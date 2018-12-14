@@ -2,6 +2,7 @@
 import { BaseComponent } from '../shared/base.component';
 import { WorkflowService } from '../../services/workflow.service';
 import { WorkflowListItem } from '../../models/workflow.model';
+import { State } from '../../models/asset.model';
 
 
 @Component({
@@ -56,13 +57,15 @@ export class MonitorFilterComponent extends BaseComponent implements OnInit {
                 this.items = r;
 
                 this.items.forEach(i => {
-                    i.label = i.Name;
+                    i.label = i.State == State.InActive ? i.Name + " ( Inactive )" : i.Name;
                     i.value = i.ID.toString();
                 });
 
-                this.selection = [];
-                if (this.selectAll)
+                
+                if (this.selectAll) {
+                    this.selection = [];
                     this.items.forEach(i => this.selection.push(i.value));
+                }
                     
                 this.selectionChange.emit(this.selection);
                 this.isLoading = false;

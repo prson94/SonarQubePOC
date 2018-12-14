@@ -14,7 +14,7 @@ import { EventListener } from "@angular/core/src/debug/debug_node";
                  <d3s-tile-actions [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
          </header>
             <d3s-monitor-filter *ngIf="showHeader" [hidden]="isFiltered" (selectionChange)="filterChange($event)" [selectAll]="selectAll"></d3s-monitor-filter>
-            <d3s-monitor-filter *ngIf="!showHeader" [(filterMode)]="showSimpleFilter"  [showFilter]="true" [hidden]="isFiltered" (selectionChange)="filterChange($event)" [selectAll]="selectAll"></d3s-monitor-filter>
+            <d3s-monitor-filter *ngIf="!showHeader" [(filterMode)]="showSimpleFilter" [selection]="selectedWorkflowTypes"  [showFilter]="true" [hidden]="isFiltered" (selectionChange)="filterChange($event)" [selectAll]="selectAll"></d3s-monitor-filter>
 
             <d3s-monitor-list 
                     [showSimpleFilter]="showSimpleFilter"

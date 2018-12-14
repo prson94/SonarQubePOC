@@ -273,7 +273,7 @@ export class WorkflowService extends BaseService {
 
     cloneWorkflowDiagramModel(id: number): Promise<number> {
         //returns workflowtype newly created id
-        return this.http.get(`services/workflow/diagram/clone/${id}`)
+        return this.http.post('services/workflow/diagram/clone', {ID:id})
             .toPromise()
             .then(response => <number>response.json())
             .catch(err => this.handleError(err));
@@ -286,6 +286,12 @@ export class WorkflowService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
+    hasPendingWorkflowItems(id: number): Promise<boolean> {
+        return this.http.get(`services/workflow/type/${id}/haspendingitems`)
+            .toPromise()
+            .then(response => <boolean>response.json())
+            .catch(err => this.handleError(err));
+    }
     getFusionLookupList(id: number): Promise<any[]> {
         return this.http.get(`api/fusionlookup/list/${id}`)
             .toPromise()

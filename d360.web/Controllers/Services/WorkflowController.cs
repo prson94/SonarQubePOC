@@ -1265,7 +1265,7 @@ order by wi.StartedOn desc";
         public HttpResponseMessage GetWorkflowType(int id)
         {
             var type = Company.WorkflowTypes.Find(id);
-            if (type == null || type.State != core.enums.State.Active)
+            if (type == null || (type.State != core.enums.State.Active && type.State != core.enums.State.InActive))
                 return Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Workflow type id {id} could not be found");
 
             
@@ -1291,14 +1291,14 @@ order by wi.StartedOn desc";
             return Request.CreateResponse(HttpStatusCode.OK, fields);
         }
 
-        [Route("diagram/clone/{id:int}"), HttpGet]
-        public HttpResponseMessage CloneWorkflowDiagramModel(int id)
+        [Route("diagram/clone"), HttpPost]
+        public HttpResponseMessage CloneWorkflowDiagramModel(core.entities.Workflow.Type workflowType)
         {
             try
             {
-                var otype = Company.WorkflowTypes.Find(id);
-                if (otype == null || otype.State != core.enums.State.Active)
-                    return Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Workflow type id {id} could not be found");
+                var otype = Company.WorkflowTypes.Find(workflowType.ID);
+                if (otype == null || (otype.State != core.enums.State.Active && otype.State != core.enums.State.InActive))
+                    return Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Workflow type id {workflowType.ID} could not be found");
 
                 //Workflow type creation
 
@@ -1312,13 +1312,13 @@ order by wi.StartedOn desc";
                 @type.UpdatedOn = DateTime.UtcNow;
                 @type.Name = otype.Name + " (Copy)";
                 @type.Description = otype.Description;
-                @type.State = core.enums.State.Active;
+                @type.State = otype.State;
 
                 Company.Add(@type);
                 Company.SaveChanges();
 
                 var currentVersion = Company.WorkflowVersions.Where(v => v.TypeID == otype.ID).OrderByDescending(v => v.Version).First();
-                var omodel = GetWorkflowDiagram(id, currentVersion?.Version);
+                var omodel = GetWorkflowDiagram(workflowType.ID, currentVersion?.Version);
 
                 var @version = new WorkflowVersion();
                 @version.ID = 0;
@@ -1480,7 +1480,7 @@ order by wi.StartedOn desc";
                         type.UpdatedOn = DateTime.UtcNow;
                         type.Name = model.Type.Name;
                         type.Description = model.Type.Description;
-                        type.State = core.enums.State.Active;
+                        type.State = model.Type.State;
 
                         Company.Add(type);
                         Company.SaveChanges();
@@ -1510,6 +1510,7 @@ order by wi.StartedOn desc";
                         var type = Company.WorkflowTypes.Find(model.Type.ID);
                         type.Name = model.Type.Name;
                         type.Description = model.Type.Description;
+                        type.State = model.Type.State;
                         type.UpdatedOn = DateTime.UtcNow;
                         type.UpdatedBy = Company.CurrentResourceID;
                         
@@ -1588,7 +1589,7 @@ order by wi.StartedOn desc";
                             @event.ObjectID = model.Event.ObjectID;
                             @event.TypeID = model.Type.ID;
                             @event.ChangeType = model.Event.ChangeType;
-
+                           
                             @event.Condition = JsonConvert.DeserializeXNode(model.Event.Condition).ToString();
                             @event.Settings = JsonConvert.DeserializeXNode(model.Event.Settings).ToString();
 
@@ -1927,8 +1928,8 @@ order by wi.StartedOn desc";
             type.UpdatedOn = DateTime.UtcNow;
             type.UpdatedBy = Company.CurrentResourceID;
             Company.SaveChanges();
-            
-            return Request.CreateResponse(HttpStatusCode.OK, id);
+
+           return Request.CreateResponse(HttpStatusCode.OK, id);
         }
 
         [Route("type/{id:int}/versions")]
@@ -2048,6 +2049,18 @@ order by wi.StartedOn desc";
             }
         }
 
+        [Route("type/{typeId:int}/haspendingitems"),HttpGet]
+        public HttpResponseMessage HasPendingWorkflowsItems(int typeId)
+        {
+            var sql = $@"		Select count(*)        from workflow.type t
+                            inner join workflow.version v on v.typeid = t.id
+                            inner join workflow.versionstep vs on vs.versionid = v.id
+                            inner join workflow.itemstep s on s.stepid = vs.id and s.CompletedOn is null
+                            where  t.State =1 and t.id= {typeId}";
+            int result = Company.Query<int>(sql).SingleOrDefault();
+
+            return Request.CreateResponse(HttpStatusCode.OK, result != 0);
+        }
         [Route("procedures"), HttpGet]
         public IQueryable GetWorkflowProcedures()
         {

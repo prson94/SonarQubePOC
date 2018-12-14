@@ -16,7 +16,9 @@ namespace d360.core.enums
         [Name("Pending Delete")]
         PendingDelete = 2,
         [Name("Deleted")]
-        Deleted = 3
+        Deleted = 3,
+        [Name("InActive")]
+        InActive =4
     }
 
     public class StateInfo

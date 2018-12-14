@@ -59,6 +59,11 @@ namespace d360.model
 
             string issueObjectType = "";
             int issueObjectId = -1;
+            
+            var workflowType = WorkflowTypes.Where(x => x.ID == registration.TypeID).FirstOrDefault();
+            if (workflowType.State != State.Active)
+                return false;
+
 
             if (objectInfo.Object == SystemObjects.Issue)
             {
