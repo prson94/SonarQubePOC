@@ -7,10 +7,13 @@
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
    <changeSet author="Andy Kelly" id="D3S-Environment-Schema">
+        <preConditions onFail="MARK_RAN" onFailMessage="The initial schema has already been created. Skipping changeset and will mark as ran">
+            <tableExists schemaName="dbo" tableName="dbo.asset" />
+        </preConditions>
         <sqlFile dbms="mssql"
                 encoding="UTF-16LE"
                 endDelimiter="GO"
-                path="D3S_Environment_20181113.sql  "
+                path="D3S_Environment_20181113.sql"
                 relativeToChangelogFile="true"
                 splitStatements="true"
                 stripComments="true"/>
