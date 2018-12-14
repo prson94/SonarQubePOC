@@ -15,7 +15,7 @@ import { BaseComponent } from '../../shared/base.component';
                 <div  *ngIf="!showEditor && !showDelete && !isLoading" class="row">                    
                     <div class="col s12">
                         <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-                        <p-table #dt [value]="relationships" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['ID','SubjectName','PredicateName','ObjectName']" [pageLinks]="3" [paginator]="true" [rows]="20">
+                        <p-table #dt [value]="relationships" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['ID','SubjectName','PredicateName','ObjectName']" [pageLinks]="3" [paginator]="true" [rows]="20"  [selection]="selected" (selectionChange)="selected=$event;selectedChange.emit(selected)">
                             <ng-template pTemplate="header">
                                 <tr>
                                     <th [pSortableColumn]="'ID'" style="width: 10%;">
