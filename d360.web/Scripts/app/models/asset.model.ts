@@ -46,7 +46,8 @@ export enum State {
     PendingAdd = 0,
     Active = 1,
     PendingDelete = 2,
-    Deleted = 3
+    Deleted = 3,
+    InActive=4
 }
 
 export class AssetType {

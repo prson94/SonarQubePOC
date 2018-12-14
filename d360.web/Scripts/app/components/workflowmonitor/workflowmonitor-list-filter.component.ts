@@ -6,6 +6,7 @@ import { WorkflowMonitorService } from '../../services/workflowmonitor.service';
 import { FilterFieldType } from '../../models/filter-field.model';
 import * as _ from 'lodash';
 import { StringHelpers } from '../../static/string-helpers';
+import { State } from '../../models/asset.model';
 
 
 
@@ -90,7 +91,7 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent  implement
                 this.items = r;
 
                 this.items.forEach(i => {
-                    i.label = i.Name;
+                    i.label = i.State == State.InActive ? i.Name + " ( Inactive )" : i.Name ;
                     i.value = i.ID.toString();
                 });
 

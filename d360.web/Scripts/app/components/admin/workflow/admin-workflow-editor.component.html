@@ -91,6 +91,15 @@
             </div>
         </div>
     </div>
+    <div class="row" *ngIf="!isLoading">
+        <div class="col s12">
+
+            <input type="checkbox" [disabled]="!(model.Type.State==1 || model.Type.State==4)" [ngModel]="model.Type.State==1? true : false" (ngModelChange)="onStateChange($event)" />
+            <div class="FieldName">
+                &nbsp;Active
+            </div>
+        </div>
+    </div>
     <div class="row" *ngIf="!isLoading && model.Event.ChangeType == WorkflowChangeType.Schedule" style="padding-top: 8px;">
         <div class="col s12">
             <div>
@@ -144,8 +153,8 @@
                 Body
             </div>
             <div style="width: 100%">
-                <p-editor [ngModel]="model.Event.SettingsObject.Settings.MessageBodyTemplate" 
-                          (ngModelChange)="model.Event.SettingsObject.Settings.MessageBodyTemplate = $event; validate();" 
+                <p-editor [ngModel]="model.Event.SettingsObject.Settings.MessageBodyTemplate"
+                          (ngModelChange)="model.Event.SettingsObject.Settings.MessageBodyTemplate = $event; validate();"
                           [style]="{'height':'150px'}" #ed2>
                 </p-editor>
             </div>
@@ -162,7 +171,10 @@
     <div class="row">
         <div class="col s12"><div class="errorMessage">{{errorMessage}}</div></div>
     </div>
-    <div  *ngIf="!isLoading" class="row" style="padding-top: 8px;">
+    <div class="row">
+        <div class="col s12"><div class="governance-value-warning">{{warningMessage}}</div></div>
+    </div>
+    <div *ngIf="!isLoading" class="row" style="padding-top: 8px;">
         <div class="col s12">
             <div>
                 <button type="button" pButton label="Cancel" (click)="onClose.emit()"></button>

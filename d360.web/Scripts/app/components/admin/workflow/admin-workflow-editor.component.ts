@@ -17,6 +17,7 @@ import { WorkflowFieldsService } from '../../../services/workflow-fields.service
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
 
 import * as _ from 'lodash';
+import { State } from '../../../models/asset.model';
 
 declare var CompanySettings;
 
@@ -48,6 +49,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     private SCHEDULE_OBJECT_LIMIT = 2000;
     private isValid = false;
     private errorMessage = "";
+    private warningMessage = "";
     private hideShoppingCart = true;
     
     WorkflowChangeType = WorkflowChangeType;
@@ -254,6 +256,23 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
         //console.log(this.conditions);
     }
 
+    hasPendingWorkflowItems() {
+        this.workflowService.hasPendingWorkflowItems(this.model.Type.ID)
+            .then(x => {
+                if (x) {
+                    this.warningMessage = "There are pending workflow items for this workflow. These items will still be able to be completed but no new workflows will be created.";
+                }
+            });
+    }
+    onStateChange($event) {
+        if ($event) {
+            this.model.Type.State = State.Active;
+            this.warningMessage = "";
+        }else {
+            this.model.Type.State = State.InActive;
+            if (this.model.Type.ID != 0) this.hasPendingWorkflowItems();
+        }
+    }
     remove(item: any) {
         let i = this.conditions.findIndex(c => c == item);
         this.conditions.splice(i, 1);

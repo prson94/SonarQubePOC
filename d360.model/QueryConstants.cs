@@ -1468,7 +1468,8 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 						'Fusion'
 					else
 						''
-					end as [Type]
+					end as [Type],
+                    t.State as State
                 from workflow.type t
                 inner join workflow.eventregistration e on e.typeid = t.id
                 left join AssetType D on D.Object = E.Object and D.ObjectID = e.ObjectID 
@@ -1480,7 +1481,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 				left join workflow.version v on v.id = t.publishedversionid
 				left join reporting.Global_Resource rc on rc.ResourceID = t.CreatedBy
 				left join reporting.Global_Resource ru on ru.ResourceID = t.UpdatedBy
-				where t.State = 1
+				where t.State in (1,4)
                 order by t.Name asc";
 
         public static string WorkflowVersionStepHistory = @"

@@ -40,6 +40,10 @@ import { GridColumn } from '../../../models/grid-definition.model';
                 <td *ngFor="let col of columns" [ngSwitch]="col.type">
                     <span *ngSwitchCase="'text'">{{item[col.datafield]}}</span>
                     <span *ngSwitchCase="'date'">{{item[col.datafield] | date:'shortDate'}}</span>
+                     <span *ngSwitchCase="'State'">
+                        <i *ngIf="item[col.datafield] == 1" class="fa fa-check enabled" title="True"></i>
+                        <i *ngIf="item[col.datafield] == 4" class="fa fa-times disabled" title="False"></i>
+                    </span>
                 </td>
                 <td>
                     <div class="RowTools">
@@ -76,6 +80,7 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
         { datafield: 'TypeName', text: 'Type Name', type: 'text'},
         { datafield: 'Type', text: 'Type', type: 'text'},
         { datafield: 'ChangeTypeName', text: 'Change Type', type: 'text' },
+        { datafield: 'State', text: 'Active', type: 'State' },
         { datafield: 'UpdatedOn', text: 'Updated On', type: 'date'},
         { datafield: 'UpdatedBy', text: 'Updated By', type: 'text'},
         { datafield: 'Published', text: 'Status', type: 'text'},

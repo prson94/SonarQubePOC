@@ -127,7 +127,7 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
     }
 
     ngOnInit() {
-        
+
         this.predefinedFilters = [];
         this.isLoading = true;
         this.sub = this.route.params.subscribe(params => {
