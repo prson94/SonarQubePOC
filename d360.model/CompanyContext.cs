@@ -24,6 +24,7 @@ using System.Data.Entity.Design.PluralizationServices;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace d360.model
@@ -977,7 +978,10 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
         {
             string query = string.Format("SELECT * FROM utility.ObjectDetail('{0}', {1})", type, id);
             var model = Database.SqlQuery<ObjectDetail>(query).SingleOrDefault();
-            if (model != null)
+            var neutralCulture = Thread.CurrentThread.CurrentCulture.Parent.Name;
+            var isNeutralCultureEnglish = neutralCulture.Equals("en", StringComparison.OrdinalIgnoreCase);
+
+            if ((model != null) && isNeutralCultureEnglish)
             {
                 var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
                 model.PluralizedName = pluralize.Pluralize(model.Name??"");
