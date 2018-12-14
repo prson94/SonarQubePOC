@@ -94,9 +94,9 @@
     <div class="row" *ngIf="!isLoading">
         <div class="col s12">
 
-            <input type="checkbox" [disabled]="!(model.Type.State==1 || model.Type.State==4)" [ngModel]="model.Type.State==1? true : false" (ngModelChange)="onStateChang($event)" />
+            <input type="checkbox" [disabled]="!(model.Type.State==1 || model.Type.State==4)" [ngModel]="model.Type.State==1? true : false" (ngModelChange)="onStateChange($event)" />
             <div class="FieldName">
-                Active
+                &nbsp;Active
             </div>
         </div>
     </div>
