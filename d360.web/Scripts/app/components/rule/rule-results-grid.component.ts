@@ -22,38 +22,63 @@ import { RuleColumnFilterComponent } from './rule-column-filter.component'
                             <input type="text" style="width: 100%;" maxlength="200" (keyup)="checkSimpleSearchEnter($event,dt);" [(ngModel)]="simpleTextFilter" placeholder="Search..." autofocus autocomplete="off" />                            
                         </div>
                         <d3s-rule-column-filter [hidden]="showSimpleFilter" [(attributeFilter)]="attributes" [(relationshipFilter)]="relationships" [(filters)]="filters" [fields]="filtercolumns" (filterChanged)="filterGridData($event)"></d3s-rule-column-filter>
-                        <p-table #dt [value]="items" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['RunDate','EffectiveDate','PassFraction','RowsPassed','RowsFailed','Passed','FusionAttribute']" [pageLinks]="3" [paginator]="true" [rows]="rowsPerPage" [rowsPerPageOptions]="[5,10,20]"  [lazy]="true"  (onLazyLoad)="loadRuleResultsLazy($event)" [totalRecords]="totalRecords">
+                        <p-table #dt 
+                            [value]="items" 
+                            selectionMode="single" 
+                            [metaKeySelection]="true" 
+                            [globalFilterFields]="['RunDate','EffectiveDate','PassFraction','RowsPassed','RowsFailed','Passed','FusionAttribute']" 
+                            [pageLinks]="3" 
+                            [paginator]="true" 
+                            [rows]="rowsPerPage" 
+                            [rowsPerPageOptions]="[5,10,20]"  
+                            [lazy]="true"  
+                            (onLazyLoad)="loadRuleResultsLazy($event)" 
+                            [totalRecords]="totalRecords" 
+                            [scrollable]="true" 
+                            scrollWidth="100%">
+                            <ng-template pTemplate="colgroup" >
+                                <colgroup>
+                                    <col style="width: 150px">
+                                    <col style="width: 120px">
+                                    <col style="width: 150px">
+                                    <col style="width: 150px">
+                                    <col style="width: 150px">
+                                    <col style="width: 150px">
+                                    <col style="width: 200px">
+                                    <col style="width: 200px">
+                                </colgroup>
+                            </ng-template> 
                             <ng-template pTemplate="header">
                                 <tr>
-                                    <th [pSortableColumn]="'RunDate'" style="width: 150px">
+                                    <th [pSortableColumn]="'RunDate'">
                                         Run Date
                                         <d3s-sortIcon [field]="'RunDate'"></d3s-sortIcon>
                                     </th>
-                                    <th [pSortableColumn]="'EffectiveDate'" style="width: 120px">
+                                    <th [pSortableColumn]="'EffectiveDate'">
                                         Effective Date
                                         <d3s-sortIcon [field]="'EffectiveDate'"></d3s-sortIcon>
                                     </th>
-                                    <th [pSortableColumn]="'PassFraction'" style="width: 150px">
+                                    <th [pSortableColumn]="'PassFraction'">
                                         Pass Fraction
                                         <d3s-sortIcon [field]="'PassFraction'"></d3s-sortIcon>
                                     </th>
-                                    <th [pSortableColumn]="'RowsPassed'" style="width: 150px">
+                                    <th [pSortableColumn]="'RowsPassed'">
                                         Rows Passed
                                         <d3s-sortIcon [field]="'RowsPassed'"></d3s-sortIcon>
                                     </th>
-                                    <th [pSortableColumn]="'RowsFailed'" style="width: 150px">
+                                    <th [pSortableColumn]="'RowsFailed'">
                                         Rows Failed
                                         <d3s-sortIcon [field]="'RowsFailed'"></d3s-sortIcon>
                                     </th>
-                                    <th [pSortableColumn]="'Passed'" style="width: 150px">
+                                    <th [pSortableColumn]="'Passed'">
                                         Passed
                                         <d3s-sortIcon [field]="'Passed'"></d3s-sortIcon>
                                     </th>
-                                    <th [pSortableColumn]="'FusionAttribute'" style="width: 200px">
+                                    <th [pSortableColumn]="'FusionAttribute'">
                                         Fusion
                                         <d3s-sortIcon [field]="'FusionAttribute'"></d3s-sortIcon>
                                     </th>
-                                    <th [pSortableColumn]="''" style="width: 200px"></th>
+                                    <th [pSortableColumn]="''"></th>
                                 </tr>
                                 <tr [hidden]="showSimpleFilter">
                                     <th></th>
