@@ -18,7 +18,7 @@ import { WorkflowType } from '../../../models/workflow.model';
                     <d3s-tile-actions [hasAdd]="false"></d3s-tile-actions>                            
                    </header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                    <p-table #dt [value]="counts" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name','Version','Step','Total']" sortField="Name" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected">
+                    <p-table #dt *ngIf="!isLoading && counts.length > 0" [value]="counts" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name','Version','Step','Total']" sortField="Name" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected">
                         <ng-template pTemplate="header">
                             <tr>
                                 <th [pSortableColumn]="'Name'">
