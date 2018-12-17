@@ -32,11 +32,6 @@ namespace d360.core.entities
     [DataContract(Namespace = NAMESPACE)]
     public class Rule : BaseCreatedAndUpdatedIntObject, IIntObject, IFieldsObject, ICreatedObject, IUpdatedObject, ICreatedMetadata, IUpdatedMetadata
     {
-        public Rule()
-        {
-            Visible = true;
-        }
-
         [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public string KeyHash { get; set; }
 
@@ -63,8 +58,6 @@ namespace d360.core.entities
 
         [DataMember, ForeignKey("RuleDimensionID")]
         public RuleDimension Dimension { get; set; }
-
-        public bool Visible { get; set; }
 
         [ForeignKey("RuleID")]
         public virtual ICollection<RuleImplementation> RuleImplementations { get; set; }

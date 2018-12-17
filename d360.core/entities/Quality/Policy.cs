@@ -26,11 +26,6 @@ namespace d360.core.entities
     [DataContract(Namespace = NAMESPACE)]
     public class Policy : PolicyModel, IIntObject, IFieldsObject, ICreatedObject, IUpdatedObject, ISearchable, IUpdatedMetadata, IEventTrackedEntity
     {
-        public Policy()
-        {
-            Visible = true;
-        }
-
         [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         [Column(TypeName = "varchar"), StringLength(250)]
         public string KeyHash { get; set; }
@@ -49,8 +44,6 @@ namespace d360.core.entities
         public DateTime? UpdatedOn { get; set; }
 
         public int? UpdatedBy { get; set; }
-
-        public bool Visible { get; set; }
 
         [DataMember]
         public string SourceID { get; set; }

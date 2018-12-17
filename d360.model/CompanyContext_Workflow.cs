@@ -585,8 +585,6 @@ namespace d360.model
             if (settingsModel.Visible.HasValue)
             {
                 Console.WriteLine($"DEBUG - OBJECT TYPE[{objectInfo.ObjectType}] ID[{objectInfo.ObjectID}] VISIBILITY SET TO {settingsModel.Visible}");
-
-                SetObjectVisibility(objectInfo, settingsModel.Visible.GetValueOrDefault());
             }
         }
 
@@ -827,9 +825,6 @@ namespace d360.model
 
                 // if the task is a finish or terminate task we need to mark the workflow instance as completed and the task as completed
                 isStepCompleted = true;
-
-                //mark the visible flag for the specified object as 1
-                if (stepType == StepType.Finish) SetObjectVisibility(objectInfo); // only finish steps should set objects as visible
 
                 var item = WorkflowItems.Where(x => x.ID == itemID).FirstOrDefault();
 
@@ -1186,41 +1181,6 @@ namespace d360.model
             }
 
             SaveChanges();
-        }
-
-        private void SetObjectVisibility(EventObjectInfo objectInfo, bool visibility = true)
-        {
-            Console.WriteLine($"Debug - Setting Object {objectInfo.Object} {objectInfo.ObjectID} as visible {visibility}");
-
-            switch (objectInfo.Object)
-            {
-                case core.SystemObjects.Artifact:
-                    var artifact = Artifacts.Where(x => x.ID == objectInfo.ObjectID).FirstOrDefault();
-                    if (artifact == null) return;
-                    artifact.Visible = visibility;
-                    SaveChanges();
-                    break;
-                case core.SystemObjects.Taxonomy:
-                    var taxonomy = Taxonomies.Where(x => x.ID == objectInfo.ObjectID).FirstOrDefault();
-                    if (taxonomy == null) return;
-                    taxonomy.Visible = visibility;
-                    SaveChanges();
-                    break;
-                case core.SystemObjects.Policy:
-                    var policy = Policies.Where(x => x.ID == objectInfo.ObjectID).FirstOrDefault();
-                    if (policy == null) return;
-                    policy.Visible = visibility;
-                    SaveChanges();
-                    break;
-                case core.SystemObjects.Rule:
-                    var rule = Rules.Where(x => x.ID == objectInfo.ObjectID).FirstOrDefault();
-                    if (rule == null) return;
-                    rule.Visible = visibility;
-                    SaveChanges();
-                    break;
-                default:
-                    break;
-            }
         }
 
         public void RequestObjectCertification(core.SystemObjects @object, int objectId, core.SystemObjects objectType, int objectTypeId)
