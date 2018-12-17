@@ -2213,7 +2213,7 @@ order by wi.StartedOn desc";
         public HttpResponseMessage GetWorkflowVersionStepHistory(int id, string filteredObject = null, int? filteredObjectId = null)
         {            
             var sql = QueryConstants.WorkflowVersionStepHistory;
-            //			left join issue s on m.object = 'Issue' and s.id = m.objectID
+
             if (filteredObject != null && filteredObjectId != null)
             {
                 if (filteredObject == "Issue")
@@ -2243,7 +2243,7 @@ order by wi.StartedOn desc";
         {
 
             var sql = QueryConstants.WorkflowVersionStepHistory;
-            //			left join issue s on m.object = 'Issue' and s.id = m.objectID
+
             if (filteredObject != null && filteredObjectId != null)
             {
                 if (filteredObject == "Issue")
@@ -2308,7 +2308,7 @@ order by wi.StartedOn desc";
         {
             var sql = @"select ft.ID as value, ft.FriendlyName + ' (' + coalesce( ri.Name, lt.Name) + ')' as [label] from 
                  FieldType ft
-                 left join ReferenceItemType ri on ri.id = lookupobjectid and ft.lookupobjecttype = 'ReferenceItem'
+                 left join AssetType ri on ri.objectid = ft.lookupobjectid and ri.[object] = 'ReferenceItemType' and ft.LookupObjectType = 'ReferenceItem'
                  left join LookupType lt on lt.id = lookupobjectid and ft.lookupobjecttype = 'Lookup'
                  where ft.Object = @objectType and ft.ObjectID = @objectId and ft.Type = 'Lookup' and ft.LookupObjectId > 0
                  order by ft.FriendlyName";
@@ -2888,7 +2888,6 @@ order by wi.StartedOn desc";
                         }
 
                         //get all relevant resource info
-                        //var emailResources = Company.GlobalReportingResources.Where(g => resourceEmails.Contains(g.Email.ToLower())).ToList();
                         var emailResources = this.GetEmailResources(assetId, responsiblities, resourceEmails);
                         for (int i = 0; i < emails.email.Count; i++)
                         {

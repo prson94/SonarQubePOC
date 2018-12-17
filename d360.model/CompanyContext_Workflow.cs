@@ -792,8 +792,7 @@ namespace d360.model
                         await SendFormWorkflowEmail(itemStep, itemStepID, itemID, objectInfo, stepSettings);
                         break;
                     case WorkflowActivityType.StatusChange:
-                        // change the status of this item
-                        ChangeItemStatus(itemStep.Step, objectInfo);
+                        // deprecated, just set to true and move on
                         isStepCompleted = true;
                         break;
                     case WorkflowActivityType.Procedure:
@@ -1187,30 +1186,6 @@ namespace d360.model
             }
 
             SaveChanges();
-        }
-
-        private void ChangeItemStatus(WorkflowVersionStep step, EventObjectInfo objectInfo)
-        {
-            var xml = step.Settings;
-            if (string.IsNullOrEmpty(xml))
-            {
-                Console.WriteLine("ERROR THE XML FOR THE STATUS CHANGE STEP IS NULL OR EMPTY.  THIS IS NOT VALID.");
-
-                throw new Exception("ERROR - INVALID CONFIGURATION FOR THE STATUS CHANGE TASK.");
-            }
-
-            // change the item status to the value specified
-            WorkflowStatusModel statusModel = WorkflowStatusModel.ParseFromXml(XElement.Parse(xml));
-
-            //change the objects status field to the specified value
-            switch (objectInfo.Object)
-            {
-                case core.SystemObjects.Artifact:
-                    var artifact = Artifacts.Where(x => x.ID == objectInfo.ObjectID).FirstOrDefault();
-                    SaveChanges();
-                    break;
-            }
-
         }
 
         private void SetObjectVisibility(EventObjectInfo objectInfo, bool visibility = true)
@@ -2049,11 +2024,10 @@ namespace d360.model
                         }
                         else
                         {
-                            var grp = Groups.Where(x => x.ID == adminGroupId).FirstOrDefault();
-
-                            if (grp != null)
+                            var group = AssetDetails.FirstOrDefault(a => a.ObjectID == adminGroupId && a.Object == "Group");
+                            if (group != null)
                             {
-                                recipientType = $"Default - {grp.Name}";
+                                recipientType = $"Default - {group.DisplayValue}";
                             }
                             else
                             {
