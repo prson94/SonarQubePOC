@@ -190,7 +190,7 @@ BEGIN
 
 	RETURN
 END
-
+GO
 
 ALTER FUNCTION [utility].[GetObjectTypePath]
 (
@@ -207,16 +207,15 @@ BEGIN
 
 	if(@object = 'FusionAttribute')
 	begin
-		select @typeName = TX.TextPath
+		select @typeName = TX.[Path]
 		from Asset A
 		inner join AssetType T on T.ID = A.AssetTypeID and A.Object = 'FusionAttribute' and A.ObjectID = @objectId
-		cross apply dbo.GetAssetTypeTextPathById(T.ID) TX;		
+		cross apply dbo.GetAssetTypeTextPathById(T.ID, '.') TX;		
 	end
 
 	return @typeName;
 END
-
-
+GO
 
 ALTER proc [dbo].[GetPageInformation]
 
@@ -380,6 +379,7 @@ begin
 			and not exists (select 1 from ResponsibilityDetail where PermissionsBitMask & 1 = 0 and ResourceID = @rid and ( (AssetID = O.ID) OR (AssetTypeID = O.AssetTypeID and AssetID = 0)))
 	for json path, WITHOUT_ARRAY_WRAPPER
 end
+GO
 ]]>
     </sql>
 	<rollback>
@@ -573,7 +573,7 @@ BEGIN
 
 	RETURN
 END
-
+go
 
 
 ALTER FUNCTION [utility].[GetObjectTypePath]
@@ -596,7 +596,7 @@ BEGIN
 
 	return @typeName;
 END
-
+go
 
 ALTER proc [dbo].[GetPageInformation]
 
@@ -762,6 +762,7 @@ begin
 			and not exists (select 1 from ResponsibilityDetail where PermissionsBitMask & 1 = 0 and ResourceID = @rid and ( (AssetID = O.ID) OR (AssetTypeID = O.AssetTypeID and AssetID = 0)))
 	for json path, WITHOUT_ARRAY_WRAPPER
 end
+go
 ]]>
 	</rollback>
   </changeSet>
@@ -784,10 +785,10 @@ end
 
 			alter table [Rule] drop constraint DF_Rule_Visible;
 			drop index IX_Rule_Visible on [Rule];
-			alter table [Rule] drop column Visible;
+			alter table [Rule] drop column Visible; 			
 	</sql>
 	<rollback>
-		alter table Artfact add Visible bit not null constraint DF_Artifact_Visible default 1;
+		alter table Artifact add Visible bit not null constraint DF_Artifact_Visible default 1;
 		alter table [Policy] add Visible bit not null constraint DF_Policy_Visible default 1;
 		alter table Taxonomy add Visible bit not null constraint DF_Taxonomy_Visible default 1;
 		alter table [Rule] add Visible bit not null constraint DF_Rule_Visible default 1;
