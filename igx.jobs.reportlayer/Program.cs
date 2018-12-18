@@ -1141,6 +1141,7 @@ from	workflow.Item I
 
                             selectSql = @"
 select	S.ItemID,
+        S.StepID,
 		S.StartedBy,
 		S.StartedOn,
 		S.CompletedBy,
