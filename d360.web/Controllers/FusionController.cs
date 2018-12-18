@@ -412,8 +412,6 @@ where A.FusionID = @f and A.FusionAttributeTypeID = @t and A.Deleted = 0";
             var fusionQueryAttributeTypeName = Company.FusionQueryAttributeTypes.Where(x => x.ID == fusionQueryAttributeTypeID).Single().Name;
 
             var pluralFusionQueryAttributeTypeName = "Defalut";
-            var random = new Random();
-            var hashNameWhenNonEnCulture = new string(Enumerable.Repeat("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 7).Select(s => s[random.Next(s.Length)]).ToArray());
             if (PluralCultureHelper.IsNeutralCultureEnglish())
             {
                 var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
@@ -502,7 +500,7 @@ where   A.FusionQueryAttributeTypeID = @t
 
             var stream = new MemoryStream();
             document.SaveAs(stream);
-            return File(stream.ToArray(), "application/vnd.ms-excel", $"{pluralFusionQueryAttributeTypeName}-{hashNameWhenNonEnCulture}.xlsx");
+            return File(stream.ToArray(), "application/vnd.ms-excel", $"{pluralFusionQueryAttributeTypeName}.xlsx");
         }
 
         [Route("QueryItemsByAttributeType"), NonNullableParameters]
