@@ -44,7 +44,6 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     private selectedIssueObjectType: any = null;
 
     private showAddCondition: boolean = false;
-    private hideObject: boolean = false;
 
     private SCHEDULE_OBJECT_LIMIT = 2000;
     private isValid = false;
@@ -104,11 +103,6 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                         if (this.id > 0 && this.model == null && r != null)
                             this.model = r;
 
-
-                        //console.log('load', this.model);
-                        //if (this.id > 0 && (this.model == null || (this.model.Nodes == null && this.model.Links == null) || (this.model.Nodes.length)))
-                        //    this.model = r;
-
                         //create initial model and settings if needed
                         if (this.model == null)
                             this.model = new WorkflowDiagramModel();
@@ -119,8 +113,6 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
 
                         if (this.model.Event.SettingsObject != null && this.model.Event.SettingsObject.Settings != null
                             && this.model.Event.SettingsObject.Settings.Visible != null) {
-                            this.hideObject = (this.model.Event.SettingsObject.Settings.Visible.toString() == "false") ? true : false;
-
                             if (this.model.Event.SettingsObject.Settings.SendAggregateEmail != null)
                                 //convert to bool
                                 this.model.Event.SettingsObject.Settings.SendAggregateEmail = this.model.Event.SettingsObject.Settings.SendAggregateEmail.toString().toLowerCase() == "true" ? true : false;
@@ -281,8 +273,6 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     }
 
     save() {
-        this.model.Event.SettingsObject.Settings.Visible = !this.hideObject;
-
         this.model.Event.conditions = this.conditions;
         this.model.Event.Object = this.objectType;
         this.model.Event.ObjectID = this.objectID;

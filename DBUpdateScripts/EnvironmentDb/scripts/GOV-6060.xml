@@ -1,0 +1,817 @@
+﻿<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="MDonato" id="GOV-6060-procs">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+			<![CDATA[
+ALTER FUNCTION [utility].[ObjectDetail]
+(
+
+	@type varchar(50), 
+	@id int
+
+
+)
+RETURNS @tbl TABLE 
+(
+	ID int,
+	AssetID bigint,
+	UID uniqueidentifier,
+	AssetTypeID int,
+	Name nvarchar(max),
+	TextPath nvarchar(2500),
+	Description nvarchar(max),
+	ParentID int null,
+	ParentType nvarchar(250),
+	Url nvarchar(2500),
+	TypeID int,
+	[Type] varchar(25),
+	[TypeName] nvarchar(250),
+	IconBackColor varchar(15),
+	IconForeColor varchar(15),
+	IconText varchar(15),
+	Status nvarchar(25) null
+) 
+AS
+BEGIN
+	if @type in 
+	(
+		'Artifact',
+		'Attribute',
+		'Fusion',
+		'FusionAttribute',
+		'Policy',
+		'ReferenceItem',
+		'Rule',
+		'Taxonomy',
+		'Group',
+		'FusionQueryAttribute',
+		'Resource'
+	)
+	begin
+		insert into @tbl (	ID,		UID,	AssetID,	AssetTypeID, Name,			TextPath,		[Description],	ParentID,	ParentType, Url,											TypeID,	[Type],	TypeName, Status)
+			SELECT			ObjectID,	UID, ID, 		AssetTypeID, DisplayValue,	DisplayValue,	NULL,			null,		null,		dbo.GenerateAssetUrl(ID),	TypeID,	Type,	TypeName, NULL
+			FROM	AssetDetail
+			where	Object = @type 
+					and ObjectID = @id
+	end
+
+	if @type in
+	(
+		'ArtifactType',
+		'AttributeType',
+		'FusionType',
+		'FusionAttributeType',
+		'FusionQueryAttributeType',
+		'PolicyType',
+		'ReferenceItemType',
+		'RuleType',
+		'TaxonomyType'
+	)
+	begin
+		insert into @tbl (	ID,		UID, Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
+			SELECT			ObjectID, UID,		Name,	Name,		Description,	NULL,		NULL,		turl.[url] as Url,	ObjectID,		@type,	'Asset Type'
+			FROM	AssetType O
+			cross apply [dbo].GetAssetTypeUrlById(o.id) turl
+			WHERE	Object = @type
+					and ObjectID = @id
+	end
+
+	if @type = 'Intersect'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,													TypeID,				[Type],				TypeName)
+			SELECT			O.ID,	IName.Name,	IName.Name,		'',				NULL,		@type,		null,	O.IntersectTypeID,	'IntersectType', ITN.Name	
+			FROM	[Intersect] O
+					INNER JOIN IntersectType T ON O.IntersectTypeID = T.ID and O.ID = @id
+					CROSS APPLY dbo.GetIntersectNames(O.ID) IName	
+					CROSS APPLY dbo.GetIntersectTypeNames(T.ID) ITN
+	end
+
+	if @type = 'IntersectType'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
+			SELECT			ID,		T.Name,	T.Name,		'',				NULL,		NULL,		null,	ID,		@type,	'Intersect Type'
+			FROM	IntersectType 
+			CROSS APPLY dbo.GetIntersectTypeNames(@id) T	
+			WHERE	ID = @id
+	end
+
+	if @type = 'Issue'
+	begin
+		insert into @tbl (	ID,		Name,				TextPath,	[Description],	ParentID,	ParentType, Url,												TypeID,			[Type],			TypeName)
+			SELECT			O.ID,	'',	'',		'',				NULL,		NULL,		null,	O.IssueTypeID,	'IssueType',	T.Name
+			FROM	Issue O
+					INNER JOIN IssueType T ON O.IssueTypeID = T.ID AND O.ID = @id
+	end
+
+	if @type = 'IssueType'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,													TypeID,				[Type],				TypeName)
+			SELECT			O.ID,	O.Name,	O.Name,		O.Description,				NULL,		@type,		NULL,	O.ID,	'IssueType',	'Issue Type'
+			FROM	IssueType O
+			WHERE	ID = @id
+	end
+
+	if @type = 'Lookup'
+	begin
+		insert into @tbl (	ID,		Name,				TextPath,	[Description],	ParentID,	ParentType, Url,												TypeID,			[Type],			TypeName)
+			SELECT			O.ID,	T.Name + ' Item',	T.Name,		'',				NULL,		NULL,		dbo.GenerateUrlByTypeName(@type, O.LookupTypeID, O.ID),	O.LookupTypeID,	'LookupType',	T.Name
+			FROM	[Lookup] O
+					INNER JOIN LookupType T ON O.LookupTypeID = T.ID AND O.ID = @id
+	end
+
+	if @type = 'LookupType'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
+			SELECT			ID,		Name,	Name,		'',				0,			@type,		dbo.GenerateUrlByTypeName(@type, ID, 0),	ID,		@type,	'Lookup Type'
+			FROM	LookupType O
+			WHERE	ID = @id
+	end
+
+	if @type = 'Report'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,				[Type],			TypeName)
+			SELECT			O.ID,	O.Name,	O.Name,	O.Description,	NULL,		@type,		'#',	0,	'Report',	'Report'
+			FROM	Report O
+			WHERE	O.ID = @id
+	end
+
+	if @type = 'ResponsibilityType'
+	begin
+		insert into @tbl (	ID, Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
+			SELECT			ID,	O.Name,	NULL,		Description,	NULL,		NULL,		null,	ID,		@type,	'Responsibility Type'
+			FROM	ResponsibilityType O
+			WHERE	ID = @id
+	end
+
+	if @type = 'ResourceType'
+	begin
+		insert into @tbl (ID, Name, Url, TypeID, [Type], TypeName)
+		values			(@id, 'Resource Type', '#/resources/administration', @id, @type, 'Resource Type')
+	end
+
+	if @type = 'RuleImplementation'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,				[Type],			TypeName, Status)
+			SELECT			O.ID,	coalesce(O.Name,'Implementation ' + cast(o.id as nvarchar)) ,	coalesce(O.Name,'Implementation ' + cast(o.id as nvarchar)),	null,	T.ID,		'Rule',		null,	T.RuleTypeID,	'RuleType',	T.DisplayValue, 'Active'
+			FROM	[RuleImplementation] O
+					inner join [Rule] T on T.ID = O.RuleID
+			WHERE	O.ID = @id
+	end
+
+	if @type = 'ShoppingCart'
+	begin
+			insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
+			SELECT			O.ID,		Name,	Name,		NULL,	NULL,		NULL,		dbo.GenerateUrlByTypeName('ShoppingCartType', O.ShoppingCartTypeID, O.ID),	O.ID,		@type,	T.Name
+			FROM	ShoppingCart O
+			inner join ShoppingCartType T on O.ShoppingCartTypeID = T.ID
+			WHERE	O.ID = @id
+	end
+
+	update	T
+	set		T.IconBackColor = coalesce(S.IconBackColor, '#000000'),
+			T.IconForeColor = coalesce(S.IconForeColor, '#ffffff'),
+			T.IconText =	
+							
+							
+								
+								COALESCE(S.IconText, 'leaf') 
+							
+	from	@tbl T
+			left join ObjectStyle S ON S.ObjectType = T.[Type] and S.ObjectID = T.TypeID
+
+	RETURN
+END
+GO
+
+ALTER FUNCTION [utility].[GetObjectTypePath]
+(
+	@object varchar(20),
+	@objectId int
+	
+)
+RETURNS nvarchar(max)
+AS
+BEGIN
+	declare @typeName nvarchar(max);
+	
+	select @typeName = TypeName from utility.objectdetail(@object,@objectId)
+
+	if(@object = 'FusionAttribute')
+	begin
+		select @typeName = TX.[Path]
+		from Asset A
+		inner join AssetType T on T.ID = A.AssetTypeID and A.Object = 'FusionAttribute' and A.ObjectID = @objectId
+		cross apply dbo.GetAssetTypeTextPathById(T.ID, '.') TX;		
+	end
+
+	return @typeName;
+END
+GO
+
+ALTER proc [dbo].[GetPageInformation]
+
+	@o varchar(50),
+	@oid int,
+	@rid int 
+as
+begin
+	declare @breadcrumbsRaw table ([Level] int, [TypeName] nvarchar(500), [Name] nvarchar(max), [TypeUrl] nvarchar(2500), [Url] nvarchar(2500));
+	declare @breadcrumbs table ([Name] nvarchar(max), [Url] nvarchar(2500), Active bit, IsType bit);
+
+	with h as
+		(
+		select	A.ID,
+				A.[ObjectID], 
+				A.AssetTypeID,
+				I.SubjectID as [ParentID], 
+				0 as [Level]
+		from	Asset A
+				left join PredicateIntersect I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.PredicateType = 3
+		where	A.[Object] = @o and A.ObjectID = @oid
+		union all
+		select	P.ID,
+				P.[ObjectID] as ID, 
+				P.AssetTypeID,
+				I.SubjectID as ParentID, 
+				h.[Level]-1 as [Level]
+		from	Asset P
+				inner join h on P.[Object] = @o and P.ObjectID = h.ParentID
+				outer apply (
+							select	SubjectID
+							from	PredicateIntersect 
+							where	Object = P.Object 
+									and ObjectID = P.ObjectID 
+									and PredicateType = 3
+							) I
+		)
+
+	insert into @breadcrumbsRaw
+		select		distinct	
+					[Level],
+					ltrim(rtrim(T.Name)),
+					ltrim(rtrim(D.DisplayValue)),
+					UT.Url,
+					U.Url
+		from		h 
+					inner join AssetType T on T.ID = h.AssetTypeID
+					left join dbo.GetAssetDisplayValue() D on D.ID = h.ID
+					cross apply dbo.GetAssetUrlByID(h.ID) U
+					cross apply dbo.GetAssetTypeUrlById(T.ID) UT
+		where		ltrim(rtrim(T.Name)) is not null
+					and ltrim(rtrim(D.DisplayValue)) is not null
+		order by	[Level]
+
+	declare @max int = 0,
+			@min int
+	select	@min = min([Level]) from @breadcrumbsRaw
+
+	insert into @breadcrumbs values ('Glossary', null, 0, 0)
+
+	while @min <= @max
+	begin
+		insert into @breadcrumbs
+			select	TypeName, TypeUrl, 0, 1 from @breadcrumbsRaw where [Level] = @min
+
+		insert into @breadcrumbs
+			select	Name, 
+					Url, 
+					case @min when 0 then 1 else 0 end, 
+					0 
+			from	@breadcrumbsRaw 
+			where	[Level] = @min
+
+		set @min = @min + 1
+	end
+
+	select	distinct
+			O.[Uid],
+			O.ObjectID as ID,
+			O.ID as AssetID,
+			O.AssetTypeID,
+			OD.DisplayValue,
+			T.Name as [TypeName],
+			case 
+				when Dash.[Count] > 0 then cast(1 as bit)
+				else cast(0 as bit)
+			end as HasDashboards,
+			case 
+				when Work.[Count] > 0 then cast(1 as bit)
+				else cast(0 as bit)
+			end as HasWorkflow,
+			case 
+				when Child.[Count] > 0 then cast(1 as bit)
+				else cast(0 as bit)
+			end as HasChildArtifacts,
+			case 
+				when Attr.[Count] > 0 then cast(1 as bit)
+				else cast(0 as bit)
+			end as AllowAttributes,
+			case 
+				when Hier.[Count] > 0 then cast(1 as bit)
+				else cast(0 as bit)
+			end as AllowPredicateHierarchies,
+			(
+			select	*
+			from	(
+					select	P.ID as [ID],
+							P.Name as [Name]
+					from	[Predicate] P
+					where	exists(SELECT * FROM IntersectType IT WHERE P.[type] = 6 and P.ID = IT.PredicateID and ((IT.Subject = T.Object and IT.SubjectID = T.ObjectID) OR (IT.Object = T.Object and IT.ObjectID =T.ObjectID)))
+					union	
+					select	P.ID as [ID], 
+							P.Name as [Name] 
+					from	[NymRelation] R 
+							inner join [dbo].[predicate] P on P.ID = R.PredicateID where R.[Object] = T.Object and R.ObjectID = T.ObjectID
+					) NMT
+			for		json path
+			)
+			as NymTypes,
+			(
+			select	* 
+			from	@breadcrumbs
+			for		json path
+			) as Breadcrumbs
+	from	Asset O
+			inner join AssetType T on T.ID = O.AssetTypeID
+			left join dbo.GetAssetDisplayValue() OD on OD.ID = O.ID
+			
+			cross apply (
+						select	count(1) as [Count]
+						from	Report
+						where	ObjectType = O.Object
+								and ObjectID = T.ObjectID
+						) Dash
+			cross apply (
+						select	count(1) as [Count]
+						from	workflow.EventRegistration WER
+								inner join workflow.Type WT on WER.TypeID = WT.ID and WT.PublishedVersionID is not null and WT.[State] = 1 and WER.ChangeType = 8 
+						where	WER.Object = T.Object
+								and WER.ObjectID = T.ObjectID
+						) Work
+			cross apply (
+						select	count(1) as [Count]
+						from	[PredicateIntersect]
+						where	Subject = O.Object
+								and SubjectID = O.ObjectID
+								and PredicateType = 3
+						) Child
+			cross apply (
+						select	count(1) as [Count]
+						from	AttributeTypeRelation
+						where	ObjectType = T.Object and ObjectID = T.ObjectID
+						) Attr
+			cross apply (
+						select	count(1) as [Count]
+						from	IntersectType IT
+								inner join [Predicate] P on P.ID = IT.PredicateID and P.[Type] = 3 
+						where	((IT.Subject = T.Object and IT.SubjectID = T.ObjectID) OR (IT.Object = T.Object and IT.ObjectID = T.ObjectID))
+						) Hier
+	where   O.Object = @o and O.ObjectID = @oid  
+			and not exists (select 1 from ResponsibilityDetail where PermissionsBitMask & 1 = 0 and ResourceID = @rid and ( (AssetID = O.ID) OR (AssetTypeID = O.AssetTypeID and AssetID = 0)))
+	for json path, WITHOUT_ARRAY_WRAPPER
+end
+GO
+]]>
+    </sql>
+	<rollback>
+	<![CDATA[
+	ALTER FUNCTION [utility].[ObjectDetail]
+(
+
+	@type varchar(50), 
+	@id int
+
+
+)
+RETURNS @tbl TABLE 
+(
+	ID int,
+	AssetID bigint,
+	UID uniqueidentifier,
+	AssetTypeID int,
+	Name nvarchar(max),
+	TextPath nvarchar(2500),
+	Description nvarchar(max),
+	ParentID int null,
+	ParentType nvarchar(250),
+	Url nvarchar(2500),
+	TypeID int,
+	[Type] varchar(25),
+	[TypeName] nvarchar(250),
+	IconBackColor varchar(15),
+	IconForeColor varchar(15),
+	IconText varchar(15),
+	Status nvarchar(25) null
+) 
+AS
+BEGIN
+	if @type = 'Artifact' or @type = 'Attribute' or @type = 'Fusion' or @type = 'FusionAttribute' or @type = 'Policy' or @type = 'ReferenceItem' or @type = 'Rule' or @type = 'Taxonomy'
+	begin
+		insert into @tbl (	ID,		UID,	AssetID,	AssetTypeID, Name,			TextPath,		[Description],	ParentID,	ParentType, Url,											TypeID,	[Type],	TypeName, Status)
+			SELECT			ObjectID,	UID, ID, 		AssetTypeID, DisplayValue,	DisplayValue,	NULL,			null,		null,		dbo.GenerateAssetUrl(ID),	TypeID,	Type,	TypeName, NULL
+			FROM	AssetDetail
+			where	Object = @type 
+					and ObjectID = @id
+	end
+
+	if @type = 'ArtifactType' or @type = 'AttributeType' or @type = 'FusionType' or @type = 'FusionAttributeType' or @type = 'PolicyType' or @type = 'ReferenceItemType' or @type = 'RuleType' or @type = 'TaxonomyType'
+	begin
+		insert into @tbl (	ID,		UID, Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
+			SELECT			ObjectID, UID,		Name,	Name,		Description,	NULL,		NULL,		turl.[url] as Url,	ObjectID,		@type,	'Asset Type'
+			FROM	AssetType O
+			cross apply [dbo].GetAssetTypeUrlById(o.id) turl
+			WHERE	Object = @type
+					and ObjectID = @id
+	end
+
+	if @type = 'Group'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
+			SELECT			G.ID,		G.Name,	G.Name,		G.Description,	NULL,		NULL,		dbo.GenerateAssetUrl(A.ID),	0,		@type,	'Group'
+			FROM	[Group] G
+			inner join Asset A on A.Object = 'Group' and A.ObjectID = G.ID
+			WHERE	G.ID = @id
+	end
+
+	if @type = 'Intersect'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,													TypeID,				[Type],				TypeName)
+			SELECT			O.ID,	IName.Name,	IName.Name,		'',				NULL,		@type,		null,	O.IntersectTypeID,	'IntersectType', ITN.Name	
+			FROM	[Intersect] O
+					INNER JOIN IntersectType T ON O.IntersectTypeID = T.ID and O.ID = @id
+					CROSS APPLY dbo.GetIntersectNames(O.ID) IName	
+					CROSS APPLY dbo.GetIntersectTypeNames(T.ID) ITN
+	end
+
+	if @type = 'IntersectType'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
+			SELECT			ID,		T.Name,	T.Name,		'',				NULL,		NULL,		null,	ID,		@type,	'Intersect Type'
+			FROM	IntersectType 
+			CROSS APPLY dbo.GetIntersectTypeNames(@id) T	
+			WHERE	ID = @id
+	end
+
+	if @type = 'Issue'
+	begin
+		insert into @tbl (	ID,		Name,				TextPath,	[Description],	ParentID,	ParentType, Url,												TypeID,			[Type],			TypeName)
+			SELECT			O.ID,	'',	'',		'',				NULL,		NULL,		null,	O.IssueTypeID,	'IssueType',	T.Name
+			FROM	Issue O
+					INNER JOIN IssueType T ON O.IssueTypeID = T.ID AND O.ID = @id
+	end
+
+	if @type = 'IssueType'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,													TypeID,				[Type],				TypeName)
+			SELECT			O.ID,	O.Name,	O.Name,		O.Description,				NULL,		@type,		NULL,	O.ID,	'IssueType',	'Issue Type'
+			FROM	IssueType O
+			WHERE	ID = @id
+	end
+
+	if @type = 'Lookup'
+	begin
+		insert into @tbl (	ID,		Name,				TextPath,	[Description],	ParentID,	ParentType, Url,												TypeID,			[Type],			TypeName)
+			SELECT			O.ID,	T.Name + ' Item',	T.Name,		'',				NULL,		NULL,		dbo.GenerateUrlByTypeName(@type, O.LookupTypeID, O.ID),	O.LookupTypeID,	'LookupType',	T.Name
+			FROM	[Lookup] O
+					INNER JOIN LookupType T ON O.LookupTypeID = T.ID AND O.ID = @id
+	end
+
+	if @type = 'LookupType'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
+			SELECT			ID,		Name,	Name,		'',				0,			@type,		dbo.GenerateUrlByTypeName(@type, ID, 0),	ID,		@type,	'Lookup Type'
+			FROM	LookupType O
+			WHERE	ID = @id
+	end
+
+	if @type = 'FusionQueryAttribute'
+	begin
+		insert into @tbl (	ID,		Name,		TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,						[Type],					TypeName)
+			SELECT			O.ID,	O.DisplayValue,	O.DisplayValue,	'',				NULL,	@type,		null,
+																											O.FusionQueryAttributeTypeID,	'FusionQueryAttributeType',	T.Name
+			FROM	FusionQueryAttribute O
+					INNER JOIN FusionQueryAttributeType T ON O.FusionQueryAttributeTypeID = T.ID and O.ID = @id					
+	end
+	
+	if @type = 'FusionQueryAttributeType'
+	begin
+		insert into @tbl (	ID, Name,		TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
+			SELECT			ID,	O.Name,	O.Name,	'',				NULL,		NULL,		null,	ID,		@type,	'Fusion Query Attribute Type'
+			FROM	FusionQueryAttributeType O
+			WHERE	ID = @id
+	end
+
+	if @type = 'Report'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,				[Type],			TypeName)
+			SELECT			O.ID,	O.Name,	O.Name,	O.Description,	NULL,		@type,		'#',	0,	'Report',	'Report'
+			FROM	Report O
+			WHERE	O.ID = @id
+	end
+
+	if @type = 'Resource'
+	begin
+		insert into @tbl (ID, Name, Url, TypeID, [Type], TypeName)
+			select	ResourceID, FirstName + ' ' + LastName, dbo.GenerateAssetUrl(A.ID), 1, 'ResourceType', 'Employee'
+			from	reporting.Global_Resource R
+			inner join Asset A on A.Object = 'Resource' and A.objectID = R.ResourceID
+			where	ResourceID = @id
+	end
+
+	if @type = 'ResponsibilityType'
+	begin
+		insert into @tbl (	ID, Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
+			SELECT			ID,	O.Name,	NULL,		Description,	NULL,		NULL,		null,	ID,		@type,	'Responsibility Type'
+			FROM	ResponsibilityType O
+			WHERE	ID = @id
+	end
+
+	if @type = 'ResourceType'
+	begin
+		insert into @tbl (ID, Name, Url, TypeID, [Type], TypeName)
+		values			(@id, 'Resource Type', '#/resources/administration', @id, @type, 'Resource Type')
+	end
+
+	if @type = 'RuleImplementation'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,				[Type],			TypeName, Status)
+			SELECT			O.ID,	coalesce(O.Name,'Implementation ' + cast(o.id as nvarchar)) ,	coalesce(O.Name,'Implementation ' + cast(o.id as nvarchar)),	null,	T.ID,		'Rule',		null,	T.RuleTypeID,	'RuleType',	T.DisplayValue, 'Active'
+			FROM	[RuleImplementation] O
+					inner join [Rule] T on T.ID = O.RuleID
+			WHERE	O.ID = @id
+	end
+
+	if @type = 'ShoppingCart'
+	begin
+			insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
+			SELECT			O.ID,		Name,	Name,		NULL,	NULL,		NULL,		dbo.GenerateUrlByTypeName('ShoppingCartType', O.ShoppingCartTypeID, O.ID),	O.ID,		@type,	T.Name
+			FROM	ShoppingCart O
+			inner join ShoppingCartType T on O.ShoppingCartTypeID = T.ID
+			WHERE	O.ID = @id
+	end
+
+	update	T
+	set		T.IconBackColor = coalesce(S.IconBackColor, '#000000'),
+			T.IconForeColor = coalesce(S.IconForeColor, '#ffffff'),
+			T.IconText =	
+							
+							
+								
+								COALESCE(S.IconText, 'leaf') 
+							
+	from	@tbl T
+			left join ObjectStyle S ON S.ObjectType = T.[Type] and S.ObjectID = T.TypeID
+
+	RETURN
+END
+go
+
+
+ALTER FUNCTION [utility].[GetObjectTypePath]
+(
+	@object varchar(20),
+	@objectId int
+	
+)
+RETURNS nvarchar(max)
+AS
+BEGIN
+	declare @typeName nvarchar(max);
+	
+	select @typeName = TypeName from utility.objectdetail(@object,@objectId)
+
+	if(@object = 'FusionAttribute')
+	begin
+		select @typeName = ft.textpath from fusionattribute f inner join fusionattributetype ft on (f.fusionattributetypeid = ft.id) where f.id = @objectId;		
+	end
+
+	return @typeName;
+END
+go
+
+ALTER proc [dbo].[GetPageInformation]
+
+	@o varchar(50),
+	@oid int,
+	@rid int 
+as
+begin
+	declare @breadcrumbsRaw table ([Level] int, [TypeName] nvarchar(500), [Name] nvarchar(max), [TypeUrl] nvarchar(2500), [Url] nvarchar(2500));
+	declare @breadcrumbs table ([Name] nvarchar(max), [Url] nvarchar(2500), Active bit, IsType bit);
+
+	with h as
+		(
+		select	A.ID,
+				A.[ObjectID], 
+				A.AssetTypeID,
+				I.SubjectID as [ParentID], 
+				0 as [Level]
+		from	Asset A
+				left join PredicateIntersect I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.PredicateType = 3
+		where	A.[Object] = @o and A.ObjectID = @oid
+		union all
+		select	P.ID,
+				P.[ObjectID] as ID, 
+				P.AssetTypeID,
+				I.SubjectID as ParentID, 
+				h.[Level]-1 as [Level]
+		from	Asset P
+				inner join h on P.[Object] = @o and P.ObjectID = h.ParentID
+				outer apply (
+							select	SubjectID
+							from	PredicateIntersect 
+							where	Object = P.Object 
+									and ObjectID = P.ObjectID 
+									and PredicateType = 3
+							) I
+		)
+
+	insert into @breadcrumbsRaw
+		select		distinct	
+					[Level],
+					ltrim(rtrim(T.Name)),
+					ltrim(rtrim(D.DisplayValue)),
+					UT.Url,
+					U.Url
+		from		h 
+					inner join AssetType T on T.ID = h.AssetTypeID
+					left join dbo.GetAssetDisplayValue() D on D.ID = h.ID
+					cross apply dbo.GetAssetUrlByID(h.ID) U
+					cross apply dbo.GetAssetTypeUrlById(T.ID) UT
+		where		ltrim(rtrim(T.Name)) is not null
+					and ltrim(rtrim(D.DisplayValue)) is not null
+		order by	[Level]
+
+	declare @max int = 0,
+			@min int
+	select	@min = min([Level]) from @breadcrumbsRaw
+
+	insert into @breadcrumbs values ('Glossary', null, 0, 0)
+
+	while @min <= @max
+	begin
+		insert into @breadcrumbs
+			select	TypeName, TypeUrl, 0, 1 from @breadcrumbsRaw where [Level] = @min
+
+		insert into @breadcrumbs
+			select	Name, 
+					Url, 
+					case @min when 0 then 1 else 0 end, 
+					0 
+			from	@breadcrumbsRaw 
+			where	[Level] = @min
+
+		set @min = @min + 1
+	end
+
+	select	distinct
+			O.[Uid],
+			A.ID,
+			O.ID as AssetID,
+			O.AssetTypeID,
+			OD.DisplayValue,
+			T.Name as [TypeName],
+			case 
+				when Dash.[Count] > 0 then cast(1 as bit)
+				else cast(0 as bit)
+			end as HasDashboards,
+			case 
+				when Work.[Count] > 0 then cast(1 as bit)
+				else cast(0 as bit)
+			end as HasWorkflow,
+			case 
+				when Child.[Count] > 0 then cast(1 as bit)
+				else cast(0 as bit)
+			end as HasChildArtifacts,
+			case 
+				when Attr.[Count] > 0 then cast(1 as bit)
+				else cast(0 as bit)
+			end as AllowAttributes,
+			case 
+				when Hier.[Count] > 0 then cast(1 as bit)
+				else cast(0 as bit)
+			end as AllowPredicateHierarchies,
+			(
+			select	*
+			from	(
+					select	P.ID as [ID],
+							P.Name as [Name]
+					from	[Predicate] P
+					where	exists(SELECT * FROM IntersectType IT WHERE P.[type] = 6 and P.ID = IT.PredicateID and ((IT.Subject = T.Object and IT.SubjectID = T.ObjectID) OR (IT.Object = T.Object and IT.ObjectID =T.ObjectID)))
+					union	
+					select	P.ID as [ID], 
+							P.Name as [Name] 
+					from	[NymRelation] R 
+							inner join [dbo].[predicate] P on P.ID = R.PredicateID where R.[Object] = T.Object and R.ObjectID = T.ObjectID
+					) NMT
+			for		json path
+			)
+			as NymTypes,
+			(
+			select	* 
+			from	@breadcrumbs
+			for		json path
+			) as Breadcrumbs
+	from	Artifact A 
+			inner join Asset O on O.Object = @o and O.ObjectID = A.ID 
+			inner join AssetType T on T.ID = O.AssetTypeID
+			left join dbo.GetAssetDisplayValue() OD on OD.ID = O.ID
+			
+			cross apply (
+						select	count(1) as [Count]
+						from	Report
+						where	ObjectType = O.Object
+								and ObjectID = T.ObjectID
+						) Dash
+			cross apply (
+						select	count(1) as [Count]
+						from	workflow.EventRegistration WER
+								inner join workflow.Type WT on WER.TypeID = WT.ID and WT.PublishedVersionID is not null and WT.[State] = 1 and WER.ChangeType = 8 
+						where	WER.Object = T.Object
+								and WER.ObjectID = T.ObjectID
+						) Work
+			cross apply (
+						select	count(1) as [Count]
+						from	[PredicateIntersect]
+						where	Subject = O.Object
+								and SubjectID = O.ObjectID
+								and PredicateType = 3
+						) Child
+			cross apply (
+						select	count(1) as [Count]
+						from	AttributeTypeRelation
+						where	ObjectType = T.Object and ObjectID = T.ObjectID
+						) Attr
+			cross apply (
+						select	count(1) as [Count]
+						from	IntersectType IT
+								inner join [Predicate] P on P.ID = IT.PredicateID and P.[Type] = 3 
+						where	((IT.Subject = T.Object and IT.SubjectID = T.ObjectID) OR (IT.Object = T.Object and IT.ObjectID = T.ObjectID))
+						) Hier
+	where   A.ID = @oid 
+			and A.[Visible] = 1 
+			and not exists (select 1 from ResponsibilityDetail where PermissionsBitMask & 1 = 0 and ResourceID = @rid and ( (AssetID = O.ID) OR (AssetTypeID = O.AssetTypeID and AssetID = 0)))
+	for json path, WITHOUT_ARRAY_WRAPPER
+end
+go
+]]>
+	</rollback>
+  </changeSet>
+  <changeSet author="MDonato" id="GOV-6060-tables">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+			alter table Artifact drop constraint DF_Artifact_Visible;
+			drop index IX_Artifact_Visible on Artifact;
+			alter table Artifact drop column Visible;
+
+			alter table [Policy] drop constraint DF_Policy_Visible;
+			drop index IX_Policy_Visible on [Policy];
+			alter table [Policy] drop column Visible;
+
+			alter table Taxonomy drop constraint DF_Taxonomy_Visible;
+			drop index IX_Taxonomy_Visible on [Taxonomy];
+			alter table Taxonomy drop column Visible;
+
+			alter table [Rule] drop constraint DF_Rule_Visible;
+			drop index IX_Rule_Visible on [Rule];
+			alter table [Rule] drop column Visible; 			
+	</sql>
+	<rollback>
+		alter table Artifact add Visible bit not null constraint DF_Artifact_Visible default 1;
+		alter table [Policy] add Visible bit not null constraint DF_Policy_Visible default 1;
+		alter table Taxonomy add Visible bit not null constraint DF_Taxonomy_Visible default 1;
+		alter table [Rule] add Visible bit not null constraint DF_Rule_Visible default 1;
+
+		CREATE NONCLUSTERED INDEX [IX_Artifact_Visible] ON [dbo].[Artifact]
+		(
+			[Visible] ASC
+		)WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
+
+		CREATE NONCLUSTERED INDEX [IX_Rule_Visible] ON [dbo].[Rule]
+		(
+			[Visible] ASC
+		)WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
+
+		CREATE NONCLUSTERED INDEX [IX_Taxonomy_Visible] ON [dbo].[Taxonomy]
+		(
+			[Visible] ASC
+		)WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
+
+		CREATE NONCLUSTERED INDEX [IX_Policy_Visible] ON [dbo].[Policy]
+		(
+			[Visible] ASC
+		)WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>

@@ -1390,48 +1390,56 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 ";
 
         public static string WorkflowObjectTypes = @"
-            select 'ArtifactType|' + cast(t.id as varchar) as value, t.id, 'ArtifactType' as [type], 'Artifact Type :: ' +  t.Name as [label], count(*) as [count] 
-            from artifacttype t
-            left join artifact a on a.artifacttypeid = t.id
-            group by t.ID, t.Name
-            union all
-            select 'RuleType|' + cast(t.id as varchar) as value, t.id, 'RuleType' as [type], 'Rule Type :: ' + t.Name as [label], count(*) as [count] 
-            from ruletype t
-            left join [rule] a on a.ruletypeid = t.id
-            group by t.id, t.name
-            union all
-            select 'PolicyType|' + cast(t.id as varchar) as value, t.id, 'PolicyType' as [type], 'Policy Type :: ' + t.Name as [label], count(*) as [count] 
-            from policytype t
-            left join [policy] a on a.policytypeid = t.id
-            group by t.id, t.name
-            union all
-            select 'TaxonomyType|' + cast(t.id as varchar) as value, t.id, 'TaxonomyType' as [type], 'Model Type :: ' + t.Name as [label], count(*) as [count] 
-            from taxonomytype t
-            left join taxonomy a on a.taxonomytypeid = t.id
-            group by t.id, t.name
-            union all
-            select 'IssueType|' + cast(t.id as varchar) as value, t.id, 'IssueType' as [type], 'Action Type :: ' + t.Name as [label], count(*) as [count] 
-            from issuetype t
-            left join issue a on a.issuetypeid = t.id
-            group by t.id, t.name
-			union all
-            select 'Fusion|' + cast(t.id as varchar) as value, t.id, 'Fusion' as [type], 'Fusion :: ' + t.Name as [label], 1 as [count] 
-            from fusion t
-            group by t.id, t.name
-            union all
-            select 'IntersectType|' + cast(t.id as varchar) as value, t.id, 'IntersectType' as [type], 'Relationship :: ' + t_name.Name as [label], 1 as [count] 
-            from intersecttype t
-			cross apply dbo.GetIntersectTypeNames(t.ID) t_name			
-            group by t.id, t_name.name
-            union all
-			select 'ShoppingCartType|' + cast(t.id as varchar) as value, t.id, 'ShoppingCartType' as [type], 'Shopping Cart :: ' + t.Name as [label], 1 as [count]
-			from shoppingcarttype t
-			group by t.id, t.name
-			union all
-			select 'ReferenceItemType|' + cast(t.id as varchar) as value, t.id, 'ReferenceItemType' as [type], 'Reference List :: ' + t.Name as [label], 1 as [count]
-			from referenceitemtype t
-			group by t.id, t.name
-            order by label
+           	    select 
+		            [object] + '|' + cast(objectId as varchar) as [value],
+		            objectId as id,
+		            [object] as [type],		
+		            case when T.[object] = 'ArtifactType' then
+			            'Artifact Type'
+		            when T.[object] = 'RuleType' then
+			            'Rule Type'
+		            when T.[object] = 'PolicyType' then
+			            'Policy Type'
+		            when T.[object] = 'ReferenceItemType' then
+			            'Reference List'
+		            when T.[object] = 'TaxonomyType' then
+			            'Model Type'
+		            when T.[object] = 'ShoppingCartType' then
+			            'Shopping Cart'
+		            else
+			            ''
+		            end + ' :: ' + [name] as label, 
+		            assetCount.[count]
+	            from 
+		            AssetType T
+		            cross apply 
+		            (
+				            select count(*) as [count] from Asset A
+				            where A.AssetTypeID = T.ID
+		            ) assetCount
+	            where
+		            T.[object] in ('ArtifactType','TaxonomyType','PolicyType','RuleType','ShoppingCartType','ReferenceItemType')
+	            union all
+	            select 
+		            'Fusion|' + cast(A.objectId as varchar) as [value],
+		            A.objectId as [id],
+		            'Fusion' as [type],
+		            'Fusion :: ' + A.DisplayValue as [label],
+		            1 as [count]
+	            from 
+		            AssetDetail A 
+	            where
+		            A.[object] = 'Fusion'
+	            union all
+                select 'IntersectType|' + cast(t.id as varchar) as value, t.id, 'IntersectType' as [type], 'Relationship :: ' + t_name.Name as [label], 1 as [count] 
+                from intersecttype t
+	            cross apply dbo.GetIntersectTypeNames(t.ID) t_name			
+                group by t.id, t_name.name
+	            union all
+	            select 'IssueType|' + cast(t.id as varchar) as value, t.id, 'IssueType' as [type], 'Action Type :: ' + t.Name as [label], count(*) as [count] 
+                from issuetype t
+                left join issue a on a.issuetypeid = t.id
+                group by t.id, t.name
 ";
 
         public static string WorkflowList = @"
@@ -1442,7 +1450,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                     ,t.UpdatedOn
 					,coalesce(ru.FirstName + ' ' + ru.LastName, '') as UpdatedBy
                     ,e.ChangeType
-                    ,coalesce(d.Name, ITN.Name, it_t.Name, st.Name,f.Name) as TypeName,
+                    ,coalesce(d.Name, ITN.Name, it_t.Name, st.Name,f.DisplayValue) as TypeName,
 					case when t.PublishedVersionID is not null then
 						'Version ' + cast(v.Version as varchar) + ' Published'
 					else
@@ -1477,7 +1485,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 				left join IntersectType IT on e.Object = 'IntersectType' and e.objectid = IT.ID
 				outer apply dbo.GetIntersectTypeNames(IT.ID) ITN
                 left join ShoppingCartType st on st.ID = e.objectid and e.object = 'ShoppingCartType'
-                left join Fusion f on f.id = e.objectid and e.object = 'Fusion'
+                left join AssetDetail f on f.objectid = e.objectid and f.object = 'Fusion'
 				left join workflow.version v on v.id = t.publishedversionid
 				left join reporting.Global_Resource rc on rc.ResourceID = t.CreatedBy
 				left join reporting.Global_Resource ru on ru.ResourceID = t.UpdatedBy
