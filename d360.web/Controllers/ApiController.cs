@@ -1,34 +1,30 @@
-﻿using d360.core.entities;
+﻿using d360.core;
+using d360.core.entities;
 using d360.core.entities.Views;
-using d360.core;
+using d360.core.enums;
+using d360.core.exceptions;
+using d360.core.helpers;
+using d360.extensions;
+using d360.model;
+using d360.web.Filters;
 using d360.web.Models;
+using Dapper;
+using Microsoft.Web.Http;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using SpreadsheetLight;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity.Design.PluralizationServices;
+using System.Data.SqlClient;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Web.Http;
-using System.Xml.Linq;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using d360.core.exceptions;
-using System.Data.SqlClient;
-using d360.core.enums;
-using d360.model;
-using d360.core.entities.Transitive;
-using System.Data.Entity.Design.PluralizationServices;
-using System.Web.Http.Description;
-using System.Runtime.Serialization;
-using System.Dynamic;
-using System.Web;
-using System.IO;
-using SpreadsheetLight;
-using d360.extensions;
 using System.Threading.Tasks;
-using Dapper;
-using d360.core.entities.Metric;
-using d360.web.Filters;
-using Microsoft.Web.Http;
+using System.Web.Http;
+using System.Web.Http.Description;
+using System.Xml.Linq;
 
 namespace d360.web.Controllers
 {
@@ -1098,17 +1094,28 @@ where   h.ID <> @t order by h.[Level] desc;
             var json = Company.GetPageInformation(SystemObjects.Artifact, id);
 
             if (json == null)
+            {
                 return Request.CreateResponse(HttpStatusCode.NotFound, json);
+            }
 
-            var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
+            var isPluralize = PluralCultureHelper.IsNeutralCultureEnglish();
 
             foreach (var br in json["Breadcrumbs"].Children())
             {
                 if (br["IsType"].ToObject<bool>())
-                    br["Name"] = pluralize.Pluralize(br["Name"].Value<string>());
+                {
+                    if (isPluralize)
+                    {
+                        var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
+                        br["Name"] = pluralize.Pluralize(br["Name"].Value<string>());
+                        pluralize = null;
+                    } else
+                    {
+                        br["Name"] = "";
+                    }
+                    
+                }
             }
-
-            pluralize = null;
 
             return Request.CreateResponse(HttpStatusCode.OK, json);
         }

@@ -5,12 +5,12 @@ using d360.core.entities.Views;
 using d360.core.enums;
 using d360.core.enums.Workflow;
 using d360.core.exceptions;
+using d360.core.helpers;
 using d360.core.queue;
 using d360.core.resources;
 using d360.extensions;
 using Dapper;
 using Ganss.XSS;
-using gudusoft.gsqlparser;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -24,6 +24,7 @@ using System.Data.Entity.Design.PluralizationServices;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace d360.model
@@ -977,7 +978,9 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
         {
             string query = string.Format("SELECT * FROM utility.ObjectDetail('{0}', {1})", type, id);
             var model = Database.SqlQuery<ObjectDetail>(query).SingleOrDefault();
-            if (model != null)
+            var neutralCulture = Thread.CurrentThread.CurrentCulture.Parent.Name;
+
+            if ((model != null) && PluralCultureHelper.IsNeutralCultureEnglish())
             {
                 var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
                 model.PluralizedName = pluralize.Pluralize(model.Name??"");
