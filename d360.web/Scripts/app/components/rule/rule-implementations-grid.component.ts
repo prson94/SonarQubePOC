@@ -20,7 +20,7 @@ import { MessagesService } from '../../services/messages.service';
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div *ngIf="!isLoading && !showDelete && !showEditor">
                     <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-                    <p-table #dt [value]="results" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name']" [pageLinks]="3" [paginator]="true" [rows]="rowsPerPage" [rowsPerPageOptions]="[5,10,20]">
+                    <p-table #dt [value]="results" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name']" [pageLinks]="3" [paginator]="true" [rows]="rowsPerPage" [selection]="selected"  [rowsPerPageOptions]="[5,10,20]">
                         <ng-template pTemplate="header">
                             <tr>
                                 <th [pSortableColumn]="'Name'">
@@ -57,12 +57,12 @@ import { MessagesService } from '../../services/messages.service';
                                 </td>
                                 <td>
                                         <div class="RowTools">
-                                            <a style="cursor:pointer;" (click)="selected=imp;showEditor=true"><i class="fa fa-pencil"></i></a>
+                                            <a style="cursor:pointer;" (click)="selected=item;showEditor=true"><i class="fa fa-pencil"></i></a>
                                         </div>
                                 </td>
                                 <td>
                                         <div class="RowTools">
-                                            <a style="cursor:pointer;" (click)="selected=imp;showDelete=true"><i class="fa fa-trash-o"></i></a>
+                                            <a style="cursor:pointer;" (click)="selected=item;showDelete=true"><i class="fa fa-trash-o"></i></a>
                                         </div>
                                 </td>
                             </tr>
