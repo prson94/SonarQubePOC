@@ -1,16 +1,14 @@
 ﻿using d360.core;
-using System.Linq;
-using System.Web.Mvc;
-using d360.core.entities;
+using d360.core.helpers;
 using d360.model;
-using System.Collections.Generic;
-using d360.core.enums;
 using d360.web.Models;
+using Dapper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 using System.Data.Entity.Design.PluralizationServices;
-using d360.web.Models.Attributes;
-using Dapper;
+using System.Linq;
+using System.Web.Mvc;
 
 namespace d360.web.Controllers
 {
@@ -64,21 +62,26 @@ namespace d360.web.Controllers
                 type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true },
                 id
             });
-            var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
 
             var json = string.Join("", list);
-            //var obj = (string.IsNullOrEmpty(json)) ? new JObject() : JObject.Parse(json);
+
             dynamic obj = JsonConvert.DeserializeObject(string.IsNullOrEmpty(json) ? "{}" : json);
 
-            if (obj != null && obj.nodes != null)
-                foreach(var node in obj.nodes)
+            if (obj != null && obj.nodes != null && PluralCultureHelper.IsNeutralCultureEnglish())
+            {
+                var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
+
+                foreach (var node in obj.nodes)
                 {
                     try
                     {
-                        node.typeNamePlural.Value = pluralize.IsPlural(node.typeNamePlural.Value) ? node.typeNamePlural.Value : pluralize.Pluralize(node.typeNamePlural.Value);
+                        node.typeNamePlural.Value = pluralize.IsPlural(node.typeNamePlural.Value) ?
+                            node.typeNamePlural.Value :
+                            pluralize.Pluralize(node.typeNamePlural.Value);
                     }
                     catch { }
                 }
+            }
 
             return new JsonNetResult
             {
@@ -95,12 +98,14 @@ namespace d360.web.Controllers
                 type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true },
                 id
             });
-            var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
 
             var json = string.Join("", list);
             dynamic obj = JsonConvert.DeserializeObject(string.IsNullOrEmpty(json) ? "{}" : json);
 
-            if (obj != null && obj.nodes != null)
+            if (obj != null && obj.nodes != null && PluralCultureHelper.IsNeutralCultureEnglish())
+            {
+                var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
+
                 foreach (var node in obj.nodes)
                 {
                     try
@@ -109,6 +114,7 @@ namespace d360.web.Controllers
                     }
                     catch { }
                 }
+            }
 
             return new JsonNetResult
             {

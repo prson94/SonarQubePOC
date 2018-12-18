@@ -1,9 +1,8 @@
 ﻿using d360.core;
 using d360.core.entities;
-using d360.core.exceptions;
+using d360.core.helpers;
 using d360.extensions;
 using d360.model;
-using d360.web.Models;
 using d360.web.Models.Attributes;
 using Newtonsoft.Json;
 using SpreadsheetLight;
@@ -12,10 +11,7 @@ using System.Collections.Generic;
 using System.Data.Entity.Design.PluralizationServices;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
 using System.Web.Mvc;
-using System.Xml.Linq;
 
 namespace d360.web.Controllers
 {
@@ -150,9 +146,15 @@ select * from h where ID <> @t order by h.[Level] desc;
             
             var fusionAttributeTypeName = Company.FusionAttributeTypes.Where(x => x.ID == fusionAttributeTypeID).Single().Name;
 
-            var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
-            var pluralFusionAttributeName = pluralize.Pluralize(fusionAttributeTypeName);
-
+            var pluralFusionAttributeName = "Defalut";
+            var random = new Random();
+            var hashNameWhenNonEnCulture = new string(Enumerable.Repeat("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 7).Select(s => s[random.Next(s.Length)]).ToArray());
+            if(PluralCultureHelper.IsNeutralCultureEnglish())
+            {
+                var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
+                pluralFusionAttributeName = pluralize.Pluralize(fusionAttributeTypeName);
+            }
+            
             var sqlFieldModels = new List<SqlFieldModel>();
 
             #region Parents
@@ -270,7 +272,7 @@ where   A.FusionID = @f
 
             var stream = new MemoryStream();
             document.SaveAs(stream);
-            return File(stream.ToArray(), "application/vnd.ms-excel", $"{pluralFusionAttributeName}.xlsx");
+            return File(stream.ToArray(), "application/vnd.ms-excel", $"{pluralFusionAttributeName}-{hashNameWhenNonEnCulture}.xlsx");
         }
 
         [Route("ItemsByAttributeType"), NonNullableParameters]
@@ -409,11 +411,16 @@ where A.FusionID = @f and A.FusionAttributeTypeID = @t and A.Deleted = 0";
         public FileResult ExportQueryItemsByAttributeType(int fusionID, int fusionQueryAttributeTypeID, string sortDataField, string sortOrder)
         {
             var type = "FusionQueryAttributeType";
-            
             var fusionQueryAttributeTypeName = Company.FusionQueryAttributeTypes.Where(x => x.ID == fusionQueryAttributeTypeID).Single().Name;
 
-            var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
-            var pluralFusionQueryAttributeTypeName = pluralize.Pluralize(fusionQueryAttributeTypeName);
+            var pluralFusionQueryAttributeTypeName = "Defalut";
+            var random = new Random();
+            var hashNameWhenNonEnCulture = new string(Enumerable.Repeat("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 7).Select(s => s[random.Next(s.Length)]).ToArray());
+            if (PluralCultureHelper.IsNeutralCultureEnglish())
+            {
+                var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
+                pluralFusionQueryAttributeTypeName = pluralize.Pluralize(fusionQueryAttributeTypeName);
+            }
 
             var sqlFieldModels = new List<SqlFieldModel>();
 
@@ -497,7 +504,7 @@ where   A.FusionQueryAttributeTypeID = @t
 
             var stream = new MemoryStream();
             document.SaveAs(stream);
-            return File(stream.ToArray(), "application/vnd.ms-excel", $"{pluralFusionQueryAttributeTypeName}.xlsx");
+            return File(stream.ToArray(), "application/vnd.ms-excel", $"{pluralFusionQueryAttributeTypeName}-{hashNameWhenNonEnCulture}.xlsx");
         }
 
         [Route("QueryItemsByAttributeType"), NonNullableParameters]
