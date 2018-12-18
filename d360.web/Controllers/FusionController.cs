@@ -147,8 +147,6 @@ select * from h where ID <> @t order by h.[Level] desc;
             var fusionAttributeTypeName = Company.FusionAttributeTypes.Where(x => x.ID == fusionAttributeTypeID).Single().Name;
 
             var pluralFusionAttributeName = "Defalut";
-            var random = new Random();
-            var hashNameWhenNonEnCulture = new string(Enumerable.Repeat("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 7).Select(s => s[random.Next(s.Length)]).ToArray());
             if(PluralCultureHelper.IsNeutralCultureEnglish())
             {
                 var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
@@ -272,7 +270,7 @@ where   A.FusionID = @f
 
             var stream = new MemoryStream();
             document.SaveAs(stream);
-            return File(stream.ToArray(), "application/vnd.ms-excel", $"{pluralFusionAttributeName}-{hashNameWhenNonEnCulture}.xlsx");
+            return File(stream.ToArray(), "application/vnd.ms-excel", $"{pluralFusionAttributeName}.xlsx");
         }
 
         [Route("ItemsByAttributeType"), NonNullableParameters]
