@@ -2237,7 +2237,9 @@ namespace d360.web.Controllers
             {
                 css = Storage.GetFileContentsAsString(constants.COMPANY_STYLES_FOLDER, $"{Company.CurrentCompanyID}.css");
             }
-            catch { }
+            catch(Exception ex) {
+                Console.WriteLine($"Error {ex}");
+            }
             return new JsonNetResult { Data = css, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
@@ -2267,12 +2269,12 @@ namespace d360.web.Controllers
 
                     if (stylesSetting == null)
                     {
-                        stylesSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 24, Value = $"{constants.COMPANY_STYLES_URL}/{Company.CurrentCompanyID}.css" };
+                        stylesSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 24, Value = $"{constants.COMPANY_STYLES_URL}{Company.CurrentCompanyID}.css" };
                         Community.Add(stylesSetting);
                     }
                     else
                     {
-                        stylesSetting.Value = $"{constants.COMPANY_STYLES_URL}/{Company.CurrentCompanyID}.css";
+                        stylesSetting.Value = $"{constants.COMPANY_STYLES_URL}{Company.CurrentCompanyID}.css";
                         Community.SaveChanges();
                     }
 
