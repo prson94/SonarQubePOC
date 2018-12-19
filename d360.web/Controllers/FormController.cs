@@ -2267,12 +2267,12 @@ namespace d360.web.Controllers
 
                     if (stylesSetting == null)
                     {
-                        stylesSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 24, Value = $"{constants.COMPANY_STYLES_URL}/{Company.CurrentCompanyID}.css" };
+                        stylesSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 24, Value = $"{constants.COMPANY_STYLES_URL}{Company.CurrentCompanyID}.css" };
                         Community.Add(stylesSetting);
                     }
                     else
                     {
-                        stylesSetting.Value = $"{constants.COMPANY_STYLES_URL}/{Company.CurrentCompanyID}.css";
+                        stylesSetting.Value = $"{constants.COMPANY_STYLES_URL}{Company.CurrentCompanyID}.css";
                         Community.SaveChanges();
                     }
 
