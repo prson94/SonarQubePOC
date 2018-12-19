@@ -1,0 +1,42 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="BHoward" id="GOV-6254">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      BEGIN
+      IF NOT EXISTS (SELECT 1 FROM [dbo].[AttributeTypeCategory] WHERE [Name] = 'Web Links')
+      BEGIN
+      INSERT [dbo].[AttributeTypeCategory] VALUES (N'Web Links', NULL)
+      END
+      IF NOT EXISTS (SELECT 1 FROM [dbo].[AttributeTypeCategory] WHERE [Name] = 'Alternative Names')
+      BEGIN
+      INSERT [dbo].[AttributeTypeCategory] VALUES (N'Alternative Names', N'')
+      END
+      IF NOT EXISTS (SELECT 1 FROM [dbo].[AttributeTypeCategory] WHERE [Name] = 'Characteristics')
+      BEGIN
+      INSERT [dbo].[AttributeTypeCategory] VALUES (N'Characteristics', NULL)
+      END
+      IF NOT EXISTS (SELECT 1 FROM [dbo].[AttributeTypeCategory] WHERE [Name] = 'Classification')
+      BEGIN
+      INSERT [dbo].[AttributeTypeCategory] VALUES (N'Classification', NULL)
+      END
+      END
+    </sql>
+    <rollback>
+      begin
+      DELETE FROM [dbo].[AttributeTypeCategory] WHERE [Name] = 'Web Links'
+      DELETE FROM [dbo].[AttributeTypeCategory] WHERE [Name] = 'Alternative Names'
+      DELETE FROM [dbo].[AttributeTypeCategory] WHERE [Name] = 'Characteristics'
+      DELETE FROM [dbo].[AttributeTypeCategory] WHERE [Name] = 'Classification'
+      end
+    </rollback>
+  </changeSet>
+</databaseChangeLog>
