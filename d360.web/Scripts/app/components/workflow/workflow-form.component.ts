@@ -25,7 +25,7 @@ import { ISubscription } from 'rxjs/Subscription';
                         <div class="col s12">
                             <div class="tile tile-detail" *ngIf="!isCompleted && isUserAllowedToComplete && !isItemDeleted">                        
                                 <header>{{title}}</header>
-                                <div class="form-instructions" *ngIf="objectType != 'Issue'">The following form is for the [<b>{{typeName}}</b>] named [<b>
+                                <div class="col s12" *ngIf="objectType != 'Issue'">The following form is for the [<b>{{typeName}}</b>] named [<b>
                                     <d3s-preview-tooltip [objectType]="objectType" [objectId]="objectID">
                                         <a *ngIf="objectUrl != null" [routerLink]="objectUrl">{{objectName}}</a>
                                         <span *ngIf="objectUrl == null">{{objectName}}</span>
@@ -33,7 +33,7 @@ import { ISubscription } from 'rxjs/Subscription';
                                 <div class="form-instructions" *ngIf="objectType == 'Issue'">The following form is for the [<b><d3s-preview-tooltip [objectType]="objectType" [objectId]="objectID">{{issueTypeName}}</d3s-preview-tooltip></b>] action raised on [<b><d3s-preview-tooltip [objectType]="issueObject" [objectId]="issueObjectID">{{issueObjectName}}</d3s-preview-tooltip></b>].  <span [innerHtml]="description"></span></div>
                                 <form (ngSubmit)="onSubmit()" #workflowForm="ngForm">                           
                                     <div class="row">   
-                                        <div class="col l6 s12">
+                                        <div class="l6 s12">
                                             <div *ngFor="let field of fields;let indx=index" class="row">                                            
                                                 <div [ngSwitch]="field.FieldType" class="col s12">
                                                     <div class="FieldName" [innerHtml]="field.Label"></div>
