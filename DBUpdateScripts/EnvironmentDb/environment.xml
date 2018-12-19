@@ -20,6 +20,7 @@
     <include file="scripts/GOV-6201.xml"/>
     <include file="scripts/GOV-6181.xml"/>
 	<include file="scripts/GOV-6220.xml"/>
-  <include file="scripts/GOV-6221.xml"/>
+    <include file="scripts/GOV-6221.xml"/>
 	<include file="scripts/GOV-6227.xml"/>
+	<include file="scripts/GOV-5933.xml"/>
 </databaseChangeLog>
