@@ -307,10 +307,6 @@
       <DependentUpon>App.config</DependentUpon>
       <IsTransformFile>True</IsTransformFile>
     </None>
-    <None Include="ApplicationInsights.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <SubType>Designer</SubType>
-    </None>
     <None Include="packages.config" />
     <None Include="Properties\PublishProfiles\d3s-us-processor-Nightly - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\gov-preview-eng.pubxml" />
