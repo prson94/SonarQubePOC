@@ -442,9 +442,6 @@ select	I.ID,
 		I.SubjectUid as SubjectUid,
 		coalesce(S.Class, 0) as SubjectClassID,
 		case 
-			when I.SubjectUid = '0000000A-0000-0000-0000-000000000009' then 'Reference List' 
-			when I.SubjectUid = '00000001-0000-0000-0000-a00000000011' then 'User'
-			when I.SubjectUid = '00000001-0000-0000-0000-a00000000012' then 'Group'
 			when I.Subject = 'IntersectType' then SI.SubjectName + ' ' + SI.PredicateName + ' ' + SI.ObjectName + ' relationship'
 			else coalesce(SFT.Name + ' / ','') + coalesce(SP.[Path], S.Name)
 		end as SubjectTypeName,
@@ -452,12 +449,7 @@ select	I.ID,
 		I.ObjectID,
 		I.ObjectUid,
 		coalesce(O.Class, 0) as ObjectClassID,
-		case 
-			when I.ObjectUid = '0000000A-0000-0000-0000-000000000009' then 'Reference List' 
-			when I.ObjectUid = '00000001-0000-0000-0000-a00000000011' then 'User'
-			when I.ObjectUid = '00000001-0000-0000-0000-a00000000012' then 'Group'
-			else coalesce(OFT.Name + ' / ','') + coalesce(OP.[Path], O.Name)
-		end as ObjectTypeName
+		coalesce(OFT.Name + ' / ','') + coalesce(OP.[Path], O.Name) as ObjectTypeName
 from	IntersectType I
 		left join [Predicate] P on P.ID = I.PredicateID
 
