@@ -574,7 +574,7 @@ select	F.ID,
 
 		) as [Values]
 from	AssetType A
-		inner join FieldType F on F.AssetTypeID = A.ID and A.[uid] = '{assetTypeUid.ToString()}' and F.Type in ('Boolean', 'Date', 'Lookup', 'Number', 'Text')
+		inner join FieldType F on F.AssetTypeID = A.ID and A.[uid] = '{assetTypeUid.ToString()}' and F.Type in ('Boolean', 'Decimal', 'Date', 'DateTime', 'Lookup', 'Number', 'Text')
 for		json path").ToList();
 
                 models = JsonConvert.DeserializeObject<List<MetricFieldTypeViewModel>>(string.Join("", fragments));
