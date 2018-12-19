@@ -131,7 +131,6 @@ namespace igx.jobs.reportlayer
                     {
                         using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
                         {
-                            CoreFunction.AITrackEvent(functionName, "Pappas - test", new Dictionary<string, string> { { "Environment", "junk" }, { "ReportLayer", "awesome" } }, c.CompanyID, null);
                             companyConnection.OpenWithRetry(RetryPolicy.DefaultProgressive);
 
                             var selectSql = "";
