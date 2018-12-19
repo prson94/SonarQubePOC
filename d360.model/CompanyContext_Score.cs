@@ -1,7 +1,7 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.entities.Metric;
-using d360.core.entities.Views;
+using d360.core.helpers;
 using Dapper;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using Newtonsoft.Json;
@@ -11,7 +11,6 @@ using System.Data.Entity;
 using System.Data.Entity.Design.PluralizationServices;
 using System.Data.SqlClient;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace d360.model
 {
@@ -35,8 +34,6 @@ namespace d360.model
 
             var list = Database.Connection.Query<RawObjectStatistic>("[tile].[GetObjectStatistics] @type, @id", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id = id }).ToList();
 
-            var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
-
             list.ForEach(i =>
             {
                 switch (i.Group)
@@ -56,7 +53,15 @@ namespace d360.model
                         model.IssueLast = i.MostRecent;
                         break;
                     default:
-                        model.Items.Add(new ObjectStatisticTileItemModel { Count = i.Value.GetValueOrDefault(), Name = pluralize.Pluralize(i.Name ?? ""), TypeID = i.TypeID });
+                        var name = "";
+
+                        if (PluralCultureHelper.IsNeutralCultureEnglish())
+                        {
+                            var namePluralizationInstance = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
+                            name = namePluralizationInstance.Pluralize(i.Name ?? "");
+                        }
+
+                        model.Items.Add(new ObjectStatisticTileItemModel { Count = i.Value.GetValueOrDefault(), Name = name, TypeID = i.TypeID });
                         break;
                 }
             });

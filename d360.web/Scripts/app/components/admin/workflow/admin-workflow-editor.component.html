@@ -123,20 +123,8 @@
             <div>
                 <select style="width: 100%" disabled>
                     <option value="SpecificUser">Specific User</option>
-                    <!--<option *ngFor="let d of destination" [value]="d.value">{{d.label}}</option>-->
                 </select>
             </div>
-            <!--<div *ngIf="model.Event.SettingsObject.Settings.MessageRecipientType == 'Responsibility'">
-                <div class="FieldName">
-                    Responsibility
-                </div>
-                <div>
-                    <select [(ngModel)]="model.Event.SettingsObject.Settings.ResponsibilityTypeID" style="width: 100%">
-                        <option></option>
-                        <option *ngFor="let r of responsibilities" [value]="r.ResponsibilityTypeID">{{r.Name}}</option>
-                    </select>
-                </div>
-            </div>-->
             <div>
                 <div class="FieldName">
                     Recipient
@@ -162,11 +150,6 @@
     </div>
     <div class="row">
         <div class="col s12">&nbsp;</div>
-    </div>
-    <div class="row" *ngIf="objectType == 'ArtifactType' && model.Event.ChangeType == WorkflowChangeType.Add && !isLoading">
-        <div class="col s12">
-            <input type="checkbox" [(ngModel)]="hideObject" /> Hide new objects until workflow runs?
-        </div>
     </div>
     <div class="row">
         <div class="col s12"><div class="errorMessage">{{errorMessage}}</div></div>

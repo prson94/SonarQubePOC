@@ -1,0 +1,68 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="GOV-6199">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+if not exists(select Uid from AssetType where UID = '00000001-0000-0000-0000-A00000000011')
+begin
+	insert into AssetType (Name, Description, Class, DisplayFormat, State, Hierarchical, HierarchyMaximumDepth, Object, ObjectID, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, Uid)
+	values ('User', 'A resource account.', 11, '{FirstName} {LastName}', 1, 0, 0, 'ResourceType', 1, getutcdate(), 0, getutcdate(), 0, '00000001-0000-0000-0000-A00000000011')
+end
+GO
+if not exists(select Uid from AssetType where UID = '00000001-0000-0000-0000-B00000000012')
+begin
+	insert into AssetType (Name, Description, Class, DisplayFormat, State, Hierarchical, HierarchyMaximumDepth, Object, ObjectID, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, Uid)
+	values ('Group', 'A security group.', 12, '{Name}', 1, 0, 0, 'GroupType', 1, getutcdate(), 0, getutcdate(), 0, '00000001-0000-0000-0000-B00000000012')
+end
+GO
+if not exists(select Uid from AssetType where UID = '0000000A-0000-0000-0000-000000000009')
+begin
+	insert into AssetType (Name, Description, Class, DisplayFormat, State, Hierarchical, HierarchyMaximumDepth, Object, ObjectID, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, Uid)
+	values ('Reference List', 'A reference list.', 12, '{Name}', 1, 0, 0, 'ReferenceItemType', 0, getutcdate(), 0, getutcdate(), 0, '0000000A-0000-0000-0000-000000000009')
+end
+GO
+update	T
+set		T.SubjectUid = S.[uid]
+from	[IntersectType] T
+		inner join AssetType S on S.Object = T.Subject and S.ObjectID = T.SubjectID
+GO
+update	T
+set		T.ObjectUid = S.[uid]
+from	[IntersectType] T
+		inner join AssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID
+GO
+update	IntersectType
+set		SubjectUid = '0000000A-0000-0000-0000-000000000009' --reference
+where	Subject = 'ReferenceItemType' and SubjectID = 0
+GO
+update	IntersectType
+set		ObjectUid = '0000000A-0000-0000-0000-000000000009' --reference
+where	Object = 'ReferenceItemType' and ObjectID = 0
+GO
+    </sql>
+    <rollback>
+delete AssetType where UID = '00000001-0000-0000-0000-A00000000011'
+GO
+delete AssetType where UID = '00000001-0000-0000-0000-B00000000012'
+GO
+delete AssetType where UID = '0000000A-0000-0000-0000-000000000009'
+GO
+update	IntersectType
+set		SubjectUid = NULL
+where	SubjectUid = '0000000A-0000-0000-0000-000000000009'
+GO
+update	IntersectType
+set		ObjectUid = NULL
+where	ObjectUid = '0000000A-0000-0000-0000-000000000009'
+GO
+    </rollback>
+  </changeSet>
+</databaseChangeLog>

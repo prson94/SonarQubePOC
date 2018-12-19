@@ -12,11 +12,6 @@ namespace d360.core.entities
     [DataContract(Namespace = NAMESPACE)]
     public class Artifact : BaseCreatedAndUpdatedIntObject, IIntObject, IFieldsObject, ICreatedObject, ICreatedMetadata, IUpdatedObject, ISearchable, IUpdatedMetadata, IEventTrackedEntity
     {
-        public Artifact()
-        {
-            Visible = true;
-        }
-
         [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "ArtifactType_Name", Description = "ArtifactType_Description")]
         public int ArtifactTypeID { get; set; }
                
@@ -25,8 +20,6 @@ namespace d360.core.entities
 
         [DataMember]
         public string SourceID { get; set; }
-
-        public bool Visible { get; set; }
 
         [IgnoreDataMember]
         public virtual ArtifactType ArtifactType { get; set; }

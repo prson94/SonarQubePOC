@@ -946,7 +946,8 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
             int currentCompanyID,
             int currentResourceID,
             AssetType at,
-            AssetInserts import)
+            AssetInserts import, 
+            int timeout = 3600)
         {
             #region Build data tables for bulk load.
 
@@ -994,7 +995,7 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
 
             #endregion
 
-            return cnn.UpsertAssets(queue, companyUrlPrefix, currentCompanyID, currentResourceID, true, at, assetTable, assetFieldTable);
+            return cnn.UpsertAssets(queue, companyUrlPrefix, currentCompanyID, currentResourceID, true, at, assetTable, assetFieldTable, timeout);
         }
 
         public static List<DatabaseBulkAssetResult> UpdateAssets(this SqlConnection cnn,
@@ -1003,7 +1004,8 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
             int currentCompanyID,
             int currentResourceID,
             AssetType at,
-            AssetUpdates import)
+            AssetUpdates import, 
+            int timeout = 3600)
         {
             #region Build data tables for bulk load.
 
@@ -1052,7 +1054,7 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
 
             #endregion
 
-            return cnn.UpsertAssets(queue, companyUrlPrefix, currentCompanyID, currentResourceID, false, at, assetTable, assetFieldTable);
+            return cnn.UpsertAssets(queue, companyUrlPrefix, currentCompanyID, currentResourceID, false, at, assetTable, assetFieldTable, timeout);
         }
 
         static List<DatabaseBulkAssetResult> UpsertAssets(this SqlConnection cnn, 
@@ -1063,7 +1065,8 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
             bool isInsert,
             AssetType at, 
             System.Data.DataTable assetTable,
-            System.Data.DataTable assetFieldTable)
+            System.Data.DataTable assetFieldTable,
+            int timeout = 3600)
         {
             List<DatabaseBulkAssetResult> results = null;
 
@@ -1105,7 +1108,7 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
 
                     assetBulkCopy.BatchSize = assetTable.Rows.Count;
                     assetBulkCopy.DestinationTableName = "#AssetTable";
-                    assetBulkCopy.BulkCopyTimeout = 3600;
+                    assetBulkCopy.BulkCopyTimeout = timeout;
 
                     assetBulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
                     assetBulkCopy.ColumnMappings.Add("Uid", "Uid");
@@ -1141,7 +1144,7 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
 
                     #endregion
 
-                    cnn.Execute("exec asset.BulkUpsert @isInsert, @uid, @r", new { isInsert, at.uid, r = currentResourceID }, trans, 1800);
+                    cnn.Execute("exec asset.BulkUpsert @isInsert, @uid, @r", new { isInsert, at.uid, r = currentResourceID }, trans, timeout);
 
                     results = cnn.Query<DatabaseBulkAssetResult>("select * from #AssetTable", transaction: trans).ToList();
                     trans.Commit();
@@ -1212,7 +1215,8 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
             int currentCompanyID,
             int currentResourceID,
             AssetType at,
-            AssetDeletes import)
+            AssetDeletes import, 
+            int timeout = 3600)
         {
             #region Build data tables for bulk load.
 
@@ -1271,7 +1275,7 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
 
                     assetBulkCopy.BatchSize = assetTable.Rows.Count;
                     assetBulkCopy.DestinationTableName = "#AssetTable";
-                    assetBulkCopy.BulkCopyTimeout = 3600;
+                    assetBulkCopy.BulkCopyTimeout = timeout;
 
                     assetBulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
                     assetBulkCopy.ColumnMappings.Add("Uid", "Uid");
@@ -1279,7 +1283,7 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
 
                     #endregion
 
-                    cnn.Execute("exec asset.BulkDelete @uid, @r", new { at.uid, r = currentResourceID }, trans, 3600);
+                    cnn.Execute("exec asset.BulkDelete @uid, @r", new { at.uid, r = currentResourceID }, trans, timeout);
 
                     results = cnn.Query<DatabaseBulkAssetResult>("select * from #AssetTable", transaction: trans).ToList();
                     trans.Commit();
@@ -1303,7 +1307,8 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
             int currentCompanyID,
             int currentResourceID,
             IntersectType rt,
-            List<Dictionary<string, string>> import)
+            List<Dictionary<string, string>> import, 
+            int timeout = 3600)
         {
             List<DatabaseBulkRelationshipResult> results = null;
 
@@ -1398,7 +1403,7 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
 
                     bulkCopy.BatchSize = table.Rows.Count;
                     bulkCopy.DestinationTableName = "#RelationshipTable";
-                    bulkCopy.BulkCopyTimeout = 3600;
+                    bulkCopy.BulkCopyTimeout = timeout;
 
                     bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
                     bulkCopy.ColumnMappings.Add("SubjectUid", "SubjectUid");
@@ -1424,7 +1429,7 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
 
                     fieldBulkCopy.BatchSize = table.Rows.Count;
                     fieldBulkCopy.DestinationTableName = "#RelationshipFieldTable";
-                    fieldBulkCopy.BulkCopyTimeout = 3600;
+                    fieldBulkCopy.BulkCopyTimeout = timeout;
 
                     bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
                     bulkCopy.ColumnMappings.Add("FieldName", "FieldName");
@@ -1434,7 +1439,7 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
 
                     #endregion
 
-                    cnn.Execute("exec relation.BulkUpsert @uid, @r", new { rt.uid, r = currentResourceID }, trans, 1800);
+                    cnn.Execute("exec relation.BulkUpsert @uid, @r", new { rt.uid, r = currentResourceID }, trans, timeout);
 
                     results = cnn.Query<DatabaseBulkRelationshipResult>("select * from #RelationshipTable", transaction: trans).ToList();
                     trans.Commit();
@@ -1506,7 +1511,8 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
             int currentCompanyID,
             int currentResourceID,
             IntersectType rt,
-            RelationshipInserts import)
+            RelationshipInserts import,
+            int timeout = 3600)
         {
             var values = new List<Dictionary<string, string>>();
             import.ForEach(i =>
@@ -1520,7 +1526,7 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
                 values.Add(dict);
             });
 
-            return BulkRelationshipsImport(cnn, queue, companyUrlPrefix, currentCompanyID, currentResourceID, rt, values);
+            return BulkRelationshipsImport(cnn, queue, companyUrlPrefix, currentCompanyID, currentResourceID, rt, values, timeout);
         }
         #endregion API v2 logic
     }

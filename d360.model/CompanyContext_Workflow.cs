@@ -585,8 +585,6 @@ namespace d360.model
             if (settingsModel.Visible.HasValue)
             {
                 Console.WriteLine($"DEBUG - OBJECT TYPE[{objectInfo.ObjectType}] ID[{objectInfo.ObjectID}] VISIBILITY SET TO {settingsModel.Visible}");
-
-                SetObjectVisibility(objectInfo, settingsModel.Visible.GetValueOrDefault());
             }
         }
 
@@ -792,8 +790,7 @@ namespace d360.model
                         await SendFormWorkflowEmail(itemStep, itemStepID, itemID, objectInfo, stepSettings);
                         break;
                     case WorkflowActivityType.StatusChange:
-                        // change the status of this item
-                        ChangeItemStatus(itemStep.Step, objectInfo);
+                        // deprecated, just set to true and move on
                         isStepCompleted = true;
                         break;
                     case WorkflowActivityType.Procedure:
@@ -828,9 +825,6 @@ namespace d360.model
 
                 // if the task is a finish or terminate task we need to mark the workflow instance as completed and the task as completed
                 isStepCompleted = true;
-
-                //mark the visible flag for the specified object as 1
-                if (stepType == StepType.Finish) SetObjectVisibility(objectInfo); // only finish steps should set objects as visible
 
                 var item = WorkflowItems.Where(x => x.ID == itemID).FirstOrDefault();
 
@@ -1187,65 +1181,6 @@ namespace d360.model
             }
 
             SaveChanges();
-        }
-
-        private void ChangeItemStatus(WorkflowVersionStep step, EventObjectInfo objectInfo)
-        {
-            var xml = step.Settings;
-            if (string.IsNullOrEmpty(xml))
-            {
-                Console.WriteLine("ERROR THE XML FOR THE STATUS CHANGE STEP IS NULL OR EMPTY.  THIS IS NOT VALID.");
-
-                throw new Exception("ERROR - INVALID CONFIGURATION FOR THE STATUS CHANGE TASK.");
-            }
-
-            // change the item status to the value specified
-            WorkflowStatusModel statusModel = WorkflowStatusModel.ParseFromXml(XElement.Parse(xml));
-
-            //change the objects status field to the specified value
-            switch (objectInfo.Object)
-            {
-                case core.SystemObjects.Artifact:
-                    var artifact = Artifacts.Where(x => x.ID == objectInfo.ObjectID).FirstOrDefault();
-                    SaveChanges();
-                    break;
-            }
-
-        }
-
-        private void SetObjectVisibility(EventObjectInfo objectInfo, bool visibility = true)
-        {
-            Console.WriteLine($"Debug - Setting Object {objectInfo.Object} {objectInfo.ObjectID} as visible {visibility}");
-
-            switch (objectInfo.Object)
-            {
-                case core.SystemObjects.Artifact:
-                    var artifact = Artifacts.Where(x => x.ID == objectInfo.ObjectID).FirstOrDefault();
-                    if (artifact == null) return;
-                    artifact.Visible = visibility;
-                    SaveChanges();
-                    break;
-                case core.SystemObjects.Taxonomy:
-                    var taxonomy = Taxonomies.Where(x => x.ID == objectInfo.ObjectID).FirstOrDefault();
-                    if (taxonomy == null) return;
-                    taxonomy.Visible = visibility;
-                    SaveChanges();
-                    break;
-                case core.SystemObjects.Policy:
-                    var policy = Policies.Where(x => x.ID == objectInfo.ObjectID).FirstOrDefault();
-                    if (policy == null) return;
-                    policy.Visible = visibility;
-                    SaveChanges();
-                    break;
-                case core.SystemObjects.Rule:
-                    var rule = Rules.Where(x => x.ID == objectInfo.ObjectID).FirstOrDefault();
-                    if (rule == null) return;
-                    rule.Visible = visibility;
-                    SaveChanges();
-                    break;
-                default:
-                    break;
-            }
         }
 
         public void RequestObjectCertification(core.SystemObjects @object, int objectId, core.SystemObjects objectType, int objectTypeId)
@@ -2049,11 +1984,10 @@ namespace d360.model
                         }
                         else
                         {
-                            var grp = Groups.Where(x => x.ID == adminGroupId).FirstOrDefault();
-
-                            if (grp != null)
+                            var group = AssetDetails.FirstOrDefault(a => a.ObjectID == adminGroupId && a.Object == "Group");
+                            if (group != null)
                             {
-                                recipientType = $"Default - {grp.Name}";
+                                recipientType = $"Default - {group.DisplayValue}";
                             }
                             else
                             {

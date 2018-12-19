@@ -5,12 +5,12 @@ using d360.core.entities.Views;
 using d360.core.enums;
 using d360.core.enums.Workflow;
 using d360.core.exceptions;
+using d360.core.helpers;
 using d360.core.queue;
 using d360.core.resources;
 using d360.extensions;
 using Dapper;
 using Ganss.XSS;
-using gudusoft.gsqlparser;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -24,6 +24,7 @@ using System.Data.Entity.Design.PluralizationServices;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace d360.model
@@ -442,27 +443,27 @@ select	I.ID,
 		I.SubjectUid as SubjectUid,
 		coalesce(S.Class, 0) as SubjectClassID,
 		case 
-			when I.SubjectUid = '0000000A-0000-0000-0000-000000000009' then 'Reference List' 
-			when I.SubjectUid = '00000001-0000-0000-0000-a00000000011' then 'User'
-			when I.SubjectUid = '00000001-0000-0000-0000-a00000000012' then 'Group'
 			when I.Subject = 'IntersectType' then SI.SubjectName + ' ' + SI.PredicateName + ' ' + SI.ObjectName + ' relationship'
-			else S.Name 
+			else coalesce(SFT.Name + ' / ','') + coalesce(SP.[Path], S.Name)
 		end as SubjectTypeName,
 		I.Object,
 		I.ObjectID,
 		I.ObjectUid,
 		coalesce(O.Class, 0) as ObjectClassID,
-		case 
-			when I.ObjectUid = '0000000A-0000-0000-0000-000000000009' then 'Reference List' 
-			when I.ObjectUid = '00000001-0000-0000-0000-a00000000011' then 'User'
-			when I.ObjectUid = '00000001-0000-0000-0000-a00000000012' then 'Group'
-			else O.Name 
-		end as ObjectTypeName
+		coalesce(OFT.Name + ' / ','') + coalesce(OP.[Path], O.Name) as ObjectTypeName
 from	IntersectType I
 		left join [Predicate] P on P.ID = I.PredicateID
+
 		left join AssetType S on (S.uid = I.SubjectUid OR (S.Object = I.Subject and S.ObjectID = I.SubjectID))
+        left join FusionAttributeType SFAT on I.Subject = 'FusionAttributeType' and SFAT.ID = I.SubjectID 
+        left join FusionType SFT on SFT.ID = SFAT.FusionTypeID 
+        outer apply dbo.GetAssetTypeTextPathById(S.ID, '/') SP
+
 		left join IntersectTypeDetail SI on I.Subject = 'IntersectType' and SI.ID = I.SubjectID
 		left join AssetType O on (O.uid = I.ObjectUid OR (O.Object = I.Object and O.ObjectID = I.ObjectID))
+        left join FusionAttributeType OFAT on I.Object = 'FusionAttributeType' and OFAT.ID = I.ObjectID 
+        left join FusionType OFT on OFT.ID = OFAT.FusionTypeID 
+        outer apply dbo.GetAssetTypeTextPathById(O.ID, '/') OP
 where	I.State = 1");
         }
 
@@ -977,7 +978,9 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
         {
             string query = string.Format("SELECT * FROM utility.ObjectDetail('{0}', {1})", type, id);
             var model = Database.SqlQuery<ObjectDetail>(query).SingleOrDefault();
-            if (model != null)
+            var neutralCulture = Thread.CurrentThread.CurrentCulture.Parent.Name;
+
+            if ((model != null) && PluralCultureHelper.IsNeutralCultureEnglish())
             {
                 var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
                 model.PluralizedName = pluralize.Pluralize(model.Name??"");
@@ -1556,25 +1559,27 @@ where	R.SourceObject = 'FusionAttribute'
             int? predicateID = null)
         {
             var sql = @"
-	SELECT		I.ID,
+    SELECT		I.ID,
 				I.Name,
 				I.Type
 	FROM		(
                 select	T.ObjectID as ID,
 		                case T.Object
-			                when 'ArtifactType' then 'Glossary'
-			                when 'FusionAttributeType' then 'Fusion Attribute'
-			                when 'FusionQueryAttributeType' then 'Fusion Query'
-			                when 'GroupType' then 'Security'
-			                when 'PolicyType' then 'Policy'
-			                when 'ReferenceItemType' then 'Reference'
-			                when 'ResourceType' then 'Security'
-			                when 'RuleType' then 'Rule'
-			                when 'TaxonomyType' then 'Model'
-		                end + ' :: ' + coalesce(P.[Path], T.Name) as Name,
+			                when 'ArtifactType' then 'Glossary :: '
+			                when 'FusionAttributeType' then 'Fusion Attribute :: ' + FT.Name + ' / '
+			                when 'FusionQueryAttributeType' then 'Fusion Query :: '
+			                when 'GroupType' then 'Security :: '
+			                when 'PolicyType' then 'Policy :: '
+			                when 'ReferenceItemType' then 'Reference :: '
+			                when 'ResourceType' then 'Security :: '
+			                when 'RuleType' then 'Rule :: '
+			                when 'TaxonomyType' then 'Model :: '
+		                end + coalesce(P.[Path], T.Name) as Name,
 		                T.Object as Type
                 from	AssetType T
 		                cross apply dbo.GetAssetTypeTextPathById(T.ID, '/') P
+                        left join FusionAttributeType FAT on T.Object = 'FusionAttributeType' and FAT.ID = T.ObjectID 
+                        left join FusionType FT on FT.ID = FAT.FusionTypeID 
                 where	T.Object not in ('AttributeType', 'FusionType', 'OrganizationType')
                 UNION
                 SELECT	CAST(IT.ID as int) ID,

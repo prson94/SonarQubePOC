@@ -1,7 +1,7 @@
-﻿using ApplicationInsights.Helpers.WebJobs;
-using d360.core;
+﻿using d360.core;
 using d360.core.entities;
 using d360.core.enums;
+using d360.core.helpers;
 using d360.utils.company;
 using Dapper;
 using Microsoft.Azure.WebJobs;
@@ -140,8 +140,6 @@ namespace igx.jobs.reportlayer
                             var prefix = "Glossary";
                             string objectID;
 
-                            var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
-
                             var assetTypes = companyConnection.Query<AssetType>($"select * from AssetType where [Class] in ({(int)AssetTypeClass.Glossary}, {(int)AssetTypeClass.Model}, {(int)AssetTypeClass.Policy})").ToList();
                             var fieldTypes = companyConnection.Query<FieldType>($"select * from FieldType where AssetTypeID in (select ID from AssetType where [Class] in ({(int)AssetTypeClass.Glossary}, {(int)AssetTypeClass.Model}, {(int)AssetTypeClass.Policy}))").ToList();
 
@@ -150,7 +148,12 @@ namespace igx.jobs.reportlayer
                                 var joins = "";
                                 var columns = "";
 
-                                objectName = pluralize.Pluralize(cleanObjectName(o.Name));
+                                if (PluralCultureHelper.IsNeutralCultureEnglish())
+                                {
+                                    var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
+                                    objectName = pluralize.Pluralize(cleanObjectName(o.Name));
+                                }
+                                
 
                                 if (objectName.Length > 100)
                                     objectName = objectName.Substring(0, 100);

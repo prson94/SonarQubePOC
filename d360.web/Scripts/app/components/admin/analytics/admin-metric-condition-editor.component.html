@@ -62,8 +62,17 @@
                     <option *ngFor="let l of getLookupValues(condition.FieldTypeID)" [value]="l.Value">{{l.Text}}</option>
                 </select>
             </div>
-            <div *ngIf="condition.FieldType.Type == 'Number' || fieldType == 'Decimal' || condition.FieldType.Type == 'Date' || condition.FieldType.Type == 'DateTime'">
+            <div *ngIf="condition.FieldType.Type == 'Date'">
+                <p-calendar [(ngModel)]="condition.Values" [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}"></p-calendar>
+            </div>
+            <div *ngIf="condition.FieldType.Type == 'DateTime'">
+                <p-calendar [(ngModel)]="condition.Values" [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}" showTime="true"></p-calendar>
+            </div>
+            <div *ngIf="condition.FieldType.Type == 'Number'">
                 <input type="number" style="width: 95%" [(ngModel)]="condition.Values" />
+            </div>
+            <div *ngIf="condition.FieldType.Type == 'Decimal'">
+                <input type="number" style="width: 95%" [(ngModel)]="condition.Values" [step]="0.25" />
             </div>
             <div *ngIf="condition.FieldType.Type == 'Boolean'">
                 <p-checkbox [(ngModel)]="condition.Values" binary="true"></p-checkbox>

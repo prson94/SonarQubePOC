@@ -74,6 +74,8 @@ namespace igx.jobs.apiexecutionprocessor
                     AssetType assetType = null;
                     IntersectType intersectType = null;
 
+                    int dbExecutionTimeout = int.Parse(CoreFunction.GetConfigValueByKey("DBExecuteQueryTimeout"));
+
                     switch (info.Action)
                     {
                         case ApiExecutionAction.PostAssets:
@@ -82,7 +84,7 @@ namespace igx.jobs.apiexecutionprocessor
                             string postAssetsJson = storage.GetFileContentsAsString(info.StorageFolder, info.RequestFileName, Encoding.UTF8);
                             var postAssets = JsonConvert.DeserializeObject<AssetInserts>(postAssetsJson);
 
-                            var postAssetsResults = companyConnection.InsertAssets(queue, info.CompanyDomainPrefix, info.CompanyID, dbExecutionItem.ResourceID, assetType, postAssets);
+                            var postAssetsResults = companyConnection.InsertAssets(queue, info.CompanyDomainPrefix, info.CompanyID, dbExecutionItem.ResourceID, assetType, postAssets, dbExecutionTimeout);
                             dbExecutionItem.Processed = postAssetsResults.Count(i => i.Success);
                             dbExecutionItem.Error = postAssetsResults.Count(i => !i.Success);
 
@@ -94,7 +96,7 @@ namespace igx.jobs.apiexecutionprocessor
                             string putAssetsJson = storage.GetFileContentsAsString(info.StorageFolder, info.RequestFileName, Encoding.UTF8);
                             var putAssets = JsonConvert.DeserializeObject<AssetUpdates>(putAssetsJson);
 
-                            var putAssetsResults = companyConnection.UpdateAssets(queue, info.CompanyDomainPrefix, info.CompanyID, dbExecutionItem.ResourceID, assetType, putAssets);
+                            var putAssetsResults = companyConnection.UpdateAssets(queue, info.CompanyDomainPrefix, info.CompanyID, dbExecutionItem.ResourceID, assetType, putAssets, dbExecutionTimeout);
                             dbExecutionItem.Processed = putAssetsResults.Count(i => i.Success);
                             dbExecutionItem.Error = putAssetsResults.Count(i => !i.Success);
 
@@ -106,7 +108,7 @@ namespace igx.jobs.apiexecutionprocessor
 
                             string deleteAssetsJson = storage.GetFileContentsAsString(info.StorageFolder, info.RequestFileName, Encoding.UTF8);
                             var deleteAssets = JsonConvert.DeserializeObject<AssetDeletes>(deleteAssetsJson);
-                            var deleteAssetsResults = companyConnection.DeleteAssets(queue, info.CompanyDomainPrefix, info.CompanyID, dbExecutionItem.ResourceID, assetType, deleteAssets);
+                            var deleteAssetsResults = companyConnection.DeleteAssets(queue, info.CompanyDomainPrefix, info.CompanyID, dbExecutionItem.ResourceID, assetType, deleteAssets, dbExecutionTimeout);
                             dbExecutionItem.Processed = deleteAssetsResults.Count(i => i.Success);
                             dbExecutionItem.Error = deleteAssetsResults.Count(i => !i.Success);
 
@@ -118,7 +120,7 @@ namespace igx.jobs.apiexecutionprocessor
                             string postRelationshipsJson = storage.GetFileContentsAsString(info.StorageFolder, info.RequestFileName, Encoding.UTF8);
                             var postRelationships = JsonConvert.DeserializeObject<RelationshipInserts>(postRelationshipsJson);
 
-                            var postRelationshipsResults = companyConnection.BulkRelationshipsImport(queue, info.CompanyDomainPrefix, info.CompanyID, dbExecutionItem.ResourceID, intersectType, postRelationships);
+                            var postRelationshipsResults = companyConnection.BulkRelationshipsImport(queue, info.CompanyDomainPrefix, info.CompanyID, dbExecutionItem.ResourceID, intersectType, postRelationships, dbExecutionTimeout);
                             dbExecutionItem.Processed = postRelationshipsResults.Count(i => i.Success);
                             dbExecutionItem.Error = postRelationshipsResults.Count(i => !i.Success);
 

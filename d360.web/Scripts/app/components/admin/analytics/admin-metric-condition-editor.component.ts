@@ -115,6 +115,12 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
                 if (!this.condition.Values) {
                     this.condition.Values = "";
                 }
+                else {
+                    if (field.Type == "Date" || field.Type == "DateTime") {
+                        this.condition.Values = new Date(<string>this.condition.Values);
+                        this.condition.Values.setMinutes(this.condition.Values.getMinutes() + this.condition.Values.getTimezoneOffset());
+                    }
+                }
             }
         }
     }
