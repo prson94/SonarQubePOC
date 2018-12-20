@@ -788,6 +788,19 @@ from	PolicyType T
 					) R
 where	T.ID = @id";
 
+        public static string RuleSettingsItem = @"
+select	T.*, R.*
+from	RuleType T 
+		cross apply (
+					select	case 
+								when count(1) > 0 then cast(1 as bit)
+								else cast(0 as bit)
+							end as AllowAttributes
+					from	AttributeTypeRelation
+					where	ObjectType = 'RuleType' and ObjectID = T.ID
+					) R
+where	T.ID = @id";
+
         public static string PromotionHistoryList = @"
 select	ID,
 		DateStarted,
