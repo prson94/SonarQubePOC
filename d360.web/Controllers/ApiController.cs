@@ -4883,10 +4883,10 @@ order by    Name
                     { "ID", row.ID },
                     { "Name", row.Name },
                     { "Description", row.Description },
-                    { "AllowAttributes", (bool)row.AllowAttributes },
+                    { "AllowAttributes", (bool)row.AllowAttributes }, 
                     { "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = id, ot = new DbString {Value = "RuleType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
                     { "MaximumDepth", row.MaximumDepth }
-                }
+                } 
             );
         }
 

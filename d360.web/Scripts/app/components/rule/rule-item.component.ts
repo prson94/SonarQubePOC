@@ -90,7 +90,7 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
             this.isLoading = true;
 
             this.load(ruleId).then(() => {
-                this.rulesService.getRuleType(ruleTypeId).then(r => this.ruleType = r);
+                this.rulesService.getRuleType(ruleTypeId).then(r => this.ruleType = r); 
                 this.headerBreadcrumbService.setCurrentObjectInfo('Rule', ruleId);
                 this.setObjectInfo('Rule', ruleId, this.rule.Name, this.rule.AssetID);
 

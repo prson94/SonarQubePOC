@@ -791,7 +791,7 @@ where	T.ID = @id";
         public static string RuleSettingsItem = @"
 select	T.*, R.*
 from	RuleType T 
-		cross apply (
+		cross apply ( 
 					select	case 
 								when count(1) > 0 then cast(1 as bit)
 								else cast(0 as bit)
