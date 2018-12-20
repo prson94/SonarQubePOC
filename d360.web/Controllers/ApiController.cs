@@ -4884,16 +4884,16 @@ order by    Name
         [Route("ruletypes/{id:int}")]
         public HttpResponseMessage GetRuleType(int id)
         {
-            var row = Company.GetById<RuleType>(id);
-
+            var row = Company.Query<dynamic>(QueryConstants.RuleSettingsItem, new { id }).Single();
             return Request.CreateResponse<dynamic>(
                 new Dictionary<string, object>() {
                     { "ID", row.ID },
                     { "Name", row.Name },
                     { "Description", row.Description },
+                    { "AllowAttributes", (bool)row.AllowAttributes }, 
                     { "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = id, ot = new DbString {Value = "RuleType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
                     { "HasDashboards",Company.Reports.Any(x=>x.ObjectID == id && x.ObjectType == SystemObjects.RuleType.ToString() && x.ReportType != "legacy") }
-                }
+                } 
             );
         }
 
