@@ -608,16 +608,13 @@ namespace d360.web.Controllers
             {
                 case SystemObjects.ArtifactType:
                     #region
-
-
-                    var parentType = Company.GetParentType<ArtifactType>(id);
-                    var hasParentType = parentType != null;
+                                        
+                    var hasParentType = Company.TypeHasParent(SystemObjects.ArtifactType, id);
 
                     parseDynamicColumnsAndFields(items, columns, fields, groups, 0, true);
 
                     if (hasParentType)
                     {
-
                         columns.Insert(1, new GridColumn
                         {
                             text = d360.core.resources.Fields.Parent_Name,
@@ -629,8 +626,7 @@ namespace d360.web.Controllers
                             columnWidth = 200
                         });
                     }
-
-                   
+                                       
 
                     fields.Add(new GridField { name = "AssetID", type = "number" });
                     fields.Add(new GridField { name = "ID", type = "number" });
