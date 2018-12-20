@@ -4885,7 +4885,7 @@ order by    Name
                     { "Description", row.Description },
                     { "AllowAttributes", (bool)row.AllowAttributes }, 
                     { "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = id, ot = new DbString {Value = "RuleType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
-                    { "MaximumDepth", row.MaximumDepth }
+                    { "HasDashboards",Company.Reports.Any(x=>x.ObjectID == id && x.ObjectType == SystemObjects.RuleType.ToString() && x.ReportType != "legacy") }
                 } 
             );
         }
