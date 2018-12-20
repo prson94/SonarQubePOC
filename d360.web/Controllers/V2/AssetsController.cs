@@ -6,6 +6,7 @@ using d360.extensions;
 using d360.model;
 using d360.web.Filters;
 using d360.web.Models;
+using Dapper;
 using Microsoft.Web.Http;
 using Newtonsoft.Json;
 using Swashbuckle.Swagger.Annotations;
@@ -18,17 +19,15 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
-using System.Data.Entity;
-using Dapper;
 
 namespace d360.web.Controllers.V2
 {
     /// <summary>
     /// This service houses all endpoints handling glossary-related data such as artifacts and models.
     /// </summary>
-    [ 
-        ApiVersion("2.0"), 
-        RoutePrefix("api/v{version:apiVersion}/assets"), 
+    [
+        ApiVersion("2.0"),
+        RoutePrefix("api/v{version:apiVersion}/assets"),
         Authorize
     ]
     public class AssetsController : BaseApiController
@@ -267,8 +266,8 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <returns>Returns a list of asset type classes.</returns>
         [
-            HttpGet, 
-            Route("classes"), 
+            HttpGet,
+            Route("classes"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "A list of asset type classes.", typeof(List<AssetTypeClassInfo>))
         ]
@@ -296,7 +295,7 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <returns></returns>
         [
-            HttpGet, 
+            HttpGet,
             Route("types"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "A list of asset types.", typeof(List<AssetTypeApiViewModel>))
@@ -309,16 +308,16 @@ namespace d360.web.Controllers.V2
             try
             {
                 var assetTypes = await Company.QueryAsync<AssetTypeApiViewModel>(@"
-SELECT		A.[Name]
-			,A.[Description]
-			,A.[Class] as ClassID
-			,A.[Notes]
-			,A.[uid],
-			P.[Path]
-FROM		AssetType A
-			cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P
-where		A.[State] = 1
-order by	P.[Path]
+SELECT      A.[Name]
+            ,A.[Description]
+            ,A.[Class] as ClassID
+            ,A.[Notes]
+            ,A.[uid],
+            P.[Path]
+FROM        AssetType A
+            cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P
+where       A.[State] = 1
+order by    P.[Path]
 ");
 
                 return Request.CreateResponse(HttpStatusCode.OK, assetTypes);
@@ -387,21 +386,21 @@ order by	P.[Path]
                 Guid relatedAssetUID;
 
                 var predicateUID = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_predicateuid").Value;
-                var intersectJoin = ""; 
+                var intersectJoin = "";
                 var relatedAssetSql = "";
                 var innerSql = @"
-					        select 
-						        B.[UID] as AssetUid, 
-						        BD.DisplayValue,
-						        TB.[Name] as TypeName,
+                            select 
+                                B.[UID] as AssetUid, 
+                                BD.DisplayValue,
+                                TB.[Name] as TypeName,
                                 P.[UID] as PredicateUid
-					        from Asset B
-					        inner join AssetType TB on TB.ID = B.AssetTypeID
-					        cross apply dbo.GetAssetDisplayValueById(B.ID) BD
-					        inner join [Intersect] I on {0}
-					        inner join IntersectType IT on IT.ID = I.IntersectTypeID
-					        inner join [Predicate] P on P.ID = IT.PredicateID and P.[UID] = @predicateUid
-					        {1}";
+                            from Asset B
+                            inner join AssetType TB on TB.ID = B.AssetTypeID
+                            cross apply dbo.GetAssetDisplayValueById(B.ID) BD
+                            inner join [Intersect] I on {0}
+                            inner join IntersectType IT on IT.ID = I.IntersectTypeID
+                            inner join [Predicate] P on P.ID = IT.PredicateID and P.[UID] = @predicateUid
+                            {1}";
 
                 var joinSql = @"
                     cross apply (
@@ -423,7 +422,7 @@ order by	P.[Path]
                     intersectJoin = $"I.[Subject] = {objectAlias}.[Object] and I.SubjectID = {objectAlias}.ObjectID and I.[Object] = {subjectAlias}.[Object] and I.ObjectID = {subjectAlias}.ObjectID";
                     innerSql = string.Format(innerSql, intersectJoin, relatedAssetSql);
                     joinSql = string.Format(joinSql, innerSql);
-                    
+
                 }
                 else if (queryParams.ToList().Any(q => q.Key.ToLower() == "_subjectuid"))
                 {
@@ -498,9 +497,9 @@ order by	P.[Path]
 
 
         /// <summary>
-        /// Get assets for the given asset type UID
+        /// Get assets for the given asset type Uid
         /// </summary>
-        /// <param name="assetTypeUid">The UID of the asset type</param>
+        /// <param name="assetTypeUid">The Uid of the asset type</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpGet,
@@ -538,11 +537,13 @@ order by	P.[Path]
         /// <param name="assets">The payload of your request.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
-            HttpPost, 
+            HttpPost,
             Route("{uid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of bulk asset results, including any error messages.", typeof(List<DatabaseBulkAssetResult>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add assets of this type.", typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> PostAssetsAsync(Guid uid, AssetInserts assets)
         {
@@ -557,17 +558,17 @@ order by	P.[Path]
                 var assetType = Company.Filter<AssetType>(i => i.uid == uid).SingleOrDefault();
 
                 if (assetType == null)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with UID {uid} could not be found."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {uid} could not be found."));
 
                 if (assets == null)
                     assets = readRequestJsonContent<AssetInserts>(Request).Result;
 
                 var results = (Company.Database.Connection as SqlConnection).InsertAssets(
-                    QueueSource, 
-                    Company.CurrentCompanyDomain, 
-                    Company.CurrentCompanyID, 
-                    Company.CurrentResourceID, 
-                    assetType, 
+                    QueueSource,
+                    Company.CurrentCompanyDomain,
+                    Company.CurrentCompanyID,
+                    Company.CurrentResourceID,
+                    assetType,
                     assets
                 );
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
@@ -607,17 +608,17 @@ order by	P.[Path]
                 var assetType = Company.Filter<AssetType>(i => i.uid == uid).SingleOrDefault();
 
                 if (assetType == null)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with UID {uid} could not be found."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {uid} could not be found."));
 
                 if (assets == null)
                     assets = readRequestJsonContent<AssetUpdates>(Request).Result;
 
                 var results = (Company.Database.Connection as SqlConnection).UpdateAssets(
-                    QueueSource, 
-                    Company.CurrentCompanyDomain, 
-                    Company.CurrentCompanyID, 
-                    Company.CurrentResourceID, 
-                    assetType, 
+                    QueueSource,
+                    Company.CurrentCompanyDomain,
+                    Company.CurrentCompanyID,
+                    Company.CurrentResourceID,
+                    assetType,
                     assets
                 );
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
@@ -657,7 +658,7 @@ order by	P.[Path]
                 var assetType = Company.Filter<AssetType>(i => i.uid == uid).SingleOrDefault();
 
                 if (assetType == null)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with UID {uid} could not be found."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {uid} could not be found."));
 
                 if (assets == null)
                     assets = readRequestJsonContent<AssetDeletes>(Request).Result;
@@ -709,7 +710,7 @@ order by	P.[Path]
                 var assetType = Company.Filter<AssetType>(i => i.uid == uid).SingleOrDefault();
 
                 if (assetType == null)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with UID {uid} could not be found."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {uid} could not be found."));
 
                 if (assets == null)
                     assets = readRequestJsonContent<AssetInserts>(Request).Result;
@@ -790,7 +791,7 @@ order by	P.[Path]
                 var assetType = Company.Filter<AssetType>(i => i.uid == uid).SingleOrDefault();
 
                 if (assetType == null)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with UID {uid} could not be found."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {uid} could not be found."));
 
                 if (assets == null)
                     assets = readRequestJsonContent<AssetUpdates>(Request).Result;
@@ -871,7 +872,7 @@ order by	P.[Path]
                 var assetType = Company.Filter<AssetType>(i => i.uid == uid).SingleOrDefault();
 
                 if (assetType == null)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with UID {uid} could not be found."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {uid} could not be found."));
 
                 if (assets == null)
                     assets = readRequestJsonContent<AssetDeletes>(Request).Result;
@@ -963,7 +964,8 @@ order by	P.[Path]
                 {
                 }
 
-                var statusModel = new ApiExecutionStatusModel {
+                var statusModel = new ApiExecutionStatusModel
+                {
                     CompletedOn = dbExecutionItem.CompletedOn,
                     Error = dbExecutionItem.Error,
                     Fields = Newtonsoft.Json.Linq.JObject.Parse(dbExecutionItem.Fields),
