@@ -20,8 +20,8 @@ drop proc if exists dbo.GetFieldsWithRelationsByObject;
 drop proc if exists dbo.GetTechnicalMapping;
 drop proc if exists dbo.UpdateAssetDisplayFormatFieldTypes;
 drop proc if exists dbo.Workflow_Task_CheckAndSetGdprFlag;
-drop proc if exists dbo.ClearMarkitMapLineageData;
-drop proc if exists dbo.ConvertSQLServerFusionIDs;
+drop proc if exists fusion.ClearMarkitMapLineageData;
+drop proc if exists fusion.ConvertSQLServerFusionIDs;
 drop proc if exists fusion.FindRelationships;
 drop proc if exists fusion.FindEagleToDBRelationships
 drop proc if exists fusion.GenerateEagleBusinessLineageData;
@@ -35,6 +35,8 @@ drop function if exists dbo.GetArtifactParentDisplayValue;
 drop function if exists lineage.GetTrailForObject;
 drop function if exists utility.GetObjectHierarchy;
 drop function if exists utility.ObjectFields;
+drop function if exists utility.GetAssetHash;
+drop function if exists utility.GetAssetHashWrapper;
 
 drop function if exists dbo.GenerateNgObjectUrl;
 drop function if exists dbo.ArtifactSiteNavigation;
@@ -159,63 +161,6 @@ BEGIN
 				CR.ObjectType,
 				O.Name
 END
-go
-
-CREATE PROCEDURE [dbo].[GetFieldNamesByObjectType]
-	@type varchar(50),
-	@id int
-AS
-BEGIN
-	declare @t table (Name nvarchar(250))
-
-	if (@type = 'ArtifactType')
-	begin
-		insert into @t values ('Name')
-		insert into @t values ('Description')
-		
-		insert into @t values ('ParentID')
-		insert into @t values ('TaxonomyTypeID')
-	end
-	if (@type = 'AttributeType')
-	begin
-		insert into @t values ('ObjectID')
-	end
-	if (@type = 'Domain')
-	begin
-		insert into @t values ('Name')
-		insert into @t values ('Description')
-	end
-	if (@type = 'DomainItem')
-	begin
-		insert into @t values ('Code')
-		insert into @t values ('Name')
-		insert into @t values ('Description')
-	end
-	
-	
-	
-	if (@type = 'TaxonomyType')
-	begin
-		insert into @t values ('Name')
-		insert into @t values ('Description')
-	end
-
-	select Name, cast(0 as bit) as IsCustomField from @t
-	union
-	select Name, cast(1 as bit) as IsCustomField from FieldTypeWithRelation where [Object] = @type and ObjectID = @id
-END
-go
-
-CREATE PROCEDURE [dbo].[GetFieldsWithRelationsByObject]
-	@type varchar(25),
-	@id int
-as
-begin
-	select	* 
-	from	FieldWithRelation 
-	WHERE	ObjectType = @type
-			and ObjectID = @id
-end
 go
 
 
@@ -2044,26 +1989,7 @@ BEGIN
 END
 go
 
-CREATE FUNCTION [dbo].[GetObjectStatisticScore]
-(
-
-	@type varchar(25) = 'Resource',
-	@id int = 1
-)
-RETURNS int
-AS
-BEGIN
-	declare @score int
-
-	select	@score = cast(Value * 100 as int)
-	from	metrics.Score
-	where	getutcdate() between EffectiveStartDate and EffectiveEndDate
-			and Object = @type and ObjectID = @id
-	return @score
-END
-go
-
-ALTER  FUNCTION [dbo].[GetOwnersListForWorkflow]
+CREATE FUNCTION [dbo].[GetOwnersListForWorkflow]
 (
 	@workflowID int,
 	@workflowStepID int = 0	
@@ -2438,7 +2364,6 @@ BEGIN
 	RETURN @Url
 END
 go
-
 ]]>
 	</rollback>
   </changeSet>
