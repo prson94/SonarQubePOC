@@ -264,7 +264,7 @@ from	FollowDetail F
                 if (!string.IsNullOrEmpty(field.DefaultFormattedValue))
                     sb.Append($"(coalesce(Field{field.ID}_T.FormattedValue, '{field.DefaultFormattedValue}') like @simpleFilter )");
                 else
-                    sb.Append($"(Field{field.ID} like  '%'+ @simpleFilter + '%')");
+                    sb.Append($"(Field{field.ID}_T.Value like  '%'+ @simpleFilter + '%')");
 
             }
 
@@ -327,23 +327,16 @@ from	FollowDetail F
                 var countSql = string.Format(@"select count(1) from ({0}) AA", querySql);
                 var sql = string.Format(@"select * from ({0}) AA", querySql);
 
-
-
                 var dbArgs = new DynamicParameters();
                 dbArgs.Add("excludeStatus", CompanyResourceState.Deleted);
-
                 
-             
-
                 if (!string.IsNullOrEmpty(simpleFilter))
                 {
                   
                     string[] fixedColumns = { "FirstName", "LastName", "Email", "LastLoggedInOn", "State" };
                     var filter = getDynamicFieldSimpleFilter(fixedColumns, SystemObjects.ResourceType, typeId, simpleFilter, dbArgs,null);
-
-                    countSql = string.Format(@" {0} {1} {2}", countSql,"where", filter);
-                    sql = string.Format(@" {0} {1} {2}", sql, "where", filter);
-
+                    countSql = string.Format(@"select count(1) from ({0} where {1}) AA", querySql, filter);
+                    sql = string.Format(@"select * from ({0} where {1} ) AA ", querySql,filter);
                 }
                 else
                 {
@@ -418,22 +411,14 @@ from	FollowDetail F
 
             var sql = string.Format(@"select * from ({0}) AA", querySql);
 
-
-
             var dbArgs = new DynamicParameters();
             dbArgs.Add("excludeStatus", CompanyResourceState.Deleted);
 
-
-
-
             if (!string.IsNullOrEmpty(simpleFilter))
             {
-
                 string[] fixedColumns = { "FirstName", "LastName", "Email", "LastLoggedInOn", "State" };
                 var filter = getDynamicFieldSimpleFilter(fixedColumns, SystemObjects.ResourceType, typeId, simpleFilter, dbArgs, null);
-
-                sql = string.Format(@" {0} {1} {2}", sql, "where", filter);
-
+                sql = string.Format(@"select * from ({0} where {1} ) AA ", querySql, filter);
             }
             else
             {
