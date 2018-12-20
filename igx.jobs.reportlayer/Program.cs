@@ -717,49 +717,48 @@ from	ResponsibilityTypeRelation R
 
                             selectSql = @"
 with p as (
-	select	T.ID,
-			T.PolicyTypeID,
+	select	T.ObjectID as ID,
+			T.TypeID as PolicyTypeID,
 			T.UpdatedOn,
 			T.UpdatedBy,
 			null as ParentID,
-			D.DisplayValue,
-			D.DisplayValue as TextPath,
+			T.DisplayValue,
+			T.DisplayValue as TextPath,
 			1 as [Level]
-	from	Policy T
-			inner join dbo.GetAssetDisplayValue() D on D.Object = 'Policy' and D.ObjectID = T.ID
-			left join PredicateIntersect I on I.Object = 'Policy' and I.ObjectID = T.ID and I.PredicateType = 4
-	where	I.IntersectID is null
+	from	AssetDetail T
+			left join PredicateIntersect I on I.Object = 'Policy' and I.ObjectID = T.ObjectID and I.PredicateType = 4
+	where	I.IntersectID is null and T.Object = 'Policy'
 	union all
-	select	T.ID,
-			T.PolicyTypeID,
+	select	T.ObjectID as ID,
+			T.TypeID as PolicyTypeID,
 			T.UpdatedOn,
 			T.UpdatedBy,
 			p.ID as ParentID,
-			D.DisplayValue,
-			p.TextPath + '.' + D.DisplayValue as TextPath,
+			T.DisplayValue,
+			p.TextPath + '.' + T.DisplayValue as TextPath,
 			p.[Level] + 1 as [Level]
-	from	Policy T
-			inner join dbo.GetAssetDisplayValue() D on D.Object = 'Policy' and D.ObjectID = T.ID
-			inner join PredicateIntersect I on I.Object = 'Policy' and I.ObjectID = T.ID and I.PredicateType = 4
+	from	AssetDetail T
+			inner join PredicateIntersect I on I.Object = 'Policy' and I.ObjectID = T.ObjectID and I.PredicateType = 4
 			inner join p on I.Subject = 'Policy' and I.SubjectID = p.ID
+	where	T.Object = 'Policy'
 )
 
-SELECT  D.ID as AssetID,
+SELECT  A.ID as AssetID,
         p.[ID] as [PolicyID],
         p.[ParentID],
-        D.DisplayValue,
+        p.DisplayValue,
 		p.TextPath,
         p.[UpdatedOn],
         p.[UpdatedBy],
         p.[PolicyTypeID],
         p.[Level],
-        pt.Name as [Policy Type],
+        t.Name as [Policy Type],
         ptl.Name as [Policy Level Name],
         CONVERT(VARCHAR(10), p.UpdatedOn, 112) as UpdatedOnKey
 FROM    p
-        inner join dbo.GetAssetDisplayValue() D on D.Object = 'Policy' and D.ObjectID = p.ID
-        inner Join PolicyType pt on pt.ID = p.[PolicyTypeID]
-        inner Join PolicyTypeLevel ptl on ptl.PolicyTypeID = pt.ID and ptl.[Level] = p.[level]";
+		inner join Asset A on A.Object = 'Policy' and A.ObjectID = p.ID
+		inner join AssetType T on T.ID = A.AssetTypeID
+        inner Join PolicyTypeLevel ptl on ptl.PolicyTypeID = T.ObjectID and ptl.[Level] = p.[level]";
 
                             objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
