@@ -775,7 +775,7 @@ namespace d360.web.Controllers
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
                         
             var parentType = Company.GetParentType<ArtifactType>(a.ArtifactTypeID);
-
+           
             if (parentType != null)
             {
                 var parent = Company.GetParentObject<Artifact>(a.ID);
@@ -1039,8 +1039,7 @@ namespace d360.web.Controllers
                 Company.Delete(SystemObjects.ArtifactType, id);
 
                 dynamic custom = new
-                {
-                    ParentID = Company.GetParentType<ArtifactType>(model.ID)?.ID ?? null,
+                {                    
                     Name = model.Name,
                     action = "delete"              
                 };

@@ -395,6 +395,7 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
                 for (let item of result) {
                     expr.options.push({ label: item.Name, value: item.ID });
                 }
+                this.ref.markForCheck();
             });
     }
 
@@ -430,11 +431,13 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
                     .getObjectRelations('ArtifactType', this.artifactType.ID)
                     .then(result => {
                         this.relationshipTypes = result;
-                        this.addRelationshipTypesToAvailable(this.relationshipTypes);                       
+                        this.addRelationshipTypesToAvailable(this.relationshipTypes);  
+                        this.ref.markForCheck();
                     });
             }
             else {
                 this.addRelationshipTypesToAvailable(this.relationshipTypes);
+                this.ref.markForCheck();
             }
         }
         catch (e) {

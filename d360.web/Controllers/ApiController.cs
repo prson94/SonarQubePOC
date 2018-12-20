@@ -608,16 +608,13 @@ namespace d360.web.Controllers
             {
                 case SystemObjects.ArtifactType:
                     #region
-
-
-                    var parentType = Company.GetParentType<ArtifactType>(id);
-                    var hasParentType = parentType != null;
+                                        
+                    var hasParentType = Company.TypeHasParent(SystemObjects.ArtifactType, id);
 
                     parseDynamicColumnsAndFields(items, columns, fields, groups, 0, true);
 
                     if (hasParentType)
                     {
-
                         columns.Insert(1, new GridColumn
                         {
                             text = d360.core.resources.Fields.Parent_Name,
@@ -629,8 +626,7 @@ namespace d360.web.Controllers
                             columnWidth = 200
                         });
                     }
-
-                   
+                                       
 
                     fields.Add(new GridField { name = "AssetID", type = "number" });
                     fields.Add(new GridField { name = "ID", type = "number" });
@@ -4884,16 +4880,16 @@ order by    Name
         [Route("ruletypes/{id:int}")]
         public HttpResponseMessage GetRuleType(int id)
         {
-            var row = Company.GetById<RuleType>(id);
-
+            var row = Company.Query<dynamic>(QueryConstants.RuleSettingsItem, new { id }).Single();
             return Request.CreateResponse<dynamic>(
                 new Dictionary<string, object>() {
                     { "ID", row.ID },
                     { "Name", row.Name },
                     { "Description", row.Description },
+                    { "AllowAttributes", (bool)row.AllowAttributes }, 
                     { "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = id, ot = new DbString {Value = "RuleType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
                     { "HasDashboards",Company.Reports.Any(x=>x.ObjectID == id && x.ObjectType == SystemObjects.RuleType.ToString() && x.ReportType != "legacy") }
-                }
+                } 
             );
         }
 

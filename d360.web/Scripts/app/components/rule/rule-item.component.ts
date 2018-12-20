@@ -8,7 +8,7 @@ import { RulesService } from '../../services/rules.service';
 import { PermissionsService } from '../../services/permissions.service';
 import { SurveysService } from '../../services/surveys.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { RuleDetail, RuleImplementation } from '../../models/rule.model';
+import { RuleDetail, RuleImplementation, RuleType } from '../../models/rule.model';
 import { MessageBarItem } from '../../models/message-bar-item.model';
 import { SurveyType } from '../../models/survey.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
@@ -39,7 +39,7 @@ declare var CompanySettings;
                 <div class="row" *ngIf="!isLoading">
                     <div class="col s12">
                         <div class="tile tile-detail">
-                            <d3s-object-definition-tile [objectType]="'Rule'" [objectID]="rule?.ID" [objectPermissions]="permissions" [hasAttributes]="true" (onEditComplete)="editRule($event)"></d3s-object-definition-tile>
+                            <d3s-object-definition-tile [objectType]="'Rule'" [objectID]="rule?.ID" [objectPermissions]="permissions" [hasAttributes]="ruleType?.AllowAttributes" (onEditComplete)="editRule($event)"></d3s-object-definition-tile>
                         </div>
                     </div>
                 </div>
@@ -68,6 +68,7 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
     private showSurvey: boolean = false;    
     private selectedImp: RuleImplementation;
     private showSocialScoreBar: boolean = true;
+    private ruleType: RuleType;
 
     constructor(private rulesService: RulesService,
             private route: ActivatedRoute,
@@ -89,6 +90,7 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
             this.isLoading = true;
 
             this.load(ruleId).then(() => {
+                this.rulesService.getRuleType(ruleTypeId).then(r => this.ruleType = r); 
                 this.headerBreadcrumbService.setCurrentObjectInfo('Rule', ruleId);
                 this.setObjectInfo('Rule', ruleId, this.rule.Name, this.rule.AssetID);
 
