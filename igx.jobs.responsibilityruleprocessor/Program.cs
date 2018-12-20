@@ -69,7 +69,9 @@ namespace igx.jobs.responsibilityruleprocessor
                         }
                         catch (Exception ex)
                         {
+                            CoreFunction.AITrackException(functionName, ex, c.CompanyID);
                             log.WriteLine($"Company [{c.CompanyID}]: [{ex.GetFullExceptionData()}]");
+                            CoreFunction.AIFlush();
                         }
                     }
                     catch (Exception ex)
