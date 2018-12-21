@@ -4,6 +4,9 @@
     EventEmitter,
     Output,
     OnInit,
+    OnDestroy,
+    OnChanges,
+    SimpleChange,
     ChangeDetectionStrategy,
     ChangeDetectorRef
 } from '@angular/core';
@@ -59,6 +62,18 @@ export class ArtifactTopLevelFilterComponent extends BaseComponent implements On
         this.ref.markForCheck();
     }
 
+    private resetFilters(): void {
+        this.filters = [];
+        for (let field of this.fields) {
+            if (!field.value || field.value === '') {
+                continue;
+            }
+
+            field.value = null;
+        }
+        this.filtersChange.emit(this.filters);
+        this.filterChanged.emit();
+    }
 
     onSubmit() {
         this.filters = [];
@@ -126,8 +141,9 @@ export class ArtifactTopLevelFilterComponent extends BaseComponent implements On
         } else {
             givenfield.disabled = true;
             givenfield.filteritems = [];
-            givenfield.value = [];
+            givenfield.filteritems = [];
             this.ref.markForCheck();
         }
     }
+
 };
