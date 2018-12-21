@@ -432,8 +432,8 @@ from    #AssetTable T
                 T.UpdatedBy = @r,
                 T.UpdatedOn = getutcdate()
     when not matched by target then
-        insert  (ArtifactTypeID, SourceID, CreatedOn, UpdatedBy, UpdatedOn, Visible)
-        values  (@id, S.SourceID, getutcdate(), @r, getutcdate(), 1)
+        insert  (ArtifactTypeID, SourceID, CreatedOn, UpdatedBy, UpdatedOn)
+        values  (@id, S.SourceID, getutcdate(), @r, getutcdate())
     output inserted.ID, S.ItemNumber, $action into #ObjectMergeTableResult;
     ", new { id = otid, @r = currentResourceID }, transaction: trans, commandTimeout: 1200);
                             break;
@@ -490,8 +490,8 @@ from    #AssetTable T
                 T.UpdatedBy = @r,
                 T.UpdatedOn = getutcdate()
     when not matched by target then
-        insert  (PolicyTypeID, SourceID, UpdatedBy, UpdatedOn, Visible)
-        values  (@id, S.SourceID, @r, getutcdate(), 1)
+        insert  (PolicyTypeID, SourceID, UpdatedBy, UpdatedOn)
+        values  (@id, S.SourceID, @r, getutcdate())
     output inserted.ID, S.ItemNumber, $action into #ObjectMergeTableResult;
     ", new { id = otid, @r = currentResourceID }, transaction: trans, commandTimeout: 1200);
                             break;
@@ -547,8 +547,8 @@ from    #AssetTable T
                 T.UpdatedBy = @r,
                 T.UpdatedOn = getutcdate()
     when not matched by target then
-        insert  (RuleTypeID, SourceID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, Visible)
-        values  (@id, S.SourceID, @r, getutcdate(), @r, getutcdate(), 1)
+        insert  (RuleTypeID, SourceID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+        values  (@id, S.SourceID, @r, getutcdate(), @r, getutcdate())
     output inserted.ID, S.ItemNumber, $action into #ObjectMergeTableResult;
     ", new { id = otid, @r = currentResourceID }, transaction: trans, commandTimeout: 1200);
                             break;
@@ -574,8 +574,8 @@ from    #AssetTable T
                 T.UpdatedBy = @r,
                 T.UpdatedOn = getutcdate()
     when not matched by target then
-        insert  (TaxonomyTypeID, SourceID, UpdatedBy, UpdatedOn, Visible)
-        values  (@id, S.SourceID, @r, getutcdate(), 1)
+        insert  (TaxonomyTypeID, SourceID, UpdatedBy, UpdatedOn)
+        values  (@id, S.SourceID, @r, getutcdate())
     output inserted.ID, S.ItemNumber, $action into #ObjectMergeTableResult;
     ", new { id = otid, @r = currentResourceID }, transaction: trans, commandTimeout: 1200);
                             break;

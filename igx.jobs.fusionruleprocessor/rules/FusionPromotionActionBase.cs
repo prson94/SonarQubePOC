@@ -88,8 +88,8 @@ namespace igx.jobs.fusionruleprocessor
             await UpdateModifiedAssets(company, transaction);
 
             // update display values
-            var assetTypeID = await company.QueryFirstOrDefaultAsync<int>($"select id from assettype where [object] = @obj and [objectid] = @objId", new { obj = new DbString { Value = promoteToObject, IsFixedLength = true, Length = 20, IsAnsi = true }, objId = promoteToObjectID });
-            await company.ExecuteAsync("exec GenerateAssetTypeDisplayValues @assetTypeID", new { assetTypeID }, null, 2400);
+            var assetTypeID = await company.QueryFirstOrDefaultAsync<int>($"select id from assettype where [object] = @obj and [objectid] = @objId", new { obj = new DbString { Value = promoteToObject, IsFixedLength = true, Length = 20, IsAnsi = true }, objId = promoteToObjectID }, transaction:transaction);
+            await company.ExecuteAsync("exec GenerateAssetTypeDisplayValues @assetTypeID", new { assetTypeID }, transaction, 2400);
         }
 
         private async Task MergeFieldValues(SqlConnection company, SqlTransaction transaction = null)
