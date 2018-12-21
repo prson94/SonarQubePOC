@@ -261,10 +261,7 @@ from	FollowDetail F
             foreach (var field in fields)
             {
                 if (sb.Length != 0) sb.Append(" or ");
-                if (!string.IsNullOrEmpty(field.DefaultFormattedValue))
-                    sb.Append($"(coalesce(Field{field.ID}_T.FormattedValue, '{field.DefaultFormattedValue}') like @simpleFilter )");
-                else
-                    sb.Append($"(Field{field.ID}_T.Value like  '%'+ @simpleFilter + '%')");
+                sb.Append($"(Field{field.ID} like  '%'+ @simpleFilter + '%')");
 
             }
 
@@ -332,11 +329,12 @@ from	FollowDetail F
                 
                 if (!string.IsNullOrEmpty(simpleFilter))
                 {
-                  
+
                     string[] fixedColumns = { "FirstName", "LastName", "Email", "LastLoggedInOn", "State" };
-                    var filter = getDynamicFieldSimpleFilter(fixedColumns, SystemObjects.ResourceType, typeId, simpleFilter, dbArgs,null);
-                    countSql = string.Format(@"select count(1) from ({0} where {1}) AA", querySql, filter);
-                    sql = string.Format(@"select * from ({0} where {1} ) AA ", querySql,filter);
+                   var filterCondition = getDynamicFieldSimpleFilter(fixedColumns, SystemObjects.ResourceType, typeId, simpleFilter, dbArgs, null);
+                    filterCondition = string.IsNullOrEmpty(filterCondition) ? filterCondition : $"where {filterCondition}";
+                    countSql = string.Format(@"select count(1) from ({0}  {1}) AB", sql, filterCondition);
+                    sql = string.Format(@"select * from ({0}  {1} ) AB", sql, filterCondition);
                 }
                 else
                 {
@@ -417,8 +415,9 @@ from	FollowDetail F
             if (!string.IsNullOrEmpty(simpleFilter))
             {
                 string[] fixedColumns = { "FirstName", "LastName", "Email", "LastLoggedInOn", "State" };
-                var filter = getDynamicFieldSimpleFilter(fixedColumns, SystemObjects.ResourceType, typeId, simpleFilter, dbArgs, null);
-                sql = string.Format(@"select * from ({0} where {1} ) AA ", querySql, filter);
+                var filterCondition = getDynamicFieldSimpleFilter(fixedColumns, SystemObjects.ResourceType, typeId, simpleFilter, dbArgs, null);
+                filterCondition = string.IsNullOrEmpty(filterCondition) ? filterCondition : $"where {filterCondition}";
+                sql = string.Format(@"select * from ({0}  {1} ) AB", sql, filterCondition);
             }
             else
             {
