@@ -1060,6 +1060,32 @@ order by wi.StartedOn desc";
             }
         }
 
+        [HttpDelete, Route("deleteItems")]
+        public HttpResponseMessage DeleteWorkfowItems([FromBody] int[] items)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.Forbidden));
+            }
+            if (items.Length > 0)
+            {
+                string inclause = string.Join(",", items.Select((s, i) => "@p" + i.ToString()).ToArray());
+                var parameters = new DynamicParameters();
+                for (var i = 0; i < items.Length; i++)
+                {
+                    parameters.Add("p" + i.ToString(), items[i]);
+                }
+                string sql = "";
+                sql = @"DELETE FROM [workflow].[ItemStepTransition] WHERE [FromItemStepID] IN (SELECT [ID] FROM [workflow].[ItemStep] WHERE [ItemID] IN (" + inclause + "))";
+                int rows = Company.Database.Connection.Execute(sql, parameters);
+                sql = @"DELETE FROM [workflow].[ItemStep] WHERE [ItemID] IN  (" + inclause + ")";
+                rows = Company.Database.Connection.Execute(sql, parameters);
+                sql = @"DELETE FROM [workflow].[Item] WHERE [ID] IN  (" + inclause + ")";
+                rows = Company.Database.Connection.Execute(sql, parameters);
+            }
+            return Request.CreateResponse(HttpStatusCode.OK, items.Length);
+        }
+
         [Route("activitytypes"), HttpGet]
         public List<core.enums.Workflow.ActivityTypeInfo> GetActivityTypes()
         {

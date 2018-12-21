@@ -8,6 +8,7 @@ import { SortOrder } from "../../models/enums.model";
 import {  GridFilterExpression } from "../../models/grid-definition.model";
 import { StateService } from "../../services/state.service";
 import { StringHelpers } from "../../static/string-helpers";
+import { AuthenticationService } from '../../services/authentication.service';
 import * as _ from "lodash";
 
 
@@ -26,12 +27,13 @@ import * as _ from "lodash";
                     </d3s-workflowmonitor-list-filter>
                 </div>
                     <div class="col s12">                
-                        <p-table #dt [loading]="isLoading" loadingIcon="fa fa-spinner" [value]="items" selectionMode="single" [lazy]="true" [totalRecords]="totalRecords"  [scrollable]="true" scrollWidth="100%" [metaKeySelection]="true" 
+                        <p-table #dt [loading]="isLoading" loadingIcon="fa fa-spinner" [value]="items" selectionMode="multiple" [metaKeySelection]="true" [lazy]="true" [totalRecords]="totalRecords"  [scrollable]="true" scrollWidth="100%" [metaKeySelection]="true" 
                             [globalFilterFields]="['WorkflowName','Type','TypeName','Asset','Initiator','StartedOn','CompletedOn']" [pageLinks]="3" [paginator]="true" 
                             [rows]="rowsPerPage" [rowsPerPageOptions]="defaultPagingOptions" (onLazyLoad)="loadWorkflowMonitorItems($event)" [selection]="selection" 
                             (selectionChange)="gridSelectionChange($event)">
                             <ng-template pTemplate="header">
                                 <tr>
+                                    <th *ngIf="isAdmin" style="width: 35px"><p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
                                     <th [pSortableColumn]="'WorkflowName'">
                                         Workflow Name
                                         <d3s-sortIcon [field]="'WorkflowName'"></d3s-sortIcon>
@@ -73,6 +75,7 @@ import * as _ from "lodash";
                             </ng-template>
                             <ng-template pTemplate="body" let-item>
                                 <tr [pSelectableRow]="item">
+                                    <td *ngIf="isAdmin" ><p-tableCheckbox [value]="item"></p-tableCheckbox></td>
                                     <td>{{item.WorkflowName}}</td>
                                     <td>{{item.Type}}</td>
                                     <td>{{item.TypeName}}</td>
@@ -107,16 +110,19 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
     private sortField: string = undefined;
     private sortOrder: SortOrder = SortOrder.Descending;
     private usePredefinedFilters: boolean = false;
-     selection: any;
+    private isAdmin: boolean = false;
+    selection: any;
     @Output() selectionChange = new EventEmitter();
 
     constructor(private wfMonitorService: WorkflowMonitorService,
         private stateService: StateService,
-        private changeDetectorRef: ChangeDetectorRef) {
+        private changeDetectorRef: ChangeDetectorRef,
+        private authenticationService: AuthenticationService) {
         super();
     }
 
     ngOnInit(): void {
+        this.isAdmin = this.authenticationService.isAdmin;
      }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -141,7 +147,13 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
     }
 
     private gridSelectionChange($event) {
-        this.stateService.workflowItemFilters.itemId = $event ? $event.Id : 0;
+        console.log('gridSelectionChange');
+        console.log($event);
+        if (Array.isArray($event) && $event.length == 1) {
+            this.stateService.workflowItemFilters.itemId = $event[0].Id;
+        } else {
+            this.stateService.workflowItemFilters.itemId = 0;
+        }
         this.selection = $event;
         this.selectionChange.emit($event)
     }
@@ -192,7 +204,7 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
                         item = this.items.find(x => x.Id == this.stateService.workflowItemFilters.itemId)
                     }
 
-                    this.selection = item ? item : this.items[0];
+                    this.selection = item ? [item] : [this.items[0]];
                     this.selectionChange.emit(this.selection);
                 }
                 else {
@@ -203,7 +215,20 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
             });
     }
 
-
+    public deleteItems() {
+        this.isLoading = true;
+        let itemIds = [];
+        if (Array.isArray(this.selection)) {
+            itemIds = this.selection.map(i => i.Id);
+        } else if (this.selection != null) {
+            itemIds.push(this.selection.Id);
+        }
+        this.wfMonitorService.deleteItems(itemIds).then(
+            (res) => {
+                this.loadData();
+            }
+        );
+    }
 
     OnFilterChange() {
         this.stateService.workflowItemFilters.currentPageNumber = 0;
