@@ -2503,7 +2503,7 @@
         </member>
         <member name="M:d360.web.Controllers.V2.CrossReferencesController.GetByUid(System.String)">
             <summary>
-            Returns asset cross reference values for the specified uid
+            Returns asset cross reference values for the specified Uid
             </summary>
             <returns>An array of matching cross reference records</returns>
         </member>
@@ -2545,7 +2545,7 @@
         </member>
         <member name="M:d360.web.Controllers.V2.CrossReferencesController.DeleteByUid(System.Guid)">
             <summary>
-            Deletes a AssetCrossReference by the specified UID value
+            Deletes a AssetCrossReference by the specified Uid value
             </summary>
             <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted</returns>
         </member>
@@ -2625,6 +2625,13 @@
             <param name="ruleUid">The Uid of the rule</param>
             <param name="ruleResults">The rule results and the mappings of fusionattributes that tie to the results</param>
             <returns></returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.ErrorsController.SaveClientError(d360.web.Models.ClientErrorModel)">
+            <summary>
+            This logs the client error on server side
+            </summary>
+            <param name="model">Error model</param>
+            <returns>Returns Http Status code 200 if logged successfully; else return http status code 500 with error message</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.ExportTemplatesController.Get">
             <summary>
@@ -2801,9 +2808,9 @@
         </member>
         <member name="M:d360.web.Controllers.V2.AssetsController.GetAssetsAsync(System.Guid)">
             <summary>
-            Get assets for the given asset type UID
+            Get assets for the given asset type Uid
             </summary>
-            <param name="assetTypeUid">The UID of the asset type</param>
+            <param name="assetTypeUid">The Uid of the asset type</param>
             <returns>An HTTP status code and message.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.AssetsController.PostAssetsAsync(System.Guid,d360.core.entities.AssetInserts)">

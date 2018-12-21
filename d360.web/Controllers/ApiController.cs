@@ -8173,23 +8173,6 @@ where	Type = 'ReferenceItemType'
 
         #endregion
 
-        #region LogClientError
-        [HttpPost, Route("log/clienterror")]
-        public HttpResponseMessage SaveClientError(ClientErrorModel model)
-        {
-            try
-            {
-                IDictionary<string, string> properties = new Dictionary<string, string>();
-                properties.Add("name", model.Name);
-                properties.Add("stacktrace", model.Stack);
-                this.SendException(new ClientSideException(model.Message), properties);
-                return Request.CreateResponse(HttpStatusCode.OK);
-            }
-            catch (Exception ex)
-            {
-                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
-            }
-        }
-        #endregion
+
     }
 } 
