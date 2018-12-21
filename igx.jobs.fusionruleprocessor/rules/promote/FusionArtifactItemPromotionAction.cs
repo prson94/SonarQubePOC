@@ -300,8 +300,8 @@ namespace igx.jobs.fusionruleprocessor
 			                    ) S
 	                    ON      (1 != 1)
 	                    WHEN NOT MATCHED THEN
-	                        INSERT  (ArtifactTypeID, UpdatedOn, UpdatedBy, CreatedOn, CreatedBy, Visible)
-	                        VALUES  (@promoteToId, getutcdate(), 0, getutcdate(), 0, 1)                        
+	                        INSERT  (ArtifactTypeID, UpdatedOn, UpdatedBy, CreatedOn, CreatedBy)
+	                        VALUES  (@promoteToId, getutcdate(), 0, getutcdate(), 0)                        
                         output  S.ID, S.ObjectType, inserted.ID, @targetType into #promotedItems;";
             await company.ExecuteAsync(sql, new { promoteToId = PromoteToObjectID, targetType = "Artifact", rulestepid = ruleStepId, ruleid = ruleId, items = itemsToPromote }, commandTimeout: FusionActionBase.ExecutionTimeout, transaction: transaction);
         }
