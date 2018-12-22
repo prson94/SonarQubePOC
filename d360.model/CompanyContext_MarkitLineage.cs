@@ -17,6 +17,13 @@ namespace d360.model
         public Tuple<string, int> TargetObject { get; set; }
     }
 
+    public class MarkitObject
+    {
+        public int ObjectID { get; set; }
+        public string Object { get; set; }
+    }
+
+
     partial class CompanyContext : BaseContext
     {
         
@@ -34,6 +41,22 @@ namespace d360.model
 
             var maps = await LoadMarkitMapRawData();
             var objectMaps = await LoadMarkitMapItemMapData();
+
+            Dictionary<MarkitObject, List<int>> objectMapDictionary = new Dictionary<MarkitObject, List<int>>();
+
+            // iterate through the object
+            int previousObjectId = -1;
+            foreach (var obj in objectMaps)
+            {
+                if(obj.ObjectID != previousObjectId)
+                {
+                    objectMapDictionary[new MarkitObject { Object = obj.Object, ObjectID=obj.ObjectID}] = new List<int>{ obj.MapID};
+                }
+                else
+                {
+                    //add to existing.
+                }
+            }
 
             var rows = maps.Count();
             client.TrackEvent($"Loaded {rows} Markit Map Records");
@@ -186,19 +209,19 @@ namespace d360.model
         private async Task<bool> MarkitRequiresRun()
         {
             // is htere any data? and what is the date its for            
-            var dataDate = await (Database.Connection.QueryFirstOrDefaultAsync<DateTime>("select max(updatedon) from [fusion].MarkitLineageData"));
+            var dataDate = await (Database.Connection.QueryFirstOrDefaultAsync<DateTime?>("select max(updatedon) from [fusion].MarkitLineageData"));
 
-            if (dataDate == DateTime.MinValue)
+            if (!dataDate.HasValue || dataDate.Value == DateTime.MinValue)
                 return false;
 
             // compare max last run to date in                
-            var lastRun = await Database.Connection.QueryFirstOrDefaultAsync<DateTime>("select max(completedOn) from [fusion].MarkitLineageHistory");
+            var lastRun = (await Database.Connection.QueryFirstAsync<DateTime?>("select max(completedOn) from [fusion].MarkitLineageHistory where completedOn is not null"));
 
             // has data but never run
-            if (lastRun == DateTime.MinValue)
+            if (!lastRun.HasValue || lastRun.Value == DateTime.MinValue)
                 return true;
 
-            if (dataDate > lastRun) return true;
+            if (dataDate.Value > lastRun.Value) return true;
 
             return false;
         }
@@ -209,9 +232,9 @@ namespace d360.model
                             MapID,
                             [Object],
                             ObjectID                         
-                      FROM [fusion].[MarkitLineageMapToBusinessItems]";
+                      FROM [fusion].[MarkitLineageMapToBusinessItems] order by [object], ObjectID";
 
-            return await QueryAsync<core.entities.FusionMarkitLineageMapToBusinessItems>(sql);
+            return await Database.Connection.QueryAsync<core.entities.FusionMarkitLineageMapToBusinessItems>(sql);
         }
 
         private async Task<IEnumerable<core.entities.FusionMarkitLineageData>> LoadMarkitMapRawData()
