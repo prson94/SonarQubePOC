@@ -34,13 +34,13 @@ namespace igx.jobs.workflowdigestprocessor
         
 
 #if DEBUG
-        const string timerSettings = "*/10 * * * * *";
+        const string timerSettings = "*/10 * * * * *"; // run in debug every 10 seconds
 #else
         const string timerSettings = "0 */15 * * * *"; // every 15 minutes
 #endif
 
 
-        public static async Task Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log) //   
+        public static async Task Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
         {
             try
             {
@@ -67,6 +67,8 @@ namespace igx.jobs.workflowdigestprocessor
                         var company = new CompanyContext(community, cache, queue, sec, true);
 
                         #endregion
+
+                        if (c.CompanyID != 3) continue;
 
                         await company.GenerateMarkitBusinessLineage();
                     }
