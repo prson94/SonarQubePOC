@@ -93,7 +93,7 @@ import * as _ from 'lodash';
             </div>
             <div *ngIf="iconType == 'image'" style="padding:10px">
                 <img *ngIf="iconImage != null && iconImage.dataUrl != null" [src]="iconImage.dataUrl" style="max-width: 72px; max-height: 128px;" />
-                <img *ngIf="shortcut.IconPayload == null" [src]="shortcut.IconUrl" style="max-width: 72px; max-height: 128px;" />
+                <img *ngIf="shortcut.IconPayload == null" [src]="shortcut.FullURL" style="max-width: 72px; max-height: 128px;" />
                 <div *ngIf="shortcut.IconPayload != null || shortcut.IconUrl != null">
                     <button pButton type="button" label="Clear" (click)="clearIcon()"></button>
                 </div>

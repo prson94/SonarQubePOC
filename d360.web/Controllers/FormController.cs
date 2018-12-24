@@ -14427,7 +14427,7 @@ order by DN.DisplayValue");
                         var imageFileName = string.Format("{0}.shortcut.{1}{2}", Company.CurrentCompanyID, imageGuid, imageExtension);
                         Storage.CreateFile(constants.COMPANY_RESOURCES_FOLDER, imageFileName, imageStream);
 
-                        shortcut.IconUrl = $"{constants.COMPANY_RESOURCES_URL}{imageFileName}";
+                        shortcut.IconUrl = $"{imageFileName}";
 
                     }
                 }
@@ -14494,7 +14494,7 @@ order by DN.DisplayValue");
                         var imageFileName = string.Format("{0}.shortcut.{1}{2}", Company.CurrentCompanyID, imageGuid, imageExtension);
                         Storage.CreateFile(constants.COMPANY_RESOURCES_FOLDER, imageFileName, imageStream);
 
-                        shortcut.IconUrl = $"{constants.COMPANY_RESOURCES_URL}{imageFileName}";
+                        shortcut.IconUrl = $"{imageFileName}";
 
                     }
                 }
@@ -14544,7 +14544,7 @@ order by DN.DisplayValue");
                 if (!string.IsNullOrEmpty(existing.IconUrl))
                 {
                     //delete the file
-                    Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, new Uri(existing.IconUrl).Segments.Last());
+                    Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, new Uri(existing.FullURL).Segments.Last());
                 }
 
                 Company.Delete(existing);
