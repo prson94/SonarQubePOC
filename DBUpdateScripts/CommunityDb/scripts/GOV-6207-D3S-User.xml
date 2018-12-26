@@ -23,13 +23,6 @@
 						values (S.CompanyID, S.ResourceID, S.IsAdministrator);
 		</sql>
 		<rollback>
-			IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES 
-							WHERE TABLE_NAME = N'CompanyResource')
-							   AND  EXISTS (Select * from CompanyResource  where ResourceID=0)
-			BEGIN
-
-				Delete from CompanyResource  where ResourceID=0
-			END
 		</rollback>
 
 	</changeSet>
