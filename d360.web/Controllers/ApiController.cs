@@ -4921,7 +4921,7 @@ from	[Rule] A
         inner join Asset O on O.Object = 'Rule' and O.ObjectID = A.ID 
         {1} 
         left join RuleDimension D on D.ID = A.RuleDimensionID 
-where   A.RuleTypeID = @id and A.[Visible] = 1
+where   A.RuleTypeID = @id 
         and O.ID not in (" + GetNoReadSqlStatement("@r") + ")" +
         "and O.AssetTypeID not in (" + GetAssetTypeNoReadSqlStatement("@r") + ")", columns, joins);
 
