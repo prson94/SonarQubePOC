@@ -1,5 +1,5 @@
 ﻿import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
@@ -48,16 +48,25 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
     private colSize = 4;
     public hasResults = false;
     public dashboard: Dashboard = null;
+    private sub;
 
-    constructor(protected titleService: Title,
+    constructor(
+        protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,        
         webAnalyticsService: WebAnalyticsService,
         protected router: Router,
         rightSidebarService: RightSidebarService,
-        private dashboardService: DashboardService) {
+        private dashboardService: DashboardService
+    ) {
         super();
         this.rightSidebarService = rightSidebarService;
         this.webAnalyticsService = webAnalyticsService;
+
+        this.sub = this.router.events.subscribe((val) => {
+            if (val instanceof NavigationEnd) {
+                this.hasResults = false;
+            }
+        });
     }
 
     ngOnInit() {
@@ -97,6 +106,7 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
 
     ngOnDestroy() {
         this.clearSidebar();
+        this.sub.unsubscribe();
     }
 
     private onShowActivityDetails(event) {
