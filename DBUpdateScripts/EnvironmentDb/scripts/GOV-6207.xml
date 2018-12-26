@@ -14,7 +14,7 @@
 							WHERE TABLE_NAME = N'Global_Resource' AND TABLE_SCHEMA= N'reporting')
 							   AND NOT EXISTS (Select * from [reporting].[Global_Resource]  where ResourceID=0)
 				BEGIN
-					 INSERT [reporting].[Global_Resource] ([ResourceID], [FirstName], [LastName], [Email], [IsAdministrator], [CreatedOn], [State], [LastLoggedInOn]) VALUES (0, N'D3S', N'System', N'system@data3sixty.com', 1, getdate(), 1, NULL)
+					 INSERT [reporting].[Global_Resource] ([ResourceID], [FirstName], [LastName], [Email], [IsAdministrator], [CreatedOn], [State], [LastLoggedInOn]) VALUES (0, N'D3S', N'System', N'system@data3sixty.com', 0, getdate(), 1, NULL)
 
 				END
 		</sql>
