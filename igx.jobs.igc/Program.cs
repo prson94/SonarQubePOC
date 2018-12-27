@@ -47,7 +47,7 @@ namespace igx.jobs
 
     public static class IgcIntegration
     {
-        [Disable]
+        //[Disable]
         public static void RunScheduleViaTimer([TimerTrigger("0 */5 * * * *", RunOnStartup = true)]TimerInfo myTimer, CancellationToken token, TextWriter log)
         {
             string functionName = "IGC_Integration_Schedule";
@@ -233,6 +233,24 @@ where	T.CompletedOn is null
             StepCompleted?.Invoke(this, e);
         }
 
+        public event EventHandler<RelationshipBreakdownModelsUpdatedEventArgs> RelationshipBreakdownModelsUpdated;
+        protected virtual void OnRelationshipBreakdownModelsUpdated(RelationshipBreakdownModelsUpdatedEventArgs e)
+        {
+            RelationshipBreakdownModelsUpdated?.Invoke(this, e);
+        }
+
+        public event EventHandler<ResponsibilityBreakdownModelsUpdatedEventArgs> ResponsibilityBreakdownModelsUpdated;
+        protected virtual void OnResponsibilityBreakdownModelsUpdated(ResponsibilityBreakdownModelsUpdatedEventArgs e)
+        {
+            ResponsibilityBreakdownModelsUpdated?.Invoke(this, e);
+        }
+
+        public event EventHandler<EventArgs> PageBreakdownsUpdated;
+        protected virtual void OnPageBreakdowns(EventArgs e)
+        {
+            PageBreakdownsUpdated?.Invoke(this, e);
+        }
+
         #endregion
 
         const string functionName = "IGC_Integration";
@@ -285,6 +303,8 @@ where	T.CompletedOn is null
         public IntegrationAssetType SynchedAssetType { get; set; }
         public IntegrationExecutionAssetType ExecutionAssetType { get; set; }
         public RetryLogModel ExecutionAssetTypeRetryLog { get; set; }
+        public IGCAssetRelationshipBreakdownModels RelationshipBreakdownModels { get; set; }
+        public IGCAssetResponsibilityBreakdownModels ResponsibilityBreakdownModels { get; set; }
 
         public CommunityContext Community { get; set; }
 
@@ -301,6 +321,9 @@ where	T.CompletedOn is null
             PageBeginValueUpdated += IgcIntegrationEngine_PageBeginValueUpdated;
             PageErrorCaptured += IgcIntegrationEngine_PageErrorCaptured;
             StepCompleted += IgcIntegrationEngine_StepCompleted;
+            RelationshipBreakdownModelsUpdated += IgcIntegrationEngine_RelationshipBreakdownModelsUpdated;
+            ResponsibilityBreakdownModelsUpdated += IgcIntegrationEngine_ResponsibilityBreakdownModelsUpdated;
+            PageBreakdownsUpdated += IgcIntegrationEngine_PageBreakdownsUpdated;
         }
 
         #endregion
@@ -362,6 +385,47 @@ where	T.CompletedOn is null
             }
         }
 
+        private void IgcIntegrationEngine_RelationshipBreakdownModelsUpdated(object sender, RelationshipBreakdownModelsUpdatedEventArgs e)
+        {
+            foreach (var model in e.Updates)
+            {
+                if (RelationshipBreakdownModels.Any(i => i.FieldName == model.FieldName && i.AssetTypeName == model.AssetTypeName))
+                {
+                    RelationshipBreakdownModels.Single(i => i.FieldName == model.FieldName && i.AssetTypeName == model.AssetTypeName).Count += model.Count;
+                }
+                else
+                {
+                    RelationshipBreakdownModels.Add(model);
+                }
+            }
+        }
+
+        private void IgcIntegrationEngine_ResponsibilityBreakdownModelsUpdated(object sender, ResponsibilityBreakdownModelsUpdatedEventArgs e)
+        {
+            if (ResponsibilityBreakdownModels.Any(i => i.Role == e.Update.Role))
+            {
+                ResponsibilityBreakdownModels.Single(i => i.Role == e.Update.Role).Count += e.Update.Count;
+            }
+            else
+            {
+                ResponsibilityBreakdownModels.Add(e.Update);
+            }
+        }
+
+        private void IgcIntegrationEngine_PageBreakdownsUpdated(object sender, EventArgs e)
+        {
+            try
+            {
+                ExecutionAssetType.IGCAssetRelationshipBreakdown = JsonConvert.SerializeObject(RelationshipBreakdownModels);
+                ExecutionAssetType.IGCAssetResponsibilityBreakdown = JsonConvert.SerializeObject(ResponsibilityBreakdownModels);
+                Company.Update(ExecutionAssetType);
+            }
+            catch
+            {
+            }
+        }
+
+
         #endregion
 
         public void RunSingle()
@@ -381,6 +445,8 @@ where	T.CompletedOn is null
             SynchedAssetType = Company.GetById<IntegrationAssetType>(QueueModel.SynchedAssetTypeID);
             ExecutionAssetType = Company.Filter<IntegrationExecutionAssetType>(i => i.ExecutionID == QueueModel.ExecutionID && i.SynchedAssetTypeID == QueueModel.SynchedAssetTypeID).Single();
             ExecutionAssetTypeRetryLog = JsonConvert.DeserializeObject<RetryLogModel>(ExecutionAssetType.RetryLog);
+            RelationshipBreakdownModels = string.IsNullOrEmpty(ExecutionAssetType.IGCAssetRelationshipBreakdown) ? new IGCAssetRelationshipBreakdownModels() : JsonConvert.DeserializeObject<IGCAssetRelationshipBreakdownModels>(ExecutionAssetType.IGCAssetRelationshipBreakdown);
+            ResponsibilityBreakdownModels = string.IsNullOrEmpty(ExecutionAssetType.IGCAssetResponsibilityBreakdown) ? new IGCAssetResponsibilityBreakdownModels() : JsonConvert.DeserializeObject<IGCAssetResponsibilityBreakdownModels>(ExecutionAssetType.IGCAssetResponsibilityBreakdown);
 
             var fields = Company.Filter<IntegrationAssetTypeFieldItem>(i => i.Active && i.SynchedAssetTypeID == QueueModel.SynchedAssetTypeID).ToList();
             var relations = Company.Filter<IntegrationAssetTypeRelationItem>(i => i.Active && i.SynchedAssetTypeID == QueueModel.SynchedAssetTypeID).ToList();
@@ -826,23 +892,26 @@ where	T.CompletedOn is null
                 #region Metrics
 
                 currentStep = 8;
-                if (cnn.State != System.Data.ConnectionState.Open)
-                    cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep)
+                {
+                    if (cnn.State != System.Data.ConnectionState.Open)
+                        cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
 
-                // Section 4 : Gather metric on this run
-                cnn.Query<dynamic>(
-                    procedureCommand,
-                    new { ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID, requestNumber, SynchedAssetType.AssetTypeID, r = DefaultResourceID, section = 4 },
-                    commandTimeout: 3600);
+                    // Section 4 : Gather metric on this run
+                    cnn.Query<dynamic>(
+                        procedureCommand,
+                        new { ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID, requestNumber, SynchedAssetType.AssetTypeID, r = DefaultResourceID, section = 4 },
+                        commandTimeout: 3600);
 
-                OnStepCompleted(new StepCompletedEventArgs { Step = currentStep });
+                    OnStepCompleted(new StepCompletedEventArgs { Step = currentStep });
+                }
 
                 #endregion
 
                 #region Perform asset deletions, if full refresh
 
                 currentStep = 9;
-                if (!checkForChangesOnly)
+                if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep && !checkForChangesOnly)
                 {
                     // You can do a delete based on asset hash missing attributes.
                     if (cnn.State != System.Data.ConnectionState.Open)
@@ -1113,6 +1182,44 @@ where	T.CompletedOn is null
                             propertiesToRemove.ForEach(pr => { obj.Remove(pr); });
                         }
 
+                        foreach (var prop in obj.Properties())
+                        {
+                            if (fieldsToKeep.Contains(prop.Name))
+                            {
+                                switch (section)
+                                {
+                                    case 2:
+                                        #region
+                                        var relationshipCollection = JsonConvert.DeserializeObject<IgcRelationshipCollection>(prop.Value.ToString());
+                                        if (relationshipCollection.paging.numTotal > 0)
+                                        {
+                                            OnRelationshipBreakdownModelsUpdated(new RelationshipBreakdownModelsUpdatedEventArgs {
+                                                Updates = relationshipCollection.items
+                                                                .GroupBy(rc => rc._type)
+                                                                .Select(rcg => new IGCAssetRelationshipBreakdownModel { AssetTypeName = rcg.Key, Count = rcg.Count(), FieldName = prop.Name })
+                                                                .ToList()
+                                            });
+                                        }
+                                        #endregion
+                                        break;
+                                    case 3:
+                                        #region
+                                        if (!string.IsNullOrEmpty(prop.Value.ToString()))
+                                        {
+                                            OnResponsibilityBreakdownModelsUpdated(new ResponsibilityBreakdownModelsUpdatedEventArgs {
+                                                Update = new IGCAssetResponsibilityBreakdownModel {
+                                                    Role = prop.Name,
+                                                    Count = 1
+                                                }
+                                            });
+                                        }
+                                        #endregion
+                                        break;
+                                }
+
+                            }
+                        }
+
                         var json = JsonConvert.SerializeObject(obj, Formatting.None, new DecimalJsonConverter());
 
                         var assetHashModel = new AssetHashModel
@@ -1126,6 +1233,14 @@ where	T.CompletedOn is null
                         hashModels.Add(assetHashModel);
                         pageAssets.Add(sourceID, obj);
                     }
+                }
+
+                switch (section)
+                {
+                    case 2:
+                    case 3:
+                        OnPageBreakdowns(new EventArgs());
+                        break;
                 }
             }
 
