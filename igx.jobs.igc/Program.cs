@@ -47,15 +47,8 @@ namespace igx.jobs
 
     public static class IgcIntegration
     {
-
-#if DEBUG
-        const string timerSettings = "0 */2 * * * *";//"*/5 * * * * *";
-#else
-        const string timerSettings = "0 */5 * * * *";
-#endif
-
         [Disable]
-        public static void RunScheduleViaTimer([TimerTrigger(timerSettings)]TimerInfo myTimer, CancellationToken token, TextWriter log)
+        public static void RunScheduleViaTimer([TimerTrigger("0 */5 * * * *", RunOnStartup = true)]TimerInfo myTimer, CancellationToken token, TextWriter log)
         {
             string functionName = "IGC_Integration_Schedule";
             CoreFunction.AppInsightsInstrumentationKey(CoreFunction.GetConfigValueByKey("IGC_APPINSIGHTS_INSTRUMENTATIONKEY"));
@@ -89,7 +82,7 @@ namespace igx.jobs
                         if (settings.Count > 0)
                         {
 #if DEBUG
-                            var IDs = new List<int>() { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 }; //, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
+                            var IDs = new List<int>() { 1 }; //, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
                             mappings = company.Filter<IntegrationAssetType>(i => i.Active && IDs.Contains(i.ID)).ToList(); // testing only.
 #else
                             mappings = company.Filter<IntegrationAssetType>(i => i.Active).ToList();
@@ -147,42 +140,36 @@ where	T.CompletedOn is null
                             #endregion
                         }
 
-                        var executionIDs = new List<ExecutionAssetType>(); //To loop through to synch deletions.
-
                         foreach (var setting in settings)
                         {
                             var now = DateTime.UtcNow;
 
                             if (mappings.Any(i => i.Active && i.IntegrationSettingID == setting.ID && i.ObjectID.HasValue))
                             {
-                                var assetsToAvoid = company.Query<int>(@"
-select		T.SynchedAssetTypeID
-from		integration.ExecutionAssetType T
-where		T.CompletedOn is null
-			and T.ErrorMessage is null").ToList();
-
-                                //            and T.ExecutionID > (select coalesce(max(ID)-10, 0) from integration.Execution)
+                                var assetsToAvoid = company.Query<int>("select SynchedAssetTypeID from integration.ExecutionAssetType where CompletedOn is null").ToList();
 
                                 if (assetsToAvoid.Count > 0)
                                 {
                                     log.WriteLine($"Avoiding assets: {string.Join(", ", assetsToAvoid)}");
                                 }
 
+                                long executionID = 0;
+
                                 if (mappings.Any(i => !assetsToAvoid.Contains(i.ID)))
                                 {
-                                    var execution = new IntegrationExecution { StartedOn = now };
-                                    company.Add(execution);
-
-                                    log.WriteLine($"Creating execution {execution.ID}");
+                                    if (executionID == 0)
+                                    {
+                                        executionID = company.Query<long>("select NEXT VALUE for integration.Execution_Seq").Single();
+                                    }
 
                                     foreach (var item in mappings.Where(i => i.IntegrationSettingID == setting.ID && !assetsToAvoid.Contains(i.ID) && i.ObjectID.HasValue))
                                     {
-                                        var atExecution = new IntegrationExecutionAssetType { StartedOn = now, SynchedAssetTypeID = item.ID, ExecutionID = execution.ID };
+                                        var atExecution = new IntegrationExecutionAssetType { StartedOn = now, SynchedAssetTypeID = item.ID, ExecutionID = executionID };
                                         company.Add(atExecution);
                                         var queueModel = new IntegrationQueueModel
                                         {
                                             CompanyID = c.CompanyID,
-                                            ExecutionID = execution.ID,
+                                            ExecutionID = executionID,
                                             IntegrationSettingID = setting.ID,
                                             SynchedAssetTypeID = item.ID,
                                             To = QueueAction.Integration,

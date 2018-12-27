@@ -1,0 +1,321 @@
+{
+  "modified_on": "2017 - 11 - 01T11: 13:12Z",
+  "writes_to_(design)": {
+    "items": [
+      {
+        "_type": "$ApplicationCatalog-ApplicationCatalog",
+        "_id": "5b818a0c.187019e4.ocg5i2hb7.3khalij.qo63uo.akplas53kg0ug5j0a124e",
+        "_url": "https://edgm-catalog.statestreet.com:9443/ibm/iis/igc-rest/v1/assets/5b818a0c.187019e4.ocg5i2hb7.3khalij.qo63uo.akplas53kg0ug5j0a124e",
+        "_name": "GSG"
+      },
+      {
+        "_type": "$ApplicationCatalog-ApplicationCatalog",
+        "_id": "5b818a0c.187019e4.ocg5i2hb7.bla59qg.2oq3hr.0mast1u22le18qllttd4d",
+        "_url": "https://edgm-catalog.statestreet.com:9443/ibm/iis/igc-rest/v1/assets/5b818a0c.187019e4.ocg5i2hb7.bla59qg.2oq3hr.0mast1u22le18qllttd4d",
+        "_name": "GPT"
+      },
+      {
+        "_type": "$ApplicationCatalog-ApplicationCatalog",
+        "_id": "5b818a0c.187019e4.ocg5i2hb7.6vtfju0.t7ihr6.4i1njpjcmoqilggvjsesv",
+        "_url": "https://edgm-catalog.statestreet.com:9443/ibm/iis/igc-rest/v1/assets/5b818a0c.187019e4.ocg5i2hb7.6vtfju0.t7ihr6.4i1njpjcmoqilggvjsesv",
+        "_name": "RTP"
+      },
+      {
+        "_type": "$ApplicationCatalog-ApplicationCatalog",
+        "_id": "5b818a0c.187019e4.ocg5i2hb7.b81i2rs.5cnt70.5q6h587kvhfg00olpgqs5",
+        "_url": "https://edgm-catalog.statestreet.com:9443/ibm/iis/igc-rest/v1/assets/5b818a0c.187019e4.ocg5i2hb7.b81i2rs.5cnt70.5q6h587kvhfg00olpgqs5",
+        "_name": "GPR"
+      },
+      {
+        "_type": "$ApplicationCatalog-ApplicationCatalog",
+        "_id": "5b818a0c.187019e4.ocg5i2hb6.rrm4esi.3btgen.eq82d76h8l25bfiadad56",
+        "_url": "https://edgm-catalog.statestreet.com:9443/ibm/iis/igc-rest/v1/assets/5b818a0c.187019e4.ocg5i2hb6.rrm4esi.3btgen.eq82d76h8l25bfiadad56",
+        "_name": "SLG"
+      },
+      {
+        "_type": "$ApplicationCatalog-ApplicationCatalog",
+        "_id": "5b818a0c.187019e4.ocg5i2hb6.32ch1md.k2ffu4.ji04i3sgnfvltrav422nd",
+        "_url": "https://edgm-catalog.statestreet.com:9443/ibm/iis/igc-rest/v1/assets/5b818a0c.187019e4.ocg5i2hb6.32ch1md.k2ffu4.ji04i3sgnfvltrav422nd",
+        "_name": "CHD"
+      },
+      {
+        "_type": "$ApplicationCatalog-ApplicationCatalog",
+        "_id": "5b818a0c.187019e4.ocflvdm0q.dslvfev.cto3ov.cd00cvinf9r49os10i53d",
+        "_url": "https://edgm-catalog.statestreet.com:9443/ibm/iis/igc-rest/v1/assets/5b818a0c.187019e4.ocflvdm0q.dslvfev.cto3ov.cd00cvinf9r49os10i53d",
+        "_name": "CRC"
+      },
+      {
+        "_type": "$ApplicationCatalog-ApplicationCatalog",
+        "_id": "5b818a0c.187019e4.ocg5i2hb5.1ribamf.2gqgp4.2ef9spklc4p04h8h5jope",
+        "_url": "https://edgm-catalog.statestreet.com:9443/ibm/iis/igc-rest/v1/assets/5b818a0c.187019e4.ocg5i2hb5.1ribamf.2gqgp4.2ef9spklc4p04h8h5jope",
+        "_name": "SZC"
+      },
+      {
+        "_type": "$ApplicationCatalog-ApplicationCatalog",
+        "_id": "5b818a0c.187019e4.ocg5i2hb7.4ufuvsf.mpgv2j.bt82r71p8v7pqb0e7bd95",
+        "_url": "https://edgm-catalog.statestreet.com:9443/ibm/iis/igc-rest/v1/assets/5b818a0c.187019e4.ocg5i2hb7.4ufuvsf.mpgv2j.bt82r71p8v7pqb0e7bd95",
+        "_name": "PSE"
+      },
+      {
+        "_type": "$ApplicationCatalog-ApplicationCatalog",
+        "_id": "5b818a0c.187019e4.ocg5i2hb3.bm7famk.huv008.2rbq2gu666n60208ss2da",
+        "_url": "https://edgm-catalog.statestreet.com:9443/ibm/iis/igc-rest/v1/assets/5b818a0c.187019e4.ocg5i2hb3.bm7famk.huv008.2rbq2gu666n60208ss2da",
+        "_name": "AUM"
+      },
+      {
+        "_type": "$ApplicationCatalog-ApplicationCatalog",
+        "_id": "5b818a0c.187019e4.ocg5i2hb4.ust4bq3.2pqick.t3bhnj8seeqemlfgfktpf",
+        "_url": "https://edgm-catalog.statestreet.com:9443/ibm/iis/igc-rest/v1/assets/5b818a0c.187019e4.ocg5i2hb4.ust4bq3.2pqick.t3bhnj8seeqemlfgfktpf",
+        "_name": "OPR"
+      },
+      {
+        "_type": "$ApplicationCatalog-ApplicationCatalog",
+        "_id": "5b818a0c.187019e4.ocg5i2hb6.j1b04e7.na1dqi.13jcvasvenp1q2o3otq7g",
+        "_url": "https://edgm-catalog.statestreet.com:9443/ibm/iis/igc-rest/v1/assets/5b818a0c.187019e4.ocg5i2hb6.j1b04e7.na1dqi.13jcvasvenp1q2o3otq7g",
+        "_name": "POT"
+      },
+      {
+        "_type": "$ApplicationCatalog-ApplicationCatalog",
+        "_id": "5b818a0c.187019e4.ocg5i2hb7.6q2c15q.4s1lag.72k1tl2t4db8nlks67c4f",
+        "_url": "https://edgm-catalog.statestreet.com:9443/ibm/iis/igc-rest/v1/assets/5b818a0c.187019e4.ocg5i2hb7.6q2c15q.4s1lag.72k1tl2t4db8nlks67c4f",
+        "_name": "RTK"
+      },
+      {
+        "_type": "$ApplicationCatalog-ApplicationCatalog",
+        "_id": "5b818a0c.187019e4.ocg5i2hb7.15qe06d.j0louc.fc4amtp6t14t48li32a5o",
+        "_url": "https://edgm-catalog.statestreet.com:9443/ibm/iis/igc-rest/v1/assets/5b818a0c.187019e4.ocg5i2hb7.15qe06d.j0louc.fc4amtp6t14t48li32a5o",
+        "_name": "NSD"
+      },
+      {
+        "_type": "$ApplicationCatalog-ApplicationCatalog",
+        "_id": "5b818a0c.187019e4.ocg5i2hb5.a9kgten.n9up4k.h4qvpap81jml1ut5tuknf",
+        "_url": "https://edgm-catalog.statestreet.com:9443/ibm/iis/igc-rest/v1/assets/5b818a0c.187019e4.ocg5i2hb5.a9kgten.n9up4k.h4qvpap81jml1ut5tuknf",
+        "_name": "RMZ"
+      },
+      {
+        "_type": "$ApplicationCatalog-ApplicationCatalog",
+        "_id": "5b818a0c.187019e4.ocg5i2hb3.c5lb199.lkosa9.2krsq155mlrcdpvenn2sm",
+        "_url": "https://edgm-catalog.statestreet.com:9443/ibm/iis/igc-rest/v1/assets/5b818a0c.187019e4.ocg5i2hb3.c5lb199.lkosa9.2krsq155mlrcdpvenn2sm",
+        "_name": "GHF"
+      },
+      {
+        "_type": "$ApplicationCatalog-ApplicationCatalog",
+        "_id": "5b818a0c.187019e4.ocg5i2hb6.45flul2.eegd3t.0c2nadbapefrm29b5e167",
+        "_url": "https://edgm-catalog.statestreet.com:9443/ibm/iis/igc-rest/v1/assets/5b818a0c.187019e4.ocg5i2hb6.45flul2.eegd3t.0c2nadbapefrm29b5e167",
+        "_name": "SIA"
+      },
+      {
+        "_type": "$ApplicationCatalog-ApplicationCatalog",
+        "_id": "5b818a0c.187019e4.ocg5i2hb5.5vcgdvl.ajgue4.0cjmfkrb233bs7pmah5gi",
+        "_url": "https://edgm-catalog.statestreet.com:9443/ibm/iis/igc-rest/v1/assets/5b818a0c.187019e4.ocg5i2hb5.5vcgdvl.ajgue4.0cjmfkrb233bs7pmah5gi",
+        "_name": "CUL"
+      }
+    ],
+    "paging": {
+      "numTotal": 18,
+      "pageSize": 18,
+      "end": 17,
+      "begin": 0
+    }
+  },
+  "assigned_to_terms": {
+    "items": [],
+    "paging": {
+      "numTotal": 0,
+      "pageSize": 0,
+      "end": -1,
+      "begin": 0
+    }
+  },
+  "_context": [],
+  "created_on": "2016-12-16T19:25:27Z",
+  "reads_from_(user_defined)": {
+    "items": [],
+    "paging": {
+      "numTotal": 0,
+      "pageSize": 0,
+      "end": -1,
+      "begin": 0
+    }
+  },
+  "labels": {
+    "items": [],
+    "paging": {
+      "numTotal": 0,
+      "pageSize": 0,
+      "end": -1,
+      "begin": 0
+    }
+  },
+  "_name": "PRK",
+  "reads_from_(static)": {
+    "items": [],
+    "paging": {
+      "numTotal": 0,
+      "pageSize": 0,
+      "end": -1,
+      "begin": 0
+    }
+  },
+  "impacted_by": {
+    "items": [],
+    "paging": {
+      "numTotal": 0,
+      "pageSize": 0,
+      "end": -1,
+      "begin": 0
+    }
+  },
+  "custom_System of Record Designation": {
+    "items": [],
+    "paging": {
+      "numTotal": 0,
+      "pageSize": 0,
+      "end": -1,
+      "begin": 0
+    }
+  },
+  "impacts_on": {
+    "items": [
+      {
+        "_type": "$RRP-RRPLevel3Service",
+        "_id": "5b818a0c.187019e4.ocfluo3sc.27urcdl.sb6cd9.s27360ttu6f98s8lcdt1e",
+        "_url": "https://edgm-catalog.statestreet.com:9443/ibm/iis/igc-rest/v1/assets/5b818a0c.187019e4.ocfluo3sc.27urcdl.sb6cd9.s27360ttu6f98s8lcdt1e",
+        "_name": "Investment Management Risk Monitoring and Management Reporting"
+      },
+      {
+        "_type": "$KeyAsset-KeyReport",
+        "_id": "5b818a0c.187019e4.ocfmarg4q.15uev6g.so7255.9i78jnucvd7fke5hmq82v",
+        "_url": "https://edgm-catalog.statestreet.com:9443/ibm/iis/igc-rest/v1/assets/5b818a0c.187019e4.ocfmarg4q.15uev6g.so7255.9i78jnucvd7fke5hmq82v",
+        "_name": "Risk Committee Monthly Report"
+      },
+      {
+        "_type": "$RRP-RRPLevel3Service",
+        "_id": "5b818a0c.187019e4.ocfmcnqps.50ebt37.9fstld.lsguhujfto7aic7l64bua",
+        "_url": "https://edgm-catalog.statestreet.com:9443/ibm/iis/igc-rest/v1/assets/5b818a0c.187019e4.ocfmcnqps.50ebt37.9fstld.lsguhujfto7aic7l64bua",
+        "_name": "Client Service Operations"
+      },
+      {
+        "_type": "$BUOrg-BusinessUnitLevel3",
+        "_id": "5b818a0c.187019e4.ocfluo3q5.l86q5rg.co9q82.ucmtbk7mer44lom5hqt1n",
+        "_url": "https://edgm-catalog.statestreet.com:9443/ibm/iis/igc-rest/v1/assets/5b818a0c.187019e4.ocfluo3q5.l86q5rg.co9q82.ucmtbk7mer44lom5hqt1n",
+        "_name": "State Street Global Advisors"
+      },
+      {
+        "_type": "$RRP-RRPLevel3Service",
+        "_id": "5b818a0c.187019e4.ocfluo3sc.3b1motl.j3rr8c.frvir737dk15c6pel6epe",
+        "_url": "https://edgm-catalog.statestreet.com:9443/ibm/iis/igc-rest/v1/assets/5b818a0c.187019e4.ocfluo3sc.3b1motl.j3rr8c.frvir737dk15c6pel6epe",
+        "_name": "Regulatory Reporting"
+      },
+      {
+        "_type": "$RRP-RRPLevel3Service",
+        "_id": "5b818a0c.187019e4.ocfm4ot2g.u2u0tul.5hldks.ia34dj6pinln1ac4emnad",
+        "_url": "https://edgm-catalog.statestreet.com:9443/ibm/iis/igc-rest/v1/assets/5b818a0c.187019e4.ocfm4ot2g.u2u0tul.5hldks.ia34dj6pinln1ac4emnad",
+        "_name": "Vendor and Third Party Service Provider Management Services"
+      }
+    ],
+    "paging": {
+      "numTotal": 6,
+      "pageSize": 6,
+      "end": 5,
+      "begin": 0
+    }
+  },
+  "reads_from_(design)": {
+    "items": [
+      {
+        "_type": "$ApplicationCatalog-ApplicationCatalog",
+        "_id": "5b818a0c.187019e4.ocg5i2hb3.tek5i3g.bng80g.l8m8gvn6u3ekb0tjr0lpr",
+        "_url": "https://edgm-catalog.statestreet.com:9443/ibm/iis/igc-rest/v1/assets/5b818a0c.187019e4.ocg5i2hb3.tek5i3g.bng80g.l8m8gvn6u3ekb0tjr0lpr",
+        "_name": "CCJ"
+      },
+      {
+        "_type": "$ApplicationCatalog-ApplicationCatalog",
+        "_id": "5b818a0c.187019e4.ocg5i2hb7.15qe06d.j0louc.fc4amtp6t14t48li32a5o",
+        "_url": "https://edgm-catalog.statestreet.com:9443/ibm/iis/igc-rest/v1/assets/5b818a0c.187019e4.ocg5i2hb7.15qe06d.j0louc.fc4amtp6t14t48li32a5o",
+        "_name": "NSD"
+      },
+      {
+        "_type": "$ApplicationCatalog-ApplicationCatalog",
+        "_id": "5b818a0c.187019e4.ocg5i2hb7.bs73g7n.44si7k.rj2qt3d95pc4hfj6tvr4t",
+        "_url": "https://edgm-catalog.statestreet.com:9443/ibm/iis/igc-rest/v1/assets/5b818a0c.187019e4.ocg5i2hb7.bs73g7n.44si7k.rj2qt3d95pc4hfj6tvr4t",
+        "_name": "CRL"
+      },
+      {
+        "_type": "$ApplicationCatalog-ApplicationCatalog",
+        "_id": "5b818a0c.187019e4.ocg5i2hb3.nsgipnc.f2knot.fasg9p1td19hvs77sc0ig",
+        "_url": "https://edgm-catalog.statestreet.com:9443/ibm/iis/igc-rest/v1/assets/5b818a0c.187019e4.ocg5i2hb3.nsgipnc.f2knot.fasg9p1td19hvs77sc0ig",
+        "_name": "CAJ"
+      },
+      {
+        "_type": "$ApplicationCatalog-ApplicationCatalog",
+        "_id": "5b818a0c.187019e4.ocg5i2hb7.4ufuvsf.mpgv2j.bt82r71p8v7pqb0e7bd95",
+        "_url": "https://edgm-catalog.statestreet.com:9443/ibm/iis/igc-rest/v1/assets/5b818a0c.187019e4.ocg5i2hb7.4ufuvsf.mpgv2j.bt82r71p8v7pqb0e7bd95",
+        "_name": "PSE"
+      }
+    ],
+    "paging": {
+      "numTotal": 5,
+      "pageSize": 5,
+      "end": 4,
+      "begin": 0
+    }
+  },
+  "writes_to_(operational)": {
+    "items": [],
+    "paging": {
+      "numTotal": 0,
+      "pageSize": 0,
+      "end": -1,
+      "begin": 0
+    }
+  },
+  "_type": "$ApplicationCatalog-ApplicationCatalog",
+  "_id": "5b818a0c.187019e4.ocg5i2hb6.vi8enqs.7sc054.tbdj8rm3uc0pcj1k5odd7",
+  "writes_to_(user_defined)": {
+    "items": [],
+    "paging": {
+      "numTotal": 0,
+      "pageSize": 0,
+      "end": -1,
+      "begin": 0
+    }
+  },
+  "_url": "https://edgm-catalog.statestreet.com:9443/ibm/iis/igc-rest/v1/assets/5b818a0c.187019e4.ocg5i2hb6.vi8enqs.7sc054.tbdj8rm3uc0pcj1k5odd7",
+  "writes_to_(static)": {
+    "items": [],
+    "paging": {
+      "numTotal": 0,
+      "pageSize": 0,
+      "end": -1,
+      "begin": 0
+    }
+  },
+  "implements_rules": {
+    "items": [],
+    "paging": {
+      "numTotal": 0,
+      "pageSize": 0,
+      "end": -1,
+      "begin": 0
+    }
+  },
+  "reads_from_(operational)": {
+    "items": [],
+    "paging": {
+      "numTotal": 0,
+      "pageSize": 0,
+      "end": -1,
+      "begin": 0
+    }
+  },
+  "governed_by_rules": {
+    "items": [],
+    "paging": {
+      "numTotal": 0,
+      "pageSize": 0,
+      "end": -1,
+      "begin": 0
+    }
+  }
+}
