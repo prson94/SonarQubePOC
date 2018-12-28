@@ -4525,7 +4525,7 @@ select	top 100 percent
         {columns}
         A.[Level]
 from	[Policy] A 
-        inner join Asset OA on OA.Object = 'Policy' and OA.ObjectID = A.ID and A.PolicyTypeID = @id and A.[Visible] = 1 
+        inner join Asset OA on OA.Object = 'Policy' and OA.ObjectID = A.ID and A.PolicyTypeID = @id 
         {joins} 
         left join dbo.GetAssetDisplayValue() TD on TD.ID = OA.ID
         outer apply (
