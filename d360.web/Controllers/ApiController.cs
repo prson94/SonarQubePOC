@@ -3693,10 +3693,31 @@ outer apply (
             }
             catch (Exception ex)
             {
-                return Request.CreateResponse(HttpStatusCode.InternalServerError, new
+                var errorColumns = new List<GridColumn>() { new GridColumn { datafield = "ErrorMessage", text = "Error message", columntype = "string" } };       /* columntype can be as -text- */
+                var Fields = new List<GridField>() { new GridField { name = "ErrorMessage", type = "string" } };
+                dynamic ErrorObject = new { ErrorMessage = "my error" };
+
+                var errorResults = new List<dynamic>() { ErrorObject };
+
+                /*var err = ex;
+                var errr = ex.GetFullExceptionData();
+                var errr_text = "Invalid complex lookup no fields specified in definition.  Please specify one or more fields in the complex lookup definition.";*/
+                /* NEED return HttpStatusCode with text message from ex.GetFullExceptionData() */
+                /*var stop = 1;*/
+
+                /*return Request.CreateResponse(HttpStatusCode.BadRequest, new
                 {
-                    Error = ex.GetFullExceptionData(),
+                    Error = ex.GetFullExceptionData()
+                });*/
+
+                return Request.CreateResponse(HttpStatusCode.OK, new
+                {
+                    /*Values = errorResults,
+                    Columns = errorColumns,
+                    Fields = Fields*/
+                    Error = ex.GetFullExceptionData()
                 });
+                
             }
 
             return Request.CreateResponse(HttpStatusCode.OK, new

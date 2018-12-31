@@ -76,7 +76,7 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
         let type = (this.objectType.toLowerCase() == 'artifact') ? "1" : this.objectType;
 
         return this.objectDetailService.getObject(this.objectID, type)
-            .then(r => {
+            .then(r => {debugger;alert(1);
                 this.object = r;
                 this.isLoading = false;
             });
