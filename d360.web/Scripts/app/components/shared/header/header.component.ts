@@ -6,7 +6,8 @@ import { BaseComponent } from '../../shared/base.component';
     selector: 'd3s-header',
     template: ` <div class="navbar-fixed">
                 <nav class="top">  
-                    <span class="logo" routerLink="/home" style="cursor:pointer;"></span>                                 
+                    <span class="logo" routerLink="/home" style="cursor:pointer;"></span>  
+                    <span class="logo" routerLink="/home" (click)="homeLogoAction()"  style="cursor:pointer;"></span>
                     <d3s-header-breadcrumb [controlWidth]="controlWidth"></d3s-header-breadcrumb>                                          
                     <d3s-header-actions (controlWidthChange)="controlWidth = $event"></d3s-header-actions>
                 </nav>
@@ -14,11 +15,25 @@ import { BaseComponent } from '../../shared/base.component';
               `,    
 })
 
-export class HeaderComponent extends BaseComponent {   
+export class HeaderComponent extends BaseComponent implements OnInit {
     public controlWidth: number = 0;
-
-    constructor(private router: Router, private route: ActivatedRoute) {
+    private showHomeShortcuts: boolean;
+ 
+    constructor(
+        private router: Router,
+        private route: ActivatedRoute,
+        private homeShortcutsService: HomeShortcutsService
+    ) {
         super();
     }
-}
 
+    ngOnInit() {
+        this.homeShortcutsService.showHomeShortcuts$.subscribe(showHomeShortcuts => this.showHomeShortcuts = showHomeShortcuts);
+    }
+
+    homeLogoAction() {
+        if (this.router.url === '/home' && this.showHomeShortcuts === false) {
+            this.homeShortcutsService.setHomeShortcutsVisibility(true);
+        }
+    }
+}

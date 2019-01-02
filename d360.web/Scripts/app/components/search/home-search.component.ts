@@ -4,6 +4,7 @@ import { SearchService } from '../../services/search.service';
 import { TypeaheadSearchService } from '../../services/typeahead-search.service';
 import { SearchResultsObject, SearchCategories, SearchResult } from '../../models/search-result.model';
 import { CurrentCompanySettings } from '../../static/company-settings'
+import { HomeShortcutsService } from '../../services/home-shortcuts.service';
 
 declare var CompanySettings;
 
@@ -11,8 +12,15 @@ declare var CompanySettings;
     selector: 'd3s-home-search',
     template: `               
                 <d3s-search-input (search)="doSearch()" [(isExactMatch)]="isExactMatch" [(searchTypes)]="searchTypes" [(searchText)]="searchText"></d3s-search-input>                
-                <d3s-search-results [itemsPerPage]="resultsPerPage" [results]="searchResults" [categories]="categories" (paginateClick)="paginate($event);" (selectedCategoryChange)="filterByCategory($event);"></d3s-search-results>
-                `,
+                                <d3s-search-results
+                    [itemsPerPage]="resultsPerPage"
+                    [results]="searchResults"
+                    [categories]="categories"
+                    (paginateClick)="paginate($event);"
+                    (selectedCategoryChange)="filterByCategory($event);"
+                    [hidden]="showHomeShortcuts"
+                ></d3s-search-results>
+`,
     providers: [SearchService, TypeaheadSearchService],
 })
 
@@ -27,13 +35,19 @@ export class HomeSearchComponent extends BaseComponent {
 
     private resultsPerPage: number = 5;
     private pageNumber: number = 0;
-       
-    constructor(private searchService: SearchService, private typeaheadSearchService: TypeaheadSearchService) {
+    private showHomeShortcuts: boolean;
+
+    constructor(
+        private searchService: SearchService,
+        private typeaheadSearchService: TypeaheadSearchService,
+        private homeShortcutsService: HomeShortcutsService
+    ) {
         super();        
     }
 
     ngOnInit() {
         this.isExactMatch = (CompanySettings.SearchExactMatch && CompanySettings.SearchExactMatch == 'true');
+        this.homeShortcutsService.showHomeShortcuts$.subscribe(showHomeShortcuts => this.showHomeShortcuts = showHomeShortcuts);
     }
     
     private doSearch(filterCategory?: SearchCategories) {        

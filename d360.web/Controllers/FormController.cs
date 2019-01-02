@@ -12456,6 +12456,9 @@ order by	case
         [HttpGet, ActionName("ResponsibilityTypeRelationRuleRelationships_FormData"), Route("ResponsibilityTypeRelationRuleRelationships_FormData"), NonNullableParameters]
         public JsonNetResult GetResponsibilityTypeRelationRuleRelationships_FormData(SystemObjects type, int id, int intersectTypeID)
         {
+            var test = type.ToString();
+            // print test
+
             var items = Company.Query<dynamic>($@"
 select	D.Object + '|' + cast(D.ObjectID as varchar) as value,
 		DN.DisplayValue as label

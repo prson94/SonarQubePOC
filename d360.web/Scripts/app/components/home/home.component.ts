@@ -11,6 +11,7 @@ import { WorkflowType } from '../../models/workflow.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { DashboardService } from '../../services/dashboard.service';
 import { Dashboard } from '../../models/dashboard.model';
+import { HomeShortcutsService } from '../../services/home-shortcuts.service';
 
 declare var CompanySettings;
 
@@ -47,16 +48,18 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
     public numTiles: number = 3;
     private colSize = 4;
     public hasResults = false;
-    public dashboard: Dashboard = null;
+    public dashboard: Dashboard = null; 
     private sub;
+    private showHomeShortcuts: boolean;
 
-    constructor(
-        protected titleService: Title,
-        protected headerBreadcrumbService: HeaderBreadcrumbService,        
+    constructor(protected titleService: Title,
+        protected headerBreadcrumbService: HeaderBreadcrumbService,
         webAnalyticsService: WebAnalyticsService,
         protected router: Router,
         rightSidebarService: RightSidebarService,
-        private dashboardService: DashboardService
+        private dashboardService: DashboardService) {
+        private dashboardService: DashboardService,
+    private homeShortcutsService: HomeShortcutsService
     ) {
         super();
         this.rightSidebarService = rightSidebarService;
@@ -101,7 +104,8 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
         this.dashboardService.getHomePageDashboards().then(r => {
             if (r && r.length > 0)
                 this.dashboard = r[0];
-        });
+    });
+    this.homeShortcutsService.showHomeShortcuts$.subscribe(showHomeShortcuts => this.showHomeShortcuts = showHomeShortcuts);
     }
 
     ngOnDestroy() {
@@ -151,6 +155,12 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
     }    
 
     private checkHasResults(e: any) {
-        this.hasResults = (e != null);
-    }
+    this.hasResults = (e != null);
+    this.homeShortcutsService.setHomeShortcutsVisibility(false);
+}
+
+ public setResults() {
+    this.hasResults = false;
+}
+
 }
