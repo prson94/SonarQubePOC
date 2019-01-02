@@ -165,7 +165,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Deletes all rule result fusion attributes for the specified asset uid.
+        /// Deletes all rule result fusion attributes for the specified asset Uid.
         /// </summary>
         /// <param name="assetUid">The uid of the asset</param>
         /// <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted</returns>
@@ -175,7 +175,7 @@ namespace d360.web.Controllers.V2
             Route("fusionattribute/{assetUid}"),
             SwaggerResponse(HttpStatusCode.OK, "Indicates the request succeeded"),
             SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid."),
-            SwaggerResponse(HttpStatusCode.NotFound, "Indicates that no such rule result for the specified asset uid could be deleted."),
+            SwaggerResponse(HttpStatusCode.NotFound, "Indicates that no such rule result for the specified asset Uid could be deleted."),
             SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that you do not have access to this endpoint."),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.")
         ]
@@ -193,10 +193,10 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Deletes specified rule results fusion attributes for the specified asset uid.
+        /// Deletes specified rule results fusion attributes for the specified asset Uid.
         /// </summary>
         /// <param name="ruleResultId">The id of the rule result</param>
-        /// <param name="assetUid">The uid of the asset</param>
+        /// <param name="assetUid">The Uid of the asset</param>
         /// <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted</returns>
         [
             HttpDelete, 
@@ -204,7 +204,7 @@ namespace d360.web.Controllers.V2
             Route("fusionattribute/{ruleResultId:int}/{assetUid}"),
             SwaggerResponse(HttpStatusCode.OK, "Indicates the request succeeded"),
             SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid."),
-            SwaggerResponse(HttpStatusCode.NotFound, "Indicates that no such rule result for the specified rule result id /asset uid could be deleted."),
+            SwaggerResponse(HttpStatusCode.NotFound, "Indicates that no such rule result for the specified rule result id /asset Uid could be deleted."),
             SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that you do not have access to this endpoint."),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.")
         ]
@@ -225,7 +225,7 @@ namespace d360.web.Controllers.V2
         /// Creates a new Data Quality Rule result record for the specified Rule with the specified rule Uid.  
         ///  Looks for a rule implementation called 'default'.  If not found, it creates this rule implemention.        
         ///  Current user must be an admin or http status code 403 is returned. If the specified RuleUid is not found http status code 401 is returned.            
-        ///  If any of the specified AssetUIDs are not valid, a http status code 400 bad request with the Uids of the invalid assets is returned.  
+        ///  If any of the specified AssetUids are not valid, a http status code 400 bad request with the Uids of the invalid assets is returned.  
         ///  No rule results are written if there is any sort of error.  You must fix any errors and resubmit your request.  The timeout parameter is optional.  If specified,
         ///  a value in seconds is used to override the default timeout of 600 seconds.
         /// </summary>
@@ -238,7 +238,7 @@ namespace d360.web.Controllers.V2
             Route("{ruleUid}"),
             SwaggerResponse(HttpStatusCode.OK, "Indicates the request succeeded and the items were created and returned"),
             SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid."),
-            SwaggerResponse(HttpStatusCode.NotFound, "Indicates that no such rule uid could be found."),
+            SwaggerResponse(HttpStatusCode.NotFound, "Indicates that no such rule Uid could be found."),
             SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that you do not have access to this endpoint."),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.")
         ]
