@@ -234,13 +234,13 @@ from	FollowDetail F
 
         #region Resources
 
-        private  string getDynamicFieldSimpleFilter(string[] fixedColumns, SystemObjects type, int typeID, string filterExp, Dapper.DynamicParameters dbArgs, List<FieldType> fields = null)
+        private string getDynamicFieldSimpleFilter(string[] fixedColumns, SystemObjects type, int typeID, string filterExp, Dapper.DynamicParameters dbArgs, List<FieldType> fields = null)
         {
             if (string.IsNullOrEmpty(filterExp)) return "";
 
-           
 
-            
+
+
             if (fields == null)
             {
                 fields = Company.Filter<FieldType>(i => i.Object == type.ToString() && i.ObjectID == typeID && i.IsListable).OrderBy(i => i.ColumnOrder).ToList();
@@ -293,12 +293,18 @@ from	FollowDetail F
                 var columns = "";
                 getDynamicFieldJoinStatements(typeId, "Resource", out joins, out columns, false, false);
 
+                var hideData3SixtySql = string.Empty;
+                if (HideData3SixtyUsers())
+                {
+                    hideData3SixtySql += " and (Email not like '%@data3sixty.com' and Email not like '%@infogix.com')";
+                }
+
                 var querySql = $@"
                     select  A.FirstName,
 		                    A.LastName,
                             A.Email,
 		                    A.LastLoggedInOn,
-                            case A.State when 1 then 'Active' else 'Inactive' end as [State],
+                            A.[State],
                             A.IsAdministrator,
                             {columns}
 		                    A.ID,
@@ -309,37 +315,35 @@ from	FollowDetail F
 		                            LastName,
                                     Email,
 		                            LastLoggedInOn,
-                                    State,
-                                    IsAdministrator,
+                                    case State when 1 then 'Active' else 'Inactive' end as [State],
+                                    case IsAdministrator when 1 then 'True' else 'False' end as [IsAdministrator],
                                     ResourceID as ID
                             from	reporting.Global_Resource
-                                    where State <> @excludeStatus
+                                    where State <> @excludeStatus {hideData3SixtySql}
                             ) A 
                             {joins}";
 
 
 
-                if (HideData3SixtyUsers())
-                {
-                    querySql += " where (A.Email not like '%@data3sixty.com' and A.Email not like '%@infogix.com')";
-                }
 
-                var countSql = string.Format(@"select count(1) from ({0}) AA", querySql);
-                var sql = string.Format(@"select * from ({0}) AA", querySql);
+
+                var countSql = string.Empty;
+                var sql = string.Empty;
 
                 var dbArgs = new DynamicParameters();
                 dbArgs.Add("excludeStatus", CompanyResourceState.Deleted);
                 
                 if (!string.IsNullOrEmpty(simpleFilter))
                 {
-                  
-                    string[] fixedColumns = { "FirstName", "LastName", "Email", "LastLoggedInOn", "State" };
+                     string[] fixedColumns = { "FirstName", "LastName", "Email", "IsAdministrator", "LastLoggedInOn", "State" };
                     var filter = getDynamicFieldSimpleFilter(fixedColumns, SystemObjects.ResourceType, typeId, simpleFilter, dbArgs,null);
                     countSql = string.Format(@"select count(1) from ({0} where {1}) AA", querySql, filter);
                     sql = string.Format(@"select * from ({0} where {1} ) AA ", querySql,filter);
                 }
                 else
                 {
+                    countSql = string.Format(@"select count(1) from ({0}) AA", querySql);
+                    sql = string.Format(@"select * from ({0}) AA", querySql);
                     countSql = applyFilteringSuffixBind(countSql, Request, dbArgs);
                     sql = applyFilteringSuffixBind(sql, Request, dbArgs);
                 }
@@ -376,6 +380,11 @@ from	FollowDetail F
 
             var joins = "";
             var columns = "";
+            var hideData3SixtySql = string.Empty;
+            if (HideData3SixtyUsers())
+            {
+                hideData3SixtySql += " and (Email not like '%@data3sixty.com' and Email not like '%@infogix.com')";
+            }
             getDynamicFieldJoinStatements(typeId, "Resource", out joins, out columns, false, false);
 
             var querySql = $@"
@@ -383,7 +392,7 @@ from	FollowDetail F
 		                    A.LastName,
                             A.Email,
 		                    A.LastLoggedInOn,
-                            case A.State when 1 then 'Active' else 'Inactive' end as [State],
+                            A.[State],
                             A.IsAdministrator,
                             {columns}
 		                    A.ID,
@@ -394,11 +403,11 @@ from	FollowDetail F
 		                            LastName,
                                     Email,
 		                            LastLoggedInOn,
-                                    State,
-                                    IsAdministrator,
+                                    case State when 1 then 'Active' else 'Inactive' end as [State],
+                                    case IsAdministrator when 1 then 'True' else 'False' end as [IsAdministrator],
                                     ResourceID as ID
                             from	reporting.Global_Resource
-                                    where State <> @excludeStatus
+                                    where State <> @excludeStatus {hideData3SixtySql}
                             ) A 
                             {joins}";
 
@@ -416,7 +425,7 @@ from	FollowDetail F
 
             if (!string.IsNullOrEmpty(simpleFilter))
             {
-                string[] fixedColumns = { "FirstName", "LastName", "Email", "LastLoggedInOn", "State" };
+                string[] fixedColumns = { "FirstName", "LastName", "Email", "IsAdministrator", "LastLoggedInOn", "State" };
                 var filter = getDynamicFieldSimpleFilter(fixedColumns, SystemObjects.ResourceType, typeId, simpleFilter, dbArgs, null);
                 sql = string.Format(@"select * from ({0} where {1} ) AA ", querySql, filter);
             }
@@ -424,10 +433,6 @@ from	FollowDetail F
             {
                 sql = applyFilteringSuffixBind(sql, Request, dbArgs);
             }
-
-
-
-
 
             sql = applySortSuffix(sql, sortDataField, sortOrder, "FirstName", "asc", sortFieldType: "string");
 
