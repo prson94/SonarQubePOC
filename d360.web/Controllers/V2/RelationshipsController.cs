@@ -128,7 +128,7 @@ namespace d360.web.Controllers.V2
                 var intersectType = Company.Filter<IntersectType>(i => i.uid == uid).SingleOrDefault();
 
                 if (intersectType == null)
-                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Relationship Type with UID {uid} could not be found.")));
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Relationship Type with Uid {uid} could not be found.")));
                 if (relationships == null)
                     relationships = readRequestJsonContent<RelationshipInserts>(Request).Result;
 
@@ -179,7 +179,7 @@ namespace d360.web.Controllers.V2
                 var intersectType = Company.Filter<IntersectType>(i => i.uid == uid).SingleOrDefault();
 
                 if (intersectType == null)
-                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Relationship Type with UID {uid} could not be found.")));
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Relationship Type with Uid {uid} could not be found.")));
 
                 if (relationships == null)
                     relationships = readRequestJsonContent<RelationshipInserts>(Request).Result;
