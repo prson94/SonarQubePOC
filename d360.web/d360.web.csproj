@@ -685,6 +685,7 @@
     <Content Include="Scripts\app\components\admin\analytics\admin-metric-condition-editor.component.html" />
     <Content Include="Scripts\app\components\admin\analytics\admin-metric-editor.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-top-level-filter.component.html" />
+    <Content Include="Scripts\app\components\shared\relationship\object-relationships.component.html" />
     <Content Include="Scripts\app\components\shared\responsibilities\responsibility-relations.component.html" />
     <Content Include="Scripts\app\components\shared\responsibilities\responsibility-relation.form.html" />
     <Content Include="Scripts\app\components\shared\assettypeeditor\asset-type-editor.component.html" />
