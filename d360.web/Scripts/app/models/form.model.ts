@@ -43,17 +43,16 @@ export module FormHelper {
 
     }
 
-    export function getDataUrl(file: File): Promise<string> {
+    export function getDataUrl(file: File): Promise<any> {
         let reader = new FileReader();
 
-        return new Promise<string>((resolve, reject) => {
+        return new Promise<any>((resolve, reject) => {
 
             reader.onloadend = () => {
                 resolve(reader.result);
             }
             reader.readAsDataURL(file);
         }).then(() => {
-            //console.log(reader.result);
             return reader.result;
         });
     }
