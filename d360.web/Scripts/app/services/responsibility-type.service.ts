@@ -176,12 +176,7 @@ export class ResponsibilityTypeService extends BaseService implements IResponsib
     getRelationRuleFormDataRelationshipsForDropdown(type: string, id: number, intersectTypeId: number): Promise<SelectItem[]> {
         return this.http.get(`form/ResponsibilityTypeRelationRuleRelationships_FormData?type=${type}&id=${id}&intersectTypeID=${intersectTypeId}`)
             .toPromise()
-            .then(response => {
-                const formRequest = `form/ResponsibilityTypeRelationRuleRelationships_FormData?type=${type}&id=${id}&intersectTypeID=${intersectTypeId}`;
-                console.log('Form Request:', formRequest);
-                console.log(response);
-                return <SelectItem[]>response.json()
-            })
+            .then(response => <SelectItem[]>response.json())
             .catch(err => this.handleError(err));
     }
 

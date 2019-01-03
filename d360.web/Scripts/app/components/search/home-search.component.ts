@@ -4,7 +4,6 @@ import { SearchService } from '../../services/search.service';
 import { TypeaheadSearchService } from '../../services/typeahead-search.service';
 import { SearchResultsObject, SearchCategories, SearchResult } from '../../models/search-result.model';
 import { CurrentCompanySettings } from '../../static/company-settings'
-import { HomeShortcutsService } from '../../services/home-shortcuts.service';
 
 declare var CompanySettings;
 
@@ -20,16 +19,14 @@ declare var CompanySettings;
                     (paginateClick)="paginate($event);" 
                     (selectedCategoryChange)="filterByCategory($event);"
                 ></d3s-search-results>
-`,
+                `,
     providers: [SearchService, TypeaheadSearchService],
 })
 
 export class HomeSearchComponent extends BaseComponent {
-    @Output() resultsChange = new EventEmitter()
-    private searchResults: SearchResultsObject;
     @Output() resultsChange = new EventEmitter();
-    @Input() hasResults: boolean; 
-    @Input() searchResults: SearchResultsObject;
+    @Input() hasResults: boolean;
+    private searchResults: SearchResultsObject;
     private categories: SearchCategories[] = [];
     private selectedCategory: SearchCategories;
     private searchText: string;
@@ -38,19 +35,13 @@ export class HomeSearchComponent extends BaseComponent {
 
     private resultsPerPage: number = 5;
     private pageNumber: number = 0;
-    private showHomeShortcuts: boolean;
-
-    constructor(
-        private searchService: SearchService,
-        private typeaheadSearchService: TypeaheadSearchService,
-        private homeShortcutsService: HomeShortcutsService
-    ) {
+       
+    constructor(private searchService: SearchService, private typeaheadSearchService: TypeaheadSearchService) {
         super();        
     }
 
     ngOnInit() {
         this.isExactMatch = (CompanySettings.SearchExactMatch && CompanySettings.SearchExactMatch == 'true');
-        this.homeShortcutsService.showHomeShortcuts$.subscribe(showHomeShortcuts => this.showHomeShortcuts = showHomeShortcuts);
     }
     
     private doSearch(filterCategory?: SearchCategories) {        
