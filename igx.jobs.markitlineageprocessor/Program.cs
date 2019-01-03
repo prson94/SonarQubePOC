@@ -11,7 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace igx.jobs.workflowdigestprocessor
+namespace igx.jobs.markitlineageprocessor
 {
     class Program
     {
@@ -28,7 +28,7 @@ namespace igx.jobs.workflowdigestprocessor
         }
     }
 
-    public static class WorkflowDigestProcessor
+    public static class MarkitLineageProcessor
     {
         const string functionName = "Lineage_MarkitProcessor";
         
