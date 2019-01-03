@@ -19,7 +19,7 @@
             </div>
             <div class="col l6 m6 s12">
                 <div id='TypeTip' class="FieldNameRequired">Selected Type</div>
-                <p-dropdown disabled="true" required name="objecttype" [options]="objectTypes" [ngModel]="model.ObjectString" [style]="{'width':'98%', 'display' : 'block'}" (onChange)="loadObjectType($event.value)" #objectType="ngModel"></p-dropdown>
+                <p-dropdown required name="objecttype" [options]="objectTypes" [ngModel]="model.ObjectString" [style]="{'width':'98%', 'display' : 'block'}" (onChange)="loadObjectType($event.value)" #objectType="ngModel"></p-dropdown>
                 <div [hidden]="objectType.valid || objectType.pristine">Object type is required</div>
             </div>
         </div>
