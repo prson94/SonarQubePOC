@@ -36,11 +36,13 @@
 </div>
 
 <div style="padding-top:30px;" class="homeTileArea">
-    <d3s-home-search *ngIf="!showActivityDetails && !showBoardDetails" (resultsChange)="checkHasResults($event)"></d3s-home-search>
+    <d3s-home-search *ngIf="!showActivityDetails && !showBoardDetails" (resultsChange)="checkHasResults($event)"></d3s-home-search> 
+    <d3s-home-search
+        *ngIf="!showActivityDetails && !showBoardDetails" 
+        (resultsChange)="checkHasResults($event)"
+        hasResults="{{ hasResults }}"
+    ></d3s-home-search> 
     <span style="padding-left:5px" [hidden]="hasResults"><d3s-shortcut-display></d3s-shortcut-display></span>
-    <span style="padding-left:5px" [hidden]="!showHomeShortcuts">
-        <d3s-shortcut-display></d3s-shortcut-display>
-    </span>
 </div>
 
 <div *ngIf="dashboard != null" class="tile tile-detail" style="position: relative;" [style.top]="(backgroundImage != '' && numTiles < 1) ? '120px' : null">
