@@ -12777,8 +12777,15 @@ order by DN.DisplayValue");
                 else
                 {
                     id = a.ID;
+                    var globalResource = Company.Filter<GlobalReportingResource>(i => i.ResourceID == id).FirstOrDefault();
+                    if (globalResource != null && globalResource.State != CompanyResourceState.Deleted)
+                    {
+                        throw new ConflictException("Error", "The specified email address / username is already in use.");
+                    }
                 }
 
+                var firstName = parseNameField(form, "FirstName");
+                var lastName = parseNameField(form, "LastName");
                 var isAdmin = parseBooleanField(form, "IsAdministrator");
                 var state = parseEnumField<CompanyResourceState>(form, "State");
                 var companyResource = Community.Filter<CompanyResource>(i => i.CompanyID == Community.CurrentCompanyID && i.ResourceID == id).FirstOrDefault();
@@ -12808,12 +12815,24 @@ order by DN.DisplayValue");
                         IsAdministrator = isAdmin,
                         ResourceID = id,
                         Email = a.Email,
-                        LastName = a.LastName,
-                        FirstName = a.FirstName,
+                        LastName = lastName,
+                        FirstName = firstName,
                         State = state
                     };
 
                     Company.Add(gr);
+                }
+                else
+                {
+                    GlobalReportingResource gr = Company.Filter<GlobalReportingResource>(i => i.ResourceID == id).FirstOrDefault();
+
+                    gr.FirstName = firstName;
+                    gr.LastName = lastName;
+                    gr.Email = a.Email;
+                    gr.IsAdministrator = isAdmin;
+                    gr.State = state;
+
+                    Company.Update(gr);
                 }
                 
                 // Dynamic fields
