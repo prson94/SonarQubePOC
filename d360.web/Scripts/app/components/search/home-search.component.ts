@@ -1,4 +1,4 @@
-﻿import { Component, Output, EventEmitter } from '@angular/core';
+﻿import { Component, Output, EventEmitter, Input } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { SearchService } from '../../services/search.service';
 import { TypeaheadSearchService } from '../../services/typeahead-search.service';
@@ -12,13 +12,13 @@ declare var CompanySettings;
     selector: 'd3s-home-search',
     template: `               
                 <d3s-search-input (search)="doSearch()" [(isExactMatch)]="isExactMatch" [(searchTypes)]="searchTypes" [(searchText)]="searchText"></d3s-search-input>                
-                                <d3s-search-results
-                    [itemsPerPage]="resultsPerPage"
-                    [results]="searchResults"
-                    [categories]="categories"
-                    (paginateClick)="paginate($event);"
+                <d3s-search-results
+                    *ngIf="hasResults=='true'" 
+                    [itemsPerPage]="resultsPerPage" 
+                    [results]="searchResults" 
+                    [categories]="categories" 
+                    (paginateClick)="paginate($event);" 
                     (selectedCategoryChange)="filterByCategory($event);"
-                    [hidden]="showHomeShortcuts"
                 ></d3s-search-results>
 `,
     providers: [SearchService, TypeaheadSearchService],
@@ -27,6 +27,9 @@ declare var CompanySettings;
 export class HomeSearchComponent extends BaseComponent {
     @Output() resultsChange = new EventEmitter()
     private searchResults: SearchResultsObject;
+    @Output() resultsChange = new EventEmitter();
+    @Input() hasResults: boolean; 
+    @Input() searchResults: SearchResultsObject;
     private categories: SearchCategories[] = [];
     private selectedCategory: SearchCategories;
     private searchText: string;
