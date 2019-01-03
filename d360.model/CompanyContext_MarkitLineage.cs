@@ -23,6 +23,20 @@ namespace d360.model
         public string Object { get; set; }
     }
 
+    public class MarkitObjectComparer : IEqualityComparer<MarkitObject>
+    {
+        public bool Equals(MarkitObject x, MarkitObject y)
+        {
+            return x.ObjectID == y.ObjectID && (string.Compare(x.Object, y.Object, true) == 0);
+        }
+
+        public int GetHashCode(MarkitObject obj)
+        {
+            return obj.ObjectID.GetHashCode() + obj.Object.GetHashCode();
+        }
+    }
+
+
 
     partial class CompanyContext : BaseContext
     {
@@ -42,20 +56,24 @@ namespace d360.model
             var maps = await LoadMarkitMapRawData();
             var objectMaps = await LoadMarkitMapItemMapData();
 
-            Dictionary<MarkitObject, List<int>> objectMapDictionary = new Dictionary<MarkitObject, List<int>>();
+            Dictionary<MarkitObject, List<int>> objectMapDictionary = new Dictionary<MarkitObject, List<int>>(new MarkitObjectComparer());
 
             // iterate through the object
             int previousObjectId = -1;
             foreach (var obj in objectMaps)
             {
-                if(obj.ObjectID != previousObjectId)
+                var markitObject = new MarkitObject { Object = obj.Object, ObjectID = obj.ObjectID };
+
+                if (obj.ObjectID != previousObjectId)
                 {
-                    objectMapDictionary[new MarkitObject { Object = obj.Object, ObjectID=obj.ObjectID}] = new List<int>{ obj.MapID};
+                    objectMapDictionary[markitObject] = new List<int>{ obj.MapID};                    
                 }
                 else
                 {
                     //add to existing.
+                    objectMapDictionary[markitObject].Add(obj.MapID);
                 }
+                previousObjectId = obj.ObjectID;
             }
 
             var rows = maps.Count();
@@ -64,11 +82,15 @@ namespace d360.model
             // get all the business terms that we need to generate the business lineage for as these will be the items we need to
             // travers the graphs for
 
-            // parse through the maps 
-            foreach (var row in maps)
+            foreach (var item in objectMapDictionary)
             {
-
+                //find any items that connect to this business term
+                foreach (var map in item.Value)
+                {
+                    var mp = maps.Where(x => x.ID == map);
+                }
             }
+           
 
             // create a hash that has the source fusion attribute for easy find
             // create a hash that has the target fusion attribute for easy find
