@@ -1,0 +1,22 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="BHoward" id="GOV-6279">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      BEGIN
+            DROP INDEX [IX_Artifact_ParentID] ON [dbo].[Artifact]
+            ALTER TABLE [dbo].[Artifact] DROP CONSTRAINT [FK_Artifact_ParentArtifact]
+            ALTER TABLE [dbo].[Artifact]
+            DROP Column ParentID
+      END
+    </sql>
+  </changeSet>
+</databaseChangeLog>
