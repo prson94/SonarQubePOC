@@ -3693,8 +3693,17 @@ outer apply (
             }
             catch (Exception ex)
             {
+                var errorColumns = new List<GridColumn>() { new GridColumn { datafield = "ErrorMessage", text = "", columntype = "string" } };       /* columntype can be as -text- */
+                var errorFields = new List<GridField>() { new GridField { name = "ErrorMessage", type = "string" } };
+                dynamic ErrorObject = new { ErrorMessage = ex.GetFullExceptionData() };
+                var errorResults = new List<dynamic>() { ErrorObject };
+
+                /* FIXME: use server error(HttpStatusCode.BadRequest) instead HttpStatusCode.OK */
                 return Request.CreateResponse(HttpStatusCode.OK, new
                 {
+                    Values = results,
+                    Columns = columns,
+                    Fields = gridFields,
                     Error = ex.GetFullExceptionData()
                 });
             }
