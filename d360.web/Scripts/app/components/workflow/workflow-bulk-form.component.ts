@@ -1,4 +1,4 @@
-﻿import { Input, Output, Component, OnInit, OnDestroy, EventEmitter } from '@angular/core';
+import { Input, Output, Component, OnInit, OnDestroy, EventEmitter } from '@angular/core';
 import { Location } from '@angular/common';
 import { Router, ActivatedRoute }       from '@angular/router';
 import { NgForm, FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
@@ -15,7 +15,7 @@ import { TagService } from '../../services/tag.service';
 import { ResourcesService } from '../../services/resources.service';
 import { Resource } from '../../models/resource.model';
 import { MessagesService } from '../../services/messages.service';
-import { ISubscription } from 'rxjs/Subscription';
+import { SubscriptionLike as ISubscription } from 'rxjs';
 
 @Component({
     selector: 'd3s-workflow-bulk-form',
