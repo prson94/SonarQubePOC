@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Dapper;
 using System.Data.Common;
+using d360.core.entities;
 
 namespace d360.model
 {
@@ -84,11 +85,7 @@ namespace d360.model
 
             foreach (var item in objectMapDictionary)
             {
-                //find any items that connect to this business term
-                foreach (var map in item.Value)
-                {
-                    var mp = maps.Where(x => x.ID == map);
-                }
+                GenerateBusinessLineageForObject(item, maps);                
             }
            
 
@@ -112,7 +109,57 @@ namespace d360.model
 
         }
 
-        
+        private void GenerateBusinessLineageForObject(KeyValuePair<MarkitObject, List<int>> item, IEnumerable<FusionMarkitLineageData> maps)
+        {
+            if (item.Value == null || item.Value.Count == 0) return;
+
+            var mapValues = new List<int>(item.Value);
+
+            // look for first map record we can find in maps
+            FusionMarkitLineageData initialMap = maps.FirstOrDefault(x => x.ID == mapValues[0]);
+
+            if (initialMap == null) return;
+
+            //remove the first item from mapvalues since we already found it
+            mapValues.RemoveAt(0);
+
+            GenerateMarkitBusinessLineageImpl(null, null, initialMap, mapValues, item.Key, maps);
+        }
+
+        private void GenerateMarkitBusinessLineageImpl(string obj, int? objectId, FusionMarkitLineageData currentMap, List<int> mapValues, MarkitObject key, IEnumerable<FusionMarkitLineageData> maps)
+        {
+            // update the source / target values only of one is null
+            if(string.IsNullOrEmpty(currentMap.Target) ^ string.IsNullOrEmpty(currentMap.Source))
+            {
+                if(string.IsNullOrEmpty(currentMap.Target))
+                {
+                    currentMap.Target = currentMap.Source;
+                    currentMap.TargetID = currentMap.SourceID;
+                }
+                else
+                {
+                    currentMap.Source = currentMap.Target;
+                    currentMap.SourceID = currentMap.TargetID;
+                }
+            }            
+            
+            //look at the current map records source 
+            FusionMarkitLineageData leftMap = maps.FirstOrDefault(x => x.TargetFusionAttributeID == currentMap.SourceFusionAttributeID);
+
+            if(leftMap != null)
+            {
+                GenerateMarkitBusinessLineageImpl(currentMap.SourceObject, currentMap.SourceID, leftMap, mapValues, key, maps);
+            }
+
+
+            //look at the current map records target
+            FusionMarkitLineageData rightMap = maps.FirstOrDefault(x => x.SourceFusionAttributeID == currentMap.TargetFusionAttributeID);
+
+            if (rightMap != null)
+            {
+                GenerateMarkitBusinessLineageImpl(currentMap.Target, currentMap.TargetID, rightMap, mapValues, key, maps);
+            }
+        }
 
         private async Task SaveMarkitLineageRunDetails(int rows, int techRows, int businessRows, DbTransaction transaction)
         {
