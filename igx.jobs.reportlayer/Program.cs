@@ -753,12 +753,12 @@ SELECT  A.ID as AssetID,
         p.[PolicyTypeID],
         p.[Level],
         t.Name as [Policy Type],
-        ptl.Name as [Policy Level Name],
+        coalesce(ptl.Name, 'Level ' + cast(p.[Level] as nvarchar)) as [Policy Level Name],
         CONVERT(VARCHAR(10), p.UpdatedOn, 112) as UpdatedOnKey
 FROM    p
 		inner join Asset A on A.Object = 'Policy' and A.ObjectID = p.ID
 		inner join AssetType T on T.ID = A.AssetTypeID
-        inner Join PolicyTypeLevel ptl on ptl.PolicyTypeID = T.ObjectID and ptl.[Level] = p.[level]";
+        left Join PolicyTypeLevel ptl on ptl.PolicyTypeID = T.ObjectID and ptl.[Level] = p.[level]";
 
                             objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
