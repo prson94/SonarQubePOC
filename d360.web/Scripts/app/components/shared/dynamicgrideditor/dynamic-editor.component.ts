@@ -13,7 +13,7 @@ import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-dynamic-editor',
-    template: './dynamic-editor.component.html',
+    templateUrl: './dynamic-editor.component.html',
     providers: [EditorDefinitionService, UriBasedService, FieldsService, CascadeService],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -35,6 +35,8 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     @Input() newActionName: string = "New";
     @Input() hasHeader = true;
     @Input() copy: boolean;
+    @Input() intervalMax: number;
+    @Input() intervalMin: number;
 
     @Output() closeClick = new EventEmitter();
     @Output() saveClick = new EventEmitter();
@@ -66,7 +68,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         this.load();
     }
 
-    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+    ngOnChanges(changes: { [propName: string]: SimpleChange }) {        
         if (changes['objectID']) {
             if (!changes['objectID'].isFirstChange() && (changes['objectID'].previousValue != changes['objectID'].currentValue)) { // object has changed            
                 this.load();
@@ -74,7 +76,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         }
     }
 
-    private load() {
+    private load() {        
         if (this.selection != undefined) {
             this.editedItem = _.cloneDeep(this.selection);
             this.action = this.copy ? "Copy" : this.action;
@@ -86,7 +88,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         this.getDefinition();
     }
 
-    getDefinition() {
+    getDefinition() {        
         this.isLoading = true;
         let id = (this.selection ? this.selection[this.rowID] : null);
         this.editorDefinitionService.getEditorDefinition(id, this.objectID, this.objectType, this.parentID, this.targetType, this.targetTypeID, this.createParams, this.editParams, this.action)
@@ -199,10 +201,11 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 group[field.FieldName] = new FormControl({ value: (field.Value === null ? '' : field.Value), disabled: field.ReadOnly }, this.getFieldValidators(field));
             }
         });
+
         return new FormGroup(group);
     }
 
-    private getFieldValidators(field: EditorField) {
+    private getFieldValidators(field: EditorField) {        
         var validators = [];
 
         if (field.Validations) {
@@ -239,8 +242,18 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
             validators.push(FormHelpers.numberValidator);
 
         if (field.FieldType == 'Number' || field.FieldType == 'Decimal') {
-            validators.push(Validators.max(10000));
-            validators.push(Validators.min(0));
+            if (this.intervalMax) {
+                validators.push(Validators.max(this.intervalMax));
+            }
+            else {
+                validators.push(Validators.max(9223372036854776));
+            }
+            if (this.intervalMin) {
+                validators.push(Validators.min(this.intervalMin));
+            }
+            else {
+                validators.push(Validators.min(-9223372036854776));
+            }
         }
 
         return validators.length > 0 ? validators : null;

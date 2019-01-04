@@ -80,13 +80,11 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
     addRelationship(event) {
         if (!this.selected) return;
         this.selected.Count = this.selected.Count + event.count;
-        this.updateCardinality();
     }
 
     removeRelationship() {
         if (!this.selected) return;
         this.selected.Count--;
-        this.updateCardinality();
     }
 
     hideforDelete() {

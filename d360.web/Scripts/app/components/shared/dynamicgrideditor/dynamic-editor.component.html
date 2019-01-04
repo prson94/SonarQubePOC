@@ -4,13 +4,13 @@
     <div class="row" *ngIf="!isLoading">
         <form (ngSubmit)="onSubmit()" [formGroup]="form">
             <ng-template ngFor let-category [ngForOf]="categories">
-                <simple-accordion *ngIf="category.name" [header]="category.name" [active]="true">
+                 <simple-accordion *ngIf="category.name" [header]="category.name" [active]="true">
                     <div class="row" *ngFor="let row of category.rows">
                         <div *ngFor="let field of row.Fields" [class]="'col ' + row.getColClass()" style="padding-bottom:10px;">
                             <d3s-dynamic-field [field]="field" [form]="form" (listItemChange)="listSelectionChanged($event)" [object]="objectType" [objectID]="objectID"></d3s-dynamic-field>
                         </div>
                     </div>
-                </simple-accordion>
+                </simple-accordion> 
                 <span *ngIf="!category.name">
                     <div class="row" *ngFor="let row of category.rows">
                         <div *ngFor="let field of row.Fields" [class]="'col ' + row.getColClass()" style="padding-bottom:10px;">
