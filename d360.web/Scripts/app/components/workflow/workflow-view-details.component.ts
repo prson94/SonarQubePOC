@@ -102,7 +102,7 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
     private workflowId: number;
     private details: any;
     private item: any;
-
+    private workflowTypeId: number;
     constructor(
         private route: ActivatedRoute,
         private router: Router,
@@ -147,7 +147,9 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
                     item.StepType = StepType[step[0].StepType];
                     item.ActivityType = WorkflowActivityType[step[0].ActivityType];
                 }
-                this.details = res;                                
+                this.details = res;     
+                if (res && res.Workflow && res.Workflow.ID)
+                    this.workflowTypeId = res.Workflow.ID;
                 this.isLoading = false;
             });
     }
@@ -172,6 +174,6 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
     }
 
     private showForm(item: any) {        
-        this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_FORM}/${this.workflowId}/${item.ID}/${item.ItemID}`);
+        this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_FORM}/${this.workflowTypeId}/${item.ID}/${item.ItemID}`);
     }
 };

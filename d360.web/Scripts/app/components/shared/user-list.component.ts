@@ -187,8 +187,10 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
             then(res => {
                 this.showMessageForResult(this.messagesService, res);
                 this.showDelete = false;
-                if (res.type != 'error')
+                 if (res.type != 'error') {
                     this.items = this.items.filter(x => x.ID != id);
+                    this.changeDetectorRef.markForCheck();
+                }
             });
     }
 
