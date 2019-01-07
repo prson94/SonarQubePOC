@@ -30,6 +30,7 @@
 	<include file="scripts/GOV-6187-B.xml"/>	
 	<include file="scripts/GOV-6273.xml"/>
 	<include file="scripts/GOV-6273-ProcUpdate.xml"/>
+	<include file="scripts/GOV-6336.xml"/>
   <!--Sprint 8.1 -->
   <include file="scripts/GOV-6343.xml"/>
 </databaseChangeLog>
