@@ -182,14 +182,16 @@ namespace d360.model
                         throw;
                     }
                 }
-              
+
             });
+
+            #region  Insert into temporary ruleID table to ignore.
 
             using (SqlTransaction trans = cnn.BeginTransaction())
             {
                 try
                 {
-                    #region  Insert into temporary ruleID table to ignore.
+
 
                     var ruleIdTable = new System.Data.DataTable();
 
@@ -211,122 +213,6 @@ namespace d360.model
                     ruleIdBulkCopy.ColumnMappings.Add("RuleID", "RuleID");
 
                     ruleIdBulkCopy.WriteToServer(ruleIdTable);
-
-                    #endregion
-
-                    #region Insert item assignments into #resp table.
-
-                    cnn.Execute(@"
-    insert into #resp
-	    select	R.ID as RuleID,
-			    R.ResponsibilityTypeID,
-			    A.ID as AssetID,
-			    A.AssetTypeID,
-			    I.SecurityAsset,
-			    I.SecurityAssetID,
-			    R.Context,
-			    R.ApplyToType,
-			    REL.PermissionsBitMask,
-			    R.IsVisible, 
-			    cast(0 as bit) as Overridden, 
-			    0 as OverrideID 
-	    from	Asset A
-			    inner join AssetType T on T.ID = A.AssetTypeID
-			    inner join ResponsibilityTypeRelationRule R on R.ApplyToType = 0 and R.Object = T.Object and R.ObjectID = T.ObjectID
-			    inner join ResponsibilityTypeRelation REL on REL.ObjectType = T.Object and REL.ObjectID = T.ObjectID and REL.ResponsibilityTypeID = R.ResponsibilityTypeID
-			    inner join #ResponsibilityTypeRelationItem I on I.RuleID = R.ID and I.AssetID = A.ID", transaction: trans, commandTimeout: 7200);
-
-                    #endregion
-
-                    #region Update override columns
-
-                    cnn.Execute(@"
-    update	T
-    set		T.Overridden = 1,
-		    T.OverrideID = S.ID
-    from	#resp T
-		    inner join ResponsibilityTypeRelationOverrideItem S on S.AssetID = T.AssetID and S.ResponsibilityTypeID = T.ResponsibilityTypeID", transaction: trans, commandTimeout: 7200);
-
-                    #endregion
-
-                    #region Insert type assignments into #resp table.
-
-                    cnn.Execute(@"
-    insert into #resp
-	    select	R.ID as RuleID,
-			    R.ResponsibilityTypeID,
-			    0 as AssetID,
-			    T.ID as AssetTypeID,
-			    I.SecurityAsset,
-			    I.SecurityAssetID,
-			    R.Context,
-			    R.ApplyToType,
-			    REL.PermissionsBitMask,
-			    R.IsVisible,
-			    cast(0 as bit) as Overridden,
-			    0 as OverrideID 
-	    from	AssetType T
-			    inner join ResponsibilityTypeRelationRule R on R.Object = T.Object and R.ObjectID = T.ObjectID
-			    inner join ResponsibilityTypeRelation REL on REL.ObjectType = T.Object and REL.ObjectID = T.ObjectID and REL.ResponsibilityTypeID = R.ResponsibilityTypeID
-			    inner join #ResponsibilityTypeRelationTypeItem I on I.RuleID = R.ID and R.ApplyToType = 1", transaction: trans, commandTimeout: 7200);
-
-                    #endregion
-
-                    #region Merge final results into ResponsibilityTypeRelationRuleResult table
-
-                    cnn.Execute(@"
-delete	T
-from	ResponsibilityTypeRelationRuleResult T
-		left join #resp S on 
-					S.RuleID = T.RuleID
-					and S.ResponsibilityTypeID = T.ResponsibilityTypeID 
-					and S.AssetID = T.AssetID 
-					and S.AssetTypeID = T.AssetTypeID 
-					and S.SecurityAsset = T.SecurityAsset 
-					and S.SecurityAssetID = T.SecurityAssetID 
-					and S.ApplyToType = T.ApplyToType
-					and S.Overridden = T.Overridden
-					and S.OverrideID = T.OverrideID
-where	S.RuleID is null
-		and T.RuleID in (select RuleID from #ResponsibilityTypeConsideredRules)",
-transaction: trans, commandTimeout: 7200);
-
-                    cnn.Execute(@"
-update	T
-set		T.Context = S.Context,
-		T.PermissionsBitMask = S.PermissionsBitMask,
-		T.IsVisible = S.IsVisible
-from	ResponsibilityTypeRelationRuleResult T
-		inner join #resp S on S.RuleID = T.RuleID
-		    and S.ResponsibilityTypeID = T.ResponsibilityTypeID 
-		    and S.AssetID = T.AssetID 
-		    and S.AssetTypeID = T.AssetTypeID 
-		    and S.SecurityAsset = T.SecurityAsset 
-		    and S.SecurityAssetID = T.SecurityAssetID 
-		    and S.ApplyToType = T.ApplyToType
-		    and S.Overridden = T.Overridden
-		    and S.OverrideID = T.OverrideID",
-transaction: trans, commandTimeout: 7200);
-
-                    cnn.Execute(@"
-insert into ResponsibilityTypeRelationRuleResult (RuleID, ResponsibilityTypeID, AssetID, AssetTypeID, SecurityAsset, SecurityAssetID, Context, ApplyToType, PermissionsBitMask, IsVisible, Overridden, OverrideID)
-	select	S.*
-	from	#resp S 
-			left join ResponsibilityTypeRelationRuleResult T on 
-						S.RuleID = T.RuleID
-						and S.ResponsibilityTypeID = T.ResponsibilityTypeID 
-						and S.AssetID = T.AssetID 
-						and S.AssetTypeID = T.AssetTypeID 
-						and S.SecurityAsset = T.SecurityAsset 
-						and S.SecurityAssetID = T.SecurityAssetID 
-						and S.ApplyToType = T.ApplyToType
-						and S.Overridden = T.Overridden
-						and S.OverrideID = T.OverrideID
-	where	T.RuleID is null",
-transaction: trans, commandTimeout: 7200);
-
-
-                    #endregion
 
                     trans.Commit();
                 }
@@ -350,6 +236,202 @@ transaction: trans, commandTimeout: 7200);
                     throw;
                 }
             }
+
+            #endregion
+
+            int position = 0;
+            int pageSize = 10000;
+            int recordCount = cnn.Query<int>(@"select count(*)
+	                    from Asset A
+			            inner join AssetType T on T.ID = A.AssetTypeID
+			            inner join ResponsibilityTypeRelationRule R on R.ApplyToType = 0 and R.Object = T.Object and R.ObjectID = T.ObjectID
+			            inner join ResponsibilityTypeRelation REL on REL.ObjectType = T.Object and REL.ObjectID = T.ObjectID and REL.ResponsibilityTypeID = R.ResponsibilityTypeID
+			            inner join #ResponsibilityTypeRelationItem I on I.RuleID = R.ID and I.AssetID = A.ID").FirstOrDefault();
+
+
+            while (position < recordCount)
+            {
+                #region Insert item assignments into #resp table.
+
+                cnn.Execute("truncate table #resp");
+
+                cnn.Execute($@"
+                            insert into #resp
+	                            select	R.ID as RuleID,
+			                            R.ResponsibilityTypeID,
+			                            A.ID as AssetID,
+			                            A.AssetTypeID,
+			                            I.SecurityAsset,
+			                            I.SecurityAssetID,
+			                            R.Context,
+			                            R.ApplyToType,
+			                            REL.PermissionsBitMask,
+			                            R.IsVisible, 
+			                            cast(0 as bit) as Overridden, 
+			                            0 as OverrideID 
+	                            from	Asset A
+			                            inner join AssetType T on T.ID = A.AssetTypeID
+			                            inner join ResponsibilityTypeRelationRule R on R.ApplyToType = 0 and R.Object = T.Object and R.ObjectID = T.ObjectID
+			                            inner join ResponsibilityTypeRelation REL on REL.ObjectType = T.Object and REL.ObjectID = T.ObjectID and REL.ResponsibilityTypeID = R.ResponsibilityTypeID
+			                            inner join #ResponsibilityTypeRelationItem I on I.RuleID = R.ID and I.AssetID = A.ID
+                                order by R.ID, A.ID, I.SecurityAssetID
+                                offset {position} rows fetch next {pageSize} rows only", transaction: trans, commandTimeout: 7200);
+
+                position += pageSize;
+
+                #endregion
+
+                #region Update override columns
+
+                cnn.Execute(@"
+                            update	T
+                            set		T.Overridden = 1,
+		                            T.OverrideID = S.ID
+                            from	#resp T
+		                            inner join ResponsibilityTypeRelationOverrideItem S on S.AssetID = T.AssetID and S.ResponsibilityTypeID = T.ResponsibilityTypeID", transaction: trans, commandTimeout: 7200);
+
+                #endregion
+
+                #region Merge final results into ResponsibilityTypeRelationRuleResult table
+
+                cnn.Execute(@"
+delete	T
+from	ResponsibilityTypeRelationRuleResult T
+		left join #resp S on 
+					S.RuleID = T.RuleID
+					and S.ResponsibilityTypeID = T.ResponsibilityTypeID 
+					and S.AssetID = T.AssetID 
+					and S.AssetTypeID = T.AssetTypeID 
+					and S.SecurityAsset = T.SecurityAsset 
+					and S.SecurityAssetID = T.SecurityAssetID 
+					and S.ApplyToType = T.ApplyToType
+					and S.Overridden = T.Overridden
+					and S.OverrideID = T.OverrideID
+where	S.RuleID is null
+		and T.RuleID in (select RuleID from #ResponsibilityTypeConsideredRules)", commandTimeout: 7200);
+
+                cnn.Execute(@"
+update	T
+set		T.Context = S.Context,
+		T.PermissionsBitMask = S.PermissionsBitMask,
+		T.IsVisible = S.IsVisible
+from	ResponsibilityTypeRelationRuleResult T
+		inner join #resp S on S.RuleID = T.RuleID
+		    and S.ResponsibilityTypeID = T.ResponsibilityTypeID 
+		    and S.AssetID = T.AssetID 
+		    and S.AssetTypeID = T.AssetTypeID 
+		    and S.SecurityAsset = T.SecurityAsset 
+		    and S.SecurityAssetID = T.SecurityAssetID 
+		    and S.ApplyToType = T.ApplyToType
+		    and S.Overridden = T.Overridden
+		    and S.OverrideID = T.OverrideID", commandTimeout: 7200);
+
+                cnn.Execute(@"
+insert into ResponsibilityTypeRelationRuleResult (RuleID, ResponsibilityTypeID, AssetID, AssetTypeID, SecurityAsset, SecurityAssetID, Context, ApplyToType, PermissionsBitMask, IsVisible, Overridden, OverrideID)
+	select	S.*
+	from	#resp S 
+			left join ResponsibilityTypeRelationRuleResult T on 
+						S.RuleID = T.RuleID
+						and S.ResponsibilityTypeID = T.ResponsibilityTypeID 
+						and S.AssetID = T.AssetID 
+						and S.AssetTypeID = T.AssetTypeID 
+						and S.SecurityAsset = T.SecurityAsset 
+						and S.SecurityAssetID = T.SecurityAssetID 
+						and S.ApplyToType = T.ApplyToType
+						and S.Overridden = T.Overridden
+						and S.OverrideID = T.OverrideID
+	where	T.RuleID is null", commandTimeout: 7200);
+
+
+
+
+
+                #endregion
+
+            }
+
+            #region Insert type assignments into #resp table.
+
+            cnn.Execute("truncate table #resp");
+
+            cnn.Execute(@"
+    insert into #resp
+	    select	R.ID as RuleID,
+			    R.ResponsibilityTypeID,
+			    0 as AssetID,
+			    T.ID as AssetTypeID,
+			    I.SecurityAsset,
+			    I.SecurityAssetID,
+			    R.Context,
+			    R.ApplyToType,
+			    REL.PermissionsBitMask,
+			    R.IsVisible,
+			    cast(0 as bit) as Overridden,
+			    0 as OverrideID 
+	    from	AssetType T
+			    inner join ResponsibilityTypeRelationRule R on R.Object = T.Object and R.ObjectID = T.ObjectID
+			    inner join ResponsibilityTypeRelation REL on REL.ObjectType = T.Object and REL.ObjectID = T.ObjectID and REL.ResponsibilityTypeID = R.ResponsibilityTypeID
+			    inner join #ResponsibilityTypeRelationTypeItem I on I.RuleID = R.ID and R.ApplyToType = 1", commandTimeout: 7200);
+
+
+            #endregion
+
+            #region Merge final results into ResponsibilityTypeRelationRuleResult table
+
+            cnn.Execute(@"
+delete	T
+from	ResponsibilityTypeRelationRuleResult T
+		left join #resp S on 
+					S.RuleID = T.RuleID
+					and S.ResponsibilityTypeID = T.ResponsibilityTypeID 
+					and S.AssetID = T.AssetID 
+					and S.AssetTypeID = T.AssetTypeID 
+					and S.SecurityAsset = T.SecurityAsset 
+					and S.SecurityAssetID = T.SecurityAssetID 
+					and S.ApplyToType = T.ApplyToType
+					and S.Overridden = T.Overridden
+					and S.OverrideID = T.OverrideID
+where	S.RuleID is null
+		and T.RuleID in (select RuleID from #ResponsibilityTypeConsideredRules)", commandTimeout: 7200);
+
+            cnn.Execute(@"
+update	T
+set		T.Context = S.Context,
+		T.PermissionsBitMask = S.PermissionsBitMask,
+		T.IsVisible = S.IsVisible
+from	ResponsibilityTypeRelationRuleResult T
+		inner join #resp S on S.RuleID = T.RuleID
+		    and S.ResponsibilityTypeID = T.ResponsibilityTypeID 
+		    and S.AssetID = T.AssetID 
+		    and S.AssetTypeID = T.AssetTypeID 
+		    and S.SecurityAsset = T.SecurityAsset 
+		    and S.SecurityAssetID = T.SecurityAssetID 
+		    and S.ApplyToType = T.ApplyToType
+		    and S.Overridden = T.Overridden
+		    and S.OverrideID = T.OverrideID", commandTimeout: 7200);
+
+            cnn.Execute(@"
+insert into ResponsibilityTypeRelationRuleResult (RuleID, ResponsibilityTypeID, AssetID, AssetTypeID, SecurityAsset, SecurityAssetID, Context, ApplyToType, PermissionsBitMask, IsVisible, Overridden, OverrideID)
+	select	S.*
+	from	#resp S 
+			left join ResponsibilityTypeRelationRuleResult T on 
+						S.RuleID = T.RuleID
+						and S.ResponsibilityTypeID = T.ResponsibilityTypeID 
+						and S.AssetID = T.AssetID 
+						and S.AssetTypeID = T.AssetTypeID 
+						and S.SecurityAsset = T.SecurityAsset 
+						and S.SecurityAssetID = T.SecurityAssetID 
+						and S.ApplyToType = T.ApplyToType
+						and S.Overridden = T.Overridden
+						and S.OverrideID = T.OverrideID
+	where	T.RuleID is null", commandTimeout: 7200);
+
+
+
+
+
+            #endregion
+
         }
 
         public static void RemoveRelationRuleResultsByRule(this DbConnection cnn, int ruleID)
