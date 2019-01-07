@@ -276,7 +276,10 @@ namespace d360.extensions.search
                     sb.Append("\" } }\n");
                     sb.Append("{\"Url\" : \"");
                     sb.Append(item.RelativeUrl);
-                    sb.Append("\",");
+                    sb.Append("\"");
+                    if (item.Fields.Any())
+                        sb.Append(",");
+
                     bool bFirst = true;
                     foreach (var f in item.Fields)
                     {
@@ -841,7 +844,11 @@ namespace d360.extensions.search
             {
                 sb.Append("{ \"update\" : { \"_type\" : \"" + item.Group + "\", \"_id\" : \"" + createItemID(item) + "\"}}\n");
 
-                sb.Append("{ \"doc\" : {\"Url\" : \"" + item.RelativeUrl + "\",");
+                sb.Append("{ \"doc\" : {\"Url\" : \"" + item.RelativeUrl + "\"");
+                
+                if (item.Fields.Any())
+                    sb.Append(",");
+
                 bool bFirst = true;
                 foreach (var f in item.Fields)
                 {
