@@ -15,87 +15,7 @@ import * as _ from "lodash";
 @Component({
     selector: 'd3s-workflowmonitor-list',
     providers: [WorkflowMonitorService],
-    template: ` <d3s-loading [isLoading]="isEditing"></d3s-loading>                                                
-                <header *ngIf="showHeader">
-                  WorkFlow Items
-                  <d3s-tile-actions  [hasExport]="true"  (exportClick)="export()" ></d3s-tile-actions>
-                </header>                    
-                <div class="row" >                    
-                <div class="col s12">                                                
-                    <d3s-workflowmonitor-list-filter  [showExport]="!showHeader" [usePredefinedFilters]="usePredefinedFilters" (exportClick)="export()" [(columnFilters)]="stateService.workflowItemFilters.columFilters" [(workflowTypeFilters)]="stateService.workflowItemFilters.workflowTypeFilters"
-                       (filterChange)= "OnFilterChange()"   (exportToExcel)="export()"     [selectAll]="true" >
-                    </d3s-workflowmonitor-list-filter>
-                </div>
-                    <div class="col s12">                
-                        <p-table #dt [loading]="isLoading" loadingIcon="fa fa-spinner" [value]="items" selectionMode="multiple" [metaKeySelection]="true" [lazy]="true" [totalRecords]="totalRecords"  [scrollable]="true" scrollWidth="100%" [metaKeySelection]="true" 
-                            [globalFilterFields]="['WorkflowName','Type','TypeName','Asset','Initiator','StartedOn','CompletedOn']" [pageLinks]="3" [paginator]="true" 
-                            [rows]="rowsPerPage" [rowsPerPageOptions]="defaultPagingOptions" (onLazyLoad)="loadWorkflowMonitorItems($event)" [selection]="selection" 
-                            (selectionChange)="gridSelectionChange($event)">
-                            <ng-template pTemplate="header">
-                                <tr>
-                                    <th *ngIf="isAdmin" style="width: 35px"><p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
-                                    <th [pSortableColumn]="'WorkflowName'">
-                                        Workflow Name
-                                        <d3s-sortIcon [field]="'WorkflowName'"></d3s-sortIcon>
-                                    </th>
-                                    <th [pSortableColumn]="'Type'">
-                                        Type
-                                        <d3s-sortIcon [field]="'Type'"></d3s-sortIcon>
-                                    </th>
-                                    <th [pSortableColumn]="'TypeName'">
-                                        Type Name
-                                        <d3s-sortIcon [field]="'TypeName'"></d3s-sortIcon>
-                                    </th>
-                                    <th [pSortableColumn]="'Asset'">
-                                        Asset
-                                        <d3s-sortIcon [field]="'Asset'"></d3s-sortIcon>
-                                    </th>
-                                    <th [pSortableColumn]="'Initiator'">
-                                        Initiator
-                                        <d3s-sortIcon [field]="'Initiator'"></d3s-sortIcon>
-                                    </th>
-                                    <th [pSortableColumn]="'StartedOn'">
-                                        Started
-                                        <d3s-sortIcon [field]="'StartedOn'"></d3s-sortIcon>
-                                    </th>
-                                    <th [pSortableColumn]="'CompletedOn'">
-                                        Completed
-                                        <d3s-sortIcon [field]="'CompletedOn'"></d3s-sortIcon>
-                                    </th>
-                                </tr>
-                                <tr [hidden]="showSimpleFilter">
-                                    <th><d3s-column-filter [field]="'WorkflowName'" [datatype]="'text'"></d3s-column-filter></th>
-                                    <th><d3s-column-filter [field]="'Type'" [datatype]="'text'"></d3s-column-filter></th>
-                                    <th><d3s-column-filter [field]="'TypeName'" [datatype]="'text'"></d3s-column-filter></th>
-                                    <th><d3s-column-filter [field]="'Asset'" [datatype]="'text'"></d3s-column-filter></th>
-                                    <th><d3s-column-filter [field]="'Initiator'" [datatype]="'text'"></d3s-column-filter></th>
-                                    <th><d3s-column-filter [field]="'StartedOn'" [datatype]="'text'"></d3s-column-filter></th>
-                                    <th><d3s-column-filter [field]="'CompletedOn'" [datatype]="'text'"></d3s-column-filter></th>
-                                </tr>
-                            </ng-template>
-                            <ng-template pTemplate="body" let-item>
-                                <tr [pSelectableRow]="item">
-                                    <td *ngIf="isAdmin" ><p-tableCheckbox [value]="item"></p-tableCheckbox></td>
-                                    <td>{{item.WorkflowName}}</td>
-                                    <td>{{item.Type}}</td>
-                                    <td>{{item.TypeName}}</td>
-                                    <td>{{item.Asset}}</td>
-                                    <td>{{item.Initiator}}</td>
-                                    <td>
-                                        <span>{{item.StartedOn | date: 'shortDate'}}</span>
-                                    </td>
-                                    <td>
-                                        <span>{{item.CompletedOn | date: 'shortDate'}}</span>
-                                    </td>
-                                </tr>
-                            </ng-template>
-                            <ng-template pTemplate="summary">
-                                <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
-                            </ng-template>
-                        </p-table>                        
-                    </div>
-                </div>                                  
-                `,
+    templateUrl: 'workflowmonitor-list.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,  
 })
 
@@ -111,8 +31,11 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
     private sortOrder: SortOrder = SortOrder.Descending;
     private usePredefinedFilters: boolean = false;
     private isAdmin: boolean = false;
+    private showConfirmDelete: boolean = false;
+    private selectedCount: number = 0;
     selection: any;
     @Output() selectionChange = new EventEmitter();
+    @Output() hideDetails = new EventEmitter();
 
     constructor(private wfMonitorService: WorkflowMonitorService,
         private stateService: StateService,
@@ -147,14 +70,13 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
     }
 
     private gridSelectionChange($event) {
-        console.log('gridSelectionChange');
-        console.log($event);
         if (Array.isArray($event) && $event.length == 1) {
             this.stateService.workflowItemFilters.itemId = $event[0].Id;
         } else {
             this.stateService.workflowItemFilters.itemId = 0;
         }
         this.selection = $event;
+        this.selectedCount = this.selection == null ? 0 : this.selection.length;
         this.selectionChange.emit($event)
     }
     private getFilter(): GridFilterExpression[] {
@@ -205,14 +127,21 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
                     }
 
                     this.selection = item ? [item] : [this.items[0]];
+                    this.selectedCount = 1;
                     this.selectionChange.emit(this.selection);
                 }
                 else {
+                    this.selectedCount = 0;
                     this.selectionChange.emit(null);
                 }
                 this.isLoading = false;
                 this.changeDetectorRef.markForCheck();
             });
+    }
+
+    private confirmDelete(showConfirm: boolean) {
+        this.showConfirmDelete = showConfirm;
+        this.hideDetails.emit(showConfirm);
     }
 
     public deleteItems() {
@@ -225,7 +154,8 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
         }
         this.wfMonitorService.deleteItems(itemIds).then(
             (res) => {
-                this.loadData();
+                this.confirmDelete(false);
+                this.loadWorkflowMonitorItems({ rows: this.rowsPerPage, first: 0 });
             }
         );
     }
@@ -235,7 +165,7 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
         this.loadData();
     }
     private loadWorkflowMonitorItems(event: LazyLoadEvent) {
-        debugger;
+        //debugger;
         this.rowsPerPage = event.rows;
         this.sortOrder = event.sortField == undefined ? SortOrder.Descending: event.sortOrder;
         this.sortField = event.sortField == undefined ? "" : event.sortField;
@@ -243,6 +173,25 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
         this.stateService.workflowItemFilters.currentPageNumber =  event.first / event.rows;
         this.loadData();
     }
+
+    private getMetaKey() {
+        if (window.navigator && window.navigator.platform.indexOf("Mac") >= 0) {
+            return "\u2318";
+        } else {
+            return "Ctrl"
+        }
+    }
+
+    private selectAll($event) {
+        if (this.selection) {
+            if (this.selection.length == this.items.length) {
+                this.gridSelectionChange([this.items[0]]);
+            } else {
+                this.gridSelectionChange(this.items);
+            }
+        }
+    }
 }
+
 
 

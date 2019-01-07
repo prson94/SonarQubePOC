@@ -56,8 +56,14 @@ namespace d360.core.entities
         [DataMember]
         public string RetryLog { get; set; } = "{RetryCount:0, LastRetryInError: false, LastStepCompleted: 0, Begins:{Fields:0,Relations:0,Responsibilities:0}}";
 
-        [IgnoreDataMember, ForeignKey("ExecutionID")]
-        public virtual IntegrationExecution Execution { get; set; }
+        [DataMember]
+        public string IGCAssetRelationshipBreakdown { get; set; }
+
+        [DataMember]
+        public string IGCAssetResponsibilityBreakdown { get; set; }
+
+        // IMPORTANT: Do not add any other property references that are purely used by the integration procedure. 
+        // Doing so can alter the property results an set int properties to 0, nullifying metric results.
 
         [IgnoreDataMember, ForeignKey("SynchedAssetTypeID")]
         public virtual IntegrationAssetType SynchedAssetType { get; set; }

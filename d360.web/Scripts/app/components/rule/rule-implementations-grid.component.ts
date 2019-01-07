@@ -20,7 +20,7 @@ import { MessagesService } from '../../services/messages.service';
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div *ngIf="!isLoading && !showDelete && !showEditor">
                     <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-                    <p-table #dt [value]="results" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name']" [pageLinks]="3" [paginator]="true" [rows]="rowsPerPage" [selection]="selected"  [rowsPerPageOptions]="[5,10,20]">
+                    <p-table #dt [value]="results" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name']" [pageLinks]="3" [paginator]="true" [rows]="rowsPerPage" [selection]="selected" (selectionChange)="selected=$event;selectedChange.emit(selected)" [rowsPerPageOptions]="[5,10,20]">
                         <ng-template pTemplate="header">
                             <tr>
                                 <th [pSortableColumn]="'Name'">
