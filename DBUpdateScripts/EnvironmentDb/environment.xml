@@ -30,6 +30,8 @@
 	<include file="scripts/GOV-6187-B.xml"/>	
 	<include file="scripts/GOV-6273.xml"/>
 	<include file="scripts/GOV-6273-ProcUpdate.xml"/>
+	<include file="scripts/GOV-6336.xml"/>
   <include file="scripts/GOV-6338.xml"/>
+  <include file="scripts/GOV-6343.xml"/>
 </databaseChangeLog>
 
