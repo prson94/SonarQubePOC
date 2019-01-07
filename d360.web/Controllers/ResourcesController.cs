@@ -261,10 +261,7 @@ from	FollowDetail F
             foreach (var field in fields)
             {
                 if (sb.Length != 0) sb.Append(" or ");
-                if (!string.IsNullOrEmpty(field.DefaultFormattedValue))
-                    sb.Append($"(coalesce(Field{field.ID}_T.FormattedValue, '{field.DefaultFormattedValue}') like @simpleFilter )");
-                else
-                    sb.Append($"(Field{field.ID}_T.Value like  '%'+ @simpleFilter + '%')");
+                sb.Append($"(Field{field.ID} like  '%'+ @simpleFilter + '%')");
 
             }
 

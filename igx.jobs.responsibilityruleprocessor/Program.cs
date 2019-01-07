@@ -44,7 +44,8 @@ namespace igx.jobs.responsibilityruleprocessor
 #else
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 #endif
-                companies.ForEach(c =>
+                //companies.ForEach(c =>
+                companies.AsParallel().ForAll(c =>
                 {
                     try
                     {
