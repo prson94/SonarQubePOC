@@ -3157,10 +3157,9 @@ namespace d360.web.Controllers
                     );
                     break;
                 case SystemObjects.TaxonomyType:
+                    var sqlForTaxonomy = "select att.ObjectID as value, textpath as Title from asset a inner join assettype att on a.assettypeid = att.id cross apply getassettextpath('/') atp where atp.id = a.id and a.object = 'Taxonomy' and att.ObjectID = @id";
                     list.AddRange(
-                        Company.Filter<Taxonomy>(i => i.TaxonomyTypeID == id)
-                        .OrderBy(i => i.TextPath)
-                        .Select(i => new ListIntItem { title = i.TextPath, value = i.ID })
+                        Company.Query<ListIntItem>(sqlForTaxonomy, new { id = id })
                     );
                     break;                
             }
