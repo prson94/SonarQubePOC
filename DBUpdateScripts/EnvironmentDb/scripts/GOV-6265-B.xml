@@ -1,0 +1,24 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="VKyrychuk" id="gov-6265-B">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+	update AssetType 
+		SET CanOwnFusion = art.CanOwnFusion
+	from  ArtifactType as art
+		where art.ID= AssetType.ObjectID
+		 
+	</sql>
+	<rollback>
+	 
+    </rollback>
+  </changeSet>
+</databaseChangeLog>
