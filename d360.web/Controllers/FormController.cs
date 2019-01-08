@@ -4669,7 +4669,7 @@ namespace d360.web.Controllers
                 // Dynamic fields
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Fusion, model.ID, Company.GetFieldTypesByObject(SystemObjects.FusionType, model.FusionTypeID).ToList(), form, Server, false);
 
-                Company.SaveOrUpdate<Fusion>(model, fields);
+                Company.SaveOrUpdate<Fusion>(model, fields, -1,true);
 
                 return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);
             }
