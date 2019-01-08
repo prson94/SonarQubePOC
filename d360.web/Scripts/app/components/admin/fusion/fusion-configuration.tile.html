@@ -85,8 +85,6 @@
                             [objectID]="fusionType.ID"
                             [title]="'Fusion Configuration'"
                             [createUri]="'form/dynamicedit/create/fusion'"
-                            [intervalMax]="10000"
-                            [intervalMin]="1"
                             (closeClick)="formMode = FormModeConfig.Default"
                             (saveClick)="isLoading = true; formMode = FormModeConfig.Default; load();">
         </d3s-dynamic-editor>
@@ -96,8 +94,6 @@
                             [title]="'Fusion Configuration'"
                             [objectID]="fusionType.ID"
                             [objectType]="'Fusion'"
-                            [intervalMax]="10000"
-                            [intervalMin]="1"
                             [editUri]="'form/dynamicedit/edit/fusion'"
                             (closeClick)="formMode = FormModeConfig.Default"
                             (saveClick)="isLoading = true; formMode = FormModeConfig.Default; load();">

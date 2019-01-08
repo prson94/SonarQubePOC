@@ -35,8 +35,6 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     @Input() newActionName: string = "New";
     @Input() hasHeader = true;
     @Input() copy: boolean;
-    @Input() intervalMax: number;
-    @Input() intervalMin: number;
 
     @Output() closeClick = new EventEmitter();
     @Output() saveClick = new EventEmitter();
@@ -241,21 +239,11 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         if (field.FieldType == 'Decimal')
             validators.push(FormHelpers.numberValidator);
 
-        if (field.FieldType == 'Number' || field.FieldType == 'Decimal') {
-            if (this.intervalMax) {
-                validators.push(Validators.max(this.intervalMax));
-            }
-            else {
-                validators.push(Validators.max(9223372036854776));
-            }
-            if (this.intervalMin) {
-                validators.push(Validators.min(this.intervalMin));
-            }
-            else {
-                validators.push(Validators.min(-9223372036854776));
-            }
+        if (field.FieldType == 'Number' || field.FieldType == 'Decimal') {            
+            validators.push(Validators.max(9223372036854776));
+            validators.push(Validators.min(-9223372036854776));
         }
-
+        
         return validators.length > 0 ? validators : null;
     }
 
