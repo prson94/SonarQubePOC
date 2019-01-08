@@ -3123,7 +3123,7 @@ namespace d360.web.Controllers
                     var sql = "select ast.ObjectID as value,d.DisplayValue as title  from asset ast inner join assettype astt on (ast.assettypeid = astt.id and ast.[object] = 'Artifact') cross apply [dbo].GetAssetDisplayValueById(ast.id) d where astt.ObjectID = @id order by d.DisplayValue";
 
                     list.AddRange(
-                        Company.Query<ListIntItem>(sql, new { id = id }) 
+                        Company.Query<ListIntItem>(sql, new { id = id })
                     );
                     break;
                 case SystemObjects.ReferenceItem:
@@ -3131,7 +3131,7 @@ namespace d360.web.Controllers
                     list.AddRange(
                         Company.Filter<ReferenceItem>(i => i.ReferenceItemTypeID == id)
                         .OrderBy(i => i.DisplayValue)
-                        .Select(i => new ListIntItem  { title = i.DisplayValue, value = i.ID })
+                        .Select(i => new ListIntItem { title = i.DisplayValue, value = i.ID })
                     );
                     break;
                 case SystemObjects.PolicyType:
@@ -3143,11 +3143,21 @@ namespace d360.web.Controllers
                     break;
                 case SystemObjects.Resource:
                 case SystemObjects.ResourceType:
-                    list.AddRange(
-                        Company.Table<GlobalReportingResource>().ToList()
-                        .OrderBy(i => i.FullName)
-                        .Select(i => new ListIntItem  { title = i.FullName, value = i.ResourceID })
-                    );
+                    if (HideData3SixtyUsers())
+                    {
+                        list.AddRange(
+                            Company.Table<GlobalReportingResource>().ToList()
+                            .Where(i => !i.Email.EndsWith("@data3sixty.com") && !i.Email.EndsWith("@infogix.com"))
+                            .OrderBy(i => i.FullName)
+                            .Select(i => new ListIntItem { title = i.FullName, value = i.ResourceID }));
+                    }
+                    else
+                    {
+                        list.AddRange(
+                            Company.Table<GlobalReportingResource>().ToList()
+                            .OrderBy(i => i.FullName)
+                            .Select(i => new ListIntItem { title = i.FullName, value = i.ResourceID }));
+                    }
                     break;
                 case SystemObjects.RuleType:
                     list.AddRange(
@@ -3426,10 +3436,15 @@ namespace d360.web.Controllers
                 union
                 ";
 
+            var resourceJoin = $@"
+                inner join reporting.Global_resource R on R.ResourceID = V.Value and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com'
+                ";
+            
             var itemsSql = $@"
                 {(string.IsNullOrWhiteSpace(selectedValue) ? "" : selectedSql)}
                 select top {maxItems} {columns}
                 from FieldLookupValue V
+                {(HideData3SixtyUsers() && ft.LookupObjectType == "Resource" ? resourceJoin : "")}
                 where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId {(string.IsNullOrWhiteSpace(query) ? "" : " and V.Text like '%' + @query + '%' ")}
                 ";
 
