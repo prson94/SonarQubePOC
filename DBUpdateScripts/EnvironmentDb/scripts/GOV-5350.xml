@@ -1,0 +1,24 @@
+<databaseChangeLog    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="BHoward" id="GOV-5350">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+			begin
+			  UPDATE [dbo].[Shortcut]
+				SET IconUrl = SUBSTRING(
+										IconUrl,
+										(LEN(IconUrl) - CHARINDEX('/',REVERSE(IconUrl)) + 2),
+										LEN(IconUrl)
+										)
+				WHERE IconUrl like 'https://%' and IconUrl like '%.blob.core.windows.net/company-resources/%'
+			end
+    </sql>
+  </changeSet>
+</databaseChangeLog>

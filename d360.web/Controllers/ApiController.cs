@@ -608,16 +608,13 @@ namespace d360.web.Controllers
             {
                 case SystemObjects.ArtifactType:
                     #region
-
-
-                    var parentType = Company.GetParentType<ArtifactType>(id);
-                    var hasParentType = parentType != null;
+                                        
+                    var hasParentType = Company.TypeHasParent(SystemObjects.ArtifactType, id);
 
                     parseDynamicColumnsAndFields(items, columns, fields, groups, 0, true);
 
                     if (hasParentType)
                     {
-
                         columns.Insert(1, new GridColumn
                         {
                             text = d360.core.resources.Fields.Parent_Name,
@@ -629,8 +626,7 @@ namespace d360.web.Controllers
                             columnWidth = 200
                         });
                     }
-
-                   
+                                       
 
                     fields.Add(new GridField { name = "AssetID", type = "number" });
                     fields.Add(new GridField { name = "ID", type = "number" });
@@ -4529,7 +4525,7 @@ select	top 100 percent
         {columns}
         A.[Level]
 from	[Policy] A 
-        inner join Asset OA on OA.Object = 'Policy' and OA.ObjectID = A.ID and A.PolicyTypeID = @id and A.[Visible] = 1 
+        inner join Asset OA on OA.Object = 'Policy' and OA.ObjectID = A.ID and A.PolicyTypeID = @id 
         {joins} 
         left join dbo.GetAssetDisplayValue() TD on TD.ID = OA.ID
         outer apply (
@@ -4884,16 +4880,16 @@ order by    Name
         [Route("ruletypes/{id:int}")]
         public HttpResponseMessage GetRuleType(int id)
         {
-            var row = Company.GetById<RuleType>(id);
-
+            var row = Company.Query<dynamic>(QueryConstants.RuleSettingsItem, new { id }).Single();
             return Request.CreateResponse<dynamic>(
                 new Dictionary<string, object>() {
                     { "ID", row.ID },
                     { "Name", row.Name },
                     { "Description", row.Description },
+                    { "AllowAttributes", (bool)row.AllowAttributes }, 
                     { "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = id, ot = new DbString {Value = "RuleType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
                     { "HasDashboards",Company.Reports.Any(x=>x.ObjectID == id && x.ObjectType == SystemObjects.RuleType.ToString() && x.ReportType != "legacy") }
-                }
+                } 
             );
         }
 
@@ -4925,7 +4921,7 @@ from	[Rule] A
         inner join Asset O on O.Object = 'Rule' and O.ObjectID = A.ID 
         {1} 
         left join RuleDimension D on D.ID = A.RuleDimensionID 
-where   A.RuleTypeID = @id and A.[Visible] = 1
+where   A.RuleTypeID = @id 
         and O.ID not in (" + GetNoReadSqlStatement("@r") + ")" +
         "and O.AssetTypeID not in (" + GetAssetTypeNoReadSqlStatement("@r") + ")", columns, joins);
 
@@ -8177,23 +8173,6 @@ where	Type = 'ReferenceItemType'
 
         #endregion
 
-        #region LogClientError
-        [HttpPost, Route("log/clienterror")]
-        public HttpResponseMessage SaveClientError(ClientErrorModel model)
-        {
-            try
-            {
-                IDictionary<string, string> properties = new Dictionary<string, string>();
-                properties.Add("name", model.Name);
-                properties.Add("stacktrace", model.Stack);
-                this.SendException(new ClientSideException(model.Message), properties);
-                return Request.CreateResponse(HttpStatusCode.OK);
-            }
-            catch (Exception ex)
-            {
-                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
-            }
-        }
-        #endregion
+
     }
 } 

@@ -23,21 +23,19 @@ namespace igx.jobs.fusionruleprocessor
     public static class FusionRuleProcessor
     {
         const string functionName = "Fusion_ProcessRules";
-       //  const string timing = "0 * * * * *";
+#if DEBUG
+        const string timing = "0 * * * * *";
+#else
         const string timing = "0 */10 * * * *";
-        //const string timing = "*/5 0 * * * *";
-
+#endif
         public static async Task Run([TimerTrigger(timing)]TimerInfo myTimer, TextWriter log)
         {
             try
             {
                 CoreFunction.AITrackJobStart(functionName);
 
-#if DEBUG
-                var companies = d360.utils.company.CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings().Where(i => i.CompanyID == 4).ToList();
-#else
                 var companies = CoreFunction.GetCompaniesByCurrentSlot().ToList();
-#endif
+
 
                 foreach (var company in companies)
                 {

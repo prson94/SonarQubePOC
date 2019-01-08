@@ -85,4 +85,85 @@
 		end
     </rollback>
   </changeSet>
+  <changeSet author="MDonato" id="GOV-6227-B">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		begin
+			declare @refId int;
+			set @refId = -1;
+			select @refId = ID from ReferenceItemType where Name = 'Criticality' and CreatedBy = 0; 
+
+			if (@refId > -1)
+			begin
+				update FT
+				set ColumnOrder = case when Name = 'Criticality' and LookupObjectType = 'ReferenceItem' and LookupobjectID = @refId then
+					0
+				else
+					ColumnOrder + 1
+				end
+				from FieldType FT
+				cross apply (
+					select 
+						count(*) as cnt 
+					from 
+						FieldType 
+					where 
+						Object = 'IssueType' and ObjectID = FT.ObjectID and Type = 'Lookup' and Name = 'Criticality' and LookupObjectType = 'ReferenceItem'
+						and LookupObjectID = @refId
+				) a 
+				cross apply (
+					select 
+						count(*) as cnt 
+					from 
+						FieldType 
+					where 
+						Object = 'IssueType' and ObjectID = FT.ObjectID and ColumnOrder = 0 and Name != 'Criticality'
+				) b
+				where 
+					FT.Object = 'IssueType'  
+					and a.cnt > 0 --if criticality field exists on this issue type
+					and b.cnt > 0 --if there are other fields on this issue type with column order = 0
+			end
+		end
+    </sql>
+    <rollback>
+		begin
+			declare @refId int;
+			set @refId = -1;
+			select @refId = ID from ReferenceItemType where Name = 'Criticality' and CreatedBy = 0; 
+
+			if (@refId > -1)
+			begin
+				update FT
+				set ColumnOrder = ColumnOrder - 1
+				from FieldType FT
+				cross apply (
+					select 
+						count(*) as cnt 
+					from 
+						FieldType 
+					where 
+						Object = 'IssueType' and ObjectID = FT.ObjectID and Type = 'Lookup' and Name = 'Criticality' and LookupObjectType = 'ReferenceItem'
+						and LookupObjectID = @refId
+				) a 
+				cross apply (
+					select 
+						count(*) as cnt 
+					from 
+						FieldType 
+					where 
+						Object = 'IssueType' and ObjectID = FT.ObjectID and ColumnOrder = 1 and Name != 'Criticality'
+				) b
+				where 
+					FT.Object = 'IssueType'  
+					and a.cnt > 0 --if criticality field exists on this issue type
+					and ColumnOrder > 0
+					and not exists (select 1 from FieldType where ID = FT.ID and Name = 'Criticality' 
+						and LookupObjectType = 'ReferenceItem' and LookupobjectID = @refId)
+			end
+		end
+    </rollback>
+  </changeSet>
 </databaseChangeLog>

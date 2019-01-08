@@ -16,4 +16,5 @@ export class Shortcut {
     TitleColor: string;
     BackgroundColor: string;
     LinkTarget: LinkTarget;
+    FullURL: string;
 }

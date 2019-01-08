@@ -18,7 +18,7 @@ declare var CurrentResourceID;
                 <div class="row" *ngIf="!isLoading && !showBulkFormEditor">
                     <div class="col s12">
                         <div class="tile tile-detail">
-                            <header>Edit {{workflow?.Name}}<d3s-tile-actions [hasAdd]="false" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
+                            <header>{{workflow?.Name}}<d3s-tile-actions [hasAdd]="false" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
                             <div class="row" style="margin-bottom: 5px">
                                 <div class="col l2 m4 s12">
                                        <span class="FieldName FieldDisplayName">Version:&nbsp;</span>

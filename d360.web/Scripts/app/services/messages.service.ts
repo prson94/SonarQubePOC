@@ -40,7 +40,7 @@ export class MessagesService {
 
         model = { Name: objError.name, Message: objError.message, Stack: objError.stack };
 
-        return this.http.post('api/log/clienterror', model)
+        return this.http.post('api/v2/errors/log/clienterror', model)
             .toPromise()
             .then(() => Promise.resolve())
             .catch(err => {
@@ -62,7 +62,7 @@ export class MessagesService {
 
         model = { Name: objError.name, Message: objError.message, Stack: objError.stack };
 
-        return this.http.post('api/log/clienterror', model)
+        return this.http.post('api/v2/errors/log/clienterror', model)
             .toPromise()
             .then(() => Promise.resolve())
             .catch(err => {

@@ -16,7 +16,7 @@
     <AssemblyName>d360.web</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
-    <UseIISExpress>true</UseIISExpress>
+    <UseIISExpress>false</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -344,6 +344,7 @@
     <Compile Include="Controllers\Services\OrganizationsController.cs" />
     <Compile Include="Controllers\V2\CrossReferencesController.cs" />
     <Compile Include="Controllers\V2\DataQualityController.cs" />
+    <Compile Include="Controllers\V2\ErrorsController.cs" />
     <Compile Include="Controllers\V2\ExportTemplatesController.cs" />
     <Compile Include="Controllers\V2\MetricsController.cs" />
     <Compile Include="Controllers\V2\RelationshipsController.cs" />
@@ -620,6 +621,7 @@
     <EmbeddedResource Include="Content\Swagger\swagger.css">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
+    <Content Include="Scripts\app\components\workflowmonitor\workflowmonitor-list.component.html" />
     <Content Include="fonts\fontawesome-webfont.svg" />
     <Content Include="images\error.png" />
     <Content Include="images\grid.gif" />
@@ -683,6 +685,8 @@
     <Content Include="Scripts\app\9.chunk.js" />
     <Content Include="Scripts\app\components\admin\analytics\admin-metric-condition-editor.component.html" />
     <Content Include="Scripts\app\components\admin\analytics\admin-metric-editor.component.html" />
+    <Content Include="Scripts\app\components\artifact\artifact-top-level-filter.component.html" />
+    <Content Include="Scripts\app\components\shared\relationship\object-relationships.component.html" />
     <Content Include="Scripts\app\components\shared\responsibilities\responsibility-relations.component.html" />
     <Content Include="Scripts\app\components\shared\responsibilities\responsibility-relation.form.html" />
     <Content Include="Scripts\app\components\shared\assettypeeditor\asset-type-editor.component.html" />
@@ -1754,7 +1758,7 @@
     <DocumentationFile>App_Data\Documentation.XML</DocumentationFile>
     <NoWarn>1591</NoWarn>
     <PublishDatabases>false</PublishDatabases>
-    <CodeAnalysisRuleSet>..\codeanalysis.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>ManagedMinimumRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

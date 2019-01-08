@@ -1,35 +1,35 @@
-﻿import { Input, Component, OnInit, ViewChild } from '@angular/core';
-import { Router, ActivatedRoute }       from '@angular/router';
-import { BaseComponent } from '../shared/base.component';
+﻿
 import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
-import { UriBasedService } from '../../services/uri-based.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Breadcrumb } from '../../models/breadcrumb.model';
+import { GridColumn, GridField, GridFilterExpression } from '../../models/grid-definition.model';
 import { GridDefinitionService } from '../../services/grid-definition.service';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { MessagesService } from '../../services/messages.service';
 import { PermissionsService } from '../../services/permissions.service';
 import { ResourcesService } from '../../services/resources.service';
 import { CompanySettingsService } from '../../services/settings.service';
-import { Breadcrumb } from '../../models/breadcrumb.model';
-import { GridDefinition, GridColumn, GridField } from '../../models/grid-definition.model';
+import { UriBasedService } from '../../services/uri-based.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
-
+import { BaseComponent } from '../shared/base.component';
+import { LazyLoadEvent } from 'primeng/primeng';
+import { ISubscription } from 'rxjs/Subscription';
+import { SortOrder } from '../../models/enums.model';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, ViewChild, OnInit } from '@angular/core';
 @Component({
-    selector: 'd3s-user-list',    
+    selector: 'd3s-user-list',
     providers: [GridDefinitionService, UriBasedService, PermissionsService, ResourcesService, CompanySettingsService],
     template: `                                         
                 <header *ngIf="!showEditor && !showDelete && !showResetPwd">Users
-                    <d3s-tile-actions [hasAdd]="hasModifyAssetPermissions()" (addClick)="add()" hasFilterMode="true" [(filterMode)]="showSimpleFilter" hasExport="true" (exportClick)="export()"></d3s-tile-actions>                            
+                    <d3s-tile-actions [hasAdd]="hasModifyAssetPermissions()" (addClick)="add()" hasFilterMode="true"  [(filterMode)]="showSimpleFilter" hasExport="true" (exportClick)="export()"></d3s-tile-actions>                            
                 </header>                           
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <span *ngIf="!isLoading && !showDelete && !showEditor && !showResetPwd">
-                    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="filter =$event.target.value;dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-                    <p-table #dt [value]="items" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="globalFilterFields" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected">
+                <span *ngIf="!showDelete && !showEditor && !showResetPwd">
+                    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="$event.target.value;dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                    <p-table #dt  [loading]="isLoading" loadingIcon="fa fa-spinner" [scrollable]="true" scrollWidth="100%" [lazy]="true" (onLazyLoad)="lazyLoadUsers($event)" [totalRecords]="totalRecords" [value]="items" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="globalFilterFields" [pageLinks]="3" [paginator]="true" [rows]="rowsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected">
                         <ng-template pTemplate="header">
                             <tr>
-                                <th [pSortableColumn]="'FirstName'">
-                                    First Name
-                                    <d3s-sortIcon [field]="'FirstName'"></d3s-sortIcon>
-                                </th>
+
                                 <th *ngFor="let column of columns" [pSortableColumn]="column.sortable ? column.datafield : null">
                                     {{column.text}}
                                     <d3s-sortIcon *ngIf="column.sortable" [field]="column.datafield"></d3s-sortIcon>
@@ -39,7 +39,6 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                 <th style="width: 40px" *ngIf="hasModifyAssetPermissions() && allowPasswordReset "></th>
                             </tr>
                             <tr [hidden]="showSimpleFilter">
-                                <th><d3s-column-filter [field]="'FirstName'" [datatype]="'text'"></d3s-column-filter></th>
                                 <th *ngFor="let column of columns"><d3s-column-filter [field]="column.datafield"></d3s-column-filter></th>
                                 <th *ngIf="hasModifyAssetPermissions()"></th>
                                 <th *ngIf="hasDeleteAssetPermissions()"></th>
@@ -48,30 +47,29 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                         </ng-template>
                         <ng-template pTemplate="body" let-item>
                             <tr [pSelectableRow]="item">
-                                <td>
-                                    <a (click)="openResource(item)">{{item.FirstName}}</a>
-                                </td>
+
                                 <td *ngFor="let column of columns">
-                                    <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value>                                                                 
+                                    <a *ngIf="column.datafield=='FirstName'" (click)="openResource(item)">{{item.FirstName}}</a>
+                                    <d3s-dynamic-field-value *ngIf="column.datafield!='FirstName'"  [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value>                                                                 
                                 </td>
-                                <td *ngIf="hasModifyAssetPermissions()">
+                                <td *ngIf="hasModifyAssetPermissions()" style="width: 40px">
                                     <div class="RowTools" *ngIf="item.ResourceID > 0">
                                         <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>
                                     </div>
                                 </td>
-                                <td *ngIf="hasDeleteAssetPermissions()">
+                                <td *ngIf="hasDeleteAssetPermissions()" style="width: 40px">
                                     <div class="RowTools" *ngIf="item.ResourceID > 0">
                                         <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>
                                     </div>
                                 </td>
-                                <td *ngIf="hasModifyAssetPermissions() && allowPasswordReset ">
+                                <td *ngIf="hasModifyAssetPermissions() && allowPasswordReset " style="width: 40px">
                                     <div class="RowTools" *ngIf="item.ID>0">
                                         <a title="Reset Password" style="cursor:pointer;" (click)="selected=item;showResetPwd=true;"><i class="fa fa-asterisk fa-fw"></i></a>
                                     </div>
                                 </td>
                             </tr>
                         </ng-template>
-                        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                        <ng-template pTemplate="summary">
                             <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
                         </ng-template>
                     </p-table>
@@ -95,11 +93,13 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                 [prompt]="'Are you sure you want to delete the user [' + selected.FirstName + ' ' + selected.LastName + ']?'"                                         
                                 (onCancel)="showDelete=false;"
                 ></d3s-delete-form>
-                `
+                `,
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class UserListComponent extends BaseComponent{    
-    
+export class UserListComponent extends BaseComponent implements OnInit, OnDestroy {
+
+
     error: any;
     items: any[] = [];
     columns: GridColumn[] = [];
@@ -112,11 +112,18 @@ export class UserListComponent extends BaseComponent{
     allowPasswordReset: boolean = false;
 
     selected: any = null;
-    filter: string="";
-    
+    simpleFilter: string = "";
+
+    totalRecords: number;
+    rowsPerPage: number = 10;
+    private usersSub: ISubscription
+    currentPageNumber: number = 0;
+    sortField: string = undefined;
+    sortOrder: SortOrder = SortOrder.None;
+    filters: GridFilterExpression[] = [];
+
     get globalFilterFields(): string[] {
         let f = this.columns.map(c => c.datafield);
-        f.push('FirstName');
         return f;
     }
 
@@ -128,15 +135,17 @@ export class UserListComponent extends BaseComponent{
     constructor(private route: ActivatedRoute,
         private router: Router,
         protected uriBasedService: UriBasedService,
-        private gridDefinitionService: GridDefinitionService, 
+        private gridDefinitionService: GridDefinitionService,
         protected messagesService: MessagesService,
         private permissionsService: PermissionsService,
         private resourcesService: ResourcesService,
         private companySettingsService: CompanySettingsService,
-        protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService) {
+        protected titleService: Title,
+        protected headerBreadcrumbService: HeaderBreadcrumbService,
+        private changeDetectorRef: ChangeDetectorRef) {
         super();
         this.setObjectInfo('ResourceType', 1);
-    }    
+    }
 
     ngOnInit() {
         this.setBrowserTitle(this.titleService, 'Resources');
@@ -146,21 +155,27 @@ export class UserListComponent extends BaseComponent{
         this.theDeleteCallback = this.deleteUser.bind(this);
         this.load();
     }
-    
+
+    ngOnDestroy(): void {
+        if (this.usersSub) {
+            this.usersSub.unsubscribe();
+        }
+    }
+
     private openResource(event) {
-        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('resource',event.ResourceID));
+        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('resource', event.ResourceID));
     }
 
     public export() {
-        this.resourcesService.exportResources(this.objectID,this.filter);
+        this.resourcesService.exportResources(this.objectID, this.sortOrder, this.sortField, this.simpleFilter, this.filters);
     }
 
     load() {
         this.loadPermissions(this.permissionsService, this.objectType, this.objectID);
         this.getFieldsDefinition();
-        this.getData();
 
-        this.companySettingsService.getAuthenticationModel().then(res => {            
+
+        this.companySettingsService.getAuthenticationModel().then(res => {
             if (res.model == 'forms') {
                 this.allowPasswordReset = true;
             }
@@ -172,27 +187,68 @@ export class UserListComponent extends BaseComponent{
             then(res => {
                 this.showMessageForResult(this.messagesService, res);
                 this.showDelete = false;
-                if (res.type != 'error')
+                 if (res.type != 'error') {
                     this.items = this.items.filter(x => x.ID != id);
+                    this.changeDetectorRef.markForCheck();
+                }
             });
     }
 
     getFieldsDefinition() {
         this.gridDefinitionService.getGridDefinition(this.objectID, this.objectType)
             .then(result => {
-                this.columns = result.Columns.filter(x => x.datafield != 'FirstName');
+                this.columns = result.Columns;
                 this.fields = result.Fields;
+            }).then(() => {
+                this.getData();
             });
     }
 
     getData() {
         this.isLoading = true;
-        this.uriBasedService.getItems(`/api/resources/${this.objectID}?filter=${this.filter}`)
-            .then(result => {
-                this.items = result;
+
+        this.usersSub = this.resourcesService.getResourceLazy(this.objectID, this.currentPageNumber, this.rowsPerPage, this.sortOrder, this.sortField, this.simpleFilter, this.filters)
+            .debounceTime(3000)
+            .subscribe(result => {
+                this.items = result.results;
+                this.totalRecords = result.total;
+                if (this.items && this.items.length > 0) this.selected = this.items[0];
                 this.isLoading = false;
-                if (this.items.length > 0) this.selected = this.items[0];
+                this.changeDetectorRef.markForCheck();
             });
+    }
+
+    public lazyLoadUsers(event: LazyLoadEvent) {
+        //event.first = First row offset
+        //event.rows = Number of rows per page
+        //event.sortField = Field name to sort with
+        //event.sortOrder = Sort order as number, 1 for asc and -1 for dec
+        //filters: FilterMetadata object having field as key and filter value, filter matchMode as value      
+
+        this.filters.splice(0, this.filters.length);
+        this.simpleFilter = "";
+        for (var key in event.filters) {
+            var filter = event.filters[key];
+            if (key == "global" && this.showSimpleFilter) {
+                this.simpleFilter = filter.value;
+                this.filters.splice(0, this.filters.length);
+                break;
+            } else if (key == "global") {
+                continue;
+            }
+
+            var gridFilter = new GridFilterExpression();
+            gridFilter.condition = "CONTAINS"
+            gridFilter.field = key;
+            gridFilter.value = filter.value;
+            this.filters.push(gridFilter);
+        }
+
+        this.sortOrder = event.sortOrder;
+        this.sortField = event.sortField == undefined ? "" : event.sortField;
+        this.rowsPerPage = event.rows;
+        this.currentPageNumber = event.first / event.rows;
+        this.getData();
     }
 
     closeEditor() {
@@ -207,12 +263,12 @@ export class UserListComponent extends BaseComponent{
     saveItem(event) {
         this.isLoading = true;
         this.uriBasedService.saveItem('form/dynamicedit/create/resource/', 'form/dynamicedit/edit/resource/', event.item)
-            .then(result => {                
+            .then(result => {
                 this.showMessageForResult(this.messagesService, result);
                 this.showEditor = false;
                 this.getData();
             });
-    } 
+    }
 
     resetPassword() {
         if (!this.selected.ID) {
@@ -222,6 +278,6 @@ export class UserListComponent extends BaseComponent{
             this.showMessageForResult(this.messagesService, result);
             this.showResetPwd = false;
         });
-        
+
     }
 };

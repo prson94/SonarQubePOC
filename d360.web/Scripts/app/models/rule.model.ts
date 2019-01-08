@@ -3,6 +3,7 @@
     Name: string;
     Description: string;
     HasDashboards: boolean;
+    AllowAttributes: boolean; 
 }
 
 export class RuleDimension {

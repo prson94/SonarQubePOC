@@ -1,5 +1,4 @@
 ﻿using d360.core.entities;
-using d360.extensions;
 using d360.model;
 using d360.web.Filters;
 using Dapper;
@@ -9,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -28,7 +26,7 @@ namespace d360.web.Controllers.V2
         public CrossReferencesController(CommunityContext community, CompanyContext company)
             : base(community, company)
         {
-            
+
         }
 
         #endregion
@@ -40,26 +38,28 @@ namespace d360.web.Controllers.V2
         [
             HttpGet, MapToApiVersion("2.0"), Route(""),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
-            SwaggerResponse(HttpStatusCode.OK, "A full list of asset cross reference values.", typeof(List<AssetCrossReference>))
+            SwaggerResponse(HttpStatusCode.OK, "A full list of asset cross reference values.", typeof(List<AssetCrossReference>)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(List<AssetCrossReference>)),
         ]
         public async Task<HttpResponseMessage> Get()
         {
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
 
-            return Request.CreateResponse(await Company.QueryAsync<AssetCrossReference>("select uid, DataSource,Type,ExternalID,FieldHash from AssetCrossReference"));            
+            return Request.CreateResponse(await Company.QueryAsync<AssetCrossReference>("select uid, DataSource,Type,ExternalID,FieldHash from AssetCrossReference"));
         }
 
         /// <summary>
-        /// Returns asset cross reference values for the specified uid
+        /// Returns asset cross reference values for the specified Uid
         /// </summary>
         /// <returns>An array of matching cross reference records</returns>
         [
-            HttpGet, 
-            MapToApiVersion("2.0"), 
+            HttpGet,
+            MapToApiVersion("2.0"),
             Route("{uid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
-            SwaggerResponse(HttpStatusCode.OK, "A list of asset cross reference values based on the public ID (uid) of the asset.", typeof(List<AssetCrossReference>))
+            SwaggerResponse(HttpStatusCode.OK, "A list of asset cross reference values based on the public ID (uid) of the asset.", typeof(List<AssetCrossReference>)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(List<AssetCrossReference>))
         ]
         public async Task<HttpResponseMessage> GetByUid(string uid)
         {
@@ -74,11 +74,12 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <returns>An array of matching cross reference records</returns>
         [
-            HttpGet, 
-            MapToApiVersion("2.0"), 
+            HttpGet,
+            MapToApiVersion("2.0"),
             Route("{type}/{externalId}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
-            SwaggerResponse(HttpStatusCode.OK, "A list of asset cross reference values based on the external type and identifier of the asset.", typeof(List<AssetCrossReference>))
+            SwaggerResponse(HttpStatusCode.OK, "A list of asset cross reference values based on the external type and identifier of the asset.", typeof(List<AssetCrossReference>)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(List<AssetCrossReference>))
         ]
         public async Task<HttpResponseMessage> GetByTypeID(string type, string externalId)
         {
@@ -93,11 +94,12 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <returns>An array of matching cross reference records</returns>
         [
-            HttpGet, 
-            MapToApiVersion("2.0"), 
+            HttpGet,
+            MapToApiVersion("2.0"),
             Route("type/{type}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
-            SwaggerResponse(HttpStatusCode.OK, "A list of asset cross reference values based on the external type.", typeof(List<AssetCrossReference>))
+            SwaggerResponse(HttpStatusCode.OK, "A list of asset cross reference values based on the external type.", typeof(List<AssetCrossReference>)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(List<AssetCrossReference>))
        ]
         public async Task<HttpResponseMessage> GetByType(string type)
         {
@@ -113,11 +115,12 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <returns>An array of matching cross reference records</returns>
         [
-            HttpGet, 
-            MapToApiVersion("2.0"), 
+            HttpGet,
+            MapToApiVersion("2.0"),
             Route("datasource/{dataSource}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
-            SwaggerResponse(HttpStatusCode.OK, "A list of asset cross reference values based on the data source.", typeof(List<AssetCrossReference>))
+            SwaggerResponse(HttpStatusCode.OK, "A list of asset cross reference values based on the data source.", typeof(List<AssetCrossReference>)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "Access Denied", typeof(List<AssetCrossReference>))
         ]
         public async Task<HttpResponseMessage> GetByDataSource(string dataSource)
         {
@@ -132,21 +135,24 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <returns>AssetCrossReference model of the created item if item already exists http confict is returned.</returns>
         [
-            HttpPost, 
+            HttpPost,
             MapToApiVersion("2.0"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
-            Route("")
+            Route(""),
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(AssetCrossReference)),
+            SwaggerResponse(HttpStatusCode.NotAcceptable, "Model does not contain required fields.", typeof(AssetCrossReference)),
+            SwaggerResponse(HttpStatusCode.Conflict, "Item already exists", typeof(AssetCrossReference))
         ]
         public async Task<AssetCrossReference> Post(AssetCrossReference model)
         {
-            if(!Company.CurrentResourceIsAdmin)
+            if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
             //validate the model input
             if (string.IsNullOrEmpty(model.DataSource) || string.IsNullOrEmpty(model.ExternalID) || string.IsNullOrEmpty(model.Type))
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "Model does not contain required fields."));
 
             //check if the item already exists            
-            if(await XrefExists(model))
+            if (await XrefExists(model))
             {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Conflict, "Item already exists"));
             }
@@ -154,7 +160,7 @@ namespace d360.web.Controllers.V2
             //create the new record
             var res = await Company.Database.Connection.ExecuteAsync("insert into assetcrossreference (uid,DataSource,Type,ExternalID,FieldHash) values(@u,@d,@t,@e,@f)", new { u = model.uid, d = model.DataSource, t = model.Type, f = model.FieldHash, e = model.ExternalID });
 
-            if(res <= 0)
+            if (res <= 0)
             {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Conflict, "Item already exists"));
             }
@@ -167,17 +173,20 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <returns>AssetCrossReference model of the created item if item already exists http confict is returned.</returns>
         [
-            HttpPost, 
+            HttpPost,
             MapToApiVersion("2.0"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
-            Route("bulk")
+            Route("bulk"),
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(List<AssetCrossReference>)),
+            SwaggerResponse(HttpStatusCode.Conflict, "One or items already exist", typeof(List<AssetCrossReference>))
+
         ]
         public async Task<List<AssetCrossReference>> PostBulk(List<AssetCrossReference> models)
         {
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
 
-            
+
             try
             {
                 if (Company.Database.Connection.State != ConnectionState.Open)
@@ -243,8 +252,8 @@ namespace d360.web.Controllers.V2
                         begin
                             select 1;
                                 end
-	                    else 
-	                    begin
+                        else 
+                        begin
                             select 0;
                                 end", new { u = model.uid, t = model.Type, d = model.DataSource, e = model.ExternalID });
 
@@ -255,10 +264,13 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <returns>Http Status code OK if item was updated, Http Status code of Not Found if item could not be updated</returns>
         [
-            HttpPut, 
-            MapToApiVersion("2.0"), 
+            HttpPut,
+            MapToApiVersion("2.0"),
             Route("{uid}/{dataSource}/{type}/{externalId}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(AssetCrossReference)),
+            SwaggerResponse(HttpStatusCode.NotAcceptable, "Model does not contain required fields.", typeof(AssetCrossReference)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference))
         ]
         public async Task<HttpResponseMessage> Put(Guid uid, string dataSource, string type, string externalId, AssetCrossReference model)
         {
@@ -268,7 +280,7 @@ namespace d360.web.Controllers.V2
             //validate the model input
             if (string.IsNullOrEmpty(dataSource) || string.IsNullOrEmpty(type) || string.IsNullOrEmpty(externalId))
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "Model does not contain required fields."));
-            
+
             //create the new record
             var res = await Company.Database.Connection.ExecuteAsync("update assetcrossreference set FieldHash = @fh where uid = @uid and DataSource = @ds and [Type] = @t", new { fh = model.FieldHash, uid = uid, ds = dataSource, t = type });
 
@@ -276,23 +288,25 @@ namespace d360.web.Controllers.V2
 
             return Request.CreateResponse(HttpStatusCode.NotFound); // nothing updated
         }
-                
+
         /// <summary>
-        /// Deletes a AssetCrossReference by the specified UID value
+        /// Deletes a AssetCrossReference by the specified Uid value
         /// </summary>
         /// <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted</returns>
         [
-            HttpDelete, 
-            MapToApiVersion("2.0"), 
+            HttpDelete,
+            MapToApiVersion("2.0"),
             Route("{uid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(AssetCrossReference)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference))
         ]
         public async Task<HttpResponseMessage> DeleteByUid(Guid uid)
         {
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
-                       
-            
+
+
             //deletes the new record
             var res = await Company.Database.Connection.ExecuteAsync("delete assetcrossreference where uid = @uid", new { uid = uid });
 
@@ -300,16 +314,19 @@ namespace d360.web.Controllers.V2
 
             return Request.CreateResponse(HttpStatusCode.NotFound); // nothing deleted
         }
-                   
+
         /// <summary>
         /// Deletes a AssetCrossReference with the specified datasource and type
         /// </summary>
         /// <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted</returns>
         [
-            HttpDelete, 
-            MapToApiVersion("2.0"), 
+            HttpDelete,
+            MapToApiVersion("2.0"),
             Route("{dataSource}/{type}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(AssetCrossReference)),
+            SwaggerResponse(HttpStatusCode.NotAcceptable, "Request does not contain required parameters datasource and type.", typeof(AssetCrossReference)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference))
         ]
         public async Task<HttpResponseMessage> DeleteByDatasource(string dataSource, string type)
         {
@@ -332,10 +349,13 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <returns>Http Status code OK if item(s) was deleted, Http Status code of Not Found if item could not be deleted</returns>
         [
-            HttpDelete, 
-            MapToApiVersion("2.0"), 
+            HttpDelete,
+            MapToApiVersion("2.0"),
             Route("type/{type}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(AssetCrossReference)),
+            SwaggerResponse(HttpStatusCode.NotAcceptable, "Request does not contain required parameter type.", typeof(AssetCrossReference)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference))
         ]
         public async Task<HttpResponseMessage> DeleteByType(string type)
         {
@@ -358,10 +378,13 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <returns>Http Status code OK if item(s) was deleted, Http Status code of Not Found if item could not be deleted</returns>
         [
-            HttpDelete, 
-            MapToApiVersion("2.0"), 
+            HttpDelete,
+            MapToApiVersion("2.0"),
             Route("dataSource/{dataSource}"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json") //, "application/xml"
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),//, "application/xml"
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(AssetCrossReference)),
+            SwaggerResponse(HttpStatusCode.NotAcceptable, "Request does not contain required parameter dataSource.", typeof(AssetCrossReference)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference))
         ]
         public async Task<HttpResponseMessage> DeleteByDataSource(string dataSource)
         {

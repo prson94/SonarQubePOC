@@ -54,14 +54,11 @@ namespace d360.web.Controllers
 
         [Route("actions/{type}/{id:int}/{owner}/{ownerID:int}/{attributeID:int?}")]
         public JsonResult AttributeActions(SystemObjects type, int id, SystemObjects owner, int ownerID, int? attributeID = null)
-        {
-            Company.Database.Log = message => System.Diagnostics.Trace.Write(message);
-
+        {            
             var objectDetail = Company.GetObjectDetail(owner.ToString(), ownerID);
-
-            var permissions = Company.GetPermissions(objectDetail.Type, objectDetail.TypeID, owner.ToString(), ownerID).ToList();
-
+                        
             var list = new List<ToolbarItemNg>();
+            var hasModifyPermission = Company.HasAssetTypePermission(objectDetail.Type, objectDetail.TypeID, Permission.ModifyAttributes);
 
             if (attributeID.HasValue)
             {
@@ -69,15 +66,15 @@ namespace d360.web.Controllers
                 {
                     attributeID = attributeID.Value
                 };
-
-                if (permissions.Any(i => (i.ID == Permission.ModifyAttributes)))
+                
+                if (hasModifyPermission)
                     list.Add(new ToolbarItemNg { Title = "edit attribute", Icon = "pencil",  Action = "edit", Params = p });
-                if (permissions.Any(i => (i.ID == Permission.DeleteAttributes)))
+                if (Company.HasAssetTypePermission(objectDetail.Type, objectDetail.TypeID, Permission.DeleteAttributes))
                     list.Add(new ToolbarItemNg { Title = "delete attribute", Icon = "trash-o", Action = "delete", Params = p });
             }
 
             IQueryable<AttributeType> types = null;
-            if (permissions.Any(i => (i.ID == Permission.ModifyAttributes)))
+            if (hasModifyPermission)
             {
                 if (type == SystemObjects.Attribute)
                 {
@@ -93,8 +90,7 @@ namespace d360.web.Controllers
                     {
                         _id = sType.EndsWith("Type") ? detail.ID : detail.TypeID;
                     }
-
-
+                    
                     var usedIDs = Company.Filter<core.entities.Attribute>(i => i.ObjectType == sType && i.ObjectID == id).Select(i => i.AttributeTypeID).ToList();
 
                     if (!sType.EndsWith("Type")) sType += "Type";

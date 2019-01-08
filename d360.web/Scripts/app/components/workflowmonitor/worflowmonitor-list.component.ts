@@ -8,91 +8,14 @@ import { SortOrder } from "../../models/enums.model";
 import {  GridFilterExpression } from "../../models/grid-definition.model";
 import { StateService } from "../../services/state.service";
 import { StringHelpers } from "../../static/string-helpers";
+import { AuthenticationService } from '../../services/authentication.service';
 import * as _ from "lodash";
 
 
 @Component({
     selector: 'd3s-workflowmonitor-list',
     providers: [WorkflowMonitorService],
-    template: ` <d3s-loading [isLoading]="isEditing"></d3s-loading>                                                
-                <header *ngIf="showHeader">
-                  WorkFlow Items
-                  <d3s-tile-actions  [hasExport]="true"  (exportClick)="export()" ></d3s-tile-actions>
-                </header>                    
-                <div class="row" >                    
-                <div class="col s12">                                                
-                    <d3s-workflowmonitor-list-filter  [showExport]="!showHeader" [usePredefinedFilters]="usePredefinedFilters" (exportClick)="export()" [(columnFilters)]="stateService.workflowItemFilters.columFilters" [(workflowTypeFilters)]="stateService.workflowItemFilters.workflowTypeFilters"
-                       (filterChange)= "OnFilterChange()"   (exportToExcel)="export()"     [selectAll]="true" >
-                    </d3s-workflowmonitor-list-filter>
-                </div>
-                    <div class="col s12">                
-                        <p-table #dt [loading]="isLoading" loadingIcon="fa fa-spinner" [value]="items" selectionMode="single" [lazy]="true" [totalRecords]="totalRecords"  [scrollable]="true" scrollWidth="100%" [metaKeySelection]="true" 
-                            [globalFilterFields]="['WorkflowName','Type','TypeName','Asset','Initiator','StartedOn','CompletedOn']" [pageLinks]="3" [paginator]="true" 
-                            [rows]="rowsPerPage" [rowsPerPageOptions]="defaultPagingOptions" (onLazyLoad)="loadWorkflowMonitorItems($event)" [selection]="selection" 
-                            (selectionChange)="gridSelectionChange($event)">
-                            <ng-template pTemplate="header">
-                                <tr>
-                                    <th [pSortableColumn]="'WorkflowName'">
-                                        Workflow Name
-                                        <d3s-sortIcon [field]="'WorkflowName'"></d3s-sortIcon>
-                                    </th>
-                                    <th [pSortableColumn]="'Type'">
-                                        Type
-                                        <d3s-sortIcon [field]="'Type'"></d3s-sortIcon>
-                                    </th>
-                                    <th [pSortableColumn]="'TypeName'">
-                                        Type Name
-                                        <d3s-sortIcon [field]="'TypeName'"></d3s-sortIcon>
-                                    </th>
-                                    <th [pSortableColumn]="'Asset'">
-                                        Asset
-                                        <d3s-sortIcon [field]="'Asset'"></d3s-sortIcon>
-                                    </th>
-                                    <th [pSortableColumn]="'Initiator'">
-                                        Initiator
-                                        <d3s-sortIcon [field]="'Initiator'"></d3s-sortIcon>
-                                    </th>
-                                    <th [pSortableColumn]="'StartedOn'">
-                                        Started
-                                        <d3s-sortIcon [field]="'StartedOn'"></d3s-sortIcon>
-                                    </th>
-                                    <th [pSortableColumn]="'CompletedOn'">
-                                        Completed
-                                        <d3s-sortIcon [field]="'CompletedOn'"></d3s-sortIcon>
-                                    </th>
-                                </tr>
-                                <tr [hidden]="showSimpleFilter">
-                                    <th><d3s-column-filter [field]="'WorkflowName'" [datatype]="'text'"></d3s-column-filter></th>
-                                    <th><d3s-column-filter [field]="'Type'" [datatype]="'text'"></d3s-column-filter></th>
-                                    <th><d3s-column-filter [field]="'TypeName'" [datatype]="'text'"></d3s-column-filter></th>
-                                    <th><d3s-column-filter [field]="'Asset'" [datatype]="'text'"></d3s-column-filter></th>
-                                    <th><d3s-column-filter [field]="'Initiator'" [datatype]="'text'"></d3s-column-filter></th>
-                                    <th><d3s-column-filter [field]="'StartedOn'" [datatype]="'text'"></d3s-column-filter></th>
-                                    <th><d3s-column-filter [field]="'CompletedOn'" [datatype]="'text'"></d3s-column-filter></th>
-                                </tr>
-                            </ng-template>
-                            <ng-template pTemplate="body" let-item>
-                                <tr [pSelectableRow]="item">
-                                    <td>{{item.WorkflowName}}</td>
-                                    <td>{{item.Type}}</td>
-                                    <td>{{item.TypeName}}</td>
-                                    <td>{{item.Asset}}</td>
-                                    <td>{{item.Initiator}}</td>
-                                    <td>
-                                        <span>{{item.StartedOn | date: 'shortDate'}}</span>
-                                    </td>
-                                    <td>
-                                        <span>{{item.CompletedOn | date: 'shortDate'}}</span>
-                                    </td>
-                                </tr>
-                            </ng-template>
-                            <ng-template pTemplate="summary">
-                                <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
-                            </ng-template>
-                        </p-table>                        
-                    </div>
-                </div>                                  
-                `,
+    templateUrl: 'workflowmonitor-list.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,  
 })
 
@@ -107,16 +30,22 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
     private sortField: string = undefined;
     private sortOrder: SortOrder = SortOrder.Descending;
     private usePredefinedFilters: boolean = false;
-     selection: any;
+    private isAdmin: boolean = false;
+    private showConfirmDelete: boolean = false;
+    private selectedCount: number = 0;
+    selection: any;
     @Output() selectionChange = new EventEmitter();
+    @Output() hideDetails = new EventEmitter();
 
     constructor(private wfMonitorService: WorkflowMonitorService,
         private stateService: StateService,
-        private changeDetectorRef: ChangeDetectorRef) {
+        private changeDetectorRef: ChangeDetectorRef,
+        private authenticationService: AuthenticationService) {
         super();
     }
 
     ngOnInit(): void {
+        this.isAdmin = this.authenticationService.isAdmin;
      }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -141,8 +70,13 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
     }
 
     private gridSelectionChange($event) {
-        this.stateService.workflowItemFilters.itemId = $event ? $event.Id : 0;
+        if (Array.isArray($event) && $event.length == 1) {
+            this.stateService.workflowItemFilters.itemId = $event[0].Id;
+        } else {
+            this.stateService.workflowItemFilters.itemId = 0;
+        }
         this.selection = $event;
+        this.selectedCount = this.selection == null ? 0 : this.selection.length;
         this.selectionChange.emit($event)
     }
     private getFilter(): GridFilterExpression[] {
@@ -192,10 +126,12 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
                         item = this.items.find(x => x.Id == this.stateService.workflowItemFilters.itemId)
                     }
 
-                    this.selection = item ? item : this.items[0];
+                    this.selection = item ? [item] : [this.items[0]];
+                    this.selectedCount = 1;
                     this.selectionChange.emit(this.selection);
                 }
                 else {
+                    this.selectedCount = 0;
                     this.selectionChange.emit(null);
                 }
                 this.isLoading = false;
@@ -203,14 +139,33 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
             });
     }
 
+    private confirmDelete(showConfirm: boolean) {
+        this.showConfirmDelete = showConfirm;
+        this.hideDetails.emit(showConfirm);
+    }
 
+    public deleteItems() {
+        this.isLoading = true;
+        let itemIds = [];
+        if (Array.isArray(this.selection)) {
+            itemIds = this.selection.map(i => i.Id);
+        } else if (this.selection != null) {
+            itemIds.push(this.selection.Id);
+        }
+        this.wfMonitorService.deleteItems(itemIds).then(
+            (res) => {
+                this.confirmDelete(false);
+                this.loadWorkflowMonitorItems({ rows: this.rowsPerPage, first: 0 });
+            }
+        );
+    }
 
     OnFilterChange() {
         this.stateService.workflowItemFilters.currentPageNumber = 0;
         this.loadData();
     }
     private loadWorkflowMonitorItems(event: LazyLoadEvent) {
-        debugger;
+        //debugger;
         this.rowsPerPage = event.rows;
         this.sortOrder = event.sortField == undefined ? SortOrder.Descending: event.sortOrder;
         this.sortField = event.sortField == undefined ? "" : event.sortField;
@@ -218,6 +173,25 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
         this.stateService.workflowItemFilters.currentPageNumber =  event.first / event.rows;
         this.loadData();
     }
+
+    private getMetaKey() {
+        if (window.navigator && window.navigator.platform.indexOf("Mac") >= 0) {
+            return "\u2318";
+        } else {
+            return "Ctrl"
+        }
+    }
+
+    private selectAll($event) {
+        if (this.selection) {
+            if (this.selection.length == this.items.length) {
+                this.gridSelectionChange([this.items[0]]);
+            } else {
+                this.gridSelectionChange(this.items);
+            }
+        }
+    }
 }
+
 
 
