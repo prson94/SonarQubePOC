@@ -3869,8 +3869,11 @@ namespace d360.web.Controllers
                 {
                     throw new ConflictException("Error Occurred!", FieldInfo.FieldReferenceItemListFromRelationship_NeededRelationship);
                 }
+                //shallow copy of fieldType
+                var ftCopy = (FieldType)Company.Entry(ft)
+                                              .CurrentValues.ToObject();
                 // Static fields
-                
+
                 ft.Name = model.FieldType.Name;
                 ft.SortOrder = model.FieldType.SortOrder;
                 ft.Category = model.FieldType.Category;
@@ -4410,7 +4413,30 @@ namespace d360.web.Controllers
 
                 ft.UpdatedBy = Company.CurrentResourceID;
 
-                Company.Update<FieldType>(ft);
+                bool columnModified = false;
+                foreach (System.Reflection.PropertyInfo property in ft.GetType().GetProperties(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public)) 
+                {
+                    if (property.Name == "Fields" || property.Name == "FieldTypeLookup" || property.Name == "FieldTypeFilteredLookupDefinitions"
+                          || property.Name == "UpdatedBy" || property.Name ==  "FieldTypeFusionLookupDefinitions")
+                        continue;
+
+                    object value1 = property.GetValue(ft, null);
+                    object value2 = property.GetValue(ftCopy, null);
+                    if (!object.Equals(value1,value2)){
+                        Company.Entry(ft).Property(property.Name).IsModified = true;
+                        columnModified = true;
+                    }
+                    else
+                        Company.Entry(ft).Property(property.Name).IsModified = false;
+
+                }
+
+                if(columnModified)
+                    Company.Entry(ft).Property(x=>x.UpdatedBy).IsModified = true;
+
+                Company.SaveChanges();
+
+               
 
                 return jsonSuccess(FormInfo.Edit_FieldType_Confirmation, ft.ID.ToString(), "edit", HttpStatusCode.OK);
             }

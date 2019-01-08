@@ -30,6 +30,7 @@
 	<include file="scripts/GOV-6187.xml"/>
   <include file="scripts/GOV-6216.xml"/>
   <include file="scripts/GOV-5350.xml"/>
+  <include file="scripts/GOV-5497.xml"/>
   <include file="scripts/GOV-6279.xml"/>
 	<include file="scripts/GOV-6187-B.xml"/>	
 	<include file="scripts/GOV-6273.xml"/>
