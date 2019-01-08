@@ -114,13 +114,13 @@ namespace d360.model
             string ruleFailureLog = "";
             List<int> rulesRequiringRun = new List<int>();
 
+            int j = 0;
             rules.ForEach(rule =>
             {
-                using (SqlTransaction trans = cnn.BeginTransaction())
-                {
+                j++;
                     try
                     {
-                        var shouldrunRule = cnn.Query<bool>("exec ResponsibilityRuleShouldRun @id", new { id = rule.ID }, transaction: trans).Single();
+                        var shouldrunRule = cnn.Query<bool>("exec ResponsibilityRuleShouldRun @id", new { id = rule.ID }).Single();
 
                         if (shouldrunRule)
                         {
@@ -133,9 +133,55 @@ namespace d360.model
                             {
                                 try
                                 {
-                                    var thenSql = cnn.GetThenResultsSql(rule, false, false);
+                                    cnn.Execute("truncate table #ResponsibilityTypeRelationTypeItem");
+
+                                var thenSql = cnn.GetThenResultsSql(rule, false, false);
                                     sqlToExecute = $@"insert into #ResponsibilityTypeRelationTypeItem {string.Format(thenSql, "")}";
-                                    cnn.Execute(sqlToExecute, transaction: trans, commandTimeout: 1200);
+                                    int i = cnn.Execute(sqlToExecute, commandTimeout: 1200);
+
+                                    #region Insert type assignments into #resp table.
+
+                                    cnn.Execute("truncate table #resp");
+
+                                    cnn.Execute(@"
+    insert into #resp
+	    select	R.ID as RuleID,
+			    R.ResponsibilityTypeID,
+			    0 as AssetID,
+			    T.ID as AssetTypeID,
+			    I.SecurityAsset,
+			    I.SecurityAssetID,
+			    R.Context,
+			    R.ApplyToType,
+			    REL.PermissionsBitMask,
+			    R.IsVisible,
+			    cast(0 as bit) as Overridden,
+			    0 as OverrideID 
+	    from	AssetType T
+			    inner join ResponsibilityTypeRelationRule R on R.Object = T.Object and R.ObjectID = T.ObjectID
+			    inner join ResponsibilityTypeRelation REL on REL.ObjectType = T.Object and REL.ObjectID = T.ObjectID and REL.ResponsibilityTypeID = R.ResponsibilityTypeID
+			    inner join #ResponsibilityTypeRelationTypeItem I on I.RuleID = R.ID and R.ApplyToType = 1", commandTimeout: 7200);
+
+
+                                    #endregion
+
+                                    #region Merge final results into ResponsibilityTypeRelationRuleResult table
+                                    
+                                    cnn.Execute(@"
+                                        delete	T
+                                        from	ResponsibilityTypeRelationRuleResult T
+                                        where	T.RuleID = @ruleId",new { ruleId = rule.ID }, commandTimeout: 7200);
+
+
+                                    cnn.Execute(@"
+                                        insert into ResponsibilityTypeRelationRuleResult (RuleID, ResponsibilityTypeID, AssetID, AssetTypeID, SecurityAsset, SecurityAssetID, Context, ApplyToType, PermissionsBitMask, IsVisible, Overridden, OverrideID)
+	                                        select	S.*
+	                                        from	#resp S ", commandTimeout: 7200);
+
+
+                                    #endregion
+
+                                    
                                 }
                                 catch (Exception ex)
                                 {
@@ -149,7 +195,7 @@ namespace d360.model
                                     var thenSql = cnn.GetThenResultsSql(rule, false, false, "A.AssetID");
                                     var whenSql = cnn.GetWhenResultsSql(rule, false);
                                     sqlToExecute = $"insert into #ResponsibilityTypeRelationItem {string.Format(thenSql, (string.IsNullOrEmpty(whenSql) ? "" : $"cross apply ({whenSql}) A"))}";
-                                    cnn.Execute(sqlToExecute, transaction: trans, commandTimeout: 1200);
+                                    cnn.Execute(sqlToExecute, commandTimeout: 1200);
                                 }
                                 catch (Exception ex)
                                 {
@@ -157,32 +203,16 @@ namespace d360.model
                                 }
                             }
 
-                            cnn.Execute("update ResponsibilityTypeRelationRule set LastRunOn = @date where ID = @id", new { date = DateTime.UtcNow, id = rule.ID }, transaction: trans);
+                            cnn.Execute("update ResponsibilityTypeRelationRule set LastRunOn = @date where ID = @id", new { date = DateTime.UtcNow, id = rule.ID });
                         }
 
-                        trans.Commit();
                     }
                     catch
                     {
-                        try
-                        {
-                            trans.Rollback();
-                        }
-                        catch (Exception ex)
-                        {
-
-                            // This catch block will handle any errors that may have occurred
-                            // on the server that would cause the rollback to fail, such as
-                            // a closed connection.
-
-                            Console.WriteLine("Rollback Exception Type: {0}", ex.GetType());
-                            Console.WriteLine("  Message: {0}", ex.Message);
-
-                        }
+                       
                         throw;
                     }
-                }
-
+              
             });
 
             #region  Insert into temporary ruleID table to ignore.
@@ -275,7 +305,7 @@ namespace d360.model
 			                            inner join ResponsibilityTypeRelation REL on REL.ObjectType = T.Object and REL.ObjectID = T.ObjectID and REL.ResponsibilityTypeID = R.ResponsibilityTypeID
 			                            inner join #ResponsibilityTypeRelationItem I on I.RuleID = R.ID and I.AssetID = A.ID
                                 order by R.ID, A.ID, I.SecurityAssetID
-                                offset {position} rows fetch next {pageSize} rows only", transaction: trans, commandTimeout: 7200);
+                                offset {position} rows fetch next {pageSize} rows only",  commandTimeout: 7200);
 
                 position += pageSize;
 
@@ -288,7 +318,7 @@ namespace d360.model
                             set		T.Overridden = 1,
 		                            T.OverrideID = S.ID
                             from	#resp T
-		                            inner join ResponsibilityTypeRelationOverrideItem S on S.AssetID = T.AssetID and S.ResponsibilityTypeID = T.ResponsibilityTypeID", transaction: trans, commandTimeout: 7200);
+		                            inner join ResponsibilityTypeRelationOverrideItem S on S.AssetID = T.AssetID and S.ResponsibilityTypeID = T.ResponsibilityTypeID", commandTimeout: 7200);
 
                 #endregion
 
