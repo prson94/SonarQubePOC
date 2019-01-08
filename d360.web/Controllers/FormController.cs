@@ -12301,7 +12301,7 @@ select	{QueryConstants.HighLevelTypeCaseStatement} + T.Name as label,
 		T.Object + '|' + cast(T.ObjectID as varchar) as value
 from	ResponsibilityTypeRelation R
 		inner join AssetType T on T.Object = R.ObjectType and T.ObjectID = R.ObjectID and R.ResponsibilityTypeID = {id}
-        where R.ObjectType<>'ArtifactType'
+        where R.ObjectType<>'FusionAttributeType'
 order by {QueryConstants.HighLevelTypeCaseStatement} + T.Name");
             return new JsonNetResult
             {
