@@ -1,4 +1,6 @@
-﻿import { Injectable } from '@angular/core';
+
+import {catchError, map} from 'rxjs/operators';
+import { Injectable } from '@angular/core';
 import { Headers, Http, ResponseContentType } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
@@ -6,7 +8,7 @@ import { HelpResource, Resource, CountObject, ResponsibilityDetailForResource, F
 import { JsonResult } from '../models/jsonresult.model';
 import { SortOrder } from '../models/enums.model';
 import { GridFilterExpression } from '../models/grid-definition.model';
-import { Observable } from "rxjs/Observable";
+import { Observable } from "rxjs";
 
 
 @Injectable()
@@ -52,11 +54,11 @@ export class ResourcesService extends BaseService {
         }
 
 
-        return this.http.get(url)
-            .map(response => {
+        return this.http.get(url).pipe(
+            map(response => {
                 return response.json()
-            })
-            .catch(err => this.handleError(err));
+            }),
+            catchError(err => this.handleError(err)),);
     }
 
     getResponsibilityBreakdownByResource(id: number, responsibilityTypeId: number = 0): Promise<CountObject[]> {
