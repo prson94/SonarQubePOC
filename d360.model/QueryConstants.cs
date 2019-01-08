@@ -1403,7 +1403,8 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 ";
 
         public static string WorkflowObjectTypes = @"
-           	    select 
+           	select * from (
+                select 
 		            [object] + '|' + cast(objectId as varchar) as [value],
 		            objectId as id,
 		            [object] as [type],		
@@ -1437,10 +1438,11 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 		            'Fusion|' + cast(A.objectId as varchar) as [value],
 		            A.objectId as [id],
 		            'Fusion' as [type],
-		            'Fusion :: ' + A.DisplayValue as [label],
+		            'Fusion :: ' + F.[Name] as [label],
 		            1 as [count]
 	            from 
 		            AssetDetail A 
+                    inner join Fusion F on F.ID = A.ObjectID
 	            where
 		            A.[object] = 'Fusion'
 	            union all
@@ -1453,6 +1455,8 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                 from issuetype t
                 left join issue a on a.issuetypeid = t.id
                 group by t.id, t.name
+                ) o
+                order by o.label
 ";
 
         public static string WorkflowList = @"

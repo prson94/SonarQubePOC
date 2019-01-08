@@ -57,7 +57,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.OK, "Returns the corresponding metric.", typeof(MetricAsset)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your metric was not found.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this metric is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this metric is invalid, possibly due to an incorrectly formatted identifier (Uid).", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
         ]
         public IHttpActionResult GetAssetById(Guid uid)
@@ -390,16 +390,16 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Gets a hierarchical structure of metrics and conditions associated with the asset type UID provided.
+        /// Gets a hierarchical structure of metrics and conditions associated with the asset type Uid provided.
         /// </summary>
-        /// <param name="assetTypeUid">The UID of the asset type.</param>
+        /// <param name="assetTypeUid">The Uid of the asset type.</param>
         /// <param name="effectiveDate">The date which you want to pull the metric hierarchy for. If not provided, today's date is used. Optionally, you may also provide a past or future effective date.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpGet,
             Route("{assetTypeUid:Guid}/definition"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
-            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the asset type based on the provided uid was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the asset type based on the provided Uid was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "The hierarchical structure of metrics and conditions.", typeof(MetricAssetTypeHierarchyModels)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
         ]
@@ -415,7 +415,7 @@ namespace d360.web.Controllers.V2
                 var assetType = Company.Filter<AssetType>(i => i.uid == assetTypeUid).SingleOrDefault();
 
                 if (assetType == null)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with UID {assetTypeUid} could not be found."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {assetTypeUid} could not be found."));
 
                 var result = (Company.Database.Connection as SqlConnection).GetMetricDefinitionHierarchyByAssetType(assetTypeUid, effectiveDate);
 
@@ -431,7 +431,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Gets a hierarchical structure of metrics associated with the asset UID provided, for a given effective date. If no effective date is provided, today's date is used.
+        /// Gets a hierarchical structure of metrics associated with the asset Uid provided, for a given effective date. If no effective date is provided, today's date is used.
         /// </summary>
         /// <param name="assetUid">The UID of the asset.</param>
         /// <param name="effectiveDate">The date which you want to pull the metric hierarchy for. If not provided, today's date is used. Optionally, you may also provide a past effective date.</param>
@@ -440,7 +440,7 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route("{assetUid:Guid}/pointbreakdown"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
-            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the asset based on the provided uid was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the asset based on the provided Uid was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "The hierarchical structure of metric values for a given asset.", typeof(MetricAssetHierarchyModels)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
         ]
@@ -458,7 +458,7 @@ namespace d360.web.Controllers.V2
                 var asset = Company.Filter<Asset>(i => i.uid == assetUid).SingleOrDefault();
 
                 if (asset == null)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset with UID {assetUid} could not be found."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset with Uid {assetUid} could not be found."));
 
                 var result = (Company.Database.Connection as SqlConnection).GetMetricHierarchyByAsset(assetUid, effectiveDate);
 
@@ -474,9 +474,9 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Gets a administrative hierarchical structure of metrics associated with the asset type UID provided.
+        /// Gets a administrative hierarchical structure of metrics associated with the asset type Uid provided.
         /// </summary>
-        /// <param name="assetTypeUid">The UID of the asset type.</param>
+        /// <param name="assetTypeUid">The Uid of the asset type.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpGet,
@@ -539,9 +539,9 @@ for		json path").ToList();
         }
 
         /// <summary>
-        /// Gets a administrative hierarchical structure of metrics associated with the asset type UID provided.
+        /// Gets a administrative hierarchical structure of metrics associated with the asset type Uid provided.
         /// </summary>
-        /// <param name="assetTypeUid">The UID of the asset type.</param>
+        /// <param name="assetTypeUid">The Uid of the asset type.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpGet,

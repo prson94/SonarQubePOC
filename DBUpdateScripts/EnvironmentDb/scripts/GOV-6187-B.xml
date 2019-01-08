@@ -6,7 +6,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="MDonato" id="GOV-6187">
+  <changeSet author="MDonato" id="GOV-6187-B">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -17,8 +17,8 @@ ALTER PROCEDURE [dbo].[GetAssetHierarchy]
     @Type varchar(50) )
 	AS
 	Begin
-	-- declare  @ID int =2430947 ;--4832;-- 16113;
-	--declare @Type varchar(50) ='FusionAttribute';--'Taxonomy'; --'Artifact'
+	
+	
     if @Type = 'Artifact'  
 	  begin  
 	  with Sub as (  
@@ -30,8 +30,7 @@ ALTER PROCEDURE [dbo].[GetAssetHierarchy]
 		  1 as [Level]  
 		from AssetDetail O  
 		 cross apply [utility].[ObjectDetail](@Type,O.ObjectID) as D  
-		 outer apply dbo.GetParentByAssetID(O.ID) P
-		 left join Asset PA on PA.ID = P.ID
+		 left join Asset PA on PA.Object = 'Artifact' and PA.ObjectID = dbo.GetParentObjectID('Artifact',O.ObjectID)
 		where O.ObjectID = @ID and O.Object = 'Artifact'  
 		union all  
 		select O.ObjectID as ID,  
@@ -43,11 +42,10 @@ ALTER PROCEDURE [dbo].[GetAssetHierarchy]
 		from AssetDetail O  
 		  inner join Sub as C on C.ParentID = O.ObjectID  
 		  cross apply [utility].[ObjectDetail](@Type,O.ObjectID) as D 
-		  outer apply dbo.GetParentByAssetID(O.ObjectID) P
 		  outer apply (
-				select * from Asset where ID = P.ID
+				select * from Asset where Object = 'Artifact' and ObjectID = dbo.GetParentObjectID('Artifact',O.ObjectID)
 			) PA
-		where O.Object = 'Artifact' and (P.ID is null or (PA.ID = P.ID))
+		where O.Object = 'Artifact'
 	   )  
 	  select ID, ParentID,[Path],LevelName,Url,rank() over (Order by Level desc) as [Level] from Sub;
   end
@@ -109,7 +107,6 @@ ALTER PROCEDURE [dbo].[GetAssetHierarchy]
 	  select ID, ParentID,[Path],LevelName,Url,rank() over (Order by Level desc) as [Level] from Sub;
   end
   end
-
 ]]>
     </sql>
 	<rollback>
