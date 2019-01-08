@@ -10,7 +10,6 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace igx.jobs.responsibilityruleprocessor
 {
@@ -36,45 +35,23 @@ namespace igx.jobs.responsibilityruleprocessor
 #else
         const string timerSettings = "0 */3 * * * *";
 #endif
-        public static async Task Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log) //   
+        public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log) //   
         {
             try
             {
-
 #if DEBUG
-                var companies = new List<CompanyWithDatabaseServerSettings>();
-                using (var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
-                {
-                    cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
-                    companies = cnn.Query<CompanyWithDatabaseServerSettings>(@"
-                        select  c.ID as CompanyID, 
-                                c.Status, 
-                                ds.Server, 
-                                ds.Username, 
-                                ds.Password, 
-                                ds.FusionQueue, 
-                                ds.SearchServer, 
-                                ds.EventTopic, 
-                                ds.IsDevelopment,
-                                c.EnvironmentLevel,
-                                CDS.UrlPrefix
-                        from    company c 
-                                inner join databaseserver ds on c.databaseserverid = ds.id and c.ID = 1065
-                                inner join CompanyDomainSetting CDS on CDS.CompanyID = c.ID and CDS.IsPrimary = 1").ToList();
-                }
+                var companies = CoreFunction.GetCompaniesByCurrentSlot().Where(i => i.CompanyID == 1065).ToList();
 #else
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 #endif
-
-                foreach (var c in companies)
+                //companies.ForEach(c =>
+                companies.AsParallel().ForAll(c =>
                 {
                     try
                     {
                         var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password);
 
                         company.OpenWithRetry(RetryPolicy.DefaultFixed);
-
-                        CoreFunction.AITrackEvent(functionName, "ResponsibilityRuleProcessor Job Starting", new Dictionary<string, string> { { "CompanyID", c.CompanyID.ToString() } });
 
                         try
                         {
@@ -89,7 +66,7 @@ namespace igx.jobs.responsibilityruleprocessor
 
                         try
                         {
-                            await company.ProcessResponsibilityRelationRules();
+                            company.ProcessResponsibilityRelationRules();
                         }
                         catch (Exception ex)
                         {
@@ -97,8 +74,6 @@ namespace igx.jobs.responsibilityruleprocessor
                             log.WriteLine($"Company [{c.CompanyID}]: [{ex.GetFullExceptionData()}]");
                             CoreFunction.AIFlush();
                         }
-
-                        CoreFunction.AITrackEvent(functionName, "ResponsibilityRuleProcessor Job Completed", new Dictionary<string, string> { { "CompanyID", c.CompanyID.ToString() } });
                     }
                     catch (Exception ex)
                     {
@@ -106,7 +81,7 @@ namespace igx.jobs.responsibilityruleprocessor
                         log.WriteLine($"Company [{c.CompanyID}]: [{ex.GetFullExceptionData()}]");
                         CoreFunction.AIFlush();
                     }
-                }
+                });
             }
             catch (Exception ex)
             {
