@@ -15149,35 +15149,7 @@ new { t = a.TaxonomyTypeID, currentLevel = a.Level ?? 1, maxLevel = a.TaxonomyTy
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-        [Route("Taxonomy_SimilarItems"), NonNullableParameters]
-        public JsonNetResult Taxonomy_SimilarItems(int typeID, int id, string query)
-        {
-
-            var sql = @"with p as
-                    (
-                    select t.id, t.parentid, t.name from taxonomy t
-                    where t.id = @id
-                    union all
-                    select t.id, t.parentid, t.name from taxonomy t
-                    join p on t.parentid = p.id and t.parentid is not null and t.id != p.id
-                    )
-                    select 
-	                    d.DisplayValue as Name,
-	                    d.Url, 
-	                    d.ForeColor as IconForeColor, 
-	                    d.BackColor as IconBackColor, 
-	                    cast(null as nvarchar) as [Description],
-	                    d.TypeID as objecttypeid
-                    from p
-                    join AssetDetail d on d.objectid = p.id and d.[object] = @type
-                    where d.DisplayValue like @query + '%'
-                    ";
-            return new JsonNetResult
-            {
-                Data = Company.Query<dynamic>((id > 0) ? sql : QueryConstants.SimilarItems, new { type = new DbString { Value = "Taxonomy", IsFixedLength = true, IsAnsi = true, Length = 50 }, typeID, id, query }),
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
+        
         
         #endregion
 
