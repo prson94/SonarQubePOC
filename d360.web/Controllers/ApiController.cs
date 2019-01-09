@@ -1141,15 +1141,18 @@ where   h.ID <> @t order by h.[Level] desc;
             var artifactType = Company.GetById<ArtifactType>(typeID);
             if (artifactType == null) throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
 
+            var assetType = Company.Filter<AssetType>(i => i.Object == "ArtifactType" && i.ObjectID == artifactType.ID).SingleOrDefault();
+            if (assetType == null) throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
+
             var model = new Dictionary<string, object>();
 
             model.Add("ID", artifactType.ID);
             model.Add("Name", artifactType.Name);
             model.Add("Description", artifactType.Description);
             model.Add("ParentID", Company.GetParentType<ArtifactType>(artifactType.ID)?.ID ?? null);
-            model.Add("CanOwnFusion", artifactType.CanOwnFusion);
+            model.Add("CanOwnFusion", assetType.CanOwnFusion);
             model.Add("HasCustomExportTemplates", Company.ArtifactTypeExportTemplates.Where(x => x.ArtifactTypeID == typeID).Any());
-            model.Add("AutoDisplayDescription", artifactType.AutoDisplayDescription);
+            model.Add("AutoDisplayDescription", assetType.AutoDisplayDescription);
 
             bool hasDashboards = Company.Filter<Report>(x => x.ObjectType == "ArtifactType" && x.ObjectID == typeID && x.ReportType != "legacy").Any();
             model.Add("HasDashboards", hasDashboards);
