@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Dapper;
 using System.Data.Common;
 using d360.core.entities;
+using System.Data;
 
 namespace d360.model
 {
@@ -87,14 +88,17 @@ namespace d360.model
             {
                 GenerateBusinessLineageForObject(item, maps);                
             }
-           
+
 
             // create a hash that has the source fusion attribute for easy find
             // create a hash that has the target fusion attribute for easy find
-           // Dictionary<int, MarkitMapRowData> sourceFusionDictionary = new Dictionary<int, MarkitMapRowData>();
+            // Dictionary<int, MarkitMapRowData> sourceFusionDictionary = new Dictionary<int, MarkitMapRowData>();
             //Dictionary<int, MarkitMapRowData> targetFusionDictionary = new Dictionary<int, MarkitMapRowData>();
 
             // start a transaction
+
+            if (Database.Connection.State != ConnectionState.Open)
+                Database.Connection.Open();
 
             using (var transaction = Database.Connection.BeginTransaction())
             {
@@ -128,36 +132,50 @@ namespace d360.model
 
         private void GenerateMarkitBusinessLineageImpl(string obj, int? objectId, FusionMarkitLineageData currentMap, List<int> mapValues, MarkitObject key, IEnumerable<FusionMarkitLineageData> maps)
         {
-            // update the source / target values only of one is null
-            if(string.IsNullOrEmpty(currentMap.Target) ^ string.IsNullOrEmpty(currentMap.Source))
+            Queue<FusionMarkitLineageData> mapQueue = new Queue<FusionMarkitLineageData>();
+            mapQueue.Enqueue(currentMap);
+            currentMap.Visited = true;
+
+            while(mapQueue.Count != 0)
             {
-                if(string.IsNullOrEmpty(currentMap.Target))
+                var front = mapQueue.Dequeue();
+                // update the source / target business item values only of one is null
+                if (string.IsNullOrEmpty(front.Target) ^ string.IsNullOrEmpty(front.Source))
                 {
-                    currentMap.Target = currentMap.Source;
-                    currentMap.TargetID = currentMap.SourceID;
+                    if (string.IsNullOrEmpty(front.Target))
+                    {
+                        front.Target = front.Source;
+                        front.TargetID = front.SourceID;
+                    }
+                    else
+                    {
+                        front.Source = front.Target;
+                        front.SourceID = front.TargetID;
+                    }
                 }
-                else
+
+                //mark item as visited
+                front.Visited = true;
+
+                //look for all adjacent verticies if not visited add toe the queue
+                // this needs to be optimized to be binary search / hash table
+                //left
+                var leftMaps = maps.Where(x => x.TargetFusionAttributeID == front.SourceFusionAttributeID);
+
+                foreach (var map in leftMaps)
                 {
-                    currentMap.Source = currentMap.Target;
-                    currentMap.SourceID = currentMap.TargetID;
+                    if(!map.Visited)
+                        mapQueue.Enqueue(map);
                 }
-            }            
-            
-            //look at the current map records source 
-            FusionMarkitLineageData leftMap = maps.FirstOrDefault(x => x.TargetFusionAttributeID == currentMap.SourceFusionAttributeID);
 
-            if(leftMap != null)
-            {
-                GenerateMarkitBusinessLineageImpl(currentMap.SourceObject, currentMap.SourceID, leftMap, mapValues, key, maps);
-            }
+                //right
+                var rightMaps = maps.Where(x => x.SourceFusionAttributeID == front.TargetFusionAttributeID);
 
-
-            //look at the current map records target
-            FusionMarkitLineageData rightMap = maps.FirstOrDefault(x => x.SourceFusionAttributeID == currentMap.TargetFusionAttributeID);
-
-            if (rightMap != null)
-            {
-                GenerateMarkitBusinessLineageImpl(currentMap.Target, currentMap.TargetID, rightMap, mapValues, key, maps);
+                foreach (var map in rightMaps)
+                {
+                    if (!map.Visited)
+                        mapQueue.Enqueue(map);
+                }
             }
         }
 
