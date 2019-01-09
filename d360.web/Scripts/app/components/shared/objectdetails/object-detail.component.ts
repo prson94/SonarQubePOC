@@ -66,17 +66,12 @@ export class ObjectDetailComponent implements OnChanges {
                                 this.objectDetailService.getLookupGrid(f.LookupGridUrl)
                                     .then(i => {
                                         f.Data = i;
-                                        /*if (f.Data.Error) {
-                                            this.messagesService.showError('Error', f.Data.Error);
-                                        }*/
                                     })
                                     .then(() => {
                                         if (!f.Data || !f.Data.Values || f.Data.Values.length == 0) {
                                             f.Type = DetailFieldType.None;
                                             r.FirstColumnFields.splice(r.FirstColumnFields.indexOf(f), 1);
                                         }
-                                    }).catch((err) => {alert(1);
-                                        console.log("err ", err);
                                     });
                             }
 

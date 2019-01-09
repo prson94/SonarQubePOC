@@ -3628,6 +3628,11 @@ outer apply (
                 var fieldTypeIDs = fields.Where(i => i.FieldTypeID != 0).Select(x => x.FieldTypeID).ToList();
                 var fieldTypes = Company.Filter<FieldType>(i => fieldTypeIDs.Contains(i.ID)).ToList();
 
+                if(def.Fields.Count > 0 && (fieldTypes == null || fieldTypes.Count == 0))
+                {
+                    throw new Exception("All the fields have been removed.");
+                }
+
                 type = type.CleanForSql();
 
                 for (var i = 0; i < def.Relations.Count; i++)
@@ -3693,19 +3698,10 @@ outer apply (
             }
             catch (Exception ex)
             {
-                var errorColumns = new List<GridColumn>() { new GridColumn { datafield = "ErrorMessage", text = "", columntype = "string" } };       /* columntype can be as -text- */
-                var errorFields = new List<GridField>() { new GridField { name = "ErrorMessage", type = "string" } };
-                dynamic ErrorObject = new { ErrorMessage = ex.GetFullExceptionData() };
-                var errorResults = new List<dynamic>() { ErrorObject };
-
-                /* FIXME: use server error(HttpStatusCode.BadRequest) instead HttpStatusCode.OK */
-                return Request.CreateResponse(HttpStatusCode.OK, new
-                {
-                    Values = results,
-                    Columns = columns,
-                    Fields = gridFields,
-                    Error = ex.GetFullExceptionData()
-                });
+                return Request.CreateResponse(
+                    HttpStatusCode.InternalServerError,
+                    new ErrorResponse { title = "Error", message = ex.GetFullExceptionData() }
+                );
             }
 
             return Request.CreateResponse(HttpStatusCode.OK, new
