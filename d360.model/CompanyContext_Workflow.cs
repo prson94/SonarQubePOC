@@ -769,6 +769,12 @@ namespace d360.model
 
                     return;
                 }
+                else if (WorkflowItemAssignments.Any(i => i.ItemID == itemStep.ItemID && i.StepID == itemStep.StepID))
+                {
+                    Console.WriteLine($"STEP WITH ID {itemStepID} ALREADY HAS AN ACTIVE ASSIGNMENT FROM ANOTHER TRANSITION");
+
+                    return;
+                }
             }
 
 
