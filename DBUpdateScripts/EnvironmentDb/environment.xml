@@ -35,4 +35,5 @@
 	<include file="scripts/GOV-6273.xml"/>
 	<include file="scripts/GOV-6273-ProcUpdate.xml"/>
   <include file="scripts/GOV-6254.xml"/>
+  <include file="scripts/GOV-6350.xml"/>
 </databaseChangeLog>
