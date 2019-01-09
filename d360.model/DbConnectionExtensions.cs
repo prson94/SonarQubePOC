@@ -114,10 +114,8 @@ namespace d360.model
             string ruleFailureLog = "";
             List<int> rulesRequiringRun = new List<int>();
 
-            int j = 0;
             rules.ForEach(rule =>
             {
-                j++;
                     try
                     {
                         var shouldrunRule = cnn.Query<bool>("exec ResponsibilityRuleShouldRun @id", new { id = rule.ID }).Single();
