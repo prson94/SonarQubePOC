@@ -26,5 +26,6 @@ namespace d360.core.entities
         public string Target { get; set; }
         public int? TargetID { get; set; }
         public DateTime UpdatedOn { get; set; }
+        public bool Visited { get; set; }
     }
 }
