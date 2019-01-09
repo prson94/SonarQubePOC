@@ -938,6 +938,63 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
 
         #region API v2 logic
 
+        internal class FieldTypeIdModel
+        {
+            public int ID { get; set; }
+            public string Name { get; set; }
+        }
+
+        static List<FieldType> GetEditableFieldTypesByAssetType(this SqlConnection cnn, AssetType at)
+        {
+            return cnn.Query<FieldType>("select * from FieldType where AssetTypeID = @atId and [Type] not in ('Hidden', 'Color', 'FusionLookup', 'Attribute', 'FilteredLookup', 'ComplexRelationLookup', 'OwnershipLookup', 'FieldFromRelationship', 'RefListRelationship')", new { atId = at.ID }).ToList();
+        }
+
+        static void SendWorkflowEvents(this SqlConnection cnn, 
+            IQueueSource queue, string companyUrlPrefix, int currentCompanyID, int currentResourceID, 
+            AssetType at, List<DatabaseBulkAssetResult> results)
+        {
+            try
+            {
+                var events = new List<EventInfo>();
+                var objectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), at.Object);
+                foreach (var result in results)
+                {
+                    var changeType = result.IsNew ? ChangeType.Add : ChangeType.Update;
+
+                    events.Add(new EventInfo
+                    {
+                        CompanyID = currentCompanyID,
+                        DomainPrefix = companyUrlPrefix,
+                        ResourceID = currentResourceID,
+                        Action = changeType,
+                        Object = new EventObjectInfo
+                        {
+                            Object = (SystemObjects)Enum.Parse(typeof(SystemObjects), result.Object),
+                            ObjectType = objectType,
+                            ObjectID = result.ObjectID,
+                            ObjectTypeID = at.ObjectID
+                        }
+                    });
+
+                    if (events.Count > 50)
+                    {
+                        queue.CreateTopicMessages(events);
+                        events.Clear();
+                    }
+                }
+
+                if (events.Count > 0)
+                {
+                    queue.CreateTopicMessages(events);
+                    events.Clear();
+                }
+            }
+            catch (Exception)
+            {
+
+            }
+        }
+
         public static List<DatabaseBulkAssetResult> InsertAssets(this SqlConnection cnn,
             IQueueSource queue,
             string companyUrlPrefix,
@@ -964,6 +1021,17 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
 
             #endregion
 
+            var results = new List<DatabaseBulkAssetResult>();
+
+            var fieldTypes = cnn.GetEditableFieldTypesByAssetType(at);
+            var fieldTypeIDs = new HashSet<FieldTypeIdModel>();
+            fieldTypes.ForEach(ft => {
+                fieldTypeIDs.Add(new FieldTypeIdModel { ID = ft.ID, Name = ft.Name });
+            });
+
+            int dbLimit = 1000;
+            int currentCount = 0;
+
             #region Generate data sets
 
             for (int i = 1; i <= import.Count; i++)
@@ -977,23 +1045,73 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
                 if (model.ParentUid.HasValue)
                     row["ParentUid"] = model.ParentUid.Value;
 
-                assetTable.Rows.Add(row);
-
+                var usedFields = new HashSet<string>();
+                bool assetIsValid = true;
                 foreach (var k in model.Fields.Keys.Where(k => k != "ParentUid"))
                 {
+                    // Checks for duplicate fields and only add uniques.
+                    if (!usedFields.Any(u => u == k) && assetIsValid)
+                    {
+                        usedFields.Add(k);
+
                         var fieldRow = assetFieldTable.NewRow();
 
                         fieldRow["ItemNumber"] = i;
                         fieldRow["FieldName"] = k.Trim();
                         fieldRow["FieldValue"] = (model.Fields[k] + "").Trim();
+                        if (fieldTypeIDs.Any(ft => ft.Name == k))
+                        {
+                            fieldRow["FieldTypeID"] = fieldTypeIDs.Single(ft => ft.Name == k).ID;
+                            assetFieldTable.Rows.Add(fieldRow);
+                        }
+                        else
+                        {
+                            if (k != "Name" && k != "Code" && k != "FusionID")
+                            {
+                                row["Message"] += $"Field [{k}] is not valid for this asset. ";
+                                assetIsValid = false;
+                            }
+                        }
+                    }
+                }
 
-                        assetFieldTable.Rows.Add(fieldRow);                 
+                if (assetIsValid)
+                {
+                    assetTable.Rows.Add(row);
+                    currentCount++;
+                }
+                else
+                {
+                    results.Add(new DatabaseBulkAssetResult { ItemNumber = i, Message = row["Message"].ToString(), Success = false, IsNew = false });
+                }
+
+                // If we reached limit, have the database process what we have so far.
+                if (currentCount >= dbLimit)
+                {
+                    results.AddRange(
+                        cnn.UpsertAssets(currentResourceID, true, at, assetTable, assetFieldTable, timeout)
+                    );
+                    assetTable.Rows.Clear();
+                    assetFieldTable.Rows.Clear();
+                    currentCount = 0;
                 }
             }
 
             #endregion
 
-            return cnn.UpsertAssets(queue, companyUrlPrefix, currentCompanyID, currentResourceID, true, at, assetTable, assetFieldTable, timeout);
+            // Now deal with any remaining items.
+            if (currentCount > 0)
+            {
+                results.AddRange(
+                    cnn.UpsertAssets(currentResourceID, true, at, assetTable, assetFieldTable, timeout)
+                );
+                currentCount = 0;
+            }
+
+
+            cnn.SendWorkflowEvents(queue, companyUrlPrefix, currentCompanyID, currentResourceID, at, results);
+
+            return results;
         }
 
         public static List<DatabaseBulkAssetResult> UpdateAssets(this SqlConnection cnn,
@@ -1022,6 +1140,8 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
 
             #endregion
 
+            var results = new List<DatabaseBulkAssetResult>();
+
             #region Generate data sets
 
             for (int i = 1; i <= import.Count; i++)
@@ -1037,8 +1157,6 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
 
                 foreach (var k in model.Fields.Keys.Where(k => k != "Uid"))
                 {
-                    //if (!string.IsNullOrEmpty(model.Fields[k]))
-                    //{
                         var fieldRow = assetFieldTable.NewRow();
 
                         fieldRow["ItemNumber"] = i;
@@ -1046,30 +1164,30 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
                         fieldRow["FieldValue"] = (model.Fields[k] + "").Trim();
 
                         assetFieldTable.Rows.Add(fieldRow);
-                    //}
                 }
             }
 
+            results.AddRange(cnn.UpsertAssets(currentResourceID, false, at, assetTable, assetFieldTable, timeout));
+
             #endregion
 
-            return cnn.UpsertAssets(queue, companyUrlPrefix, currentCompanyID, currentResourceID, false, at, assetTable, assetFieldTable, timeout);
+            cnn.SendWorkflowEvents(queue, companyUrlPrefix, currentCompanyID, currentResourceID, at, results);
+
+            return results;
         }
 
         static List<DatabaseBulkAssetResult> UpsertAssets(this SqlConnection cnn, 
-            IQueueSource queue, 
-            string companyUrlPrefix,
-            int currentCompanyID,
             int currentResourceID, 
             bool isInsert,
-            AssetType at, 
+            AssetType at,
             System.Data.DataTable assetTable,
             System.Data.DataTable assetFieldTable,
             int timeout = 3600)
         {
-            List<DatabaseBulkAssetResult> results = null;
-
             if (cnn.State != System.Data.ConnectionState.Open)
                 cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+            List<DatabaseBulkAssetResult> results = null;
 
             using (var trans = cnn.BeginTransaction())
             {
@@ -1155,53 +1273,6 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
             }
 
             cnn.Close();
-
-
-            #region Send Relationship Events
-
-            try
-            {
-                var events = new List<EventInfo>();
-                var objectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), at.Object);
-                foreach (var result in results)
-                {
-                    var changeType = result.IsNew ? ChangeType.Add : ChangeType.Update;
-
-                    events.Add(new EventInfo
-                    {
-                        CompanyID = currentCompanyID,
-                        DomainPrefix = companyUrlPrefix,
-                        ResourceID = currentResourceID,
-                        Action = changeType,
-                        Object = new EventObjectInfo
-                        {
-                            Object = (SystemObjects)Enum.Parse(typeof(SystemObjects), result.Object),
-                            ObjectType = objectType,
-                            ObjectID = result.ObjectID,
-                            ObjectTypeID = at.ObjectID
-                        }
-                    });
-
-                    if (events.Count > 50)
-                    {
-                        queue.CreateTopicMessages(events);
-                        events.Clear();
-                    }
-                }
-
-                if (events.Count > 0)
-                {
-                    queue.CreateTopicMessages(events);
-                    events.Clear();
-                }
-            }
-            catch (Exception)
-            {
-
-            }
-
-            #endregion
-
 
             return results;
         }
@@ -1526,6 +1597,7 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
 
             return BulkRelationshipsImport(cnn, queue, companyUrlPrefix, currentCompanyID, currentResourceID, rt, values, timeout);
         }
+        
         #endregion API v2 logic
     }
 }
