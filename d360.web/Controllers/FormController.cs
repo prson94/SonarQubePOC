@@ -12482,31 +12482,65 @@ order by	case
         [HttpGet, ActionName("ResponsibilityTypeRelationRuleRelationships_FormData"), Route("ResponsibilityTypeRelationRuleRelationships_FormData"), NonNullableParameters]
         public JsonNetResult GetResponsibilityTypeRelationRuleRelationships_FormData(SystemObjects type, int id, int intersectTypeID)
         {
-            var items = Company.Query<dynamic>($@"
-select	D.Object + '|' + cast(D.ObjectID as varchar) as value,
-		DN.DisplayValue as label
-from	Asset D
-        inner join AssetType DT on DT.ID = D.AssetTypeID
-		inner join	(
-					select	case
-								when (Subject = '{type.ToString()}' and SubjectID = {id}) then Object
-								else Subject
-							end as Object,
-							case
-								when (Subject = '{type.ToString()}' and SubjectID = {id}) then ObjectID
-								else SubjectID
-							end as ObjectID
-					from	IntersectType
-					where	ID = {intersectTypeID}
-					) I on I.Object = DT.Object and I.ObjectID = DT.ObjectID
-        cross apply dbo.GetAssetDisplayValueById(D.ID) DN  
-order by DN.DisplayValue");
-
-            return new JsonNetResult
+            if (type == SystemObjects.TaxonomyType || type == SystemObjects.PolicyType)
             {
-                Data = items,
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
+                // case #1:
+                var items = Company.Query<dynamic>($@"
+                    select	D.Object + '|' + cast(D.ObjectID as varchar) as value,
+		                    atp.textpath as label 
+                    from	Asset D
+                            inner join AssetType DT on DT.ID = D.AssetTypeID
+		                    inner join	(
+					                    select	case
+								                    when (Subject = '{type.ToString()}' and SubjectID = {id}) then Object
+								                    else Subject
+							                    end as Object,
+							                    case
+								                    when (Subject = '{type.ToString()}' and SubjectID = {id}) then ObjectID
+								                    else SubjectID
+							                    end as ObjectID
+					                    from	IntersectType
+					                    where	ID = {intersectTypeID}
+					                    ) I on I.Object = DT.Object and I.ObjectID = DT.ObjectID
+                            cross apply getassettextpathbyid(D.id, '/') atp
+                       order by atp.textpath");
+
+                items.First().label = "long string.....";
+                return new JsonNetResult
+                {
+                    Data = items,
+                    Formatting = Newtonsoft.Json.Formatting.None
+                };
+            } else
+            {
+                // case #2:
+                var items = Company.Query<dynamic>($@"
+                    select	D.Object + '|' + cast(D.ObjectID as varchar) as value,
+		                    DN.DisplayValue as label
+                    from	Asset D
+                            inner join AssetType DT on DT.ID = D.AssetTypeID
+		                    inner join	(
+					                    select	case
+								                    when (Subject = '{type.ToString()}' and SubjectID = {id}) then Object
+								                    else Subject
+							                    end as Object,
+							                    case
+								                    when (Subject = '{type.ToString()}' and SubjectID = {id}) then ObjectID
+								                    else SubjectID
+							                    end as ObjectID
+					                    from	IntersectType
+					                    where	ID = {intersectTypeID}
+					                    ) I on I.Object = DT.Object and I.ObjectID = DT.ObjectID
+                            cross apply dbo.GetAssetDisplayValueById(D.ID) DN  
+                    order by DN.DisplayValue");
+
+                items.First().label = "long string.....";
+                return new JsonNetResult
+                {
+                    Data = items,
+                    Formatting = Newtonsoft.Json.Formatting.None
+                };
+            }
         }
         
         #endregion
