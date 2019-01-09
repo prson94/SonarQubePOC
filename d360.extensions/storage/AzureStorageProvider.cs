@@ -37,8 +37,14 @@ namespace d360.extensions.storage
 
         public void CreateFile(string folderName, string fileName, Stream file)
         {
+            CreateFile(folderName, fileName, file, true);
+        }
+
+        public void CreateFile(string folderName, string fileName, Stream file, bool noCache = false)
+        {
             var c = getContainer(folderName);
             CloudBlockBlob blockBlob = c.GetBlockBlobReference(fileName);
+            blockBlob.Properties.CacheControl = "private, max-age=0, no-cache, no-store";
             blockBlob.UploadFromStream(file);
         }
 
