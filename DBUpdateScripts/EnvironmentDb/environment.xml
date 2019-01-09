@@ -45,9 +45,6 @@
  	<include file="scripts/GOV-6350.xml"/>
 	<include file="scripts/GOV-6359.xml"/>
 	<include file="scripts/GOV-6265.xml"/>
-	<include file="scripts/GOV-6265-B.xml"/>
-	<include file="scripts/GOV-6265-C.xml"/>
-	<include file="scripts/GOV-6265-D.xml"/>
 
 </databaseChangeLog>
 
