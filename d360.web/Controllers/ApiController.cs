@@ -3630,7 +3630,7 @@ outer apply (
 
                 if(def.Fields.Count > 0 && (fieldTypes == null || fieldTypes.Count == 0))
                 {
-                    throw new Exception("All the fields have been removed.");
+                    throw new Exception("The relationship lookup field has 0 valid fields to display. Please verify the definition is correct.");
                 }
 
                 type = type.CleanForSql();
