@@ -18,11 +18,23 @@ export class BaseService {
 
                 if (error instanceof Error) {
                     // A client-side or network error occurred. Handle it accordingly.
-                    console.log('An error occurred[client side]:', error.statusText);//error.error.message);
+                    console.error('An error occurred[client side]:', error.statusText);//error.error.message);
                 } else {
                     // server side error
-                    console.log('An error occurred[server side]', error);
-                    if (this && this.messages && error.status !== 0) this.messages.showError('Error', error.toString());
+                    console.error('An error occurred[server side]', error);
+                    if (this && this.messages && error.status !== 0) {
+                        var errorMessage = "";
+                        var isError_body = Object.keys(error).indexOf("_body") > -1;
+
+                        if (isError_body) {
+                            errorMessage = JSON.parse(error["_body"]).message;
+                        } else {
+                            errorMessage = error.toString();
+                        }
+                        
+                        this.messages.showError('Error', errorMessage);
+                        
+                    }
                 }
             });
 
