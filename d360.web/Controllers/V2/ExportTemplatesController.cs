@@ -1,21 +1,20 @@
 ﻿using d360.core.entities;
-using d360.extensions;
 using d360.model;
 using d360.web.Filters;
+using d360.web.Models;
 using Dapper;
 using Microsoft.Web.Http;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
-using System.Drawing;
 using System.Web.Http.Description;
 
 namespace d360.web.Controllers.V2
@@ -32,7 +31,7 @@ namespace d360.web.Controllers.V2
         public ExportTemplatesController(CommunityContext community, CompanyContext company)
             : base(community, company)
         {
-            
+
         }
 
         #endregion
@@ -44,16 +43,15 @@ namespace d360.web.Controllers.V2
         [
             HttpGet, MapToApiVersion("2.0"), Route(""),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "", 
-            
-            typeof(List<ArtifactTypeExportTemplate>))
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(List<ArtifactTypeExportTemplate>)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse))
         ]
         public async Task<IEnumerable<dynamic>> Get()
         {
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
 
-            return (await Company.QueryAsync<dynamic>("select ID, ArtifactTypeID, Name, Description,IncludeFields,ExportViewType,IncludeUrl,IncludeParent,UsageNotes,CASE WHEN templatefile IS NULL THEN 0 ELSE 1 END as HasTemplateFile from ArtifactTypeExportTemplate order by Name, ID"));            
+            return (await Company.QueryAsync<dynamic>("select ID, ArtifactTypeID, Name, Description,IncludeFields,ExportViewType,IncludeUrl,IncludeParent,UsageNotes,CASE WHEN templatefile IS NULL THEN 0 ELSE 1 END as HasTemplateFile from ArtifactTypeExportTemplate order by Name, ID"));
         }
 
         /// <summary>
@@ -65,6 +63,8 @@ namespace d360.web.Controllers.V2
             MapToApiVersion("2.0"),
             Route("{id}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ArtifactTypeExportTemplate)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse))
         ]
         public async Task<HttpResponseMessage> DeleteById(int id)
         {
@@ -86,7 +86,10 @@ namespace d360.web.Controllers.V2
             HttpPost,
             MapToApiVersion("2.0"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            Route("")
+            Route(""),
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotAcceptable, "Model does not contain required fields.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Conflict, "Item already exists", typeof(ErrorResponse)),
         ]
         public async Task<ArtifactTypeExportTemplate> Post(ArtifactTypeExportTemplate model)
         {
@@ -97,7 +100,7 @@ namespace d360.web.Controllers.V2
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "Model does not contain required fields."));
 
             //validate the artifacttype id is a valid artifact typeid
-            if(!Company.ArtifactTypes.Any(x=>x.ID == model.ArtifactTypeID))
+            if (!Company.ArtifactTypes.Any(x => x.ID == model.ArtifactTypeID))
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "Model does not contain a valid existing Artifact Type."));
 
             //create the new record
@@ -120,7 +123,8 @@ namespace d360.web.Controllers.V2
             HttpGet,
             MapToApiVersion("2.0"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            Route("Styles/{templateId:int}")
+            Route("Styles/{templateId:int}"),
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse))
         ]
         public IEnumerable<ArtifactTypeExportTemplateStyle> GetStyles(int templateId)
         {
@@ -128,9 +132,10 @@ namespace d360.web.Controllers.V2
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
             var styles = Company.ArtifactTypeExportTemplateStyles.Where(x => x.ArtifactTypeExportTemplateID == templateId).ToList();
-            styles.ForEach(x => {
-                x.BgColor =  x.BackgroundColor.HasValue?  ColorTranslator.ToHtml(Color.FromArgb(x.BackgroundColor.Value)) : "#FFFFFF";
-                x.TextColor= x.Color.HasValue ? ColorTranslator.ToHtml(Color.FromArgb(x.Color.Value)) : "#000000";
+            styles.ForEach(x =>
+            {
+                x.BgColor = x.BackgroundColor.HasValue ? ColorTranslator.ToHtml(Color.FromArgb(x.BackgroundColor.Value)) : "#FFFFFF";
+                x.TextColor = x.Color.HasValue ? ColorTranslator.ToHtml(Color.FromArgb(x.Color.Value)) : "#000000";
             });
             return styles;
 
@@ -145,7 +150,9 @@ namespace d360.web.Controllers.V2
             HttpPost,
             MapToApiVersion("2.0"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            Route("Style")
+            Route("Style"),
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse))
         ]
         public async Task<ArtifactTypeExportTemplateStyle> SaveTemplateStyle(ArtifactTypeExportTemplateStyle model)
         {
@@ -178,14 +185,17 @@ namespace d360.web.Controllers.V2
             MapToApiVersion("2.0"),
             Route("Style/{id}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotAcceptable, "Access Denied", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse))
         ]
-        public async Task<ArtifactTypeExportTemplateStyle> UpdateTemplateStyle(int id,ArtifactTypeExportTemplateStyle model)
+        public async Task<ArtifactTypeExportTemplateStyle> UpdateTemplateStyle(int id, ArtifactTypeExportTemplateStyle model)
         {
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
 
             //validate the model input
-            if (model.ID <= 0  || model.ArtifactTypeExportTemplateID <= 0)
+            if (model.ID <= 0 || model.ArtifactTypeExportTemplateID <= 0)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "Model does not contain required fields."));
 
             //check that there is a export template exists
@@ -200,10 +210,10 @@ namespace d360.web.Controllers.V2
                 data.BackgroundColor = ColorTranslator.FromHtml(model.BgColor).ToArgb();
 
             if (!string.IsNullOrEmpty(model.TextColor))
-                data.Color =ColorTranslator.FromHtml(model.TextColor).ToArgb();
+                data.Color = ColorTranslator.FromHtml(model.TextColor).ToArgb();
 
             Company.Entry(data).State = System.Data.Entity.EntityState.Modified;
-            var res =await Company.SaveChangesAsync();
+            var res = await Company.SaveChangesAsync();
             if (res > 0) return model; // updated
 
             throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "Export Template Style not found to update."));
@@ -220,12 +230,14 @@ namespace d360.web.Controllers.V2
             MapToApiVersion("2.0"),
             Route("Style/{id}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse))
         ]
         public async Task<HttpResponseMessage> DeleteStyle(int id)
         {
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
-           
+
             var res = await Company.Database.Connection.ExecuteAsync("delete ArtifactTypeExportTemplateStyle where id = @id", new { id = id });
 
             if (res > 0) return Request.CreateResponse(HttpStatusCode.OK); // deleted
@@ -241,7 +253,10 @@ namespace d360.web.Controllers.V2
             HttpPost,
             MapToApiVersion("2.0"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            Route("TemplateFile/{templateId}")
+            Route("TemplateFile/{templateId}"),
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "Error while opening file.", typeof(ErrorResponse))
         ]
         public async Task<HttpResponseMessage> PostTemplateFile(int templateId)
         {
@@ -250,7 +265,7 @@ namespace d360.web.Controllers.V2
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
 
-            if(!Company.ArtifactTypeExportTemplates.Any(x=>x.ID == templateId))
+            if (!Company.ArtifactTypeExportTemplates.Any(x => x.ID == templateId))
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "Template not found"));
 
             byte[] template = null;
@@ -269,7 +284,7 @@ namespace d360.web.Controllers.V2
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "Error while opening file"));
             }
 
-            var res = await Company.Database.Connection.ExecuteAsync("update ArtifactTypeExportTemplate  set TemplateFile = @t where ID = @id", new { @t = template, @id=templateId  });
+            var res = await Company.Database.Connection.ExecuteAsync("update ArtifactTypeExportTemplate  set TemplateFile = @t where ID = @id", new { @t = template, @id = templateId });
 
             return Request.CreateResponse(HttpStatusCode.OK, "updated");
         }
@@ -284,6 +299,9 @@ namespace d360.web.Controllers.V2
             MapToApiVersion("2.0"),
             Route("{id}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Export Template not found to update.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotAcceptable, "Model does not contain required fields.", typeof(ErrorResponse))
         ]
         public async Task<ArtifactTypeExportTemplate> Put(int id, ArtifactTypeExportTemplate model)
         {
@@ -295,11 +313,11 @@ namespace d360.web.Controllers.V2
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "Model does not contain required fields."));
 
             //check that there is a export template exists
-            if(!Company.ArtifactTypeExportTemplates.Any(x=>x.ID==model.ID))
+            if (!Company.ArtifactTypeExportTemplates.Any(x => x.ID == model.ID))
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "Model does not contain a valid existing export template."));
 
             //create the new record
-            var res = await Company.Database.Connection.ExecuteAsync("update ArtifactTypeExportTemplate set Name = @name,Description = @desc, ExportViewType = @exp, IncludeUrl = @url, IncludeParent = @parent,IncludeFields = @incl, UsageNotes =@notes,ArtifactTypeID=@ty  where id = @id", new { ty=model.ArtifactTypeID, url = model.IncludeUrl, parent= model.IncludeParent,  name = model.Name, id = id, desc = model.Description, exp = model.ExportViewType, incl = model.IncludeFields, notes = model.UsageNotes });
+            var res = await Company.Database.Connection.ExecuteAsync("update ArtifactTypeExportTemplate set Name = @name,Description = @desc, ExportViewType = @exp, IncludeUrl = @url, IncludeParent = @parent,IncludeFields = @incl, UsageNotes =@notes,ArtifactTypeID=@ty  where id = @id", new { ty = model.ArtifactTypeID, url = model.IncludeUrl, parent = model.IncludeParent, name = model.Name, id = id, desc = model.Description, exp = model.ExportViewType, incl = model.IncludeFields, notes = model.UsageNotes });
 
             if (res > 0) return model; // updated
 

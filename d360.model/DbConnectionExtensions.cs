@@ -354,7 +354,7 @@ transaction: trans, commandTimeout: 7200);
 
         public static void RemoveRelationRuleResultsByRule(this DbConnection cnn, int ruleID)
         {
-            cnn.Execute("delete ResponsibilityTypeRelationRuleResult where RuleID <> 0 and RuleID = ruleID", commandTimeout: 7200);
+            cnn.Execute("delete ResponsibilityTypeRelationRuleResult where RuleID <> 0 and RuleID = @ruleID", new { ruleID }, commandTimeout: 7200);
         }
 
         public static void ClearInvalidRelationRuleResults(this DbConnection cnn)

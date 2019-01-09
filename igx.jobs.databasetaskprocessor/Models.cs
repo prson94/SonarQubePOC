@@ -79,7 +79,7 @@ select	C.ID,
 		P.DateCreated as ParentDateCreated,
 		PR.FirstName + ' ' + PR.LastName as ParentAuthor,
 		utility.GetAssetDisplayValueWrapper(D.ID) as OwnerName,
-		dbo.GenerateNgObjectUrl(T.Object, T.ObjectID,D.ObjectID) as OwnerUrl,
+		dbo.GenerateAssetUrl(D.ID) as OwnerUrl,
 		T.Name as OwnerTypeName,
 		case when C.ParentID is null then 'comment' else 'reply' end as OriginationType
 from	Comment C

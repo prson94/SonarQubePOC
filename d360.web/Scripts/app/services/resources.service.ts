@@ -1,9 +1,14 @@
-﻿import { Injectable } from '@angular/core';
+
+import {catchError, map} from 'rxjs/operators';
+import { Injectable } from '@angular/core';
 import { Headers, Http, ResponseContentType } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
 import { HelpResource, Resource, CountObject, ResponsibilityDetailForResource, FollowingDetailForResource, ResourceAPICredentials, MulitSelectResourceData } from '../models/resource.model';
 import { JsonResult } from '../models/jsonresult.model';
+import { SortOrder } from '../models/enums.model';
+import { GridFilterExpression } from '../models/grid-definition.model';
+import { Observable } from "rxjs";
 
 
 @Injectable()
@@ -30,6 +35,30 @@ export class ResourcesService extends BaseService {
             .toPromise()
             .then(response => <Resource>response.json())
             .catch(err => this.handleError(err));
+    }
+
+
+    getResourceLazy(typeId: number, pageNum: number, pageSize: number, sortOrder: SortOrder, sortField?: string, simpleFilter?:string, filters?: GridFilterExpression[]): Observable<any> {
+        let sortCol = sortField != undefined ? sortField : "";
+
+        let url = `/resources/${typeId}/lazy?pagenum=${pageNum}&pagesize=${pageSize}&sortdatafield=${sortField}&sortorder=${sortOrder == SortOrder.None ? "" : (sortOrder == SortOrder.Ascending ? "asc" : "desc")}&simpleFilter=${simpleFilter}`;
+        let indx = 0;
+
+        if (filters != undefined) {
+            url += `&filterscount=${filters.length}`;
+
+            for (let filter of filters) {
+                url += `&filtervalue${indx}=${filter.value}&filtercondition${indx}=${filter.condition}&filteroperator${indx}=1&filterdatafield${indx}=${filter.field}`;
+                indx++;
+            }
+        }
+
+
+        return this.http.get(url).pipe(
+            map(response => {
+                return response.json()
+            }),
+            catchError(err => this.handleError(err)),);
     }
 
     getResponsibilityBreakdownByResource(id: number, responsibilityTypeId: number = 0): Promise<CountObject[]> {
@@ -116,9 +145,23 @@ export class ResourcesService extends BaseService {
             .catch(err => this.handleError(err));
     }
 
-    exportResources(id: number,filter:string) {
-        let uri = `api/resources/${id}/excel/excel.xls?filter=${filter}`;
-        this.http.get(uri, { responseType: ResponseContentType.Blob }).subscribe((data: any) => this.downloadFile(data, "Users.xlsx"));  
+    exportResources(typeId: number, sortOrder: SortOrder, sortField?: string, simpleFilter?: string, filters?: GridFilterExpression[]) {
+
+        let sortCol = sortField != undefined ? sortField : "";
+
+        let url = `/resources/${typeId}/lazy/excel?sortdatafield=${sortField}&sortorder=${sortOrder == SortOrder.None ? "" : (sortOrder == SortOrder.Ascending ? "asc" : "desc")}&simpleFilter=${simpleFilter}`;
+        let indx = 0;
+
+        if (filters != undefined) {
+            url += `&filterscount=${filters.length}`;
+
+            for (let filter of filters) {
+                url += `&filtervalue${indx}=${filter.value}&filtercondition${indx}=${filter.condition}&filteroperator${indx}=1&filterdatafield${indx}=${filter.field}`;
+                indx++;
+            }
+        }
+
+        this.http.get(url, { responseType: ResponseContentType.Blob }).subscribe((data: any) => this.downloadFile(data, "Users.xlsx"));  
     }
 
     downloadFile(data: Response, filename: string) {

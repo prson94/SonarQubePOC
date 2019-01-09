@@ -1,5 +1,5 @@
-﻿import { Injectable } from '@angular/core';
-import {Subject} from 'rxjs/Subject';
+import { Injectable } from '@angular/core';
+import {Subject} from 'rxjs';
 import {SiteMessage} from '../models/site-message.model';
 import { Http } from '@angular/http';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -40,7 +40,7 @@ export class MessagesService {
 
         model = { Name: objError.name, Message: objError.message, Stack: objError.stack };
 
-        return this.http.post('api/log/clienterror', model)
+        return this.http.post('api/v2/errors/log/clienterror', model)
             .toPromise()
             .then(() => Promise.resolve())
             .catch(err => {
@@ -62,7 +62,7 @@ export class MessagesService {
 
         model = { Name: objError.name, Message: objError.message, Stack: objError.stack };
 
-        return this.http.post('api/log/clienterror', model)
+        return this.http.post('api/v2/errors/log/clienterror', model)
             .toPromise()
             .then(() => Promise.resolve())
             .catch(err => {

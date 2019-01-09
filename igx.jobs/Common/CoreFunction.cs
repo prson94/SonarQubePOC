@@ -96,40 +96,44 @@ namespace igx.jobs
             }
         }
 
+        private static Dictionary<string, string> buildPropertiesToLog(string jobName, IDictionary<string, string> properties = null, int? companyId = null)
+        {
+            var propsToSend = new Dictionary<string, string> {
+                { "Environment", ConfigurationManager.AppSettings["Environment"] },
+                { "Function", jobName }
+            };
+            if (companyId.HasValue) propsToSend["CompanyId"] = companyId.Value.ToString();
+
+            if (properties != null)
+            {
+                foreach (var key in properties.Keys)
+                {
+                    if (!propsToSend.ContainsKey(key) && !string.IsNullOrEmpty(properties[key]))
+                    {
+                        propsToSend.Add(key, properties[key]);
+                    }
+                }
+            }
+
+            return propsToSend;
+        }
+
         public static void AITrackTrace(string jobName, string message, IDictionary<string, string> properties = null, int? companyId = null)
         {
-            if (properties == null)
-                properties = new Dictionary<string, string>();
-
-            properties["Function"] = jobName;
-            if (companyId.HasValue) properties["CompanyId"] = companyId.Value.ToString();
-            properties["Environment"] = ConfigurationManager.AppSettings["Environment"];
-
-            AITelemetryClient.TrackTrace(message, properties);
+            var propsToSend = buildPropertiesToLog(jobName, properties, companyId);
+            AITelemetryClient.TrackTrace(message, propsToSend);
         }
 
         public static void AITrackEvent(string jobName, string eventName, IDictionary<string, string> properties = null, int? companyId = null, IDictionary<string, double> metrics = null)
         {
-            if (properties == null)
-                properties = new Dictionary<string, string>();
-
-            properties["Function"] = jobName;
-            if (companyId.HasValue) properties["CompanyId"] = companyId.Value.ToString();
-            properties["Environment"] = ConfigurationManager.AppSettings["Environment"];
-                        
-            AITelemetryClient.TrackEvent(eventName, properties,metrics);
+            var propsToSend = buildPropertiesToLog(jobName, properties, companyId);
+            AITelemetryClient.TrackEvent(eventName, propsToSend, metrics);
         }
 
         public static void AITrackException(string jobName, Exception e, int? companyId = null, IDictionary<string, string> properties = null)
         {
-            if (properties == null)
-                properties = new Dictionary<string, string>();
-            properties["Function"] = jobName;
-            properties["Environment"] = ConfigurationManager.AppSettings["Environment"];
-
-            if (companyId.HasValue) properties["CompanyId"] = companyId.Value.ToString();
-            AITelemetryClient.TrackException(e, properties);
-
+            var propsToSend = buildPropertiesToLog(jobName, properties, companyId);
+            AITelemetryClient.TrackException(e, propsToSend);
             AIFlush();
         }
 

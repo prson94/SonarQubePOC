@@ -1,11 +1,14 @@
-﻿import { Injectable } from "@angular/core";
+
+import {catchError, map} from 'rxjs/operators';
+import { Injectable } from "@angular/core";
 import { BaseService } from "./base.service";
-import { Observable } from "rxjs/Observable";
-import { Headers, Http, Response, ResponseContentType } from '@angular/http';
+import { Observable } from "rxjs";
+import { Headers, Http, Response, ResponseContentType, RequestOptions } from '@angular/http';
 import { MessagesService } from "./messages.service";
 import {  WorkflowMonitorItems } from "../models/workflowmonitor.model";
 import { GridFilterExpression, GridFilterColumn, GridFilterFieldType } from "../models/grid-definition.model";
 import { SortOrder } from "../models/enums.model";
+
 
 
 
@@ -30,12 +33,12 @@ export class WorkflowMonitorService extends BaseService {
                 count++;
             }
         }
-        return this.http.get(uri)
-            .map(response => {
+        return this.http.get(uri).pipe(
+            map(response => {
                 return response.json()
-            })
-            .map(item => { return <WorkflowMonitorItems>item })
-            .catch(err => this.handleError(err));
+            }),
+            map(item => { return <WorkflowMonitorItems>item }),
+            catchError(err => this.handleError(err)),);
     }
 
     getWorkFlowMonitorFilterColumnDefinition(): Promise<GridFilterColumn[]> {
@@ -84,5 +87,16 @@ export class WorkflowMonitorService extends BaseService {
             anchor.href = url;
             anchor.click();
         }
+    }
+
+    deleteItems(itemIds) {
+        let options = new RequestOptions( {
+            body: itemIds,
+        });
+        let uri = `services/workflow/deleteItems`;
+        return this.http.delete(uri, options)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
     }
 }

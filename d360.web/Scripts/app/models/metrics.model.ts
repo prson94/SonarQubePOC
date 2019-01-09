@@ -17,7 +17,7 @@ export class MetricAssetViewModel {
 export class MetricAssetVersionConditionViewModel {
     FieldTypeID: number;
     Operator: string;
-    Values: string;//[] = [];
+    Values: any;//[] = [];
     
     // Transitive values used for UI logic only.
     FieldType: MetricFieldTypeViewModel;

@@ -1,5 +1,5 @@
-﻿import { Injectable } from '@angular/core';
-import { Subject } from 'rxjs/Subject';
+import { Injectable } from '@angular/core';
+import { Subject } from 'rxjs';
 import { SortOrder } from '../models/enums.model';
 import { GridFilterExpression, GridRelationshipFilterExpression, GridAttributeFilterExpression, GridOwnerFilter } from '../models/grid-definition.model';
 import { FusionAttributeFilter } from '../models/fusion-attribute.model';

@@ -7,6 +7,7 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { RightSidebarService } from '../../services/right-sidebar.service';
 import { GridFilterExpression, GridFilterFieldType } from '../../models/grid-definition.model';
+import { isNull } from 'util';
 
 @Component({
     selector: 'd3s-monitor',
@@ -20,7 +21,12 @@ import { GridFilterExpression, GridFilterFieldType } from '../../models/grid-def
                     <ng-template pTemplate="content">
                         <div class="row">
                             <div *ngIf="!isLoading">
-                                <d3s-workflowmonitor-list [showHeader]="false" (selectionChange)="listChange($event)" [predefinedFilters]="predefinedFilters"></d3s-workflowmonitor-list>  
+                                <d3s-workflowmonitor-list
+                                    [showHeader]="false"
+                                    (selectionChange)="listChange($event)"
+                                    (hideDetails)="hideDetails($event)"
+                                    [predefinedFilters]="predefinedFilters">
+                                </d3s-workflowmonitor-list>  
                             </div>
                         </div>
                     </ng-template>
@@ -47,8 +53,8 @@ import { GridFilterExpression, GridFilterFieldType } from '../../models/grid-def
     </div>
     <div class="col s12 m6">
         <ng-container *ngIf="tabIsLoaded('items')">
-            <div [hidden]="!tabIsActive('items')">
-                <div class="tile tile-detail">
+            <div [hidden]="!tabIsActive('items') || !itemVisible">
+                <div class="tile tile-detail" [hidden]="itemId == null">
                     <d3s-workflow-monitor-step-list [itemId]="itemId" (selectionChange)="stepChange($event)"></d3s-workflow-monitor-step-list>
                 </div>
                 <div class="tile tile-detail" [hidden]="!detailVisible">
@@ -104,6 +110,7 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
     itemStepId: number = null;
     itemId: number = null;
     detailVisible = false;
+    itemVisible: boolean = true;
 
     sub: any;
     querySub: any;
@@ -127,7 +134,6 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
     }
 
     ngOnInit() {
-
         this.predefinedFilters = [];
         this.isLoading = true;
         this.sub = this.route.params.subscribe(params => {
@@ -213,8 +219,13 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
     }
 
     listChange($event) {
-        if ($event) {
-            this.itemId = $event.Id
+        if (Array.isArray($event)) {
+            if ($event.length == 1) {
+                this.itemId = $event[0].Id;
+            } else {
+                this.itemId = null;
+                this.detailVisible = false;
+            }
         } else {
             this.itemId = null;
             this.detailVisible = false;
@@ -247,4 +258,7 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
 
     }
 
+    hideDetails(hide: boolean) {
+        this.itemVisible = !hide;
+    }
 }

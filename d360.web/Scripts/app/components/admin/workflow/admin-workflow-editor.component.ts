@@ -252,7 +252,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
         this.workflowService.hasPendingWorkflowItems(this.model.Type.ID)
             .then(x => {
                 if (x) {
-                    this.warningMessage = "There are pending workflow items for this workflow. These items will still be able to be completed but no new workflows will be created.";
+                    this.warningMessage = "There are pending workflow items for this workflow. These items can still be completed, but no new workflow items will be created.";
                 }
             });
     }

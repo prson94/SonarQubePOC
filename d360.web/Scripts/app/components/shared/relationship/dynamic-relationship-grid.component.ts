@@ -17,12 +17,31 @@ declare var CompanySettings;
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span *ngIf="!isLoading && relations.length > 0 && !shouldShowEditor() && !showTechnical && !showDelete">                    
                     <input type="text" [hidden]="!simpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-                    <p-table #dt [value]="relations" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="globalFilterFields" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected">
+                    <p-table #dt 
+                        [value]="relations" 
+                        selectionMode="single" 
+                        [metaKeySelection]="true" 
+                        [globalFilterFields]="globalFilterFields" 
+                        [pageLinks]="3" 
+                        [paginator]="true" 
+                        [rows]="defaultInitialItemsPerPage" 
+                        [rowsPerPageOptions]="defaultPagingOptions" 
+                        [(selection)]="selected"
+                        [scrollable]="true"
+                        scrollWidth="100%">
+                        <ng-template pTemplate="colgroup" >
+                            <colgroup>
+                                <col style="width: 28px">
+                                <col style="width: 28px">
+                                <col style="width: 28px">
+                                <col *ngFor="let col of columns" style="width: 250px">
+                            </colgroup>
+                        </ng-template>  
                         <ng-template pTemplate="header">
                             <tr>
-                                <th style="width: 28px"></th>
-                                <th style="width: 28px"></th>
-                                <th style="width: 28px"></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
                                 <th *ngFor="let column of columns" [pSortableColumn]="column.sortable ? column.datafield : null " style="width: 250px">
                                     {{column.text}}
                                     <d3s-sortIcon [field]="column.datafield"></d3s-sortIcon>

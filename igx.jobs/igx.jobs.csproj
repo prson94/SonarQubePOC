@@ -299,8 +299,8 @@
       <IsTransformFile>True</IsTransformFile>
     </None>
     <None Include="ApplicationInsights.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <SubType>Designer</SubType>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="CommonConnectionSettings.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

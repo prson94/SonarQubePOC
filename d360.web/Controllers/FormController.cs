@@ -775,7 +775,7 @@ namespace d360.web.Controllers
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
                         
             var parentType = Company.GetParentType<ArtifactType>(a.ArtifactTypeID);
-
+           
             if (parentType != null)
             {
                 var parent = Company.GetParentObject<Artifact>(a.ID);
@@ -1039,8 +1039,7 @@ namespace d360.web.Controllers
                 Company.Delete(SystemObjects.ArtifactType, id);
 
                 dynamic custom = new
-                {
-                    ParentID = Company.GetParentType<ArtifactType>(model.ID)?.ID ?? null,
+                {                    
                     Name = model.Name,
                     action = "delete"              
                 };
@@ -2267,12 +2266,12 @@ namespace d360.web.Controllers
 
                     if (stylesSetting == null)
                     {
-                        stylesSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 24, Value = $"{constants.COMPANY_STYLES_URL}/{Company.CurrentCompanyID}.css" };
+                        stylesSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 24, Value = $"{constants.COMPANY_STYLES_URL}{Company.CurrentCompanyID}.css" };
                         Community.Add(stylesSetting);
                     }
                     else
                     {
-                        stylesSetting.Value = $"{constants.COMPANY_STYLES_URL}/{Company.CurrentCompanyID}.css";
+                        stylesSetting.Value = $"{constants.COMPANY_STYLES_URL}{Company.CurrentCompanyID}.css";
                         Community.SaveChanges();
                     }
 
@@ -3158,10 +3157,9 @@ namespace d360.web.Controllers
                     );
                     break;
                 case SystemObjects.TaxonomyType:
+                    var sqlForTaxonomy = "select att.ObjectID as value, textpath as Title from asset a inner join assettype att on a.assettypeid = att.id cross apply getassettextpath('/') atp where atp.id = a.id and a.object = 'Taxonomy' and att.ObjectID = @id";
                     list.AddRange(
-                        Company.Filter<Taxonomy>(i => i.TaxonomyTypeID == id)
-                        .OrderBy(i => i.TextPath)
-                        .Select(i => new ListIntItem { title = i.TextPath, value = i.ID })
+                        Company.Query<ListIntItem>(sqlForTaxonomy, new { id = id })
                     );
                     break;                
             }
@@ -3870,8 +3868,11 @@ namespace d360.web.Controllers
                 {
                     throw new ConflictException("Error Occurred!", FieldInfo.FieldReferenceItemListFromRelationship_NeededRelationship);
                 }
+                //shallow copy of fieldType
+                var ftCopy = (FieldType)Company.Entry(ft)
+                                              .CurrentValues.ToObject();
                 // Static fields
-                
+
                 ft.Name = model.FieldType.Name;
                 ft.SortOrder = model.FieldType.SortOrder;
                 ft.Category = model.FieldType.Category;
@@ -4411,7 +4412,30 @@ namespace d360.web.Controllers
 
                 ft.UpdatedBy = Company.CurrentResourceID;
 
-                Company.Update<FieldType>(ft);
+                bool columnModified = false;
+                foreach (System.Reflection.PropertyInfo property in ft.GetType().GetProperties(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public)) 
+                {
+                    if (property.Name == "Fields" || property.Name == "FieldTypeLookup" || property.Name == "FieldTypeFilteredLookupDefinitions"
+                          || property.Name == "UpdatedBy" || property.Name ==  "FieldTypeFusionLookupDefinitions")
+                        continue;
+
+                    object value1 = property.GetValue(ft, null);
+                    object value2 = property.GetValue(ftCopy, null);
+                    if (!object.Equals(value1,value2)){
+                        Company.Entry(ft).Property(property.Name).IsModified = true;
+                        columnModified = true;
+                    }
+                    else
+                        Company.Entry(ft).Property(property.Name).IsModified = false;
+
+                }
+
+                if(columnModified)
+                    Company.Entry(ft).Property(x=>x.UpdatedBy).IsModified = true;
+
+                Company.SaveChanges();
+
+               
 
                 return jsonSuccess(FormInfo.Edit_FieldType_Confirmation, ft.ID.ToString(), "edit", HttpStatusCode.OK);
             }
@@ -4670,7 +4694,7 @@ namespace d360.web.Controllers
                 // Dynamic fields
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Fusion, model.ID, Company.GetFieldTypesByObject(SystemObjects.FusionType, model.FusionTypeID).ToList(), form, Server, false);
 
-                Company.SaveOrUpdate<Fusion>(model, fields);
+                Company.SaveOrUpdate<Fusion>(model, fields, -1,true);
 
                 return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);
             }
@@ -12302,6 +12326,7 @@ select	{QueryConstants.HighLevelTypeCaseStatement} + T.Name as label,
 		T.Object + '|' + cast(T.ObjectID as varchar) as value
 from	ResponsibilityTypeRelation R
 		inner join AssetType T on T.Object = R.ObjectType and T.ObjectID = R.ObjectID and R.ResponsibilityTypeID = {id}
+        where R.ObjectType<>'FusionAttributeType'
 order by {QueryConstants.HighLevelTypeCaseStatement} + T.Name");
             return new JsonNetResult
             {
@@ -12774,8 +12799,15 @@ order by DN.DisplayValue");
                 else
                 {
                     id = a.ID;
+                    var globalResource = Company.Filter<GlobalReportingResource>(i => i.ResourceID == id).FirstOrDefault();
+                    if (globalResource != null && globalResource.State != CompanyResourceState.Deleted)
+                    {
+                        throw new ConflictException("Error", "The specified email address / username is already in use.");
+                    }
                 }
 
+                var firstName = parseNameField(form, "FirstName");
+                var lastName = parseNameField(form, "LastName");
                 var isAdmin = parseBooleanField(form, "IsAdministrator");
                 var state = parseEnumField<CompanyResourceState>(form, "State");
                 var companyResource = Community.Filter<CompanyResource>(i => i.CompanyID == Community.CurrentCompanyID && i.ResourceID == id).FirstOrDefault();
@@ -12805,12 +12837,24 @@ order by DN.DisplayValue");
                         IsAdministrator = isAdmin,
                         ResourceID = id,
                         Email = a.Email,
-                        LastName = a.LastName,
-                        FirstName = a.FirstName,
+                        LastName = lastName,
+                        FirstName = firstName,
                         State = state
                     };
 
                     Company.Add(gr);
+                }
+                else
+                {
+                    GlobalReportingResource gr = Company.Filter<GlobalReportingResource>(i => i.ResourceID == id).FirstOrDefault();
+
+                    gr.FirstName = firstName;
+                    gr.LastName = lastName;
+                    gr.Email = a.Email;
+                    gr.IsAdministrator = isAdmin;
+                    gr.State = state;
+
+                    Company.Update(gr);
                 }
                 
                 // Dynamic fields
@@ -14428,7 +14472,7 @@ order by DN.DisplayValue");
                         var imageFileName = string.Format("{0}.shortcut.{1}{2}", Company.CurrentCompanyID, imageGuid, imageExtension);
                         Storage.CreateFile(constants.COMPANY_RESOURCES_FOLDER, imageFileName, imageStream);
 
-                        shortcut.IconUrl = $"{constants.COMPANY_RESOURCES_URL}{imageFileName}";
+                        shortcut.IconUrl = $"{imageFileName}";
 
                     }
                 }
@@ -14495,7 +14539,7 @@ order by DN.DisplayValue");
                         var imageFileName = string.Format("{0}.shortcut.{1}{2}", Company.CurrentCompanyID, imageGuid, imageExtension);
                         Storage.CreateFile(constants.COMPANY_RESOURCES_FOLDER, imageFileName, imageStream);
 
-                        shortcut.IconUrl = $"{constants.COMPANY_RESOURCES_URL}{imageFileName}";
+                        shortcut.IconUrl = $"{imageFileName}";
 
                     }
                 }
@@ -14545,7 +14589,7 @@ order by DN.DisplayValue");
                 if (!string.IsNullOrEmpty(existing.IconUrl))
                 {
                     //delete the file
-                    Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, new Uri(existing.IconUrl).Segments.Last());
+                    Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, new Uri(existing.FullURL).Segments.Last());
                 }
 
                 Company.Delete(existing);

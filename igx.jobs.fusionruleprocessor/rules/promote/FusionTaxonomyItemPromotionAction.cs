@@ -101,8 +101,8 @@ namespace igx.jobs.fusionruleprocessor
 			                    ) S
 	                    ON      (1 != 1)
 	                    WHEN NOT MATCHED THEN
-	                        INSERT  (TaxonomyTypeID, UpdatedOn, UpdatedBy, Visible)
-	                        VALUES  (@promoteToId, getutcdate(), 0, 1)                        
+	                        INSERT  (TaxonomyTypeID, UpdatedOn, UpdatedBy)
+	                        VALUES  (@promoteToId, getutcdate(), 0)                        
                         output  S.ID, S.ObjectType, inserted.ID, @targetType into #promotedItems;";
             await company.ExecuteAsync(sql, new { promoteToId = PromoteToObjectID, targetType = "Taxonomy", items = itemsToPromote }, transaction: transaction);
         }

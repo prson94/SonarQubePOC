@@ -1,4 +1,4 @@
-﻿import { Component, Input, OnInit, ChangeDetectionStrategy, Output, EventEmitter, ChangeDetectorRef, OnDestroy, ViewChild, AfterViewChecked, OnChanges } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectionStrategy, Output, EventEmitter, ChangeDetectorRef, OnDestroy, ViewChild, AfterViewChecked, OnChanges } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { EditorField, EditorDropDownItem } from '../../../models/editor-field.model';
 import { SelectItem, Editor } from 'primeng/primeng';
@@ -7,8 +7,7 @@ import { BaseComponent } from '../base.component';
 import { FormHelpers } from '../../../static/form-helpers';
 import { CascadeService } from '../../../services/cascade.service';
 import { FieldsService } from '../../../services/fields.service';
-import { concat } from 'rxjs/observable/concat';
-import { Subject } from 'rxjs';
+import { concat ,  Subject } from 'rxjs';
 
 declare var CompanySettings;
 
