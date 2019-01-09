@@ -53,6 +53,7 @@ namespace d360.utils.company
             cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
             var companies = cnn.Query<CompanyWithDatabaseServerSettings>(@"
 select  c.ID as CompanyID, 
+        c.ClientID,
         c.Status, 
         ds.Server, 
         ds.Username, 
