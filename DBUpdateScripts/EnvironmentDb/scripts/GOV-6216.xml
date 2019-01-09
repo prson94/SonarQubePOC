@@ -11,7 +11,7 @@
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="true">
-      BEGIN
+      <![CDATA[
             ALTER PROCEDURE [dbo].[GenerateAssetDisplayValue]	
                 @AssetID bigint,
                 @Object varchar(20),
@@ -71,10 +71,11 @@
 
                 exec UpdateDependentObjectTypeDisplayValues @assetObjectType,@assetObjectID	
             END
-      END
+      ]]>
     </sql>
     <rollback>
-      begin
+      <![CDATA[
+      
         ALTER PROCEDURE [dbo].[GenerateAssetDisplayValue]	
             @AssetID bigint,
             @Object varchar(20),
@@ -95,41 +96,42 @@
 
             
             if @AssetID is null or @AssetID <= 0
-            begin
-                return;
-            end
+              begin
+              return;
+              end
 
-            Select @displayValue = DisplayValue from GetAssetDisplayValueById(@AssetID);
-            SELECT @DisplayValueHash = CONVERT(NVARCHAR(32),HashBytes('SHA1', @displayValue),2)
-                
-            Print 'DisplayValue: ' + @DisplayValue
-            Print 'DisplayValueHash: ' + @DisplayValueHash
-            
-            
+              Select @displayValue = DisplayValue from GetAssetDisplayValueById(@AssetID);
+              SELECT @DisplayValueHash = CONVERT(NVARCHAR(32),HashBytes('SHA1', @displayValue),2)
 
-            if exists(select 1 from AssetDisplayValue where AssetID = @AssetID)
-            begin		
-                    UPDATE AssetDisplayValue
-                        SET DisplayValue = A.DisplayValue,
-                            DisplayValueHash = @DisplayValueHash,
-                            DisplayValuePrefix = SUBSTRING(A.DisplayValue, 1, 250),
-                            UpdatedOn = getutcdate()
-                        FROM GetAssetDisplayValueById(@AssetID) A		
-                        where AssetID = @AssetID	
-            end
-            else
-            begin
-                    insert into AssetDisplayValue (AssetID,DisplayValue,DisplayValueHash,DisplayValuePrefix, UpdatedOn) values(@AssetID,@displayValue,@DisplayValueHash,SUBSTRING(@displayValue, 1, 250),getutcdate())
-            end	
+              Print 'DisplayValue: ' + @DisplayValue
+              Print 'DisplayValueHash: ' + @DisplayValueHash
 
-            Declare @assetObjectType varchar(20);
-            Declare @assetObjectID int;
-            
-            select @assetObjectType = ATT.[Object], @assetObjectID = ATT.ObjectID from Asset A inner join AssetType ATT on A.AssetTypeID = ATT.ID where A.id = @AssetID
 
-            exec UpdateDependentObjectTypeDisplayValues @assetObjectType,@assetObjectID	
-        END
-      end
+
+              if exists(select 1 from AssetDisplayValue where AssetID = @AssetID)
+              begin
+              UPDATE AssetDisplayValue
+              SET DisplayValue = A.DisplayValue,
+              DisplayValueHash = @DisplayValueHash,
+              DisplayValuePrefix = SUBSTRING(A.DisplayValue, 1, 250),
+              UpdatedOn = getutcdate()
+              FROM GetAssetDisplayValueById(@AssetID) A
+              where AssetID = @AssetID
+              end
+              else
+              begin
+              insert into AssetDisplayValue (AssetID,DisplayValue,DisplayValueHash,DisplayValuePrefix, UpdatedOn) values(@AssetID,@displayValue,@DisplayValueHash,SUBSTRING(@displayValue, 1, 250),getutcdate())
+              end
+
+              Declare @assetObjectType varchar(20);
+              Declare @assetObjectID int;
+
+              select @assetObjectType = ATT.[Object], @assetObjectID = ATT.ObjectID from Asset A inner join AssetType ATT on A.AssetTypeID = ATT.ID where A.id = @AssetID
+
+              exec UpdateDependentObjectTypeDisplayValues @assetObjectType,@assetObjectID
+              END
+
+              ]]>
     </rollback>
   </changeSet>
 </databaseChangeLog>
