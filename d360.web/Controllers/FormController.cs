@@ -2237,7 +2237,8 @@ namespace d360.web.Controllers
                 css = Storage.GetFileContentsAsString(constants.COMPANY_STYLES_FOLDER, $"{Company.CurrentCompanyID}.css");
             }
             catch(Exception ex) {
-                Console.WriteLine($"Error {ex}");
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
             return new JsonNetResult { Data = css, Formatting = Newtonsoft.Json.Formatting.None };
         }
