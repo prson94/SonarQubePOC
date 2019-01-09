@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, OnChanges, Input, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild } from '@angular/core';
+﻿import { Component, OnInit, OnChanges, Input, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
@@ -7,8 +7,7 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { RightSidebarService } from '../../services/right-sidebar.service';
 import { GridFilterExpression, GridFilterFieldType } from '../../models/grid-definition.model';
-import { AuthenticationService } from '../../services/authentication.service';
-import { WorkflowMonitorListComponent } from '../workflowmonitor/worflowmonitor-list.component';
+import { isNull } from 'util';
 
 @Component({
     selector: 'd3s-monitor',
@@ -22,7 +21,12 @@ import { WorkflowMonitorListComponent } from '../workflowmonitor/worflowmonitor-
                     <ng-template pTemplate="content">
                         <div class="row">
                             <div *ngIf="!isLoading">
-                                <d3s-workflowmonitor-list [showHeader]="false" (selectionChange)="listChange($event)" [predefinedFilters]="predefinedFilters"></d3s-workflowmonitor-list>  
+                                <d3s-workflowmonitor-list
+                                    [showHeader]="false"
+                                    (selectionChange)="listChange($event)"
+                                    (hideDetails)="hideDetails($event)"
+                                    [predefinedFilters]="predefinedFilters">
+                                </d3s-workflowmonitor-list>  
                             </div>
                         </div>
                     </ng-template>
@@ -49,23 +53,12 @@ import { WorkflowMonitorListComponent } from '../workflowmonitor/worflowmonitor-
     </div>
     <div class="col s12 m6">
         <ng-container *ngIf="tabIsLoaded('items')">
-            <div [hidden]="!tabIsActive('items')">
+            <div [hidden]="!tabIsActive('items') || !itemVisible">
                 <div class="tile tile-detail" [hidden]="itemId == null">
                     <d3s-workflow-monitor-step-list [itemId]="itemId" (selectionChange)="stepChange($event)"></d3s-workflow-monitor-step-list>
                 </div>
                 <div class="tile tile-detail" [hidden]="!detailVisible">
                     <d3s-workflow-monitor-step-details [itemStepId]="itemStepId" [(visible)]="detailVisible"></d3s-workflow-monitor-step-details>
-                </div>
-                <div class="tile tile-detail" [hidden]="!isAdmin">
-                    <header>Delete Workflow Items</header>
-                    <div class="row" style="padding-left:10px;">
-                        <p>You have selected {{seletedCount}} workflow items.</p>
-                        <p>The deletion of workflow items cannot be undone.</p>
-                        <div>
-                            <button pButton type="button" (click)="deleteItems()" label="Delete {{seletedCount}} workflow items" [disabled]="seletedCount < 1"></button>
-                        </div>
-                        <p>Press the {{getMetaKey()}}-key to select multiple items.</p>
-                    </div>
                 </div>
             </div>
         </ng-container>
@@ -117,10 +110,7 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
     itemStepId: number = null;
     itemId: number = null;
     detailVisible = false;
-    private isAdmin: boolean = false;
-    seletedCount: number = 0;
-    @ViewChild(WorkflowMonitorListComponent)
-    private workflowListComponent: WorkflowMonitorListComponent;
+    itemVisible: boolean = true;
 
     sub: any;
     querySub: any;
@@ -138,14 +128,12 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected router: Router,
         protected route: ActivatedRoute,
-        rightSidebarService: RightSidebarService,
-        private authenticationService: AuthenticationService) {
+        rightSidebarService: RightSidebarService) {
         super();
         this.rightSidebarService = rightSidebarService;
     }
 
     ngOnInit() {
-        this.isAdmin = this.authenticationService.isAdmin;
         this.predefinedFilters = [];
         this.isLoading = true;
         this.sub = this.route.params.subscribe(params => {
@@ -232,8 +220,7 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
 
     listChange($event) {
         if (Array.isArray($event)) {
-            this.seletedCount = $event.length;
-            if (this.seletedCount == 1) {
+            if ($event.length == 1) {
                 this.itemId = $event[0].Id;
             } else {
                 this.itemId = null;
@@ -271,15 +258,7 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
 
     }
 
-    private getMetaKey() {
-        if (window.navigator && window.navigator.platform.indexOf("Mac") >= 0) {
-            return "\u2318";
-        } else {
-            return "Crtl"
-        }
-    }
-
-    deleteItems() {
-        this.workflowListComponent.deleteItems();
+    hideDetails(hide: boolean) {
+        this.itemVisible = !hide;
     }
 }

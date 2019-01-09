@@ -4534,7 +4534,7 @@ select	top 100 percent
         {columns}
         A.[Level]
 from	[Policy] A 
-        inner join Asset OA on OA.Object = 'Policy' and OA.ObjectID = A.ID and A.PolicyTypeID = @id and A.[Visible] = 1 
+        inner join Asset OA on OA.Object = 'Policy' and OA.ObjectID = A.ID and A.PolicyTypeID = @id 
         {joins} 
         left join dbo.GetAssetDisplayValue() TD on TD.ID = OA.ID
         outer apply (
@@ -4930,7 +4930,7 @@ from	[Rule] A
         inner join Asset O on O.Object = 'Rule' and O.ObjectID = A.ID 
         {1} 
         left join RuleDimension D on D.ID = A.RuleDimensionID 
-where   A.RuleTypeID = @id and A.[Visible] = 1
+where   A.RuleTypeID = @id 
         and O.ID not in (" + GetNoReadSqlStatement("@r") + ")" +
         "and O.AssetTypeID not in (" + GetAssetTypeNoReadSqlStatement("@r") + ")", columns, joins);
 

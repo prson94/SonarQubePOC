@@ -1,4 +1,6 @@
-﻿import { Input, Component, OnInit, OnDestroy } from '@angular/core';
+
+import {debounceTime} from 'rxjs/operators';
+import { Input, Component, OnInit, OnDestroy } from '@angular/core';
 import { Location } from '@angular/common';
 import { Router, ActivatedRoute }       from '@angular/router';
 import { NgForm, FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
@@ -15,7 +17,7 @@ import { TagService } from '../../services/tag.service';
 import { ResourcesService } from '../../services/resources.service';
 import { Resource } from '../../models/resource.model';
 import { MessagesService } from '../../services/messages.service';
-import { ISubscription } from 'rxjs/Subscription';
+import { SubscriptionLike as ISubscription } from 'rxjs';
 
 @Component({
     selector: 'd3s-workflow-form',
@@ -296,8 +298,8 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     }
 
     private search(event) {
-       this.searchSub= this.tagService.getTags(event.query,'Resource')
-            .debounceTime(400)
+       this.searchSub= this.tagService.getTags(event.query,'Resource').pipe(
+            debounceTime(400))
             .subscribe(data => {
             this.terms = data;
         });

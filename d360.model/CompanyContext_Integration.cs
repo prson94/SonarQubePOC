@@ -19,8 +19,6 @@ namespace d360.model
     {
         #region DbSets
 
-        public DbSet<IntegrationExecution> IntegrationExecutions { get; set; }
-
         public DbSet<IntegrationExecutionAssetType> IntegrationExecutionAssetTypes { get; set; }
 
         public DbSet<IntegrationSetting> IntegrationSettings { get; set; }

@@ -3161,10 +3161,9 @@ namespace d360.web.Controllers
                     );
                     break;
                 case SystemObjects.TaxonomyType:
+                    var sqlForTaxonomy = "select att.ObjectID as value, textpath as Title from asset a inner join assettype att on a.assettypeid = att.id cross apply getassettextpath('/') atp where atp.id = a.id and a.object = 'Taxonomy' and att.ObjectID = @id";
                     list.AddRange(
-                        Company.Filter<Taxonomy>(i => i.TaxonomyTypeID == id)
-                        .OrderBy(i => i.TextPath)
-                        .Select(i => new ListIntItem { title = i.TextPath, value = i.ID })
+                        Company.Query<ListIntItem>(sqlForTaxonomy, new { id = id })
                     );
                     break;                
             }
@@ -3873,8 +3872,11 @@ namespace d360.web.Controllers
                 {
                     throw new ConflictException("Error Occurred!", FieldInfo.FieldReferenceItemListFromRelationship_NeededRelationship);
                 }
+                //shallow copy of fieldType
+                var ftCopy = (FieldType)Company.Entry(ft)
+                                              .CurrentValues.ToObject();
                 // Static fields
-                
+
                 ft.Name = model.FieldType.Name;
                 ft.SortOrder = model.FieldType.SortOrder;
                 ft.Category = model.FieldType.Category;
@@ -4414,7 +4416,30 @@ namespace d360.web.Controllers
 
                 ft.UpdatedBy = Company.CurrentResourceID;
 
-                Company.Update<FieldType>(ft);
+                bool columnModified = false;
+                foreach (System.Reflection.PropertyInfo property in ft.GetType().GetProperties(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public)) 
+                {
+                    if (property.Name == "Fields" || property.Name == "FieldTypeLookup" || property.Name == "FieldTypeFilteredLookupDefinitions"
+                          || property.Name == "UpdatedBy" || property.Name ==  "FieldTypeFusionLookupDefinitions")
+                        continue;
+
+                    object value1 = property.GetValue(ft, null);
+                    object value2 = property.GetValue(ftCopy, null);
+                    if (!object.Equals(value1,value2)){
+                        Company.Entry(ft).Property(property.Name).IsModified = true;
+                        columnModified = true;
+                    }
+                    else
+                        Company.Entry(ft).Property(property.Name).IsModified = false;
+
+                }
+
+                if(columnModified)
+                    Company.Entry(ft).Property(x=>x.UpdatedBy).IsModified = true;
+
+                Company.SaveChanges();
+
+               
 
                 return jsonSuccess(FormInfo.Edit_FieldType_Confirmation, ft.ID.ToString(), "edit", HttpStatusCode.OK);
             }
@@ -4673,7 +4698,7 @@ namespace d360.web.Controllers
                 // Dynamic fields
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Fusion, model.ID, Company.GetFieldTypesByObject(SystemObjects.FusionType, model.FusionTypeID).ToList(), form, Server, false);
 
-                Company.SaveOrUpdate<Fusion>(model, fields);
+                Company.SaveOrUpdate<Fusion>(model, fields, -1,true);
 
                 return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);
             }
@@ -12305,6 +12330,7 @@ select	{QueryConstants.HighLevelTypeCaseStatement} + T.Name as label,
 		T.Object + '|' + cast(T.ObjectID as varchar) as value
 from	ResponsibilityTypeRelation R
 		inner join AssetType T on T.Object = R.ObjectType and T.ObjectID = R.ObjectID and R.ResponsibilityTypeID = {id}
+        where R.ObjectType<>'FusionAttributeType'
 order by {QueryConstants.HighLevelTypeCaseStatement} + T.Name");
             return new JsonNetResult
             {

@@ -94,26 +94,6 @@ namespace igx.jobs.igc
         public int begin { get; set; }
     }
 
-    public class IgcModel
-    {
-        [JsonProperty(PropertyName = "_id")]
-        public string SourceID { get; set; }
-
-        [JsonProperty(PropertyName = "_name")]
-        public string Name { get; set; }
-
-        [JsonProperty(PropertyName = "short_description")]
-        public string ShortDescription { get; set; }
-
-        [JsonProperty(PropertyName = "_url")]
-        public string IgcUrl { get; set; }
-
-        [JsonProperty(PropertyName = "_type")]
-        public string Type { get; set; }
-
-        public List<GenericIgcContextModel> _context { get; set; }
-    }
-
     public class IgcModels
     {
         public GenericIgcPagingModel paging { get; set; }
@@ -199,27 +179,12 @@ namespace igx.jobs.igc
         public string Action { get; set; } //returned from db to determine what type of action this was for hash
     }
 
-    public class AssetFieldModel
-    {
-        public int SynchedAssetTypeID { get; set; }
-        public int Section { get; set; }
-        public string SourceID { get; set; }
-        public string FieldName { get; set; }
-        public string FieldValue { get; set; }
-    }
-
     public class RelationshipAction
     {
         //IntersectTypeID, IntersectID, [Action]
         public int IntersectTypeID { get; set; }
         public int IntersectID { get; set; }
         public string Action { get; set; }
-    }
-
-    public class ExecutionAssetType
-    {
-        public long ExecutionID { get; set; }
-        public int SynchedAssetTypeID { get; set; }
     }
 
     public enum PageDataClass
@@ -229,27 +194,39 @@ namespace igx.jobs.igc
         Responsibilities = 3
     }
 
-    public class PageBeginValueUpdatedEventArgs : EventArgs
-    {
-        public int Value { get; set; }
-        public PageDataClass Class { get; set; }
-    }
-
-    public class PageErrorCapturedEventArgs : EventArgs
-    {
-        public string ErrorMessage { get; set; }
-        public HttpStatusCode StatusCode { get; set; }
-    }
-
-    public class StepCompletedEventArgs : EventArgs
-    {
-        public int Step { get; set; }
-    }
-
     public class IgcPageErrorModel
     {
         public string message { get; set; }
         public HttpStatusCode code { get; set; }
+    }
+
+
+    public class IgcRelationshipCollection : IgcModels
+    {
+        public List<IgcRelationshipCollectionModel> items { get; set; }
+    }
+
+    public class IgcRelationshipCollectionModel
+    {
+        public string _type { get; set; }
+        public string _id { get; set; }
+    }
+
+    public class IGCAssetRelationshipBreakdownModels : List<IGCAssetRelationshipBreakdownModel> { }
+    //[{"FieldName":"impacts_on","AssetTypeName":"$RRP-RRPLevel3Service","Count":3561}]
+    public class IGCAssetRelationshipBreakdownModel
+    {
+        public string FieldName { get; set; }
+        public string AssetTypeName { get; set; }
+        public int Count { get; set; }
+    }
+
+    public class IGCAssetResponsibilityBreakdownModels : List<IGCAssetResponsibilityBreakdownModel> { }
+    //[{"Role":"$EDGMStewardId","Count":1951},{"Role":"custom_Data Quality Administrator ID","Count":13}]
+    public class IGCAssetResponsibilityBreakdownModel
+    {
+        public string Role { get; set; }
+        public int Count { get; set; }
     }
 
     /// <summary>
@@ -308,4 +285,35 @@ namespace igx.jobs.igc
             return false;
         }
     }
+    
+    #region EventArgs
+
+    public class PageBeginValueUpdatedEventArgs : EventArgs
+    {
+        public int Value { get; set; }
+        public PageDataClass Class { get; set; }
+    }
+
+    public class PageErrorCapturedEventArgs : EventArgs
+    {
+        public string ErrorMessage { get; set; }
+        public HttpStatusCode StatusCode { get; set; }
+    }
+
+    public class RelationshipBreakdownModelsUpdatedEventArgs : EventArgs
+    {
+        public List<IGCAssetRelationshipBreakdownModel> Updates { get; set; }
+    }
+
+    public class ResponsibilityBreakdownModelsUpdatedEventArgs : EventArgs
+    {
+        public IGCAssetResponsibilityBreakdownModel Update { get; set; }
+    }
+
+    public class StepCompletedEventArgs : EventArgs
+    {
+        public int Step { get; set; }
+    }
+
+    #endregion
 }
