@@ -47,15 +47,9 @@ namespace d360.core.entities
 
         [DataMember]
         public string SourceID { get; set; }
-
-        [IgnoreDataMember]
-        public virtual Policy Parent { get; set; }
-
+        
         [ForeignKey("PolicyTypeID"), IgnoreDataMember]
         public virtual PolicyType PolicyType { get; set; }
-
-        [ForeignKey("ParentID"), IgnoreDataMember]
-        public virtual ICollection<Policy> Children { get; set; }
 
         public EventObjectInfo GetEventObjectInfo()
         {

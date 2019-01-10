@@ -1,0 +1,34 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+	<changeSet author="VKyrychuk" id="GOV-6283">
+		<dropForeignKeyConstraint baseTableName="Policy" constraintName="FK_Policy_ParentPolicy"/>
+		<rollback>
+			 <addForeignKeyConstraint baseColumnNames="ParentID"
+				baseTableName="Policy"
+				constraintName="FK_Policy_ParentPolicy"
+				referencedColumnNames="ID"
+				referencedTableName="Policy"/>
+		</rollback>
+  </changeSet>
+	
+  <changeSet author="VKyrychuk" id="GOV-6283-B">
+  	<dropColumn catalogName="D3S_10"
+            columnName="ParentID"
+            schemaName="dbo"
+            tableName="Policy"/>
+	<rollback>
+		 <addColumn catalogName="D3S_10"
+            schemaName="dbo"
+            tableName="Policy">
+			<column name="ParentID" type="int" defaultValue="NULL"/>
+		</addColumn>
+	</rollback>
+  </changeSet>
+  
+</databaseChangeLog>
