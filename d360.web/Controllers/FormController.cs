@@ -4504,10 +4504,10 @@ namespace d360.web.Controllers
             intervalTypes.Add(new SelectListItem { Text = "Minute(s)", Value = "3" });
             intervalTypes.Add(new SelectListItem { Text = "Hour(s)", Value = "2" });            
             list.Add(new EditableField { Row = 4, Column = 1, FieldName = "IntervalType", Required= true, Name = fusion.GetName(i => i.IntervalType), FieldDescription = fusion.GetDescription(i => i.IntervalType), FieldType = DataType.Lookup.ToString(), Items = intervalTypes });
-            list.Add(new EditableField { Row = 4, Column = 2, Required=true, FieldName = "Interval", Name = fusion.GetName(i => i.Interval), FieldDescription = fusion.GetDescription(i => i.Interval), FieldType = DataType.Number.ToString() });
+            list.Add(new EditableField { Row = 4, Column = 2, Required=true, FieldName = "Interval", Name = fusion.GetName(i => i.Interval), FieldDescription = fusion.GetDescription(i => i.Interval), FieldType = DataType.Number.ToString(), Validations = checkAndAddValidation("Number", "Interval", true, "([1-9]|[1-8][0-9]|9[0-9]|[1-8][0-9]{2}|9[0-8][0-9]|99[0-9]|[1-8][0-9]{3}|9[0-8][0-9]{2}|99[0-8][0-9]|999[0-9]|10000)", null, null, "Please enter value between 1,10000.") });
 
             list.Add(new EditableField { Row = 5, Column = 3, FieldName = "LockPromotedItems", Name = fusion.GetName(i => i.LockPromotedItems), FieldDescription = fusion.GetDescription(i => i.LockPromotedItems), FieldType = DataType.Boolean.ToString() });
-
+            
             var owners = Company.GetFusionOwnerOptions().Select(i => new SelectListItem { Text = i.Name, Value = $"{i.ID}", Selected = false }).ToList();
             list.Add(new EditableField { Row = 6, Column = 1, Required = true, FieldName = "Owners", Name = "Owners", FieldDescription = "You must assign one or more owners for this configuration.", FieldType = DataType.Lookup.ToString(), MultiSelect = true, Items = owners });
             
@@ -4537,7 +4537,7 @@ namespace d360.web.Controllers
             intervalTypes.Add(new SelectListItem { Text = "Minute(s)", Value = "3" });
             intervalTypes.Add(new SelectListItem { Text = "Hour(s)", Value = "2" });
             list.Add(new EditableField { Row = 4, Column = 1, Required = true, FieldName = "IntervalType", Name = a.GetName(i => i.IntervalType), FieldDescription = a.GetDescription(i => i.IntervalType), FieldType = DataType.Lookup.ToString(), Items = intervalTypes, Value = a.IntervalType.HasValue ? ((int)a.IntervalType.Value).ToString() : "" });
-            list.Add(new EditableField { Row = 4, Column = 2, Required = true,  FieldName = "Interval", Name = a.GetName(i => i.Interval), FieldDescription = a.GetDescription(i => i.Interval), FieldType = DataType.Number.ToString(), Value = (a.Interval.HasValue ? a.Interval.Value.ToString() : "") });
+            list.Add(new EditableField { Row = 4, Column = 2, Required = true,  FieldName = "Interval", Name = a.GetName(i => i.Interval), FieldDescription = a.GetDescription(i => i.Interval), FieldType = DataType.Number.ToString(), Value = (a.Interval.HasValue ? a.Interval.Value.ToString() : "") ,Validations= checkAndAddValidation("Number", "Interval", true, "([1-9]|[1-8][0-9]|9[0-9]|[1-8][0-9]{2}|9[0-8][0-9]|99[0-9]|[1-8][0-9]{3}|9[0-8][0-9]{2}|99[0-8][0-9]|999[0-9]|10000)", null, null, "Please enter value between 1,10000.") });
 
             list.Add(new EditableField { Row = 5, Column = 1, FieldName = "ForceRefresh", Name = "Force Refresh on Next Run?", FieldDescription = "Force the local agent to perform a full refresh of this configuration on the next run.", FieldType = DataType.Boolean.ToString(), Value = a.ForceRefresh.GetValueOrDefault().ToString().ToLower() });
             list.Add(new EditableField { Row = 5, Column = 2, FieldName = "LockPromotedItems", Name = a.GetName(i => i.LockPromotedItems), FieldDescription = a.GetDescription(i => i.LockPromotedItems), FieldType = DataType.Boolean.ToString(), Value = a.LockPromotedItems.ToString().ToLower() });
