@@ -1,4 +1,8 @@
-﻿import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter, ViewChild, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+
+import {of as observableOf,  Subject ,  Observable } from 'rxjs';
+
+import {debounceTime, map, distinctUntilChanged, delay, mergeMap} from 'rxjs/operators';
+import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter, ViewChild, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { LazyLoadEvent, DataTable } from 'primeng/primeng';
 import { Lookup, LookupItem } from '../../models/lookup.model';
 import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression, GridAttributeFilterExpression } from '../../models/grid-definition.model';
@@ -14,8 +18,6 @@ import { BaseComponent } from '../shared/base.component';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
 import { ObjectDetailService } from '../../services/object-detail.service';
-import { Subject } from 'rxjs/Subject';
-import { Observable } from "rxjs/Observable";
 
 @Component({
     selector: 'd3s-artifact-grid',
@@ -184,11 +186,11 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         super();
         this.theDeleteCallback = this.deleteItem.bind(this);
         var me = this;
-        const subscription = this.simpleSearch
-            .map(event => event.target.value)
-            .debounceTime(1000)
-            .distinctUntilChanged()
-            .flatMap(search => Observable.of(search).delay(500))
+        const subscription = this.simpleSearch.pipe(
+            map(event => event.target.value),
+            debounceTime(1000),
+            distinctUntilChanged(),
+            mergeMap(search => observableOf(search).pipe(delay(500))),)
             .subscribe(data => { this.doSimpleSearch(me.dt, me.isLoading); });
     
     }
@@ -262,7 +264,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     }    
     getData() {        
         this.isLoading = true;
-        this.artifactService.getArtifacts(this.artifactType.ID, this.rowsPerPage, this.stateService.artifactTypeFilters.currentPageNumber, this.stateService.artifactTypeFilters.sortField, this.stateService.artifactTypeFilters.sortOrder, this.stateService.artifactTypeFilters.filters, this.stateService.artifactTypeFilters.relationships, this.stateService.artifactTypeFilters.attributes, this.stateService.artifactTypeFilters.simpleTextFilter, this.stateService.artifactTypeFilters.owners).debounceTime(3000)
+        this.artifactService.getArtifacts(this.artifactType.ID, this.rowsPerPage, this.stateService.artifactTypeFilters.currentPageNumber, this.stateService.artifactTypeFilters.sortField, this.stateService.artifactTypeFilters.sortOrder, this.stateService.artifactTypeFilters.filters, this.stateService.artifactTypeFilters.relationships, this.stateService.artifactTypeFilters.attributes, this.stateService.artifactTypeFilters.simpleTextFilter, this.stateService.artifactTypeFilters.owners).pipe(debounceTime(3000))
             .subscribe(result => {
                 this.items = result.results;
                 this.totalRecords = result.total;

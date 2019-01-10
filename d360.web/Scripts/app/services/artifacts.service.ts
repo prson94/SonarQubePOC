@@ -1,4 +1,6 @@
-﻿import { Injectable } from '@angular/core';
+
+import {catchError, map} from 'rxjs/operators';
+import { Injectable } from '@angular/core';
 import { Headers, Http, Response, ResponseContentType } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
@@ -9,7 +11,7 @@ import { GridFilterExpression, GridRelationshipFilterExpression, GridFilterField
 import { Count } from '../models/counts.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { AssetDetail } from '../models/asset.model';
-import { Observable } from "rxjs/Observable";
+import { Observable } from "rxjs";
 
 @Injectable()
 export class ArtifactService extends BaseService {
@@ -91,12 +93,12 @@ export class ArtifactService extends BaseService {
             uri += `&ownerUsers=${owner.ownerUsers.join(',')}&ownerGroups=${owner.ownerGroups.join(',')}`;
         }
         
-        return this.http.get(uri)
-            .map(response => {
+        return this.http.get(uri).pipe(
+            map(response => {
                 return response.json()
-            })
-            .map(item => { return <Artifacts>item })
-            .catch(err => this.handleError(err));
+            }),
+            map(item => { return <Artifacts>item }),
+            catchError(err => this.handleError(err)),);
         
     }   
 

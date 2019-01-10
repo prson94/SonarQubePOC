@@ -6,7 +6,7 @@ import { HeaderActionsService } from './services/header-actions.service';
 import { RightSidebarService } from './services/right-sidebar.service';
 import { StateService } from './services/state.service';
 import { SiteMessage } from './models/site-message.model';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 import { Message } from 'primeng/components/common/api';
 
 

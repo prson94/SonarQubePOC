@@ -1,10 +1,8 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.enums;
-using d360.model;
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Web;
@@ -51,7 +49,7 @@ namespace d360.web.Models
         [DataMember]
         public string FieldApiNameN { get; set; }
     }
-        
+
     #endregion
 
     [DataContract(Name = "artifacts", Namespace = constants.NAMESPACE)]

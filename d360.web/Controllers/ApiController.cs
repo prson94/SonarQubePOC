@@ -453,13 +453,32 @@ namespace d360.web.Controllers
                 case "":
                 case "Lookup":
                     if (loadLookupList)
-                        filterItems = Company
-                            .Filter<FieldLookupValue>(o => o.FieldTypeID == item.ID && 
-                                                            o.LookupObjectType == item.LookupObjectType && 
-                                                            o.LookupObjectID == item.LookupObjectID)
-                            .OrderBy(o => o.Text)
-                            .Select(o => o.Text)
-                            .ToList();
+                    {
+                        if (item.LookupObjectType == "Resource" && HideData3SixtyUsers())
+                        {
+
+                            filterItems = Company.Query<string>(@"
+                                select V.Text
+                                from FieldLookupValue V
+                                inner join reporting.Global_resource R on R.ResourceID = V.Value and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com'
+                                where V.LookupObjectType = @lookupObjectType and V.LookupObjectID = @lookupObjectId
+                                order by V.Text", new { lookupObjectId = item.LookupObjectID, lookupObjectType = item.LookupObjectType })
+                                .ToList();
+
+                        }
+                        else
+                        {
+                            filterItems = Company
+                                .Filter<FieldLookupValue>(o => o.FieldTypeID == item.ID &&
+                                                                o.LookupObjectType == item.LookupObjectType &&
+                                                                o.LookupObjectID == item.LookupObjectID)
+                                .OrderBy(o => o.Text)
+                                .Select(o => o.Text)
+                                .ToList();
+                        }
+
+                    }
+
                     columnType = GridColumn.COLUMN_TYPE_DROPDOWN;
                     filterType = serverPaged ? GridColumn.FILTER_TYPE_LIST : GridColumn.FILTER_TYPE_CHECKEDLIST;
                     break;
@@ -3628,6 +3647,11 @@ outer apply (
                 var fieldTypeIDs = fields.Where(i => i.FieldTypeID != 0).Select(x => x.FieldTypeID).ToList();
                 var fieldTypes = Company.Filter<FieldType>(i => fieldTypeIDs.Contains(i.ID)).ToList();
 
+                if(def.Fields.Count > 0 && (fieldTypes == null || fieldTypes.Count == 0))
+                {
+                    throw new Exception("The relationship lookup field has 0 valid fields to display. Please verify the definition is correct.");
+                }
+
                 type = type.CleanForSql();
 
                 for (var i = 0; i < def.Relations.Count; i++)
@@ -3693,10 +3717,10 @@ outer apply (
             }
             catch (Exception ex)
             {
-                return Request.CreateResponse(HttpStatusCode.InternalServerError, new
-                {
-                    Error = ex.GetFullExceptionData(),
-                });
+                return Request.CreateResponse(
+                    HttpStatusCode.InternalServerError,
+                    new ErrorResponse { title = "Error", message = ex.GetFullExceptionData() }
+                );
             }
 
             return Request.CreateResponse(HttpStatusCode.OK, new
@@ -3935,6 +3959,7 @@ where R.IsVisible = 1 and ((R.Object = @type
             {
                 var lookup = Company.Filter<FieldTypeLookup>(i => i.FieldTypeID == fieldTypeID).SingleOrDefault();
                 if (lookup == null) throw new Exception("Invalid ownership lookup field is specified.");
+                var assetId = Company.Assets.FirstOrDefault(a => a.Object == type && a.ObjectID == id)?.ID ?? 0;
 
                 var def = lookup.ParseOwnershipLookupDefinition();
                 type = type.CleanForSql();
@@ -3946,16 +3971,16 @@ SELECT  R.ResponsibilityTypeName,
         case SecurityAsset when 'R' then '' else SecurityAssetName end as SecurityAssetName, 
         'Preview' as SecurityAssetContext, 
         U.FirstName + ' ' + U.LastName as ResourceName, 
-        U.ResourceID, 
+        R.ResourceID, 
         'Resource' as ResourceObject, 
         'Preview' as ResourceItemContext, 
         '/resource/' + cast(R.ResourceID as varchar) as ResourceItemUrl,
         R.Context
-from    ResponsibilityDetail R
-        inner join Asset A on A.Object = @type and A.ObjectID = @id
+from    [dbo].[ResponsibilityAllAsset] R
+        inner join Asset A on A.ID = @assetId
         inner join AssetType T on T.ID = A.AssetTypeID and T.ID = R.AssetTypeID
         inner join reporting.Global_Resource U on U.ResourceID = R.ResourceID and U.State = 1 
-where   R.IsVisible = 1 and ((R.Object = @type and R.ObjectID = @id) or (R.ApplyToType = 1 and R.AssetTypeID = T.ID))";
+where   R.IsVisible = 1 and ((R.AssetID = @assetId) or (R.ApplyToType = 1 and R.AssetTypeID = T.ID))";
 
                 gridFields.Add(new GridField { name = "ResponsibilityTypeName", type = "string" });
                 gridFields.Add(new GridField { name = "ResourceName", type = "lookup" });
@@ -4011,7 +4036,7 @@ where   R.IsVisible = 1 and ((R.Object = @type and R.ObjectID = @id) or (R.Apply
                     filtertype = "textbox"
                 });
 
-                results = Company.Query<dynamic>(sql, new { type, id }).Distinct();
+                results = Company.Query<dynamic>(sql, new { assetId }).Distinct();
             }
             catch (Exception ex)
             {

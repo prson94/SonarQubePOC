@@ -2043,10 +2043,9 @@ where	R.SourceObject = 'FusionAttribute'
             return (SaveChanges() > 0);
         }
 
-        public bool SaveOrUpdate<T>(T entity, List<Field> fields, int parentId = -1) where T : BaseIntObject, IFieldsObject
-        {
-            
-            var isUpdate = IsPersistent(entity);
+        public bool SaveOrUpdate<T>(T entity, List<Field> fields, int parentId = -1, bool forceUpdate = false) where T : BaseIntObject, IFieldsObject
+        {            
+            var isUpdate = forceUpdate || IsPersistent(entity);
             
             var fieldsJson = JsonConvert.SerializeObject(fields.Select(f => new { ID = f.FieldTypeID, Value = f.Value }));
             var attr = entity.GetFieldsObjectInfo();

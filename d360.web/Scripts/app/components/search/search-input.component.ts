@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, OnDestroy, Input, Output, EventEmitter, OnChanges, SimpleChange} from '@angular/core';
+import { Component, OnInit, OnDestroy, Input, Output, EventEmitter, OnChanges, SimpleChange} from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import {SelectItem} from 'primeng/primeng';
@@ -7,7 +7,7 @@ import { TypeaheadSearchService } from '../../services/typeahead-search.service'
 import { SearchResultsObject, SearchCategories, SearchResult, AdvancedSearchFilter } from '../../models/search-result.model';
 import { DropdownOption } from '../../models/dropdown.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import { ISubscription } from 'rxjs/Subscription';
+import { SubscriptionLike as ISubscription } from 'rxjs';
 
 @Component({
     selector: 'd3s-search-input',
