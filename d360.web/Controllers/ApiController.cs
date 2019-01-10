@@ -453,13 +453,31 @@ namespace d360.web.Controllers
                 case "":
                 case "Lookup":
                     if (loadLookupList)
-                        filterItems = Company
-                            .Filter<FieldLookupValue>(o => o.FieldTypeID == item.ID && 
-                                                            o.LookupObjectType == item.LookupObjectType && 
-                                                            o.LookupObjectID == item.LookupObjectID)
-                            .OrderBy(o => o.Text)
-                            .Select(o => o.Text)
-                            .ToList();
+                    {
+                        if (item.LookupObjectType == "Resource" && HideData3SixtyUsers())
+                        {
+
+                            filterItems = Company.Query<string>(@"
+                                select V.Text
+                                from FieldLookupValue V
+                                inner join reporting.Global_resource R on R.ResourceID = V.Value and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com'
+                                order by V.Text", new { lookupObjectId = item.LookupObjectID, lookupObjectType = item.LookupObjectType })
+                                .ToList();
+
+                        }
+                        else
+                        {
+                            filterItems = Company
+                                .Filter<FieldLookupValue>(o => o.FieldTypeID == item.ID &&
+                                                                o.LookupObjectType == item.LookupObjectType &&
+                                                                o.LookupObjectID == item.LookupObjectID)
+                                .OrderBy(o => o.Text)
+                                .Select(o => o.Text)
+                                .ToList();
+                        }
+
+                    }
+
                     columnType = GridColumn.COLUMN_TYPE_DROPDOWN;
                     filterType = serverPaged ? GridColumn.FILTER_TYPE_LIST : GridColumn.FILTER_TYPE_CHECKEDLIST;
                     break;
