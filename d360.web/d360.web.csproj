@@ -417,6 +417,8 @@
     <Compile Include="Models\Attributes\AiHandleErrorAttribute.cs" />
     <Compile Include="Models\Editor Models.cs" />
     <Compile Include="Models\MimeTypeExtensionsMap.cs" />
+    <Compile Include="Models\SwaggerExampleModels.cs" />
+    <Compile Include="Models\SwaggerExampleModelLogic.cs" />
     <Compile Include="Models\Viewer Models.cs" />
     <Compile Include="Models\Attributes\FileDownloadAttribute.cs" />
     <Compile Include="Models\Formatters\DictionaryXmlMediaTypeFormatter.cs" />
