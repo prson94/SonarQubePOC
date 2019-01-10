@@ -26,6 +26,7 @@ using System.Web;
 using System.Web.Mvc;
 using System.Xml.Linq;
 using System.Configuration;
+using d360.core.helpers;
 
 namespace d360.web.Controllers
 {    
@@ -776,13 +777,16 @@ namespace d360.web.Controllers
                         
             var parentType = Company.GetParentType<ArtifactType>(a.ArtifactTypeID);
            
-            if (parentType != null)
+            if(PluralCultureHelper.IsNeutralCultureEnglish())
             {
-                var parent = Company.GetParentObject<Artifact>(a.ID);
+                if (parentType != null)
+                {
+                    var parent = Company.GetParentObject<Artifact>(a.ID);
 
-                var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
-                var parents = Company.Query<SelectListItem>($"select ObjectID as Value, DisplayValue as Text from AssetDetail where Type = 'ArtifactType' and TypeID = {parentType.ID}").OrderBy(i => i.Text).ToList();
-                list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ParentID", Name = $"Parent {pluralize.Singularize(parentType.Name)}", FieldType = DataType.Lookup.ToString(), Value = ((parent != null) ? parent.ID.ToString() : ""), Items = parents });
+                    var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
+                    var parents = Company.Query<SelectListItem>($"select ObjectID as Value, DisplayValue as Text from AssetDetail where Type = 'ArtifactType' and TypeID = {parentType.ID}").OrderBy(i => i.Text).ToList();
+                    list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ParentID", Name = $"Parent {pluralize.Singularize(parentType.Name)}", FieldType = DataType.Lookup.ToString(), Value = ((parent != null) ? parent.ID.ToString() : ""), Items = parents });
+                }
             }
 
             list = (
@@ -3167,10 +3171,9 @@ namespace d360.web.Controllers
                     );
                     break;
                 case SystemObjects.TaxonomyType:
+                    var sqlForTaxonomy = "select att.ObjectID as value, textpath as Title from asset a inner join assettype att on a.assettypeid = att.id cross apply getassettextpath('/') atp where atp.id = a.id and a.object = 'Taxonomy' and att.ObjectID = @id";
                     list.AddRange(
-                        Company.Filter<Taxonomy>(i => i.TaxonomyTypeID == id)
-                        .OrderBy(i => i.TextPath)
-                        .Select(i => new ListIntItem { title = i.TextPath, value = i.ID })
+                        Company.Query<ListIntItem>(sqlForTaxonomy, new { id = id })
                     );
                     break;                
             }

@@ -1722,11 +1722,11 @@ select
 	            RS.FirstName + ' ' + RS.LastName as StartedBy,
 	            IST.CompletedOn,
 	            RC.FirstName + ' ' + RC.LastName as CompletedBy,
-                convert(xml,convert(varchar(max),S.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') as MessageRecipientType,
-                case when S.ActivityType = 3 and IST.CompletedOn is null and convert(xml,convert(varchar(max),S.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') = 'Initiator' then
+                convert(xml,convert(nvarchar(max),S.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','nvarchar(max)') as MessageRecipientType,
+                case when S.ActivityType = 3 and IST.CompletedOn is null and convert(xml,convert(nvarchar(max),S.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','nvarchar(max)') = 'Initiator' then
 					IAR.Email
-                when S.ActivityType = 3 and IST.CompletedOn is null and convert(xml,convert(varchar(max),S.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') = 'SpecificUser' then
-					coalesce(convert(xml,convert(varchar(max),S.Settings)).value('/settings[1]/MessageToUser[1]/text()[1]','varchar(max)'), '[unknown]')
+                when S.ActivityType = 3 and IST.CompletedOn is null and convert(xml,convert(nvarchar(max),S.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','nvarchar(max)') = 'SpecificUser' then
+					coalesce(convert(xml,convert(nvarchar(max),S.Settings)).value('/settings[1]/MessageToUser[1]/text()[1]','nvarchar(max)'), '[unknown]')
 				when S.ActivityType = 3 and IST.CompletedOn is not null then
 					Forms.Responses
 				else
@@ -1755,7 +1755,7 @@ select
                     RI.Email
 				from workflow.ItemAssignment IA
 				inner join reporting.Global_Resource RI on RI.ResourceID = IA.ResourceObjectID
-			) IAR on IAR.ItemID = IST.ItemID and (IAR.StepID = ISt.StepID or IAR.StepID is null) and convert(xml,convert(varchar(max),S.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') = 'Initiator'
+			) IAR on IAR.ItemID = IST.ItemID and (IAR.StepID = ISt.StepID or IAR.StepID is null) and convert(xml,convert(nvarchar(max),S.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','nvarchar(max)') = 'Initiator'
             left join reporting.Global_resource RS on RS.ResourceID = IST.StartedBy
             left join reporting.Global_resource RC on RC.ResourceID = IST.CompletedBy
 			outer apply (

@@ -261,7 +261,10 @@ from	FollowDetail F
             foreach (var field in fields)
             {
                 if (sb.Length != 0) sb.Append(" or ");
-                sb.Append($"(Field{field.ID} like  '%'+ @simpleFilter + '%')");
+                if (!string.IsNullOrEmpty(field.DefaultFormattedValue))
+                    sb.Append($"(coalesce(Field{field.ID}_T.FormattedValue, '{field.DefaultFormattedValue}') like @simpleFilter )");
+                else
+                    sb.Append($"(Field{field.ID}_T.Value like  '%'+ @simpleFilter + '%')");
 
             }
 
@@ -273,12 +276,12 @@ from	FollowDetail F
         }
 
 
-        [HttpGet,Route("{typeId:int}/lazy")]
-        public JsonNetResult GetResourcesLazy(int typeId, int pagenum, int pagesize, string sortDataField, string sortOrder,string simpleFilter)
-      {
+        [HttpGet, Route("{typeId:int}/lazy")]
+        public JsonNetResult GetResourcesLazy(int typeId, int pagenum, int pagesize, string sortDataField, string sortOrder, string simpleFilter)
+        {
             try
             {
-               var settings = Community.GetCompanySettings();
+                var settings = Community.GetCompanySettings();
                 //check that current user is an admin or the company settings allow users to be listed
                 if (!Company.CurrentResourceIsAdmin && (settings["ShowResources"] ?? "").ToUpper() != "TRUE")
                 {
@@ -329,13 +332,13 @@ from	FollowDetail F
 
                 var dbArgs = new DynamicParameters();
                 dbArgs.Add("excludeStatus", CompanyResourceState.Deleted);
-                
+
                 if (!string.IsNullOrEmpty(simpleFilter))
                 {
-                     string[] fixedColumns = { "FirstName", "LastName", "Email", "IsAdministrator", "LastLoggedInOn", "State" };
-                    var filter = getDynamicFieldSimpleFilter(fixedColumns, SystemObjects.ResourceType, typeId, simpleFilter, dbArgs,null);
+                    string[] fixedColumns = { "FirstName", "LastName", "Email", "IsAdministrator", "LastLoggedInOn", "State" };
+                    var filter = getDynamicFieldSimpleFilter(fixedColumns, SystemObjects.ResourceType, typeId, simpleFilter, dbArgs, null);
                     countSql = string.Format(@"select count(1) from ({0} where {1}) AA", querySql, filter);
-                    sql = string.Format(@"select * from ({0} where {1} ) AA ", querySql,filter);
+                    sql = string.Format(@"select * from ({0} where {1} ) AA ", querySql, filter);
                 }
                 else
                 {
@@ -347,8 +350,8 @@ from	FollowDetail F
 
                 int total = Company.Query<int>(countSql, dbArgs).First();
 
-               
-            
+
+
                 sql = applySortSuffix(sql, sortDataField, sortOrder, "FirstName", "asc", sortFieldType: "string");
                 sql = applyPagingSuffix(sql, pagenum, pagesize);
 
@@ -362,9 +365,9 @@ from	FollowDetail F
             }
         }
 
-  
+
         [HttpGet, Route("{typeID:int}/lazy/excel")]
-        public FileResult GetResourcesExcel(int typeId,  string sortDataField, string sortOrder, string simpleFilter)
+        public FileResult GetResourcesExcel(int typeId, string sortDataField, string sortOrder, string simpleFilter)
         {
 
             var settings = Community.GetCompanySettings();
@@ -434,22 +437,22 @@ from	FollowDetail F
             sql = applySortSuffix(sql, sortDataField, sortOrder, "FirstName", "asc", sortFieldType: "string");
 
 
-            var query = Company.Query<dynamic>(sql, dbArgs) ;
-        
+            var query = Company.Query<dynamic>(sql, dbArgs);
+
 
 
             var items = Company.Filter<FieldType>(i => i.Object == SystemObjects.ResourceType.ToString() && i.ObjectID == typeId && i.IsListable).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
 
 
-           
+
             var fields = new List<GridColumn>();
-            fields.Add(new GridColumn { text = d360.core.resources.Fields.FirstName_Name, datafield = "FirstName",columntype="string" });
+            fields.Add(new GridColumn { text = d360.core.resources.Fields.FirstName_Name, datafield = "FirstName", columntype = "string" });
             fields.Add(new GridColumn { text = d360.core.resources.Fields.LastName_Name, datafield = "LastName", columntype = "string" });
             fields.Add(new GridColumn { text = d360.core.resources.Fields.Email_Name, datafield = "Email", columntype = "string" });
             items.ForEach(
-                i=>
+                i =>
                 {
-                    fields.Add(new GridColumn { text = i.Name, datafield=$"Field{i.ID}", columntype = getGridFieldTypeForColumn(i) });
+                    fields.Add(new GridColumn { text = i.Name, datafield = $"Field{i.ID}", columntype = getGridFieldTypeForColumn(i) });
                 }
                 );
             fields.Add(new GridColumn { text = d360.core.resources.Fields.LastLoggedInOn_Name, datafield = "LastLoggedInOn", columntype = "date" });
@@ -481,8 +484,8 @@ from	FollowDetail F
                 int i = 0;
                 foreach (var f in fields)
                 {
-                    var val =   (((row as IDictionary<string, object>)[$"{f.datafield}"]) ?? "").ToString();
-                    SetCellValue(document, rowIndex, colIndex, f.columntype,val);
+                    var val = (((row as IDictionary<string, object>)[$"{f.datafield}"]) ?? "").ToString();
+                    SetCellValue(document, rowIndex, colIndex, f.columntype, val);
                     colIndex++;
                 }
             }
@@ -878,7 +881,7 @@ order by A.ID, FT.SortOrder", new { id, attribute });
 
             #endregion
 
-            var items = list                            
+            var items = list
                 .Select(i => new
                 {
                     i.ID,
