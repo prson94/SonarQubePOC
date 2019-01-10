@@ -9,6 +9,7 @@ import { LoadingComponent } from './loading.component';
 import { D3STreeTableToggler } from './treetable-toggler.component';
 import { D3SColumnFilterModule } from './turbotable-column-filter.component';
 import { D3SSortIconModule } from './turbotable-sorticon.component';
+import { DirectivesModule } from '../../directives/directives.module';
 
 
 @NgModule({
@@ -30,7 +31,8 @@ import { D3SSortIconModule } from './turbotable-sorticon.component';
     ]
     , imports: [
         CommonModule,
-        RouterModule      
+        RouterModule,
+        DirectivesModule,
     ]
 
 })

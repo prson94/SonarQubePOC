@@ -6211,6 +6211,7 @@ where    A.RuleID = @id", new { id });
                 case SystemObjects.PolicyType:
                     #region Fields
                     var policyType = Company.GetById<PolicyType>(id);
+                    var objectDetail = Company.GetObjectDetail("PolicyType", id);
                     if (policyType != null)
                     {
                         model.rows.Add(new DetailReadOnlyRowModel
@@ -6225,7 +6226,14 @@ where    A.RuleID = @id", new { id });
                                 new ReadOnlyField { Name = policyType.GetName(i => i.ID), FieldName = "PolicyTypeID", FieldDescription = policyType.GetDescription(i => i.ID), Value = policyType.ID.ToString() }
                             }
                         });
-
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField{ Name = "UID",FieldName = "PolicyTypeUID", FieldDescription = objectDetail.GetDescription(i => i.Description), Value = objectDetail.UID.ToString()  }
+                            }
+                        });
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
                             columns = 1,
