@@ -52,7 +52,7 @@ export class IpRestriction {
 export class CompanyImage {
     file: File;
     isLoading = false;
-    dataUrl: string;
+    dataUrl: any;
 
     public setDataUrl(): void {
         this.isLoading = true;

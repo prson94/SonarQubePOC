@@ -1,4 +1,6 @@
-﻿import { Component, OnInit, OnDestroy } from '@angular/core';
+
+import {debounceTime} from 'rxjs/operators';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Location } from '@angular/common';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
@@ -12,7 +14,7 @@ import { MessagesService } from '../../services/messages.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SocialCommentType } from '../../models/social.model';
 import { WorkflowType, WorkflowIssueType } from '../../models/workflow.model';
-import { Subscription, ISubscription }   from 'rxjs/Subscription';
+import { Subscription, SubscriptionLike as ISubscription }   from 'rxjs';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
 import { ObjectDetail } from '../../models/object-detail.model';
 import { Tag } from '../../models/tag.model';
@@ -173,8 +175,8 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
     }
 
     private search(event) {
-        this.searchSub=  this.tagService.getTags(event.query, 'Resource')
-            .debounceTime(400)
+        this.searchSub=  this.tagService.getTags(event.query, 'Resource').pipe(
+            debounceTime(400))
             .subscribe(data => {
             this.terms = data;
         });

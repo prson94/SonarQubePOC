@@ -1,11 +1,11 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Input, Component, EventEmitter, Output, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
 import { MetricAssetViewModel, MetricFieldTypeViewModel } from '../../../models/metrics.model';
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesService } from '../../../services/messages.service';
 import { FormMode } from "../../../models/form.model";
 import { FormHelpers } from '../../../static/form-helpers';
-import 'rxjs/add/operator/catch';
+
 
 @Component({
     selector: 'd3s-admin-metric-editor',
