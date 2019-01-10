@@ -461,6 +461,7 @@ namespace d360.web.Controllers
                                 select V.Text
                                 from FieldLookupValue V
                                 inner join reporting.Global_resource R on R.ResourceID = V.Value and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com'
+                                where V.LookupObjectType = @lookupObjectType and V.LookupObjectID = @lookupObjectId
                                 order by V.Text", new { lookupObjectId = item.LookupObjectID, lookupObjectType = item.LookupObjectType })
                                 .ToList();
 
