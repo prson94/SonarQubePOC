@@ -292,7 +292,7 @@ where   A.RuleImplementationID = @id";
                         typeSql += $@"( gr.firstName Like '{ff.RawValue}%' or gr.lastName Like '{ff.RawValue}%' or gr.firstName + ' ' + gr.lastName LIKE '{ff.RawValue}%' ) and ";
                         break;
                     case "AssignedTo":
-                        assignedSql = @"inner join workflow.ItemAssignment WIA on WIA.ItemID = WI.ID and WIA.ResourceObject = 'Resource'
+                        assignedSql = @"inner join workflow.ItemAssignment WIA on WIA.ItemStepID = S.ID and WIA.ResourceObject = 'Resource'
                                             inner join reporting.Global_Resource GRA on WIA.ResourceObjectID = GRA.ResourceID ";
                         typeSql += $@"( gra.firstName Like '{ff.RawValue}%' or gra.lastName Like '{ff.RawValue}%' or gra.firstName + ' ' + gra.lastName LIKE '{ff.RawValue}%' ) and ";
                         break;
