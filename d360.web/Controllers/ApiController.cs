@@ -3940,6 +3940,7 @@ where R.IsVisible = 1 and ((R.Object = @type
             {
                 var lookup = Company.Filter<FieldTypeLookup>(i => i.FieldTypeID == fieldTypeID).SingleOrDefault();
                 if (lookup == null) throw new Exception("Invalid ownership lookup field is specified.");
+                var assetId = Company.Assets.FirstOrDefault(a => a.Object == type && a.ObjectID == id)?.ID ?? 0;
 
                 var def = lookup.ParseOwnershipLookupDefinition();
                 type = type.CleanForSql();
@@ -3951,16 +3952,16 @@ SELECT  R.ResponsibilityTypeName,
         case SecurityAsset when 'R' then '' else SecurityAssetName end as SecurityAssetName, 
         'Preview' as SecurityAssetContext, 
         U.FirstName + ' ' + U.LastName as ResourceName, 
-        U.ResourceID, 
+        R.ResourceID, 
         'Resource' as ResourceObject, 
         'Preview' as ResourceItemContext, 
         '/resource/' + cast(R.ResourceID as varchar) as ResourceItemUrl,
         R.Context
-from    ResponsibilityDetail R
-        inner join Asset A on A.Object = @type and A.ObjectID = @id
+from    [dbo].[ResponsibilityAllAsset] R
+        inner join Asset A on A.ID = @assetId
         inner join AssetType T on T.ID = A.AssetTypeID and T.ID = R.AssetTypeID
         inner join reporting.Global_Resource U on U.ResourceID = R.ResourceID and U.State = 1 
-where   R.IsVisible = 1 and ((R.Object = @type and R.ObjectID = @id) or (R.ApplyToType = 1 and R.AssetTypeID = T.ID))";
+where   R.IsVisible = 1 and ((R.AssetID = @assetId) or (R.ApplyToType = 1 and R.AssetTypeID = T.ID))";
 
                 gridFields.Add(new GridField { name = "ResponsibilityTypeName", type = "string" });
                 gridFields.Add(new GridField { name = "ResourceName", type = "lookup" });
@@ -4016,7 +4017,7 @@ where   R.IsVisible = 1 and ((R.Object = @type and R.ObjectID = @id) or (R.Apply
                     filtertype = "textbox"
                 });
 
-                results = Company.Query<dynamic>(sql, new { type, id }).Distinct();
+                results = Company.Query<dynamic>(sql, new { assetId }).Distinct();
             }
             catch (Exception ex)
             {
