@@ -234,12 +234,6 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         if (errors["integer"]) {
             message += "Please enter a valid integer";
         }
-        if (errors["min"]) {
-            message += "Invalid min"
-        }
-        if (errors["max"]) {
-            message += "Invalid max"
-        }
         if (errors["maxlength"]) {
             message += `${this.currentFieldName} maximum length of ${errors["maxlength"].requiredLength} characters exceeded.  Current length is [${errors["maxlength"].actualLength}]`;
         }
