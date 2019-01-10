@@ -541,13 +541,14 @@ order by    P.[Path]
         [
             HttpPost,
             Route("{uid}"),
+            SwaggerRequestExample(typeof(AssetInsert), typeof(AssetInsertsExample)),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of bulk asset results, including any error messages.", typeof(List<DatabaseBulkAssetResult>)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add assets of this type.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> PostAssetsAsync(Guid uid, AssetInserts assets)
+        public async Task<IHttpActionResult> PostAssetsAsync(Guid uid, List<AssetInsert> assets)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to add assets of this type."));
@@ -563,15 +564,16 @@ order by    P.[Path]
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {uid} could not be found."));
 
                 if (assets == null)
-                    assets = readRequestJsonContent<AssetInserts>(Request).Result;
+                    assets = readRequestJsonContent<List<AssetInsert>>(Request).Result;
 
-                var results = (Company.Database.Connection as SqlConnection).InsertAssets(
+                var results = (Company.Database.Connection as SqlConnection).UpsertAssets(
                     QueueSource,
                     Company.CurrentCompanyDomain,
                     Company.CurrentCompanyID,
                     Company.CurrentResourceID,
                     assetType,
-                    assets
+                    assets,
+                    true
                 );
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
@@ -593,13 +595,14 @@ order by    P.[Path]
         [
             HttpPut,
             Route("{uid}"),
+            SwaggerRequestExample(typeof(AssetUpdate), typeof(AssetUpdatesExample)),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of bulk asset results, including any error messages.", typeof(List<DatabaseBulkAssetResult>)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add assets of this type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> PutAssetsAsync(Guid uid, AssetUpdates assets)
+        public async Task<IHttpActionResult> PutAssetsAsync(Guid uid, List<AssetUpdate> assets)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to update assets of this type."));
@@ -615,15 +618,16 @@ order by    P.[Path]
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {uid} could not be found."));
 
                 if (assets == null)
-                    assets = readRequestJsonContent<AssetUpdates>(Request).Result;
+                    assets = readRequestJsonContent<List<AssetUpdate>>(Request).Result;
 
-                var results = (Company.Database.Connection as SqlConnection).UpdateAssets(
+                var results = (Company.Database.Connection as SqlConnection).UpsertAssets(
                     QueueSource,
                     Company.CurrentCompanyDomain,
                     Company.CurrentCompanyID,
                     Company.CurrentResourceID,
                     assetType,
-                    assets
+                    assets, 
+                    false
                 );
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
@@ -699,13 +703,14 @@ order by    P.[Path]
         [
             HttpPost,
             Route("batch/{uid}"),
+            SwaggerRequestExample(typeof(AssetInsert), typeof(AssetInsertsExample)),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution ID to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add assets of this type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> PostBulkAssetsAsync(Guid uid, AssetInserts assets)
+        public async Task<IHttpActionResult> PostBulkAssetsAsync(Guid uid, List<AssetInsert> assets)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to add assets of this type."));
@@ -721,7 +726,7 @@ order by    P.[Path]
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {uid} could not be found."));
 
                 if (assets == null)
-                    assets = readRequestJsonContent<AssetInserts>(Request).Result;
+                    assets = readRequestJsonContent<List<AssetInsert>>(Request).Result;
 
                 var executionInfo = new ApiExecutionInfo
                 {
@@ -782,13 +787,14 @@ order by    P.[Path]
         [
             HttpPut,
             Route("batch/{uid}"),
+            SwaggerRequestExample(typeof(AssetUpdate), typeof(AssetUpdatesExample)),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution ID to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add assets of this type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> PutBulkAssetsAsync(Guid uid, AssetUpdates assets)
+        public async Task<IHttpActionResult> PutBulkAssetsAsync(Guid uid, List<AssetUpdate> assets)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to update assets of this type."));
@@ -804,7 +810,7 @@ order by    P.[Path]
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {uid} could not be found."));
 
                 if (assets == null)
-                    assets = readRequestJsonContent<AssetUpdates>(Request).Result;
+                    assets = readRequestJsonContent<List<AssetUpdate>>(Request).Result;
 
                 var executionInfo = new ApiExecutionInfo
                 {

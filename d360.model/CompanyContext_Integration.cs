@@ -995,13 +995,14 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
             }
         }
 
-        public static List<DatabaseBulkAssetResult> InsertAssets(this SqlConnection cnn,
+        public static List<DatabaseBulkAssetResult> UpsertAssets(this SqlConnection cnn,
             IQueueSource queue,
             string companyUrlPrefix,
             int currentCompanyID,
             int currentResourceID,
             AssetType at,
-            AssetInserts import, 
+            IEnumerable<IAssetUpsert> import, 
+            bool isInsert,
             int timeout = 3600)
         {
             #region Build data tables for bulk load.
@@ -1034,39 +1035,100 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
 
             #region Generate data sets
 
-            for (int i = 1; i <= import.Count; i++)
+            int i = 1;
+            foreach(var model in import)
             {
-                var model = import[i - 1];
-
                 var row = assetTable.NewRow();
 
                 row["ItemNumber"] = i;
 
-                if (model.ParentUid.HasValue)
+                if (model.Uid != Guid.Empty && !isInsert)
+                    row["Uid"] = model.Uid;
+
+                if (model.ParentUid.HasValue && isInsert)
                     row["ParentUid"] = model.ParentUid.Value;
 
                 var usedFields = new HashSet<string>();
                 bool assetIsValid = true;
-                foreach (var k in model.Fields.Keys.Where(k => k != "ParentUid"))
+
+                #region Model-level validation
+
+                if (isInsert)
                 {
-                    // Checks for duplicate fields and only add uniques.
-                    if (!usedFields.Any(u => u == k) && assetIsValid)
+                    if (model.Uid != Guid.Empty)
                     {
-                        usedFields.Add(k);
+                        row["Message"] += $"You may not provide a Uid for this asset when you are attempting to add it. ";
+                        assetIsValid = false;
+                    }
+                }
+                else
+                {
+                    if (model.Uid == Guid.Empty)
+                    {
+                        row["Message"] += $"You must provide a valid Uid for this asset when you are attempting to update it. ";
+                        assetIsValid = false;
+                    }
 
-                        var fieldRow = assetFieldTable.NewRow();
+                    if (model.ParentUid != Guid.Empty && model.ParentUid.HasValue)
+                    {
+                        row["Message"] += $"You may not provide a Parent Uid for this asset when you are attempting to update it. ";
+                        assetIsValid = false;
+                    }
+                }
 
-                        fieldRow["ItemNumber"] = i;
-                        fieldRow["FieldName"] = k.Trim();
-                        fieldRow["FieldValue"] = (model.Fields[k] + "").Trim();
-                        if (fieldTypeIDs.Any(ft => ft.Name == k))
+                if (assetIsValid)
+                {
+                    if (at.Class == AssetTypeClass.Reference && !model.Fields.ContainsKey("Code"))
+                    {
+                        row["Message"] += $"You must provide a Code in order to ${(isInsert ? "add" : "update")} this reference list item. ";
+                        assetIsValid = false;
+                    }
+
+                    if (at.Class == AssetTypeClass.FusionAttribute && (!model.Fields.ContainsKey("FusionID") || !model.Fields.ContainsKey("Name")))
+                    {
+                        if (!model.Fields.ContainsKey("FusionID"))
                         {
-                            fieldRow["FieldTypeID"] = fieldTypeIDs.Single(ft => ft.Name == k).ID;
-                            assetFieldTable.Rows.Add(fieldRow);
+                            row["Message"] += $"You must provide a FusionID in order to ${(isInsert ? "add" : "update")} this technical asset. ";
+                            assetIsValid = false;
                         }
-                        else
+                        if (!model.Fields.ContainsKey("Name"))
                         {
-                            if (k != "Name" && k != "Code" && k != "FusionID")
+                            row["Message"] += $"You must provide a Name in order to ${(isInsert ? "add" : "update")} this technical asset. ";
+                            assetIsValid = false;
+                        }
+                    }
+                }
+
+                #endregion
+
+                if (assetIsValid)
+                {
+                    foreach (var k in model.Fields.Keys)
+                    {
+                        // Checks for duplicate fields and only add uniques.
+                        if (!usedFields.Any(u => u == k) && assetIsValid)
+                        {
+                            usedFields.Add(k);
+
+                            var fieldRow = assetFieldTable.NewRow();
+
+                            fieldRow["ItemNumber"] = i;
+                            fieldRow["FieldName"] = k.Trim();
+                            fieldRow["FieldValue"] = (model.Fields[k] + "").Trim();
+                            if (fieldTypeIDs.Any(ft => ft.Name == k))
+                            {
+                                fieldRow["FieldTypeID"] = fieldTypeIDs.Single(ft => ft.Name == k).ID;
+                                assetFieldTable.Rows.Add(fieldRow);
+                            }
+                            else if (at.Class == AssetTypeClass.Reference && k == "Code")
+                            {
+                                assetFieldTable.Rows.Add(fieldRow);
+                            }
+                            else if (at.Class == AssetTypeClass.FusionAttribute && ((k == "Name") || (k == "FusionID")))
+                            {
+                                assetFieldTable.Rows.Add(fieldRow);
+                            }
+                            else
                             {
                                 row["Message"] += $"Field [{k}] is not valid for this asset. ";
                                 assetIsValid = false;
@@ -1089,12 +1151,14 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
                 if (currentCount >= dbLimit)
                 {
                     results.AddRange(
-                        cnn.UpsertAssets(currentResourceID, true, at, assetTable, assetFieldTable, timeout)
+                        cnn.UpsertAssetsToDatabase(currentResourceID, isInsert, at, assetTable, assetFieldTable, timeout)
                     );
                     assetTable.Rows.Clear();
                     assetFieldTable.Rows.Clear();
                     currentCount = 0;
                 }
+
+                i++;
             }
 
             #endregion
@@ -1103,80 +1167,17 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
             if (currentCount > 0)
             {
                 results.AddRange(
-                    cnn.UpsertAssets(currentResourceID, true, at, assetTable, assetFieldTable, timeout)
+                    cnn.UpsertAssetsToDatabase(currentResourceID, isInsert, at, assetTable, assetFieldTable, timeout)
                 );
                 currentCount = 0;
             }
 
-
             cnn.SendWorkflowEvents(queue, companyUrlPrefix, currentCompanyID, currentResourceID, at, results);
 
             return results;
         }
 
-        public static List<DatabaseBulkAssetResult> UpdateAssets(this SqlConnection cnn,
-            IQueueSource queue,
-            string companyUrlPrefix,
-            int currentCompanyID,
-            int currentResourceID,
-            AssetType at,
-            AssetUpdates import, 
-            int timeout = 3600)
-        {
-            #region Build data tables for bulk load.
-
-            var assetTable = new System.Data.DataTable();
-            assetTable.Columns.Add("ItemNumber", typeof(int));
-            assetTable.Columns.Add("Message", typeof(string));
-            assetTable.Columns.Add("Success", typeof(bool));
-            assetTable.Columns.Add("Uid", typeof(Guid));
-            assetTable.Columns.Add("ParentUid", typeof(Guid));
-
-            var assetFieldTable = new System.Data.DataTable();
-            assetFieldTable.Columns.Add("ItemNumber", typeof(int));
-            assetFieldTable.Columns.Add("FieldName", typeof(string));
-            assetFieldTable.Columns.Add("FieldValue", typeof(string));
-            assetFieldTable.Columns.Add("FieldTypeID", typeof(int));
-
-            #endregion
-
-            var results = new List<DatabaseBulkAssetResult>();
-
-            #region Generate data sets
-
-            for (int i = 1; i <= import.Count; i++)
-            {
-                var model = import[i - 1];
-
-                var row = assetTable.NewRow();
-
-                row["ItemNumber"] = i;
-                row["Uid"] = model.Uid;
-
-                assetTable.Rows.Add(row);
-
-                foreach (var k in model.Fields.Keys.Where(k => k != "Uid"))
-                {
-                        var fieldRow = assetFieldTable.NewRow();
-
-                        fieldRow["ItemNumber"] = i;
-                        fieldRow["FieldName"] = k.Trim();
-                        fieldRow["FieldValue"] = (model.Fields[k] + "").Trim();
-
-                        assetFieldTable.Rows.Add(fieldRow);
-                }
-            }
-
-            results.AddRange(cnn.UpsertAssets(currentResourceID, false, at, assetTable, assetFieldTable, timeout));
-
-            #endregion
-
-            cnn.SendWorkflowEvents(queue, companyUrlPrefix, currentCompanyID, currentResourceID, at, results);
-
-            return results;
-        }
-
-        static List<DatabaseBulkAssetResult> UpsertAssets(this SqlConnection cnn, 
+        static List<DatabaseBulkAssetResult> UpsertAssetsToDatabase(this SqlConnection cnn, 
             int currentResourceID, 
             bool isInsert,
             AssetType at,
@@ -1255,6 +1256,7 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
                     assetBulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
                     assetBulkCopy.ColumnMappings.Add("FieldName", "FieldName");
                     assetBulkCopy.ColumnMappings.Add("FieldValue", "FieldValue");
+                    assetBulkCopy.ColumnMappings.Add("FieldTypeID", "FieldTypeID");
 
                     assetFieldBulkCopy.WriteToServer(assetFieldTable);
 
