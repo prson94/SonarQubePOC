@@ -31,7 +31,7 @@
 		SET CanOwnFusion = art.CanOwnFusion
 	from  ArtifactType as art
 		where art.ID= AssetType.ObjectID
-		 
+		and AssetType.[Object]='ArtifactType' 
 	</sql>
 	<rollback>
 	 
