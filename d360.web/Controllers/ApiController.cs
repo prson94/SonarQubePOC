@@ -5775,6 +5775,7 @@ where    A.RuleID = @id", new { id });
                 case SystemObjects.FusionType:
                     #region Fields
                     var fusionType = Company.GetById<FusionType>(id);
+                    var fusionDetail = Company.GetObjectDetail("FusionType", id);
                     if (fusionType != null)
                     {
                         model.rows.Add(new DetailReadOnlyRowModel
@@ -5789,7 +5790,14 @@ where    A.RuleID = @id", new { id });
                                 new ReadOnlyField { Name = fusionType.GetName(i => i.ID), FieldName = "FusionTypeID", FieldDescription = fusionType.GetDescription(i => i.ID), Value = fusionType.ID.ToString() }
                             }
                         });
-
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField{ Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = fusionDetail.UID.ToString()  }
+                            }
+                        });
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
                             columns = 1,
