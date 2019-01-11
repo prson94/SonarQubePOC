@@ -1,4 +1,6 @@
-﻿import { CommonModule }       from '@angular/common';
+
+import {map} from 'rxjs/operators';
+import { CommonModule }       from '@angular/common';
 import { NgModule, Input, Output, Component, EventEmitter } from '@angular/core';
 import { Http, Headers } from '@angular/http';
 import { FormMessage} from '../../models/form.model';
@@ -43,8 +45,8 @@ export class DeleteForm  {
                 this.callback(this.itemId);
                  break;
             case 'post':
-                this.http.post(this.uri, JSON.stringify(this.model), { headers: headers })
-                    .map(data => data.json())
+                this.http.post(this.uri, JSON.stringify(this.model), { headers: headers }).pipe(
+                    map(data => data.json()))
                     .subscribe(
                     data => {
                         var r = new JsonResult(data);
@@ -63,8 +65,8 @@ export class DeleteForm  {
                     );
                 break;
             case 'put':
-                this.http.put(this.uri, JSON.stringify(this.model), { headers: headers })
-                    .map(data => data.json())
+                this.http.put(this.uri, JSON.stringify(this.model), { headers: headers }).pipe(
+                    map(data => data.json()))
                     .subscribe(
                     data => {
                         var r = new JsonResult(data);
@@ -85,8 +87,8 @@ export class DeleteForm  {
             case 'delete':
                 if (this.model)
                     console.warn('Model passed to generic delete will be ignored when method=\'DELETE\'.');
-                this.http.delete(this.uri)
-                    .map(data => data.json())
+                this.http.delete(this.uri).pipe(
+                    map(data => data.json()))
                     .subscribe(
                     data => {                        
                         var r = new JsonResult(data);

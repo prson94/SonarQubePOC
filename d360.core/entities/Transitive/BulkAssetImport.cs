@@ -6,16 +6,21 @@ using System.Runtime.Serialization;
 
 namespace d360.core.entities
 {
-    [JsonArray]
-    [DataContract(Name="assets")]
-    public class AssetInserts : List<AssetInsert>
+    public interface IAssetUpsert
     {
+        Guid Uid { get; set; }
 
+        Guid? ParentUid { get; set; }
+
+        Dictionary<string, string> Fields { get; set; }
     }
 
     [DataContract(Name = "asset")]
-    public class AssetInsert
+    public class AssetInsert : IAssetUpsert
     {
+        [IgnoreDataMember]
+        public Guid Uid { get; set; }
+
         [DataMember]
         public Guid? ParentUid { get; set; }
 
@@ -23,18 +28,14 @@ namespace d360.core.entities
         public Dictionary<string, string> Fields { get; set; } = new Dictionary<string, string>();
     }
 
-    [JsonArray]
-    [DataContract(Name = "assets")]
-    public class AssetUpdates : List<AssetUpdate>
-    {
-
-    }
-
     [DataContract(Name = "asset")]
-    public class AssetUpdate// : Dictionary<string, string>
+    public class AssetUpdate : IAssetUpsert
     {
         [DataMember]
         public Guid Uid { get; set; }
+
+        [IgnoreDataMember]
+        public Guid? ParentUid { get; set; }
 
         [DataMember]
         public Dictionary<string, string> Fields { get; set; } = new Dictionary<string, string>();

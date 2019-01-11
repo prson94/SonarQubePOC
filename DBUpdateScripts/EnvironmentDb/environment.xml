@@ -27,14 +27,22 @@
 	<include file="scripts/GOV-6199.xml"/>
 	<include file="scripts/GOV-6256.xml"/>
 	<include file="scripts/GOV-6069.xml"/>
-	<include file="scripts/GOV-6187.xml"/>
-  <include file="scripts/GOV-6216.xml"/>
-  <include file="scripts/GOV-5350.xml"/>
-  <include file="scripts/GOV-5497.xml"/>
-  <include file="scripts/GOV-6279.xml"/>
+    <include file="scripts/GOV-6216.xml"/>
+    <include file="scripts/GOV-5350.xml"/>
+    <include file="scripts/GOV-5497.xml"/>
+    <include file="scripts/GOV-6279.xml"/>
 	<include file="scripts/GOV-6187-B.xml"/>	
 	<include file="scripts/GOV-6273.xml"/>
 	<include file="scripts/GOV-6273-ProcUpdate.xml"/>
+	<include file="scripts/GOV-6336.xml"/>
+	<include file="scripts/GOV-6338.xml"/>
+	<include file="scripts/GOV-6343.xml"/>
+	<include file="scripts/GOV-6292.xml"/>
+	<include file="scripts/GOV-6292-Fix.xml"/>
+  <include file="scripts/GOV-6355.xml"/>
+  <include file="scripts/GOV-6254.xml"/>
+  <include file="scripts/GOV-6350.xml"/>
+  <include file="scripts/GOV-6359.xml"/>
   <include file="scripts/GOV-6243.xml"/>
 </databaseChangeLog>
 

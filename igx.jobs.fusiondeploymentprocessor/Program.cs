@@ -110,7 +110,7 @@ from	plugin.FusionAttributeType A
                 community.Dispose();
 
 #if DEBUG
-                var companies = CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings().Where(i => i.CompanyID == 187).ToList();
+                var companies = CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings().Where(i => i.CompanyID == 215).ToList();
 #else
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 #endif
@@ -122,14 +122,14 @@ from	plugin.FusionAttributeType A
                     {
                         #region Lists
 
-//#if DEBUG
-//                        clientFusionTypes = clientFusionTypes.Where(i => i.FusionTypeID == 26).ToList();
-//#endif
+                        //#if DEBUG
+                        //                        clientFusionTypes = clientFusionTypes.Where(i => i.FusionTypeID == 26).ToList();
+                        //#endif
 
                         var c_FusionTypes = (
                             from cft in clientFusionTypes
                             from ft in fusionTypes
-                            where cft.ClientID == c.CompanyID
+                            where cft.ClientID == c.ClientID
                             where cft.FusionTypeID == ft.ID
                             select ft
                         ).ToList();
@@ -159,7 +159,7 @@ from	plugin.FusionAttributeType A
                             from cft in clientFusionTypes
                             from ft in fusionTypes
                             from fa in fusionAttributeTypes
-                            where cft.ClientID == c.CompanyID
+                            where cft.ClientID == c.ClientID
                             where cft.FusionTypeID == ft.ID
                             where fa.FusionTypeID == ft.ID
                             select fa
@@ -362,7 +362,7 @@ from	plugin.FusionAttributeType A
                                 #endregion
 
                                 SqlBulkCopy bulkCopy = null;
-                            
+
                                 #region Merge fusion types
 
                                 bulkCopy = new SqlBulkCopy(company, SqlBulkCopyOptions.Default, trans);
@@ -391,7 +391,7 @@ from	plugin.FusionAttributeType A
         SET IDENTITY_INSERT FusionType OFF;", transaction: trans);
 
                                 #endregion
-                            
+
                                 #region Merge fusion type fields
 
                                 bulkCopy = new SqlBulkCopy(company, SqlBulkCopyOptions.Default, trans);

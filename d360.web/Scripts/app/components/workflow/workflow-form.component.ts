@@ -1,4 +1,6 @@
-﻿import { Input, Component, OnInit, OnDestroy } from '@angular/core';
+
+import {debounceTime} from 'rxjs/operators';
+import { Input, Component, OnInit, OnDestroy } from '@angular/core';
 import { Location } from '@angular/common';
 import { Router, ActivatedRoute }       from '@angular/router';
 import { NgForm, FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
@@ -15,7 +17,8 @@ import { TagService } from '../../services/tag.service';
 import { ResourcesService } from '../../services/resources.service';
 import { Resource } from '../../models/resource.model';
 import { MessagesService } from '../../services/messages.service';
-import { ISubscription } from 'rxjs/Subscription';
+import { SubscriptionLike as ISubscription } from 'rxjs';
+import { close } from 'fs';
 
 @Component({
     selector: 'd3s-workflow-form',
@@ -262,6 +265,9 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
                     this.loadResources();
                 }
                 this.hasObjectReassign = (this.reassignAvailableTypes.length > 0);                
+            }).catch(res => {
+                this.isLoading = false;
+                this.title = "Cannot find the requested item.";
             });
     }
 
@@ -270,7 +276,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
             this.location.back();
         }
         else {
-            window.close();
+            this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
         }
     }
     
@@ -296,8 +302,8 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     }
 
     private search(event) {
-       this.searchSub= this.tagService.getTags(event.query,'Resource')
-            .debounceTime(400)
+       this.searchSub= this.tagService.getTags(event.query,'Resource').pipe(
+            debounceTime(400))
             .subscribe(data => {
             this.terms = data;
         });

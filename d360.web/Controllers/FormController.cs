@@ -26,6 +26,7 @@ using System.Web;
 using System.Web.Mvc;
 using System.Xml.Linq;
 using System.Configuration;
+using d360.core.helpers;
 
 namespace d360.web.Controllers
 {    
@@ -776,13 +777,16 @@ namespace d360.web.Controllers
                         
             var parentType = Company.GetParentType<ArtifactType>(a.ArtifactTypeID);
            
-            if (parentType != null)
+            if(PluralCultureHelper.IsNeutralCultureEnglish())
             {
-                var parent = Company.GetParentObject<Artifact>(a.ID);
+                if (parentType != null)
+                {
+                    var parent = Company.GetParentObject<Artifact>(a.ID);
 
-                var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
-                var parents = Company.Query<SelectListItem>($"select ObjectID as Value, DisplayValue as Text from AssetDetail where Type = 'ArtifactType' and TypeID = {parentType.ID}").OrderBy(i => i.Text).ToList();
-                list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ParentID", Name = $"Parent {pluralize.Singularize(parentType.Name)}", FieldType = DataType.Lookup.ToString(), Value = ((parent != null) ? parent.ID.ToString() : ""), Items = parents });
+                    var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
+                    var parents = Company.Query<SelectListItem>($"select ObjectID as Value, DisplayValue as Text from AssetDetail where Type = 'ArtifactType' and TypeID = {parentType.ID}").OrderBy(i => i.Text).ToList();
+                    list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ParentID", Name = $"Parent {pluralize.Singularize(parentType.Name)}", FieldType = DataType.Lookup.ToString(), Value = ((parent != null) ? parent.ID.ToString() : ""), Items = parents });
+                }
             }
 
             list = (
@@ -3123,7 +3127,7 @@ namespace d360.web.Controllers
                     var sql = "select ast.ObjectID as value,d.DisplayValue as title  from asset ast inner join assettype astt on (ast.assettypeid = astt.id and ast.[object] = 'Artifact') cross apply [dbo].GetAssetDisplayValueById(ast.id) d where astt.ObjectID = @id order by d.DisplayValue";
 
                     list.AddRange(
-                        Company.Query<ListIntItem>(sql, new { id = id }) 
+                        Company.Query<ListIntItem>(sql, new { id = id })
                     );
                     break;
                 case SystemObjects.ReferenceItem:
@@ -3131,7 +3135,7 @@ namespace d360.web.Controllers
                     list.AddRange(
                         Company.Filter<ReferenceItem>(i => i.ReferenceItemTypeID == id)
                         .OrderBy(i => i.DisplayValue)
-                        .Select(i => new ListIntItem  { title = i.DisplayValue, value = i.ID })
+                        .Select(i => new ListIntItem { title = i.DisplayValue, value = i.ID })
                     );
                     break;
                 case SystemObjects.PolicyType:
@@ -3143,11 +3147,21 @@ namespace d360.web.Controllers
                     break;
                 case SystemObjects.Resource:
                 case SystemObjects.ResourceType:
-                    list.AddRange(
-                        Company.Table<GlobalReportingResource>().ToList()
-                        .OrderBy(i => i.FullName)
-                        .Select(i => new ListIntItem  { title = i.FullName, value = i.ResourceID })
-                    );
+                    if (HideData3SixtyUsers())
+                    {
+                        list.AddRange(
+                            Company.Table<GlobalReportingResource>().ToList()
+                            .Where(i => !i.Email.EndsWith("@data3sixty.com") && !i.Email.EndsWith("@infogix.com"))
+                            .OrderBy(i => i.FullName)
+                            .Select(i => new ListIntItem { title = i.FullName, value = i.ResourceID }));
+                    }
+                    else
+                    {
+                        list.AddRange(
+                            Company.Table<GlobalReportingResource>().ToList()
+                            .OrderBy(i => i.FullName)
+                            .Select(i => new ListIntItem { title = i.FullName, value = i.ResourceID }));
+                    }
                     break;
                 case SystemObjects.RuleType:
                     list.AddRange(
@@ -3157,10 +3171,9 @@ namespace d360.web.Controllers
                     );
                     break;
                 case SystemObjects.TaxonomyType:
+                    var sqlForTaxonomy = "select att.ObjectID as value, textpath as Title from asset a inner join assettype att on a.assettypeid = att.id cross apply getassettextpath('/') atp where atp.id = a.id and a.object = 'Taxonomy' and att.ObjectID = @id";
                     list.AddRange(
-                        Company.Filter<Taxonomy>(i => i.TaxonomyTypeID == id)
-                        .OrderBy(i => i.TextPath)
-                        .Select(i => new ListIntItem { title = i.TextPath, value = i.ID })
+                        Company.Query<ListIntItem>(sqlForTaxonomy, new { id = id })
                     );
                     break;                
             }
@@ -3426,10 +3439,15 @@ namespace d360.web.Controllers
                 union
                 ";
 
+            var resourceJoin = $@"
+                inner join reporting.Global_resource R on R.ResourceID = V.Value and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com'
+                ";
+            
             var itemsSql = $@"
                 {(string.IsNullOrWhiteSpace(selectedValue) ? "" : selectedSql)}
                 select top {maxItems} {columns}
                 from FieldLookupValue V
+                {(HideData3SixtyUsers() && ft.LookupObjectType == "Resource" ? resourceJoin : "")}
                 where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId {(string.IsNullOrWhiteSpace(query) ? "" : " and V.Text like '%' + @query + '%' ")}
                 ";
 
@@ -4486,10 +4504,10 @@ namespace d360.web.Controllers
             intervalTypes.Add(new SelectListItem { Text = "Minute(s)", Value = "3" });
             intervalTypes.Add(new SelectListItem { Text = "Hour(s)", Value = "2" });            
             list.Add(new EditableField { Row = 4, Column = 1, FieldName = "IntervalType", Required= true, Name = fusion.GetName(i => i.IntervalType), FieldDescription = fusion.GetDescription(i => i.IntervalType), FieldType = DataType.Lookup.ToString(), Items = intervalTypes });
-            list.Add(new EditableField { Row = 4, Column = 2, Required=true, FieldName = "Interval", Name = fusion.GetName(i => i.Interval), FieldDescription = fusion.GetDescription(i => i.Interval), FieldType = DataType.Number.ToString() });
+            list.Add(new EditableField { Row = 4, Column = 2, Required=true, FieldName = "Interval", Name = fusion.GetName(i => i.Interval), FieldDescription = fusion.GetDescription(i => i.Interval), FieldType = DataType.Number.ToString(), Validations = checkAndAddValidation("Number", "Interval", true, "([1-9]|[1-8][0-9]|9[0-9]|[1-8][0-9]{2}|9[0-8][0-9]|99[0-9]|[1-8][0-9]{3}|9[0-8][0-9]{2}|99[0-8][0-9]|999[0-9]|10000)", null, null, "Please enter value between 1,10000.") });
 
             list.Add(new EditableField { Row = 5, Column = 3, FieldName = "LockPromotedItems", Name = fusion.GetName(i => i.LockPromotedItems), FieldDescription = fusion.GetDescription(i => i.LockPromotedItems), FieldType = DataType.Boolean.ToString() });
-
+            
             var owners = Company.GetFusionOwnerOptions().Select(i => new SelectListItem { Text = i.Name, Value = $"{i.ID}", Selected = false }).ToList();
             list.Add(new EditableField { Row = 6, Column = 1, Required = true, FieldName = "Owners", Name = "Owners", FieldDescription = "You must assign one or more owners for this configuration.", FieldType = DataType.Lookup.ToString(), MultiSelect = true, Items = owners });
             
@@ -4519,7 +4537,7 @@ namespace d360.web.Controllers
             intervalTypes.Add(new SelectListItem { Text = "Minute(s)", Value = "3" });
             intervalTypes.Add(new SelectListItem { Text = "Hour(s)", Value = "2" });
             list.Add(new EditableField { Row = 4, Column = 1, Required = true, FieldName = "IntervalType", Name = a.GetName(i => i.IntervalType), FieldDescription = a.GetDescription(i => i.IntervalType), FieldType = DataType.Lookup.ToString(), Items = intervalTypes, Value = a.IntervalType.HasValue ? ((int)a.IntervalType.Value).ToString() : "" });
-            list.Add(new EditableField { Row = 4, Column = 2, Required = true,  FieldName = "Interval", Name = a.GetName(i => i.Interval), FieldDescription = a.GetDescription(i => i.Interval), FieldType = DataType.Number.ToString(), Value = (a.Interval.HasValue ? a.Interval.Value.ToString() : "") });
+            list.Add(new EditableField { Row = 4, Column = 2, Required = true,  FieldName = "Interval", Name = a.GetName(i => i.Interval), FieldDescription = a.GetDescription(i => i.Interval), FieldType = DataType.Number.ToString(), Value = (a.Interval.HasValue ? a.Interval.Value.ToString() : "") ,Validations= checkAndAddValidation("Number", "Interval", true, "([1-9]|[1-8][0-9]|9[0-9]|[1-8][0-9]{2}|9[0-8][0-9]|99[0-9]|[1-8][0-9]{3}|9[0-8][0-9]{2}|99[0-8][0-9]|999[0-9]|10000)", null, null, "Please enter value between 1,10000.") });
 
             list.Add(new EditableField { Row = 5, Column = 1, FieldName = "ForceRefresh", Name = "Force Refresh on Next Run?", FieldDescription = "Force the local agent to perform a full refresh of this configuration on the next run.", FieldType = DataType.Boolean.ToString(), Value = a.ForceRefresh.GetValueOrDefault().ToString().ToLower() });
             list.Add(new EditableField { Row = 5, Column = 2, FieldName = "LockPromotedItems", Name = a.GetName(i => i.LockPromotedItems), FieldDescription = a.GetDescription(i => i.LockPromotedItems), FieldType = DataType.Boolean.ToString(), Value = a.LockPromotedItems.ToString().ToLower() });
@@ -12327,6 +12345,7 @@ select	{QueryConstants.HighLevelTypeCaseStatement} + T.Name as label,
 		T.Object + '|' + cast(T.ObjectID as varchar) as value
 from	ResponsibilityTypeRelation R
 		inner join AssetType T on T.Object = R.ObjectType and T.ObjectID = R.ObjectID and R.ResponsibilityTypeID = {id}
+        where R.ObjectType<>'FusionAttributeType'
 order by {QueryConstants.HighLevelTypeCaseStatement} + T.Name");
             return new JsonNetResult
             {
@@ -12482,31 +12501,44 @@ order by	case
         [HttpGet, ActionName("ResponsibilityTypeRelationRuleRelationships_FormData"), Route("ResponsibilityTypeRelationRuleRelationships_FormData"), NonNullableParameters]
         public JsonNetResult GetResponsibilityTypeRelationRuleRelationships_FormData(SystemObjects type, int id, int intersectTypeID)
         {
-            var items = Company.Query<dynamic>($@"
-select	D.Object + '|' + cast(D.ObjectID as varchar) as value,
-		DN.DisplayValue as label
-from	Asset D
-        inner join AssetType DT on DT.ID = D.AssetTypeID
-		inner join	(
-					select	case
-								when (Subject = '{type.ToString()}' and SubjectID = {id}) then Object
-								else Subject
-							end as Object,
-							case
-								when (Subject = '{type.ToString()}' and SubjectID = {id}) then ObjectID
-								else SubjectID
-							end as ObjectID
-					from	IntersectType
-					where	ID = {intersectTypeID}
-					) I on I.Object = DT.Object and I.ObjectID = DT.ObjectID
-        cross apply dbo.GetAssetDisplayValueById(D.ID) DN  
-order by DN.DisplayValue");
+            string crossApplyValue;
+            string labelValue;
 
-            return new JsonNetResult
+            if (type == SystemObjects.TaxonomyType || type == SystemObjects.PolicyType)
             {
-                Data = items,
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
+                crossApplyValue = "getassettextpathbyid(D.id, '/') atp";
+                labelValue = "atp.textpath";
+            } else
+            {
+                crossApplyValue = "dbo.GetAssetDisplayValueById(D.ID) DN";
+                labelValue = "DN.DisplayValue";
+            }
+
+            var items = Company.Query<dynamic>($@"
+                select	D.Object + '|' + cast(D.ObjectID as varchar) as value,
+		            {labelValue} as label 
+                from	Asset D
+                    inner join AssetType DT on DT.ID = D.AssetTypeID
+		            inner join	(
+				        select	case
+						        when (Subject = '{type.ToString()}' and SubjectID = {id}) then Object
+								else Subject
+					    end as Object,
+						case
+						    when (Subject = '{type.ToString()}' and SubjectID = {id}) then ObjectID
+							else SubjectID
+						    end as ObjectID
+					    from	IntersectType
+					        where	ID = {intersectTypeID}
+					 ) I on I.Object = DT.Object and I.ObjectID = DT.ObjectID
+                   cross apply {crossApplyValue}
+                   order by {labelValue}");
+
+                return new JsonNetResult
+                {
+                    Data = items,
+                    Formatting = Newtonsoft.Json.Formatting.None
+                };
         }
         
         #endregion
