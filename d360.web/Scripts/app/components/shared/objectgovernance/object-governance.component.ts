@@ -5,7 +5,7 @@ import { ObjectStatistics } from '../../../models/object-statistics.model';
 import { ArtifactService } from '../../../services/artifacts.service';
 import { HeaderActions } from '../../../models/header.model';
 import { HeaderActionsService } from '../../../services/header-actions.service';
-import { OnDestroy } from '@angular/core/src/metadata/lifecycle_hooks';
+import { OnDestroy, OnInit } from '@angular/core/src/metadata/lifecycle_hooks';
 
 @Component({
     selector: 'd3s-object-governance',    
@@ -60,7 +60,7 @@ import { OnDestroy } from '@angular/core/src/metadata/lifecycle_hooks';
     providers: [ArtifactService, ObjectStatisticsService]
 })
 
-export class ObjectGovernanceComponent extends BaseComponent implements OnChanges,OnDestroy {
+export class ObjectGovernanceComponent extends BaseComponent implements OnInit, OnChanges, OnDestroy {
     @Input() uid: string;
     @Input() objectType: string;
     @Input() objectID: number;
@@ -83,6 +83,11 @@ export class ObjectGovernanceComponent extends BaseComponent implements OnChange
         super();
     }    
     
+    ngOnInit(): void {
+        if (this.objectType && this.objectID) 
+            this.load();
+    }
+
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (this.objectType && this.objectID && this.uid)
             this.load();

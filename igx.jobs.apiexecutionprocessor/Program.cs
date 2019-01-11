@@ -82,9 +82,9 @@ namespace igx.jobs.apiexecutionprocessor
                             var postAssetsFields = JsonConvert.DeserializeObject<ApiExecutionFields_PostAssets>(dbExecutionItem.Fields);
                             assetType = company.Filter<AssetType>(i => i.uid == postAssetsFields.AssetTypeUid).Single();
                             string postAssetsJson = storage.GetFileContentsAsString(info.StorageFolder, info.RequestFileName, Encoding.UTF8);
-                            var postAssets = JsonConvert.DeserializeObject<AssetInserts>(postAssetsJson);
+                            var postAssets = JsonConvert.DeserializeObject<List<AssetInsert>>(postAssetsJson);
 
-                            var postAssetsResults = companyConnection.InsertAssets(queue, info.CompanyDomainPrefix, info.CompanyID, dbExecutionItem.ResourceID, assetType, postAssets, dbExecutionTimeout);
+                            var postAssetsResults = companyConnection.UpsertAssets(queue, info.CompanyDomainPrefix, info.CompanyID, dbExecutionItem.ResourceID, assetType, postAssets, true, dbExecutionTimeout);
                             dbExecutionItem.Processed = postAssetsResults.Count(i => i.Success);
                             dbExecutionItem.Error = postAssetsResults.Count(i => !i.Success);
 
@@ -94,9 +94,9 @@ namespace igx.jobs.apiexecutionprocessor
                             var putAssetsFields = JsonConvert.DeserializeObject<ApiExecutionFields_PutAssets>(dbExecutionItem.Fields);
                             assetType = company.Filter<AssetType>(i => i.uid == putAssetsFields.AssetTypeUid).Single();
                             string putAssetsJson = storage.GetFileContentsAsString(info.StorageFolder, info.RequestFileName, Encoding.UTF8);
-                            var putAssets = JsonConvert.DeserializeObject<AssetUpdates>(putAssetsJson);
+                            var putAssets = JsonConvert.DeserializeObject<List<AssetUpdate>>(putAssetsJson);
 
-                            var putAssetsResults = companyConnection.UpdateAssets(queue, info.CompanyDomainPrefix, info.CompanyID, dbExecutionItem.ResourceID, assetType, putAssets, dbExecutionTimeout);
+                            var putAssetsResults = companyConnection.UpsertAssets(queue, info.CompanyDomainPrefix, info.CompanyID, dbExecutionItem.ResourceID, assetType, putAssets, false, dbExecutionTimeout);
                             dbExecutionItem.Processed = putAssetsResults.Count(i => i.Success);
                             dbExecutionItem.Error = putAssetsResults.Count(i => !i.Success);
 
