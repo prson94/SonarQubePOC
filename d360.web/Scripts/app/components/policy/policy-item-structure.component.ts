@@ -1,7 +1,8 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
+
+import { BaseComponent } from '../shared/base.component';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { PoliciesService } from '../../services/policies.service';
 import { RightSidebarService } from '../../services/right-sidebar.service';
@@ -11,7 +12,6 @@ import { PermissionsService } from '../../services/permissions.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Policy, PolicyType, PolicyStatus } from '../../models/policy.model';
 import { TreeNode } from 'primeng/primeng';
-import { FormMode } from '../../models/form.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
 import { LevelsService } from '../../services/levels.service';
@@ -20,63 +20,7 @@ import { GridDefinitionService } from '../../services/grid-definition.service';
 
 @Component({
     selector: 'd3s-policy-item-structure',
-    template: `                
-                <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <div class="tile tile-detail" *ngIf="!isLoading">                            
-                    <header *ngIf="!showDelete && !showEditor">{{policyType.Name}}
-                        <d3s-tile-actions [hasAdd]="hasModifyAssetPermissions()" (addClick)="add()"></d3s-tile-actions>                            
-                    </header>                              
-                    <input type="text" pInputText [(ngModel)]="searchValue" placeholder="Search" style="width: 100%;margin-bottom:10px;" *ngIf="!showDelete && !showEditor">                      
-                    <p-treeTable *ngIf="!showDelete && !showEditor" [value]="treeNodeArray | treeSearch: searchValue" selectionMode="single" [(selection)]="selected" styleClass="breadcrumbTree" [style]="{'line-height':'25px'}">
-                        <ng-template pTemplate="header">
-                            <tr>
-                                <th>Item</th>
-                                <th *ngFor="let column of columns" [ttSortableColumn]="column.sortable === true ? column.datafield : null">
-                                    {{column.text}}
-                                    <p-treeTableSortIcon *ngIf="column.sortable === true" [field]="column.datafield"></p-treeTableSortIcon>
-                                </th>
-                                <th style="width: 40px"></th>
-                                <th style="width: 40px"></th>
-                                <th style="width: 40px"></th>
-                            </tr>
-                        </ng-template>
-                        <ng-template pTemplate="body" let-rowNode let-item="rowData">
-                            <tr [ttSelectableRow]="rowNode">
-                                <td>
-                                    <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
-                                    <a (click)="showHierarchy(item.ID)" [ngStyle]="setTreeNodeStyles(rowNode.node)">{{item.DisplayValue}} <i *ngIf="item?.hasRelations" class="fa fa-share-alt" aria-hidden="true" title="Item has relationships" style="color:#999;"></i></a>                                
-                                </td>
-                                <td *ngFor="let column of columns">
-                                    <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value>                                 
-                                </td>
-                                <td>
-                                    <div *ngIf="hasModifyAssetPermissions()" class="RowTools">
-                                        <a style="cursor:pointer;" *ngIf="policyType.MaximumDepth > item.Level" (click)="selected=rowNode.node;add()"><i class="fa fa-plus"></i></a>                                        
-                                    </div>
-                                </td>
-                                <td>
-                                    <div *ngIf="hasModifyAssetPermissions()" class="RowTools">
-                                        <a style="cursor:pointer;" (click)="selected=rowNode.node;showEditor=true;"><i class="fa fa-pencil"></i></a>                                        
-                                    </div>
-                                </td>
-                                <td>
-                                    <div *ngIf="hasDeleteAssetPermissions()" class="RowTools">
-                                        <a *ngIf="!rowNode.node.children" style="cursor:pointer;" (click)="selected=rowNode.node;showDelete=true;"><i class="fa fa-trash-o"></i></a>                                    
-                                    </div>
-                                </td>
-                            </tr>
-                       </ng-template> 
-                    </p-treeTable> 
-                    <d3s-delete-form *ngIf="showDelete"
-                        [callback]="theDeleteCallback"
-                        [itemId]="selected?.data?.ID"
-                        [method]="'callback'"
-                        [prompt]="'Are you sure you want to delete the policy item [' + [selected?.data?.DisplayValue] + ']?'"                                         
-                        (onCancel)="showDelete=false;"
-                    ></d3s-delete-form>        
-                    <d3s-dynamic-editor *ngIf="showEditor" [objectID]="policyType.ID" objectType="Policy" [parentID]="selectedParentID" [title]="policyEditorTitle()" [selection]="selected?.data" (saveClick)="savePolicy($event)" (closeClick)="showEditor=false"></d3s-dynamic-editor>
-                </div>                    
-                `,
+    templateUrl: './policy-item-structure.component.html',
     providers: [PoliciesService, GridDefinitionService, PermissionsService, LevelsService]
 })
 
@@ -102,7 +46,6 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
 
     theDeleteCallback: Function;
 
-
     constructor(
         protected titleService: Title,
         private headerActionsService: HeaderActionsService,
@@ -119,6 +62,9 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
         super();
         this.rightSidebarService = rightSidebarService;
         this.theDeleteCallback = this.deletePolicyItem.bind(this);
+        router.events.subscribe((value) => {
+            this.showEditor = false;
+        });
     }
 
     ngOnInit() {
@@ -245,7 +191,9 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
 
         let thisLevel = this.levels.filter(x => x.Level == this.selected.data.Level);
 
-        if (thisLevel && thisLevel.length > 0) return thisLevel[0].Name;
+        if (thisLevel && thisLevel.length > 0) {
+            return thisLevel[0].Name;
+        }
         return `(Level ${this.selected.data.Level + 1}) Item`;
     }
 
@@ -286,7 +234,9 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
             //remove this node
             nodes.splice(0, 1);
 
-            if (nodes.length == 0) return null;
+            if (nodes.length == 0) {
+                return null;
+            }
             node = nodes[0];
         }
     }
