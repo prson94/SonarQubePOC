@@ -6150,6 +6150,7 @@ where    A.RuleID = @id", new { id });
                 case SystemObjects.RuleType:
                     #region Fields
                     var ruleType = Company.GetById<RuleType>(id);
+                    var ruleDetail = Company.GetObjectDetail("RuleType", id);
                     if (ruleType != null)
                     {
                         model.rows.Add(new DetailReadOnlyRowModel
@@ -6164,7 +6165,14 @@ where    A.RuleID = @id", new { id });
                                 new ReadOnlyField { Name = Resources.FieldInfo.ID_Name, FieldName = "RuleTypeID", Value = ruleType.ID.ToString() }
                             }
                         });
-
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField{ Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = ruleDetail.UID.ToString()  }
+                            }
+                        });
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
                             columns = 1,
