@@ -63,7 +63,7 @@
                                     [ngModelOptions]="{standalone: true}"
                                     [disabled]="model.FieldType.Type == 'ComplexRelationLookup' || model.FieldType.Type == 'FilteredLookup' || model.FieldType.Type == 'OwnershipLookup'"></p-checkbox>
                     </div>
-                    <div>
+                    <div *ngIf="showIsListable">
                         <p-checkbox binary="true"
                                     [(ngModel)]="model.FieldType.IsListable"
                                     label="Is Listable?"
@@ -78,7 +78,7 @@
                                     [ngModelOptions]="{standalone: true}"
                                     [disabled]="model.FieldType.Type == 'Relationship' || model.FieldType.Type == 'FieldFromRelationship' || model.FieldType.Type == 'ComplexRelationLookup' || model.FieldType.Type == 'FilteredLookup' || model.FieldType.Type == 'OwnershipLookup'"></p-checkbox>
                     </div>
-                    <div>
+                    <div *ngIf="showIsPartOfKey">
                         <p-checkbox binary="true"
                                     [(ngModel)]="model.FieldType.IsPartOfKey"
                                     label="Part Of Key?"
