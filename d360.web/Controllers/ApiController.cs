@@ -6231,7 +6231,7 @@ where    A.RuleID = @id", new { id });
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField{ Name = "UID",FieldName = "PolicyTypeUID", FieldDescription = objectDetail.GetDescription(i => i.Description), Value = objectDetail.UID.ToString()  }
+                                new ReadOnlyField{ Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = objectDetail.UID.ToString()  }
                             }
                         });
                         model.rows.Add(new DetailReadOnlyRowModel
@@ -6649,6 +6649,7 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
                 case SystemObjects.TaxonomyType:
                     #region Fields
                     var taxonomyType = Company.GetById<TaxonomyType>(id);
+                    var taxonomyObjectDetail = Company.GetObjectDetail("TaxonomyType", id);
                     if (taxonomyType != null)
                     {
                         model.rows.Add(new DetailReadOnlyRowModel
@@ -6666,10 +6667,14 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
 
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
-                            columns = 1,
+                            columns = 2,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
                                 new ReadOnlyField { Name = taxonomyType.GetName(i => i.MaximumDepth), FieldName = "TaxonomyTypeMaximumDepth", FieldDescription = taxonomyType.GetDescription(i => i.MaximumDepth), Value = taxonomyType.MaximumDepth.ToString() }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField{ Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = taxonomyObjectDetail.UID.ToString()  }
                             }
                         });
 
