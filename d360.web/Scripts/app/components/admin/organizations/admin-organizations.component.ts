@@ -27,7 +27,7 @@ import { RightSidebarItem } from '../../../models/rightsidebar.model';
     <div class="row" *ngIf="selectedType">
         <div class="col s12">
             <div class="tile tile-detail">  
-                <d3s-field-definition-tile [objectType]="'OrganizationType'" [objectID]="selectedType.ID"></d3s-field-definition-tile>
+                <d3s-field-definition-tile [objectType]="'OrganizationType'" [objectID]="selectedType.ID" [showIsListable]="false"></d3s-field-definition-tile>
             </div>
         </div>
         <div class="col s12">
