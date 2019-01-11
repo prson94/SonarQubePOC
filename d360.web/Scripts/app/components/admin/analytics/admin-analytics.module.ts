@@ -35,11 +35,13 @@ import {
     SharedModule,
     SpinnerModule,
     TreeTableModule,
+    TooltipModule,
 } from 'primeng/primeng';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { TableModule } from 'primeng/table';
 import { SimpleAccordionModule } from '../../shared/simple-accordion.part';
 import { ErrorNotifyInterceptor } from '../../../http-interceptors/error-notify-interceptor';
+import { DirectivesModule } from '../../../directives/directives.module';
 
 
 @NgModule({
@@ -75,6 +77,8 @@ import { ErrorNotifyInterceptor } from '../../../http-interceptors/error-notify-
         SharedDynamicGridEditorModule,
         TilesModule,
         SimpleAccordionModule,
+        TooltipModule,
+        DirectivesModule,
     ],
     declarations: [
         AdminAnalyticsComponent,
