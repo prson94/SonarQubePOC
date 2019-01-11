@@ -92,7 +92,7 @@ namespace d360.core.enums
             AllowIntersectTypeAssignment(true),            
             AllowMultiplePredicates(false),
             AllowDifferentSubjectObject(true),
-            ForceDifferentSubjectObject(true),
+            ForceDifferentSubjectObject(false),
             AllowEditFromRelationshipEditor(true)
         ]
         FusionMapping = 8,

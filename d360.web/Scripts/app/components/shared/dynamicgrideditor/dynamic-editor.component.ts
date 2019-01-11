@@ -13,37 +13,9 @@ import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-dynamic-editor',
-    template: ` <header *ngIf="hasHeader">{{action}} {{title}} <div *ngIf="hasCloseButton" (click)="closeClick.emit()" style="cursor: pointer; float: right; font-size: 1.3em"><i class="fa fa-remove"></i></div></header>
-                <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <div class="row" *ngIf="!isLoading">                                        
-                    <form (ngSubmit)="onSubmit()" [formGroup]="form">        
-                        <ng-template ngFor let-category [ngForOf]="categories">
-                            <simple-accordion *ngIf="category.name" [header]="category.name" [active]="true">                
-                                <div class="row" *ngFor="let row of category.rows">                          
-                                    <div *ngFor="let field of row.Fields" [class]="'col ' + row.getColClass()" style="padding-bottom:10px;">                                
-                                        <d3s-dynamic-field [field]="field" [form]="form" (listItemChange)="listSelectionChanged($event)" [object]="objectType" [objectID]="objectID"></d3s-dynamic-field>
-                                    </div>
-                                </div>
-                            </simple-accordion>
-                            <span *ngIf="!category.name">
-                            <div class="row" *ngFor="let row of category.rows">                          
-                                <div *ngFor="let field of row.Fields" [class]="'col ' + row.getColClass()" style="padding-bottom:10px;">                                
-                                    <d3s-dynamic-field [field]="field" [form]="form" (listItemChange)="listSelectionChanged($event)" [object]="objectType" [objectID]="objectID"></d3s-dynamic-field>
-                                </div>
-                            </div>
-                            </span>
-                        </ng-template>
-                        <div *ngIf="hasIconFields && fore.Value == back.Value" class="col s12 errorMessage">* Foreground and background color cannot be the same</div>
-                        <div class="col s12">&nbsp;</div>
-                        <div class="col s12">
-                            <button pButton type="submit" [disabled]="!form.valid || (hasIconFields && fore.Value == back.Value)" style="width: '150px';" label="Save"></button>                            
-                            <button pButton type="button" (click)="closeClick.emit();" label="Close" style="width: '150px';"></button>
-                        </div>                    
-                    </form>                    
-                </div>
-                `,
+    templateUrl: './dynamic-editor.component.html',
     providers: [EditorDefinitionService, UriBasedService, FieldsService, CascadeService],
-    changeDetection: ChangeDetectionStrategy.OnPush, 
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 
 export class DynamicEditorComponent extends BaseComponent implements OnChanges, OnInit {
@@ -63,7 +35,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     @Input() newActionName: string = "New";
     @Input() hasHeader = true;
     @Input() copy: boolean;
-    
+
     @Output() closeClick = new EventEmitter();
     @Output() saveClick = new EventEmitter();
 
@@ -71,14 +43,14 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
     action: string = "Edit";
     fields: EditorField[] = [];
-   
+
     categories: EditorCategory[] = [];
     editedItem: any;
 
     hasIconFields = false;
     fore: EditorField;
     back: EditorField;
-    
+
     constructor(private ref: ChangeDetectorRef,
         private formBuilder: FormBuilder,
         private messagesService: MessagesService,
@@ -102,31 +74,31 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         }
     }
 
-    private load() {
+    private load() {        
         if (this.selection != undefined) {
             this.editedItem = _.cloneDeep(this.selection);
-            this.action = this.copy ? "Copy" : this.action;            
-        }        
+            this.action = this.copy ? "Copy" : this.action;
+        }
         else {
             this.editedItem = new Object();
-            this.action = this.newActionName;            
+            this.action = this.newActionName;
         }
-        this.getDefinition();       
+        this.getDefinition();
     }
 
-    getDefinition() {      
+    getDefinition() {        
         this.isLoading = true;
         let id = (this.selection ? this.selection[this.rowID] : null);
-         this.editorDefinitionService.getEditorDefinition(id, this.objectID, this.objectType, this.parentID, this.targetType, this.targetTypeID, this.createParams, this.editParams, this.action)
+        this.editorDefinitionService.getEditorDefinition(id, this.objectID, this.objectType, this.parentID, this.targetType, this.targetTypeID, this.createParams, this.editParams, this.action)
             .then(result => {
                 this.isLoading = false;
                 this.categories = [];
 
-                result = _.orderBy(result, [field => field.Category ? field.Category.toLowerCase():''], ['asc']);
-                this.fields = result;                
+                result = _.orderBy(result, [field => field.Category ? field.Category.toLowerCase() : ''], ['asc']);
+                this.fields = result;
                 let previousCategory = null;
                 let currentCategory = null;
-                let rows = [];                
+                let rows = [];
                 let firstRow = true;
 
                 this.fields.forEach(f => {
@@ -142,7 +114,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                     if (previousCategory != currentCategory) {
                         let category = new EditorCategory();
                         category.name = previousCategory;
-                        category.rows= rows;
+                        category.rows = rows;
                         this.categories.push(category);
                         previousCategory = currentCategory;
                         rows = [];
@@ -168,17 +140,17 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 let category = new EditorCategory();
                 category.name = currentCategory;
                 category.rows = rows;
-                this.categories.push(category);                
-                                
+                this.categories.push(category);
+
                 this.fore = this.fields.find(f => f.FieldType == 'Color' && f.FieldName == 'IconForeColor');
                 this.back = this.fields.find(f => f.FieldType == 'Color' && f.FieldName == 'IconBackColor');
-                if (this.fore != null && this.back != null)  
+                if (this.fore != null && this.back != null)
                     this.hasIconFields = true;
 
                 this.form = this.toFormGroup(this.fields);
-                this.ref.markForCheck();                
+                this.ref.markForCheck();
             });
-    }   
+    }
 
     toFormGroup(editorField: EditorField[]) {
         let group: any = {};
@@ -199,34 +171,35 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 }
                 group[field.FieldName + '_Name'] = new FormControl(name || '');
                 group[field.FieldName + '_Url'] = new FormControl(url || '', this.getFieldValidators(field));
-            }            
+            }
             else if (field.FieldType == "Date" || field.FieldType == "DateTime") {
                 if (field.Value != null)
-                    field.Value =  new Date(field.Value);                
-                group[field.FieldName] = new FormControl({ value: (field.Value), disabled: field.ReadOnly }, this.getFieldValidators(field));                
-                                
-            }            
+                    field.Value = new Date(field.Value);
+                group[field.FieldName] = new FormControl({ value: (field.Value), disabled: field.ReadOnly }, this.getFieldValidators(field));
+
+            }
             else {
                 if (field.FieldType == "Relationship" && this.selection) {
                     if (field.Value != null)
                         field.Value = JSON.parse(field.Value);
                 }
                 else if (field.FieldType == "Lookup" && !field.Value && this.selection) {
-                    let selected = field.Items.filter(x => x.Selected);                    
+                    let selected = field.Items.filter(x => x.Selected);
                     field.Value = [];
-                    for (let item of selected) {                        
+                    for (let item of selected) {
                         field.Value.push(item.Value);
                     }
-                    if (field.Value.length == 0) field.Value = null;                    
+                    if (field.Value.length == 0) field.Value = null;
                 }
                 else if (field.FieldType == "Lookup" && field.Value) {
-                    if (field.Value != null && field.MultiSelect && typeof field.Value === "string") {                        
+                    if (field.Value != null && field.MultiSelect && typeof field.Value === "string") {
                         field.Value = field.Value.split(',');
                     }
                 }
-                group[field.FieldName] = new FormControl({ value: (field.Value === null ? '' : field.Value), disabled: field.ReadOnly }, this.getFieldValidators(field));                
+                group[field.FieldName] = new FormControl({ value: (field.Value === null ? '' : field.Value), disabled: field.ReadOnly }, this.getFieldValidators(field));
             }
-        });        
+        });
+
         return new FormGroup(group);
     }
 
@@ -257,7 +230,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 }
             }
         }
-                       
+
         if (field.Required)
             validators.push(Validators.required);
 
@@ -266,19 +239,19 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         if (field.FieldType == 'Decimal')
             validators.push(FormHelpers.numberValidator);
 
-        if (field.FieldType == 'Number' || field.FieldType == 'Decimal') {
+        if (field.FieldType == 'Number' || field.FieldType == 'Decimal') {            
             validators.push(Validators.max(9223372036854776));
-            validators.push(Validators.min(-9223372036854776)); 
+            validators.push(Validators.min(-9223372036854776));
         }
-
+        
         return validators.length > 0 ? validators : null;
     }
-    
+
     onSubmit() {
         let action = (this.selection == null ? "new" : "edit");
         if (this.copy == true) action = this.action;
         let values: any = {};
-        
+
         //adjust any dates to utc
         for (var p in this.form.value) {
             if (this.form.value.hasOwnProperty(p)) {
@@ -307,36 +280,36 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         }
 
         if ((this.createUri && action == "new") || (this.editUri && action == "edit")) {
-            this.isLoading = true;            
+            this.isLoading = true;
             this.uriBasedService.saveItem(this.createUri, this.editUri, values)
                 .then(result => {
-                    this.showMessageForResult(this.messagesService, result);                    
+                    this.showMessageForResult(this.messagesService, result);
                     this.isLoading = false;
-                    this.saveClick.emit({ item: result, action: action, values: values});    
+                    this.saveClick.emit({ item: result, action: action, values: values });
                 });
-        } else {            
-            this.saveClick.emit({ item: values, action: action });     
+        } else {
+            this.saveClick.emit({ item: values, action: action });
         }
     }
 
-    getUTCDate(date: Date): Date {        
+    getUTCDate(date: Date): Date {
         date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
         return date;
     }
 
-    listSelectionChanged(event: any) {           
+    listSelectionChanged(event: any) {
         //look for any fields with this as a parent        
-        var field = event.field;        
+        var field = event.field;
         if (field == null || this.fields == null || this.fields.length <= 0) return;
 
         var value = event.value;
         if (Array.isArray(event.value)) {
             value = event.value.join();
         }
-        
-        this.fields.forEach(editorField => {            
-            if (editorField.ParentFieldTypeID == field.FieldTypeID) {                
-                this.cascadeService.cascadeEvent(editorField.FieldTypeID, value);        
+
+        this.fields.forEach(editorField => {
+            if (editorField.ParentFieldTypeID == field.FieldTypeID) {
+                this.cascadeService.cascadeEvent(editorField.FieldTypeID, value);
             }
         });
     }

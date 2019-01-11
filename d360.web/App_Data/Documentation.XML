@@ -2505,66 +2505,83 @@
             <summary>
             Returns asset cross reference values for the specified Uid
             </summary>
+            <param name="uid">AssetCrossReference Id</param>
             <returns>An array of matching cross reference records</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.CrossReferencesController.GetByTypeID(System.String,System.String)">
             <summary>
             Returns asset cross reference values for the specified type and external id
             </summary>
+            <param name="type">AssetCrossReference type</param>
+            <param name="externalId">AssetCrossReference externalId</param>
             <returns>An array of matching cross reference records</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.CrossReferencesController.GetByType(System.String)">
             <summary>
             Returns asset cross reference values for the specified type
             </summary>
+            <param name="type">AssetCrossReference type</param>
             <returns>An array of matching cross reference records</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.CrossReferencesController.GetByDataSource(System.String)">
             <summary>
             Returns asset cross reference values for the specified data source
             </summary>
+            <param name="dataSource">AssetCrossReference datasource</param>
             <returns>An array of matching cross reference records</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.CrossReferencesController.Post(d360.core.entities.AssetCrossReference)">
             <summary>
             Creates a new AssetCrossReference record.  If an asset cross reference exists already an error is returned
             </summary>
+            <param name="model">AssetCrossReference model</param>
             <returns>AssetCrossReference model of the created item if item already exists http confict is returned.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.CrossReferencesController.PostBulk(System.Collections.Generic.List{d360.core.entities.AssetCrossReference})">
             <summary>
             Creates new AssetCrossReference records.  If an asset cross reference exists already an error is returned
             </summary>
+            <param name="models">List of AssetCrossReference models</param>
             <returns>AssetCrossReference model of the created item if item already exists http confict is returned.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.CrossReferencesController.Put(System.Guid,System.String,System.String,System.String,d360.core.entities.AssetCrossReference)">
             <summary>
             Updates the specified AssetCrossReference record.
             </summary>
+            <param name="uid">AssetCrossReference Id</param>
+            <param name="dataSource">AssetCrossReference datasource</param>
+            <param name="type">AssetCrossReference type</param>
+            <param name="externalId">AssetCrossReference externalId</param>
+            <param name="model">AssetCrossReference model</param>
             <returns>Http Status code OK if item was updated, Http Status code of Not Found if item could not be updated</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.CrossReferencesController.DeleteByUid(System.Guid)">
             <summary>
             Deletes a AssetCrossReference by the specified Uid value
             </summary>
+            <param name="uid">Crossreference Id</param>
             <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.CrossReferencesController.DeleteByDatasource(System.String,System.String)">
             <summary>
             Deletes a AssetCrossReference with the specified datasource and type
             </summary>
-            <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted</returns>
+            <param name="dataSource">AssetCrossReference datasource</param>
+            <param name="type">AssetCrossReference type</param>
+            <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted></returns>
         </member>
         <member name="M:d360.web.Controllers.V2.CrossReferencesController.DeleteByType(System.String)">
             <summary>
             Deletes a AssetCrossReference records with the specified type
             </summary>
+            <param name="type">AssetCrossReference type</param>
             <returns>Http Status code OK if item(s) was deleted, Http Status code of Not Found if item could not be deleted</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.CrossReferencesController.DeleteByDataSource(System.String)">
             <summary>
             Deletes a AssetCrossReference records with the specified datasource
             </summary>
+            <param name="dataSource">AssetCrossReference datasource</param>
             <returns>Http Status code OK if item(s) was deleted, Http Status code of Not Found if item could not be deleted</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.DataQualityController.GetRuleResults(System.Guid)">
