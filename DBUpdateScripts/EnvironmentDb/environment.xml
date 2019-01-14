@@ -39,10 +39,13 @@
 	<include file="scripts/GOV-6343.xml"/>
 	<include file="scripts/GOV-6292.xml"/>
 	<include file="scripts/GOV-6292-Fix.xml"/>
-  <include file="scripts/GOV-6355.xml"/>
-  <include file="scripts/GOV-6254.xml"/>
-  <include file="scripts/GOV-6350.xml"/>
-  <include file="scripts/GOV-6359.xml"/>
-  <include file="scripts/GOV-6243.xml"/>
+	<include file="scripts/GOV-6243.xml"/>
+	<include file="scripts/GOV-6355.xml"/>
+	<include file="scripts/GOV-6254.xml"/>
+ 	<include file="scripts/GOV-6350.xml"/>
+	<include file="scripts/GOV-6359.xml"/>
+	<!-- 6265,6266 are editing the same table and should be executed on this order  -->
+	<include file="scripts/GOV-6265.xml"/>
+	<!-- 6265,6266 are editing the same table and should be executed on this order  -->
 </databaseChangeLog>
 
