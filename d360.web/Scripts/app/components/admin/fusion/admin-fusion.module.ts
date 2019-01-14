@@ -42,11 +42,13 @@ import {
     InputTextModule,
     SharedModule,
     TreeTableModule,
+    TooltipModule,
 } from 'primeng/primeng';
 
 import { TableModule } from 'primeng/table';
 
 import { CodemirrorModule } from 'ng2-codemirror';
+import { DirectivesModule } from '../../../directives/directives.module';
 
 @NgModule({
     imports: [CommonModule,
@@ -87,6 +89,8 @@ import { CodemirrorModule } from 'ng2-codemirror';
         SharedDynamicGridEditorModule,
         SharedAssetTypeEditorModule,
         TilesModule,
+        DirectivesModule,
+        TooltipModule,
     ],
     declarations: [
         AdminFusionComponent,
