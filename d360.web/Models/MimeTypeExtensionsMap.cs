@@ -47,7 +47,7 @@ namespace d360.web.Models
         public static string GetExtension(string mimeType)
         {
             var item = items.SingleOrDefault(i => i.MimeType.ToLower().Equals(mimeType.Trim().ToLower()));
-            return (item == null) ? ".xlsx" : item.Extension;
+            return (item == null) ? null : item.Extension;
         }
     }
 }
