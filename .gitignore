@@ -47,7 +47,9 @@
 /*/obj
 \*\node_modules
 
-/d360.web/Scripts/app
+/d360.web/Scripts/app/*.map
+/d360.web/Scripts/app/*.bundle.js
+/d360.web/Scripts/app/*.chunk.js
 /d360.web/Content/quill/v1.3.4/*.min.css
 /d360.web/Content/styles/typeahead.min.css
 /d360.web/Content/styles/typeahead.css
