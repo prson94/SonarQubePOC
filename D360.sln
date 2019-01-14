@@ -76,6 +76,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.displayvaluechecke
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.apiexecutionprocessor", "igx.jobs.apiexecutionprocessor\igx.jobs.apiexecutionprocessor.csproj", "{9B959DF4-93DC-4FF2-B187-8BDB26206700}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Utilities", "Utilities", "{564B5DEE-8FE7-4411-8AA3-59A6A5C935D3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -233,9 +235,10 @@ Global
 		{868597A5-9A50-447B-8702-E46EC308BA85} = {757CF48D-6728-4702-AC12-754629196548}
 		{AA54113F-1E7E-4B28-BF89-6FB686E61B46} = {757CF48D-6728-4702-AC12-754629196548}
 		{9B959DF4-93DC-4FF2-B187-8BDB26206700} = {757CF48D-6728-4702-AC12-754629196548}
+		{564B5DEE-8FE7-4411-8AA3-59A6A5C935D3} = {2CE94CC8-D9FB-4CC5-B44A-1CDD40971448}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;packages\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45
 		SolutionGuid = {DA470272-2404-43CC-B3A7-997246EDACA8}
+		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;packages\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45
 	EndGlobalSection
 EndGlobal
