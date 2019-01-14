@@ -3640,7 +3640,7 @@ outer apply (
 
                 var def = lookup.ParseComplexLookupDefinition();
 
-                if (def.Fields == null || def.Fields.Count == 0) throw new Exception("Invalid complex lookup no fields specified in definition.  Please specify one or more fields in the complex lookup definition.");
+                if (def.Fields == null || def.Fields.Count == 0) throw new Exception("There is an invalid Relation Look up field. There is no field specified in the Relation Lookup definition. Please specify one or more fields in the Relation Lookup definition.");
                 
                 var fields = def.Fields.ToList();
 
