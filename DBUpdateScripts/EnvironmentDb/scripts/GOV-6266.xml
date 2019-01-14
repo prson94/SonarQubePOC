@@ -7,7 +7,7 @@
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
   <changeSet author="VKyrychuk" id="GOV-6266">
-    <addColumn catalogName="D3S_10"
+    <addColumn 
             schemaName="dbo"
             tableName="assetType">
         <column name="AutoDisplayDescription" type="bit" defaultValue="0">
@@ -16,7 +16,7 @@
 		</column>
     </addColumn>
 	<rollback>
-		<dropColumn catalogName="D3S_10"
+		<dropColumn 
             columnName="AutoDisplayDescription"
             schemaName="dbo"
             tableName="assetType"/>
