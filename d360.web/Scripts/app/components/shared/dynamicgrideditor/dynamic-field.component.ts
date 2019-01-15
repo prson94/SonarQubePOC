@@ -13,156 +13,7 @@ declare var CompanySettings;
 
 @Component({
     selector: 'd3s-dynamic-field',
-    template: ` <div [formGroup]="form">    
-                   <input *ngIf="field.FieldType=='Hidden'" [formControlName]="field.FieldName" type="hidden" />              
-                  <div [ngSwitch]="field.FieldType" class="col s12" *ngIf="field.FieldType!='Hidden'" >
-                        <div class="FieldName">                            
-                            <span *ngIf="fieldTooltip" [pTooltip]="fieldTooltip">{{currentFieldName}}</span>
-                            <span *ngIf="!fieldTooltip">{{currentFieldName}}&nbsp;</span>
-                        </div>
-                        <input *ngSwitchCase="'Text'" [formControlName]="field.FieldName" (blur)="OnBlurTrim()" style="width: 100%;" type="string" [(ngModel)]="field.Value">  
-                        <d3s-similar-items *ngIf="field.SimilarItemsUri != null" [uri]="field.SimilarItemsUri" [query]="field.Value"></d3s-similar-items>                                  
-                        <p-editor *ngSwitchCase="'Html'" [formControlName]="field.FieldName"  [style]="{'height':'150px'}" [ngModel]="field.Value" (ngModelChange)="setEditorContent($event)" #ed>
-                            <header style="padding-bottom:0px !important">                                 
-                                    <span class="ql-formats">
-                                        <select class="ql-header">
-                                          <option value="1">Heading</option>
-                                          <option value="2">Subheading</option>
-                                          <option selected>Normal</option>
-                                        </select>
-                                        <select class="ql-font">
-                                          <option selected>Sans Serif</option>
-                                          <option value="serif">Serif</option>
-                                          <option value="monospace">Monospace</option>
-                                        </select>
-                                    </span>
-                                    <span class="ql-formats">
-                                        <button class="ql-bold"></button>
-                                        <button class="ql-italic"></button>
-                                        <button class="ql-underline"></button>
-                                    </span>
-                                    <span class="ql-formats">
-                                        <select class="ql-color"></select>
-                                        <select class="ql-background"></select>
-                                    </span>
-                                    <span class="ql-formats">
-                                        <button class="ql-list" value="ordered"></button>
-                                        <button class="ql-list" value="bullet"></button>
-                                        <select class="ql-align">
-                                            <option selected></option>
-                                            <option value="center"></option>
-                                            <option value="right"></option>
-                                            <option value="justify"></option>
-                                        </select>
-                                    </span>
-                                    <span class="ql-formats">
-                                        <button class="ql-link"></button>                                        
-                                        <button class="ql-code-block"></button>
-                                    </span>
-                                    <span class="ql-formats">
-                                        <button class="ql-clean"></button>
-                                    </span>                                
-                            </header>
-                        </p-editor>                                                                                                             
-                        <div *ngSwitchCase="'Lookup'">
-                            <p-multiSelect *ngIf="field?.MultiSelect; else singleSelect" [formControlName]="field.FieldName" [ngModel]="field.Value" (ngModelChange)="listItemChange.emit({field:field,value:$event});field.Value=$event;" [options]="field.Items | dropdownItemToSelectItemPipe" [style]="{width:'100%'}" ngDefaultControl [defaultLabel]="multiselectLabel()"></p-multiSelect>
-                            <ng-template #singleSelect>
-                                <ng-container *ngIf="!field.UseTypeahead">                                
-                                    <select [formControlName]="field.FieldName" style="height:auto;width:100%;" [ngModel]="field.Value" (ngModelChange)="listItemChange.emit({field:field,value:$event});field.Value=$event;">
-                                        <option *ngIf="field.ParentFieldTypeName && (!field.Items || field.Items.length == 0);else blankOption" value="" disabled selected>Select a {{field.ParentFieldTypeName}}</option>
-                                        <ng-template #blankOption>
-                                            <option value=""></option>
-                                        </ng-template>
-                                        <option *ngFor="let opt of field.Items" [value]="opt.Value">{{opt.Text}}</option>
-                                    </select>
-                                </ng-container> 
-                                <ng-container *ngIf="field.UseTypeahead">
-                                    <p-autoComplete 
-                                        [placeholder]="'Start typing to select an item'"
-                                        [delay]="350"
-                                        [field]="'Text'"
-                                        [style]="{'width':'100%'}"
-                                        [inputStyle]="{'width':'100%' }"
-                                        [formControlName]="field.FieldName" 
-                                        [ngModel]="typeAheadValue" 
-                                        (onSelect)="onSelect($event)"
-                                        [suggestions]="field.Items" 
-                                        (completeMethod)="search($event)" 
-                                        [forceSelection]="field.Required"
-                                        (onClear)="clearTypeahead($event)"
-                                        [dropdown]="false">
-                                        <ng-template let-item pTemplate="item">
-                                            <div *ngIf="item.Selected" style="font-weight: bold; color: #fff; background: #54a4da">
-                                                {{item.Text}}
-                                            </div>
-                                            <div *ngIf="!item.Selected">
-                                                {{item.Text}}
-                                            </div>
-                                        </ng-template>
-                                    </p-autoComplete>
-                                </ng-container>
-                            </ng-template>
-                        </div>
-                        <div *ngSwitchCase="'Relationship'">
-                            <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-                            <p-table #dt [value]="field.Items" [selectionMode]="field?.MultiSelect ? 'multiple' : 'single'" [selection]="relationItems" (selectionChange)="selectRelationItems($event)" 
-                                [globalFilterFields]="['Text']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions"
-                                [lazy]="true" (onLazyLoad)="lazyLoad($event)" [totalRecords]="field?.RecordCount" [formControlName]="field.FieldName" ngDefaultControl>
-                                <ng-template pTemplate="header">
-                                    <tr>
-                                        <th style="width: 30px">
-                                            <p-tableHeaderCheckbox *ngIf="field?.MultiSelect"></p-tableHeaderCheckbox>
-                                        </th>
-                                        <th>Name</th>
-                                    </tr>
-                                </ng-template>
-                                <ng-template pTemplate="body" let-item>
-                                    <tr [pSelectableRow]="item">
-                                        <td>
-                                            <p-tableRadioButton *ngIf="!field?.MultiSelect" [value]="item"></p-tableRadioButton>
-                                            <p-tableCheckbox *ngIf="field?.MultiSelect" [value]="item"></p-tableCheckbox>
-                                        </td>
-                                        <td>{{item.Text}}</td>
-                                    </tr>
-                                </ng-template>
-                                <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
-                                    <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
-                                </ng-template>
-                            </p-table>
-                        </div>
-
-                        <input *ngSwitchCase="'Number'" [(ngModel)]="field.Value" [formControlName]="field.FieldName" style="width: 100%;" type="string">              
-                        <input *ngSwitchCase="'Decimal'" [(ngModel)]="field.Value" [formControlName]="field.FieldName" style="width: 100%;" type="string">   
-
-                        <input *ngSwitchCase="'Percentage'" [formControlName]="field.FieldName" style="width: 100%;" type="number" step="0.01" min="0.00" max="1.00" (keyup)="clamp($event, 0, 1, 3)">   
-                        <div *ngSwitchCase = "'Color'">
-                            <p-colorPicker [(ngModel)]="colorValue" [formControlName]="field.FieldName"></p-colorPicker>                            
-                            <input type="text" [(ngModel)]="colorValue" [formControlName]="field.FieldName" style="padding:2px;" />
-                        </div>
-                        <input *ngSwitchCase="'Password'" type="password" [formControlName]="field.FieldName" style="width: 100%;" />
-                        <input *ngSwitchCase="'Boolean'" type="checkbox" [formControlName]="field.FieldName" />                        
-                        <div *ngSwitchCase="'Date'">                            
-                            <p-calendar [(ngModel)]="field.Value" [formControlName]="field.FieldName" [dateFormat]="getLocaleDateString()"></p-calendar>
-                        </div>
-                        <div *ngSwitchCase="'DateTime'">                            
-                            <p-calendar [(ngModel)]="field.Value" [formControlName]="field.FieldName" [showTime]="true" [dateFormat]="getLocaleDateString()"></p-calendar>
-                        </div>
-                        <div *ngSwitchCase="'Link'">
-                            <input [formControlName]="field.FieldName + '_Name'" style="width: 100%;" type="string" >
-                            <div>(Link Name)</div>
-                            <input [formControlName]="field.FieldName + '_Url'" style="width: 100%;" type="string">
-                            <div>(Link Url: Your Url should start with a protocol prefix.  For example 'http://' or 'https://')</div>
-                        </div>
-                        <div *ngSwitchCase="'FusionLookup'">
-                            <select [formControlName]="field.FieldName" style="height:auto;width:100%;">
-                                <option *ngFor="let opt of field.Items" [value]="opt.Value">{{opt.Text}}</option>
-                            </select>                            
-                        </div>
-                        <d3s-multiselect-grid *ngSwitchCase="'DataTableSelect'" [multiple]="field.MultiSelect" [formControlName]="field.FieldName" ngDefaultControl [field]="field" [(ngModel)]="field.Value" ></d3s-multiselect-grid>
-                    <div class="errorMessage" *ngIf="!isValid">* {{errorMessage}}</div>
-                  </div>                   
-                </div>
-                `,
+    templateUrl: './dynamic-field.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [FieldsService]
 })
@@ -174,7 +25,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
     @ViewChild('ed') ed: Editor;
     private quill;
-    
+
     @Output() listItemChange = new EventEmitter();
 
     private regexErrorMessage: string = "The field doesnt meet the required pattern.";
@@ -222,7 +73,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                     //console.log('value', quill.container.querySelector('.ql-editor').innerHTML);
                     this.field.Value = quill.container.querySelector('.ql-editor').innerHTML;
                     return;
-                } 
+                }
             }
         }
 
@@ -236,21 +87,21 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                 if (this.field.ParentFieldTypeID > 0 && casc.fieldTypeId == this.field.FieldTypeID) {
                     if (casc.parentListItemId != null && casc.parentListItemId.length > 0) {
                         //load the values for the list that is a child                    
-                        this.field.Items = [];                        
+                        this.field.Items = [];
                         return this.fieldsService.getCascadingListFieldValues(casc.fieldTypeId, casc.parentListItemId).then(res => {
-                            
+
                             this.field.Items = res;
                             if (((this.field.Items == null || this.field.Items.length == 0) && this.field.Value != null) || this.hasCascadeLoaded) {
-                                this.field.Value = null;                                
-                            }                            
+                                this.field.Value = null;
+                            }
                             this.hasCascadeLoaded = true;
-                            this.listItemChange.emit({ field: this.field, value: this.field.Value });                                
+                            this.listItemChange.emit({ field: this.field, value: this.field.Value });
                             this.ref.markForCheck();
                         })
                     }
                     else {
                         this.field.Value = null;
-                        this.listItemChange.emit({ field: this.field, value: null });    
+                        this.listItemChange.emit({ field: this.field, value: null });
                     }
                 }
             });
@@ -298,9 +149,9 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         }
 
         if (this.field.FieldType == 'Lookup' && this.field.ParentFieldTypeID <= 0) {
-            window.setTimeout(() => {                
+            window.setTimeout(() => {
                 this.listItemChange.emit({ field: this.field, value: this.field.Value });
-            }, 250);            
+            }, 250);
         }
 
         if (this.field.FieldType == 'Lookup' && this.field.UseTypeahead) {
@@ -324,7 +175,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         if (this.ed != null && this.ed.quill != null)
             this.quill = this.ed.quill;
     }
-    
+
     ngOnDestroy() {
         this.cascadeSub.unsubscribe();
         this.relationSub.unsubscribe();
@@ -350,11 +201,12 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     }
 
     get errorMessage() {
-        if (this.field.FieldType == "Link") {
-            return this.fieldMessage(this.field.FieldName + '_Url');
+        switch (this.field.FieldType) {
+            case "Link":
+                return this.fieldMessage(this.field.FieldName + '_Url');
+            default:
+                return this.fieldMessage(this.field.FieldName);
         }
-        else
-            return this.fieldMessage(this.field.FieldName);
     }
 
     get taxonomyName() {
@@ -414,7 +266,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             this.form.controls[this.field.FieldName].setValue(newVal);
             this.field.Value = newVal;
         }
-    }   
+    }
 
     multiselectLabel(): string {
         if (this.field && this.field.ParentFieldTypeName && this.field.ParentFieldTypeName.length > 0 && (this.field.Items == null || this.field.Items.length == 0))
@@ -440,7 +292,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             this.relationItems = e;
 
         if (this.relationItems != null) {
-            if (!Array.isArray(this.relationItems)) 
+            if (!Array.isArray(this.relationItems))
                 this.relationItems = [this.relationItems];
 
             for (let i = 0; i < this.relationItems.length; i++) { //associate the selection with the item in the table
@@ -448,8 +300,8 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                 if (x > -1) {
                     this.relationItems[i] = this.field.Items[x];
                 }
-            } 
-            
+            }
+
             this.relationItems = this.relationItems.slice();
             this.field.Value = this.relationItems.map(i => i.Value).join(',');
         } else {

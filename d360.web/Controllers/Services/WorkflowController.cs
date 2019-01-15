@@ -696,7 +696,10 @@ order by wi.StartedOn desc";
 
             if(itemStep == null)
             {
-                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "INVALID WORKFLOW ITEM ID,  CANNOT FIND WORKFLOWITEMSTEP WITH SPECIFIED ID.");
+                return Request.CreateResponse<dynamic>(HttpStatusCode.OK, new
+                {
+                    Title = "Cannot find the requested item",
+                });
             }
             
             string sql = @"
