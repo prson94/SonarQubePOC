@@ -12,10 +12,13 @@
             splitStatements="true"
             stripComments="true">
       BEGIN
-            DROP INDEX [IX_Artifact_ParentID] ON [dbo].[Artifact]
-            ALTER TABLE [dbo].[Artifact] DROP CONSTRAINT [FK_Artifact_ParentArtifact]
-            ALTER TABLE [dbo].[Artifact]
-            DROP Column ParentID
+      IF COL_LENGTH('[dbo].[Artifact]','ParentID') IS NOT NULL
+        BEGIN
+          DROP INDEX [IX_Artifact_ParentID] ON [dbo].[Artifact]
+          ALTER TABLE [dbo].[Artifact] DROP CONSTRAINT [FK_Artifact_ParentArtifact]
+          ALTER TABLE [dbo].[Artifact]
+          DROP Column ParentID
+        END
       END
     </sql>
   </changeSet>

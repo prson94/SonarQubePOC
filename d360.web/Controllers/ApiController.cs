@@ -5650,6 +5650,7 @@ where    A.RuleID = @id", new { id });
                 case SystemObjects.FusionAttribute:
                     #region Fields
                     var fusionAttribute = Company.GetById<FusionAttribute>(id);
+                    var fusionAttDetail = Company.GetObjectDetail("FusionAttribute", id);
                     if (fusionAttribute != null)
                     {
                         model.rows.Add(new DetailReadOnlyRowModel
@@ -5660,7 +5661,14 @@ where    A.RuleID = @id", new { id });
                                 new ReadOnlyField { Name = fusionAttribute.GetName(i => i.Name), FieldName = "FAName", FieldDescription = fusionAttribute.GetDescription(i => i.Name), Value = fusionAttribute.Name }
                             }
                         });
-
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField{ Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = fusionAttDetail.UID.ToString()  }
+                            }
+                        });
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
                             columns = 1,
@@ -6196,6 +6204,8 @@ where    A.RuleID = @id", new { id });
                 case SystemObjects.ResponsibilityType:
                     #region Fields
                     var responsibilityType = Company.GetById<ResponsibilityType>(id);
+                    var responsibilityDetail = Company.GetObjectDetail("ResponsibilityType", id);
+
                     if (responsibilityType != null)
                     {
                         model.columns = 1;
@@ -6208,7 +6218,14 @@ where    A.RuleID = @id", new { id });
                                 new ReadOnlyField { Name = responsibilityType.GetName(i => i.Name), FieldName = "Name", FieldDescription = responsibilityType.GetDescription(i => i.Name), Value = responsibilityType.Name }
                             }
                         });
-
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField{ Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = responsibilityDetail.UID.ToString()  }
+                            }
+                        });
                         if (!string.IsNullOrEmpty(responsibilityType.Description))
                         {
                             model.rows.Add(new DetailReadOnlyRowModel
@@ -6308,11 +6325,15 @@ where    A.RuleID = @id", new { id });
                         {
                             model.rows.Add(new DetailReadOnlyRowModel
                             {
-                                columns = 1,
+                                columns = 2,
                                 FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = "Asset Type ID", FieldName = "AssetTypeId", FieldDescription = Resources.FieldInfo.AssetId_Description, Value = assetType.ID.ToString(), DataType = "string" }
-                            }
+                                {
+                                    new ReadOnlyField{ Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = assetType.uid.ToString()  }
+                                },
+                                SecondColumnFields = new List<ReadOnlyField>
+                                {
+                                    new ReadOnlyField { Name = "Asset Type ID", FieldName = "AssetTypeId", FieldDescription = Resources.FieldInfo.AssetId_Description, Value = assetType.ID.ToString(), DataType = "string" }
+                                }
                             });
                         }
 

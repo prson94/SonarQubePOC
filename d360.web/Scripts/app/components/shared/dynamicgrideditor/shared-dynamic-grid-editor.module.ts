@@ -32,6 +32,7 @@ import { DynamicFieldValueComponent } from './dynamic-field-value.component';
 import { DynamicGridComponent } from './dynamic-grid.component';
 import { MultiSelectGridComponent } from './multiselect-grid.component';
 import { SimpleAccordionModule } from '../simple-accordion.part';
+import { DirectivesModule } from '../../../directives/directives.module';
 
 @NgModule({
     imports: [CommonModule,
@@ -59,6 +60,7 @@ import { SimpleAccordionModule } from '../simple-accordion.part';
         TooltipModule,
         AutoCompleteModule,
         TableModule,
+        DirectivesModule,
 
         //color picker
         ColorPickerModule,

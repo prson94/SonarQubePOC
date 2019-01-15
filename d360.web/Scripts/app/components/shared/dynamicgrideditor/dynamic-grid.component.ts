@@ -1,4 +1,4 @@
-﻿import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter} from '@angular/core';
+﻿import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter } from '@angular/core';
 import { Column } from 'primeng/primeng';
 import { Lookup, LookupItem } from '../../../models/lookup.model';
 import { GridDefinition, GridColumn, GridField } from '../../../models/grid-definition.model';
@@ -27,11 +27,13 @@ import { BaseComponent } from '../../shared/base.component';
                                 </th>
                                 <th style="width: 40px"></th>
                                 <th style="width: 40px"></th>
+                                <th style="width: 40px"></th>
                             </tr>
                             <tr [hidden]="showSimpleFilter">
                                 <th *ngFor="let column of columns">
                                     <d3s-column-filter [field]="column.datafield" [datatype]="'text'"></d3s-column-filter>
                                 </th>
+                                <th></th>
                                 <th></th>
                                 <th></th>
                             </tr>
@@ -40,6 +42,11 @@ import { BaseComponent } from '../../shared/base.component';
                             <tr (dblclick)="selected=item;editItemClick.emit(selected)" [pSelectableRow]="item">
                                 <td *ngFor="let column of columns">
                                     <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value>
+                                </td>
+                                <td>
+                                    <div class="RowTools" *ngIf="item.UID">
+                                        <a style="cursor:pointer;" (click)="selected=item;"><i [copy-clipboard]="item.UID" [pTooltip]="'UID: \n' + item.UID + '\n\n (click to copy)\n'" tooltipPosition="top" class="fa fa-info"></i></a>                                      
+                                    </div>
                                 </td>
                                 <td>
                                     <div class="RowTools" *ngIf="showEditButton || item.P_CanEdit">
@@ -88,15 +95,15 @@ export class DynamicGridComponent extends BaseComponent implements OnChanges {
 
     @Output() editItemClick = new EventEmitter();
     @Output() exportClick = new EventEmitter();
-    
+
     error: any;
     items: any[] = [];
-    columns: GridColumn[] = [];   
+    columns: GridColumn[] = [];
     fields: GridField[] = [];
 
     showDelete: boolean = false;
     showEditor: boolean = false;
-    
+
     selected: any = null;
 
     theDeleteCallback: Function;
@@ -115,11 +122,11 @@ export class DynamicGridComponent extends BaseComponent implements OnChanges {
             this.showEditor = false;
             this.showDelete = false;
         }
-        if (this.objectID != null && this.objectType != null) this.load(); 
+        if (this.objectID != null && this.objectType != null) this.load();
     }
-    
+
     public load() {
-        this.getFieldsDefinition();        
+        this.getFieldsDefinition();
         this.getData();
     }
 
@@ -129,27 +136,27 @@ export class DynamicGridComponent extends BaseComponent implements OnChanges {
                 this.showMessageForResult(this.messagesService, res);
                 this.showDelete = false;
                 if (res.type != 'error')
-                    this.items = this.items.filter(x => x.ID != id);                
-            });        
+                    this.items = this.items.filter(x => x.ID != id);
+            });
     }
 
-    getFieldsDefinition() {        
+    getFieldsDefinition() {
         this.gridDefinitionService.getGridDefinition(this.objectID, this.objectType)
             .then(result => {
                 this.columns = result.Columns;
-                this.fields = result.Fields;              
+                this.fields = result.Fields;
             });
-    }    
+    }
 
-    getData() {    
+    getData() {
         this.isLoading = true;
         this.uriBasedService.getItems(this.dataUri)
             .then(result => {
-                this.items = result;                
+                this.items = result;
                 this.isLoading = false;
-                if (this.items.length > 0) this.selected = this.items[0];                
+                if (this.items.length > 0) this.selected = this.items[0];
             });
-    }  
+    }
 
     doExport() {
 
@@ -168,20 +175,20 @@ export class DynamicGridComponent extends BaseComponent implements OnChanges {
         this.isLoading = true;
         this.uriBasedService.saveItem(this.createUri, this.editUri, event.item)
             .then(result => {
-                this.showMessageForResult(this.messagesService, result);                                     
+                this.showMessageForResult(this.messagesService, result);
                 //reload grid for now as the name / id of the field differs in display mode / edit mode
-                this.showEditor = false;                
-                this.getData();                
+                this.showEditor = false;
+                this.getData();
             });
-    }    
+    }
 
     customSort(e: any) {
         let field = e.field;
         let direction = e.order;
-        
+
         var fld = this.fields.filter(x => x.name == field);
         var type = (fld != null && fld.length > 0) ? fld[0].type : "";
-        
+
         this.items = this.items.slice().sort((a, b) => {
             let fa = a[field];
             let fb = b[field];
