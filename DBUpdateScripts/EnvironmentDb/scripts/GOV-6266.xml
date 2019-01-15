@@ -7,19 +7,17 @@
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
   <changeSet author="VKyrychuk" id="GOV-6266">
-    <addColumn 
-            schemaName="dbo"
-            tableName="assetType">
-        <column name="AutoDisplayDescription" type="bit" defaultValue="0">
-			<constraints nullable="false"/>
-			
-		</column>
-    </addColumn>
+	<sql dbms="mssql"
+				endDelimiter="\nGO"
+				splitStatements="true"
+				stripComments="true">
+				
+			ALTER TABLE  assetType
+				ADD AutoDisplayDescription bit DEFAULT 0 NOT NULL ;	
+		</sql>
 	<rollback>
-		<dropColumn 
-            columnName="AutoDisplayDescription"
-            schemaName="dbo"
-            tableName="assetType"/>
+		ALTER TABLE  assetType
+			DROP COLUMN AutoDisplayDescription;
 	</rollback>
   </changeSet>
   <changeSet author="VKyrychuk" id="GOV-6266-B">
