@@ -94,7 +94,14 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         this.companySettingsService.putSettings(this.companySettings)
             .then(data => {                
                 this.isLoading = false;
-                window.location.reload();
+                let type = JSON.parse(data["_body"]).type;
+                if (type && type == "error") {
+                    let message = JSON.parse(data["_body"]).message;
+                    console.log("type: " + type + " message: " + message);
+                    this.messagesService.showError("Problem Saving settings", message);
+                } else {
+                    window.location.reload();
+                }
             });
     }
 

@@ -53,7 +53,7 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Returns asset cross reference values for the specified Uid
         /// </summary>
-        /// <param name="uid">AssetCrossReference Id</param>
+        /// <param name="uid">AssetCrossReference Uid</param>
         /// <returns>An array of matching cross reference records</returns>
         [
             HttpGet,
@@ -270,7 +270,7 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Updates the specified AssetCrossReference record.
         /// </summary>
-        /// <param name="uid">AssetCrossReference Id</param>
+        /// <param name="uid">AssetCrossReference Uid</param>
         /// <param name="dataSource">AssetCrossReference datasource</param>
         /// <param name="type">AssetCrossReference type</param>
         /// <param name="externalId">AssetCrossReference externalId</param>

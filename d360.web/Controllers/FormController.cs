@@ -2601,6 +2601,10 @@ namespace d360.web.Controllers
                         var imageMime = imageMatch.Groups["mime"].Value;
                         var imageData = imageMatch.Groups["data"].Value;
                         var imageExtension = MimeTypeExtensionsMap.GetExtension(imageMime);
+                        if (imageExtension == null)
+                        {
+                            return jsonException(string.Format("Invalid file type: {0} cannot be uploaded.", imageMime), HttpStatusCode.BadRequest);
+                        }
                         var imageByteArray = Convert.FromBase64String(imageData);
                         var imageGuid = Guid.NewGuid();
 
