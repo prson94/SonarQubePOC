@@ -47,5 +47,6 @@
 	<!-- 6265,6266 are editing the same table and should be executed on this order  -->
 	<include file="scripts/GOV-6265.xml"/>
 	<!-- 6265,6266 are editing the same table and should be executed on this order  -->
+	<include file="scripts/GOV-6205.xml"/>
 </databaseChangeLog>
 
