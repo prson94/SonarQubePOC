@@ -1,0 +1,43 @@
+﻿<databaseChangeLog   
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="MDonato" id="GOV-6205">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[
+alter table workflow.ItemAssignment add ItemStepID bigint null;
+go
+
+update A
+set A.ItemStepID = IST.ID
+from workflow.ItemAssignment A
+inner join workflow.ItemStep IST on IST.StepID = A.StepID and IST.ItemID = A.ItemID;
+go
+
+alter table workflow.ItemAssignment drop column StepID;
+go
+			
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+alter table workflow.ItemAssignment add StepID int null;
+go
+update A
+set A.StepID = IST.StepID
+from workflow.ItemAssignment A
+inner join workflow.ItemStep IST on IST.ID = A.ItemStepID;
+go
+alter table workflow.ItemAssignment drop column ItemStepID;
+go
+		
+		]]>
+	</rollback>
+  </changeSet>
+</databaseChangeLog>

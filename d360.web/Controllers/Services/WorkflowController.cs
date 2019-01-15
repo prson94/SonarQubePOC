@@ -90,7 +90,7 @@ from	    Issue I
 			outer apply [dbo].[GetAssetTypeUrlById](T.ID) TUrl
 			left outer join reporting.Global_Resource R on R.ResourceID = I.CreatedBy
 			left outer join Comment C on C.ID = I.CommentID
-            left join workflow.ItemAssignment IA on IA.ItemStepID = si.ID and IA.ResourceObject = 'Resource' {0}
+            left join workflow.ItemAssignment IA on IA.ItemID = wi.ID and IA.ResourceObject = 'Resource' {0}
 order by wi.StartedOn desc", 
             resourceID.HasValue ? $"and IA.ResourceObjectID = {resourceID.Value}" : ""
             );
@@ -233,7 +233,6 @@ select		distinct
             end as ActivityName
 from	    Issue I
 			inner join [workflow].item wi on (wi.[object] = 'Issue' and wi.[objectid] = i.id) and I.[object] = @obj and I.[objectid] = @id
-            innrt join workflow.itemstep si on si.itemid = wi.id
 			inner join IssueType IT on (I.IssueTypeID = IT.ID)						
 			left join AssetDetail D on D.[Object] = I.[Object] and D.ObjectID = I.ObjectID
 			outer apply [dbo].[GetAssetUrlById](D.ID) DUrl
@@ -241,7 +240,7 @@ from	    Issue I
 			outer apply [dbo].[GetAssetTypeUrlById](T.ID) TUrl            		
 			left outer join reporting.Global_Resource R on R.ResourceID = I.CreatedBy
 			left outer join Comment C on C.ID = I.CommentID
-            left join workflow.ItemAssignment IA on IA.ItemStepID = si.ID and IA.ResourceObject = 'Resource'
+            left join workflow.ItemAssignment IA on IA.ItemID = wi.ID and IA.ResourceObject = 'Resource'
 order by wi.StartedOn desc";
 
             var list = Company.Query<dynamic>(sql, new { id = objectid, obj = objecttype });
@@ -312,7 +311,7 @@ order by wi.StartedOn desc";
                     Company.SaveChanges();
                 }
                 //remove all the current version step items assignments
-                var currentAssignments = Company.WorkflowItemAssignments.Where(x => x.ItemStepID == itemStep.ID);
+                var currentAssignments = Company.WorkflowItemAssignments.Where(x => x.ItemID == itemStep.ItemID);
 
                 if(currentAssignments != null)
                 {
@@ -326,6 +325,7 @@ order by wi.StartedOn desc";
                 var assignment = new WorkflowItemAssignment
                 {
                     ItemStepID = itemStep.ID,
+                    ItemID = itemStep.ItemID,
                     CreatedBy = Company.CurrentResourceID,
                     CreatedOn = DateTime.UtcNow,
                     ResourceObject = "Resource",
@@ -540,8 +540,7 @@ order by wi.StartedOn desc";
                 Company.Entry(itemStepsModel).State = System.Data.Entity.EntityState.Modified;
 
                 //remove any assignment records in the workflow item assignment table so this item doesnt appear assigned to this user anymore
-
-                var assignment = Company.WorkflowItemAssignments.Where(x => x.ItemStepID == itemStepsModel.ID && x.ResourceObject == "Resource" && x.ResourceObjectID == Company.CurrentResourceID).FirstOrDefault();
+                var assignment = Company.WorkflowItemAssignments.Where(x => x.ItemID == itemId && x.ResourceObject == "Resource" && x.ResourceObjectID == Company.CurrentResourceID && x.ItemStepID == itemStepsModel.ID).FirstOrDefault();
 
                 if (assignment!= null)
                 {
@@ -2008,7 +2007,7 @@ order by wi.StartedOn desc";
 									left join [dbo].assettype assettype on(ass.assettypeid = assettype.id)
 	                                inner join [workflow].[itemstep] wis on(wis.itemid = wi.id and wis.completedon is null)
 	                                inner join [workflow].[versionstep] wvs on(wvs.id = wis.stepid)
-	                                inner join [workflow].[itemassignment] wia on (wia.itemstepid = wis.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r)
+	                                inner join [workflow].[itemassignment] wia on (wia.itemid = wi.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r and (wia.itemstepid = wis.id or wia.itemstepid is null))
                                     inner join [reporting].global_resource gr on (wi.startedBy = gr.resourceid)
                                     left outer join [dbo].[issue] iss on(wi.[objectid] = iss.id and wi.[object] = 'Issue')
                                     left outer join [dbo].[asset] cod on (iss.objectid = cod.objectid and cod.[object] = iss.[object]) 
@@ -2052,7 +2051,7 @@ order by wi.StartedOn desc";
 	                                left join [dbo].asset ass on(ass.[object] = wi.[object] and ass.[objectid] = wi.[objectid])
 									left join [dbo].assettype assettype on(ass.assettypeid = assettype.id)
 	                                left join [workflow].[itemstep] wis on(wis.itemid = wi.id )
-	                                left join [workflow].[itemassignment] wia on (wia.itemstepid = wis.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r)
+	                                left join [workflow].[itemassignment] wia on(wia.itemid = wi.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r)
 	                                left join [workflow].[versionstep] wvs on(wvs.id = wis.stepid)
                                     inner join [reporting].global_resource gr on (wi.startedBy = gr.resourceid)
                                     left outer join [dbo].[issue] iss on(wi.[objectid] = iss.id and wi.[object] = 'Issue')
@@ -3048,7 +3047,8 @@ order by wi.StartedOn desc";
                         {
                             if (detail.Settings.MessageRecipientType == "Initiator")
                             {
-                                var assignment = Company.WorkflowItemAssignments.FirstOrDefault(i => i.ItemStepID == detail.ItemStepID);
+                                var assignment = Company.WorkflowItemAssignments.FirstOrDefault(i => i.ItemID == detail.ItemID && (i.ItemStepID == detail.ItemStepID || i.ItemStepID == null));
+
                                 if (assignment != null)
                                 {
                                     var initiator = Company.GlobalReportingResources.FirstOrDefault(u => u.ResourceID == assignment.ResourceObjectID);

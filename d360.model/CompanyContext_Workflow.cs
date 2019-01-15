@@ -228,7 +228,7 @@ namespace d360.model
 	                                inner join workflow.Item WI on WV.ID = WI.VersionID
 	                                inner join reporting.Global_Resource GR on WI.StartedBy = GR.ResourceID									
 	                                inner join workflow.ItemStep WIS on WIS.ItemID = WI.ID and WIS.CompletedOn is null
-	                                inner join workflow.ItemAssignment WIA on WIA.ItemStepID = WIS.ID and WIA.ResourceObject = 'Resource'
+	                                inner join workflow.ItemAssignment WIA on WIA.ItemID = WI.ID and WIA.ResourceObject = 'Resource'
 	                                inner join workflow.VersionStep WVS on WVS.ID = WIS.StepID                                    
 									inner join reporting.Global_Resource GRAA on WIA.ResourceObjectID = GRAA.ResourceID									
                                 where
@@ -252,7 +252,7 @@ namespace d360.model
                     inner join [workflow].[version] wv on (wt.id = wv.typeid)
                     inner join [workflow].[item] wi on (wv.id = wi.versionid)	
                     inner join [workflow].[itemstep] wis on(wis.itemid = wi.id and wis.completedon is null)
-                    inner join [workflow].[itemassignment] wia on(wia.itemstepid = wis.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r)
+                    inner join [workflow].[itemassignment] wia on(wia.itemid = wi.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r)
                     inner join [workflow].[versionstep] wvs on(wvs.id = wis.stepid)
                     where
                     wi.completedon is null and wvs.steptype = 2 and wvs.activitytype = 3
@@ -663,12 +663,9 @@ namespace d360.model
             if (transitionPassed)
             {
                 var fromItemStep = WorkflowItemSteps.Where(i => i.ItemID == itemID && i.StepID == transition.FromVersionStepID).FirstOrDefault();
-                var toVersionStep = WorkflowVersionSteps.Where(i => i.ID == transition.ToVersionStepID).FirstOrDefault();
 
                 if (fromItemStep == null) throw new Exception("ERROR - CANNOT FIND ITEM FROM STEP");
-                if (toVersionStep == null) throw new Exception("ERROR - CANNOT FIND VERSION TO STEP");
 
-                var toVersionStepSettings = WorkflowItemStepSettingModel.ParseXml(toVersionStep.Settings);
                 long toItemStepID = 0;
 
                 Console.WriteLine($"DEBUG ADDING WORKFLOW WORKFLOW.ITEMSTEP STEP ID [{transition.ToVersionStepID}] ITEM ID [{itemID}] ");
@@ -688,21 +685,6 @@ namespace d360.model
 
                 WorkflowItemSteps.Add(toItemStep);
                 SaveChanges();
-
-                //if (toVersionStepSettings.WaitForAllTransitions)
-                //{
-                //    var existingItemStep = WorkflowItemSteps.Where(i => i.StepID == toItemStep.StepID && i.ItemID == toItemStep.ItemID).FirstOrDefault();
-
-                //    if (existingItemStep == null)
-                //    {
-                //        WorkflowItemSteps.Add(toItemStep);
-                //        SaveChanges();
-                //    }
-                //    else
-                //    {
-                //        toItemStep = existingItemStep;
-                //    }
-                //}
 
                 toItemStepID = toItemStep.ID;
 
@@ -724,31 +706,6 @@ namespace d360.model
 
                 WorkflowItemStepTransitions.Add(trans);
                 SaveChanges();
-                //add item step and trans records but don't queue event
-                //on last item, remove all item steps and trans but one, then queue event
-
-                //alternatively just don't insert multiple item steps when wait for all is specified? would lose some date/time info
-                //cant do this because of constraints on PK transition table
-
-                //if (toVersionStepSettings.WaitForAllTransitions)
-                //{
-                //    //get count of the number of transitions to this step
-                //    var expectedTransitionCount = WorkflowVersionStepTransitions.Where(x => x.ToVersionStepID == transition.ToVersionStepID).Count();
-
-                //    //get count of the completed transitions to this step                
-                //    var completedTransitionsCount = Database.Connection.QueryFirstOrDefault<int>(@"select count(1) from
-	               //     workflow.itemsteptransition ist
-	               //     inner join workflow.itemstep iss on (ist.toitemstepid = iss.id)
-                //    where 
-	               //     iss.stepid = @stepId and iss.itemid = @itemId", new { stepId = transition.ToVersionStepID, itemId = itemID });
-
-                //    if (expectedTransitionCount != completedTransitionsCount)
-                //    {
-                //        Console.WriteLine($"SKIPPING EVENT TO STEP ID [{transition.ToVersionStepID}] ON ITEM ID [{itemID}] WAITING FOR ALL TRANSITIONS TO COMPLETE");
-
-                //        return;
-                //    }
-                //}
 
                 var startEvent = new EventInfo
                 {
@@ -813,15 +770,6 @@ namespace d360.model
                     Console.WriteLine($"STEP WITH ID {itemStepID} HAS WAIT FOR ALL TRANSITIONS TO COMPLETE ENABLED NOT ALL HAVE COMPLETED expected:{expectedTransitionCount} actual completed:{completedTransitionsCount}");
 
                     return;
-                }
-                else
-                {
-                    var otherItemSteps = WorkflowItemSteps.Where(i => i.ItemID == itemStep.ItemID && i.StepID == itemStep.StepID && i.ID != itemStep.ID).ToList();
-                    var otherItemStepIds = otherItemSteps.Select(o => o.ID).ToList();
-                    var otherItemTransitions = WorkflowItemStepTransitions.Where(i => otherItemStepIds.Contains(i.ToItemStepID)).ToList();
-                    WorkflowItemStepTransitions.RemoveRange(otherItemTransitions);
-                    WorkflowItemSteps.RemoveRange(otherItemSteps);
-                    SaveChanges();
                 }
             }
 
@@ -889,7 +837,7 @@ namespace d360.model
                 SaveChanges();
 
                 //Mark any assignments as inactive / update them
-                CompleteItemAssignments(itemStep.ID);
+                CompleteItemAssignments(itemID);
             }
 
             if (isStepCompleted)
@@ -1192,7 +1140,7 @@ namespace d360.model
             }
         }
 
-        private void SaveItemAssignments(IEnumerable<core.entities.GlobalReportingResource> users, long itemStepId)
+        private void SaveItemAssignments(IEnumerable<core.entities.GlobalReportingResource> users, long itemId, long itemStepId)
         {
             foreach (var user in users)
             {
@@ -1201,6 +1149,7 @@ namespace d360.model
                     CreatedBy = 0,
                     CreatedOn = DateTime.UtcNow,
                     ItemStepID = itemStepId,
+                    ItemID = itemId,
                     ResourceObject = "Resource",
                     ResourceObjectID = user.ResourceID,
                     UpdatedBy = 0,
@@ -1212,9 +1161,9 @@ namespace d360.model
             SaveChanges();
         }
 
-        private void CompleteItemAssignments(long itemStepID)
+        private void CompleteItemAssignments(long itemID)
         {
-            var itemAssignments = WorkflowItemAssignments.Where(x => x.ItemStepID == itemStepID);
+            var itemAssignments = WorkflowItemAssignments.Where(x => x.ItemID == x.ItemID);
 
             foreach (var assignment in itemAssignments)
             {
@@ -1420,7 +1369,7 @@ namespace d360.model
                 SaveItemStepEmailedUsers(item, emailedUsers);
             }
 
-            SaveItemAssignments(users, itemStepID);
+            SaveItemAssignments(users, itemId, itemStepID);
         }
 
         private async Task SendAggregateWorkflowEmail(WorkflowEventRegistrationSettingsModel settings, List<string> items)
