@@ -172,7 +172,7 @@ namespace d360.web.Controllers.V2
             });
         }
 
-        private void getQueryParamsSql(AssetsApiViewModel model, List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> whereStatements, List<string> pagingSql, IEnumerable<KeyValuePair<string, string>> queryParams)
+        private void getQueryParamsSql(AssetsApiViewModel model, AssetType assetType, List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> whereStatements, List<string> pagingSql, IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             if (queryParams != null)
             {
@@ -198,21 +198,28 @@ namespace d360.web.Controllers.V2
                         {
                             if (key == "_order")
                             {
-                                var field = fieldTypes.FirstOrDefault(f => f.Name.ToLower() == q.Value.ToLower());
-                                var valueColumn = "FormattedValue";
-                                var fieldDataType = getFieldDataType(field);
-                                if (field.Type == "Link") valueColumn = "Value";
-
-                                if (field == null)
+                                if (assetType.Object == "ReferenceItemType" && q.Value.ToLower() == "code")
                                 {
-                                    orderBySql = "order by A.ID";
-                                    return;
+                                    orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + "RI.Code";
                                 }
-
-                                if (!string.IsNullOrEmpty(fieldDataType))
-                                    orderBySql = $"order by cast(F{field.ID}.{valueColumn} as {fieldDataType})";
                                 else
-                                    orderBySql = $"order by F{field.ID}.{valueColumn}";
+                                {
+                                    var field = fieldTypes.FirstOrDefault(f => f.Name.ToLower() == q.Value.ToLower());
+                                    var valueColumn = "FormattedValue";
+                                    var fieldDataType = getFieldDataType(field);
+                                    if (field.Type == "Link") valueColumn = "Value";
+
+                                    if (field == null)
+                                    {
+                                        orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + "A.ID";
+                                        return;
+                                    }
+
+                                    if (!string.IsNullOrEmpty(fieldDataType))
+                                        orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"cast(F{field.ID}.{valueColumn} as {fieldDataType})";
+                                    else
+                                        orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"F{field.ID}.{valueColumn}";
+                                }
                             }
                             else if (key == "_pagenum")
                             {
@@ -231,13 +238,21 @@ namespace d360.web.Controllers.V2
                         }
                         else
                         {
-                            var field = fieldTypes.Find(f => f.Name.ToLower() == key);
-
-                            if (field != null)
+                            if (assetType.Object == "ReferenceItemType" && key == "code")
                             {
-                                var tableAlias = $"F{field.ID}";
-                                whereStatements.Add($"{tableAlias}.FormattedValue = @field{field.ID}");
-                                dbArgs.Add($"@field{field.ID}", q.Value);
+                                whereStatements.Add($"RI.[Code] = @code");
+                                dbArgs.Add($"@code", q.Value);
+                            }
+                            else
+                            {
+                                var field = fieldTypes.Find(f => f.Name.ToLower() == key);
+
+                                if (field != null)
+                                {
+                                    var tableAlias = $"F{field.ID}";
+                                    whereStatements.Add($"{tableAlias}.FormattedValue = @field{field.ID}");
+                                    dbArgs.Add($"@field{field.ID}", q.Value);
+                                }
                             }
                         }
                     });
@@ -338,23 +353,26 @@ order by    P.[Path]
             var assetTypeID = 0;
             var includeRelationships = false;
 
-            assetTypeID = Company.AssetTypes.FirstOrDefault(t => t.uid == uid)?.ID ?? 0;
-            var fieldTypes = Company.FieldTypes.Where(f => f.AssetTypeID == assetTypeID).ToList();
-
-            if (assetTypeID == 0)
+            var assetType = Company.AssetTypes.FirstOrDefault(t => t.uid == uid);
+            if (assetType == null)
                 throw new Exception("not found");
+
+            assetTypeID = assetType.ID;
+
+            var fieldTypes = Company.FieldTypes.Where(f => f.AssetTypeID == assetTypeID).ToList();
 
             if (queryParams.ToList().Any(k => k.Key.ToLower() == "_predicateuid"))
                 includeRelationships = true;
 
-            var countSql = @"
+            var countSql = $@"
                 select
                     count(*)
                 from Asset A
-                {0}
-                {1}";
+                {(assetType.Object == "ReferenceItemType" ? " inner join ReferenceItem RI on RI.ID = A.ObjectID" : "")} 
+                {"{0}"}
+                {"{1}"}";
 
-            var sql = @"
+            var sql = $@"
                 select
                     A.ID as AssetId,
                     A.[UID] as [AssetUid],
@@ -362,11 +380,13 @@ order by    P.[Path]
                     T.[UID] as AssetTypeUid,
                     A.UpdatedOn,
                     A.CreatedOn
-                    {0}
+                    {(assetType.Object == "ReferenceItemType" ? " , RI.Code" : "")} 
+                    {"{0}"}
                 from Asset A
-                {1}
-                {2}
-                {3}
+                {(assetType.Object == "ReferenceItemType" ? " inner join ReferenceItem RI on RI.ID = A.ObjectID" : "")} 
+                {"{1}"}
+                {"{2}"}
+                {"{3}"}
             ";
 
             List<string> fieldColumns = new List<string>();
@@ -465,7 +485,7 @@ order by    P.[Path]
             if (includeRelationships)
                 whereStatements.Add("R.Relationships is not null");
 
-            getQueryParamsSql(model, fieldTypes, dbArgs, whereStatements, pagingSql, queryParams);
+            getQueryParamsSql(model, assetType, fieldTypes, dbArgs, whereStatements, pagingSql, queryParams);
 
             var whereSql = "";
             if (whereStatements.Any())
