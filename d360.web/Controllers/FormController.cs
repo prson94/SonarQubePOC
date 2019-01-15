@@ -2238,8 +2238,9 @@ namespace d360.web.Controllers
             }
             catch(Exception ex) {
                 SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
+                return jsonNetException(ex, HttpStatusCode.InternalServerError, string.Empty);
             }
+
             return new JsonNetResult { Data = css, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
