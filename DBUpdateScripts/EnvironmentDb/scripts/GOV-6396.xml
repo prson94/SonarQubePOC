@@ -35,7 +35,7 @@ begin
 			@class = [Class] 
 	from	AssetType
 	where	[uid] = @uid
-	
+
 	select	@parentIntersectTypeUid = I.[Uid],
 			@parentIntersectTypeID = I.ID,
 			@parentOt = I.Subject,
@@ -50,36 +50,7 @@ begin
 														else 3 
 													end
 
-	update	T
-	set		T.FieldTypeID = S.ID
-	from	#AssetFieldTable T
-			inner join FieldType S on S.AssetTypeID = @at and S.Name = T.FieldName;
-
 	BEGIN 
-		if @isInsert = 1
-		begin
-			update	#AssetTable
-			set		Success = 0,
-					[Message] = coalesce([Message] + '; ', '') + 'You may not provide a Uid for this asset when you are attempting to add it'
-			where	[Uid] is not null 
-		end;
-		
-		if @isInsert = 0
-		begin
-			update	#AssetTable
-			set		Success = 0,
-					[Message] = coalesce([Message] + '; ', '') + 'You must provide a valid Uid for this asset when you are attempting to update it'
-			where	[Uid] is null or [Uid] = CAST(CAST(0 AS BINARY) AS UNIQUEIDENTIFIER) 
-		end;
-		
-		if @isInsert = 0
-		begin
-			update	#AssetTable
-			set		Success = 0,
-					[Message] = coalesce([Message] + '; ', '') + 'You may not provide a Parent Uid for this asset when you are attempting to update it'
-			where	[ParentUid] is not null 
-		end;
-
 		IF @parentIntersectTypeID is not null and @isInsert = 1
 		BEGIN
 			update	#AssetTable
@@ -100,7 +71,7 @@ begin
 			where	ParentObjectID is null
 					and ParentUid is not null;
 		END;
-
+				
 		update	T
 		set		T.Success = 0,
 				T.[Message] = coalesce(T.[Message] + '; ', '') + 'Asset is missing key field(s): [' + S.Names + ']'
@@ -115,7 +86,7 @@ begin
 							where	F.ItemNumber is null
 							group by A.ItemNumber
 							) S on S.ItemNumber = T.ItemNumber;
-		
+				
 		if @isInsert = 1
 		begin
 			update	T
@@ -133,7 +104,7 @@ begin
 								group by A.ItemNumber
 								) S on S.ItemNumber = T.ItemNumber
 		end;
-
+		
 		update	T
 		set		T.LookupValue = RI.ID
 		from	#AssetFieldTable T
@@ -184,7 +155,7 @@ begin
 																	)
 							group by A.ItemNumber
 							) S on S.ItemNumber = T.ItemNumber;
-		
+
 		update	T
 		set		T.Success = 0,
 				T.[Message] = coalesce(T.[Message] + '; ', '') + 'Asset contains one or more field that have an invalid length: [' + S.Names + ']'
@@ -233,6 +204,76 @@ begin
 							group by A.ItemNumber
 							) S on S.ItemNumber = T.ItemNumber;
 
+		declare @sql nvarchar(max) = '',
+				@sqlColumns nvarchar(max) = 'update A set A.Success = 0, A.Message = ''Key values match another asset under a different set of key fields. '' ',
+				@sqlTables nvarchar(max) = 'from #AssetTable A ',
+				@sqlWhere nvarchar(max) = ''
+
+		declare @keyFields table(ID int identity, FieldTypeID int)
+		insert into @keyFields
+			select	ID from FieldType where IsPartOfKey = 1 and AssetTypeID = @at
+		declare @currentKeyRow int = 1,
+				@maxKeyRow int,
+				@kfcId int,
+				@kfc nvarchar(15) = '',
+				@previousKfc nvarchar(15) = ''
+		select @maxKeyRow = max(ID) from @keyFields
+
+		if @ot = 'FusionAttributeType'
+		begin
+			
+			set @sqlTables =  @sqlTables + 'inner join #AssetFieldTable FFN on FFN.ItemNumber = A.ItemNumber and FFN.FieldName = ''Name'''
+			set @sqlTables =  @sqlTables + 'inner join #AssetFieldTable FFF on FFF.ItemNumber = A.ItemNumber and FFF.FieldName = ''FusionID'''
+			set @sqlTables = @sqlTables + ' inner join FusionAttribute F on F.FusionAttributeTypeID = ' + cast(@otid as nvarchar) + ' and F.Name = FFN.FieldValue and F.FusionID = FFF.FieldValue '
+		end
+		if @ot = 'ReferenceItemType'
+		begin
+			
+			set @sqlTables =  @sqlTables + 'inner join #AssetFieldTable RF on RF.ItemNumber = A.ItemNumber and RF.FieldName = ''Code'''
+			set @sqlTables = @sqlTables + ' inner join ReferenceItem R on R.ReferenceItemTypeID = ' + cast(@otid as nvarchar) + ' and R.Code = RF.FieldValue '
+		end
+
+		while @currentKeyRow <= @maxKeyRow
+		begin
+			select @kfcId = FieldTypeID from @keyFields where ID = @currentKeyRow
+			set @kfc = cast(@kfcId as varchar)
+
+			if @currentKeyRow > 1
+			begin
+				if @sqlWhere = ''
+				begin
+					set @sqlWhere = 'where'
+				end
+				else
+				begin
+					set @sqlWhere = @sqlWhere + 'and'
+				end
+				set @sqlWhere = @sqlWhere + ' EF' + @kfc+ '.AssetID = EF' + @previousKfc + '.AssetID '
+			end
+			
+			set @sqlTables =  @sqlTables + 'inner join #AssetFieldTable NF' + @kfc+ ' on NF' + @kfc + '.ItemNumber = A.ItemNumber and NF' + @kfc + '.FieldTypeID = ' + @kfc
+			set @sqlTables = @sqlTables + ' inner join Field EF' + @kfc + ' on EF' + @kfc + '.FieldTypeID = ' + @kfc + ' and EF' + @kfc + '.Value = NF' + @kfc + '.FieldValue '
+
+			set @previousKfc = @kfc
+			set @currentKeyRow = @currentKeyRow + 1
+		end
+
+		if @parentIntersectTypeID is not null
+		begin
+			set @sqlTables = @sqlTables + ' inner join PredicateIntersect I on I.IntersectTypeID = ' + cast(@parentIntersectTypeID as nvarchar) + ' and I.Subject = A.ParentObject and I.SubjectID = A.ParentObjectID and I.PredicateType in (3,4) and I.Object = EF' + @kfc + '.ObjectType and I.ObjectID = EF' + @kfc + '.ObjectID'
+		end
+		if @isInsert = 0
+		begin
+			set @sqlTables = @sqlTables + ' inner join Asset EA on EA.[Uid] <> A.[Uid] '
+			if @kfc <> '' and @kfc is not null
+			begin
+				set @sqlTables = @sqlTables + 'and EA.ID = EF' + @kfc + '.AssetID '
+			end
+		end
+
+		set @sql = @sqlColumns + @sqlTables + @sqlWhere
+		exec sp_executesql @sql
+
 		update	T
 		set		T.KeyHash = S.KeyHash
 		from	#AssetTable T
@@ -255,33 +296,6 @@ begin
 							group by O.ItemNumber,
 									O.ParentUid
 							) S on S.ItemNumber = T.ItemNumber;
-		
-		if @isInsert = 1
-		begin
-			update	T
-			set		T.Success = 0,
-					T.[Message] = coalesce(T.[Message] + '; ', '') + 'Asset contains an error: [' + S.Error + ']'
-			from	#AssetTable T
-					inner join	(
-								select	T.ItemNumber,
-										'Key values match another asset under a different set of key fields.' as Error
-								from	#AssetTable T
-										inner join AssetKeyHash K on K.AssetTypeID = @at and K.KeyHash = T.KeyHash
-								) S on S.ItemNumber = T.ItemNumber;
-		end
-		else
-		begin 
-			update	T
-			set		T.Success = 0,
-					T.[Message] = coalesce(T.[Message] + '; ', '') + 'Asset contains an error: [' + S.Error + ']'
-			from	#AssetTable T
-					inner join	(
-								select	T.ItemNumber,
-										'Key values match another asset under a different public uid.' as Error
-								from	#AssetTable T
-										inner join AssetKeyHash K on K.AssetTypeID = @at and K.KeyHash = T.KeyHash and T.[Uid] <> K.[Uid]
-								) S on S.ItemNumber = T.ItemNumber;
-		end
 
 		update	T
 		set		T.Success = 0,
@@ -401,10 +415,12 @@ begin
 			while @current <= @max
 			begin
 				declare @fusionId int,
+						@parentId int,
 						@fusionName nvarchar(250)
 
 				select	@fusionId = cast(F.FieldValue as int),
-						@fusionName = N.FieldValue
+						@fusionName = N.FieldValue,
+						@parentId = A.ParentObjectID
 				from	#AssetTable A
 						inner join #AssetFieldTable N on N.ItemNumber = A.ItemNumber and N.FieldName = 'Name'
 						inner join #AssetFieldTable F on F.ItemNumber = A.ItemNumber and F.FieldName = 'FusionID'
@@ -416,8 +432,8 @@ begin
 				begin
 					set	@objectId = NEXT VALUE FOR [dbo].[FusionAttribute_Seq]
 
-					insert FusionAttribute(ID, FusionAttributeTypeID, Name, FusionID)
-					values (@objectId, @otid, @fusionName, @fusionId);
+					insert FusionAttribute(ID, ParentID, FusionAttributeTypeID, Name, FusionID)
+					values (@objectId, @parentId, @otid, @fusionName, @fusionId);
 
 					update	T
 					set		T.Object ='FusionAttribute',
@@ -434,6 +450,12 @@ begin
 		end
 		else
 		begin
+			update	T
+			set		T.Name = N.FieldValue
+			from	FusionAttribute T
+					inner join #AssetTable S on S.ObjectID = T.ID
+					inner join #AssetFieldTable N on N.ItemNumber = S.ItemNumber and N.FieldName = 'Name';
+
 			update	#AssetTable
 			set		IsNew = 0
 			where	Success is null;
@@ -537,8 +559,7 @@ begin
 				where		A.Success is null 
 							and A.ObjectID is null
 							and A.ItemNumber = @current
-				
-				
+
 				if @code is not null
 				begin
 					insert ReferenceItem(ReferenceItemTypeID, Code, UpdatedBy, UpdatedOn)
@@ -562,17 +583,19 @@ begin
 		else
 		begin
 			update	T
-			set		T.UpdatedBy = @r,
+			set		T.Code = F.FieldValue,
+					T.UpdatedBy = @r,
 					T.UpdatedOn = @dt
 			from	ReferenceItem T
-					inner join #AssetTable S on S.ObjectID = T.ID;
+					inner join #AssetTable S on S.ObjectID = T.ID
+					inner join #AssetFieldTable F on F.ItemNumber = S.ItemNumber and F.FieldName = 'Code';
 
 			update	#AssetTable
 			set		IsNew = 0
 			where	Success is null;
 		end
 	END;
-
+	
 	IF @parentIntersectTypeID is not null and @isInsert = 1
 	BEGIN
 		delete	T
@@ -604,7 +627,7 @@ begin
 	
 	merge into  Field T
     using       (
-                select  distinct 
+                select  
                         A.AssetID,
 						A.Object, 
                         A.ObjectID, 
