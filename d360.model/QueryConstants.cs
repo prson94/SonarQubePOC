@@ -1706,7 +1706,7 @@ select
                                      WT.ID in ({0}) and WI.CompletedOn is null and WVS.StepType = 2 and WVS.ActivityType = 3";
 
         public static string WorkflowItemSteps = @"
-  select 
+      select 
 	            IST.ID,
 	            IST.ItemID,
 	            IST.StepID,
@@ -1722,11 +1722,11 @@ select
 	            RS.FirstName + ' ' + RS.LastName as StartedBy,
 	            IST.CompletedOn,
 	            RC.FirstName + ' ' + RC.LastName as CompletedBy,
-                convert(xml,convert(varchar(max),S.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') as MessageRecipientType,
-                case when S.ActivityType = 3 and IST.CompletedOn is null and convert(xml,convert(varchar(max),S.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') = 'Initiator' then
+                VSSettings.MessageRecipientType,
+                case when S.ActivityType = 3 and IST.CompletedOn is null and VSSettings.MessageRecipientType = 'Initiator' then
 					IAR.Email
-                when S.ActivityType = 3 and IST.CompletedOn is null and convert(xml,convert(varchar(max),S.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') = 'SpecificUser' then
-					coalesce(convert(xml,convert(varchar(max),S.Settings)).value('/settings[1]/MessageToUser[1]/text()[1]','varchar(max)'), '[unknown]')
+                when S.ActivityType = 3 and IST.CompletedOn is null and VSSettings.MessageRecipientType = 'SpecificUser' then
+					VSSettings.MessageToUser
 				when S.ActivityType = 3 and IST.CompletedOn is not null then
 					Forms.Responses
 				else
@@ -1745,6 +1745,13 @@ select
             workflow.ItemStep IST
             inner join workflow.Item I on I.ID = IST.ItemID
             inner join workflow.VersionStep S on S.ID = IST.StepID
+			cross apply (
+				select
+					coalesce(convert(xml,convert(varchar(max),Settings)).value('/settings[1]/WaitForAllTransitions[1]/text()[1]','varchar(max)'), 'false') as WaitForAllTransitions,
+					convert(xml,convert(varchar(max),Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') as MessageRecipientType,
+					coalesce(convert(xml,convert(varchar(max),S.Settings)).value('/settings[1]/MessageToUser[1]/text()[1]','varchar(max)'), '[unknown]') as MessageToUser
+				from workflow.VersionStep where ID = S.ID
+			) VSSettings
 			inner join workflow.[Version] V on V.ID = S.VersionID
 			inner join workflow.EventRegistration E on E.TypeID = V.TypeID
 			left join (
@@ -1755,7 +1762,7 @@ select
                     RI.Email
 				from workflow.ItemAssignment IA
 				inner join reporting.Global_Resource RI on RI.ResourceID = IA.ResourceObjectID
-			) IAR on IAR.ItemID = IST.ItemID and (IAR.ItemStepID = IST.ID or IAR.ItemStepID is null) and convert(xml,convert(varchar(max),S.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') = 'Initiator'
+			) IAR on IAR.ItemID = IST.ItemID and (IAR.ItemStepID = IST.ID or IAR.ItemStepID is null) and VSSettings.MessageRecipientType = 'Initiator'
             left join reporting.Global_resource RS on RS.ResourceID = IST.StartedBy
             left join reporting.Global_resource RC on RC.ResourceID = IST.CompletedBy
 			outer apply (
@@ -1767,6 +1774,8 @@ select
 				where ID = IST.ID
 			) Forms
             where IST.ItemID = @itemId
+			and ((VSSettings.WaitForAllTransitions = 'true' and (IST.CompletedOn is not null or IAR.ItemStepID is not null)) 
+				or (VSSettings.WaitForAllTransitions = 'false'))
             order by IST.StartedOn, IST.CompletedOn";
 
         #endregion
