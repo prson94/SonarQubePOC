@@ -21,7 +21,7 @@ import { GridDefinitionService } from '../../services/grid-definition.service';
 @Component({
     selector: 'd3s-model-item-structure',
     providers: [GridDefinitionService, ModelsService, PermissionsService, LevelsService],
-    template: './model-item-structure.component.html'
+    templateUrl: './model-item-structure.component.html'
 })
 
 export class ModelItemStructureComponent extends BaseComponent implements OnInit, OnDestroy {
