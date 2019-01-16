@@ -1,6 +1,7 @@
 ﻿using d360.core.enums;
 using Dapper;
 using System;
+using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.IO;
@@ -10,7 +11,7 @@ namespace igx.CertificateManager
 {
     public partial class AddSsoCertificate : Form
     {
-        string connectionString = "Server=tcp:bzbdz2ikmp.database.windows.net;Database=D3S;User ID=d3s_user;Password=d3fGt$$@eEwq00y;Trusted_Connection=False;MultipleActiveResultSets=True;";
+        string connectionString = ConfigurationManager.AppSettings["CommunityContext"];
 
         public AddSsoCertificate()
         {

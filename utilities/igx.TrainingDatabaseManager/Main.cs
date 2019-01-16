@@ -9,12 +9,13 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Data.SqlClient;
+using System.Configuration;
 
 namespace igx.TrainingDatabaseManager
 {
     public partial class Main : Form
     {
-        string connectionString = "Server=tcp:bzbdz2ikmp.database.windows.net;Database=D3S;User ID=d3s_user;Password=d3fGt$$@eEwq00y;Trusted_Connection=False;MultipleActiveResultSets=True;";
+        string connectionString = ConfigurationManager.AppSettings["CommunityContext"];
         List<TrainingEnvironment> Environments;
 
         public Main()
