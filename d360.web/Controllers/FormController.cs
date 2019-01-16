@@ -2282,7 +2282,7 @@ namespace d360.web.Controllers
                         Community.SaveChanges();
                     }
 
-                    Storage.CreateFile(constants.COMPANY_STYLES_FOLDER, $"{Company.CurrentCompanyID}.css", css, "text/css");
+                    Storage.CreateFile(constants.COMPANY_STYLES_FOLDER, $"{Company.CurrentCompanyID}.css", css, "text/css", false);
                 }
                 else
                 {
