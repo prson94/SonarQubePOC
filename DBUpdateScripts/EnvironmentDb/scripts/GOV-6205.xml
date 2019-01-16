@@ -1,0 +1,57 @@
+﻿<databaseChangeLog   
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="MDonato" id="GOV-6205-1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[
+alter table workflow.ItemAssignment add ItemStepID bigint null;
+			
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+alter table workflow.ItemAssignment drop column ItemStepID;		
+		]]>
+	</rollback>
+  </changeSet>
+    <changeSet author="MDonato" id="GOV-6205-2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[
+update A
+set A.ItemStepID = IST.ID
+from workflow.ItemAssignment A
+inner join workflow.ItemStep IST on IST.StepID = A.StepID and IST.ItemID = A.ItemID;			
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+		
+		]]>
+	</rollback>
+  </changeSet>
+    <changeSet author="MDonato" id="GOV-6205-3">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[
+alter table workflow.ItemAssignment drop column StepID;			
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+alter table workflow.ItemAssignment add StepID int null;		
+		]]>
+	</rollback>
+  </changeSet>
+</databaseChangeLog>

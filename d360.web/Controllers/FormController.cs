@@ -1141,7 +1141,7 @@ namespace d360.web.Controllers
                         case AssetTypeClass.Glossary:
                             var a = Company.GetById<ArtifactType>(model.AssetType.ObjectID);
                             model.CanOwnFusion = a.CanOwnFusion;
-                            model.AutoDisplayDescription = a.AutoDisplayDescription;
+                            model.AutoDisplayDescription = assetType.AutoDisplayDescription;
                             model.AssetType.Name = a.Name;
                             model.AssetType.Description = a.Description;
                             model.AssetType.DisplayFormat = a.DisplayFormat;
@@ -1277,7 +1277,6 @@ namespace d360.web.Controllers
                             DisplayFormat = model.AssetType.DisplayFormat,
                             Description = model.AssetType.Description,
                             CanOwnFusion = model.CanOwnFusion ?? false,
-                            AutoDisplayDescription = model.AutoDisplayDescription ?? false
                         };
                         Company.Add(a);
                         parentType = SystemObjects.ArtifactType;
@@ -2240,7 +2239,11 @@ namespace d360.web.Controllers
             {
                 css = Storage.GetFileContentsAsString(constants.COMPANY_STYLES_FOLDER, $"{Company.CurrentCompanyID}.css");
             }
-            catch { }
+            catch(Exception ex) {
+                SendException(ex);
+                return jsonNetException(ex, HttpStatusCode.InternalServerError, string.Empty);
+            }
+
             return new JsonNetResult { Data = css, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
@@ -2279,7 +2282,7 @@ namespace d360.web.Controllers
                         Community.SaveChanges();
                     }
 
-                    Storage.CreateFile(constants.COMPANY_STYLES_FOLDER, $"{Company.CurrentCompanyID}.css", css, "text/css");
+                    Storage.CreateFile(constants.COMPANY_STYLES_FOLDER, $"{Company.CurrentCompanyID}.css", css, "text/css", false);
                 }
                 else
                 {
