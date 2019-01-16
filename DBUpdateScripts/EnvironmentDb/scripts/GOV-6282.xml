@@ -13,8 +13,8 @@
             stripComments="true">
       BEGIN
            DROP INDEX [IX_Taxonomy_TaxonomyTypeID-ParentID] ON [dbo].[Taxonomy] 
-		       ALTER TABLE [dbo].[Taxonomy] DROP CONSTRAINT [CK_Taxonomy_IDNotEqualParentID]
-		       ALTER TABLE [dbo].[Taxonomy] DROP COLUMN [ParentID]
+		   ALTER TABLE [dbo].[Taxonomy] DROP CONSTRAINT [CK_Taxonomy_IDNotEqualParentID]
+		   ALTER TABLE [dbo].[Taxonomy] DROP COLUMN [ParentID]
       END
     </sql>
   </changeSet>
