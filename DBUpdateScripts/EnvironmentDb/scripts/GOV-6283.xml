@@ -7,27 +7,33 @@
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
 	<changeSet author="VKyrychuk" id="GOV-6283">
-		<dropForeignKeyConstraint baseTableName="Policy" constraintName="FK_Policy_ParentPolicy"/>
+	 <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		ALTER TABLE Policy
+			DROP CONSTRAINT FK_Policy_ParentPolicy;
+	</sql>
 		<rollback>
-			 <addForeignKeyConstraint baseColumnNames="ParentID"
-				baseTableName="Policy"
-				constraintName="FK_Policy_ParentPolicy"
-				referencedColumnNames="ID"
-				referencedTableName="Policy"/>
+			ALTER TABLE [dbo].[Policy]  WITH CHECK ADD  CONSTRAINT [FK_Policy_ParentPolicy] FOREIGN KEY([ParentID])	
+			REFERENCES [dbo].[Policy] ([ID])
+			GO
+			ALTER TABLE [dbo].[Policy] CHECK CONSTRAINT [FK_Policy_ParentPolicy]
+			GO
 		</rollback>
   </changeSet>
 	
   <changeSet author="VKyrychuk" id="GOV-6283-B">
-  	<dropColumn catalogName="D3S_10"
-            columnName="ParentID"
-            schemaName="dbo"
-            tableName="Policy"/>
+   <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		ALTER TABLE Policy
+		DROP COLUMN ParentID;
+	</sql>
 	<rollback>
-		 <addColumn catalogName="D3S_10"
-            schemaName="dbo"
-            tableName="Policy">
-			<column name="ParentID" type="int" defaultValue="NULL"/>
-		</addColumn>
+		ALTER TABLE Policy
+		ADD ParentID int;
 	</rollback>
   </changeSet>
   
