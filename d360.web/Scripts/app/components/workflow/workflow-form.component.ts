@@ -267,6 +267,8 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
                 this.hasObjectReassign = (this.reassignAvailableTypes.length > 0);                
             }).catch(res => {
                 this.isLoading = false;
+                this.isCompleted = false;
+                this.isItemDeleted = true;
                 this.title = "Cannot find the requested item.";
             });
     }

@@ -696,10 +696,7 @@ order by wi.StartedOn desc";
 
             if(itemStep == null)
             {
-                return Request.CreateResponse<dynamic>(HttpStatusCode.OK, new
-                {
-                    Title = "Cannot find the requested item",
-                });
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Workflow item has been deleted.");
             }
             
             string sql = @"
