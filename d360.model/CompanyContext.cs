@@ -827,8 +827,7 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
 
         public List<FusionOwnerOption> GetFusionOwnerOptions()
         {
-            
-                return Database.Connection.Query<FusionOwnerOption>(@"
+            return Database.Connection.Query<FusionOwnerOption>(@"
 	select	ASTT.Name as [Type],
 			AST.ObjectID as ID,
 			ASTT.Name + ' : ' + D.DisplayValue as Name
