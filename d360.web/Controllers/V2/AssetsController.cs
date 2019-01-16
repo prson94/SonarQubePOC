@@ -172,7 +172,7 @@ namespace d360.web.Controllers.V2
             });
         }
 
-        private void getQueryParamsSql(AssetsApiViewModel model, List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> whereStatements, List<string> pagingSql, IEnumerable<KeyValuePair<string, string>> queryParams)
+        private void getQueryParamsSql(AssetsApiViewModel model, AssetType assetType, List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> whereStatements, List<string> pagingSql, IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             if (queryParams != null)
             {
@@ -198,21 +198,28 @@ namespace d360.web.Controllers.V2
                         {
                             if (key == "_order")
                             {
-                                var field = fieldTypes.FirstOrDefault(f => f.Name.ToLower() == q.Value.ToLower());
-                                var valueColumn = "FormattedValue";
-                                var fieldDataType = getFieldDataType(field);
-                                if (field.Type == "Link") valueColumn = "Value";
-
-                                if (field == null)
+                                if (assetType.Object == "ReferenceItemType" && q.Value.ToLower() == "code")
                                 {
-                                    orderBySql = "order by A.ID";
-                                    return;
+                                    orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + "RI.Code";
                                 }
-
-                                if (!string.IsNullOrEmpty(fieldDataType))
-                                    orderBySql = $"order by cast(F{field.ID}.{valueColumn} as {fieldDataType})";
                                 else
-                                    orderBySql = $"order by F{field.ID}.{valueColumn}";
+                                {
+                                    var field = fieldTypes.FirstOrDefault(f => f.Name.ToLower() == q.Value.ToLower());
+                                    var valueColumn = "FormattedValue";
+                                    var fieldDataType = getFieldDataType(field);
+                                    if (field.Type == "Link") valueColumn = "Value";
+
+                                    if (field == null)
+                                    {
+                                        orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + "A.ID";
+                                        return;
+                                    }
+
+                                    if (!string.IsNullOrEmpty(fieldDataType))
+                                        orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"cast(F{field.ID}.{valueColumn} as {fieldDataType})";
+                                    else
+                                        orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"F{field.ID}.{valueColumn}";
+                                }
                             }
                             else if (key == "_pagenum")
                             {
@@ -231,13 +238,21 @@ namespace d360.web.Controllers.V2
                         }
                         else
                         {
-                            var field = fieldTypes.Find(f => f.Name.ToLower() == key);
-
-                            if (field != null)
+                            if (assetType.Object == "ReferenceItemType" && key == "code")
                             {
-                                var tableAlias = $"F{field.ID}";
-                                whereStatements.Add($"{tableAlias}.FormattedValue = @field{field.ID}");
-                                dbArgs.Add($"@field{field.ID}", q.Value);
+                                whereStatements.Add($"RI.[Code] = @code");
+                                dbArgs.Add($"@code", q.Value);
+                            }
+                            else
+                            {
+                                var field = fieldTypes.Find(f => f.Name.ToLower() == key);
+
+                                if (field != null)
+                                {
+                                    var tableAlias = $"F{field.ID}";
+                                    whereStatements.Add($"{tableAlias}.FormattedValue = @field{field.ID}");
+                                    dbArgs.Add($"@field{field.ID}", q.Value);
+                                }
                             }
                         }
                     });
@@ -269,7 +284,8 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route("classes"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
-            SwaggerResponse(HttpStatusCode.OK, "A list of asset type classes.", typeof(List<AssetTypeClassInfo>))
+            SwaggerResponse(HttpStatusCode.OK, "A list of asset type classes.", typeof(List<AssetTypeClassInfo>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
         public HttpResponseMessage GetAssetTypeClassesAsync()
         {
@@ -337,23 +353,26 @@ order by    P.[Path]
             var assetTypeID = 0;
             var includeRelationships = false;
 
-            assetTypeID = Company.AssetTypes.FirstOrDefault(t => t.uid == uid)?.ID ?? 0;
-            var fieldTypes = Company.FieldTypes.Where(f => f.AssetTypeID == assetTypeID).ToList();
-
-            if (assetTypeID == 0)
+            var assetType = Company.AssetTypes.FirstOrDefault(t => t.uid == uid);
+            if (assetType == null)
                 throw new Exception("not found");
+
+            assetTypeID = assetType.ID;
+
+            var fieldTypes = Company.FieldTypes.Where(f => f.AssetTypeID == assetTypeID).ToList();
 
             if (queryParams.ToList().Any(k => k.Key.ToLower() == "_predicateuid"))
                 includeRelationships = true;
 
-            var countSql = @"
+            var countSql = $@"
                 select
                     count(*)
                 from Asset A
-                {0}
-                {1}";
+                {(assetType.Object == "ReferenceItemType" ? " inner join ReferenceItem RI on RI.ID = A.ObjectID" : "")} 
+                {"{0}"}
+                {"{1}"}";
 
-            var sql = @"
+            var sql = $@"
                 select
                     A.ID as AssetId,
                     A.[UID] as [AssetUid],
@@ -361,11 +380,13 @@ order by    P.[Path]
                     T.[UID] as AssetTypeUid,
                     A.UpdatedOn,
                     A.CreatedOn
-                    {0}
+                    {(assetType.Object == "ReferenceItemType" ? " , RI.Code" : "")} 
+                    {"{0}"}
                 from Asset A
-                {1}
-                {2}
-                {3}
+                {(assetType.Object == "ReferenceItemType" ? " inner join ReferenceItem RI on RI.ID = A.ObjectID" : "")} 
+                {"{1}"}
+                {"{2}"}
+                {"{3}"}
             ";
 
             List<string> fieldColumns = new List<string>();
@@ -464,7 +485,7 @@ order by    P.[Path]
             if (includeRelationships)
                 whereStatements.Add("R.Relationships is not null");
 
-            getQueryParamsSql(model, fieldTypes, dbArgs, whereStatements, pagingSql, queryParams);
+            getQueryParamsSql(model, assetType, fieldTypes, dbArgs, whereStatements, pagingSql, queryParams);
 
             var whereSql = "";
             if (whereStatements.Any())
@@ -541,13 +562,14 @@ order by    P.[Path]
         [
             HttpPost,
             Route("{uid}"),
+            SwaggerRequestExample(typeof(AssetInsert), typeof(AssetInsertsExample)),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of bulk asset results, including any error messages.", typeof(List<DatabaseBulkAssetResult>)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add assets of this type.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> PostAssetsAsync(Guid uid, AssetInserts assets)
+        public async Task<IHttpActionResult> PostAssetsAsync(Guid uid, List<AssetInsert> assets)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to add assets of this type."));
@@ -563,15 +585,16 @@ order by    P.[Path]
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {uid} could not be found."));
 
                 if (assets == null)
-                    assets = readRequestJsonContent<AssetInserts>(Request).Result;
+                    assets = readRequestJsonContent<List<AssetInsert>>(Request).Result;
 
-                var results = (Company.Database.Connection as SqlConnection).InsertAssets(
+                var results = (Company.Database.Connection as SqlConnection).UpsertAssets(
                     QueueSource,
                     Company.CurrentCompanyDomain,
                     Company.CurrentCompanyID,
                     Company.CurrentResourceID,
                     assetType,
-                    assets
+                    assets,
+                    true
                 );
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
@@ -593,13 +616,14 @@ order by    P.[Path]
         [
             HttpPut,
             Route("{uid}"),
+            SwaggerRequestExample(typeof(AssetUpdate), typeof(AssetUpdatesExample)),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of bulk asset results, including any error messages.", typeof(List<DatabaseBulkAssetResult>)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add assets of this type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> PutAssetsAsync(Guid uid, AssetUpdates assets)
+        public async Task<IHttpActionResult> PutAssetsAsync(Guid uid, List<AssetUpdate> assets)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to update assets of this type."));
@@ -615,15 +639,16 @@ order by    P.[Path]
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {uid} could not be found."));
 
                 if (assets == null)
-                    assets = readRequestJsonContent<AssetUpdates>(Request).Result;
+                    assets = readRequestJsonContent<List<AssetUpdate>>(Request).Result;
 
-                var results = (Company.Database.Connection as SqlConnection).UpdateAssets(
+                var results = (Company.Database.Connection as SqlConnection).UpsertAssets(
                     QueueSource,
                     Company.CurrentCompanyDomain,
                     Company.CurrentCompanyID,
                     Company.CurrentResourceID,
                     assetType,
-                    assets
+                    assets, 
+                    false
                 );
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
@@ -699,13 +724,14 @@ order by    P.[Path]
         [
             HttpPost,
             Route("batch/{uid}"),
+            SwaggerRequestExample(typeof(AssetInsert), typeof(AssetInsertsExample)),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution ID to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add assets of this type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> PostBulkAssetsAsync(Guid uid, AssetInserts assets)
+        public async Task<IHttpActionResult> PostBulkAssetsAsync(Guid uid, List<AssetInsert> assets)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to add assets of this type."));
@@ -721,7 +747,7 @@ order by    P.[Path]
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {uid} could not be found."));
 
                 if (assets == null)
-                    assets = readRequestJsonContent<AssetInserts>(Request).Result;
+                    assets = readRequestJsonContent<List<AssetInsert>>(Request).Result;
 
                 var executionInfo = new ApiExecutionInfo
                 {
@@ -782,13 +808,14 @@ order by    P.[Path]
         [
             HttpPut,
             Route("batch/{uid}"),
+            SwaggerRequestExample(typeof(AssetUpdate), typeof(AssetUpdatesExample)),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution ID to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add assets of this type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> PutBulkAssetsAsync(Guid uid, AssetUpdates assets)
+        public async Task<IHttpActionResult> PutBulkAssetsAsync(Guid uid, List<AssetUpdate> assets)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to update assets of this type."));
@@ -804,7 +831,7 @@ order by    P.[Path]
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {uid} could not be found."));
 
                 if (assets == null)
-                    assets = readRequestJsonContent<AssetUpdates>(Request).Result;
+                    assets = readRequestJsonContent<List<AssetUpdate>>(Request).Result;
 
                 var executionInfo = new ApiExecutionInfo
                 {

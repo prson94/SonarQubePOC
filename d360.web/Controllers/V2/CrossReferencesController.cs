@@ -49,9 +49,11 @@ namespace d360.web.Controllers.V2
             return Request.CreateResponse(await Company.QueryAsync<AssetCrossReference>("select uid, DataSource,Type,ExternalID,FieldHash from AssetCrossReference"));
         }
 
+
         /// <summary>
         /// Returns asset cross reference values for the specified Uid
         /// </summary>
+        /// <param name="uid">AssetCrossReference Uid</param>
         /// <returns>An array of matching cross reference records</returns>
         [
             HttpGet,
@@ -72,6 +74,8 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Returns asset cross reference values for the specified type and external id
         /// </summary>
+        /// <param name="type">AssetCrossReference type</param>
+        /// <param name="externalId">AssetCrossReference externalId</param>
         /// <returns>An array of matching cross reference records</returns>
         [
             HttpGet,
@@ -92,6 +96,7 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Returns asset cross reference values for the specified type
         /// </summary>
+        /// <param name="type">AssetCrossReference type</param>
         /// <returns>An array of matching cross reference records</returns>
         [
             HttpGet,
@@ -113,6 +118,7 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Returns asset cross reference values for the specified data source
         /// </summary>
+        /// <param name="dataSource">AssetCrossReference datasource</param>
         /// <returns>An array of matching cross reference records</returns>
         [
             HttpGet,
@@ -133,6 +139,7 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Creates a new AssetCrossReference record.  If an asset cross reference exists already an error is returned
         /// </summary>
+        /// <param name="model">AssetCrossReference model</param>
         /// <returns>AssetCrossReference model of the created item if item already exists http confict is returned.</returns>
         [
             HttpPost,
@@ -171,6 +178,7 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Creates new AssetCrossReference records.  If an asset cross reference exists already an error is returned
         /// </summary>
+        /// <param name="models">List of AssetCrossReference models</param>
         /// <returns>AssetCrossReference model of the created item if item already exists http confict is returned.</returns>
         [
             HttpPost,
@@ -262,6 +270,11 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Updates the specified AssetCrossReference record.
         /// </summary>
+        /// <param name="uid">AssetCrossReference Uid</param>
+        /// <param name="dataSource">AssetCrossReference datasource</param>
+        /// <param name="type">AssetCrossReference type</param>
+        /// <param name="externalId">AssetCrossReference externalId</param>
+        /// <param name="model">AssetCrossReference model</param>
         /// <returns>Http Status code OK if item was updated, Http Status code of Not Found if item could not be updated</returns>
         [
             HttpPut,
@@ -292,6 +305,7 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Deletes a AssetCrossReference by the specified Uid value
         /// </summary>
+        /// <param name="uid">Crossreference Id</param>
         /// <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted</returns>
         [
             HttpDelete,
@@ -318,7 +332,9 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Deletes a AssetCrossReference with the specified datasource and type
         /// </summary>
-        /// <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted</returns>
+        /// <param name="dataSource">AssetCrossReference datasource</param>
+        /// <param name="type">AssetCrossReference type</param>
+        /// <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted></returns>
         [
             HttpDelete,
             MapToApiVersion("2.0"),
@@ -347,6 +363,7 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Deletes a AssetCrossReference records with the specified type
         /// </summary>
+        /// <param name="type">AssetCrossReference type</param>
         /// <returns>Http Status code OK if item(s) was deleted, Http Status code of Not Found if item could not be deleted</returns>
         [
             HttpDelete,
@@ -372,10 +389,10 @@ namespace d360.web.Controllers.V2
 
             return Request.CreateResponse(HttpStatusCode.NotFound); // nothing deleted
         }
-
         /// <summary>
         /// Deletes a AssetCrossReference records with the specified datasource
         /// </summary>
+        /// <param name="dataSource">AssetCrossReference datasource</param>
         /// <returns>Http Status code OK if item(s) was deleted, Http Status code of Not Found if item could not be deleted</returns>
         [
             HttpDelete,

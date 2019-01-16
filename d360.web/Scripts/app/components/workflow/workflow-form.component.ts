@@ -18,6 +18,7 @@ import { ResourcesService } from '../../services/resources.service';
 import { Resource } from '../../models/resource.model';
 import { MessagesService } from '../../services/messages.service';
 import { SubscriptionLike as ISubscription } from 'rxjs';
+import { close } from 'fs';
 
 @Component({
     selector: 'd3s-workflow-form',
@@ -264,6 +265,11 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
                     this.loadResources();
                 }
                 this.hasObjectReassign = (this.reassignAvailableTypes.length > 0);                
+            }).catch(res => {
+                this.isLoading = false;
+                this.isCompleted = false;
+                this.isItemDeleted = true;
+                this.title = "Cannot find the requested item.";
             });
     }
 
@@ -272,7 +278,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
             this.location.back();
         }
         else {
-            window.close();
+            this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
         }
     }
     

@@ -11,8 +11,6 @@ namespace d360.core.entities
     [DataContract(Namespace = NAMESPACE)]
     public class Taxonomy : BaseIntObject, IIntObject, IFieldsObject, ISearchable, IUpdatedMetadata, IEventTrackedEntity
     {
-        [DataMember]
-        public int? ParentID { get; set; }
                 
         [DataMember, ReadOnly(true), DatabaseGenerated(DatabaseGeneratedOption.Computed), Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Path_Name", Description = "Path_Description")]
         public string TextPath { get; set; }
