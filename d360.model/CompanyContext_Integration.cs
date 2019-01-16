@@ -1030,7 +1030,7 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
                 fieldTypeIDs.Add(new FieldTypeIdModel { ID = ft.ID, Name = ft.Name });
             });
 
-            int dbLimit = 1000;
+            int dbLimit = 5000;
             int currentCount = 0;
 
             #region Generate data sets
