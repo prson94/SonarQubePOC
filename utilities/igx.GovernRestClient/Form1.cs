@@ -52,7 +52,6 @@ namespace igx.GovernRestClient
             if (result == DialogResult.OK)
             {
                 JsonRequestFilePath.Text = openFileDialog1.FileName;
-                //openFileDialog1.OpenFile();
             }
         }
 
