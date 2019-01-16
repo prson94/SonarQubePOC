@@ -2239,7 +2239,11 @@ namespace d360.web.Controllers
             {
                 css = Storage.GetFileContentsAsString(constants.COMPANY_STYLES_FOLDER, $"{Company.CurrentCompanyID}.css");
             }
-            catch { }
+            catch(Exception ex) {
+                SendException(ex);
+                return jsonNetException(ex, HttpStatusCode.InternalServerError, string.Empty);
+            }
+
             return new JsonNetResult { Data = css, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
@@ -2278,7 +2282,7 @@ namespace d360.web.Controllers
                         Community.SaveChanges();
                     }
 
-                    Storage.CreateFile(constants.COMPANY_STYLES_FOLDER, $"{Company.CurrentCompanyID}.css", css, "text/css");
+                    Storage.CreateFile(constants.COMPANY_STYLES_FOLDER, $"{Company.CurrentCompanyID}.css", css, "text/css", false);
                 }
                 else
                 {

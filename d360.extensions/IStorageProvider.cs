@@ -22,6 +22,7 @@ namespace d360.extensions
         void CreateFile(string folderName, string fileName, Stream file);
         void CreateFile(string folderName, string fileName, string content);
         void CreateFile(string folderName, string fileName, string content, string contentType);
+        void CreateFile(string folderName, string fileName, string content, string contentType, bool cache = true);
         void DeleteFile(string folderName, string fileName);
         bool FileExists(string folderName, string fileName);
         Stream GetFile(string folderName, string fileName);
