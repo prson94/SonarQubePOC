@@ -30,9 +30,7 @@ namespace d360.core.entities.Views
 
         [DataMember]
         public string Description { get; set; }
-
-        [DataMember]
-        public int? ParentID { get; set; }
+          
 
         [DataMember, Column(TypeName = "varchar"), StringLength(19)]
         public string ParentType { get; set; }
