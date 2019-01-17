@@ -623,6 +623,10 @@
     <EmbeddedResource Include="Content\Swagger\swagger.css">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
+    <Content Include="Scripts\app\components\fusion\fusion-promotion-history.component.html" />
+    <Content Include="Scripts\app\components\shared\diagram\model-diagram.component.html" />
+    <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-template-tool.component.html" />
+    <Content Include="Scripts\app\components\shared\editor-header.component.html" />
     <Content Include="Scripts\app\components\model\model-item-structure.component.html" />
     <Content Include="Scripts\app\components\policy\policy-item-structure.component.html" />
     <Content Include="Scripts\app\components\workflowmonitor\workflowmonitor-list.component.html" />

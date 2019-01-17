@@ -1,27 +1,20 @@
 ﻿import { Component, NgZone, OnInit, Output, EventEmitter, Input, OnChanges, AfterViewChecked, ElementRef, ViewChild } from '@angular/core';
+import * as _ from 'lodash';
+
 import { FieldType } from '../../../../models/fields.model';
 import { WorkflowService } from '../../../../services/workflow.service';
-
-import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-workflow-template-tool',
     providers: [WorkflowService],
-    template: `
-<div class="ql-custom-field-tool" #cont style="display: inline-block">
-    <select style="font-size: 1em; font-weight: normal; display: block !important;" #sel [ngModel]="selected" (ngModelChange)="clickItem($event)">
-        <option value="none" disabled>Append field value...</option>
-        <option *ngFor="let f of fields" [value]="f.value" style="color:#000;">{{f.label}}</option>
-    </select>
-</div>
-`
+    templateUrl: './workflow-template-tool.component.html'
 })
 
 export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked {
     @Input() objectType: string;
     @Input() objectId: number;
     @Output() onItemClick = new EventEmitter();
-    @ViewChild('sel') select; 
+    @ViewChild('sel') select;
     @ViewChild('cont') container;
 
     private fields = [];
@@ -51,7 +44,6 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked {
     }
 
     ngOnChanges() {
-        //console.log('ngOnChanges', this.objectType, this.objectId);
         if (this.objectType != null && this.objectId != null)
             this.workflowService.getWorkflowFieldTypes(this.objectId, this.objectType, true)
                 .then(r => {
@@ -63,7 +55,7 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked {
 
                     r.forEach(f => {
                         this.fields.push({
-                            value: '[FIELD'+ f.ID +']',
+                            value: '[FIELD' + f.ID + ']',
                             label: 'Field :: ' + f.Name
                         });
                     });
