@@ -300,7 +300,9 @@ namespace d360.web.Controllers.V2
             catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
 
                 return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
             }
@@ -342,7 +344,9 @@ order by    P.[Path]
             catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
 
                 return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
             }
@@ -545,7 +549,10 @@ order by    P.[Path]
             catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix },
+                    { "AssetTypeUid", assetTypeUid.ToString() }
+                });
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
@@ -601,7 +608,11 @@ order by    P.[Path]
             catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix },
+                    { "AssetTypeUid", uid.ToString() },
+                    { "AssetCount", $"{((assets != null) ? assets.Count : 0)}" }
+                });
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
@@ -655,7 +666,11 @@ order by    P.[Path]
             catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix },
+                    { "AssetTypeUid", uid.ToString() },
+                    { "AssetCount", $"{((assets != null) ? assets.Count : 0)}" }
+                });
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
@@ -707,7 +722,11 @@ order by    P.[Path]
             catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix },
+                    { "AssetTypeUid", uid.ToString() },
+                    { "AssetCount", $"{((assets != null) ? assets.Count : 0)}" }
+                });
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
@@ -758,7 +777,6 @@ order by    P.[Path]
                 };
 
                 // Save to storage container.
-                //Storage.CreateFolder(executionInfo.StorageFolder);
                 Storage.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(assets));
 
                 // Save to queue.
@@ -793,7 +811,11 @@ order by    P.[Path]
             catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix },
+                    { "AssetTypeUid", uid.ToString() },
+                    { "AssetCount", $"{((assets != null) ? assets.Count : 0)}" }
+                });
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
@@ -877,7 +899,11 @@ order by    P.[Path]
             catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix },
+                    { "AssetTypeUid", uid.ToString() },
+                    { "AssetCount", $"{((assets != null) ? assets.Count : 0)}" }
+                });
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
@@ -960,7 +986,11 @@ order by    P.[Path]
             catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix },
+                    { "AssetTypeUid", uid.ToString() },
+                    { "AssetCount", $"{((assets != null) ? assets.Count : 0)}" }
+                });
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
@@ -1027,7 +1057,10 @@ order by    P.[Path]
             catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix },
+                    { "ExecutionUid", uid.ToString() }
+                });
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
