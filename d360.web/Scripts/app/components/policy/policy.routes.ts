@@ -1,5 +1,6 @@
 ﻿import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
+
 import { PolicyComponent } from './policy.component';
 import { PolicyItemComponent } from './policy-item.component';
 import { PolicyItemStructureComponent } from './policy-item-structure.component';
