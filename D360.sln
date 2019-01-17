@@ -76,6 +76,18 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.displayvaluechecke
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.apiexecutionprocessor", "igx.jobs.apiexecutionprocessor\igx.jobs.apiexecutionprocessor.csproj", "{9B959DF4-93DC-4FF2-B187-8BDB26206700}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Utilities", "Utilities", "{E08213BF-83D1-4263-8F7B-ED4EFAC6BA58}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.CertificateManager", "utilities\igx.CertificateManager\igx.CertificateManager.csproj", "{E66CD394-FAE0-47BF-A24A-DC65FADCE0ED}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.GovernRestClient", "utilities\igx.GovernRestClient\igx.GovernRestClient.csproj", "{6098B791-400D-49DB-8C47-4E21C16D871E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.PostFusionJob", "utilities\igx.PostFusionJob\igx.PostFusionJob.csproj", "{A5CD92B3-BD9C-4140-B363-391A4F22CAEB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.TrainingDatabaseManager", "utilities\igx.TrainingDatabaseManager\igx.TrainingDatabaseManager.csproj", "{77045490-98EB-4357-9674-42FADD298A74}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.UpdateDatabases", "utilities\igx.UpdateDatabases\igx.UpdateDatabases.csproj", "{34C9341E-AF61-4A47-B817-920026EC4A13}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -198,6 +210,26 @@ Global
 		{9B959DF4-93DC-4FF2-B187-8BDB26206700}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9B959DF4-93DC-4FF2-B187-8BDB26206700}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9B959DF4-93DC-4FF2-B187-8BDB26206700}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E66CD394-FAE0-47BF-A24A-DC65FADCE0ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E66CD394-FAE0-47BF-A24A-DC65FADCE0ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E66CD394-FAE0-47BF-A24A-DC65FADCE0ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E66CD394-FAE0-47BF-A24A-DC65FADCE0ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6098B791-400D-49DB-8C47-4E21C16D871E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6098B791-400D-49DB-8C47-4E21C16D871E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6098B791-400D-49DB-8C47-4E21C16D871E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6098B791-400D-49DB-8C47-4E21C16D871E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5CD92B3-BD9C-4140-B363-391A4F22CAEB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5CD92B3-BD9C-4140-B363-391A4F22CAEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5CD92B3-BD9C-4140-B363-391A4F22CAEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5CD92B3-BD9C-4140-B363-391A4F22CAEB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{77045490-98EB-4357-9674-42FADD298A74}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77045490-98EB-4357-9674-42FADD298A74}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77045490-98EB-4357-9674-42FADD298A74}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77045490-98EB-4357-9674-42FADD298A74}.Release|Any CPU.Build.0 = Release|Any CPU
+		{34C9341E-AF61-4A47-B817-920026EC4A13}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{34C9341E-AF61-4A47-B817-920026EC4A13}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{34C9341E-AF61-4A47-B817-920026EC4A13}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{34C9341E-AF61-4A47-B817-920026EC4A13}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -233,9 +265,15 @@ Global
 		{868597A5-9A50-447B-8702-E46EC308BA85} = {757CF48D-6728-4702-AC12-754629196548}
 		{AA54113F-1E7E-4B28-BF89-6FB686E61B46} = {757CF48D-6728-4702-AC12-754629196548}
 		{9B959DF4-93DC-4FF2-B187-8BDB26206700} = {757CF48D-6728-4702-AC12-754629196548}
+		{E08213BF-83D1-4263-8F7B-ED4EFAC6BA58} = {2CE94CC8-D9FB-4CC5-B44A-1CDD40971448}
+		{E66CD394-FAE0-47BF-A24A-DC65FADCE0ED} = {E08213BF-83D1-4263-8F7B-ED4EFAC6BA58}
+		{6098B791-400D-49DB-8C47-4E21C16D871E} = {E08213BF-83D1-4263-8F7B-ED4EFAC6BA58}
+		{A5CD92B3-BD9C-4140-B363-391A4F22CAEB} = {E08213BF-83D1-4263-8F7B-ED4EFAC6BA58}
+		{77045490-98EB-4357-9674-42FADD298A74} = {E08213BF-83D1-4263-8F7B-ED4EFAC6BA58}
+		{34C9341E-AF61-4A47-B817-920026EC4A13} = {E08213BF-83D1-4263-8F7B-ED4EFAC6BA58}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;packages\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45
 		SolutionGuid = {DA470272-2404-43CC-B3A7-997246EDACA8}
+		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;packages\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45
 	EndGlobalSection
 EndGlobal
