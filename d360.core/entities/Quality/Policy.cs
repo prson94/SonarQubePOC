@@ -14,9 +14,6 @@ namespace d360.core.entities
     {
         #region Properties
         
-        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Parent_Name", Description = "Parent_Description")]
-        public int? ParentID { get; set; }
-
         [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Type_Name", Description = "Type_Description")]
         public int PolicyTypeID { get; set; }
 
