@@ -19,9 +19,8 @@ namespace d360.extensions
     public interface IStorageProvider
     {
         void CreateFolder(string name);
-        void CreateFile(string folderName, string fileName, Stream file);
-        void CreateFile(string folderName, string fileName, string content);
-        void CreateFile(string folderName, string fileName, string content, string contentType);
+        void CreateFile(string folderName, string fileName, Stream file, string contentType = null, bool cache = true);
+        void CreateFile(string folderName, string fileName, string content, string contentType = null, bool cache = true);
         void DeleteFile(string folderName, string fileName);
         bool FileExists(string folderName, string fileName);
         Stream GetFile(string folderName, string fileName);

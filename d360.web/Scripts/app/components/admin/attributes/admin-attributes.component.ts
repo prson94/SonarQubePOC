@@ -7,6 +7,7 @@ import { AdminBaseComponent } from '../admin-base.component';
 import { AttributeType } from '../../../models/attribute-type.model';
 import { TreeNode } from 'primeng/primeng';
 import { Title } from '@angular/platform-browser';
+import { type } from 'os';
 
 @Component({
     selector: 'd3s-admin-attributes-component',  
@@ -162,9 +163,14 @@ export class AdminAttributesComponent extends AdminBaseComponent {
         this.isLoading = true;
         this.attributeTypeService.saveAttributeType(event.attribute)
             .then(result => {
-                this.getAttributes();      
-                this.isLoading = false;
-                this.showEditor = false;
+                if (result.type == "error") {
+                    this.isLoading = false;
+                    this.messagesService.showError(result.title, result.message);
+                } else {
+                    this.getAttributes();      
+                    this.isLoading = false;
+                    this.showEditor = false;
+                }
             });
     }
 

@@ -69,6 +69,7 @@
 
 /d360.database.company
 /packages
+
 /utilities/igx.CertificateManager/bin/Debug
 /utilities/igx.CertificateManager/obj/Debug
 /utilities/igx.GovernRestClient/bin/Debug

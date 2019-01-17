@@ -35,23 +35,20 @@ namespace d360.extensions.storage
             c.CreateIfNotExists();
         }
 
-        public void CreateFile(string folderName, string fileName, Stream file)
+        public void CreateFile(string folderName, string fileName, Stream file, string contentType = null, bool cache = true)
         {
             var c = getContainer(folderName);
             CloudBlockBlob blockBlob = c.GetBlockBlobReference(fileName);
+            if (!cache) blockBlob.Properties.CacheControl = "private, max-age=0, no-cache, no-store";
+            if (!string.IsNullOrEmpty(contentType)) blockBlob.Properties.ContentType = contentType;
             blockBlob.UploadFromStream(file);
         }
 
-        public void CreateFile(string folderName, string fileName, string content)
-        {
-            CreateFile(folderName, fileName, content, "");
-        }
-
-        public void CreateFile(string folderName, string fileName, string content, string contentType)
+        public void CreateFile(string folderName, string fileName, string content, string contentType = null, bool cache = true)
         {
             var c = getContainer(folderName);
             CloudBlockBlob blockBlob = c.GetBlockBlobReference(fileName);
-
+            if (!cache) blockBlob.Properties.CacheControl = "private, max-age=0, no-cache, no-store";
             if (!string.IsNullOrEmpty(contentType)) blockBlob.Properties.ContentType = contentType;
             blockBlob.UploadText(content);
         }
