@@ -55,4 +55,5 @@
 	<include file="scripts/GOV-6350-Update.xml"/>
 	<!--6294 MUST go after 6350 files-->
 	<include file="scripts/GOV-6294.xml"/>
+	<include file="scripts/GOV-6294-Update.xml"/>
 </databaseChangeLog>
