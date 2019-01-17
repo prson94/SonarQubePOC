@@ -165,7 +165,6 @@ export class AdminAttributesComponent extends AdminBaseComponent {
             .then(result => {
                 if (result.type == "error") {
                     this.isLoading = false;
-                    this.showEditor = false;
                     this.messagesService.showError(result.title, result.message);
                 } else {
                     this.getAttributes();      
