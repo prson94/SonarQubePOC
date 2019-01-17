@@ -69,3 +69,9 @@
 
 /d360.database.company
 /packages
+/utilities/igx.CertificateManager/obj/Debug
+/utilities/igx.GovernRestClient/obj/Debug
+/utilities/igx.PostFusionJob/obj/Debug
+/utilities/igx.TrainingDatabaseManager/obj/Debug
+/utilities/igx.UpdateDatabases/bin/Debug
+/utilities/igx.UpdateDatabases/obj/Debug
