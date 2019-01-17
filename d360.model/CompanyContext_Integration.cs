@@ -1190,7 +1190,7 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
 
             List<DatabaseBulkAssetResult> results = null;
 
-            using (var trans = cnn.BeginTransaction())
+            using (var trans = cnn.BeginTransaction(System.Data.IsolationLevel.ReadCommitted))
             {
                 try
                 {
