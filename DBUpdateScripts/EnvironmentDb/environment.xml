@@ -50,8 +50,13 @@
 	<!-- 6265,6266 are editing the same table and should be executed on this order  -->
 	<include file="scripts/GOV-6205.xml"/>
 	<include file="scripts/GOV-6331.xml"/>
-  <include file="scripts/GOV-6379.xml"/>
+	<include file="scripts/GOV-6379.xml"/>
 	<include file="scripts/GOV-6396.xml"/>
 	<include file="scripts/GOV-6350-Update.xml"/>
+	<!--6294 MUST go after 6350 files-->
+	<include file="scripts/GOV-6294.xml"/>	
+	<include file="scripts/GOV-6294-Update.xml"/>
+  <include file="scripts/GOV-6191.xml"/>
+  <include file="scripts/GOV-6283.xml"/>
 	<include file="scripts/GOV-6282.xml"/>
 </databaseChangeLog>

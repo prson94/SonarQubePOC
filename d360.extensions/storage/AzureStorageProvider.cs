@@ -34,22 +34,23 @@ namespace d360.extensions.storage
             var c = getContainer(name);
             c.CreateIfNotExists();
         }
-                
-        public void CreateFile(string folderName, string fileName, string content)
-        {
-            CreateFile(folderName, fileName, content, "");
-        }
-        public void CreateFile(string folderName, string fileName, string content, string contentType, bool cache = true)
+
+        public void CreateFile(string folderName, string fileName, Stream file, string contentType = null, bool cache = true)
         {
             var c = getContainer(folderName);
             CloudBlockBlob blockBlob = c.GetBlockBlobReference(fileName);
-            if (!cache) { blockBlob.Properties.CacheControl = "private, max-age=0, no-cache, no-store"; }
+            if (!cache) blockBlob.Properties.CacheControl = "private, max-age=0, no-cache, no-store";
+            if (!string.IsNullOrEmpty(contentType)) blockBlob.Properties.ContentType = contentType;
+            blockBlob.UploadFromStream(file);
+        }
+
+        public void CreateFile(string folderName, string fileName, string content, string contentType = null, bool cache = true)
+        {
+            var c = getContainer(folderName);
+            CloudBlockBlob blockBlob = c.GetBlockBlobReference(fileName);
+            if (!cache) blockBlob.Properties.CacheControl = "private, max-age=0, no-cache, no-store";
             if (!string.IsNullOrEmpty(contentType)) blockBlob.Properties.ContentType = contentType;
             blockBlob.UploadText(content);
-        }
-        public void CreateFile(string folderName, string fileName, string content, string contentType)
-        {
-            CreateFile(folderName, fileName, content, contentType);
         }
 
         public void DeleteFile(string folderName, string fileName)
@@ -171,13 +172,6 @@ namespace d360.extensions.storage
             CloudBlockBlob blockBlob = c.GetBlockBlobReference(fileName);
             var timespan  = blockBlob.BreakLease();
             return true;
-        }
-
-        public void CreateFile(string folderName, string fileName, Stream file)
-        {
-            var c = getContainer(folderName);
-            CloudBlockBlob blockBlob = c.GetBlockBlobReference(fileName);
-            blockBlob.UploadFromStream(file);
         }
     }
 }

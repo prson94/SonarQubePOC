@@ -66,6 +66,7 @@
                     </td>
                     <td>
                         <div class="RowTools">
+                            <a style="cursor:pointer;"><i [copy-clipboard]="item.uid" [pTooltip]="'UID: \n' + item.uid + '\n\n (click to copy)\n'" tooltipPosition="top" class="fa fa-info"></i></a>
                             <a (click)="selectedRow = rowNode.node; edit();" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
                             <a (click)="selectedRow = rowNode.node; delete();" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
                             <a (click)="selectedRow = rowNode.node; add();" style="cursor:pointer;"><i class="fa fa-plus"></i></a>

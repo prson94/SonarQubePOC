@@ -37,12 +37,14 @@ import { BaseComponent } from '../../shared/base.component';
                                     <th style="width: 40px"></th>
                                     <th style="width: 40px"></th>
                                     <th style="width: 40px"></th>
+                                    <th style="width: 40px"></th>
                                 </tr>
                                 <tr [hidden]="showSimpleFilter">
                                     <th><d3s-column-filter [field]="'ID'" [datatype]="'text'"></d3s-column-filter></th>
                                     <th><d3s-column-filter [field]="'SubjectTypeName'" [datatype]="'text'"></d3s-column-filter></th>
                                     <th><d3s-column-filter [field]="'PredicateName'" [datatype]="'text'"></d3s-column-filter></th>
                                     <th><d3s-column-filter [field]="'ObjectTypeName'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th></th>
                                     <th></th>
                                     <th></th>
                                     <th></th>
@@ -59,6 +61,9 @@ import { BaseComponent } from '../../shared/base.component';
                                     </td>
                                     <td>
                                         <span>{{item?.ObjectTypeName}}<span style="color: #999;font-size:75%;"> ({{displayTypeName(item?.ObjectClass.Name)}})</span></span>
+                                    </td>
+                                    <td class="RowTools">
+                                        <d3s-preview-tooltip objectType="IntersectType" [objectId]="item.ID" icon="info"></d3s-preview-tooltip>
                                     </td>
                                     <td>
                                         <div class="RowTools">
