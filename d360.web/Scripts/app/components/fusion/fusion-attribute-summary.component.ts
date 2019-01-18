@@ -42,7 +42,9 @@ import { StateService } from '../../services/state.service';
                                 <tr [pSelectableRow]="item">
                                     <td>
                                         <div class="RowTools">
-                                            <a style="cursor:pointer;" (click)="selectItem(item)" title="details"><i class="fa fa-info" aria-hidden="true"></i></a>
+                                            <d3s-preview-tooltip objectType="FusionAttribute" [objectId]="item.ID" icon="info">
+                                                <a style="cursor:pointer;" (click)="selectItem(item)" title="details"></a>
+                                            </d3s-preview-tooltip>
                                         </div>
                                     </td>
                                     <td>

@@ -17,6 +17,9 @@ namespace d360.core.entities
         [DataMember, NotMapped]
         public int? AssetTypeID { get; set; }
 
+        [DataMember, NotMapped]
+        public Guid uid { get; set; }
+
         [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "FusionType_Name", Description = "FusionType_Description")]
         public int FusionTypeID { get; set; }
 
