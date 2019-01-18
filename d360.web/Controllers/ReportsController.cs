@@ -79,7 +79,7 @@ namespace d360.web.Controllers
             using (var client = new PowerBIClient(new Uri(pbiUrl), tokenCredentials))
             {
                 var reportsResponse = await client.Reports.GetReportsAsync(groupId);               
-                var report = reportsResponse.Value.FirstOrDefault(r => r.Id == reportId);
+                var report = reportsResponse.Value.FirstOrDefault(r => string.Compare(r.Id,reportId,true) == 0 );
 
                 if(report == null)
                 {

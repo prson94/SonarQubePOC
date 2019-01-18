@@ -172,7 +172,7 @@ namespace d360.web.Controllers.V2
             });
         }
 
-        private void getQueryParamsSql(AssetsApiViewModel model, List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> whereStatements, List<string> pagingSql, IEnumerable<KeyValuePair<string, string>> queryParams)
+        private void getQueryParamsSql(AssetsApiViewModel model, AssetType assetType, List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> whereStatements, List<string> pagingSql, IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             if (queryParams != null)
             {
@@ -198,21 +198,28 @@ namespace d360.web.Controllers.V2
                         {
                             if (key == "_order")
                             {
-                                var field = fieldTypes.FirstOrDefault(f => f.Name.ToLower() == q.Value.ToLower());
-                                var valueColumn = "FormattedValue";
-                                var fieldDataType = getFieldDataType(field);
-                                if (field.Type == "Link") valueColumn = "Value";
-
-                                if (field == null)
+                                if (assetType.Object == "ReferenceItemType" && q.Value.ToLower() == "code")
                                 {
-                                    orderBySql = "order by A.ID";
-                                    return;
+                                    orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + "RI.Code";
                                 }
-
-                                if (!string.IsNullOrEmpty(fieldDataType))
-                                    orderBySql = $"order by cast(F{field.ID}.{valueColumn} as {fieldDataType})";
                                 else
-                                    orderBySql = $"order by F{field.ID}.{valueColumn}";
+                                {
+                                    var field = fieldTypes.FirstOrDefault(f => f.Name.ToLower() == q.Value.ToLower());
+                                    var valueColumn = "FormattedValue";
+                                    var fieldDataType = getFieldDataType(field);
+                                    if (field.Type == "Link") valueColumn = "Value";
+
+                                    if (field == null)
+                                    {
+                                        orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + "A.ID";
+                                        return;
+                                    }
+
+                                    if (!string.IsNullOrEmpty(fieldDataType))
+                                        orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"cast(F{field.ID}.{valueColumn} as {fieldDataType})";
+                                    else
+                                        orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"F{field.ID}.{valueColumn}";
+                                }
                             }
                             else if (key == "_pagenum")
                             {
@@ -231,13 +238,21 @@ namespace d360.web.Controllers.V2
                         }
                         else
                         {
-                            var field = fieldTypes.Find(f => f.Name.ToLower() == key);
-
-                            if (field != null)
+                            if (assetType.Object == "ReferenceItemType" && key == "code")
                             {
-                                var tableAlias = $"F{field.ID}";
-                                whereStatements.Add($"{tableAlias}.FormattedValue = @field{field.ID}");
-                                dbArgs.Add($"@field{field.ID}", q.Value);
+                                whereStatements.Add($"RI.[Code] = @code");
+                                dbArgs.Add($"@code", q.Value);
+                            }
+                            else
+                            {
+                                var field = fieldTypes.Find(f => f.Name.ToLower() == key);
+
+                                if (field != null)
+                                {
+                                    var tableAlias = $"F{field.ID}";
+                                    whereStatements.Add($"{tableAlias}.FormattedValue = @field{field.ID}");
+                                    dbArgs.Add($"@field{field.ID}", q.Value);
+                                }
                             }
                         }
                     });
@@ -269,7 +284,8 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route("classes"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
-            SwaggerResponse(HttpStatusCode.OK, "A list of asset type classes.", typeof(List<AssetTypeClassInfo>))
+            SwaggerResponse(HttpStatusCode.OK, "A list of asset type classes.", typeof(List<AssetTypeClassInfo>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
         public HttpResponseMessage GetAssetTypeClassesAsync()
         {
@@ -284,7 +300,9 @@ namespace d360.web.Controllers.V2
             catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
 
                 return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
             }
@@ -326,7 +344,9 @@ order by    P.[Path]
             catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
 
                 return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
             }
@@ -337,23 +357,26 @@ order by    P.[Path]
             var assetTypeID = 0;
             var includeRelationships = false;
 
-            assetTypeID = Company.AssetTypes.FirstOrDefault(t => t.uid == uid)?.ID ?? 0;
-            var fieldTypes = Company.FieldTypes.Where(f => f.AssetTypeID == assetTypeID).ToList();
-
-            if (assetTypeID == 0)
+            var assetType = Company.AssetTypes.FirstOrDefault(t => t.uid == uid);
+            if (assetType == null)
                 throw new Exception("not found");
+
+            assetTypeID = assetType.ID;
+
+            var fieldTypes = Company.FieldTypes.Where(f => f.AssetTypeID == assetTypeID).ToList();
 
             if (queryParams.ToList().Any(k => k.Key.ToLower() == "_predicateuid"))
                 includeRelationships = true;
 
-            var countSql = @"
+            var countSql = $@"
                 select
                     count(*)
                 from Asset A
-                {0}
-                {1}";
+                {(assetType.Object == "ReferenceItemType" ? " inner join ReferenceItem RI on RI.ID = A.ObjectID" : "")} 
+                {"{0}"}
+                {"{1}"}";
 
-            var sql = @"
+            var sql = $@"
                 select
                     A.ID as AssetId,
                     A.[UID] as [AssetUid],
@@ -361,11 +384,13 @@ order by    P.[Path]
                     T.[UID] as AssetTypeUid,
                     A.UpdatedOn,
                     A.CreatedOn
-                    {0}
+                    {(assetType.Object == "ReferenceItemType" ? " , RI.Code" : "")} 
+                    {"{0}"}
                 from Asset A
-                {1}
-                {2}
-                {3}
+                {(assetType.Object == "ReferenceItemType" ? " inner join ReferenceItem RI on RI.ID = A.ObjectID" : "")} 
+                {"{1}"}
+                {"{2}"}
+                {"{3}"}
             ";
 
             List<string> fieldColumns = new List<string>();
@@ -464,7 +489,7 @@ order by    P.[Path]
             if (includeRelationships)
                 whereStatements.Add("R.Relationships is not null");
 
-            getQueryParamsSql(model, fieldTypes, dbArgs, whereStatements, pagingSql, queryParams);
+            getQueryParamsSql(model, assetType, fieldTypes, dbArgs, whereStatements, pagingSql, queryParams);
 
             var whereSql = "";
             if (whereStatements.Any())
@@ -498,13 +523,13 @@ order by    P.[Path]
 
 
         /// <summary>
-        /// Get assets for the given asset type Uid
+        /// Retrieves assets for the given asset type unique identifier.
         /// </summary>
-        /// <param name="assetTypeUid">The Uid of the asset type</param>
+        /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpGet,
-            Route("{assetTypeUid}"),
+            Route("{assetTypeUid:Guid}"),
             SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetsApiViewModel)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
@@ -524,7 +549,10 @@ order by    P.[Path]
             catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix },
+                    { "AssetTypeUid", assetTypeUid.ToString() }
+                });
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
@@ -533,21 +561,22 @@ order by    P.[Path]
 
 
         /// <summary>
-        /// Adds a given set of assets based on the specific asset type Uid. Use this endpoint if you want to process under 200 items and need immediate results.
+        /// Adds a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 200 items and need immediate results.
         /// </summary>
-        /// <param name="uid">The unique identifier of the asset type.</param>
+        /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
         /// <param name="assets">The payload of your request.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpPost,
-            Route("{uid}"),
+            Route("{assetTypeUid:Guid}"),
+            SwaggerRequestExample(typeof(AssetInsert), typeof(AssetInsertsExample)),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of bulk asset results, including any error messages.", typeof(List<DatabaseBulkAssetResult>)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add assets of this type.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> PostAssetsAsync(Guid uid, AssetInserts assets)
+        public async Task<IHttpActionResult> PostAssetsAsync(Guid assetTypeUid, List<AssetInsert> assets)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to add assets of this type."));
@@ -557,49 +586,55 @@ order by    P.[Path]
 
             try
             {
-                var assetType = Company.Filter<AssetType>(i => i.uid == uid).SingleOrDefault();
+                var assetType = Company.Filter<AssetType>(i => i.uid == assetTypeUid).SingleOrDefault();
 
                 if (assetType == null)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {uid} could not be found."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {assetTypeUid} could not be found."));
 
                 if (assets == null)
-                    assets = readRequestJsonContent<AssetInserts>(Request).Result;
+                    assets = readRequestJsonContent<List<AssetInsert>>(Request).Result;
 
-                var results = (Company.Database.Connection as SqlConnection).InsertAssets(
+                var results = (Company.Database.Connection as SqlConnection).UpsertAssets(
                     QueueSource,
                     Company.CurrentCompanyDomain,
                     Company.CurrentCompanyID,
                     Company.CurrentResourceID,
                     assetType,
-                    assets
+                    assets,
+                    true
                 );
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
             catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix },
+                    { "AssetTypeUid", assetTypeUid.ToString() },
+                    { "AssetCount", $"{((assets != null) ? assets.Count : 0)}" }
+                });
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
         }
 
         /// <summary>
-        /// Updates a given set of assets based on the specific asset type Uid. Use this endpoint if you want to process under 200 items and need immediate results.
+        /// Updates a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 200 items and need immediate results.
         /// </summary>
-        /// <param name="uid">The unique identifier of the asset type.</param>
+        /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
         /// <param name="assets">The payload of your request.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpPut,
-            Route("{uid}"),
+            Route("{assetTypeUid:Guid}"),
+            SwaggerRequestExample(typeof(AssetUpdate), typeof(AssetUpdatesExample)),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of bulk asset results, including any error messages.", typeof(List<DatabaseBulkAssetResult>)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add assets of this type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> PutAssetsAsync(Guid uid, AssetUpdates assets)
+        public async Task<IHttpActionResult> PutAssetsAsync(Guid assetTypeUid, List<AssetUpdate> assets)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to update assets of this type."));
@@ -609,49 +644,54 @@ order by    P.[Path]
 
             try
             {
-                var assetType = Company.Filter<AssetType>(i => i.uid == uid).SingleOrDefault();
+                var assetType = Company.Filter<AssetType>(i => i.uid == assetTypeUid).SingleOrDefault();
 
                 if (assetType == null)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {uid} could not be found."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {assetTypeUid} could not be found."));
 
                 if (assets == null)
-                    assets = readRequestJsonContent<AssetUpdates>(Request).Result;
+                    assets = readRequestJsonContent<List<AssetUpdate>>(Request).Result;
 
-                var results = (Company.Database.Connection as SqlConnection).UpdateAssets(
+                var results = (Company.Database.Connection as SqlConnection).UpsertAssets(
                     QueueSource,
                     Company.CurrentCompanyDomain,
                     Company.CurrentCompanyID,
                     Company.CurrentResourceID,
                     assetType,
-                    assets
+                    assets, 
+                    false
                 );
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
             catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix },
+                    { "AssetTypeUid", assetTypeUid.ToString() },
+                    { "AssetCount", $"{((assets != null) ? assets.Count : 0)}" }
+                });
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
         }
 
         /// <summary>
-        /// Removes a given set of assets based on the specific asset type Uid. Use this endpoint if you want to process under 200 items and need immediate results.
+        /// Removes a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 200 items and need immediate results.
         /// </summary>
-        /// <param name="uid">The unique identifier of the asset type.</param>
+        /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
         /// <param name="assets">The payload of your request.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpDelete,
-            Route("{uid}"),
+            Route("{assetTypeUid:Guid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of bulk asset results, including any error messages.", typeof(List<DatabaseBulkAssetResult>)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add assets of this type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> DeleteAssetsAsync(Guid uid, AssetDeletes assets)
+        public async Task<IHttpActionResult> DeleteAssetsAsync(Guid assetTypeUid, AssetDeletes assets)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to remove assets of this type."));
@@ -661,10 +701,10 @@ order by    P.[Path]
 
             try
             {
-                var assetType = Company.Filter<AssetType>(i => i.uid == uid).SingleOrDefault();
+                var assetType = Company.Filter<AssetType>(i => i.uid == assetTypeUid).SingleOrDefault();
 
                 if (assetType == null)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {uid} could not be found."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {assetTypeUid} could not be found."));
 
                 if (assets == null)
                     assets = readRequestJsonContent<AssetDeletes>(Request).Result;
@@ -682,7 +722,11 @@ order by    P.[Path]
             catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix },
+                    { "AssetTypeUid", assetTypeUid.ToString() },
+                    { "AssetCount", $"{((assets != null) ? assets.Count : 0)}" }
+                });
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
@@ -691,21 +735,22 @@ order by    P.[Path]
         #region Batch
 
         /// <summary>
-        /// Adds a given set of assets based on the specific asset type Uid. This endpoint is meant for a greater number of items as it stores the asset list for asynchronous or batch processing.
+        /// Adds a given set of assets based on the specific asset type unique identifier. This endpoint is meant for a greater number of items as it stores the asset list for asynchronous or batch processing.
         /// </summary>
-        /// <param name="uid">The unique identifier of the asset type.</param>
+        /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
         /// <param name="assets">The payload of your request.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpPost,
-            Route("batch/{uid}"),
+            Route("batch/{assetTypeUid:Guid}"),
+            SwaggerRequestExample(typeof(AssetInsert), typeof(AssetInsertsExample)),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution ID to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add assets of this type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> PostBulkAssetsAsync(Guid uid, AssetInserts assets)
+        public async Task<IHttpActionResult> PostBulkAssetsAsync(Guid assetTypeUid, List<AssetInsert> assets)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to add assets of this type."));
@@ -715,13 +760,13 @@ order by    P.[Path]
 
             try
             {
-                var assetType = Company.Filter<AssetType>(i => i.uid == uid).SingleOrDefault();
+                var assetType = Company.Filter<AssetType>(i => i.uid == assetTypeUid).SingleOrDefault();
 
                 if (assetType == null)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {uid} could not be found."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {assetTypeUid} could not be found."));
 
                 if (assets == null)
-                    assets = readRequestJsonContent<AssetInserts>(Request).Result;
+                    assets = readRequestJsonContent<List<AssetInsert>>(Request).Result;
 
                 var executionInfo = new ApiExecutionInfo
                 {
@@ -732,7 +777,6 @@ order by    P.[Path]
                 };
 
                 // Save to storage container.
-                //Storage.CreateFolder(executionInfo.StorageFolder);
                 Storage.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(assets));
 
                 // Save to queue.
@@ -747,7 +791,7 @@ order by    P.[Path]
                     Total = assets.Count,
                     StartedOn = DateTime.UtcNow,
                     ResourceID = Company.CurrentResourceID,
-                    Fields = JsonConvert.SerializeObject(new ApiExecutionFields_PostAssets { AssetTypeUid = uid })
+                    Fields = JsonConvert.SerializeObject(new ApiExecutionFields_PostAssets { AssetTypeUid = assetTypeUid })
                 });
 
                 return await Task.FromResult<IHttpActionResult>(
@@ -767,7 +811,11 @@ order by    P.[Path]
             catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix },
+                    { "AssetTypeUid", assetTypeUid.ToString() },
+                    { "AssetCount", $"{((assets != null) ? assets.Count : 0)}" }
+                });
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
@@ -776,19 +824,20 @@ order by    P.[Path]
         /// <summary>
         /// Updates a given set of assets based on the specific asset type Uid. This endpoint is meant for a greater number of items as it stores the asset list for asynchronous or batch processing.
         /// </summary>
-        /// <param name="uid">The unique identifier of the asset type.</param>
+        /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
         /// <param name="assets">The payload of your request.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpPut,
-            Route("batch/{uid}"),
+            Route("batch/{assetTypeUid:Guid}"),
+            SwaggerRequestExample(typeof(AssetUpdate), typeof(AssetUpdatesExample)),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution ID to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add assets of this type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> PutBulkAssetsAsync(Guid uid, AssetUpdates assets)
+        public async Task<IHttpActionResult> PutBulkAssetsAsync(Guid assetTypeUid, List<AssetUpdate> assets)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to update assets of this type."));
@@ -798,13 +847,13 @@ order by    P.[Path]
 
             try
             {
-                var assetType = Company.Filter<AssetType>(i => i.uid == uid).SingleOrDefault();
+                var assetType = Company.Filter<AssetType>(i => i.uid == assetTypeUid).SingleOrDefault();
 
                 if (assetType == null)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {uid} could not be found."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {assetTypeUid} could not be found."));
 
                 if (assets == null)
-                    assets = readRequestJsonContent<AssetUpdates>(Request).Result;
+                    assets = readRequestJsonContent<List<AssetUpdate>>(Request).Result;
 
                 var executionInfo = new ApiExecutionInfo
                 {
@@ -830,7 +879,7 @@ order by    P.[Path]
                     Total = assets.Count,
                     StartedOn = DateTime.UtcNow,
                     ResourceID = Company.CurrentResourceID,
-                    Fields = JsonConvert.SerializeObject(new ApiExecutionFields_PutAssets { AssetTypeUid = uid })
+                    Fields = JsonConvert.SerializeObject(new ApiExecutionFields_PutAssets { AssetTypeUid = assetTypeUid })
                 });
 
                 return await Task.FromResult<IHttpActionResult>(
@@ -850,7 +899,11 @@ order by    P.[Path]
             catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix },
+                    { "AssetTypeUid", assetTypeUid.ToString() },
+                    { "AssetCount", $"{((assets != null) ? assets.Count : 0)}" }
+                });
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
@@ -859,19 +912,19 @@ order by    P.[Path]
         /// <summary>
         /// Removes a given set of assets based on the specific asset type Uid. This endpoint is meant for a greater number of items as it stores the asset list for asynchronous or batch processing.
         /// </summary>
-        /// <param name="uid">The unique identifier of the asset type.</param>
+        /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
         /// <param name="assets">The payload of your request.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpDelete,
-            Route("batch/{uid}"),
+            Route("batch/{assetTypeUid:Guid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution ID to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
+            SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution's unique identifier to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add assets of this type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> DeleteBulkAssetsAsync(Guid uid, AssetDeletes assets)
+        public async Task<IHttpActionResult> DeleteBulkAssetsAsync(Guid assetTypeUid, AssetDeletes assets)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to remove assets of this type."));
@@ -881,10 +934,10 @@ order by    P.[Path]
 
             try
             {
-                var assetType = Company.Filter<AssetType>(i => i.uid == uid).SingleOrDefault();
+                var assetType = Company.Filter<AssetType>(i => i.uid == assetTypeUid).SingleOrDefault();
 
                 if (assetType == null)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {uid} could not be found."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {assetTypeUid} could not be found."));
 
                 if (assets == null)
                     assets = readRequestJsonContent<AssetDeletes>(Request).Result;
@@ -898,7 +951,6 @@ order by    P.[Path]
                 };
 
                 // Save to storage container.
-                //Storage.CreateFolder(executionInfo.StorageFolder);
                 Storage.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(assets));
 
                 // Save to queue.
@@ -913,7 +965,7 @@ order by    P.[Path]
                     Total = assets.Count,
                     StartedOn = DateTime.UtcNow,
                     ResourceID = Company.CurrentResourceID,
-                    Fields = JsonConvert.SerializeObject(new ApiExecutionFields_DeleteAssets { AssetTypeUid = uid })
+                    Fields = JsonConvert.SerializeObject(new ApiExecutionFields_DeleteAssets { AssetTypeUid = assetTypeUid })
                 });
 
                 return await Task.FromResult<IHttpActionResult>(
@@ -933,7 +985,11 @@ order by    P.[Path]
             catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix },
+                    { "AssetTypeUid", assetTypeUid.ToString() },
+                    { "AssetCount", $"{((assets != null) ? assets.Count : 0)}" }
+                });
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
@@ -942,30 +998,30 @@ order by    P.[Path]
         /// <summary>
         /// GETs the status of an execution record, including the results for the execution.
         /// </summary>
-        /// <param name="uid">The execution ID to retrieve status for.</param>
+        /// <param name="executionUid">The execution's unique identifier to retrieve status for.</param>
         /// <returns></returns>
         [
             HttpGet,
-            Route("executions/{uid}/status"),
+            Route("executions/{executionUid:Guid}/status"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "An execution status including a list of assets.", typeof(ApiExecutionStatusModel)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your status was not found.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> GetExecutionStatus(Guid uid)
+        public async Task<IHttpActionResult> GetExecutionStatus(Guid executionUid)
         {
             var prefix = "Assets.GetExecutionStatus => ";
             var errorMessage = "";
 
             try
             {
-                var dbExecutionItem = Company.Filter<ApiExecution>(i => i.ExecutionID == uid).SingleOrDefault();
+                var dbExecutionItem = Company.Filter<ApiExecution>(i => i.ExecutionID == executionUid).SingleOrDefault();
 
                 if (dbExecutionItem == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Execution ID not found."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Execution unique identifier not found."));
                 }
 
-                var info = new ApiExecutionInfo { CompanyID = Company.CurrentCompanyID, ExecutionID = uid };
+                var info = new ApiExecutionInfo { CompanyID = Company.CurrentCompanyID, ExecutionID = executionUid };
 
                 List<DatabaseBulkAssetResult> results = null;
                 try
@@ -1000,7 +1056,10 @@ order by    P.[Path]
             catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix },
+                    { "ExecutionUid", executionUid.ToString() }
+                });
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }

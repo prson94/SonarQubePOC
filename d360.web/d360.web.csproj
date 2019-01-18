@@ -16,7 +16,7 @@
     <AssemblyName>d360.web</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
-    <UseIISExpress>false</UseIISExpress>
+    <UseIISExpress>true</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -417,6 +417,8 @@
     <Compile Include="Models\Attributes\AiHandleErrorAttribute.cs" />
     <Compile Include="Models\Editor Models.cs" />
     <Compile Include="Models\MimeTypeExtensionsMap.cs" />
+    <Compile Include="Models\SwaggerExampleModels.cs" />
+    <Compile Include="Models\SwaggerExampleModelLogic.cs" />
     <Compile Include="Models\Viewer Models.cs" />
     <Compile Include="Models\Attributes\FileDownloadAttribute.cs" />
     <Compile Include="Models\Formatters\DictionaryXmlMediaTypeFormatter.cs" />
@@ -621,6 +623,8 @@
     <EmbeddedResource Include="Content\Swagger\swagger.css">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
+    <Content Include="Scripts\app\components\model\model-item-structure.component.html" />
+    <Content Include="Scripts\app\components\policy\policy-item-structure.component.html" />
     <Content Include="Scripts\app\components\workflowmonitor\workflowmonitor-list.component.html" />
     <Content Include="fonts\fontawesome-webfont.svg" />
     <Content Include="images\error.png" />
@@ -686,6 +690,8 @@
     <Content Include="Scripts\app\components\admin\analytics\admin-metric-condition-editor.component.html" />
     <Content Include="Scripts\app\components\admin\analytics\admin-metric-editor.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-top-level-filter.component.html" />
+    <Content Include="Scripts\app\components\shared\dynamicgrideditor\dynamic-editor.component.html" />
+    <Content Include="Scripts\app\components\shared\dynamicgrideditor\dynamic-field.component.html" />
     <Content Include="Scripts\app\components\shared\relationship\object-relationships.component.html" />
     <Content Include="Scripts\app\components\shared\responsibilities\responsibility-relations.component.html" />
     <Content Include="Scripts\app\components\shared\responsibilities\responsibility-relation.form.html" />

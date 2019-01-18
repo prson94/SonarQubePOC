@@ -38,11 +38,11 @@ namespace d360.web.Controllers.V2
         private static string DefaultImplementationName = "default";
 
         /// <summary>
-        /// Returns the all the rule results for the specified rule uid that are under the default implementation
+        /// Returns the all the rule results for the specified rule Uid that are under the default implementation
         /// If the user is not an admin http status code 403 forbidden is returned
         /// </summary>
-        /// <param name="ruleUid">The uid of the rule</param>
-        /// <returns>The rule result object with the specified uid for the default implementation.  If no such rule result or implementation exists http status code 404 not found is returned.</returns>
+        /// <param name="ruleUid">The Uid of the rule</param>
+        /// <returns>The rule result object with the specified Uid for the default implementation.  If no such rule result or implementation exists http status code 404 not found is returned.</returns>
         [
             HttpGet, 
             MapToApiVersion("2.0"), 
@@ -167,7 +167,7 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Deletes all rule result fusion attributes for the specified asset Uid.
         /// </summary>
-        /// <param name="assetUid">The uid of the asset</param>
+        /// <param name="assetUid">The Uid of the asset</param>
         /// <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted</returns>
         [
             HttpDelete, 

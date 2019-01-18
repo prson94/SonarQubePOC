@@ -223,9 +223,9 @@ select ObjectID from AttributeDetail{tableHints} where AttributeTypeID = @{param
                                 else
                                 {
                                     nonPivotInnerJoinPrefix = $@"inner join (
-                                                                                select AssetID, FieldTypeID, FormattedValue as Value from Field{tableHints} where FieldTypeID = {thisFilterFieldType.ID}
+                                                                                select AssetID, FieldTypeID, FormattedValue as Value, [Value] as Val from Field{tableHints} where FieldTypeID = {thisFilterFieldType.ID}
                                                                                 union all
-                                                                                select SA{thisFilterFieldType.ID}.ID as AssetID, SFT{thisFilterFieldType.ID}.ID as FieldTypeID, DefaultFormattedValue as Value from FieldType SFT{thisFilterFieldType.ID}{tableHints}
+                                                                                select SA{thisFilterFieldType.ID}.ID as AssetID, SFT{thisFilterFieldType.ID}.ID as FieldTypeID, DefaultFormattedValue as Value, '' as Val from FieldType SFT{thisFilterFieldType.ID}{tableHints}
 							                                                    inner join Asset SA{thisFilterFieldType.ID}{tableHints} on SA{thisFilterFieldType.ID}.AssetTypeID = @atID
 							                                                    where not exists (select 1 from Field where AssetID = SA{thisFilterFieldType.ID}.ID and FieldTYpeID = {thisFilterFieldType.ID})
                                                                             ) F{thisFilterFieldType.ID} on F{thisFilterFieldType.ID}.AssetID = A.ID and F{thisFilterFieldType.ID}.FieldTypeID = {thisFilterFieldType.ID}";
@@ -235,7 +235,7 @@ select ObjectID from AttributeDetail{tableHints} where AttributeTypeID = @{param
                                 var nonPivotFieldName = $"F{thisFilterFieldType.ID}.Value";
                                 var valueColumnQuery = GetFilterCondition(f.Condition, nonPivotFieldName, bind, dbArgs, f.RawValue);
                                 if (thisFilterFieldType.AllowAllValue)
-                                    filterJoinList.Add($"{nonPivotInnerJoinPrefix} and ({valueColumnQuery} or F{thisFilterFieldType.ID}.Value = '0')");
+                                    filterJoinList.Add($"{nonPivotInnerJoinPrefix} and ({valueColumnQuery} or F{thisFilterFieldType.ID}.Val = '0')");
                                 else
                                     filterJoinList.Add($"{nonPivotInnerJoinPrefix} and {valueColumnQuery}");
 

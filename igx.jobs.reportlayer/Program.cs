@@ -115,10 +115,6 @@ namespace igx.jobs.reportlayer
             {                
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
-#if DEBUG
-                companies = d360.utils.company.CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings();
-                companies = companies.Where(x => x.CompanyID == 5).ToList();
-#endif
 
                 companies.ForEach(c =>
                 {
@@ -1181,7 +1177,7 @@ from	workflow.ItemStep S
 	                                coalesce(a.DisplayValue, ai.DisplayValue, arn.[Name], '[unknown]') as WorkflowItem,
 	                                coalesce(a.ID, ai.ID) as AssetID,
 	                                si.StepID,
-	                                form.fieldId,
+	                                form.fieldId as FieldID,
 	                                form.fieldLabel as Field,
 	                                coalesce(form.fieldValue, form.fieldValueRaw) as FieldValue,
 	                                form.resId as ResourceID,

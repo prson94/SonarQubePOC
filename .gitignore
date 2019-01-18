@@ -47,7 +47,8 @@
 /*/obj
 \*\node_modules
 
-/d360.web/Scripts/app
+/d360.web/Scripts/app/*.map
+/d360.web/Scripts/app/*.js
 /d360.web/Content/quill/v1.3.4/*.min.css
 /d360.web/Content/styles/typeahead.min.css
 /d360.web/Content/styles/typeahead.css
@@ -68,3 +69,16 @@
 
 /d360.database.company
 /packages
+
+/utilities/igx.CertificateManager/bin/Debug
+/utilities/igx.CertificateManager/obj/Debug
+/utilities/igx.GovernRestClient/bin/Debug
+/utilities/igx.GovernRestClient/governrestclient
+/utilities/igx.GovernRestClient/obj/Debug
+/utilities/igx.GovernRestClient/publish
+/utilities/igx.PostFusionJob/bin/Debug
+/utilities/igx.PostFusionJob/obj/Debug
+/utilities/igx.TrainingDatabaseManager/bin/Debug
+/utilities/igx.TrainingDatabaseManager/obj/Debug
+/utilities/igx.UpdateDatabases/bin
+/utilities/igx.UpdateDatabases/obj

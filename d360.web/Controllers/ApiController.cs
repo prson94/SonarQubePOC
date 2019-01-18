@@ -453,13 +453,32 @@ namespace d360.web.Controllers
                 case "":
                 case "Lookup":
                     if (loadLookupList)
-                        filterItems = Company
-                            .Filter<FieldLookupValue>(o => o.FieldTypeID == item.ID && 
-                                                            o.LookupObjectType == item.LookupObjectType && 
-                                                            o.LookupObjectID == item.LookupObjectID)
-                            .OrderBy(o => o.Text)
-                            .Select(o => o.Text)
-                            .ToList();
+                    {
+                        if (item.LookupObjectType == "Resource" && HideData3SixtyUsers())
+                        {
+
+                            filterItems = Company.Query<string>(@"
+                                select V.Text
+                                from FieldLookupValue V
+                                inner join reporting.Global_resource R on R.ResourceID = V.Value and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com'
+                                where V.LookupObjectType = @lookupObjectType and V.LookupObjectID = @lookupObjectId
+                                order by V.Text", new { lookupObjectId = item.LookupObjectID, lookupObjectType = item.LookupObjectType })
+                                .ToList();
+
+                        }
+                        else
+                        {
+                            filterItems = Company
+                                .Filter<FieldLookupValue>(o => o.FieldTypeID == item.ID &&
+                                                                o.LookupObjectType == item.LookupObjectType &&
+                                                                o.LookupObjectID == item.LookupObjectID)
+                                .OrderBy(o => o.Text)
+                                .Select(o => o.Text)
+                                .ToList();
+                        }
+
+                    }
+
                     columnType = GridColumn.COLUMN_TYPE_DROPDOWN;
                     filterType = serverPaged ? GridColumn.FILTER_TYPE_LIST : GridColumn.FILTER_TYPE_CHECKEDLIST;
                     break;
@@ -3621,7 +3640,7 @@ outer apply (
 
                 var def = lookup.ParseComplexLookupDefinition();
 
-                if (def.Fields == null || def.Fields.Count == 0) throw new Exception("Invalid complex lookup no fields specified in definition.  Please specify one or more fields in the complex lookup definition.");
+                if (def.Fields == null || def.Fields.Count == 0) throw new Exception("There is an invalid Relation Look up field. There is no field specified in the Relation Lookup definition. Please specify one or more fields in the Relation Lookup definition.");
                 
                 var fields = def.Fields.ToList();
 
@@ -3940,6 +3959,7 @@ where R.IsVisible = 1 and ((R.Object = @type
             {
                 var lookup = Company.Filter<FieldTypeLookup>(i => i.FieldTypeID == fieldTypeID).SingleOrDefault();
                 if (lookup == null) throw new Exception("Invalid ownership lookup field is specified.");
+                var assetId = Company.Assets.FirstOrDefault(a => a.Object == type && a.ObjectID == id)?.ID ?? 0;
 
                 var def = lookup.ParseOwnershipLookupDefinition();
                 type = type.CleanForSql();
@@ -3951,16 +3971,16 @@ SELECT  R.ResponsibilityTypeName,
         case SecurityAsset when 'R' then '' else SecurityAssetName end as SecurityAssetName, 
         'Preview' as SecurityAssetContext, 
         U.FirstName + ' ' + U.LastName as ResourceName, 
-        U.ResourceID, 
+        R.ResourceID, 
         'Resource' as ResourceObject, 
         'Preview' as ResourceItemContext, 
         '/resource/' + cast(R.ResourceID as varchar) as ResourceItemUrl,
         R.Context
-from    ResponsibilityDetail R
-        inner join Asset A on A.Object = @type and A.ObjectID = @id
+from    [dbo].[ResponsibilityAllAsset] R
+        inner join Asset A on A.ID = @assetId
         inner join AssetType T on T.ID = A.AssetTypeID and T.ID = R.AssetTypeID
         inner join reporting.Global_Resource U on U.ResourceID = R.ResourceID and U.State = 1 
-where   R.IsVisible = 1 and ((R.Object = @type and R.ObjectID = @id) or (R.ApplyToType = 1 and R.AssetTypeID = T.ID))";
+where   R.IsVisible = 1 and ((R.AssetID = @assetId) or (R.ApplyToType = 1 and R.AssetTypeID = T.ID))";
 
                 gridFields.Add(new GridField { name = "ResponsibilityTypeName", type = "string" });
                 gridFields.Add(new GridField { name = "ResourceName", type = "lookup" });
@@ -4016,7 +4036,7 @@ where   R.IsVisible = 1 and ((R.Object = @type and R.ObjectID = @id) or (R.Apply
                     filtertype = "textbox"
                 });
 
-                results = Company.Query<dynamic>(sql, new { type, id }).Distinct();
+                results = Company.Query<dynamic>(sql, new { assetId }).Distinct();
             }
             catch (Exception ex)
             {
@@ -7825,7 +7845,7 @@ from	    TaxonomyType FAT
 	                                inner join [workflow].[version] wv on (wt.id = wv.typeid)
 	                                inner join [workflow].[item] wi on (wv.id = wi.versionid)	
                                     inner join [workflow].[itemstep] wis on(wis.itemid = wi.id and wis.completedon is null)
-	                                inner join [workflow].[itemassignment] wia on(wia.itemid = wi.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r and (wia.stepid = wis.stepid or wia.stepid is null))
+	                                inner join [workflow].[itemassignment] wia on(wia.itemid = wi.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r and (wia.itemstepid = wis.id or wia.itemstepid is null))
 	                                inner join [workflow].[versionstep] wvs on(wvs.id = wis.stepid)
                                 where
                                     wi.completedon is null and wvs.steptype = 2 and wvs.activitytype = 3

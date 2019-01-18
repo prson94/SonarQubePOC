@@ -27,14 +27,34 @@
 	<include file="scripts/GOV-6199.xml"/>
 	<include file="scripts/GOV-6256.xml"/>
 	<include file="scripts/GOV-6069.xml"/>
-  <include file="scripts/GOV-6216.xml"/>
-  <include file="scripts/GOV-5350.xml"/>
-  <include file="scripts/GOV-5497.xml"/>
-  <include file="scripts/GOV-6279.xml"/>
+    <include file="scripts/GOV-6216.xml"/>
+    <include file="scripts/GOV-5350.xml"/>
+    <include file="scripts/GOV-5497.xml"/>
+    <include file="scripts/GOV-6279.xml"/>
 	<include file="scripts/GOV-6187-B.xml"/>	
 	<include file="scripts/GOV-6273.xml"/>
 	<include file="scripts/GOV-6273-ProcUpdate.xml"/>
-  <include file="scripts/GOV-6254.xml"/>
-  <include file="scripts/GOV-6350.xml"/>
+	<include file="scripts/GOV-6336.xml"/>
+	<include file="scripts/GOV-6338.xml"/>
+	<include file="scripts/GOV-6343.xml"/>
+	<include file="scripts/GOV-6292.xml"/>
+	<include file="scripts/GOV-6292-Fix.xml"/>
+	<include file="scripts/GOV-6243.xml"/>
+	<include file="scripts/GOV-6355.xml"/>
+	<include file="scripts/GOV-6254.xml"/>
+ 	<include file="scripts/GOV-6350.xml"/>
+	<include file="scripts/GOV-6359.xml"/>
+	<!-- 6265,6266 are editing the same table and should be executed on this order  -->
+	<include file="scripts/GOV-6265.xml"/>
+	<include file="scripts/GOV-6266.xml"/>
+	<!-- 6265,6266 are editing the same table and should be executed on this order  -->
+	<include file="scripts/GOV-6205.xml"/>
+	<include file="scripts/GOV-6331.xml"/>
+	<include file="scripts/GOV-6379.xml"/>
+	<include file="scripts/GOV-6396.xml"/>
+	<include file="scripts/GOV-6350-Update.xml"/>
+	<!--6294 MUST go after 6350 files-->
+	<include file="scripts/GOV-6294.xml"/>
+	<include file="scripts/GOV-6294-Update.xml"/>
   <include file="scripts/GOV-6191.xml"/>
 </databaseChangeLog>

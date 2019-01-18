@@ -20,7 +20,8 @@ import 'core-js/es6/reflect';
 import 'core-js';
 
 if (!Element.prototype.matches) {
-    Element.prototype.matches = Element.prototype.webkitMatchesSelector;
+    Element.prototype.matches = (<any>Element.prototype).msMatchesSelector ||
+        Element.prototype.webkitMatchesSelector;
 }
 
 // see issue https://github.com/AngularClass/angular2-webpack-starter/issues/709

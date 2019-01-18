@@ -2497,83 +2497,100 @@
         </member>
         <member name="M:d360.web.Controllers.V2.CrossReferencesController.Get">
             <summary>
-            Returns all asset cross references
+            Returns all asset cross references.
             </summary>
-            <returns>An array of cross reference records</returns>
+            <returns>An array of cross references</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.CrossReferencesController.GetByUid(System.String)">
             <summary>
-            Returns asset cross reference values for the specified Uid
+            Returns asset cross references for the specified asset based on its unique identifier.
             </summary>
-            <returns>An array of matching cross reference records</returns>
+            <param name="assetUid">The unique identifier of the asset.</param>
+            <returns>An array of matching cross references.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.CrossReferencesController.GetByTypeID(System.String,System.String)">
             <summary>
-            Returns asset cross reference values for the specified type and external id
+            Returns asset cross references for the specified type and external id.
             </summary>
-            <returns>An array of matching cross reference records</returns>
+            <param name="type">The type of the asset cross reference.</param>
+            <param name="externalId">The external Id of asset cross reference.</param>
+            <returns>An array of matching cross reference.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.CrossReferencesController.GetByType(System.String)">
             <summary>
-            Returns asset cross reference values for the specified type
+            Returns asset cross references for the specified type.
             </summary>
-            <returns>An array of matching cross reference records</returns>
+            <param name="type">The type of the asset cross reference.</param>
+            <returns>An array of matching cross references.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.CrossReferencesController.GetByDataSource(System.String)">
             <summary>
-            Returns asset cross reference values for the specified data source
+            Returns asset cross references for the specified data source.
             </summary>
-            <returns>An array of matching cross reference records</returns>
+            <param name="dataSource">The dataSource of asset cross reference.</param>
+            <returns>An array of matching cross references.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.CrossReferencesController.Post(d360.core.entities.AssetCrossReference)">
             <summary>
-            Creates a new AssetCrossReference record.  If an asset cross reference exists already an error is returned
+            Creates a new asset cross reference.  If an asset cross reference exists already an error is returned.
             </summary>
-            <returns>AssetCrossReference model of the created item if item already exists http confict is returned.</returns>
+            <param name="model">The asset cross references model.</param>
+            <returns>The model of the created asset cross reference. If item already exists http confict is returned.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.CrossReferencesController.PostBulk(System.Collections.Generic.List{d360.core.entities.AssetCrossReference})">
             <summary>
-            Creates new AssetCrossReference records.  If an asset cross reference exists already an error is returned
+            Creates new asset cross references.  If an asset cross reference exists already an error is returned.
             </summary>
-            <returns>AssetCrossReference model of the created item if item already exists http confict is returned.</returns>
+            <param name="models">List of asset cross references.</param>
+            <returns>List of created asset cross references. If any item already exists an HTTP Confict is returned.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.CrossReferencesController.Put(System.Guid,System.String,System.String,System.String,d360.core.entities.AssetCrossReference)">
             <summary>
-            Updates the specified AssetCrossReference record.
+            Updates the specified asset cross reference.
             </summary>
-            <returns>Http Status code OK if item was updated, Http Status code of Not Found if item could not be updated</returns>
+            <param name="uid">The unique identifier of the asset cross reference.</param>
+            <param name="dataSource">Asset cross reference datasource</param>
+            <param name="type">Asset cross reference type</param>
+            <param name="externalId">Asset cross reference externalId</param>
+            <param name="model">Asset cross reference model</param>
+            <returns>Http Status code OK if asset cross reference was updated, Http Status code of Not Found if item could not be updated.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.CrossReferencesController.DeleteByUid(System.Guid)">
             <summary>
-            Deletes a AssetCrossReference by the specified Uid value
+            Deletes an asset cross reference by the specified unique identifier.
             </summary>
-            <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted</returns>
+            <param name="uid">The unique identifier of the asset cross reference.</param>
+            <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.CrossReferencesController.DeleteByDatasource(System.String,System.String)">
             <summary>
-            Deletes a AssetCrossReference with the specified datasource and type
+            Deletes any asset cross references with the specified datasource and type.
             </summary>
-            <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted</returns>
+            <param name="dataSource">Asset cross reference datasource</param>
+            <param name="type">Asset cross reference type</param>
+            <returns>Http Status code OK if asset cross references were deleted, Http Status code of Not Found if item could not be deleted></returns>
         </member>
         <member name="M:d360.web.Controllers.V2.CrossReferencesController.DeleteByType(System.String)">
             <summary>
-            Deletes a AssetCrossReference records with the specified type
+            Deletes any asset cross references with the specified type.
             </summary>
-            <returns>Http Status code OK if item(s) was deleted, Http Status code of Not Found if item could not be deleted</returns>
+            <param name="type">Asset cross reference type.</param>
+            <returns>Http Status code OK if assset cross references were deleted, Http Status code of Not Found if item could not be deleted</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.CrossReferencesController.DeleteByDataSource(System.String)">
             <summary>
-            Deletes a AssetCrossReference records with the specified datasource
+            Deletes any asset cross references with the specified datasource.
             </summary>
-            <returns>Http Status code OK if item(s) was deleted, Http Status code of Not Found if item could not be deleted</returns>
+            <param name="dataSource">Asset cross reference datasource.</param>
+            <returns>Http Status code OK if asset cross references were deleted, Http Status code of Not Found if item could not be deleted</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.DataQualityController.GetRuleResults(System.Guid)">
             <summary>
-            Returns the all the rule results for the specified rule uid that are under the default implementation
+            Returns the all the rule results for the specified rule Uid that are under the default implementation
             If the user is not an admin http status code 403 forbidden is returned
             </summary>
-            <param name="ruleUid">The uid of the rule</param>
-            <returns>The rule result object with the specified uid for the default implementation.  If no such rule result or implementation exists http status code 404 not found is returned.</returns>
+            <param name="ruleUid">The Uid of the rule</param>
+            <returns>The rule result object with the specified Uid for the default implementation.  If no such rule result or implementation exists http status code 404 not found is returned.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.DataQualityController.GetRuleResult(System.Int32)">
             <summary>
@@ -2602,7 +2619,7 @@
             <summary>
             Deletes all rule result fusion attributes for the specified asset Uid.
             </summary>
-            <param name="assetUid">The uid of the asset</param>
+            <param name="assetUid">The Uid of the asset</param>
             <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.DataQualityController.DeleteFusionAttributeByRuleResultAndAssetUID(System.Int32,System.Guid)">
@@ -2730,7 +2747,7 @@
             <summary>
             Gets a hierarchical structure of metrics associated with the asset Uid provided, for a given effective date. If no effective date is provided, today's date is used.
             </summary>
-            <param name="assetUid">The UID of the asset.</param>
+            <param name="assetUid">The Uid of the asset.</param>
             <param name="effectiveDate">The date which you want to pull the metric hierarchy for. If not provided, today's date is used. Optionally, you may also provide a past effective date.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
@@ -2770,23 +2787,23 @@
             <summary>
             Takes a given set of relationships and bulk inserts/updates them.
             </summary>
-            <param name="uid">The unique identifier of the relationship type.</param>
-            <param name="relationships">The payload of your request. Must include SubjectUid and ObjectUid.</param>
+            <param name="intersectTypeUid">The unique identifier of the intersect type.</param>
+            <param name="relationships">The payload of your request. Must include SubjectAssetUid and ObjectAssetUid.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.RelationshipsController.PostBulkRelationshipsAsync(System.Guid,d360.core.entities.RelationshipInserts)">
             <summary>
             Inserts or updates a given set of relationships based on the specific relationship type Uid. This endpoint is meant for a greater number of items as it stores the relationship list for asynchronous or batch processing.
             </summary>
-            <param name="uid">The unique identifier of the intersect type.</param>
-            <param name="relationships">The payload of your request.</param>
+            <param name="intersectTypeUid">The unique identifier of the intersect type.</param>
+            <param name="relationships">The payload of your request. Must include SubjectAssetUid and ObjectAssetUid.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.RelationshipsController.GetExecutionStatus(System.Guid)">
             <summary>
             GETs the status of an execution record, including the results for the execution.
             </summary>
-            <param name="uid">The execution ID to retrieve status for.</param>
+            <param name="executionUid">The execution's unique identifier to retrieve status for.</param>
             <returns></returns>
         </member>
         <member name="T:d360.web.Controllers.V2.AssetsController">
@@ -2808,48 +2825,48 @@
         </member>
         <member name="M:d360.web.Controllers.V2.AssetsController.GetAssetsAsync(System.Guid)">
             <summary>
-            Get assets for the given asset type Uid
+            Retrieves assets for the given asset type unique identifier.
             </summary>
-            <param name="assetTypeUid">The Uid of the asset type</param>
+            <param name="assetTypeUid">The unique identifier of the asset type.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.AssetsController.PostAssetsAsync(System.Guid,d360.core.entities.AssetInserts)">
+        <member name="M:d360.web.Controllers.V2.AssetsController.PostAssetsAsync(System.Guid,System.Collections.Generic.List{d360.core.entities.AssetInsert})">
             <summary>
-            Adds a given set of assets based on the specific asset type Uid. Use this endpoint if you want to process under 200 items and need immediate results.
+            Adds a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 200 items and need immediate results.
             </summary>
-            <param name="uid">The unique identifier of the asset type.</param>
+            <param name="assetTypeUid">The unique identifier of the asset type.</param>
             <param name="assets">The payload of your request.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.AssetsController.PutAssetsAsync(System.Guid,d360.core.entities.AssetUpdates)">
+        <member name="M:d360.web.Controllers.V2.AssetsController.PutAssetsAsync(System.Guid,System.Collections.Generic.List{d360.core.entities.AssetUpdate})">
             <summary>
-            Updates a given set of assets based on the specific asset type Uid. Use this endpoint if you want to process under 200 items and need immediate results.
+            Updates a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 200 items and need immediate results.
             </summary>
-            <param name="uid">The unique identifier of the asset type.</param>
+            <param name="assetTypeUid">The unique identifier of the asset type.</param>
             <param name="assets">The payload of your request.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.AssetsController.DeleteAssetsAsync(System.Guid,d360.core.entities.AssetDeletes)">
             <summary>
-            Removes a given set of assets based on the specific asset type Uid. Use this endpoint if you want to process under 200 items and need immediate results.
+            Removes a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 200 items and need immediate results.
             </summary>
-            <param name="uid">The unique identifier of the asset type.</param>
+            <param name="assetTypeUid">The unique identifier of the asset type.</param>
             <param name="assets">The payload of your request.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.AssetsController.PostBulkAssetsAsync(System.Guid,d360.core.entities.AssetInserts)">
+        <member name="M:d360.web.Controllers.V2.AssetsController.PostBulkAssetsAsync(System.Guid,System.Collections.Generic.List{d360.core.entities.AssetInsert})">
             <summary>
-            Adds a given set of assets based on the specific asset type Uid. This endpoint is meant for a greater number of items as it stores the asset list for asynchronous or batch processing.
+            Adds a given set of assets based on the specific asset type unique identifier. This endpoint is meant for a greater number of items as it stores the asset list for asynchronous or batch processing.
             </summary>
-            <param name="uid">The unique identifier of the asset type.</param>
+            <param name="assetTypeUid">The unique identifier of the asset type.</param>
             <param name="assets">The payload of your request.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.AssetsController.PutBulkAssetsAsync(System.Guid,d360.core.entities.AssetUpdates)">
+        <member name="M:d360.web.Controllers.V2.AssetsController.PutBulkAssetsAsync(System.Guid,System.Collections.Generic.List{d360.core.entities.AssetUpdate})">
             <summary>
             Updates a given set of assets based on the specific asset type Uid. This endpoint is meant for a greater number of items as it stores the asset list for asynchronous or batch processing.
             </summary>
-            <param name="uid">The unique identifier of the asset type.</param>
+            <param name="assetTypeUid">The unique identifier of the asset type.</param>
             <param name="assets">The payload of your request.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
@@ -2857,7 +2874,7 @@
             <summary>
             Removes a given set of assets based on the specific asset type Uid. This endpoint is meant for a greater number of items as it stores the asset list for asynchronous or batch processing.
             </summary>
-            <param name="uid">The unique identifier of the asset type.</param>
+            <param name="assetTypeUid">The unique identifier of the asset type.</param>
             <param name="assets">The payload of your request.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
@@ -2865,7 +2882,7 @@
             <summary>
             GETs the status of an execution record, including the results for the execution.
             </summary>
-            <param name="uid">The execution ID to retrieve status for.</param>
+            <param name="executionUid">The execution's unique identifier to retrieve status for.</param>
             <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.D3SApiController.GetFieldFiltersByType(d360.core.SystemObjects,System.Int32)">
@@ -3149,6 +3166,15 @@
             <summary>
             required; length=3,12; right:0,0; phone; ssn; zipCode; email; inline javascript function
             </summary>
+        </member>
+        <member name="M:d360.web.Models.SwaggerRequestExampleAttribute.#ctor(System.Type,System.Type,System.Type,System.Type)">
+            <inheritdoc />
+            <summary>
+            </summary>
+            <param name="requestType">The type passed to the request</param>
+            <param name="examplesProviderType">A type that inherits from IExamplesProvider</param>
+            <param name="contractResolver">An optional json contract Resolver if you want to override the one you use</param>
+            <param name="jsonConverter">An optional jsonConverter to use, e.g. typeof(StringEnumConverter) will render strings as enums</param>
         </member>
         <member name="T:d360.web.Filters.ValidateHttpAntiForgeryTokenAttribute">
             <summary>

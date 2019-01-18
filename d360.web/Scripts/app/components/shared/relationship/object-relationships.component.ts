@@ -81,16 +81,12 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
         if (!this.selected) return;
         this.selected.Count = this.selected.Count + event.count;
         this.updateCardinality();
-        console.log("addRelationship");
-
     }
 
     removeRelationship() {
         if (!this.selected) return;
         this.selected.Count--;
         this.updateCardinality();
-        //this.cardinalityShow = (this.selected.Cardinality == 2) || (this.selected.Count == 0 && this.selected.Cardinality != 2);
-        console.log("removeRelationship");
     }
 
     hideforDelete() {

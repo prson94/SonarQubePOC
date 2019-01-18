@@ -1,5 +1,5 @@
 ﻿import { Input, Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { Router, ActivatedRoute }       from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
@@ -125,7 +125,7 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
         this.sub = this.route.params.subscribe(params => {
             this.workflowId = +params['workflowId'];
             this.load();
-        });        
+        });
     }
 
     private load() {
@@ -147,7 +147,7 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
                     item.StepType = StepType[step[0].StepType];
                     item.ActivityType = WorkflowActivityType[step[0].ActivityType];
                 }
-                this.details = res;     
+                this.details = res;
                 if (res && res.Workflow && res.Workflow.ID)
                     this.workflowTypeId = res.Workflow.ID;
                 this.isLoading = false;
@@ -164,7 +164,7 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
         this.showHideFollow(true);
         this.sub.unsubscribe();
     }
-    
+
     private getStepName(itemStep: any): string {
         if (!this.details || !this.details.Steps) return "";
         var step = this.details.Steps.filter(x => x.ID == itemStep.StepID);
@@ -173,7 +173,7 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
         return step[0].Name;
     }
 
-    private showForm(item: any) {        
+    private showForm(item: any) {
         this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_FORM}/${this.workflowTypeId}/${item.ID}/${item.ItemID}`);
     }
 };

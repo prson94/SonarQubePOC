@@ -21,6 +21,8 @@ using Ganss.XSS;
 using System.Text.RegularExpressions;
 using d360.extensions.storage;
 using System.Text;
+using System.Threading;
+using d360.core;
 
 namespace igx.jobs.apiexecutionprocessor
 {
@@ -30,6 +32,7 @@ namespace igx.jobs.apiexecutionprocessor
         {
             var config = CoreFunction.GetJobHostConfiguration();
 #if DEBUG
+            config.UseTimers();
             config.UseDevelopmentSettings();
 #endif
             var host = new JobHost(config);
@@ -41,9 +44,18 @@ namespace igx.jobs.apiexecutionprocessor
     {
         const string functionName = "ApiExecution_Process";
 
+#if DEBUG
+        public static void Run([TimerTrigger("0 0 */5 * * *", RunOnStartup = true)]TimerInfo myTimer, CancellationToken token, TextWriter log)
+#else
         public async static Task Run([QueueTrigger("%ApiExecutionQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, TextWriter log)
+#endif
         {
-            var info = JsonConvert.DeserializeObject<ApiExecutionInfo>(myQueueItem);
+            ApiExecutionInfo info = null;
+#if DEBUG
+            info = new ApiExecutionInfo { Action = ApiExecutionAction.PostAssets, CompanyDomainPrefix = "integration.eng", CompanyID = 1, ExecutionID = new Guid("0921ba39-f5f9-4900-9149-9569d0ee67e6") };
+#else
+            info = JsonConvert.DeserializeObject<ApiExecutionInfo>(myQueueItem);
+#endif
 
             try
             {
@@ -82,25 +94,33 @@ namespace igx.jobs.apiexecutionprocessor
                             var postAssetsFields = JsonConvert.DeserializeObject<ApiExecutionFields_PostAssets>(dbExecutionItem.Fields);
                             assetType = company.Filter<AssetType>(i => i.uid == postAssetsFields.AssetTypeUid).Single();
                             string postAssetsJson = storage.GetFileContentsAsString(info.StorageFolder, info.RequestFileName, Encoding.UTF8);
-                            var postAssets = JsonConvert.DeserializeObject<AssetInserts>(postAssetsJson);
+                            var postAssets = JsonConvert.DeserializeObject<List<AssetInsert>>(postAssetsJson);
 
-                            var postAssetsResults = companyConnection.InsertAssets(queue, info.CompanyDomainPrefix, info.CompanyID, dbExecutionItem.ResourceID, assetType, postAssets, dbExecutionTimeout);
+                            log.WriteLine($"POST Assets (DB Start): Total raw assets: {postAssets.Count}. Asset Type Uid: {postAssetsFields.AssetTypeUid}.");
+                            var postAssetsResults = companyConnection.UpsertAssets(queue, info.CompanyDomainPrefix, info.CompanyID, dbExecutionItem.ResourceID, assetType, postAssets, true, dbExecutionTimeout);
                             dbExecutionItem.Processed = postAssetsResults.Count(i => i.Success);
                             dbExecutionItem.Error = postAssetsResults.Count(i => !i.Success);
+                            log.WriteLine($"POST Assets (DB Complete): Total results: {postAssetsResults.Count}.");
 
+                            log.WriteLine($"POST Assets (Response Storage Start): Storage folder: {info.StorageFolder}. Response File: {info.ResponseFileName}.");
                             storage.CreateFile(info.StorageFolder, info.ResponseFileName, JsonConvert.SerializeObject(postAssetsResults));
+                            log.WriteLine($"POST Assets (Response Storage Complete): Storage folder: {info.StorageFolder}. Response File: {info.ResponseFileName}.");
                             break;
                         case ApiExecutionAction.PutAssets:
                             var putAssetsFields = JsonConvert.DeserializeObject<ApiExecutionFields_PutAssets>(dbExecutionItem.Fields);
                             assetType = company.Filter<AssetType>(i => i.uid == putAssetsFields.AssetTypeUid).Single();
                             string putAssetsJson = storage.GetFileContentsAsString(info.StorageFolder, info.RequestFileName, Encoding.UTF8);
-                            var putAssets = JsonConvert.DeserializeObject<AssetUpdates>(putAssetsJson);
+                            var putAssets = JsonConvert.DeserializeObject<List<AssetUpdate>>(putAssetsJson);
 
-                            var putAssetsResults = companyConnection.UpdateAssets(queue, info.CompanyDomainPrefix, info.CompanyID, dbExecutionItem.ResourceID, assetType, putAssets, dbExecutionTimeout);
+                            log.WriteLine($"PUT Assets (DB Start): Total raw assets: {putAssets.Count}. Asset Type Uid: {putAssetsFields.AssetTypeUid}.");
+                            var putAssetsResults = companyConnection.UpsertAssets(queue, info.CompanyDomainPrefix, info.CompanyID, dbExecutionItem.ResourceID, assetType, putAssets, false, dbExecutionTimeout);
                             dbExecutionItem.Processed = putAssetsResults.Count(i => i.Success);
                             dbExecutionItem.Error = putAssetsResults.Count(i => !i.Success);
+                            log.WriteLine($"PUT Assets (DB Complete): Total results: {putAssetsResults.Count}.");
 
+                            log.WriteLine($"PUT Assets (Response Storage Start): Storage folder: {info.StorageFolder}. Response File: {info.ResponseFileName}.");
                             storage.CreateFile(info.StorageFolder, info.ResponseFileName, JsonConvert.SerializeObject(putAssetsResults));
+                            log.WriteLine($"PUT Assets (Response Storage Complete): Storage folder: {info.StorageFolder}. Response File: {info.ResponseFileName}.");
                             break;
                         case ApiExecutionAction.DeleteAssets:
                             var deleteAssetsFields = JsonConvert.DeserializeObject<ApiExecutionFields_DeleteAssets>(dbExecutionItem.Fields);
@@ -108,11 +128,16 @@ namespace igx.jobs.apiexecutionprocessor
 
                             string deleteAssetsJson = storage.GetFileContentsAsString(info.StorageFolder, info.RequestFileName, Encoding.UTF8);
                             var deleteAssets = JsonConvert.DeserializeObject<AssetDeletes>(deleteAssetsJson);
+
+                            log.WriteLine($"DELETE Assets (DB Start): Total raw assets: {deleteAssets.Count}. Asset Type Uid: {deleteAssetsFields.AssetTypeUid}.");
                             var deleteAssetsResults = companyConnection.DeleteAssets(queue, info.CompanyDomainPrefix, info.CompanyID, dbExecutionItem.ResourceID, assetType, deleteAssets, dbExecutionTimeout);
                             dbExecutionItem.Processed = deleteAssetsResults.Count(i => i.Success);
                             dbExecutionItem.Error = deleteAssetsResults.Count(i => !i.Success);
+                            log.WriteLine($"DELETE Assets (DB Complete): Total results: {deleteAssetsResults.Count}.");
 
+                            log.WriteLine($"DELETE Assets (Response Storage Start): Storage folder: {info.StorageFolder}. Response File: {info.ResponseFileName}.");
                             storage.CreateFile(info.StorageFolder, info.ResponseFileName, JsonConvert.SerializeObject(deleteAssetsResults));
+                            log.WriteLine($"DELETE Assets (Response Storage Complete): Storage folder: {info.StorageFolder}. Response File: {info.ResponseFileName}.");
                             break;
                         case ApiExecutionAction.PostRelationships:
                             var postRelationshipsFields = JsonConvert.DeserializeObject<ApiExecutionFields_PostRelationships>(dbExecutionItem.Fields);
@@ -120,11 +145,15 @@ namespace igx.jobs.apiexecutionprocessor
                             string postRelationshipsJson = storage.GetFileContentsAsString(info.StorageFolder, info.RequestFileName, Encoding.UTF8);
                             var postRelationships = JsonConvert.DeserializeObject<RelationshipInserts>(postRelationshipsJson);
 
+                            log.WriteLine($"POST Relationships (DB Start): Total raw assets: {postRelationships.Count}. Intersect Type Uid: {postRelationshipsFields.IntersectTypeUid}.");
                             var postRelationshipsResults = companyConnection.BulkRelationshipsImport(queue, info.CompanyDomainPrefix, info.CompanyID, dbExecutionItem.ResourceID, intersectType, postRelationships, dbExecutionTimeout);
                             dbExecutionItem.Processed = postRelationshipsResults.Count(i => i.Success);
                             dbExecutionItem.Error = postRelationshipsResults.Count(i => !i.Success);
+                            log.WriteLine($"POST Relationships (DB Complete): Total results: {postRelationshipsResults.Count}.");
 
+                            log.WriteLine($"POST Relationships (Response Storage Start): Storage folder: {info.StorageFolder}. Response File: {info.ResponseFileName}.");
                             storage.CreateFile(info.StorageFolder, info.ResponseFileName, JsonConvert.SerializeObject(postRelationshipsResults));
+                            log.WriteLine($"POST Relationships (Response Storage Complete): Storage folder: {info.StorageFolder}. Response File: {info.ResponseFileName}.");
                             break;
                     }
 
@@ -138,7 +167,13 @@ namespace igx.jobs.apiexecutionprocessor
             }
             catch (Exception ex)
             {
-                CoreFunction.AITrackException(functionName, ex, info.CompanyID);
+                log.WriteLine($"{ex.GetFullExceptionData()}");
+                CoreFunction.AITrackException(functionName, ex, info.CompanyID, new Dictionary<string, string>() {
+                    { "ExecutionID", info.ExecutionID.ToString() },
+                    { "StorageFolder", info.StorageFolder },
+                    { "RequestFileName", info.RequestFileName },
+                    { "ResponseFileName", info.ResponseFileName }
+                });
             }
         }
     }
