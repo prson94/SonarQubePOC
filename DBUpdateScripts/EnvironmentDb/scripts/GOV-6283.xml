@@ -41,7 +41,7 @@
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="true">
-		 CREATE VIEW [dbo].[FollowDetail]
+		 ALTER  VIEW [dbo].[FollowDetail]
 AS
 	with ArtifactTypes as
 	(
@@ -262,7 +262,7 @@ AS
 				inner join cache.ObjectDetails O on O.[Object] = F.[Object] and O.ObjectID = F.ObjectID
 	</sql>
 	<rollback>
-		 CREATE VIEW [dbo].[FollowDetail]
+		 ALTER  VIEW [dbo].[FollowDetail]
 AS
 	with ArtifactTypes as
 	(
