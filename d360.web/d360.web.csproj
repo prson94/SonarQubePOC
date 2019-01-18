@@ -1415,6 +1415,7 @@
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-new-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-view-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\directives\copy-clipboard-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\directives.module.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\text-highlight-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\guards\api-key-users.gurard.ts" />

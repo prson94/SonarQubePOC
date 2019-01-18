@@ -70,7 +70,8 @@ select
 	C.ScanEnabled,
 	C.UpdatedBy,
 	C.UpdatedOn,
-	T.ID as AssetTypeID
+	T.ID as AssetTypeID,
+    T.uid as uid
 from C
 inner join AssetType T on T.[Object] = 'FusionAttributeType' and T.ObjectID = C.ID
 order by C.ParentID, C.[Name]", new { id }).AsQueryable();

@@ -7,7 +7,7 @@ import { TooltipSingletonService } from '../../services/tooltip-singleton.servic
 @Component({
     selector: 'd3s-preview-tooltip',
     template: ` 
-                <span #item class="d3s-tooltip" [ngClass]="{'d3s-tooltip-active':active}" (mouseenter)="show(item,tip)" (mouseleave)="hide()" (click)="click.emit()">
+                <span #item class="d3s-tooltip" [ngClass]="{'d3s-tooltip-active':active}" (mouseenter)="show(item,tip)" (mouseleave)="hide()">
                     <i *ngIf="icon && icon !=''" class="fa" [ngClass]="['fa-' + this.icon, class ? class: '']"  [ngStyle]="{'color': iconColor}"></i>                    
                     <ng-content></ng-content>  
                     <div *ngIf="innerHtmlContent != null" [innerHtml]="innerHtmlContent"></div>
@@ -24,13 +24,13 @@ import { TooltipSingletonService } from '../../services/tooltip-singleton.servic
                         </div> 
                         <p *ngIf="data?.Description" [innerHtml]="data?.Description"></p>
                         <div *ngIf="data?.AssetID && data?.AssetID >0"><b>Asset ID</b>: <span [innerHtml]="data.AssetID"></span></div>
-                        <div *ngIf="data?.UID"><b>UID</b>: <span [innerHtml]="data.UID"></span></div>
+                        <div *ngIf="data?.UID"><b>UID</b>: <span [innerHtml]="data.UID"></span>&nbsp; <span [copy-clipboard]="data?.UID" class=\"fa fa-copy\"></span></div>
                         <div *ngFor="let field of data?.FieldValues"><span *ngIf="field.Value"><b>{{field.Name}}</b>: <span [innerHtml]="field.Value"></span></span></div>                                            
                     </div>
                 </span>                
               `,
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [ToolTipService]
+    providers: [ToolTipService] 
 })
 
 export class PreviewTooltipComponent  {        
