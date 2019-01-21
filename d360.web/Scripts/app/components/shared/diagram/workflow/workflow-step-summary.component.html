@@ -179,7 +179,7 @@
                     <div class="FieldName">
                         Body
                     </div>
-                    <div class="FormFieldContent" *ngIf="step.settings['MessageBodyTemplate']"  [innerHTML]="step.settings['MessageBodyTemplate']">
+                    <div class="FormFieldContent" *ngIf="step.settings['MessageBodyTemplate']"  [innerHTML]="step.settings['MessageBodyTemplate']  | safeHtml">
 
                     </div>
                 </div>
