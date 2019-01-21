@@ -51,6 +51,7 @@ namespace d360.web.Controllers
             try
             {
                 Trace.TraceInformation("Calling OverlaysController.AuditCombined : {0}", id);
+                var dbArgs = new Dapper.DynamicParameters();                
 
                 var querySql = @"select 	                            
                                    ga.*,
@@ -96,10 +97,40 @@ namespace d360.web.Controllers
                                 inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID and ga.[Object] = 'Fusion' 
                                 and ga.ObjectID in ( Select  Id from Fusion where fusiontypeid= @objId)";
                 }
+
+                if (type == SystemObjects.ReferenceItemType)
+                {
+                    var referenceItemType = Company.GetById<ReferenceItemType>(id);
+                    if (referenceItemType.ReferenceItems.Any())
+                    {
+                        var referenceItemTypeIDs = referenceItemType.ReferenceItems.Select(x => x.ID);
+                        querySql += @" UNION
+                                    select 	                            
+                                   ga.*,
+                                    case when R.State = 1 then
+                                        R.FirstName + ' ' + R.LastName
+                                    else
+                                        R.FirstName + ' ' + R.LastName + ' (deleted)'
+                                    end as ResourceName,
+                                     fa.FieldName as Field, 
+                                     fa.Value as NewValue, 
+                                     fa.[Version] as 'Version',	                            
+	                                 ( select			
+				                            top 1 fa_sub.value as 'value'			                            
+			                            from reporting.global_fieldaudit fa_sub
+				                            inner join reporting.global_audit ga_sub on ( fa_sub.auditid = ga_sub.id)	
+			                            where ga_sub.[object] = ga.[object] and ga_sub.[objectid] = ga.[objectid] and fa_sub.version = (fa.Version -1) and fa_sub.fieldname = fa.FieldName and fa_sub.fieldtypeid = fa.FieldTypeId and ga_sub.actionObjectId=ga.actionObjectId) as 'PreviousValue'
+			
+                            from reporting.global_audit ga 
+								left outer join reporting.global_fieldaudit fa on ( fa.auditid = ga.id) 
+                                inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID and ga.[Object] = 'ReferenceItem' and ga.ObjectID IN @ReferenceIDs";
+                        dbArgs.Add("ReferenceIDs", referenceItemTypeIDs);
+                    }
+                }
+
                 var countSql = string.Format(@"select count(1) from ({0}) A", querySql);
                 var sql = string.Format(@"select * from ({0}) A", querySql);
 
-                var dbArgs = new Dapper.DynamicParameters();                
                 dbArgs.Add("objType", new DbString { Value = type.ToString(), IsAnsi = true, IsFixedLength = true, Length = 50 });
                 dbArgs.Add("objId", id);
 
