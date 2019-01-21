@@ -151,15 +151,28 @@ AS
    inner join Follow P on P.ObjectType = 'ResourceType' and P.FollowTypeID = 3  
  where C.ResourceID > 0  
  ),  
- TaxonomyParents as    
- (    
- select F.ID as FollowID,    
-   T.ID,    
-   F.ResourceID,    
-   1 as HardFollow    
- from Taxonomy T    
-   inner join Follow F on F.ObjectType = 'Taxonomy' and F.ObjectID = T.ID and F.FollowTypeID = 3    
-  
+TaxonomyParents as  
+ (  
+ select   
+   F.ID as FollowID,  
+   T.ObjectID as ID,     
+   null as ParentID,  
+   F.ResourceID,  
+   1 as HardFollow  
+ from AssetDetail T  
+   left join PredicateIntersect I on I.Object = 'Taxonomy' and I.ObjectID = T.ObjectID and I.PredicateType = 4  
+   inner join Follow F on F.ObjectType = 'Taxonomy' and F.ObjectID = T.ObjectID and F.FollowTypeID = 3  
+ where I.IntersectID is null and T.Object = 'Taxonomy'  
+ union all  
+ select P.FollowID,  
+   T.ObjectID,  
+   I.SubjectID as ParentID,  
+   P.ResourceID,  
+   0 as HardFollow  
+ from AssetDetail T  
+   inner join PredicateIntersect I on I.Object = 'Taxonomy' and I.ObjectID = T.ObjectID and I.PredicateType = 4  
+   inner join TaxonomyParents  p on I.Subject = 'Taxonomy' and I.SubjectID = p.ID  
+ where T.Object = 'Taxonomy'  
  ) 
   
  SELECT  F.FollowID,  
