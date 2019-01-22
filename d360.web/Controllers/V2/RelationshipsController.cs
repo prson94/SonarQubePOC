@@ -96,6 +96,38 @@ namespace d360.web.Controllers.V2
                 return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
             }
         }
+        
+        /// <summary>
+        /// GET a list of relationship types using an ID and a Type.
+        /// </summary>
+        /// <returns></returns>
+        [
+            HttpGet,
+            MapToApiVersion("2.0"),
+            Route("types/{id}/{type}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of relationship types by a given Type and Id, including types names of both the subject and object.", typeof(List<IntersectTypeApiViewModel>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+       ]
+        public async Task<HttpResponseMessage> GetRelationshipTypesAsync(int id, string type)
+        {
+            var prefix = "Relationships.GetRelationshipTypesAsync => ";
+            var errorMessage = "";
+
+            try
+            {
+                var types = await Company.GetActiveIntersectTypes(id, type);
+
+                return Request.CreateResponse(HttpStatusCode.OK, types);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+        }
 
         #region Bulk Relationships
 
