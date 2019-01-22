@@ -148,7 +148,6 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
     getRelationships() {
         this.isLoading = true;
         if (this.objectID && this.objectType) {
-            console.log("new method");
             this.relationshipsService.getRelationshipTypesById(this.objectID, this.objectType)
                 .then(result => {
                     this.relationships = result;
@@ -159,7 +158,6 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
                     }
                 });
         } else {
-            console.log("old method");
             this.relationshipsService.getRelationshipTypes()
                 .then(result => {
                     this.relationships = result;
