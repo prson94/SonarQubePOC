@@ -673,19 +673,21 @@ namespace d360.web.Controllers
                                         V.Value,
                                         V.Text";
 
+                                    var hideData3SixtyUsersCondition = $@" and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com'";
+
                                     var resourceJoin = $@"
-                                        inner join reporting.Global_resource R on R.ResourceID = V.Value and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com'
+                                        inner join reporting.Global_resource R on R.ResourceID = V.Value and R.State <> 3 {(hideData3SixtyUsers ? hideData3SixtyUsersCondition : "")}
                                         ";
 
                                     var itemSql = $@"select {columns} 
                                         from FieldLookupValue V
-                                        {(hideData3SixtyUsers && f.LookupObjectType == "Resource" ? resourceJoin : "")}
+                                        {(f.LookupObjectType == "Resource" ? resourceJoin : "")}
                                         where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId
                                         ";
 
                                     var countSql = $@"select count(*)
                                         from FieldLookupValue V
-                                        {(hideData3SixtyUsers && f.LookupObjectType == "Resource" ? resourceJoin : "")}
+                                        {(f.LookupObjectType == "Resource" ? resourceJoin : "")}
                                         where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId
                                         ";
 
@@ -889,19 +891,21 @@ namespace d360.web.Controllers
                                         V.Value,
                                         V.Text";
 
+                                    var hideData3SixtyUsersCondition = $@" and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com'";
+
                                     var resourceJoin = $@"
-                                        inner join reporting.Global_resource R on R.ResourceID = V.Value and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com'
+                                        inner join reporting.Global_resource R on R.ResourceID = V.Value and R.State <> 3 {(hideData3SixtyUsers ? hideData3SixtyUsersCondition : "")}
                                         ";
 
                                     var itemSql = $@"select {columns} 
                                         from FieldLookupValue V
-                                        {(hideData3SixtyUsers && ft.LookupObjectType == "Resource" ? resourceJoin : "")}
+                                        {(ft.LookupObjectType == "Resource" ? resourceJoin : "")}
                                         where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId
                                         ";
 
                                     var countSql = $@"select count(*)
                                         from FieldLookupValue V
-                                        {(hideData3SixtyUsers && ft.LookupObjectType == "Resource" ? resourceJoin : "")}
+                                        {(ft.LookupObjectType == "Resource" ? resourceJoin : "")}
                                         where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId
                                         ";
 
