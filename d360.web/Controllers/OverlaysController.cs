@@ -101,10 +101,8 @@ namespace d360.web.Controllers
                 if (type == SystemObjects.ReferenceItemType)
                 {
                     var referenceItemType = Company.GetById<ReferenceItemType>(id);
-                    if (referenceItemType.ReferenceItems.Any())
-                    {
-                        var referenceItemTypeIDs = referenceItemType.ReferenceItems.Select(x => x.ID);
-                        querySql += @" UNION
+                    var referenceItemTypeIDs = referenceItemType.ReferenceItems.Select(x => x.ID);
+                    querySql += @" UNION
                                     select 	                            
                                    ga.*,
                                     case when R.State = 1 then
@@ -124,8 +122,8 @@ namespace d360.web.Controllers
                             from reporting.global_audit ga 
 								left outer join reporting.global_fieldaudit fa on ( fa.auditid = ga.id) 
                                 inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID and ga.[Object] = 'ReferenceItem' and ga.ObjectID IN @ReferenceIDs";
-                        dbArgs.Add("ReferenceIDs", referenceItemTypeIDs);
-                    }
+                    dbArgs.Add("ReferenceIDs", referenceItemTypeIDs);
+
                 }
 
                 var countSql = string.Format(@"select count(1) from ({0}) A", querySql);
