@@ -183,7 +183,7 @@ where   A.Type = 'ArtifactType'
 
             joins = addOwnershipJoinCriteria(joins, ownerUsers, ownerGroups);
 
-            var template = Company.ArtifactTypeExportTemplates.Where(x => x.ID == templateId).FirstOrDefault();
+            var template = Company.AssetTypeExportTemplates.Where(x => x.ID == templateId).FirstOrDefault();
 
             if(template == null)
             {
@@ -317,12 +317,12 @@ where   A.Type = 'ArtifactType'
             return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"{template.Name} for {DateTime.Now.ToShortDateString()}.xlsx");
         }
 
-        private SLDocument GenerateDefaultSpreadsheet(List<FieldType> fields, IEnumerable<dynamic> results, ArtifactTypeExportTemplate template = null, string worksheetName = "Items")
+        private SLDocument GenerateDefaultSpreadsheet(List<FieldType> fields, IEnumerable<dynamic> results, AssetTypeExportTemplate template = null, string worksheetName = "Items")
         {
-            ICollection<ArtifactTypeExportTemplateStyle> styles = null;
+            ICollection<AssetTypeExportTemplateStyle> styles = null;
             if (template != null)
             {
-                styles = template.ArtifactTypeExportTemplateStyles;
+                styles = template.AssetTypeExportTemplateStyles;
             }
 
             int index = 1;
@@ -361,9 +361,9 @@ where   A.Type = 'ArtifactType'
             return document;
         }
 
-        private SLDocument GenerateGroupedSpreadsheet(List<FieldType> fields, IEnumerable<dynamic> results, ArtifactTypeExportTemplate template, string worksheetName = "Items")
+        private SLDocument GenerateGroupedSpreadsheet(List<FieldType> fields, IEnumerable<dynamic> results, AssetTypeExportTemplate template, string worksheetName = "Items")
         {
-            var styles = template.ArtifactTypeExportTemplateStyles;
+            var styles = template.AssetTypeExportTemplateStyles;
 
             int index = 1;
             var document = createExcelBaseDocument(template, worksheetName);
@@ -420,9 +420,9 @@ where   A.Type = 'ArtifactType'
             return document;
         }
 
-        private SLDocument GeneratePivotedSpreadsheet(List<FieldType> fields, IEnumerable<dynamic> results, ArtifactTypeExportTemplate template, string worksheetName = "Items")
+        private SLDocument GeneratePivotedSpreadsheet(List<FieldType> fields, IEnumerable<dynamic> results, AssetTypeExportTemplate template, string worksheetName = "Items")
         {
-            var styles = template.ArtifactTypeExportTemplateStyles;
+            var styles = template.AssetTypeExportTemplateStyles;
 
             int index = 1;
 
@@ -470,7 +470,7 @@ where   A.Type = 'ArtifactType'
             return document;
         }
 
-        private void SetRowStylesFromField(ICollection<ArtifactTypeExportTemplateStyle> styles, SLDocument document, int rowIndex, int columnIndex, FieldType field, dynamic row)
+        private void SetRowStylesFromField(ICollection<AssetTypeExportTemplateStyle> styles, SLDocument document, int rowIndex, int columnIndex, FieldType field, dynamic row)
         {
             if (!styles.Any()) return;
 
@@ -484,7 +484,7 @@ where   A.Type = 'ArtifactType'
             }
         }
 
-        private void SetColumnStylesFromField(ICollection<ArtifactTypeExportTemplateStyle> styles, SLDocument document, int rowIndex, int columnIndex, FieldType field, dynamic row)
+        private void SetColumnStylesFromField(ICollection<AssetTypeExportTemplateStyle> styles, SLDocument document, int rowIndex, int columnIndex, FieldType field, dynamic row)
         {            
             if (styles != null && styles.Any())
             {
@@ -504,13 +504,13 @@ where   A.Type = 'ArtifactType'
             }            
         }
 
-        private SLDocument createExcelBaseDocument(ArtifactTypeExportTemplate template, string worksheetName)
+        private SLDocument createExcelBaseDocument(AssetTypeExportTemplate template, string worksheetName)
         {
             SLDocument document = null;
 
             if (template == null)
             {
-                template = new ArtifactTypeExportTemplate();
+                template = new AssetTypeExportTemplate();
             }
 
             if (template.TemplateFile != null)
@@ -541,7 +541,7 @@ where   A.Type = 'ArtifactType'
             return document;
         }
 
-        private void SetColumnCellStyle(SLDocument document, int column,int totalRows, ICollection<ArtifactTypeExportTemplateStyle> styles)
+        private void SetColumnCellStyle(SLDocument document, int column,int totalRows, ICollection<AssetTypeExportTemplateStyle> styles)
         {
             if (styles == null) return;
             //style for the whole column
@@ -552,7 +552,7 @@ where   A.Type = 'ArtifactType'
                 document.SetCellStyle(1,column,totalRows,column, CreateStyle(columnStyle));
             }
         }
-        private void SetColumnStyles(SLDocument document, int column, ICollection<ArtifactTypeExportTemplateStyle> styles)
+        private void SetColumnStyles(SLDocument document, int column, ICollection<AssetTypeExportTemplateStyle> styles)
         {
             if (styles == null) return;
 
@@ -573,7 +573,7 @@ where   A.Type = 'ArtifactType'
             }            
         }
 
-        private void SetRowStyles(SLDocument document, int row, ICollection<ArtifactTypeExportTemplateStyle> styles)
+        private void SetRowStyles(SLDocument document, int row, ICollection<AssetTypeExportTemplateStyle> styles)
         {
             if (styles == null) return;
 
@@ -584,7 +584,7 @@ where   A.Type = 'ArtifactType'
             document.SetRowStyle(row, CreateStyle(columnStyle));
         }
 
-        private SLStyle CreateStyle(ArtifactTypeExportTemplateStyle columnStyle, dynamic row = null)
+        private SLStyle CreateStyle(AssetTypeExportTemplateStyle columnStyle, dynamic row = null)
         {
             SLStyle style = new SLStyle();
 

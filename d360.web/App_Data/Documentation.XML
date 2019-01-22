@@ -2656,13 +2656,19 @@
             </summary>
             <returns>An array of asset export template records</returns>
         </member>
+        <member name="M:d360.web.Controllers.V2.ExportTemplatesController.Get(System.Guid)">
+            <summary>
+            Returns all asset export templates for an asset type
+            </summary>
+            <returns>An array of asset export template records</returns>
+        </member>
         <member name="M:d360.web.Controllers.V2.ExportTemplatesController.DeleteById(System.Int32)">
             <summary>
             Deletes a Export Template based on the specified ID
             </summary>
             <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted</returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.ExportTemplatesController.Post(d360.core.entities.ArtifactTypeExportTemplate)">
+        <member name="M:d360.web.Controllers.V2.ExportTemplatesController.Post(d360.core.entities.AssetTypeExportTemplate)">
             <summary>
             Creates a new Export Template record.  
             </summary>
@@ -2675,14 +2681,14 @@
             <param name="templateId">template Id</param>
             <returns></returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.ExportTemplatesController.SaveTemplateStyle(d360.core.entities.ArtifactTypeExportTemplateStyle)">
+        <member name="M:d360.web.Controllers.V2.ExportTemplatesController.SaveTemplateStyle(d360.core.entities.AssetTypeExportTemplateStyle)">
             <summary>
             Create new  syle for the template
             </summary>
-            <param name="model">ArtifactTypeExportTemplateStyle</param>
+            <param name="model">AssetTypeExportTemplateStyle</param>
             <returns></returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.ExportTemplatesController.UpdateTemplateStyle(System.Int32,d360.core.entities.ArtifactTypeExportTemplateStyle)">
+        <member name="M:d360.web.Controllers.V2.ExportTemplatesController.UpdateTemplateStyle(System.Int32,d360.core.entities.AssetTypeExportTemplateStyle)">
             <summary>
             Update  style for a template
             </summary>
@@ -2703,7 +2709,7 @@
             </summary>
             <returns>Http 200 if upload was successful.</returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.ExportTemplatesController.Put(System.Int32,d360.core.entities.ArtifactTypeExportTemplate)">
+        <member name="M:d360.web.Controllers.V2.ExportTemplatesController.Put(System.Int32,d360.core.entities.AssetTypeExportTemplate)">
             <summary>
             Updates the specified Export Template
             </summary>
@@ -2834,6 +2840,13 @@
             Retrieves assets for the given asset type unique identifier.
             </summary>
             <param name="assetTypeUid">The unique identifier of the asset type.</param>
+            <returns>An HTTP status code and message.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.AssetsController.GetAssetsTypeFieldsAsync(System.Guid)">
+            <summary>
+            Get field types for the given asset type Uid
+            </summary>
+            <param name="assetTypeUid">The Uid of the asset type</param>
             <returns>An HTTP status code and message.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.AssetsController.PostAssetsAsync(System.Guid,System.Collections.Generic.List{d360.core.entities.AssetInsert})">

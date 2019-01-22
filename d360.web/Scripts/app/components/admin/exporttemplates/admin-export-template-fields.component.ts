@@ -98,7 +98,7 @@ export class AdminExportTemplateFieldsComponent extends BaseComponent implements
     private load() {       
         this.availableFields = [];
         //load available fields for the artifact type
-        this.fieldsService.getFields(this.exportTemplate.ArtifactTypeID, 'ArtifactType')
+        this.fieldsService.getAssetTypeFields(this.exportTemplate.AssetTypeUID)
             .then(data => {       
                 data = data.filter(x => x.Type != 'Relation Lookup' && x.Type != 'Filtered Lookup' && x.Type != 'Ownership Lookup' && x.Type != 'Fusion Lookup')
                 //split the string of selected fields and populate the selected fields array

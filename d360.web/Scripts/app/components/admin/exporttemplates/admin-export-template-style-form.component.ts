@@ -99,7 +99,7 @@ export class AdminExportTemplateStyleFormComponent extends BaseComponent impleme
         protected messagesService: MessagesService, ) {
         super();
         //default
-        this.model = { SelectionType: "Row", BgColor: "#FFFFFF", TextColor: "#000000", Column: -1, Row:1, ID: 0, ArtifactTypeExportTemplateID: 0, IsBold: false };
+        this.model = { SelectionType: "Row", BgColor: "#FFFFFF", TextColor: "#000000", Column: -1, Row:1, ID: 0, AssetTypeExportTemplateID: 0, IsBold: false };
     }
 
 
@@ -109,7 +109,7 @@ export class AdminExportTemplateStyleFormComponent extends BaseComponent impleme
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        this.model.ArtifactTypeExportTemplateID = changes["templateId"].currentValue;
+        this.model.AssetTypeExportTemplateID = changes["templateId"].currentValue;
         if (changes["mode"].currentValue == 'Edit' && changes["selectedStyle"].currentValue) {
             this.model = _.clone(changes["selectedStyle"].currentValue);
         }
@@ -134,7 +134,7 @@ export class AdminExportTemplateStyleFormComponent extends BaseComponent impleme
         this.exportTemplateService.saveExportTemplateStyle(this.model).subscribe(result => {
             this.messagesService.showInfoMessage('Success', 'Style added successfully');
             //default
-            this.model = { SelectionType: "Row", BgColor: "#FFFFFF", TextColor: "#000000", Column: null, Row: null, ID: 0, ArtifactTypeExportTemplateID: 0, IsBold: false };
+            this.model = { SelectionType: "Row", BgColor: "#FFFFFF", TextColor: "#000000", Column: null, Row: null, ID: 0, AssetTypeExportTemplateID: 0, IsBold: false };
             this.onSuccess.emit(null);
         });
     }

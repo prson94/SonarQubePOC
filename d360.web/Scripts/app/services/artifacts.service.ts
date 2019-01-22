@@ -5,7 +5,7 @@ import { Headers, Http, Response, ResponseContentType } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
 import { Artifacts, Artifact } from '../models/artifacts.model';
-import { ArtifactType, ArtifactTypeExportTemplate } from '../models/artifact-type.model';
+import { ArtifactType, AssetTypeExportTemplate } from '../models/artifact-type.model';
 import { SortOrder } from '../models/enums.model';
 import { GridFilterExpression, GridRelationshipFilterExpression, GridFilterFieldType, GridAttributeFilterExpression, GridOwnerFilter } from '../models/grid-definition.model';
 import { Count } from '../models/counts.model';
@@ -228,13 +228,6 @@ export class ArtifactService extends BaseService {
 
     getSimilarArtifactNames(typeID: number, query: string): Promise<any[]> {
         return this.http.get(`form/Artifact_SimilarItems?typeID=${typeID}&query=${query}`)
-            .toPromise()
-            .then(response => <any[]>response.json())
-            .catch(err => this.handleError(err));
-    }
-
-    getArtifactTypeExportTemplates(artifactTypeId: number): Promise<ArtifactTypeExportTemplate[]> {
-        return this.http.get(`api/artifacttype/${artifactTypeId}/export/templates`)
             .toPromise()
             .then(response => <any[]>response.json())
             .catch(err => this.handleError(err));

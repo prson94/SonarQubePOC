@@ -16653,7 +16653,7 @@ new { t = a.TaxonomyTypeID, currentLevel = a.Level ?? 1, maxLevel = a.TaxonomyTy
 
         private JsonResult ExportTemplate_EditFields(int id)
         {
-            var template = Company.ArtifactTypeExportTemplates.Where(x => x.ID == id).FirstOrDefault();
+            var template = Company.AssetTypeExportTemplates.Where(x => x.ID == id).FirstOrDefault();
 
             var list = new List<EditableField>();
 
@@ -16665,9 +16665,9 @@ new { t = a.TaxonomyTypeID, currentLevel = a.Level ?? 1, maxLevel = a.TaxonomyTy
 
             list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "ExportViewType", Name = "List Arrangement", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = names });
 
-            var types = Company.ArtifactTypes.Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString(), Selected = template.ArtifactTypeID == i.ID }).OrderBy(x=>x.Text).ToList();
+            var types = Company.AssetTypes.Where(f => f.Class == AssetTypeClass.Glossary).Select(i => new SelectListItem { Text = i.Name, Value = i.uid.ToString(), Selected = template.AssetTypeID == i.ID }).OrderBy(x=>x.Text).ToList();
             
-            list.Add(new EditableField { Row = 4, Column = 1, Required = true, FieldName = "ArtifactTypeID", Name = "Artifact Type", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = types });
+            list.Add(new EditableField { Row = 4, Column = 1, Required = true, FieldName = "AssetTypeUID", Name = "Asset Type", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = types });
 
             list.Add(new EditableField { Row = 5, Column = 1, Required = true, FieldName = "IncludeUrl", Name = "Include Glossary Url", FieldDescription = "", FieldType = DataType.Boolean.ToString() , Value = template.IncludeUrl.ToString()});
             list.Add(new EditableField { Row = 6, Column = 1, Required = true, FieldName = "IncludeParent", Name = "Include Parent Name", FieldDescription = "", FieldType = DataType.Boolean.ToString(), Value = template.IncludeParent.ToString() });
@@ -16687,8 +16687,8 @@ new { t = a.TaxonomyTypeID, currentLevel = a.Level ?? 1, maxLevel = a.TaxonomyTy
             
             list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "ExportViewType", Name = "List Arrangement", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = names});
 
-            var types = Company.ArtifactTypes.Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).OrderBy(x=>x.Text).ToList();
-            list.Add(new EditableField { Row = 4, Column = 1, Required = true, FieldName = "ArtifactTypeID", Name = "Artifact Type", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = types });
+            var types = Company.AssetTypes.Where(f => f.Class == AssetTypeClass.Glossary).Select(i => new SelectListItem { Text = i.Name, Value = i.uid.ToString() }).OrderBy(x=>x.Text).ToList();
+            list.Add(new EditableField { Row = 4, Column = 1, Required = true, FieldName = "AssetTypeUID", Name = "Asset Type", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = types });
 
             list.Add(new EditableField { Row = 5, Column = 1, Required = true, FieldName = "IncludeUrl", Name = "Include Glossary Url", FieldDescription = "", FieldType = DataType.Boolean.ToString() });
             list.Add(new EditableField { Row = 6, Column = 1, Required = true, FieldName = "IncludeParent", Name = "Include Parent Name", FieldDescription = "", FieldType = DataType.Boolean.ToString() });
