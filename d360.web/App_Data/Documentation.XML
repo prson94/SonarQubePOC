@@ -2783,6 +2783,12 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:d360.web.Controllers.V2.RelationshipsController.GetRelationshipTypesAsync(System.Int32,System.String)">
+            <summary>
+            GET a list of relationship types using an ID and a Type.
+            </summary>
+            <returns></returns>
+        </member>
         <member name="M:d360.web.Controllers.V2.RelationshipsController.PostRelationshipsAsync(System.Guid,d360.core.entities.RelationshipInserts)">
             <summary>
             Takes a given set of relationships and bulk inserts/updates them.

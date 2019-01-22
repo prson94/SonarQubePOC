@@ -104,6 +104,9 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
     
     @Input() filterToName: string;
 
+    @Input() objectType: string;
+    @Input() objectID: number;
+    
     @Input() selected: RelationshipType;
     @Output() selectedChange = new EventEmitter();
 
@@ -144,16 +147,30 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 
     getRelationships() {
         this.isLoading = true;
-        this.relationshipsService.getRelationshipTypes()
-            .then(result => {                                
-                this.relationships = result;
-                this.filterResults();
-                this.isLoading = false;
-                if (this.relationships.length > 0) {
-                    this.selected = this.relationships[0];    
-                    this.selectedChange.emit(this.selected)                
-                }
-            });
+        if (this.objectID && this.objectType) {
+            console.log("new method");
+            this.relationshipsService.getRelationshipTypesById(this.objectID, this.objectType)
+                .then(result => {
+                    this.relationships = result;
+                    this.isLoading = false;
+                    if (this.relationships.length > 0) {
+                        this.selected = this.relationships[0];
+                        this.selectedChange.emit(this.selected)
+                    }
+                });
+        } else {
+            console.log("old method");
+            this.relationshipsService.getRelationshipTypes()
+                .then(result => {
+                    this.relationships = result;
+                    this.filterResults();
+                    this.isLoading = false;
+                    if (this.relationships.length > 0) {
+                        this.selected = this.relationships[0];
+                        this.selectedChange.emit(this.selected)
+                    }
+                });
+        }
     }
 
     findRelationshipIndex(id: number) {
