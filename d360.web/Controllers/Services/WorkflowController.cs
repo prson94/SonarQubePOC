@@ -1545,7 +1545,7 @@ order by wi.StartedOn desc";
                         versionID = currentVersion.ID;
 
                         //the current version is published
-                        if (type.PublishedVersionID == versionID && model.Nodes.Count > 0 && model.Links.Count > 0)
+                        if (type.PublishedVersionID == versionID && model.Nodes.Count > 0 && model.Links.Count > 0 && model.Type.PublishedVersionID ==-1)
                         {
 
                             var version = new WorkflowVersion();
