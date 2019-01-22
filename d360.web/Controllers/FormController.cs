@@ -751,7 +751,7 @@ namespace d360.web.Controllers
 
             list.Add(new EditableField { FieldName = "ArtifactTypeID", FieldType = DataType.Hidden.ToString(), Value = at.ToString() });
 
-            if (intersectType != null && PluralCultureHelper.IsNeutralCultureEnglish())
+            if (intersectType != null)
             {
                 var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
                 var parents = Company.Query<SelectListItem>($"select ObjectID as Value, DisplayValue as Text from AssetDetail where Type = 'ArtifactType' and TypeID = {intersectType.SubjectID}").OrderBy(i => i.Text).ToList();
