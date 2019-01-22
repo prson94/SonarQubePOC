@@ -68,3 +68,7 @@
 
 /d360.database.company
 /packages
+/utilities/igx.GovernRestClient/obj/Debug
+/utilities/igx.UpdateDatabases/bin/Debug
+/utilities/igx.PostFusionJob/obj/Debug
+/utilities/igx.UpdateDatabases/obj/Debug
