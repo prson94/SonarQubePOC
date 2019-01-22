@@ -750,14 +750,14 @@ namespace d360.web.Controllers
             ).SingleOrDefault();
 
             list.Add(new EditableField { FieldName = "ArtifactTypeID", FieldType = DataType.Hidden.ToString(), Value = at.ToString() });
-            
+
             if (intersectType != null)
             {
                 var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
                 var parents = Company.Query<SelectListItem>($"select ObjectID as Value, DisplayValue as Text from AssetDetail where Type = 'ArtifactType' and TypeID = {intersectType.SubjectID}").OrderBy(i => i.Text).ToList();
                 list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ParentID", Name = $"Parent {pluralize.Singularize(intersectType.SubjectName)}", FieldType = DataType.Lookup.ToString(), Value = ((p > 0) ? p.ToString() : null), Items = parents });
             }
-            
+
             list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ArtifactType, at).ToList(), 1);
 
             return Json(list, JsonRequestBehavior.AllowGet);
