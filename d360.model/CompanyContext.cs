@@ -89,7 +89,11 @@ namespace d360.model
 
         public DbSet<ArtifactTypeExportTemplate> ArtifactTypeExportTemplates { get; set; }
 
+        public DbSet<AssetTypeExportTemplate> AssetTypeExportTemplates { get; set; }
+
         public DbSet<ArtifactTypeExportTemplateStyle> ArtifactTypeExportTemplateStyles { get; set; }
+
+        public DbSet<AssetTypeExportTemplateStyle> AssetTypeExportTemplateStyles { get; set; }
 
         public DbSet<ArtifactType> ArtifactTypes { get; set; }
 
