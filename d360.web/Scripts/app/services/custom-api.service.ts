@@ -76,28 +76,28 @@ export class CustomAPIService extends BaseService {
 
 
     getEndpointVersionFieldEditorModel(id: number): Promise<any> {
-        return this.http.get(`form/CustomAPIVersionFieldEditor_EditModel?id=${id}`)
+        return this.http.get(`/api/v2/customendpoints/Version/FieldEditor/model?id=${id}`)
             .toPromise()
             .then(response => <any>response.json())
             .catch(err => this.handleError(err));
     }
 
     getEndpointVersionField_FieldTypes(versionId: number) : Promise<any[]> {
-        return this.http.get(`form/CustomAPIVersionFieldEditor_GetFieldTypes?versionId=${versionId}`)
+        return this.http.get(`/api/v2/customendpoints/Version/FieldEditor/FieldTypes?versionId=${versionId}`)
             .toPromise()
             .then(response => <any[]>response.json())
             .catch(err => this.handleError(err));
     }
 
     getEndpointVersionField_LookupFieldTypes(fieldTypeId: number): Promise<any[]> {
-        return this.http.get(`form/CustomAPIVersionFieldEditor_GetLookupFields?fieldTypeId=${fieldTypeId}`)
+        return this.http.get(`/api/v2/customendpoints/Version/FieldEditor/LookupFields?fieldTypeId=${fieldTypeId}`)
             .toPromise()
             .then(response => <any[]>response.json())
             .catch(err => this.handleError(err));
     }
 
     saveEndpointVersionField(model: ApiField): Promise<any> {
-        return this.http.post(`form/AddCustomAPIVersionField`, model)
+        return this.http.post(`/api/v2/customendpoints/Version/FieldEditor/Field`, model)
             .toPromise()
             .then(response => <any>response.json())
             .catch(err => this.handleError(err));

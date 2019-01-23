@@ -64,10 +64,10 @@ import { FormHelpers } from '../../../static/form-helpers';
                         </p-treeTable>
                     </div>
                     <div *ngSwitchCase="FormMode.Adding">
-                        <d3s-admin-metric-editor [metricEditorFieldTypes]="metricListFieldTypes" [assetTypeUid]="assetType?.Uid" [parentUid]="selection?.Uid" (onCancel)="formMode = FormMode.Default" (onSave)="formMode = FormMode.Default; load(); "></d3s-admin-metric-editor>
+                        <d3s-admin-metric-editor [metricEditorFieldTypes]="metricListFieldTypes" [assetTypeUid]="assetType?.Uid" [parentUid]="selection?.Uid" (onCancel)="formMode = FormMode.Default;" (onSave)="formMode = FormMode.Default; load(); "></d3s-admin-metric-editor>
                     </div>
                     <div *ngSwitchCase="FormMode.Editing">
-                        <d3s-admin-metric-editor [(model)]="selection" [metricEditorFieldTypes]="metricListFieldTypes" [assetTypeUid]="assetType?.Uid" [uid]="selection.Uid" (onCancel)="formMode = FormMode.Default" (onSave)="formMode = FormMode.Default; load(); "></d3s-admin-metric-editor>
+                        <d3s-admin-metric-editor [(model)]="selection" [metricEditorFieldTypes]="metricListFieldTypes" [assetTypeUid]="assetType?.Uid" [uid]="selection.Uid" (onCancel)="formMode = FormMode.Default; load();" (onSave)="formMode = FormMode.Default; load(); "></d3s-admin-metric-editor>
                     </div>
                     <div *ngSwitchCase="FormMode.Deleting">
                         <header>

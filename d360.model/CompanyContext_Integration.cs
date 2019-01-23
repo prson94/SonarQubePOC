@@ -1242,7 +1242,8 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
         FieldName nvarchar(250) not null,
         FieldValue nvarchar(max) null,
         FieldTypeID int null,
-        LookupValue nvarchar(250) null
+        LookupValue nvarchar(250) null,
+        Ignore bit null
     )", transaction: trans);
 
                     cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempAssetFieldTable ON #AssetFieldTable ( ItemNumber ASC, FieldTypeID ASC )", transaction: trans);

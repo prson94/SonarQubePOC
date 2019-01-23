@@ -71,7 +71,7 @@
             <d3s-admin-allocation [objectType]="objectType" [objectID]="selectedRow?.data?.ID"></d3s-admin-allocation>
         </div>
         <div class="tile tile-detail" *ngIf="!isEditingFieldType && !isAddingFieldType">
-            <d3s-admin-relationships-list [filterToName]="selectedRow?.data?.Name"></d3s-admin-relationships-list>
+            <d3s-admin-relationships-list [filterToName]="selectedRow?.data?.Name" [objectType]="objectType" [objectID]="selectedRow?.data?.ID"></d3s-admin-relationships-list>
         </div>        
     </div>
 </div>

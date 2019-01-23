@@ -1,4 +1,7 @@
 ﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter, Input, OnChanges, ElementRef, ViewChild, AfterViewChecked } from '@angular/core';
+import * as _ from 'lodash';
+import { Column, Header, MenuItem, Editor } from 'primeng/primeng';
+
 import { BaseComponent } from '../../../shared/base.component';
 import {
     NodeModel,
@@ -10,13 +13,10 @@ import {
     EmailTaskRecipientTypeInfo,
 } from '../../../../models/workflow.model';
 import { FieldType } from '../../../../models/fields.model';
-import { Column, Header, MenuItem, Editor } from 'primeng/primeng';
 import { WorkflowService } from '../../../../services/workflow.service';
 import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
 import { ResponsibilityTypeService } from '../../../../services/responsibility-type.service';
 import { FormMode } from '../../../../models/form.model';
-
-import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-workflow-step-form-editor',
@@ -103,27 +103,27 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
         this.isLoading = true;
         Promise.all(promises).then(() => this.isLoading = false);
-
     }
 
     ngOnChanges() {
         this.initFields();
 
-        if (this.ed != null && this.ed.quill != null)
+        if (this.ed != null && this.ed.quill != null) {
             this.quill = this.ed.quill;
-        else
+        } else {
             this.quill = null;
+        }
     }
 
     ngAfterViewChecked() {
-        if (this.ed != null && this.ed.quill != null)
+        if (this.ed != null && this.ed.quill != null) {
             this.quill = this.ed.quill;
+        }
     }
 
     ngOnDestroy() {
         this.quill = null;
         this.ed = null;
-
     }
 
     initFields() {
@@ -143,8 +143,9 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
             this.step.fields.form.field.push(f);
         }
 
-        if (this.step.settings == null)
+        if (this.step.settings == null) {
             this.step.settings = {};
+        }
 
         //parse bool fields
         if (this.step.settings.SendFormEmail == null)
@@ -168,8 +169,6 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         //load lists, needed for labels
         this.changeType('list');
         this.changeType('relationshipType');
-
-        //console.log('initFields', this.step.settings);
     }
 
     add() {
@@ -198,7 +197,6 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         this.changeType(this.newField['@type']);
 
         this.formMode = FormMode.Editing;
-        //console.log(this.newField, this.usedIn, item, this.step.fields.form.field);
     }
 
     confirmDelete() {
@@ -224,7 +222,6 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
         }
 
-        //console.log('confirmDelete', this.step.fields.form.field);
         this.formMode = FormMode.Default;
     }
 
@@ -285,12 +282,9 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
 
         this.workflowFieldsService.pushFormField(f);
-        //console.log(existing, this.newField);
     }
 
     appendFieldDescription(e: string) {
-        //console.log(this.step.fields.form['@description'], this.quill == null);
-
         if (this.fed != null && this.fed.quill != null)
             this.quill = this.fed.quill;
 
@@ -309,12 +303,9 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
                 + e;
         }
         this.stepChange.emit(this.step);
-
     }
 
     appendField(e: string) {
-        //console.log(this.step.settings.MessageBodyTemplate, this.quill);
-
         if (this.ed != null && this.ed.quill != null)
             this.quill = this.ed.quill;
 
@@ -334,7 +325,6 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         }
 
         this.stepChange.emit(this.step);
-
     }
 
     changeType(e: any) {

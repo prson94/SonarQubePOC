@@ -343,6 +343,7 @@
     <Compile Include="Controllers\Services\ReportsController.cs" />
     <Compile Include="Controllers\Services\OrganizationsController.cs" />
     <Compile Include="Controllers\V2\CrossReferencesController.cs" />
+    <Compile Include="Controllers\V2\CustomEndpointsController.cs" />
     <Compile Include="Controllers\V2\DataQualityController.cs" />
     <Compile Include="Controllers\V2\ErrorsController.cs" />
     <Compile Include="Controllers\V2\ExportTemplatesController.cs" />
@@ -623,6 +624,9 @@
     <EmbeddedResource Include="Content\Swagger\swagger.css">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
+    <Content Include="Scripts\app\components\fusion\fusion-promotion-history.component.html" />
+    <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-template-tool.component.html" />
+    <Content Include="Scripts\app\components\shared\editor-header.component.html" />
     <Content Include="Scripts\app\components\model\model-item-structure.component.html" />
     <Content Include="Scripts\app\components\policy\policy-item-structure.component.html" />
     <Content Include="Scripts\app\components\workflowmonitor\workflowmonitor-list.component.html" />
@@ -725,6 +729,7 @@
     <Content Include="Scripts\app\components\shoppingcart\shopping-cart-request.component.html" />
     <Content Include="Scripts\app\components\shoppingcart\shopping-cart.component.html" />
     <Content Include="Scripts\app\components\workflowmonitor\workflowmonitor-step-details.component.html" />
+    <Content Include="Scripts\app\components\workflow\workflow-form.component.html" />
     <Content Include="Scripts\app\main.bundle.js" />
     <Content Include="Scripts\app\polyfills.bundle.js" />
     <Content Include="Scripts\app\vendor.bundle.js" />

@@ -100,9 +100,7 @@
                         <div class="FieldName">
                             Description
                         </div>
-                        <div class="FormFieldContent" [innerHTML]="step.fields.form['@description']">
-
-                        </div>
+                        <div class="FormFieldContent" [innerHTML]="step.fields.form['@description'] | safeHtml"></div>
                     </div>
                 </ng-container>
                 <div class="col s6">
@@ -181,7 +179,7 @@
                     <div class="FieldName">
                         Body
                     </div>
-                    <div class="FormFieldContent" *ngIf="step.settings['MessageBodyTemplate']"  [innerHTML]="step.settings['MessageBodyTemplate']">
+                    <div class="FormFieldContent" *ngIf="step.settings['MessageBodyTemplate']"  [innerHTML]="step.settings['MessageBodyTemplate']  | safeHtml">
 
                     </div>
                 </div>

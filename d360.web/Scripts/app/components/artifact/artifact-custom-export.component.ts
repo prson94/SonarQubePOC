@@ -1,6 +1,7 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { ArtifactType, ArtifactTypeExportTemplate } from '../../models/artifact-type.model';
+import { ArtifactType, AssetTypeExportTemplate } from '../../models/artifact-type.model';
 import { ArtifactService } from '../../services/artifacts.service';
+import { ExportTemplateService } from '../../services/export-template.service';
 import { BaseComponent } from '../shared/base.component';
 import { SortOrder } from '../../models/enums.model';
 import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression, GridAttributeFilterExpression, GridOwnerFilter } from '../../models/grid-definition.model';
@@ -21,7 +22,7 @@ import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpr
                 </div>        
                 `,    
         changeDetection: ChangeDetectionStrategy.OnPush,  
-    providers: [ArtifactService]
+    providers: [ArtifactService, ExportTemplateService]
 })
 
 export class ArtifactCustomExportComponent extends BaseComponent implements OnInit {
@@ -36,10 +37,11 @@ export class ArtifactCustomExportComponent extends BaseComponent implements OnIn
 
     @Output() closeClick = new EventEmitter();
 
-    private exportOptions: ArtifactTypeExportTemplate[];
+    private exportOptions: AssetTypeExportTemplate[];
     
     constructor(
         protected artifactService: ArtifactService,
+        protected exportTempalteService: ExportTemplateService,
         private changeDetectorRef: ChangeDetectorRef
     ) { super(); }
 
@@ -49,7 +51,7 @@ export class ArtifactCustomExportComponent extends BaseComponent implements OnIn
     
     private load() {
         this.isLoading = true;
-        this.artifactService.getArtifactTypeExportTemplates(this.artifactType.ID).then(res => {
+        this.exportTempalteService.getExportTemplatesForAssetType(this.artifactType.AssetTypeUID).subscribe(res => {
             this.isLoading = false;
             this.exportOptions = res;
             this.changeDetectorRef.markForCheck();
@@ -60,7 +62,7 @@ export class ArtifactCustomExportComponent extends BaseComponent implements OnIn
         this.artifactService.getArtifactsXls(false, this.artifactType, this.sortField, this.sortOrder, this.filters, this.relationships, this.attributes, this.simpleFilter, this.owner);
     }
 
-    private doExport(option: ArtifactTypeExportTemplate) {
+    private doExport(option: AssetTypeExportTemplate) {
         this.artifactService.getArtifactsCustomXls(option.ID, false, this.artifactType, this.sortField, this.sortOrder, this.filters, this.relationships, this.attributes, this.simpleFilter, this.owner);
     }
 };
