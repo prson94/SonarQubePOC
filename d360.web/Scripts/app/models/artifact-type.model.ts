@@ -25,9 +25,10 @@ export class ArtifactType {
     HasDashboards: boolean;    
     HasV2Workflows: boolean;
     HasCustomExportTemplates: boolean;
+    AssetTypeUID: string;
 }
 
-export class ArtifactTypeExportTemplate {
+export class AssetTypeExportTemplate {
     ID: number;
     Name: string;
     Description: string;

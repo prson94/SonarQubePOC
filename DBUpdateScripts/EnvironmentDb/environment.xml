@@ -60,5 +60,6 @@
 	<include file="scripts/GOV-6281_6284_6407_6392.xml"/>
   <include file="scripts/GOV-6283.xml"/>
 	<include file="scripts/GOV-6282.xml"/>
-  <include file="scripts/GOV-6443.xml"/>
+	<include file="scripts/GOV-6212.xml"/>
+  <include file="scripts/GOV-6443.xml"/> <!-- must be after 6212-->
 </databaseChangeLog>

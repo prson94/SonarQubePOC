@@ -559,6 +559,53 @@ order by    P.[Path]
 
         }
 
+        /// <summary>
+        /// Get field types for the given asset type Uid
+        /// </summary>
+        /// <param name="assetTypeUid">The Uid of the asset type</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpGet,
+            Route("fields/{assetTypeUid}"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetsApiViewModel)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> GetAssetsTypeFieldsAsync(Guid assetTypeUid)
+        {
+            var prefix = "Assets.GetAssetsTypeFieldsAsync => ";
+            var errorMessage = "";
+
+            try
+            {
+                var assetTypeID = 0;
+                assetTypeID = Company.AssetTypes.FirstOrDefault(t => t.uid == assetTypeUid)?.ID ?? 0;
+                //Use same output format as FieldsController._FieldTypesByObject to preserve compatability
+                var fieldTypes = Company.FieldTypes.Where(f => f.AssetTypeID == assetTypeID).Select(i => new {
+                    i.FriendlyName,
+                    i.Category,
+                    i.DisplayDescription,
+                    i.FormDescription,
+                    i.ID,
+                    i.IsListable,
+                    i.IsRequired,
+                    i.ColumnOrder,
+                    i.SortOrder,
+                    ObjectType = i.Object,
+                    i.ObjectID,
+                    i.Type
+                }).ToList();
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, fieldTypes)));
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
 
         /// <summary>
         /// Adds a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 200 items and need immediate results.

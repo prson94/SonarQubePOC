@@ -1151,7 +1151,7 @@ where   h.ID <> @t order by h.[Level] desc;
             model.Add("Description", artifactType.Description);
             model.Add("ParentID", Company.GetParentType<ArtifactType>(artifactType.ID)?.ID ?? null);
             model.Add("CanOwnFusion", assetType.CanOwnFusion);
-            model.Add("HasCustomExportTemplates", Company.ArtifactTypeExportTemplates.Where(x => x.ArtifactTypeID == typeID).Any());
+            model.Add("HasCustomExportTemplates", Company.AssetTypeExportTemplates.Where(x => x.AssetTypeID == assetType.ID).Any());
             model.Add("AutoDisplayDescription", assetType.AutoDisplayDescription);
 
             bool hasDashboards = Company.Filter<Report>(x => x.ObjectType == "ArtifactType" && x.ObjectID == typeID && x.ReportType != "legacy").Any();
@@ -1161,14 +1161,9 @@ where   h.ID <> @t order by h.[Level] desc;
 
             var hasV2WorkflowsAssigned = (Company.Query<int>(sql).FirstOrDefault() > 0);
             model.Add("HasV2Workflows", hasV2WorkflowsAssigned);
+            model.Add("AssetTypeUID", assetType.uid);
 
             return model;
-        }
-
-        [Route("artifacttype/{id:int}/export/templates")]
-        public IEnumerable<ArtifactTypeExportTemplate> GetArtifactTypeExportTemplates(int id)
-        {
-            return Company.ArtifactTypeExportTemplates.Where(x => x.ArtifactTypeID == id);
         }
 
         [Route("artifacttypes")]
@@ -5438,7 +5433,7 @@ where    A.RuleID = @id", new { id });
                 #endregion
                 case SystemObjects.ExportTemplate:
                     #region Fields
-                    var template = Company.GetById<ArtifactTypeExportTemplate>(id);
+                    var template = Company.GetById<AssetTypeExportTemplate>(id);
                     if (template != null)
                     {
                         model.rows.Add(new DetailReadOnlyRowModel
@@ -5459,7 +5454,7 @@ where    A.RuleID = @id", new { id });
                             columns = 2,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField{ Name = "Artifact Type", FieldName = "TypeName", Value = template.ArtifactType.Name}
+                                new ReadOnlyField{ Name = "Asset Type", FieldName = "TypeName", Value = template.AssetType.Name}
                             },
                             SecondColumnFields = new List<ReadOnlyField>
                             {

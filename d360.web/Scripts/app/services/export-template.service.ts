@@ -19,6 +19,12 @@ export class ExportTemplateService extends BaseService {
             catchError(err => this.handleError(err)),);
     }
 
+    public getExportTemplatesForAssetType(assetTypeUID: string): Observable<ExportTemplate[]> {
+        return this.http.get(`/api/v2/exporttemplates/${assetTypeUID}`).pipe(            
+            map(item => { return <ExportTemplate[]>item }),
+            catchError(err => this.handleError(err)));
+    }
+
     public deleteExportTemplates(id: number): Observable<any> {
        return this.http.delete(`/api/v2/exporttemplates/${id}`);            
     }
@@ -29,6 +35,7 @@ export class ExportTemplateService extends BaseService {
                 map(item => { return <ExportTemplate>item }),
                 catchError(err => this.handleError(err)),);
         }
+        console.log(exportTemplate);
         
         return this.http
                 .post<ExportTemplate>(`/api/v2/exporttemplates`, exportTemplate).pipe(
