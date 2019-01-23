@@ -343,6 +343,7 @@
     <Compile Include="Controllers\Services\ReportsController.cs" />
     <Compile Include="Controllers\Services\OrganizationsController.cs" />
     <Compile Include="Controllers\V2\CrossReferencesController.cs" />
+    <Compile Include="Controllers\V2\CustomEndpointsController.cs" />
     <Compile Include="Controllers\V2\DataQualityController.cs" />
     <Compile Include="Controllers\V2\ErrorsController.cs" />
     <Compile Include="Controllers\V2\ExportTemplatesController.cs" />

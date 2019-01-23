@@ -2584,6 +2584,34 @@
             <param name="dataSource">Asset cross reference datasource.</param>
             <returns>Http Status code OK if asset cross references were deleted, Http Status code of Not Found if item could not be deleted</returns>
         </member>
+        <member name="M:d360.web.Controllers.V2.CustomEndpointsController.CustomAPIVersionFieldEditor_GetFieldTypes(System.Int32)">
+            <summary>
+            Gets the field types
+            </summary>
+            <param name="versionId">End Point Version Id</param>
+            <returns>The field types</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.CustomEndpointsController.CustomAPIVersionFieldEditor_GetLookupFields(System.Int32)">
+            <summary>
+            Gets the lookupFields for a fieldtypeID
+            </summary>
+            <param name="fieldTypeId">Field Type Id</param>
+            <returns>List of lookup fields</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.CustomEndpointsController.CustomAPIVersionFieldEditor_EditModel(System.Int32)">
+            <summary>
+            Gets the model for field editor
+            </summary>
+            <param name="id">ApiEntityFieldType Id</param>
+            <returns>The model for the field editor</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.CustomEndpointsController.AddCustomAPIVersionField(d360.core.entities.ApiEntityFieldType)">
+            <summary>
+            Adds a given  field type based on the specific field type
+            </summary>
+            <param name="model">API Entity Field Type</param>
+            <returns>An HTTP status code and newly added field type</returns>
+        </member>
         <member name="M:d360.web.Controllers.V2.DataQualityController.GetRuleResults(System.Guid)">
             <summary>
             Returns the all the rule results for the specified rule Uid that are under the default implementation
