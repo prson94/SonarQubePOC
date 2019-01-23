@@ -38,7 +38,7 @@
                     <d3s-lineage-source-rules *ngIf="target && targetId" [source]="source" [sourceId]="sourceId" [target]="target" [targetId]="targetId"></d3s-lineage-source-rules>
                 </div>
                 <div *ngSwitchCase="'user'">
-                    <d3s-lineage-responsibilities *ngIf="target && targetId" [assetId]="null"></d3s-lineage-responsibilities>
+                    <d3s-lineage-responsibilities *ngIf="target && targetId" [objectId]="targetId" [objectType]="target"></d3s-lineage-responsibilities>
                 </div>
                 <div *ngSwitchCase="'database'">
                     <d3s-lineage-technical *ngIf="target && targetId" [source]="source" [sourceId]="sourceId" [target]="target" [targetId]="targetId"></d3s-lineage-technical>

@@ -2,6 +2,7 @@
 import { DiagramService } from '../../../../services/diagram.service';
 import { Responsibility } from '../../../../models/lineage.model';
 import { BaseComponent } from '../../base.component';
+import { ObjectDetailService } from '../../../../services/object-detail.service';
 
 @Component({
     selector: 'd3s-lineage-responsibilities',
@@ -27,16 +28,19 @@ import { BaseComponent } from '../../base.component';
             </p-table>
         </div>
     `,
-    providers: [DiagramService]
+    providers: [DiagramService, ObjectDetailService]
 })
 
 export class LineageResponsibilitiesComponent extends BaseComponent implements OnInit, OnChanges {
     @Input() assetId: number;
     isLoading = false;
 
+    @Input() objectType: string;
+    @Input() objectId: number;
+
     items: Responsibility[] = [];
 
-    constructor(private diagramService: DiagramService) {
+    constructor(private diagramService: DiagramService, private objectDetailService: ObjectDetailService) {
         super();
     }
 
@@ -46,8 +50,21 @@ export class LineageResponsibilitiesComponent extends BaseComponent implements O
 
     ngOnInit() { }
 
-    load() {
+    private load() {
+        // if the object type and objectid is passed and the assetid is null lookup the assetid then load responsibilities
+        if (this.objectType && this.objectId != undefined && this.assetId == null) {
+            this.objectDetailService.getObject(this.objectId, this.objectType)
+                .then(data => {
+                    this.assetId = data.AssetID;
+                    this.loadResponsibilities();
+                })
+        }
+        else {
+            this.loadResponsibilities();
+        }
+    }
 
+    private loadResponsibilities() {
         if (this.assetId == null || this.assetId < 1) {
             this.items = [];
             return;
