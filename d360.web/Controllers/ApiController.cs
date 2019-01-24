@@ -3650,7 +3650,7 @@ outer apply (
                 var fieldTypeIDs = fields.Where(i => i.FieldTypeID != 0).Select(x => x.FieldTypeID).ToList();
                 var fieldTypes = Company.Filter<FieldType>(i => fieldTypeIDs.Contains(i.ID)).ToList();
 
-                if(def.Fields.Count > 0 && (fieldTypes == null || fieldTypes.Count == 0))
+                if ((def.Fields.Count > 0 && ((fieldTypes == null || fieldTypes.Count == 0)) & !def.Fields.Any(x => x.FieldTypeName == "TextPath")))
                 {
                     throw new Exception("The relationship lookup field has 0 valid fields to display. Please verify the definition is correct.");
                 }
