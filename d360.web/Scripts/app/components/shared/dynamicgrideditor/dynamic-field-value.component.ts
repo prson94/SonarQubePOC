@@ -7,6 +7,12 @@ import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpr
 @Component({
     selector: 'd3s-dynamic-field-value',
     template: `   
+    <style>
+    a,
+    span {
+        word-break: break-all;
+    }
+</style>
             <span [ngSwitch]="fieldType">
                 <span *ngSwitchCase="'date'" ><span *ngIf="fieldValue">{{fieldValue | date:'shortDate'}}</span></span>
                 <span *ngSwitchCase="'datetime'"><span *ngIf="fieldValue">{{fieldValue | date:'medium'}}</span></span>
