@@ -42,6 +42,9 @@ namespace d360.core.entities
         public DateTime? CompletedOn { get; set; }
 
         [DataMember]
+        public DateTime? DelayUntil { get; set; }
+
+        [DataMember]
         public string ErrorMessage { get; set; }
 
         [DataMember]

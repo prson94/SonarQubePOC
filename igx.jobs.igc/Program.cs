@@ -62,7 +62,7 @@ namespace igx.jobs
                 var Security = new UriSecurityContextProvider { IsAdministrator = true, ResourceID = 0 };
                 var Community = new CommunityContext(Caching, Queue, Security);
 #if DEBUG
-                var companies = CoreFunction.GetCompaniesByCurrentSlot().Where(i => i.CompanyID == 120).ToList();
+                var companies = CoreFunction.GetCompaniesByCurrentSlot().Where(i => i.CompanyID == 122).ToList();
 #else
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 #endif
@@ -148,7 +148,14 @@ where	T.CompletedOn is null
 
                             if (mappings.Any(i => i.Active && i.IntegrationSettingID == setting.ID && i.ObjectID.HasValue))
                             {
-                                var assetsToAvoid = company.Query<int>("select SynchedAssetTypeID from integration.ExecutionAssetType where CompletedOn is null").ToList();
+                                var assetsToAvoid = company.Query<int>(@"
+select SynchedAssetTypeID as ID from integration.ExecutionAssetType where CompletedOn is null
+union
+select	distinct
+		S.ID 
+from	integration.SynchedAssetType S
+		inner join integration.ExecutionAssetType E on E.SynchedAssetTypeID = S.ID and E.CompletedOn > DATEADD(hh, -coalesce(S.RefreshIntervalOverride,1), getutcdate())
+where	[AllowChangeDetection] = 0").ToList();
 
                                 if (assetsToAvoid.Count > 0)
                                 {
@@ -182,6 +189,33 @@ where	T.CompletedOn is null
                                     }
                                 }
                             }
+
+                            // See if you need to requeue based on DelayUntil flag.
+                            var delayedExecutions = company.Filter<IntegrationExecutionAssetType>(i => i.SynchedAssetType.IntegrationSettingID == setting.ID && i.DelayUntil <= DateTime.UtcNow).ToList();
+
+                            if (delayedExecutions.Count > 0)
+                            {
+                                foreach (var delayedExecution in delayedExecutions)
+                                {
+                                    delayedExecution.DelayUntil = null;
+                                }
+                                company.SaveChanges();
+
+                                foreach (var item in delayedExecutions)
+                                {
+                                    var queueModel = new IntegrationQueueModel
+                                    {
+                                        CompanyID = c.CompanyID,
+                                        ExecutionID = item.ExecutionID,
+                                        IntegrationSettingID = setting.ID,
+                                        SynchedAssetTypeID = item.SynchedAssetTypeID,
+                                        To = QueueAction.Integration,
+                                        UrlPrefix = c.UrlPrefix
+                                    };
+                                    Queue.CreateMessage(CoreFunction.GetConfigValueByKey("IntegrationQueue"), queueModel);
+                                    log.WriteLine($"Queued PREVIOUSLY DELAYED execution {item.ExecutionID}, asset {item.SynchedAssetTypeID}, full refresh {(item.IsFullRefresh ? "Yes" : "No")}");
+                                }
+                            }
                         }
                     }
                     catch (Exception ex)
@@ -209,7 +243,7 @@ where	T.CompletedOn is null
         {
             CoreFunction.AppInsightsInstrumentationKey(CoreFunction.GetConfigValueByKey("IGC_APPINSIGHTS_INSTRUMENTATIONKEY"));
 #if DEBUG
-            var queueModel = new IntegrationQueueModel { CompanyID = 122, ExecutionID = 55556, IntegrationSettingID = 1, SynchedAssetTypeID = 53, To = QueueAction.Integration, UrlPrefix = "statestreet.uat" };
+            var queueModel = new IntegrationQueueModel { CompanyID = 122, ExecutionID = 57436, IntegrationSettingID = 1, SynchedAssetTypeID = 1, To = QueueAction.Integration, UrlPrefix = "statestreet.uat" };
 #else
             var queueModel = JsonConvert.DeserializeObject<IntegrationQueueModel>(myQueueItem);
 #endif
@@ -314,6 +348,8 @@ where	T.CompletedOn is null
         public RetryLogModel ExecutionAssetTypeRetryLog { get; set; }
         public IGCAssetRelationshipBreakdownModels RelationshipBreakdownModels { get; set; }
         public IGCAssetResponsibilityBreakdownModels ResponsibilityBreakdownModels { get; set; }
+        public List<RelationshipTargetComparisonModel> RelationshipTargetComparisons { get; set; }
+
 
         public CommunityContext Community { get; set; }
 
@@ -398,9 +434,9 @@ where	T.CompletedOn is null
         {
             foreach (var model in e.Updates)
             {
-                if (RelationshipBreakdownModels.Any(i => i.FieldName == model.FieldName && i.AssetTypeName == model.AssetTypeName))
+                if (RelationshipBreakdownModels.Any(i => i.FieldName == model.FieldName && i.AssetTypeName == model.AssetTypeName && i.IntersectTypeID == model.IntersectTypeID))
                 {
-                    RelationshipBreakdownModels.Single(i => i.FieldName == model.FieldName && i.AssetTypeName == model.AssetTypeName).Count += model.Count;
+                    RelationshipBreakdownModels.Single(i => i.FieldName == model.FieldName && i.AssetTypeName == model.AssetTypeName && i.IntersectTypeID == model.IntersectTypeID).Count += model.Count;
                 }
                 else
                 {
@@ -451,16 +487,32 @@ where	T.CompletedOn is null
             Security.CompanyPrefix = QueueModel.UrlPrefix;
             Company = new CompanyContext(Community, Caching, Queue, Security, true);
 
+            #region Set common properties that we will work with in many methods
+
+            Log.WriteLine("Getting common data");
+
             SynchedAssetType = Company.GetById<IntegrationAssetType>(QueueModel.SynchedAssetTypeID);
             ExecutionAssetType = Company.Filter<IntegrationExecutionAssetType>(i => i.ExecutionID == QueueModel.ExecutionID && i.SynchedAssetTypeID == QueueModel.SynchedAssetTypeID).Single();
             ExecutionAssetTypeRetryLog = JsonConvert.DeserializeObject<RetryLogModel>(ExecutionAssetType.RetryLog);
             RelationshipBreakdownModels = string.IsNullOrEmpty(ExecutionAssetType.IGCAssetRelationshipBreakdown) ? new IGCAssetRelationshipBreakdownModels() : JsonConvert.DeserializeObject<IGCAssetRelationshipBreakdownModels>(ExecutionAssetType.IGCAssetRelationshipBreakdown);
             ResponsibilityBreakdownModels = string.IsNullOrEmpty(ExecutionAssetType.IGCAssetResponsibilityBreakdown) ? new IGCAssetResponsibilityBreakdownModels() : JsonConvert.DeserializeObject<IGCAssetResponsibilityBreakdownModels>(ExecutionAssetType.IGCAssetResponsibilityBreakdown);
 
-            var fields = Company.Filter<IntegrationAssetTypeFieldItem>(i => i.Active && i.SynchedAssetTypeID == QueueModel.SynchedAssetTypeID).ToList();
-            var relations = Company.Filter<IntegrationAssetTypeRelationItem>(i => i.Active && i.SynchedAssetTypeID == QueueModel.SynchedAssetTypeID).ToList();
-            var relationTargets = Company.Filter<IntegrationAssetTypeRelationItemTarget>(i => i.IntegrationAssetTypeRelationItem.Active && i.IntegrationAssetTypeRelationItem.SynchedAssetTypeID == QueueModel.SynchedAssetTypeID).ToList();
-            var roles = Company.Filter<IntegrationAssetTypeRoleItem>(i => i.Active && i.SynchedAssetTypeID == QueueModel.SynchedAssetTypeID).ToList();
+            var Fields = Company.Filter<IntegrationAssetTypeFieldItem>(i => i.Active && i.SynchedAssetTypeID == QueueModel.SynchedAssetTypeID).ToList();
+            var Relations = Company.Filter<IntegrationAssetTypeRelationItem>(i => i.Active && i.SynchedAssetTypeID == QueueModel.SynchedAssetTypeID).ToList();
+            var RelationTargets = Company.Filter<IntegrationAssetTypeRelationItemTarget>(i => i.IntegrationAssetTypeRelationItem.Active && i.IntegrationAssetTypeRelationItem.SynchedAssetTypeID == QueueModel.SynchedAssetTypeID).ToList();
+            var Roles = Company.Filter<IntegrationAssetTypeRoleItem>(i => i.Active && i.SynchedAssetTypeID == QueueModel.SynchedAssetTypeID).ToList();
+
+            RelationshipTargetComparisons = (
+                                            from rel in Relations
+                                            join tar in RelationTargets on rel.ID equals tar.SynchedAssetTypeRelationItemID
+                                            select new RelationshipTargetComparisonModel
+                                            {
+                                                SourceField = rel.SourceField,
+                                                SourceAssetType = tar.SourceAssetType,
+                                                IntersectTypeID = tar.IntersectTypeID
+                                            }).ToList();
+
+            #endregion
 
             //Reset the error message value, b/c this could be a restart.
             ExecutionAssetType.ErrorMessage = "";
@@ -488,6 +540,8 @@ where	T.CompletedOn is null
             {
                 try
                 {
+                    Log.WriteLine($"Getting type definition for: {SynchedAssetType.SourceAssetTypeName}");
+
                     // First, get the type definition of the asset type, to pull enum values.
                     url = $"{baseUri}types/{SynchedAssetType.SourceAssetTypeName}?showEditProperties=true";
 
@@ -638,17 +692,17 @@ where	T.CompletedOn is null
                         case PageDataClass.Fields:
                             ps = fieldPageSize;
                             begin = ExecutionAssetTypeRetryLog.Begins.Fields;
-                            selectFields = fields.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceField)).Select(i => i.SourceField).ToList();
+                            selectFields = Fields.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceField)).Select(i => i.SourceField).ToList();
                             break;
                         case PageDataClass.Relations:
                             ps = relationshipPageSize;
                             begin = ExecutionAssetTypeRetryLog.Begins.Relations;
-                            selectFields = relations.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceField)).Select(i => i.SourceField).ToList();
+                            selectFields = Relations.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceField)).Select(i => i.SourceField).ToList();
                             break;
                         case PageDataClass.Responsibilities:
                             ps = ownershipPageSize;
                             begin = ExecutionAssetTypeRetryLog.Begins.Responsibilities;
-                            selectFields = roles.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceIdField)).Select(i => i.SourceIdField).ToList();
+                            selectFields = Roles.Where(i => i.IncludeInPropertyRequest && !string.IsNullOrEmpty(i.SourceIdField)).Select(i => i.SourceIdField).ToList();
                             break;
                     }
                     postModel.pageSize = ps;
@@ -668,11 +722,12 @@ where	T.CompletedOn is null
                 currentStep = 2;
                 if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep)
                 {
+                    Log.WriteLine($"BEGIN: Getting field data");
                     parsePostModel(PageDataClass.Fields);
                     var igcReportedAssetCount = DownloadAndSavePageFromIgc(postModel, Company.CurrentCompanyID, url, $"{rootFolderName}/fields", PageDataClass.Fields);
                     ExecutionAssetType.CurrentSourceAssetCount = igcReportedAssetCount;
                     Company.Update(ExecutionAssetType);
-
+                    Log.WriteLine($"END: Getting field data");
                     OnStepCompleted(new StepCompletedEventArgs { Step = currentStep });
                 }
 
@@ -680,9 +735,10 @@ where	T.CompletedOn is null
                 currentStep = 3;
                 if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep)
                 {
+                    Log.WriteLine($"BEGIN: Getting relationship data");
                     parsePostModel(PageDataClass.Relations);
                     DownloadAndSavePageFromIgc(postModel, Company.CurrentCompanyID, url, $"{rootFolderName}/relations", PageDataClass.Relations);
-
+                    Log.WriteLine($"END: Getting relationship data");
                     OnStepCompleted(new StepCompletedEventArgs { Step = currentStep });
                 }
 
@@ -690,9 +746,10 @@ where	T.CompletedOn is null
                 currentStep = 4;
                 if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep)
                 {
+                    Log.WriteLine($"BEGIN: Getting responsibility data");
                     parsePostModel(PageDataClass.Responsibilities);
                     DownloadAndSavePageFromIgc(postModel, Company.CurrentCompanyID, url, $"{rootFolderName}/owners", PageDataClass.Responsibilities);
-
+                    Log.WriteLine($"END: Getting responsibility data");
                     OnStepCompleted(new StepCompletedEventArgs { Step = currentStep });
                 }
 
@@ -718,9 +775,17 @@ where	T.CompletedOn is null
                     requestNumber = 1;
                     totalPageCount = pages.Count;
 
+                    // Clear the execution fields to start.
+                    if (totalPageCount > 0)
+                    {
+                        Log.WriteLine($"Clear out ExecutionAssetField to start processing field data");
+                        cnn.Execute(@"delete integration.ExecutionAssetField where SynchedAssetTypeID = @SynchedAssetTypeID and Section = @section", new { ExecutionAssetType.SynchedAssetTypeID, section = 1 }, commandTimeout: 3600);
+                        Log.WriteLine($"Parsing {totalPageCount} page(s) of field data");
+                    }
+
                     foreach (var p in pages)
                     {
-                        var json = Storage.GetFileContentsAsString(path, p.Name);
+                        var json = Storage.GetFileContentsAsString(path, p.Name, Encoding.UTF8);
                         if (p.Name.Contains("_error"))
                         {
                             ParsePageSavedException(json);
@@ -732,7 +797,7 @@ where	T.CompletedOn is null
 
                             if (page.items.Count > 0)
                             {
-                                var hasChanges = ParseAndSaveAssetsOnIgcPage(cnn, page, 1, requestNumber, fields.Select(i => i.SourceField).ToList());          // step (5)
+                                var hasChanges = ParseAndSaveAssetsOnIgcPage(cnn, page, 1, requestNumber, Fields.Select(i => i.SourceField).ToList());          // step (5)
 
                                 if (hasChanges)
                                 {
@@ -744,7 +809,7 @@ where	T.CompletedOn is null
                                         procedureCommand,
                                         new { ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID, requestNumber, SynchedAssetType.AssetTypeID, r = DefaultResourceID, section = 0 },
                                         commandTimeout: 3600);
-
+                                     
                                     // Section 1 : Fields
                                     cnn.Query<dynamic>(
                                         procedureCommand,
@@ -772,9 +837,17 @@ where	T.CompletedOn is null
                     requestNumber = 1;
                     totalPageCount = pages.Count;
 
+                    // Clear the execution fields to start.
+                    if (totalPageCount > 0)
+                    {
+                        Log.WriteLine($"Clear out ExecutionAssetField to start processing relationship data");
+                        cnn.Execute(@"delete integration.ExecutionAssetField where SynchedAssetTypeID = @SynchedAssetTypeID and Section = @section", new { ExecutionAssetType.SynchedAssetTypeID, section = 2 }, commandTimeout: 3600);
+                        Log.WriteLine($"Parsing {totalPageCount} page(s) of relationship data");
+                    }
+
                     foreach (var p in pages)
                     {
-                        var json = Storage.GetFileContentsAsString(path, p.Name);
+                        var json = Storage.GetFileContentsAsString(path, p.Name, Encoding.UTF8);
                         if (p.Name.Contains("_error"))
                         {
                             ParsePageSavedException(json);
@@ -785,7 +858,7 @@ where	T.CompletedOn is null
                             var page = JsonConvert.DeserializeObject<IgcDynamicArrayModels>(json);
                             if (page.items.Count > 0)
                             {
-                                var hasChanges = ParseAndSaveAssetsOnIgcPage(cnn, page, 2, requestNumber, relations.Select(i => i.SourceField).ToList());          // step (5)
+                                var hasChanges = ParseAndSaveAssetsOnIgcPage(cnn, page, 2, requestNumber, Relations.Select(i => i.SourceField).ToList());          // step (5)
 
                                 if (hasChanges)
                                 {
@@ -861,7 +934,7 @@ where	T.CompletedOn is null
                                     }
                                     catch (Exception wex)
                                     {
-                                        Log.WriteLine($"Workflow error - Company: {QueueModel.CompanyID}, Exception: {wex.GetFullExceptionData(false)}");
+                                        this.Log.WriteLine($"Workflow error - Company: {QueueModel.CompanyID}, Exception: {wex.GetFullExceptionData(false)}");
                                         CoreFunction.AITrackException(functionName, wex);
                                     }
 
@@ -888,9 +961,17 @@ where	T.CompletedOn is null
                     requestNumber = 1;
                     totalPageCount = pages.Count;
 
+                    // Clear the execution fields to start.
+                    if (totalPageCount > 0)
+                    {
+                        Log.WriteLine($"Clear out ExecutionAssetField to start processing responsibility data");
+                        cnn.Execute(@"delete integration.ExecutionAssetField where SynchedAssetTypeID = @SynchedAssetTypeID and Section = @section", new { ExecutionAssetType.SynchedAssetTypeID, section = 3 }, commandTimeout: 3600);
+                        Log.WriteLine($"Parsing {totalPageCount} page(s) of responsibility data");
+                    }
+
                     foreach (var p in pages)
                     {
-                        var json = Storage.GetFileContentsAsString(path, p.Name);
+                        var json = Storage.GetFileContentsAsString(path, p.Name, Encoding.UTF8);
                         if (p.Name.Contains("_error"))
                         {
                             ParsePageSavedException(json);
@@ -904,7 +985,7 @@ where	T.CompletedOn is null
                             {
                                 if (page.items.Count > 0)
                                 {
-                                    var hasChanges = ParseAndSaveAssetsOnIgcPage(cnn, page, 3, requestNumber, roles.Select(i => i.SourceIdField).ToList());
+                                    var hasChanges = ParseAndSaveAssetsOnIgcPage(cnn, page, 3, requestNumber, Roles.Select(i => i.SourceIdField).ToList());
 
                                     if (hasChanges)
                                     {
@@ -935,6 +1016,8 @@ where	T.CompletedOn is null
                 currentStep = 8;
                 if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep)
                 {
+                    Log.WriteLine($"Process metrics");
+
                     if (cnn.State != System.Data.ConnectionState.Open)
                         cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
 
@@ -954,6 +1037,8 @@ where	T.CompletedOn is null
                 currentStep = 9;
                 if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep && !checkForChangesOnly && !fatalError)
                 {
+                    Log.WriteLine($"Process deletions");
+
                     // You can do a delete based on asset hash missing attributes.
                     if (cnn.State != System.Data.ConnectionState.Open)
                         cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
@@ -973,6 +1058,8 @@ where	T.CompletedOn is null
                 currentStep = 10;
                 if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep)
                 {
+                    Log.WriteLine($"Do final clearing of execution data like fields");
+
                     if (cnn.State != System.Data.ConnectionState.Open)
                         cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
                     cnn.Execute("delete integration.ExecutionAssetField where SynchedAssetTypeID = @at", new { at = ExecutionAssetType.SynchedAssetTypeID }, commandTimeout: 7200);
@@ -983,6 +1070,8 @@ where	T.CompletedOn is null
                 currentStep = 11;
                 if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep)
                 {
+                    Log.WriteLine($"Do final clearing of execution data like hash");
+
                     if (cnn.State != System.Data.ConnectionState.Open)
                         cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
                     cnn.Execute("update integration.AssetHash set RequestNumber = null, [Action] = null, UpdateHash = null where SynchedAssetTypeID = @at", new { at = ExecutionAssetType.SynchedAssetTypeID }, commandTimeout: 7200);
@@ -1005,11 +1094,8 @@ where	T.CompletedOn is null
                 }
                 catch (Exception cex)
                 {
+                    Log.WriteLine(cex.GetFullExceptionData(false));
                     CoreFunction.AITrackException(functionName, cex);
-                }
-                if (oex.Message.Contains("403 (Forbidden)"))
-                {
-                    throw oex;
                 }
             }
             finally
@@ -1026,15 +1112,28 @@ where	T.CompletedOn is null
                     }
 
                     ExecutionAssetType.RetryLog = JsonConvert.SerializeObject(ExecutionAssetTypeRetryLog);
+
+                    if (
+                        (
+                        ExecutionAssetType.ErrorMessage.Contains("403 (Forbidden)") || 
+                        ExecutionAssetType.ErrorMessage.Contains("Unexpected character encountered while parsing value: <. Path ''")
+                        )
+                        && !ExecutionAssetType.CompletedOn.HasValue
+                       )
+                    {
+                        ExecutionAssetType.DelayUntil = DateTime.UtcNow.AddMinutes(30);
+                    }
+
                     Company.Update(ExecutionAssetType);
 
-                    if (ExecutionAssetTypeRetryLog.LastRetryInError && ExecutionAssetTypeRetryLog.RetryCount < 10)
+                    if (ExecutionAssetTypeRetryLog.LastRetryInError && ExecutionAssetTypeRetryLog.RetryCount < 10 && !ExecutionAssetType.DelayUntil.HasValue)
                     {
                         Queue.CreateMessage(CoreFunction.GetConfigValueByKey("IntegrationQueue"), QueueModel);
                     }
                 }
                 catch (Exception cex)
                 {
+                    Log.WriteLine(cex.GetFullExceptionData(false));
                     CoreFunction.AITrackException(functionName, cex);
                 }
             }
@@ -1238,10 +1337,17 @@ where	T.CompletedOn is null
                                             {
                                                 OnRelationshipBreakdownModelsUpdated(new RelationshipBreakdownModelsUpdatedEventArgs
                                                 {
-                                                    Updates = relationshipCollection.items
-                                                                    .GroupBy(rc => rc._type)
-                                                                    .Select(rcg => new IGCAssetRelationshipBreakdownModel { AssetTypeName = rcg.Key, Count = rcg.Count(), FieldName = prop.Name })
-                                                                    .ToList()
+                                                    Updates = (
+                                                              from rci in relationshipCollection.items
+                                                              join rtc in RelationshipTargetComparisons on rci._type equals rtc.SourceAssetType
+                                                              where rtc.SourceField == prop.Name
+                                                              group rtc by new { rtc.SourceAssetType, rtc.IntersectTypeID } into g
+                                                              select new IGCAssetRelationshipBreakdownModel {
+                                                                  AssetTypeName = g.Key.SourceAssetType,
+                                                                  FieldName = prop.Name,
+                                                                  IntersectTypeID = g.Key.IntersectTypeID,
+                                                                  Count = g.Count()
+                                                              }).ToList()
                                                 });
                                             }
                                         }
@@ -1334,8 +1440,6 @@ where	T.CompletedOn is null
             #endregion
 
             #region Load the fields for changed assets
-
-            cnn.Execute(@"delete integration.ExecutionAssetField where SynchedAssetTypeID = @SynchedAssetTypeID and Section = @section", new { ExecutionAssetType.SynchedAssetTypeID, section }, commandTimeout: 3600);
 
             var fieldTbl = new System.Data.DataTable();
 
@@ -1444,6 +1548,25 @@ where	T.CompletedOn is null
 
                     bulkCopy.WriteToServer(fieldTbl);
                 }
+
+                // Then merge the field data above into integration.AssetField table.
+                cnn.Execute(@"
+merge	[integration].[AssetField] T
+using	(
+        select *
+        from    [integration].[ExecutionAssetField] 
+        where   SynchedAssetTypeID = @SynchedAssetTypeID and Section = @section
+        ) S
+on		(T.SynchedAssetTypeID = S.SynchedAssetTypeID and T.[Section] = S.[Section] and T.[SourceID] = S.[SourceID] and T.[FieldName] = S.[FieldName])
+when	matched then
+update	set
+		T.FieldValue = S.FieldValue
+when	not matched then
+insert	(SynchedAssetTypeID, Section, SourceID, FieldName, FieldValue)
+values	(S.SynchedAssetTypeID, S.Section, S.SourceID, S.FieldName, S.FieldValue);
+delete integration.ExecutionAssetField where SynchedAssetTypeID = @SynchedAssetTypeID and Section = @section;
+", new { ExecutionAssetType.SynchedAssetTypeID, section }, commandTimeout: 6000, commandType: System.Data.CommandType.Text);
+
             }
 
             fieldTbl.Dispose();
@@ -1478,9 +1601,19 @@ where	T.CompletedOn is null
             {
                 Client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", AuthenticationHeaderValue);
 
-                using (var response = await Client.PostAsync(uri, new StringContent(requestBody, System.Text.Encoding.UTF8, "application/json")))
+                using (var response = await Client.PostAsync(uri, new StringContent(requestBody, Encoding.UTF8, "application/json")))
                 {
-                    jsonToReturn = await response.Content.ReadAsStringAsync();
+                    var stream = await response.Content.ReadAsStreamAsync();
+                    var rdr = new StreamReader(stream, Encoding.UTF8);
+                    jsonToReturn = rdr.ReadToEnd();
+                    rdr.Dispose();
+                    stream.Dispose();
+                    //byte[] bytes = await response.Content.ReadAsByteArrayAsync();
+                    //byte[] convertedBytes = Encoding.Convert(Encoding.UTF8, Encoding.Unicode, bytes);
+                    //jsonToReturn = Encoding.Unicode.GetString(convertedBytes);
+
+
+                    //jsonToReturn = await response.Content.ReadAsStringAsync();
 
                     cookies = (from c in response.Headers.Where(c => c.Key == "Set-Cookie")
                                from cv in c.Value
