@@ -9,6 +9,7 @@ import { AuthenticationConnectionBackend } from '../../authentication-connection
 import { CoreModule } from '../shared/core.module';
 import { TilesModule } from '../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
+import { PipesModule } from '../../pipes/pipes.module';
 
 import { WorkflowMonitorRoutingModule } from './workflowmonitor.routes';
 import { WorkflowMonitorComponent } from './workflowmonitor.component';
@@ -23,7 +24,6 @@ import { WorkflowMonitorStepEmailDetailsComponent } from './workflowmonitor-step
 import { WorkflowMonitorActionDetailsComponent } from './workflowmonitor-action-details.component';
 import { WorkflowMonitorStepFieldChangeDetailsComponent } from './workflowmonitor-step-field-change-details.component';
 import { WorkflowMonitorStepRelationshipChangeDetailsComponent } from './workflowmonitor-step-relationship-change-details';
-
 
 import { SharedObjectDetailsModule } from '../shared/objectdetails/shared-object-details.module';
 import { D3SSharedModule } from '../shared/shared.module';
@@ -43,15 +43,13 @@ import {
 
 import { TableModule } from 'primeng/table';
 
-
-
-
 @NgModule({
     imports: [CommonModule,
         DeprecatedI18NPipesModule,
         HttpModule,
         RouterModule,
         FormsModule,
+        PipesModule,
 
         //primeng
         GrowlModule,
