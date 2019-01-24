@@ -35,7 +35,6 @@ export class ExportTemplateService extends BaseService {
                 map(item => { return <ExportTemplate>item }),
                 catchError(err => this.handleError(err)),);
         }
-        console.log(exportTemplate);
         
         return this.http
                 .post<ExportTemplate>(`/api/v2/exporttemplates`, exportTemplate).pipe(
