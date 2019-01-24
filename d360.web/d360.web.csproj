@@ -729,6 +729,7 @@
     <Content Include="Scripts\app\components\shoppingcart\shopping-cart-request.component.html" />
     <Content Include="Scripts\app\components\shoppingcart\shopping-cart.component.html" />
     <Content Include="Scripts\app\components\workflowmonitor\workflowmonitor-step-details.component.html" />
+    <Content Include="Scripts\app\components\workflowmonitor\workflowmonitor-step-email-details.component.html" />
     <Content Include="Scripts\app\components\workflow\workflow-form.component.html" />
     <Content Include="Scripts\app\main.bundle.js" />
     <Content Include="Scripts\app\polyfills.bundle.js" />
