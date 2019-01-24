@@ -1,4 +1,5 @@
-﻿<div *ngIf="step != null" style="padding:10px;">
+﻿<div *ngIf="step != null"
+    style="padding:10px;">
     <!--COMMON PROPERTIES-->
     <div class="row">
         <div class="col s6">
@@ -9,7 +10,8 @@
                 {{step.name}}
             </div>
         </div>
-        <div class="col s6" *ngIf="step.activityType != null && step.activityType > 0">
+        <div class="col s6"
+            *ngIf="step.activityType != null && step.activityType > 0">
             <div class="FieldName">
                 Activity Type
             </div>
@@ -17,7 +19,8 @@
                 {{step.activityDescription}}
             </div>
         </div>
-        <div class="col s6" *ngIf="step.stepType != StepType.Task">
+        <div class="col s6"
+            *ngIf="step.stepType != StepType.Task">
             <div class="FieldName">
                 Step Type
             </div>
@@ -30,16 +33,20 @@
     <ng-container *ngIf="step.settings != null">
         <ng-container [ngSwitch]="step.activityType">
             <!--EMAIL NOTIFICATION-->
-            <div *ngSwitchCase="WorkflowActivityType.EmailNotification" class="row" style="padding-top:10px">
+            <div *ngSwitchCase="WorkflowActivityType.EmailNotification"
+                class="row"
+                style="padding-top:10px">
                 <div class="col s6">
                     <div class="FieldName">
                         Recipient Type
                     </div>
                     <div>
-                        {{step.settings['MessageRecipientType'] == 'SpecificUser' ? 'Specific User' : step.settings['MessageRecipientType']}}
+                        {{step.settings['MessageRecipientType'] == 'SpecificUser' ? 'Specific User' :
+                        step.settings['MessageRecipientType']}}
                     </div>
                 </div>
-                <div class="col s6" *ngIf="step.settings['MessageRecipientType'] == 'SpecificUser'">
+                <div class="col s6"
+                    *ngIf="step.settings['MessageRecipientType'] == 'SpecificUser'">
                     <div class="FieldName">
                         Recipient
                     </div>
@@ -47,7 +54,8 @@
                         {{step.settings['MessageToUser']}}
                     </div>
                 </div>
-                <div class="col s6" *ngIf="step.settings['MessageRecipientType'] == 'Responsibility'">
+                <div class="col s6"
+                    *ngIf="step.settings['MessageRecipientType'] == 'Responsibility'">
                     <div class="FieldName">
                         Responsibility
                     </div>
@@ -74,11 +82,14 @@
                     <div class="FieldName">
                         Body
                     </div>
-                    <div class="FormFieldContent" *ngIf="step.settings['MessageBodyTemplate']" [innerHtml]="step.settings['MessageBodyTemplate']">
+                    <div class="FormFieldContent"
+                        *ngIf="step.settings['MessageBodyTemplate']"
+                        [innerHtml]="step.settings['MessageBodyTemplate'] | safeHtml">
 
                     </div>
                 </div>
-                <div class="col s12" *ngIf="step.settings['IncludePreviousFormResponses'] != null">
+                <div class="col s12"
+                    *ngIf="step.settings['IncludePreviousFormResponses'] != null">
                     <div class="FieldName">Include previous form responses?</div>
                     <div>
                         {{step.settings['IncludePreviousFormResponses'].toString() == 'true' ? 'Yes' : 'No'}}
@@ -86,9 +97,12 @@
                 </div>
             </div>
             <!--FORM-->
-            <div *ngSwitchCase="WorkflowActivityType.Form" class="row" style="padding-top:10px">
+            <div *ngSwitchCase="WorkflowActivityType.Form"
+                class="row"
+                style="padding-top:10px">
                 <ng-container *ngIf="step != null && step.fields != null && step.fields.form != null">
-                    <div class="col s6" *ngIf="step.fields.form['@title'] != null">
+                    <div class="col s6"
+                        *ngIf="step.fields.form['@title'] != null">
                         <div class="FieldName">
                             Title
                         </div>
@@ -96,11 +110,13 @@
                             {{step?.fields?.form['@title']}}
                         </div>
                     </div>
-                    <div class="col s12" *ngIf="step.fields.form['@description'] != null">
+                    <div class="col s12"
+                        *ngIf="step.fields.form['@description'] != null">
                         <div class="FieldName">
                             Description
                         </div>
-                        <div class="FormFieldContent" [innerHTML]="step.fields.form['@description'] | safeHtml"></div>
+                        <div class="FormFieldContent"
+                            [innerHTML]="step.fields.form['@description'] | safeHtml"></div>
                     </div>
                 </ng-container>
                 <div class="col s6">
@@ -108,7 +124,8 @@
                         Response Type
                     </div>
                     <div>
-                        {{step?.settings?.FormResponseType == 'FirstResponse' ? 'First Response' : step?.settings?.FormResponseType}}
+                        {{step?.settings?.FormResponseType == 'FirstResponse' ? 'First Response' :
+                        step?.settings?.FormResponseType}}
                     </div>
                 </div>
                 <div class="col s6">
@@ -116,10 +133,12 @@
                         Recipient Type
                     </div>
                     <div>
-                        {{step?.settings['MessageRecipientType'] == 'SpecificUser' ? 'Specific User' : step?.settings['MessageRecipientType']}}
+                        {{step?.settings['MessageRecipientType'] == 'SpecificUser' ? 'Specific User' :
+                        step?.settings['MessageRecipientType']}}
                     </div>
                 </div>
-                <div class="col s6" *ngIf="step?.settings['MessageRecipientType'] == 'SpecificUser'">
+                <div class="col s6"
+                    *ngIf="step?.settings['MessageRecipientType'] == 'SpecificUser'">
                     <div class="FieldName">
                         Recipient
                     </div>
@@ -127,17 +146,24 @@
                         {{step?.settings['MessageToUser']}}
                     </div>
                 </div>
-                <div class="col s6" *ngIf="step.settings['MessageRecipientType'] == 'Responsibility'">
+                <div class="col s6"
+                    *ngIf="step.settings['MessageRecipientType'] == 'Responsibility'">
                     <div class="FieldName">
-                        {{(step.settings.ResponsibilityTypeID == null || step.settings.ResponsibilityTypeID.length < 2) ? 'Responsibility' : 'Responsibilities' }}
-                    </div>
-                    <div *ngFor="let x of step.settings.ResponsibilityTypeID; let i = index">
-                        <ng-container *ngIf="step.settings.ResponsibilityTypeID[i] != null">
-                            {{step?.settings?.ResponsibilitySide != null ? step?.settings?.ResponsibilitySide : ''}} {{getResponsibilityName(i)}}
-                        </ng-container>
+                        {{(step.settings.ResponsibilityTypeID == null || step.settings.ResponsibilityTypeID.length < 2)
+                            ? 'Responsibility'
+                            : 'Responsibilities'
+                            }}
+                            </div>
+                            <div
+                            *ngFor="let x of step.settings.ResponsibilityTypeID; let i = index">
+                            <ng-container *ngIf="step.settings.ResponsibilityTypeID[i] != null">
+                                {{step?.settings?.ResponsibilitySide != null ? step?.settings?.ResponsibilitySide :
+                                ''}} {{getResponsibilityName(i)}}
+                            </ng-container>
                     </div>
                 </div>
-                <div class="col s6" *ngIf="step?.fields?.form != null && step?.fields?.form['@allowReassignResource'] != null">
+                <div class="col s6"
+                    *ngIf="step?.fields?.form != null && step?.fields?.form['@allowReassignResource'] != null">
                     <div class="FieldName">
                         Allow resource reassignment?
                     </div>
@@ -145,7 +171,8 @@
                         {{step?.fields?.form['@allowReassignResource'].toString() == 'true' ? 'Yes' : 'No'}}
                     </div>
                 </div>
-                <div class="col s6" *ngIf="step.settings['SendFormEmail'] != null">
+                <div class="col s6"
+                    *ngIf="step.settings['SendFormEmail'] != null">
                     <div class="FieldName">
                         Send form email?
                     </div>
@@ -153,7 +180,8 @@
                         {{step?.settings['SendFormEmail'].toString() == 'true' ? 'Yes' : 'No'}}
                     </div>
                 </div>
-                <div class="col s6" *ngIf="step?.fields?.form != null && step?.fields?.form['@allowReassignObject'] != null">
+                <div class="col s6"
+                    *ngIf="step?.fields?.form != null && step?.fields?.form['@allowReassignObject'] != null">
                     <div class="FieldName">
                         Allow object reassignment?
                     </div>
@@ -161,13 +189,15 @@
                         {{step?.fields?.form['@allowReassignObject'].toString() == 'true' ? 'Yes' : 'No'}}
                     </div>
                 </div>
-                <div class="col s12" *ngIf="step.settings['IncludePreviousFormResponses'] != null">
+                <div class="col s12"
+                    *ngIf="step.settings['IncludePreviousFormResponses'] != null">
                     <div class="FieldName">Include previous form responses?</div>
                     <div>
                         {{step.settings['IncludePreviousFormResponses'].toString() == 'true' ? 'Yes' : 'No'}}
                     </div>
                 </div>
-                <div class="col s12" *ngIf="step.settings['SendFormEmail'] != null && step.settings['SendFormEmail'].toString() == 'true' && step?.settings?.MessageSubjectTemplate != null">
+                <div class="col s12"
+                    *ngIf="step.settings['SendFormEmail'] != null && step.settings['SendFormEmail'].toString() == 'true' && step?.settings?.MessageSubjectTemplate != null">
                     <div class="FieldName">
                         Subject
                     </div>
@@ -175,11 +205,14 @@
                         {{step?.settings['MessageSubjectTemplate']}}
                     </div>
                 </div>
-                <div class="col s12" *ngIf="step.settings['SendFormEmail'] != null && step.settings['SendFormEmail'].toString() == 'true'">
+                <div class="col s12"
+                    *ngIf="step.settings['SendFormEmail'] != null && step.settings['SendFormEmail'].toString() == 'true'">
                     <div class="FieldName">
                         Body
                     </div>
-                    <div class="FormFieldContent" *ngIf="step.settings['MessageBodyTemplate']"  [innerHTML]="step.settings['MessageBodyTemplate']  | safeHtml">
+                    <div class="FormFieldContent"
+                        *ngIf="step.settings['MessageBodyTemplate']"
+                        [innerHTML]="step.settings['MessageBodyTemplate'] | safeHtml">
 
                     </div>
                 </div>
@@ -188,14 +221,18 @@
                         Form Inputs
                     </div>
                     <ng-container *ngIf="step.fields.form != null && step.fields.form.field != null && step.fields.form.field.length > 0; else none">
-                        <p-table #dt [value]="step.fields.form.field" selectionMode="single" [metaKeySelection]="true">
+                        <p-table #dt
+                            [value]="step.fields.form.field"
+                            selectionMode="single"
+                            [metaKeySelection]="true">
                             <ng-template pTemplate="header">
                                 <tr>
                                     <th>Label</th>
                                     <th>Type</th>
                                 </tr>
                             </ng-template>
-                            <ng-template pTemplate="body" let-item>
+                            <ng-template pTemplate="body"
+                                let-item>
                                 <tr [pSelectableRow]="item">
                                     <td>{{item['@label']}}</td>
                                     <td>
@@ -213,27 +250,43 @@
                 </div>
             </div>
             <!--FIELD CHANGE-->
-            <div *ngSwitchCase="WorkflowActivityType.FieldChange" class="row"  style="padding-top:10px">
-                <div class="col s12" *ngIf="step?.settings?.FieldUpdate?.Field != null">
+            <div *ngSwitchCase="WorkflowActivityType.FieldChange"
+                class="row"
+                style="padding-top:10px">
+                <div class="col s12"
+                    *ngIf="step?.settings?.FieldUpdate?.Field != null">
 
-                    <p-table *ngIf="!isLoading" #dt [value]="step.settings.FieldUpdate.Field" selectionMode="single" [metaKeySelection]="true" [pageLinks]="3" [paginator]="true" [rows]="5" [rowsPerPageOptions]="defaultPagingOptions">
+                    <p-table *ngIf="!isLoading"
+                        #dt
+                        [value]="step.settings.FieldUpdate.Field"
+                        selectionMode="single"
+                        [metaKeySelection]="true"
+                        [pageLinks]="3"
+                        [paginator]="true"
+                        [rows]="5"
+                        [rowsPerPageOptions]="defaultPagingOptions">
                         <ng-template pTemplate="header">
                             <tr>
                                 <th>Field</th>
                                 <th>Value</th>
                             </tr>
                         </ng-template>
-                        <ng-template pTemplate="body" let-item>
+                        <ng-template pTemplate="body"
+                            let-item>
                             <tr [pSelectableRow]="item">
                                 <td>{{item['@FieldName']}}</td>
                                 <td>
                                     <div *ngIf="item != null">
-                                        <span *ngIf="item['@UseCurrentDate'] != null && item['@UseCurrentDate'].toString() == 'true'">[use date at time of execution]</span>
-                                        <span *ngIf="item['@ClearValue'] != null && item['@ClearValue'].toString() == 'true'">[clear the field value]</span>
-                                        <span *ngIf="item['@UseFormValue'] != null && item['@UseFormValue'].toString() == 'true'">[use value from form input {{item['@Formlabel']}}]</span>
+                                        <span *ngIf="item['@UseCurrentDate'] != null && item['@UseCurrentDate'].toString() == 'true'">[use
+                                            date at time of execution]</span>
+                                        <span *ngIf="item['@ClearValue'] != null && item['@ClearValue'].toString() == 'true'">[clear
+                                            the field value]</span>
+                                        <span *ngIf="item['@UseFormValue'] != null && item['@UseFormValue'].toString() == 'true'">[use
+                                            value from form input {{item['@Formlabel']}}]</span>
                                         <div *ngIf="(item['@UseCurrentDate'] == null || item['@UseCurrentDate'].toString() == 'false') && (item['@UseFormValue'] == null || item['@UseFormValue'].toString() == 'false') && (item['@ClearValue'] == null || item['@ClearValue'].toString() == 'false')">
                                             <ng-container *ngIf="isHtml(item); else str">
-                                                <div [innerHtml]="getValue(item)" style="max-height: 42px; overflow: hidden; text-overflow: ellipsis">
+                                                <div [innerHtml]="getValue(item) | safeHtml"
+                                                    style="max-height: 42px; overflow: hidden; text-overflow: ellipsis">
                                                 </div>
                                             </ng-container>
                                             <ng-template #str>
@@ -245,21 +298,26 @@
                             </tr>
                         </ng-template>
                         <ng-template pTemplate="summary">
-                            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                            <d3s-grid-paging-info [first]="dt.first"
+                                [rows]="dt.rows"
+                                [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
                         </ng-template>
                     </p-table>
                 </div>
             </div>
             <!--STORED PROCEDURE-->
-            <div *ngSwitchCase="WorkflowActivityType.Procedure" class="row">
+            <div *ngSwitchCase="WorkflowActivityType.Procedure"
+                class="row">
 
             </div>
             <!--RELATIONSHIP UPDATE-->
-            <div *ngSwitchCase="WorkflowActivityType.RelationshipUpdate" class="row">
+            <div *ngSwitchCase="WorkflowActivityType.RelationshipUpdate"
+                class="row">
 
             </div>
             <!--STATE CHANGE-->
-            <div *ngSwitchCase="WorkflowActivityType.StateChange" class="row">
+            <div *ngSwitchCase="WorkflowActivityType.StateChange"
+                class="row">
                 <div class="col s6">
                     <div class="FieldName">State</div>
                     <div>
@@ -268,13 +326,14 @@
                 </div>
             </div>
             <!--DELETE-->
-            <div *ngSwitchCase="WorkflowActivityType.Delete" class="row">
+            <div *ngSwitchCase="WorkflowActivityType.Delete"
+                class="row">
 
             </div>
         </ng-container>
     </ng-container>
 </div>
-<div *ngIf="step == null" style="text-align: center">
+<div *ngIf="step == null"
+    style="text-align: center">
     Nothing selected
 </div>
-
