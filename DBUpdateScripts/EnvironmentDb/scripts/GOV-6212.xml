@@ -1872,5 +1872,32 @@ SELECT aet.[ID] as AssetTypeExportTemplateID
         delete from [dbo].[AssetTypeExportTemplateStyle];
         delete from [dbo].[AssetTypeExportTemplate];
     </rollback>
-	</changeSet>
+  </changeSet>
+  <changeSet author="TKlok" id="GOV-6212-fk">
+	<dropForeignKeyConstraint
+		baseTableName="AssetTypeExportTemplateStyle"
+		constraintName="FK_AssetTypeExportTemplateStyle_AssetTypeExportTemplate"
+		/>
+	<addForeignKeyConstraint
+		baseTableName="AssetTypeExportTemplateStyle"
+		constraintName="FK_AssetTypeExportTemplateStyle_AssetTypeExportTemplate"
+		baseColumnNames="AssetTypeExportTemplateID"
+		referencedTableName="AssetTypeExportTemplate"
+		referencedColumnNames="ID"
+		onDelete="CASCADE"
+		/>
+    <rollback>
+	<dropForeignKeyConstraint
+		baseTableName="AssetTypeExportTemplateStyle"
+		constraintName="FK_AssetTypeExportTemplateStyle_AssetTypeExportTemplate"
+		/>
+	<addForeignKeyConstraint
+		baseTableName="AssetTypeExportTemplateStyle"
+		constraintName="FK_AssetTypeExportTemplateStyle_AssetTypeExportTemplate"
+		baseColumnNames="AssetTypeExportTemplateID"
+		referencedTableName="AssetTypeExportTemplate"
+		referencedColumnNames="ID"
+		/>
+	</rollback>
+  </changeSet>
 </databaseChangeLog>
