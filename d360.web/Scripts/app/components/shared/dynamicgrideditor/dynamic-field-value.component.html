@@ -1,0 +1,33 @@
+<style>
+    a,
+    span {
+        word-break: break-all;
+        display: inline-block;
+        /* for IE */
+    }
+</style>
+<span [ngSwitch]="fieldType">
+    <span *ngSwitchCase="'date'"><span *ngIf="fieldValue">{{fieldValue | date:'shortDate'}}</span></span>
+    <span *ngSwitchCase="'datetime'"><span *ngIf="fieldValue">{{fieldValue | date:'medium'}}</span></span>
+    <span *ngSwitchCase="'number'">{{formatAsNumber()}}</span>
+    <span *ngSwitchCase="'bool'">
+        <i *ngIf="fieldValue == 'TRUE'"
+            class="fa fa-check enabled"
+            title="True"></i>
+        <i *ngIf="fieldValue == 'FALSE'"
+            class="fa fa-times disabled"
+            title="False"></i>
+    </span>
+    <span *ngSwitchCase="'lookup'">
+        <d3s-lookup-tooltip [objectType]="item[column.objectfield]"
+            [objectId]="item[column.objectidfield]">
+            <a (click)="navigate(item[column.urlfield])"
+                [innerText]="fieldValue"></a>
+        </d3s-lookup-tooltip>
+    </span>
+    <span *ngSwitchCase="'string'">{{fieldValue}}</span>
+    <ng-template ngSwitchDefault>
+        <span *ngIf="fieldValue != null"
+            [innerHtml]="fieldValue"></span>
+    </ng-template>
+</span>

@@ -17,13 +17,6 @@ import { Router } from '@angular/router';
                 </div>
             </div>            
             <ng-template [ngIf]="!field.Values || field.Values.length == 0">
-            <style>
-            a,
-            span,
-            div {
-                word-break: break-all;
-            }
-        </style>
                 <div *ngIf="field.Type == DetailFieldType.Field && field.Name == 'Email'" class="FieldDisplayContent"><a [href]="'mailto:' + field.Value">{{field.Value}}</a></div>
                 <div *ngIf="field.Type == DetailFieldType.Field && field.Name != 'Email' && field.DataType == 'date'" class="FieldDisplayContent" >
                     <div *ngIf="field.Value" [innerHtml]="field.Value | date:'shortDate'"></div>
