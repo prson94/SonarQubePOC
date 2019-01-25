@@ -49,7 +49,7 @@ BEGIN
 
 	insert into @table values (null, @ObjectScore, 'Score', null, null, null)
 
-	if @type = 'Artifact' or @type = 'Taxonomy' or @type = 'Rule'
+	if @type = 'Artifact' or @type = 'Taxonomy' or @type = 'Rule' or @type = 'Policy'
 	begin
 		insert into @table 
 			select 
