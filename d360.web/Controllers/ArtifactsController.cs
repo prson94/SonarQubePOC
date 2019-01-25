@@ -763,8 +763,6 @@ where   O.Type = 'ArtifactType' and O.TypeID = @id and O.[State] = 1
                     };
                 }
                 var filters = GetFilterValuesFromRequest(Request,true);
-                string querry = $"[dbo].GetAssetTextPathById(3,'.') ";
-                var text = Company.Query<dynamic>(querry);
                 var results = await Company.GetPivotVersionDynamicAssets(assetType, filters, pagenum, pagesize, false, sortDataField, sortOrder, filter);
 
                 return new JsonNetResult

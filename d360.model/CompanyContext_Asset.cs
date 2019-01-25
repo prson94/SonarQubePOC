@@ -88,11 +88,8 @@ cross apply (select count(1) as [Count] from ResponsibilityAllAsset where Resour
             var relationshipJoinStatement = "";
             if (selectFields.Any(i => i.Type == "Relationship"))
             {
-                if (selectFields.Any(i => i.Type == "Relationship"))
-                {
-                    relationshipCaseStatement = @" when FT.Type = 'Relationship' and FT.LookupObjectType = 'IntersectType' then RD.DisplayValue ";
-                }
-
+                relationshipCaseStatement = @" when FT.Type = 'Relationship' and FT.LookupObjectType = 'IntersectType' then RD.DisplayValue ";
+                
                 relationshipJoinStatement = $@"
  left join [Intersect] F_R{tableHints} on	FT.LookupObjectType = 'IntersectType' 
 										and F_R.IntersectTypeID = FT.LookupObjectID 
@@ -100,9 +97,19 @@ cross apply (select count(1) as [Count] from ResponsibilityAllAsset where Resour
 											(F_R.Subject = A.Object and F_R.SubjectID = A.ObjectID) or 
 											(F_R.Object = A.Object and F_R.ObjectID = A.ObjectID)
 											) 
-outer apply dbo.GetObjectDisplayValueById(
-	case when F_R.Subject = A.Object and F_R.SubjectID = A.ObjectID then F_R.Object else F_R.Subject end,
-	case when F_R.Subject = A.Object and F_R.SubjectID = A.ObjectID then F_R.ObjectID else F_R.SubjectID end) RD ";
+outer apply (
+        select
+            case when AST.Object = 'Taxonomy' then
+				Textpath.TextPath  
+            else
+				D.DisplayValue 
+            end as DisplayValue
+         from Asset AST
+         outer apply dbo.GetObjectDisplayValueById(AST.Object, AST.ObjectID) as D
+         outer apply dbo.GetAssetTextPathById(AST.ID, '/') as  Textpath
+         where AST.Object = case when F_R.Subject = A.Object and F_R.SubjectID = A.ObjectID then F_R.Object else F_R.Subject end
+         and AST.ObjectID = case when F_R.Subject = A.Object and F_R.SubjectID = A.ObjectID then F_R.ObjectID else F_R.SubjectID end 
+            ) RD";
             }
 
             #endregion
@@ -470,13 +477,23 @@ OPTION (RECOMPILE)";
                 pageSize = 25;
             pageNumber = ((pageNumber < 0) ? 0 : pageNumber) * pageSize;
 
-            var sql = $@"
+
+            string textPathStatement = string.Empty;
+            if (selectFields.Any(i => i.Type == "Relationship"))
+            {
+                textPathStatement = "cross apply GetAssetTextPathById(A.ID, '/') as  TextPath";
+            }
+
+
+
+
+                var sql = $@"
 select	*
 from	(
 		select	AssetID, Object, ObjectID, Type, TypeID, 
                {parentOuterSqlColumn}  
                 P_CanEdit, P_CanDelete,
-				{selectFieldString}
+				{selectFieldString} 
 		from	(
 				select	A.ID as AssetID,
                         A.AssetTypeID as AssetTypeID,
@@ -494,8 +511,9 @@ from	(
 							{relationshipCaseStatement}
 							{fieldFromRelationshipCaseStatement}
 							else '' 
-						end as [Field]											
-				from	Asset A{tableHints}
+						end as [Field]	
+				from	Asset A{tableHints} 
+                        {textPathStatement}
                         {parentSqlJoin} 
                         inner join AssetType AST{tableHints} on AST.ID = A.AssetTypeID and AST.ID = @atID and A.State = 1  
                         {filterJoinString}     
