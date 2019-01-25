@@ -96,30 +96,32 @@ namespace d360.extensions.queue
         public void CreateTopicMessage(EventInfo e)
         {
             var topicName = getTopicName();
-            CreateTopicMessageAsync(topicName, e);
+            var bm = new BrokeredMessage(e);
+            bm.Properties["topic"] = topicName;
+            var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName);
+            client.Send(bm);
         }
 
         public void CreateTopicMessage(string topicName, EventInfo e)
         {
             var bm = new BrokeredMessage(e);
             bm.Properties["topic"] = topicName;
-            var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName); //Microsoft.ServiceBus.ConnectionString in app.config
-            client.Send(bm);
-            client = null;
+            var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName);
+            client.Send(bm);            
         }
 
-        public Task CreateTopicMessageAsync(EventInfo e)
+        public async Task CreateTopicMessageAsync(EventInfo e)
         {
             var topicName = getTopicName();
-            return CreateTopicMessageAsync(topicName, e);
+            await CreateTopicMessageAsync(topicName, e);
         }
 
-        public Task CreateTopicMessageAsync(string topicName, EventInfo e)
+        public async Task CreateTopicMessageAsync(string topicName, EventInfo e)
         {
             var bm = new BrokeredMessage(e);
             bm.Properties["topic"] = topicName;
-            var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName); //Microsoft.ServiceBus.ConnectionString in app.config
-            return client.SendAsync(bm);
+            var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName);
+            await client.SendAsync(bm);
         }
 
         public void CreateTopicMessages(List<EventInfo> events)
@@ -146,8 +148,7 @@ namespace d360.extensions.queue
             }
 
             var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName); //Microsoft.ServiceBus.ConnectionString in app.config
-            client.SendBatch(list);
-            client = null;
+            client.SendBatch(list);            
         }
 
         private string getTopicName()
@@ -155,10 +156,10 @@ namespace d360.extensions.queue
             return (CloudConfigurationManager.GetSetting("EventBusTopicName") ?? "events-debug");
         }
 
-        public Task CreateTopicMessagesAsync(List<EventInfo> events)
+        public async Task CreateTopicMessagesAsync(List<EventInfo> events)
         {
             var topicName = getTopicName();
-            return CreateTopicMessagesAsync(topicName, events);
+            await CreateTopicMessagesAsync(topicName, events);
         }
 
         public async Task CreateTopicMessagesAsync(string topicName, List<EventInfo> events)
