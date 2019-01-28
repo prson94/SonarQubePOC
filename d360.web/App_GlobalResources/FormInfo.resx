@@ -375,6 +375,9 @@
   <data name="InUse_Error_Delete" xml:space="preserve">
     <value>The relationship type you are trying to delete has established relationships.  Please delete these prior to deleting the relationship type.</value>
   </data>
+  <data name="InUse_RelationShipType_Error_Delete" xml:space="preserve">
+    <value>The relationship type is referenced by one or more field type definitions. Please update or delete these prior to deleting this relationship type.</value>
+  </data>
   <data name="NoFormData_AttributeType" xml:space="preserve">
     <value>attribute group</value>
   </data>

@@ -1238,6 +1238,11 @@
               Looks up a localized string similar to The relationship type you are trying to delete has established relationships.  Please delete these prior to deleting the relationship type..
             </summary>
         </member>
+        <member name="P:Resources.FormInfo.InUse_RelationShipType_Error_Delete">
+            <summary>
+              Looks up a localized string similar to The relationship type is referenced by one or more field type definitions. Please update or delete these prior to deleting this relationship type..
+            </summary>
+        </member>
         <member name="P:Resources.FormInfo.NoFormData_AttributeType">
             <summary>
               Looks up a localized string similar to attribute group.

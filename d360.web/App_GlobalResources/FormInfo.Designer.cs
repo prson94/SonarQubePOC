@@ -835,6 +835,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The relationship type is referenced by one or more field type definitions. Please update or delete these prior to deleting this relationship type..
+        /// </summary>
+        public static string InUse_RelationShipType_Error_Delete {
+            get {
+                return ResourceManager.GetString("InUse_RelationShipType_Error_Delete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to attribute group.
         /// </summary>
         public static string NoFormData_AttributeType {
