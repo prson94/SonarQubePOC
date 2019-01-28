@@ -384,8 +384,6 @@ begin
 
 	end
 
-	select * from AssetType where Name = 'f444'
-
 	drop table if exists #ObjectMergeTableResult;
 	create table #ObjectMergeTableResult (ID int, ItemNumber int, [Action] nvarchar(10));
 	CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC );
