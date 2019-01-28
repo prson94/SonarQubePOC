@@ -6,6 +6,40 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
+  <changeSet author="Pappas" id="GOV-6250-AssetField">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+IF (NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'integration' AND  TABLE_NAME = 'AssetField'))
+BEGIN
+	CREATE TABLE [integration].[AssetField](
+		[SynchedAssetTypeID] [int] NOT NULL,
+		[Section] [int] NOT NULL,
+		[SourceID] [varchar](100) NOT NULL,
+		[FieldName] [nvarchar](250) NOT NULL,
+		[FieldValue] [nvarchar](max) NULL,
+		CONSTRAINT [PK_IntegrationAssetField] PRIMARY KEY CLUSTERED (
+			[SynchedAssetTypeID] ASC,
+			[SourceID] ASC,
+			[Section] ASC,
+			[FieldName] ASC
+		)
+	)
+END
+]]>
+    </sql>
+    <rollback>
+<![CDATA[
+IF (EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'integration' AND  TABLE_NAME = 'AssetField'))
+BEGIN
+    drop table [integration].[AssetField]
+END
+]]>
+    </rollback>
+  </changeSet> 	
+	
   <changeSet author="Pappas" id="GOV-6250-A">
     <sql dbms="mssql"
             endDelimiter="\nGO"
