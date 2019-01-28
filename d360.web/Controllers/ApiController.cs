@@ -4269,8 +4269,8 @@ order by C.DisplayValue";
 		    T.Object as Type,
 		    T.ObjectID as TypeID,
 		    T.Name as TypeName,
-		    RD.Object,
-		    RD.ObjectID,
+		    A.Object,
+		    A.ObjectID,
 		    utility.GetAssetDisplayValueWrapper(A.ID) as ObjectName,
 		    RD.ResponsibilityTypeName,
 		    case RD.SecurityAsset
