@@ -22,32 +22,7 @@ declare var CompanySettings;
 
 @Component({
     selector: 'd3s-artifact-item',
-    template: ` <d3s-loading [isLoading]="isLoading"></d3s-loading>                                                
-                <div *ngIf="!isLoading">                                    
-                    <d3s-messages-bar [messages]="messages" (messageClick)="showSurvey=true" (messageClose)="showSurvey=false"></d3s-messages-bar>
-                    <div class="row" *ngIf="showSurvey && surveyType">
-                        <div class="col s12">
-                            <div class="tile tile-detail">
-                                <d3s-take-survey [surveyType]="surveyType" [objectID]="artifact?.ID" [objectType]="'Artifact'" (surveyCancel)="showSurvey=false" (surveyComplete)="completeSurvey()"></d3s-take-survey>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row" *ngIf="showSocialScoreBar">
-                        <div class="col s12">
-                             <div class="tile tile-detail" style="padding-left:0;padding-right:0;">
-                                <d3s-object-governance [objectType]="'Artifact'" [objectID]="artifact?.ID" [uid]="artifact?.Uid" [objectName]="artifact?.DisplayValue" [status]="artifact?.Status" [isWorkflowEnabled]="artifact?.HasWorkflow"></d3s-object-governance>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col s12">
-                            <div class="tile tile-detail">                               
-                                <d3s-object-definition-tile [objectPermissions]="permissions" [objectID]="artifact?.ID" [objectType]="'Artifact'" [hasAttributes]="artifact?.AllowAttributes" [nymTypes]="artifact?.NymTypes" (onEditComplete)="editArtifact($event)"></d3s-object-definition-tile>
-                            </div>
-                        </div>
-                    </div>                    
-                </div>                
-                `,
+    templateUrl:'./artifact-item.component.html',
     providers: [ArtifactService, SurveysService, PermissionsService]
 })
 

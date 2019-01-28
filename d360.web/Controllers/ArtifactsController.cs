@@ -753,6 +753,7 @@ where   O.Type = 'ArtifactType' and O.TypeID = @id and O.[State] = 1
             try
             {
                 var assetType = Company.Filter<AssetType>(i => i.Object == "ArtifactType" && i.ObjectID == id).SingleOrDefault();
+                
                 if (assetType == null)
                 {
                     return new JsonNetResult
@@ -762,7 +763,6 @@ where   O.Type = 'ArtifactType' and O.TypeID = @id and O.[State] = 1
                     };
                 }
                 var filters = GetFilterValuesFromRequest(Request,true);
-
                 var results = await Company.GetPivotVersionDynamicAssets(assetType, filters, pagenum, pagesize, false, sortDataField, sortOrder, filter);
 
                 return new JsonNetResult
