@@ -166,7 +166,7 @@ namespace d360.core
 
     public static class GeneralExtensions
     {
-        public static string GetFullExceptionData(this Exception ex)
+        public static string GetFullExceptionData(this Exception ex, bool includeStacktrace = true)
         {
             if (ex.InnerException != null && ex.InnerException.InnerException != null && ex.InnerException.InnerException.GetType() == typeof(SqlException))
             {
@@ -190,7 +190,7 @@ namespace d360.core
             var iex = ex.InnerException;
             while (iex != null)
             {
-                error += ";  " + iex.Message + "-----" + iex.StackTrace;
+                error += $";  {iex.Message}{(includeStacktrace ? "-----" + iex.StackTrace : "")}";
                 iex = iex.InnerException;
             }
 
