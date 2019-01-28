@@ -97,19 +97,9 @@ cross apply (select count(1) as [Count] from ResponsibilityAllAsset where Resour
 											(F_R.Subject = A.Object and F_R.SubjectID = A.ObjectID) or 
 											(F_R.Object = A.Object and F_R.ObjectID = A.ObjectID)
 											) 
-outer apply (
-        select
-            case when AST.Object = 'Taxonomy' then
-				Textpath.TextPath  
-            else
-				D.DisplayValue 
-            end as DisplayValue
-         from Asset AST
-         outer apply dbo.GetObjectDisplayValueById(AST.Object, AST.ObjectID) as D
-         outer apply dbo.GetAssetTextPathById(AST.ID, '/') as  Textpath
-         where AST.Object = case when F_R.Subject = A.Object and F_R.SubjectID = A.ObjectID then F_R.Object else F_R.Subject end
-         and AST.ObjectID = case when F_R.Subject = A.Object and F_R.SubjectID = A.ObjectID then F_R.ObjectID else F_R.SubjectID end 
-            ) RD";
+outer apply dbo.GetRelationshipDisplayValue(
+	case when F_R.Subject = A.Object and F_R.SubjectID = A.ObjectID then F_R.Object else F_R.Subject end,
+	case when F_R.Subject = A.Object and F_R.SubjectID = A.ObjectID then F_R.ObjectID else F_R.SubjectID end) as RD";
             }
 
             #endregion
@@ -503,7 +493,6 @@ from	(
 							else '' 
 						end as [Field]	
 				from	Asset A{tableHints} 
-                        {textPathStatement}
                         {parentSqlJoin} 
                         inner join AssetType AST{tableHints} on AST.ID = A.AssetTypeID and AST.ID = @atID and A.State = 1  
                         {filterJoinString}     
