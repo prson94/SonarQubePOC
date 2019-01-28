@@ -1,0 +1,1502 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="GOV-6281-ProcUpdate">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+ALTER procedure [asset].[BulkUpsert]
+
+	@isInsert bit,
+	@uid uniqueidentifier,
+	@r int
+as
+begin
+	set nocount on;
+
+	declare @ot varchar(50),
+			@otid int,
+			@at int,
+			@class int,
+			@parentIntersectTypeUid uniqueidentifier,
+			@parentIntersectTypeID int,
+			@parentOt varchar(50),
+			@parentOtId int,
+			@dt datetime = getutcdate()
+	select	@ot = Object,
+			@otid = ObjectID,
+			@at = ID,
+			@class = [Class] 
+	from	AssetType
+	where	[uid] = @uid
+
+	select	@parentIntersectTypeUid = I.[Uid],
+			@parentIntersectTypeID = I.ID,
+			@parentOt = I.Subject,
+			@parentOtId = I.SubjectID
+	from	IntersectType I
+			inner join [Predicate] P on P.ID = I.PredicateID 
+									and I.Object = @ot
+									and I.ObjectID = @otid
+									and P.[Type] = case @ot
+														when 'PolicyType' then 4
+														when 'TaxonomyType' then 4
+														else 3 
+													end
+	if @ot = 'FusionAttributeType'
+	begin
+		select	@parentOt = 'FusionAttributeType',
+				@parentOtId = ParentID
+		from	FusionAttributeType 
+		where	ID = @otid
+	end
+
+	update #AssetFieldTable set Ignore = 0;
+
+	begin
+		IF (@parentIntersectTypeID is not null OR @ot = 'FusionAttributeType') and @isInsert = 1
+		BEGIN
+			if @ot = 'ArtifactType' 
+			begin
+				update	#AssetTable
+				set		Success = 0,
+						[Message] = coalesce([Message] + '; ', '') + 'Asset is missing a required ParentUid value'
+				where	ParentUid is null;
+			end;
+
+			update	T
+			set		T.ParentObject = S.Object,
+					T.ParentObjectID = S.ObjectID
+			from	#AssetTable T
+					inner join Asset S on S.[Uid] = T.ParentUid and T.ParentUid is not null
+					inner join AssetType ST on ST.ID = S.AssetTypeID and ST.Object = @parentOt and ST.ObjectID = @parentOtId;
+
+			update	#AssetTable
+			set		Success = 0,
+					[Message] = coalesce([Message] + '; ', '') + 'Asset does not contain a valid ParentUid value'
+			where	ParentObjectID is null
+					and ParentUid is not null;
+		END;
+				
+		IF @isInsert = 0 
+		begin
+			
+			update	T
+			set		T.Object = S.Object,
+					T.ObjectID = S.ObjectID,
+					T.AssetID = S.ID
+			from	#AssetTable T
+					inner join Asset S on S.[Uid] = T.[Uid];
+
+			
+			insert into #AssetFieldTable (ItemNumber, FieldName, FieldValue, FieldTypeID, LookupValue, Ignore)
+				select	A.ItemNumber,
+						FT.Name,
+						EF.FormattedValue,
+						FT.ID,
+						EF.Value,
+						1
+				from	#AssetTable A
+						inner join FieldType FT on FT.AssetTypeID = @at 
+													and FT.IsPartOfKey = 1
+						inner join Field EF on EF.FieldTypeID = FT.ID and EF.AssetID = A.AssetID
+						left join #AssetFieldTable F on F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID
+				where	F.ItemNumber is null;
+		end;
+
+		update	T
+		set		T.Success = 0,
+				T.[Message] = coalesce(T.[Message] + '; ', '') + 'Asset is missing key field(s): [' + S.Names + ']'
+		from	#AssetTable T
+				inner join	(
+							select	A.ItemNumber,
+									STRING_AGG(FT.Name, ', ') as Names
+							from	#AssetTable A
+									inner join FieldType FT on FT.AssetTypeID = @at 
+																and FT.IsPartOfKey = 1
+									left join #AssetFieldTable F on F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID
+							where	F.ItemNumber is null
+							group by A.ItemNumber
+							) S on S.ItemNumber = T.ItemNumber;
+			
+		if @isInsert = 1
+		begin
+			update	T
+			set		T.Success = 0,
+					T.[Message] = coalesce(T.[Message] + '; ', '') + 'Asset is missing required field(s): [' + S.Names + ']'
+			from	#AssetTable T
+					inner join	(
+								select	A.ItemNumber,
+										STRING_AGG(FT.Name, ', ') as Names
+								from	#AssetTable A
+										inner join FieldType FT on FT.AssetTypeID = @at 
+																	and FT.IsRequired = 1
+										left join #AssetFieldTable F on F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID 
+								where	F.ItemNumber is null
+								group by A.ItemNumber
+								) S on S.ItemNumber = T.ItemNumber
+		end;
+		
+		update	T
+		set		T.LookupValue = RI.ID
+		from	#AssetFieldTable T
+				inner join FieldType F on F.ID = T.FieldTypeID and F.[Type] = 'Lookup'
+				inner join ReferenceItem RI ON F.LookupObjectType = 'ReferenceItem' and F.LookupObjectID = RI.ReferenceItemTypeID 
+					and T.FieldValue = utility.GetFormattedFieldLookupValue(F.Type, coalesce(F.LookupEditFormat, F.LookupDisplayFormat), F.LookupObjectType, F.LookupObjectID, RI.ID);
+		
+		update	T
+		set		T.LookupValue = RI.ID
+		from	#AssetFieldTable T
+				inner join FieldType F on F.ID = T.FieldTypeID and F.[Type] = 'Lookup'
+				inner join ReferenceItemType RI ON F.LookupObjectType = 'ReferenceItemType'
+					and T.FieldValue = utility.GetFormattedFieldLookupValue(F.Type, coalesce(F.LookupEditFormat, F.LookupDisplayFormat), F.LookupObjectType, F.LookupObjectID, RI.ID);
+		
+		update	T
+		set		T.Success = 0,
+				T.[Message] = coalesce(T.[Message] + '; ', '') + 'Asset contains one or more fields with invalid lookup values: [' + S.Names + ']'
+		from	#AssetTable T
+				inner join	(
+							select		A.ItemNumber,
+										STRING_AGG(FT.Name + '=' + F.FieldValue, ', ') as Names
+							from		#AssetTable A
+										inner join FieldType FT on FT.AssetTypeID = @at 
+																	and FT.[Type] = 'Lookup'
+										inner join #AssetFieldTable F on F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID and F.LookupValue is null
+							group by	A.ItemNumber
+							) S on S.ItemNumber = T.ItemNumber;
+
+		
+		update	#AssetFieldTable
+		set		LookupValue = FieldValue
+		where	LookupValue is null;
+
+		update	T
+		set		T.Success = 0,
+				T.[Message] = coalesce(T.[Message] + '; ', '') + 'Asset contains one or more field that are invalid based on their data types: [' + S.Names + ']'
+		from	#AssetTable T
+				inner join	(
+							select	A.ItemNumber,
+									STRING_AGG(FT.Name + ' is ' + FT.[Type] + ' but has a value of ' + F.FieldValue, ', ') as Names
+							from	#AssetTable A
+									inner join FieldType FT on FT.AssetTypeID = @at 
+									inner join #AssetFieldTable F on F.ItemNumber = A.ItemNumber 
+																	and F.FieldTypeID = FT.ID 
+																	and (
+																		(FT.[Type] = 'Boolean' and LOWER(F.FieldValue)  not in ('false', 'true')) or 
+																		(FT.[Type] = 'Date' and ISDATE(F.FieldValue) = 0) or 
+																		(FT.[Type] = 'DateTime' and ISDATE(F.FieldValue) = 0) or 
+																		(FT.[Type] = 'Number' and ISNUMERIC(F.FieldValue + '.e0') = 0) or 
+																		(FT.[Type] = 'Decimal' and ISNUMERIC(F.FieldValue) = 0) or 
+																		(FT.[Type] = 'Link' and (CHARINDEX('|', F.FieldValue, 0) = 0 OR CHARINDEX('|', F.FieldValue, 0) is null) ) or 
+																		(FT.[Type] = 'Percentage' and ISDATE(F.FieldValue) = 0)
+																	)
+							group by A.ItemNumber
+							) S on S.ItemNumber = T.ItemNumber;
+
+		update	T
+		set		T.Success = 0,
+				T.[Message] = coalesce(T.[Message] + '; ', '') + 'Asset contains one or more field that have an invalid length: [' + S.Names + ']'
+		from	#AssetTable T
+				inner join	(
+							select	A.ItemNumber,
+									STRING_AGG(FT.Name + ' must have an exact length of ' + cast(FT.[Length] as nvarchar), ', ') as Names
+							from	#AssetTable A
+									inner join FieldType FT on FT.AssetTypeID = @at 
+									inner join #AssetFieldTable F on F.ItemNumber = A.ItemNumber 
+																	and F.FieldTypeID = FT.ID 
+																	and FT.[Length] is not null
+																	and FT.[Length] <> LEN(F.FieldValue)
+							group by A.ItemNumber
+							) S on S.ItemNumber = T.ItemNumber;
+		
+		update	T
+		set		T.Success = 0,
+				T.[Message] = coalesce(T.[Message] + '; ', '') + 'Asset contains one or more field that have an invalid minimum length: [' + S.Names + ']'
+		from	#AssetTable T
+				inner join	(
+							select	A.ItemNumber,
+									STRING_AGG(FT.Name + ' must have a minimum length of ' + cast(FT.[MinimumLength] as nvarchar), ', ') as Names
+							from	#AssetTable A
+									inner join FieldType FT on FT.AssetTypeID = @at 
+									inner join #AssetFieldTable F on F.ItemNumber = A.ItemNumber 
+																	and F.FieldTypeID = FT.ID 
+																	and FT.[MinimumLength] is not null
+																	and FT.[MinimumLength] > LEN(F.FieldValue)
+							group by A.ItemNumber
+							) S on S.ItemNumber = T.ItemNumber;
+		
+		update	T
+		set		T.Success = 0,
+				T.[Message] = coalesce(T.[Message] + '; ', '') + 'Asset contains one or more field that have an invalid maximum length: [' + S.Names + ']'
+		from	#AssetTable T
+				inner join	(
+							select	A.ItemNumber,
+									STRING_AGG(FT.Name + ' must have a maximum length of ' + cast(FT.[MaximumLength] as nvarchar), ', ') as Names
+							from	#AssetTable A
+									inner join FieldType FT on FT.AssetTypeID = @at 
+									inner join #AssetFieldTable F on F.ItemNumber = A.ItemNumber 
+																	and F.FieldTypeID = FT.ID 
+																	and FT.[MaximumLength] is not null
+																	and FT.[MaximumLength] < LEN(F.FieldValue)
+							group by A.ItemNumber
+							) S on S.ItemNumber = T.ItemNumber;
+
+		declare @sql nvarchar(max) = '',
+				@sqlColumns nvarchar(max) = 'update A set A.Success = 0, A.Message = ''Key values match another asset under a different set of key fields. '' ',
+				@sqlNewColumns nvarchar(max) = 'select A.ItemNumber, A.AssetID, A.ParentObject, A.ParentObjectID',
+				@sqlNewTables nvarchar(max) = ' from #AssetTable A',
+				@sqlExistColumns nvarchar(max) = 'select A.ID as AssetID',
+				@sqlExistTables nvarchar(max) = ' from Asset A',
+				@sqlWhere nvarchar(max) = ''
+
+		declare @keyFields table(ID int identity, FieldTypeID int)
+		insert into @keyFields
+			select	ID from FieldType where IsPartOfKey = 1 and AssetTypeID = @at
+		declare @currentKeyRow int = 1,
+				@maxKeyRow int,
+				@kfcId int,
+				@kfc nvarchar(15) = '',
+				@previousKfc nvarchar(15) = ''
+		select @maxKeyRow = max(ID) from @keyFields
+
+		if @ot = 'FusionAttributeType'
+		begin
+			set @sqlNewColumns = @sqlNewColumns + ', FFN.FieldValue as Name, FFF.FieldValue as FusionID'
+			set @sqlNewTables =  @sqlNewTables + ' inner join #AssetFieldTable FFN on FFN.ItemNumber = A.ItemNumber and FFN.FieldName = ''Name'''
+			set @sqlNewTables =  @sqlNewTables + ' inner join #AssetFieldTable FFF on FFF.ItemNumber = A.ItemNumber and FFF.FieldName = ''FusionID'''
+
+			set @sqlExistColumns = @sqlExistColumns + ', F.Name, F.FusionID, F.ParentID as ParentObjectID'
+			set @sqlExistTables = @sqlExistTables + ' inner join FusionAttribute F on F.FusionAttributeTypeID = ' + cast(@otid as nvarchar) + ' and A.Object = ''FusionAttribute'' and F.ID = A.ObjectID'
+
+			set @sqlWhere = @sqlWhere + case when @sqlWhere = '' then ' on ' else ' and ' end + 'E.FusionID = N.FusionID and E.Name = N.Name'
+		end
+		if @ot = 'ReferenceItemType'
+		begin
+			set @sqlNewColumns = @sqlNewColumns + ', C.FieldValue as [Code]'
+			set @sqlNewTables =  @sqlNewTables + ' inner join #AssetFieldTable C on C.ItemNumber = A.ItemNumber and C.FieldName = ''Code'''
+
+			set @sqlExistColumns = @sqlExistColumns + ', C.[Code]'
+			set @sqlExistTables = @sqlExistTables + ' inner join ReferenceItem C on C.ReferenceItemTypeID = ' + cast(@otid as nvarchar) + ' and C.ID = A.ObjectID'
+
+			set @sqlWhere = @sqlWhere + case when @sqlWhere = '' then ' on ' else ' and ' end + 'E.[Code] = N.[Code]'
+		end
+
+		while @currentKeyRow <= @maxKeyRow
+		begin
+			select @kfcId = FieldTypeID from @keyFields where ID = @currentKeyRow
+			set @kfc = cast(@kfcId as varchar)
+
+			set @sqlWhere = @sqlWhere + case when @sqlWhere = '' then ' on ' else ' and ' end + ' E.F' + @kfc + 'Value = N.F' + @kfc + 'LookupValue'
+
+			set @sqlNewColumns = @sqlNewColumns + 
+												', F' + @kfc + '.FieldTypeID as F' + @kfc + 'FieldTypeID' + 
+												', F' + @kfc + '.LookupValue as F' + @kfc + 'LookupValue'
+			set @sqlNewTables =  @sqlNewTables + ' inner join #AssetFieldTable F' + @kfc+ ' on F' + @kfc + '.ItemNumber = A.ItemNumber and F' + @kfc + '.FieldTypeID = ' + @kfc
+
+			set @sqlExistColumns = @sqlExistColumns + 
+													', F' + @kfc + '.FieldTypeID as F' + @kfc + 'FieldTypeID' + 
+													', F' + @kfc + '.Value as F' + @kfc + 'Value'
+			set @sqlExistTables = @sqlExistTables + ' inner join Field F' + @kfc+ ' on F' + @kfc + '.AssetID = A.ID and F' + @kfc + '.FieldTypeID = ' + @kfc
+
+			set @previousKfc = @kfc
+			set @currentKeyRow = @currentKeyRow + 1
+		end
+
+		if @parentIntersectTypeID is not null
+		begin
+			declare @joinType nvarchar(15) = ' inner join'
+			set @sqlExistColumns = @sqlExistColumns + ', I.Subject as ParentObject, I.SubjectID as ParentObjectID'
+			if @ot = 'PolicyType' or @ot = 'TaxonomyType'
+			begin
+				set @joinType = ' left join'
+				set @sqlWhere = @sqlWhere + case when @sqlWhere = '' then ' on ' else ' and ' end + '((N.ParentObjectID is not null and E.ParentObject = N.ParentObject and E.ParentObjectID = N.ParentObjectID) or (N.ParentObjectID is null))'
+			end
+			else
+			begin
+				set @sqlWhere = @sqlWhere + case when @sqlWhere = '' then ' on ' else ' and ' end + 'E.ParentObject = N.ParentObject and E.ParentObjectID = N.ParentObjectID'
+			end
+			set @sqlExistTables = @sqlExistTables + @joinType + ' PredicateIntersect I on I.IntersectTypeID = ' + cast(@parentIntersectTypeID as nvarchar) + ' and I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID'
+		end
+		if @ot = 'FusionAttributeType' and @parentOt = 'FusionAttributeType' and @parentOtId is not null
+		begin
+			set @sqlWhere = @sqlWhere + case when @sqlWhere = '' then ' on ' else ' and ' end + 'N.ParentObject = ''FusionAttribute'' and E.ParentObjectID = N.ParentObjectID'
+		end
+
+		if @isInsert = 0
+		begin
+			set @sqlWhere = @sqlWhere + case when @sqlWhere = '' then ' on ' else ' and ' end + 'E.AssetID <> N.AssetID'
+		end
+
+		set @sql = 'update A set A.Success = 0, A.Message = ''Key values match another asset under a different set of key fields. '' from #AssetTable A inner join (' + @sqlNewColumns + @sqlNewTables + ' where A.Success is null) N on N.ItemNumber = A.ItemNumber inner join (' + @sqlExistColumns + @sqlExistTables + ') E ' + @sqlWhere
+
+		exec sp_executesql @sql
+
+		update	T
+		set		T.KeyHash = S.KeyHash
+		from	#AssetTable T
+				inner join	(
+							select	O.ItemNumber,
+									utility.GetHash(coalesce(convert(varchar(36), O.ParentUid)+'|','') + STRING_AGG(O.Value, '|')) as KeyHash
+							from	(
+									select	top 100 percent
+											A.ItemNumber,
+											A.ParentUid,
+											coalesce(F.LookupValue, F.FieldValue) as [Value]
+									from	#AssetTable A
+											inner join #AssetFieldTable F on F.ItemNumber = A.ItemNumber 
+																			and F.FieldName = 'Code'
+																			and A.Success is null 
+																			and @ot = 'ReferenceItemType'
+									union
+									select	top 100 percent
+											A.ItemNumber,
+											A.ParentUid,
+											coalesce(F.LookupValue, F.FieldValue) as [Value]
+									from	#AssetTable A
+											inner join FieldType FT on FT.AssetTypeID = @at 
+											inner join #AssetFieldTable F on F.ItemNumber = A.ItemNumber 
+																			and F.FieldTypeID = FT.ID 
+																			and FT.IsPartOfKey = 1
+																			and A.Success is null 
+									order by FT.ColumnOrder						
+									) O
+							group by O.ItemNumber,
+									O.ParentUid
+							) S on S.ItemNumber = T.ItemNumber;
+
+		update	T
+		set		T.Success = 0,
+				T.[Message] = coalesce(T.[Message] + '; ', '') + 'Asset with matching key hash is already referenced previously. Nodes must be unique within a load.'
+		from	#AssetTable T
+				inner join	(
+							select	min(ItemNumber) as ItemNumber,
+									KeyHash
+							from	#AssetTable
+							group by KeyHash
+							) S on S.KeyHash = T.KeyHash and S.ItemNumber < T.ItemNumber;
+
+	end
+
+	select * from AssetType where Name = 'f444'
+
+	drop table if exists #ObjectMergeTableResult;
+	create table #ObjectMergeTableResult (ID int, ItemNumber int, [Action] nvarchar(10));
+	CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC );
+
+	declare @current int = 1,	
+			@max int = 0,
+			@objectId int
+
+	select @max = max(ItemNumber) from #AssetTable
+
+	IF @class = 1 
+	BEGIN
+		if @isInsert = 1
+		begin
+			while @current <= @max
+			begin
+				if exists(select ItemNumber from #AssetTable where ItemNumber = @current and Success is null and ObjectID is null)
+				begin
+					insert Artifact(ArtifactTypeID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+					values (@otid, @r, @dt, @r, @dt);
+				
+					set	@objectId = SCOPE_IDENTITY()
+
+					update	T
+					set		T.Object ='Artifact',
+							T.ObjectID = @objectId,
+							T.AssetID = S.ID,
+							T.[Uid] = S.[Uid],
+							T.IsNew = 1
+					from	#AssetTable T
+							inner join Asset S on S.Object = 'Artifact' and S.ObjectID = @objectId and T.ItemNumber = @current; 
+				end
+				set @current = @current + 1
+			end
+		end
+		else
+		begin
+			update	T
+			set		T.UpdatedBy = @r,
+					T.UpdatedOn = @dt
+			from	Artifact T
+					inner join #AssetTable S on S.ObjectID = T.ID;
+
+			update	#AssetTable
+			set		IsNew = 0
+			where	Success is null;
+		end
+	END;
+
+	IF @class = 2 
+	BEGIN
+		if @isInsert = 1
+		begin
+			while @current <= @max
+			begin
+				if exists(select ItemNumber from #AssetTable where ItemNumber = @current and Success is null and ObjectID is null)
+				begin
+					insert Taxonomy(TaxonomyTypeID, UpdatedBy, UpdatedOn)
+					values (@otid, @r, @dt);
+				
+					set	@objectId = SCOPE_IDENTITY()
+
+					update	T
+					set		T.Object ='Taxonomy',
+							T.ObjectID = @objectId,
+							T.AssetID = S.ID,
+							T.[Uid] = S.[Uid],
+							T.IsNew = 1
+					from	#AssetTable T
+							inner join Asset S on S.Object = 'Taxonomy' and S.ObjectID = @objectId and T.ItemNumber = @current; 
+				end
+				set @current = @current + 1
+			end
+		end
+		else
+		begin
+			update	T
+			set		T.UpdatedBy = @r,
+					T.UpdatedOn = @dt
+			from	Taxonomy T
+					inner join #AssetTable S on S.ObjectID = T.ID;
+
+			update	#AssetTable
+			set		IsNew = 0
+			where	Success is null;
+		end
+	END;
+
+	IF @class = 4 
+	BEGIN
+		if @isInsert = 1
+		begin
+			while @current <= @max
+			begin
+				if exists(select ItemNumber from #AssetTable where ItemNumber = @current and Success is null and ObjectID is null)
+				begin
+					declare @fusionId int,
+							@parentId int,
+							@fusionName nvarchar(250)
+
+					select	@fusionId = cast(F.FieldValue as int),
+							@fusionName = N.FieldValue,
+							@parentId = A.ParentObjectID
+					from	#AssetTable A
+							inner join #AssetFieldTable N on N.ItemNumber = A.ItemNumber and N.FieldName = 'Name'
+							inner join #AssetFieldTable F on F.ItemNumber = A.ItemNumber and F.FieldName = 'FusionID'
+					where	A.Success is null 
+							and A.ObjectID is null
+							and A.ItemNumber = @current;
+
+					if @fusionId is not null and @fusionName is not null
+					begin
+						set	@objectId = NEXT VALUE FOR [dbo].[FusionAttribute_Seq]
+
+						insert FusionAttribute(ID, ParentID, FusionAttributeTypeID, Name, FusionID)
+						values (@objectId, @parentId, @otid, @fusionName, @fusionId);
+
+						update	T
+						set		T.Object ='FusionAttribute',
+								T.ObjectID = @objectId,
+								T.AssetID = S.ID,
+								T.[Uid] = S.[Uid],
+								T.IsNew = 1
+						from	#AssetTable T
+								inner join Asset S on S.Object = 'FusionAttribute' and S.ObjectID = @objectId and T.ItemNumber = @current; 
+					end
+				end
+				set @current = @current + 1
+			end
+		end
+		else
+		begin
+			update	T
+			set		T.Name = N.FieldValue
+			from	FusionAttribute T
+					inner join #AssetTable S on S.ObjectID = T.ID
+					inner join #AssetFieldTable N on N.ItemNumber = S.ItemNumber and N.FieldName = 'Name';
+
+			update	#AssetTable
+			set		IsNew = 0
+			where	Success is null;
+		end;
+
+		
+		WITH hierarchy (RootID, ID, ParentID, ItemPath) AS
+		(
+			SELECT	ID,
+					ID, 
+					ParentID,
+					cast(name as nvarchar(2500))
+			FROM	FusionAttribute F
+					inner join #AssetTable S on S.ObjectID = F.ID
+			UNION ALL
+			SELECT	c.RootID,
+					p.ID, 
+					p.ParentID,
+					cast(p.name + '.' +  c.ItemPath as nvarchar(2500))
+			FROM	hierarchy c
+					inner join FusionAttribute p ON p.ID = c.parentid
+		)
+		update	T
+		set		T.TextPath = cte.ItemPath
+		from	FusionAttribute T
+				inner join hierarchy cte on cte.RootID = T.ID and cte.ParentID is null option (MAXRECURSION 10);
+	END;
+
+	IF @class = 6 
+	BEGIN
+		if @isInsert = 1
+		begin
+			while @current <= @max
+			begin
+				if exists(select ItemNumber from #AssetTable where ItemNumber = @current and Success is null and ObjectID is null)
+				begin
+					insert [Policy](PolicyTypeID, UpdatedBy, UpdatedOn)
+					values (@otid, @r, @dt);
+				
+					set	@objectId = SCOPE_IDENTITY()
+
+					update	T
+					set		T.Object ='Policy',
+							T.ObjectID = @objectId,
+							T.AssetID = S.ID,
+							T.[Uid] = S.[Uid],
+							T.IsNew = 1
+					from	#AssetTable T
+							inner join Asset S on S.Object = 'Policy' and S.ObjectID = @objectId and T.ItemNumber = @current;
+				end
+				set @current = @current + 1
+			end
+		end
+		else
+		begin
+			update	T
+			set		T.UpdatedBy = @r,
+					T.UpdatedOn = @dt
+			from	[Policy] T
+					inner join #AssetTable S on S.ObjectID = T.ID;
+
+			update	#AssetTable
+			set		IsNew = 0
+			where	Success is null;
+		end
+	END;
+
+	IF @class = 7 
+	BEGIN
+		if @isInsert = 1
+		begin
+			while @current <= @max
+			begin
+				if exists(select ItemNumber from #AssetTable where ItemNumber = @current and Success is null and ObjectID is null)
+				begin
+
+					insert [Rule](RuleTypeID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+					values (@otid, @r, @dt, @r, @dt);
+				
+					set	@objectId = SCOPE_IDENTITY()
+
+					update	T
+					set		T.Object ='Rule',
+							T.ObjectID = @objectId,
+							T.AssetID = S.ID,
+							T.[Uid] = S.[Uid],
+							T.IsNew = 1
+					from	#AssetTable T
+							inner join Asset S on S.Object = 'Rule' and S.ObjectID = @objectId and T.ItemNumber = @current;
+
+				end
+				set @current = @current + 1 
+			end
+		end
+		else
+		begin
+			update	T
+			set		T.UpdatedBy = @r,
+					T.UpdatedOn = @dt
+			from	[Rule] T
+					inner join #AssetTable S on S.ObjectID = T.ID;
+
+			update	#AssetTable
+			set		IsNew = 0
+			where	Success is null;
+		end
+	END;
+
+	IF @class = 9 
+	BEGIN
+		if @isInsert = 1
+		begin
+			while @current <= @max
+			begin
+				if exists(select ItemNumber from #AssetTable where ItemNumber = @current and Success is null and ObjectID is null) 
+				begin
+					declare @code nvarchar(250)
+
+					select		top 1
+							
+								@code = F.FieldValue
+					from		#AssetTable A
+								inner join #AssetFieldTable F on F.ItemNumber = A.ItemNumber and F.FieldName = 'Code'
+					where		A.Success is null 
+								and A.ObjectID is null
+								and A.ItemNumber = @current
+
+					if @code is not null
+					begin
+						insert ReferenceItem(ReferenceItemTypeID, Code, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+						values (@otid, @code, @r, @dt, @r, @dt);
+				
+						set	@objectId = SCOPE_IDENTITY()
+
+						update	T
+						set		T.Object ='ReferenceItem',
+								T.ObjectID = @objectId,
+								T.AssetID = S.ID,
+								T.[Uid] = S.[Uid],
+								T.IsNew = 1
+						from	#AssetTable T
+								inner join Asset S on S.Object = 'ReferenceItem' and S.ObjectID = @objectId and T.ItemNumber = @current
+					end
+				end
+				set @current = @current + 1
+			end
+		end
+		else
+		begin
+			update	T
+			set		T.Code = F.FieldValue,
+					T.UpdatedBy = @r,
+					T.UpdatedOn = @dt
+			from	ReferenceItem T
+					inner join #AssetTable S on S.ObjectID = T.ID
+					inner join #AssetFieldTable F on F.ItemNumber = S.ItemNumber and F.FieldName = 'Code';
+
+			update	#AssetTable
+			set		IsNew = 0
+			where	Success is null;
+		end
+	END;
+	
+	IF @parentIntersectTypeID is not null and @isInsert = 1
+	BEGIN
+		delete	T
+		from	[Intersect] T
+				inner join #AssetTable S on T.IntersectTypeID = @parentIntersectTypeID 
+											and S.Object = T.Object 
+											and S.ObjectID = T.ObjectID 
+											and (S.ParentObject <> T.Subject OR S.ParentObjectID <> T.SubjectID)
+											and S.Object is not null 
+											and S.ObjectID is not null 
+											and S.ParentObject is not null 
+											and S.ParentObjectID is not null;
+		
+		merge into  [Intersect] T
+		using		(
+					select      *
+					from        #AssetTable
+					where		Object is not null 
+								and ObjectID is not null 
+								and ParentObject is not null 
+								and ParentObjectID is not null
+								and Success is null	
+                ) S
+		on      ( T.IntersectTypeID = @parentIntersectTypeID and S.Object = T.Object and S.ObjectID = T.ObjectID )
+		when not matched by target then
+			insert  (IntersectTypeID, Subject, SubjectID, Object, ObjectID, CreatedBy, UpdatedBy)
+			values  (@parentIntersectTypeID, S.ParentObject, S.ParentObjectID, S.Object, S.ObjectID, @r, @r);
+	END;
+	
+	merge into  Field T
+    using       (
+                select  
+                        A.AssetID,
+						A.Object, 
+                        A.ObjectID, 
+                        F.FieldTypeID,
+                        coalesce(F.LookupValue, F.FieldValue) as Value
+                from    #AssetFieldTable F
+                        inner join #AssetTable A on A.ItemNumber = F.ItemNumber 
+                            and A.ObjectID is not null 
+                            and F.FieldTypeID is not null
+							and A.Success is null	
+							and F.Ignore = 0
+                ) S
+    on          (
+                    T.FieldTypeID = S.FieldTypeID and 
+                    T.AssetID = S.AssetID
+                )
+    when		matched then
+	update		set
+					T.Value = S.Value,
+					T.FormattedValue = S.Value,
+					T.UpdatedBy = @r,
+					T.Updatedon = @dt
+    when		not matched by target then
+	insert		(FieldTypeID, ObjectType, ObjectID, AssetID, Value, FormattedValue, UpdatedBy, UpdatedOn)
+    values		(S.FieldTypeID, S.Object, S.ObjectID, S.AssetID, S.Value, S.Value, @r, @dt);
+
+	update	#AssetTable
+	set		Success = 1
+	where	Success is null
+			and Object is not null
+			and ObjectID is not null;
+
+	select * from #AssetTable;
+end
+]]>
+    </sql>
+    <rollback>
+<![CDATA[
+ALTER procedure [asset].[BulkUpsert]
+--declare 
+	@isInsert bit,-- = 1,
+	@uid uniqueidentifier,-- = '53a4b81c-150e-40f3-b519-f784f17c8fce',
+	@r int-- = 3
+as
+begin
+	set nocount on;
+
+	declare @ot varchar(50),
+			@otid int,
+			@at int,
+			@class int,
+			@parentIntersectTypeUid uniqueidentifier,
+			@parentIntersectTypeID int,
+			@parentOt varchar(50),
+			@parentOtId int,
+			@dt datetime = getutcdate()
+	select	@ot = Object,
+			@otid = ObjectID,
+			@at = ID,
+			@class = [Class] 
+	from	AssetType
+	where	[uid] = @uid
+
+	select	@parentIntersectTypeUid = I.[Uid],
+			@parentIntersectTypeID = I.ID,
+			@parentOt = I.Subject,
+			@parentOtId = I.SubjectID
+	from	IntersectType I
+			inner join [Predicate] P on P.ID = I.PredicateID 
+									and I.Object = @ot
+									and I.ObjectID = @otid
+									and P.[Type] = case @ot
+														when 'PolicyType' then 4
+														when 'TaxonomyType' then 4
+														else 3 
+													end
+	if @ot = 'FusionAttributeType'
+	begin
+		select	@parentOt = 'FusionAttributeType',
+				@parentOtId = ParentID
+		from	FusionAttributeType 
+		where	ID = @otid
+	end
+
+	update #AssetFieldTable set Ignore = 0;
+
+	begin
+		IF (@parentIntersectTypeID is not null OR @ot = 'FusionAttributeType') and @isInsert = 1
+		BEGIN
+			if @ot = 'ArtifactType' -- GOV-6281 - Only validate that ParentUid is present if this an artifact. policies and taxonomies do not require a parent if it is a top-level model.
+			begin
+				update	#AssetTable
+				set		Success = 0,
+						[Message] = coalesce([Message] + '; ', '') + 'Asset is missing a required ParentUid value'
+				where	ParentUid is null;
+			end;
+
+			update	T
+			set		T.ParentObject = S.Object,
+					T.ParentObjectID = S.ObjectID
+			from	#AssetTable T
+					inner join Asset S on S.[Uid] = T.ParentUid and T.ParentUid is not null
+					inner join AssetType ST on ST.ID = S.AssetTypeID and ST.Object = @parentOt and ST.ObjectID = @parentOtId;
+
+			update	#AssetTable
+			set		Success = 0,
+					[Message] = coalesce([Message] + '; ', '') + 'Asset does not contain a valid ParentUid value'
+			where	ParentObjectID is null
+					and ParentUid is not null;
+		END;
+				
+		IF @isInsert = 0 --PUT
+		begin
+			-- Resolve the AssetID and Object/ID based on the Uid.
+			update	T
+			set		T.Object = S.Object,
+					T.ObjectID = S.ObjectID,
+					T.AssetID = S.ID
+			from	#AssetTable T
+					inner join Asset S on S.[Uid] = T.[Uid];
+
+			-- GOV-6284 - Load the missing key fields from Field table, b/c we still need to validate below.
+			insert into #AssetFieldTable (ItemNumber, FieldName, FieldValue, FieldTypeID, LookupValue, Ignore)
+				select	A.ItemNumber,
+						FT.Name,
+						EF.FormattedValue,
+						FT.ID,
+						EF.Value,
+						1
+				from	#AssetTable A
+						inner join FieldType FT on FT.AssetTypeID = @at 
+													and FT.IsPartOfKey = 1
+						inner join Field EF on EF.FieldTypeID = FT.ID and EF.AssetID = A.AssetID
+						left join #AssetFieldTable F on F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID
+				where	F.ItemNumber is null;
+		end;
+
+		update	T
+		set		T.Success = 0,
+				T.[Message] = coalesce(T.[Message] + '; ', '') + 'Asset is missing key field(s): [' + S.Names + ']'
+		from	#AssetTable T
+				inner join	(
+							select	A.ItemNumber,
+									STRING_AGG(FT.Name, ', ') as Names
+							from	#AssetTable A
+									inner join FieldType FT on FT.AssetTypeID = @at 
+																and FT.IsPartOfKey = 1
+									left join #AssetFieldTable F on F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID
+							where	F.ItemNumber is null
+							group by A.ItemNumber
+							) S on S.ItemNumber = T.ItemNumber;
+			
+		if @isInsert = 1
+		begin
+			update	T
+			set		T.Success = 0,
+					T.[Message] = coalesce(T.[Message] + '; ', '') + 'Asset is missing required field(s): [' + S.Names + ']'
+			from	#AssetTable T
+					inner join	(
+								select	A.ItemNumber,
+										STRING_AGG(FT.Name, ', ') as Names
+								from	#AssetTable A
+										inner join FieldType FT on FT.AssetTypeID = @at 
+																	and FT.IsRequired = 1
+										left join #AssetFieldTable F on F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID 
+								where	F.ItemNumber is null
+								group by A.ItemNumber
+								) S on S.ItemNumber = T.ItemNumber
+		end;
+		
+		update	T
+		set		T.LookupValue = RI.ID
+		from	#AssetFieldTable T
+				inner join FieldType F on F.ID = T.FieldTypeID and F.[Type] = 'Lookup'
+				inner join ReferenceItem RI ON F.LookupObjectType = 'ReferenceItem' and F.LookupObjectID = RI.ReferenceItemTypeID 
+					and T.FieldValue = utility.GetFormattedFieldLookupValue(F.Type, coalesce(F.LookupEditFormat, F.LookupDisplayFormat), F.LookupObjectType, F.LookupObjectID, RI.ID);
+		
+		update	T
+		set		T.LookupValue = RI.ID
+		from	#AssetFieldTable T
+				inner join FieldType F on F.ID = T.FieldTypeID and F.[Type] = 'Lookup'
+				inner join ReferenceItemType RI ON F.LookupObjectType = 'ReferenceItemType'
+					and T.FieldValue = utility.GetFormattedFieldLookupValue(F.Type, coalesce(F.LookupEditFormat, F.LookupDisplayFormat), F.LookupObjectType, F.LookupObjectID, RI.ID);
+		
+		update	T
+		set		T.Success = 0,
+				T.[Message] = coalesce(T.[Message] + '; ', '') + 'Asset contains one or more fields with invalid lookup values: [' + S.Names + ']'
+		from	#AssetTable T
+				inner join	(
+							select		A.ItemNumber,
+										STRING_AGG(FT.Name + '=' + F.FieldValue, ', ') as Names
+							from		#AssetTable A
+										inner join FieldType FT on FT.AssetTypeID = @at 
+																	and FT.[Type] = 'Lookup'
+										inner join #AssetFieldTable F on F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID and F.LookupValue is null
+							group by	A.ItemNumber
+							) S on S.ItemNumber = T.ItemNumber;
+
+		-- Populate the lookup values with the field values.
+		update	#AssetFieldTable
+		set		LookupValue = FieldValue
+		where	LookupValue is null;
+
+		update	T
+		set		T.Success = 0,
+				T.[Message] = coalesce(T.[Message] + '; ', '') + 'Asset contains one or more field that are invalid based on their data types: [' + S.Names + ']'
+		from	#AssetTable T
+				inner join	(
+							select	A.ItemNumber,
+									STRING_AGG(FT.Name + ' is ' + FT.[Type] + ' but has a value of ' + F.FieldValue, ', ') as Names
+							from	#AssetTable A
+									inner join FieldType FT on FT.AssetTypeID = @at 
+									inner join #AssetFieldTable F on F.ItemNumber = A.ItemNumber 
+																	and F.FieldTypeID = FT.ID 
+																	and (
+																		(FT.[Type] = 'Boolean' and LOWER(F.FieldValue)  not in ('false', 'true')) or 
+																		(FT.[Type] = 'Date' and ISDATE(F.FieldValue) = 0) or 
+																		(FT.[Type] = 'DateTime' and ISDATE(F.FieldValue) = 0) or 
+																		(FT.[Type] = 'Number' and ISNUMERIC(F.FieldValue + '.e0') = 0) or 
+																		(FT.[Type] = 'Decimal' and ISNUMERIC(F.FieldValue) = 0) or 
+																		(FT.[Type] = 'Link' and (CHARINDEX('|', F.FieldValue, 0) = 0 OR CHARINDEX('|', F.FieldValue, 0) is null) ) or 
+																		(FT.[Type] = 'Percentage' and ISDATE(F.FieldValue) = 0)
+																	)
+							group by A.ItemNumber
+							) S on S.ItemNumber = T.ItemNumber;
+
+		update	T
+		set		T.Success = 0,
+				T.[Message] = coalesce(T.[Message] + '; ', '') + 'Asset contains one or more field that have an invalid length: [' + S.Names + ']'
+		from	#AssetTable T
+				inner join	(
+							select	A.ItemNumber,
+									STRING_AGG(FT.Name + ' must have an exact length of ' + cast(FT.[Length] as nvarchar), ', ') as Names
+							from	#AssetTable A
+									inner join FieldType FT on FT.AssetTypeID = @at 
+									inner join #AssetFieldTable F on F.ItemNumber = A.ItemNumber 
+																	and F.FieldTypeID = FT.ID 
+																	and FT.[Length] is not null
+																	and FT.[Length] <> LEN(F.FieldValue)
+							group by A.ItemNumber
+							) S on S.ItemNumber = T.ItemNumber;
+		
+		update	T
+		set		T.Success = 0,
+				T.[Message] = coalesce(T.[Message] + '; ', '') + 'Asset contains one or more field that have an invalid minimum length: [' + S.Names + ']'
+		from	#AssetTable T
+				inner join	(
+							select	A.ItemNumber,
+									STRING_AGG(FT.Name + ' must have a minimum length of ' + cast(FT.[MinimumLength] as nvarchar), ', ') as Names
+							from	#AssetTable A
+									inner join FieldType FT on FT.AssetTypeID = @at 
+									inner join #AssetFieldTable F on F.ItemNumber = A.ItemNumber 
+																	and F.FieldTypeID = FT.ID 
+																	and FT.[MinimumLength] is not null
+																	and FT.[MinimumLength] > LEN(F.FieldValue)
+							group by A.ItemNumber
+							) S on S.ItemNumber = T.ItemNumber;
+		
+		update	T
+		set		T.Success = 0,
+				T.[Message] = coalesce(T.[Message] + '; ', '') + 'Asset contains one or more field that have an invalid maximum length: [' + S.Names + ']'
+		from	#AssetTable T
+				inner join	(
+							select	A.ItemNumber,
+									STRING_AGG(FT.Name + ' must have a maximum length of ' + cast(FT.[MaximumLength] as nvarchar), ', ') as Names
+							from	#AssetTable A
+									inner join FieldType FT on FT.AssetTypeID = @at 
+									inner join #AssetFieldTable F on F.ItemNumber = A.ItemNumber 
+																	and F.FieldTypeID = FT.ID 
+																	and FT.[MaximumLength] is not null
+																	and FT.[MaximumLength] < LEN(F.FieldValue)
+							group by A.ItemNumber
+							) S on S.ItemNumber = T.ItemNumber;
+
+		declare @sql nvarchar(max) = '',
+				@sqlColumns nvarchar(max) = 'update A set A.Success = 0, A.Message = ''Key values match another asset under a different set of key fields. '' ',
+				@sqlNewColumns nvarchar(max) = 'select A.ItemNumber, A.AssetID, A.ParentObject, A.ParentObjectID',
+				@sqlNewTables nvarchar(max) = ' from #AssetTable A',
+				@sqlExistColumns nvarchar(max) = 'select A.ID as AssetID',
+				@sqlExistTables nvarchar(max) = ' from Asset A',
+				@sqlWhere nvarchar(max) = ''
+
+		declare @keyFields table(ID int identity, FieldTypeID int)
+		insert into @keyFields
+			select	ID from FieldType where IsPartOfKey = 1 and AssetTypeID = @at
+		declare @currentKeyRow int = 1,
+				@maxKeyRow int,
+				@kfcId int,
+				@kfc nvarchar(15) = '',
+				@previousKfc nvarchar(15) = ''
+		select @maxKeyRow = max(ID) from @keyFields
+
+		if @ot = 'FusionAttributeType'
+		begin
+			set @sqlNewColumns = @sqlNewColumns + ', FFN.FieldValue as Name, FFF.FieldValue as FusionID'
+			set @sqlNewTables =  @sqlNewTables + ' inner join #AssetFieldTable FFN on FFN.ItemNumber = A.ItemNumber and FFN.FieldName = ''Name'''
+			set @sqlNewTables =  @sqlNewTables + ' inner join #AssetFieldTable FFF on FFF.ItemNumber = A.ItemNumber and FFF.FieldName = ''FusionID'''
+
+			set @sqlExistColumns = @sqlExistColumns + ', F.Name, F.FusionID, F.ParentID as ParentObjectID'
+			set @sqlExistTables = @sqlExistTables + ' inner join FusionAttribute F on F.FusionAttributeTypeID = ' + cast(@otid as nvarchar) + ' and A.Object = ''FusionAttribute'' and F.ID = A.ObjectID'
+
+			set @sqlWhere = @sqlWhere + case when @sqlWhere = '' then ' on ' else ' and ' end + 'E.FusionID = N.FusionID and E.Name = N.Name'
+		end
+		if @ot = 'ReferenceItemType'
+		begin
+			set @sqlNewColumns = @sqlNewColumns + ', C.FieldValue as [Code]'
+			set @sqlNewTables =  @sqlNewTables + ' inner join #AssetFieldTable C on C.ItemNumber = A.ItemNumber and C.FieldName = ''Code'''
+
+			set @sqlExistColumns = @sqlExistColumns + ', C.[Code]'
+			set @sqlExistTables = @sqlExistTables + ' inner join ReferenceItem C on C.ReferenceItemTypeID = ' + cast(@otid as nvarchar) + ' and C.ID = A.ObjectID'
+
+			set @sqlWhere = @sqlWhere + case when @sqlWhere = '' then ' on ' else ' and ' end + 'E.[Code] = N.[Code]'
+		end
+
+		while @currentKeyRow <= @maxKeyRow
+		begin
+			select @kfcId = FieldTypeID from @keyFields where ID = @currentKeyRow
+			set @kfc = cast(@kfcId as varchar)
+
+			set @sqlWhere = @sqlWhere + case when @sqlWhere = '' then ' on ' else ' and ' end + ' E.F' + @kfc + 'Value = N.F' + @kfc + 'LookupValue'
+
+			set @sqlNewColumns = @sqlNewColumns + 
+												', F' + @kfc + '.FieldTypeID as F' + @kfc + 'FieldTypeID' + 
+												', F' + @kfc + '.LookupValue as F' + @kfc + 'LookupValue'
+			set @sqlNewTables =  @sqlNewTables + ' inner join #AssetFieldTable F' + @kfc+ ' on F' + @kfc + '.ItemNumber = A.ItemNumber and F' + @kfc + '.FieldTypeID = ' + @kfc
+
+			set @sqlExistColumns = @sqlExistColumns + 
+													', F' + @kfc + '.FieldTypeID as F' + @kfc + 'FieldTypeID' + 
+													', F' + @kfc + '.Value as F' + @kfc + 'Value'
+			set @sqlExistTables = @sqlExistTables + ' inner join Field F' + @kfc+ ' on F' + @kfc + '.AssetID = A.ID and F' + @kfc + '.FieldTypeID = ' + @kfc
+
+			set @previousKfc = @kfc
+			set @currentKeyRow = @currentKeyRow + 1
+		end
+
+		if @parentIntersectTypeID is not null
+		begin
+			declare @joinType nvarchar(15) = ' inner join'
+			if @ot = 'PolicyType' or @ot = 'TaxonomyType'
+			begin
+				set @joinType = ' left join'
+				set @sqlExistColumns = @sqlExistColumns + ', I.Subject as ParentObject, I.SubjectID as ParentObjectID'
+				set @sqlWhere = @sqlWhere + case when @sqlWhere = '' then ' on ' else ' and ' end + '((N.ParentObjectID is not null and E.ParentObject = N.ParentObject and E.ParentObjectID = N.ParentObjectID) or (N.ParentObjectID is null))'
+			end
+			else
+			begin
+				set @sqlWhere = @sqlWhere + case when @sqlWhere = '' then ' on ' else ' and ' end + 'E.ParentObject = N.ParentObject and E.ParentObjectID = N.ParentObjectID'
+			end
+			set @sqlExistTables = @sqlExistTables + @joinType + ' PredicateIntersect I on I.IntersectTypeID = ' + cast(@parentIntersectTypeID as nvarchar) + ' and I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID'
+		end
+		if @ot = 'FusionAttributeType' and @parentOt = 'FusionAttributeType' and @parentOtId is not null
+		begin
+			set @sqlWhere = @sqlWhere + case when @sqlWhere = '' then ' on ' else ' and ' end + 'N.ParentObject = ''FusionAttribute'' and E.ParentObjectID = N.ParentObjectID'
+		end
+
+		if @isInsert = 0
+		begin
+			set @sqlWhere = @sqlWhere + case when @sqlWhere = '' then ' on ' else ' and ' end + 'E.AssetID <> N.AssetID'
+		end
+
+		set @sql = 'update A set A.Success = 0, A.Message = ''Key values match another asset under a different set of key fields. '' from #AssetTable A inner join (' + @sqlNewColumns + @sqlNewTables + ' where A.Success is null) N on N.ItemNumber = A.ItemNumber inner join (' + @sqlExistColumns + @sqlExistTables + ') E ' + @sqlWhere
+--select @sql
+		exec sp_executesql @sql
+
+		update	T
+		set		T.KeyHash = S.KeyHash
+		from	#AssetTable T
+				inner join	(
+							select	O.ItemNumber,
+									utility.GetHash(coalesce(convert(varchar(36), O.ParentUid)+'|','') + STRING_AGG(O.Value, '|')) as KeyHash
+							from	(
+									select	top 100 percent
+											A.ItemNumber,
+											A.ParentUid,
+											coalesce(F.LookupValue, F.FieldValue) as [Value]
+									from	#AssetTable A
+											inner join #AssetFieldTable F on F.ItemNumber = A.ItemNumber 
+																			and F.FieldName = 'Code'
+																			and A.Success is null 
+																			and @ot = 'ReferenceItemType'
+									union
+									select	top 100 percent
+											A.ItemNumber,
+											A.ParentUid,
+											coalesce(F.LookupValue, F.FieldValue) as [Value]
+									from	#AssetTable A
+											inner join FieldType FT on FT.AssetTypeID = @at 
+											inner join #AssetFieldTable F on F.ItemNumber = A.ItemNumber 
+																			and F.FieldTypeID = FT.ID 
+																			and FT.IsPartOfKey = 1
+																			and A.Success is null 
+									order by FT.ColumnOrder						
+									) O
+							group by O.ItemNumber,
+									O.ParentUid
+							) S on S.ItemNumber = T.ItemNumber;
+
+		update	T
+		set		T.Success = 0,
+				T.[Message] = coalesce(T.[Message] + '; ', '') + 'Asset with matching key hash is already referenced previously. Nodes must be unique within a load.'
+		from	#AssetTable T
+				inner join	(
+							select	min(ItemNumber) as ItemNumber,
+									KeyHash
+							from	#AssetTable
+							group by KeyHash
+							) S on S.KeyHash = T.KeyHash and S.ItemNumber < T.ItemNumber;
+
+	end
+
+	drop table if exists #ObjectMergeTableResult;
+	create table #ObjectMergeTableResult (ID int, ItemNumber int, [Action] nvarchar(10));
+	CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC );
+
+	declare @current int = 1,	
+			@max int = 0,
+			@objectId int
+
+	select @max = max(ItemNumber) from #AssetTable
+
+	IF @class = 1 
+	BEGIN
+		if @isInsert = 1
+		begin
+			while @current <= @max
+			begin
+				if exists(select ItemNumber from #AssetTable where ItemNumber = @current and Success is null and ObjectID is null)
+				begin
+					insert Artifact(ArtifactTypeID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+					values (@otid, @r, @dt, @r, @dt);
+				
+					set	@objectId = SCOPE_IDENTITY()
+
+					update	T
+					set		T.Object ='Artifact',
+							T.ObjectID = @objectId,
+							T.AssetID = S.ID,
+							T.[Uid] = S.[Uid],
+							T.IsNew = 1
+					from	#AssetTable T
+							inner join Asset S on S.Object = 'Artifact' and S.ObjectID = @objectId and T.ItemNumber = @current; 
+				end
+				set @current = @current + 1
+			end
+		end
+		else
+		begin
+			update	T
+			set		T.UpdatedBy = @r,
+					T.UpdatedOn = @dt
+			from	Artifact T
+					inner join #AssetTable S on S.ObjectID = T.ID;
+
+			update	#AssetTable
+			set		IsNew = 0
+			where	Success is null;
+		end
+	END;
+
+	IF @class = 2 
+	BEGIN
+		if @isInsert = 1
+		begin
+			while @current <= @max
+			begin
+				if exists(select ItemNumber from #AssetTable where ItemNumber = @current and Success is null and ObjectID is null)
+				begin
+					insert Taxonomy(TaxonomyTypeID, UpdatedBy, UpdatedOn)
+					values (@otid, @r, @dt);
+				
+					set	@objectId = SCOPE_IDENTITY()
+
+					update	T
+					set		T.Object ='Taxonomy',
+							T.ObjectID = @objectId,
+							T.AssetID = S.ID,
+							T.[Uid] = S.[Uid],
+							T.IsNew = 1
+					from	#AssetTable T
+							inner join Asset S on S.Object = 'Taxonomy' and S.ObjectID = @objectId and T.ItemNumber = @current; 
+				end
+				set @current = @current + 1
+			end
+		end
+		else
+		begin
+			update	T
+			set		T.UpdatedBy = @r,
+					T.UpdatedOn = @dt
+			from	Taxonomy T
+					inner join #AssetTable S on S.ObjectID = T.ID;
+
+			update	#AssetTable
+			set		IsNew = 0
+			where	Success is null;
+		end
+	END;
+
+	IF @class = 4 
+	BEGIN
+		if @isInsert = 1
+		begin
+			while @current <= @max
+			begin
+				if exists(select ItemNumber from #AssetTable where ItemNumber = @current and Success is null and ObjectID is null)
+				begin
+					declare @fusionId int,
+							@parentId int,
+							@fusionName nvarchar(250)
+
+					select	@fusionId = cast(F.FieldValue as int),
+							@fusionName = N.FieldValue,
+							@parentId = A.ParentObjectID
+					from	#AssetTable A
+							inner join #AssetFieldTable N on N.ItemNumber = A.ItemNumber and N.FieldName = 'Name'
+							inner join #AssetFieldTable F on F.ItemNumber = A.ItemNumber and F.FieldName = 'FusionID'
+					where	A.Success is null 
+							and A.ObjectID is null
+							and A.ItemNumber = @current;
+
+					if @fusionId is not null and @fusionName is not null
+					begin
+						set	@objectId = NEXT VALUE FOR [dbo].[FusionAttribute_Seq]
+
+						insert FusionAttribute(ID, ParentID, FusionAttributeTypeID, Name, FusionID)
+						values (@objectId, @parentId, @otid, @fusionName, @fusionId);
+
+						update	T
+						set		T.Object ='FusionAttribute',
+								T.ObjectID = @objectId,
+								T.AssetID = S.ID,
+								T.[Uid] = S.[Uid],
+								T.IsNew = 1
+						from	#AssetTable T
+								inner join Asset S on S.Object = 'FusionAttribute' and S.ObjectID = @objectId and T.ItemNumber = @current; 
+					end
+				end
+				set @current = @current + 1
+			end
+		end
+		else
+		begin
+			update	T
+			set		T.Name = N.FieldValue
+			from	FusionAttribute T
+					inner join #AssetTable S on S.ObjectID = T.ID
+					inner join #AssetFieldTable N on N.ItemNumber = S.ItemNumber and N.FieldName = 'Name';
+
+			update	#AssetTable
+			set		IsNew = 0
+			where	Success is null;
+		end;
+
+		-- GOV-6392 - Recalculate text paths for fusion attributes. 
+		WITH hierarchy (RootID, ID, ParentID, ItemPath) AS
+		(
+			SELECT	ID,
+					ID, 
+					ParentID,
+					cast(name as nvarchar(2500))
+			FROM	FusionAttribute F
+					inner join #AssetTable S on S.ObjectID = F.ID
+			UNION ALL
+			SELECT	c.RootID,
+					p.ID, 
+					p.ParentID,
+					cast(p.name + '.' +  c.ItemPath as nvarchar(2500))
+			FROM	hierarchy c
+					inner join FusionAttribute p ON p.ID = c.parentid
+		)
+		update	T
+		set		T.TextPath = cte.ItemPath
+		from	FusionAttribute T
+				inner join hierarchy cte on cte.RootID = T.ID and cte.ParentID is null option (MAXRECURSION 10);
+	END;
+
+	IF @class = 6 
+	BEGIN
+		if @isInsert = 1
+		begin
+			while @current <= @max
+			begin
+				if exists(select ItemNumber from #AssetTable where ItemNumber = @current and Success is null and ObjectID is null)
+				begin
+					insert [Policy](PolicyTypeID, UpdatedBy, UpdatedOn)
+					values (@otid, @r, @dt);
+				
+					set	@objectId = SCOPE_IDENTITY()
+
+					update	T
+					set		T.Object ='Policy',
+							T.ObjectID = @objectId,
+							T.AssetID = S.ID,
+							T.[Uid] = S.[Uid],
+							T.IsNew = 1
+					from	#AssetTable T
+							inner join Asset S on S.Object = 'Policy' and S.ObjectID = @objectId and T.ItemNumber = @current;
+				end
+				set @current = @current + 1
+			end
+		end
+		else
+		begin
+			update	T
+			set		T.UpdatedBy = @r,
+					T.UpdatedOn = @dt
+			from	[Policy] T
+					inner join #AssetTable S on S.ObjectID = T.ID;
+
+			update	#AssetTable
+			set		IsNew = 0
+			where	Success is null;
+		end
+	END;
+
+	IF @class = 7 
+	BEGIN
+		if @isInsert = 1
+		begin
+			while @current <= @max
+			begin
+				if exists(select ItemNumber from #AssetTable where ItemNumber = @current and Success is null and ObjectID is null)
+				begin
+
+					insert [Rule](RuleTypeID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+					values (@otid, @r, @dt, @r, @dt);
+				
+					set	@objectId = SCOPE_IDENTITY()
+
+					update	T
+					set		T.Object ='Rule',
+							T.ObjectID = @objectId,
+							T.AssetID = S.ID,
+							T.[Uid] = S.[Uid],
+							T.IsNew = 1
+					from	#AssetTable T
+							inner join Asset S on S.Object = 'Rule' and S.ObjectID = @objectId and T.ItemNumber = @current;
+
+				end
+				set @current = @current + 1 
+			end
+		end
+		else
+		begin
+			update	T
+			set		T.UpdatedBy = @r,
+					T.UpdatedOn = @dt
+			from	[Rule] T
+					inner join #AssetTable S on S.ObjectID = T.ID;
+
+			update	#AssetTable
+			set		IsNew = 0
+			where	Success is null;
+		end
+	END;
+
+	IF @class = 9 
+	BEGIN
+		if @isInsert = 1
+		begin
+			while @current <= @max
+			begin
+				if exists(select ItemNumber from #AssetTable where ItemNumber = @current and Success is null and ObjectID is null) --GOV-6407
+				begin
+					declare @code nvarchar(250)
+
+					select		top 1
+							
+								@code = F.FieldValue
+					from		#AssetTable A
+								inner join #AssetFieldTable F on F.ItemNumber = A.ItemNumber and F.FieldName = 'Code'
+					where		A.Success is null 
+								and A.ObjectID is null
+								and A.ItemNumber = @current
+
+					if @code is not null
+					begin
+						insert ReferenceItem(ReferenceItemTypeID, Code, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+						values (@otid, @code, @r, @dt, @r, @dt);
+				
+						set	@objectId = SCOPE_IDENTITY()
+
+						update	T
+						set		T.Object ='ReferenceItem',
+								T.ObjectID = @objectId,
+								T.AssetID = S.ID,
+								T.[Uid] = S.[Uid],
+								T.IsNew = 1
+						from	#AssetTable T
+								inner join Asset S on S.Object = 'ReferenceItem' and S.ObjectID = @objectId and T.ItemNumber = @current
+					end
+				end
+				set @current = @current + 1
+			end
+		end
+		else
+		begin
+			update	T
+			set		T.Code = F.FieldValue,
+					T.UpdatedBy = @r,
+					T.UpdatedOn = @dt
+			from	ReferenceItem T
+					inner join #AssetTable S on S.ObjectID = T.ID
+					inner join #AssetFieldTable F on F.ItemNumber = S.ItemNumber and F.FieldName = 'Code';
+
+			update	#AssetTable
+			set		IsNew = 0
+			where	Success is null;
+		end
+	END;
+	
+	IF @parentIntersectTypeID is not null and @isInsert = 1
+	BEGIN
+		delete	T
+		from	[Intersect] T
+				inner join #AssetTable S on T.IntersectTypeID = @parentIntersectTypeID 
+											and S.Object = T.Object 
+											and S.ObjectID = T.ObjectID 
+											and (S.ParentObject <> T.Subject OR S.ParentObjectID <> T.SubjectID)
+											and S.Object is not null 
+											and S.ObjectID is not null 
+											and S.ParentObject is not null 
+											and S.ParentObjectID is not null;
+		
+		merge into  [Intersect] T
+		using		(
+					select      *
+					from        #AssetTable
+					where		Object is not null 
+								and ObjectID is not null 
+								and ParentObject is not null 
+								and ParentObjectID is not null
+								and Success is null	
+                ) S
+		on      ( T.IntersectTypeID = @parentIntersectTypeID and S.Object = T.Object and S.ObjectID = T.ObjectID )
+		when not matched by target then
+			insert  (IntersectTypeID, Subject, SubjectID, Object, ObjectID, CreatedBy, UpdatedBy)
+			values  (@parentIntersectTypeID, S.ParentObject, S.ParentObjectID, S.Object, S.ObjectID, @r, @r);
+	END;
+	
+	merge into  Field T
+    using       (
+                select  
+                        A.AssetID,
+						A.Object, 
+                        A.ObjectID, 
+                        F.FieldTypeID,
+                        coalesce(F.LookupValue, F.FieldValue) as Value
+                from    #AssetFieldTable F
+                        inner join #AssetTable A on A.ItemNumber = F.ItemNumber 
+                            and A.ObjectID is not null 
+                            and F.FieldTypeID is not null
+							and A.Success is null	
+							and F.Ignore = 0
+                ) S
+    on          (
+                    T.FieldTypeID = S.FieldTypeID and 
+                    T.AssetID = S.AssetID
+                )
+    when		matched then
+	update		set
+					T.Value = S.Value,
+					T.FormattedValue = S.Value,
+					T.UpdatedBy = @r,
+					T.Updatedon = @dt
+    when		not matched by target then
+	insert		(FieldTypeID, ObjectType, ObjectID, AssetID, Value, FormattedValue, UpdatedBy, UpdatedOn)
+    values		(S.FieldTypeID, S.Object, S.ObjectID, S.AssetID, S.Value, S.Value, @r, @dt);
+
+	update	#AssetTable
+	set		Success = 1
+	where	Success is null
+			and Object is not null
+			and ObjectID is not null;
+
+	select * from #AssetTable;
+end
+]]>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>
