@@ -306,7 +306,7 @@ where   A.RuleImplementationID = @id";
                         break;
                     case "AssignedTo":
                         dbArgs.Add($"{ff.FieldName}{count}", $"{ff.RawValue}%");
-                        assignedSql = @"inner join workflow.ItemAssignment WIA on WIA.ItemStepID = S.ID and WIA.ResourceObject = 'Resource'
+                        assignedSql = @"inner join workflow.ItemAssignment WIA on WIA.ItemID = wi.ID and WIA.ResourceObject = 'Resource'
                                             inner join reporting.Global_Resource GRA on WIA.ResourceObjectID = GRA.ResourceID ";
                         typeSql += $@"( gra.firstName Like @{ff.FieldName}{count} or gra.lastName Like @{ff.FieldName}{count} or gra.firstName + ' ' + gra.lastName LIKE @{ff.FieldName}{count} ) and ";
                         break;
