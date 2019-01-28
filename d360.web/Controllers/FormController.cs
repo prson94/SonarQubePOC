@@ -750,14 +750,14 @@ namespace d360.web.Controllers
             ).SingleOrDefault();
 
             list.Add(new EditableField { FieldName = "ArtifactTypeID", FieldType = DataType.Hidden.ToString(), Value = at.ToString() });
-            
+
             if (intersectType != null)
             {
                 var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
                 var parents = Company.Query<SelectListItem>($"select ObjectID as Value, DisplayValue as Text from AssetDetail where Type = 'ArtifactType' and TypeID = {intersectType.SubjectID}").OrderBy(i => i.Text).ToList();
                 list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ParentID", Name = $"Parent {pluralize.Singularize(intersectType.SubjectName)}", FieldType = DataType.Lookup.ToString(), Value = ((p > 0) ? p.ToString() : null), Items = parents });
             }
-            
+
             list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ArtifactType, at).ToList(), 1);
 
             return Json(list, JsonRequestBehavior.AllowGet);
@@ -1141,7 +1141,7 @@ namespace d360.web.Controllers
                         case AssetTypeClass.Glossary:
                             var a = Company.GetById<ArtifactType>(model.AssetType.ObjectID);
                             model.CanOwnFusion = a.CanOwnFusion;
-                            model.AutoDisplayDescription = a.AutoDisplayDescription;
+                            model.AutoDisplayDescription = assetType.AutoDisplayDescription;
                             model.AssetType.Name = a.Name;
                             model.AssetType.Description = a.Description;
                             model.AssetType.DisplayFormat = a.DisplayFormat;
@@ -1277,7 +1277,6 @@ namespace d360.web.Controllers
                             DisplayFormat = model.AssetType.DisplayFormat,
                             Description = model.AssetType.Description,
                             CanOwnFusion = model.CanOwnFusion ?? false,
-                            AutoDisplayDescription = model.AutoDisplayDescription ?? false
                         };
                         Company.Add(a);
                         parentType = SystemObjects.ArtifactType;
@@ -2240,7 +2239,11 @@ namespace d360.web.Controllers
             {
                 css = Storage.GetFileContentsAsString(constants.COMPANY_STYLES_FOLDER, $"{Company.CurrentCompanyID}.css");
             }
-            catch { }
+            catch(Exception ex) {
+                SendException(ex);
+                return jsonNetException(ex, HttpStatusCode.InternalServerError, string.Empty);
+            }
+
             return new JsonNetResult { Data = css, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
@@ -2279,7 +2282,7 @@ namespace d360.web.Controllers
                         Community.SaveChanges();
                     }
 
-                    Storage.CreateFile(constants.COMPANY_STYLES_FOLDER, $"{Company.CurrentCompanyID}.css", css, "text/css");
+                    Storage.CreateFile(constants.COMPANY_STYLES_FOLDER, $"{Company.CurrentCompanyID}.css", css, "text/css", false);
                 }
                 else
                 {
@@ -2601,6 +2604,10 @@ namespace d360.web.Controllers
                         var imageMime = imageMatch.Groups["mime"].Value;
                         var imageData = imageMatch.Groups["data"].Value;
                         var imageExtension = MimeTypeExtensionsMap.GetExtension(imageMime);
+                        if (imageExtension == null)
+                        {
+                            return jsonException(string.Format("Invalid file type: {0} cannot be uploaded.", imageMime), HttpStatusCode.BadRequest);
+                        }
                         var imageByteArray = Convert.FromBase64String(imageData);
                         var imageGuid = Guid.NewGuid();
 
@@ -3171,7 +3178,7 @@ namespace d360.web.Controllers
                     );
                     break;
                 case SystemObjects.TaxonomyType:
-                    var sqlForTaxonomy = "select att.ObjectID as value, textpath as Title from asset a inner join assettype att on a.assettypeid = att.id cross apply getassettextpath('/') atp where atp.id = a.id and a.object = 'Taxonomy' and att.ObjectID = @id";
+                    var sqlForTaxonomy = "select att.ObjectID as value, textpath as Title from asset a inner join assettype att on a.assettypeid = att.id cross apply[dbo].[GetAssetTextPathById](a.id, '/') atp where atp.id = a.id and a.object = 'Taxonomy' and att.ObjectID = @id";
                     list.AddRange(
                         Company.Query<ListIntItem>(sqlForTaxonomy, new { id = id })
                     );
@@ -7136,8 +7143,8 @@ namespace d360.web.Controllers
 
                 if (Company.Filter<Intersect>(i => i.IntersectTypeID == id).Count() > 0)
                     return jsonException(FormInfo.InUse_Error_Delete, HttpStatusCode.Conflict);
-                if (Company.Filter<FieldType>(i => i.LookupObjectID == id && i.Type== "Relationship" && i.LookupObjectType== "IntersectType").Count() > 0)
-                    return jsonException(FormInfo.InUse_Error_Delete, HttpStatusCode.Conflict);
+                if (Company.Filter<FieldType>(i => i.LookupObjectID == id && i.Type == "Relationship" && i.LookupObjectType == "IntersectType").Count() > 0)
+                    return jsonException(FormInfo.InUse_RelationShipType_Error_Delete, HttpStatusCode.Conflict);
 
                 var model = Company.GetById<IntersectType>(id);
                 if (model == null) throw new NotFoundException("relationship type");
@@ -15180,35 +15187,7 @@ new { t = a.TaxonomyTypeID, currentLevel = a.Level ?? 1, maxLevel = a.TaxonomyTy
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-        [Route("Taxonomy_SimilarItems"), NonNullableParameters]
-        public JsonNetResult Taxonomy_SimilarItems(int typeID, int id, string query)
-        {
-
-            var sql = @"with p as
-                    (
-                    select t.id, t.parentid, t.name from taxonomy t
-                    where t.id = @id
-                    union all
-                    select t.id, t.parentid, t.name from taxonomy t
-                    join p on t.parentid = p.id and t.parentid is not null and t.id != p.id
-                    )
-                    select 
-	                    d.DisplayValue as Name,
-	                    d.Url, 
-	                    d.ForeColor as IconForeColor, 
-	                    d.BackColor as IconBackColor, 
-	                    cast(null as nvarchar) as [Description],
-	                    d.TypeID as objecttypeid
-                    from p
-                    join AssetDetail d on d.objectid = p.id and d.[object] = @type
-                    where d.DisplayValue like @query + '%'
-                    ";
-            return new JsonNetResult
-            {
-                Data = Company.Query<dynamic>((id > 0) ? sql : QueryConstants.SimilarItems, new { type = new DbString { Value = "Taxonomy", IsFixedLength = true, IsAnsi = true, Length = 50 }, typeID, id, query }),
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
+        
         
         #endregion
 
@@ -16290,143 +16269,6 @@ new { t = a.TaxonomyTypeID, currentLevel = a.Level ?? 1, maxLevel = a.TaxonomyTy
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-        [HttpGet, Route("CustomAPIVersionFieldEditor_GetFieldTypes")]
-        public JsonNetResult CustomAPIVersionFieldEditor_GetFieldTypes(int versionId)
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                return jsonNetException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-            var entity = Company.ApiEntities.First(x => x.EndpointVersionID == versionId);
-
-            var fieldTypes = Company.FieldTypes.Where(x => x.AssetTypeID == entity.AssetTypeID).ToList();
-            return new JsonNetResult
-            {
-                Data = fieldTypes,
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
-        [HttpGet, Route("CustomAPIVersionFieldEditor_GetLookupFields")]
-        public JsonResult CustomAPIVersionFieldEditor_GetLookupFields(int fieldTypeId)
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-            var fieldType = Company.GetById<FieldType>(fieldTypeId);
-
-            if (fieldType == null)
-                return jsonException("field type", HttpStatusCode.NotFound);
-
-            if (!fieldType.AllowMultipleValues || fieldType.LookupObjectType != "ReferenceItem")
-                return Json(new List<SelectListItem>(), JsonRequestBehavior.AllowGet);
-
-
-            var fields = Company.FieldTypes
-                .Where(f => f.Object == "ReferenceItemType" && f.ObjectID == fieldType.LookupObjectID)
-                .Select(i => new SelectListItem { Text = i.FriendlyName, Value = i.ID.ToString() })
-                .ToList();
-
-            return Json(fields, JsonRequestBehavior.AllowGet);
-
-        }
-
-        [HttpGet, Route("CustomAPIVersionFieldEditor_EditModel")]
-        public JsonNetResult CustomAPIVersionFieldEditor_EditModel(int id)
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                return jsonNetException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-            var model = Company.GetById<ApiEntityFieldType>(id);
-
-            if (model == null)
-                return jsonNetException("entity field type", HttpStatusCode.NotFound);
-
-            var entity = Company.GetById<ApiEntity>(model.EntityID);
-            var fieldType = Company.GetById<FieldType>(model.FieldTypeID);
-
-            var multiSelectRecords = Company.ApiEntityFieldTypeMultiSelectFields
-                .Where(i => i.EntityFieldTypeID == id)
-                .Select(i => i.FieldTypeID.ToString());
-
-            var multiSelectFieldTypes = Company.FieldTypes
-                .Where(f => f.Object == "ReferenceItemType" && f.ObjectID == fieldType.LookupObjectID)
-                .Select(i => new SelectListItem() { Text = i.FriendlyName, Value = i.ID.ToString() })
-                .ToList();
-
-            var selectedFields = multiSelectFieldTypes.Where(i => multiSelectRecords.Contains(i.Value)).ToList();
-
-            var fieldTypes = Company.FieldTypes.Where(x => x.AssetTypeID == entity.AssetTypeID).ToList();
-
-            return new JsonNetResult
-            {
-                Data = new
-                {
-                    model,
-                    fieldTypes,
-                    multiSelectFieldTypes,
-                    selectedFields
-                },
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
-        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddCustomAPIVersionField")]
-        public JsonResult AddCustomAPIVersionField(ApiEntityFieldType model)
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-            if (model == null)
-                return jsonException("model", HttpStatusCode.BadRequest);
-
-            try
-            {
-                if (model.ID < 1)
-                {
-                    Company.Add(model);
-                    Company.SaveChanges();
-
-                    if (model?.MultiSelectFields?.Any() ?? false)
-                    {
-                        Company.ApiEntityFieldTypeMultiSelectFields.AddRange(
-                            model.MultiSelectFields.Select(i => new ApiEntityFieldTypeMultiSelectField { EntityFieldTypeID = model.ID, FieldTypeID = i.FieldTypeID }).ToList());
-                    }
-                }
-                else
-                {
-                    var existing = Company.ApiEntityFieldTypes.FirstOrDefault(i => i.ID == model.ID);
-
-                    if (existing == null)
-                        return jsonException("entity field type", HttpStatusCode.NotFound);
-
-                    var existingMultiSelect = Company.ApiEntityFieldTypeMultiSelectFields.Where(i => i.EntityFieldTypeID == model.ID).ToList();
-                    Company.ApiEntityFieldTypeMultiSelectFields.RemoveRange(existingMultiSelect);
-
-                    existing.FieldTypeID = model.FieldTypeID;
-                    existing.JsonFieldNameOverride = model.JsonFieldNameOverride;
-                    existing.XmlFieldNameOverride = model.XmlFieldNameOverride;
-                    existing.ItemNameOverride = model.ItemNameOverride;
-                    existing.AllowFilter = model.AllowFilter;
-                    existing.AllowSelect = model.AllowSelect;
-                    existing.AllowSort = model.AllowSort;
-
-                    Company.SaveChanges();
-
-                    if (model?.MultiSelectFields?.Any() ?? false)
-                    {
-                        Company.ApiEntityFieldTypeMultiSelectFields.AddRange(model.MultiSelectFields);
-                    }
-                    Company.SaveChanges();
-                }
-            }
-             catch (Exception ex)
-            {
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-
-            return jsonSuccess("entity field type saved", model.ID.ToString(), "add", HttpStatusCode.OK);
-        }
-
         [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddServiceEndpointVersionField")]
         public JsonResult AddServiceEndpointVersionField(FormCollection form)
         {
@@ -16674,7 +16516,7 @@ new { t = a.TaxonomyTypeID, currentLevel = a.Level ?? 1, maxLevel = a.TaxonomyTy
 
         private JsonResult ExportTemplate_EditFields(int id)
         {
-            var template = Company.ArtifactTypeExportTemplates.Where(x => x.ID == id).FirstOrDefault();
+            var template = Company.AssetTypeExportTemplates.Where(x => x.ID == id).FirstOrDefault();
 
             var list = new List<EditableField>();
 
@@ -16686,9 +16528,9 @@ new { t = a.TaxonomyTypeID, currentLevel = a.Level ?? 1, maxLevel = a.TaxonomyTy
 
             list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "ExportViewType", Name = "List Arrangement", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = names });
 
-            var types = Company.ArtifactTypes.Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString(), Selected = template.ArtifactTypeID == i.ID }).OrderBy(x=>x.Text).ToList();
+            var types = Company.AssetTypes.Where(f => f.Class == AssetTypeClass.Glossary).Select(i => new SelectListItem { Text = i.Name, Value = i.uid.ToString(), Selected = template.AssetTypeID == i.ID }).OrderBy(x=>x.Text).ToList();
             
-            list.Add(new EditableField { Row = 4, Column = 1, Required = true, FieldName = "ArtifactTypeID", Name = "Artifact Type", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = types });
+            list.Add(new EditableField { Row = 4, Column = 1, Required = true, FieldName = "AssetTypeUID", Name = "Asset Type", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = types });
 
             list.Add(new EditableField { Row = 5, Column = 1, Required = true, FieldName = "IncludeUrl", Name = "Include Glossary Url", FieldDescription = "", FieldType = DataType.Boolean.ToString() , Value = template.IncludeUrl.ToString()});
             list.Add(new EditableField { Row = 6, Column = 1, Required = true, FieldName = "IncludeParent", Name = "Include Parent Name", FieldDescription = "", FieldType = DataType.Boolean.ToString(), Value = template.IncludeParent.ToString() });
@@ -16708,8 +16550,8 @@ new { t = a.TaxonomyTypeID, currentLevel = a.Level ?? 1, maxLevel = a.TaxonomyTy
             
             list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "ExportViewType", Name = "List Arrangement", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = names});
 
-            var types = Company.ArtifactTypes.Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).OrderBy(x=>x.Text).ToList();
-            list.Add(new EditableField { Row = 4, Column = 1, Required = true, FieldName = "ArtifactTypeID", Name = "Artifact Type", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = types });
+            var types = Company.AssetTypes.Where(f => f.Class == AssetTypeClass.Glossary).Select(i => new SelectListItem { Text = i.Name, Value = i.uid.ToString() }).OrderBy(x=>x.Text).ToList();
+            list.Add(new EditableField { Row = 4, Column = 1, Required = true, FieldName = "AssetTypeUID", Name = "Asset Type", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = types });
 
             list.Add(new EditableField { Row = 5, Column = 1, Required = true, FieldName = "IncludeUrl", Name = "Include Glossary Url", FieldDescription = "", FieldType = DataType.Boolean.ToString() });
             list.Add(new EditableField { Row = 6, Column = 1, Required = true, FieldName = "IncludeParent", Name = "Include Parent Name", FieldDescription = "", FieldType = DataType.Boolean.ToString() });

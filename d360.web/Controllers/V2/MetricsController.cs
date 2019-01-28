@@ -433,7 +433,7 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Gets a hierarchical structure of metrics associated with the asset Uid provided, for a given effective date. If no effective date is provided, today's date is used.
         /// </summary>
-        /// <param name="assetUid">The UID of the asset.</param>
+        /// <param name="assetUid">The Uid of the asset.</param>
         /// <param name="effectiveDate">The date which you want to pull the metric hierarchy for. If not provided, today's date is used. Optionally, you may also provide a past effective date.</param>
         /// <returns>An HTTP status code and message.</returns>
         [

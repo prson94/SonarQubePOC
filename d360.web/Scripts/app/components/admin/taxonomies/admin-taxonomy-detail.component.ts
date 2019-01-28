@@ -5,6 +5,9 @@ import { Taxonomy } from '../../../models/taxonomy.model';
     selector: 'd3s-admin-model-detail-component',
     template: `
                     <div class="tile tile-detail">
+                        <object-detail [objectType]="'TaxonomyType'" [objectID]="taxonomy?.ID"></object-detail>
+                    </div>
+                    <div class="tile tile-detail">
                         <d3s-field-definition-tile objectType="TaxonomyType" [objectID]="taxonomy?.ID" ></d3s-field-definition-tile>
                     </div>
                     <div class="tile tile-detail">

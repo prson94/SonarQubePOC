@@ -1141,15 +1141,18 @@ where   h.ID <> @t order by h.[Level] desc;
             var artifactType = Company.GetById<ArtifactType>(typeID);
             if (artifactType == null) throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
 
+            var assetType = Company.Filter<AssetType>(i => i.Object == "ArtifactType" && i.ObjectID == artifactType.ID).SingleOrDefault();
+            if (assetType == null) throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
+
             var model = new Dictionary<string, object>();
 
             model.Add("ID", artifactType.ID);
             model.Add("Name", artifactType.Name);
             model.Add("Description", artifactType.Description);
             model.Add("ParentID", Company.GetParentType<ArtifactType>(artifactType.ID)?.ID ?? null);
-            model.Add("CanOwnFusion", artifactType.CanOwnFusion);
-            model.Add("HasCustomExportTemplates", Company.ArtifactTypeExportTemplates.Where(x => x.ArtifactTypeID == typeID).Any());
-            model.Add("AutoDisplayDescription", artifactType.AutoDisplayDescription);
+            model.Add("CanOwnFusion", assetType.CanOwnFusion);
+            model.Add("HasCustomExportTemplates", Company.AssetTypeExportTemplates.Where(x => x.AssetTypeID == assetType.ID).Any());
+            model.Add("AutoDisplayDescription", assetType.AutoDisplayDescription);
 
             bool hasDashboards = Company.Filter<Report>(x => x.ObjectType == "ArtifactType" && x.ObjectID == typeID && x.ReportType != "legacy").Any();
             model.Add("HasDashboards", hasDashboards);
@@ -1158,14 +1161,9 @@ where   h.ID <> @t order by h.[Level] desc;
 
             var hasV2WorkflowsAssigned = (Company.Query<int>(sql).FirstOrDefault() > 0);
             model.Add("HasV2Workflows", hasV2WorkflowsAssigned);
+            model.Add("AssetTypeUID", assetType.uid);
 
             return model;
-        }
-
-        [Route("artifacttype/{id:int}/export/templates")]
-        public IEnumerable<ArtifactTypeExportTemplate> GetArtifactTypeExportTemplates(int id)
-        {
-            return Company.ArtifactTypeExportTemplates.Where(x => x.ArtifactTypeID == id);
         }
 
         [Route("artifacttypes")]
@@ -3640,14 +3638,14 @@ outer apply (
 
                 var def = lookup.ParseComplexLookupDefinition();
 
-                if (def.Fields == null || def.Fields.Count == 0) throw new Exception("Invalid complex lookup no fields specified in definition.  Please specify one or more fields in the complex lookup definition.");
+                if (def.Fields == null || def.Fields.Count == 0) throw new Exception("There is an invalid Relation Look up field. There is no field specified in the Relation Lookup definition. Please specify one or more fields in the Relation Lookup definition.");
                 
                 var fields = def.Fields.ToList();
 
                 var fieldTypeIDs = fields.Where(i => i.FieldTypeID != 0).Select(x => x.FieldTypeID).ToList();
                 var fieldTypes = Company.Filter<FieldType>(i => fieldTypeIDs.Contains(i.ID)).ToList();
 
-                if(def.Fields.Count > 0 && (fieldTypes == null || fieldTypes.Count == 0))
+                if ((def.Fields.Count > 0 && ((fieldTypes == null || fieldTypes.Count == 0)) & !def.Fields.Any(x => x.FieldTypeName == "TextPath")))
                 {
                     throw new Exception("The relationship lookup field has 0 valid fields to display. Please verify the definition is correct.");
                 }
@@ -4271,8 +4269,8 @@ order by C.DisplayValue";
 		    T.Object as Type,
 		    T.ObjectID as TypeID,
 		    T.Name as TypeName,
-		    RD.Object,
-		    RD.ObjectID,
+		    A.Object,
+		    A.ObjectID,
 		    utility.GetAssetDisplayValueWrapper(A.ID) as ObjectName,
 		    RD.ResponsibilityTypeName,
 		    case RD.SecurityAsset
@@ -5435,7 +5433,7 @@ where    A.RuleID = @id", new { id });
                 #endregion
                 case SystemObjects.ExportTemplate:
                     #region Fields
-                    var template = Company.GetById<ArtifactTypeExportTemplate>(id);
+                    var template = Company.GetById<AssetTypeExportTemplate>(id);
                     if (template != null)
                     {
                         model.rows.Add(new DetailReadOnlyRowModel
@@ -5456,7 +5454,7 @@ where    A.RuleID = @id", new { id });
                             columns = 2,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField{ Name = "Artifact Type", FieldName = "TypeName", Value = template.ArtifactType.Name}
+                                new ReadOnlyField{ Name = "Asset Type", FieldName = "TypeName", Value = template.AssetType.Name}
                             },
                             SecondColumnFields = new List<ReadOnlyField>
                             {
@@ -5670,6 +5668,7 @@ where    A.RuleID = @id", new { id });
                 case SystemObjects.FusionAttribute:
                     #region Fields
                     var fusionAttribute = Company.GetById<FusionAttribute>(id);
+                    var fusionAttDetail = Company.GetObjectDetail("FusionAttribute", id);
                     if (fusionAttribute != null)
                     {
                         model.rows.Add(new DetailReadOnlyRowModel
@@ -5680,7 +5679,14 @@ where    A.RuleID = @id", new { id });
                                 new ReadOnlyField { Name = fusionAttribute.GetName(i => i.Name), FieldName = "FAName", FieldDescription = fusionAttribute.GetDescription(i => i.Name), Value = fusionAttribute.Name }
                             }
                         });
-
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField{ Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = fusionAttDetail.UID.ToString()  }
+                            }
+                        });
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
                             columns = 1,
@@ -5795,6 +5801,7 @@ where    A.RuleID = @id", new { id });
                 case SystemObjects.FusionType:
                     #region Fields
                     var fusionType = Company.GetById<FusionType>(id);
+                    var fusionDetail = Company.GetObjectDetail("FusionType", id);
                     if (fusionType != null)
                     {
                         model.rows.Add(new DetailReadOnlyRowModel
@@ -5809,7 +5816,14 @@ where    A.RuleID = @id", new { id });
                                 new ReadOnlyField { Name = fusionType.GetName(i => i.ID), FieldName = "FusionTypeID", FieldDescription = fusionType.GetDescription(i => i.ID), Value = fusionType.ID.ToString() }
                             }
                         });
-
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField{ Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = fusionDetail.UID.ToString()  }
+                            }
+                        });
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
                             columns = 1,
@@ -6170,6 +6184,7 @@ where    A.RuleID = @id", new { id });
                 case SystemObjects.RuleType:
                     #region Fields
                     var ruleType = Company.GetById<RuleType>(id);
+                    var ruleDetail = Company.GetObjectDetail("RuleType", id);
                     if (ruleType != null)
                     {
                         model.rows.Add(new DetailReadOnlyRowModel
@@ -6184,7 +6199,14 @@ where    A.RuleID = @id", new { id });
                                 new ReadOnlyField { Name = Resources.FieldInfo.ID_Name, FieldName = "RuleTypeID", Value = ruleType.ID.ToString() }
                             }
                         });
-
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField{ Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = ruleDetail.UID.ToString()  }
+                            }
+                        });
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
                             columns = 1,
@@ -6200,6 +6222,8 @@ where    A.RuleID = @id", new { id });
                 case SystemObjects.ResponsibilityType:
                     #region Fields
                     var responsibilityType = Company.GetById<ResponsibilityType>(id);
+                    var responsibilityDetail = Company.GetObjectDetail("ResponsibilityType", id);
+
                     if (responsibilityType != null)
                     {
                         model.columns = 1;
@@ -6212,7 +6236,14 @@ where    A.RuleID = @id", new { id });
                                 new ReadOnlyField { Name = responsibilityType.GetName(i => i.Name), FieldName = "Name", FieldDescription = responsibilityType.GetDescription(i => i.Name), Value = responsibilityType.Name }
                             }
                         });
-
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField{ Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = responsibilityDetail.UID.ToString()  }
+                            }
+                        });
                         if (!string.IsNullOrEmpty(responsibilityType.Description))
                         {
                             model.rows.Add(new DetailReadOnlyRowModel
@@ -6231,6 +6262,7 @@ where    A.RuleID = @id", new { id });
                 case SystemObjects.PolicyType:
                     #region Fields
                     var policyType = Company.GetById<PolicyType>(id);
+                    var objectDetail = Company.GetObjectDetail("PolicyType", id);
                     if (policyType != null)
                     {
                         model.rows.Add(new DetailReadOnlyRowModel
@@ -6245,7 +6277,14 @@ where    A.RuleID = @id", new { id });
                                 new ReadOnlyField { Name = policyType.GetName(i => i.ID), FieldName = "PolicyTypeID", FieldDescription = policyType.GetDescription(i => i.ID), Value = policyType.ID.ToString() }
                             }
                         });
-
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField{ Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = objectDetail.UID.ToString()  }
+                            }
+                        });
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
                             columns = 1,
@@ -6304,11 +6343,15 @@ where    A.RuleID = @id", new { id });
                         {
                             model.rows.Add(new DetailReadOnlyRowModel
                             {
-                                columns = 1,
+                                columns = 2,
                                 FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = "Asset Type ID", FieldName = "AssetTypeId", FieldDescription = Resources.FieldInfo.AssetId_Description, Value = assetType.ID.ToString(), DataType = "string" }
-                            }
+                                {
+                                    new ReadOnlyField{ Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = assetType.uid.ToString()  }
+                                },
+                                SecondColumnFields = new List<ReadOnlyField>
+                                {
+                                    new ReadOnlyField { Name = "Asset Type ID", FieldName = "AssetTypeId", FieldDescription = Resources.FieldInfo.AssetId_Description, Value = assetType.ID.ToString(), DataType = "string" }
+                                }
                             });
                         }
 
@@ -6661,6 +6704,7 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
                 case SystemObjects.TaxonomyType:
                     #region Fields
                     var taxonomyType = Company.GetById<TaxonomyType>(id);
+                    var taxonomyObjectDetail = Company.GetObjectDetail("TaxonomyType", id);
                     if (taxonomyType != null)
                     {
                         model.rows.Add(new DetailReadOnlyRowModel
@@ -6678,10 +6722,14 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
 
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
-                            columns = 1,
+                            columns = 2,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
                                 new ReadOnlyField { Name = taxonomyType.GetName(i => i.MaximumDepth), FieldName = "TaxonomyTypeMaximumDepth", FieldDescription = taxonomyType.GetDescription(i => i.MaximumDepth), Value = taxonomyType.MaximumDepth.ToString() }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField{ Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = taxonomyObjectDetail.UID.ToString()  }
                             }
                         });
 
@@ -7795,7 +7843,7 @@ from	    TaxonomyType FAT
 	                                inner join [workflow].[version] wv on (wt.id = wv.typeid)
 	                                inner join [workflow].[item] wi on (wv.id = wi.versionid)	
                                     inner join [workflow].[itemstep] wis on(wis.itemid = wi.id and wis.completedon is null)
-	                                inner join [workflow].[itemassignment] wia on(wia.itemid = wi.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r and (wia.stepid = wis.stepid or wia.stepid is null))
+	                                inner join [workflow].[itemassignment] wia on(wia.itemid = wi.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r and (wia.itemstepid = wis.id or wia.itemstepid is null))
 	                                inner join [workflow].[versionstep] wvs on(wvs.id = wis.stepid)
                                 where
                                     wi.completedon is null and wvs.steptype = 2 and wvs.activitytype = 3

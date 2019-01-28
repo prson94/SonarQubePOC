@@ -89,7 +89,11 @@ namespace d360.model
 
         public DbSet<ArtifactTypeExportTemplate> ArtifactTypeExportTemplates { get; set; }
 
+        public DbSet<AssetTypeExportTemplate> AssetTypeExportTemplates { get; set; }
+
         public DbSet<ArtifactTypeExportTemplateStyle> ArtifactTypeExportTemplateStyles { get; set; }
+
+        public DbSet<AssetTypeExportTemplateStyle> AssetTypeExportTemplateStyles { get; set; }
 
         public DbSet<ArtifactType> ArtifactTypes { get; set; }
 
@@ -467,6 +471,44 @@ from	IntersectType I
 where	I.State = 1");
         }
 
+        public Task<IEnumerable<IntersectTypeApiViewModel>> GetActiveIntersectTypes(int id, string type)
+        {
+            return QueryAsync<IntersectTypeApiViewModel>(@"
+select	I.ID,
+        I.Uid,
+        coalesce(I.IsSystem, 0) as IsSystem,
+		P.Name as PredicateName,
+		P.Inverse as PredicateInverse,
+		P.[Type] as PredicateTypeID,
+		I.Subject,
+		I.SubjectID,
+		I.SubjectUid as SubjectUid,
+		coalesce(S.Class, 0) as SubjectClassID,
+		case 
+			when I.Subject = 'IntersectType' then SI.SubjectName + ' ' + SI.PredicateName + ' ' + SI.ObjectName + ' relationship'
+			else coalesce(SFT.Name + ' / ','') + coalesce(SP.[Path], S.Name)
+		end as SubjectTypeName,
+		I.Object,
+		I.ObjectID,
+		I.ObjectUid,
+		coalesce(O.Class, 0) as ObjectClassID,
+		coalesce(OFT.Name + ' / ','') + coalesce(OP.[Path], O.Name) as ObjectTypeName
+from	IntersectType I
+		left join [Predicate] P on P.ID = I.PredicateID
+
+		left join AssetType S on (S.uid = I.SubjectUid OR (S.Object = I.Subject and S.ObjectID = I.SubjectID))
+        left join FusionAttributeType SFAT on I.Subject = 'FusionAttributeType' and SFAT.ID = I.SubjectID 
+        left join FusionType SFT on SFT.ID = SFAT.FusionTypeID 
+        outer apply dbo.GetAssetTypeTextPathById(S.ID, '/') SP
+
+		left join IntersectTypeDetail SI on I.Subject = 'IntersectType' and SI.ID = I.SubjectID
+		left join AssetType O on (O.uid = I.ObjectUid OR (O.Object = I.Object and O.ObjectID = I.ObjectID))
+        left join FusionAttributeType OFAT on I.Object = 'FusionAttributeType' and OFAT.ID = I.ObjectID 
+        left join FusionType OFT on OFT.ID = OFAT.FusionTypeID 
+        outer apply dbo.GetAssetTypeTextPathById(O.ID, '/') OP
+where	I.State = 1 and (I.SubjectID = @id and I.[Subject] = @type or I.ObjectID = @id and I.Object = @type)", new { id, type });
+        }
+
         public List<AllocationPossibility> GetAllocationOptions()
         {
             var list = Database.Connection.Query<AllocationPossibility>(@"
@@ -833,8 +875,8 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
 			ASTT.Name + ' : ' + D.DisplayValue as Name
 	from	
 			Asset AST
-			inner join AssetType ASTT on ASTT.ID = AST.AssetTypeID
-			inner join ArtifactType T on (ASTT.ObjectID = T.ID and ASTT.[Object] = 'ArtifactType' and T.CanOwnFusion = 1)			
+			inner join AssetType ASTT on ASTT.ID = AST.AssetTypeID and ASTT.CanOwnFusion = 1
+			inner join ArtifactType T on (ASTT.ObjectID = T.ID and ASTT.[Object] = 'ArtifactType'  )			
             cross apply GetAssetDisplayValueById(AST.ID) D
 	order by	ASTT.Name + ' : ' + D.DisplayValue").ToList();
         }

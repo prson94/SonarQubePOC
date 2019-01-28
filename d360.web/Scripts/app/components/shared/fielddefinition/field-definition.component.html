@@ -6,7 +6,14 @@
         </header>
     </div>    
     <div *ngIf="isEditing">
-        <d3s-field-type-form [id]="selectedRow != null? selectedRow.ID : 0" [objectType]="objectType" [objectID]="objectID" (onCancel)="isEditing = false; onCancel.emit()" (onComplete)="editComplete($event)"></d3s-field-type-form>
+        <d3s-field-type-form
+            [id]="selectedRow != null? selectedRow.ID : 0"
+            [objectType]="objectType"
+            [objectID]="objectID"
+            [showIsListable]="showIsListable"
+            [showIsPartOfKey]="showIsPartOfKey"
+            (onCancel)="isEditing = false; onCancel.emit()"
+            (onComplete)="editComplete($event)"></d3s-field-type-form>
     </div>    
     <d3s-delete-form *ngIf="isDeleting"
                      [callback]="theDeleteCallback"
@@ -24,9 +31,9 @@
                     <col style="width: 20%">
                     <col style="width: 15%">
                     <col style="width: 15%">
+                    <col style="width: 12%" *ngIf="showIsListable">
                     <col style="width: 12%">
-                    <col style="width: 12%">
-                    <col style="width: 12%">
+                    <col style="width: 12%" *ngIf="showIsPartOfKey">
                     <col style="width: 12%">
                     <col style="width: 12%">
                     <col style="width: 30px">
@@ -49,7 +56,7 @@
                         Category
                         <d3s-sortIcon [field]="'Category'"></d3s-sortIcon>
                     </th>
-                    <th [pSortableColumn]="'IsListable'" style="width: 12%">
+                    <th [pSortableColumn]="'IsListable'" style="width: 12%" *ngIf="showIsListable">
                         Listable?
                         <d3s-sortIcon [field]="'IsListable'"></d3s-sortIcon>
                     </th>
@@ -57,7 +64,7 @@
                         Required?
                         <d3s-sortIcon [field]="'IsRequired'"></d3s-sortIcon>
                     </th>
-                    <th [pSortableColumn]="'IsPartOfKey'" style="width: 12%">
+                    <th [pSortableColumn]="'IsPartOfKey'" style="width: 12%" *ngIf="showIsPartOfKey">
                         Key?
                         <d3s-sortIcon [field]="'IsPartOfKey'"></d3s-sortIcon>
                     </th>
@@ -78,9 +85,9 @@
                     <th><d3s-column-filter [field]="'FriendlyName'" [datatype]="'text'"></d3s-column-filter></th>
                     <th><d3s-column-filter [field]="'Type'" [datatype]="'text'"></d3s-column-filter></th>
                     <th><d3s-column-filter [field]="'Category'" [datatype]="'text'"></d3s-column-filter></th>
+                    <th *ngIf="showIsListable"></th>
                     <th></th>
-                    <th></th>
-                    <th></th>
+                    <th *ngIf="showIsPartOfKey"></th>
                     <th><d3s-column-filter [field]="'SortOrder'" [datatype]="'text'"></d3s-column-filter></th>
                     <th><d3s-column-filter [field]="'ColumnWidth'" [datatype]="'text'"></d3s-column-filter></th>
                     <th></th>
@@ -94,7 +101,7 @@
                     <td>{{item.FriendlyName}}</td>
                     <td>{{item.Type}}</td>
                     <td>{{item.Category}}</td>
-                    <td>
+                    <td *ngIf="showIsListable">
                         <span><i *ngIf="item.IsListable" class="fa fa-check enabled" title="True"></i></span>
                         <span><i *ngIf="!item.IsListable" class="fa fa-times disabled" title="False"></i></span>
                     </td>
@@ -102,7 +109,7 @@
                         <span><i *ngIf="item.IsRequired" class="fa fa-check enabled" title="True"></i></span>
                         <span><i *ngIf="!item.IsRequired" class="fa fa-times disabled" title="False"></i></span>
                     </td>
-                    <td>
+                    <td *ngIf="showIsPartOfKey">
                         <span><i *ngIf="item.IsPartOfKey" class="fa fa-check enabled" title="True"></i></span>
                         <span><i *ngIf="!item.IsPartOfKey" class="fa fa-times disabled" title="False"></i></span>
                     </td>
@@ -110,22 +117,22 @@
                     <td>{{item.ColumnWidth}}</td>
                     <td>
                         <div class="RowTools">
-                            <a (click)="moveUp(item)" style="cursor:pointer;"><i class="fa fa-caret-up"></i></a>
+                            <a (click)="moveUp(item)" style="cursor:pointer;margin:0px;"><i class="fa fa-caret-up"></i></a>
                         </div>
                     </td>
                     <td>
                         <div class="RowTools">
-                            <a (click)="moveDown(item)" style="cursor:pointer;"><i class="fa fa-caret-down"></i></a>
+                            <a (click)="moveDown(item)" style="cursor:pointer;margin:0px;"><i class="fa fa-caret-down"></i></a>
                         </div>
                     </td>
                     <td>
                         <div class="RowTools" *ngIf="showEditButton">
-                            <a (click)="edit(item.ID)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
+                            <a (click)="edit(item.ID)" style="cursor:pointer;margin:0px;"><i class="fa fa-pencil"></i></a>
                         </div>
                     </td>
                     <td>
                         <div class="RowTools" *ngIf="showDeleteButton">
-                            <a (click)="delete(item.ID)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                            <a (click)="delete(item.ID)" style="cursor:pointer;margin:0px;"><i class="fa fa-trash-o"></i></a>
                         </div>
                     </td>
                 </tr>

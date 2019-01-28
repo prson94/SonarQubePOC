@@ -82,6 +82,7 @@ select		distinct
             end as ActivityName
 from	    Issue I
 			inner join [workflow].item wi on (wi.[object] = 'Issue' and wi.[objectid] = i.id)
+            inner join workflow.itemstep si on si.itemid = wi.id
 			inner join IssueType IT on (I.IssueTypeID = IT.ID)							
 			left join AssetDetail D on D.[Object] = I.[Object] and D.ObjectID = I.ObjectID
 			outer apply [dbo].[GetAssetUrlById](D.ID) DUrl
@@ -323,8 +324,8 @@ order by wi.StartedOn desc";
 
                 var assignment = new WorkflowItemAssignment
                 {
+                    ItemStepID = itemStep.ID,
                     ItemID = itemStep.ItemID,
-                    StepID = itemStep.StepID,
                     CreatedBy = Company.CurrentResourceID,
                     CreatedOn = DateTime.UtcNow,
                     ResourceObject = "Resource",
@@ -539,8 +540,7 @@ order by wi.StartedOn desc";
                 Company.Entry(itemStepsModel).State = System.Data.Entity.EntityState.Modified;
 
                 //remove any assignment records in the workflow item assignment table so this item doesnt appear assigned to this user anymore
-
-                var assignment = Company.WorkflowItemAssignments.Where(x => x.ItemID == itemId && x.ResourceObject == "Resource" && x.ResourceObjectID == Company.CurrentResourceID && x.StepID == itemStepsModel.StepID).FirstOrDefault();
+                var assignment = Company.WorkflowItemAssignments.Where(x => x.ItemID == itemId && x.ResourceObject == "Resource" && x.ResourceObjectID == Company.CurrentResourceID && x.ItemStepID == itemStepsModel.ID).FirstOrDefault();
 
                 if (assignment!= null)
                 {
@@ -561,7 +561,7 @@ order by wi.StartedOn desc";
                 if (isCompleted)
                 {
                     //clear other assignments
-                    Company.CompleteItemStepAssignments(itemId, itemStepsModel.StepID);
+                    Company.CompleteItemStepAssignments(itemStepId);
 
                     SendEvent("Workflow Form Completed", new Dictionary<string, string> { { "WorkflowItemID", "itemId" }, { "ResourceID", Company.CurrentResourceID.ToString() } });                    
                     int transitionsCount = await Company.MarkStepAsCompleteAndContinue(itemStepsModel, itemId, new core.queue.EventObjectInfo { Object = @object, ObjectID = item.ObjectID, ObjectTypeID = (obj != null ? obj.TypeID : -1), ObjectType = type });
@@ -667,7 +667,7 @@ order by wi.StartedOn desc";
                     }
 
                     // check if the user has access
-                    var IsUserAllowedToComplete = Company.WorkflowItemAssignments.Where(x => x.ItemID == i.ItemID && x.ResourceObjectID == Company.CurrentResourceID).Any();
+                    var IsUserAllowedToComplete = Company.WorkflowItemAssignments.Where(x => x.ItemStepID == i.ID && x.ResourceObjectID == Company.CurrentResourceID).Any();
 
                     // if user does not have access or item has been deleted, don't add it to the list of valid item steps
                     if (IsUserAllowedToComplete && !isCompletedByCurrentUser && !i.CompletedOn.HasValue && !isDeleted)
@@ -696,7 +696,7 @@ order by wi.StartedOn desc";
 
             if(itemStep == null)
             {
-                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "INVALID WORKFLOW ITEM ID,  CANNOT FIND WORKFLOWITEMSTEP WITH SPECIFIED ID.");
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Workflow item has been deleted.");
             }
             
             string sql = @"
@@ -850,7 +850,7 @@ order by wi.StartedOn desc";
             }
 
             // check if the user has access
-            var IsUserAllowedToComplete = Company.WorkflowItemAssignments.Where(x => x.ItemID == itemStep.ItemID && x.ResourceObjectID == Company.CurrentResourceID).Any();
+            var IsUserAllowedToComplete = Company.WorkflowItemAssignments.Where(x => x.ItemStepID == itemStep.ID && x.ResourceObjectID == Company.CurrentResourceID).Any();
 
 
             //replace any tokens in hte description            
@@ -1545,7 +1545,7 @@ order by wi.StartedOn desc";
                         versionID = currentVersion.ID;
 
                         //the current version is published
-                        if (type.PublishedVersionID == versionID && model.Nodes.Count > 0 && model.Links.Count > 0)
+                        if (type.PublishedVersionID == versionID && model.Nodes.Count > 0 && model.Links.Count > 0 && model.Type.PublishedVersionID ==-1)
                         {
 
                             var version = new WorkflowVersion();
@@ -2007,7 +2007,7 @@ order by wi.StartedOn desc";
 									left join [dbo].assettype assettype on(ass.assettypeid = assettype.id)
 	                                inner join [workflow].[itemstep] wis on(wis.itemid = wi.id and wis.completedon is null)
 	                                inner join [workflow].[versionstep] wvs on(wvs.id = wis.stepid)
-	                                inner join [workflow].[itemassignment] wia on (wia.itemid = wi.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r and (wia.stepid = wvs.id or wia.stepid is null))
+	                                inner join [workflow].[itemassignment] wia on (wia.itemid = wi.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r and (wia.itemstepid = wis.id or wia.itemstepid is null))
                                     inner join [reporting].global_resource gr on (wi.startedBy = gr.resourceid)
                                     left outer join [dbo].[issue] iss on(wi.[objectid] = iss.id and wi.[object] = 'Issue')
                                     left outer join [dbo].[asset] cod on (iss.objectid = cod.objectid and cod.[object] = iss.[object]) 
@@ -2050,8 +2050,8 @@ order by wi.StartedOn desc";
 	                                inner join [workflow].[item] wi on (wv.id = wi.versionid)	                                
 	                                left join [dbo].asset ass on(ass.[object] = wi.[object] and ass.[objectid] = wi.[objectid])
 									left join [dbo].assettype assettype on(ass.assettypeid = assettype.id)
-	                                left join [workflow].[itemassignment] wia on(wia.itemid = wi.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r)
 	                                left join [workflow].[itemstep] wis on(wis.itemid = wi.id )
+	                                left join [workflow].[itemassignment] wia on(wia.itemid = wi.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r)
 	                                left join [workflow].[versionstep] wvs on(wvs.id = wis.stepid)
                                     inner join [reporting].global_resource gr on (wi.startedBy = gr.resourceid)
                                     left outer join [dbo].[issue] iss on(wi.[objectid] = iss.id and wi.[object] = 'Issue')
@@ -3047,7 +3047,8 @@ order by wi.StartedOn desc";
                         {
                             if (detail.Settings.MessageRecipientType == "Initiator")
                             {
-                                var assignment = Company.WorkflowItemAssignments.FirstOrDefault(i => i.ItemID == detail.ItemID && (i.StepID == detail.StepID || i.StepID == null));
+                                var assignment = Company.WorkflowItemAssignments.FirstOrDefault(i => i.ItemID == detail.ItemID && (i.ItemStepID == detail.ItemStepID || i.ItemStepID == null));
+
                                 if (assignment != null)
                                 {
                                     var initiator = Company.GlobalReportingResources.FirstOrDefault(u => u.ResourceID == assignment.ResourceObjectID);

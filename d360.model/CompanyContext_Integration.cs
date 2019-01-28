@@ -1030,7 +1030,7 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
                 fieldTypeIDs.Add(new FieldTypeIdModel { ID = ft.ID, Name = ft.Name });
             });
 
-            int dbLimit = 1000;
+            int dbLimit = 5000;
             int currentCount = 0;
 
             #region Generate data sets
@@ -1190,7 +1190,7 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
 
             List<DatabaseBulkAssetResult> results = null;
 
-            using (var trans = cnn.BeginTransaction())
+            using (var trans = cnn.BeginTransaction(System.Data.IsolationLevel.ReadCommitted))
             {
                 try
                 {
@@ -1242,7 +1242,8 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
         FieldName nvarchar(250) not null,
         FieldValue nvarchar(max) null,
         FieldTypeID int null,
-        LookupValue nvarchar(250) null
+        LookupValue nvarchar(250) null,
+        Ignore bit null
     )", transaction: trans);
 
                     cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempAssetFieldTable ON #AssetFieldTable ( ItemNumber ASC, FieldTypeID ASC )", transaction: trans);

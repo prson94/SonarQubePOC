@@ -28,6 +28,7 @@ import { FormHelpers } from '../../../static/form-helpers';
                                     <th style="width: 40px"></th>
                                     <th style="width: 40px"></th>
                                     <th style="width: 40px"></th>
+                                    <th style="width: 40px"></th>
                                 </tr>
                             </ng-template>
                             <ng-template pTemplate="body" let-rowNode let-item="rowData">
@@ -38,6 +39,11 @@ import { FormHelpers } from '../../../static/form-helpers';
                                     </td>
                                     <td>{{item.Weight}}</td>
                                     <td>{{item.EffectiveDate | utcDate | date:'shortDate'}}</td>
+                                    <td>
+                                        <div class="RowTools" *ngIf="rowNode.node.data.Uid">                                
+                                            <a style="cursor:pointer;" (click)="selectNode(rowNode.node);"><i [copy-clipboard]="rowNode.node.data.Uid" [pTooltip]="'UID: \n' + rowNode.node.data.Uid + '\n\n (click to copy)\n'" tooltipPosition="top" class="fa fa-info"></i></a>                                      
+                                        </div>
+                                    </td>
                                     <td>
                                         <div class="RowTools" *ngIf="item.IsGroup">                                
                                             <a style="cursor:pointer;" (click)="selectNode(rowNode.node); add()"><i class="fa fa-plus"></i></a>                                      
@@ -58,10 +64,10 @@ import { FormHelpers } from '../../../static/form-helpers';
                         </p-treeTable>
                     </div>
                     <div *ngSwitchCase="FormMode.Adding">
-                        <d3s-admin-metric-editor [metricEditorFieldTypes]="metricListFieldTypes" [assetTypeUid]="assetType?.Uid" [parentUid]="selection?.Uid" (onCancel)="formMode = FormMode.Default" (onSave)="formMode = FormMode.Default; load(); "></d3s-admin-metric-editor>
+                        <d3s-admin-metric-editor [metricEditorFieldTypes]="metricListFieldTypes" [assetTypeUid]="assetType?.Uid" [parentUid]="selection?.Uid" (onCancel)="formMode = FormMode.Default;" (onSave)="formMode = FormMode.Default; load(); "></d3s-admin-metric-editor>
                     </div>
                     <div *ngSwitchCase="FormMode.Editing">
-                        <d3s-admin-metric-editor [(model)]="selection" [metricEditorFieldTypes]="metricListFieldTypes" [assetTypeUid]="assetType?.Uid" [uid]="selection.Uid" (onCancel)="formMode = FormMode.Default" (onSave)="formMode = FormMode.Default; load(); "></d3s-admin-metric-editor>
+                        <d3s-admin-metric-editor [(model)]="selection" [metricEditorFieldTypes]="metricListFieldTypes" [assetTypeUid]="assetType?.Uid" [uid]="selection.Uid" (onCancel)="formMode = FormMode.Default; load();" (onSave)="formMode = FormMode.Default; load(); "></d3s-admin-metric-editor>
                     </div>
                     <div *ngSwitchCase="FormMode.Deleting">
                         <header>

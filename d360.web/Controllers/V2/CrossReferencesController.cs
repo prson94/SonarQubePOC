@@ -32,13 +32,13 @@ namespace d360.web.Controllers.V2
         #endregion
 
         /// <summary>
-        /// Returns all asset cross references
+        /// Returns all asset cross references.
         /// </summary>
-        /// <returns>An array of cross reference records</returns>
+        /// <returns>An array of cross references</returns>
         [
             HttpGet, MapToApiVersion("2.0"), Route(""),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
-            SwaggerResponse(HttpStatusCode.OK, "A full list of asset cross reference values.", typeof(List<AssetCrossReference>)),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A full list of asset cross references.", typeof(List<AssetCrossReference>)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(List<AssetCrossReference>)),
         ]
         public async Task<HttpResponseMessage> Get()
@@ -51,38 +51,38 @@ namespace d360.web.Controllers.V2
 
 
         /// <summary>
-        /// Returns asset cross reference values for the specified Uid
+        /// Returns asset cross references for the specified asset based on its unique identifier.
         /// </summary>
-        /// <param name="uid">AssetCrossReference Id</param>
-        /// <returns>An array of matching cross reference records</returns>
+        /// <param name="assetUid">The unique identifier of the asset.</param>
+        /// <returns>An array of matching cross references.</returns>
         [
             HttpGet,
             MapToApiVersion("2.0"),
-            Route("{uid}"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
-            SwaggerResponse(HttpStatusCode.OK, "A list of asset cross reference values based on the public ID (uid) of the asset.", typeof(List<AssetCrossReference>)),
+            Route("{assetUid:Guid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of asset cross references based on the public unique identifier (assetUid) of the asset.", typeof(List<AssetCrossReference>)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(List<AssetCrossReference>))
         ]
-        public async Task<HttpResponseMessage> GetByUid(string uid)
+        public async Task<HttpResponseMessage> GetByUid(string assetUid)
         {
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
 
-            return Request.CreateResponse<IEnumerable<AssetCrossReference>>(await Company.QueryAsync<AssetCrossReference>("select uid, DataSource,Type,ExternalID,FieldHash from AssetCrossReference where uid = @uid", new { uid }));
+            return Request.CreateResponse<IEnumerable<AssetCrossReference>>(await Company.QueryAsync<AssetCrossReference>("select uid, DataSource,Type,ExternalID,FieldHash from AssetCrossReference where uid = @assetUid", new { assetUid }));
         }
 
         /// <summary>
-        /// Returns asset cross reference values for the specified type and external id
+        /// Returns asset cross references for the specified type and external id.
         /// </summary>
-        /// <param name="type">AssetCrossReference type</param>
-        /// <param name="externalId">AssetCrossReference externalId</param>
-        /// <returns>An array of matching cross reference records</returns>
+        /// <param name="type">The type of the asset cross reference.</param>
+        /// <param name="externalId">The external Id of asset cross reference.</param>
+        /// <returns>An array of matching cross reference.</returns>
         [
             HttpGet,
             MapToApiVersion("2.0"),
             Route("{type}/{externalId}"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
-            SwaggerResponse(HttpStatusCode.OK, "A list of asset cross reference values based on the external type and identifier of the asset.", typeof(List<AssetCrossReference>)),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of asset cross references based on the external type and identifier of the asset.", typeof(List<AssetCrossReference>)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(List<AssetCrossReference>))
         ]
         public async Task<HttpResponseMessage> GetByTypeID(string type, string externalId)
@@ -94,16 +94,16 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Returns asset cross reference values for the specified type
+        /// Returns asset cross references for the specified type.
         /// </summary>
-        /// <param name="type">AssetCrossReference type</param>
-        /// <returns>An array of matching cross reference records</returns>
+        /// <param name="type">The type of the asset cross reference.</param>
+        /// <returns>An array of matching cross references.</returns>
         [
             HttpGet,
             MapToApiVersion("2.0"),
             Route("type/{type}"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
-            SwaggerResponse(HttpStatusCode.OK, "A list of asset cross reference values based on the external type.", typeof(List<AssetCrossReference>)),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of asset cross references based on the external type.", typeof(List<AssetCrossReference>)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(List<AssetCrossReference>))
        ]
         public async Task<HttpResponseMessage> GetByType(string type)
@@ -116,16 +116,16 @@ namespace d360.web.Controllers.V2
 
 
         /// <summary>
-        /// Returns asset cross reference values for the specified data source
+        /// Returns asset cross references for the specified data source.
         /// </summary>
-        /// <param name="dataSource">AssetCrossReference datasource</param>
-        /// <returns>An array of matching cross reference records</returns>
+        /// <param name="dataSource">The dataSource of asset cross reference.</param>
+        /// <returns>An array of matching cross references.</returns>
         [
             HttpGet,
             MapToApiVersion("2.0"),
             Route("datasource/{dataSource}"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
-            SwaggerResponse(HttpStatusCode.OK, "A list of asset cross reference values based on the data source.", typeof(List<AssetCrossReference>)),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of asset cross references based on the data source.", typeof(List<AssetCrossReference>)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "Access Denied", typeof(List<AssetCrossReference>))
         ]
         public async Task<HttpResponseMessage> GetByDataSource(string dataSource)
@@ -137,18 +137,18 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Creates a new AssetCrossReference record.  If an asset cross reference exists already an error is returned
+        /// Creates a new asset cross reference.  If an asset cross reference exists already an error is returned.
         /// </summary>
-        /// <param name="model">AssetCrossReference model</param>
-        /// <returns>AssetCrossReference model of the created item if item already exists http confict is returned.</returns>
+        /// <param name="model">The asset cross references model.</param>
+        /// <returns>The model of the created asset cross reference. If item already exists http confict is returned.</returns>
         [
             HttpPost,
             MapToApiVersion("2.0"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             Route(""),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(AssetCrossReference)),
-            SwaggerResponse(HttpStatusCode.NotAcceptable, "Model does not contain required fields.", typeof(AssetCrossReference)),
-            SwaggerResponse(HttpStatusCode.Conflict, "Item already exists", typeof(AssetCrossReference))
+            SwaggerResponse(HttpStatusCode.NotAcceptable, "Asset cross reference model does not contain required fields.", typeof(AssetCrossReference)),
+            SwaggerResponse(HttpStatusCode.Conflict, "Asset cross reference already exists.", typeof(AssetCrossReference))
         ]
         public async Task<AssetCrossReference> Post(AssetCrossReference model)
         {
@@ -161,7 +161,7 @@ namespace d360.web.Controllers.V2
             //check if the item already exists            
             if (await XrefExists(model))
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Conflict, "Item already exists"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Conflict, "Asset cross reference already exists."));
             }
 
             //create the new record
@@ -169,24 +169,24 @@ namespace d360.web.Controllers.V2
 
             if (res <= 0)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Conflict, "Item already exists"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Conflict, "Asset cross reference already exists."));
             }
 
             return model;
         }
 
         /// <summary>
-        /// Creates new AssetCrossReference records.  If an asset cross reference exists already an error is returned
+        /// Creates new asset cross references.  If an asset cross reference exists already an error is returned.
         /// </summary>
-        /// <param name="models">List of AssetCrossReference models</param>
-        /// <returns>AssetCrossReference model of the created item if item already exists http confict is returned.</returns>
+        /// <param name="models">List of asset cross references.</param>
+        /// <returns>List of created asset cross references. If any item already exists an HTTP Confict is returned.</returns>
         [
             HttpPost,
             MapToApiVersion("2.0"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             Route("bulk"),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(List<AssetCrossReference>)),
-            SwaggerResponse(HttpStatusCode.Conflict, "One or items already exist", typeof(List<AssetCrossReference>))
+            SwaggerResponse(HttpStatusCode.Conflict, "One or more asset cross references already exist.", typeof(List<AssetCrossReference>))
 
         ]
         public async Task<List<AssetCrossReference>> PostBulk(List<AssetCrossReference> models)
@@ -246,7 +246,7 @@ namespace d360.web.Controllers.V2
             }
             catch
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Conflict, "One or items already exist"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Conflict, "One or more asset cross references already exist."));
             }
 
             //return the created items
@@ -268,19 +268,19 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Updates the specified AssetCrossReference record.
+        /// Updates the specified asset cross reference.
         /// </summary>
-        /// <param name="uid">AssetCrossReference Id</param>
-        /// <param name="dataSource">AssetCrossReference datasource</param>
-        /// <param name="type">AssetCrossReference type</param>
-        /// <param name="externalId">AssetCrossReference externalId</param>
-        /// <param name="model">AssetCrossReference model</param>
-        /// <returns>Http Status code OK if item was updated, Http Status code of Not Found if item could not be updated</returns>
+        /// <param name="uid">The unique identifier of the asset cross reference.</param>
+        /// <param name="dataSource">Asset cross reference datasource</param>
+        /// <param name="type">Asset cross reference type</param>
+        /// <param name="externalId">Asset cross reference externalId</param>
+        /// <param name="model">Asset cross reference model</param>
+        /// <returns>Http Status code OK if asset cross reference was updated, Http Status code of Not Found if item could not be updated.</returns>
         [
             HttpPut,
             MapToApiVersion("2.0"),
-            Route("{uid}/{dataSource}/{type}/{externalId}"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            Route("{uid:Guid}/{dataSource}/{type}/{externalId}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(AssetCrossReference)),
             SwaggerResponse(HttpStatusCode.NotAcceptable, "Model does not contain required fields.", typeof(AssetCrossReference)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference))
@@ -292,7 +292,7 @@ namespace d360.web.Controllers.V2
 
             //validate the model input
             if (string.IsNullOrEmpty(dataSource) || string.IsNullOrEmpty(type) || string.IsNullOrEmpty(externalId))
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "Model does not contain required fields."));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "Asset cross reference model does not contain required fields."));
 
             //create the new record
             var res = await Company.Database.Connection.ExecuteAsync("update assetcrossreference set FieldHash = @fh where uid = @uid and DataSource = @ds and [Type] = @t", new { fh = model.FieldHash, uid = uid, ds = dataSource, t = type });
@@ -303,15 +303,15 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Deletes a AssetCrossReference by the specified Uid value
+        /// Deletes an asset cross reference by the specified unique identifier.
         /// </summary>
-        /// <param name="uid">Crossreference Id</param>
-        /// <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted</returns>
+        /// <param name="uid">The unique identifier of the asset cross reference.</param>
+        /// <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted.</returns>
         [
             HttpDelete,
             MapToApiVersion("2.0"),
-            Route("{uid}"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            Route("{uid:Guid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(AssetCrossReference)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference))
         ]
@@ -330,16 +330,16 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Deletes a AssetCrossReference with the specified datasource and type
+        /// Deletes any asset cross references with the specified datasource and type.
         /// </summary>
-        /// <param name="dataSource">AssetCrossReference datasource</param>
-        /// <param name="type">AssetCrossReference type</param>
-        /// <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted></returns>
+        /// <param name="dataSource">Asset cross reference datasource</param>
+        /// <param name="type">Asset cross reference type</param>
+        /// <returns>Http Status code OK if asset cross references were deleted, Http Status code of Not Found if item could not be deleted></returns>
         [
             HttpDelete,
             MapToApiVersion("2.0"),
             Route("{dataSource}/{type}"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(AssetCrossReference)),
             SwaggerResponse(HttpStatusCode.NotAcceptable, "Request does not contain required parameters datasource and type.", typeof(AssetCrossReference)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference))
@@ -361,15 +361,15 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Deletes a AssetCrossReference records with the specified type
+        /// Deletes any asset cross references with the specified type.
         /// </summary>
-        /// <param name="type">AssetCrossReference type</param>
-        /// <returns>Http Status code OK if item(s) was deleted, Http Status code of Not Found if item could not be deleted</returns>
+        /// <param name="type">Asset cross reference type.</param>
+        /// <returns>Http Status code OK if assset cross references were deleted, Http Status code of Not Found if item could not be deleted</returns>
         [
             HttpDelete,
             MapToApiVersion("2.0"),
             Route("type/{type}"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(AssetCrossReference)),
             SwaggerResponse(HttpStatusCode.NotAcceptable, "Request does not contain required parameter type.", typeof(AssetCrossReference)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference))
@@ -390,15 +390,15 @@ namespace d360.web.Controllers.V2
             return Request.CreateResponse(HttpStatusCode.NotFound); // nothing deleted
         }
         /// <summary>
-        /// Deletes a AssetCrossReference records with the specified datasource
+        /// Deletes any asset cross references with the specified datasource.
         /// </summary>
-        /// <param name="dataSource">AssetCrossReference datasource</param>
-        /// <returns>Http Status code OK if item(s) was deleted, Http Status code of Not Found if item could not be deleted</returns>
+        /// <param name="dataSource">Asset cross reference datasource.</param>
+        /// <returns>Http Status code OK if asset cross references were deleted, Http Status code of Not Found if item could not be deleted</returns>
         [
             HttpDelete,
             MapToApiVersion("2.0"),
             Route("dataSource/{dataSource}"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),//, "application/xml"
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(AssetCrossReference)),
             SwaggerResponse(HttpStatusCode.NotAcceptable, "Request does not contain required parameter dataSource.", typeof(AssetCrossReference)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference))

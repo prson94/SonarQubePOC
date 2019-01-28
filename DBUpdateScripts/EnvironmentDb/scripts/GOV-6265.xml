@@ -1,0 +1,107 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="VKyrychuk" id="gov-6265">
+    <addColumn 
+            schemaName="dbo"
+            tableName="assetType">
+        <column name="CanOwnFusion" type="bit" defaultValue="0">
+			<constraints nullable="false"/>
+			
+		</column>
+    </addColumn>
+	<rollback>
+		<dropColumn  
+            columnName="CanOwnFusion"
+            schemaName="dbo"
+            tableName="assetType"/>
+	</rollback>
+  </changeSet>
+  <changeSet author="VKyrychuk" id="gov-6265-B">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+	update AssetType 
+		SET CanOwnFusion = art.CanOwnFusion
+	from  ArtifactType as art
+		where art.ID= AssetType.ObjectID
+		and AssetType.[Object]='ArtifactType' 
+	</sql>
+	<rollback>
+	 
+    </rollback>
+  </changeSet>
+  <changeSet author="VKyrychuk" id="gov-6265-C">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		
+		ALTER TRIGGER ArtifactType_AfterInsert
+			ON  ArtifactType
+		AFTER INSERT
+			AS 
+		SET NOCOUNT ON
+			insert into AssetType (Name, Description, Class, DisplayFormat, [State], [Hierarchical], [HierarchyMaximumDepth], [Object], [ObjectID], [CreatedOn], [CreatedBy], [UpdatedOn], [UpdatedBy],[CanOwnFusion])
+				select Name, Description, 1, DisplayFormat, 1, 0, 1, 'ArtifactType', ID, coalesce(UpdatedOn, getutcdate()), UpdatedBy, coalesce(UpdatedOn, getutcdate()), UpdatedBy, CanOwnFusion from inserted
+		 
+	</sql>
+	<rollback>
+		 
+		ALTER TRIGGER ArtifactType_AfterInsert
+		ON ArtifactType
+		AFTER INSERT
+			AS 
+		SET NOCOUNT ON
+		insert into AssetType (Name, Description, Class, DisplayFormat, [State], [Hierarchical], [HierarchyMaximumDepth], [Object], [ObjectID], [CreatedOn], [CreatedBy], [UpdatedOn], [UpdatedBy])
+			select Name, Description, 1, DisplayFormat, 1, 0, 1, 'ArtifactType', ID, coalesce(UpdatedOn, getutcdate()), UpdatedBy, coalesce(UpdatedOn, getutcdate()), UpdatedBy from inserted
+	 
+    </rollback>
+  </changeSet>
+  <changeSet author="VKyrychuk" id="gov-6265-D">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+	 
+	ALTER TRIGGER ArtifactType_AfterUpdate
+		ON  ArtifactType 
+	AFTER UPDATE
+		AS 
+	SET NOCOUNT ON
+		update	T
+		set		T.Name = S.Name,
+				T.Description = S.Description,
+				T.CanOwnFusion= S.CanOwnFusion,
+				T.DisplayFormat = S.DisplayFormat,
+				T.UpdatedBy = S.UpdatedBy,
+				T.UpdatedOn = S.UpdatedOn
+		from	AssetType T
+				inner join inserted S on T.Object = 'ArtifactType' and T.ObjectID = S.ID
+			 
+	</sql>
+	<rollback>
+	 
+	ALTER TRIGGER  ArtifactType_AfterUpdate
+	ON ArtifactType 
+	AFTER UPDATE
+		AS 
+	SET NOCOUNT ON
+		update	T
+		set		T.Name = S.Name,
+				T.Description = S.Description,
+				T.DisplayFormat = S.DisplayFormat,
+				T.UpdatedBy = S.UpdatedBy,
+				T.UpdatedOn = S.UpdatedOn
+		from	AssetType T
+				inner join inserted S on T.Object = 'ArtifactType' and T.ObjectID = S.ID
+
+    </rollback>
+  </changeSet>
+</databaseChangeLog>

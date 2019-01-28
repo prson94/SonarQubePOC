@@ -1,113 +1,13 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+﻿import * as _ from 'lodash';
+import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+
 import { BaseComponent } from '../shared/base.component';
 import { FusionService } from '../../services/fusion.service';
 import { FusionPromotionExecutionStats } from '../../models/fusion.model';
-import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-fusion-promotion-history',
-    template: `                 
-                <div class="tile tile-detail">
-                    <header>Promotion History<d3s-tile-actions [hasRefresh]="true" (refreshClick)="load()" [hasAdd]="false" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
-                    <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                    <span *ngIf="!isLoading">
-                        <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-                        <p-table #dt [value]="executions" [scrollable]="true" scrollWidth="100%" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['DateStarted','DateCompleted','TotalNewPromotions','PromotedArtifacts','PromotedDomains','PromotedDomainItems','PromotedTaxonomies','RelationshipsAdded','NumberOfRules','AttributesConsidered']" [pageLinks]="3" [paginator]="true" [rows]="5" [rowsPerPageOptions]="[5,10,20]" [(selection)]="selected">
-                            <ng-template pTemplate="colgroup" let-columns>
-                                <colgroup>
-                                    <col  style="width:150px">
-                                    <col  style="width:150px">
-                                    <col  style="width:150px">
-                                    <col  style="width:150px">
-                                    <col  style="width:150px">
-                                    <col  style="width:150px">
-                                    <col  style="width:150px">
-                                    <col  style="width:150px">
-                                    <col  style="width:150px">
-                                    <col  style="width:150px">
-                                </colgroup>
-                            </ng-template>
-                            <ng-template pTemplate="header">
-                                <tr>
-                                    <th style="width: 150px" [pSortableColumn]="'DateStarted'">
-                                        Started
-                                        <d3s-sortIcon [field]="'DateStarted'"></d3s-sortIcon>
-                                    </th>
-                                    <th style="width: 150px" [pSortableColumn]="'DateCompleted'">
-                                        Completed
-                                        <d3s-sortIcon [field]="'DateCompleted'"></d3s-sortIcon>
-                                    </th>
-                                    <th [pSortableColumn]="'TotalNewPromotions'" style="width: 150px">
-                                        # New Promotions
-                                        <d3s-sortIcon [field]="'TotalNewPromotions'"></d3s-sortIcon>
-                                    </th>
-                                    <th [pSortableColumn]="'PromotedArtifacts'" style="width: 150px">
-                                        # New Artifacts
-                                        <d3s-sortIcon [field]="'PromotedArtifacts'"></d3s-sortIcon>
-                                    </th>
-                                    <th [pSortableColumn]="'PromotedDomains'" style="width: 150px">
-                                        # New Domains
-                                        <d3s-sortIcon [field]="'PromotedDomains'"></d3s-sortIcon>
-                                    </th>
-                                    <th [pSortableColumn]="'PromotedDomainItems'" style="width: 150px">
-                                        # New Domain Items
-                                        <d3s-sortIcon [field]="'PromotedDomainItems'"></d3s-sortIcon>
-                                    </th>
-                                    <th [pSortableColumn]="'PromotedTaxonomies'" style="width: 150px">
-                                        # New Taxonomies
-                                        <d3s-sortIcon [field]="'PromotedTaxonomies'"></d3s-sortIcon>
-                                    </th>
-                                    <th [pSortableColumn]="'RelationshipsAdded'" style="width: 150px">
-                                        # New Relationships
-                                        <d3s-sortIcon [field]="'RelationshipsAdded'"></d3s-sortIcon>
-                                    </th>
-                                    <th [pSortableColumn]="'NumberOfRules'" style="width: 150px">
-                                        # Rules
-                                        <d3s-sortIcon [field]="'NumberOfRules'"></d3s-sortIcon>
-                                    </th>
-                                    <th [pSortableColumn]="'AttributesConsidered'" style="width: 150px">
-                                        # Attributes Considered
-                                        <d3s-sortIcon [field]="'AttributesConsidered'"></d3s-sortIcon>
-                                    </th>
-                                </tr>
-                                <tr [hidden]="showSimpleFilter">
-                                    <th><d3s-column-filter [field]="'DateStarted'" [datatype]="'text'"></d3s-column-filter></th>
-                                    <th><d3s-column-filter [field]="'DateCompleted'" [datatype]="'text'"></d3s-column-filter></th>
-                                    <th><d3s-column-filter [field]="'TotalNewPromotions'" [datatype]="'text'"></d3s-column-filter></th>
-                                    <th><d3s-column-filter [field]="'PromotedArtifacts'" [datatype]="'text'"></d3s-column-filter></th>
-                                    <th><d3s-column-filter [field]="'PromotedDomains'" [datatype]="'text'"></d3s-column-filter></th>
-                                    <th><d3s-column-filter [field]="'PromotedDomainItems'" [datatype]="'text'"></d3s-column-filter></th>
-                                    <th><d3s-column-filter [field]="'PromotedTaxonomies'" [datatype]="'text'"></d3s-column-filter></th>
-                                    <th><d3s-column-filter [field]="'RelationshipsAdded'" [datatype]="'text'"></d3s-column-filter></th>
-                                    <th><d3s-column-filter [field]="'NumberOfRules'" [datatype]="'text'"></d3s-column-filter></th>
-                                    <th><d3s-column-filter [field]="'AttributesConsidered'" [datatype]="'text'"></d3s-column-filter></th>
-                                </tr>
-                            </ng-template>
-                            <ng-template pTemplate="body" let-item>
-                                <tr (dblclick)="selected=item" [pSelectableRow]="item">
-                                    <td>
-                                        <span>{{item.DateStarted | date: 'short'}}</span>
-                                    </td>
-                                    <td>
-                                        <span>{{item.DateCompleted | date: 'short'}}</span>
-                                    </td>
-                                    <td>{{item.TotalNewPromotions}}</td>
-                                    <td>{{item.PromotedArtifacts}}</td>
-                                    <td>{{item.PromotedDomains}}</td>
-                                    <td>{{item.PromotedDomainItems}}</td>
-                                    <td>{{item.PromotedTaxonomies}}</td>
-                                    <td>{{item.RelationshipsAdded}}</td>
-                                    <td>{{item.NumberOfRules}}</td>
-                                    <td>{{item.AttributesConsidered}}</td>
-                                </tr>
-                            </ng-template>
-                            <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
-                                <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
-                            </ng-template>
-                        </p-table>  
-                    </span>
-                </div>
-                `,
+    templateUrl: './fusion-promotion-history.component.html',
     providers: [FusionService],
 })
 
@@ -132,13 +32,14 @@ export class FusionPromotionHistoryComponent extends BaseComponent implements On
                 this.executions = res;
                 this.selected = res.length > 0 ? res[0] : null;
                 this.isLoading = false;
-            });
+            })
+        ;
     }
 
     private nullDateSort(event) {
-        //event.field = Field to sort
-        //event.order = Sort order, 1 ascending , -1 descending                
         this.executions = _.sortBy(this.executions, event.field);
-        if (event.order == -1) this.executions.reverse();
-    }    
+        if (event.order == -1) {
+            this.executions.reverse();
+        }
+    }
 };

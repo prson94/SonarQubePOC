@@ -40,6 +40,7 @@ import { WorkflowStepFieldChangeComponent } from './workflow-step-field-change.c
 import { WorkflowStepSummaryComponent } from './workflow-step-summary.component'
 import { WorkflowTransitionSummaryComponent } from './workflow-transition-summary.component';
 import { WorkflowResponsibilitySelectorComponent } from './workflow-responsibility-selector.component';
+import { PipesModule } from '../../../../pipes/pipes.module';
 
 
 import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
@@ -70,6 +71,7 @@ import { WorkflowFieldsService } from '../../../../services/workflow-fields.serv
         AutoCompleteModule,
         MultiSelectModule,
         TableModule,
+        PipesModule
     ],
     declarations: [
         WorkflowDiagramComponent,
