@@ -476,17 +476,7 @@ OPTION (RECOMPILE)";
             if (pageSize < 0)
                 pageSize = 25;
             pageNumber = ((pageNumber < 0) ? 0 : pageNumber) * pageSize;
-
-
-            string textPathStatement = string.Empty;
-            if (selectFields.Any(i => i.Type == "Relationship"))
-            {
-                textPathStatement = "cross apply GetAssetTextPathById(A.ID, '/') as  TextPath";
-            }
-
-
-
-
+ 
                 var sql = $@"
 select	*
 from	(
