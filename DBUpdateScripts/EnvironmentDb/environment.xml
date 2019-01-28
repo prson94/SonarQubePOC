@@ -1,36 +1,35 @@
-<databaseChangeLog
-    
+<databaseChangeLog   
     xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-    <include file="scripts/FulltextCatalog.xml"/>
-    <include file="scripts/EnvironmentSchema.xml"/>
+  <include file="scripts/FulltextCatalog.xml"/>
+  <include file="scripts/EnvironmentSchema.xml"/>
 	<include file="scripts/GOV-6102.xml"/>
-    <include file="scripts/GOV-6105.xml"/>
-    <include file="scripts/GOV-6126.xml"/>
-    <include file="scripts/GOV-6140.xml"/>
-    <include file="scripts/GOV-6145.xml"/>
-    <include file="scripts/GOV-6094.xml"/>
+  <include file="scripts/GOV-6105.xml"/>
+  <include file="scripts/GOV-6126.xml"/>
+  <include file="scripts/GOV-6140.xml"/>
+  <include file="scripts/GOV-6145.xml"/>
+  <include file="scripts/GOV-6094.xml"/>
 	<include file="scripts/GOV-4491.xml"/>
 	<include file="scripts/GOV-6165.xml"/>
 	<include file="scripts/GOV-6169.xml"/>
-    <include file="scripts/GOV-6201.xml"/>
-    <include file="scripts/GOV-6181.xml"/>
+  <include file="scripts/GOV-6201.xml"/>
+  <include file="scripts/GOV-6181.xml"/>
 	<include file="scripts/GOV-6220.xml"/>
-    <include file="scripts/GOV-6221.xml"/>
+  <include file="scripts/GOV-6221.xml"/>
 	<include file="scripts/GOV-6227.xml"/>
 	<include file="scripts/GOV-5933-C.xml"/>
 	<include file="scripts/GOV-6060.xml"/>
 	<include file="scripts/GOV-6199.xml"/>
 	<include file="scripts/GOV-6256.xml"/>
 	<include file="scripts/GOV-6069.xml"/>
-    <include file="scripts/GOV-6216.xml"/>
-    <include file="scripts/GOV-5350.xml"/>
-    <include file="scripts/GOV-5497.xml"/>
-    <include file="scripts/GOV-6279.xml"/>
+  <include file="scripts/GOV-6216.xml"/>
+  <include file="scripts/GOV-5350.xml"/>
+  <include file="scripts/GOV-5497.xml"/>
+  <include file="scripts/GOV-6279.xml"/>
 	<include file="scripts/GOV-6187-B.xml"/>	
 	<include file="scripts/GOV-6273.xml"/>
 	<include file="scripts/GOV-6273-ProcUpdate.xml"/>
@@ -65,4 +64,5 @@
   <include file="scripts/GOV-6443.xml"/>
   <include file="scripts/GOV-6454.xml"/>
   <include file="scripts/GOV-6360.xml"/>
+  <include file="scripts/GOV-6250.xml"/> 
 </databaseChangeLog>
