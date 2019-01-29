@@ -1,0 +1,537 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="GOV-6442">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+ALTER procedure [metrics].[LoadFromStaging]
+as
+begin
+	set nocount on;
+
+	DECLARE @TranName VARCHAR(20);  
+	SELECT @TranName = 'UpdateScores';  
+	begin transaction @TranName;
+
+	-- 1. Remove all except the most recent staging values, grouped by date (not time).
+	begin try
+		update	metrics.StagingScoreItem
+		set		Processing = 1
+		where	Archived = 0;
+
+		-- STEP: Get the list of uniue asset / date combinations in order to calculate the score for these assets, for these 
+		--		 dates - using the metrics in the transactional table.
+		drop table if exists #assetEffectiveDates;
+		create table #assetEffectiveDates (AssetTypeUid uniqueidentifier not null, AssetUid uniqueidentifier not null, EffectiveDate date not null);
+		insert into #assetEffectiveDates
+			select		distinct
+						T.[Uid] as AssetTypeUid,
+						A.[Uid] as AssetUid,
+						R.EffectiveDate
+			from		metrics.StagingScoreItem R
+						inner join dbo.Asset A on A.[uid] = R.AssetUid
+						inner join dbo.AssetType T on T.ID = A.AssetTypeID
+			where		R.Archived = 0
+						and R.Processing = 1;
+
+		--select * from #assetEffectiveDates
+
+		-- STEP: Get the all the relevant metrics.
+		drop table if exists #step1;
+		create table #step1 (
+			AssetUid uniqueidentifier not null, EffectiveDate date not null,
+			MetricAssetUid uniqueidentifier not null, ParentUid uniqueidentifier null, IsGroup bit not null,
+			Weight decimal(5,3) not null,
+			[Value] bit not null
+			);
+
+		insert into #step1
+			select	E.AssetUid,
+					E.EffectiveDate,
+					A.[Uid],
+					A.ParentUid,
+					A.IsGroup,
+					V.Weight,
+					coalesce(S.Result, P.Value, 0) as Value
+			from	metrics.AssetVersion V
+					inner join metrics.Asset A on A.[Uid] = V.[Uid]
+					inner join #assetEffectiveDates E on E.AssetTypeUid = A.AssetTypeUid and A.State = 1
+					cross apply (
+						select	max(EffectiveDate) as EffectiveDate
+						from	metrics.AssetVersion
+						where	[Uid] = A.[Uid]
+								and EffectiveDate <= E.EffectiveDate
+					) MV
+					left join metrics.StagingScoreItem S on S.AssetUid = E.AssetUid and S.MetricAssetUid = V.Uid and S.EffectiveDate = E.EffectiveDate --and V.EffectiveDate <= S.EffectiveDate
+					outer apply (
+						select		top 1
+									AssetUid,
+									MetricAssetUid,
+									Value,
+									max(EffectiveDate) OVER(PARTITION BY AssetUid, MetricAssetUid, EffectiveDate) as EffectiveDate
+						from		metrics.ScoreItem
+						where		AssetUid = E.AssetUid and MetricAssetUid = V.Uid and EffectiveDate <= S.EffectiveDate
+					) P
+			where	V.EffectiveDate = MV.EffectiveDate
+					and metrics.AssetMeetsConditions(V.[Uid], V.EffectiveDate, E.AssetUid) = 1;
+
+		--select * from #step1
+
+		-- STEP: Calculate the level and adjust the weight at each level.
+		drop table if exists #step2;
+		create table #step2 (
+			AssetUid uniqueidentifier not null, EffectiveDate date not null,
+			MetricAssetUid uniqueidentifier not null, ParentUid uniqueidentifier null, IsGroup bit not null,
+			IsRelevant bit,
+			Weight decimal(5,3) not null,
+			[Value] bit not null,
+			[Level] int null,
+			AdjustedWeight decimal(5,3) null,
+			Score decimal(5,3) null
+		);
+
+		with h as (
+			select	AssetUid,
+					EffectiveDate,
+					MetricAssetUid,
+					ParentUid,
+					IsGroup,
+					Weight,
+					Value,
+					1 as [Level]
+			from	#step1
+			where	ParentUid is null
+			union all
+			select	c.AssetUid,
+					c.EffectiveDate,
+					c.MetricAssetUid,
+					c.ParentUid,
+					c.IsGroup,
+					c.Weight,
+					c.Value,
+					h.[Level] + 1 as [Level]
+			from	#step1 c
+					inner join h on h.AssetUid = c.AssetUid and h.MetricAssetUid = c.[ParentUid] and c.EffectiveDate = h.EffectiveDate
+		)
+
+		insert into #step2 (AssetUid, EffectiveDate, MetricAssetUid, ParentUid, IsGroup, Weight, [Value], [Level])
+			select	*
+			from	h
+			order by EffectiveDate, [Level];
+
+		update	#step2
+		set		IsRelevant = 1
+		where	IsGroup = 0
+
+		declare @maxLevel int
+		select	@maxLevel = max(Level) from #step2
+		while @maxLevel >= 1
+		begin
+			update	T
+			set		T.IsRelevant = case when [RelevantItemCount] > 0 then 1 else 0 end
+			from	#step2 T
+					cross apply (
+						select	count(1) as [RelevantItemCount]
+						from	#step2
+						where	ParentUid = T.MetricAssetUid
+								and [Level] = @maxLevel + 1
+								and IsRelevant = 1
+					) S		
+			where	T.IsGroup = 1
+					and T.[Level] = @maxLevel 
+
+			set @maxLevel = @maxLevel - 1
+		end
+
+		--select * from #step2 order by AssetUid, EffectiveDate desc, [Level]
+
+		-- Fix the weights that users inevitably screwed up. Adjust them based on sibling ratios.
+		update	T
+		set		T.AdjustedWeight = IIF(T.Weight = 0, 1, T.Weight) / IIF(S.Weight = 0, 1, S.Weight) --select *
+		from	#step2 T
+				outer apply (
+					select	sum(Weight) Weight
+					from	#step2
+					where	AssetUid = T.AssetUid
+							and EffectiveDate = T.EffectiveDate
+							and ( (ParentUid = T.ParentUid) or (ParentUid is null and T.ParentUid is null) )
+							and IsRelevant = 1
+				) S;
+
+		update	#step2
+		set		Score = case [Value]
+							when 1 then AdjustedWeight
+							else 0
+						end
+		where	IsGroup = 0;
+
+		update	#step2
+		set		Score = null
+		where	IsGroup = 1;
+
+		--select * from #step2
+
+		declare @stopLevel int = 1,
+				@currentLevel int
+		select	@currentLevel = max([Level])
+		from	#step2;
+
+		while @currentLevel >= @stopLevel
+		begin
+			update	T
+			set		T.Score = S.Score*AdjustedWeight
+			from	#step2 T
+					cross apply (
+						select	sum(coalesce(Score, AdjustedWeight)) as Score
+						from	#step2
+						where	ParentUid = T.MetricAssetUid
+								and EffectiveDate = T.EffectiveDate
+								and AssetUid = T.AssetUid
+								--and [Value] is not null
+								and [Level] = @currentLevel+1			
+					) S
+			where	T.[Level] = @currentLevel
+					and T.IsGroup = 1
+
+			set @currentLevel = @currentLevel - 1
+		end;
+
+		-- Adjust for any groups that have no child metrics, and set the Score value appropriately.
+		update	#step2
+		set		Score = case when Value = 1 then AdjustedWeight else 0 end
+		where	Score is null;
+
+		--select * from #step2
+
+		-- Merge SCORES
+		merge		metrics.Score as T
+		using		(
+					select		AssetUid,
+								EffectiveDate,
+								round(sum(Score), 2) as Value
+					from		#step2
+					where		[Level] = 1
+								and Score is not null
+								and IsRelevant = 1
+					group by	AssetUid,
+								EffectiveDate
+					) S
+		on			(T.AssetUid = S.AssetUid and T.EffectiveDate = S.EffectiveDate)
+		when		matched then
+			update	set
+					T.Value = S.Value
+		when		not matched by target then
+			insert	(AssetUid, EffectiveDate, Value)
+			values	(S.AssetUid, S.EffectiveDate, S.Value);
+
+		-- Merge SCOREITEMS
+		merge		metrics.ScoreItem as T
+		using		(
+					select		distinct
+								AssetUid,
+								MetricAssetUid,
+								EffectiveDate,
+								Value,
+								AdjustedWeight
+					from		#step2
+					where		IsGroup = 0
+
+					) S
+		on			(T.AssetUid = S.AssetUid and T.MetricAssetUid = S.MetricAssetUid and T.EffectiveDate = S.EffectiveDate)
+		when		matched then
+			update	set
+					T.AdjustedWeight = S.AdjustedWeight,
+					T.Value = S.Value,
+					T.UpdatedOn = getutcdate()
+		when		not matched by target then
+			insert	(AssetUid, MetricAssetUid, EffectiveDate, UpdatedOn, Value, AdjustedWeight)
+			values	(S.AssetUid, S.MetricAssetUid, S.EffectiveDate, getutcdate(), S.Value, S.AdjustedWeight);
+
+		-- Clear out previously archived records for the same primary key values.
+		delete	T
+		from	metrics.StagingScoreItem T
+				inner join metrics.StagingScoreItem S on S.AssetUid = T.AssetUid and S.MetricAssetUid = T.MetricAssetUid and S.EffectiveDate = T.EffectiveDate and T.Archived = 1 and S.Archived = 0 and S.Processing = 1
+
+		update	metrics.StagingScoreItem
+		set		Processing = 0,
+				Archived = 1
+		where	Processing = 1;
+
+		commit transaction @TranName;
+	end try
+	begin catch
+		rollback transaction @TranName;
+		throw
+	end catch
+end
+]]>
+    </sql>
+    <rollback>
+<![CDATA[
+ALTER procedure [metrics].[LoadFromStaging]
+as
+begin
+	set nocount on;
+
+	DECLARE @TranName VARCHAR(20);  
+	SELECT @TranName = 'UpdateScores';  
+	begin transaction @TranName;
+
+	-- 1. Remove all except the most recent staging values, grouped by date (not time).
+	begin try
+		update	metrics.StagingScoreItem
+		set		Processing = 1
+		where	Archived = 0;
+
+		-- STEP: Get the list of uniue asset / date combinations in order to calculate the score for these assets, for these 
+		--		 dates - using the metrics in the transactional table.
+		drop table if exists #assetEffectiveDates;
+		create table #assetEffectiveDates (AssetTypeUid uniqueidentifier not null, AssetUid uniqueidentifier not null, EffectiveDate date not null);
+		insert into #assetEffectiveDates
+			select		distinct
+						T.[Uid] as AssetTypeUid,
+						A.[Uid] as AssetUid,
+						R.EffectiveDate
+			from		metrics.StagingScoreItem R
+						inner join dbo.Asset A on A.[uid] = R.AssetUid
+						inner join dbo.AssetType T on T.ID = A.AssetTypeID
+			where		R.Archived = 0
+						and R.Processing = 1;
+
+		--select * from #assetEffectiveDates
+
+		-- STEP: Get the all the relevant metrics.
+		drop table if exists #step1;
+		create table #step1 (
+			AssetUid uniqueidentifier not null, EffectiveDate date not null,
+			MetricAssetUid uniqueidentifier not null, ParentUid uniqueidentifier null, IsGroup bit not null,
+			Weight decimal(5,3) not null,
+			[Value] bit not null
+			);
+
+		insert into #step1
+			select	E.AssetUid,
+					E.EffectiveDate,
+					A.[Uid],
+					A.ParentUid,
+					A.IsGroup,
+					V.Weight,
+					coalesce(S.Result, P.Value, 0) as Value
+			from	metrics.AssetVersion V
+					inner join metrics.Asset A on A.[Uid] = V.[Uid]
+					inner join #assetEffectiveDates E on E.AssetTypeUid = A.AssetTypeUid and A.State = 1
+					cross apply (
+						select	max(EffectiveDate) as EffectiveDate
+						from	metrics.AssetVersion
+						where	[Uid] = A.[Uid]
+								and EffectiveDate <= E.EffectiveDate
+					) MV
+					left join metrics.StagingScoreItem S on S.AssetUid = E.AssetUid and S.MetricAssetUid = V.Uid and S.EffectiveDate = E.EffectiveDate --and V.EffectiveDate <= S.EffectiveDate
+					outer apply (
+						select		top 1
+									AssetUid,
+									MetricAssetUid,
+									Value,
+									max(EffectiveDate) OVER(PARTITION BY AssetUid, MetricAssetUid, EffectiveDate) as EffectiveDate
+						from		metrics.ScoreItem
+						where		AssetUid = E.AssetUid and MetricAssetUid = V.Uid and EffectiveDate <= S.EffectiveDate
+					) P
+			where	V.EffectiveDate = MV.EffectiveDate
+					and metrics.AssetMeetsConditions(V.[Uid], V.EffectiveDate, E.AssetUid) = 1;
+
+		--select * from #step1
+
+		-- STEP: Calculate the level and adjust the weight at each level.
+		drop table if exists #step2;
+		create table #step2 (
+			AssetUid uniqueidentifier not null, EffectiveDate date not null,
+			MetricAssetUid uniqueidentifier not null, ParentUid uniqueidentifier null, IsGroup bit not null,
+			IsRelevant bit,
+			Weight decimal(5,3) not null,
+			[Value] bit not null,
+			[Level] int null,
+			AdjustedWeight decimal(5,3) null,
+			Score decimal(5,3) null
+		);
+
+		with h as (
+			select	AssetUid,
+					EffectiveDate,
+					MetricAssetUid,
+					ParentUid,
+					IsGroup,
+					Weight,
+					Value,
+					1 as [Level]
+			from	#step1
+			where	ParentUid is null
+			union all
+			select	c.AssetUid,
+					c.EffectiveDate,
+					c.MetricAssetUid,
+					c.ParentUid,
+					c.IsGroup,
+					c.Weight,
+					c.Value,
+					h.[Level] + 1 as [Level]
+			from	#step1 c
+					inner join h on h.AssetUid = c.AssetUid and h.MetricAssetUid = c.[ParentUid] and c.EffectiveDate = h.EffectiveDate
+		)
+
+		insert into #step2 (AssetUid, EffectiveDate, MetricAssetUid, ParentUid, IsGroup, Weight, [Value], [Level])
+			select	*
+			from	h
+			order by EffectiveDate, [Level];
+
+		update	#step2
+		set		IsRelevant = 1
+		where	IsGroup = 0
+
+		declare @maxLevel int
+		select	@maxLevel = max(Level) from #step2
+		while @maxLevel >= 1
+		begin
+			update	T
+			set		T.IsRelevant = case when [RelevantItemCount] > 0 then 1 else 0 end
+			from	#step2 T
+					cross apply (
+						select	count(1) as [RelevantItemCount]
+						from	#step2
+						where	ParentUid = T.MetricAssetUid
+								and [Level] = @maxLevel + 1
+								and IsRelevant = 1
+					) S		
+			where	T.IsGroup = 1
+					and T.[Level] = @maxLevel 
+
+			set @maxLevel = @maxLevel - 1
+		end
+
+		--select * from #step2 order by AssetUid, EffectiveDate desc, [Level]
+
+		-- Fix the weights that users inevitably screwed up. Adjust them based on sibling ratios.
+		update	T
+		set		T.AdjustedWeight = IIF(T.Weight = 0, 1, T.Weight) / IIF(S.Weight = 0, 1, S.Weight) --select *
+		from	#step2 T
+				outer apply (
+					select	sum(Weight) Weight
+					from	#step2
+					where	AssetUid = T.AssetUid
+							and EffectiveDate = T.EffectiveDate
+							and ( (ParentUid = T.ParentUid) or (ParentUid is null and T.ParentUid is null) )
+							and IsRelevant = 1
+				) S;
+
+		update	#step2
+		set		Score = case [Value]
+							when 1 then AdjustedWeight
+							else 0
+						end
+		where	IsGroup = 0;
+
+		update	#step2
+		set		Score = null
+		where	IsGroup = 1;
+
+		--select * from #step2
+
+		declare @stopLevel int = 1,
+				@currentLevel int
+		select	@currentLevel = max([Level])
+		from	#step2;
+
+		while @currentLevel >= @stopLevel
+		begin
+			update	T
+			set		T.Score = S.Score*AdjustedWeight
+			from	#step2 T
+					cross apply (
+						select	sum(coalesce(Score, AdjustedWeight)) as Score
+						from	#step2
+						where	ParentUid = T.MetricAssetUid
+								and EffectiveDate = T.EffectiveDate
+								and AssetUid = T.AssetUid
+								--and [Value] is not null
+								and [Level] = @currentLevel+1			
+					) S
+			where	T.[Level] = @currentLevel
+					and T.IsGroup = 1
+
+			set @currentLevel = @currentLevel - 1
+		end;
+
+		-- Adjust for any groups that have no child metrics, and set the Score value appropriately.
+		update	#step2
+		set		Score = case when Value = 1 then AdjustedWeight else 0 end
+		where	Score is null;
+
+		--select * from #step2
+
+		-- Merge SCORES
+		merge		metrics.Score as T
+		using		(
+					select		AssetUid,
+								EffectiveDate,
+								round(sum(Score), 2) as Value
+					from		#step2
+					where		[Level] = 1
+								and Score is not null
+								and IsRelevant = 1
+					group by	AssetUid,
+								EffectiveDate
+					) S
+		on			(T.AssetUid = S.AssetUid and T.EffectiveDate = S.EffectiveDate)
+		when		matched then
+			update	set
+					T.Value = S.Value
+		when		not matched by target then
+			insert	(AssetUid, EffectiveDate, Value)
+			values	(S.AssetUid, S.EffectiveDate, S.Value);
+
+		-- Merge SCOREITEMS
+		merge		metrics.ScoreItem as T
+		using		(
+					select		distinct
+								AssetUid,
+								MetricAssetUid,
+								EffectiveDate,
+								Value,
+								AdjustedWeight
+					from		#step2
+					where		IsGroup = 0
+
+					) S
+		on			(T.AssetUid = S.AssetUid and T.MetricAssetUid = S.MetricAssetUid and T.EffectiveDate = S.EffectiveDate)
+		when		matched then
+			update	set
+					T.AdjustedWeight = S.AdjustedWeight,
+					T.Value = S.Value,
+					T.UpdatedOn = getutcdate()
+		when		not matched by target then
+			insert	(AssetUid, MetricAssetUid, EffectiveDate, UpdatedOn, Value, AdjustedWeight)
+			values	(S.AssetUid, S.MetricAssetUid, S.EffectiveDate, getutcdate(), S.Value, S.AdjustedWeight);
+
+		update	metrics.StagingScoreItem
+		set		Processing = 0,
+				Archived = 1
+		where	Processing = 1;
+
+		commit transaction @TranName;
+	end try
+	begin catch
+		rollback transaction @TranName;
+		throw
+	end catch
+end
+]]>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>
