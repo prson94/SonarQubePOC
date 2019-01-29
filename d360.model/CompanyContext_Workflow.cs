@@ -619,6 +619,7 @@ namespace d360.model
         /// <returns></returns>
         public async Task EvaluateWorkflowTransition(long versionStepTransitionID, long itemID, EventObjectInfo objectInfo)
         {
+            TelemetryClient client = new TelemetryClient();
             var transition = WorkflowVersionStepTransitions
                 .Where(i => i.ID == versionStepTransitionID && i.State == State.Active).FirstOrDefault();
 
@@ -639,7 +640,9 @@ namespace d360.model
 
                     if (item == null) throw new Exception("ERROR UNABLE TO GET THE DETAILS FOR THIS WORKFLOW INSTANCE.");
                     //evaluate the condition then determine if we move to next step
+                    client.TrackEvent($"Condition Transition Evaluating.  Condition [{transition.Condition}], ItemID [{itemID}], VersionStepTransitionID [{versionStepTransitionID}]");
                     transitionPassed = WorkflowRegistrationCriteriaProcessor.Evaluate(this, item.Object, item.ObjectID, transition.Condition, itemID, -1, objectInfo.ChangedFieldIds);
+                    client.TrackEvent($"Condition Transition Evaluated.  Condition Result [{transitionPassed}], VersionStepTransitionID [{versionStepTransitionID}]");
                     break;
                 case TransitionType.Timer:
                     //check if this timer transtion has a condition if so evaluate it
