@@ -286,6 +286,13 @@ namespace d360.web.Controllers
                                     var obj = isSubject ? intersect.Object : intersect.Subject;
                                     var objID = isSubject ? intersect.ObjectID : intersect.SubjectID;
 
+                                    if (obj == "Taxonomy")
+                                    {
+                                        var det = Company.Query<string>("select tp.TextPath from  asset a cross apply GetAssetTextPathById(a.id, '/') tp where a.[Object] = 'Taxonomy' and a.ObjectID = @id", new { id = objID }).FirstOrDefault();
+                                        intersectDisplayValue = det;
+                                    }
+
+
                                     if(objectsWithoutReadAccess != null && objectsWithoutReadAccess.Count > 0)
                                     {
                                         if(objectsWithoutReadAccess.Any(x=>(x.Object == obj && x.ObjectID == objID)))
