@@ -1166,7 +1166,7 @@ namespace d360.model
 
         private void CompleteItemAssignments(long itemID)
         {
-            var itemAssignments = WorkflowItemAssignments.Where(x => x.ItemID == x.ItemID);
+            var itemAssignments = WorkflowItemAssignments.Where(x => x.ItemID == itemID);
 
             foreach (var assignment in itemAssignments)
             {
