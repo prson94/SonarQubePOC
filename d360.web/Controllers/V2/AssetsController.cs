@@ -198,7 +198,15 @@ namespace d360.web.Controllers.V2
                         {
                             if (key == "_order")
                             {
-                                if (assetType.Object == "ReferenceItemType" && q.Value.ToLower() == "code")
+                                if (assetType.Object == "FusionAttributeType" && q.Value.ToLower() == "name")
+                                {
+                                    orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + "FA.Name";
+                                }
+                                else if (assetType.Object == "FusionAttributeType" && q.Value.ToLower() == "sourceid")
+                                {
+                                    orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + "FA.SourceID";
+                                }
+                                else if (assetType.Object == "ReferenceItemType" && q.Value.ToLower() == "code")
                                 {
                                     orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + "RI.Code";
                                 }
@@ -238,7 +246,17 @@ namespace d360.web.Controllers.V2
                         }
                         else
                         {
-                            if (assetType.Object == "ReferenceItemType" && key == "code")
+                            if (assetType.Object == "FusionAttributeType" && key == "name")
+                            {
+                                whereStatements.Add($"FA.[Name] = @faName");
+                                dbArgs.Add($"@faName", q.Value);
+                            }
+                            else if (assetType.Object == "FusionAttributeType" && key == "sourceid")
+                            {
+                                whereStatements.Add($"FA.[SourceID] = @sourceID");
+                                dbArgs.Add($"@sourceID", q.Value);
+                            }
+                            else if (assetType.Object == "ReferenceItemType" && key == "code")
                             {
                                 whereStatements.Add($"RI.[Code] = @code");
                                 dbArgs.Add($"@code", q.Value);
@@ -373,6 +391,7 @@ order by    P.[Path]
                     count(*)
                 from Asset A
                 {(assetType.Object == "ReferenceItemType" ? " inner join ReferenceItem RI on RI.ID = A.ObjectID" : "")} 
+                {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID" : "")} 
                 {"{0}"}
                 {"{1}"}";
 
@@ -385,9 +404,11 @@ order by    P.[Path]
                     A.UpdatedOn,
                     A.CreatedOn
                     {(assetType.Object == "ReferenceItemType" ? " , RI.Code" : "")} 
+                    {(assetType.Object == "FusionAttributeType" ? " , FA.SourceID, FA.Name" : "")} 
                     {"{0}"}
                 from Asset A
                 {(assetType.Object == "ReferenceItemType" ? " inner join ReferenceItem RI on RI.ID = A.ObjectID" : "")} 
+                {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID" : "")} 
                 {"{1}"}
                 {"{2}"}
                 {"{3}"}
