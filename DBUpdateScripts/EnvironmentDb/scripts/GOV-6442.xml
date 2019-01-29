@@ -31,6 +31,8 @@ begin
 		--		 dates - using the metrics in the transactional table.
 		drop table if exists #assetEffectiveDates;
 		create table #assetEffectiveDates (AssetTypeUid uniqueidentifier not null, AssetUid uniqueidentifier not null, EffectiveDate date not null);
+		CREATE NONCLUSTERED INDEX IX_TempAssetEffectiveDates_AssetTypeUid ON #assetEffectiveDates ([AssetTypeUid]);
+
 		insert into #assetEffectiveDates
 			select		distinct
 						T.[Uid] as AssetTypeUid,
@@ -42,8 +44,6 @@ begin
 			where		R.Archived = 0
 						and R.Processing = 1;
 
-		--select * from #assetEffectiveDates
-
 		-- STEP: Get the all the relevant metrics.
 		drop table if exists #step1;
 		create table #step1 (
@@ -51,7 +51,9 @@ begin
 			MetricAssetUid uniqueidentifier not null, ParentUid uniqueidentifier null, IsGroup bit not null,
 			Weight decimal(5,3) not null,
 			[Value] bit not null
-			);
+		);
+		CREATE NONCLUSTERED INDEX IX_TempStep1_Asset_Metric_EffectiveDate ON #step1 (AssetUid, MetricAssetUid, EffectiveDate);
+		CREATE NONCLUSTERED INDEX IX_TempStep1_Asset_ParentMetric_EffectiveDate ON #step1 (AssetUid, ParentUid, EffectiveDate);
 
 		insert into #step1
 			select	E.AssetUid,
@@ -97,6 +99,8 @@ begin
 			AdjustedWeight decimal(5,3) null,
 			Score decimal(5,3) null
 		);
+		CREATE NONCLUSTERED INDEX IX_TempStep2_Metric_IsGroup_Level ON #step2 (MetricAssetUid, IsGroup, [Level]);
+		CREATE NONCLUSTERED INDEX IX_TempStep2_Parent_Level_IsRelevant ON #step2 (ParentUid, [Level], IsRelevant);
 
 		with h as (
 			select	AssetUid,
@@ -534,4 +538,20 @@ end
 ]]>
     </rollback>
   </changeSet>
+
+  <changeSet author="Pappas" id="GOV-6442-IX">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+CREATE NONCLUSTERED INDEX IX_MetricStagingScoreItem_Asset_Metric_Date_Include ON [metrics].[StagingScoreItem] ([AssetUid],[MetricAssetUid],[EffectiveDate]) INCLUDE ([Result])
+]]>
+    </sql>
+    <rollback>
+<![CDATA[
+DROP INDEX IX_MetricStagingScoreItem_Asset_Metric_Date_Include ON [metrics].[StagingScoreItem]
+]]>
+    </rollback>
+  </changeSet>  
 </databaseChangeLog>
