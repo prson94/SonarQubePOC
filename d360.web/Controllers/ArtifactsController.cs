@@ -782,32 +782,33 @@ where   O.Type = 'ArtifactType' and O.TypeID = @id and O.[State] = 1
         {
             
             var models = Company.Query<dynamic>(@"
-select	    T.ID,
+select	    AT.ObjectID as ID,
 		    IT.SubjectID as ParentID,
-		    T.Name,
+		    AT.Name,
             AT.Description,
-			T.AutoDisplayDescription,
-			T.CanOwnFusion,
-			T.DisplayFormat,
+			AT.AutoDisplayDescription,
+			AT.CanOwnFusion,
+			AT.DisplayFormat,
 		    AT.CreatedBy,
 			AT.CreatedOn,
-			T.UpdatedBy,
-		    T.UpdatedOn,
+			AT.UpdatedBy,
+		    AT.UpdatedOn,
             AT.ID as AssetTypeID,
 			K.kount
-from	    ArtifactType T
-			left join AssetType AT on AT.Object = 'ArtifactType' and AT.ObjectID = T.ID
-			left join (SELECT count(a.ArtifactTypeID) kount,a.ArtifactTypeID
-							FROM [dbo].[Artifact] a
-							inner join ArtifactType b on a.ArtifactTypeID = b.ID
-							group by ArtifactTypeID
-						) K on K.ArtifactTypeID = t.ID
+from	   
+			 AssetType AT
+			left join (SELECT count(a.AssetTypeID) kount,a.AssetTypeID
+							FROM [dbo].[Asset] a
+							inner join AssetType b on a.AssetTypeID = b.ID
+							group by AssetTypeID
+						) K on K.AssetTypeID = AT.ID 
 		    outer apply (
 					    select	IT.SubjectID
 					    from	IntersectType IT 
-							    inner join [Predicate] P on IT.Object = 'ArtifactType' and IT.ObjectID = T.ID and P.ID = IT.PredicateID and P.Type = 3
+							    inner join [Predicate] P on IT.Object = 'ArtifactType' and IT.ObjectID = AT.ObjectID and P.ID = IT.PredicateID and P.Type = 3
 					    ) IT
-order by    T.Name").AsQueryable();
+			where  AT.Object = 'ArtifactType'
+order by    AT.Name").AsQueryable();
 
             return new JsonNetResult
             {
