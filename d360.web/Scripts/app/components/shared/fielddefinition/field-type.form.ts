@@ -985,6 +985,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private anyDisplayFieldsSelected(e: any) {
         if (this.model.FieldType.Type != 'ComplexRelationLookup') {
             this.displayFieldSelected = true;
+            this.cardinalFieldFromRelationshipSelected(parseInt(this.lookups.Field_FieldFromRelRelationships[0].value));
             return;
         }
         if (e == true) {
