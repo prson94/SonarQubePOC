@@ -58,43 +58,19 @@ namespace d360.model
             var maps = await LoadMarkitMapRawData();
             var objectMaps = await LoadMarkitMapItemMapData();
 
-            Dictionary<MarkitObject, List<int>> objectMapDictionary = new Dictionary<MarkitObject, List<int>>(new MarkitObjectComparer());
-
-            // iterate through the object
-            int previousObjectId = -1;
-            foreach (var obj in objectMaps)
-            {
-                var markitObject = new MarkitObject { Object = obj.Object, ObjectID = obj.ObjectID };
-
-                if (obj.ObjectID != previousObjectId)
-                {
-                    objectMapDictionary[markitObject] = new List<int>{ obj.MapID};                    
-                }
-                else
-                {
-                    //add to existing.
-                    objectMapDictionary[markitObject].Add(obj.MapID);
-                }
-                previousObjectId = obj.ObjectID;
-            }
-
             var rows = maps.Count();
             client.TrackEvent($"Loaded {rows} Markit Map Records");
 
-            // get all the business terms that we need to generate the business lineage for as these will be the items we need to
-            // travers the graphs for
+            //find source/target mappings by traversing possible paths along the technical lineage
+            var leftmostMaps = maps.Where(m => !maps.Any(n => n.TargetFusionAttributeID == m.SourceFusionAttributeID)).ToList();
+            var mappings = new List<FusionMarkitSourceTargetMapping>();
+            foreach(var map in leftmostMaps)
+                UpdateSourceTargetObjectMap(maps.ToList(), map, mappings, new List<int>(), map.SourceAssetID, map, objectMaps.ToList()
+                    ,objectMaps.FirstOrDefault(o => o.FusionAttributeID == map.SourceFusionAttributeID), false);
 
-            foreach (var item in objectMapDictionary)
-            {
-                GenerateBusinessLineageForObject(item, maps);                
-            }
+            var asdf = mappings.Where(m => m.ObjectAssetID != 0).ToList();
 
-
-            // create a hash that has the source fusion attribute for easy find
-            // create a hash that has the target fusion attribute for easy find
-            // Dictionary<int, MarkitMapRowData> sourceFusionDictionary = new Dictionary<int, MarkitMapRowData>();
-            //Dictionary<int, MarkitMapRowData> targetFusionDictionary = new Dictionary<int, MarkitMapRowData>();
-
+         
             // start a transaction
 
             if (Database.Connection.State != ConnectionState.Open)
@@ -111,6 +87,54 @@ namespace d360.model
                 transaction.Commit();
             }
 
+        }
+
+
+        private void UpdateSourceTargetObjectMap(List<FusionMarkitLineageData> maps, FusionMarkitLineageData currentMap, List<FusionMarkitSourceTargetMapping> mappings, List<int> processedList, long? sourceAssetId, FusionMarkitLineageData root, List<FusionMarkitObjectMapping> objectMaps, FusionMarkitObjectMapping rootObjectMap, bool skipMap = false)
+        {
+            processedList.Add(currentMap.ID);
+            var nextMaps = maps.Where(m => m.SourceFusionAttributeID == currentMap?.TargetFusionAttributeID && !processedList.Contains(m.ID));
+            var skipNextMap = false;
+
+            if (rootObjectMap == null)
+                rootObjectMap = objectMaps.FirstOrDefault(o => o.FusionAttributeID == currentMap.SourceFusionAttributeID);
+
+            if (sourceAssetId == null)
+                sourceAssetId = currentMap.SourceAssetID;
+            if (skipMap)
+                sourceAssetId = null;
+            if (sourceAssetId != null && currentMap.TargetAssetID != null && currentMap.TargetAssetID != sourceAssetId)
+            {
+                if (!skipMap)
+                {
+                    if (nextMaps.Count() < 1 && rootObjectMap == null)
+                        rootObjectMap = objectMaps.FirstOrDefault(o => o.FusionAttributeID == currentMap.TargetFusionAttributeID);
+
+                    mappings.Add(new FusionMarkitSourceTargetMapping
+                    {
+                        MapID = currentMap.ID,
+                        SourceFusionAttributeID = (int)currentMap.SourceFusionAttributeID,
+                        TargetFusionAttributeID = (int)currentMap.TargetFusionAttributeID,
+                        SourceAssetID = (long)sourceAssetId,
+                        TargetAssetID = (long)currentMap.TargetAssetID,
+                        ObjectAssetID = (rootObjectMap == null ? 0 : rootObjectMap.ObjectAssetID),
+                        UltimateParent = root
+                    });
+
+                    skipNextMap = true;
+                }
+
+                sourceAssetId = null;
+                rootObjectMap = null;
+            }
+
+
+            foreach(var next in nextMaps)
+                UpdateSourceTargetObjectMap(maps, next, mappings, processedList, sourceAssetId, root, objectMaps, rootObjectMap, skipNextMap);
+
+
+
+           
         }
 
         private void GenerateBusinessLineageForObject(KeyValuePair<MarkitObject, List<int>> item, IEnumerable<FusionMarkitLineageData> maps)
@@ -133,14 +157,17 @@ namespace d360.model
         private void GenerateMarkitBusinessLineageImpl(string obj, int? objectId, FusionMarkitLineageData currentMap, List<int> mapValues, MarkitObject key, IEnumerable<FusionMarkitLineageData> maps)
         {
             Queue<FusionMarkitLineageData> mapQueue = new Queue<FusionMarkitLineageData>();
+
             mapQueue.Enqueue(currentMap);
+
             currentMap.Visited = true;
 
             while(mapQueue.Count != 0)
             {
                 var front = mapQueue.Dequeue();
-                // update the source / target business item values only of one is null
-                if (string.IsNullOrEmpty(front.Target) ^ string.IsNullOrEmpty(front.Source))
+                var parent = mapQueue.Peek();
+                // if source or target is null
+                if (!front.TargetAssetID.HasValue || !front.SourceAssetID.HasValue)
                 {
                     if (string.IsNullOrEmpty(front.Target))
                     {
@@ -313,15 +340,14 @@ namespace d360.model
             return false;
         }
 
-        private async Task<IEnumerable<core.entities.FusionMarkitLineageMapToBusinessItems>> LoadMarkitMapItemMapData()
+        private async Task<IEnumerable<core.entities.FusionMarkitObjectMapping>> LoadMarkitMapItemMapData()
         {
             var sql = @"SELECT  
-                            MapID,
-                            [Object],
-                            ObjectID                         
-                      FROM [fusion].[MarkitLineageMapToBusinessItems] order by [object], ObjectID";
+                           FusionAttributeID,
+                           ObjectAssetID
+                      FROM [fusion].[MarkitLineageMapToBusinessItems]";
 
-            return await Database.Connection.QueryAsync<core.entities.FusionMarkitLineageMapToBusinessItems>(sql);
+            return await Database.Connection.QueryAsync<core.entities.FusionMarkitObjectMapping>(sql);
         }
 
         private async Task<IEnumerable<core.entities.FusionMarkitLineageData>> LoadMarkitMapRawData()
@@ -343,12 +369,12 @@ namespace d360.model
                           ,[TargetParentObject]
                           ,[TargetParentObjectFusionAttributeID]
                           ,[TargetParentObjectFusionAttributeTypeID]
-                          ,[Source]
-                          ,[SourceID]
-                          ,[Target]
-                          ,[TargetID]
+                          ,[SourceAssetID]
+                          ,[TargetAssetID]
+                          ,[Processed]
                           ,[UpdatedOn]
-                      FROM [fusion].[MarkitLineageData]";
+                      FROM [fusion].[MarkitLineageData]
+";
 
             return await QueryAsync<core.entities.FusionMarkitLineageData>(sql);
         }

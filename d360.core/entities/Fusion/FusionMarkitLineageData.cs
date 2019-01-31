@@ -25,7 +25,28 @@ namespace d360.core.entities
         public int? SourceID { get; set; }
         public string Target { get; set; }
         public int? TargetID { get; set; }
+        public long? SourceAssetID { get; set; }
+        public long? TargetAssetID { get; set; }
+        public bool Processed { get; set; }
         public DateTime UpdatedOn { get; set; }
-        public bool Visited { get; set; }
+        public bool Visited { get; set; } = false;
+    }
+
+    public class FusionMarkitObjectMapping
+    {
+        public int FusionAttributeID { get; set; }
+        public long ObjectAssetID { get; set; }
+    }
+
+    public class FusionMarkitSourceTargetMapping
+    {
+        public int MapID { get; set; }
+        public int SourceFusionAttributeID { get; set; }
+        public int TargetFusionAttributeID { get; set; }
+        public long SourceAssetID { get; set; }
+        public long TargetAssetID { get; set; }
+        public int MapItemID { get; set; }
+        public long ObjectAssetID { get; set; }
+        public FusionMarkitLineageData UltimateParent { get; set; }
     }
 }
