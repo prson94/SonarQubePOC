@@ -41,7 +41,8 @@ namespace d360.model
         ApplyToType bit, PermissionsBitMask int, IsVisible bit,
         Overridden bit, OverrideID bigint null
     );
-    CREATE NONCLUSTERED INDEX CIX_Tempresp ON #resp (RuleID, ResponsibilityTypeID, AssetID, AssetTypeID, SecurityAsset, SecurityAssetID, ApplyToType, Overridden, OverrideID);
+    CREATE CLUSTERED INDEX CIX_Tempresp ON #resp (RuleID, ResponsibilityTypeID, AssetID, AssetTypeID, SecurityAsset, SecurityAssetID, ApplyToType, Overridden, OverrideID);
+
     ", transaction: trans);
 
                     cnn.Execute(@"
@@ -64,7 +65,7 @@ namespace d360.model
     [SecurityAsset] char(1) not null, 
     [SecurityAssetID] int not null
     );
-    CREATE CLUSTERED INDEX CIX_TempResponsibilityTypeRelationItem ON #ResponsibilityTypeRelationItem (RuleID, AssetID);
+    CREATE CLUSTERED INDEX CIX_TempResponsibilityTypeRelationItem ON #ResponsibilityTypeRelationItem (RuleID, AssetID, SecurityAssetID);
     ", transaction: trans);
 
                     cnn.Execute(@"
@@ -424,7 +425,7 @@ where	S.RuleID is null
 
             cnn.Execute(@"
 update	T
-set		T.Context = S.Context,
+set		--T.Context = S.Context,
 		T.PermissionsBitMask = S.PermissionsBitMask,
 		T.IsVisible = S.IsVisible
 from	ResponsibilityTypeRelationRuleResult T
