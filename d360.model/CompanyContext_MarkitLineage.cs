@@ -8,6 +8,8 @@ using Dapper;
 using System.Data.Common;
 using d360.core.entities;
 using System.Data;
+using System.Data.SqlClient;
+using Newtonsoft.Json;
 
 namespace d360.model
 {
@@ -68,41 +70,38 @@ namespace d360.model
                 UpdateSourceTargetObjectMap(maps.ToList(), map, mappings, new List<int>(), map.SourceAssetID, map, objectMaps.ToList()
                     ,objectMaps.FirstOrDefault(o => o.FusionAttributeID == map.SourceFusionAttributeID), false);
 
-            var asdf = mappings.Where(m => m.ObjectAssetID != 0).ToList();
+            //find mappings which have a valid source/target/object
+            var validMappings = mappings.Where(m => m.ObjectAssetID != 0).ToList();
+     
+            await Database.ExecuteSqlCommandAsync("truncate table [fusion].[MarkitLineageMapping]");
 
-         
-            // start a transaction
+            //save mappings to a table
+            await SaveMarkitLineageResults(validMappings);
 
-            if (Database.Connection.State != ConnectionState.Open)
-                Database.Connection.Open();
-
-            using (var transaction = Database.Connection.BeginTransaction())
-            {
-                // save the results
-                await SaveMarkitLineageResults(transaction);
-
-                // save the run information
-                await SaveMarkitLineageRunDetails(rows,rows,0,transaction);
-
-                transaction.Commit();
-            }
+            //generate the lineage
+            await Database.ExecuteSqlCommandAsync("[fusion].[GenerateMarkitMapLineage] 1");
 
         }
 
 
         private void UpdateSourceTargetObjectMap(List<FusionMarkitLineageData> maps, FusionMarkitLineageData currentMap, List<FusionMarkitSourceTargetMapping> mappings, List<int> processedList, long? sourceAssetId, FusionMarkitLineageData root, List<FusionMarkitObjectMapping> objectMaps, FusionMarkitObjectMapping rootObjectMap, bool skipMap = false)
         {
+            //add current item to list of processed nodes
             processedList.Add(currentMap.ID);
+            //get next items to process
             var nextMaps = maps.Where(m => m.SourceFusionAttributeID == currentMap?.TargetFusionAttributeID && !processedList.Contains(m.ID));
             var skipNextMap = false;
 
             if (rootObjectMap == null)
                 rootObjectMap = objectMaps.FirstOrDefault(o => o.FusionAttributeID == currentMap.SourceFusionAttributeID);
 
+            //find a source asset if possible
             if (sourceAssetId == null)
                 sourceAssetId = currentMap.SourceAssetID;
             if (skipMap)
                 sourceAssetId = null;
+            
+            //if we have a source/target pair save it in the mapping table
             if (sourceAssetId != null && currentMap.TargetAssetID != null && currentMap.TargetAssetID != sourceAssetId)
             {
                 if (!skipMap)
@@ -117,8 +116,7 @@ namespace d360.model
                         TargetFusionAttributeID = (int)currentMap.TargetFusionAttributeID,
                         SourceAssetID = (long)sourceAssetId,
                         TargetAssetID = (long)currentMap.TargetAssetID,
-                        ObjectAssetID = (rootObjectMap == null ? 0 : rootObjectMap.ObjectAssetID),
-                        UltimateParent = root
+                        ObjectAssetID = (rootObjectMap == null ? 0 : rootObjectMap.ObjectAssetID)
                     });
 
                     skipNextMap = true;
@@ -128,13 +126,9 @@ namespace d360.model
                 rootObjectMap = null;
             }
 
-
+            //process the next nodes in the lineage
             foreach(var next in nextMaps)
-                UpdateSourceTargetObjectMap(maps, next, mappings, processedList, sourceAssetId, root, objectMaps, rootObjectMap, skipNextMap);
-
-
-
-           
+                UpdateSourceTargetObjectMap(maps, next, mappings, processedList, sourceAssetId, root, objectMaps, rootObjectMap, skipNextMap);  
         }
 
         private void GenerateBusinessLineageForObject(KeyValuePair<MarkitObject, List<int>> item, IEnumerable<FusionMarkitLineageData> maps)
@@ -213,91 +207,52 @@ namespace d360.model
             await Database.Connection.ExecuteAsync(sql, new { rows, techLineageRows = techRows, businessLineageRows = businessRows, dt = now }, transaction);
         }
 
-        private async Task SaveMarkitLineageResults(DbTransaction transaction)
+        private async Task SaveMarkitLineageResults(List<FusionMarkitSourceTargetMapping> mappings)
         {
-            //create temp tables to connect the records
-            // temp table for storing mapruleitem id to map table id
-            await Database.Connection.ExecuteAsync(@"IF OBJECT_ID('tempdb..#MapRuleItemIDList') IS NOT NULL
-			                                DROP TABLE #MapRuleItemIDList;
+            using (var conn = new SqlConnection(CompanyConnectionString))
+            {
+                conn.Open();
+                using (SqlBulkCopy bulkCopy = new SqlBulkCopy(conn))
+                {
+                    var columnList = new List<string>()
+                    {
+                        "MapID",
+                        "SourceFusionAttributeID",
+                        "TargetFusionAttributeID",
+                        "SourceAssetID",
+                        "TargetAssetID",
+                        "ObjectAssetID",
+                        "SourceIntersectID",
+                        "TargetIntersectID",
+                        "MapItemID",
+                    };
 
-		                                create table #MapRuleItemIDList (    
-                                            MapRuleItemID int not null,
-			                                MapID Int
-		                                );
-                                ", transaction: transaction);
+                    DataTable dt = new DataTable();
+                    columnList.ForEach(c => dt.Columns.Add(c));
 
-            await Database.Connection.ExecuteAsync(@"IF OBJECT_ID('tempdb..#MapItemIDList') IS NOT NULL
-			                                            DROP TABLE #MapItemIDList;
+                    mappings.ForEach(m =>
+                    {
+                        var json = JsonConvert.SerializeObject(m);
+                        var dictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
+                        var row = dt.NewRow();
+                        foreach(var c in columnList)
+                        {
+                            if (dictionary.ContainsKey(c))
+                                row[c] = dictionary[c];
+                            else
+                                row[c] = null;
+                        }
 
-		                                create table #MapItemIDList (    
-                                            MapItemID int, 
-                                            sourceintersectid int, 
-                                            targetintersectid int
-		                                );
-                                ", transaction: transaction);
+                        dt.Rows.Add(row);
 
+                    });
 
-            await SaveMarkitTechLineage(transaction);
-            
+                    bulkCopy.DestinationTableName = "[fusion].[MarkitLineageMapping]";
+                    await bulkCopy.WriteToServerAsync(dt);
+                    
+                }
+            }
 
-            /*
-             -- output the results into proper tables here
-	
-
-	
-	update T
-	set T.MapItemID = mi.ID
-	from #objectmap T
-		inner join mapitem mi on(T.sourceintersectid = mi.SourceIntersectID and T.targetintersectid = mi.TargetIntersectID and mi.[Owner] = 'MARKIT LINEAGE'); 
-
-	
-	MERGE
-	INTO    mapitem mi
-	USING   (			
-			select distinct sourceintersectid, targetintersectid FROM #objectmap where (sourceintersectid is not null and targetintersectid is not null) and sourceintersectid != targetintersectid and mapitemid is null
-			) S
-	ON      (1 = 0)
-	WHEN NOT MATCHED THEN
-	INSERT  (SourceIntersectID, TargetIntersectID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, [Owner])
-	VALUES  (S.sourceintersectid, S.targetintersectid, 0, getutcdate(), 0, getutcdate(), 'MARKIT LINEAGE')
-	OUTPUT  INSERTED.ID, S.sourceintersectid, S.targetintersectid into @MapItemIDList;
-
-	
-	update T
-	set T.mapitemid = MI.MapItemID
-	from #objectmap T
-		inner join @MapItemIDList MI on (MI.sourceintersectid = T.sourceintersectid and MI.targetintersectid = T.targetintersectid)
-		
-	
-	delete from mapitem where [owner] = 'MARKIT LINEAGE' and id not in (select mapitemid from #objectmap);
-	
-	
-	update T
-	set T.mapruleitemid = S.id
-	from #maps T
-		inner join [dbo].[mapruleitem] S on (S.[owner] = 'MARKIT LINEAGE' and S.SourceFusionAttributeID = T.SourceFusionAttributeID and S.TargetFusionAttributeID = T.TargetFusionAttributeID);
-	
-	
-	
-	
-	
-	update T
-	set T.MapRuleItemID = MI.MapRuleItemID
-	from #maps T
-		inner join @MapRuleItemIDList MI on (MI.MapID = T.ID);
-
-	
-	delete from mapruleitem where [owner] = 'MARKIT LINEAGE' and id not in (select MapRuleItemID from #maps);
-			
-	
-	insert into mapruleitemmapitem 
-		(MapRuleItemID, MapItemID, [Owner])
-		SELECT distinct M.MapRuleItemID, OM.MapItemID , 'MARKIT LINEAGE'
-		FROM #maps M 
-		inner join #objectmap OM on(M.ID = OM.MapID)
-		where M.MapRuleItemID is not null and OM.MapItemID is not null;	
-
-             */
         }
 
         private async Task SaveMarkitTechLineage(DbTransaction transaction)
