@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace igx.jobs.responsibilityruleprocessor
 {
@@ -35,7 +36,7 @@ namespace igx.jobs.responsibilityruleprocessor
 #else
         const string timerSettings = "0 */3 * * * *";
 #endif
-        public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log) //   
+        public static async Task Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log) //   
         {
             try
             {
@@ -64,8 +65,8 @@ namespace igx.jobs.responsibilityruleprocessor
 #else
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 #endif
-                //companies.ForEach(c =>
-                companies.AsParallel().ForAll(c =>
+
+                foreach (var c in companies)
                 {
                     try
                     {
@@ -88,7 +89,7 @@ namespace igx.jobs.responsibilityruleprocessor
 
                         try
                         {
-                            company.ProcessResponsibilityRelationRules();
+                            await company.ProcessResponsibilityRelationRules();
                         }
                         catch (Exception ex)
                         {
@@ -105,7 +106,7 @@ namespace igx.jobs.responsibilityruleprocessor
                         log.WriteLine($"Company [{c.CompanyID}]: [{ex.GetFullExceptionData()}]");
                         CoreFunction.AIFlush();
                     }
-                });
+                }
             }
             catch (Exception ex)
             {
