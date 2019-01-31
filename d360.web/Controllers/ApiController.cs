@@ -5046,21 +5046,23 @@ where    A.RuleID = @id", new { id });
             var sql = @"select 
 										c.[Object], 
 										c.ObjectID, 
-										c.DisplayValue as TextPath, 
+										AD.DisplayValue as TextPath, 
 										cU.Url, 
 										c.TypeName as ObjectTypeName, 
 										c.ForeColor as IconForeColor, 
 										c.BackColor as IconBackColor
-									from [dbo].assetdetail c   
-									cross apply [dbo].getAssetUrlById(c.ID) cU                              
-									where c.[Object] not in @exclude and (c.DisplayValue like @beginsWith or (len(@val) > 2 and c.DisplayValue like @contains))";
+										from [dbo].AssetWithType c   
+										inner join  AssetDisplayValue as AD   on
+										AD.AssetID = C.ID
+										cross apply [dbo].getAssetUrlById(c.ID) cU                              
+										where c.[Object] not in @exclude and (AD.DisplayValue like @beginsWith or (len(@val) > 2 and AD.DisplayValue like @contains))";
 
             dbParams.Add("beginsWith", $"{phrase}%");
             dbParams.Add("val", $"{phrase}%");
             dbParams.Add("contains", $"%{phrase}%");
             dbParams.Add("exclude", objectsToExclude);
 
-            return Company.Query<TagSuggestionModel>(sql,dbParams);            
+            return Company.Query<TagSuggestionModel>(sql,dbParams);
         }
 
         #endregion
