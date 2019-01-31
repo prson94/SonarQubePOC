@@ -39,8 +39,28 @@ namespace igx.jobs.responsibilityruleprocessor
         {
             try
             {
+
 #if DEBUG
-                var companies = CoreFunction.GetCompaniesByCurrentSlot().Where(i => i.CompanyID == 1065).ToList();
+                var companies = new List<CompanyWithDatabaseServerSettings>();
+                using (var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
+                {
+                    cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                    companies = cnn.Query<CompanyWithDatabaseServerSettings>(@"
+                        select  c.ID as CompanyID, 
+                                c.Status, 
+                                ds.Server, 
+                                ds.Username, 
+                                ds.Password, 
+                                ds.FusionQueue, 
+                                ds.SearchServer, 
+                                ds.EventTopic, 
+                                ds.IsDevelopment,
+                                c.EnvironmentLevel,
+                                CDS.UrlPrefix
+                        from    company c 
+                                inner join databaseserver ds on c.databaseserverid = ds.id and c.ID = 1065
+                                inner join CompanyDomainSetting CDS on CDS.CompanyID = c.ID and CDS.IsPrimary = 1").ToList();
+                }
 #else
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 #endif
@@ -51,6 +71,8 @@ namespace igx.jobs.responsibilityruleprocessor
                         var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password);
 
                         company.OpenWithRetry(RetryPolicy.DefaultFixed);
+
+                        CoreFunction.AITrackEvent(functionName, "ResponsibilityRuleProcessor Job Starting", new Dictionary<string, string> { { "CompanyID", c.CompanyID.ToString() } });
 
                         try
                         {
@@ -73,6 +95,8 @@ namespace igx.jobs.responsibilityruleprocessor
                             log.WriteLine($"Company [{c.CompanyID}]: [{ex.GetFullExceptionData()}]");
                             CoreFunction.AIFlush();
                         }
+
+                        CoreFunction.AITrackEvent(functionName, "ResponsibilityRuleProcessor Job Completed", new Dictionary<string, string> { { "CompanyID", c.CompanyID.ToString() } });
                     }
                     catch (Exception ex)
                     {
