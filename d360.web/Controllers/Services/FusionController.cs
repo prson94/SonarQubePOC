@@ -70,7 +70,8 @@ select
 	C.ScanEnabled,
 	C.UpdatedBy,
 	C.UpdatedOn,
-	T.ID as AssetTypeID
+	T.ID as AssetTypeID,
+    T.uid as uid
 from C
 inner join AssetType T on T.[Object] = 'FusionAttributeType' and T.ObjectID = C.ID
 order by C.ParentID, C.[Name]", new { id }).AsQueryable();
@@ -896,6 +897,20 @@ where A.FusionTypeID = @id", columns, joins);
         {
             if (!Company.CurrentResourceIsAdmin)
                 return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to upload fusion data for this configuration.");
+
+            #region Validation
+            var fusion = Company.Filter<Fusion>(x => x.ID == fusionID).Select(x=>new { x.ID,x.FusionTypeID}).SingleOrDefault();
+            if (fusion == null)
+            {
+                Trace.TraceWarning($"fusionID {fusionID} not found");
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, $"fusionID {fusionID} not found");
+            }
+            if (fusion.FusionTypeID != typeID)
+            {
+                Trace.TraceWarning($"typeID {typeID} doesn't match fusion {fusionID}");
+                return Request.CreateErrorResponse(HttpStatusCode.NotFound, $"typeID {typeID} doesn't match fusion {fusionID}");
+            }
+            #endregion
 
             var prefix = "Fusion.PostBulkAttributesAsync => ";
             var errorMessage = "";

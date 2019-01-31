@@ -212,12 +212,20 @@ namespace igx.jobs.igc
         public string _id { get; set; }
     }
 
+    public class RelationshipTargetComparisonModel
+    {
+        public string SourceField { get; set; }
+        public string SourceAssetType { get; set; }
+        public int IntersectTypeID { get; set; }
+    }
+
     public class IGCAssetRelationshipBreakdownModels : List<IGCAssetRelationshipBreakdownModel> { }
     //[{"FieldName":"impacts_on","AssetTypeName":"$RRP-RRPLevel3Service","Count":3561}]
     public class IGCAssetRelationshipBreakdownModel
     {
         public string FieldName { get; set; }
         public string AssetTypeName { get; set; }
+        public int IntersectTypeID { get; set; }
         public int Count { get; set; }
     }
 

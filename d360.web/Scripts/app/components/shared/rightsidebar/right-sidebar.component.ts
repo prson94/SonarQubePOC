@@ -1,8 +1,8 @@
-﻿import { Component, ElementRef, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, ElementRef, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { RightSidebarService  } from '../../../services/right-sidebar.service';
 import { RightSidebarItem } from '../../../models/rightsidebar.model';
-import { Subscription }   from 'rxjs/Subscription';
+import { Subscription }   from 'rxjs';
 import * as _ from 'lodash';
 
 @Component({

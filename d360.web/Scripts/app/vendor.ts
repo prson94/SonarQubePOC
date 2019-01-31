@@ -7,7 +7,7 @@ import '@angular/http';
 import '@angular/router';
 import '@angular/platform-browser/animations';
 
-import 'rxjs/Rx';
+import 'rxjs';
 
 import 'primeng/primeng';
 import 'lodash';

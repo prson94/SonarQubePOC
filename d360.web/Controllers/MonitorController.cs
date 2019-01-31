@@ -8,6 +8,7 @@ using SpreadsheetLight;
 using System.IO;
 using Newtonsoft.Json;
 using d360.web.Models;
+using Dapper;
 
 namespace d360.web.Controllers
 {
@@ -149,7 +150,8 @@ where   A.RuleImplementationID = @id";
         {
 
 
-            var sql = GetWorkflowMonitorSql();
+            var dbArgs = new DynamicParameters();
+            var sql = GetWorkflowMonitorSql(dbArgs);
 
             sortDataField = string.IsNullOrEmpty(sortDataField) ? "StartedOn" : sortDataField;
             var stFieldType = sortDataField == "StartedOn" || sortDataField == "CompletedOn" ? "DateTime" : "string";
@@ -157,7 +159,7 @@ where   A.RuleImplementationID = @id";
   
 
             sql = $@"Select * from ({sql}) as A {sortsql} ";
-            var list = Company.Query<dynamic>(sql);
+            var list = Company.Query<dynamic>(sql,dbArgs);
 
             var document = new SLDocument();
             document.AddWorksheet("Items");
@@ -239,74 +241,90 @@ where   A.RuleImplementationID = @id";
             return objType;
         }
 
-        private string GetWorkflowMonitorSql()
+        private string GetWorkflowMonitorSql(DynamicParameters dbArgs)
         {
             var filters = GetFilterValuesFromRequest(Request, true);
             string typeSql = "";
             string whereSql = "";
             string assignedSql = "";
             string havingSql = "";
+            int count = 0; //same filtername multiple times
             foreach (var f in filters)
             {
                 var ff = f as UiRequestFieldFilterValue;
                 if (ff == null) continue;
+                count++;
                 switch (ff.FieldName)
                 {
                     case "WorkflowId":
-                        var types = ff.RawValue.Trim().TrimEnd(',');
-                        typeSql += $@" wt.id in ({types}) and ";
+                        var types=  Array.ConvertAll(ff.RawValue.Trim().TrimEnd(',').Split(','), s => int.Parse(s));
+                        dbArgs.Add($"{ff.FieldName}{count}", types);
+                        typeSql += $@" wt.id in @{ff.FieldName}{count} and ";
                         break;
                     case "Asset":
+                        dbArgs.Add($"{ff.FieldName}{count}", $"%{ff.RawValue}%");
                         typeSql += $@" (case when wi.[object] = 'Intersect' then coalesce(utility.deriveintersectname(wi.objectid), '(unknown relationship)') 
                                         when wi.[object] = 'Issue' then utility.getassetdisplayvalue(cod.id) 
-                                        else coalesce(utility.getassetdisplayvalue(ass.id), '(unknown)') end) Like '%{ff.RawValue}%' and ";
+                                        else coalesce(utility.getassetdisplayvalue(ass.id), '(unknown)') end) Like @{ff.FieldName}{count} and ";
                         break;
                     case "TypeName":
-                        typeSql += $@"  coalesce(assettype.Name, it.Name,ITypeName.Name)  LIKE '%{ff.RawValue}%' and ";
+                        dbArgs.Add($"{ff.FieldName}{count}", $"%{ff.RawValue}%");
+                        typeSql += $@"  coalesce(assettype.Name, it.Name,ITypeName.Name)  LIKE @{ff.FieldName}{count} and ";
                         break;
                     case "Type":
                             switch(ff.RawValue)
                                 {
                             case "Action":
-                                typeSql += $@"( wi.[object] = 'Issue' or assettype.[Object]='{getAssetType(ff.RawValue)}' ) and ";
+                                dbArgs.Add($"{ff.FieldName}{count}", $"{getAssetType(ff.RawValue)}");
+                                typeSql += $@"( wi.[object] = 'Issue' or assettype.[Object]=@{ff.FieldName}{count} ) and ";
                                 break;
                             case "Relationship":
-                                typeSql += $@"assettype.[Object] = '{getAssetType(ff.RawValue)}' or wi.[object]='Intersect' and";
+                                dbArgs.Add($"{ff.FieldName}{count}", $"{getAssetType(ff.RawValue)}");
+                                typeSql += $@"( assettype.[Object] = @{ff.FieldName}{count} or wi.[object]='Intersect' ) and";
                                 break;
                             default:
-                                typeSql +=  $@"assettype.[Object]='{getAssetType(ff.RawValue)}' and ";
+                                dbArgs.Add($"{ff.FieldName}{count}", $"{getAssetType(ff.RawValue)}");
+                                typeSql +=  $@"assettype.[Object]= @{ff.FieldName}{count} and ";
                                 break;
                         }
                         
                         break;
                     case "StartedOn":
-                        typeSql += $@"datediff(day, wi.startedOn, '{ff.RawValue}') = 0 and ";
+                        dbArgs.Add($"{ff.FieldName}{count}", $"{ff.RawValue}");
+                        typeSql += $@"datediff(day, wi.startedOn, @{ff.FieldName}{count}) = 0 and ";
                         break;
                     case "CompletedOn":
-                        typeSql += $@"datediff(day, wi.CompletedOn, '{ff.RawValue}') = 0 and ";
+                        dbArgs.Add($"{ff.FieldName}{count}", $"{ff.RawValue}");
+                        typeSql += $@"datediff(day, wi.CompletedOn, @{ff.FieldName}{count}) = 0 and ";
                         break;
                     case "Status":
                         typeSql +=  ff.RawValue == "Pending" ? " wi.CompletedOn is null and " : " wi.CompletedOn is not null and ";
                         break;
                     case "Initiator":
-                        typeSql += $@"( gr.firstName Like '{ff.RawValue}%' or gr.lastName Like '{ff.RawValue}%' or gr.firstName + ' ' + gr.lastName LIKE '{ff.RawValue}%' ) and ";
+                        dbArgs.Add($"{ff.FieldName}{count}", $"{ff.RawValue}%");
+                        typeSql += $@"( gr.firstName Like @{ff.FieldName}{count} or gr.lastName Like @{ff.FieldName}{count} or gr.firstName + ' ' + gr.lastName LIKE @{ff.FieldName}{count} ) and ";
                         break;
                     case "AssignedTo":
-                        assignedSql = @"inner join workflow.ItemAssignment WIA on WIA.ItemID = WI.ID and WIA.ResourceObject = 'Resource'
+                        dbArgs.Add($"{ff.FieldName}{count}", $"{ff.RawValue}%");
+                        assignedSql = @"inner join workflow.ItemAssignment WIA on WIA.ItemID = wi.ID and WIA.ResourceObject = 'Resource'
                                             inner join reporting.Global_Resource GRA on WIA.ResourceObjectID = GRA.ResourceID ";
-                        typeSql += $@"( gra.firstName Like '{ff.RawValue}%' or gra.lastName Like '{ff.RawValue}%' or gra.firstName + ' ' + gra.lastName LIKE '{ff.RawValue}%' ) and ";
+                        typeSql += $@"( gra.firstName Like @{ff.FieldName}{count} or gra.lastName Like @{ff.FieldName}{count} or gra.firstName + ' ' + gra.lastName LIKE @{ff.FieldName}{count} ) and ";
                         break;
                     case "Object":
-                        typeSql += $@"coalesce(cod.Object, ass.Object) = '{ff.RawValue}' and ";
+                        dbArgs.Add($"{ff.FieldName}{count}", $"{ff.RawValue}");
+                        typeSql += $@"coalesce(cod.Object, ass.Object) = @{ff.FieldName}{count} and ";
                         break;
                     case "ObjectID":
-                        typeSql += $@"coalesce(cod.ObjectID, ass.ObjectID) = cast({ff.RawValue} as int) and ";
+                        dbArgs.Add($"{ff.FieldName}{count}", $"{ff.RawValue}");
+                        typeSql += $@"coalesce(cod.ObjectID, ass.ObjectID) = cast(@{ff.FieldName}{count} as int) and ";
                         break;
                     case "ObjectType":
-                        typeSql += $@"assettype.Object = '{ff.RawValue}' and ";
+                        dbArgs.Add($"{ff.FieldName}{count}", $"{ff.RawValue}");
+                        typeSql += $@"assettype.Object = @{ff.FieldName}{count} and ";
                         break;
                     case "ObjectTypeID":
-                        typeSql += $@"assettype.ObjectID = cast({ff.RawValue} as int) and ";
+                        dbArgs.Add($"{ff.FieldName}{count}", $"{ff.RawValue}");
+                        typeSql += $@"assettype.ObjectID = cast(@{ff.FieldName}{count} as int) and ";
                         break;
                 }
             }
@@ -387,7 +405,8 @@ where   A.RuleImplementationID = @id";
 
             try
             {
-                  var sql = GetWorkflowMonitorSql();
+                var dbArgs = new DynamicParameters();
+                var sql = GetWorkflowMonitorSql(dbArgs);
 
                 sortDataField = string.IsNullOrEmpty(sortDataField) ? "StartedOn" : sortDataField;
                 var stFieldType = sortDataField == "StartedOn" || sortDataField == "CompletedOn" ? "DateTime" : "string";
@@ -401,8 +420,8 @@ where   A.RuleImplementationID = @id";
                 sql = $@"Select * from ({sql}) as A {sortsql} 
                         {pagingSql}";
                                
-                var list = Company.Query<dynamic>(sql);
-                var totalCount = Company.Query<int>(countSql);
+                var list = Company.Query<dynamic>(sql,dbArgs);
+                var totalCount = Company.Query<int>(countSql,dbArgs);
 
                 return new JsonNetResult
                 {

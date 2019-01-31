@@ -664,24 +664,46 @@ namespace d360.web.Controllers
 
                                     if (f.AllowAllValue)
                                         fld.Items.Add(new SelectListItem { Text = f.AllowAllLabel, Value = "0" });
-                                                                        
+
+                                    bool hideData3SixtyUsers = HideData3SixtyUsers();
+                                    var columns = $@"
+                                        V.FieldTypeID,
+                                        V.LookupObjectType,
+                                        V.LookupObjectID,
+                                        V.Value,
+                                        V.Text";
+
+                                    var hideData3SixtyUsersCondition = $@" and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com'";
+
+                                    var resourceJoin = $@"
+                                        inner join reporting.Global_resource R on R.ResourceID = V.Value and R.State <> 3 {(hideData3SixtyUsers ? hideData3SixtyUsersCondition : "")}
+                                        ";
+
+                                    var itemSql = $@"select {columns} 
+                                        from FieldLookupValue V
+                                        {(f.LookupObjectType == "Resource" ? resourceJoin : "")}
+                                        where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId
+                                        ";
+
+                                    var countSql = $@"select count(*)
+                                        from FieldLookupValue V
+                                        {(f.LookupObjectType == "Resource" ? resourceJoin : "")}
+                                        where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId
+                                        ";
+
                                     if (f.AllowMultipleValues)
                                     {
-                                        fld.Items.AddRange(
-                                            Company.Filter<FieldLookupValue>(o => o.FieldTypeID == f.ID && o.LookupObjectType == f.LookupObjectType && o.LookupObjectID == f.LookupObjectID.Value)
+                                        var items = Company.Query<FieldLookupValue>(itemSql, new { fieldTypeId = f.ID, lookupObjectType = f.LookupObjectType, lookupObjectId = f.LookupObjectID })
                                             .OrderBy(o => o.Text)
                                             .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
-                                            .ToList()
-                                            );
+                                            .ToList();
+
+                                        fld.Items.AddRange(items);
                                     }
                                     else
                                     {
                                         int maxItems = int.Parse(Community.GetCompanySettings()["MaxDropdownItems"]);
-                                        var countSql = @"select count(*) 
-                                            from FieldLookupValue V where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId";
-
-
-                                        var count = Company.Query<int>(countSql, new { fieldTypeId = f.ID, lookupObjectType = f.LookupObjectType, lookupObjectId = f.LookupObjectID }).FirstOrDefault();
+                                        int count = Company.Query<int>(countSql, new { fieldTypeId = f.ID, lookupObjectType = f.LookupObjectType, lookupObjectId = f.LookupObjectID }).FirstOrDefault();
 
                                         if (count > maxItems)
                                         {
@@ -699,12 +721,12 @@ namespace d360.web.Controllers
                                         }
                                         else
                                         {
-                                            fld.Items.AddRange(
-                                                Company.Filter<FieldLookupValue>(o => o.FieldTypeID == f.ID && o.LookupObjectType == f.LookupObjectType && o.LookupObjectID == f.LookupObjectID.Value)
+                                            var items = Company.Query<FieldLookupValue>(itemSql, new { fieldTypeId = f.ID, lookupObjectType = f.LookupObjectType, lookupObjectId = f.LookupObjectID })
                                                 .OrderBy(o => o.Text)
                                                 .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
-                                                .ToList()
-                                                );
+                                                .ToList();
+
+                                            fld.Items.AddRange(items);
                                         }
                                     }
                                 }
@@ -860,11 +882,36 @@ namespace d360.web.Controllers
                                         fld.Items.Add(new SelectListItem { Text = ft.AllowAllLabel, Value = "0" });
 
                                     var items = new List<SelectListItem>();
+                                    bool hideData3SixtyUsers = HideData3SixtyUsers();
 
+                                    var columns = $@"
+                                        V.FieldTypeID,
+                                        V.LookupObjectType,
+                                        V.LookupObjectID,
+                                        V.Value,
+                                        V.Text";
+
+                                    var hideData3SixtyUsersCondition = $@" and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com'";
+
+                                    var resourceJoin = $@"
+                                        inner join reporting.Global_resource R on R.ResourceID = V.Value and R.State <> 3 {(hideData3SixtyUsers ? hideData3SixtyUsersCondition : "")}
+                                        ";
+
+                                    var itemSql = $@"select {columns} 
+                                        from FieldLookupValue V
+                                        {(ft.LookupObjectType == "Resource" ? resourceJoin : "")}
+                                        where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId
+                                        ";
+
+                                    var countSql = $@"select count(*)
+                                        from FieldLookupValue V
+                                        {(ft.LookupObjectType == "Resource" ? resourceJoin : "")}
+                                        where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId
+                                        ";
 
                                     if (ft.AllowMultipleValues)
                                     {
-                                        items = Company.Filter<FieldLookupValue>(o => o.FieldTypeID == ft.ID && o.LookupObjectType == ft.LookupObjectType && o.LookupObjectID == ft.LookupObjectID.Value)
+                                        items = Company.Query<FieldLookupValue>(itemSql, new { fieldTypeId = ft.ID, lookupObjectType = ft.LookupObjectType, lookupObjectId = ft.LookupObjectID.Value})
                                             .OrderBy(o => o.Text)
                                             .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
                                             .ToList();
@@ -890,8 +937,8 @@ namespace d360.web.Controllers
                                     else
                                     {
                                         int maxItems = int.Parse(Community.GetCompanySettings()["MaxDropdownItems"]);
-                                        var countSql = @"select count(*) 
-                                            from FieldLookupValue V where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId";
+                                        int count = Company.Query<int>(countSql, new { fieldTypeId = ft.ID, lookupObjectType = ft.LookupObjectType, lookupObjectId = ft.LookupObjectID }).FirstOrDefault();
+                                        
                                         string selectedValue = null;
                                         if (f != null && !string.IsNullOrWhiteSpace(f.Value))
                                             selectedValue = f.Value;
@@ -899,8 +946,6 @@ namespace d360.web.Controllers
                                             selectedValue = ft.DefaultValue;
 
                                         List<SelectListItem> selected = null;
-
-                                        var count = Company.Query<int>(countSql, new { fieldTypeId = ft.ID, lookupObjectType = ft.LookupObjectType, lookupObjectId = ft.LookupObjectID }).FirstOrDefault();
 
                                         if (count > maxItems)
                                         {
@@ -916,7 +961,8 @@ namespace d360.web.Controllers
                                         else
                                         {
                                             fld.UseTypeahead = false;
-                                            items = Company.Filter<FieldLookupValue>(o => o.FieldTypeID == ft.ID && o.LookupObjectType == ft.LookupObjectType && o.LookupObjectID == ft.LookupObjectID.Value)
+
+                                            items = Company.Query<FieldLookupValue>(itemSql, new { fieldTypeId = ft.ID, lookupObjectType = ft.LookupObjectType, lookupObjectId = ft.LookupObjectID.Value })
                                                 .OrderBy(o => o.Text)
                                                 .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
                                                 .ToList();

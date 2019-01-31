@@ -1,0 +1,31 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="BHoward" id="GOV-6279-update-2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		  BEGIN
+		  IF COL_LENGTH('[dbo].[Artifact]','ParentID') IS NOT NULL
+			BEGIN
+			  IF EXISTS (SELECT * FROM sys.indexes WHERE name='IX_Artifact_ParentID' AND object_id = OBJECT_ID('[dbo].[Artifact]')) 
+				  BEGIN
+					  DROP INDEX [IX_Artifact_ParentID] ON [dbo].[Artifact]
+				  END
+			  IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_NAME ='FK_Artifact_ParentArtifact')
+				  BEGIN
+					  ALTER TABLE [dbo].[Artifact] DROP CONSTRAINT [FK_Artifact_ParentArtifact]
+				  END 
+			  ALTER TABLE [dbo].[Artifact]
+			  DROP Column ParentID
+			END
+		  END
+    </sql>
+  </changeSet>
+</databaseChangeLog>

@@ -1,0 +1,62 @@
+﻿<div>
+    <header *ngIf="hasHeader">{{action}} {{title}} <div *ngIf="hasCloseButton"
+            (click)="closeClick.emit()"
+            style="cursor: pointer; float: right; font-size: 1.3em"><i class="fa fa-remove"></i></div>
+    </header>
+    <d3s-loading [isLoading]="isLoading"></d3s-loading>
+    <div class="row"
+        *ngIf="!isLoading">
+        <form (ngSubmit)="onSubmit()"
+            [formGroup]="form">
+            <ng-template ngFor
+                let-category
+                [ngForOf]="categories">
+                <simple-accordion *ngIf="category.name"
+                    [header]="category.name"
+                    [active]="true">
+                    <div class="row"
+                        *ngFor="let row of category.rows">
+                        <div *ngFor="let field of row.Fields"
+                            [class]="'col ' + row.getColClass()"
+                            style="padding-bottom:10px;">
+                            <d3s-dynamic-field [field]="field"
+                                [form]="form"
+                                (listItemChange)="listSelectionChanged($event)"
+                                [object]="objectType"
+                                [objectID]="objectID"></d3s-dynamic-field>
+                        </div>
+                    </div>
+                </simple-accordion>
+                <span *ngIf="!category.name">
+                    <div class="row"
+                        *ngFor="let row of category.rows">
+                        <div *ngFor="let field of row.Fields"
+                            [class]="'col ' + row.getColClass()"
+                            style="padding-bottom:10px;">
+                            <d3s-dynamic-field [field]="field"
+                                [form]="form"
+                                (listItemChange)="listSelectionChanged($event)"
+                                [object]="objectType"
+                                [objectID]="objectID"></d3s-dynamic-field>
+                        </div>
+                    </div>
+                </span>
+            </ng-template>
+            <div *ngIf="hasIconFields && fore.Value == back.Value"
+                class="col s12 errorMessage">* Foreground and background color cannot be the same</div>
+            <div class="col s12">&nbsp;</div>
+            <div class="col s12">
+                <button pButton
+                    type="submit"
+                    [disabled]="!form.valid || (hasIconFields && fore.Value == back.Value)"
+                    style="width: '150px';"
+                    label="Save"></button>
+                <button pButton
+                    type="button"
+                    (click)="closeClick.emit();"
+                    label="Close"
+                    style="width: '150px';"></button>
+            </div>
+        </form>
+    </div>
+</div>

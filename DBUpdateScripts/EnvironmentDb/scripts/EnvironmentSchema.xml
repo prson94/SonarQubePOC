@@ -8,7 +8,6 @@
 
    <changeSet author="Andy Kelly" id="D3S-Environment-Schema">
         <preConditions onFail="MARK_RAN" onFailMessage="The initial schema has already been created. Skipping changeset and will mark as ran">
-            <tableExists schemaName="dbo" tableName="dbo.asset" />
           <sqlCheck expectedResult="0">select count(*) from INFORMATION_SCHEMA.TABLES where TABLE_NAME = 'asset'</sqlCheck>
         </preConditions>
         <sqlFile dbms="mssql"

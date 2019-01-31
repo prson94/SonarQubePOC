@@ -1,0 +1,160 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Bhoward" id="GOV-6404-update-1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+ALTER procedure [tile].[GetObjectStatistics]
+	@type varchar(50),
+	@id int
+AS
+BEGIN
+	declare @table table (Name nvarchar(250), Value varchar(250), [Group] varchar(25), Url varchar(250), MostRecent datetime, TypeID int)
+	
+	declare @ObjectScore varchar(250),
+			@assetUid uniqueidentifier;
+
+	select @assetUid = [Uid] from dbo.Asset where Object = @type and ObjectID = @id;
+
+	insert into @table
+		select NULL, count(1), 'Followers', '', max(datecreated),null
+		from	Follow F
+		inner join reporting.Global_Resource R on R.ResourceID = F.ResourceID
+		where	F.ObjectType = @type and F.ObjectID = @id
+	
+	insert into @table
+		select	NULL, count(1), 'Comments', '', max(datecreated),null
+		from	Comment C
+				inner join CommentRelation R	on R.CommentID = C.ID and C.ParentID is null
+												and R.ObjectType = @type and R.ObjectID = @id
+                                                and C.ParentID is null
+												and C.IsDeleted = 0
+
+	select	@ObjectScore = cast(Value * 100 as int)
+	from	metrics.Score S
+			inner join (
+				select	max(EffectiveDate) as EffectiveDate
+				from	metrics.Score
+				where	AssetUid = @assetUid
+						and EffectiveDate <= getutcdate()
+			) M on M.EffectiveDate = S.EffectiveDate and S.AssetUid = @assetUid
+
+	insert into @table values (null, @ObjectScore, 'Score', null, null, null)
+
+	if @type = 'Artifact' or @type = 'Taxonomy' or @type = 'Rule' or @type = 'Policy'
+	begin
+		insert into @table 
+			select 
+				lower(c.childartifacttypename), 
+				count(1),
+				'Children',
+				'',
+				getutcdate(),
+				c.ChildArtifactTypeID
+			from 
+				asset a
+			cross apply [dbo].[GetArtifactChildByAssetID](a.id) c
+			where a.objectid = @id and a.[object] = 'Artifact' group by c.childartifacttypename, c.ChildArtifactTypeID
+		insert into @table
+			select 
+				'Issue',
+				count(1),
+				'Issues',	
+				'',
+				max(i.CreatedOn),
+				null
+			from workflow.item wi
+				inner join issue i on (wi.objectid = i.id and wi.[object] = 'Issue')
+			where 
+				i.object = @type and i.objectid = @id and completedon is null		
+	end
+	select * from @table
+END
+]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+      ALTER procedure [tile].[GetObjectStatistics]
+      @type varchar(50),
+      @id int
+      AS
+      BEGIN
+      declare @table table (Name nvarchar(250), Value varchar(250), [Group] varchar(25), Url varchar(250), MostRecent datetime, TypeID int)
+
+      declare @ObjectScore varchar(250),
+      @assetUid uniqueidentifier;
+
+      select @assetUid = [Uid] from dbo.Asset where Object = @type and ObjectID = @id;
+
+      insert into @table
+      select NULL, count(1), 'Followers', '', max(datecreated),null
+      from	Follow F
+      inner join reporting.Global_Resource R on R.ResourceID = F.ResourceID
+      where	F.ObjectType = @type and F.ObjectID = @id
+
+      insert into @table
+      select	NULL, count(1), 'Comments', '', max(datecreated),null
+      from	Comment C
+      inner join CommentRelation R	on R.CommentID = C.ID and C.ParentID is null
+      and R.ObjectType = @type and R.ObjectID = @id
+      and C.ParentID is null
+      and C.IsDeleted = 0
+
+      select	@ObjectScore = cast(Value * 100 as int)
+      from	metrics.Score S
+      inner join (
+      select	max(EffectiveDate) as EffectiveDate
+      from	metrics.Score
+      where	AssetUid = @assetUid
+      and EffectiveDate <= getutcdate()
+      ) M on M.EffectiveDate = S.EffectiveDate and S.AssetUid = @assetUid
+
+      insert into @table values (null, @ObjectScore, 'Score', null, null, null)
+
+      if @type = 'Artifact'
+      begin
+      insert into @table
+      select
+      lower(c.childartifacttypename),
+      count(1),
+      'Children',
+      '',
+      getutcdate(),
+      c.ChildArtifactTypeID
+      from
+      asset a
+      cross apply [dbo].[GetArtifactChildByAssetID](a.id) c
+      where a.objectid = @id and a.[object] = 'Artifact' group by c.childartifacttypename, c.ChildArtifactTypeID
+
+      insert into @table
+      select
+      'Issue',
+      count(1),
+      'Issues',
+      '',
+      max(i.CreatedOn),
+      null
+      from workflow.item wi
+      inner join issue i on (wi.objectid = i.id and wi.[object] = 'Issue')
+      where
+      i.object = 'Artifact' and i.objectid = @id and completedon is null
+
+
+      end
+
+
+      select * from @table
+
+      END
+      ]]>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>

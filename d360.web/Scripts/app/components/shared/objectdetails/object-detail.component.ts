@@ -2,6 +2,7 @@
 import { DetailRow, DetailField, DetailModel, DetailFieldType } from '../../../models/object-detail.model';
 import { ObjectDetailService } from '../../../services/object-detail.service';
 import { LookupGrid } from '../../../models/grid-definition.model';
+import { MessagesService } from '../../../services/messages.service';
 
 declare var CompanySettings;
 
@@ -24,11 +25,9 @@ export class ObjectDetailComponent implements OnChanges {
 
     private categories: Category[] = new Array<Category>();
 
-
     rows = new Array<DetailRow>();
 
-    constructor(private objectDetailService: ObjectDetailService) {
-    }
+    constructor(private objectDetailService: ObjectDetailService, protected messagesService: MessagesService) {}
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         for (let p in changes) {
@@ -63,10 +62,9 @@ export class ObjectDetailComponent implements OnChanges {
                             if (f.FieldName == this.TaxonomyTypeNodeName) {
                                 f.Name = CompanySettings.ArtifactType_TaxonomyTypeIDNodes;
                             }
-
                             if (f.Type == DetailFieldType.Lookup) {
                                 this.objectDetailService.getLookupGrid(f.LookupGridUrl)
-                                    .then(i => {                                        
+                                    .then(i => {
                                         f.Data = i;
                                     })
                                     .then(() => {
@@ -119,10 +117,9 @@ export class ObjectDetailComponent implements OnChanges {
                                 this.categories[i].rows.push(j);
                             }
                         }
-                    }                    
+                    }
                     this.rows = displayRows;
                     this.loadCategory();
-                    //console.log(this.rows);
                     this.isLoading = false;                    
                 });
         }

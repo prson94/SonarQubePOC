@@ -6,13 +6,13 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Sebastian Abraham" id="GOV-5933">
+  <changeSet author="KMcNamee" id="GOV-6443">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="true">
 <![CDATA[
-ALTER procedure [dbo].[DeleteObject]
+  ALTER procedure [dbo].[DeleteObject]
  @ObjTemp varchar(50),
  @ObjectIDTemp int,
  @ResourceIDTemp int
@@ -54,6 +54,21 @@ begin
 
 	begin try
 		begin transaction @trans
+
+		insert into @workflowItem
+			select   distinct wi.Id from workflow.type wt
+			inner join workflow.EventRegistration we on
+			we.typeid = wt.id
+			inner join workflow.version wv on
+			wt.id = wv.typeId
+			inner join [workflow].[Item] wi on
+			wv.id = wi.VersionID
+			where  we.changetype <> 3 and wi.[object]=@Obj and wi.objectId=@ObjectID 
+
+		insert into @workflowItem
+			select wi.id from workflow.item wi
+			inner join Issue i on i.id = wi.objectid and wi.object = 'Issue'
+			where i.object = @Obj and i.objectid = @ObjectID
 
 		if @Obj = 'Artifact' or @Obj = 'ArtifactType' or @Obj = 'FusionAttribute' or @Obj = 'FusionAttributeType' or @Obj = 'ReferenceItem' or @Obj = 'ReferenceItemType' or @Obj = 'Rule'
 		begin
@@ -138,15 +153,15 @@ begin
 		
 		insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)
 			select	O.Object, 
-					O.ObjectID, 
-					O.DisplayValue, 
+					O.ObjectID,
+					SUBSTRING(O.DisplayValue,1,250), 
 					@ResourceID, 
 					@CurrentDate, 
 					'Deleted', 
 					O.Object, 
 					O.ObjectID, 
 					O.TypeName, 
-					O.DisplayValue, 
+					SUBSTRING(O.DisplayValue,1,250), 
 					'This asset has been removed.' 
 			from	AssetDetail O
 					inner join @h I on O.ID = I.ID
@@ -171,6 +186,12 @@ begin
 		where	[Uid] in (select [Uid] 
 						  from Asset A
 							   inner join @h I on I.ID = A.ID)
+
+
+		delete	AssetCrossReference
+		where	[Uid] in (select [Uid] 
+						  from AssetType O
+								inner join @ht I on O.ID = I.ID)
 
 		
 
@@ -813,34 +834,8 @@ begin
 			delete ObjectStyle						where ObjectType = @Obj AND ObjectID in (select ObjectID from @ht)
 		end
 
-		if exists(select   1 from workflow.type wt
-					inner join workflow.EventRegistration we on
-					we.typeid = wt.id
-					inner join workflow.version wv on
-					wt.id = wv.typeId
-					inner join [workflow].[Item] wi on
-					wv.id = wi.VersionID
-					where  we.changetype in (1,2) and wi.[object]=@Obj and wi.objectId=@ObjectID )
-					or exists(
-					select wi.id from workflow.item wi
-					inner join Issue i on i.id = wi.objectid and wi.object = 'Issue'
-					where i.object = @Obj and i.objectid = @ObjectID
-					)
+		if exists(Select 1 from @workflowItem)
 		begin
-					insert into @workflowItem
-						select   distinct wi.Id from workflow.type wt
-							inner join workflow.EventRegistration we on
-							we.typeid = wt.id
-							inner join workflow.version wv on
-							wt.id = wv.typeId
-							inner join [workflow].[Item] wi on
-							wv.id = wi.VersionID
-							where  we.changetype in (1,2) and wi.[object]=@Obj and wi.objectId=@ObjectID 
-
-					insert into @workflowItem
-						select wi.id from workflow.item wi
-							inner join Issue i on i.id = wi.objectid and wi.object = 'Issue'
-							where i.object = @Obj and i.objectid = @ObjectID
 
 					Delete from [workflow].[ItemAssignment]   
 						where ItemID in (Select wfi.ItemID from @workflowItem wfi )
@@ -886,8 +881,8 @@ end
 ]]>
     </sql>
     <rollback>
-	<![CDATA[
-	ALTER procedure [dbo].[DeleteObject]
+<![CDATA[
+ALTER procedure [dbo].[DeleteObject]
  @ObjTemp varchar(50),
  @ObjectIDTemp int,
  @ResourceIDTemp int
@@ -908,7 +903,7 @@ begin
 
 	declare @h table (IntersectID int, ID bigint, ObjectID int, Processed bit null)
 	declare @ht table (IntersectTypeID int, ID int, ObjectID int, Processed bit null)
-
+	declare @workflowItem table (ItemId int)
 	declare @ClearAttributes bit = 0,
 			@ClearComments bit = 0,
 			@ClearIntersects bit = 0,
@@ -929,6 +924,21 @@ begin
 
 	begin try
 		begin transaction @trans
+
+		insert into @workflowItem
+			select   distinct wi.Id from workflow.type wt
+			inner join workflow.EventRegistration we on
+			we.typeid = wt.id
+			inner join workflow.version wv on
+			wt.id = wv.typeId
+			inner join [workflow].[Item] wi on
+			wv.id = wi.VersionID
+			where  we.changetype <> 3 and wi.[object]=@Obj and wi.objectId=@ObjectID 
+
+		insert into @workflowItem
+			select wi.id from workflow.item wi
+			inner join Issue i on i.id = wi.objectid and wi.object = 'Issue'
+			where i.object = @Obj and i.objectid = @ObjectID
 
 		if @Obj = 'Artifact' or @Obj = 'ArtifactType' or @Obj = 'FusionAttribute' or @Obj = 'FusionAttributeType' or @Obj = 'ReferenceItem' or @Obj = 'ReferenceItemType' or @Obj = 'Rule'
 		begin
@@ -1013,7 +1023,7 @@ begin
 		
 		insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)
 			select	O.Object, 
-					O.ObjectID, 
+					O.ObjectID,
 					O.DisplayValue, 
 					@ResourceID, 
 					@CurrentDate, 
@@ -1046,6 +1056,12 @@ begin
 		where	[Uid] in (select [Uid] 
 						  from Asset A
 							   inner join @h I on I.ID = A.ID)
+
+
+		delete	AssetCrossReference
+		where	[Uid] in (select [Uid] 
+						  from AssetType O
+								inner join @ht I on O.ID = I.ID)
 
 		
 
@@ -1687,6 +1703,27 @@ begin
 			delete IntersectType					where (Object = @Obj and ObjectID in (select ObjectID from @ht)) OR (Subject = @Obj and SubjectID in (select ObjectID from @ht))
 			delete ObjectStyle						where ObjectType = @Obj AND ObjectID in (select ObjectID from @ht)
 		end
+
+		if exists(Select 1 from @workflowItem)
+		begin
+
+					Delete from [workflow].[ItemAssignment]   
+						where ItemID in (Select wfi.ItemID from @workflowItem wfi )
+
+					Delete  from [workflow].[ItemStepTransition] 
+						where FromItemStepID in (select  wis.ID from workflow.itemstep wis
+								where wis.ItemID in (Select wfi.ItemID from @workflowItem wfi))
+							or ToItemStepID in (select  wis.ID from workflow.itemstep wis
+								where wis.ItemID in (Select wfi.ItemID from @workflowItem wfi));
+
+					Delete  from workflow.itemstep 
+						where ItemID in (Select wfi.ItemID from @workflowItem wfi)
+ 
+					Delete  from [workflow].[Item] 
+						where Id in (Select wfi.ItemID from @workflowItem wfi)
+
+		end
+	
 		
 		commit transaction @trans
 	end try
@@ -1711,7 +1748,7 @@ begin
 		rollback transaction @trans
 	end catch
 end
-	]]>
+]]>
     </rollback>
   </changeSet>
 </databaseChangeLog>

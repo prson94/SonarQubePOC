@@ -54,6 +54,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     @Output() onComplete = new EventEmitter();
     @Output() onFail = new EventEmitter();
     @Output() onCancel = new EventEmitter();
+    @Input() showIsListable: boolean = true;
+    @Input() showIsPartOfKey: boolean = true;
 
     private lookups: Lookups = new Lookups();
     private lookupDefaultValueOptions: SelectItem[];
@@ -983,6 +985,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private anyDisplayFieldsSelected(e: any) {
         if (this.model.FieldType.Type != 'ComplexRelationLookup') {
             this.displayFieldSelected = true;
+            this.cardinalFieldFromRelationshipSelected(parseInt(this.lookups.Field_FieldFromRelRelationships[0].value));
             return;
         }
         if (e == true) {

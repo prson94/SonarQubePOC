@@ -1,6 +1,6 @@
-﻿import { Injectable, EventEmitter } from '@angular/core';
+import { Injectable, EventEmitter } from '@angular/core';
 import { Http } from '@angular/http';
-import { Subject } from 'rxjs/Subject';
+import { Subject } from 'rxjs';
 import { Favorite } from '../models/favorite.model';
 import { BaseService } from './base.service';
 import { MessagesService } from './messages.service';

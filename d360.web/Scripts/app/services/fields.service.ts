@@ -1,4 +1,6 @@
-﻿import { Injectable } from '@angular/core';
+
+import {distinctUntilChanged, switchMap, map} from 'rxjs/operators';
+import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { FieldDefinition, IFieldsService, FieldTypeEditorModel, Lookups, LookupItem } from '../models/fields.model';
 import { EditorDropDownItem } from '../models/editor-field.model'
@@ -17,7 +19,14 @@ export class FieldsService extends BaseService implements IFieldsService {
         return this.http.get(`/fields/${objectType}/${objectID}/full`)
             .toPromise()
             .then(response => <FieldDefinition[]>response.json())
-            .catch(err => this.handleError(err)); 
+            .catch(err => this.handleError(err));
+    }
+
+    getAssetTypeFields(assetTypeUID: string): Promise<FieldDefinition[]> {
+        return this.http.get(`/api/v2/assets/fields/${assetTypeUID}`)
+            .toPromise()
+            .then(response => <FieldDefinition[]>response.json())
+            .catch(err => this.handleError(err));
     }
 
     getFieldTypeEditor(id: number): Promise<any> {
@@ -235,28 +244,28 @@ export class FieldsService extends BaseService implements IFieldsService {
     }
 
     getRelationshipFieldItems(event: Observable<any>) {
-        return event
-            .distinctUntilChanged()
-            .switchMap(event => {
+        return event.pipe(
+            distinctUntilChanged(),
+            switchMap(event => {
                 let uri = `api/relationships/field/${event.fieldTypeID}?offset=${event.event.first}&rows=${event.event.rows}`;
                 if (event.event.globalFilter != null && event.event.globalFilter.length > 0)
                     uri += `&query=${event.event.globalFilter}`
                 if (event.objectID != null)
                     uri += `&object=${event.object}&objectID=${event.objectID}`
-                return this.http.get(uri).map(res => res.json())
-                    .map(res => { return { fieldTypeID: event.fieldTypeID, results: res, event: event.event } });
-            });
+                return this.http.get(uri).pipe(map(res => res.json()),
+                    map(res => { return { fieldTypeID: event.fieldTypeID, results: res, event: event.event } }),);
+            }),);
     }
 
     getTypeaheadItems(e: Observable<any>): Observable<EditorDropDownItem[]> {
-        return e
-            .distinctUntilChanged()
-            .switchMap(e => {
+        return e.pipe(
+            distinctUntilChanged(),
+            switchMap(e => {
                 let uri = `form/FieldType_TypeAheadLookup?fieldTypeId=${e.fieldTypeID}&query=${e.event.query}`;
                 if (e.value != null)
                     uri += `&value=${e.value}`;
-                return this.http.get(uri).map(res => <EditorDropDownItem[]>res.json());
-            });
+                return this.http.get(uri).pipe(map(res => <EditorDropDownItem[]>res.json()));
+            }),);
     }
 
 }

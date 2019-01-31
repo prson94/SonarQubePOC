@@ -1,0 +1,137 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="BHoward" id="GOV-6216">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+            ALTER PROCEDURE [dbo].[GenerateAssetDisplayValue]	
+                @AssetID bigint,
+                @Object varchar(20),
+                @ObjectID int
+            AS
+            BEGIN
+                
+                
+                SET NOCOUNT ON;
+
+                DECLARE @DisplayValue NVARCHAR(MAX);
+                DECLARE @DisplayValueHash NVARCHAR(50);
+
+                if @AssetID is null or @AssetID <= 0
+                begin
+                    select @AssetID = id from asset where [object] = @Object and [objectid] = @ObjectID		
+                end
+
+                
+                if @AssetID is null or @AssetID <= 0
+                begin
+                    return;
+                end
+
+                Select @displayValue = DisplayValue from GetAssetDisplayValueById(@AssetID);
+                SELECT @DisplayValueHash = CONVERT(NVARCHAR(32),HashBytes('SHA1', @displayValue),2)
+                
+                if @displayValue is null 
+                begin
+                    return;
+                end
+
+                Print 'DisplayValue: ' + @DisplayValue
+                Print 'DisplayValueHash: ' + @DisplayValueHash
+                
+                
+
+                if exists(select 1 from AssetDisplayValue where AssetID = @AssetID)
+                begin		
+                        UPDATE AssetDisplayValue
+                            SET DisplayValue = A.DisplayValue,
+                                DisplayValueHash = @DisplayValueHash,
+                                DisplayValuePrefix = SUBSTRING(A.DisplayValue, 1, 250),
+                                UpdatedOn = getutcdate()
+                            FROM GetAssetDisplayValueById(@AssetID) A		
+                            where AssetID = @AssetID	
+                end
+                else
+                begin
+                        insert into AssetDisplayValue (AssetID,DisplayValue,DisplayValueHash,DisplayValuePrefix, UpdatedOn) values(@AssetID,@displayValue,@DisplayValueHash,SUBSTRING(@displayValue, 1, 250),getutcdate())
+                end	
+
+                Declare @assetObjectType varchar(20);
+                Declare @assetObjectID int;
+                
+                select @assetObjectType = ATT.[Object], @assetObjectID = ATT.ObjectID from Asset A inner join AssetType ATT on A.AssetTypeID = ATT.ID where A.id = @AssetID
+
+                exec UpdateDependentObjectTypeDisplayValues @assetObjectType,@assetObjectID	
+            END
+      ]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+      
+        ALTER PROCEDURE [dbo].[GenerateAssetDisplayValue]	
+            @AssetID bigint,
+            @Object varchar(20),
+            @ObjectID int
+        AS
+        BEGIN
+            
+            
+            SET NOCOUNT ON;
+
+            DECLARE @DisplayValue NVARCHAR(MAX);
+            DECLARE @DisplayValueHash NVARCHAR(50);
+
+            if @AssetID is null or @AssetID <= 0
+            begin
+                select @AssetID = id from asset where [object] = @Object and [objectid] = @ObjectID		
+            end
+
+            
+            if @AssetID is null or @AssetID <= 0
+              begin
+              return;
+              end
+
+              Select @displayValue = DisplayValue from GetAssetDisplayValueById(@AssetID);
+              SELECT @DisplayValueHash = CONVERT(NVARCHAR(32),HashBytes('SHA1', @displayValue),2)
+
+              Print 'DisplayValue: ' + @DisplayValue
+              Print 'DisplayValueHash: ' + @DisplayValueHash
+
+
+
+              if exists(select 1 from AssetDisplayValue where AssetID = @AssetID)
+              begin
+              UPDATE AssetDisplayValue
+              SET DisplayValue = A.DisplayValue,
+              DisplayValueHash = @DisplayValueHash,
+              DisplayValuePrefix = SUBSTRING(A.DisplayValue, 1, 250),
+              UpdatedOn = getutcdate()
+              FROM GetAssetDisplayValueById(@AssetID) A
+              where AssetID = @AssetID
+              end
+              else
+              begin
+              insert into AssetDisplayValue (AssetID,DisplayValue,DisplayValueHash,DisplayValuePrefix, UpdatedOn) values(@AssetID,@displayValue,@DisplayValueHash,SUBSTRING(@displayValue, 1, 250),getutcdate())
+              end
+
+              Declare @assetObjectType varchar(20);
+              Declare @assetObjectID int;
+
+              select @assetObjectType = ATT.[Object], @assetObjectID = ATT.ObjectID from Asset A inner join AssetType ATT on A.AssetTypeID = ATT.ID where A.id = @AssetID
+
+              exec UpdateDependentObjectTypeDisplayValues @assetObjectType,@assetObjectID
+              END
+
+              ]]>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>

@@ -73,7 +73,7 @@ namespace d360.web.Controllers.V2
             HttpGet,
             MapToApiVersion("2.0"),
             Route("types"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of relationship types, including types names of both the subject and object.", typeof(List<IntersectTypeApiViewModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
        ]
@@ -96,26 +96,58 @@ namespace d360.web.Controllers.V2
                 return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
             }
         }
+        
+        /// <summary>
+        /// GET a list of relationship types using an ID and a Type.
+        /// </summary>
+        /// <returns></returns>
+        [
+            HttpGet,
+            MapToApiVersion("2.0"),
+            Route("types/{id}/{type}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of relationship types by a given Type and Id, including types names of both the subject and object.", typeof(List<IntersectTypeApiViewModel>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+       ]
+        public async Task<HttpResponseMessage> GetRelationshipTypesAsync(int id, string type)
+        {
+            var prefix = "Relationships.GetRelationshipTypesAsync => ";
+            var errorMessage = "";
+
+            try
+            {
+                var types = await Company.GetActiveIntersectTypes(id, type);
+
+                return Request.CreateResponse(HttpStatusCode.OK, types);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+        }
 
         #region Bulk Relationships
 
         /// <summary>
         /// Takes a given set of relationships and bulk inserts/updates them.
         /// </summary>
-        /// <param name="uid">The unique identifier of the relationship type.</param>
-        /// <param name="relationships">The payload of your request. Must include SubjectUid and ObjectUid.</param>
+        /// <param name="intersectTypeUid">The unique identifier of the intersect type.</param>
+        /// <param name="relationships">The payload of your request. Must include SubjectAssetUid and ObjectAssetUid.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpPost,
             MapToApiVersion("2.0"),
-            Route("{uid}"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),//, "application/xml"
+            Route("{intersectTypeUid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of bulk relationship results, including any error messages.", typeof(List<DatabaseBulkRelationshipResult>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add assets of this type.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> PostRelationshipsAsync(Guid uid, RelationshipInserts relationships)
+        public async Task<IHttpActionResult> PostRelationshipsAsync(Guid intersectTypeUid, RelationshipInserts relationships)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add/update relationships of this type.")));
@@ -125,10 +157,10 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                var intersectType = Company.Filter<IntersectType>(i => i.uid == uid).SingleOrDefault();
+                var intersectType = Company.Filter<IntersectType>(i => i.uid == intersectTypeUid).SingleOrDefault();
 
                 if (intersectType == null)
-                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Relationship Type with Uid {uid} could not be found.")));
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Relationship Type with Uid {intersectTypeUid} could not be found.")));
                 if (relationships == null)
                     relationships = readRequestJsonContent<RelationshipInserts>(Request).Result;
 
@@ -153,20 +185,20 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Inserts or updates a given set of relationships based on the specific relationship type Uid. This endpoint is meant for a greater number of items as it stores the relationship list for asynchronous or batch processing.
         /// </summary>
-        /// <param name="uid">The unique identifier of the intersect type.</param>
-        /// <param name="relationships">The payload of your request.</param>
+        /// <param name="intersectTypeUid">The unique identifier of the intersect type.</param>
+        /// <param name="relationships">The payload of your request. Must include SubjectAssetUid and ObjectAssetUid.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpPost,
             MapToApiVersion("2.0"),
-            Route("batch/{uid}"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            Route("batch/{intersectTypeUid:Guid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution ID to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)), SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add assets of this type.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> PostBulkRelationshipsAsync(Guid uid, RelationshipInserts relationships)
+        public async Task<IHttpActionResult> PostBulkRelationshipsAsync(Guid intersectTypeUid, RelationshipInserts relationships)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to add assets of this type."));
@@ -176,10 +208,10 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                var intersectType = Company.Filter<IntersectType>(i => i.uid == uid).SingleOrDefault();
+                var intersectType = Company.Filter<IntersectType>(i => i.uid == intersectTypeUid).SingleOrDefault();
 
                 if (intersectType == null)
-                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Relationship Type with Uid {uid} could not be found.")));
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Relationship Type with Uid {intersectTypeUid} could not be found.")));
 
                 if (relationships == null)
                     relationships = readRequestJsonContent<RelationshipInserts>(Request).Result;
@@ -205,7 +237,7 @@ namespace d360.web.Controllers.V2
                     Total = relationships.Count,
                     StartedOn = DateTime.UtcNow,
                     ResourceID = Company.CurrentResourceID,
-                    Fields = JsonConvert.SerializeObject(new ApiExecutionFields_PostRelationships { IntersectTypeUid = uid })
+                    Fields = JsonConvert.SerializeObject(new ApiExecutionFields_PostRelationships { IntersectTypeUid = intersectTypeUid })
                 });
 
                 return await Task.FromResult<IHttpActionResult>(
@@ -236,31 +268,31 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// GETs the status of an execution record, including the results for the execution.
         /// </summary>
-        /// <param name="uid">The execution ID to retrieve status for.</param>
+        /// <param name="executionUid">The execution's unique identifier to retrieve status for.</param>
         /// <returns></returns>
         [
             HttpGet,
-            Route("executions/{uid}/status"),
+            Route("executions/{executionUid:Guid}/status"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "An execution status including a list of relationships.", typeof(ApiExecutionStatusModel)),
-            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
         ]
-        public async Task<IHttpActionResult> GetExecutionStatus(Guid uid)
+        public async Task<IHttpActionResult> GetExecutionStatus(Guid executionUid)
         {
             var prefix = "Relationships.GetExecutionStatus => ";
             var errorMessage = "";
 
             try
             {
-                var dbExecutionItem = Company.Filter<ApiExecution>(i => i.ExecutionID == uid).SingleOrDefault();
+                var dbExecutionItem = Company.Filter<ApiExecution>(i => i.ExecutionID == executionUid).SingleOrDefault();
 
                 if (dbExecutionItem == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Execution ID not found."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Execution unique identifier not found."));
                 }
 
-                var info = new ApiExecutionInfo { CompanyID = Company.CurrentCompanyID, ExecutionID = uid };
+                var info = new ApiExecutionInfo { CompanyID = Company.CurrentCompanyID, ExecutionID = executionUid };
 
                 List<DatabaseBulkAssetResult> results = null;
                 try

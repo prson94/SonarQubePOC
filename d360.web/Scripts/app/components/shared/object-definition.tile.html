@@ -1,0 +1,58 @@
+<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div *ngIf="formMode == FormMode.Default && !isLoading">
+  <header>
+    &nbsp;<d3s-tile-actions
+      [hasEdit]="hasModifyAssetPermissions()"
+      (editClick)="formMode = FormMode.Editing; formModeChange.emit(formMode)"
+    ></d3s-tile-actions>
+  </header>
+  <simple-accordion header="Definition" [active]="true">
+    <object-detail
+      [objectID]="objectID"
+      [objectType]="objectType"
+    ></object-detail>
+  </simple-accordion>
+  <simple-accordion
+    header="{{ nym.Name }} ({{ synonyms.itemCount }})"
+    [active]="false"
+    *ngFor="let nym of nymTypes"
+  >
+    <d3s-synonyms-tile
+      #synonyms
+      [predicateId]="nym.ID"
+      [predicateName]="nym.Name"
+      [objectID]="objectID"
+      [objectType]="objectType"
+      [readonly]="false"
+      [hasAdd]="hasModifyRelationshipsPermissions()"
+      [hasDelete]="hasDeleteRelationshipsPermissions()"
+    ></d3s-synonyms-tile>
+  </simple-accordion>
+  <simple-accordion
+    header="Attributes ({{ attributes.itemCount }})"
+    [active]="false"
+    *ngIf="hasAttributes"
+  >
+    <d3s-attributes-tile
+      #attributes
+      [objectID]="objectID"
+      [objectType]="objectType"
+      [readonly]="false"
+      [hasAdd]="hasModifyAttributesPermissions()"
+      [hasEdit]="hasModifyAttributesPermissions()"
+      [hasDelete]="hasDeleteAttributesPermissions"
+    ></d3s-attributes-tile>
+  </simple-accordion>
+</div>
+<d3s-dynamic-editor
+  *ngIf="formMode == FormMode.Editing"
+  [objectID]="objectID"
+  [parentID]="object?.ParentID"
+  [objectType]="objectType"
+  [selection]="object"
+  [editUri]="'form/dynamicedit/edit/' + objectType"
+  [title]="object?.Name"
+  (saveClick)="save($event)"
+  (closeClick)="formMode = FormMode.Default; formModeChange.emit(formMode)"
+>
+</d3s-dynamic-editor>

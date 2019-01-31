@@ -13,22 +13,13 @@ namespace d360.core.entities
     public class Artifact : BaseCreatedAndUpdatedIntObject, IIntObject, IFieldsObject, ICreatedObject, ICreatedMetadata, IUpdatedObject, ISearchable, IUpdatedMetadata, IEventTrackedEntity
     {
         [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "ArtifactType_Name", Description = "ArtifactType_Description")]
-        public int ArtifactTypeID { get; set; }
-               
-        [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Parent_Name", Description = "Parent_Description")]
-        public int? ParentID { get; set; }
+        public int ArtifactTypeID { get; set; }       
 
         [DataMember]
         public string SourceID { get; set; }
 
         [IgnoreDataMember]
         public virtual ArtifactType ArtifactType { get; set; }
-
-        [IgnoreDataMember]
-        public virtual Artifact Parent { get; set; }
-
-        [ForeignKey("ParentID"), IgnoreDataMember]
-        public virtual ICollection<Artifact> Children { get; set; }
 
         [IgnoreDataMember]
         public virtual ICollection<Fusion> OwnedFusions { get; set; }

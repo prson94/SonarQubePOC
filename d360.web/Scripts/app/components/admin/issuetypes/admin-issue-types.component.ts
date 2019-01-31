@@ -75,7 +75,7 @@ import { Title } from '@angular/platform-browser';
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">                                              
-                                    <d3s-field-definition-tile [objectType]="'IssueType'" [objectID]="selected?.ID" ></d3s-field-definition-tile>     
+                                    <d3s-field-definition-tile [objectType]="'IssueType'" [objectID]="selected?.ID" [showIsListable]="false" [showIsPartOfKey]="false"></d3s-field-definition-tile>     
                                 </div>
                             </div>
                         </div> 

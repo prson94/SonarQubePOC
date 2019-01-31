@@ -1,9 +1,9 @@
-﻿import { Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { CanActivate, Router, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { AuthenticationService } from '../services/authentication.service';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 import { SiteUrlHelpers } from '../static/site-url-helpers';
-import 'rxjs/add/operator/first';
+
 
 @Injectable()
 export class AdminUserGuard implements CanActivate {

@@ -93,7 +93,7 @@
                             <div class="FieldName">
                                 Form Description:
                             </div>
-                            <div *ngIf="step?.Fields?.form['@description'] != null" class="panel-section FormFieldContent" [innerHTML]="step?.Fields?.form['@description']">
+                            <div *ngIf="step?.Fields?.form['@description'] != null" class="panel-section FormFieldContent" [innerHTML]="step?.Fields?.form['@description'] | safeHtml">
                             </div>
                             <div *ngIf="step?.Fields?.form['@description'] == null" class="panel-section FormFieldContent" style="color: #aaa;">
                                 [empty]

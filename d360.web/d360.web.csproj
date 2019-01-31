@@ -343,6 +343,7 @@
     <Compile Include="Controllers\Services\ReportsController.cs" />
     <Compile Include="Controllers\Services\OrganizationsController.cs" />
     <Compile Include="Controllers\V2\CrossReferencesController.cs" />
+    <Compile Include="Controllers\V2\CustomEndpointsController.cs" />
     <Compile Include="Controllers\V2\DataQualityController.cs" />
     <Compile Include="Controllers\V2\ErrorsController.cs" />
     <Compile Include="Controllers\V2\ExportTemplatesController.cs" />
@@ -417,6 +418,8 @@
     <Compile Include="Models\Attributes\AiHandleErrorAttribute.cs" />
     <Compile Include="Models\Editor Models.cs" />
     <Compile Include="Models\MimeTypeExtensionsMap.cs" />
+    <Compile Include="Models\SwaggerExampleModels.cs" />
+    <Compile Include="Models\SwaggerExampleModelLogic.cs" />
     <Compile Include="Models\Viewer Models.cs" />
     <Compile Include="Models\Attributes\FileDownloadAttribute.cs" />
     <Compile Include="Models\Formatters\DictionaryXmlMediaTypeFormatter.cs" />
@@ -621,6 +624,17 @@
     <EmbeddedResource Include="Content\Swagger\swagger.css">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
+    <Content Include="Scripts\app\components\artifact\artifact-grid.component.html" />
+    <Content Include="Scripts\app\components\artifact\artifact-item.component.html" />
+    <Content Include="Scripts\app\components\fusion\fusion-promotion-history.component.html" />
+    <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-template-tool.component.html" />
+    <Content Include="Scripts\app\components\shared\dynamicgrideditor\dynamic-field-value.component.html" />
+    <Content Include="Scripts\app\components\shared\editor-header.component.html" />
+    <Content Include="Scripts\app\components\model\model-item-structure.component.html" />
+    <Content Include="Scripts\app\components\policy\policy-item-structure.component.html" />
+    <Content Include="Scripts\app\components\shared\object-definition.tile.html" />
+    <Content Include="Scripts\app\components\shared\preview-tooltip.component.html" />
+    <Content Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-editor.component.html" />
     <Content Include="Scripts\app\components\workflowmonitor\workflowmonitor-list.component.html" />
     <Content Include="fonts\fontawesome-webfont.svg" />
     <Content Include="images\error.png" />
@@ -686,6 +700,9 @@
     <Content Include="Scripts\app\components\admin\analytics\admin-metric-condition-editor.component.html" />
     <Content Include="Scripts\app\components\admin\analytics\admin-metric-editor.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-top-level-filter.component.html" />
+    <Content Include="Scripts\app\components\shared\dynamicgrideditor\dynamic-editor.component.html" />
+    <Content Include="Scripts\app\components\shared\dynamicgrideditor\dynamic-field.component.html" />
+    <Content Include="Scripts\app\components\shared\relationship\object-relationships.component.html" />
     <Content Include="Scripts\app\components\shared\responsibilities\responsibility-relations.component.html" />
     <Content Include="Scripts\app\components\shared\responsibilities\responsibility-relation.form.html" />
     <Content Include="Scripts\app\components\shared\assettypeeditor\asset-type-editor.component.html" />
@@ -718,6 +735,8 @@
     <Content Include="Scripts\app\components\shoppingcart\shopping-cart-request.component.html" />
     <Content Include="Scripts\app\components\shoppingcart\shopping-cart.component.html" />
     <Content Include="Scripts\app\components\workflowmonitor\workflowmonitor-step-details.component.html" />
+    <Content Include="Scripts\app\components\workflowmonitor\workflowmonitor-step-email-details.component.html" />
+    <Content Include="Scripts\app\components\workflow\workflow-form.component.html" />
     <Content Include="Scripts\app\main.bundle.js" />
     <Content Include="Scripts\app\polyfills.bundle.js" />
     <Content Include="Scripts\app\vendor.bundle.js" />
@@ -1408,6 +1427,7 @@
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-new-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-view-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\directives\copy-clipboard-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\directives.module.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\text-highlight-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\guards\api-key-users.gurard.ts" />
@@ -1757,7 +1777,7 @@
     <DocumentationFile>App_Data\Documentation.XML</DocumentationFile>
     <NoWarn>1591</NoWarn>
     <PublishDatabases>false</PublishDatabases>
-    <CodeAnalysisRuleSet>..\codeanalysis.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>ManagedMinimumRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

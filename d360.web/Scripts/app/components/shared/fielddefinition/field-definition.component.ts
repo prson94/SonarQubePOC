@@ -19,6 +19,9 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
     @Input() showEditButton: boolean = true;
     @Input() showDeleteButton: boolean = true;
 
+    @Input() showIsListable: boolean = true;
+    @Input() showIsPartOfKey: boolean = true;
+
     @Output() onEdit = new EventEmitter();
     @Output() onAdd = new EventEmitter();
     @Output() onDelete = new EventEmitter();

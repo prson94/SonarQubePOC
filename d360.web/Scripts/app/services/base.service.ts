@@ -1,10 +1,10 @@
-﻿import { Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Headers, Http, RequestOptions } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { JsonResult } from '../models/jsonresult.model';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/observable/throw';
+import { Observable } from 'rxjs';
+
 
 @Injectable()
 export class BaseService {
@@ -18,11 +18,23 @@ export class BaseService {
 
                 if (error instanceof Error) {
                     // A client-side or network error occurred. Handle it accordingly.
-                    console.log('An error occurred[client side]:', error.statusText);//error.error.message);
+                    console.error('An error occurred[client side]:', error.statusText);//error.error.message);
                 } else {
                     // server side error
-                    console.log('An error occurred[server side]', error);
-                    if (this && this.messages && error.status !== 0) this.messages.showError('Error', error.toString());
+                    console.error('An error occurred[server side]', error);
+                    if (this && this.messages && error.status !== 0) {
+                        var errorMessage = "";
+                        var isError_body = Object.keys(error).indexOf("_body") > -1;
+
+                        if (isError_body) {
+                            errorMessage = JSON.parse(error["_body"]).message;
+                        } else {
+                            errorMessage = error.toString();
+                        }
+                        
+                        this.messages.showError('Error', errorMessage);
+                        
+                    }
                 }
             });
 

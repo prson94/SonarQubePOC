@@ -90,6 +90,8 @@
     <Compile Include="entities\Asset.cs" />
     <Compile Include="entities\AssetCrossReference.cs" />
     <Compile Include="entities\AssetType.cs" />
+    <Compile Include="entities\AssetTypeExportTemplate.cs" />
+    <Compile Include="entities\AssetTypeExportTemplateStyle.cs" />
     <Compile Include="entities\Community\Client.cs" />
     <Compile Include="entities\Community\CompanyHelpResource.cs" />
     <Compile Include="entities\Community\HelpResource.cs" />

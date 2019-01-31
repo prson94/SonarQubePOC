@@ -2,7 +2,8 @@
     Name: string;    
     Description: string;
     ID: number;
-    ArtifactTypeID: number;
+    AssetTypeID: number;
+    AssetTypeUID: string;
     IncludeFields: string;
     HasTemplateFile: boolean;
     ExportViewType: ExportViewType;
@@ -14,7 +15,7 @@ export class ExportTemplateStyle {
     TextColor: string;
     BgColor: string;
     IsBold: boolean;
-    ArtifactTypeExportTemplateID: number;
+    AssetTypeExportTemplateID: number;
     ID: number;
     SelectionType: string;
 }

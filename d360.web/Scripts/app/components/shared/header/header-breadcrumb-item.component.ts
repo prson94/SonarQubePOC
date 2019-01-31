@@ -1,11 +1,13 @@
-﻿import { Component, Input, ElementRef, ViewChildren, OnChanges, SimpleChange, Output, EventEmitter, AfterViewInit, OnInit,OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+
+import {debounceTime} from 'rxjs/operators';
+import { Component, Input, ElementRef, ViewChildren, OnChanges, SimpleChange, Output, EventEmitter, AfterViewInit, OnInit,OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Router }       from '@angular/router';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { TypeaheadSearchService } from '../../../services/typeahead-search.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { SearchResult } from '../../../models/search-result.model';
 import { TreeNode } from 'primeng/components/common/api';
-import { ISubscription } from 'rxjs/Subscription';
+import { SubscriptionLike as ISubscription } from 'rxjs';
 
 @Component({
     selector: 'd3s-header-breadcrumb-item',
@@ -97,8 +99,8 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
 
     search(event) {
         
-        this.searchSub = this.typeaheadSearchService.getObjectTypeItems(10, event.query, this.breadcrumb.objectType, this.breadcrumb.objectId)
-            .debounceTime(400)
+        this.searchSub = this.typeaheadSearchService.getObjectTypeItems(10, event.query, this.breadcrumb.objectType, this.breadcrumb.objectId).pipe(
+            debounceTime(400))
             .subscribe(data => {
                 this.results = data;
                 this.ref.markForCheck();

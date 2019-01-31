@@ -227,8 +227,8 @@ namespace d360.model
 	                                inner join workflow.[Version] WV on WT.ID = WV.TypeID
 	                                inner join workflow.Item WI on WV.ID = WI.VersionID
 	                                inner join reporting.Global_Resource GR on WI.StartedBy = GR.ResourceID									
-	                                inner join workflow.ItemAssignment WIA on WIA.ItemID = WI.ID and WIA.ResourceObject = 'Resource'
 	                                inner join workflow.ItemStep WIS on WIS.ItemID = WI.ID and WIS.CompletedOn is null
+	                                inner join workflow.ItemAssignment WIA on WIA.ItemID = WI.ID and WIA.ResourceObject = 'Resource'
 	                                inner join workflow.VersionStep WVS on WVS.ID = WIS.StepID                                    
 									inner join reporting.Global_Resource GRAA on WIA.ResourceObjectID = GRAA.ResourceID									
                                 where
@@ -250,9 +250,9 @@ namespace d360.model
                     from
                     [workflow].[type] wt
                     inner join [workflow].[version] wv on (wt.id = wv.typeid)
-                    inner join [workflow].[item] wi on (wv.id = wi.versionid)	                                
-                    inner join [workflow].[itemassignment] wia on(wia.itemid = wi.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r)
+                    inner join [workflow].[item] wi on (wv.id = wi.versionid)	
                     inner join [workflow].[itemstep] wis on(wis.itemid = wi.id and wis.completedon is null)
+                    inner join [workflow].[itemassignment] wia on(wia.itemid = wi.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r)
                     inner join [workflow].[versionstep] wvs on(wvs.id = wis.stepid)
                     where
                     wi.completedon is null and wvs.steptype = 2 and wvs.activitytype = 3
@@ -270,9 +270,9 @@ namespace d360.model
                     from
                     [workflow].[type] wt
                     inner join [workflow].[version] wv on (wt.id = wv.typeid)
-                    inner join [workflow].[item] wi on (wv.id = wi.versionid)	                                
-                    inner join [workflow].[itemassignment] wia on(wia.itemid = wi.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r)
+                    inner join [workflow].[item] wi on (wv.id = wi.versionid)	 
                     inner join [workflow].[itemstep] wis on(wis.itemid = wi.id and wis.completedon is null)
+                    inner join [workflow].[itemassignment] wia on(wia.itemstepid = wis.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r)
                     inner join [workflow].[versionstep] wvs on(wvs.id = wis.stepid)
                     where
                     wi.completedon is null and wvs.steptype = 2 and wvs.activitytype = 3  and wia.CreatedOn > getdate()-1
@@ -619,6 +619,7 @@ namespace d360.model
         /// <returns></returns>
         public async Task EvaluateWorkflowTransition(long versionStepTransitionID, long itemID, EventObjectInfo objectInfo)
         {
+            TelemetryClient client = new TelemetryClient();
             var transition = WorkflowVersionStepTransitions
                 .Where(i => i.ID == versionStepTransitionID && i.State == State.Active).FirstOrDefault();
 
@@ -639,7 +640,9 @@ namespace d360.model
 
                     if (item == null) throw new Exception("ERROR UNABLE TO GET THE DETAILS FOR THIS WORKFLOW INSTANCE.");
                     //evaluate the condition then determine if we move to next step
+                    client.TrackEvent($"Condition Transition Evaluating.  Condition [{transition.Condition}], ItemID [{itemID}], VersionStepTransitionID [{versionStepTransitionID}]");
                     transitionPassed = WorkflowRegistrationCriteriaProcessor.Evaluate(this, item.Object, item.ObjectID, transition.Condition, itemID, -1, objectInfo.ChangedFieldIds);
+                    client.TrackEvent($"Condition Transition Evaluated.  Condition Result [{transitionPassed}], VersionStepTransitionID [{versionStepTransitionID}]");
                     break;
                 case TransitionType.Timer:
                     //check if this timer transtion has a condition if so evaluate it
@@ -669,6 +672,9 @@ namespace d360.model
                 long toItemStepID = 0;
 
                 Console.WriteLine($"DEBUG ADDING WORKFLOW WORKFLOW.ITEMSTEP STEP ID [{transition.ToVersionStepID}] ITEM ID [{itemID}] ");
+
+
+               
 
                 var toItemStep = new WorkflowItemStep
                 {
@@ -703,7 +709,6 @@ namespace d360.model
 
                 WorkflowItemStepTransitions.Add(trans);
                 SaveChanges();
-
 
                 var startEvent = new EventInfo
                 {
@@ -1138,7 +1143,7 @@ namespace d360.model
             }
         }
 
-        private void SaveItemAssignments(IEnumerable<core.entities.GlobalReportingResource> users, long itemId, int? stepId)
+        private void SaveItemAssignments(IEnumerable<core.entities.GlobalReportingResource> users, long itemId, long itemStepId)
         {
             foreach (var user in users)
             {
@@ -1146,8 +1151,8 @@ namespace d360.model
                 {
                     CreatedBy = 0,
                     CreatedOn = DateTime.UtcNow,
+                    ItemStepID = itemStepId,
                     ItemID = itemId,
-                    StepID = stepId,
                     ResourceObject = "Resource",
                     ResourceObjectID = user.ResourceID,
                     UpdatedBy = 0,
@@ -1171,9 +1176,9 @@ namespace d360.model
             SaveChanges();
         }
 
-        public void CompleteItemStepAssignments(long itemID, int stepID)
+        public void CompleteItemStepAssignments(long itemStepID)
         {
-            var itemAssignments = WorkflowItemAssignments.Where(x => x.ItemID == itemID && x.StepID == stepID);
+            var itemAssignments = WorkflowItemAssignments.Where(x => x.ItemStepID == itemStepID);
                         
             foreach (var assignment in itemAssignments)
             {
@@ -1367,7 +1372,7 @@ namespace d360.model
                 SaveItemStepEmailedUsers(item, emailedUsers);
             }
 
-            SaveItemAssignments(users, itemId, item.StepID);
+            SaveItemAssignments(users, itemId, itemStepID);
         }
 
         private async Task SendAggregateWorkflowEmail(WorkflowEventRegistrationSettingsModel settings, List<string> items)

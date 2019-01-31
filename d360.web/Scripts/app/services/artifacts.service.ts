@@ -1,15 +1,17 @@
-﻿import { Injectable } from '@angular/core';
+
+import {catchError, map} from 'rxjs/operators';
+import { Injectable } from '@angular/core';
 import { Headers, Http, Response, ResponseContentType } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
 import { Artifacts, Artifact } from '../models/artifacts.model';
-import { ArtifactType, ArtifactTypeExportTemplate } from '../models/artifact-type.model';
+import { ArtifactType, AssetTypeExportTemplate } from '../models/artifact-type.model';
 import { SortOrder } from '../models/enums.model';
 import { GridFilterExpression, GridRelationshipFilterExpression, GridFilterFieldType, GridAttributeFilterExpression, GridOwnerFilter } from '../models/grid-definition.model';
 import { Count } from '../models/counts.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { AssetDetail } from '../models/asset.model';
-import { Observable } from "rxjs/Observable";
+import { Observable } from "rxjs";
 
 @Injectable()
 export class ArtifactService extends BaseService {
@@ -91,12 +93,12 @@ export class ArtifactService extends BaseService {
             uri += `&ownerUsers=${owner.ownerUsers.join(',')}&ownerGroups=${owner.ownerGroups.join(',')}`;
         }
         
-        return this.http.get(uri)
-            .map(response => {
+        return this.http.get(uri).pipe(
+            map(response => {
                 return response.json()
-            })
-            .map(item => { return <Artifacts>item })
-            .catch(err => this.handleError(err));
+            }),
+            map(item => { return <Artifacts>item }),
+            catchError(err => this.handleError(err)),);
         
     }   
 
@@ -226,13 +228,6 @@ export class ArtifactService extends BaseService {
 
     getSimilarArtifactNames(typeID: number, query: string): Promise<any[]> {
         return this.http.get(`form/Artifact_SimilarItems?typeID=${typeID}&query=${query}`)
-            .toPromise()
-            .then(response => <any[]>response.json())
-            .catch(err => this.handleError(err));
-    }
-
-    getArtifactTypeExportTemplates(artifactTypeId: number): Promise<ArtifactTypeExportTemplate[]> {
-        return this.http.get(`api/artifacttype/${artifactTypeId}/export/templates`)
             .toPromise()
             .then(response => <any[]>response.json())
             .catch(err => this.handleError(err));

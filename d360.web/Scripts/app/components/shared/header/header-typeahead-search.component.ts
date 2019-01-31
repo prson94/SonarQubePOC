@@ -1,9 +1,11 @@
-﻿import { Component, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+
+import {debounceTime} from 'rxjs/operators';
+import { Component, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { TypeaheadSearchService } from '../../../services/typeahead-search.service';
 import { SearchResult } from '../../../models/search-result.model';
 import { Router, NavigationEnd } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
-import { ISubscription } from 'rxjs/Subscription';
+import { SubscriptionLike as ISubscription } from 'rxjs';
 
 @Component({
     selector: 'd3s-header-typeahead-search',    
@@ -54,8 +56,8 @@ export class HeaderTypeaheadSearchComponent implements OnDestroy {
 
     search(event) {
         this.searchText = event.query;
-        this.searchSub = this.typeaheadSearchService.getResults(20, event.query)
-            .debounceTime(400)
+        this.searchSub = this.typeaheadSearchService.getResults(20, event.query).pipe(
+            debounceTime(400))
             .subscribe(data => {
                 this.results = data;
                 this.ref.markForCheck();

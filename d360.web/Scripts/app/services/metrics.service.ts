@@ -1,4 +1,4 @@
-﻿import { Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { BaseService } from './base.service';
@@ -6,9 +6,9 @@ import { MessagesService } from './messages.service';
 import { JsonResult } from '../models/jsonresult.model';
 import { Group, Map, Item, Condition, MapForm, ConditionForm, MetricAssetViewModel, MetricFieldTypeViewModel } from '../models/metrics.model';
 import { AssetTypeMetricModel } from '../models/asset.model';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/operator/catch';
-import 'rxjs/add/observable/throw';
+import { Observable } from 'rxjs';
+
+
 
 @Injectable()
 export class MetricsService extends BaseService {

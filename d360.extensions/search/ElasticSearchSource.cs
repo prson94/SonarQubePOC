@@ -276,7 +276,10 @@ namespace d360.extensions.search
                     sb.Append("\" } }\n");
                     sb.Append("{\"Url\" : \"");
                     sb.Append(item.RelativeUrl);
-                    sb.Append("\",");
+                    sb.Append("\"");
+                    if (item.Fields.Any())
+                        sb.Append(",");
+
                     bool bFirst = true;
                     foreach (var f in item.Fields)
                     {
@@ -430,14 +433,21 @@ namespace d360.extensions.search
             {
                 phrase = EscapeSpecialCharacters(phrase);
 
+                //search.service indicates "Exact match" by wrapping phrase in single quotes
                 if (phrase.StartsWith("'") && phrase.EndsWith("'"))
                 {
                     phrase = phrase.Trim('\'');
-                    sb.Append("{\"query\":{\"filtered\": {\"query\":  { \"match_phrase\": { \"Name\":\"" + phrase + "\"} }");                    
+                    sb.Append("{\"query\":{\"filtered\": {\"query\":  { \"match_phrase\": { \"Name\":\"" + phrase + "\"} }");
                 }
                 else
+                {
+                    //Not exact match, so append *
+                    if (!phrase.EndsWith("*"))
+                    {
+                        phrase += "*";
+                    }
                     sb.Append("{\"query\":{\"filtered\": {\"query\":  { \"query_string\": { \"query\":\"" + phrase + "\"} }");
-
+                }
             }
             else if(!string.IsNullOrEmpty(advancedFilterJSON))
             {
@@ -462,6 +472,11 @@ namespace d360.extensions.search
                         searchTerm = searchTerm.Replace("\\\"","");
 
                         searchTerm = "\\\"" + searchTerm + "\\\"";
+                    }
+                    else if(!searchTerm.EndsWith("*"))
+                    {
+                        //Not exact, so append * to searchTerm if it does not already end with *
+                        searchTerm += "*";
                     }
 
                     compositeSearchTerm += $"{item.field}:{searchTerm}";
@@ -841,7 +856,11 @@ namespace d360.extensions.search
             {
                 sb.Append("{ \"update\" : { \"_type\" : \"" + item.Group + "\", \"_id\" : \"" + createItemID(item) + "\"}}\n");
 
-                sb.Append("{ \"doc\" : {\"Url\" : \"" + item.RelativeUrl + "\",");
+                sb.Append("{ \"doc\" : {\"Url\" : \"" + item.RelativeUrl + "\"");
+                
+                if (item.Fields.Any())
+                    sb.Append(",");
+
                 bool bFirst = true;
                 foreach (var f in item.Fields)
                 {

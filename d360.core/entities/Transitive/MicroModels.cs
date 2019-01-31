@@ -55,6 +55,7 @@ namespace d360.core.entities
     public class CompanyWithDatabaseServerSettings
     {
         public int CompanyID { get; set; }
+        public int ClientID { get; set; }
         public string Status { get; set; }
         public string Server { get; set; }
         public string Username { get; set; }

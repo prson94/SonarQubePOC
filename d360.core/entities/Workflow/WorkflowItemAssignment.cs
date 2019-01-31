@@ -13,10 +13,10 @@ namespace d360.core.entities.Workflow
         public long ID { get; set; }
 
         [DataMember]
-        public long ItemID { get; set; }
+        public long? ItemStepID { get; set; }
 
         [DataMember]
-        public int? StepID { get; set; }
+        public long ItemID { get; set; }
 
         [DataMember]
         [Column(TypeName = "varchar"), StringLength(50)]

@@ -1,10 +1,12 @@
-﻿import { Injectable } from '@angular/core';
+
+import {switchMap, distinctUntilChanged, debounceTime, map} from 'rxjs/operators';
+import { Injectable } from '@angular/core';
 import { Headers, Http, RequestOptions } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
 import { ObjectStyle } from '../models/object-style.model';
 import { JsonResult } from '../models/jsonresult.model';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 
 @Injectable()
 export class UriBasedService extends BaseService {
@@ -76,12 +78,12 @@ export class UriBasedService extends BaseService {
     }
 
     getAsObservable(uri: string) {
-        return this.http.get(uri).map(res => res.json());
+        return this.http.get(uri).pipe(map(res => res.json()));
     }
 
-    search(uri: string, query: Observable<string>, debounceTime: number = 300, emptyResults: boolean = false) {
-        return query.debounceTime(debounceTime)
-            .distinctUntilChanged()
-            .switchMap(query => this.getAsObservable(uri + query));
+    search(uri: string, query: Observable<string>, debounceTimeParametr: number = 300, emptyResults: boolean = false) {
+        return query.pipe(debounceTime(debounceTimeParametr),
+            distinctUntilChanged(),
+            switchMap(query => this.getAsObservable(uri + query)),);
     }
 }

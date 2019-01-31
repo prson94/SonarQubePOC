@@ -11,8 +11,9 @@
 	<include file="scripts/GOV-6180.xml"/>
 	<include file="scripts/GOV-6186-FusionTypeFieldDefinitions.xml"/>
 	<include file="scripts/GOV-6169.xml"/>
-  <include file="scripts/GOV-6194.xml"/>      <!-- Missing intersect type between Markit view / Markit Table-->
-  <include file="scripts/GOV-5759.xml"/>
-  <include file="scripts/GOV-6207-D3S-User.xml"/>
-	
+	<include file="scripts/GOV-6194.xml"/>      <!-- Missing intersect type between Markit view / Markit Table-->
+	<include file="scripts/GOV-5759.xml"/>
+	<include file="scripts/GOV-6326.xml"/>      <!-- Create resource id 0 system if not present -->
+	<include file="scripts/GOV-6207-D3S-User.xml"/>
+	<include file="scripts/GOV-6228.xml"/>
 </databaseChangeLog>

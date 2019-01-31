@@ -1,5 +1,5 @@
-﻿import {Component, EventEmitter, Output, Input, OnInit, OnChanges, SimpleChange, ChangeDetectionStrategy} from '@angular/core';
-import {MenuItem} from 'primeng/primeng';
+﻿import { Component, EventEmitter, Output, Input, OnInit, OnChanges, SimpleChange, ChangeDetectionStrategy } from '@angular/core';
+import { MenuItem } from 'primeng/primeng';
 
 @Component({
     selector: 'd3s-tile-actions',
@@ -40,7 +40,7 @@ import {MenuItem} from 'primeng/primeng';
                     </div>
                 </div>          
                 `,
-    changeDetection: ChangeDetectionStrategy.OnPush    
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class TileActionsComponent implements OnInit, OnChanges {
@@ -64,9 +64,9 @@ export class TileActionsComponent implements OnInit, OnChanges {
     @Input() userMode: boolean = false;
     @Output() userModeChange = new EventEmitter();
 
-    @Input() filterMode: boolean = false;        
+    @Input() filterMode: boolean = false;
     @Output() filterModeChange = new EventEmitter();
-    
+
     @Input() hasAdd: boolean = false;
     @Input() hasExport: boolean = false;
     @Input() hasCustomExport: boolean = false;
@@ -94,21 +94,21 @@ export class TileActionsComponent implements OnInit, OnChanges {
     @Input() hideTooltip: boolean = false;
 
     @Output() fullScreenClick = new EventEmitter();
-        
+
     private dateMenuItems: MenuItem[] = [];
-    
 
-    ngOnInit() {        
 
-        
+    ngOnInit() {
+
+
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         this.buildMenu();
     }
 
-    private buildMenu() {        
-       
+    private buildMenu() {
+
         if (this.hasDate) {
             this.dateMenuItems.push({
                 icon: 'fa fa-clock-o',

@@ -59,7 +59,6 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
 
     private quill: any;
 
-
     constructor(
         private workflowService: WorkflowService,
         private workflowFieldsService: WorkflowFieldsService,
@@ -80,9 +79,9 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
 
     ngAfterViewChecked() {
         //always try to use the quill API if possible. Avoids inserting extra <p> tags and inserting on a newline
-        //console.log('ngAfterViewChecked', this.ed);
-        if (this.ed != null && this.ed.quill != null)
+        if (this.ed != null && this.ed.quill != null) {
             this.quill = this.ed.quill;
+        }
     }
 
     ngOnDestroy() {
@@ -144,7 +143,6 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                             let c = this.conditions.filter(c => c['@FieldTypeID'] == t.ID);
                             if (c != null)
                                 c.forEach(f => f['@FieldName'] = t.FriendlyName);
-                            //c['@FieldName'] = t.FriendlyName;
                         });
                     })
                     .then(() => {
@@ -177,11 +175,9 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
 
                         }
                     });
-
             })
             .then(() => this.loadResponsibilities())
             .then(() => { this.validate(); });
-
     }
 
     loadObjects() {
@@ -203,7 +199,6 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
             this.objectType = e.split('|')[0];
             this.objectID = +e.split('|')[1];
 
-
             if (this.model.Event.SettingsObject.Settings.TaxonomyTypeID != null && this.objectType != 'ArtifactType') {
                 delete this.model.Event.SettingsObject.Settings.TaxonomyTypeID;
             }
@@ -221,8 +216,6 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
         } else {
             this.isValid = false;
         }
-
-
     }
 
     loadResponsibilities(): Promise<any> {
@@ -245,7 +238,6 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
         this.conditions = this.conditions.slice();
         this.showAddCondition = false;
         this.validate();
-        //console.log(this.conditions);
     }
 
     hasPendingWorkflowItems() {
@@ -256,15 +248,17 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                 }
             });
     }
+
     onStateChange($event) {
         if ($event) {
             this.model.Type.State = State.Active;
             this.warningMessage = "";
-        }else {
+        } else {
             this.model.Type.State = State.InActive;
             if (this.model.Type.ID != 0) this.hasPendingWorkflowItems();
         }
     }
+
     remove(item: any) {
         let i = this.conditions.findIndex(c => c == item);
         this.conditions.splice(i, 1);
@@ -283,8 +277,6 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
             delete c['@FieldName'];
         });
 
-        //console.log('save', this.objectType, this.selectedIssueObjectType);
-
         let objectIndex = this.conditions.findIndex(c => c['@ContextualFieldID'] == 'IssueObject');
         let objectIdIndex = this.conditions.findIndex(c => c['@ContextualFieldID'] == 'IssueObjectID');
 
@@ -292,7 +284,6 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
             if (this.selectedIssueObjectType != null && this.selectedIssueObjectType.indexOf('|') > -1) {
                 let obj = this.selectedIssueObjectType.split('|')[0];
                 let objid = this.selectedIssueObjectType.split('|')[1];
-
 
                 if (objectIndex < 0) {
                     this.conditions.push({
@@ -315,8 +306,6 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                 } else {
                     this.conditions[objectIdIndex]['@Value'] = objid;
                 }
-
-
             } else {
                 if (objectIndex > -1) {
                     this.conditions.splice(objectIndex, 1);
@@ -338,9 +327,6 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
             }
         }
 
-        //console.log('save', this.conditions);
-        
-
         if (this.model.Event.SettingsObject.Settings.SendAggregateEmail == false
             || this.model.Event.SettingsObject.Settings.SendAggregateEmail == null) {
             //delete aggregate email settings
@@ -353,13 +339,10 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
             if (this.model.Event.ChangeType != WorkflowChangeType.Schedule) {
                 delete this.model.Event.SettingsObject.Settings.SendAggregateEmail;
             }
-
         }
 
         this.model.Event.Condition = JSON.stringify({ Conditions: { Condition: this.conditions } });
         this.model.Event.Settings = JSON.stringify(this.model.Event.SettingsObject);
-
-        
 
         this.onSave.emit(this.model);
     }
@@ -381,8 +364,6 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
         });
 
         if (this.model.Event.ChangeType == WorkflowChangeType.Schedule && this.selectedObjectType != '' && this.selectedObjectType != null) {
-            //console.log(this.model.Event.SettingsObject);
-
             if (this.model.Event.SettingsObject.Settings.ScheduleInterval == null) {
                 this.errorMessage = "Please enter a run interval";
                 this.isValid = false;
@@ -407,8 +388,6 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                 return;
             }
         }
-
-
 
         if (this.model.Event.SettingsObject.Settings.SendAggregateEmail != null
             && this.model.Event.SettingsObject.Settings.SendAggregateEmail.toString() == 'true') {
@@ -437,9 +416,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                         return;
                     }
                 }
-
             }
-
         }
 
         if (this.model.Type.Name == null || this.model.Type.Name == '') {
@@ -474,6 +451,5 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                     : this.model.Event.SettingsObject.Settings.MessageBodyTemplate)
                 + e;
         }
-
     }
 }

@@ -1,5 +1,5 @@
-﻿import { Injectable, EventEmitter } from '@angular/core';
-import { Subject } from 'rxjs/Subject';
+import { Injectable, EventEmitter } from '@angular/core';
+import { Subject } from 'rxjs';
 import { Favorite } from '../models/favorite.model';
 import { HeaderActions } from '../models/header.model';
 

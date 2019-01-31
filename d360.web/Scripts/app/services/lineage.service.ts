@@ -1,4 +1,6 @@
-﻿import { Injectable } from '@angular/core';
+
+import {distinctUntilChanged, map, switchMap} from 'rxjs/operators';
+import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { BaseService } from './base.service';
 import { MessagesService } from './messages.service';
@@ -18,7 +20,7 @@ import {
 import { ImpactDiagramModel } from '../models/impact.model';
 import { HierarchyDiagramModel } from '../models/model.model';
 import { JsonResult } from '../models/jsonresult.model';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 
 @Injectable()
 export class LineageService extends BaseService {
@@ -53,22 +55,22 @@ export class LineageService extends BaseService {
     }
 
     public queryObjectTypes(type: string, id: number, query: string): Observable<any[]> {
-        return this.http.get(`api/lineage/query/objects/${type}/${id}?query=${query}`)
-            .map(response => <any[]>response.json());
+        return this.http.get(`api/lineage/query/objects/${type}/${id}?query=${query}`).pipe(
+            map(response => <any[]>response.json()));
     }
 
     public getLineageObjects(event: Observable<any>) {
         let uri = `api/lineage/objects/`;
-        return event
-            .distinctUntilChanged()
-            .switchMap(event => {
+        return event.pipe(
+            distinctUntilChanged(),
+            switchMap(event => {
                 let uri = `api/lineage/objects/${event.assetTypeId}?offset=${event.event.first}&rows=${event.event.rows}`;
 
                 if (event.event.globalFilter != null && event.event.globalFilter.length > 0)
                     uri += `&query=${event.event.globalFilter}`;
-                return this.http.get(uri).map(res => res.json())
-                    .map(res => { return { assetTypeId: event.assetTypeId, results: res, event: event.event }});
-            });
+                return this.http.get(uri).pipe(map(res => res.json()),
+                    map(res => { return { assetTypeId: event.assetTypeId, results: res, event: event.event }}),);
+            }),);
     }
 
     public getLineageObjectDetail(type: string, id: number): Promise<any> {

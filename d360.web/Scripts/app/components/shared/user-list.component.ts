@@ -1,4 +1,6 @@
-﻿
+
+import {debounceTime} from 'rxjs/operators';
+
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Breadcrumb } from '../../models/breadcrumb.model';
@@ -13,7 +15,7 @@ import { UriBasedService } from '../../services/uri-based.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { BaseComponent } from '../shared/base.component';
 import { LazyLoadEvent } from 'primeng/primeng';
-import { ISubscription } from 'rxjs/Subscription';
+import { SubscriptionLike as ISubscription } from 'rxjs';
 import { SortOrder } from '../../models/enums.model';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, ViewChild, OnInit } from '@angular/core';
 @Component({
@@ -187,9 +189,10 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
             then(res => {
                 this.showMessageForResult(this.messagesService, res);
                 this.showDelete = false;
-                this.getData();
-                if (res.type != 'error')
+                 if (res.type != 'error') {
                     this.items = this.items.filter(x => x.ID != id);
+                    this.changeDetectorRef.markForCheck();
+                }
             });
     }
 
@@ -206,8 +209,8 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     getData() {
         this.isLoading = true;
 
-        this.usersSub = this.resourcesService.getResourceLazy(this.objectID, this.currentPageNumber, this.rowsPerPage, this.sortOrder, this.sortField, this.simpleFilter, this.filters)
-            .debounceTime(3000)
+        this.usersSub = this.resourcesService.getResourceLazy(this.objectID, this.currentPageNumber, this.rowsPerPage, this.sortOrder, this.sortField, this.simpleFilter, this.filters).pipe(
+            debounceTime(3000))
             .subscribe(result => {
                 this.items = result.results;
                 this.totalRecords = result.total;

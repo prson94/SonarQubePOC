@@ -8,35 +8,7 @@ import { ResponsibilityTypeRelationPermission } from '../../../models/responsibi
 @Component({
     selector: 'd3s-object-relationships',
     providers: [RelationshipsService],
-    template: `
-                <header>Relationships
-                    <d3s-tile-actions [hasAdd]="cardinalityShow && hasRelationships && selected &&  hasModifyRelationshipsPermissions() &&!readOnly" [hasExport]="enableExport()" (exportClick)="export()" (addClick)="showAddRelationship = true;" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
-                </header>
-                <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <div *ngIf="!isLoading && hasRelationships && hideDelete" class="row" style="padding-left:10px;padding-bottom:5px;">
-                    <label pTooltip="If you would like to see relationship types that have no relationships established click here.  In order to setup relations between types with no relations you need to enable this option also.">
-                        <input type="checkbox" [(ngModel)]="showEmptyRelationshipTypes">Show relationship types with no relations established.
-                    </label>
-                </div>
-                <div class="row">
-                    <div *ngIf="!isLoading && hasRelationships && hideDelete" class="col l3 s12 relationship-container">
-                        <ng-template ngFor let-rel [ngForOf]="relationshipItems">                        
-                            <div class="row relationship" *ngIf="(rel.Count > 0 && !showEmptyRelationshipTypes) || showEmptyRelationshipTypes" [ngClass]="{'active' : isSelected(rel)}" (click)="selected=rel;cardinalityShow = (rel.Cardinality == 2) || (rel.Count == 0 && rel.Cardinality != 2);">
-                                <div class="col s10 name" style="word-wrap: break-word;"><i class="fa inactive-tool-icon" [ngClass]="{'fa-book':rel.Object=='ArtifactType','fa-sitemap':rel.Object=='TaxonomyType','fa-university':rel.Object=='PolicyType','fa-database':(rel.Object==('FusionAttributeType') || rel.Object==('FusionQueryAttributeType')),'fa-pie-chart':rel.Object=='RuleType', 'fa-user':rel.Object=='ResourceType', 'fa-list':rel.Object=='ReferenceItemType'}" [pTooltip]="rel.Object | technicalNameToDisplayValue"></i> {{rel.Name}}</div>
-                                <div class="col s2 count center" [ngClass]="{'empty-count': rel.Count == 0, 'count': rel.Count != 0}">{{rel.Count}}</div>
-                            </div>                        
-                        </ng-template>
-                    </div>
-                    <div class="col l9 s12">                        
-                        <d3s-dynamic-relationship-grid [simpleFilter]="showSimpleFilter" (onFilterChange)="onFilterChange($event)" [(readOnly)]="readOnly" [objectName]="objectName" [(addRelationship)]="showAddRelationship" (relationshipAdded)="addRelationship($event)" (relationshipRemoved)="removeRelationship()" (deleteOn)="hideforDelete()"  (deleteOff)="unhideforDelete()" [objectType]="objectType" [objectID]="objectID" [targetType]="selected?.Object" [targetName]="selected?.Name" [targetTypeID]="selected?.ObjectID" [intersectTypeID]="selected?.IntersectTypeID" [hasEdit]="hasModifyRelationshipsPermissions()" [hasDelete]="hasDeleteRelationshipsPermissions()"></d3s-dynamic-relationship-grid>                        
-                    </div>                    
-                </div>
-                <div class="row" *ngIf="!isLoading && !hasRelationships  && hideDelete">
-                        <div class="col s12">
-                            <span class="center">No relationships types are currently setup for this item type.  Please contact your administrator or use the administration / metamodel / relationships module to configure them.</span>
-                        </div>
-                </div>
-                `
+    templateUrl: './object-relationships.component.html'
 })
 
 export class ObjectRelationshipsComponent extends BaseComponent implements OnChanges {
@@ -55,6 +27,8 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
     showEmptyRelationshipTypes: boolean = true;
     hideDelete: boolean = true;
     queryString: string = "";
+    public hasAdd: boolean;
+
     @ViewChild(DynamicRelationshipGridComponent) private relGrid: DynamicRelationshipGridComponent;
 
     constructor(protected relationshipsService: RelationshipsService) {
@@ -94,6 +68,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
                 this.hasRelationships = (this.relationshipItems && this.relationshipItems.length > 0);
 
                 this.isLoading = false;
+                this.updateCardinality();
             });
     }
 
@@ -105,33 +80,38 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
     addRelationship(event) {
         if (!this.selected) return;
         this.selected.Count = this.selected.Count + event.count;
-        this.cardinalityShow = (this.selected.Cardinality == 2) || (this.selected.Count == 0 && this.selected.Cardinality != 2);
+        this.updateCardinality();
     }
 
     removeRelationship() {
         if (!this.selected) return;
         this.selected.Count--;
-        this.cardinalityShow = (this.selected.Cardinality == 2) || (this.selected.Count == 0 && this.selected.Cardinality != 2);
+        this.updateCardinality();
     }
 
     hideforDelete() {
         this.hideDelete = false;
+        console.log("hideforDelete");
     }
 
     unhideforDelete() {
         this.hideDelete = true;
+        console.log("unhideforDelete");
     }
 
     enableExport() {
+        console.log("enableExport");
         if (!this.selected) return false;
         return this.selected.Count > 0;
     }
 
     isSelected(item: ObjectRelationshipCount): boolean {
+        console.log("isSelected");
         return (this.selected && this.selected == item);
     }
 
     relationshipsToShow() {
+        console.log("relationshipsToShow");
         if (this.showEmptyRelationshipTypes)
             return this.relationshipItems;
 
@@ -140,5 +120,16 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
 
     onFilterChange(qstring) {
         this.queryString = qstring;
+        console.log("onFilterChange");
+    }
+
+    public relationClick(rel: any) {
+
+        this.selected = rel;
+        this.updateCardinality();
+    }
+    private updateCardinality() {
+        this.cardinalityShow = (this.selected.Cardinality == 2) || (this.selected.Count == 0 && this.selected.Cardinality != 2);
+        this.hasAdd = this.cardinalityShow && this.hasRelationships && this.selected && this.hasModifyRelationshipsPermissions() && !this.readOnly;
     }
 }

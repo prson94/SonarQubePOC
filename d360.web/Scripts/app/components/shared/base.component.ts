@@ -1,4 +1,4 @@
-﻿import { Input } from '@angular/core';
+import { Input } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
 import { PermissionsService } from '../../services/permissions.service';
@@ -6,7 +6,7 @@ import { MessagesService } from '../../services/messages.service';
 import { RightSidebarService } from '../../services/right-sidebar.service';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 
-import { Subscription }   from 'rxjs/Subscription';
+import { Subscription }   from 'rxjs';
 import { StringConstants } from '../../static/string-constants';
 import { FormHelpers } from '../../static/form-helpers';
 import { JsonResult } from '../../models/jsonresult.model';

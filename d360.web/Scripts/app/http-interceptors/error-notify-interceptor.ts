@@ -1,10 +1,10 @@
-﻿import { Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpEvent, HttpInterceptor, HttpHandler, HttpRequest, HttpResponse, HttpErrorResponse } from '@angular/common/http';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/operator/catch';
-import 'rxjs/add/observable/of';
-import 'rxjs/add/observable/empty';
-import 'rxjs/add/operator/retry';
+import { Observable } from 'rxjs';
+
+
+
+
 import { tap, finalize, catchError } from 'rxjs/operators';
 import { Message } from 'primeng/primeng';
 import { MessagesService } from '../services/messages.service';
