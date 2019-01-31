@@ -66,25 +66,52 @@ namespace d360.model
             //find source/target mappings by traversing possible paths along the technical lineage
             var leftmostMaps = maps.Where(m => !maps.Any(n => n.TargetFusionAttributeID == m.SourceFusionAttributeID)).ToList();
             var mappings = new List<FusionMarkitSourceTargetMapping>();
-            foreach(var map in leftmostMaps)
-                UpdateSourceTargetObjectMap(maps.ToList(), map, mappings, new List<int>(), map.SourceAssetID, map, objectMaps.ToList()
-                    ,objectMaps.FirstOrDefault(o => o.FusionAttributeID == map.SourceFusionAttributeID), false);
+
+            foreach(var currentMap in leftmostMaps)
+                UpdateSourceTargetObjectMap(
+                    maps, 
+                    currentMap, 
+                    mappings, 
+                    new List<int>(), 
+                    currentMap.SourceAssetID, 
+                    currentMap, 
+                    objectMaps,
+                    objectMaps.FirstOrDefault(o => o.FusionAttributeID == currentMap.SourceFusionAttributeID), //root object map
+                    false);
 
             //find mappings which have a valid source/target/object
             var validMappings = mappings.Where(m => m.ObjectAssetID != 0).ToList();
-     
-            await Database.ExecuteSqlCommandAsync("truncate table [fusion].[MarkitLineageMapping]");
 
             //save mappings to a table
             await SaveMarkitLineageResults(validMappings);
 
-            //generate the lineage
-            await Database.ExecuteSqlCommandAsync("[fusion].[GenerateMarkitMapLineage] 1");
+            if (Database.Connection.State != ConnectionState.Open)
+                Database.Connection.Open();
 
+            using (var transaction = Database.Connection.BeginTransaction())
+            {
+                //generate the lineage
+                await Database.ExecuteSqlCommandAsync("[fusion].[GenerateMarkitMapLineage] 1",  transaction);
+                await Database.ExecuteSqlCommandAsync("truncate table [fusion].[MarkitLineageMapping]", transaction);
+                
+                // save the run information
+                await SaveMarkitLineageRunDetails(rows, validMappings.Count, 0, transaction);
+                
+                transaction.Commit();
+            }
         }
 
 
-        private void UpdateSourceTargetObjectMap(List<FusionMarkitLineageData> maps, FusionMarkitLineageData currentMap, List<FusionMarkitSourceTargetMapping> mappings, List<int> processedList, long? sourceAssetId, FusionMarkitLineageData root, List<FusionMarkitObjectMapping> objectMaps, FusionMarkitObjectMapping rootObjectMap, bool skipMap = false)
+        private void UpdateSourceTargetObjectMap(
+            IEnumerable<FusionMarkitLineageData> maps, 
+            FusionMarkitLineageData currentMap, 
+            List<FusionMarkitSourceTargetMapping> mappings, 
+            List<int> processedList, 
+            long? sourceAssetId, 
+            FusionMarkitLineageData root, 
+            IEnumerable<FusionMarkitObjectMapping> objectMaps, 
+            FusionMarkitObjectMapping rootObjectMap, 
+            bool skipMap = false)
         {
             //add current item to list of processed nodes
             processedList.Add(currentMap.ID);
@@ -212,6 +239,7 @@ namespace d360.model
             using (var conn = new SqlConnection(CompanyConnectionString))
             {
                 conn.Open();
+                
                 using (SqlBulkCopy bulkCopy = new SqlBulkCopy(conn))
                 {
                     var columnList = new List<string>()
