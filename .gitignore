@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # ignore compiled js files
 \d360.web\Scripts\app\app.js
 \d360.web\Scripts\all.js
@@ -81,3 +82,76 @@
 /utilities/igx.TrainingDatabaseManager/obj
 /utilities/igx.UpdateDatabases/bin
 /utilities/igx.UpdateDatabases/obj
+=======
+﻿######################################
+# ignore compiled js files
+\d360.web\Scripts\app\app.js
+\d360.web\Scripts\all.js
+\d360.web\Scripts\all.min.js
+\d360.web\Scripts\app\*.chunk.js
+\d360.web\Scripts\app\*.bundle.js
+
+# Ignore cache files
+*.cache
+
+# Ignore .cer files
+*.cer
+
+# Ignore .pubxml files
+*.pubxml
+
+# Ignore all files in the Temp sub-folder
+\node_modules
+\WebJob1
+
+# Ignore application config
+\.vs\config\*.config
+
+# Ignore compiled css files
+\d360.web\Content\styles\*.min.css
+\d360.web\Content\styles\ang.css
+\d360.web\Content\styles\angular.css
+\d360.web\Content\styles\Root.css
+\d360.web\Content\styles\Diagrams.css
+\d360.web\Content\styles\ContentFormatting.css
+\d360.web\Content\styles\Tooltip.css
+\d360.web\Content\styles\typeahead.css
+
+# Ignore retrieved packages except 2 required DLLs
+\.vs
+\.nuget
+\packages\*
+!\packages\repositories.config
+!\packages\gudusoft.gsqlparser.dll
+!\packages\ComponentSpace.SAML2.dll
+
+# Ignore user settings
+*.user
+
+/*/bin
+/*/obj
+\*\node_modules
+
+/d360.web/Scripts/app
+/d360.web/Content/quill/v1.3.4/*.min.css
+/d360.web/Content/styles/typeahead.min.css
+/d360.web/Content/styles/typeahead.css
+/d360.web/Content/styles/Tooltip.min.css
+/d360.web/Content/styles/Tooltip.css
+/d360.web/Content/styles/Root.min.css
+/d360.web/Content/styles/Root.css
+/d360.web/Content/styles/materialize.min.css
+/d360.web/Content/styles/Diagrams.min.css
+/d360.web/Content/styles/Diagrams.css
+/d360.web/Content/styles/ContentFormatting.min.css
+/d360.web/Content/styles/ContentFormatting.css
+/d360.web/Content/styles/angular.min.css
+/d360.web/Content/styles/angular.css
+/d360.web/Content/styles/ang.min.css
+/d360.web/Content/styles/ang.css
+/d360.web/package-lock.json
+
+/d360.database.company
+/packages
+/utilities
+>>>>>>> added logging
