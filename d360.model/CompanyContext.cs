@@ -62,6 +62,8 @@ namespace d360.model
         public CompanyContext(CommunityContext community, ICachingProvider caching, IQueueSource queueSource, ISecurityContextProvider context, bool skipCacheCheck = false)
             : base(community.GetCompanyConnectionString(skipCacheCheck))
         {
+            Database.SetInitializer<CompanyContext>(null); //dont create any tables if they dont exist.
+
             Community = community;
             Caching = caching;
             QueueSource = queueSource;
