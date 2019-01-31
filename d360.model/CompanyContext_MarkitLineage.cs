@@ -82,23 +82,18 @@ namespace d360.model
             //find mappings which have a valid source/target/object
             var validMappings = mappings.Where(m => m.ObjectAssetID != 0).ToList();
 
-            //save mappings to a table
-            await SaveMarkitLineageResults(validMappings);
-
             if (Database.Connection.State != ConnectionState.Open)
                 Database.Connection.Open();
 
-            using (var transaction = Database.Connection.BeginTransaction())
-            {
-                //generate the lineage
-                await Database.ExecuteSqlCommandAsync("[fusion].[GenerateMarkitMapLineage] 1",  transaction);
-                await Database.ExecuteSqlCommandAsync("truncate table [fusion].[MarkitLineageMapping]", transaction);
-                
-                // save the run information
-                await SaveMarkitLineageRunDetails(rows, validMappings.Count, 0, transaction);
-                
-                transaction.Commit();
-            }
+            await Database.ExecuteSqlCommandAsync("truncate table [fusion].[MarkitLineageMapping]");
+
+            //save mappings to a table
+            await SaveMarkitLineageResults(validMappings);
+
+
+            await Database.ExecuteSqlCommandAsync("[fusion].[GenerateMarkitMapLineage] 1");
+
+            //}
         }
 
 
