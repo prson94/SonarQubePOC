@@ -1,4 +1,5 @@
 ﻿using d360.core.entities.Contracts;
+using d360.core.queue;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -30,7 +31,7 @@ namespace d360.core.entities
 
 
     [DataContract(Namespace = NAMESPACE)]
-    public class Rule : BaseCreatedAndUpdatedIntObject, IIntObject, IFieldsObject, ICreatedObject, IUpdatedObject, ICreatedMetadata, IUpdatedMetadata
+    public class Rule : BaseCreatedAndUpdatedIntObject, IIntObject, IFieldsObject, ICreatedObject, IUpdatedObject, ICreatedMetadata, IUpdatedMetadata, IEventTrackedEntity
     {
         [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public string KeyHash { get; set; }
@@ -61,6 +62,17 @@ namespace d360.core.entities
 
         [ForeignKey("RuleID")]
         public virtual ICollection<RuleImplementation> RuleImplementations { get; set; }
+                
+        public EventObjectInfo GetEventObjectInfo()
+        {
+            return new EventObjectInfo
+            {
+                Object = SystemObjects.Rule,
+                ObjectID = ID,
+                ObjectType = SystemObjects.RuleType,
+                ObjectTypeID = RuleTypeID
+            };
+        }
 
         public FieldsObjectModel GetFieldsObjectInfo()
         {
