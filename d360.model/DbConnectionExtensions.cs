@@ -26,53 +26,59 @@ namespace d360.model
             if (cnn.State != System.Data.ConnectionState.Open)
                 cnn.OpenWithRetry(RetryPolicy.DefaultFixed);
 
+
+            // Do two passes 1 pass for rules applying to type second pass for rules not applying to type
+            // PASS 1 - Do rules that apply to types 
+            await ProcessTypeBasedResponsibilityRelationRules(cnn, ruleID, timeout);
+
+            // PASS 2 - Do rules that dont apply to types
+            await ProcessAssetBasedResponsibilityRelationRules(cnn, ruleID, timeout);            
+        }
+
+        private static async Task ProcessAssetBasedResponsibilityRelationRules(SqlConnection cnn, int? ruleID, int timeout)
+        {
             await CreateWorkAreaTables(cnn);
 
-            IEnumerable<ResponsibilityTypeRelationRule> rules = await GetRulesToRun(cnn,ruleID);
-                        
+            IEnumerable<ResponsibilityTypeRelationRule> rules = await GetRulesToRun(cnn, ruleID);
+
             List<int> rulesRequiringRun = new List<int>();
-                        
+
             foreach (var rule in rules)
             {
                 try
                 {
-                    if (await ShouldRuleRun(cnn, rule.ID))
+                    if (await ShouldRuleRun(cnn, rule.ID) && !rule.ApplyToType)
                     {
+                        
                         rulesRequiringRun.Add(rule.ID);
 
                         rule.SetDefinitionFromRaw();
 
                         string sqlToExecute = "";
-                        if (rule.ApplyToType)
+                        
+                        try
                         {
-                            await ProcessRuleForAssetType(cnn, rule, timeout);
+                            var thenSql = cnn.GetThenResultsSql(rule, false, false, "A.AssetID");
+                            var whenSql = cnn.GetWhenResultsSql(rule, false);
+                            sqlToExecute = $"insert into #ResponsibilityTypeRelationItem {string.Format(thenSql, (string.IsNullOrEmpty(whenSql) ? "" : $"cross apply ({whenSql}) A"))}";
+                            await cnn.ExecuteAsync(sqlToExecute, commandTimeout: timeout);
                         }
-                        else
+                        catch (Exception ex)
                         {
-                            try
-                            {
-                                var thenSql = cnn.GetThenResultsSql(rule, false, false, "A.AssetID");
-                                var whenSql = cnn.GetWhenResultsSql(rule, false);
-                                sqlToExecute = $"insert into #ResponsibilityTypeRelationItem {string.Format(thenSql, (string.IsNullOrEmpty(whenSql) ? "" : $"cross apply ({whenSql}) A"))}";
-                                await cnn.ExecuteAsync(sqlToExecute, commandTimeout: timeout);
-                            }
-                            catch (Exception ex)
-                            {
-                                var ruleFailureLog = $"{rule.ID}: {ex.GetFullExceptionData()}. SQL was: {sqlToExecute}.\n";
-                            }
-                        }
+                            var ruleFailureLog = $"{rule.ID}: {ex.GetFullExceptionData()}. SQL was: {sqlToExecute}.\n";
+                        }                        
 
                         // Mark the responsibility rule as having been built right now
                         // This is wrong because it may not have been built and the subsequent lines could fail...
-                        await MarkResponsibilityRuleAsRan(cnn, rule.ID);                        
+                        await MarkResponsibilityRuleAsRan(cnn, rule.ID);
                     }
                 }
                 catch
                 {
                     throw;
-                }              
+                }
             }
-            
+
             // Save the rules we are processing to a temp table so we can easily 
             await PopulateImpactedResponsibilityRulesTempTable(cnn, rulesRequiringRun, timeout);
 
@@ -82,10 +88,51 @@ namespace d360.model
             // For Applies to type rules save assignments into responsibility temp table
             await InsertRuleTypeAssignmentsIntoTempTable(cnn, timeout);
 
-            // For all impacted rules delete/ update/ insert changes
+            // For all impacted rules delete/ update/ insert changes only applies to rules for entire type.
             await PerformFinalMerge(cnn, timeout);
         }
-                
+
+        private static async Task ProcessTypeBasedResponsibilityRelationRules(SqlConnection cnn, int? ruleID, int timeout)
+        {
+            await CreateWorkAreaTables(cnn);
+
+            IEnumerable<ResponsibilityTypeRelationRule> rules = await GetRulesToRun(cnn, ruleID);
+
+            List<int> rulesRequiringRun = new List<int>();
+
+            foreach (var rule in rules)
+            {
+                try
+                {
+                    if (await ShouldRuleRun(cnn, rule.ID) && rule.ApplyToType)
+                    {
+                        rulesRequiringRun.Add(rule.ID);
+
+                        rule.SetDefinitionFromRaw();
+
+                        await ProcessRuleForAssetType(cnn, rule, timeout);
+                        
+                        // Mark the responsibility rule as having been built right now
+                        // This is wrong because it may not have been built and the subsequent lines could fail...
+                        await MarkResponsibilityRuleAsRan(cnn, rule.ID);
+                    }
+                }
+                catch
+                {
+                    throw;
+                }
+            }
+
+            // Save the rules we are processing to a temp table so we can easily 
+            await PopulateImpactedResponsibilityRulesTempTable(cnn, rulesRequiringRun, timeout);
+                        
+            // For Applies to type rules save assignments into responsibility temp table
+            await InsertRuleTypeAssignmentsIntoTempTable(cnn, timeout);
+
+            // For all impacted rules delete/ update/ insert changes only applies to rules for entire type.
+            await PerformFinalMerge(cnn, timeout);
+        }
+
 
         #region Helper Methods
 
