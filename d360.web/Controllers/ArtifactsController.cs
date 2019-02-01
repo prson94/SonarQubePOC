@@ -180,8 +180,7 @@ where   A.Type = 'ArtifactType'
             var dbArgs = new Dapper.DynamicParameters();
 
             dbArgs.Add("id", artifactTypeId);
-
-            joins = addOwnershipJoinCriteria(joins, ownerUsers, ownerGroups);
+                        
 
             var template = Company.AssetTypeExportTemplates.Where(x => x.ID == templateId).FirstOrDefault();
 
@@ -193,7 +192,9 @@ where   A.Type = 'ArtifactType'
             var fields = getFieldTypesByObjectType("ArtifactType", artifactTypeId, listableOnly).Where(i => !typesToAvoid.Contains(i.Type)).ToList();
 
             getDynamicFieldJoinStatements(artifactTypeId, "Artifact", out joins, out columns, true, false, listableOnly, fields, "A.ObjectID");
-            
+
+            joins = addOwnershipJoinCriteria(joins, ownerUsers, ownerGroups);
+
             var oldFields = new List<FieldType>(fields);
             //if include fields is specified only include field ids from list
             if (!string.IsNullOrEmpty(template.IncludeFields))
