@@ -62,6 +62,8 @@ namespace d360.model
                             }
                         }
 
+                        // Mark the responsibility rule as having been built right now
+                        // This is wrong because it may not have been built and the subsequent lines could fail...
                         await MarkResponsibilityRuleAsRan(cnn, rule.ID);                        
                     }
                 }
@@ -71,91 +73,20 @@ namespace d360.model
                 }              
             }
             
+            // Save the rules we are processing to a temp table so we can easily 
             await PopulateImpactedResponsibilityRulesTempTable(cnn, rulesRequiringRun, timeout);
 
+            // For None Applies to type rules save the rule overrides
             await PerformResponsibilityRuleOverrideUpdates(cnn, timeout);
 
-            #region Insert type assignments into #resp table.
+            // For Applies to type rules save assignments into responsibility temp table
+            await InsertRuleTypeAssignmentsIntoTempTable(cnn, timeout);
 
-            await cnn.ExecuteAsync("truncate table #resp");
-
-            await cnn.ExecuteAsync(@"
-    insert into #resp
-	    select	R.ID as RuleID,
-			    R.ResponsibilityTypeID,
-			    0 as AssetID,
-			    T.ID as AssetTypeID,
-			    I.SecurityAsset,
-			    I.SecurityAssetID,
-			    R.Context,
-			    R.ApplyToType,
-			    REL.PermissionsBitMask,
-			    R.IsVisible,
-			    cast(0 as bit) as Overridden,
-			    0 as OverrideID 
-	    from	AssetType T
-			    inner join ResponsibilityTypeRelationRule R on R.Object = T.Object and R.ObjectID = T.ObjectID
-			    inner join ResponsibilityTypeRelation REL on REL.ObjectType = T.Object and REL.ObjectID = T.ObjectID and REL.ResponsibilityTypeID = R.ResponsibilityTypeID
-			    inner join #ResponsibilityTypeRelationTypeItem I on I.RuleID = R.ID and R.ApplyToType = 1", commandTimeout: timeout);
-
-
-            #endregion
-
-            #region Merge final results into ResponsibilityTypeRelationRuleResult table
-
-            await cnn.ExecuteAsync(@"
-delete	T
-from	ResponsibilityTypeRelationRuleResult T
-		left join #resp S on 
-					S.RuleID = T.RuleID
-					and S.ResponsibilityTypeID = T.ResponsibilityTypeID 
-					and S.AssetID = T.AssetID 
-					and S.AssetTypeID = T.AssetTypeID 
-					and S.SecurityAsset = T.SecurityAsset 
-					and S.SecurityAssetID = T.SecurityAssetID 
-					and S.ApplyToType = T.ApplyToType
-					and S.Overridden = T.Overridden
-					and S.OverrideID = T.OverrideID
-where	S.RuleID is null
-		and T.RuleID in (select RuleID from #ResponsibilityTypeConsideredRules)", commandTimeout: timeout);
-
-            await cnn.ExecuteAsync(@"
-update	T
-set		T.Context = S.Context,
-		T.PermissionsBitMask = S.PermissionsBitMask,
-		T.IsVisible = S.IsVisible
-from	ResponsibilityTypeRelationRuleResult T
-		inner join #resp S on S.RuleID = T.RuleID
-		    and S.ResponsibilityTypeID = T.ResponsibilityTypeID 
-		    and S.AssetID = T.AssetID 
-		    and S.AssetTypeID = T.AssetTypeID 
-		    and S.SecurityAsset = T.SecurityAsset 
-		    and S.SecurityAssetID = T.SecurityAssetID 
-		    and S.ApplyToType = T.ApplyToType
-		    and S.Overridden = T.Overridden
-		    and S.OverrideID = T.OverrideID", commandTimeout: timeout);
-
-            await cnn.ExecuteAsync(@"
-insert into ResponsibilityTypeRelationRuleResult (RuleID, ResponsibilityTypeID, AssetID, AssetTypeID, SecurityAsset, SecurityAssetID, Context, ApplyToType, PermissionsBitMask, IsVisible, Overridden, OverrideID)
-	select	S.*
-	from	#resp S 
-			left join ResponsibilityTypeRelationRuleResult T on 
-						S.RuleID = T.RuleID
-						and S.ResponsibilityTypeID = T.ResponsibilityTypeID 
-						and S.AssetID = T.AssetID 
-						and S.AssetTypeID = T.AssetTypeID 
-						and S.SecurityAsset = T.SecurityAsset 
-						and S.SecurityAssetID = T.SecurityAssetID 
-						and S.ApplyToType = T.ApplyToType
-						and S.Overridden = T.Overridden
-						and S.OverrideID = T.OverrideID
-	where	T.RuleID is null", commandTimeout: timeout);
-
-            #endregion
-
+            // For all impacted rules delete/ update/ insert changes
+            await PerformFinalMerge(cnn, timeout);
         }
+                
 
-        
         #region Helper Methods
 
         /// <summary>
@@ -252,7 +183,7 @@ insert into ResponsibilityTypeRelationRuleResult (RuleID, ResponsibilityTypeID, 
             {
                 #region Insert item assignments into #resp table.
 
-                await cnn.ExecuteAsync("truncate table #resp");
+                await ClearResponsibilityTempTable(cnn);
 
                 await cnn.ExecuteAsync($@"
                             insert into #resp
@@ -346,6 +277,86 @@ insert into ResponsibilityTypeRelationRuleResult (RuleID, ResponsibilityTypeID, 
             }
         }
 
+        private static async Task InsertRuleTypeAssignmentsIntoTempTable(SqlConnection cnn, int timeout)
+        {
+            await ClearResponsibilityTempTable(cnn);
+            
+            await cnn.ExecuteAsync(@"
+    insert into #resp
+	    select	R.ID as RuleID,
+			    R.ResponsibilityTypeID,
+			    0 as AssetID,
+			    T.ID as AssetTypeID,
+			    I.SecurityAsset,
+			    I.SecurityAssetID,
+			    R.Context,
+			    R.ApplyToType,
+			    REL.PermissionsBitMask,
+			    R.IsVisible,
+			    cast(0 as bit) as Overridden,
+			    0 as OverrideID 
+	    from	AssetType T
+			    inner join ResponsibilityTypeRelationRule R on R.Object = T.Object and R.ObjectID = T.ObjectID
+			    inner join ResponsibilityTypeRelation REL on REL.ObjectType = T.Object and REL.ObjectID = T.ObjectID and REL.ResponsibilityTypeID = R.ResponsibilityTypeID
+			    inner join #ResponsibilityTypeRelationTypeItem I on I.RuleID = R.ID and R.ApplyToType = 1", commandTimeout: timeout);
+        }
+
+        private static async Task ClearResponsibilityTempTable(SqlConnection cnn)
+        {
+            await cnn.ExecuteAsync("truncate table #resp");
+        }
+
+        private static async Task PerformFinalMerge(SqlConnection cnn, int timeout)
+        {
+            await cnn.ExecuteAsync(@"
+                delete	T
+                from	ResponsibilityTypeRelationRuleResult T
+		                left join #resp S on 
+					                S.RuleID = T.RuleID
+					                and S.ResponsibilityTypeID = T.ResponsibilityTypeID 
+					                and S.AssetID = T.AssetID 
+					                and S.AssetTypeID = T.AssetTypeID 
+					                and S.SecurityAsset = T.SecurityAsset 
+					                and S.SecurityAssetID = T.SecurityAssetID 
+					                and S.ApplyToType = T.ApplyToType
+					                and S.Overridden = T.Overridden
+					                and S.OverrideID = T.OverrideID
+                where	S.RuleID is null
+		        and T.RuleID in (select RuleID from #ResponsibilityTypeConsideredRules)", commandTimeout: timeout);
+
+            await cnn.ExecuteAsync(@"
+                update	T
+                set		T.Context = S.Context,
+		                T.PermissionsBitMask = S.PermissionsBitMask,
+		                T.IsVisible = S.IsVisible
+                from	ResponsibilityTypeRelationRuleResult T
+		                inner join #resp S on S.RuleID = T.RuleID
+		                    and S.ResponsibilityTypeID = T.ResponsibilityTypeID 
+		                    and S.AssetID = T.AssetID 
+		                    and S.AssetTypeID = T.AssetTypeID 
+		                    and S.SecurityAsset = T.SecurityAsset 
+		                    and S.SecurityAssetID = T.SecurityAssetID 
+		                    and S.ApplyToType = T.ApplyToType
+		                    and S.Overridden = T.Overridden
+		                    and S.OverrideID = T.OverrideID", commandTimeout: timeout);
+
+            await cnn.ExecuteAsync(@"
+                insert into ResponsibilityTypeRelationRuleResult (RuleID, ResponsibilityTypeID, AssetID, AssetTypeID, SecurityAsset, SecurityAssetID, Context, ApplyToType, PermissionsBitMask, IsVisible, Overridden, OverrideID)
+	                select	S.*
+	                from	#resp S 
+			                left join ResponsibilityTypeRelationRuleResult T on 
+						                S.RuleID = T.RuleID
+						                and S.ResponsibilityTypeID = T.ResponsibilityTypeID 
+						                and S.AssetID = T.AssetID 
+						                and S.AssetTypeID = T.AssetTypeID 
+						                and S.SecurityAsset = T.SecurityAsset 
+						                and S.SecurityAssetID = T.SecurityAssetID 
+						                and S.ApplyToType = T.ApplyToType
+						                and S.Overridden = T.Overridden
+						                and S.OverrideID = T.OverrideID
+	                where	T.RuleID is null", commandTimeout: timeout);
+        }
+
         private static async Task ProcessRuleForAssetType(SqlConnection cnn, ResponsibilityTypeRelationRule rule, int timeout)
         {
             string sqlToExecute = "";
@@ -359,7 +370,7 @@ insert into ResponsibilityTypeRelationRuleResult (RuleID, ResponsibilityTypeID, 
 
                 #region Insert type assignments into #resp table.
 
-                await cnn.ExecuteAsync("truncate table #resp");
+                await ClearResponsibilityTempTable(cnn);
 
                 await cnn.ExecuteAsync(@"
     insert into #resp
