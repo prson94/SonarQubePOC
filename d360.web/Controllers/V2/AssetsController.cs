@@ -180,7 +180,7 @@ namespace d360.web.Controllers.V2
                 var orderBySql = "";
                 var offsetSql = "";
                 var pageNum = -1;
-                var pageSize = -1;
+                var pageSize = 200;
 
                 //add base sort if none is specified
                 if (!queryParams.Any(p => p.Key == "_order"))
@@ -418,12 +418,14 @@ order by    P.[Path]
             List<string> fieldJoins = new List<string>();
             List<string> whereStatements = new List<string>();
             List<string> pagingSql = new List<string>();
-
+            
             var dbArgs = new DynamicParameters();
             var model = new AssetsApiViewModel();
 
             dbArgs.Add("@uid", uid.ToString());
             fieldJoins.Add("inner join AssetType T on T.ID = A.AssetTypeID and T.UID = @uid");
+
+            List<string> countJoins = new List<string>(fieldJoins);
 
             if (includeRelationships)
             {
@@ -520,7 +522,10 @@ order by    P.[Path]
             if (fieldColumns.Any())
                 fieldsSql = $",\n {string.Join(",\n", fieldColumns)}";
 
-            countSql = string.Format(countSql, string.Join("\n", fieldJoins), whereSql);
+            if(string.IsNullOrWhiteSpace(whereSql))
+                countSql = string.Format(countSql, string.Join("\n", countJoins), whereSql);
+            else
+                countSql = string.Format(countSql, string.Join("\n", fieldJoins), whereSql);
             sql = string.Format(sql, fieldsSql, string.Join("\n", fieldJoins), whereSql, string.Join("\n", pagingSql));
 
             var countResults = await Company.QueryAsync<int>(countSql, dbArgs);
