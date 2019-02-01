@@ -90,6 +90,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private errorMessage: string = "";
     private isListableRelationship: boolean = false;
 
+    public defaultDate:any;
+
     constructor(private fieldsService: FieldsService, private messagesService: MessagesService, private objectDetailService: ObjectDetailService) {
         super();
         this.model = new FieldTypeEditorModel();
@@ -417,6 +419,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.model.FieldType.LookupObjectType = null;
                 break;
         }
+        if (this.model.FieldType.Type == 'Date' && this.model.FieldType.DefaultValue != null) {
+            this.defaultDate = new Date(Number(this.model.FieldType.DefaultValue));
+        }
+
         return Promise.all(promises).then(() => {
         });
     }
@@ -1051,7 +1057,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             if (this.lookups.Field_FieldFromRelRelationships.length > 0)
                 this.cardinalFieldFromRelationshipSelected(parseInt(this.lookups.Field_FieldFromRelRelationships[0].value));
             return;
-        }
+        }  
         if (e == true) {
             this.displayFieldSelected = true;
             return;
@@ -1066,7 +1072,11 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             });
         });
     }
-
+    private onDateSelectMethod(e: Date)
+    {
+        this.model.FieldType.DefaultValue = e.getTime().toString();
+        this.defaultDate = e;
+    }
     public isRelationshipWithMultipleCardinality(): boolean {
         
         return true;
