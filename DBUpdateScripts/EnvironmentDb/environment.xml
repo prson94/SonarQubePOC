@@ -71,4 +71,5 @@
   <!-- Sprint 2 2019 Start      -->
   <include file="scripts/GOV-6507.xml"/>
   <include file="scripts/GOV-6509.xml"/>
+  <include file="scripts/GOV-6513.xml"/>
 </databaseChangeLog>
