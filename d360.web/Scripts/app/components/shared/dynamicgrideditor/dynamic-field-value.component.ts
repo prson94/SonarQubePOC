@@ -1,31 +1,13 @@
 ﻿import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
+
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { BaseComponent } from '../base.component';
 import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression, GridAttributeFilterExpression } from '../../../models/grid-definition.model';
 
 @Component({
     selector: 'd3s-dynamic-field-value',
-    template: `   
-            <span [ngSwitch]="fieldType">
-                <span *ngSwitchCase="'date'" ><span *ngIf="fieldValue">{{fieldValue | date:'shortDate'}}</span></span>
-                <span *ngSwitchCase="'datetime'"><span *ngIf="fieldValue">{{fieldValue | date:'medium'}}</span></span>
-                <span *ngSwitchCase="'number'">{{formatAsNumber()}}</span>                
-                <span *ngSwitchCase="'bool'">
-                    <i *ngIf="fieldValue == 'TRUE'" class="fa fa-check enabled" title="True"></i>
-                    <i *ngIf="fieldValue == 'FALSE'" class="fa fa-times disabled" title="False"></i>
-                </span>
-                <span *ngSwitchCase="'lookup'">
-                    <d3s-lookup-tooltip [objectType]="item[column.objectfield]" [objectId]="item[column.objectidfield]">
-                        <a (click)="navigate(item[column.urlfield])" [innerText]="fieldValue"></a> 
-                    </d3s-lookup-tooltip>                    
-                </span>
-                <span *ngSwitchCase="'string'">{{fieldValue}}</span>                                                        
-                <ng-template ngSwitchDefault>
-                    <span *ngIf="fieldValue != null" [innerHtml]="fieldValue"></span>                                        
-                </ng-template>
-            </span>
-        `,
+    templateUrl: './dynamic-field-value.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
@@ -85,4 +67,3 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
         this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(url));
     }
 }
-

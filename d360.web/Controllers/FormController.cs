@@ -3180,7 +3180,7 @@ namespace d360.web.Controllers
                     );
                     break;
                 case SystemObjects.TaxonomyType:
-                    var sqlForTaxonomy = "select att.ObjectID as value, textpath as Title from asset a inner join assettype att on a.assettypeid = att.id cross apply[dbo].[GetAssetTextPathById](a.id, '/') atp where atp.id = a.id and a.object = 'Taxonomy' and att.ObjectID = @id";
+                    var sqlForTaxonomy = "select a.ObjectID as value, textpath as Title from asset a inner join assettype att on a.assettypeid = att.id cross apply[dbo].[GetAssetTextPathById](a.id, '/') atp where atp.id = a.id and a.object = 'Taxonomy' and att.ObjectID = @id";
                     list.AddRange(
                         Company.Query<ListIntItem>(sqlForTaxonomy, new { id = id })
                     );
@@ -7145,8 +7145,8 @@ namespace d360.web.Controllers
 
                 if (Company.Filter<Intersect>(i => i.IntersectTypeID == id).Count() > 0)
                     return jsonException(FormInfo.InUse_Error_Delete, HttpStatusCode.Conflict);
-                if (Company.Filter<FieldType>(i => i.LookupObjectID == id && i.Type== "Relationship" && i.LookupObjectType== "IntersectType").Count() > 0)
-                    return jsonException(FormInfo.InUse_Error_Delete, HttpStatusCode.Conflict);
+                if (Company.Filter<FieldType>(i => i.LookupObjectID == id && i.Type == "Relationship" && i.LookupObjectType == "IntersectType").Count() > 0)
+                    return jsonException(FormInfo.InUse_RelationShipType_Error_Delete, HttpStatusCode.Conflict);
 
                 var model = Company.GetById<IntersectType>(id);
                 if (model == null) throw new NotFoundException("relationship type");

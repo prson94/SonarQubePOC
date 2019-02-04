@@ -34,7 +34,15 @@
         <ng-template pTemplate="body"
             let-rowNode
             let-item="rowData">
-            <tr [ttSelectableRow]="rowNode">
+            <style>
+                .linkTree a,
+                .linkTree span {
+                    word-break: break-all;
+                    display: inline-block; /* for IE */
+                }
+            </style>
+            <tr [ttSelectableRow]="rowNode"
+                class="linkTree">
                 <td>
                     <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
                     <a (click)="showHierarchy(item.ID)"

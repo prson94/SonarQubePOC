@@ -1,0 +1,48 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+	<changeSet author="VKyrychuk" id="GOV-6318">
+		<sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+	CREATE FUNCTION [dbo].[GetRelationshipDisplayValue]
+(
+	@o varchar(50),
+	@oid int
+)
+RETURNS TABLE 
+AS
+RETURN 
+(
+	select
+		DisplayValue
+	from
+		dbo.Asset A
+		cross apply [dbo].[GetObjectDisplayValueById](A.[Object],A.ObjectID) DV
+	where 
+		@o != 'Taxonomy' and A.[Object] = @o and A.ObjectID = @oid
+	union all
+	select 
+		TextPath
+	from 
+		dbo.Asset A
+		cross apply [dbo].GetAssetTextPathById(A.ID,'/')
+	where 
+		@o = 'Taxonomy' and A.[Object] = @o and A.ObjectID = @oid
+		
+)
+	</sql>
+	<rollback>
+		DROP FUNCTION [dbo].[GetRelationshipDisplayValue]  
+	</rollback>
+  </changeSet>
+	
+  
+  
+</databaseChangeLog>
