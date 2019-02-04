@@ -24,6 +24,9 @@ namespace d360.core.entities
         [DataMember]
         public string Notes { get; set; }
 
+        [DataMember]
+        public int Priority { get; set; }
+
         [IgnoreDataMember]
         public virtual DatabaseServer DatabaseServer { get; set; }
 

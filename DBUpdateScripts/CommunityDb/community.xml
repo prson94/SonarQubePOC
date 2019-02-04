@@ -16,4 +16,5 @@
 	<include file="scripts/GOV-6326.xml"/>      <!-- Create resource id 0 system if not present -->
 	<include file="scripts/GOV-6207-D3S-User.xml"/>
 	<include file="scripts/GOV-6228.xml"/>
+  <include file="scripts/GOV-6445.xml"/>    <!-- Create the priority for company items for index rebuild webjob-->
 </databaseChangeLog>
