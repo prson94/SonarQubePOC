@@ -86,7 +86,7 @@ namespace d360.model
             await PerformResponsibilityRuleOverrideUpdates(cnn, timeout);
 
             // For Applies to type rules save assignments into responsibility temp table
-            await InsertRuleTypeAssignmentsIntoTempTable(cnn, timeout);
+           // await InsertRuleTypeAssignmentsIntoTempTable(cnn, timeout);
 
             // For all impacted rules delete/ update/ insert changes only applies to rules for entire type.
             await PerformFinalMerge(cnn, timeout);
@@ -124,13 +124,13 @@ namespace d360.model
             }
 
             // Save the rules we are processing to a temp table so we can easily 
-            await PopulateImpactedResponsibilityRulesTempTable(cnn, rulesRequiringRun, timeout);
+    /*        await PopulateImpactedResponsibilityRulesTempTable(cnn, rulesRequiringRun, timeout);
                         
             // For Applies to type rules save assignments into responsibility temp table
             await InsertRuleTypeAssignmentsIntoTempTable(cnn, timeout);
 
             // For all impacted rules delete/ update/ insert changes only applies to rules for entire type.
-            await PerformFinalMerge(cnn, timeout);
+            await PerformFinalMerge(cnn, timeout);*/
         }
 
 
@@ -214,7 +214,7 @@ namespace d360.model
         /// <param name="timeout"></param>
         /// <param name="pageSize"></param>
         /// <returns></returns>
-        private static async Task PerformResponsibilityRuleOverrideUpdates(SqlConnection cnn, int timeout, int pageSize = 10000)
+        private static async Task PerformResponsibilityRuleOverrideUpdates(SqlConnection cnn, int timeout, int pageSize = 5000)
         {
             int position = 0;
             
