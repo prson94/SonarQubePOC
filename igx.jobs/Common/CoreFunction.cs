@@ -88,7 +88,11 @@ namespace igx.jobs
             {
                 if (_AITelemetryClient == null)
                 {
-                    TelemetryConfiguration.Active.InstrumentationKey = AppInsightsInstrumentationKey("2dd165d7-28b2-4258-8b55-32d9c83a3f43");
+                    var key = CloudConfigurationManager.GetSetting("APPINSIGHTS_INSTRUMENTATIONKEY");
+
+                    if (string.IsNullOrEmpty(key)) key = "2dd165d7-28b2-4258-8b55-32d9c83a3f43";
+
+                    TelemetryConfiguration.Active.InstrumentationKey = AppInsightsInstrumentationKey(key);
 
                     _AITelemetryClient = new TelemetryClient();
                 }

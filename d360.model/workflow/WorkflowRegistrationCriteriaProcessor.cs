@@ -10,8 +10,6 @@ namespace d360.model.workflow
 {
     public static class WorkflowRegistrationCriteriaProcessor
     {
-        internal static List<WorkflowCriteriaExpressionModel> expression;
-
         public static bool Evaluate(CompanyContext context, string @object, int objectId, string criteria, long itemId = -1, int score = -1, List<int> changedFields = null, string issueObject = "", int issueObjectId = -1)
         {
             if (string.IsNullOrEmpty(criteria)) return true; // null criteria means all objects are applicable
@@ -19,10 +17,10 @@ namespace d360.model.workflow
             if (string.IsNullOrEmpty(@object) || objectId <= 0) throw new Exception("ERROR - A VALID OBJECT AND OBJECT ID MUST BE SPECIFIED.  THE OBJECT ID MUST BE GREATER THAN 0.");
 
             //take the string criteria and generate the class
-            PopulateExpressionFromXml(criteria);
+            List<WorkflowCriteriaExpressionModel> expression = PopulateExpressionFromXml(criteria);
 
             //load the values for each of the fields for the given object
-            return EvaluateObject(context, @object, objectId, itemId, score, issueObject, issueObjectId, changedFields);            
+            return EvaluateObject(expression, context, @object, objectId, itemId, score, issueObject, issueObjectId, changedFields);            
         }
 
         public static string ToPlainText(CompanyContext context, string criteria)
@@ -30,7 +28,7 @@ namespace d360.model.workflow
             if (string.IsNullOrEmpty(criteria)) return "";
 
             //take the string criteria and generate the class
-            PopulateExpressionFromXml(criteria);
+            List<WorkflowCriteriaExpressionModel> expression = PopulateExpressionFromXml(criteria);
 
             StringBuilder sb = new StringBuilder();
 
@@ -50,7 +48,7 @@ namespace d360.model.workflow
         /// <param name="context"></param>
         /// <param name="object"></param>
         /// <param name="objectId"></param>
-        private static bool EvaluateObject(CompanyContext context, string @object, int objectId, long itemId, int score = -1, string issueObjectType = "", int issueObjectTypeId = -1, List<int> changedFields = null)
+        private static bool EvaluateObject(List<WorkflowCriteriaExpressionModel> expression, CompanyContext context, string @object, int objectId, long itemId, int score = -1, string issueObjectType = "", int issueObjectTypeId = -1, List<int> changedFields = null)
         {
             bool hasChangeCondition = expression.Any(e => e.Operator == core.enums.Workflow.CriteriaOperator.Changed);
 
@@ -210,8 +208,6 @@ namespace d360.model.workflow
                             Console.WriteLine("DEBUG - FORM HAS UNKNOWN OR UNSUPPORTED FORM RESPONSE TYPE");
 
                             return false;
-                        
-
                     }
                 }
             }
@@ -219,8 +215,8 @@ namespace d360.model.workflow
             return true;
         }
 
-        private static void PopulateExpressionFromXml(string criteria)
-        {
+        private static List<WorkflowCriteriaExpressionModel> PopulateExpressionFromXml(string criteria)
+        {            
             // PARSE THE XML
             XElement exprXml = null;
             try
@@ -233,12 +229,14 @@ namespace d360.model.workflow
             }
 
             // LOOP THROUGH EACH EXPRESSION
-            expression = new List<WorkflowCriteriaExpressionModel>();
+            List<WorkflowCriteriaExpressionModel> expression = new List<WorkflowCriteriaExpressionModel>();
 
             foreach (var expr in exprXml.Elements("Condition"))
             {
                 expression.Add(WorkflowCriteriaExpressionModel.Parse(expr));                
             }
+
+            return expression;
         }
     }
 }

@@ -286,6 +286,13 @@ namespace d360.web.Controllers
                                     var obj = isSubject ? intersect.Object : intersect.Subject;
                                     var objID = isSubject ? intersect.ObjectID : intersect.SubjectID;
 
+                                    if (obj == "Taxonomy")
+                                    {
+                                        var det = Company.Query<string>("select tp.TextPath from  asset a cross apply GetAssetTextPathById(a.id, '/') tp where a.[Object] = 'Taxonomy' and a.ObjectID = @id", new { id = objID }).FirstOrDefault();
+                                        intersectDisplayValue = det;
+                                    }
+
+
                                     if(objectsWithoutReadAccess != null && objectsWithoutReadAccess.Count > 0)
                                     {
                                         if(objectsWithoutReadAccess.Any(x=>(x.Object == obj && x.ObjectID == objID)))
@@ -4269,8 +4276,8 @@ order by C.DisplayValue";
 		    T.Object as Type,
 		    T.ObjectID as TypeID,
 		    T.Name as TypeName,
-		    RD.Object,
-		    RD.ObjectID,
+		    A.Object,
+		    A.ObjectID,
 		    utility.GetAssetDisplayValueWrapper(A.ID) as ObjectName,
 		    RD.ResponsibilityTypeName,
 		    case RD.SecurityAsset
@@ -5039,21 +5046,23 @@ where    A.RuleID = @id", new { id });
             var sql = @"select 
 										c.[Object], 
 										c.ObjectID, 
-										c.DisplayValue as TextPath, 
+										AD.DisplayValue as TextPath, 
 										cU.Url, 
 										c.TypeName as ObjectTypeName, 
 										c.ForeColor as IconForeColor, 
 										c.BackColor as IconBackColor
-									from [dbo].assetdetail c   
-									cross apply [dbo].getAssetUrlById(c.ID) cU                              
-									where c.[Object] not in @exclude and (c.DisplayValue like @beginsWith or (len(@val) > 2 and c.DisplayValue like @contains))";
+										from [dbo].AssetWithType c   
+										inner join  AssetDisplayValue as AD   on
+										AD.AssetID = C.ID
+										cross apply [dbo].getAssetUrlById(c.ID) cU                              
+										where c.[Object] not in @exclude and (AD.DisplayValue like @beginsWith or (len(@val) > 2 and AD.DisplayValue like @contains))";
 
             dbParams.Add("beginsWith", $"{phrase}%");
             dbParams.Add("val", $"{phrase}%");
             dbParams.Add("contains", $"%{phrase}%");
             dbParams.Add("exclude", objectsToExclude);
 
-            return Company.Query<TagSuggestionModel>(sql,dbParams);            
+            return Company.Query<TagSuggestionModel>(sql,dbParams);
         }
 
         #endregion
