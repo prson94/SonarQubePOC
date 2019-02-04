@@ -91,7 +91,7 @@ namespace d360.model
             await SaveMarkitLineageResults(validMappings);
 
 
-            await Database.ExecuteSqlCommandAsync("[fusion].[GenerateMarkitMapLineage] 1");
+            await Database.ExecuteSqlCommandAsync("[fusion].[GenerateMarkitMapLineage] 2");
 
             //}
         }
@@ -112,9 +112,9 @@ namespace d360.model
             processedList.Add(currentMap.ID);
             //get next items to process
             var nextMaps = maps.Where(m => m.SourceFusionAttributeID == currentMap?.TargetFusionAttributeID && !processedList.Contains(m.ID));
-            var skipNextMap = false;
+            //var skipNextMap = false;
 
-            if (rootObjectMap == null)
+            if (rootObjectMap == null || objectMaps.FirstOrDefault(o => o.FusionAttributeID == currentMap.SourceFusionAttributeID) != null)
                 rootObjectMap = objectMaps.FirstOrDefault(o => o.FusionAttributeID == currentMap.SourceFusionAttributeID);
 
             //find a source asset if possible
@@ -126,31 +126,38 @@ namespace d360.model
             //if we have a source/target pair save it in the mapping table
             if (sourceAssetId != null && currentMap.TargetAssetID != null && currentMap.TargetAssetID != sourceAssetId)
             {
-                if (!skipMap)
-                {
+                //if (!skipMap)
+                //{
                     if (nextMaps.Count() < 1 && rootObjectMap == null)
                         rootObjectMap = objectMaps.FirstOrDefault(o => o.FusionAttributeID == currentMap.TargetFusionAttributeID);
 
-                    mappings.Add(new FusionMarkitSourceTargetMapping
+                    if (!mappings.Any(m => m.MapID == currentMap.ID && m.SourceFusionAttributeID == currentMap.SourceFusionAttributeID
+                    && m.TargetFusionAttributeID == currentMap.TargetFusionAttributeID && m.SourceAssetID == sourceAssetId && m.TargetAssetID == currentMap.TargetAssetID
+                    && m.ObjectAssetID == (rootObjectMap == null ? 0 : rootObjectMap.ObjectAssetID)) && rootObjectMap != null)
                     {
-                        MapID = currentMap.ID,
-                        SourceFusionAttributeID = (int)currentMap.SourceFusionAttributeID,
-                        TargetFusionAttributeID = (int)currentMap.TargetFusionAttributeID,
-                        SourceAssetID = (long)sourceAssetId,
-                        TargetAssetID = (long)currentMap.TargetAssetID,
-                        ObjectAssetID = (rootObjectMap == null ? 0 : rootObjectMap.ObjectAssetID)
-                    });
+                        mappings.Add(new FusionMarkitSourceTargetMapping
+                        {
+                            MapID = currentMap.ID,
+                            SourceFusionAttributeID = (int)currentMap.SourceFusionAttributeID,
+                            TargetFusionAttributeID = (int)currentMap.TargetFusionAttributeID,
+                            SourceAssetID = (long)sourceAssetId,
+                            TargetAssetID = (long)currentMap.TargetAssetID,
+                            ObjectAssetID = (rootObjectMap == null ? 0 : rootObjectMap.ObjectAssetID)
+                        });
+                    }
 
-                    skipNextMap = true;
-                }
 
-                sourceAssetId = null;
-                rootObjectMap = null;
+
+                    //skipNextMap = true;
+                //}
+
+                //sourceAssetId = null;
+                //rootObjectMap = null;
             }
 
             //process the next nodes in the lineage
             foreach(var next in nextMaps)
-                UpdateSourceTargetObjectMap(maps, next, mappings, processedList, sourceAssetId, root, objectMaps, rootObjectMap, skipNextMap);  
+                UpdateSourceTargetObjectMap(maps, next, mappings, processedList, sourceAssetId, root, objectMaps, rootObjectMap, false);  
         }
 
         private void GenerateBusinessLineageForObject(KeyValuePair<MarkitObject, List<int>> item, IEnumerable<FusionMarkitLineageData> maps)
