@@ -12510,12 +12510,31 @@ order by	case
         {
             string crossApplyValue;
             string labelValue;
+            string objType;
+            string joinColumn;
+            int objId;
 
-            if (type == SystemObjects.TaxonomyType || type == SystemObjects.PolicyType)
+            var intersectType = Company.GetById<IntersectType>(intersectTypeID);
+
+            if (intersectType.Object == type.ToString() && intersectType.ObjectID == id)
+            {
+                objType = intersectType.Subject;
+                objId = intersectType.SubjectID;
+                joinColumn = "Subject";
+            }
+            else
+            {
+                objType = intersectType.Object;
+                objId = intersectType.ObjectID;
+                joinColumn = "Object";
+            }
+
+            if (objType == SystemObjects.TaxonomyType.ToString() || objType == SystemObjects.PolicyType.ToString())
             {
                 crossApplyValue = "getassettextpathbyid(D.id, '/') atp";
                 labelValue = "atp.textpath";
-            } else
+            }
+            else
             {
                 crossApplyValue = "dbo.GetAssetDisplayValueById(D.ID) DN";
                 labelValue = "DN.DisplayValue";
@@ -12526,20 +12545,9 @@ order by	case
 		            {labelValue} as label 
                 from	Asset D
                     inner join AssetType DT on DT.ID = D.AssetTypeID
-		            inner join	(
-				        select	case
-						        when (Subject = '{type.ToString()}' and SubjectID = {id}) then Object
-								else Subject
-					    end as Object,
-						case
-						    when (Subject = '{type.ToString()}' and SubjectID = {id}) then ObjectID
-							else SubjectID
-						    end as ObjectID
-					    from	IntersectType
-					        where	ID = {intersectTypeID}
-					 ) I on I.Object = DT.Object and I.ObjectID = DT.ObjectID
-                   cross apply {crossApplyValue}
-                   order by {labelValue}");
+                    inner join IntersectType I on I.{joinColumn} = DT.Object and I.{joinColumn}ID = DT.ObjectID and I.ID = {intersectTypeID}
+                    cross apply {crossApplyValue}
+                    order by {labelValue}");
 
                 return new JsonNetResult
                 {
