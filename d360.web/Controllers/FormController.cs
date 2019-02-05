@@ -10928,10 +10928,9 @@ if @OwnerSourceType = 'Artifact'
 		insert into @h
 			select ID from h;
 	end
-else
-	begin
+
 		insert into @h values (@id)
-	end;
+
 
 select	'FusionAttribute' as [Object], 
         FA.ID as ObjectID, 
