@@ -109,21 +109,27 @@ group by at.name,at.id order by at.name";
     ";
 
         public static string ArtifactTypeStatisticsList = @"
-select		T.ID,
-			T.ParentID,
-			T.Name,
-			T.Description,
+select		AT.ObjectID as ID,
+			IT.ParentID,
+			AT.Name,
+			AT.Description,
             cast(1 as bit) as expanded,
 			AC.*
-from		ArtifactType T
+from		AssetType as AT
 			cross apply (
 						select	count(1) AS [Total]
-						from	Artifact
-						where	ArtifactTypeID = T.ID
-								and Visible = 1
+						from	Asset A
+						
+						where	AssetTypeID = AT.ID
 						) AC
-order by	T.ParentID,
-			T.Name";
+			outer apply (
+				select	IT.SubjectID as ParentID
+				from	IntersectType IT 
+						inner join [Predicate] P on IT.Object = 'ArtifactType' and IT.ObjectID = AT.ObjectID and P.ID = IT.PredicateID and P.Type = 3
+			) IT
+	Where AT.Object = 'ArtifactType'
+order by	IT.ParentID,
+			AT.Name";
              
 
         public static string ExecutionErrorList = @"

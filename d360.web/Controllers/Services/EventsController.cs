@@ -252,7 +252,7 @@ namespace d360.web.Controllers.Services
                 if (parentID > 0)
                 {
                     var parent = Company.GetById<Policy>(parentID);
-                    var existing = Company.GetParentObject<Policy>(item.ID);
+                    var existing = Company.GetParentObject(item.ID, SystemObjects.Policy);
                     var intersectType = Company.GetHierarchyIntersectType(SystemObjects.TaxonomyType, parent.PolicyTypeID, item.PolicyTypeID);
                     if (intersectType == null)
                         throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
@@ -270,9 +270,9 @@ namespace d360.web.Controllers.Services
 
                         Company.Add(intersect);
                     }
-                    else if (existing.ID != parentID)
+                    else if (existing.ObjectID != parentID)
                     {
-                        var intersect = Company.Filter<Intersect>(i => i.Subject == "Policy" && i.Object == "Policy" && i.SubjectID == existing.ID && i.ObjectID == item.ID).FirstOrDefault();
+                        var intersect = Company.Filter<Intersect>(i => i.Subject == "Policy" && i.Object == "Policy" && i.SubjectID == existing.ObjectID && i.ObjectID == item.ID).FirstOrDefault();
                         if (intersect != null)
                         {
                             intersect.SubjectID = parentID;

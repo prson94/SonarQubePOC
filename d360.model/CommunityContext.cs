@@ -25,6 +25,8 @@ namespace d360.model
         public CommunityContext(ICachingProvider caching, IQueueSource queueSource, ISecurityContextProvider context)
             : base(constants.COMMUNITY_DATABASE_CONNECTION)
         {
+            Database.SetInitializer<CommunityContext>(null); //dont create any tables if they dont exist.
+
             Caching = caching;
             QueueSource = queueSource;
 

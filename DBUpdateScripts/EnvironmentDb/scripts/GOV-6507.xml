@@ -1,0 +1,75 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="KMcNamee" id="GOV-6507">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+alter procedure [fusion].[UpdateFusionTextPaths]
+	@FusionID int
+as
+begin
+	set nocount on;
+
+	WITH hierarchy (id, itempath) AS
+	(
+		SELECT id, cast(name as nvarchar(2500))
+		FROM fusionattribute
+		WHERE fusionid = @FusionID and parentid is null
+
+		UNION ALL
+
+		SELECT gp.id, cast(gps.itempath + '.' + gp.name as nvarchar(2500))
+		FROM fusionattribute gp
+		JOIN hierarchy gps ON gps.id = gp.parentid
+	)
+	UPDATE T
+	set T.textpath = cte.itempath
+	from fusionattribute T
+	inner join 
+		hierarchy cte
+	on cte.id = T.id
+	where T.TextPath <> cte.itempath
+	OPTION (MAXRECURSION 10)
+end
+]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+alter procedure [fusion].[UpdateFusionTextPaths]
+	@FusionID int
+as
+begin
+	set nocount on;
+
+	WITH hierarchy (id, itempath) AS
+	(
+		SELECT id, cast(name as nvarchar(2500))
+		FROM fusionattribute
+		WHERE fusionid = @FusionID and parentid is null
+
+		UNION ALL
+
+		SELECT gp.id, cast(gps.itempath + '.' + gp.name as nvarchar(2500))
+		FROM fusionattribute gp
+		JOIN hierarchy gps ON gps.id = gp.parentid
+	)
+	UPDATE T
+	set T.textpath = cte.itempath
+	from fusionattribute T
+	inner join 
+		hierarchy cte
+	on cte.id = T.id	
+	OPTION (MAXRECURSION 10)
+end
+      ]]>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>
