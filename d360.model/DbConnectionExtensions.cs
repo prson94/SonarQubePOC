@@ -214,7 +214,7 @@ namespace d360.model
         /// <param name="timeout"></param>
         /// <param name="pageSize"></param>
         /// <returns></returns>
-        private static async Task PerformResponsibilityRuleOverrideUpdates(SqlConnection cnn, int timeout, int pageSize = 5000)
+        private static async Task PerformResponsibilityRuleOverrideUpdates(SqlConnection cnn, int timeout, int pageSize = 10000000)
         {
             int position = 0;
             
