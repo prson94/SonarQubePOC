@@ -942,8 +942,16 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
     }
 
-    private validateIncrement() {
+    private validateIncrement(value: string) {
         if (this.model.FieldType.Increment > 0) {
+
+            if (value == 'Number') {
+                if (this.model.FieldType.Increment % 1 != 0) {
+                    this.errorMessage = value + ' input type requires a valid integer.';  
+                    return;
+                } 
+            }
+
             if (this.model.FieldType.MinimumLength && this.model.FieldType.MinimumLength % this.model.FieldType.Increment != 0) {
                 this.errorMessage = 'Minimum length is not an increment of ' + this.model.FieldType.Increment;
             }

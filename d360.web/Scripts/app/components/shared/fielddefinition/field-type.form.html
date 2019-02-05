@@ -152,15 +152,15 @@
                 </div>
                 <div *ngIf="model.FieldType.Type == 'Number'" class="col s3">
                     <div class="FieldName" style="display:block">Increment</div>
-                    <input name="validationIncrement" type="number" [(ngModel)]="model.FieldType.Increment" (change)="validateIncrement()" style="width: 98%; display: block;" />
+                    <input name="validationIncrement" type="number" [(ngModel)]="model.FieldType.Increment" (change)="validateIncrement(model.FieldType.Type)" style="width: 98%; display: block;" />
                 </div>
                 <div class="col s3">
                     <div id='MinimumLengthTip' class="FieldName">Minimum Length</div>
-                    <input name="minLength" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}" [disabled]="!model.FieldType.IsRequired" [(ngModel)]="model.FieldType.MinimumLength" (change)="validateIncrement()" style="width: 98%; display: block;" />
+                    <input name="minLength" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}" [disabled]="!model.FieldType.IsRequired" [(ngModel)]="model.FieldType.MinimumLength" (change)="validateIncrement(model.FieldType.Type)" style="width: 98%; display: block;" />
                 </div>
                 <div class="col s3">
                     <div id='MaximumLengthTip' class="FieldName">Maximum Length</div>
-                    <input name="maxLength" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}" [(ngModel)]="model.FieldType.MaximumLength" (change)="validateIncrement()" style="width: 98%; display: block;" />
+                    <input name="maxLength" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}" [(ngModel)]="model.FieldType.MaximumLength" (change)="validateIncrement(model.FieldType.Type)" style="width: 98%; display: block;" />
                 </div>
             </div>
             <div class="row" *ngIf="model.FieldType.Pattern?.length > 0 || model.FieldType.Increment > 0">
@@ -195,7 +195,7 @@
                     <p-dropdown *ngIf="model.FieldType.Type == 'Boolean'" [options]="booleanDefaultValueOptions" [(ngModel)]="model.FieldType.DefaultValue" [style]="{ 'width': '98%' }" ngDefaultControl [ngModelOptions]="{standalone: true}"></p-dropdown>
                     <p-dropdown *ngIf="model.FieldType.Type == 'Lookup'" [options]="lookupDefaultValueOptions" [(ngModel)]="model.FieldType.DefaultValue" [style]="{ 'width': '98%' }" ngDefaultControl [ngModelOptions]="{standalone: true}"></p-dropdown>
                     <input *ngIf="model.FieldType.Type == 'Text'" pInputText type="text" [(ngModel)]="model.FieldType.DefaultValue" style="width: 98%; display: block;" [ngModelOptions]="{standalone: true}" />
-                    <input *ngIf="model.FieldType.Type == 'Number'" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}"  (change)="validateIncrement()" [(ngModel)]="model.FieldType.DefaultValue" style="width: 98%; display: block;" [ngModelOptions]="{standalone: true}" />
+                    <input *ngIf="model.FieldType.Type == 'Number'" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}"  (change)="validateIncrement(model.FieldType.Type)" [(ngModel)]="model.FieldType.DefaultValue" style="width: 98%; display: block;" [ngModelOptions]="{standalone: true}" />
                 </div>
                 <div class="col l1 m1 s12" *ngIf="model.FieldType.Type == 'Lookup'">
                     <p-checkbox binary="true" [(ngModel)]="model.FieldType.AllowAllValue" [ngModelOptions]="{standalone: true}"></p-checkbox>

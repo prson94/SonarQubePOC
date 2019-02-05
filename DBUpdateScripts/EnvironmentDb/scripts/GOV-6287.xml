@@ -15,7 +15,7 @@
 		IF COL_LENGTH('[dbo].[FieldType]','Increment') IS NULL
 		BEGIN
 		 Alter Table [dbo].[FieldType]
-		 ADD [Increment] int null
+		 ADD [Increment] decimal(38,18) null
 		END
 		GO
       ]]>
