@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -35,6 +36,8 @@ namespace igx.jobs.databaseindexrebuilder
 
         public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
         {
+            int commandTimeout = int.TryParse(ConfigurationManager.AppSettings["IndexRebuilderDBCommandTimeout"], out commandTimeout) ? commandTimeout : 1800;
+
             try
             {
                 CoreFunction.AITrackJobStart(functionName);
@@ -50,8 +53,8 @@ namespace igx.jobs.databaseindexrebuilder
                         var start = DateTime.Now;
                         using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(item.CompanyID))
                         {
-                            companyConnection.OpenWithRetry(RetryPolicy.DefaultProgressive);
-                            var res = companyConnection.Execute("EXEC [dbo].[AzureSQLMaintenance]", new { Operation = "reindex", From = 30, To = 100, MinNumberOfPages = 10 });                        
+                            companyConnection.OpenWithRetry(RetryPolicy.DefaultProgressive); 
+                            var res = companyConnection.Execute("EXEC [dbo].[AzureSQLMaintenance]", new { Operation = "reindex", From = 30, To = 100, MinNumberOfPages = 10 },null, commandTimeout);                        
                         }
                         TimeSpan end = DateTime.Now - start;
                         properties.Add("Time Taken", end.TotalMilliseconds.ToString());
