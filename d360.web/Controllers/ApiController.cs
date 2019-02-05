@@ -788,14 +788,14 @@ namespace d360.web.Controllers
 
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.Code_Name, datafield = "Code" });
 
-                    var parentRefType = Company.GetParentType<ReferenceItemType>(id);
+                    var parentRefType = Company.GetParentType(id, SystemObjects.ReferenceItemType);
                     var loopCount = 0;
                     //add the parent columns
                     while (parentRefType != null && loopCount < 20)
                     {
-                        columns.Insert(0,new GridColumn { text = parentRefType.Name, datafield = $"Rel{parentRefType.ID}" });
+                        columns.Insert(0,new GridColumn { text = parentRefType.Name, datafield = $"Rel{parentRefType.ObjectID}" });
 
-                        parentRefType = Company.GetParentType<ReferenceItemType>(parentRefType.ID);
+                        parentRefType = Company.GetParentType(parentRefType.ObjectID, SystemObjects.ReferenceItemType);
                         loopCount++;
                     }
 
@@ -1036,11 +1036,11 @@ where   h.ID <> @t order by h.[Level] desc;
         {
             if ((type ?? "").ToUpper() == "ARTIFACTTYPE")
             {
-                var parentType = Company.GetParentType<ArtifactType>(id);
+                var parentType = Company.GetParentType(id, SystemObjects.ArtifactType);
 
                 if(parentType == null) return Request.CreateErrorResponse(HttpStatusCode.NotFound, new Exception("parent"));
 
-                var res = await Company.QueryAsync<string>("select ADV.DisplayValue from AssetDisplayValue ADV inner join Asset A on (A.ID = ADV.AssetID) inner join AssetType ATT on (A.AssetTypeID = ATT.ID) where ATT.[Object] = 'ArtifactType' and ATT.[ObjectID] = @objID order by 1", new { objID = parentType.ID });
+                var res = await Company.QueryAsync<string>("select ADV.DisplayValue from AssetDisplayValue ADV inner join Asset A on (A.ID = ADV.AssetID) inner join AssetType ATT on (A.AssetTypeID = ATT.ID) where ATT.[Object] = 'ArtifactType' and ATT.[ObjectID] = @objID order by 1", new { objID = parentType.ObjectID });
 
                 return Request.CreateResponse(HttpStatusCode.OK, res);
             }
@@ -1156,7 +1156,7 @@ where   h.ID <> @t order by h.[Level] desc;
             model.Add("ID", artifactType.ID);
             model.Add("Name", artifactType.Name);
             model.Add("Description", artifactType.Description);
-            model.Add("ParentID", Company.GetParentType<ArtifactType>(artifactType.ID)?.ID ?? null);
+            model.Add("ParentID", Company.GetParentType(artifactType.ID, SystemObjects.ArtifactType)?.ObjectID ?? null);
             model.Add("CanOwnFusion", assetType.CanOwnFusion);
             model.Add("HasCustomExportTemplates", Company.AssetTypeExportTemplates.Where(x => x.AssetTypeID == assetType.ID).Any());
             model.Add("AutoDisplayDescription", assetType.AutoDisplayDescription);
@@ -5236,20 +5236,20 @@ where    A.RuleID = @id", new { id });
                     #region Fields
 
                     var artifact = Company.GetById<Artifact>(id, i => i.ArtifactType);
-                    var parent = Company.GetParentObject<Artifact>(id);                    
+                    var parent = Company.GetParentObject(id, SystemObjects.Artifact);                    
                     if (artifact != null)
                     {
                         model.rows.AddRange(loadDynamicDisplayFields(type, id));
                         if (parent != null)
                         {
-                            var parentAsset = Company.GetAssetDetail("Artifact", parent.ID);
+                            var parentAsset = Company.GetAssetDetail("Artifact", parent.ObjectID);
                             var parentUrl = Company.Query<string>($"select dbo.GenerateAssetUrl({parentAsset.ID})").First();
 
                             model.rows.Insert(1,new DetailReadOnlyRowModel
                             {
                                 columns = 1,
                                 FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = Resources.FieldInfo.Parent_Name , FieldName = "ArtifactParentName", FieldDescription = Resources.FieldInfo.Parent_Description, Value = parentAsset.DisplayValue, TooltipUrl = parentUrl, TooltipType="Artifact", TooltipContext="Preview", TooltipID = parent.ID}
+                                    new ReadOnlyField { Name = Resources.FieldInfo.Parent_Name , FieldName = "ArtifactParentName", FieldDescription = Resources.FieldInfo.Parent_Description, Value = parentAsset.DisplayValue, TooltipUrl = parentUrl, TooltipType="Artifact", TooltipContext="Preview", TooltipID = parent.ObjectID}
                                 }
                             });
                         }
@@ -6364,7 +6364,7 @@ where    A.RuleID = @id", new { id });
                             });
                         }
 
-                        var parentRefType = Company.GetParentType<ReferenceItemType>(refType.ID);
+                        var parentRefType = Company.GetParentType(refType.ID, SystemObjects.ReferenceItemType);
 
                         var heirarchyColumns = new DetailReadOnlyRowModel
                         {
@@ -7927,16 +7927,16 @@ where	Type = 'ReferenceItemType'
 
 
             var fields = Company.Filter<FieldType>(i => i.Object == "ReferenceItemType" && i.ObjectID == typeID).ToList().OrderBy(x => x.ColumnOrder);
-            var relations = new List<ReferenceItemType>();
+            var relations = new List<AssetType>();
 
-            var parent = Company.GetParentType<ReferenceItemType>(typeID);
+            var parent = Company.GetParentType(typeID, SystemObjects.ReferenceItemType);
             var maxLoops = 20;
 
             while(parent != null && maxLoops > 0)
             {
                 relations.Insert(0,parent);
 
-                parent = Company.GetParentType<ReferenceItemType>(parent.ID);
+                parent = Company.GetParentType(parent.ID, SystemObjects.ReferenceItemType);
                                 
                 maxLoops--;
             }
@@ -8153,7 +8153,7 @@ where	Type = 'ReferenceItemType'
 
             if(referenceListType == null) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
                         
-            var parentReferenceListType = Company.GetParentType<ReferenceItemType>(referenceListType.ID);
+            var parentReferenceListType = Company.GetParentType(referenceListType.ID, SystemObjects.ReferenceItemType);
 
             if(parentReferenceListType == null) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
 
@@ -8162,7 +8162,7 @@ where	Type = 'ReferenceItemType'
                         inner join[referenceitem] ri on(ri.referenceitemtypeid = id.subjecttypeid and ri.id = id.subjectid and ri.id in @parentReferenceItemId)
                         where flv.fieldTypeID = @id";
 
-            items = Company.Query<System.Web.Mvc.SelectListItem>(sql, new { id = fieldTypeID, predicate = predicateTypeId, parentReferenceItemId = parents, parentReferenceListTypeId = parentReferenceListType.ID }).ToList();
+            items = Company.Query<System.Web.Mvc.SelectListItem>(sql, new { id = fieldTypeID, predicate = predicateTypeId, parentReferenceItemId = parents, parentReferenceListTypeId = parentReferenceListType.ObjectID }).ToList();
 
             return items;
 
