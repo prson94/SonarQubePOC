@@ -243,7 +243,7 @@ where	[AllowChangeDetection] = 0").ToList();
         {
             CoreFunction.AppInsightsInstrumentationKey(CoreFunction.GetConfigValueByKey("IGC_APPINSIGHTS_INSTRUMENTATIONKEY"));
 #if DEBUG
-            var queueModel = new IntegrationQueueModel { CompanyID = 122, ExecutionID = 58579, IntegrationSettingID = 1, SynchedAssetTypeID = 20, To = QueueAction.Integration, UrlPrefix = "statestreet.uat" };
+            var queueModel = new IntegrationQueueModel { CompanyID = 122, ExecutionID = 60964, IntegrationSettingID = 1, SynchedAssetTypeID = 49, To = QueueAction.Integration, UrlPrefix = "statestreet.uat" };
 #else
             var queueModel = JsonConvert.DeserializeObject<IntegrationQueueModel>(myQueueItem);
 #endif
@@ -460,11 +460,19 @@ where	[AllowChangeDetection] = 0").ToList();
         {
             try
             {
-                StepExecutionTimes.Add(new StepExecutionTime { Step = e.Step, StartedOn = DateTime.UtcNow });
+                var execStep = StepExecutionTimes.FirstOrDefault(i => i.Step == e.Step);
+                if (execStep == null)
+                {
+                    StepExecutionTimes.Add(new StepExecutionTime { Step = e.Step, StartedOn = DateTime.UtcNow, CompletedOn = DateTime.UtcNow });
+                }
+                else
+                {
+                    execStep.StartedOn = DateTime.UtcNow;
+                }
                 ExecutionAssetType.StepExecutionTimes = JsonConvert.SerializeObject(StepExecutionTimes);
                 Company.Update(ExecutionAssetType);
             }
-            catch
+            catch(Exception ex)
             {
             }
         }
@@ -474,8 +482,8 @@ where	[AllowChangeDetection] = 0").ToList();
             ExecutionAssetTypeRetryLog.LastStepCompleted = e.Step;
             try
             {
-                var execStep = StepExecutionTimes.SingleOrDefault(i => i.Step == e.Step);
-                if (execStep != null)
+                var execStep = StepExecutionTimes.FirstOrDefault(i => i.Step == e.Step);
+                if (execStep == null)
                 {
                     StepExecutionTimes.Add(new StepExecutionTime { Step = e.Step, StartedOn = DateTime.UtcNow, CompletedOn = DateTime.UtcNow });
                 }
@@ -487,7 +495,7 @@ where	[AllowChangeDetection] = 0").ToList();
                 ExecutionAssetType.RetryLog = JsonConvert.SerializeObject(ExecutionAssetTypeRetryLog);
                 Company.Update(ExecutionAssetType);
             }
-            catch
+            catch (Exception ex)
             {
             }
         }
@@ -539,10 +547,16 @@ where	[AllowChangeDetection] = 0").ToList();
         {
             if (SynchedAssetType.EnableAppInsightsVerboseLogging)
             {
+                var properties = new Dictionary<string, string>() { { "Step", $"{step}" } };
+                if (ExecutionAssetType != null)
+                {
+                    properties.Add("ExecutionID", ExecutionAssetType.ExecutionID.ToString());
+                    properties.Add("SynchedAssetTypeID", ExecutionAssetType.SynchedAssetTypeID.ToString());
+                }
                 if (isError)
-                    CoreFunction.AITrackException("IGC", new ApplicationException(message), Company.CurrentCompanyID, new Dictionary<string, string>() { { "Step", $"{step}" } });
+                    CoreFunction.AITrackException("IGC", new ApplicationException(message), Company.CurrentCompanyID, properties);
                 else
-                    CoreFunction.AITrackEvent("IGC", $"Step {step}", new Dictionary<string, string>() { { "Step", $"{step}" } }, Company.CurrentCompanyID);
+                    CoreFunction.AITrackTrace("IGC", message, properties, Company.CurrentCompanyID);
             }
             else
             {
@@ -566,12 +580,13 @@ where	[AllowChangeDetection] = 0").ToList();
 
             #region Set common properties that we will work with in many methods
 
-            Log.WriteLine("Getting common data");
-
             SynchedAssetType = Company.GetById<IntegrationAssetType>(QueueModel.SynchedAssetTypeID);
+
+            writeLogEntry("Getting common data", 0);
+
             ExecutionAssetType = Company.Filter<IntegrationExecutionAssetType>(i => i.ExecutionID == QueueModel.ExecutionID && i.SynchedAssetTypeID == QueueModel.SynchedAssetTypeID).Single();
             ExecutionAssetTypeRetryLog = JsonConvert.DeserializeObject<RetryLogModel>(ExecutionAssetType.RetryLog);
-            StepExecutionTimes = JsonConvert.DeserializeObject<List<StepExecutionTime>>(ExecutionAssetType.StepExecutionTimes);
+            StepExecutionTimes = JsonConvert.DeserializeObject<List<StepExecutionTime>>(ExecutionAssetType.StepExecutionTimes ?? "[]");
             RelationshipBreakdownModels = string.IsNullOrEmpty(ExecutionAssetType.IGCAssetRelationshipBreakdown) ? new IGCAssetRelationshipBreakdownModels() : JsonConvert.DeserializeObject<IGCAssetRelationshipBreakdownModels>(ExecutionAssetType.IGCAssetRelationshipBreakdown);
             ResponsibilityBreakdownModels = string.IsNullOrEmpty(ExecutionAssetType.IGCAssetResponsibilityBreakdown) ? new IGCAssetResponsibilityBreakdownModels() : JsonConvert.DeserializeObject<IGCAssetResponsibilityBreakdownModels>(ExecutionAssetType.IGCAssetResponsibilityBreakdown);
 
@@ -620,7 +635,7 @@ where	[AllowChangeDetection] = 0").ToList();
                 {
                     OnStepStarted(new StepStartedEventArgs { Step = currentStep });
 
-                    Log.WriteLine($"Getting type definition for: {SynchedAssetType.SourceAssetTypeName}");
+                    writeLogEntry($"Getting type definition for: {SynchedAssetType.SourceAssetTypeName}", currentStep);
 
                     // First, get the type definition of the asset type, to pull enum values.
                     url = $"{baseUri}types/{SynchedAssetType.SourceAssetTypeName}?showEditProperties=true";
@@ -668,7 +683,7 @@ where	[AllowChangeDetection] = 0").ToList();
                 }
                 catch (Exception ex)
                 {
-                    CoreFunction.AITrackException(functionName, ex);
+                    writeLogEntry(ex.GetFullExceptionData(true), currentStep, true);
                 }
             }
 
@@ -803,12 +818,12 @@ where	[AllowChangeDetection] = 0").ToList();
                 if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep)
                 {
                     OnStepStarted(new StepStartedEventArgs { Step = currentStep });
-                    Log.WriteLine($"BEGIN: Getting field data");
+                    writeLogEntry($"BEGIN: Getting field data", currentStep);
                     parsePostModel(PageDataClass.Fields);
                     var igcReportedAssetCount = DownloadAndSavePageFromIgc(postModel, Company.CurrentCompanyID, url, $"{rootFolderName}/fields", PageDataClass.Fields);
                     ExecutionAssetType.CurrentSourceAssetCount = igcReportedAssetCount;
                     Company.Update(ExecutionAssetType);
-                    Log.WriteLine($"END: Getting field data");
+                    writeLogEntry($"END: Getting field data", currentStep);
                     OnStepCompleted(new StepCompletedEventArgs { Step = currentStep });
                 }
 
@@ -817,10 +832,10 @@ where	[AllowChangeDetection] = 0").ToList();
                 if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep)
                 {
                     OnStepStarted(new StepStartedEventArgs { Step = currentStep });
-                    Log.WriteLine($"BEGIN: Getting relationship data");
+                    writeLogEntry($"BEGIN: Getting relationship data", currentStep);
                     parsePostModel(PageDataClass.Relations);
                     DownloadAndSavePageFromIgc(postModel, Company.CurrentCompanyID, url, $"{rootFolderName}/relations", PageDataClass.Relations);
-                    Log.WriteLine($"END: Getting relationship data");
+                    writeLogEntry($"END: Getting relationship data", currentStep);
                     OnStepCompleted(new StepCompletedEventArgs { Step = currentStep });
                 }
 
@@ -829,10 +844,10 @@ where	[AllowChangeDetection] = 0").ToList();
                 if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep)
                 {
                     OnStepStarted(new StepStartedEventArgs { Step = currentStep });
-                    Log.WriteLine($"BEGIN: Getting responsibility data");
+                    writeLogEntry($"BEGIN: Getting responsibility data", currentStep);
                     parsePostModel(PageDataClass.Responsibilities);
                     DownloadAndSavePageFromIgc(postModel, Company.CurrentCompanyID, url, $"{rootFolderName}/owners", PageDataClass.Responsibilities);
-                    Log.WriteLine($"END: Getting responsibility data");
+                    writeLogEntry($"END: Getting responsibility data", currentStep);
                     OnStepCompleted(new StepCompletedEventArgs { Step = currentStep });
                 }
 
@@ -863,9 +878,9 @@ where	[AllowChangeDetection] = 0").ToList();
                     // Clear the execution fields to start.
                     if (totalPageCount > 0 && !ExecutionAssetTypeRetryLog.Begins.ProcessedFieldsPage.HasValue)
                     {
-                        Log.WriteLine($"Clear out ExecutionAssetField to start processing field data");
+                        writeLogEntry($"Clear out ExecutionAssetField to start processing field data", currentStep);
                         cnn.Execute(@"delete integration.ExecutionAssetField where SynchedAssetTypeID = @SynchedAssetTypeID and Section = @section", new { ExecutionAssetType.SynchedAssetTypeID, section = 1 }, commandTimeout: 3600);
-                        Log.WriteLine($"Parsing {totalPageCount} page(s) of field data");
+                        writeLogEntry($"Parsing {totalPageCount} page(s) of field data", currentStep);
                     }
 
                     foreach (var p in pages)
@@ -892,12 +907,14 @@ where	[AllowChangeDetection] = 0").ToList();
                                             cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
 
                                         // Section 0 : Asset
+                                        writeLogEntry($"Executing section 0 of procedure for {SynchedAssetType.SourceAssetTypeName} - request number {requestNumber}", currentStep);
                                         cnn.Query<dynamic>(
                                             procedureCommand,
                                             new { ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID, requestNumber, SynchedAssetType.AssetTypeID, r = DefaultResourceID, section = 0 },
                                             commandTimeout: 3600);
-                                     
+
                                         // Section 1 : Fields
+                                        writeLogEntry($"Executing section 1 of procedure for {SynchedAssetType.SourceAssetTypeName} - request number {requestNumber}", currentStep);
                                         cnn.Query<dynamic>(
                                             procedureCommand,
                                             new { ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID, requestNumber, SynchedAssetType.AssetTypeID, r = DefaultResourceID, section = 1 },
@@ -932,9 +949,9 @@ where	[AllowChangeDetection] = 0").ToList();
                     // Clear the execution fields to start.
                     if (totalPageCount > 0 && !ExecutionAssetTypeRetryLog.Begins.ProcessedRelationsPage.HasValue)
                     {
-                        Log.WriteLine($"Clear out ExecutionAssetField to start processing relationship data");
+                        writeLogEntry($"Clear out ExecutionAssetField to start processing relationship data", currentStep);
                         cnn.Execute(@"delete integration.ExecutionAssetField where SynchedAssetTypeID = @SynchedAssetTypeID and Section = @section", new { ExecutionAssetType.SynchedAssetTypeID, section = 2 }, commandTimeout: 3600);
-                        Log.WriteLine($"Parsing {totalPageCount} page(s) of relationship data");
+                        writeLogEntry($"Parsing {totalPageCount} page(s) of relationship data", currentStep);
                     }
 
                     foreach (var p in pages)
@@ -960,6 +977,7 @@ where	[AllowChangeDetection] = 0").ToList();
                                             cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
 
                                         // Section 2 : Relationships
+                                        writeLogEntry($"Executing section 2 of procedure for {SynchedAssetType.SourceAssetTypeName} - request number {requestNumber}", currentStep);
                                         var relationshipActions = cnn.Query<RelationshipAction>(
                                             procedureCommand,
                                             new { ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID, requestNumber, SynchedAssetType.AssetTypeID, r = DefaultResourceID, section = 2 },
@@ -1028,8 +1046,7 @@ where	[AllowChangeDetection] = 0").ToList();
                                         }
                                         catch (Exception wex)
                                         {
-                                            this.Log.WriteLine($"Workflow error - Company: {QueueModel.CompanyID}, Exception: {wex.GetFullExceptionData(false)}");
-                                            CoreFunction.AITrackException(functionName, wex);
+                                            writeLogEntry($"Workflow error - Company: {QueueModel.CompanyID}, Exception: {wex.GetFullExceptionData(false)}", currentStep);
                                         }
 
                                         #endregion
@@ -1063,9 +1080,9 @@ where	[AllowChangeDetection] = 0").ToList();
                     // Clear the execution fields to start.
                     if (totalPageCount > 0 && !ExecutionAssetTypeRetryLog.Begins.ProcessedResponsibilitiesPage.HasValue)
                     {
-                        Log.WriteLine($"Clear out ExecutionAssetField to start processing responsibility data");
+                        writeLogEntry($"Clear out ExecutionAssetField to start processing responsibility data", currentStep);
                         cnn.Execute(@"delete integration.ExecutionAssetField where SynchedAssetTypeID = @SynchedAssetTypeID and Section = @section", new { ExecutionAssetType.SynchedAssetTypeID, section = 3 }, commandTimeout: 3600);
-                        Log.WriteLine($"Parsing {totalPageCount} page(s) of responsibility data");
+                        writeLogEntry($"Parsing {totalPageCount} page(s) of responsibility data", currentStep);
                     }
 
                     foreach (var p in pages)
@@ -1094,6 +1111,7 @@ where	[AllowChangeDetection] = 0").ToList();
                                                 cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
 
                                             // Section 3 : Fields
+                                            writeLogEntry($"Executing section 3 of procedure for {SynchedAssetType.SourceAssetTypeName} - request number {requestNumber}", currentStep);
                                             cnn.Query<dynamic>(
                                                 procedureCommand,
                                                 new { ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID, requestNumber, SynchedAssetType.AssetTypeID, r = DefaultResourceID, section = 3 },
@@ -1126,7 +1144,8 @@ where	[AllowChangeDetection] = 0").ToList();
                     if (cnn.State != System.Data.ConnectionState.Open)
                         cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
 
-                    // Section 4 : Gather metric on this run
+                    // Gather metric on this run
+                    writeLogEntry($"Executing section 4 of procedure for {SynchedAssetType.SourceAssetTypeName} - request number {requestNumber}", currentStep);
                     cnn.Query<dynamic>(
                         procedureCommand,
                         new { ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID, requestNumber, SynchedAssetType.AssetTypeID, r = DefaultResourceID, section = 4 },
@@ -1144,13 +1163,13 @@ where	[AllowChangeDetection] = 0").ToList();
                 {
                     OnStepStarted(new StepStartedEventArgs { Step = currentStep });
 
-                    Log.WriteLine($"Process deletions");
+                    writeLogEntry($"Process deletions", currentStep);
 
                     // You can do a delete based on asset hash missing attributes.
                     if (cnn.State != System.Data.ConnectionState.Open)
                         cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
 
-                    // Section 3 : Fields
+                    writeLogEntry($"Executing section 5 of procedure for {SynchedAssetType.SourceAssetTypeName} - request number {requestNumber}", currentStep);
                     cnn.Query<dynamic>(
                         procedureCommand,
                         new { ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID, requestNumber, SynchedAssetType.AssetTypeID, r = DefaultResourceID, section = 5 },
@@ -1167,7 +1186,7 @@ where	[AllowChangeDetection] = 0").ToList();
                 {
                     OnStepStarted(new StepStartedEventArgs { Step = currentStep });
 
-                    Log.WriteLine($"Do final clearing of execution data like fields");
+                    writeLogEntry($"Do final clearing of execution data like fields", currentStep);
 
                     if (cnn.State != System.Data.ConnectionState.Open)
                         cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
@@ -1182,7 +1201,7 @@ where	[AllowChangeDetection] = 0").ToList();
                 {
                     OnStepStarted(new StepStartedEventArgs { Step = currentStep });
 
-                    Log.WriteLine($"Do final clearing of execution data like hash");
+                    writeLogEntry($"Do final clearing of execution data like hash", currentStep);
 
                     if (cnn.State != System.Data.ConnectionState.Open)
                         cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
@@ -1199,6 +1218,8 @@ where	[AllowChangeDetection] = 0").ToList();
             {
                 try
                 {
+                    writeLogEntry($"Do final clearing of execution data like hash", 99);
+
                     ExecutionAssetTypeRetryLog.LastRetryInError = true;
                     ExecutionAssetTypeRetryLog.RetryCount++;
 
@@ -1207,7 +1228,7 @@ where	[AllowChangeDetection] = 0").ToList();
                 }
                 catch (Exception cex)
                 {
-                    Log.WriteLine(cex.GetFullExceptionData(false));
+                    writeLogEntry(cex.GetFullExceptionData(false), 99);
                     CoreFunction.AITrackException(functionName, cex);
                 }
             }
@@ -1226,15 +1247,18 @@ where	[AllowChangeDetection] = 0").ToList();
 
                     ExecutionAssetType.RetryLog = JsonConvert.SerializeObject(ExecutionAssetTypeRetryLog);
 
-                    if (
-                        (
-                        ExecutionAssetType.ErrorMessage.Contains("403 (Forbidden)") || 
-                        ExecutionAssetType.ErrorMessage.Contains("Unexpected character encountered while parsing value: <. Path ''")
-                        )
-                        && !ExecutionAssetType.CompletedOn.HasValue
-                       )
+                    if (!string.IsNullOrEmpty(ExecutionAssetType.ErrorMessage))
                     {
-                        ExecutionAssetType.DelayUntil = DateTime.UtcNow.AddMinutes(30);
+                        if (
+                            (
+                            ExecutionAssetType.ErrorMessage.Contains("403 (Forbidden)") ||
+                            ExecutionAssetType.ErrorMessage.Contains("Unexpected character encountered while parsing value: <. Path ''")
+                            )
+                            && !ExecutionAssetType.CompletedOn.HasValue
+                           )
+                        {
+                            ExecutionAssetType.DelayUntil = DateTime.UtcNow.AddMinutes(30);
+                        }
                     }
 
                     Company.Update(ExecutionAssetType);
@@ -1246,7 +1270,7 @@ where	[AllowChangeDetection] = 0").ToList();
                 }
                 catch (Exception cex)
                 {
-                    Log.WriteLine(cex.GetFullExceptionData(false));
+                    writeLogEntry(cex.GetFullExceptionData(false), 99);
                     CoreFunction.AITrackException(functionName, cex);
                 }
             }
