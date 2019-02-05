@@ -129,7 +129,9 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
         this.updateCardinality();
     }
     private updateCardinality() {
-        this.cardinalityShow = (this.selected.Cardinality == 2) || (this.selected.Count == 0 && this.selected.Cardinality != 2);
+        if (this.selected != null) {
+            this.cardinalityShow = (this.selected.Cardinality == 2) || (this.selected.Count == 0 && this.selected.Cardinality != 2);
+        }
         this.hasAdd = this.cardinalityShow && this.hasRelationships && this.selected && this.hasModifyRelationshipsPermissions() && !this.readOnly;
     }
 }

@@ -1242,7 +1242,7 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
         FieldName nvarchar(250) not null,
         FieldValue nvarchar(max) null,
         FieldTypeID int null,
-        LookupValue nvarchar(250) null,
+        LookupValue nvarchar(max) null,
         Ignore bit null
     )", transaction: trans);
 
