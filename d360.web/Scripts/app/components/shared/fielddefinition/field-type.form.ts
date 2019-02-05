@@ -90,7 +90,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private errorMessage: string = "";
     private isListableRelationship: boolean = false;
 
-    public defaultDate:any;
+    public defaultDate: any;
+    public defaultLinkName: any;
+    public defaultLinkAdress: any;
 
     constructor(private fieldsService: FieldsService, private messagesService: MessagesService, private objectDetailService: ObjectDetailService) {
         super();
@@ -420,9 +422,14 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 break;
         }
         if (this.model.FieldType.Type == 'Date' && this.model.FieldType.DefaultValue != null) {
-            this.defaultDate = new Date(Number(this.model.FieldType.DefaultValue));
+            this.defaultDate = new Date(this.model.FieldType.DefaultValue);
         }
 
+        if (this.model.FieldType.Type == 'Link' && this.model.FieldType.DefaultValue != null) {
+            var link = this.model.FieldType.DefaultValue.split('|');
+            this.defaultLinkName = link[0];
+            this.defaultLinkAdress = link[1];
+        }
         return Promise.all(promises).then(() => {
         });
     }
@@ -671,6 +678,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.model.FilteredLookupItem = item;
         }
 
+        if (this.model.FieldType.Type == 'Link' ) {
+            this.model.FieldType.DefaultValue = this.defaultLinkName + '|' + this.defaultLinkAdress;
+        }
         this.isLoading = true;
         if (this.model.FieldType.ID > 0) {
             this.fieldsService.putFieldType(this.model)
@@ -1074,9 +1084,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     }
     private onDateSelectMethod(e: Date)
     {
-        this.model.FieldType.DefaultValue = e.getTime().toString();
+        this.model.FieldType.DefaultValue =  e.getDay() + '/' + e.getMonth() + '/' + e.getFullYear();
         this.defaultDate = e;
     }
+  
     public isRelationshipWithMultipleCardinality(): boolean {
         
         return true;

@@ -185,6 +185,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             this.quill = this.ed.quill;
         else
             this.quill = null;
+
     }
 
     ngAfterViewChecked() {

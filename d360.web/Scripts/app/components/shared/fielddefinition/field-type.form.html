@@ -196,9 +196,16 @@
             <div class="row">
                 <div class="col l6 m6 s12">
                     <p-dropdown *ngIf="model.FieldType.Type == 'Boolean'" [options]="booleanDefaultValueOptions" [(ngModel)]="model.FieldType.DefaultValue" [style]="{ 'width': '98%' }" ngDefaultControl [ngModelOptions]="{standalone: true}"></p-dropdown>
-                    <p-dropdown *ngIf="model.FieldType.Type == 'Lookup'" [options]="lookupDefaultValueOptions" [(ngModel)]="model.FieldType.DefaultValue" [style]="{ 'width': '98%' }" ngDefaultControl [ngModelOptions]="{standalone: true}"></p-dropdown> prime controls
-                    <input *ngIf="model.FieldType.Type == 'Text'|| model.FieldType.Type == 'Html' " pInputText type="text" [(ngModel)]="model.FieldType.DefaultValue" style="width: 98%; display: block;" [ngModelOptions]="{standalone: true}" />
-                    <p-calendar ngIf="model.FieldType.Type == 'Date'"   [(ngModel)]="model.FieldType.DefaultValue"></p-calendar>
+                    <p-dropdown *ngIf="model.FieldType.Type == 'Lookup'" [options]="lookupDefaultValueOptions" [(ngModel)]="model.FieldType.DefaultValue" [style]="{ 'width': '98%' }" ngDefaultControl [ngModelOptions]="{standalone: true}"></p-dropdown>
+                    <p-calendar *ngIf="model.FieldType.Type == 'Date'" [ngModelOptions]="{standalone: true}" [(ngModel)]="defaultDate" (onSelect)="onDateSelectMethod($event)"></p-calendar>
+                    <input *ngIf="model.FieldType.Type == 'Text' " pInputText type="text" [(ngModel)]="model.FieldType.DefaultValue" style="width: 98%; display: block;" [ngModelOptions]="{standalone: true}" />
+                    <p-editor *ngIf="model.FieldType.Type == 'Html'" [(ngModel)]="model.FieldType.DefaultValue" [ngModelOptions]="{standalone: true}"></p-editor>
+                    <div *ngIf="model.FieldType.Type == 'Link'"  >
+                        <input  [(ngModel)]="defaultLinkName" style="width: 100%;" type="string" [ngModelOptions]="{standalone: true}">
+                        <div>(Link Name)</div>
+                        <input  [(ngModel)]="defaultLinkAdress" style="width: 100%;" type="string" [ngModelOptions]="{standalone: true}">
+                        <div>(Link Url: Your Url should start with a protocol prefix.  For example 'http://' or 'https://')</div>
+                    </div>
                     <input *ngIf="model.FieldType.Type == 'Number' || model.FieldType.Type == 'Decimal'" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}"  (change)="validateIncrement(model.FieldType.Type)" [(ngModel)]="model.FieldType.DefaultValue" style="width: 98%; display: block;" [ngModelOptions]="{standalone: true}" />
                 </div>
                 <div class="col l1 m1 s12" *ngIf="model.FieldType.Type == 'Lookup'">
