@@ -6,6 +6,7 @@ import { HttpModule, XHRBackend  }     from '@angular/http';
 import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
 
 import {
+    CalendarModule,
     ButtonModule,
     DropdownModule,
     InputTextModule,
@@ -42,6 +43,7 @@ import { FieldDefinitionComponent } from './field-definition.component';
         SimpleAccordionModule,   
 
         //prime
+        CalendarModule,
         ButtonModule,
         CheckboxModule,
         DropdownModule,
