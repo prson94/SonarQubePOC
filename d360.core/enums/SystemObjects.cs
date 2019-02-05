@@ -18,7 +18,9 @@ namespace d360.core
         ArtifactType,
         [Description("Attribute"), AllowOwnership(false), EnableAudit(true), IsType(false)]
         Attribute,
-        [Description("Attribute Group"), EnableAudit(false), IsType(true)]
+        [Description("Attribute Group"), EnableAudit(false), IsType(true), 
+         ExcludeDataType(DataType.FieldFromRelationship | DataType.FilteredLookup | DataType.FusionLookup | 
+            DataType.OwnershipLookup | DataType.RefListRelationship | DataType.ComplexRelationLookup |DataType.Relationship)]
         AttributeType,
         [Description("Email Template"), AllowOwnership(false), EnableAudit(true), IsType(false)]
         EmailTemplate,
@@ -26,15 +28,21 @@ namespace d360.core
         Fusion,
         [Description("Fusion Attribute"), EnableAudit(false), IsType(false)]
         FusionAttribute,
-        [Description("Fusion Attribute Type"), EnableAudit(true), IsType(true)]
+        [Description("Fusion Attribute Type"), EnableAudit(true), IsType(true), 
+        ExcludeDataType(DataType.FilteredLookup | DataType.FusionLookup | DataType.OwnershipLookup | DataType.RefListRelationship)]
         FusionAttributeType,
-        [Description("Fusion Type"), EnableAudit(true), IsType(true)]
+        [Description("Fusion Type"), EnableAudit(true), IsType(true), 
+            ExcludeDataType(DataType.FieldFromRelationship | DataType.FilteredLookup |
+            DataType.FusionLookup | DataType.Link | DataType.Lookup | DataType.OwnershipLookup |
+            DataType.RefListRelationship | DataType.ComplexRelationLookup | DataType.Relationship)]
         FusionType,
         [Description("Group"), EnableAudit(true), IsType(false)]
         Group,
         [Description("Intersect"), EnableAudit(false), IsType(false)]
         Intersect,
-        [Description("Intersect Type"), EnableAudit(true), IsType(true)]
+        [Description("Intersect Type"), EnableAudit(true), IsType(true), 
+            ExcludeDataType(DataType.FieldFromRelationship | DataType.FilteredLookup | DataType.FusionLookup |
+            DataType.OwnershipLookup | DataType.RefListRelationship | DataType.ComplexRelationLookup | DataType.Relationship)]
         IntersectType,
         [Description("Lookup Item"), EnableAudit(false), IsType(false)]
         Lookup,
@@ -42,13 +50,16 @@ namespace d360.core
         LookupType,
         [Description("Resource"), AllowOwnership(false), EnableAudit(false), IsType(false)]
         Resource,
-        [Description("Resource Type"), AllowOwnership(false), AllowSurvey(true), EnableAudit(false), IsType(true)]
+        [Description("Resource Type"), AllowOwnership(false), AllowSurvey(true), EnableAudit(false), IsType(true),
+            ExcludeDataType(DataType.FieldFromRelationship | DataType.FilteredLookup | DataType.FusionLookup |
+            DataType.OwnershipLookup | DataType.RefListRelationship | DataType.ComplexRelationLookup | DataType.Relationship)]
         ResourceType,
         [Description("Survey Type"), AllowSurvey(false), EnableAudit(true), IsType(true)]
         SurveyType,
         [Description("Taxonomy"), EnableAudit(true), IsType(false)]
         Taxonomy,
-        [Description("Taxonomy Type"), AllowSurvey(true), EnableAudit(true), IsType(true)]
+        [Description("Taxonomy Type"), AllowSurvey(true), EnableAudit(true), IsType(true), 
+            ExcludeDataType(DataType.FilteredLookup | DataType.FusionLookup)]
         TaxonomyType,
         [Description("Tooltip  Template"), AllowOwnership(false), EnableAudit(false), IsType(false)]
         TooltipTemplate,
@@ -78,11 +89,13 @@ namespace d360.core
         AttributeTypeCategory,
         [Description("Policy"), AllowSurvey(false), EnableAudit(true), IsType(false)]
         Policy,
-        [Description("Policy Type"), AllowSurvey(false), EnableAudit(true), IsType(true)]
+        [Description("Policy Type"), AllowSurvey(false), EnableAudit(true), IsType(true),
+              ExcludeDataType(DataType.FilteredLookup | DataType.FusionLookup)]
         PolicyType,
         [Description("Rule"), AllowSurvey(false), EnableAudit(true), IsType(false)]
         Rule,
-        [Description("Rule Type"), AllowSurvey(false), EnableAudit(true), IsType(true)]
+        [Description("Rule Type"), AllowSurvey(false), EnableAudit(true), IsType(true), 
+            ExcludeDataType(DataType.FilteredLookup | DataType.FusionLookup)]
         RuleType,
         [Description("Fusion Execution"), AllowSurvey(false), EnableAudit(false), IsType(false)]
         FusionExecution,
@@ -100,15 +113,21 @@ namespace d360.core
         MapType,
         [Description("Reference Item"), AllowSurvey(false), EnableAudit(true), IsType(false)]
         ReferenceItem,
-        [Description("Reference Item Type"), AllowSurvey(false), EnableAudit(true), IsType(true)]
+        [Description("Reference Item Type"), AllowSurvey(false), EnableAudit(true), IsType(true),
+               ExcludeDataType(DataType.FilteredLookup | DataType.FusionLookup)]
         ReferenceItemType,
         [Description("Fusion Query Attribute"), EnableAudit(false), IsType(false)]
         FusionQueryAttribute,
-        [Description("Fusion Query Attribute Type"), EnableAudit(true), IsType(true)]
+        [Description("Fusion Query Attribute Type"), EnableAudit(true), IsType(true),
+                    ExcludeDataType(DataType.FieldFromRelationship | DataType.FilteredLookup |
+                    DataType.FusionLookup | DataType.Link | DataType.Lookup | DataType.OwnershipLookup |
+                    DataType.RefListRelationship | DataType.ComplexRelationLookup | DataType.Relationship)]
         FusionQueryAttributeType,
         [Description("Monitor"), AllowSurvey(false), EnableAudit(false), IsType(false)]
         Monitor,
-        [Description("Issue Type"), EnableAudit(true), IsType(true)]
+        [Description("Issue Type"), EnableAudit(true), IsType(true), 
+            ExcludeDataType(DataType.FieldFromRelationship | DataType.FilteredLookup | DataType.FusionLookup |
+            DataType.OwnershipLookup | DataType.RefListRelationship | DataType.ComplexRelationLookup | DataType.Relationship)]
         IssueType,
         [Description("Issue"), EnableAudit(false), IsType(false)]
         Issue,
@@ -130,7 +149,9 @@ namespace d360.core
         ShoppingCart,
         [Description("Rule Implementation Type"), EnableAudit(true), IsType(true)]
         RuleImplementationType,
-        [Description("Organization Type"), EnableAudit(true), IsType(true)]
+        [Description("Organization Type"), EnableAudit(true), IsType(true), 
+            ExcludeDataType(DataType.FieldFromRelationship | DataType.FilteredLookup | DataType.FusionLookup |
+            DataType.OwnershipLookup | DataType.RefListRelationship | DataType.ComplexRelationLookup | DataType.Relationship)]
         OrganizationType,
         [Description("Export Template"), EnableAudit(true), IsType(true)]
         ExportTemplate
@@ -155,6 +176,15 @@ namespace d360.core
         public static bool IsType(this SystemObjects type)
         {
             return type.GetType().GetMember(type.ToString()).Single().GetCustomAttribute<IsTypeAttribute>().IsType;
+        }
+
+        public static DataType ExcludeDataType(this SystemObjects type)
+        {
+            var etype = type.GetType().GetMember(type.ToString()).Single().GetCustomAttribute<ExcludeDataTypeAttribute>();
+            if (etype == null)
+                return DataType.None;
+            else
+                return etype.Excluded;
         }
 
         public static List<SystemObjectInfo> GetSystemObjectInfoList(this SystemObjects type)
