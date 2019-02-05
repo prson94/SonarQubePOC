@@ -1,5 +1,5 @@
 ﻿import { Input, Component, EventEmitter, Output, OnChanges, SimpleChange, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { FormArray, FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
+import { FormArray, FormGroup, FormBuilder, Validators, FormControl, ValidatorFn, AbstractControl } from '@angular/forms';
 import { EditorDefinitionService } from '../../../services/editor-definition.service';
 import { UriBasedService } from '../../../services/uri-based.service';
 import { MessagesService } from '../../../services/messages.service';
@@ -203,6 +203,22 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         return new FormGroup(group);
     }
 
+    private incrementValidator(number: number): ValidatorFn {
+        return (control: AbstractControl): { [key: string]: any } | null => {
+            let valid = true; 
+            if (!control.value || control.value == "") {
+                return null;
+            }
+            let valueAsnumber = +control.value;
+            if (valueAsnumber % number != 0) {
+                valid = false;
+            }
+            return !valid ? {
+                "increment": { incrementValue: number }
+            } : null;
+        };
+    }
+
     private getFieldValidators(field: EditorField) {        
         var validators = [];
 
@@ -225,9 +241,13 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 else if (validation.rule && validation.rule.startsWith('required')) {
                     validators.push(Validators.compose([Validators.required]));
                 }
+                else if (validation.rule && validation.rule.startsWith('increment')) {
+                    validators.push(this.incrementValidator(+validation.rule.split("increment=")[1]))
+                }
                 else if (validation.regex) {
                     validators.push(Validators.pattern(validation.regex));
                 }
+                validators.push()
             }
         }
 

@@ -942,6 +942,25 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
     }
 
+    private validateIncrement() {
+        if (this.model.FieldType.Increment > 0) {
+            if (this.model.FieldType.MinimumLength && this.model.FieldType.MinimumLength % this.model.FieldType.Increment != 0) {
+                this.errorMessage = 'Minimum length is not an increment of ' + this.model.FieldType.Increment;
+            }
+            else if (this.model.FieldType.MaximumLength && this.model.FieldType.MaximumLength % this.model.FieldType.Increment != 0) {
+                this.errorMessage = 'Maximum length is not an increment of ' + this.model.FieldType.Increment;
+            }
+            else if (this.model.FieldType.DefaultValue && +this.model.FieldType.DefaultValue % this.model.FieldType.Increment != 0) {
+                this.errorMessage = 'Default value invalid.';
+            }
+            else {
+                this.errorMessage = '';
+            } 
+        } else {
+            this.errorMessage = '';
+        }
+    }
+
     private updateApiName(event) {
         this.model.FieldType.Name = event.target.value.replace(/[^a-zA-Z0-9_]/g, ''); 
     }

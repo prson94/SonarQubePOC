@@ -111,6 +111,7 @@ export class FieldType {
     FieldTypeFusionLookupDefinitions: FieldTypeFusionLookupDefinition[];
     FieldTypeRelationLookupDefinitions: FieldTypeRelationLookupDefinition[];
     ParentFieldTypeID: number;
+    Increment: number;
 }
 
 export class Field {

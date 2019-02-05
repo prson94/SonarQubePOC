@@ -140,27 +140,31 @@
             </div>
         </simple-accordion>
 
-        <simple-accordion header="Validation" active="true" *ngIf="model.FieldType.Type == 'Text'">
+        <simple-accordion header="Validation" active="true" *ngIf="model.FieldType.Type == 'Text' || model.FieldType.Type == 'Number'">
             <div class="row">
-                <div class="col s3">
+                <div *ngIf="model.FieldType.Type == 'Text'" class="col s3">
                     <div id='PatternTip' class="FieldName">Validation Pattern</div>
                     <input name="validationPattern" pInputText type="text" [(ngModel)]="model.FieldType.Pattern" (change)="validatePattern()" style="width: 98%; display: block;" />
                 </div>
-                <div class="col s3">
+                <div *ngIf="model.FieldType.Type == 'Text'" class="col s3">
                     <div class="FieldName" style="display:block">&nbsp;</div>
                     <p-dropdown name="validationPattersOpt" [options]="lookups.Patterns" (onChange)="model.FieldType.Pattern = $event.value; validatePattern()" [style]="{ 'width': '98%' }" ngDefaultControl></p-dropdown>
                 </div>
+                <div *ngIf="model.FieldType.Type == 'Number'" class="col s3">
+                    <div class="FieldName" style="display:block">Increment</div>
+                    <input name="validationIncrement" type="number" [(ngModel)]="model.FieldType.Increment" (change)="validateIncrement()" style="width: 98%; display: block;" />
+                </div>
                 <div class="col s3">
                     <div id='MinimumLengthTip' class="FieldName">Minimum Length</div>
-                    <input name="minLength" type="number" [disabled]="!model.FieldType.IsRequired" [(ngModel)]="model.FieldType.MinimumLength" style="width: 98%; display: block;" />
+                    <input name="minLength" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}" [disabled]="!model.FieldType.IsRequired" [(ngModel)]="model.FieldType.MinimumLength" (change)="validateIncrement()" style="width: 98%; display: block;" />
                 </div>
                 <div class="col s3">
                     <div id='MaximumLengthTip' class="FieldName">Maximum Length</div>
-                    <input name="maxLength" type="number" [(ngModel)]="model.FieldType.MaximumLength" style="width: 98%; display: block;" />
+                    <input name="maxLength" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}" [(ngModel)]="model.FieldType.MaximumLength" (change)="validateIncrement()" style="width: 98%; display: block;" />
                 </div>
             </div>
-            <div class="row" *ngIf="model.FieldType.Pattern?.length > 0">
-                <div class="col s3">
+            <div class="row" *ngIf="model.FieldType.Pattern?.length > 0 || model.FieldType.Increment > 0">
+                <div *ngIf="model.FieldType.Type == 'Text'" class="col s3">
                     <div class="FieldNameRequired">Test Pattern</div>
                     <input name="testPattern" pInputText type="text" [(ngModel)]="testPattern" (change)="validatePattern()" style="width: 98%; display: block;" />
                 </div>
@@ -170,14 +174,14 @@
                 </div>
             </div>
             <div class="row" *ngIf="model.FieldType.Pattern?.length > 0 || model.FieldType.MinimumLength > 0 || model.FieldType.IsRequired">
-                <div class="col s12">
+                <div *ngIf="model.FieldType.Type != 'Number'" class="col s12">
                     <div id='ValidationDescriptionTip' class="FieldName">Validation Message</div>
                     <textarea pInputTextarea autoResize="'true'" [(ngModel)]="model.FieldType.ValidationDescription" [ngModelOptions]="{standalone: true}"></textarea>
                 </div>
             </div>
         </simple-accordion>
 
-        <simple-accordion header="Value Selection" active="true" *ngIf="model.FieldType.Type == 'Lookup' || model.FieldType.Type == 'Text' || model.FieldType.Type == 'Boolean'">
+        <simple-accordion header="Value Selection" active="true" *ngIf="model.FieldType.Type == 'Lookup' || model.FieldType.Type == 'Text' || model.FieldType.Type == 'Boolean' || model.FieldType.Type == 'Number'">
             <div class="row">
                 <div class="col l6 m6 s12">
                     <div class="FieldName">Default Value (if any)</div>
@@ -191,6 +195,7 @@
                     <p-dropdown *ngIf="model.FieldType.Type == 'Boolean'" [options]="booleanDefaultValueOptions" [(ngModel)]="model.FieldType.DefaultValue" [style]="{ 'width': '98%' }" ngDefaultControl [ngModelOptions]="{standalone: true}"></p-dropdown>
                     <p-dropdown *ngIf="model.FieldType.Type == 'Lookup'" [options]="lookupDefaultValueOptions" [(ngModel)]="model.FieldType.DefaultValue" [style]="{ 'width': '98%' }" ngDefaultControl [ngModelOptions]="{standalone: true}"></p-dropdown>
                     <input *ngIf="model.FieldType.Type == 'Text'" pInputText type="text" [(ngModel)]="model.FieldType.DefaultValue" style="width: 98%; display: block;" [ngModelOptions]="{standalone: true}" />
+                    <input *ngIf="model.FieldType.Type == 'Number'" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}"  (change)="validateIncrement()" [(ngModel)]="model.FieldType.DefaultValue" style="width: 98%; display: block;" [ngModelOptions]="{standalone: true}" />
                 </div>
                 <div class="col l1 m1 s12" *ngIf="model.FieldType.Type == 'Lookup'">
                     <p-checkbox binary="true" [(ngModel)]="model.FieldType.AllowAllValue" [ngModelOptions]="{standalone: true}"></p-checkbox>
@@ -502,7 +507,7 @@
         <div class="row">
             <div class="col s12">
                 <div style="padding-top:10px">
-                    <button pButton type="submit" [disabled]="!fieldEditor.form.valid || !displayFieldSelected ||  !valid()" label="Save"></button>
+                    <button pButton type="submit" [disabled]="!fieldEditor.form.valid || !displayFieldSelected ||  !valid() || errorMessage != ''" label="Save"></button>
                     <button pButton type="button" label="Cancel" (click)="cancel()"></button>
                 </div>
             </div>

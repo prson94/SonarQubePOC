@@ -70,4 +70,5 @@
   <include file="scripts/GOV-6442.xml"/>
   <!-- Sprint 2 2019 Start      -->
   <include file="scripts/GOV-6507.xml"/>
+  <include file="scripts/GOV-6287.xml"/>
 </databaseChangeLog>

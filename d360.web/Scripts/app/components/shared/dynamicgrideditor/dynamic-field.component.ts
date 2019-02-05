@@ -229,10 +229,10 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             message += this.regexErrorMessage;
         }
         if (errors["number"]) {
-            message += "Please enter a valid number";
+            message += "Please enter a valid number. ";
         }
         if (errors["integer"]) {
-            message += "Please enter a valid integer";
+            message += "Please enter a valid integer. ";
         }
         if (errors["maxlength"]) {
             message += `${this.currentFieldName} maximum length of ${errors["maxlength"].requiredLength} characters exceeded.  Current length is [${errors["maxlength"].actualLength}]`;
@@ -244,6 +244,9 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
         if (errors["required"]) {
             message += `${this.currentFieldName} is required.  `;
+        }
+        if (errors["increment"]) {
+            message += `${this.currentFieldName} is required to be an increment of ${errors["increment"].incrementValue}.`;
         }
 
         return message;

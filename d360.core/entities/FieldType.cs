@@ -115,6 +115,9 @@ namespace d360.core.entities
         [DataMember]
         public int UpdatedBy { get; set; }
 
+        [DataMember]
+        public int? Increment { get; set; }
+
         [IgnoreDataMember, ForeignKey("FieldTypeID")]
         public virtual ICollection<Field> Fields { get; set; }
 
