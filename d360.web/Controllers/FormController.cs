@@ -10930,6 +10930,7 @@ if @OwnerSourceType = 'Artifact'
 	end
 
 		insert into @h values (@id)
+        insert into @h select id from @Owners
 
 
 select	'FusionAttribute' as [Object], 
