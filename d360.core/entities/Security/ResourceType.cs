@@ -30,7 +30,7 @@ namespace d360.core.entities
 
         #endregion
 
-        [IgnoreDataMember, ForeignKey("ResourceTypeID")]
+        [IgnoreDataMember]
         public virtual ICollection<Resource> Resources { get; set; }
     }
 }
