@@ -2,59 +2,63 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
+using System.Linq;
 
 namespace d360.core
 {
+    [Flags]
     public enum DataType
     {
+        [Description("None")] 
+        None =0, // Not used as a type ;used for logical computing
         [Description("True/False")]
-        Boolean,
+        Boolean= 1 << 0,
         [Description("Date")]
-        Date,
+        Date= 1 << 1,
         [Description("Date With Time")]
-        DateTime,
+        DateTime=1 << 2,
         [Description("File"), ReadOnly(true)]
-        File,
+        File= 1 << 3,
         [Description("Hidden"), ReadOnly(true)]
-        Hidden,
+        Hidden= 1 << 4,
         [Description("Html/Richtext")]
-        Html,
+        Html= 1 << 5,
         [Description("Number")]
-        Number,
+        Number= 1 << 6,
         [Description("Decimal Number")]
-        Decimal,
+        Decimal= 1 << 7,
         [Description("List")]
-        Lookup,
+        Lookup= 1 << 8,
         [Description("Simple Text")]
-        Text,
+        Text= 1 << 9,
         [Description("Password"), ReadOnly(true)]
-        Password,
+        Password= 1 << 10,
         [Description("Link")]
-        Link,
+        Link= 1 << 11,
         [Description("UNC/File Link"), ReadOnly(true)]
-        UncLink,
+        UncLink= 1 << 12,
         [Description("Color Picker"), ReadOnly(true)]
-        Color,
+        Color= 1 << 13,
         [Description("Fusion Lookup")]
-        FusionLookup,
+        FusionLookup= 1 << 14,
         [Description("Attribute Hierarchy"), ReadOnly(true)]
-        Attribute,
+        Attribute= 1 << 15,
         [Description("Filtered Lookup")]
-        FilteredLookup,
+        FilteredLookup= 1 << 16,
         [Description("Relation Lookup")]
-        ComplexRelationLookup,
+        ComplexRelationLookup = 1 << 17,
         [Description("Percentage"), ReadOnly(true)]
-        Percentage, // used for range of > 0 and < 1
+        Percentage = 1 << 18, // used for range of > 0 and < 1
         [Description("DataTableSelect"), ReadOnly(true)]
-        DataTableSelect,
+        DataTableSelect = 1 << 19,
         [Description("Ownership Lookup")]
-        OwnershipLookup,
+        OwnershipLookup= 1 << 20,
         [Description("Relationship")]
-        Relationship,
+        Relationship = 1 << 21,
         [Description("Field from Relationship")]
-        FieldFromRelationship,
+        FieldFromRelationship= 1 << 22,
         [Description("Reference Item List from Relationship")]
-        RefListRelationship
+        RefListRelationship= 1 << 23
     } 
 
     public class DataTypeInfo
@@ -74,6 +78,8 @@ namespace d360.core
             foreach (MemberInfo tm in type.GetType().GetMembers(BindingFlags.Public | BindingFlags.Static))
             {
                 var aReadOnly = ((ReadOnlyAttribute)tm.GetCustomAttribute(typeof(ReadOnlyAttribute)));
+                if ((DataType)Enum.Parse(typeof(DataType), tm.Name) == DataType.None)
+                    continue;
                 var info = new DataTypeInfo
                 {
                     ReadOnly = (aReadOnly != null) ? aReadOnly.IsReadOnly : false,
@@ -85,6 +91,31 @@ namespace d360.core
             }
 
             return list;
-        }    
+        }
+
+        public static List<DataTypeInfo> GetDataTypeInfoList(this DataType type, SystemObjects sysObj)
+        {
+            var list = new List<DataTypeInfo>();
+
+            var excludes = sysObj.ExcludeDataType();
+            foreach (MemberInfo tm in type.GetType().GetMembers(BindingFlags.Public | BindingFlags.Static))
+            {
+                var aReadOnly = ((ReadOnlyAttribute)tm.GetCustomAttribute(typeof(ReadOnlyAttribute)));
+                if (((excludes & (DataType)Enum.Parse(typeof(DataType), tm.Name)) != DataType.None) || ((DataType)Enum.Parse(typeof(DataType), tm.Name) == DataType.None))
+                    continue;
+              
+                var info = new DataTypeInfo
+                {
+                    ReadOnly = (aReadOnly != null) ? aReadOnly.IsReadOnly : false,
+                    Description = ((DescriptionAttribute)tm.GetCustomAttribute(typeof(DescriptionAttribute))).Description,
+                    ID = (DataType)Enum.Parse(typeof(DataType), tm.Name),
+                    Name = tm.Name
+                };
+                list.Add(info);
+            }
+
+            return list;
+        }
+
     }
 }
