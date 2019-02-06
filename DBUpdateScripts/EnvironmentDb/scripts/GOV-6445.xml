@@ -16,7 +16,7 @@ CREATE OR ALTER PROCEDURE [dbo].[AzureSQLMaintenance]
 @Operation NVARCHAR(30) ='reindex' 
 ,@From INT = 30 
 ,@To INT = 100
-,@MinNumberOfPages = 10
+,@MinNumberOfPages INT = 10
 AS
 
 DECLARE @SQLString NVARCHAR(4000), @Schema NVARCHAR(40), @Table NVARCHAR(100), @Index NVARCHAR(100);
