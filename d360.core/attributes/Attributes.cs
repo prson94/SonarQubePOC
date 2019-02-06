@@ -141,4 +141,15 @@ namespace d360.core
             Allowed = allowed;
         }
     }
+
+    public class ExcludeDataTypeAttribute : Attribute
+    {
+        public DataType Excluded { get; set; }
+
+        public ExcludeDataTypeAttribute(DataType exclude)
+        {
+            this.Excluded = exclude;
+        }
+    }
+
 }
