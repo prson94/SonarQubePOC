@@ -1,0 +1,32 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="GOV-6520">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+IF COL_LENGTH('integration.SynchedAssetType', 'EnableAppInsightsVerboseLogging') IS NULL
+BEGIN
+    alter table [integration].[SynchedAssetType] add EnableAppInsightsVerboseLogging bit constraint DF_IntegrationSynchedAssetType_EnableAppInsightsVerboseLogging default(0) not null
+END
+]]>
+    </sql>
+    <rollback>
+<![CDATA[
+IF COL_LENGTH('integration.SynchedAssetType', 'EnableAppInsightsVerboseLogging') IS NOT NULL
+BEGIN
+	alter table [integration].[SynchedAssetType] DROP CONSTRAINT [DF_IntegrationSynchedAssetType_EnableAppInsightsVerboseLogging]
+    alter table integration.SynchedAssetType drop column EnableAppInsightsVerboseLogging
+END
+]]>
+    </rollback>
+  </changeSet>
+   
+  </databaseChangeLog>
