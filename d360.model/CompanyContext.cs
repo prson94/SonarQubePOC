@@ -1049,32 +1049,22 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
             return GetObjectStyle(type.ToString(), id);
         }
 
-        public T GetParentType<T>(int id)  where T : BaseIntObject
+        public AssetType GetParentType(int id, SystemObjects obj)
         {
-            string type = "";
+            if ( id < 0)
+                return default(AssetType);
 
-            if (typeof(T) == typeof(ArtifactType))
-                type = SystemObjects.ArtifactType.ToString();
-            else if (typeof(T) == typeof(TaxonomyType))
-                type = SystemObjects.TaxonomyType.ToString();
-            else if (typeof(T) == typeof(FusionAttributeType))
-                type = SystemObjects.FusionAttributeType.ToString();
-            else if (typeof(T) == typeof(ReferenceItemType))
-                type = SystemObjects.ReferenceItemType.ToString();
+            var sql = @"select a.id from IntersectType I
+                               inner join [Predicate] P on P.ID = I.PredicateID
+            inner join AssetType a on a.object = i.subject and a.objectid = i.subjectid
+                               where P.[Type] = @type and i.[Object] = @object and i.[ObjectID] = @objectId";
 
-            if (string.IsNullOrEmpty(type) || id < 0)
-                return default(T);
-
-            var sql = @"select I.SubjectID from IntersectType I
-                    inner join [Predicate] P on P.ID = I.PredicateID
-                    where P.[Type] = @type and [Object] = @object and ObjectID = @objectId";
-            var parentId = Query<int>(sql, new { type = (int)PredicateType.InterTypeHierarchy, @object = type, objectId = id }).FirstOrDefault();
+            var parentId = Query<int>(sql, new { type = (int)PredicateType.InterTypeHierarchy, @object = obj.ToString(), objectId = id }).FirstOrDefault();
 
             if (parentId < 1)
-                return default(T);
+                return default(AssetType);
 
-            return GetById<T>(parentId);
-
+            return GetById<AssetType>(parentId);
         }
 
         public bool UpdateObjectParentRelationship(SystemObjects type, int typeId, SystemObjects objectType, int parentID, int objectID, PredicateType predicateType = PredicateType.InterTypeHierarchy)
@@ -1159,29 +1149,19 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
 
             return intersectType;
         }
-        public IEnumerable<T> GetChildTypes<T>(int id) where T : BaseIntObject
+
+        public IEnumerable<AssetType> GetChildTypes(int id, SystemObjects obj) 
         {
-            string type = "";
-
-            if (typeof(T) == typeof(ArtifactType))
-                type = SystemObjects.ArtifactType.ToString();
-            else if (typeof(T) == typeof(TaxonomyType))
-                type = SystemObjects.TaxonomyType.ToString();
-            else if (typeof(T) == typeof(FusionAttributeType))
-                type = SystemObjects.FusionAttributeType.ToString();
-
-            if (string.IsNullOrEmpty(type) || id < 0)
-                return new List<T>();
-
+            
             var sql = @"select I.ObjectID from IntersectType I
                     inner join [Predicate] P on P.ID = I.PredicateID
                     where P.[Type] = @type and [Subject] = @object and SubjectID = @objectId";
-            var childIds = Query<int>(sql, new { type = (int)PredicateType.InterTypeHierarchy, @object = type.ToString(), objectId = id });
+            var childIds = Query<int>(sql, new { type = (int)PredicateType.InterTypeHierarchy, @object = obj.ToString(), objectId = id });
 
             if (!childIds.Any())
-                return new List<T>();
+                return new List<AssetType>();
 
-            return childIds.Select(t => GetById<T>(t));
+            return childIds.Select(t => GetById<AssetType>(t));
         }
 
         public bool TypeHasParent(SystemObjects type, int id)
@@ -1222,74 +1202,42 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
             return Query<dynamic>(sql, new { type = (int)PredicateType.InterTypeHierarchy, @object = type.ToString(), objectId = id }).Any();
         }
 
-        public T GetParentObject<T>(int id) where T : BaseIntObject
-        {
-            string type = "";
+        public AssetDetail GetParentObject(int id, SystemObjects obj) { 
+            //string type = "";
             var predicateType = PredicateType.InterTypeHierarchy;
 
-            if (typeof(T) == typeof(Artifact))
-            {
-                type = SystemObjects.Artifact.ToString();
-            }
-            else if (typeof(T) == typeof(Policy))
-            {
-                type = SystemObjects.Policy.ToString();
-                predicateType = PredicateType.IntraTypeHierarchy;
-            }
-            else if (typeof(T) == typeof(Taxonomy))
-            {
-                type = SystemObjects.Taxonomy.ToString();
-                predicateType = PredicateType.IntraTypeHierarchy;
-            }
-            else if (typeof(T) == typeof(FusionAttribute))
-            {
-                type = SystemObjects.FusionAttribute.ToString();
-            }
-            else if (typeof(T) == typeof(ReferenceItem))
-            {
-                type = SystemObjects.ReferenceItem.ToString();
-            }
-                
 
-            if (string.IsNullOrEmpty(type) || id < 0)
-                return default(T);
+            switch (obj)
+            {
+                case SystemObjects.Policy:
+                    predicateType = PredicateType.IntraTypeHierarchy;
+                    break;
+                case SystemObjects.Taxonomy:
+                    predicateType = PredicateType.IntraTypeHierarchy;
+                    break;
+                default:
+                    predicateType = PredicateType.InterTypeHierarchy;
+                    break;
 
-            var sql = @"select I.SubjectID from PredicateIntersect I
+            }
+
+
+            if ( id < 0)
+                return default(AssetDetail);
+
+            var sql = @"select a.Id from PredicateIntersect I
                     inner join IntersectType T on T.ID = I.IntersectTypeID
+                    inner join Asset a on a.object = i.subject and a.objectid = i.subjectid
                     where I.PredicateType = @type and I.[Object] = @object and I.ObjectID = @objectId";
-            var parentId = Query<int>(sql, new { type = (int)predicateType, @object = type.ToString(), objectId = id }).FirstOrDefault();
+
+            var parentId = Query<int>(sql, new { type = (int)predicateType, @object = obj.ToString(), objectId = id }).FirstOrDefault();
             if (parentId < 1)
-                return default(T);
+                return default(AssetDetail);
 
-            return GetById<T>(parentId);
+              return Filter<AssetDetail>(i => i.ID == parentId).FirstOrDefault();
         }
-        
-        public IEnumerable<T> GetChildObjects<T>(int id, PredicateType predicateType = PredicateType.InterTypeHierarchy) where T : BaseIntObject
-        {
-            string type = "";
 
-            if (typeof(T) == typeof(Artifact))
-                type = SystemObjects.Artifact.ToString();
-            else if (typeof(T) == typeof(Taxonomy))
-                type = SystemObjects.Taxonomy.ToString();
-            else if (typeof(T) == typeof(FusionAttribute))
-                type = SystemObjects.FusionAttribute.ToString();
-            else if (typeof(T) == typeof(Policy))
-                type = SystemObjects.Policy.ToString();
 
-            if (string.IsNullOrEmpty(type) || id < 0)
-                return new List<T>();
-
-            var sql = @"select I.ObjectID from PredicateIntersect I
-                    inner join IntersectType T on T.ID = I.IntersectTypeID
-                    where I.PredicateType = @type and I.[Subject] = @object and I.SubjectID = @objectId";
-            var childIds = Query<int>(sql, new { type = (int)predicateType, @object = type.ToString(), objectId = id });
-
-            if (!childIds.Any())
-                return null;
-
-            return childIds.Select(t => GetById<T>(t));
-        }
 
         public bool IsUserFollowing(SystemObjects type, int objectID, int? resourceID)
         {
@@ -2211,7 +2159,7 @@ where	R.SourceObject = 'FusionAttribute'
                         case EntityState.Deleted:
                             if (Any<Artifact>(i => i.ArtifactTypeID == o.ID))
                                 throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, o.Name), Messages.Error_ArtifactsAssignedToType);
-                            var childIDs = GetChildTypes<ArtifactType>(o.ID).ToList();
+                            var childIDs = GetChildTypes(o.ID, SystemObjects.ArtifactType).ToList();
                             if (childIDs.Count > 0)
                                 throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, o.Name), Messages.Error_ChildTypesAssignedToType);
                             

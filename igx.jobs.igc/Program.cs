@@ -514,8 +514,8 @@ where	[AllowChangeDetection] = 0").ToList();
 
             #endregion
 
-            //Reset the error message value, b/c this could be a restart.
-            ExecutionAssetType.ErrorMessage = "";
+            // Reset the error message value to NULL (to avoid alerting in DQ+), b/c this could be a restart.
+            ExecutionAssetType.ErrorMessage = null;
 
             #region Get global settings
 
