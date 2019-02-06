@@ -302,6 +302,12 @@ namespace igx.jobs.igc
         public PageDataClass Class { get; set; }
     }
 
+    public class PageProcessedInGovernUpdatedEventArgs : EventArgs
+    {
+        public int Value { get; set; }
+        public PageDataClass Class { get; set; }
+    }
+
     public class PageErrorCapturedEventArgs : EventArgs
     {
         public string ErrorMessage { get; set; }
@@ -316,6 +322,11 @@ namespace igx.jobs.igc
     public class ResponsibilityBreakdownModelsUpdatedEventArgs : EventArgs
     {
         public IGCAssetResponsibilityBreakdownModel Update { get; set; }
+    }
+
+    public class StepStartedEventArgs : EventArgs
+    {
+        public int Step { get; set; }
     }
 
     public class StepCompletedEventArgs : EventArgs
