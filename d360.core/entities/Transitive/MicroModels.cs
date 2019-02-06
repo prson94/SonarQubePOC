@@ -66,6 +66,7 @@ namespace d360.core.entities
         public bool IsDevelopment { get; set; }
         public string UrlPrefix { get; set; }
         public EnvironmentLevel EnvironmentLevel { get; set; }
+        public int Priority { get; set; }
     }
 
     public class FieldsObjectModel 
