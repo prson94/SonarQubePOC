@@ -64,6 +64,9 @@ namespace d360.core.entities
         [DataMember]
         public int? DeleteExecutionTimeoutHours { get; set; }
 
+        [DataMember]
+        public bool EnableAppInsightsVerboseLogging { get; set; }
+
         [IgnoreDataMember, ForeignKey("IntegrationSettingID")]
         public virtual ICollection<IntegrationSetting> IntegrationSetting { get; set; }
 

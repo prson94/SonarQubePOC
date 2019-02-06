@@ -243,7 +243,7 @@ where	[AllowChangeDetection] = 0").ToList();
         {
             CoreFunction.AppInsightsInstrumentationKey(CoreFunction.GetConfigValueByKey("IGC_APPINSIGHTS_INSTRUMENTATIONKEY"));
 #if DEBUG
-            var queueModel = new IntegrationQueueModel { CompanyID = 122, ExecutionID = 57436, IntegrationSettingID = 1, SynchedAssetTypeID = 1, To = QueueAction.Integration, UrlPrefix = "statestreet.uat" };
+            var queueModel = new IntegrationQueueModel { CompanyID = 122, ExecutionID = 60964, IntegrationSettingID = 1, SynchedAssetTypeID = 49, To = QueueAction.Integration, UrlPrefix = "statestreet.uat" };
 #else
             var queueModel = JsonConvert.DeserializeObject<IntegrationQueueModel>(myQueueItem);
 #endif
@@ -264,10 +264,22 @@ where	[AllowChangeDetection] = 0").ToList();
             PageBeginValueUpdated?.Invoke(this, e);
         }
 
+        public event EventHandler<PageProcessedInGovernUpdatedEventArgs> PageProcessedInGovernUpdated;
+        protected virtual void OnPageProcessedInGovernUpdated(PageProcessedInGovernUpdatedEventArgs e)
+        {
+            PageProcessedInGovernUpdated?.Invoke(this, e);
+        }
+
         public event EventHandler<PageErrorCapturedEventArgs> PageErrorCaptured;
         protected virtual void OnPageErrorCaptured(PageErrorCapturedEventArgs e)
         {
             PageErrorCaptured?.Invoke(this, e);
+        }
+
+        public event EventHandler<StepStartedEventArgs> StepStarted;
+        protected virtual void OnStepStarted(StepStartedEventArgs e)
+        {
+            StepStarted?.Invoke(this, e);
         }
 
         public event EventHandler<StepCompletedEventArgs> StepCompleted;
@@ -346,6 +358,7 @@ where	[AllowChangeDetection] = 0").ToList();
         public IntegrationAssetType SynchedAssetType { get; set; }
         public IntegrationExecutionAssetType ExecutionAssetType { get; set; }
         public RetryLogModel ExecutionAssetTypeRetryLog { get; set; }
+        public List<StepExecutionTime> StepExecutionTimes { get; set; }
         public IGCAssetRelationshipBreakdownModels RelationshipBreakdownModels { get; set; }
         public IGCAssetResponsibilityBreakdownModels ResponsibilityBreakdownModels { get; set; }
         public List<RelationshipTargetComparisonModel> RelationshipTargetComparisons { get; set; }
@@ -364,7 +377,9 @@ where	[AllowChangeDetection] = 0").ToList();
         public IgcIntegrationEngine()
         {
             PageBeginValueUpdated += IgcIntegrationEngine_PageBeginValueUpdated;
+            PageProcessedInGovernUpdated += IgcIntegrationEngine_PageProcessedInGovernUpdated;
             PageErrorCaptured += IgcIntegrationEngine_PageErrorCaptured;
+            StepStarted += IgcIntegrationEngine_StepStarted;
             StepCompleted += IgcIntegrationEngine_StepCompleted;
             RelationshipBreakdownModelsUpdated += IgcIntegrationEngine_RelationshipBreakdownModelsUpdated;
             ResponsibilityBreakdownModelsUpdated += IgcIntegrationEngine_ResponsibilityBreakdownModelsUpdated;
@@ -417,15 +432,70 @@ where	[AllowChangeDetection] = 0").ToList();
             }
         }
 
-        private void IgcIntegrationEngine_StepCompleted(object sender, StepCompletedEventArgs e)
+        private void IgcIntegrationEngine_PageProcessedInGovernUpdated(object sender, PageProcessedInGovernUpdatedEventArgs e)
         {
-            ExecutionAssetTypeRetryLog.LastStepCompleted = e.Step;
+            switch (e.Class)
+            {
+                case PageDataClass.Fields:
+                    ExecutionAssetTypeRetryLog.Begins.ProcessedFieldsPage = e.Value;
+                    break;
+                case PageDataClass.Relations:
+                    ExecutionAssetTypeRetryLog.Begins.ProcessedRelationsPage = e.Value;
+                    break;
+                case PageDataClass.Responsibilities:
+                    ExecutionAssetTypeRetryLog.Begins.ProcessedResponsibilitiesPage = e.Value;
+                    break;
+            }
             try
             {
                 ExecutionAssetType.RetryLog = JsonConvert.SerializeObject(ExecutionAssetTypeRetryLog);
                 Company.Update(ExecutionAssetType);
             }
             catch
+            {
+            }
+        }
+
+        private void IgcIntegrationEngine_StepStarted(object sender, StepStartedEventArgs e)
+        {
+            try
+            {
+                var execStep = StepExecutionTimes.FirstOrDefault(i => i.Step == e.Step);
+                if (execStep == null)
+                {
+                    StepExecutionTimes.Add(new StepExecutionTime { Step = e.Step, StartedOn = DateTime.UtcNow, CompletedOn = DateTime.UtcNow });
+                }
+                else
+                {
+                    execStep.StartedOn = DateTime.UtcNow;
+                }
+                ExecutionAssetType.StepExecutionTimes = JsonConvert.SerializeObject(StepExecutionTimes);
+                Company.Update(ExecutionAssetType);
+            }
+            catch(Exception ex)
+            {
+            }
+        }
+
+        private void IgcIntegrationEngine_StepCompleted(object sender, StepCompletedEventArgs e)
+        {
+            ExecutionAssetTypeRetryLog.LastStepCompleted = e.Step;
+            try
+            {
+                var execStep = StepExecutionTimes.FirstOrDefault(i => i.Step == e.Step);
+                if (execStep == null)
+                {
+                    StepExecutionTimes.Add(new StepExecutionTime { Step = e.Step, StartedOn = DateTime.UtcNow, CompletedOn = DateTime.UtcNow });
+                }
+                else
+                {
+                    execStep.CompletedOn = DateTime.UtcNow;
+                }
+                ExecutionAssetType.StepExecutionTimes = JsonConvert.SerializeObject(StepExecutionTimes);
+                ExecutionAssetType.RetryLog = JsonConvert.SerializeObject(ExecutionAssetTypeRetryLog);
+                Company.Update(ExecutionAssetType);
+            }
+            catch (Exception ex)
             {
             }
         }
@@ -473,6 +543,27 @@ where	[AllowChangeDetection] = 0").ToList();
 
         #endregion
 
+        void writeLogEntry(string message, int step, bool isError = false)
+        {
+            if (SynchedAssetType.EnableAppInsightsVerboseLogging)
+            {
+                var properties = new Dictionary<string, string>() { { "Step", $"{step}" } };
+                if (ExecutionAssetType != null)
+                {
+                    properties.Add("ExecutionID", ExecutionAssetType.ExecutionID.ToString());
+                    properties.Add("SynchedAssetTypeID", ExecutionAssetType.SynchedAssetTypeID.ToString());
+                }
+                if (isError)
+                    CoreFunction.AITrackException("IGC", new ApplicationException(message), Company.CurrentCompanyID, properties);
+                else
+                    CoreFunction.AITrackTrace("IGC", message, properties, Company.CurrentCompanyID);
+            }
+            else
+            {
+                Log.WriteLine(message);
+            }
+        }
+
         public void RunSingle()
         {
             var Caching = new DummyCachingProvider();
@@ -489,11 +580,13 @@ where	[AllowChangeDetection] = 0").ToList();
 
             #region Set common properties that we will work with in many methods
 
-            Log.WriteLine("Getting common data");
-
             SynchedAssetType = Company.GetById<IntegrationAssetType>(QueueModel.SynchedAssetTypeID);
+
+            writeLogEntry("Getting common data", 0);
+
             ExecutionAssetType = Company.Filter<IntegrationExecutionAssetType>(i => i.ExecutionID == QueueModel.ExecutionID && i.SynchedAssetTypeID == QueueModel.SynchedAssetTypeID).Single();
             ExecutionAssetTypeRetryLog = JsonConvert.DeserializeObject<RetryLogModel>(ExecutionAssetType.RetryLog);
+            StepExecutionTimes = JsonConvert.DeserializeObject<List<StepExecutionTime>>(ExecutionAssetType.StepExecutionTimes ?? "[]");
             RelationshipBreakdownModels = string.IsNullOrEmpty(ExecutionAssetType.IGCAssetRelationshipBreakdown) ? new IGCAssetRelationshipBreakdownModels() : JsonConvert.DeserializeObject<IGCAssetRelationshipBreakdownModels>(ExecutionAssetType.IGCAssetRelationshipBreakdown);
             ResponsibilityBreakdownModels = string.IsNullOrEmpty(ExecutionAssetType.IGCAssetResponsibilityBreakdown) ? new IGCAssetResponsibilityBreakdownModels() : JsonConvert.DeserializeObject<IGCAssetResponsibilityBreakdownModels>(ExecutionAssetType.IGCAssetResponsibilityBreakdown);
 
@@ -540,7 +633,9 @@ where	[AllowChangeDetection] = 0").ToList();
             {
                 try
                 {
-                    Log.WriteLine($"Getting type definition for: {SynchedAssetType.SourceAssetTypeName}");
+                    OnStepStarted(new StepStartedEventArgs { Step = currentStep });
+
+                    writeLogEntry($"Getting type definition for: {SynchedAssetType.SourceAssetTypeName}", currentStep);
 
                     // First, get the type definition of the asset type, to pull enum values.
                     url = $"{baseUri}types/{SynchedAssetType.SourceAssetTypeName}?showEditProperties=true";
@@ -588,7 +683,7 @@ where	[AllowChangeDetection] = 0").ToList();
                 }
                 catch (Exception ex)
                 {
-                    CoreFunction.AITrackException(functionName, ex);
+                    writeLogEntry(ex.GetFullExceptionData(true), currentStep, true);
                 }
             }
 
@@ -722,12 +817,13 @@ where	[AllowChangeDetection] = 0").ToList();
                 currentStep = 2;
                 if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep)
                 {
-                    Log.WriteLine($"BEGIN: Getting field data");
+                    OnStepStarted(new StepStartedEventArgs { Step = currentStep });
+                    writeLogEntry($"BEGIN: Getting field data", currentStep);
                     parsePostModel(PageDataClass.Fields);
                     var igcReportedAssetCount = DownloadAndSavePageFromIgc(postModel, Company.CurrentCompanyID, url, $"{rootFolderName}/fields", PageDataClass.Fields);
                     ExecutionAssetType.CurrentSourceAssetCount = igcReportedAssetCount;
                     Company.Update(ExecutionAssetType);
-                    Log.WriteLine($"END: Getting field data");
+                    writeLogEntry($"END: Getting field data", currentStep);
                     OnStepCompleted(new StepCompletedEventArgs { Step = currentStep });
                 }
 
@@ -735,10 +831,11 @@ where	[AllowChangeDetection] = 0").ToList();
                 currentStep = 3;
                 if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep)
                 {
-                    Log.WriteLine($"BEGIN: Getting relationship data");
+                    OnStepStarted(new StepStartedEventArgs { Step = currentStep });
+                    writeLogEntry($"BEGIN: Getting relationship data", currentStep);
                     parsePostModel(PageDataClass.Relations);
                     DownloadAndSavePageFromIgc(postModel, Company.CurrentCompanyID, url, $"{rootFolderName}/relations", PageDataClass.Relations);
-                    Log.WriteLine($"END: Getting relationship data");
+                    writeLogEntry($"END: Getting relationship data", currentStep);
                     OnStepCompleted(new StepCompletedEventArgs { Step = currentStep });
                 }
 
@@ -746,10 +843,11 @@ where	[AllowChangeDetection] = 0").ToList();
                 currentStep = 4;
                 if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep)
                 {
-                    Log.WriteLine($"BEGIN: Getting responsibility data");
+                    OnStepStarted(new StepStartedEventArgs { Step = currentStep });
+                    writeLogEntry($"BEGIN: Getting responsibility data", currentStep);
                     parsePostModel(PageDataClass.Responsibilities);
                     DownloadAndSavePageFromIgc(postModel, Company.CurrentCompanyID, url, $"{rootFolderName}/owners", PageDataClass.Responsibilities);
-                    Log.WriteLine($"END: Getting responsibility data");
+                    writeLogEntry($"END: Getting responsibility data", currentStep);
                     OnStepCompleted(new StepCompletedEventArgs { Step = currentStep });
                 }
 
@@ -770,55 +868,64 @@ where	[AllowChangeDetection] = 0").ToList();
                 currentStep = 5;
                 if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep)
                 {
+                    OnStepStarted(new StepStartedEventArgs { Step = currentStep });
+
                     path = $"igc/{rootFolderName}/fields";
                     pages = Storage.ListFiles(path);
                     requestNumber = 1;
                     totalPageCount = pages.Count;
 
                     // Clear the execution fields to start.
-                    if (totalPageCount > 0)
+                    if (totalPageCount > 0 && !ExecutionAssetTypeRetryLog.Begins.ProcessedFieldsPage.HasValue)
                     {
-                        Log.WriteLine($"Clear out ExecutionAssetField to start processing field data");
+                        writeLogEntry($"Clear out ExecutionAssetField to start processing field data", currentStep);
                         cnn.Execute(@"delete integration.ExecutionAssetField where SynchedAssetTypeID = @SynchedAssetTypeID and Section = @section", new { ExecutionAssetType.SynchedAssetTypeID, section = 1 }, commandTimeout: 3600);
-                        Log.WriteLine($"Parsing {totalPageCount} page(s) of field data");
+                        writeLogEntry($"Parsing {totalPageCount} page(s) of field data", currentStep);
                     }
 
                     foreach (var p in pages)
                     {
-                        var json = Storage.GetFileContentsAsString(path, p.Name, Encoding.UTF8);
-                        if (p.Name.Contains("_error"))
+                        if ((ExecutionAssetTypeRetryLog.Begins.ProcessedFieldsPage.HasValue) ? requestNumber > ExecutionAssetTypeRetryLog.Begins.ProcessedFieldsPage.Value : true)
                         {
-                            ParsePageSavedException(json);
-                            fatalError = true;
-                        }
-                        else
-                        {
-                            var page = JsonConvert.DeserializeObject<IgcDynamicArrayModels>(json);
-
-                            if (page.items.Count > 0)
+                            var json = Storage.GetFileContentsAsString(path, p.Name, Encoding.UTF8);
+                            if (p.Name.Contains("_error"))
                             {
-                                var hasChanges = ParseAndSaveAssetsOnIgcPage(cnn, page, 1, requestNumber, Fields.Select(i => i.SourceField).ToList());          // step (5)
+                                ParsePageSavedException(json);
+                                fatalError = true;
+                            }
+                            else
+                            {
+                                var page = JsonConvert.DeserializeObject<IgcDynamicArrayModels>(json);
 
-                                if (hasChanges)
+                                if (page.items.Count > 0)
                                 {
-                                    if (cnn.State != System.Data.ConnectionState.Open)
-                                        cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                                    var hasChanges = ParseAndSaveAssetsOnIgcPage(cnn, page, 1, requestNumber, Fields.Select(i => i.SourceField).ToList());          // step (5)
 
-                                    // Section 0 : Asset
-                                    cnn.Query<dynamic>(
-                                        procedureCommand,
-                                        new { ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID, requestNumber, SynchedAssetType.AssetTypeID, r = DefaultResourceID, section = 0 },
-                                        commandTimeout: 3600);
-                                     
-                                    // Section 1 : Fields
-                                    cnn.Query<dynamic>(
-                                        procedureCommand,
-                                        new { ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID, requestNumber, SynchedAssetType.AssetTypeID, r = DefaultResourceID, section = 1 },
-                                        commandTimeout: 3600);
+                                    if (hasChanges)
+                                    {
+                                        if (cnn.State != System.Data.ConnectionState.Open)
+                                            cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+                                        // Section 0 : Asset
+                                        writeLogEntry($"Executing section 0 of procedure for {SynchedAssetType.SourceAssetTypeName} - request number {requestNumber}", currentStep);
+                                        cnn.Query<dynamic>(
+                                            procedureCommand,
+                                            new { ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID, requestNumber, SynchedAssetType.AssetTypeID, r = DefaultResourceID, section = 0 },
+                                            commandTimeout: 3600);
+
+                                        // Section 1 : Fields
+                                        writeLogEntry($"Executing section 1 of procedure for {SynchedAssetType.SourceAssetTypeName} - request number {requestNumber}", currentStep);
+                                        cnn.Query<dynamic>(
+                                            procedureCommand,
+                                            new { ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID, requestNumber, SynchedAssetType.AssetTypeID, r = DefaultResourceID, section = 1 },
+                                            commandTimeout: 3600);
+                                    }
                                 }
                             }
-                        }
 
+                            OnPageProcessedInGovernUpdated(new PageProcessedInGovernUpdatedEventArgs { Class = PageDataClass.Fields, Value = requestNumber });
+                        }
+                        
                         requestNumber++;
                     }
 
@@ -832,117 +939,124 @@ where	[AllowChangeDetection] = 0").ToList();
                 currentStep = 6;
                 if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep)
                 {
+                    OnStepStarted(new StepStartedEventArgs { Step = currentStep });
+
                     path = $"igc/{rootFolderName}/relations";
                     pages = Storage.ListFiles(path);
                     requestNumber = 1;
                     totalPageCount = pages.Count;
 
                     // Clear the execution fields to start.
-                    if (totalPageCount > 0)
+                    if (totalPageCount > 0 && !ExecutionAssetTypeRetryLog.Begins.ProcessedRelationsPage.HasValue)
                     {
-                        Log.WriteLine($"Clear out ExecutionAssetField to start processing relationship data");
+                        writeLogEntry($"Clear out ExecutionAssetField to start processing relationship data", currentStep);
                         cnn.Execute(@"delete integration.ExecutionAssetField where SynchedAssetTypeID = @SynchedAssetTypeID and Section = @section", new { ExecutionAssetType.SynchedAssetTypeID, section = 2 }, commandTimeout: 3600);
-                        Log.WriteLine($"Parsing {totalPageCount} page(s) of relationship data");
+                        writeLogEntry($"Parsing {totalPageCount} page(s) of relationship data", currentStep);
                     }
 
                     foreach (var p in pages)
                     {
-                        var json = Storage.GetFileContentsAsString(path, p.Name, Encoding.UTF8);
-                        if (p.Name.Contains("_error"))
+                        if ((ExecutionAssetTypeRetryLog.Begins.ProcessedRelationsPage.HasValue) ? requestNumber > ExecutionAssetTypeRetryLog.Begins.ProcessedRelationsPage.Value : true)
                         {
-                            ParsePageSavedException(json);
-                            fatalError = true;
-                        }
-                        else
-                        {
-                            var page = JsonConvert.DeserializeObject<IgcDynamicArrayModels>(json);
-                            if (page.items.Count > 0)
+                            var json = Storage.GetFileContentsAsString(path, p.Name, Encoding.UTF8);
+                            if (p.Name.Contains("_error"))
                             {
-                                var hasChanges = ParseAndSaveAssetsOnIgcPage(cnn, page, 2, requestNumber, Relations.Select(i => i.SourceField).ToList());          // step (5)
-
-                                if (hasChanges)
+                                ParsePageSavedException(json);
+                                fatalError = true;
+                            }
+                            else
+                            {
+                                var page = JsonConvert.DeserializeObject<IgcDynamicArrayModels>(json);
+                                if (page.items.Count > 0)
                                 {
-                                    if (cnn.State != System.Data.ConnectionState.Open)
-                                        cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                                    var hasChanges = ParseAndSaveAssetsOnIgcPage(cnn, page, 2, requestNumber, Relations.Select(i => i.SourceField).ToList());          // step (5)
 
-                                    // Section 2 : Relationships
-                                    var relationshipActions = cnn.Query<RelationshipAction>(
-                                        procedureCommand,
-                                        new { ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID, requestNumber, SynchedAssetType.AssetTypeID, r = DefaultResourceID, section = 2 },
-                                        commandTimeout: 14400);
-
-                                    #region Send Relationship Events
-
-                                    try
+                                    if (hasChanges)
                                     {
-                                        var queue = new AzureQueueSource();
+                                        if (cnn.State != System.Data.ConnectionState.Open)
+                                            cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
 
-                                        var events = new List<EventInfo>();
+                                        // Section 2 : Relationships
+                                        writeLogEntry($"Executing section 2 of procedure for {SynchedAssetType.SourceAssetTypeName} - request number {requestNumber}", currentStep);
+                                        var relationshipActions = cnn.Query<RelationshipAction>(
+                                            procedureCommand,
+                                            new { ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID, requestNumber, SynchedAssetType.AssetTypeID, r = DefaultResourceID, section = 2 },
+                                            commandTimeout: 14400);
 
-                                        if (SynchedAssetType.TriggerTopicMessage)
+                                        #region Send Relationship Events
+
+                                        try
                                         {
-                                            int lastIntersectID = 0;
+                                            var queue = new AzureQueueSource();
 
-                                            foreach (var relationshipAction in relationshipActions)
+                                            var events = new List<EventInfo>();
+
+                                            if (SynchedAssetType.TriggerTopicMessage)
                                             {
-                                                var changeType = ChangeType.Add;
+                                                int lastIntersectID = 0;
 
-                                                switch (relationshipAction.Action)
+                                                foreach (var relationshipAction in relationshipActions)
                                                 {
-                                                    case "D":
-                                                        changeType = ChangeType.Delete;
-                                                        break;
-                                                    case "U":
-                                                        changeType = ChangeType.Update;
-                                                        break;
-                                                }
+                                                    var changeType = ChangeType.Add;
 
-                                                // Check to make sure we do not send multiple workflows out for the same intersect ID.
-                                                if (relationshipAction.IntersectID != lastIntersectID)
-                                                {
-                                                    events.Add(new EventInfo
+                                                    switch (relationshipAction.Action)
                                                     {
-                                                        CompanyID = Company.CurrentCompanyID,
-                                                        DomainPrefix = QueueModel.UrlPrefix,
-                                                        ResourceID = DefaultResourceID,
-                                                        Action = changeType,
-                                                        Object = new EventObjectInfo
+                                                        case "D":
+                                                            changeType = ChangeType.Delete;
+                                                            break;
+                                                        case "U":
+                                                            changeType = ChangeType.Update;
+                                                            break;
+                                                    }
+
+                                                    // Check to make sure we do not send multiple workflows out for the same intersect ID.
+                                                    if (relationshipAction.IntersectID != lastIntersectID)
+                                                    {
+                                                        events.Add(new EventInfo
                                                         {
-                                                            Object = SystemObjects.Intersect,
-                                                            ObjectType = SystemObjects.IntersectType,
-                                                            ObjectID = relationshipAction.IntersectID,
-                                                            ObjectTypeID = relationshipAction.IntersectTypeID
-                                                        }
-                                                    });
-                                                }
+                                                            CompanyID = Company.CurrentCompanyID,
+                                                            DomainPrefix = QueueModel.UrlPrefix,
+                                                            ResourceID = DefaultResourceID,
+                                                            Action = changeType,
+                                                            Object = new EventObjectInfo
+                                                            {
+                                                                Object = SystemObjects.Intersect,
+                                                                ObjectType = SystemObjects.IntersectType,
+                                                                ObjectID = relationshipAction.IntersectID,
+                                                                ObjectTypeID = relationshipAction.IntersectTypeID
+                                                            }
+                                                        });
+                                                    }
 
-                                                if (events.Count > 50)
-                                                {
-                                                    queue.CreateTopicMessages(events);
-                                                    events.Clear();
-                                                }
+                                                    if (events.Count > 50)
+                                                    {
+                                                        queue.CreateTopicMessages(events);
+                                                        events.Clear();
+                                                    }
 
-                                                lastIntersectID = relationshipAction.IntersectID;
+                                                    lastIntersectID = relationshipAction.IntersectID;
+                                                }
+                                            }
+
+                                            if (events.Count > 0)
+                                            {
+                                                queue.CreateTopicMessages(events);
+                                                events.Clear();
                                             }
                                         }
-
-                                        if (events.Count > 0)
+                                        catch (Exception wex)
                                         {
-                                            queue.CreateTopicMessages(events);
-                                            events.Clear();
+                                            writeLogEntry($"Workflow error - Company: {QueueModel.CompanyID}, Exception: {wex.GetFullExceptionData(false)}", currentStep);
                                         }
-                                    }
-                                    catch (Exception wex)
-                                    {
-                                        this.Log.WriteLine($"Workflow error - Company: {QueueModel.CompanyID}, Exception: {wex.GetFullExceptionData(false)}");
-                                        CoreFunction.AITrackException(functionName, wex);
-                                    }
 
-                                    #endregion
+                                        #endregion
+                                    }
                                 }
                             }
-                        }
 
+                            OnPageProcessedInGovernUpdated(new PageProcessedInGovernUpdatedEventArgs { Class = PageDataClass.Relations, Value = requestNumber });
+                        }
+                        
                         requestNumber++;
                     }
 
@@ -956,53 +1070,60 @@ where	[AllowChangeDetection] = 0").ToList();
                 currentStep = 7;
                 if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep)
                 {
+                    OnStepStarted(new StepStartedEventArgs { Step = currentStep });
+
                     path = $"igc/{rootFolderName}/owners";
                     pages = Storage.ListFiles(path);
                     requestNumber = 1;
                     totalPageCount = pages.Count;
 
                     // Clear the execution fields to start.
-                    if (totalPageCount > 0)
+                    if (totalPageCount > 0 && !ExecutionAssetTypeRetryLog.Begins.ProcessedResponsibilitiesPage.HasValue)
                     {
-                        Log.WriteLine($"Clear out ExecutionAssetField to start processing responsibility data");
+                        writeLogEntry($"Clear out ExecutionAssetField to start processing responsibility data", currentStep);
                         cnn.Execute(@"delete integration.ExecutionAssetField where SynchedAssetTypeID = @SynchedAssetTypeID and Section = @section", new { ExecutionAssetType.SynchedAssetTypeID, section = 3 }, commandTimeout: 3600);
-                        Log.WriteLine($"Parsing {totalPageCount} page(s) of responsibility data");
+                        writeLogEntry($"Parsing {totalPageCount} page(s) of responsibility data", currentStep);
                     }
 
                     foreach (var p in pages)
                     {
-                        var json = Storage.GetFileContentsAsString(path, p.Name, Encoding.UTF8);
-                        if (p.Name.Contains("_error"))
+                        if ((ExecutionAssetTypeRetryLog.Begins.ProcessedResponsibilitiesPage.HasValue) ? requestNumber > ExecutionAssetTypeRetryLog.Begins.ProcessedResponsibilitiesPage.Value : true)
                         {
-                            ParsePageSavedException(json);
-                            fatalError = true;
-                        }
-                        else
-                        {
-                            var page = JsonConvert.DeserializeObject<IgcDynamicArrayModels>(json);
-
-                            if (page.items != null)
+                            var json = Storage.GetFileContentsAsString(path, p.Name, Encoding.UTF8);
+                            if (p.Name.Contains("_error"))
                             {
-                                if (page.items.Count > 0)
+                                ParsePageSavedException(json);
+                                fatalError = true;
+                            }
+                            else
+                            {
+                                var page = JsonConvert.DeserializeObject<IgcDynamicArrayModels>(json);
+
+                                if (page.items != null)
                                 {
-                                    var hasChanges = ParseAndSaveAssetsOnIgcPage(cnn, page, 3, requestNumber, Roles.Select(i => i.SourceIdField).ToList());
-
-                                    if (hasChanges)
+                                    if (page.items.Count > 0)
                                     {
-                                        if (cnn.State != System.Data.ConnectionState.Open)
-                                            cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                                        var hasChanges = ParseAndSaveAssetsOnIgcPage(cnn, page, 3, requestNumber, Roles.Select(i => i.SourceIdField).ToList());
 
-                                        // Section 3 : Fields
-                                        cnn.Query<dynamic>(
-                                            procedureCommand,
-                                            new { ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID, requestNumber, SynchedAssetType.AssetTypeID, r = DefaultResourceID, section = 3 },
-                                            commandTimeout: 7200);
+                                        if (hasChanges)
+                                        {
+                                            if (cnn.State != System.Data.ConnectionState.Open)
+                                                cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+                                            // Section 3 : Fields
+                                            writeLogEntry($"Executing section 3 of procedure for {SynchedAssetType.SourceAssetTypeName} - request number {requestNumber}", currentStep);
+                                            cnn.Query<dynamic>(
+                                                procedureCommand,
+                                                new { ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID, requestNumber, SynchedAssetType.AssetTypeID, r = DefaultResourceID, section = 3 },
+                                                commandTimeout: 7200);
+                                        }
                                     }
                                 }
                             }
+
+                            OnPageProcessedInGovernUpdated(new PageProcessedInGovernUpdatedEventArgs { Class = PageDataClass.Responsibilities, Value = requestNumber });
                         }
-
-
+                        
                         requestNumber++;
                     }
 
@@ -1016,12 +1137,15 @@ where	[AllowChangeDetection] = 0").ToList();
                 currentStep = 8;
                 if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep)
                 {
+                    OnStepStarted(new StepStartedEventArgs { Step = currentStep });
+
                     Log.WriteLine($"Process metrics");
 
                     if (cnn.State != System.Data.ConnectionState.Open)
                         cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
 
-                    // Section 4 : Gather metric on this run
+                    // Gather metric on this run
+                    writeLogEntry($"Executing section 4 of procedure for {SynchedAssetType.SourceAssetTypeName} - request number {requestNumber}", currentStep);
                     cnn.Query<dynamic>(
                         procedureCommand,
                         new { ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID, requestNumber, SynchedAssetType.AssetTypeID, r = DefaultResourceID, section = 4 },
@@ -1037,13 +1161,15 @@ where	[AllowChangeDetection] = 0").ToList();
                 currentStep = 9;
                 if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep && !checkForChangesOnly && !fatalError)
                 {
-                    Log.WriteLine($"Process deletions");
+                    OnStepStarted(new StepStartedEventArgs { Step = currentStep });
+
+                    writeLogEntry($"Process deletions", currentStep);
 
                     // You can do a delete based on asset hash missing attributes.
                     if (cnn.State != System.Data.ConnectionState.Open)
                         cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
 
-                    // Section 3 : Fields
+                    writeLogEntry($"Executing section 5 of procedure for {SynchedAssetType.SourceAssetTypeName} - request number {requestNumber}", currentStep);
                     cnn.Query<dynamic>(
                         procedureCommand,
                         new { ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID, requestNumber, SynchedAssetType.AssetTypeID, r = DefaultResourceID, section = 5 },
@@ -1058,11 +1184,14 @@ where	[AllowChangeDetection] = 0").ToList();
                 currentStep = 10;
                 if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep)
                 {
-                    Log.WriteLine($"Do final clearing of execution data like fields");
+                    OnStepStarted(new StepStartedEventArgs { Step = currentStep });
+
+                    writeLogEntry($"Do final clearing of execution data like fields", currentStep);
 
                     if (cnn.State != System.Data.ConnectionState.Open)
                         cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
                     cnn.Execute("delete integration.ExecutionAssetField where SynchedAssetTypeID = @at", new { at = ExecutionAssetType.SynchedAssetTypeID }, commandTimeout: 7200);
+
                     OnStepCompleted(new StepCompletedEventArgs { Step = currentStep });
                 }
 
@@ -1070,11 +1199,14 @@ where	[AllowChangeDetection] = 0").ToList();
                 currentStep = 11;
                 if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep)
                 {
-                    Log.WriteLine($"Do final clearing of execution data like hash");
+                    OnStepStarted(new StepStartedEventArgs { Step = currentStep });
+
+                    writeLogEntry($"Do final clearing of execution data like hash", currentStep);
 
                     if (cnn.State != System.Data.ConnectionState.Open)
                         cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
                     cnn.Execute("update integration.AssetHash set RequestNumber = null, [Action] = null, UpdateHash = null where SynchedAssetTypeID = @at", new { at = ExecutionAssetType.SynchedAssetTypeID }, commandTimeout: 7200);
+
                     OnStepCompleted(new StepCompletedEventArgs { Step = currentStep });
                 }
 
@@ -1086,6 +1218,8 @@ where	[AllowChangeDetection] = 0").ToList();
             {
                 try
                 {
+                    writeLogEntry($"Do final clearing of execution data like hash", 99);
+
                     ExecutionAssetTypeRetryLog.LastRetryInError = true;
                     ExecutionAssetTypeRetryLog.RetryCount++;
 
@@ -1094,7 +1228,7 @@ where	[AllowChangeDetection] = 0").ToList();
                 }
                 catch (Exception cex)
                 {
-                    Log.WriteLine(cex.GetFullExceptionData(false));
+                    writeLogEntry(cex.GetFullExceptionData(false), 99);
                     CoreFunction.AITrackException(functionName, cex);
                 }
             }
@@ -1113,15 +1247,18 @@ where	[AllowChangeDetection] = 0").ToList();
 
                     ExecutionAssetType.RetryLog = JsonConvert.SerializeObject(ExecutionAssetTypeRetryLog);
 
-                    if (
-                        (
-                        ExecutionAssetType.ErrorMessage.Contains("403 (Forbidden)") || 
-                        ExecutionAssetType.ErrorMessage.Contains("Unexpected character encountered while parsing value: <. Path ''")
-                        )
-                        && !ExecutionAssetType.CompletedOn.HasValue
-                       )
+                    if (!string.IsNullOrEmpty(ExecutionAssetType.ErrorMessage))
                     {
-                        ExecutionAssetType.DelayUntil = DateTime.UtcNow.AddMinutes(30);
+                        if (
+                            (
+                            ExecutionAssetType.ErrorMessage.Contains("403 (Forbidden)") ||
+                            ExecutionAssetType.ErrorMessage.Contains("Unexpected character encountered while parsing value: <. Path ''")
+                            )
+                            && !ExecutionAssetType.CompletedOn.HasValue
+                           )
+                        {
+                            ExecutionAssetType.DelayUntil = DateTime.UtcNow.AddMinutes(30);
+                        }
                     }
 
                     Company.Update(ExecutionAssetType);
@@ -1133,7 +1270,7 @@ where	[AllowChangeDetection] = 0").ToList();
                 }
                 catch (Exception cex)
                 {
-                    Log.WriteLine(cex.GetFullExceptionData(false));
+                    writeLogEntry(cex.GetFullExceptionData(false), 99);
                     CoreFunction.AITrackException(functionName, cex);
                 }
             }

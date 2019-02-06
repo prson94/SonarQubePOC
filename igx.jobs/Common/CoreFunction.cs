@@ -106,7 +106,7 @@ namespace igx.jobs
                 { "Environment", ConfigurationManager.AppSettings["Environment"] },
                 { "Function", jobName }
             };
-            if (companyId.HasValue) propsToSend["CompanyId"] = companyId.Value.ToString();
+            if (companyId.HasValue) propsToSend["CompanyID"] = companyId.Value.ToString();
 
             if (properties != null)
             {
