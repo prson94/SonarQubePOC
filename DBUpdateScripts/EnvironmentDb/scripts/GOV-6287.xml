@@ -17,7 +17,6 @@
 		 Alter Table [dbo].[FieldType]
 		 ADD [Increment] decimal(38,18) null
 		END
-		GO
       ]]>
     </sql>
     <rollback>
