@@ -494,6 +494,11 @@ namespace d360.web.Controllers
                 {
                     models.Add(new FieldValidationModel { message = validationMessage, regex = pattern });
                 }
+                //Increment validation 
+                if (Increment.HasValue)
+                {
+                    models.Add(new FieldValidationModel { message = validationMessage, rule = string.Format("increment={0}", Increment.Value) });
+                }
 
                 // Min/Max next precedent
                 if (maxLength.HasValue && minLength.HasValue)
@@ -509,9 +514,6 @@ namespace d360.web.Controllers
                 else if (maxLength.HasValue)
                 {
                     models.Add(new FieldValidationModel { message = string.Format(Validation.MinLength_Tokenized, friendlyName, maxLength.Value), rule = string.Format("maxLength={0}", maxLength.Value) });
-                }else if (Increment.HasValue)
-                {
-                    models.Add(new FieldValidationModel { message = validationMessage, rule = string.Format("increment={0}", Increment.Value) });
                 }
             }
 
@@ -819,7 +821,7 @@ namespace d360.web.Controllers
                             Name = ft.FriendlyName,
                             FieldType = ft.Type.ToString(),
                             FieldDescription = ft.FormDescription,
-                            Validations = checkAndAddValidation(ft.Type.ToString(), ft.FriendlyName, ft.IsRequired, ft.Pattern, ft.MinimumLength, ft.MaximumLength, patternMessage),
+                            Validations = checkAndAddValidation(ft.Type.ToString(), ft.FriendlyName, ft.IsRequired, ft.Pattern, ft.MinimumLength, ft.MaximumLength, patternMessage, ft.Increment),
                             Category = ft.Category,
                             FieldTypeID = ft.ID
                         };

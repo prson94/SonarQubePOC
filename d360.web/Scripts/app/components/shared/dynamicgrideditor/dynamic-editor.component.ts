@@ -10,6 +10,8 @@ import { BaseComponent } from '../base.component';
 import { FormHelpers } from '../../../static/form-helpers';
 
 import * as _ from 'lodash';
+import { max } from 'rxjs/operators';
+import { Number } from 'core-js';
 
 @Component({
     selector: 'd3s-dynamic-editor',
@@ -207,33 +209,45 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
     private getFieldValidators(field: EditorField) {        
         var validators = [];
-
+        let minLen = -9223372036854776;
+        let maxLen = 9223372036854776;
         if (field.Validations) {
             for (let validation of field.Validations) {
                 if (validation.rule && validation.rule.startsWith('length=')) {
                     var vals = validation.rule.split(',');
                     if (vals.length == 2) {
-                        validators.push(Validators.maxLength(Number(vals[1])));
+                        maxLen = +vals[1];
+                        validators.push(Validators.maxLength(maxLen));
 
                         var minParts = vals[0].split('=');
                         if (minParts.length == 2) {
-                            let minLen = Number(minParts[1]);
+                            minLen = +minParts[1];
                             if (minLen > 1) {  // only min length > 1                                
                                 validators.push(Validators.minLength(minLen));
                             }
                         }
                     }
+                   
+
                 }
                 else if (validation.rule && validation.rule.startsWith('required')) {
                     validators.push(Validators.compose([Validators.required]));
                 }
                 else if (validation.rule && validation.rule.startsWith('increment')) {
-                    validators.push(FormHelpers.incrementValidator(+validation.rule.split("increment=")[1]))
+                    validators.push(FormHelpers.incrementValidator(+validation.rule.split("increment=")[1]));
+                }
+                else if (validation.rule && validation.rule.startsWith('minLength=')) {
+                    minLen = +validation.rule.split('=').pop();
+                    validators.push(Validators.minLength(minLen));
+                }
+                else if (validation.rule && validation.rule.startsWith('maxLength=')) {
+                    maxLen = +validation.rule.split('=').pop();
+                    validators.push(Validators.maxLength(maxLen));
                 }
                 else if (validation.regex) {
                     validators.push(Validators.pattern(validation.regex));
                 }
-                validators.push()
+                validators.push();
             }
         }
 
@@ -245,9 +259,9 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         if (field.FieldType == 'Decimal')
             validators.push(FormHelpers.numberValidator);
 
-        if (field.FieldType == 'Number' || field.FieldType == 'Decimal') {            
-            validators.push(Validators.max(9223372036854776));
-            validators.push(Validators.min(-9223372036854776));
+        if (field.FieldType == 'Number' || field.FieldType == 'Decimal') {
+            validators.push(Validators.max(maxLen));
+            validators.push(Validators.min(minLen));
         }
         
         return validators.length > 0 ? validators : null;
