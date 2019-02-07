@@ -68,8 +68,6 @@ namespace igx.jobs.markitlineageprocessor
 
                         #endregion
 
-                        if (c.CompanyID != 1183) continue;
-
                         await company.GenerateMarkitBusinessLineage();
                     }
                     catch (Exception ex)
