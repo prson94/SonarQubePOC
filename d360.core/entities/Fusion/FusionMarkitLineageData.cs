@@ -22,15 +22,9 @@ namespace d360.core.entities
         public string TargetParentObject { get; set; }
         public int? TargetParentObjectFusionAttributeID { get; set; }
         public int? TargetParentObjectFusionAttributeTypeID { get; set; }
-        public string Source { get; set; }
-        public int? SourceID { get; set; }
-        public string Target { get; set; }
-        public int? TargetID { get; set; }
         public long? SourceAssetID { get; set; }
         public long? TargetAssetID { get; set; }
-        public bool Processed { get; set; }
         public DateTime UpdatedOn { get; set; }
-        public bool Visited { get; set; } = false;
     }
 
     public class FusionMarkitObjectMapping

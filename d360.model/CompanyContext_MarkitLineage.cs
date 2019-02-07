@@ -286,7 +286,6 @@ namespace d360.model
                           ,[TargetParentObjectFusionAttributeTypeID]
                           ,[SourceAssetID]
                           ,[TargetAssetID]
-                          ,[Processed]
                           ,[UpdatedOn]
                       FROM [fusion].[MarkitLineageData]
 ";
