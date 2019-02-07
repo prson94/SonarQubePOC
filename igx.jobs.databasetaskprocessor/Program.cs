@@ -69,6 +69,7 @@ namespace igx.jobs.databasetaskprocessor
 
         const string functionName = "DatabaseTask_ProcessScheduled";
         const string timerSettings = "*/1 * * * * *";
+        const int markitLineageSettingID = 62;
         
 
         public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
@@ -76,7 +77,7 @@ namespace igx.jobs.databasetaskprocessor
             try
             {
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
-
+                
 
                 companies.Shuffle(); //Randomize
 
@@ -92,7 +93,8 @@ namespace igx.jobs.databasetaskprocessor
                     {
                         var numberOfQueueItems = 1000;
                         var indexCollectionModel = new ObjectIndexCollectionModel();
-
+                        var settings = CompanyConnectionUtils.GetCompanySettings(c.CompanyID);
+                        
                         using (var outerCompanyConnection = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID))
                         {
                             outerCompanyConnection.OpenWithRetry(RetryPolicy.DefaultProgressive);
@@ -353,8 +355,9 @@ from    [queue].[Task] T
                                                     break;
                                             #endregion                                            
                                             case "FusionCache":
-                                                #region
-                                                companyConnection.Execute("exec fusion.ProcessFusionCacheInQueue @FusionID", new { FusionID = q.ObjectID }, null, 10800);    // 180 minute timeout.
+                                                    #region
+                                                bool useNewMarkitLineage = settings.Any(s => s.SettingID == markitLineageSettingID && s.Value.ToLower() == "true");
+                                                companyConnection.Execute("exec fusion.ProcessFusionCacheInQueue @FusionID, @useNewMarkitLineage", new { FusionID = q.ObjectID, useNewMarkitLineage }, null, 10800);    // 180 minute timeout.
                                                 break;
                                             #endregion
                                             case "Notify":
