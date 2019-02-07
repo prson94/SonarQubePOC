@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace d360.core
 {
-    [Flags]
+   
     public enum DataType
     {
         [Description("None")] 
