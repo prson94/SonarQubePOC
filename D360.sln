@@ -88,6 +88,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.TrainingDatabaseManager
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.UpdateDatabases", "utilities\igx.UpdateDatabases\igx.UpdateDatabases.csproj", "{34C9341E-AF61-4A47-B817-920026EC4A13}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.databaseindexrebuilder", "igx.jobs.databaseindexrebuilder\igx.jobs.databaseindexrebuilder.csproj", "{7EC8A31A-AA5F-4AF0-8F81-0892CA3A3CDB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -230,6 +232,10 @@ Global
 		{34C9341E-AF61-4A47-B817-920026EC4A13}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{34C9341E-AF61-4A47-B817-920026EC4A13}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{34C9341E-AF61-4A47-B817-920026EC4A13}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7EC8A31A-AA5F-4AF0-8F81-0892CA3A3CDB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7EC8A31A-AA5F-4AF0-8F81-0892CA3A3CDB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7EC8A31A-AA5F-4AF0-8F81-0892CA3A3CDB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7EC8A31A-AA5F-4AF0-8F81-0892CA3A3CDB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -271,9 +277,10 @@ Global
 		{A5CD92B3-BD9C-4140-B363-391A4F22CAEB} = {E08213BF-83D1-4263-8F7B-ED4EFAC6BA58}
 		{77045490-98EB-4357-9674-42FADD298A74} = {E08213BF-83D1-4263-8F7B-ED4EFAC6BA58}
 		{34C9341E-AF61-4A47-B817-920026EC4A13} = {E08213BF-83D1-4263-8F7B-ED4EFAC6BA58}
+		{7EC8A31A-AA5F-4AF0-8F81-0892CA3A3CDB} = {757CF48D-6728-4702-AC12-754629196548}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {DA470272-2404-43CC-B3A7-997246EDACA8}
 		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;packages\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45
+		SolutionGuid = {DA470272-2404-43CC-B3A7-997246EDACA8}
 	EndGlobalSection
 EndGlobal

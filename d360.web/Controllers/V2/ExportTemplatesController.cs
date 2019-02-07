@@ -65,14 +65,10 @@ namespace d360.web.Controllers.V2
         [
             HttpGet, MapToApiVersion("2.0"), Route("{assetTypeUID}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "", typeof(List<AssetTypeExportTemplate>)),
-            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(List<AssetTypeExportTemplate>))
         ]
         public async Task<IEnumerable<dynamic>> Get(Guid assetTypeUID)
         {
-            if (!Company.CurrentResourceIsAdmin)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
-
             return (await Company.QueryAsync<dynamic>("" +
                 "select t.ID, t.AssetTypeID, a.uid as AssetTypeUID, t.Name, t.Description,t.IncludeFields,t.ExportViewType,t.IncludeUrl,t.IncludeParent,t.UsageNotes,CASE WHEN t.templatefile IS NULL THEN 0 ELSE 1 END as HasTemplateFile " +
                 "from AssetTypeExportTemplate t " +

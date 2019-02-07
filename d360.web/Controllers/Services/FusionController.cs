@@ -191,8 +191,8 @@ order by C.ParentID, C.[Name]", new { id }).AsQueryable();
         substring(
         (
             select	',' + ASST.Name + ':' + D.DisplayValue  AS [text()]
-            from	FusionOwner [IO]
-					inner join Asset ASS on ASS.ObjectID = [IO].ArtifactID and [IO].FusionID = A.ID and ASS.[Object] = 'Artifact'
+            from	FusionOwner [FO]
+					inner join Asset ASS on ASS.ID = [FO].AssetID and [FO].FusionID = A.ID 
 					inner join AssetType ASST on ASS.AssetTypeID = ASST.ID
 					cross apply GetAssetDisplayValueById(ASS.ID) D
             ORDER BY D.DisplayValue

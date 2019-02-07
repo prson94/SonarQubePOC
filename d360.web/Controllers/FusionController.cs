@@ -673,10 +673,10 @@ where   A.FusionQueryAttributeTypeID = @t
 		T.Name as FusionType,
 		substring(
         (
-            select	',' + IA.Name  AS [text()]
-            from	FusionOwner [IO]
-					inner join Artifact IA on IA.ID = [IO].ArtifactID and [IO].FusionID = A.ID
-            ORDER BY IA.Name
+            select	',' + AD.TypeName  AS [text()]
+            from	FusionOwner [FO]
+					inner join AssetDetail AD on FO.AssetID  = AD.ID
+            ORDER BY AD.TypeName
             For XML PATH ('')
         ), 2, 1000) as Owners,
         {0}
