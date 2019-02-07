@@ -13,12 +13,11 @@ IF( select Count(*) as GroupTypeCount
  FROM [dbo].[AssetType] where Object='Grouptype' )>1
 begin 
 	 delete FROM [dbo].[AssetType] 	 
-	 where Object='Grouptype'  
-	and	 ID not IN (select  Top(1) ID FROM [dbo].[AssetType] 
-		where Object='Grouptype');
+	 where Object='Grouptype'   and uid=N'00000001-0000-0000-0000-B00000000012'
+
   UPDATE [dbo].[AssetType]
 	 SET uid=N'00000001-0000-0000-0000-B00000000012'
-	 where Object='Grouptype' 	 
+	 where Object='Grouptype' 
  end
     </sql>
 	<rollback>
