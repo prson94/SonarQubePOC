@@ -60,27 +60,25 @@ namespace d360.model
             var maps = await LoadMarkitMapRawData();
             var objectMaps = await LoadMarkitMapItemMapData();
 
-            var rows = maps.Count();
-            client.TrackEvent($"Loaded {rows} Markit Map Records");
+            var mapCount = maps.Count();
+
+            client.TrackEvent($"Loaded {mapCount} Markit Map Records");
 
             //find source/target mappings by traversing possible paths along the technical lineage
             var leftmostMaps = maps.Where(m => !maps.Any(n => n.TargetFusionAttributeID == m.SourceFusionAttributeID)).ToList();
             var mappings = new List<FusionMarkitSourceTargetMapping>();
 
-            foreach(var currentMap in leftmostMaps)
+            foreach (var currentMap in leftmostMaps)
                 UpdateSourceTargetObjectMap(
-                    maps, 
-                    currentMap, 
-                    mappings, 
-                    new List<int>(), 
-                    currentMap.SourceAssetID, 
-                    currentMap, 
+                    maps,
+                    currentMap,
+                    mappings,
+                    new List<int>(),
+                    currentMap.SourceAssetID,
+                    currentMap,
                     objectMaps,
-                    objectMaps.FirstOrDefault(o => o.FusionAttributeID == currentMap.SourceFusionAttributeID), //root object map
-                    false);
+                    objectMaps.FirstOrDefault(o => o.FusionAttributeID == currentMap.SourceFusionAttributeID)); //root object map
 
-            //find mappings which have a valid source/target/object
-            var validMappings = mappings.Where(m => m.ObjectAssetID != 0).ToList();
 
             if (Database.Connection.State != ConnectionState.Open)
                 Database.Connection.Open();
@@ -88,152 +86,84 @@ namespace d360.model
             await Database.ExecuteSqlCommandAsync("truncate table [fusion].[MarkitLineageMapping]");
 
             //save mappings to a table
-            await SaveMarkitLineageResults(validMappings);
+            await SaveMarkitLineageResults(mappings);
+
+            client.TrackEvent($"Saved mapping {mappings.Count()} records to table for lineage processing");
+
+            await Database.ExecuteSqlCommandAsync("[fusion].[GenerateMarkitMapLineage]");
+
+            client.TrackEvent($"Completed lineage generation for company id {CurrentCompanyID}");
 
 
-            await Database.ExecuteSqlCommandAsync("[fusion].[GenerateMarkitMapLineage] 2");
+            await SaveMarkitLineageRunDetails(maps.Count(), mappings.Count(), objectMaps.Count());
 
-            //}
         }
 
 
         private void UpdateSourceTargetObjectMap(
-            IEnumerable<FusionMarkitLineageData> maps, 
-            FusionMarkitLineageData currentMap, 
-            List<FusionMarkitSourceTargetMapping> mappings, 
-            List<int> processedList, 
-            long? sourceAssetId, 
-            FusionMarkitLineageData root, 
-            IEnumerable<FusionMarkitObjectMapping> objectMaps, 
-            FusionMarkitObjectMapping rootObjectMap, 
-            bool skipMap = false)
+            IEnumerable<FusionMarkitLineageData> maps,
+            FusionMarkitLineageData currentMap,
+            List<FusionMarkitSourceTargetMapping> mappings,
+            List<int> processedList,
+            long? sourceAssetId,
+            FusionMarkitLineageData root,
+            IEnumerable<FusionMarkitObjectMapping> objectMaps,
+            FusionMarkitObjectMapping rootObjectMap)
         {
             //add current item to list of processed nodes
             processedList.Add(currentMap.ID);
+
             //get next items to process
             var nextMaps = maps.Where(m => m.SourceFusionAttributeID == currentMap?.TargetFusionAttributeID && !processedList.Contains(m.ID));
-            //var skipNextMap = false;
 
+            //find a business object mapping if we don't already have one
             if (rootObjectMap == null || objectMaps.FirstOrDefault(o => o.FusionAttributeID == currentMap.SourceFusionAttributeID) != null)
                 rootObjectMap = objectMaps.FirstOrDefault(o => o.FusionAttributeID == currentMap.SourceFusionAttributeID);
 
-            //find a source asset if possible
+            //find a source asset if we don't already have one
             if (sourceAssetId == null)
                 sourceAssetId = currentMap.SourceAssetID;
-            if (skipMap)
-                sourceAssetId = null;
-            
-            //if we have a source/target pair save it in the mapping table
+
+            //if we have a source/target pair we might have a valid mapping
             if (sourceAssetId != null && currentMap.TargetAssetID != null && currentMap.TargetAssetID != sourceAssetId)
             {
-                //if (!skipMap)
-                //{
-                    if (nextMaps.Count() < 1 && rootObjectMap == null)
-                        rootObjectMap = objectMaps.FirstOrDefault(o => o.FusionAttributeID == currentMap.TargetFusionAttributeID);
+                //if no business mapping check the target attribute too
+                if (rootObjectMap == null)
+                    rootObjectMap = objectMaps.FirstOrDefault(o => o.FusionAttributeID == currentMap.TargetFusionAttributeID);
 
-                    if (!mappings.Any(m => m.MapID == currentMap.ID && m.SourceFusionAttributeID == currentMap.SourceFusionAttributeID
-                    && m.TargetFusionAttributeID == currentMap.TargetFusionAttributeID && m.SourceAssetID == sourceAssetId && m.TargetAssetID == currentMap.TargetAssetID
-                    && m.ObjectAssetID == (rootObjectMap == null ? 0 : rootObjectMap.ObjectAssetID)) && rootObjectMap != null)
+                //if we have a valid mapping save it
+                if (!mappings.Any(m => m.MapID == currentMap.ID && m.SourceFusionAttributeID == currentMap.SourceFusionAttributeID
+                && m.TargetFusionAttributeID == currentMap.TargetFusionAttributeID && m.SourceAssetID == sourceAssetId && m.TargetAssetID == currentMap.TargetAssetID
+                && m.ObjectAssetID == (rootObjectMap == null ? 0 : rootObjectMap.ObjectAssetID)) && rootObjectMap != null)
+                {
+                    mappings.Add(new FusionMarkitSourceTargetMapping
                     {
-                        mappings.Add(new FusionMarkitSourceTargetMapping
-                        {
-                            MapID = currentMap.ID,
-                            SourceFusionAttributeID = (int)currentMap.SourceFusionAttributeID,
-                            TargetFusionAttributeID = (int)currentMap.TargetFusionAttributeID,
-                            SourceAssetID = (long)sourceAssetId,
-                            TargetAssetID = (long)currentMap.TargetAssetID,
-                            ObjectAssetID = (rootObjectMap == null ? 0 : rootObjectMap.ObjectAssetID)
-                        });
-                    }
+                        MapID = currentMap.ID,
+                        SourceFusionAttributeID = (int)currentMap.SourceFusionAttributeID,
+                        TargetFusionAttributeID = (int)currentMap.TargetFusionAttributeID,
+                        SourceAssetID = (long)sourceAssetId,
+                        TargetAssetID = (long)currentMap.TargetAssetID,
+                        ObjectAssetID = (rootObjectMap == null ? 0 : rootObjectMap.ObjectAssetID)
+                    });
 
+                    //the business mapping has been used, clear it out
+                    rootObjectMap = null;
+                }
 
-
-                    //skipNextMap = true;
-                //}
-
-                //sourceAssetId = null;
-                //rootObjectMap = null;
+                //the source of the next record will be the new source to carry along, clear the current one
+                sourceAssetId = null;
             }
 
             //process the next nodes in the lineage
-            foreach(var next in nextMaps)
-                UpdateSourceTargetObjectMap(maps, next, mappings, processedList, sourceAssetId, root, objectMaps, rootObjectMap, false);  
+            foreach (var next in nextMaps)
+                UpdateSourceTargetObjectMap(maps, next, mappings, processedList, sourceAssetId, root, objectMaps, rootObjectMap);
         }
 
-        private void GenerateBusinessLineageForObject(KeyValuePair<MarkitObject, List<int>> item, IEnumerable<FusionMarkitLineageData> maps)
-        {
-            if (item.Value == null || item.Value.Count == 0) return;
-
-            var mapValues = new List<int>(item.Value);
-
-            // look for first map record we can find in maps
-            FusionMarkitLineageData initialMap = maps.FirstOrDefault(x => x.ID == mapValues[0]);
-
-            if (initialMap == null) return;
-
-            //remove the first item from mapvalues since we already found it
-            mapValues.RemoveAt(0);
-
-            GenerateMarkitBusinessLineageImpl(null, null, initialMap, mapValues, item.Key, maps);
-        }
-
-        private void GenerateMarkitBusinessLineageImpl(string obj, int? objectId, FusionMarkitLineageData currentMap, List<int> mapValues, MarkitObject key, IEnumerable<FusionMarkitLineageData> maps)
-        {
-            Queue<FusionMarkitLineageData> mapQueue = new Queue<FusionMarkitLineageData>();
-
-            mapQueue.Enqueue(currentMap);
-
-            currentMap.Visited = true;
-
-            while(mapQueue.Count != 0)
-            {
-                var front = mapQueue.Dequeue();
-                var parent = mapQueue.Peek();
-                // if source or target is null
-                if (!front.TargetAssetID.HasValue || !front.SourceAssetID.HasValue)
-                {
-                    if (string.IsNullOrEmpty(front.Target))
-                    {
-                        front.Target = front.Source;
-                        front.TargetID = front.SourceID;
-                    }
-                    else
-                    {
-                        front.Source = front.Target;
-                        front.SourceID = front.TargetID;
-                    }
-                }
-
-                //mark item as visited
-                front.Visited = true;
-
-                //look for all adjacent verticies if not visited add toe the queue
-                // this needs to be optimized to be binary search / hash table
-                //left
-                var leftMaps = maps.Where(x => x.TargetFusionAttributeID == front.SourceFusionAttributeID);
-
-                foreach (var map in leftMaps)
-                {
-                    if(!map.Visited)
-                        mapQueue.Enqueue(map);
-                }
-
-                //right
-                var rightMaps = maps.Where(x => x.SourceFusionAttributeID == front.TargetFusionAttributeID);
-
-                foreach (var map in rightMaps)
-                {
-                    if (!map.Visited)
-                        mapQueue.Enqueue(map);
-                }
-            }
-        }
-
-        private async Task SaveMarkitLineageRunDetails(int rows, int techRows, int businessRows, DbTransaction transaction)
+        private async Task SaveMarkitLineageRunDetails(int rows, int techRows, int businessRows)
         {
             var sql = $"insert into fusion.MarkitLineageHistory values(@rows,@techLineageRows,@businessLineageRows,@dt);";
             var now = DateTime.UtcNow;
-            await Database.Connection.ExecuteAsync(sql, new { rows, techLineageRows = techRows, businessLineageRows = businessRows, dt = now }, transaction);
+            await Database.Connection.ExecuteAsync(sql, new { rows, techLineageRows = techRows, businessLineageRows = businessRows, dt = now });
         }
 
         private async Task SaveMarkitLineageResults(List<FusionMarkitSourceTargetMapping> mappings)
