@@ -63,7 +63,8 @@ select  c.ID as CompanyID,
         ds.EventTopic, 
         ds.IsDevelopment,
         c.EnvironmentLevel,
-        CDS.UrlPrefix
+        CDS.UrlPrefix,
+        c.Priority
 from    company c 
         inner join databaseserver ds on c.databaseserverid = ds.id and c.Status = 'Active' 
         inner join CompanyDomainSetting CDS on CDS.CompanyID = c.ID and CDS.IsPrimary = 1").ToList();

@@ -278,8 +278,8 @@ where   A.Type = 'ArtifactType'
                         sortSql += ((string.IsNullOrEmpty(sortSql)) ? "" : ", ") + $"[{columnName}]";
                 }
 
-                
-                sql += " ORDER BY " + sortSql;
+                if (!string.IsNullOrEmpty(sortSql))
+                    sql += " ORDER BY " + sortSql;
             }
             else
             {

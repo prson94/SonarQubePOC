@@ -620,7 +620,7 @@ where   O.ID not in ({GetNoReadSqlStatement()})
                 if (parentID > 0)
                 {
                     var parent = Company.GetById<Artifact>(parentID);
-                    var existing = Company.GetParentObject<Artifact>(item.ID);
+                    var existing = Company.GetParentObject(item.ID, SystemObjects.Artifact);
                     var intersectType = Company.GetHierarchyIntersectType(SystemObjects.ArtifactType, parent.ArtifactTypeID, item.ArtifactTypeID);
                     if (intersectType == null)
                         throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
@@ -843,7 +843,7 @@ where   O.ID not in ({GetNoReadSqlStatement()})
                 if (parentID > 0)
                 {
                     var parent = Company.GetById<Taxonomy>(parentID);
-                    var existing = Company.GetParentObject<Taxonomy>(item.ID);
+                    var existing = Company.GetParentObject(item.ID, SystemObjects.Taxonomy);
                     var intersectType = Company.GetHierarchyIntersectType(SystemObjects.TaxonomyType, parent.TaxonomyTypeID, item.TaxonomyTypeID);
                     if (intersectType == null)
                         throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
@@ -861,9 +861,9 @@ where   O.ID not in ({GetNoReadSqlStatement()})
 
                         Company.Add(intersect);
                     }
-                    else if (existing.ID != parentID)
+                    else if (existing.ObjectID != parentID)
                     {
-                        var intersect = Company.Filter<Intersect>(i => i.Subject == "Taxonomy" && i.Object == "Taxonomy" && i.SubjectID == existing.ID && i.ObjectID == item.ID).FirstOrDefault();
+                        var intersect = Company.Filter<Intersect>(i => i.Subject == "Taxonomy" && i.Object == "Taxonomy" && i.SubjectID == existing.ObjectID && i.ObjectID == item.ID).FirstOrDefault();
                         if (intersect != null)
                         {
                             intersect.SubjectID = parentID;

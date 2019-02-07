@@ -774,18 +774,20 @@ namespace d360.web.Controllers
             var a = Company.GetById<Artifact>(id);
             
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-                        
-            var parentType = Company.GetParentType<ArtifactType>(a.ArtifactTypeID);
-           
-            if(PluralCultureHelper.IsNeutralCultureEnglish())
+
+            var parentType = Company.GetParentType(a.ArtifactTypeID, SystemObjects.ArtifactType);
+            
+
+            if (PluralCultureHelper.IsNeutralCultureEnglish())
             {
                 if (parentType != null)
                 {
-                    var parent = Company.GetParentObject<Artifact>(a.ID);
+                    var parent = Company.GetParentObject(a.ID, SystemObjects.Artifact);
+                   
 
                     var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
-                    var parents = Company.Query<SelectListItem>($"select ObjectID as Value, DisplayValue as Text from AssetDetail where Type = 'ArtifactType' and TypeID = {parentType.ID}").OrderBy(i => i.Text).ToList();
-                    list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ParentID", Name = $"Parent {pluralize.Singularize(parentType.Name)}", FieldType = DataType.Lookup.ToString(), Value = ((parent != null) ? parent.ID.ToString() : ""), Items = parents });
+                    var parents = Company.Query<SelectListItem>($"select ObjectID as Value, DisplayValue as Text from AssetDetail where Type = 'ArtifactType' and TypeID = {parentType.ObjectID}").OrderBy(i => i.Text).ToList();
+                    list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ParentID", Name = $"Parent {pluralize.Singularize(parentType.Name)}", FieldType = DataType.Lookup.ToString(), Value = ((parent != null) ? parent.ObjectID.ToString() : ""), Items = parents });
                 }
             }
 
@@ -2733,15 +2735,15 @@ namespace d360.web.Controllers
             switch (type)
             {
                 case SystemObjects.ArtifactType:
-                    list = Company.GetChildTypes<ArtifactType>(id)
+                    list = Company.GetChildTypes(id, SystemObjects.ArtifactType)
                         .ToList()
-                        .Select(i => new { value = $"0|ArtifactType|{i.ID}|0", title = i.Name })
+                        .Select(i => new { value = $"0|ArtifactType|{i.ObjectID}|0", title = i.Name })
                         .ToList();
                     break;
                 case SystemObjects.FusionAttributeType:
-                    list = Company.GetChildTypes<FusionAttributeType>(id)
+                    list = Company.GetChildTypes(id, SystemObjects.FusionAttributeType)
                         .ToList()
-                        .Select(i => new { value = $"0|FusionAttributeType|{i.ID}|0", title = i.Name })
+                        .Select(i => new { value = $"0|FusionAttributeType|{i.ObjectID}|0", title = i.Name })
                         .ToList();
                     break;
             }
@@ -2768,22 +2770,22 @@ namespace d360.web.Controllers
             switch (type)
             {
                 case SystemObjects.ArtifactType:
-                    list = new List<ArtifactType>();
-                    parent = Company.GetParentType<ArtifactType>(id);
+                    list = new List<AssetType>();
+                    parent = Company.GetParentType(id, SystemObjects.ArtifactType);
                     if (parent != null)
-                        list.Add((ArtifactType)parent);
+                        list.Add((AssetType)parent);
 
-                        list = ((List<ArtifactType>)list).Select(i => new { value = $"0|ArtifactType|{i.ID}", title = i.Name })
+                        list = ((List<AssetType>)list).Select(i => new { value = $"0|ArtifactType|{i.ObjectID}", title = i.Name })
                         .Where(i => i.title != null)
                         .ToList();
                     break;
                 case SystemObjects.FusionAttributeType:
-                    list = new List<FusionAttributeType>();
-                    parent = Company.GetParentType<FusionAttributeType>(id);
+                    list = new List<AssetType>();
+                    parent = Company.GetParentType(id, SystemObjects.FusionAttributeType);
                     if (parent != null)
-                        list.Add((FusionAttributeType)parent);
+                        list.Add((AssetType)parent);
 
-                    list = ((List<FusionAttributeType>)list).Select(i => new { value = $"0|FusionAttributeType|{i.ID}", title = i.Name })
+                    list = ((List<AssetType>)list).Select(i => new { value = $"0|FusionAttributeType|{i.ObjectID}", title = i.Name })
                         .Where(i => i.title != null)
                         .ToList();
                     break;
@@ -2932,7 +2934,8 @@ namespace d360.web.Controllers
         public JsonNetResult FieldType_RelationLookup_DisplayFields(int intersectTypeID, SystemObjects type, int id)
         {
             var list = Company.GetFieldTypesByObject(type, id)
-                .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
+                .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.Relationship.ToString()  && i.Type != DataType.OwnershipLookup.ToString() && i.Type != DataType.RefListRelationship.ToString()
+              && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.FilteredLookup.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
                 .Select(i => new { i.ID, i.Name })
                 .ToDictionary(i => i.Name, i => i.ID);
 
@@ -3084,13 +3087,13 @@ namespace d360.web.Controllers
         public JsonNetResult Reference_Hierarchy(int id, SystemObjects objectType, int objectId)
         {
             //return possible hierarchy parents for this object type
-            var parent = Company.GetParentType<ReferenceItemType>(id);
+            var parent = Company.GetParentType(id, SystemObjects.ReferenceItemType);
             var list = new List<PrimeSelectItem>();
 
             if(parent != null)
             {                
                 //get possible parent reference list types defined for this object / object id they cant already be parents
-                list = Company.FieldTypes.Where(x => x.Object == objectType.ToString() && x.ObjectID == objectId && x.LookupObjectType == "ReferenceItem" && x.LookupObjectID == parent.ID).Select(i =>  new PrimeSelectItem { label = i.FriendlyName, value = i.ID.ToString() }).ToList();
+                list = Company.FieldTypes.Where(x => x.Object == objectType.ToString() && x.ObjectID == objectId && x.LookupObjectType == "ReferenceItem" && x.LookupObjectID == parent.ObjectID).Select(i =>  new PrimeSelectItem { label = i.FriendlyName, value = i.ID.ToString() }).ToList();
                 if(list.Count > 0) list.Insert(0, new PrimeSelectItem { label = "", value = "" });
             }
 
@@ -3271,7 +3274,7 @@ namespace d360.web.Controllers
                 { "Public Url", @"^$|\b(http(s)?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?\b" },
                 { "US Zip Code", @"^(\d{5}(?:\-\d{4})?)$" }
             };
-            var dataTypeOptions = DataType.Boolean.GetDataTypeInfoList()
+            var dataTypeOptions = DataType.Boolean.GetDataTypeInfoList(type)
                     .Where(i => !i.ReadOnly)
                     .Select(i => new
                     {
@@ -3913,7 +3916,7 @@ namespace d360.web.Controllers
                 ft.ValidationDescription = model.FieldType.ValidationDescription;
                 ft.ColumnWidth = model.FieldType.ColumnWidth;
                 ft.AllowMultipleValues = model.FieldType.AllowMultipleValues;
-
+                ft.Increment = model.FieldType.Increment;
                 if (model.FieldType.Type == DataType.Lookup.ToString())
                     ft.ParentFieldTypeID = model.FieldType.ParentFieldTypeID;
                 else
@@ -10299,12 +10302,12 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
             //if the reference type has a parent we need to add parent field with the values from the parent
 
-            var parentType = Company.GetParentType<ReferenceItemType>(id);
+            var parentType = Company.GetParentType(id, SystemObjects.ReferenceItemType);
 
             if(parentType != null)
             {
                 var sql = "select DisplayValue, ObjectID from assetdetail where [object] = 'Referenceitem' and TypeID = @id";
-                list.Add(new EditableField { Row = row++, Column = 1, FieldName = "ParentID", Name = parentType.Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = false, Items = Company.Query<dynamic>(sql, new { id = parentType.ID }).Select(i => new SelectListItem { Text = i.DisplayValue, Value = string.Format("{0}", i.ObjectID) }).ToList() });
+                list.Add(new EditableField { Row = row++, Column = 1, FieldName = "ParentID", Name = parentType.Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = false, Items = Company.Query<dynamic>(sql, new { id = parentType.ObjectID }).Select(i => new SelectListItem { Text = i.DisplayValue, Value = string.Format("{0}", i.ObjectID) }).ToList() });
             }
                         
             list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, id).ToList(), row);
@@ -10329,11 +10332,11 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
             //if the reference type has a parent we need to add parent field with the values from the parent
 
-            var parentType = Company.GetParentType<ReferenceItemType>(a.ReferenceItemTypeID);
+            var parentType = Company.GetParentType(a.ReferenceItemTypeID, SystemObjects.ReferenceItemType);
 
             if (parentType != null)
             {
-                var parent = Company.GetParentObject<ReferenceItem>(id);
+                var parent = Company.GetParentObject(id, SystemObjects.ReferenceItem);
                 var sql = "select DisplayValue, ObjectID from assetdetail where [object] = 'Referenceitem' and TypeID = @id";
                 list.Add(new EditableField { Row = row++, Column = 1, FieldName = "ParentID", Name = parentType.Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = false, Items = Company.Query<dynamic>(sql, new { id = parentType.ID }).Select(i => new SelectListItem { Text = i.DisplayValue, Value = string.Format("{0}", i.ObjectID), Selected = i.ObjectID == (parent != null ? parent.ID : 0)  }).ToList() });
             }
@@ -10882,25 +10885,28 @@ order by F.Name, FA.TextPath";
                         sql = $@"
 declare @OwnerSourceType varchar(50)
 declare @owners table (ID int)
+
+
 IF @source = 'Intersect'
 BEGIN
 	set @OwnerSourceType = 'Artifact'
 
 	insert into @owners
-		select	SubjectID
+		select	A.ID
 		from	[IntersectDetail] N
-				inner join Artifact A with(nolock) on N.[Subject] = 'Artifact' and A.ID = N.SubjectID and N.ID = @id
-				inner join ArtifactType [AT] with(nolock) on [AT].ID = A.ArtifactTypeID and [AT].CanOwnFusion = 1
+				inner join Asset A with(nolock) on N.[Subject] = 'Artifact' and A.objectID = N.SubjectID and N.ID = @id
+				inner join AssetType [AT] with(nolock) on [AT].ID = A.AssetTypeID and [AT].CanOwnFusion = 1
 	insert into @owners
-		select	ObjectID
+		select	A.ID
 		from	[IntersectDetail] N
-				inner join Artifact A with(nolock) on N.[Object] = 'Artifact' and A.ID = N.ObjectID and N.ID = @id
-				inner join ArtifactType [AT] with(nolock) on [AT].ID = A.ArtifactTypeID and [AT].CanOwnFusion = 1
+				inner join Asset A with(nolock) on N.[Object] = 'Artifact' and A.ObjectID = N.ObjectID and N.ID = @id
+				inner join AssetType [AT] with(nolock) on [AT].ID = A.AssetTypeID and [AT].CanOwnFusion = 1
 END
 ELSE
 BEGIN
 	set @OwnerSourceType = @source
-	insert into @owners values (@id)
+	insert into @owners 
+	Select ID from Asset where [object]=@OwnerSourceType and [objectId]=@id
 END
 
 declare @h table (ID int);
@@ -10909,22 +10915,24 @@ if @OwnerSourceType = 'Artifact'
 	begin
 		with h as	(
 					select	A.ID,
-							A.ParentID
-					from	Artifact A with(nolock)
+							PA.ID as ParentID
+					from	Asset A with(nolock)
 							inner join @owners O on O.ID = A.ID
+							cross apply [dbo].[GetParentByAssetID] (A.ID) as PA
 					union all
-					select	P.ID,
-							P.ParentID
-					from	Artifact P with(nolock)
-							inner join h as C on C.ParentID = P.ID
+					select	AA.ID,
+							PA.ID as ParentID
+					from	Asset AA with(nolock)
+							cross apply [dbo].[GetParentByAssetID] (AA.ID) as PA
+							inner join h as C on C.ParentID =AA.ID
 					)
 		insert into @h
 			select ID from h;
 	end
-else
-	begin
+
 		insert into @h values (@id)
-	end;
+        insert into @h select id from @Owners
+
 
 select	'FusionAttribute' as [Object], 
         FA.ID as ObjectID, 
@@ -10932,7 +10940,7 @@ select	'FusionAttribute' as [Object],
 from	FusionAttribute FA with(nolock)
 		inner join Fusion F with(nolock) on F.ID = FA.FusionID and FA.FusionAttributeTypeID = @targetTypeID and FA.Deleted = 0
         inner join FusionOwner FO on FO.FusionID = FA.FusionID
-        inner join @h H on H.ID = FO.ArtifactID
+        inner join @h H on H.ID = FO.ASSETID
 where	FA.ID not in (
 					select	1 
 					from	[IntersectDetail]
@@ -12510,12 +12518,31 @@ order by	case
         {
             string crossApplyValue;
             string labelValue;
+            string objType;
+            string joinColumn;
+            int objId;
 
-            if (type == SystemObjects.TaxonomyType || type == SystemObjects.PolicyType)
+            var intersectType = Company.GetById<IntersectType>(intersectTypeID);
+
+            if (intersectType.Object == type.ToString() && intersectType.ObjectID == id)
+            {
+                objType = intersectType.Subject;
+                objId = intersectType.SubjectID;
+                joinColumn = "Subject";
+            }
+            else
+            {
+                objType = intersectType.Object;
+                objId = intersectType.ObjectID;
+                joinColumn = "Object";
+            }
+
+            if (objType == SystemObjects.TaxonomyType.ToString() || objType == SystemObjects.PolicyType.ToString())
             {
                 crossApplyValue = "getassettextpathbyid(D.id, '/') atp";
                 labelValue = "atp.textpath";
-            } else
+            }
+            else
             {
                 crossApplyValue = "dbo.GetAssetDisplayValueById(D.ID) DN";
                 labelValue = "DN.DisplayValue";
@@ -12526,20 +12553,9 @@ order by	case
 		            {labelValue} as label 
                 from	Asset D
                     inner join AssetType DT on DT.ID = D.AssetTypeID
-		            inner join	(
-				        select	case
-						        when (Subject = '{type.ToString()}' and SubjectID = {id}) then Object
-								else Subject
-					    end as Object,
-						case
-						    when (Subject = '{type.ToString()}' and SubjectID = {id}) then ObjectID
-							else SubjectID
-						    end as ObjectID
-					    from	IntersectType
-					        where	ID = {intersectTypeID}
-					 ) I on I.Object = DT.Object and I.ObjectID = DT.ObjectID
-                   cross apply {crossApplyValue}
-                   order by {labelValue}");
+                    inner join IntersectType I on I.{joinColumn} = DT.Object and I.{joinColumn}ID = DT.ObjectID and I.ID = {intersectTypeID}
+                    cross apply {crossApplyValue}
+                    order by {labelValue}");
 
                 return new JsonNetResult
                 {
@@ -15146,7 +15162,7 @@ order by	case
             var list = new List<EditableField>();
             var a = Company.GetById<Taxonomy>(id, i => i.TaxonomyType);
 
-            var parent = Company.GetParentObject<Taxonomy>(a.ID);
+            var parent = Company.GetParentObject(a.ID, SystemObjects.Taxonomy);
 
             var parents = Company.Query<dynamic>(@"
 select	A.ObjectID as ID,
@@ -15167,12 +15183,12 @@ new { t = a.TaxonomyTypeID, currentLevel = a.Level ?? 1, maxLevel = a.TaxonomyTy
             var parentItems = parents.Select(i => new SelectListItem {
                 Text = i.Name,
                 Value = $"{i.ID}",
-                Selected = (parent != null ? ((int)i.ID == parent.ID) : false)
+                Selected = (parent != null ? ((int)i.ID == parent.ObjectID) : false)
             }).ToList();
             parentItems.Insert(0, new SelectListItem { Text = "- Root -", Value = "0", Selected = (parent == null) });
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "ParentID", Name = "Parent Model", FieldDescription = FormInfo.Taxonomy_ChangeParent_Warning, FieldType = DataType.Lookup.ToString(), Items = parentItems, Value = ((parent != null) ? parent.ID.ToString() : "0") });
+            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "ParentID", Name = "Parent Model", FieldDescription = FormInfo.Taxonomy_ChangeParent_Warning, FieldType = DataType.Lookup.ToString(), Items = parentItems, Value = ((parent != null) ? parent.ObjectID.ToString() : "0") });
             list =(
                 loadDynamicFields(
                     SystemObjects.Taxonomy.ToString(),
