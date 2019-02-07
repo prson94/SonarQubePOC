@@ -229,22 +229,34 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             message += this.regexErrorMessage;
         }
         if (errors["number"]) {
-            message += "Please enter a valid number";
+            message += "Please enter a valid number. ";
         }
         if (errors["integer"]) {
-            message += "Please enter a valid integer";
+            message += "Please enter a valid integer. ";
         }
         if (errors["maxlength"]) {
-            message += `${this.currentFieldName} maximum length of ${errors["maxlength"].requiredLength} characters exceeded.  Current length is [${errors["maxlength"].actualLength}]`;
+            message += `${this.currentFieldName} maximum length of ${errors["maxlength"].requiredLength} characters exceeded.  Current length is [${errors["maxlength"].actualLength}] `;
         }
 
         if (errors["minlength"]) {
-            message += `${this.currentFieldName} minimum length of ${errors["minlength"].requiredLength} characters not met.  Current length is [${errors["minlength"].actualLength}]`;
+            message += `${this.currentFieldName} minimum length of ${errors["minlength"].requiredLength} characters not met.  Current length is [${errors["minlength"].actualLength}] `;
         }
 
         if (errors["required"]) {
-            message += `${this.currentFieldName} is required.  `;
+            message += `${this.currentFieldName} is required. `;
         }
+        if (errors["increment"]) {
+            message += `${this.currentFieldName} is required to be an increment of ${errors["increment"].incrementValue}. `;
+        }
+
+        if (errors["max"]) {
+            message += ` ${this.currentFieldName} maximum value of ${errors["max"].max} exceeded.  Current value is [${errors["max"].actual}] `;
+        }
+
+        if (errors["min"]) {
+            message += ` ${this.currentFieldName} minimum value of ${errors["min"].min} not reached.  Current value is [${errors["min"].actual}] `;
+        }
+
 
         return message;
     }

@@ -3916,7 +3916,7 @@ namespace d360.web.Controllers
                 ft.ValidationDescription = model.FieldType.ValidationDescription;
                 ft.ColumnWidth = model.FieldType.ColumnWidth;
                 ft.AllowMultipleValues = model.FieldType.AllowMultipleValues;
-
+                ft.Increment = model.FieldType.Increment;
                 if (model.FieldType.Type == DataType.Lookup.ToString())
                     ft.ParentFieldTypeID = model.FieldType.ParentFieldTypeID;
                 else
