@@ -74,4 +74,9 @@
   <include file="scripts/GOV-6513.xml"/>
   <include file="scripts/GOV-6417.xml"/>
   <include file="scripts/GOV-6287.xml"/>
+  <include file="scripts/GOV-6445.xml"/>
+  <include file="scripts/GOV-5969.xml"/>
+  <include file="scripts/GOV-6519.xml"/>
+  <include file="scripts/GOV-6520.xml"/>
+  <include file="scripts/GOV-6523.xml"/>
 </databaseChangeLog>

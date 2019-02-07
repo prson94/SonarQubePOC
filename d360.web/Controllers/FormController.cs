@@ -2934,7 +2934,8 @@ namespace d360.web.Controllers
         public JsonNetResult FieldType_RelationLookup_DisplayFields(int intersectTypeID, SystemObjects type, int id)
         {
             var list = Company.GetFieldTypesByObject(type, id)
-                .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
+                .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.Relationship.ToString()  && i.Type != DataType.OwnershipLookup.ToString() && i.Type != DataType.RefListRelationship.ToString()
+              && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.FilteredLookup.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
                 .Select(i => new { i.ID, i.Name })
                 .ToDictionary(i => i.Name, i => i.ID);
 
@@ -3273,7 +3274,7 @@ namespace d360.web.Controllers
                 { "Public Url", @"^$|\b(http(s)?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?\b" },
                 { "US Zip Code", @"^(\d{5}(?:\-\d{4})?)$" }
             };
-            var dataTypeOptions = DataType.Boolean.GetDataTypeInfoList()
+            var dataTypeOptions = DataType.Boolean.GetDataTypeInfoList(type)
                     .Where(i => !i.ReadOnly)
                     .Select(i => new
                     {
@@ -10884,25 +10885,28 @@ order by F.Name, FA.TextPath";
                         sql = $@"
 declare @OwnerSourceType varchar(50)
 declare @owners table (ID int)
+
+
 IF @source = 'Intersect'
 BEGIN
 	set @OwnerSourceType = 'Artifact'
 
 	insert into @owners
-		select	SubjectID
+		select	A.ID
 		from	[IntersectDetail] N
-				inner join Artifact A with(nolock) on N.[Subject] = 'Artifact' and A.ID = N.SubjectID and N.ID = @id
-				inner join ArtifactType [AT] with(nolock) on [AT].ID = A.ArtifactTypeID and [AT].CanOwnFusion = 1
+				inner join Asset A with(nolock) on N.[Subject] = 'Artifact' and A.objectID = N.SubjectID and N.ID = @id
+				inner join AssetType [AT] with(nolock) on [AT].ID = A.AssetTypeID and [AT].CanOwnFusion = 1
 	insert into @owners
-		select	ObjectID
+		select	A.ID
 		from	[IntersectDetail] N
-				inner join Artifact A with(nolock) on N.[Object] = 'Artifact' and A.ID = N.ObjectID and N.ID = @id
-				inner join ArtifactType [AT] with(nolock) on [AT].ID = A.ArtifactTypeID and [AT].CanOwnFusion = 1
+				inner join Asset A with(nolock) on N.[Object] = 'Artifact' and A.ObjectID = N.ObjectID and N.ID = @id
+				inner join AssetType [AT] with(nolock) on [AT].ID = A.AssetTypeID and [AT].CanOwnFusion = 1
 END
 ELSE
 BEGIN
 	set @OwnerSourceType = @source
-	insert into @owners values (@id)
+	insert into @owners 
+	Select ID from Asset where [object]=@OwnerSourceType and [objectId]=@id
 END
 
 declare @h table (ID int);
@@ -10911,22 +10915,24 @@ if @OwnerSourceType = 'Artifact'
 	begin
 		with h as	(
 					select	A.ID,
-							A.ParentID
-					from	Artifact A with(nolock)
+							PA.ID as ParentID
+					from	Asset A with(nolock)
 							inner join @owners O on O.ID = A.ID
+							cross apply [dbo].[GetParentByAssetID] (A.ID) as PA
 					union all
-					select	P.ID,
-							P.ParentID
-					from	Artifact P with(nolock)
-							inner join h as C on C.ParentID = P.ID
+					select	AA.ID,
+							PA.ID as ParentID
+					from	Asset AA with(nolock)
+							cross apply [dbo].[GetParentByAssetID] (AA.ID) as PA
+							inner join h as C on C.ParentID =AA.ID
 					)
 		insert into @h
 			select ID from h;
 	end
-else
-	begin
+
 		insert into @h values (@id)
-	end;
+        insert into @h select id from @Owners
+
 
 select	'FusionAttribute' as [Object], 
         FA.ID as ObjectID, 
@@ -10934,7 +10940,7 @@ select	'FusionAttribute' as [Object],
 from	FusionAttribute FA with(nolock)
 		inner join Fusion F with(nolock) on F.ID = FA.FusionID and FA.FusionAttributeTypeID = @targetTypeID and FA.Deleted = 0
         inner join FusionOwner FO on FO.FusionID = FA.FusionID
-        inner join @h H on H.ID = FO.ArtifactID
+        inner join @h H on H.ID = FO.ASSETID
 where	FA.ID not in (
 					select	1 
 					from	[IntersectDetail]

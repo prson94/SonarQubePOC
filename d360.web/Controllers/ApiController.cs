@@ -1477,42 +1477,42 @@ order by 'Name'";
         public IEnumerable<dynamic> GetRuleFusionOwners(int fusionID)
         {
             var sql = @"
-                with cte as (
-	                select	a.ID,
+                      with cte as (
+
+					select	b.objectId AS ID,
 			                I.SubjectID as ParentID,
-			                a.ArtifactTypeID,
+			                b.TypeID,
 			                d.DisplayValue
 	                from	FusionOwner fo
-			                inner join Artifact a on a.ID = fo.ArtifactID 
+						 inner join AssetDetail b on
+							 b.ID = fo.AssetID
 			                left join IntersectTypeDetail ITD on ITD.PredicateType = 3 and ITD.[Object] = 'ArtifactType' 
-				                and ITD.ObjectID = a.ArtifactTypeID and ITD.[Subject] = 'ArtifactType'
-			                left join [Intersect] I on I.IntersectTypeID = ITD.ID and I.ObjectID = a.ID
-			                inner join Asset b on b.[Object] = 'Artifact' and b.ObjectID = a.ID
+				                and ITD.ObjectID = b.TypeID and ITD.[Subject] = 'ArtifactType'
+			                left join [Intersect] I on I.IntersectTypeID = ITD.ID and I.ObjectID = b.ObjectID
 			                cross apply dbo.GetAssetDisplayValueById(b.ID) d
 	                where	fo.fusionID = @fusionID
 	                union all
-	                select	c.ID,
+	                select	c.ObjectID,
 			                x.SubjectID as ParentID,
-			                c.ArtifactTypeID,
+			                c.TypeID,
 			                d.DisplayValue
-	                from	Artifact c
+	                from	AssetDetail c
 			                outer apply (
 				                select I.* from [Intersect] I
 				                inner join IntersectTypeDetail ITD on ITD.PredicateType = 3 and ITD.[Object] = 'ArtifactType' 
-					                and ITD.ObjectID = c.ArtifactTypeID and ITD.[Subject] = 'ArtifactType'
+					                and ITD.ObjectID = c.TypeID and ITD.[Subject] = 'ArtifactType'
 					                and I.IntersectTypeID = ITD.ID
-				                where I.ObjectID = c.ID
+				                where I.ObjectID = c.ObjectID
 			                ) x
-			                inner join Asset b on b.[Object] = 'Artifact' and b.ObjectID = c.ID
-			                cross apply dbo.GetAssetDisplayValueById(b.ID) d
-			                inner join ArtifactType ct on ct.ID = c.ArtifactTypeID and ct.CanOwnFusion = 1
-			                inner join cte p on p.ID = c.ParentID
+			                cross apply dbo.GetAssetDisplayValueById(c.ID) d
+			                inner join ArtifactType ct on ct.ID = c.TypeID and ct.CanOwnFusion = 1
+			                inner join cte p on p.ID = c.ObjectID
                 )
 
                 select	a.ID,
 		                t.Name + ': ' + a.DisplayValue as Name
                 from	cte a
-		                inner join ArtifactType t on t.ID = a.ArtifactTypeID";
+		                inner join ArtifactType t on t.ID = a.TypeID";
 
             return Company.Query<dynamic>(sql, new { fusionID });
         }
@@ -3652,7 +3652,15 @@ outer apply (
                 var fieldTypeIDs = fields.Where(i => i.FieldTypeID != 0).Select(x => x.FieldTypeID).ToList();
                 var fieldTypes = Company.Filter<FieldType>(i => fieldTypeIDs.Contains(i.ID)).ToList();
 
-                if ((def.Fields.Count > 0 && ((fieldTypes == null || fieldTypes.Count == 0)) & !def.Fields.Any(x => x.FieldTypeName == "TextPath")))
+                if (
+                    (def.Fields.Count > 0) &&
+                        (
+                            (
+                                (fieldTypes == null || fieldTypes.Count == 0) &&
+                                !def.Fields.Any(x => (x.FieldTypeName == "TextPath") || (x.FieldTypeName == "Name" && x.FieldTypeID == 0))
+                            )
+                        )
+                    )
                 {
                     throw new Exception("The relationship lookup field has 0 valid fields to display. Please verify the definition is correct.");
                 }

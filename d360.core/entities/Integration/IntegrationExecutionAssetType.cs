@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
@@ -18,6 +19,17 @@ namespace d360.core.entities
         public int Fields { get; set; }
         public int Relations { get; set; }
         public int Responsibilities { get; set; }
+
+        public int? ProcessedFieldsPage { get; set; }
+        public int? ProcessedRelationsPage { get; set; }
+        public int? ProcessedResponsibilitiesPage { get; set; }
+    }
+
+    public class StepExecutionTime
+    {
+        public int Step { get; set; }
+        public DateTime StartedOn { get; set; }
+        public DateTime? CompletedOn { get; set; }
     }
 
     [DataContract(Namespace = NAMESPACE), Table("ExecutionAssetType", Schema = "integration")]
@@ -58,6 +70,9 @@ namespace d360.core.entities
 
         [DataMember]
         public string RetryLog { get; set; } = "{RetryCount:0, LastRetryInError: false, LastStepCompleted: 0, Begins:{Fields:0,Relations:0,Responsibilities:0}}";
+
+        [DataMember]
+        public string StepExecutionTimes { get; set; } = "[]";
 
         [DataMember]
         public string IGCAssetRelationshipBreakdown { get; set; }
