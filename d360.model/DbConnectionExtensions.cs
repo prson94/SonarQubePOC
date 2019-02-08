@@ -54,23 +54,29 @@ namespace d360.model
 
                         rule.SetDefinitionFromRaw();
 
-                        string sqlToExecute = "";
-                        
-                        try
+                        using (var transaction = cnn.BeginTransaction())
                         {
-                            var thenSql = cnn.GetThenResultsSql(rule, false, false, "A.AssetID");
-                            var whenSql = cnn.GetWhenResultsSql(rule, false);
-                            sqlToExecute = $"insert into #ResponsibilityTypeRelationItem {string.Format(thenSql, (string.IsNullOrEmpty(whenSql) ? "" : $"cross apply ({whenSql}) A"))}";
-                            await cnn.ExecuteAsync(sqlToExecute, commandTimeout: timeout);
-                        }
-                        catch (Exception ex)
-                        {
-                            var ruleFailureLog = $"{rule.ID}: {ex.GetFullExceptionData()}. SQL was: {sqlToExecute}.\n";
-                        }                        
 
-                        // Mark the responsibility rule as having been built right now
-                        // This is wrong because it may not have been built and the subsequent lines could fail...
-                        await MarkResponsibilityRuleAsRan(cnn, rule.ID);
+                            string sqlToExecute = "";
+
+                            try
+                            {
+                                var thenSql = cnn.GetThenResultsSql(rule, false, false, "A.AssetID");
+                                var whenSql = cnn.GetWhenResultsSql(rule, false);
+                                sqlToExecute = $"insert into #ResponsibilityTypeRelationItem {string.Format(thenSql, (string.IsNullOrEmpty(whenSql) ? "" : $"cross apply ({whenSql}) A"))}";
+                                await cnn.ExecuteAsync(sqlToExecute, commandTimeout: timeout, transaction:transaction);
+
+
+                            }
+                            catch (Exception ex)
+                            {
+                                var ruleFailureLog = $"{rule.ID}: {ex.GetFullExceptionData()}. SQL was: {sqlToExecute}.\n";
+                            }
+
+                            // Mark the responsibility rule as having been built right now
+                            // This is wrong because it may not have been built and the subsequent lines could fail...
+                            await MarkResponsibilityRuleAsRan(cnn, rule.ID, transaction);
+                        }
                     }
                 }
                 catch
@@ -79,6 +85,7 @@ namespace d360.model
                 }
             }
 
+            /*
             // Save the rules we are processing to a temp table so we can easily 
             await PopulateImpactedResponsibilityRulesTempTable(cnn, rulesRequiringRun, timeout);
 
@@ -89,7 +96,7 @@ namespace d360.model
            // await InsertRuleTypeAssignmentsIntoTempTable(cnn, timeout);
 
             // For all impacted rules delete/ update/ insert changes only applies to rules for entire type.
-            await PerformFinalMerge(cnn, timeout);
+            await PerformFinalMerge(cnn, timeout);*/
         }
 
         private static async Task ProcessTypeBasedResponsibilityRelationRules(SqlConnection cnn, int? ruleID, int timeout)
@@ -110,11 +117,17 @@ namespace d360.model
 
                         rule.SetDefinitionFromRaw();
 
-                        await ProcessRuleForAssetType(cnn, rule, timeout);
-                        
-                        // Mark the responsibility rule as having been built right now
-                        // This is wrong because it may not have been built and the subsequent lines could fail...
-                        await MarkResponsibilityRuleAsRan(cnn, rule.ID);
+                        //create a transaction
+                        using (var transaction = cnn.BeginTransaction())
+                        {
+                            await ProcessRuleForAssetType(cnn, rule, timeout, transaction);
+
+                            // Mark the responsibility rule as having been built right now
+                            // This is wrong because it may not have been built and the subsequent lines could fail...
+                            await MarkResponsibilityRuleAsRan(cnn, rule.ID, transaction);
+
+                            transaction.Commit();
+                        }
                     }
                 }
                 catch
@@ -122,15 +135,6 @@ namespace d360.model
                     throw;
                 }
             }
-
-            // Save the rules we are processing to a temp table so we can easily 
-    /*        await PopulateImpactedResponsibilityRulesTempTable(cnn, rulesRequiringRun, timeout);
-                        
-            // For Applies to type rules save assignments into responsibility temp table
-            await InsertRuleTypeAssignmentsIntoTempTable(cnn, timeout);
-
-            // For all impacted rules delete/ update/ insert changes only applies to rules for entire type.
-            await PerformFinalMerge(cnn, timeout);*/
         }
 
 
@@ -142,9 +146,9 @@ namespace d360.model
         /// <param name="cnn"></param>
         /// <param name="ruleId"></param>
         /// <returns></returns>
-        private static async Task MarkResponsibilityRuleAsRan(SqlConnection cnn, int ruleId)
+        private static async Task MarkResponsibilityRuleAsRan(SqlConnection cnn, int ruleId, SqlTransaction transaction = null)
         {
-            await cnn.ExecuteAsync("update ResponsibilityTypeRelationRule set LastRunOn = @date where ID = @id", new { date = DateTime.UtcNow, id = ruleId });
+            await cnn.ExecuteAsync("update ResponsibilityTypeRelationRule set LastRunOn = @date where ID = @id", new { date = DateTime.UtcNow, id = ruleId }, transaction: transaction);
         }
 
         /// <summary>
@@ -404,58 +408,60 @@ namespace d360.model
 	                where	T.RuleID is null", commandTimeout: timeout);
         }
 
-        private static async Task ProcessRuleForAssetType(SqlConnection cnn, ResponsibilityTypeRelationRule rule, int timeout)
+        private static async Task ProcessRuleForAssetType(SqlConnection cnn, ResponsibilityTypeRelationRule rule, int timeout, SqlTransaction transaction)
         {
             string sqlToExecute = "";
             try
             {
-                await cnn.ExecuteAsync("truncate table #ResponsibilityTypeRelationTypeItem");
+                await cnn.ExecuteAsync("truncate table #ResponsibilityTypeRelationTypeItem", transaction:transaction);
 
                 var thenSql = cnn.GetThenResultsSql(rule, false, false);
                 sqlToExecute = $@"insert into #ResponsibilityTypeRelationTypeItem {string.Format(thenSql, "")}";
-                int i = await (cnn.ExecuteAsync(sqlToExecute, commandTimeout: timeout));
+                int i = await (cnn.ExecuteAsync(sqlToExecute, commandTimeout: timeout, transaction:transaction));
+                
+                    //merge into the asset table 
+                    await cnn.ExecuteAsync(@"
+                                    merge [dbo].[ResponsibilityRuleResultAsset] as T
+			                using	(
+					                select	R.ID as RuleID,
+							                R.ResponsibilityTypeID,							
+							                T.ID as AssetTypeID,							
+							                REL.PermissionsBitMask							
+					                from	AssetType T
+							                inner join ResponsibilityTypeRelationRule R on R.Object = T.Object and R.ObjectID = T.ObjectID
+							                inner join ResponsibilityTypeRelation REL on REL.ObjectType = T.Object and REL.ObjectID = T.ObjectID and REL.ResponsibilityTypeID = R.ResponsibilityTypeID							
+						                where 
+								                R.ID = @ruleId
+					                ) as S
+			                on		S.RuleID = T.RuleID and S.AssetTypeID = T.AssetTypeID
+			                when	matched then
+					                update set T.UpdatedOn = getutcdate(), T.UpdatedBy = 0
+			                when	not matched by target then
+					                insert (RuleID, AssetTypeID, PermissionsBitMask,UpdatedOn, UpdatedBy ) values (S.RuleID,S.AssetTypeID,S.PermissionsBitMask,getutcdate(),0)
+                            when NOT MATCHED BY SOURCE THEN
+                                    delete;
+                ", new { ruleId = rule.ID }, transaction:transaction);
 
-                #region Insert type assignments into #resp table.
-
-                await ClearResponsibilityTempTable(cnn);
-
-                await cnn.ExecuteAsync(@"
-    insert into #resp
-	    select	R.ID as RuleID,
-			    R.ResponsibilityTypeID,
-			    0 as AssetID,
-			    T.ID as AssetTypeID,
-			    I.SecurityAsset,
-			    I.SecurityAssetID,
-			    R.Context,
-			    R.ApplyToType,
-			    REL.PermissionsBitMask,
-			    R.IsVisible,
-			    cast(0 as bit) as Overridden,
-			    0 as OverrideID 
-	    from	AssetType T
-			    inner join ResponsibilityTypeRelationRule R on R.Object = T.Object and R.ObjectID = T.ObjectID
-			    inner join ResponsibilityTypeRelation REL on REL.ObjectType = T.Object and REL.ObjectID = T.ObjectID and REL.ResponsibilityTypeID = R.ResponsibilityTypeID
-			    inner join #ResponsibilityTypeRelationTypeItem I on I.RuleID = R.ID and R.ApplyToType = 1", commandTimeout: timeout);
-
-                #endregion
-
-                #region Merge final results into ResponsibilityTypeRelationRuleResult table
-
-                await cnn.ExecuteAsync(@"
-                                        delete	T
-                                        from	ResponsibilityTypeRelationRuleResult T
-                                        where	T.RuleID = @ruleId", new { ruleId = rule.ID }, commandTimeout: timeout);
-
-
-                await cnn.ExecuteAsync(@"
-                                        insert into ResponsibilityTypeRelationRuleResult (RuleID, ResponsibilityTypeID, AssetID, AssetTypeID, SecurityAsset, SecurityAssetID, Context, ApplyToType, PermissionsBitMask, IsVisible, Overridden, OverrideID)
-	                                        select	S.*
-	                                        from	#resp S ", commandTimeout: timeout);
-
-
-                #endregion
-
+                    //merge into the resource table
+                    await cnn.ExecuteAsync(@"
+                                    merge [dbo].[ResponsibilityRuleResultResource] as T
+			                using	(
+					                select	R.ID as RuleID,							
+							                I.SecurityAsset,
+							                I.SecurityAssetID							
+					                from	AssetType T
+							                inner join ResponsibilityTypeRelationRule R on R.Object = T.Object and R.ObjectID = T.ObjectID
+							                inner join ResponsibilityTypeRelation REL on REL.ObjectType = T.Object and REL.ObjectID = T.ObjectID and REL.ResponsibilityTypeID = R.ResponsibilityTypeID
+							                inner join #ResponsibilityTypeRelationTypeItem I on I.RuleID = R.ID and R.ApplyToType = 1
+					                ) as S
+			                on		S.RuleID = T.RuleID and S.SecurityAsset = T.SecurityAsset and S.SecurityAssetID = T.SecurityAssetID
+			                when	matched then
+					                update set T.UpdatedOn = getutcdate(), T.UpdatedBy = 0
+			                when	not matched by target then
+					                insert (RuleID, SecurityAsset, SecurityAssetID ,UpdatedOn, UpdatedBy ) values (S.RuleID,S.SecurityAsset,S.SecurityAssetID,getutcdate(),0)
+                            when NOT MATCHED BY SOURCE THEN
+                                    delete;
+                ", transaction: transaction);
 
             }
             catch (Exception ex)
