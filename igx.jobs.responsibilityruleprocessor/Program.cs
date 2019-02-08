@@ -59,7 +59,7 @@ namespace igx.jobs.responsibilityruleprocessor
                                 c.EnvironmentLevel,
                                 CDS.UrlPrefix
                         from    company c 
-                                inner join databaseserver ds on c.databaseserverid = ds.id and c.ID = 1065
+                                inner join databaseserver ds on c.databaseserverid = ds.id and c.ID = 3
                                 inner join CompanyDomainSetting CDS on CDS.CompanyID = c.ID and CDS.IsPrimary = 1").ToList();
                 }
 #else
