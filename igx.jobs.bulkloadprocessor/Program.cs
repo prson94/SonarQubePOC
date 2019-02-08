@@ -1,6 +1,7 @@
 ﻿using d360.core.entities;
 using d360.core.exceptions;
 using d360.core.queue;
+using d360.core.enums;
 using d360.extensions.caching;
 using d360.extensions.info;
 using d360.extensions.queue;
@@ -850,6 +851,12 @@ set		Success = 0,
         Message = Message + 'User does not have a valid last name; '
 where   [LastName] is null or [LastName] = '';", transaction: trans);
 
+                    string inclause = String.Join(",", CompanyResourceState.Active.GetList().Select(s => "'" + s.Name + "'"));
+                    community.Execute(@"update	#Users
+set		Success = 0,
+        Message = Message + 'User does not have a valid status; '
+where   [UserStatus] IS NULL OR [UserStatus] NOT IN (" + inclause + ");", transaction: trans);
+
                     community.Execute(@"update	T
 set		T.ResourceID = S.ID
 from	#Users T
@@ -936,7 +943,7 @@ where	T.Success = 1", transaction: trans);
 
                     trans.Commit();
                 }
-                catch 
+                catch
                 {
                     trans.Rollback();
                     throw;
@@ -1089,7 +1096,7 @@ where	ID = @loadId", new { loadId }, transaction: trans);
 
                     trans.Commit();
                 }
-                catch 
+                catch
                 {
                     trans.Rollback();
                     throw;
