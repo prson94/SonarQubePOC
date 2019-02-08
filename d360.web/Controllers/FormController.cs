@@ -13557,7 +13557,7 @@ order by	case
                 model.Status = (RuleStatus)Enum.Parse(typeof(RuleStatus), form["Status"]);
                 model.Threshold = threshold;
 
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Rule, model.ID, Company.GetFieldTypesByObject(SystemObjects.RuleType, model.RuleTypeID).ToList(), form, Server);
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Rule, model.ID, Company.GetFieldTypesByObject(SystemObjects.RuleType, model.RuleTypeID).ToList(), form, Server, false);
                 var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.RuleType, model.RuleTypeID).ToList();
                 Company.SaveOrUpdate<Rule>(model, fields);
                 processFormDynamicRelationshipFields(SystemObjects.RuleType, model.RuleTypeID, SystemObjects.Rule, model.ID, fieldTypes, form);
