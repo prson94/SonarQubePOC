@@ -38,7 +38,9 @@ BEGIN
 		--print( 'Column #7 was updated -- Type')
 		--Select @byte,@exp 
 	
-		IF ((substring( columns_updated() , 1 , 1 ) & power( 2, 6 ) > 0) or
+		IF (
+		(substring( columns_updated() , 1 , 2 ) & power( 2, 1 ) > 0) or
+		(substring( columns_updated() , 1 , 1 ) & power( 2, 6 ) > 0) or
 		(substring( columns_updated() , 1 , 1 ) & power( 2, 7 ) > 0) or
 		(substring( columns_updated() , 2 , 1 ) & power( 2, 0 ) > 0) or
 		(substring( columns_updated() , 2 , 1 ) & power( 2, 1 ) > 0) or
