@@ -99,6 +99,8 @@
     <Compile Include="entities\Contracts\ICreatedMetadata.cs" />
     <Compile Include="entities\Contracts\IEventTrackedEntity.cs" />
     <Compile Include="entities\FieldValue.cs" />
+    <Compile Include="entities\Fusion\FusionMarkitLineageData.cs" />
+    <Compile Include="entities\Fusion\FusionMarkitLineageMapToBusinessItems.cs" />
     <Compile Include="entities\Fusion\FusionQueryAttribute.cs" />
     <Compile Include="entities\Fusion\FusionQueryAttributeType.cs" />
     <Compile Include="entities\Fusion\FusionRuleFilter.cs" />

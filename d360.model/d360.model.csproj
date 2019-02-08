@@ -138,6 +138,7 @@
     <Compile Include="CompanyContext.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="CompanyContext_MarkitLineage.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueryConstants.cs" />
@@ -196,6 +197,7 @@
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
   </PropertyGroup>
