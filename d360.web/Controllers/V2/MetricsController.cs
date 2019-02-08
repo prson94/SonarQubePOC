@@ -378,7 +378,7 @@ namespace d360.web.Controllers.V2
             if (!Company.CurrentResourceIsAdmin)
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.Unauthorized, "You are not allowed to remove this metric."));
 
-            var model = Company.Filter<MetricAsset>(i => i.Uid == uid).SingleOrDefault();
+            var model = Company.Filter<MetricAsset>(i => i.Uid == uid && i.State == State.Active).SingleOrDefault();
 
             if (model == null)
                 return errorMessageResponse(HttpStatusCode.NotFound, "Error removing metric", "Metric not found.");
