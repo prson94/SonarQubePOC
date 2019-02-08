@@ -87,7 +87,8 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
             this.headerBreadcrumbService.setCurrentObjectInfo('TaxonomyType', this.modelId);
             
             this.modelsService.getModel(this.modelId)
-                    .then(result => {                        
+                    .then(result => {
+                        this.searchValue = "";
                         this.model = result;
 
                         this.headerBreadcrumbService.clearBreadcrumbs();
