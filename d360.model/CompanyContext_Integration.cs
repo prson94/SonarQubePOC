@@ -8,6 +8,7 @@ using Dapper;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Linq;
@@ -774,12 +775,12 @@ when not matched by target then
             {
                 try
                 {
-                    cnn.Execute("DROP TABLE IF EXISTS #RelationshipTable", transaction: trans);
+                    cnn.Execute("DROP TABLE IF EXISTS api.ExecutionRelationship", transaction: trans);
                     
                     #region Asset Bulk Copy
 
                     cnn.Execute(@"
-    create table #RelationshipTable (
+    create table api.ExecutionRelationship (
         ItemNumber int not null,
         SubjectSourceID nvarchar(1000) null,
         ObjectSourceID nvarchar(1000) null,
@@ -790,12 +791,12 @@ when not matched by target then
         IsNew bit null
     )", transaction: trans);
 
-                    cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempRelationshipTable ON #RelationshipTable ( IntersectTypeID ASC, SubjectSourceID ASC, ObjectSourceID ASC ) INCLUDE ( ItemNumber )", transaction: trans);
+                    cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempRelationshipTable ON api.ExecutionRelationship ( IntersectTypeID ASC, SubjectSourceID ASC, ObjectSourceID ASC ) INCLUDE ( ItemNumber )", transaction: trans);
 
                     var assetBulkCopy = new SqlBulkCopy(cnn, SqlBulkCopyOptions.Default, trans);
 
                     assetBulkCopy.BatchSize = relationshipTable.Rows.Count;
-                    assetBulkCopy.DestinationTableName = "#RelationshipTable";
+                    assetBulkCopy.DestinationTableName = "api.ExecutionRelationship";
                     assetBulkCopy.BulkCopyTimeout = 3600;
 
                     assetBulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
@@ -822,7 +823,7 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
 		    T.Object,
 		    T.ObjectID,
             @r, @r
-    from    #RelationshipTable R
+    from    api.ExecutionRelationship R
 		    inner join Asset S on S.SourceID = R.SubjectSourceID
 		    inner join AssetType ST on ST.ID = S.AssetTypeID
 
@@ -842,7 +843,7 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
 		    T.Object,
 		    T.ObjectID,
             @r, @r
-    from    #RelationshipTable R
+    from    api.ExecutionRelationship R
 		    inner join AssetType S on S.Uid = R.SubjectSourceID		    
 
 		    inner join Asset T on T.SourceID = R.ObjectSourceID
@@ -861,7 +862,7 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
 		    T.Object,
 		    T.ObjectID,
             @r, @r
-    from    #RelationshipTable R
+    from    api.ExecutionRelationship R
 		    inner join Asset S on S.SourceID = R.SubjectSourceID
 		    inner join AssetType ST on ST.ID = S.AssetTypeID
 
@@ -877,7 +878,7 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
     update  T
     set     T.IntersectID = I.ID,
             T.Success = case when I.ID is null then cast(0 as bit) else cast(1 as bit) end
-    from    #RelationshipTable T
+    from    api.ExecutionRelationship T
             left join Asset S on S.SourceID = T.SubjectSourceID
             left join Asset O on O.SourceID = T.ObjectSourceID
             left join [Intersect] I on T.IntersectTypeID = I.IntersectTypeID 
@@ -889,7 +890,7 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
     update  T
     set     T.IntersectID = I.ID,
             T.Success = case when I.ID is null then cast(0 as bit) else cast(1 as bit) end
-    from    #RelationshipTable T
+    from    api.ExecutionRelationship T
             inner join Asset S on S.SourceID = T.SubjectSourceID
             inner join AssetType O on O.Uid = T.ObjectSourceID
             inner join [Intersect] I on T.IntersectTypeID = I.IntersectTypeID 
@@ -901,7 +902,7 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
     update  T
     set     T.IntersectID = I.ID,
             T.Success = case when I.ID is null then cast(0 as bit) else cast(1 as bit) end
-    from    #RelationshipTable T
+    from    api.ExecutionRelationship T
             inner join AssetType S on S.Uid = T.SubjectSourceID
             inner join Asset O on O.SourceID = T.ObjectSourceID
             inner join [Intersect] I on T.IntersectTypeID = I.IntersectTypeID 
@@ -916,7 +917,7 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
 
                     #endregion
 
-                    retResults = cnn.Query<dynamic>("select * from #RelationshipTable", transaction: trans).ToList();
+                    retResults = cnn.Query<dynamic>("select * from api.ExecutionRelationship", transaction: trans).ToList();
 
                     trans.Commit();
                 }
@@ -1372,28 +1373,190 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
             return results;
         }
 
+        private static List<DataRow> ValidateFields(this SqlConnection cnn, 
+            List<FieldType> fieldTypes, List<string> requiredFieldTypeNames, 
+            Dictionary<string, string> fields, Guid executionID, int itemNumber,
+            DataTable fieldTable, bool success, string errorMessage)
+        {
+            List<DataRow> fieldRows = new List<DataRow>();
 
-        public static List<DatabaseBulkRelationshipResult> BulkRelationshipsImport(this SqlConnection cnn,
+            success = true;
+            errorMessage = string.Empty;
+
+            FieldType fieldType = null;
+
+            // Contains all required fields?
+            var missingFields = requiredFieldTypeNames.Except(fields.Select(f => f.Key));
+
+            if (missingFields.Any())
+            {
+                success = false;
+                errorMessage += $"{string.Join(",", missingFields)} are required fields;";
+            }
+
+            foreach (var k in fields)
+            {
+                string fieldName = k.Key.Trim();
+                string fieldValue = (k.Value + "").Trim();
+                int? fieldTypeId = null;
+
+                // Validation of field and value;
+                fieldType = fieldTypes.SingleOrDefault(f => f.Name == fieldName);
+                if (fieldType == null)
+                {
+                    success = false;
+                    errorMessage += $"{fieldName} is not a valid field; ";
+                }
+                else
+                {
+                    fieldTypeId = fieldType.ID;
+
+                    if (fieldType.IsRequired)
+                    {
+                        if (string.IsNullOrEmpty(fieldValue))
+                        {
+                            success = false;
+                            errorMessage += $"{fieldName} is a required field; ";
+                        }
+                    }
+                    else
+                    {
+                        switch (fieldType.Type)
+                        {
+                            case "Boolean":
+                                if ((fieldValue.ToLower() != "true" && fieldValue.ToLower() != "false") && !string.IsNullOrEmpty(fieldValue))
+                                {
+                                    success = false;
+                                    errorMessage += $"{fieldName} is a boolean field and may only be 'false' or 'true'; ";
+                                }
+                                break;
+                            case "Date":
+                                DateTime dTest;
+                                if (!DateTime.TryParse(fieldValue, out dTest) && !string.IsNullOrEmpty(fieldValue))
+                                {
+                                    success = false;
+                                    errorMessage += $"{fieldName} must be a valid date; ";
+                                }
+                                break;
+                            case "DateTime":
+                                DateTime dtTest;
+                                if (!DateTime.TryParse(fieldValue, out dtTest) && !string.IsNullOrEmpty(fieldValue))
+                                {
+                                    success = false;
+                                    errorMessage += $"{fieldName} must be a valid datetime value; ";
+                                }
+                                break;
+                            case "Decimal":
+                                decimal decTest;
+                                if (!decimal.TryParse(fieldValue, out decTest) && !string.IsNullOrEmpty(fieldValue))
+                                {
+                                    success = false;
+                                    errorMessage += $"{fieldName} must be a valid decimal; ";
+                                }
+                                break;
+                            case "Link":
+                                if (fieldValue.Count(c => c == '|') != 1 && !string.IsNullOrEmpty(fieldValue))
+                                {
+                                    success = false;
+                                    errorMessage += $"{fieldName} must be a valid link, using the format name|url; ";
+                                }
+                                break;
+                            case "Lookup":
+                                break;
+                            case "Number":
+                                int intTest;
+                                if (!int.TryParse(fieldValue, out intTest) && !string.IsNullOrEmpty(fieldValue))
+                                {
+                                    success = false;
+                                    errorMessage += $"{fieldName} must be a valid whole number; ";
+                                }
+                                break;
+                            case "Percentage":
+                                decimal pctTest;
+                                if (!decimal.TryParse(fieldValue, out pctTest) && !string.IsNullOrEmpty(fieldValue))
+                                {
+                                    success = false;
+                                    errorMessage += $"{fieldName} must be a valid percentage; ";
+                                }
+                                break;
+                            default: // Html, Text
+                                if (!string.IsNullOrEmpty(fieldType.Pattern) && !string.IsNullOrEmpty(fieldValue))
+                                {
+                                    if (!System.Text.RegularExpressions.Regex.IsMatch(fieldValue, fieldType.Pattern))
+                                    {
+                                        success = false;
+                                        errorMessage += $"{fieldName} must match regular expression pattern defined for this field; ";
+                                    }
+                                }
+                                break;
+                        }
+
+                        if (fieldType.Length.HasValue)
+                        {
+                            if (fieldValue.Length < fieldType.Length.Value)
+                            {
+                                success = false;
+                                errorMessage += $"{fieldName} must have an exact length of {fieldType.Length.Value}; ";
+                            }
+                        }
+                        if (fieldType.MinimumLength.HasValue)
+                        {
+                            if (fieldValue.Length < fieldType.MinimumLength.Value)
+                            {
+                                success = false;
+                                errorMessage += $"{fieldName} must have a minimum length of {fieldType.MinimumLength.Value}; ";
+                            }
+                        }
+                        if (fieldType.MaximumLength.HasValue)
+                        {
+                            if (fieldValue.Length > fieldType.MaximumLength.Value)
+                            {
+                                success = false;
+                                errorMessage += $"{fieldName} may only have a maximum length of {fieldType.MaximumLength.Value}; ";
+                            }
+                        }
+                    }
+                }
+
+                var fieldRow = fieldTable.NewRow();
+
+                fieldRow["ExecutionID"] = executionID;
+                fieldRow["ItemNumber"] = itemNumber;
+                fieldRow["FieldName"] = fieldName;
+                fieldRow["FieldValue"] = fieldValue;
+                if (fieldTypeId.HasValue)
+                    fieldRow["FieldTypeID"] = fieldTypeId.Value;
+
+                fieldRows.Add(fieldRow);    // Added temporarily, but may be invalidated based on success flag.
+            }
+
+            return fieldRows;
+        }
+
+        public static List<DatabaseBulkRelationshipResult> ImportRelationships(this SqlConnection cnn,
             IQueueSource queue,
             string companyUrlPrefix,
             int currentCompanyID,
             int currentResourceID,
+            ApiExecution execution,
             IntersectType rt,
-            List<Dictionary<string, string>> import, 
+            RelationshipInserts import,
             int timeout = 3600)
         {
-            List<DatabaseBulkRelationshipResult> results = null;
+            List<DatabaseBulkRelationshipResult> results = new List<DatabaseBulkRelationshipResult>();
 
             #region Build data tables for bulk load.
 
-            var table = new System.Data.DataTable();
+            var table = new DataTable();
+            table.Columns.Add("ExecutionID", typeof(Guid));
             table.Columns.Add("ItemNumber", typeof(int));
             table.Columns.Add("Message", typeof(string));
             table.Columns.Add("Success", typeof(bool));
             table.Columns.Add("SubjectUid", typeof(Guid));
             table.Columns.Add("ObjectUid", typeof(Guid));
 
-            var fieldTable = new System.Data.DataTable();
+            var fieldTable = new DataTable();
+            fieldTable.Columns.Add("ExecutionID", typeof(Guid));
             fieldTable.Columns.Add("ItemNumber", typeof(int));
             fieldTable.Columns.Add("FieldName", typeof(string));
             fieldTable.Columns.Add("FieldValue", typeof(string));
@@ -1401,130 +1564,303 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
 
             #endregion
 
+            // Get field types.
+            var fieldTypes = cnn.Query<FieldType>("select * from FieldType where Object = 'IntersectType' and ObjectID = @ID", new { rt.ID }).ToList();
+            var requiredFieldTypeNames = fieldTypes.Where(f => f.IsRequired).Select(f => f.Name).ToList();
+
             #region Generate data sets
 
             for (int i = 1; i <= import.Count; i++)
             {
                 var model = import[i - 1];
 
-                var row = table.NewRow();
+                var success = true;
+                var errorMessage = string.Empty;
+                var fieldRows = cnn.ValidateFields(fieldTypes, requiredFieldTypeNames, model.Fields, execution.ExecutionID, i, fieldTable, success, errorMessage);
 
-                row["ItemNumber"] = i;
-
-                if (model.ContainsKey("SubjectUid"))
-                    row["SubjectUid"] = Guid.Parse(model["SubjectUid"]);
-                if (model.ContainsKey("ObjectUid"))
-                    row["ObjectUid"] = Guid.Parse(model["ObjectUid"]);
-
-                table.Rows.Add(row);
-
-                foreach (var k in model.Keys)
+                if (success)
                 {
-                    if (k != "SubjectUid" && k != "ObjectUid")
-                    {
-                        if (!string.IsNullOrEmpty(model[k]))
-                        {
-                            var fieldRow = fieldTable.NewRow();
+                    fieldRows.ForEach(fr => { fieldTable.Rows.Add(fr); });
 
-                            fieldRow["ItemNumber"] = i;
-                            fieldRow["FieldName"] = k.Trim();
-                            fieldRow["FieldValue"] = (model[k] + "").Trim();
+                    var row = table.NewRow();
 
-                            fieldTable.Rows.Add(fieldRow);
-                        }
-                    }
+                    row["ExecutionID"] = execution.ExecutionID;
+                    row["ItemNumber"] = i;
+                    row["SubjectUid"] = model.SubjectAssetUid;
+                    row["ObjectUid"] = model.ObjectAssetUid;
+
+                    table.Rows.Add(row);
+                }
+                else
+                {
+                    results.Add(new DatabaseBulkRelationshipResult { IntersectID = 0, IsNew = false, ItemNumber = i, Message = errorMessage, Success = false });
                 }
             }
 
             #endregion
 
-            if (cnn.State != System.Data.ConnectionState.Open)
+            if (cnn.State != ConnectionState.Open)
                 cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
 
-            using (var trans = cnn.BeginTransaction())
+            SqlBulkCopy bulkCopy = null;
+
+            #region Asset Bulk Copy
+
+            bulkCopy = new SqlBulkCopy(cnn);
+
+            bulkCopy.BatchSize = table.Rows.Count;
+            bulkCopy.DestinationTableName = "api.ExecutionRelationship";
+            bulkCopy.BulkCopyTimeout = timeout;
+
+            bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+            bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+            bulkCopy.ColumnMappings.Add("SubjectUid", "SubjectUid");
+            bulkCopy.ColumnMappings.Add("ObjectUid", "ObjectUid");
+            bulkCopy.WriteToServer(table);
+
+            #endregion
+
+            #region Asset Field Bulk Copy
+
+            bulkCopy = new SqlBulkCopy(cnn);
+
+            bulkCopy.BatchSize = fieldTable.Rows.Count;
+            bulkCopy.DestinationTableName = "api.ExecutionField";
+            bulkCopy.BulkCopyTimeout = timeout;
+
+            bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+            bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+            bulkCopy.ColumnMappings.Add("FieldName", "FieldName");
+            bulkCopy.ColumnMappings.Add("FieldValue", "FieldValue");
+            bulkCopy.ColumnMappings.Add("FieldTypeID", "FieldTypeID");
+
+            bulkCopy.WriteToServer(fieldTable);
+
+            #endregion
+
+            bulkCopy = null;
+
+            #region Resolve lookup values
+
+            cnn.Execute(@"
+create table #LookupValues (FieldTypeID int not null, FieldValue nvarchar(max) not null, [Value] int null)
+CREATE CLUSTERED INDEX CIX_TempLookupValues ON #LookupValues ( FieldTypeID ASC );
+		
+insert into #LookupValues
+	select		T.FieldTypeID,
+				T.FieldValue,
+                null
+	from		api.ExecutionField T
+				inner join FieldType F on F.ID = T.FieldTypeID and F.[Type] = 'Lookup' and T.ExecutionID = @ExecutionID
+	group by	T.FieldTypeID,
+				T.FieldValue;
+
+update	T
+set		T.[Value] = S.[Value]
+from	#LookupValues T
+		inner join FieldLookupValue S on S.FieldTypeID = T.FieldTypeID and S.[Text] = T.FieldValue;
+
+update	T
+set		T.LookupValue = S.[Value]
+from	api.ExecutionField T
+		inner join #LookupValues S on S.FieldTypeID = T.FieldTypeID and T.FieldValue = S.FieldValue and T.ExecutionID = @ExecutionID;
+", new { execution.ExecutionID }, commandTimeout: timeout);
+
+            #endregion
+
+            #region Log lookup errors
+
+            cnn.Execute($@"
+update	T
+set		T.Success = 0,
+		T.[Message] = coalesce(T.[Message] + '; ', '') + 'Relationship contains one or more fields with invalid lookup values: [' + S.Names + ']'
+from	api.ExecutionRelationship T
+		inner join	(
+					select		A.ExecutionID,
+                                A.ItemNumber,
+								STRING_AGG(FT.Name+'='+F.FieldValue, ', ') as Names
+					from		api.ExecutionRelationship A
+								inner join FieldType FT on FT.Object = 'IntersectType' 
+															and FT.ObjectID = {rt.ID}
+															and FT.[Type] = 'Lookup'
+								inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID and F.LookupValue is null
+                    where       A.ExecutionID = @ExecutionID
+					group by	A.ExecutionID, A.ItemNumber
+					) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
+", new { execution.ExecutionID }, commandTimeout: timeout);
+
+            #endregion
+
+            #region Validate subjects/objects
+
+            cnn.Execute(@"
+declare @st varchar(50),
+		@stid int,
+		@ot varchar(50),
+		@otid int,
+		@it int
+
+select	@st = Subject,
+		@stid = SubjectID,
+		@ot = Object,
+		@otid = ObjectID,
+		@it = ID
+from	IntersectType
+where	[uid] = @uid
+
+update	T
+set		T.Subject = S.Object,
+		T.SubjectID = S.ObjectID,
+		T.Object = O.Object,
+		T.ObjectID = O.ObjectID
+from	api.ExecutionRelationship T
+		left join AssetWithType S on T.ExecutionID = @ExecutionID and S.[Type] = @st and S.TypeID = @stid and S.[uid] = T.SubjectUid
+		left join AssetWithType O on T.ExecutionID = @ExecutionID and O.[Type] = @ot and O.TypeID = @otid and O.[uid] = T.ObjectUid;
+
+if @st = 'ReferenceItemType' and @stid = 0
+begin
+	update	T
+	set		T.Subject = S.Object,
+			T.SubjectID = S.ObjectID
+	from	api.ExecutionRelationship T
+			inner join AssetType S on T.ExecutionID = @ExecutionID and S.[uid] = T.SubjectUid and T.Subject is null;
+end
+
+if @ot = 'ReferenceItemType' and @otid = 0 
+begin
+	update	T
+	set		T.Object = O.Object,
+			T.ObjectID = O.ObjectID
+	from	api.ExecutionRelationship T
+			inner join AssetType O on T.ExecutionID = @ExecutionID and O.[uid] = T.ObjectUid and T.Object is null;
+end", new { execution.ExecutionID, rt.uid }, commandTimeout: timeout);
+
+            #endregion
+
+            #region Log subject/object resolution errors
+
+            cnn.Execute(@"
+update	api.ExecutionRelationship
+set		Success = 0,
+		[Message] = coalesce([Message] + '; ', '') + 'Not able to resolve subject of this relationship to a valid asset.'
+where	ExecutionID = @ExecutionID and Subject is null or SubjectID is null;
+	
+update	api.ExecutionRelationship
+set		Success = 0,
+		[Message] = coalesce([Message] + '; ', '') + 'Not able to resolve object of this relationship to a valid asset.'
+where	ExecutionID = @ExecutionID and Object is null or ObjectID is null;", new { execution.ExecutionID }, commandTimeout: timeout);
+
+            #endregion
+
+            int loopSize = 100;
+            int numberOfLoops = (int)Math.Ceiling((decimal)execution.Total / loopSize);
+            int beginItemNumber = 1;
+            int endItemNumber = loopSize;
+
+            for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
             {
-                try
+                using (var trans = cnn.BeginTransaction())
                 {
-                    cnn.Execute("DROP TABLE IF EXISTS #RelationshipTable", transaction: trans);
-                    cnn.Execute("DROP TABLE IF EXISTS #RelationshipFieldTable", transaction: trans);
+                    try
+                    {
+                        #region Intersect table merge
 
-                    #region Asset Bulk Copy
+                        cnn.Execute($@"
+    drop table if exists #ObjectMergeTableResult;
+    create table #ObjectMergeTableResult (ID int, ItemNumber int, [Action] nvarchar(10));
+    CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC );
 
-                    cnn.Execute(@"
-    create table #RelationshipTable (
-        ItemNumber int not null,
+    merge into  [Intersect] T
+    using		(
+			    select      *
+			    from        api.ExecutionRelationship
+			    where		ExecutionID = @ExecutionID
+                            and ItemNumber between {beginItemNumber} and {endItemNumber}
+                            and Success is null	
+            ) S
+    on      ( T.IntersectTypeID = {rt.ID} and T.Subject = S.Subject and T.SubjectID = S.SubjectID and T.Object = S.Object and T.ObjectID = S.ObjectID )
+    when matched then
+	    update set
+			    T.UpdatedBy = {currentResourceID},
+			    T.UpdatedOn = getutcdate()
+    when not matched by target then
+	    insert  (IntersectTypeID, Subject, SubjectID, Object, ObjectID, [State], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, [Owner])
+	    values  ({rt.ID}, S.Subject, S.SubjectID, S.Object, S.ObjectID, 1, {currentResourceID}, getutcdate(), {currentResourceID}, getutcdate(), 'BULK_API')
+    output inserted.ID, S.ItemNumber, $action into #ObjectMergeTableResult;
 
-        SubjectUid uniqueidentifier null,
-        Subject varchar(50) null,
-        SubjectID int null,
+    update	T
+    set		T.IntersectID = S.ID,
+		    T.IsNew = IIF(S.[Action] = 'I', 1, 0)
+    from	api.ExecutionRelationship T
+		    inner join #ObjectMergeTableResult S on T.ExecutionID = @ExecutionID and S.ItemNumber = T.ItemNumber
+    where   T.ItemNumber between {beginItemNumber} and {endItemNumber};
+", new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
 
-        ObjectUid uniqueidentifier null,
-        Object varchar(50) null,
-        ObjectID int null,
+                        #endregion
 
-        IntersectID int null,
-        [Message] nvarchar(2500) null,
-        Success bit null,
-        IsNew bit null
-    )", transaction: trans);
+                        #region Field table merge
 
-                    cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempRelationshipTable_SubjectUid ON #RelationshipTable ( [SubjectUid] ASC ) INCLUDE ( ItemNumber )", transaction: trans);
-                    cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempRelationshipTable_ObjectUid ON #RelationshipTable ( [ObjectUid] ASC ) INCLUDE ( ItemNumber )", transaction: trans);
+                        cnn.Execute($@"
+	    merge into  Field T
+        using       (
+                    select  distinct 
+                            A.IntersectID as ObjectID, 
+                            F.FieldTypeID,
+                            coalesce(F.LookupValue, F.FieldValue) as Value
+                    from    api.ExecutionRelationship A
+                            inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID
+                                and F.ItemNumber = A.ItemNumber 
+                                and A.ObjectID is not null 
+                                and F.FieldTypeID is not null
+							    and A.Success is null	
+                    where   A.ExecutionID = @ExecutionID
+                            and A.ItemNumber between {beginItemNumber} and {endItemNumber}
+                    ) S
+        on          (
+                        T.FieldTypeID = S.FieldTypeID and 
+                        T.ObjectType = 'Intersect' and 
+					    T.ObjectID = S.ObjectID
+                    )
+        when		matched then
+	    update		set
+					    T.Value = S.Value
+        when		not matched by target then
+	    insert		(FieldTypeID, ObjectType, ObjectID, Value)
+        values		(S.FieldTypeID, 'Intersect', S.ObjectID, S.Value);
+    ", new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
 
-                    var bulkCopy = new SqlBulkCopy(cnn, SqlBulkCopyOptions.Default, trans);
+                        #endregion
 
-                    bulkCopy.BatchSize = table.Rows.Count;
-                    bulkCopy.DestinationTableName = "#RelationshipTable";
-                    bulkCopy.BulkCopyTimeout = timeout;
+                        #region Update success flag
 
-                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-                    bulkCopy.ColumnMappings.Add("SubjectUid", "SubjectUid");
-                    bulkCopy.ColumnMappings.Add("ObjectUid", "ObjectUid");
-                    bulkCopy.WriteToServer(table);
+                        cnn.Execute($@"
+    update	api.ExecutionRelationship
+    set		Success = 1
+    where	Success is null
+		    and ExecutionID = @ExecutionID 
+            and ItemNumber between {beginItemNumber} and {endItemNumber} 
+            and IntersectID is not null;
+    ", new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
 
-                    #endregion
+                        #endregion
 
-                    #region Asset Field Bulk Copy
-
-                    cnn.Execute(@"
-    create table #RelationshipFieldTable (
-        ItemNumber int not null,
-        FieldName nvarchar(250) not null,
-        FieldValue nvarchar(max) null,
-        FieldTypeID int null,
-        LookupValue nvarchar(250) null
-    )", transaction: trans);
-
-                    cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempRelationshipFieldTable ON #RelationshipFieldTable ( ItemNumber ASC ) INCLUDE ( FieldTypeID )", transaction: trans);
-
-                    var fieldBulkCopy = new SqlBulkCopy(cnn, SqlBulkCopyOptions.Default, trans);
-
-                    fieldBulkCopy.BatchSize = table.Rows.Count;
-                    fieldBulkCopy.DestinationTableName = "#RelationshipFieldTable";
-                    fieldBulkCopy.BulkCopyTimeout = timeout;
-
-                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-                    bulkCopy.ColumnMappings.Add("FieldName", "FieldName");
-                    bulkCopy.ColumnMappings.Add("FieldValue", "FieldValue");
-
-                    fieldBulkCopy.WriteToServer(fieldTable);
-
-                    #endregion
-
-                    cnn.Execute("exec relation.BulkUpsert @uid, @r", new { rt.uid, r = currentResourceID }, trans, timeout);
-
-                    results = cnn.Query<DatabaseBulkRelationshipResult>("select * from #RelationshipTable", transaction: trans).ToList();
-                    trans.Commit();
+                        results.AddRange(
+                            cnn.Query<DatabaseBulkRelationshipResult>($"select * from api.ExecutionRelationship where and ItemNumber between {beginItemNumber} and {endItemNumber}", transaction: trans)
+                        );
+                        trans.Commit();
+                    }
+                    catch (Exception ex)
+                    {
+                        trans.Rollback();
+                        throw ex;
+                    }
                 }
-                catch (Exception ex)
-                {
-                    trans.Rollback();
-                    throw ex;
-                }
+
+                beginItemNumber += loopSize;
+                endItemNumber += loopSize;
             }
 
             cnn.Close();
-
 
             #region Send Relationship Events
 
@@ -1547,7 +1883,7 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
                             {
                                 Object = SystemObjects.Intersect,
                                 ObjectType = SystemObjects.IntersectType,
-                                ObjectID = result.ID,
+                                ObjectID = result.IntersectID,
                                 ObjectTypeID = rt.ID
                             }
                         });
@@ -1573,32 +1909,7 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
 
             #endregion
 
-
             return results;
-        }
-
-        public static List<DatabaseBulkRelationshipResult> BulkRelationshipsImport(this SqlConnection cnn,
-            IQueueSource queue,
-            string companyUrlPrefix,
-            int currentCompanyID,
-            int currentResourceID,
-            IntersectType rt,
-            RelationshipInserts import,
-            int timeout = 3600)
-        {
-            var values = new List<Dictionary<string, string>>();
-            import.ForEach(i =>
-            {
-                var dict = new Dictionary<string, string>();
-                dict.Add("SubjectUid", i.SubjectAssetUid.ToString());
-                dict.Add("ObjectUid", i.ObjectAssetUid.ToString());
-                foreach (var f in i.Fields)
-                    if (!dict.ContainsKey(f.Key))
-                        dict.Add(f.Key, f.Value);
-                values.Add(dict);
-            });
-
-            return BulkRelationshipsImport(cnn, queue, companyUrlPrefix, currentCompanyID, currentResourceID, rt, values, timeout);
         }
         
         #endregion API v2 logic

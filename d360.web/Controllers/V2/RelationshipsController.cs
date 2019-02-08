@@ -164,9 +164,22 @@ namespace d360.web.Controllers.V2
                 if (relationships == null)
                     relationships = readRequestJsonContent<RelationshipInserts>(Request).Result;
 
-                var results = (Company.Database.Connection as SqlConnection).BulkRelationshipsImport(
+                var execution = new ApiExecution
+                {
+                    ExecutionID = Guid.NewGuid(),
+                    Error = 0,
+                    Processed = 0,
+                    Total = relationships.Count,
+                    StartedOn = DateTime.UtcNow,
+                    ResourceID = Company.CurrentResourceID,
+                    Fields = JsonConvert.SerializeObject(new ApiExecutionFields_PostRelationships { IntersectTypeUid = intersectTypeUid })
+                };
+                Company.Add(execution);
+
+                var results = (Company.Database.Connection as SqlConnection).ImportRelationships(
                     QueueSource,
-                    Company.CurrentCompanyDomain, Company.CurrentCompanyID, Company.CurrentResourceID,
+                    Company.CurrentCompanyDomain, Company.CurrentCompanyID, Company.CurrentResourceID, 
+                    execution,
                     intersectType,
                     relationships);
 

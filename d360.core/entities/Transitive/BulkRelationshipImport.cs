@@ -39,10 +39,13 @@ namespace d360.core.entities
     public class DatabaseBulkRelationshipResult
     {
         [DataMember]
+        public Guid ExecutionID { get; set; }
+
+        [DataMember]
         public int ItemNumber { get; set; }
 
         [DataMember]
-        public int ID { get; set; }
+        public int IntersectID { get; set; }
 
         [DataMember]
         public string Message { get; set; }

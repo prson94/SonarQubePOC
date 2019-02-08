@@ -1,0 +1,71 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="GOV-6381-RelationTable">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+    create table api.ExecutionRelationship (
+        ExecutionID uniqueidentifier not null,
+		ItemNumber int not null,
+
+        SubjectUid uniqueidentifier null,
+        Subject varchar(50) null,
+        SubjectID int null,
+
+        ObjectUid uniqueidentifier null,
+        Object varchar(50) null,
+        ObjectID int null,
+
+        IntersectID int null,
+        [Message] nvarchar(2500) null,
+        Success bit null,
+        IsNew bit null,
+		CONSTRAINT [PK_ApiExecutionRelationship] PRIMARY KEY CLUSTERED ( [ExecutionID] DESC, ItemNumber ASC )		
+    );
+	CREATE NONCLUSTERED INDEX IX_ApiExecutionRelationship_SubjectUid ON api.ExecutionRelationship ( ExecutionID DESC, [SubjectUid] ASC ) INCLUDE ( ItemNumber );
+	CREATE NONCLUSTERED INDEX IX_ApiExecutionRelationship_ObjectUid ON api.ExecutionRelationship ( ExecutionID DESC, [ObjectUid] ASC ) INCLUDE ( ItemNumber );
+	CREATE NONCLUSTERED INDEX IX_ApiExecutionRelationship_Success ON api.ExecutionRelationship ( ExecutionID DESC, [Success] ASC ) INCLUDE ( ItemNumber );
+]]>
+    </sql>
+    <rollback>
+<![CDATA[
+drop table api.ExecutionRelationship;
+]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="GOV-6381-FieldTable">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+    create table api.ExecutionField (
+        ExecutionID uniqueidentifier not null,
+		ItemNumber int not null,
+        FieldName nvarchar(250) not null,
+        FieldValue nvarchar(max) null,
+        FieldTypeID int null,
+        LookupValue nvarchar(max) null,
+        Ignore bit null
+		CONSTRAINT [PK_ApiExecutionField] PRIMARY KEY CLUSTERED ( [ExecutionID] DESC, ItemNumber ASC, FieldName ASC )
+    );
+	CREATE NONCLUSTERED INDEX IX_ApiExecutionField_ItemNumber_Include ON api.ExecutionField ( ExecutionID DESC, ItemNumber ASC ) INCLUDE ( FieldTypeID );
+]]>
+    </sql>
+    <rollback>
+<![CDATA[
+drop table api.ExecutionField
+]]>
+    </rollback>
+  </changeSet>  
+  
+</databaseChangeLog>
