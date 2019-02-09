@@ -48,25 +48,51 @@ namespace d360.model
                 try
                 {
                     if (await ShouldRuleRun(cnn, rule.ID) && !rule.ApplyToType)
-                    {
-                        
+                    {                        
                         rulesRequiringRun.Add(rule.ID);
 
                         rule.SetDefinitionFromRaw();
 
                         using (var transaction = cnn.BeginTransaction())
                         {
-
                             string sqlToExecute = "";
 
                             try
                             {
-                                var thenSql = cnn.GetThenResultsSql(rule, false, false, "A.AssetID");
+                                var thenSql = cnn.GetThenResultsSql(rule, false, false);
                                 var whenSql = cnn.GetWhenResultsSql(rule, false);
-                                sqlToExecute = $"insert into #ResponsibilityTypeRelationItem {string.Format(thenSql, (string.IsNullOrEmpty(whenSql) ? "" : $"cross apply ({whenSql}) A"))}";
-                                await cnn.ExecuteAsync(sqlToExecute, commandTimeout: timeout, transaction:transaction);
 
+                                thenSql = string.Format(thenSql, "");
 
+                                //merge into the asset table 
+                                await cnn.ExecuteAsync($@"
+                                    merge [dbo].[ResponsibilityRuleResultAsset] as T
+			                                using	(
+					                                    {whenSql}
+					                                ) as S
+			                                on		@ruleId = T.RuleID and S.AssetID = T.AssetID
+			                                when	matched then
+					                                update set T.UpdatedOn = getutcdate(), T.UpdatedBy = 0
+			                                when	not matched by target then
+					                                insert (RuleID, AssetID, UpdatedOn, UpdatedBy ) values (@ruleId,S.AssetID,getutcdate(),0)
+                                            when NOT MATCHED BY SOURCE and T.RuleID = @ruleId THEN
+                                                    delete;
+                                ", new { ruleId = rule.ID }, transaction: transaction);
+
+                                //merge into the resource table
+                                await cnn.ExecuteAsync($@"
+                                    merge [dbo].[ResponsibilityRuleResultResource] as T
+			                                using	(
+					                                    {thenSql}
+					                                ) as S
+			                                on		S.RuleID = T.RuleID and S.SecurityAsset = T.SecurityAsset and S.SecurityAssetID = T.SecurityAssetID
+			                                when	matched then
+					                                update set T.UpdatedOn = getutcdate(), T.UpdatedBy = 0
+			                                when	not matched by target then
+					                                insert (RuleID, SecurityAsset, SecurityAssetID ,UpdatedOn, UpdatedBy ) values (S.RuleID,S.SecurityAsset,S.SecurityAssetID,getutcdate(),0)
+                                            when NOT MATCHED BY SOURCE and T.RuleID = @ruleId THEN
+                                                    delete;
+                                ", new { ruleId = rule.ID, appliesToType = rule.ApplyToType}, transaction: transaction);
                             }
                             catch (Exception ex)
                             {
@@ -76,6 +102,8 @@ namespace d360.model
                             // Mark the responsibility rule as having been built right now
                             // This is wrong because it may not have been built and the subsequent lines could fail...
                             await MarkResponsibilityRuleAsRan(cnn, rule.ID, transaction);
+
+                            transaction.Commit();
                         }
                     }
                 }
@@ -85,18 +113,18 @@ namespace d360.model
                 }
             }
 
-            /*
+            
             // Save the rules we are processing to a temp table so we can easily 
-            await PopulateImpactedResponsibilityRulesTempTable(cnn, rulesRequiringRun, timeout);
+           // await PopulateImpactedResponsibilityRulesTempTable(cnn, rulesRequiringRun, timeout);
 
             // For None Applies to type rules save the rule overrides
-            await PerformResponsibilityRuleOverrideUpdates(cnn, timeout);
+            //await PerformResponsibilityRuleOverrideUpdates(cnn, timeout);
 
             // For Applies to type rules save assignments into responsibility temp table
            // await InsertRuleTypeAssignmentsIntoTempTable(cnn, timeout);
 
             // For all impacted rules delete/ update/ insert changes only applies to rules for entire type.
-            await PerformFinalMerge(cnn, timeout);*/
+            //await PerformFinalMerge(cnn, timeout);
         }
 
         private static async Task ProcessTypeBasedResponsibilityRelationRules(SqlConnection cnn, int? ruleID, int timeout)
@@ -416,20 +444,15 @@ namespace d360.model
                 await cnn.ExecuteAsync("truncate table #ResponsibilityTypeRelationTypeItem", transaction:transaction);
 
                 var thenSql = cnn.GetThenResultsSql(rule, false, false);
-                sqlToExecute = $@"insert into #ResponsibilityTypeRelationTypeItem {string.Format(thenSql, "")}";
-                int i = await (cnn.ExecuteAsync(sqlToExecute, commandTimeout: timeout, transaction:transaction));
-                
+                thenSql = string.Format(thenSql, "");
+
                     //merge into the asset table 
-                    await cnn.ExecuteAsync(@"
+                await cnn.ExecuteAsync(@"
                                     merge [dbo].[ResponsibilityRuleResultAsset] as T
 			                using	(
-					                select	R.ID as RuleID,
-							                R.ResponsibilityTypeID,							
-							                T.ID as AssetTypeID,							
-							                REL.PermissionsBitMask							
+					                select	T.ID as AssetTypeID							                
 					                from	AssetType T
-							                inner join ResponsibilityTypeRelationRule R on R.Object = T.Object and R.ObjectID = T.ObjectID
-							                inner join ResponsibilityTypeRelation REL on REL.ObjectType = T.Object and REL.ObjectID = T.ObjectID and REL.ResponsibilityTypeID = R.ResponsibilityTypeID							
+							                inner join ResponsibilityTypeRelationRule R on R.Object = T.Object and R.ObjectID = T.ObjectID							                
 						                where 
 								                R.ID = @ruleId
 					                ) as S
@@ -437,31 +460,25 @@ namespace d360.model
 			                when	matched then
 					                update set T.UpdatedOn = getutcdate(), T.UpdatedBy = 0
 			                when	not matched by target then
-					                insert (RuleID, AssetTypeID, PermissionsBitMask,UpdatedOn, UpdatedBy ) values (S.RuleID,S.AssetTypeID,S.PermissionsBitMask,getutcdate(),0)
-                            when NOT MATCHED BY SOURCE THEN
+					                insert (RuleID, AssetTypeID, UpdatedOn, UpdatedBy ) values (@ruleId,S.AssetTypeID,getutcdate(),0)
+                            when NOT MATCHED BY SOURCE and T.RuleID = @ruleId THEN
                                     delete;
                 ", new { ruleId = rule.ID }, transaction:transaction);
 
                     //merge into the resource table
-                    await cnn.ExecuteAsync(@"
+                    await cnn.ExecuteAsync($@"
                                     merge [dbo].[ResponsibilityRuleResultResource] as T
 			                using	(
-					                select	R.ID as RuleID,							
-							                I.SecurityAsset,
-							                I.SecurityAssetID							
-					                from	AssetType T
-							                inner join ResponsibilityTypeRelationRule R on R.Object = T.Object and R.ObjectID = T.ObjectID
-							                inner join ResponsibilityTypeRelation REL on REL.ObjectType = T.Object and REL.ObjectID = T.ObjectID and REL.ResponsibilityTypeID = R.ResponsibilityTypeID
-							                inner join #ResponsibilityTypeRelationTypeItem I on I.RuleID = R.ID and R.ApplyToType = 1
+					                {thenSql}
 					                ) as S
 			                on		S.RuleID = T.RuleID and S.SecurityAsset = T.SecurityAsset and S.SecurityAssetID = T.SecurityAssetID
 			                when	matched then
 					                update set T.UpdatedOn = getutcdate(), T.UpdatedBy = 0
 			                when	not matched by target then
 					                insert (RuleID, SecurityAsset, SecurityAssetID ,UpdatedOn, UpdatedBy ) values (S.RuleID,S.SecurityAsset,S.SecurityAssetID,getutcdate(),0)
-                            when NOT MATCHED BY SOURCE THEN
+                            when NOT MATCHED BY SOURCE and T.RuleID = @ruleId THEN
                                     delete;
-                ", transaction: transaction);
+                ", new { ruleId = rule.ID }, transaction: transaction);
 
             }
             catch (Exception ex)
