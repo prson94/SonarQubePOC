@@ -115,7 +115,7 @@
          left join OrganizationResource RD on RD.OrganizationID = D.ID  
          inner join reporting.Global_Resource RES on RES.ResourceID = coalesce(RD.ResourceID, RG.ResourceID, rresource.SecurityAssetID)  
        where orides.id is null  and RES.State=1
-      GO
+      
     ]]>
     </sql>
     <rollback>
@@ -150,7 +150,7 @@
            left join OrganizationResource RD on RD.OrganizationID = D.ID  
            inner join reporting.Global_Resource R on R.ResourceID = coalesce(RD.ResourceID, RG.ResourceID, O.SecurityAssetID)  
          where O.Overridden = 0  and R.State=1
-        GO
+        
     ]]>
     </rollback>
   </changeSet>
@@ -249,7 +249,7 @@
 	        where	
 			        not exists (select 1 from dbo.[responsibilitytyperelationoverrideitem] orides where r.ResponsibilityTypeID = orides.ResponsibilityTypeID and rasset.AssetID = orides.AssetID)
 			        and rresource.SecurityAsset = 'O')
-        GO
+        
     ]]>
     </sql>
     <rollback>
@@ -328,7 +328,7 @@
 			      inner join dbo.OrganizationResource RD on RD.OrganizationID = D.ID
 			      inner join reporting.Global_Resource R on R.ResourceID = RD.ResourceID
 	      where	O.Overridden = 0 and O.SecurityAsset = 'O')
-      GO
+      
 ]]>
     </rollback>
   </changeSet>
@@ -340,9 +340,9 @@
             splitStatements="true"
             stripComments="true">
     <![CDATA[
-    IF (EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND  TABLE_NAME = 'responsibilitytyperelationruleresult'))
+    IF (NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND  TABLE_NAME = 'responsibilitytyperelationruleresult_backup'))
       BEGIN
-        exec sp_rename '[dbo].[responsibilitytyperelationruleresult]', '[dbo].[responsibilitytyperelationruleresult_backup]'
+        exec sp_rename '[dbo].[responsibilitytyperelationruleresult]', 'responsibilitytyperelationruleresult_backup'
       END
     ]]>
     </sql>
@@ -350,7 +350,7 @@
     <![CDATA[
     IF (EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND  TABLE_NAME = 'responsibilitytyperelationruleresult_backup'))
       BEGIN
-        exec sp_rename '[dbo].[responsibilitytyperelationruleresult_backup]', '[dbo].[responsibilitytyperelationruleresult]'
+        exec sp_rename '[dbo].[responsibilitytyperelationruleresult_backup]', 'responsibilitytyperelationruleresult'
       END
     ]]>
     </rollback>
@@ -389,6 +389,73 @@
     <rollback>
       <![CDATA[
       drop view [dbo].[responsibilitytyperelationruleresult]
+    ]]>
+    </rollback>
+  </changeSet>
+  <changeSet author="MrPink" id="GOV-6258-TVF">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[    
+        CREATE or alter FUNCTION UserAssetPermissions 
+        (	
+	        -- Add the parameters for the function here
+	        @ResourceID int, 
+	        @AssetTypeID int,
+	        @AssetID bigint
+        )
+        RETURNS TABLE  with Schemabinding
+        AS
+        RETURN 
+        (
+	        -- Add the SELECT statement with parameter references here
+	        select 
+		        rel.PermissionsBitMask,
+		        rasset.AssetID,
+		        rasset.AssetTypeID
+	        from 
+		        [dbo].[ResponsibilityRuleResultResource] rresource 
+		        inner join [dbo].[ResponsibilityRuleResultAsset] rasset on (rasset.RuleID = rresource.RuleID and rasset.AssetID = @AssetID or (rasset.AssetID = -1 and rasset.AssetTypeID = @AssetTypeID))
+		        inner join [dbo].[responsibilitytyperelationrule] r on (r.id = rasset.RuleID)
+		        inner join [dbo].[ResponsibilityTypeRelation] rel on (rel.ObjectID = r.ObjectID and rel.ResponsibilityTypeID = r.ResponsibilityTypeID and rel.ObjectType = r.[Object])
+	        where 
+		        rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = @ResourceID
+	        union
+		        select 
+		        rel.PermissionsBitMask,
+		        rasset.AssetID,
+		        rasset.AssetTypeID
+	        from 
+		        [dbo].[ResponsibilityRuleResultResource] rresource 
+		        inner join [dbo].[ResponsibilityRuleResultAsset] rasset on (rasset.RuleID = rresource.RuleID and rasset.AssetID = @AssetID or (rasset.AssetID = -1 and rasset.AssetTypeID = @AssetTypeID))
+		        inner join [dbo].[responsibilitytyperelationrule] r on (r.id = rasset.RuleID)
+		        inner join [dbo].[ResponsibilityTypeRelation] rel on (rel.ObjectID = r.ObjectID and rel.ResponsibilityTypeID = r.ResponsibilityTypeID and rel.ObjectType = r.[Object])
+		        inner join dbo.[Group] G on G.ID = rresource.SecurityAssetID and rresource.SecurityAsset = 'G'
+		        inner join dbo.ResourceGroup RG on RG.GroupID = G.ID			
+	        where 
+		        RG.ResourceID = @resourceId
+	        union
+	        select 
+		        rel.PermissionsBitMask,
+		        rasset.AssetID,
+		        rasset.AssetTypeID
+	        from 
+		        [dbo].[ResponsibilityRuleResultResource] rresource 
+		        inner join [dbo].[ResponsibilityRuleResultAsset] rasset on (rasset.RuleID = rresource.RuleID and rasset.AssetID = @AssetID or (rasset.AssetID = -1 and rasset.AssetTypeID = @AssetTypeID))
+		        inner join [dbo].[responsibilitytyperelationrule] r on (r.id = rasset.RuleID)
+		        inner join [dbo].[ResponsibilityTypeRelation] rel on (rel.ObjectID = r.ObjectID and rel.ResponsibilityTypeID = r.ResponsibilityTypeID and rel.ObjectType = r.[Object])
+		        inner join dbo.[Organization] D on rresource.SecurityAsset = 'O' and D.ID = rresource.SecurityAssetID
+		        inner join dbo.OrganizationResource RD on RD.OrganizationID = D.ID
+	        where 
+		        RD.ResourceID = @ResourceID
+        )
+        GO
+    ]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+      drop function [dbo].[UserAssetPermissions]
     ]]>
     </rollback>
   </changeSet>
