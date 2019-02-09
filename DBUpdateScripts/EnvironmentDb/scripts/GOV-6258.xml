@@ -1,0 +1,395 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="MrPink" id="GOV-6258-Table-Asset">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+          <![CDATA[
+            IF (NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND  TABLE_NAME = 'ResponsibilityRuleResultAsset'))
+            BEGIN
+	            CREATE TABLE [dbo].[ResponsibilityRuleResultAsset](	
+	            [RuleID][bigint] NOT NULL,
+	            [AssetID][bigint] NOT NULL default(-1),
+	            [AssetTypeID][int] NOT NULL default(-1),	
+	            [UpdatedOn] datetime not null,
+	            [UpdatedBy] int not null
+            CONSTRAINT [PK_ResponsibilityRuleResultAsset] PRIMARY KEY CLUSTERED 
+            (
+	            [RuleID] ASC, [AssetID] ASC, [AssetTypeID] ASC
+            ))
+
+            END
+
+          ]]>
+    </sql>
+    <rollback>
+        <![CDATA[
+        IF (EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND  TABLE_NAME = 'ResponsibilityRuleResultAsset'))
+        BEGIN
+            drop table [dbo].[ResponsibilityRuleResultAsset]
+        END
+        ]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="MrPink" id="GOV-6258-Table-Resource">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+        IF (NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND  TABLE_NAME = 'ResponsibilityRuleResultResource'))
+        BEGIN
+		
+          CREATE TABLE [dbo].[ResponsibilityRuleResultResource](	
+	          [RuleID][bigint] NOT NULL,
+	          [SecurityAsset] char(1) NOT NULL,
+	          [SecurityAssetID][int] NOT NULL,	
+	          [UpdatedOn] datetime not null,
+	          [UpdatedBy] int not null
+          CONSTRAINT [PK_ResponsibilityRuleResultResource] PRIMARY KEY CLUSTERED 
+          (
+	          [RuleID] ASC, [SecurityAsset] ASC, [SecurityAssetID] ASC
+          ))
+
+        END
+
+        ]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+      IF (EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND  TABLE_NAME = 'ResponsibilityRuleResultResource'))
+      BEGIN
+          drop table [dbo].[ResponsibilityRuleResultResource]
+      END
+      ]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="MrPink" id="GOV-6258-Update-ResDetail-View">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+    CREATE or alter VIEW [dbo].[ResponsibilityDetail] AS  
+       select 
+	      r.id as RuleID,
+	      r.ResponsibilityTypeID as ResponsibilityTypeID,  
+	      RT.Name as ResponsibilityTypeName,  
+         rasset.AssetID,  
+         rasset.AssetTypeID,  
+         coalesce(RD.ResourceID, RG.ResourceID, rresource.SecurityAssetID) as ResourceID,  
+         RES.FirstName + ' ' + RES.LastName as ResourceName,  
+         rresource.SecurityAsset,  
+         rresource.SecurityAssetID,  
+         coalesce(D.Name, G.Name, RES.FirstName + ' ' + RES.LastName) as SecurityAssetName,    
+         r.Context,  
+         r.ApplyToType,  
+         rrel.PermissionsBitMask,  
+         r.IsVisible,  
+         orides.ID as OverrideID,  
+         A.Object,  
+         coalesce(A.ObjectID, 0) as ObjectID,  
+         T.Object as [Type],  
+         T.ObjectID as TypeID  
+       from 
+	      responsibilitytyperelationrule r
+	      inner join ResponsibilityTypeRelation rrel on (r.ResponsibilityTypeID = rrel.ResponsibilityTypeID and r.[Object] = rrel.[ObjectType] and r.ObjectID = rrel.ObjectID)
+	      inner join [ResponsibilityRuleResultAsset] rasset on (r.ID = rasset.RuleID)
+	      inner join [ResponsibilityRuleResultResource] rresource on (r.ID = rresource.RuleID)
+	      left join [responsibilitytyperelationoverrideitem] orides on (r.ResponsibilityTypeID = orides.ResponsibilityTypeID and rasset.AssetID = orides.AssetID)
+         inner join ResponsibilityType RT on RT.ID = r.ResponsibilityTypeID  
+         inner join AssetType T on T.ID = rasset.AssetTypeID  
+         left join Asset A on A.ID = rasset.AssetID and A.AssetTypeID = T.ID --( (A.ID = O.AssetID) OR (O.AssetID = 0 and A.AssetTypeID = O.AssetTypeID) )  
+         left join [Group] G on rresource.SecurityAsset = 'G' and G.ID = rresource.SecurityAssetID  
+         left join ResourceGroup RG on RG.GroupID = G.ID  
+         left join [Organization] D on rresource.SecurityAsset = 'O' and D.ID = rresource.SecurityAssetID  
+         left join OrganizationResource RD on RD.OrganizationID = D.ID  
+         inner join reporting.Global_Resource RES on RES.ResourceID = coalesce(RD.ResourceID, RG.ResourceID, rresource.SecurityAssetID)  
+       where orides.id is null  and RES.State=1
+      GO
+    ]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+        CREATE or ALTER VIEW [dbo].[ResponsibilityDetail] AS  
+         select O.RuleID,  
+           O.ResponsibilityTypeID,  
+           RT.Name as ResponsibilityTypeName,  
+           O.AssetID,  
+           O.AssetTypeID,  
+           coalesce(RD.ResourceID, RG.ResourceID, O.SecurityAssetID) as ResourceID,  
+           R.FirstName + ' ' + R.LastName as ResourceName,  
+           O.SecurityAsset,  
+           O.SecurityAssetID,  
+           coalesce(D.Name, G.Name, R.FirstName + ' ' + R.LastName) as SecurityAssetName,    
+           O.Context,  
+           O.ApplyToType,  
+           O.PermissionsBitMask,  
+           O.IsVisible,  
+           O.OverrideID,  
+           A.Object,  
+           coalesce(A.ObjectID, 0) as ObjectID,  
+           T.Object as [Type],  
+           T.ObjectID as TypeID  
+         from ResponsibilityTypeRelationRuleResult O  
+           inner join ResponsibilityType RT on RT.ID = O.ResponsibilityTypeID  
+           inner join AssetType T on T.ID = O.AssetTypeID  
+           left join Asset A on A.ID = O.AssetID and A.AssetTypeID = T.ID --( (A.ID = O.AssetID) OR (O.AssetID = 0 and A.AssetTypeID = O.AssetTypeID) )  
+           left join [Group] G on O.SecurityAsset = 'G' and G.ID = O.SecurityAssetID  
+           left join ResourceGroup RG on RG.GroupID = G.ID  
+           left join [Organization] D on O.SecurityAsset = 'O' and D.ID = O.SecurityAssetID  
+           left join OrganizationResource RD on RD.OrganizationID = D.ID  
+           inner join reporting.Global_Resource R on R.ResourceID = coalesce(RD.ResourceID, RG.ResourceID, O.SecurityAssetID)  
+         where O.Overridden = 0  and R.State=1
+        GO
+    ]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="MrPink" id="GOV-6258-UpdateAllAssetView">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[        
+        CREATE or ALTER VIEW [dbo].[ResponsibilityAllAsset] with SCHEMABINDING as 
+	        -- users
+	        (select	r.ID as RuleID,
+			        r.ResponsibilityTypeID,
+			        RT.Name as ResponsibilityTypeName,
+			        rasset.AssetID,
+			        rasset.AssetTypeID,
+			        rresource.SecurityAssetID as ResourceID,
+			        RES.FirstName + ' ' + RES.LastName as ResourceName,
+			        rresource.SecurityAsset,
+			        rresource.SecurityAssetID,
+			        (RES.FirstName + ' ' + RES.LastName) as SecurityAssetName,  
+			        r.Context,
+			        r.ApplyToType,
+			        rrel.PermissionsBitMask,
+			        r.IsVisible,
+			        0 as OverrideID,
+			        T.Object as [Type],
+			        T.ObjectID as TypeID
+	        from	dbo.responsibilitytyperelationrule r
+			        inner join dbo.ResponsibilityTypeRelation rrel on (r.ResponsibilityTypeID = rrel.ResponsibilityTypeID and r.[Object] = rrel.[ObjectType] and r.ObjectID = rrel.ObjectID)
+			        inner join dbo.[ResponsibilityRuleResultAsset] rasset on (r.ID = rasset.RuleID)
+			        inner join dbo.[ResponsibilityRuleResultResource] rresource on (r.ID = rresource.RuleID)			
+			        inner join dbo.ResponsibilityType RT on RT.ID = r.ResponsibilityTypeID
+			        inner join dbo.AssetType T on T.ID = rasset.AssetTypeID			
+			        inner join reporting.Global_Resource RES on RES.ResourceID = rresource.SecurityAssetID
+	        where	
+			        not exists (select 1 from dbo.[responsibilitytyperelationoverrideitem] orides where r.ResponsibilityTypeID = orides.ResponsibilityTypeID and rasset.AssetID = orides.AssetID)
+			        and rresource.SecurityAsset != 'G' and rresource.SecurityAsset !='O')
+	        union
+	        (select	r.ID as RuleID,
+			        r.ResponsibilityTypeID,
+			        RT.Name as ResponsibilityTypeName,
+			        rasset.AssetID,
+			        rasset.AssetTypeID,
+			        RG.ResourceID as ResourceID,
+			        RES.FirstName + ' ' + RES.LastName as ResourceName,
+			        rresource.SecurityAsset,
+			        rresource.SecurityAssetID,
+			        G.Name as SecurityAssetName,  
+			        r.Context,
+			        r.ApplyToType,
+			        rrel.PermissionsBitMask,
+			        r.IsVisible,
+			        0 as OverrideID,			
+			        T.Object as [Type],
+			        T.ObjectID as TypeID
+	        from	dbo.responsibilitytyperelationrule r
+			        inner join dbo.ResponsibilityTypeRelation rrel on (r.ResponsibilityTypeID = rrel.ResponsibilityTypeID and r.[Object] = rrel.[ObjectType] and r.ObjectID = rrel.ObjectID)
+			        inner join dbo.[ResponsibilityRuleResultAsset] rasset on (r.ID = rasset.RuleID)
+			        inner join dbo.[ResponsibilityRuleResultResource] rresource on (r.ID = rresource.RuleID)			
+			        inner join dbo.ResponsibilityType RT on RT.ID = r.ResponsibilityTypeID
+			        inner join dbo.AssetType T on T.ID = rasset.AssetTypeID			
+			        inner join dbo.[Group] G on G.ID = rresource.SecurityAssetID
+			        inner join dbo.ResourceGroup RG on RG.GroupID = G.ID			
+			        inner join reporting.Global_Resource RES on RES.ResourceID = RG.ResourceID
+	        where	not exists (select 1 from dbo.[responsibilitytyperelationoverrideitem] orides where r.ResponsibilityTypeID = orides.ResponsibilityTypeID and rasset.AssetID = orides.AssetID)
+			        and rresource.SecurityAsset = 'G')
+	        union
+	        (select	r.ID as RuleID,
+			        r.ResponsibilityTypeID,
+			        RT.Name as ResponsibilityTypeName,
+			        rasset.AssetID,
+			        rasset.AssetTypeID,
+			        RD.ResourceID as ResourceID,
+			        RES.FirstName + ' ' + RES.LastName as ResourceName,
+			        rresource.SecurityAsset,
+			        rresource.SecurityAssetID,
+			        D.Name as SecurityAssetName,  
+			        r.Context,
+			        r.ApplyToType,
+			        rrel.PermissionsBitMask,
+			        r.IsVisible,
+			        0 as OverrideID,			
+			        T.Object as [Type],
+			        T.ObjectID as TypeID
+	        from	dbo.responsibilitytyperelationrule r
+			        inner join dbo.ResponsibilityTypeRelation rrel on (r.ResponsibilityTypeID = rrel.ResponsibilityTypeID and r.[Object] = rrel.[ObjectType] and r.ObjectID = rrel.ObjectID)
+			        inner join dbo.[ResponsibilityRuleResultAsset] rasset on (r.ID = rasset.RuleID)
+			        inner join dbo.[ResponsibilityRuleResultResource] rresource on (r.ID = rresource.RuleID)
+			        inner join dbo.ResponsibilityType RT on RT.ID = r.ResponsibilityTypeID
+			        inner join dbo.AssetType T on T.ID = rasset.AssetTypeID			
+			        inner join dbo.[Organization] D on rresource.SecurityAsset = 'O' and D.ID = rresource.SecurityAssetID
+			        inner join dbo.OrganizationResource RD on RD.OrganizationID = D.ID
+			        inner join reporting.Global_Resource RES on RES.ResourceID = RD.ResourceID
+	        where	
+			        not exists (select 1 from dbo.[responsibilitytyperelationoverrideitem] orides where r.ResponsibilityTypeID = orides.ResponsibilityTypeID and rasset.AssetID = orides.AssetID)
+			        and rresource.SecurityAsset = 'O')
+        GO
+    ]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+        CREATE VIEW [dbo].[ResponsibilityAllAsset] with SCHEMABINDING as 
+	      -- users
+	      (select	O.RuleID,
+			      O.ResponsibilityTypeID,
+			      RT.Name as ResponsibilityTypeName,
+			      O.AssetID,
+			      O.AssetTypeID,
+			      O.SecurityAssetID as ResourceID,
+			      R.FirstName + ' ' + R.LastName as ResourceName,
+			      O.SecurityAsset,
+			      O.SecurityAssetID,
+			      (R.FirstName + ' ' + R.LastName) as SecurityAssetName,  
+			      O.Context,
+			      O.ApplyToType,
+			      O.PermissionsBitMask,
+			      O.IsVisible,
+			      O.OverrideID,			
+			      T.Object as [Type],
+			      T.ObjectID as TypeID
+	      from	dbo.ResponsibilityTypeRelationRuleResult O
+			      inner join dbo.ResponsibilityType RT on RT.ID = O.ResponsibilityTypeID
+			      inner join dbo.AssetType T on T.ID = O.AssetTypeID			
+			      inner join reporting.Global_Resource R on R.ResourceID = O.SecurityAssetID
+	      where	O.Overridden = 0 and O.SecurityAsset != 'G' and O.SecurityAsset !='O')
+	      union
+	      (select	O.RuleID,
+			      O.ResponsibilityTypeID,
+			      RT.Name as ResponsibilityTypeName,
+			      O.AssetID,
+			      O.AssetTypeID,
+			      RG.ResourceID as ResourceID,
+			      R.FirstName + ' ' + R.LastName as ResourceName,
+			      O.SecurityAsset,
+			      O.SecurityAssetID,
+			      G.Name as SecurityAssetName,  
+			      O.Context,
+			      O.ApplyToType,
+			      O.PermissionsBitMask,
+			      O.IsVisible,
+			      O.OverrideID,			
+			      T.Object as [Type],
+			      T.ObjectID as TypeID
+	      from	dbo.ResponsibilityTypeRelationRuleResult O
+			      inner join dbo.ResponsibilityType RT on RT.ID = O.ResponsibilityTypeID
+			      inner join dbo.AssetType T on T.ID = O.AssetTypeID			
+			      inner join dbo.[Group] G on G.ID = O.SecurityAssetID
+			      inner join dbo.ResourceGroup RG on RG.GroupID = G.ID			
+			      inner join reporting.Global_Resource R on R.ResourceID = RG.ResourceID
+	      where	O.Overridden = 0 and O.SecurityAsset = 'G')
+	      union
+	      (select	O.RuleID,
+			      O.ResponsibilityTypeID,
+			      RT.Name as ResponsibilityTypeName,
+			      O.AssetID,
+			      O.AssetTypeID,
+			      RD.ResourceID as ResourceID,
+			      R.FirstName + ' ' + R.LastName as ResourceName,
+			      O.SecurityAsset,
+			      O.SecurityAssetID,
+			      D.Name as SecurityAssetName,  
+			      O.Context,
+			      O.ApplyToType,
+			      O.PermissionsBitMask,
+			      O.IsVisible,
+			      O.OverrideID,			
+			      T.Object as [Type],
+			      T.ObjectID as TypeID
+	      from	dbo.ResponsibilityTypeRelationRuleResult O
+			      inner join dbo.ResponsibilityType RT on RT.ID = O.ResponsibilityTypeID
+			      inner join dbo.AssetType T on T.ID = O.AssetTypeID			
+			      inner join dbo.[Organization] D on O.SecurityAsset = 'O' and D.ID = O.SecurityAssetID
+			      inner join dbo.OrganizationResource RD on RD.OrganizationID = D.ID
+			      inner join reporting.Global_Resource R on R.ResourceID = RD.ResourceID
+	      where	O.Overridden = 0 and O.SecurityAsset = 'O')
+      GO
+]]>
+    </rollback>
+  </changeSet>
+
+
+  <changeSet author="MrPink" id="GOV-6258-Rename-Existing">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+    <![CDATA[
+    IF (EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND  TABLE_NAME = 'responsibilitytyperelationruleresult'))
+      BEGIN
+        exec sp_rename '[dbo].[responsibilitytyperelationruleresult]', '[dbo].[responsibilitytyperelationruleresult_backup]'
+      END
+    ]]>
+    </sql>
+    <rollback>
+    <![CDATA[
+    IF (EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND  TABLE_NAME = 'responsibilitytyperelationruleresult_backup'))
+      BEGIN
+        exec sp_rename '[dbo].[responsibilitytyperelationruleresult_backup]', '[dbo].[responsibilitytyperelationruleresult]'
+      END
+    ]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="MrPink" id="GOV-6258-CreateR-Resp-View">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+    create or alter view [dbo].[responsibilitytyperelationruleresult]
+    as
+    select 
+	    r.ID as RuleID,
+	    r.ResponsibilityTypeID,
+	    rasset.AssetID,
+	    rasset.AssetTypeID,
+	    rresource.SecurityAsset,
+	    rresource.SecurityAssetID,
+	    r.Context,
+	    r.ApplyToType,
+	    rrel.PermissionsBitMask,
+	    r.IsVisible,
+	    CASE WHEN orides.id IS NULL THEN 0 ELSE 1 END as Overriden,
+	    orides.id as OverrideID
+    from
+	    responsibilitytyperelationrule r
+	    inner join ResponsibilityTypeRelation rrel on (r.ResponsibilityTypeID = rrel.ResponsibilityTypeID and r.[Object] = rrel.[ObjectType] and r.ObjectID = rrel.ObjectID)
+	    inner join [ResponsibilityRuleResultAsset] rasset on (r.ID = rasset.RuleID)
+	    inner join [ResponsibilityRuleResultResource] rresource on (r.ID = rresource.RuleID)
+	    left join [responsibilitytyperelationoverrideitem] orides on (r.ResponsibilityTypeID = orides.ResponsibilityTypeID and rasset.AssetID = orides.AssetID)
+
+    ]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+      drop view [dbo].[responsibilitytyperelationruleresult]
+    ]]>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>
