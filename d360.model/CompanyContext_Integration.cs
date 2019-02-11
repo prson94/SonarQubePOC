@@ -8,6 +8,7 @@ using Dapper;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Linq;
@@ -774,12 +775,12 @@ when not matched by target then
             {
                 try
                 {
-                    cnn.Execute("DROP TABLE IF EXISTS #RelationshipTable", transaction: trans);
+                    cnn.Execute("DROP TABLE IF EXISTS api.ExecutionRelationship", transaction: trans);
                     
                     #region Asset Bulk Copy
 
                     cnn.Execute(@"
-    create table #RelationshipTable (
+    create table api.ExecutionRelationship (
         ItemNumber int not null,
         SubjectSourceID nvarchar(1000) null,
         ObjectSourceID nvarchar(1000) null,
@@ -790,12 +791,12 @@ when not matched by target then
         IsNew bit null
     )", transaction: trans);
 
-                    cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempRelationshipTable ON #RelationshipTable ( IntersectTypeID ASC, SubjectSourceID ASC, ObjectSourceID ASC ) INCLUDE ( ItemNumber )", transaction: trans);
+                    cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempRelationshipTable ON api.ExecutionRelationship ( IntersectTypeID ASC, SubjectSourceID ASC, ObjectSourceID ASC ) INCLUDE ( ItemNumber )", transaction: trans);
 
                     var assetBulkCopy = new SqlBulkCopy(cnn, SqlBulkCopyOptions.Default, trans);
 
                     assetBulkCopy.BatchSize = relationshipTable.Rows.Count;
-                    assetBulkCopy.DestinationTableName = "#RelationshipTable";
+                    assetBulkCopy.DestinationTableName = "api.ExecutionRelationship";
                     assetBulkCopy.BulkCopyTimeout = 3600;
 
                     assetBulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
@@ -822,7 +823,7 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
 		    T.Object,
 		    T.ObjectID,
             @r, @r
-    from    #RelationshipTable R
+    from    api.ExecutionRelationship R
 		    inner join Asset S on S.SourceID = R.SubjectSourceID
 		    inner join AssetType ST on ST.ID = S.AssetTypeID
 
@@ -842,7 +843,7 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
 		    T.Object,
 		    T.ObjectID,
             @r, @r
-    from    #RelationshipTable R
+    from    api.ExecutionRelationship R
 		    inner join AssetType S on S.Uid = R.SubjectSourceID		    
 
 		    inner join Asset T on T.SourceID = R.ObjectSourceID
@@ -861,7 +862,7 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
 		    T.Object,
 		    T.ObjectID,
             @r, @r
-    from    #RelationshipTable R
+    from    api.ExecutionRelationship R
 		    inner join Asset S on S.SourceID = R.SubjectSourceID
 		    inner join AssetType ST on ST.ID = S.AssetTypeID
 
@@ -877,7 +878,7 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
     update  T
     set     T.IntersectID = I.ID,
             T.Success = case when I.ID is null then cast(0 as bit) else cast(1 as bit) end
-    from    #RelationshipTable T
+    from    api.ExecutionRelationship T
             left join Asset S on S.SourceID = T.SubjectSourceID
             left join Asset O on O.SourceID = T.ObjectSourceID
             left join [Intersect] I on T.IntersectTypeID = I.IntersectTypeID 
@@ -889,7 +890,7 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
     update  T
     set     T.IntersectID = I.ID,
             T.Success = case when I.ID is null then cast(0 as bit) else cast(1 as bit) end
-    from    #RelationshipTable T
+    from    api.ExecutionRelationship T
             inner join Asset S on S.SourceID = T.SubjectSourceID
             inner join AssetType O on O.Uid = T.ObjectSourceID
             inner join [Intersect] I on T.IntersectTypeID = I.IntersectTypeID 
@@ -901,7 +902,7 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
     update  T
     set     T.IntersectID = I.ID,
             T.Success = case when I.ID is null then cast(0 as bit) else cast(1 as bit) end
-    from    #RelationshipTable T
+    from    api.ExecutionRelationship T
             inner join AssetType S on S.Uid = T.SubjectSourceID
             inner join Asset O on O.SourceID = T.ObjectSourceID
             inner join [Intersect] I on T.IntersectTypeID = I.IntersectTypeID 
@@ -916,7 +917,7 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
 
                     #endregion
 
-                    retResults = cnn.Query<dynamic>("select * from #RelationshipTable", transaction: trans).ToList();
+                    retResults = cnn.Query<dynamic>("select * from api.ExecutionRelationship", transaction: trans).ToList();
 
                     trans.Commit();
                 }
@@ -1370,235 +1371,6 @@ insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, 
             cnn.Close();
 
             return results;
-        }
-
-
-        public static List<DatabaseBulkRelationshipResult> BulkRelationshipsImport(this SqlConnection cnn,
-            IQueueSource queue,
-            string companyUrlPrefix,
-            int currentCompanyID,
-            int currentResourceID,
-            IntersectType rt,
-            List<Dictionary<string, string>> import, 
-            int timeout = 3600)
-        {
-            List<DatabaseBulkRelationshipResult> results = null;
-
-            #region Build data tables for bulk load.
-
-            var table = new System.Data.DataTable();
-            table.Columns.Add("ItemNumber", typeof(int));
-            table.Columns.Add("Message", typeof(string));
-            table.Columns.Add("Success", typeof(bool));
-            table.Columns.Add("SubjectUid", typeof(Guid));
-            table.Columns.Add("ObjectUid", typeof(Guid));
-
-            var fieldTable = new System.Data.DataTable();
-            fieldTable.Columns.Add("ItemNumber", typeof(int));
-            fieldTable.Columns.Add("FieldName", typeof(string));
-            fieldTable.Columns.Add("FieldValue", typeof(string));
-            fieldTable.Columns.Add("FieldTypeID", typeof(int));
-
-            #endregion
-
-            #region Generate data sets
-
-            for (int i = 1; i <= import.Count; i++)
-            {
-                var model = import[i - 1];
-
-                var row = table.NewRow();
-
-                row["ItemNumber"] = i;
-
-                if (model.ContainsKey("SubjectUid"))
-                    row["SubjectUid"] = Guid.Parse(model["SubjectUid"]);
-                if (model.ContainsKey("ObjectUid"))
-                    row["ObjectUid"] = Guid.Parse(model["ObjectUid"]);
-
-                table.Rows.Add(row);
-
-                foreach (var k in model.Keys)
-                {
-                    if (k != "SubjectUid" && k != "ObjectUid")
-                    {
-                        if (!string.IsNullOrEmpty(model[k]))
-                        {
-                            var fieldRow = fieldTable.NewRow();
-
-                            fieldRow["ItemNumber"] = i;
-                            fieldRow["FieldName"] = k.Trim();
-                            fieldRow["FieldValue"] = (model[k] + "").Trim();
-
-                            fieldTable.Rows.Add(fieldRow);
-                        }
-                    }
-                }
-            }
-
-            #endregion
-
-            if (cnn.State != System.Data.ConnectionState.Open)
-                cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
-
-            using (var trans = cnn.BeginTransaction())
-            {
-                try
-                {
-                    cnn.Execute("DROP TABLE IF EXISTS #RelationshipTable", transaction: trans);
-                    cnn.Execute("DROP TABLE IF EXISTS #RelationshipFieldTable", transaction: trans);
-
-                    #region Asset Bulk Copy
-
-                    cnn.Execute(@"
-    create table #RelationshipTable (
-        ItemNumber int not null,
-
-        SubjectUid uniqueidentifier null,
-        Subject varchar(50) null,
-        SubjectID int null,
-
-        ObjectUid uniqueidentifier null,
-        Object varchar(50) null,
-        ObjectID int null,
-
-        IntersectID int null,
-        [Message] nvarchar(2500) null,
-        Success bit null,
-        IsNew bit null
-    )", transaction: trans);
-
-                    cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempRelationshipTable_SubjectUid ON #RelationshipTable ( [SubjectUid] ASC ) INCLUDE ( ItemNumber )", transaction: trans);
-                    cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempRelationshipTable_ObjectUid ON #RelationshipTable ( [ObjectUid] ASC ) INCLUDE ( ItemNumber )", transaction: trans);
-
-                    var bulkCopy = new SqlBulkCopy(cnn, SqlBulkCopyOptions.Default, trans);
-
-                    bulkCopy.BatchSize = table.Rows.Count;
-                    bulkCopy.DestinationTableName = "#RelationshipTable";
-                    bulkCopy.BulkCopyTimeout = timeout;
-
-                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-                    bulkCopy.ColumnMappings.Add("SubjectUid", "SubjectUid");
-                    bulkCopy.ColumnMappings.Add("ObjectUid", "ObjectUid");
-                    bulkCopy.WriteToServer(table);
-
-                    #endregion
-
-                    #region Asset Field Bulk Copy
-
-                    cnn.Execute(@"
-    create table #RelationshipFieldTable (
-        ItemNumber int not null,
-        FieldName nvarchar(250) not null,
-        FieldValue nvarchar(max) null,
-        FieldTypeID int null,
-        LookupValue nvarchar(250) null
-    )", transaction: trans);
-
-                    cnn.Execute(@"CREATE NONCLUSTERED INDEX IX_TempRelationshipFieldTable ON #RelationshipFieldTable ( ItemNumber ASC ) INCLUDE ( FieldTypeID )", transaction: trans);
-
-                    var fieldBulkCopy = new SqlBulkCopy(cnn, SqlBulkCopyOptions.Default, trans);
-
-                    fieldBulkCopy.BatchSize = table.Rows.Count;
-                    fieldBulkCopy.DestinationTableName = "#RelationshipFieldTable";
-                    fieldBulkCopy.BulkCopyTimeout = timeout;
-
-                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-                    bulkCopy.ColumnMappings.Add("FieldName", "FieldName");
-                    bulkCopy.ColumnMappings.Add("FieldValue", "FieldValue");
-
-                    fieldBulkCopy.WriteToServer(fieldTable);
-
-                    #endregion
-
-                    cnn.Execute("exec relation.BulkUpsert @uid, @r", new { rt.uid, r = currentResourceID }, trans, timeout);
-
-                    results = cnn.Query<DatabaseBulkRelationshipResult>("select * from #RelationshipTable", transaction: trans).ToList();
-                    trans.Commit();
-                }
-                catch (Exception ex)
-                {
-                    trans.Rollback();
-                    throw ex;
-                }
-            }
-
-            cnn.Close();
-
-
-            #region Send Relationship Events
-
-            try
-            {
-                var events = new List<EventInfo>();
-                foreach (var result in results)
-                {
-                    if (result.Success)
-                    {
-                        var changeType = result.IsNew ? ChangeType.Add : ChangeType.Update;
-
-                        events.Add(new EventInfo
-                        {
-                            CompanyID = currentCompanyID,
-                            DomainPrefix = companyUrlPrefix,
-                            ResourceID = currentResourceID,
-                            Action = changeType,
-                            Object = new EventObjectInfo
-                            {
-                                Object = SystemObjects.Intersect,
-                                ObjectType = SystemObjects.IntersectType,
-                                ObjectID = result.ID,
-                                ObjectTypeID = rt.ID
-                            }
-                        });
-
-                        if (events.Count > 50)
-                        {
-                            queue.CreateTopicMessages(events);
-                            events.Clear();
-                        }
-                    }
-                }
-
-                if (events.Count > 0)
-                {
-                    queue.CreateTopicMessages(events);
-                    events.Clear();
-                }
-            }
-            catch (Exception)
-            {
-
-            }
-
-            #endregion
-
-
-            return results;
-        }
-
-        public static List<DatabaseBulkRelationshipResult> BulkRelationshipsImport(this SqlConnection cnn,
-            IQueueSource queue,
-            string companyUrlPrefix,
-            int currentCompanyID,
-            int currentResourceID,
-            IntersectType rt,
-            RelationshipInserts import,
-            int timeout = 3600)
-        {
-            var values = new List<Dictionary<string, string>>();
-            import.ForEach(i =>
-            {
-                var dict = new Dictionary<string, string>();
-                dict.Add("SubjectUid", i.SubjectAssetUid.ToString());
-                dict.Add("ObjectUid", i.ObjectAssetUid.ToString());
-                foreach (var f in i.Fields)
-                    if (!dict.ContainsKey(f.Key))
-                        dict.Add(f.Key, f.Value);
-                values.Add(dict);
-            });
-
-            return BulkRelationshipsImport(cnn, queue, companyUrlPrefix, currentCompanyID, currentResourceID, rt, values, timeout);
         }
         
         #endregion API v2 logic
