@@ -58,6 +58,8 @@
           (
 	          [RuleID] ASC, [SecurityAsset] ASC, [SecurityAssetID] ASC
           ))
+          
+          CREATE NONCLUSTERED INDEX [IX_ResponsibilityRuleResultResource_SecurityAsset-SecurityAssetID] ON [dbo].[ResponsibilityRuleResultResource] ([SecurityAsset],[SecurityAssetID])
 
         END
 
@@ -402,8 +404,7 @@
         (	
 	        -- Add the parameters for the function here
 	        @ResourceID int, 
-	        @AssetTypeID int,
-	        @AssetID bigint
+	        @AssetTypeID int
         )
         RETURNS TABLE  with Schemabinding
         AS
@@ -415,24 +416,26 @@
 		        rasset.AssetID,
 		        rasset.AssetTypeID
 	        from 
-		        [dbo].[ResponsibilityRuleResultResource] rresource 
-		        inner join [dbo].[ResponsibilityRuleResultAsset] rasset on (rasset.RuleID = rresource.RuleID and rasset.AssetID = @AssetID or (rasset.AssetID = -1 and rasset.AssetTypeID = @AssetTypeID))
-		        inner join [dbo].[responsibilitytyperelationrule] r on (r.id = rasset.RuleID)
+		        [dbo].[asset] a		
+		        inner join [dbo].[ResponsibilityRuleResultAsset] rasset on (rasset.AssetID = a.ID or (rasset.AssetID = -1 and rasset.AssetTypeID = @AssetTypeID))		
+		        inner join [dbo].[responsibilitytyperelationrule] r on (r.id = rasset.RuleID)		
 		        inner join [dbo].[ResponsibilityTypeRelation] rel on (rel.ObjectID = r.ObjectID and rel.ResponsibilityTypeID = r.ResponsibilityTypeID and rel.ObjectType = r.[Object])
+		        inner join [dbo].[ResponsibilityRuleResultResource] rresource on (r.id = rresource.RuleID)
 	        where 
-		        rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = @ResourceID
+		        rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = @ResourceID and a.AssetTypeID = @AssetTypeID
 	        union
 		        select 
 		        rel.PermissionsBitMask,
 		        rasset.AssetID,
 		        rasset.AssetTypeID
 	        from 
-		        [dbo].[ResponsibilityRuleResultResource] rresource 
-		        inner join [dbo].[ResponsibilityRuleResultAsset] rasset on (rasset.RuleID = rresource.RuleID and rasset.AssetID = @AssetID or (rasset.AssetID = -1 and rasset.AssetTypeID = @AssetTypeID))
+		        [dbo].[asset] a				
+		        inner join [dbo].[ResponsibilityRuleResultAsset] rasset on (rasset.AssetID = a.id or (rasset.AssetID = -1 and rasset.AssetTypeID = @AssetTypeID))
 		        inner join [dbo].[responsibilitytyperelationrule] r on (r.id = rasset.RuleID)
 		        inner join [dbo].[ResponsibilityTypeRelation] rel on (rel.ObjectID = r.ObjectID and rel.ResponsibilityTypeID = r.ResponsibilityTypeID and rel.ObjectType = r.[Object])
+		        inner join [dbo].[ResponsibilityRuleResultResource] rresource on (r.id = rresource.RuleID)
 		        inner join dbo.[Group] G on G.ID = rresource.SecurityAssetID and rresource.SecurityAsset = 'G'
-		        inner join dbo.ResourceGroup RG on RG.GroupID = G.ID			
+		        inner join dbo.ResourceGroup RG on RG.GroupID = G.ID and a.AssetTypeID = @AssetTypeID		
 	        where 
 		        RG.ResourceID = @resourceId
 	        union
@@ -441,14 +444,15 @@
 		        rasset.AssetID,
 		        rasset.AssetTypeID
 	        from 
-		        [dbo].[ResponsibilityRuleResultResource] rresource 
-		        inner join [dbo].[ResponsibilityRuleResultAsset] rasset on (rasset.RuleID = rresource.RuleID and rasset.AssetID = @AssetID or (rasset.AssetID = -1 and rasset.AssetTypeID = @AssetTypeID))
+		        [dbo].[asset] a			
+		        inner join [dbo].[ResponsibilityRuleResultAsset] rasset on (rasset.AssetID = a.ID or (rasset.AssetID = -1 and rasset.AssetTypeID = @AssetTypeID))
 		        inner join [dbo].[responsibilitytyperelationrule] r on (r.id = rasset.RuleID)
 		        inner join [dbo].[ResponsibilityTypeRelation] rel on (rel.ObjectID = r.ObjectID and rel.ResponsibilityTypeID = r.ResponsibilityTypeID and rel.ObjectType = r.[Object])
+		        inner join [dbo].[ResponsibilityRuleResultResource] rresource  on (r.id = rresource.RuleID)
 		        inner join dbo.[Organization] D on rresource.SecurityAsset = 'O' and D.ID = rresource.SecurityAssetID
 		        inner join dbo.OrganizationResource RD on RD.OrganizationID = D.ID
 	        where 
-		        RD.ResourceID = @ResourceID
+		        RD.ResourceID = @ResourceID and a.AssetTypeID = @AssetTypeID	
         )
         GO
     ]]>
@@ -456,6 +460,82 @@
     <rollback>
       <![CDATA[
       drop function [dbo].[UserAssetPermissions]
+    ]]>
+    </rollback>
+  </changeSet>
+  <changeSet author="MrPink" id="GOV-6258-TVF-Type">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[    
+        CREATE or alter FUNCTION AssetsByTypeUserCantRead
+        (		        
+	        @ResourceID int,
+			    @AssetTypeID int
+            )
+            RETURNS TABLE  with Schemabinding
+            AS
+            RETURN 
+            (
+			        select 
+				        A.ID as AssetID
+			        from 
+				        [dbo].[ResponsibilityTypeRelation] RR
+				        inner join [dbo].[responsibilitytyperelationrule] R on (RR.ResponsibilityTypeID = R.ResponsibilityTypeID and RR.ObjectType = R.[Object] and RR.ObjectID = R.ObjectID)	
+				        inner join [dbo].[AssetType] Ast on (Ast.[Object] = R.[Object] and Ast.ObjectID = R.ObjectID)
+				        inner join [dbo].[Asset] A on (A.AssetTypeID = Ast.ID)
+				        inner join [dbo].[ResponsibilityRuleResultAsset] rasset on (rasset.assettypeid = -1 and rasset.AssetID = A.ID and rasset.ruleid = r.id)				
+			        where 
+				        RR.PermissionsBitMask & 1 = 0 and Ast.ID = @AssetTypeID
+				         and 
+					        exists( select 1 from [dbo].[ResponsibilityRuleResultResource] rresource where rresource.RuleID = R.ID and rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = @ResourceID )
+					        or exists( select 1 from [dbo].[ResponsibilityRuleResultResource] rresource inner join dbo.[Organization] D on rresource.SecurityAsset = 'O' and D.ID = rresource.SecurityAssetID inner join dbo.OrganizationResource RD on RD.OrganizationID = D.ID where rresource.RuleID = R.ID and RD.ResourceID = @ResourceID )
+					        or exists( select 1 from [dbo].[ResponsibilityRuleResultResource] rresource inner join dbo.[Group] G on G.ID = rresource.SecurityAssetID and rresource.SecurityAsset = 'G' inner join dbo.ResourceGroup RG on RG.GroupID = G.ID  where rresource.RuleID = R.ID and RG.ResourceID =  @ResourceID )
+	
+		        )
+    ]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+      drop function [dbo].[AssetsByTypeUserCantRead]
+    ]]>
+    </rollback>
+  </changeSet>
+  <changeSet author="MrPink" id="GOV-6258-TVF-Type">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[    
+        CREATE or alter FUNCTION AssetTypesUserCantRead
+        (		        
+	        @ResourceID int
+        )
+        RETURNS TABLE  with Schemabinding
+        AS
+        RETURN 
+        (
+			      select 
+				      Ast.ID as AssetTypeID
+			      from 
+				      [dbo].[ResponsibilityTypeRelation] RR
+				      inner join [dbo].[responsibilitytyperelationrule] R on (RR.ResponsibilityTypeID = R.ResponsibilityTypeID and RR.ObjectType = R.[Object] and RR.ObjectID = R.ObjectID)	
+				      inner join [dbo].[AssetType] Ast on (Ast.[Object] = R.[Object] and Ast.ObjectID = R.ObjectID)
+				      inner join [dbo].[ResponsibilityRuleResultAsset] rasset on (rasset.assetid = -1 and rasset.AssetTypeID = Ast.ID and rasset.ruleid = r.id)				
+			      where 
+				      RR.PermissionsBitMask & 1 = 0
+				       and 
+					      exists( select 1 from [dbo].[ResponsibilityRuleResultResource] rresource where rresource.RuleID = R.ID and rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = @ResourceID )
+					      or exists( select 1 from [dbo].[ResponsibilityRuleResultResource] rresource inner join dbo.[Organization] D on rresource.SecurityAsset = 'O' and D.ID = rresource.SecurityAssetID inner join dbo.OrganizationResource RD on RD.OrganizationID = D.ID where rresource.RuleID = R.ID and RD.ResourceID = @ResourceID )
+					      or exists( select 1 from [dbo].[ResponsibilityRuleResultResource] rresource inner join dbo.[Group] G on G.ID = rresource.SecurityAssetID and rresource.SecurityAsset = 'G' inner join dbo.ResourceGroup RG on RG.GroupID = G.ID  where rresource.RuleID = R.ID and RG.ResourceID =  @ResourceID )
+	
+		      )
+    ]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+      drop function [dbo].[AssetTypesUserCantRead]
     ]]>
     </rollback>
   </changeSet>
