@@ -74,13 +74,13 @@ namespace d360.model
             if (!CurrentResourceIsAdmin)
             {
                 editRightsColumnStatement = @" case when exists (
-							 select 1 from UserAssetPermissions(@r,AssetTypeID,AssetID) where PermissionsBitMask & 2 = 2
+							 select 1 from UserAssetPermissions(@r,AssetTypeID) u where u.PermissionsBitMask & 2 = 2 and u.AssetID = AssetID
 						   ) 
 						   then 1 
 						   else 0 
 						end as P_CanEdit,
 						 case when exists (
-							 select 1 from UserAssetPermissions(@r,AssetTypeID,AssetID) where PermissionsBitMask & 4 = 4
+							 select 1 from UserAssetPermissions(@r,AssetTypeID) u where u.PermissionsBitMask & 4 = 4 and u.AssetID = AssetID
 						   ) 
 						   then 1 
 						   else 0 
@@ -395,11 +395,12 @@ select SubjectID from [Intersect]{tableHints} where IntersectTypeID = @{paramPre
             }
 
             var filterWhereString = "";
+            var filterWhereStringRaw = "";
             if (filterWhereList.Count > 0)
             {
-                filterWhereString = string.Join(" and ", filterWhereList);
-                if (!string.IsNullOrEmpty(filterWhereString))
-                    filterWhereString = $"and {filterWhereString}";
+                filterWhereStringRaw = string.Join(" and ", filterWhereList);
+                if (!string.IsNullOrEmpty(filterWhereStringRaw))
+                    filterWhereString = $"and {filterWhereStringRaw}";
             }
 
             #endregion
@@ -462,7 +463,7 @@ from	Asset A{tableHints}
         {filterJoinString}         
 where	A.AssetTypeID = @atID
 		and A.State = 1
-        and not exists (select 1 from UserAssetPermissions(@r,A.AssetTypeID,A.ID) where PermissionsBitMask & {(int)Permission.ReadAsset} = 0)        
+        and not exists (select 1 from AssetTypesUserCantRead(@r) u where u.AssetTypeID = @atID) and not exists (select 1 from AssetsByTypeUserCantRead(@r,@atID) u where u.AssetID = AssetID) 
         {filterWhereString}
 OPTION (RECOMPILE)";
             
@@ -472,7 +473,11 @@ OPTION (RECOMPILE)";
             if (pageSize < 0)
                 pageSize = 25;
             pageNumber = ((pageNumber < 0) ? 0 : pageNumber) * pageSize;
- 
+
+            var whereClause = " where ";
+
+            if (string.IsNullOrEmpty(filterWhereStringRaw)) whereClause = "";
+            
                 var sql = $@"
 select	*
 from	(
@@ -505,13 +510,13 @@ from	(
 						left join Field F_O{tableHints} on F_O.AssetID = A.ID and F_O.FieldTypeID = FT.ID
 						{relationshipJoinStatement}
 						{fieldFromRelationshipJoinStatement} 
-                where   
-                        not exists (select 1 from UserAssetPermissions(@r,A.AssetTypeID,A.ID) where PermissionsBitMask & {(int)Permission.ReadAsset} = 0)                                
-                        {filterWhereString}
+                {whereClause}                         
+                        {filterWhereStringRaw}
 				) A
 		pivot	(
 				MIN([Field]) for FieldTypeID in ({pivotFieldIDs})
-				) pvt
+				) pvt        
+        where not exists (select 1 from AssetTypesUserCantRead(@r) u where u.AssetTypeID = @atID) and not exists (select 1 from AssetsByTypeUserCantRead(@r,@atID) u where u.AssetID = AssetID)  
 		ORDER BY {orderFieldString}
 		OFFSET({pageNumber}) ROWS FETCH NEXT ({pageSize}) ROWS ONLY
 		) A
