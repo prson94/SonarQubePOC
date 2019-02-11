@@ -16,6 +16,8 @@ namespace d360.core.queue
     {
         public int CompanyID { get; set; }
 
+        public int? ResourceID { get; set; }
+
         public string CompanyDomainPrefix { get; set; }
 
         public Guid ExecutionID { get; set; }
