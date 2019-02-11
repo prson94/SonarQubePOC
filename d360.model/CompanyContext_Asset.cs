@@ -70,14 +70,21 @@ namespace d360.model
             #region Administrator Editability Sql Syntax
 
             var editRightsColumnStatement = "1 as P_CanEdit, 1 as P_CanDelete,";
-            var editRightsJoinStatement = "";
-
+            
             if (!CurrentResourceIsAdmin)
             {
-                editRightsColumnStatement = " IIF(S_E.[Count] = 0, 0, 1) as P_CanEdit, IIF(S_D.[Count] = 0, 0, 1) as P_CanDelete, ";
-                editRightsJoinStatement = $@"
-cross apply (select count(1) as [Count] from UserAssetPermissions(@r,A.AssetTypeID,A.ID) where PermissionsBitMask & {(int)Permission.ModifyAsset} = {(int)Permission.ModifyAsset}) as S_E 
-cross apply (select count(1) as [Count] from UserAssetPermissions(@r,A.AssetTypeID,A.ID) where PermissionsBitMask & {(int)Permission.DeleteAsset} = {(int)Permission.DeleteAsset}) as S_D ";
+                editRightsColumnStatement = @" case when exists (
+							 select 1 from UserAssetPermissions(@r,AssetTypeID,AssetID) where PermissionsBitMask & 2 = 2
+						   ) 
+						   then 1 
+						   else 0 
+						end as P_CanEdit,
+						 case when exists (
+							 select 1 from UserAssetPermissions(@r,AssetTypeID,AssetID) where PermissionsBitMask & 4 = 4
+						   ) 
+						   then 1 
+						   else 0 
+						end as P_CanDelete, ";            
             }            
 
             #endregion
@@ -470,8 +477,8 @@ OPTION (RECOMPILE)";
 select	*
 from	(
 		select	AssetID, Object, ObjectID, Type, TypeID, 
-               {parentOuterSqlColumn}  
-                P_CanEdit, P_CanDelete,
+               {editRightsColumnStatement}
+               {parentOuterSqlColumn}                  
 				{selectFieldString} 
 		from	(
 				select	A.ID as AssetID,
@@ -481,8 +488,7 @@ from	(
 						AST.Object as Type,
 						AST.ObjectID as TypeID,
                         {parentSqlColumn}
-						FT.ID as FieldTypeID,  
-                        {editRightsColumnStatement}
+						FT.ID as FieldTypeID,                        
 						case 
 							when FT.AllowAllValue = 1 and F_O.Value = '0' then FT.AllowAllLabel 
                             when F_O.Value is not null then F_O.FormattedValue
@@ -494,14 +500,13 @@ from	(
 				from	Asset A{tableHints} 
                         {parentSqlJoin} 
                         inner join AssetType AST{tableHints} on AST.ID = A.AssetTypeID and AST.ID = @atID and A.State = 1  
-                        {filterJoinString}     
-                        {editRightsJoinStatement} 
+                        {filterJoinString}
 						inner join FieldType FT{tableHints} on FT.ID in ({selectFieldIDs}) and FT.AssetTypeID = A.AssetTypeID
 						left join Field F_O{tableHints} on F_O.AssetID = A.ID and F_O.FieldTypeID = FT.ID
 						{relationshipJoinStatement}
 						{fieldFromRelationshipJoinStatement} 
-                where   not exists (select 1 from ResponsibilityAllAsset where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = @r and ( (AssetID = A.ID)  ) )
-                        and not exists (select 1 from ResponsibilityAllAsset where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = @r and (  (AssetID = 0 and AssetTypeID = A.AssetTypeID) ) )
+                where   
+                        not exists (select 1 from UserAssetPermissions(@r,A.AssetTypeID,A.ID) where PermissionsBitMask & {(int)Permission.ReadAsset} = 0)                                
                         {filterWhereString}
 				) A
 		pivot	(
