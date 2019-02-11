@@ -73,5 +73,20 @@ from    company c
 
             return companies;
         }
+
+        public static List<CompanySetting> GetCompanySettings(int companyID)
+        {
+            var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
+            cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+            var settings = cnn.Query<CompanySetting>(@"
+            select 
+                @companyID as CompanyID, 
+                S.ID as SettingID, 
+                coalesce(CS.Value, S.DefaultValue) as Value
+            from Setting S 
+            left join CompanySetting CS on CS.CompanyID = @companyID and CS.SettingID = S.ID", new { companyID }).ToList();
+            return settings;
+        }
     }
 }

@@ -942,6 +942,39 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
     }
 
+    private validateIncrement(value: string) {
+        if (this.model.FieldType.Increment > 0) {
+
+            if (value == 'Number') {
+                if (this.model.FieldType.Increment % 1 != 0) {
+                    this.errorMessage = value + ' input type requires a valid integer.';  
+                    return;
+                } 
+            }
+
+            if (this.model.FieldType.MinimumLength && this.model.FieldType.MinimumLength % this.model.FieldType.Increment != 0) {
+                this.errorMessage = 'Minimum value is not an increment of ' + this.model.FieldType.Increment;
+            }
+            else if (this.model.FieldType.MaximumLength && this.model.FieldType.MaximumLength % this.model.FieldType.Increment != 0) {
+                this.errorMessage = 'Maximum value is not an increment of ' + this.model.FieldType.Increment;
+            }
+            else if (this.model.FieldType.DefaultValue && +this.model.FieldType.DefaultValue % this.model.FieldType.Increment != 0) {
+                this.errorMessage = 'Default value invalid. Default [' + this.model.FieldType.DefaultValue + '] is not an increment of [' + this.model.FieldType.Increment + ']';
+            }
+            else if (this.model.FieldType.DefaultValue && (+this.model.FieldType.DefaultValue > this.model.FieldType.MinimumLength)) {
+                this.errorMessage = 'Default value invalid. Default [' + this.model.FieldType.DefaultValue + '] cannot be more than Minimum [' + this.model.FieldType.MinimumLength +']';
+            }
+            else if (this.model.FieldType.DefaultValue && (+this.model.FieldType.DefaultValue > this.model.FieldType.MaximumLength)) {
+                this.errorMessage = 'Default value invalid. Default [' + this.model.FieldType.DefaultValue + '] cannot be more than Maximum [' + this.model.FieldType.MaximumLength + ']';
+            }
+            else {
+                this.errorMessage = '';
+            } 
+        } else {
+            this.errorMessage = '';
+        }
+    }
+
     private updateApiName(event) {
         this.model.FieldType.Name = event.target.value.replace(/[^a-zA-Z0-9_]/g, ''); 
     }

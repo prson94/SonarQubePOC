@@ -3096,14 +3096,20 @@ outer apply (
                     #region DEFAULT
 
                     string overrideDisplayColumn = null;
-                    string @object = join.Object.Replace("Type", "");
+                    bool isReferenceType = (join.Object == "ReferenceItemType" && join.ObjectID == 0);
+                    string @object = isReferenceType ? join.Object : join.Object.Replace("Type", "");
                     string idColumn = @object == "Resource" ? "ResourceID" : "ID";
+                    string delim = @object.StartsWith("Fusion") ? "." : "/";
 
                     if (i.FieldTypeID == 0)
                     {
-                        if (i.FieldTypeName.ToLower() == "textpath")
+                        if (isReferenceType)
                         {
-                            string delim = @object.StartsWith("Fusion") ? "." : "/";
+                            overrideDisplayColumn = $@"(select Name from AssetType where Object = '{@object}' and ObjectID = A{pos}.{idColumn})";
+                        }
+                        else if (i.FieldTypeName.ToLower() == "textpath")
+                        {
+                            
                             overrideDisplayColumn = $@"(select T.TextPath from Asset a
                                 cross apply dbo.GetAssetTextPathById(a.ID, '{delim}') T
                                 where a.[Object] = '{@object}' and a.[ObjectID] = A{pos}.{idColumn})";
