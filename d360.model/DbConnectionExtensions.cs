@@ -726,9 +726,8 @@ namespace d360.model
 
         public static void ClearInvalidRelationRuleResults(this DbConnection cnn)
         {
-            cnn.Execute("delete ResponsibilityTypeRelationRuleResult where RuleID <> 0 and RuleID not in (select ID from ResponsibilityTypeRelationRule)", commandTimeout: 7200);
-            cnn.Execute("delete ResponsibilityTypeRelationRuleResult where RuleID = 0 and OverrideID not in (select ID from ResponsibilityTypeRelationOverrideItem)", commandTimeout: 7200);
-            cnn.Execute("update ResponsibilityTypeRelationRuleResult set Overridden = 0, OverrideID = null where RuleID <> 0 and Overridden = 1 and OverrideID not in (select ID from ResponsibilityTypeRelationOverrideItem)", commandTimeout: 7200);
+            cnn.Execute("delete [dbo].[ResponsibilityRuleResultAsset] where RuleID <> 0 and RuleID not in (select ID from ResponsibilityTypeRelationRule)", commandTimeout: 7200);            
+            cnn.Execute("delete [dbo].[ResponsibilityRuleResultResource] where RuleID <> 0 and RuleID not in (select ID from ResponsibilityTypeRelationRule)", commandTimeout: 7200);            
         }
         
         public static IEnumerable<ObjectResult> GetWhenResults(this DbConnection cnn, ResponsibilityTypeRelationRule rule, SqlTransaction trans = null)
