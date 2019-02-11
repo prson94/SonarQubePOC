@@ -18,7 +18,13 @@ begin
   UPDATE [dbo].[AssetType]
 	 SET uid=N'00000001-0000-0000-0000-B00000000012'
 	 where Object='Grouptype' 
+	 
  end
+ 
+ ALTER TABLE [dbo].[AssetType] 
+
+ADD  CONSTRAINT [AssetType_Object_ObjectId]  Unique(Object,ObjectID) 
+
     </sql>
 	<rollback>
 		 
