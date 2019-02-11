@@ -54,7 +54,7 @@ namespace d360.core.entities
         public virtual ICollection<FusionFilter> FusionFilters { get; set; }
 
         [IgnoreDataMember]
-        public virtual ICollection<Artifact> FusionOwners { get; set; }
+        public virtual ICollection<Asset> FusionOwners { get; set; }
 
         public EventObjectInfo GetEventObjectInfo()
         {
