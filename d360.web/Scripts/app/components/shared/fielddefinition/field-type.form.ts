@@ -678,8 +678,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.model.FilteredLookupItem = item;
         }
 
-        if (this.model.FieldType.Type == 'Link' ) {
-            this.model.FieldType.DefaultValue = this.defaultLinkName + '|' + this.defaultLinkAdress;
+        if (this.model.FieldType.Type == 'Link') {
+            this.model.FieldType.DefaultValue = this.defaultLinkName != null ? this.defaultLinkName : '' + '|' + this.defaultLinkAdress != null ? this.defaultLinkAdress : '';
         }
         this.isLoading = true;
         if (this.model.FieldType.ID > 0) {
