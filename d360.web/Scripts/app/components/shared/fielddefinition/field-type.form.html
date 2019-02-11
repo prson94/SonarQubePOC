@@ -140,7 +140,7 @@
             </div>
         </simple-accordion>
 
-        <simple-accordion header="Validation" active="true" *ngIf="model.FieldType.Type == 'Text' || model.FieldType.Type == 'Number'">
+        <simple-accordion header="Validation" active="true" *ngIf="model.FieldType.Type == 'Text' || model.FieldType.Type == 'Number' || model.FieldType.Type == 'Decimal'">
             <div class="row">
                 <div *ngIf="model.FieldType.Type == 'Text'" class="col s3">
                     <div id='PatternTip' class="FieldName">Validation Pattern</div>
@@ -150,7 +150,7 @@
                     <div class="FieldName" style="display:block">&nbsp;</div>
                     <p-dropdown name="validationPattersOpt" [options]="lookups.Patterns" (onChange)="model.FieldType.Pattern = $event.value; validatePattern()" [style]="{ 'width': '98%' }" ngDefaultControl></p-dropdown>
                 </div>
-                <div *ngIf="model.FieldType.Type == 'Number'" class="col s3">
+                <div *ngIf="model.FieldType.Type == 'Number' || model.FieldType.Type == 'Decimal'" class="col s3">
                     <div class="FieldName" style="display:block">Increment</div>
                     <input name="validationIncrement" type="number" [(ngModel)]="model.FieldType.Increment" (change)="validateIncrement(model.FieldType.Type)" style="width: 98%; display: block;" />
                 </div>
@@ -181,7 +181,7 @@
             </div>
         </simple-accordion>
 
-        <simple-accordion header="Value Selection" active="true" *ngIf="model.FieldType.Type == 'Lookup' || model.FieldType.Type == 'Text' || model.FieldType.Type == 'Boolean' || model.FieldType.Type == 'Number'">
+        <simple-accordion header="Value Selection" active="true" *ngIf="model.FieldType.Type == 'Lookup' || model.FieldType.Type == 'Text' || model.FieldType.Type == 'Boolean' || model.FieldType.Type == 'Number' || model.FieldType.Type == 'Decimal'">
             <div class="row">
                 <div class="col l6 m6 s12">
                     <div class="FieldName">Default Value (if any)</div>
@@ -195,7 +195,7 @@
                     <p-dropdown *ngIf="model.FieldType.Type == 'Boolean'" [options]="booleanDefaultValueOptions" [(ngModel)]="model.FieldType.DefaultValue" [style]="{ 'width': '98%' }" ngDefaultControl [ngModelOptions]="{standalone: true}"></p-dropdown>
                     <p-dropdown *ngIf="model.FieldType.Type == 'Lookup'" [options]="lookupDefaultValueOptions" [(ngModel)]="model.FieldType.DefaultValue" [style]="{ 'width': '98%' }" ngDefaultControl [ngModelOptions]="{standalone: true}"></p-dropdown>
                     <input *ngIf="model.FieldType.Type == 'Text'" pInputText type="text" [(ngModel)]="model.FieldType.DefaultValue" style="width: 98%; display: block;" [ngModelOptions]="{standalone: true}" />
-                    <input *ngIf="model.FieldType.Type == 'Number'" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}"  (change)="validateIncrement(model.FieldType.Type)" [(ngModel)]="model.FieldType.DefaultValue" style="width: 98%; display: block;" [ngModelOptions]="{standalone: true}" />
+                    <input *ngIf="model.FieldType.Type == 'Number' || model.FieldType.Type == 'Decimal'" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}"  (change)="validateIncrement(model.FieldType.Type)" [(ngModel)]="model.FieldType.DefaultValue" style="width: 98%; display: block;" [ngModelOptions]="{standalone: true}" />
                 </div>
                 <div class="col l1 m1 s12" *ngIf="model.FieldType.Type == 'Lookup'">
                     <p-checkbox binary="true" [(ngModel)]="model.FieldType.AllowAllValue" [ngModelOptions]="{standalone: true}"></p-checkbox>

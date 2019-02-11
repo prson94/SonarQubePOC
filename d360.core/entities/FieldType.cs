@@ -52,10 +52,10 @@ namespace d360.core.entities
         public int? Length { get; set; }
 
         [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "MinimumLength_Name", Description = "MinimumLength_Description")]
-        public int? MinimumLength { get; set; }
+        public decimal? MinimumLength { get; set; }
 
         [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "MaximumLength_Name", Description = "MaximumLength_Description")]
-        public int? MaximumLength { get; set; }
+        public decimal? MaximumLength { get; set; }
 
         [DataMember, Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Pattern_Name", Description = "Pattern_Description")]
         [Column(TypeName = "varchar"), StringLength(1000)]
