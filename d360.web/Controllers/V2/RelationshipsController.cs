@@ -176,12 +176,23 @@ namespace d360.web.Controllers.V2
                 };
                 Company.Add(execution);
 
-                var results = (Company.Database.Connection as SqlConnection).ImportRelationships(
-                    QueueSource,
-                    Company.CurrentCompanyDomain, Company.CurrentCompanyID, Company.CurrentResourceID, 
-                    execution,
-                    intersectType,
-                    relationships);
+                List<DatabaseBulkRelationshipResult> results = null;
+                try
+                {
+                    results = Company.ImportRelationships(execution, intersectType, relationships);
+
+                    // Close execution record.
+                    execution.Processed = results.Count;
+                    execution.Error = results.Count(i => !i.Success);
+                    execution.CompletedOn = DateTime.UtcNow;
+                    Company.Update(execution);
+                }
+                catch (Exception ex)
+                {
+                    execution.ErrorMessage = ex.GetFullExceptionData(false);
+                    execution.CompletedOn = DateTime.UtcNow;
+                    Company.Update(execution);
+                }
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
@@ -232,6 +243,7 @@ namespace d360.web.Controllers.V2
                 var executionInfo = new ApiExecutionInfo
                 {
                     CompanyID = Company.CurrentCompanyID,
+                    ResourceID = Company.CurrentResourceID,
                     CompanyDomainPrefix = Company.CurrentCompanyDomain,
                     ExecutionID = Guid.NewGuid(),
                     Action = ApiExecutionAction.PostRelationships

@@ -38,7 +38,6 @@ namespace d360.core.entities
     [DataContract]
     public class DatabaseBulkRelationshipResult
     {
-        [DataMember]
         public Guid ExecutionID { get; set; }
 
         [DataMember]
