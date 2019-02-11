@@ -953,13 +953,19 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             }
 
             if (this.model.FieldType.MinimumLength && this.model.FieldType.MinimumLength % this.model.FieldType.Increment != 0) {
-                this.errorMessage = 'Minimum length is not an increment of ' + this.model.FieldType.Increment;
+                this.errorMessage = 'Minimum value is not an increment of ' + this.model.FieldType.Increment;
             }
             else if (this.model.FieldType.MaximumLength && this.model.FieldType.MaximumLength % this.model.FieldType.Increment != 0) {
-                this.errorMessage = 'Maximum length is not an increment of ' + this.model.FieldType.Increment;
+                this.errorMessage = 'Maximum value is not an increment of ' + this.model.FieldType.Increment;
             }
             else if (this.model.FieldType.DefaultValue && +this.model.FieldType.DefaultValue % this.model.FieldType.Increment != 0) {
-                this.errorMessage = 'Default value invalid.';
+                this.errorMessage = 'Default value invalid. Default [' + this.model.FieldType.DefaultValue + '] is not an increment of [' + this.model.FieldType.Increment + ']';
+            }
+            else if (this.model.FieldType.DefaultValue && (+this.model.FieldType.DefaultValue > this.model.FieldType.MinimumLength)) {
+                this.errorMessage = 'Default value invalid. Default [' + this.model.FieldType.DefaultValue + '] cannot be more than Minimum [' + this.model.FieldType.MinimumLength +']';
+            }
+            else if (this.model.FieldType.DefaultValue && (+this.model.FieldType.DefaultValue > this.model.FieldType.MaximumLength)) {
+                this.errorMessage = 'Default value invalid. Default [' + this.model.FieldType.DefaultValue + '] cannot be more than Maximum [' + this.model.FieldType.MaximumLength + ']';
             }
             else {
                 this.errorMessage = '';

@@ -238,11 +238,20 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 }
                 else if (validation.rule && validation.rule.startsWith('minLength=')) {
                     minLen = +validation.rule.split('=').pop();
-                    validators.push(Validators.minLength(minLen));
+                    if (field.FieldType == 'Number' || field.FieldType == 'Decimal') {
+                        validators.push(Validators.min(minLen));
+                    } else {
+                        validators.push(Validators.minLength(minLen));
+                    }
                 }
                 else if (validation.rule && validation.rule.startsWith('maxLength=')) {
                     maxLen = +validation.rule.split('=').pop();
-                    validators.push(Validators.maxLength(maxLen));
+                    if (field.FieldType == 'Number' || field.FieldType == 'Decimal') {
+                        validators.push(Validators.max(maxLen));
+                    } else {
+                        validators.push(Validators.maxLength(maxLen));
+                    }
+
                 }
                 else if (validation.regex) {
                     validators.push(Validators.pattern(validation.regex));
@@ -258,11 +267,6 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
             validators.push(FormHelpers.integerValidator);
         if (field.FieldType == 'Decimal')
             validators.push(FormHelpers.numberValidator);
-
-        if (field.FieldType == 'Number' || field.FieldType == 'Decimal') {
-            validators.push(Validators.max(maxLen));
-            validators.push(Validators.min(minLen));
-        }
         
         return validators.length > 0 ? validators : null;
     }
