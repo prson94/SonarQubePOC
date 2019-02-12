@@ -463,7 +463,7 @@ from	Asset A{tableHints}
         {filterJoinString}         
 where	A.AssetTypeID = @atID
 		and A.State = 1
-        and not exists (select 1 from AssetTypesUserCantRead(@r) u where u.AssetTypeID = @atID) and not exists (select 1 from AssetsByTypeUserCantRead(@r,@atID) u where u.AssetID = AssetID) 
+        and not exists (select 1 from AssetTypesUserCantRead(@r) u where u.AssetTypeID = @atID) and not exists (select 1 from AssetsByTypeUserCantRead(@r,@atID) u where u.AssetID = A.ID) 
         {filterWhereString}
 OPTION (RECOMPILE)";
             
@@ -516,7 +516,7 @@ from	(
 		pivot	(
 				MIN([Field]) for FieldTypeID in ({pivotFieldIDs})
 				) pvt        
-        where not exists (select 1 from AssetTypesUserCantRead(@r) u where u.AssetTypeID = @atID) and not exists (select 1 from AssetsByTypeUserCantRead(@r,@atID) u where u.AssetID = AssetID)  
+        where not exists (select 1 from AssetTypesUserCantRead(@r) u where u.AssetTypeID = @atID) and not exists (select 1 from AssetsByTypeUserCantRead(@r,@atID) u where u.AssetID = pvt.AssetID)  
 		ORDER BY {orderFieldString}
 		OFFSET({pageNumber}) ROWS FETCH NEXT ({pageSize}) ROWS ONLY
 		) A

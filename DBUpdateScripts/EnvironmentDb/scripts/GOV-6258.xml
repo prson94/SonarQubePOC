@@ -24,6 +24,8 @@
             (
 	            [RuleID] ASC, [AssetID] ASC, [AssetTypeID] ASC
             ))
+                        
+            CREATE NONCLUSTERED INDEX [IX_ResonsibilityRuleResultAsset_AssetTypeID-AssetID] ON [dbo].[ResponsibilityRuleResultAsset] ([AssetTypeID], [AssetID])
 
             END
 
@@ -59,7 +61,7 @@
 	          [RuleID] ASC, [SecurityAsset] ASC, [SecurityAssetID] ASC
           ))
           
-          CREATE NONCLUSTERED INDEX [IX_ResponsibilityRuleResultSecurityAsset_SecurityAsset-SecurityAssetID] ON [dbo].[ResponsibilityRuleResultSecurityAsset] ([SecurityAsset],[SecurityAssetID])
+          CREATE NONCLUSTERED INDEX [IX_ResponsibilityRuleResultSecurityAsset_SecurityAsset-SecurityAssetID] ON [dbo].[ResponsibilityRuleResultSecurityAsset] ([SecurityAsset],[SecurityAssetID])          
 
         END
 
@@ -467,7 +469,7 @@
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="true">
-      <![CDATA[    
+      <![CDATA[            
         CREATE or alter FUNCTION AssetsByTypeUserCantRead
         (		        
 	        @ResourceID int,
@@ -490,8 +492,11 @@
 				         and 
 					        ( exists( select 1 from [dbo].[ResponsibilityRuleResultSecurityAsset] rresource where rresource.RuleID = R.ID and rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = @ResourceID )
 					        or exists( select 1 from [dbo].[ResponsibilityRuleResultSecurityAsset] rresource inner join dbo.[Organization] D on rresource.SecurityAsset = 'O' and D.ID = rresource.SecurityAssetID inner join dbo.OrganizationResource RD on RD.OrganizationID = D.ID where rresource.RuleID = R.ID and RD.ResourceID = @ResourceID )
-					        or exists( select 1 from [dbo].[ResponsibilityRuleResultSecurityAsset] rresource inner join dbo.[Group] G on G.ID = rresource.SecurityAssetID and rresource.SecurityAsset = 'G' inner join dbo.ResourceGroup RG on RG.GroupID = G.ID  where rresource.RuleID = R.ID and RG.ResourceID =  @ResourceID ) )
-	
+					        or exists( select 1 from [dbo].[ResponsibilityRuleResultSecurityAsset] rresource inner join dbo.[Group] G on G.ID = rresource.SecurityAssetID and rresource.SecurityAsset = 'G' inner join dbo.ResourceGroup RG on RG.GroupID = G.ID  where rresource.RuleID = R.ID and RG.ResourceID =  @ResourceID ) 
+							)
+						and
+							not exists (select 1 from [dbo].[ResponsibilityTypeRelationOverrideItem] oride where oride.AssetID = A.ID and oride.ResponsibilityTypeID = R.ResponsibilityTypeID)
+				
 		        )
     ]]>
     </sql>
@@ -535,6 +540,23 @@
     <rollback>
       <![CDATA[
       drop function [dbo].[AssetTypesUserCantRead]
+    ]]>
+    </rollback>
+  </changeSet>
+  <changeSet author="MrPink" id="GOV-6258-Missing-Index">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[    
+      IF (NOT EXISTS (SELECT * FROM sys.indexes WHERE name='IX_ResponsibilityTypeRelationRule_Object-ObjectID' AND object_id = OBJECT_ID('dbo.ResponsibilityTypeRelationRule')))
+      BEGIN
+        CREATE NONCLUSTERED INDEX [IX_ResponsibilityTypeRelationRule_Object-ObjectID] ON [dbo].[ResponsibilityTypeRelationRule] ([Object],[ObjectID])
+      END       
+    ]]>
+    </sql>
+    <rollback>
+      <![CDATA[      
     ]]>
     </rollback>
   </changeSet>
