@@ -106,8 +106,6 @@
     <Compile Include="entities\Fusion\FusionRuleFilter.cs" />
     <Compile Include="entities\Fusion\FusionAttributeTypeCustomQuery.cs" />
     <Compile Include="entities\Fusion\FusionSchedule.cs" />
-    <Compile Include="entities\Glossary\ArtifactTypeExportTemplate.cs" />
-    <Compile Include="entities\Glossary\ArtifactTypeExportTemplateStyle.cs" />
     <Compile Include="entities\Integration\IntegrationAssetTypeRelationItemTarget.cs" />
     <Compile Include="entities\Integration\IntegrationAssetTypeRoleItem.cs" />
     <Compile Include="entities\Integration\IntegrationAssetTypeRelationItem.cs" />
