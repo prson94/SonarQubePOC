@@ -78,7 +78,7 @@ namespace d360.model
 
                                 //merge into the resource table
                                 await cnn.ExecuteAsync($@"
-                                    merge [dbo].[ResponsibilityRuleResultResource] as T
+                                    merge [dbo].[ResponsibilityRuleResultSecurityAsset] as T
 			                                using	(
 					                                    {thenSql}
 					                                ) as S
@@ -165,9 +165,7 @@ namespace d360.model
         {
             string sqlToExecute = "";
             try
-            {
-                await cnn.ExecuteAsync("truncate table #ResponsibilityTypeRelationTypeItem", transaction:transaction);
-
+            {                
                 var thenSql = cnn.GetThenResultsSql(rule, false, false);
                 thenSql = string.Format(thenSql, "");
 
@@ -192,7 +190,7 @@ namespace d360.model
 
                     //merge into the resource table
                     await cnn.ExecuteAsync($@"
-                                    merge [dbo].[ResponsibilityRuleResultResource] as T
+                                    merge [dbo].[ResponsibilityRuleResultSecurityAsset] as T
 			                using	(
 					                {thenSql}
 					                ) as S
@@ -371,7 +369,7 @@ namespace d360.model
         public static void ClearInvalidRelationRuleResults(this DbConnection cnn)
         {
             cnn.Execute("delete [dbo].[ResponsibilityRuleResultAsset] where RuleID <> 0 and RuleID not in (select ID from ResponsibilityTypeRelationRule)", commandTimeout: 7200);            
-            cnn.Execute("delete [dbo].[ResponsibilityRuleResultResource] where RuleID <> 0 and RuleID not in (select ID from ResponsibilityTypeRelationRule)", commandTimeout: 7200);            
+            cnn.Execute("delete [dbo].[ResponsibilityRuleResultSecurityAsset] where RuleID <> 0 and RuleID not in (select ID from ResponsibilityTypeRelationRule)", commandTimeout: 7200);            
         }
         
         public static IEnumerable<ObjectResult> GetWhenResults(this DbConnection cnn, ResponsibilityTypeRelationRule rule, SqlTransaction trans = null)

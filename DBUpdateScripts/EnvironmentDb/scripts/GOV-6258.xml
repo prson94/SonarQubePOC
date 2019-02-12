@@ -45,21 +45,21 @@
             splitStatements="true"
             stripComments="true">
       <![CDATA[
-        IF (NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND  TABLE_NAME = 'ResponsibilityRuleResultResource'))
+        IF (NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND  TABLE_NAME = 'ResponsibilityRuleResultSecurityAsset'))
         BEGIN
 		
-          CREATE TABLE [dbo].[ResponsibilityRuleResultResource](	
+          CREATE TABLE [dbo].[ResponsibilityRuleResultSecurityAsset](	
 	          [RuleID][bigint] NOT NULL,
 	          [SecurityAsset] char(1) NOT NULL,
 	          [SecurityAssetID][int] NOT NULL,	
 	          [UpdatedOn] datetime not null,
 	          [UpdatedBy] int not null
-          CONSTRAINT [PK_ResponsibilityRuleResultResource] PRIMARY KEY CLUSTERED 
+          CONSTRAINT [PK_ResponsibilityRuleResultSecurityAsset] PRIMARY KEY CLUSTERED 
           (
 	          [RuleID] ASC, [SecurityAsset] ASC, [SecurityAssetID] ASC
           ))
           
-          CREATE NONCLUSTERED INDEX [IX_ResponsibilityRuleResultResource_SecurityAsset-SecurityAssetID] ON [dbo].[ResponsibilityRuleResultResource] ([SecurityAsset],[SecurityAssetID])
+          CREATE NONCLUSTERED INDEX [IX_ResponsibilityRuleResultSecurityAsset_SecurityAsset-SecurityAssetID] ON [dbo].[ResponsibilityRuleResultSecurityAsset] ([SecurityAsset],[SecurityAssetID])
 
         END
 
@@ -67,9 +67,9 @@
     </sql>
     <rollback>
       <![CDATA[
-      IF (EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND  TABLE_NAME = 'ResponsibilityRuleResultResource'))
+      IF (EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND  TABLE_NAME = 'ResponsibilityRuleResultSecurityAsset'))
       BEGIN
-          drop table [dbo].[ResponsibilityRuleResultResource]
+          drop table [dbo].[ResponsibilityRuleResultSecurityAsset]
       END
       ]]>
     </rollback>
@@ -106,7 +106,7 @@
 	      responsibilitytyperelationrule r
 	      inner join ResponsibilityTypeRelation rrel on (r.ResponsibilityTypeID = rrel.ResponsibilityTypeID and r.[Object] = rrel.[ObjectType] and r.ObjectID = rrel.ObjectID)
 	      inner join [ResponsibilityRuleResultAsset] rasset on (r.ID = rasset.RuleID)
-	      inner join [ResponsibilityRuleResultResource] rresource on (r.ID = rresource.RuleID)
+	      inner join [ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)
 	      left join [responsibilitytyperelationoverrideitem] orides on (r.ResponsibilityTypeID = orides.ResponsibilityTypeID and rasset.AssetID = orides.AssetID)
          inner join ResponsibilityType RT on RT.ID = r.ResponsibilityTypeID  
          inner join AssetType T on T.ID = rasset.AssetTypeID  
@@ -185,7 +185,7 @@
 	        from	dbo.responsibilitytyperelationrule r
 			        inner join dbo.ResponsibilityTypeRelation rrel on (r.ResponsibilityTypeID = rrel.ResponsibilityTypeID and r.[Object] = rrel.[ObjectType] and r.ObjectID = rrel.ObjectID)
 			        inner join dbo.[ResponsibilityRuleResultAsset] rasset on (r.ID = rasset.RuleID)
-			        inner join dbo.[ResponsibilityRuleResultResource] rresource on (r.ID = rresource.RuleID)			
+			        inner join dbo.[ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)			
 			        inner join dbo.ResponsibilityType RT on RT.ID = r.ResponsibilityTypeID
 			        inner join dbo.AssetType T on T.ID = rasset.AssetTypeID			
 			        inner join reporting.Global_Resource RES on RES.ResourceID = rresource.SecurityAssetID
@@ -213,7 +213,7 @@
 	        from	dbo.responsibilitytyperelationrule r
 			        inner join dbo.ResponsibilityTypeRelation rrel on (r.ResponsibilityTypeID = rrel.ResponsibilityTypeID and r.[Object] = rrel.[ObjectType] and r.ObjectID = rrel.ObjectID)
 			        inner join dbo.[ResponsibilityRuleResultAsset] rasset on (r.ID = rasset.RuleID)
-			        inner join dbo.[ResponsibilityRuleResultResource] rresource on (r.ID = rresource.RuleID)			
+			        inner join dbo.[ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)			
 			        inner join dbo.ResponsibilityType RT on RT.ID = r.ResponsibilityTypeID
 			        inner join dbo.AssetType T on T.ID = rasset.AssetTypeID			
 			        inner join dbo.[Group] G on G.ID = rresource.SecurityAssetID
@@ -242,7 +242,7 @@
 	        from	dbo.responsibilitytyperelationrule r
 			        inner join dbo.ResponsibilityTypeRelation rrel on (r.ResponsibilityTypeID = rrel.ResponsibilityTypeID and r.[Object] = rrel.[ObjectType] and r.ObjectID = rrel.ObjectID)
 			        inner join dbo.[ResponsibilityRuleResultAsset] rasset on (r.ID = rasset.RuleID)
-			        inner join dbo.[ResponsibilityRuleResultResource] rresource on (r.ID = rresource.RuleID)
+			        inner join dbo.[ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)
 			        inner join dbo.ResponsibilityType RT on RT.ID = r.ResponsibilityTypeID
 			        inner join dbo.AssetType T on T.ID = rasset.AssetTypeID			
 			        inner join dbo.[Organization] D on rresource.SecurityAsset = 'O' and D.ID = rresource.SecurityAssetID
@@ -383,7 +383,7 @@
 	    responsibilitytyperelationrule r
 	    inner join ResponsibilityTypeRelation rrel on (r.ResponsibilityTypeID = rrel.ResponsibilityTypeID and r.[Object] = rrel.[ObjectType] and r.ObjectID = rrel.ObjectID)
 	    inner join [ResponsibilityRuleResultAsset] rasset on (r.ID = rasset.RuleID)
-	    inner join [ResponsibilityRuleResultResource] rresource on (r.ID = rresource.RuleID)
+	    inner join [ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)
 	    left join [responsibilitytyperelationoverrideitem] orides on (r.ResponsibilityTypeID = orides.ResponsibilityTypeID and rasset.AssetID = orides.AssetID)
 
     ]]>
@@ -420,7 +420,7 @@
 		        inner join [dbo].[ResponsibilityRuleResultAsset] rasset on (rasset.AssetID = a.ID or (rasset.AssetID = -1 and rasset.AssetTypeID = @AssetTypeID))		
 		        inner join [dbo].[responsibilitytyperelationrule] r on (r.id = rasset.RuleID)		
 		        inner join [dbo].[ResponsibilityTypeRelation] rel on (rel.ObjectID = r.ObjectID and rel.ResponsibilityTypeID = r.ResponsibilityTypeID and rel.ObjectType = r.[Object])
-		        inner join [dbo].[ResponsibilityRuleResultResource] rresource on (r.id = rresource.RuleID)
+		        inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rresource on (r.id = rresource.RuleID)
 	        where 
 		        rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = @ResourceID and a.AssetTypeID = @AssetTypeID
 	        union
@@ -433,7 +433,7 @@
 		        inner join [dbo].[ResponsibilityRuleResultAsset] rasset on (rasset.AssetID = a.id or (rasset.AssetID = -1 and rasset.AssetTypeID = @AssetTypeID))
 		        inner join [dbo].[responsibilitytyperelationrule] r on (r.id = rasset.RuleID)
 		        inner join [dbo].[ResponsibilityTypeRelation] rel on (rel.ObjectID = r.ObjectID and rel.ResponsibilityTypeID = r.ResponsibilityTypeID and rel.ObjectType = r.[Object])
-		        inner join [dbo].[ResponsibilityRuleResultResource] rresource on (r.id = rresource.RuleID)
+		        inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rresource on (r.id = rresource.RuleID)
 		        inner join dbo.[Group] G on G.ID = rresource.SecurityAssetID and rresource.SecurityAsset = 'G'
 		        inner join dbo.ResourceGroup RG on RG.GroupID = G.ID and a.AssetTypeID = @AssetTypeID		
 	        where 
@@ -448,13 +448,12 @@
 		        inner join [dbo].[ResponsibilityRuleResultAsset] rasset on (rasset.AssetID = a.ID or (rasset.AssetID = -1 and rasset.AssetTypeID = @AssetTypeID))
 		        inner join [dbo].[responsibilitytyperelationrule] r on (r.id = rasset.RuleID)
 		        inner join [dbo].[ResponsibilityTypeRelation] rel on (rel.ObjectID = r.ObjectID and rel.ResponsibilityTypeID = r.ResponsibilityTypeID and rel.ObjectType = r.[Object])
-		        inner join [dbo].[ResponsibilityRuleResultResource] rresource  on (r.id = rresource.RuleID)
+		        inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rresource  on (r.id = rresource.RuleID)
 		        inner join dbo.[Organization] D on rresource.SecurityAsset = 'O' and D.ID = rresource.SecurityAssetID
 		        inner join dbo.OrganizationResource RD on RD.OrganizationID = D.ID
 	        where 
 		        RD.ResourceID = @ResourceID and a.AssetTypeID = @AssetTypeID	
         )
-        GO
     ]]>
     </sql>
     <rollback>
@@ -463,7 +462,7 @@
     ]]>
     </rollback>
   </changeSet>
-  <changeSet author="MrPink" id="GOV-6258-TVF-Type">
+  <changeSet author="MrPink" id="GOV-6258-TVF-AssetType">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -489,9 +488,9 @@
 			        where 
 				        RR.PermissionsBitMask & 1 = 0 and Ast.ID = @AssetTypeID
 				         and 
-					        exists( select 1 from [dbo].[ResponsibilityRuleResultResource] rresource where rresource.RuleID = R.ID and rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = @ResourceID )
-					        or exists( select 1 from [dbo].[ResponsibilityRuleResultResource] rresource inner join dbo.[Organization] D on rresource.SecurityAsset = 'O' and D.ID = rresource.SecurityAssetID inner join dbo.OrganizationResource RD on RD.OrganizationID = D.ID where rresource.RuleID = R.ID and RD.ResourceID = @ResourceID )
-					        or exists( select 1 from [dbo].[ResponsibilityRuleResultResource] rresource inner join dbo.[Group] G on G.ID = rresource.SecurityAssetID and rresource.SecurityAsset = 'G' inner join dbo.ResourceGroup RG on RG.GroupID = G.ID  where rresource.RuleID = R.ID and RG.ResourceID =  @ResourceID )
+					        ( exists( select 1 from [dbo].[ResponsibilityRuleResultSecurityAsset] rresource where rresource.RuleID = R.ID and rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = @ResourceID )
+					        or exists( select 1 from [dbo].[ResponsibilityRuleResultSecurityAsset] rresource inner join dbo.[Organization] D on rresource.SecurityAsset = 'O' and D.ID = rresource.SecurityAssetID inner join dbo.OrganizationResource RD on RD.OrganizationID = D.ID where rresource.RuleID = R.ID and RD.ResourceID = @ResourceID )
+					        or exists( select 1 from [dbo].[ResponsibilityRuleResultSecurityAsset] rresource inner join dbo.[Group] G on G.ID = rresource.SecurityAssetID and rresource.SecurityAsset = 'G' inner join dbo.ResourceGroup RG on RG.GroupID = G.ID  where rresource.RuleID = R.ID and RG.ResourceID =  @ResourceID ) )
 	
 		        )
     ]]>
@@ -526,9 +525,9 @@
 			      where 
 				      RR.PermissionsBitMask & 1 = 0
 				       and 
-					      exists( select 1 from [dbo].[ResponsibilityRuleResultResource] rresource where rresource.RuleID = R.ID and rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = @ResourceID )
-					      or exists( select 1 from [dbo].[ResponsibilityRuleResultResource] rresource inner join dbo.[Organization] D on rresource.SecurityAsset = 'O' and D.ID = rresource.SecurityAssetID inner join dbo.OrganizationResource RD on RD.OrganizationID = D.ID where rresource.RuleID = R.ID and RD.ResourceID = @ResourceID )
-					      or exists( select 1 from [dbo].[ResponsibilityRuleResultResource] rresource inner join dbo.[Group] G on G.ID = rresource.SecurityAssetID and rresource.SecurityAsset = 'G' inner join dbo.ResourceGroup RG on RG.GroupID = G.ID  where rresource.RuleID = R.ID and RG.ResourceID =  @ResourceID )
+					      exists( select 1 from [dbo].[ResponsibilityRuleResultSecurityAsset] rresource where rresource.RuleID = R.ID and rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = @ResourceID )
+					      or exists( select 1 from [dbo].[ResponsibilityRuleResultSecurityAsset] rresource inner join dbo.[Organization] D on rresource.SecurityAsset = 'O' and D.ID = rresource.SecurityAssetID inner join dbo.OrganizationResource RD on RD.OrganizationID = D.ID where rresource.RuleID = R.ID and RD.ResourceID = @ResourceID )
+					      or exists( select 1 from [dbo].[ResponsibilityRuleResultSecurityAsset] rresource inner join dbo.[Group] G on G.ID = rresource.SecurityAssetID and rresource.SecurityAsset = 'G' inner join dbo.ResourceGroup RG on RG.GroupID = G.ID  where rresource.RuleID = R.ID and RG.ResourceID =  @ResourceID )
 	
 		      )
     ]]>
