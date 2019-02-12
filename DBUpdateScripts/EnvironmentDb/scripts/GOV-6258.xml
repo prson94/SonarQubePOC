@@ -554,10 +554,17 @@
         CREATE NONCLUSTERED INDEX [IX_ResponsibilityTypeRelationRule_Object-ObjectID] ON [dbo].[ResponsibilityTypeRelationRule] ([Object],[ObjectID])
       END       
     ]]>
-    </sql>
-    <rollback>
-      <![CDATA[      
+    </sql>       
+  </changeSet>
+
+  <changeSet author="MrPink" id="GOV-6258-Trigger-Rebuild">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[    
+      update responsibilitytyperelationrule set LastRunOn = null      
     ]]>
-    </rollback>
+    </sql>    
   </changeSet>
 </databaseChangeLog>
