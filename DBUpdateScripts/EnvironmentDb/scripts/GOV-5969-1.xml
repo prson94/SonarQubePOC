@@ -1,0 +1,63 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Sebastian Abraham" id="GOV-5969-1">
+  
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+  
+			Alter table FusionOwner
+			drop constraint PK_FusionOwner
+
+			Alter table FusionOwner
+			drop constraint FK_FusionOwner_Artifact
+
+			Alter table FusionOwner
+			alter column
+			AssetID bigint not null
+
+			Alter table FusionOwner
+			alter column
+			ArtifactID int  null
+
+
+
+			Alter table FusionOwner
+			ADD CONSTRAINT PK_FusionOwner PRIMARY KEY (FusionID, AssetID)
+
+    </sql>
+	<rollback>
+		<![CDATA[
+			Alter table FusionOwner
+			drop constraint PK_FusionOwner
+
+			Alter table FusionOwner
+			alter column
+			AssetID bigint  null;
+
+			Alter table FusionOwner
+			alter column
+			ArtifactID int  not null;
+
+			ALTER TABLE FusionOwner    
+			ADD CONSTRAINT FK_FusionOwner_Artifact FOREIGN KEY (ArtifactID)     
+			REFERENCES Artifact (ID)     
+
+
+			Alter table FusionOwner
+			ADD CONSTRAINT PK_FusionOwner PRIMARY KEY (FusionID, ArtifactID)
+
+		]]>
+    </rollback>
+  </changeSet>
+  
+  
+
+</databaseChangeLog>
