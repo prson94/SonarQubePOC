@@ -39,7 +39,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     private typeAheadSource$ = new Subject<any>();
     private typeAheadSub: any;
     private typeAheadValue: EditorDropDownItem = null;
-
+    private Increment: number = 1;
     private colorValue: string = '#000';
 
     private isTaxonomyType: boolean = false; // taxonomy type requires its name be mapped to whatever the setting is set to.
@@ -128,6 +128,9 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             for (let validation of this.field.Validations) {
                 if (validation.regex) {
                     this.regexErrorMessage = validation.message ? String(validation.message).replace(/<[^>]+>/gm, '') : '';
+                }
+                else if (validation.rule && validation.rule.startsWith('increment')) {
+                    this.Increment = +validation.rule.split("increment=")[1];
                 }
             }
         }
