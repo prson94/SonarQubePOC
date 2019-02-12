@@ -156,7 +156,7 @@
                 </div>
                 <div class="col s3">
                     <div id='MinimumLengthTip' class="FieldName">Minimum {{model.FieldType.Type == 'Text' ? "Length" : "Value"}}</div>
-                    <input name="minLength" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}" [disabled]="!model.FieldType.IsRequired" [(ngModel)]="model.FieldType.MinimumLength" (change)="validateIncrement(model.FieldType.Type)" style="width: 98%; display: block;" />
+                    <input name="minLength" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}" [disabled]="CheckMinRequired(model)" [(ngModel)]="model.FieldType.MinimumLength" (change)="validateIncrement(model.FieldType.Type)" style="width: 98%; display: block;" />
                 </div>
                 <div class="col s3">
                     <div id='MaximumLengthTip' class="FieldName">Maximum {{model.FieldType.Type == 'Text' ? "Length" : "Value"}}</div> 

@@ -18,6 +18,7 @@ import { ObjectDetailService } from '../../../services/object-detail.service';
 import { BaseComponent } from '../../shared/base.component';
 
 import * as _ from 'lodash';
+import { createWriteStream } from 'fs';
 
 @Component({
     selector: 'd3s-field-type-form',
@@ -943,35 +944,59 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     }
 
     private validateIncrement(value: string) {
-        if (this.model.FieldType.Increment > 0) {
+        if (value == 'Number' || value == 'Decimal') {
 
-            if (value == 'Number') {
-                if (this.model.FieldType.Increment % 1 != 0) {
-                    this.errorMessage = value + ' input type requires a valid integer.';  
-                    return;
+            if (this.model.FieldType.Increment > 0) {
+
+                if (value == 'Number') {
+                    if (this.model.FieldType.Increment % 1 != 0) {
+                        this.errorMessage = value + ' input type requires a valid integer.';  
+                        return;
+                    } 
+                }
+
+                if (this.model.FieldType.MinimumLength && this.model.FieldType.MinimumLength % this.model.FieldType.Increment != 0) {
+                    this.errorMessage = 'Minimum value is not an increment of ' + this.model.FieldType.Increment;
+                }
+                else if (this.model.FieldType.MaximumLength && this.model.FieldType.MaximumLength % this.model.FieldType.Increment != 0) {
+                    this.errorMessage = 'Maximum value is not an increment of ' + this.model.FieldType.Increment;
+                }
+                else if (this.model.FieldType.DefaultValue && +this.model.FieldType.DefaultValue % this.model.FieldType.Increment != 0) {
+                    this.errorMessage = 'Default value invalid. Default [' + this.model.FieldType.DefaultValue + '] is not an increment of [' + this.model.FieldType.Increment + ']';
+                }
+                else if (this.model.FieldType.DefaultValue && this.model.FieldType.MinimumLength &&
+                    (+this.model.FieldType.DefaultValue < +this.model.FieldType.MinimumLength)) {
+                    this.errorMessage = 'Default value invalid. Default [' + this.model.FieldType.DefaultValue + '] must be more than Minimum [' + this.model.FieldType.MinimumLength + ']';
+                }
+                else if (this.model.FieldType.DefaultValue && this.model.FieldType.MaximumLength &&
+                    (+this.model.FieldType.DefaultValue > +this.model.FieldType.MaximumLength)) {
+                    this.errorMessage = 'Default value invalid. Default [' + this.model.FieldType.DefaultValue + '] cannot be more than Maximum [' + this.model.FieldType.MaximumLength + ']';
+                } else {
+                    this.errorMessage = '';
                 } 
+            } else {
+                if (this.model.FieldType.DefaultValue && this.model.FieldType.MinimumLength &&
+                        (+this.model.FieldType.DefaultValue < +this.model.FieldType.MinimumLength)) {
+                    this.errorMessage = 'Default value invalid. Default [' + this.model.FieldType.DefaultValue + '] must be more than Minimum [' + this.model.FieldType.MinimumLength + ']';
+                }
+                else if (this.model.FieldType.DefaultValue && this.model.FieldType.MaximumLength &&
+                         (+this.model.FieldType.DefaultValue > +this.model.FieldType.MaximumLength)) {
+                    this.errorMessage = 'Default value invalid. Default [' + this.model.FieldType.DefaultValue + '] cannot be more than Maximum [' + this.model.FieldType.MaximumLength + ']';
+                } else {
+                    this.errorMessage = '';
+                }
             }
+        }
+    }
 
-            if (this.model.FieldType.MinimumLength && this.model.FieldType.MinimumLength % this.model.FieldType.Increment != 0) {
-                this.errorMessage = 'Minimum value is not an increment of ' + this.model.FieldType.Increment;
-            }
-            else if (this.model.FieldType.MaximumLength && this.model.FieldType.MaximumLength % this.model.FieldType.Increment != 0) {
-                this.errorMessage = 'Maximum value is not an increment of ' + this.model.FieldType.Increment;
-            }
-            else if (this.model.FieldType.DefaultValue && +this.model.FieldType.DefaultValue % this.model.FieldType.Increment != 0) {
-                this.errorMessage = 'Default value invalid. Default [' + this.model.FieldType.DefaultValue + '] is not an increment of [' + this.model.FieldType.Increment + ']';
-            }
-            else if (this.model.FieldType.DefaultValue && (+this.model.FieldType.DefaultValue > this.model.FieldType.MinimumLength)) {
-                this.errorMessage = 'Default value invalid. Default [' + this.model.FieldType.DefaultValue + '] cannot be more than Minimum [' + this.model.FieldType.MinimumLength +']';
-            }
-            else if (this.model.FieldType.DefaultValue && (+this.model.FieldType.DefaultValue > this.model.FieldType.MaximumLength)) {
-                this.errorMessage = 'Default value invalid. Default [' + this.model.FieldType.DefaultValue + '] cannot be more than Maximum [' + this.model.FieldType.MaximumLength + ']';
-            }
-            else {
-                this.errorMessage = '';
-            } 
+    private CheckMinRequired(fem: FieldTypeEditorModel) {
+        if (!fem) {
+            return;
+        }
+        if (fem.FieldType.Type == 'Number' || fem.FieldType.Type == 'Decimal') {
+            return false;
         } else {
-            this.errorMessage = '';
+            return !fem.FieldType.IsRequired;
         }
     }
 
@@ -1018,7 +1043,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private anyDisplayFieldsSelected(e: any) {
         if (this.model.FieldType.Type != 'ComplexRelationLookup') {
             this.displayFieldSelected = true;
-            this.cardinalFieldFromRelationshipSelected(parseInt(this.lookups.Field_FieldFromRelRelationships[0].value));
+            if (this.lookups.Field_FieldFromRelRelationships.length > 0)
+                this.cardinalFieldFromRelationshipSelected(parseInt(this.lookups.Field_FieldFromRelRelationships[0].value));
             return;
         }
         if (e == true) {
