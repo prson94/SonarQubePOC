@@ -164,11 +164,35 @@ namespace d360.web.Controllers.V2
                 if (relationships == null)
                     relationships = readRequestJsonContent<RelationshipInserts>(Request).Result;
 
-                var results = (Company.Database.Connection as SqlConnection).BulkRelationshipsImport(
-                    QueueSource,
-                    Company.CurrentCompanyDomain, Company.CurrentCompanyID, Company.CurrentResourceID,
-                    intersectType,
-                    relationships);
+                var execution = new ApiExecution
+                {
+                    ExecutionID = Guid.NewGuid(),
+                    Error = 0,
+                    Processed = 0,
+                    Total = relationships.Count,
+                    StartedOn = DateTime.UtcNow,
+                    ResourceID = Company.CurrentResourceID,
+                    Fields = JsonConvert.SerializeObject(new ApiExecutionFields_PostRelationships { IntersectTypeUid = intersectTypeUid })
+                };
+                Company.Add(execution);
+
+                List<DatabaseBulkRelationshipResult> results = null;
+                try
+                {
+                    results = Company.ImportRelationships(execution, intersectType, relationships);
+
+                    // Close execution record.
+                    execution.Processed = results.Count;
+                    execution.Error = results.Count(i => !i.Success);
+                    execution.CompletedOn = DateTime.UtcNow;
+                    Company.Update(execution);
+                }
+                catch (Exception ex)
+                {
+                    execution.ErrorMessage = ex.GetFullExceptionData(false);
+                    execution.CompletedOn = DateTime.UtcNow;
+                    Company.Update(execution);
+                }
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
@@ -219,6 +243,7 @@ namespace d360.web.Controllers.V2
                 var executionInfo = new ApiExecutionInfo
                 {
                     CompanyID = Company.CurrentCompanyID,
+                    ResourceID = Company.CurrentResourceID,
                     CompanyDomainPrefix = Company.CurrentCompanyDomain,
                     ExecutionID = Guid.NewGuid(),
                     Action = ApiExecutionAction.PostRelationships

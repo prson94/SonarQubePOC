@@ -1,0 +1,462 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="MDonato" id="GOV-4770-proc-updates">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[
+ALTER procedure [fusion].[GenerateMarkitMapLineage]
+as
+begin
+	SET NOCOUNT, ANSI_PADDING ON;
+	SET ANSI_WARNINGS ON;
+
+	-- look for existing intersects subject to source
+	update M
+	set M.[SourceIntersectID] = OI.ID
+	from [fusion].[MarkitLineageMapping] M
+		inner join Asset S on S.ID = M.SourceAssetID
+		inner join Asset O on O.ID = M.ObjectAssetID
+		inner join [IntersectDetail] OI on OI.[Subject] = S.[Object] and OI.SubjectID = S.ObjectID and OI.[Object] = O.[Object] and OI.[ObjectID] = O.[ObjectID];
+
+	-- look for existing intersects flipped object to source
+	update M
+	set M.[SourceIntersectID] = OI.ID
+	from [fusion].[MarkitLineageMapping] M
+		inner join Asset S on S.ID = M.SourceAssetID
+		inner join Asset O on O.ID = M.ObjectAssetID
+		inner join [IntersectDetail] OI on OI.[Object] = S.[Object] and OI.ObjectID = S.[ObjectID] and OI.[Subject] = O.[Object] and OI.[SubjectID] = O.[ObjectID] and M.SourceIntersectID is null
+	
+	-- create any missing intersects for the business lineage	
+	insert into [intersect] (IntersectTypeID, [Subject], SubjectID, [Object], ObjectID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, [Owner])
+		select distinct
+			(select top 1 IT.ID from [IntersectType] IT
+			inner join [Predicate] P on IT.[predicateid] = P.ID
+			where (P.[Type] not in (3,4) and
+			(IT.[Object] = O.[Type] and IT.[Subject] = S.[Type] 
+				and IT.ObjectID = O.TypeID and IT.SubjectID = S.TypeID)))				
+			,S.[Object]
+			,S.[ObjectID]
+			,O.[Object]
+			,O.[ObjectID]
+			,0,getutcdate(),0,getutcdate(),'MARKIT LINEAGE'
+		from [fusion].[MarkitLineageMapping] M
+		inner join AssetDetail O on O.ID = M.ObjectAssetID
+		inner join AssetDetail S on S.ID = M.SourceAssetID		
+		where M.SourceIntersectID is null;
+	
+	-- do the update we did before adding new intersects again to catch the new ones
+	-- look for existing intersects subject to source
+	update M
+	set M.[SourceIntersectID] = OI.ID
+	from [fusion].[MarkitLineageMapping] M
+		inner join Asset S on S.ID = M.SourceAssetID
+		inner join Asset O on O.ID = M.ObjectAssetID
+		inner join [IntersectDetail] OI on OI.[Subject] = S.[Object] and OI.SubjectID = S.[ObjectID] and OI.[Object] = O.[Object] and OI.[ObjectID] = O.[ObjectID] and M.SourceIntersectID is null;
+	
+	-- look for target intersects subject - target
+	update M
+	set M.[TargetIntersectID] = OI.ID
+	from [fusion].[MarkitLineageMapping] M
+		inner join Asset T on T.ID = M.TargetAssetID
+		inner join Asset O on O.ID = M.ObjectAssetID
+		inner join [IntersectDetail] OI on OI.[Subject] = T.[Object] and OI.SubjectID = T.[ObjectID] and OI.[Object] = O.[Object] and OI.[ObjectID] = O.[ObjectID]
+		
+	-- look for target intersects flipped object - target
+	update M
+	set M.[TargetIntersectID] = OI.ID
+	from [fusion].[MarkitLineageMapping] M
+		inner join Asset T on T.ID = M.TargetAssetID
+		inner join Asset O on O.ID = M.ObjectAssetID
+		inner join [IntersectDetail] OI on OI.[Object] = T.[Object] and OI.ObjectID = T.[ObjectID] and OI.[Subject] = O.[Object] and OI.[SubjectID] = O.[ObjectID] and M.TargetIntersectID is null;
+
+	-- create any missing intersects for the business lineage
+	insert into [intersect] (IntersectTypeID, [Subject], SubjectID, [Object], ObjectID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, [Owner])
+		select distinct
+			(select top 1 IT.ID from [intersecttype] IT
+			inner join [Predicate] P on IT.[predicateid] = P.ID
+			where (P.[Type] not in (3,4) and 
+			(IT.[Object] = O.[Type] and IT.[Subject] = T.[Type] 
+				and IT.ObjectID = O.TypeID and IT.SubjectID = T.TypeID)))			
+			,T.[Object]
+			,T.[ObjectID]
+			,O.[Object]
+			,O.[ObjectID]
+			,0,getutcdate(),0,getutcdate(),'MARKIT LINEAGE'
+		from [fusion].[MarkitLineageMapping] M
+		inner join AssetDetail O on O.ID = M.ObjectAssetID
+		inner join AssetDetail T on T.ID = M.TargetAssetID		
+		where M.TargetIntersectID is null;
+		
+	-- update again for the newly created in above insert
+	update M
+	set M.[TargetIntersectID] = OI.ID
+	from [fusion].[MarkitLineageMapping] M
+		inner join Asset T on T.ID = M.TargetAssetID
+		inner join Asset O on O.ID = M.ObjectAssetID
+		inner join [IntersectDetail] OI on OI.[Subject] = T.[Object] and OI.SubjectID = T.[ObjectID] and OI.[Object] = O.[Object] and OI.[ObjectID] = O.[ObjectID] and M.TargetIntersectID is null;
+
+	
+	-- output the results into proper tables here
+	print 'Removing any prior generated Markit Lineage map records';
+
+	
+	delete from mapruleitemmapitem where [owner] = 'MARKIT LINEAGE';
+
+	print 'Inserting new map records';
+	
+	
+	Declare @MapItemIDList Table(MapItemID int, sourceintersectid int, targetintersectid int);
+	Declare @MapRuleItemIDList Table(MapRuleItemID int, MapID Int);
+	
+	
+	update T
+	set T.MapItemID = mi.ID
+	from [fusion].[MarkitLineageMapping] T
+		inner join mapitem mi on(T.SourceIntersectID = mi.SourceIntersectID and T.TargetIntersectID = mi.TargetIntersectID and mi.[Owner] = 'MARKIT LINEAGE'); 
+
+	
+	MERGE
+	INTO    mapitem mi
+	USING   (			
+			select distinct sourceintersectid, targetintersectid 
+			FROM [fusion].[MarkitLineageMapping] 
+			where (sourceintersectid is not null and targetintersectid is not null) and sourceintersectid != targetintersectid 
+				and coalesce(mapitemid, 0) = 0
+			) S
+	ON      (1 = 0)
+	WHEN NOT MATCHED THEN
+	INSERT  (SourceIntersectID, TargetIntersectID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, [Owner])
+	VALUES  (S.sourceintersectid, S.targetintersectid, 0, getutcdate(), 0, getutcdate(), 'MARKIT LINEAGE')
+	OUTPUT  INSERTED.ID, S.sourceintersectid, S.targetintersectid into @MapItemIDList;
+
+	
+	update T
+	set T.mapitemid = MI.MapItemID
+	from [fusion].[MarkitLineageMapping] T
+		inner join @MapItemIDList MI on (MI.SourceIntersectID = T.SourceIntersectID and MI.TargetIntersectID = T.TargetIntersectID)
+		
+	
+	delete from mapitem where [owner] = 'MARKIT LINEAGE' and id not in (select mapitemid from [fusion].[MarkitLineageMapping]);
+	
+	update T
+	set T.mapruleitemid = S.id
+	from [fusion].[MarkitLineageData] T
+		inner join [dbo].[mapruleitem] S on (S.[owner] = 'MARKIT LINEAGE' and S.SourceFusionAttributeID = T.SourceFusionAttributeID and S.TargetFusionAttributeID = T.TargetFusionAttributeID);
+	
+	
+	MERGE
+	INTO    mapruleitem mri
+	USING   (
+			select SourceFusionAttributeID, TargetFusionAttributeID, ID from [fusion].[MarkitLineageData] where coalesce(mapruleitemid, 0) = 0
+			) S
+	ON      (1 = 0)
+	WHEN NOT MATCHED THEN
+	INSERT  (SourceFusionAttributeID, TargetFusionAttributeID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, [Owner])
+	VALUES  (S.SourceFusionAttributeID, S.TargetFusionAttributeID, 0, getutcdate(), 0, getutcdate(), 'MARKIT LINEAGE')
+	OUTPUT  INSERTED.ID, S.ID into @MapRuleItemIDList;
+	
+	
+	update T
+	set T.MapRuleItemID = MI.MapRuleItemID
+	from [fusion].[MarkitLineageData] T
+		inner join @MapRuleItemIDList MI on (MI.MapID = T.ID);
+
+	
+	delete from mapruleitem where [owner] = 'MARKIT LINEAGE' and id not in (select MapRuleItemID from [fusion].[MarkitLineageData]);
+			
+	
+	insert into mapruleitemmapitem 
+		(MapRuleItemID, MapItemID, [Owner])
+		SELECT distinct M.MapRuleItemID, O.MapItemID , 'MARKIT LINEAGE'
+		FROM [fusion].[MarkitLineageData] M
+		inner join [fusion].[MarkitLineageMapping] O on O.MapID = M.ID
+		where coalesce(M.MapRuleItemID, 0) != 0 and coalesce(O.MapItemID, 0) != 0;	
+
+	declare @mapruleitemmapitemCount int;
+	select @mapruleitemmapitemCount = count(1) from mapruleitemmapitem where [owner] = 'MARKIT LINEAGE'
+	print 'Inserted [' + cast(@mapruleitemmapitemCount as varchar) + '] mapruleitemmapitem records';			
+
+	declare @mapruleitemCount int;
+	select @mapruleitemCount = count(1) from mapruleitem where [owner] = 'MARKIT LINEAGE'
+	print 'Inserted [' + cast(@mapruleitemCount as varchar) + '] mapruleitem records';			
+
+	declare @mapitemCount int;
+	select @mapitemCount = count(1) from mapitem where [owner] = 'MARKIT LINEAGE'
+	print 'Inserted [' + cast(@mapitemCount as varchar) + '] mapitem records';
+			
+end
+go
+
+ALTER procedure [fusion].[ProcessFusionCacheInQueue]
+
+	@FusionID int,
+	@UseNewMarkitLineage bit = 0
+
+as
+begin
+	SET NOCOUNT, ANSI_PADDING ON;
+	SET ANSI_WARNINGS ON;
+
+	UPDATE  FusionAttribute
+	SET		TextPath = utility.GetBreadcrumbStringWrapper('FusionAttribute', ID, '.')
+	FROM	FusionAttribute 
+	WHERE	FusionID = @FusionID and deleted = 0
+
+	
+	declare @fusionTypeId int;
+
+	select 
+		@fusionTypeId = fusiontypeid
+	from
+		fusion
+	where
+		id = @FusionID;
+
+	if @fusionTypeId = 13
+	begin		
+		exec fusion.GenerateMarkitMapLineageData @FusionID, @UseNewMarkitLineage
+	end
+	else if @fusionTypeId = 16
+	begin
+		exec [fusion].[GenerateEagleLineageData] @FusionID
+	end
+	else if @fusionTypeId = 111
+	begin
+		exec [fusion].[GenerateFoundationLineage] @FusionID
+	end
+	
+end
+go
+			
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+ALTER procedure [fusion].[GenerateMarkitMapLineage]
+as
+begin
+	SET NOCOUNT, ANSI_PADDING ON;
+	SET ANSI_WARNINGS ON;
+
+	-- look for existing intersects subject to source
+	update M
+	set M.[SourceIntersectID] = OI.ID
+	from [fusion].[MarkitLineageMapping] M
+		inner join Asset S on S.ID = M.SourceAssetID
+		inner join Asset O on O.ID = M.ObjectAssetID
+		inner join [IntersectDetail] OI on OI.[Subject] = S.[Object] and OI.SubjectID = S.ObjectID and OI.[Object] = O.[Object] and OI.[ObjectID] = O.[ObjectID];
+
+	-- look for existing intersects flipped object to source
+	update M
+	set M.[SourceIntersectID] = OI.ID
+	from [fusion].[MarkitLineageMapping] M
+		inner join Asset S on S.ID = M.SourceAssetID
+		inner join Asset O on O.ID = M.ObjectAssetID
+		inner join [IntersectDetail] OI on OI.[Object] = S.[Object] and OI.ObjectID = S.[ObjectID] and OI.[Subject] = O.[Object] and OI.[SubjectID] = O.[ObjectID] and M.SourceIntersectID is null
+	
+	-- create any missing intersects for the business lineage	
+	insert into [intersect] (IntersectTypeID, [Subject], SubjectID, [Object], ObjectID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, [Owner])
+		select distinct
+			(select top 1 IT.ID from [IntersectType] IT
+			where (IT.[Object] = O.[Type] and IT.[Subject] = S.[Type] 
+				and IT.ObjectID = O.TypeID and IT.SubjectID = S.TypeID))				
+			,S.[Object]
+			,S.[ObjectID]
+			,O.[Object]
+			,O.[ObjectID]
+			,0,getutcdate(),0,getutcdate(),'MARKIT LINEAGE'
+		from [fusion].[MarkitLineageMapping] M
+		inner join AssetDetail O on O.ID = M.ObjectAssetID
+		inner join AssetDetail S on S.ID = M.SourceAssetID		
+		where M.SourceIntersectID is null;
+	
+	-- do the update we did before adding new intersects again to catch the new ones
+	-- look for existing intersects subject to source
+	update M
+	set M.[SourceIntersectID] = OI.ID
+	from [fusion].[MarkitLineageMapping] M
+		inner join Asset S on S.ID = M.SourceAssetID
+		inner join Asset O on O.ID = M.ObjectAssetID
+		inner join [IntersectDetail] OI on OI.[Subject] = S.[Object] and OI.SubjectID = S.[ObjectID] and OI.[Object] = O.[Object] and OI.[ObjectID] = O.[ObjectID] and M.SourceIntersectID is null;
+	
+	-- look for target intersects subject - target
+	update M
+	set M.[TargetIntersectID] = OI.ID
+	from [fusion].[MarkitLineageMapping] M
+		inner join Asset T on T.ID = M.TargetAssetID
+		inner join Asset O on O.ID = M.ObjectAssetID
+		inner join [IntersectDetail] OI on OI.[Subject] = T.[Object] and OI.SubjectID = T.[ObjectID] and OI.[Object] = O.[Object] and OI.[ObjectID] = O.[ObjectID]
+		
+	-- look for target intersects flipped object - target
+	update M
+	set M.[TargetIntersectID] = OI.ID
+	from [fusion].[MarkitLineageMapping] M
+		inner join Asset T on T.ID = M.TargetAssetID
+		inner join Asset O on O.ID = M.ObjectAssetID
+		inner join [IntersectDetail] OI on OI.[Object] = T.[Object] and OI.ObjectID = T.[ObjectID] and OI.[Subject] = O.[Object] and OI.[SubjectID] = O.[ObjectID] and M.TargetIntersectID is null;
+
+	-- create any missing intersects for the business lineage
+	insert into [intersect] (IntersectTypeID, [Subject], SubjectID, [Object], ObjectID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, [Owner])
+		select distinct
+			(select top 1 IT.ID from [intersecttype] IT
+			where (IT.[Object] = O.[Type] and IT.[Subject] = T.[Type] 
+				and IT.ObjectID = O.TypeID and IT.SubjectID = T.TypeID))			
+			,T.[Object]
+			,T.[ObjectID]
+			,O.[Object]
+			,O.[ObjectID]
+			,0,getutcdate(),0,getutcdate(),'MARKIT LINEAGE'
+		from [fusion].[MarkitLineageMapping] M
+		inner join AssetDetail O on O.ID = M.ObjectAssetID
+		inner join AssetDetail T on T.ID = M.TargetAssetID		
+		where M.TargetIntersectID is null;
+		
+	-- update again for the newly created in above insert
+	update M
+	set M.[TargetIntersectID] = OI.ID
+	from [fusion].[MarkitLineageMapping] M
+		inner join Asset T on T.ID = M.TargetAssetID
+		inner join Asset O on O.ID = M.ObjectAssetID
+		inner join [IntersectDetail] OI on OI.[Subject] = T.[Object] and OI.SubjectID = T.[ObjectID] and OI.[Object] = O.[Object] and OI.[ObjectID] = O.[ObjectID] and M.TargetIntersectID is null;
+	
+	-- output the results into proper tables here
+	print 'Removing any prior generated Markit Lineage map records';
+	
+	delete from mapruleitemmapitem where [owner] = 'MARKIT LINEAGE';
+
+	print 'Inserting new map records';
+	
+	
+	Declare @MapItemIDList Table(MapItemID int, sourceintersectid int, targetintersectid int);
+	Declare @MapRuleItemIDList Table(MapRuleItemID int, MapID Int);
+	
+	
+	update T
+	set T.MapItemID = mi.ID
+	from [fusion].[MarkitLineageMapping] T
+		inner join mapitem mi on(T.SourceIntersectID = mi.SourceIntersectID and T.TargetIntersectID = mi.TargetIntersectID and mi.[Owner] = 'MARKIT LINEAGE'); 
+
+	
+	MERGE
+	INTO    mapitem mi
+	USING   (			
+			select distinct sourceintersectid, targetintersectid 
+			FROM [fusion].[MarkitLineageMapping] 
+			where (sourceintersectid is not null and targetintersectid is not null) and sourceintersectid != targetintersectid 
+				and coalesce(mapitemid, 0) = 0
+			) S
+	ON      (1 = 0)
+	WHEN NOT MATCHED THEN
+	INSERT  (SourceIntersectID, TargetIntersectID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, [Owner])
+	VALUES  (S.sourceintersectid, S.targetintersectid, 0, getutcdate(), 0, getutcdate(), 'MARKIT LINEAGE')
+	OUTPUT  INSERTED.ID, S.sourceintersectid, S.targetintersectid into @MapItemIDList;
+
+	
+	update T
+	set T.mapitemid = MI.MapItemID
+	from [fusion].[MarkitLineageMapping] T
+		inner join @MapItemIDList MI on (MI.SourceIntersectID = T.SourceIntersectID and MI.TargetIntersectID = T.TargetIntersectID)
+		
+	
+	delete from mapitem where [owner] = 'MARKIT LINEAGE' and id not in (select mapitemid from [fusion].[MarkitLineageMapping]);
+	
+	update T
+	set T.mapruleitemid = S.id
+	from [fusion].[MarkitLineageData] T
+		inner join [dbo].[mapruleitem] S on (S.[owner] = 'MARKIT LINEAGE' and S.SourceFusionAttributeID = T.SourceFusionAttributeID and S.TargetFusionAttributeID = T.TargetFusionAttributeID);
+	
+	
+	MERGE
+	INTO    mapruleitem mri
+	USING   (
+			select SourceFusionAttributeID, TargetFusionAttributeID, ID from [fusion].[MarkitLineageData] where coalesce(mapruleitemid, 0) = 0
+			) S
+	ON      (1 = 0)
+	WHEN NOT MATCHED THEN
+	INSERT  (SourceFusionAttributeID, TargetFusionAttributeID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, [Owner])
+	VALUES  (S.SourceFusionAttributeID, S.TargetFusionAttributeID, 0, getutcdate(), 0, getutcdate(), 'MARKIT LINEAGE')
+	OUTPUT  INSERTED.ID, S.ID into @MapRuleItemIDList;
+	
+	
+	update T
+	set T.MapRuleItemID = MI.MapRuleItemID
+	from [fusion].[MarkitLineageData] T
+		inner join @MapRuleItemIDList MI on (MI.MapID = T.ID);
+
+	
+	delete from mapruleitem where [owner] = 'MARKIT LINEAGE' and id not in (select MapRuleItemID from [fusion].[MarkitLineageData]);
+			
+	
+	insert into mapruleitemmapitem 
+		(MapRuleItemID, MapItemID, [Owner])
+		SELECT distinct M.MapRuleItemID, O.MapItemID , 'MARKIT LINEAGE'
+		FROM [fusion].[MarkitLineageData] M
+		inner join [fusion].[MarkitLineageMapping] O on O.MapID = M.ID
+		where coalesce(M.MapRuleItemID, 0) != 0 and coalesce(O.MapItemID, 0) != 0;	
+
+	declare @mapruleitemmapitemCount int;
+	select @mapruleitemmapitemCount = count(1) from mapruleitemmapitem where [owner] = 'MARKIT LINEAGE'
+	print 'Inserted [' + cast(@mapruleitemmapitemCount as varchar) + '] mapruleitemmapitem records';			
+
+	declare @mapruleitemCount int;
+	select @mapruleitemCount = count(1) from mapruleitem where [owner] = 'MARKIT LINEAGE'
+	print 'Inserted [' + cast(@mapruleitemCount as varchar) + '] mapruleitem records';			
+
+	declare @mapitemCount int;
+	select @mapitemCount = count(1) from mapitem where [owner] = 'MARKIT LINEAGE'
+	print 'Inserted [' + cast(@mapitemCount as varchar) + '] mapitem records';
+			
+end
+go
+ALTER procedure [fusion].[ProcessFusionCacheInQueue]
+
+	@FusionID int
+
+as
+begin
+	SET NOCOUNT, ANSI_PADDING ON;
+	SET ANSI_WARNINGS ON;
+
+	UPDATE  FusionAttribute
+	SET		TextPath = utility.GetBreadcrumbStringWrapper('FusionAttribute', ID, '.')
+	FROM	FusionAttribute 
+	WHERE	FusionID = @FusionID and deleted = 0
+
+	
+	declare @fusionTypeId int;
+
+	select 
+		@fusionTypeId = fusiontypeid
+	from
+		fusion
+	where
+		id = @FusionID;
+
+	if @fusionTypeId = 13
+	begin		
+		exec fusion.GenerateMarkitMapLineageData @FusionID
+	end
+	else if @fusionTypeId = 16
+	begin
+		exec [fusion].[GenerateEagleLineageData] @FusionID
+	end
+	else if @fusionTypeId = 111
+	begin
+		exec [fusion].[GenerateFoundationLineage] @FusionID
+	end
+	
+end
+go
+
+		]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>
