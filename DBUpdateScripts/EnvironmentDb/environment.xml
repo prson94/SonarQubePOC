@@ -80,5 +80,6 @@
   <include file="scripts/GOV-6520.xml"/>
   <include file="scripts/GOV-6523.xml"/>
   <include file="scripts/GOV-6538.xml"/>
-  <include file="scripts/GOV-4770.xml"/> 
+  <include file="scripts/GOV-4770.xml"/>
+  <include file="scripts/GOV-6570.xml"/>
 </databaseChangeLog>
