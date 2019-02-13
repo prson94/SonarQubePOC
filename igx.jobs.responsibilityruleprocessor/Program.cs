@@ -40,31 +40,7 @@ namespace igx.jobs.responsibilityruleprocessor
         {
             try
             {
-
-#if DEBUG
-                var companies = new List<CompanyWithDatabaseServerSettings>();
-                using (var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
-                {
-                    cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
-                    companies = cnn.Query<CompanyWithDatabaseServerSettings>(@"
-                        select  c.ID as CompanyID, 
-                                c.Status, 
-                                ds.Server, 
-                                ds.Username, 
-                                ds.Password, 
-                                ds.FusionQueue, 
-                                ds.SearchServer, 
-                                ds.EventTopic, 
-                                ds.IsDevelopment,
-                                c.EnvironmentLevel,
-                                CDS.UrlPrefix
-                        from    company c 
-                                inner join databaseserver ds on c.databaseserverid = ds.id and c.ID = 1065
-                                inner join CompanyDomainSetting CDS on CDS.CompanyID = c.ID and CDS.IsPrimary = 1").ToList();
-                }
-#else
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
-#endif
 
                 foreach (var c in companies)
                 {

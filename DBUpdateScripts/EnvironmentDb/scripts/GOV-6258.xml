@@ -6,7 +6,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="MrPink" id="GOV-6258-Table-Asset">
+  <changeSet author="KMcNamee" id="GOV-6258-Table-Asset">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -41,7 +41,7 @@
     </rollback>
   </changeSet>
 
-  <changeSet author="MrPink" id="GOV-6258-Table-Resource">
+  <changeSet author="KMcNamee" id="GOV-6258-Table-Resource">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -77,7 +77,7 @@
     </rollback>
   </changeSet>
 
-  <changeSet author="MrPink" id="GOV-6258-Update-ResDetail-View">
+  <changeSet author="KMcNamee" id="GOV-6258-Update-ResDetail-View">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -224,7 +224,7 @@ alter   VIEW [dbo].[ResponsibilityDetail] AS
     </rollback>
   </changeSet>
 
-  <changeSet author="MrPink" id="GOV-6258-UpdateAllAssetView">
+  <changeSet author="KMcNamee" id="GOV-6258-UpdateAllAssetView">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -403,7 +403,7 @@ alter   VIEW [dbo].[ResponsibilityDetail] AS
   </changeSet>
 
 
-  <changeSet author="MrPink" id="GOV-6258-Rename-Existing">
+  <changeSet author="KMcNamee" id="GOV-6258-Rename-Existing">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -425,7 +425,7 @@ alter   VIEW [dbo].[ResponsibilityDetail] AS
     </rollback>
   </changeSet>
 
-  <changeSet author="MrPink" id="GOV-6258-CreateR-Resp-View">
+  <changeSet author="KMcNamee" id="GOV-6258-CreateR-Resp-View">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -461,7 +461,7 @@ alter   VIEW [dbo].[ResponsibilityDetail] AS
     ]]>
     </rollback>
   </changeSet>
-  <changeSet author="MrPink" id="GOV-6258-TVF">
+  <changeSet author="KMcNamee" id="GOV-6258-TVF">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -529,7 +529,7 @@ alter   VIEW [dbo].[ResponsibilityDetail] AS
     ]]>
     </rollback>
   </changeSet>
-  <changeSet author="MrPink" id="GOV-6258-TVF-AssetType">
+  <changeSet author="KMcNamee" id="GOV-6258-TVF-AssetType">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -571,7 +571,7 @@ alter   VIEW [dbo].[ResponsibilityDetail] AS
     ]]>
     </rollback>
   </changeSet>
-  <changeSet author="MrPink" id="GOV-6258-TVF-Type">
+  <changeSet author="KMcNamee" id="GOV-6258-TVF-Type">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -608,7 +608,7 @@ alter   VIEW [dbo].[ResponsibilityDetail] AS
     ]]>
     </rollback>
   </changeSet>
-  <changeSet author="MrPink" id="GOV-6258-Missing-Index">
+  <changeSet author="KMcNamee" id="GOV-6258-Missing-Index">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -622,7 +622,7 @@ alter   VIEW [dbo].[ResponsibilityDetail] AS
     </sql>       
   </changeSet>
 
-  <changeSet author="MrPink" id="GOV-6258-Trigger-Rebuild">
+  <changeSet author="KMcNamee" id="GOV-6258-Trigger-Rebuild">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
