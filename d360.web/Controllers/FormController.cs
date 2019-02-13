@@ -4557,7 +4557,7 @@ namespace d360.web.Controllers
                 {
                     Text = i.Name,
                     Value = $"{i.ID}",
-                    Selected = a.FusionOwners.Any(c => c.ID == i.ID)
+                    Selected = a.FusionOwners.Any(c => c.ObjectID == i.ID && c.Object=="Artifact")
                 }).ToList();
                         
             list.Add(new EditableField { Row = 6, Column = 1, Required = true, FieldName = "Owners", Name = "Owners", FieldDescription = "You must assign one or more owners for this configuration.", FieldType = DataType.Lookup.ToString(), MultiSelect = true, Items = owners });
@@ -4599,7 +4599,7 @@ namespace d360.web.Controllers
 
                 var items = rawOwners.Split(',').ToList().Select(i => int.Parse(i)).ToList();
 
-                var ownerArtifacts = Company.Filter<Artifact>(i => items.Contains(i.ID)).ToList();
+                var ownerArtifacts = Company.Filter<Asset>(i => items.Contains(i.ObjectID) && i.Object=="Artifact").ToList();
 
                 var model = new Fusion
                 {
@@ -4684,7 +4684,7 @@ namespace d360.web.Controllers
 
                 var items = rawOwners.Split(',').ToList().Select(i => int.Parse(i)).ToList();
 
-                var ownerArtifacts = Company.Filter<Artifact>(i => items.Contains(i.ID)).ToList();
+                var ownerArtifacts = Company.Filter<Asset>(i => items.Contains(i.ObjectID) && i.Object=="Artifact").ToList();
 
                 model.Description = parseTextField(form, "Description");
                 model.Enabled = parseBooleanField(form, "Enabled");
@@ -4706,7 +4706,7 @@ namespace d360.web.Controllers
                 #endregion
 
                 #region See which ones to delete.
-                var ownersToRemove = new List<Artifact>();
+                var ownersToRemove = new List<Asset>();
                 foreach(var co in model.FusionOwners)
                 {
                     if (!ownerArtifacts.Any(no => no.ID == co.ID))

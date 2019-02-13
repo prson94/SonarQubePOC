@@ -1,0 +1,80 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Sebastian Abraham" id="GOV-5969-2">
+  
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+  
+  
+			UPDATE t1
+			SET t1.AssetID = t2.[ID]
+			FROM dbo.fusionowner AS t1
+			INNER JOIN dbo.Asset AS t2
+			ON t1.ArtifactID = t2.[ObjectID] and t2.[Object] ='Artifact'
+			
+			IF EXISTS(Select 1 from INFORMATION_SCHEMA.TABLE_CONSTRAINTS where constraint_name ='PK_FusionOwner')
+			BEGIN
+				Alter table FusionOwner
+				drop constraint PK_FusionOwner
+			END		
+			
+			
+			IF EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS 
+			WHERE CONSTRAINT_NAME ='FK_FusionOwner_Artifact')
+			BEGIN
+					Alter table FusionOwner
+					drop constraint FK_FusionOwner_Artifact
+			END
+
+			Alter table FusionOwner
+			alter column
+			AssetID bigint not null
+
+			Alter table FusionOwner
+			alter column
+			ArtifactID int  null
+
+
+			IF NOT EXISTS(Select 1 from INFORMATION_SCHEMA.TABLE_CONSTRAINTS where constraint_name ='PK_FusionOwner')
+			BEGIN
+				Alter table FusionOwner
+				ADD CONSTRAINT PK_FusionOwner PRIMARY KEY (FusionID, AssetID)
+			END
+
+    </sql>
+	<rollback>
+		<![CDATA[
+			Alter table FusionOwner
+			drop constraint PK_FusionOwner
+
+			Alter table FusionOwner
+			alter column
+			AssetID bigint  null
+
+			Alter table FusionOwner
+			alter column
+			ArtifactID int  not null
+
+			ALTER TABLE FusionOwner    
+			ADD CONSTRAINT FK_FusionOwner_Artifact FOREIGN KEY (ArtifactID)     
+			REFERENCES Artifact (ID)     
+
+
+			Alter table FusionOwner
+			ADD CONSTRAINT PK_FusionOwner PRIMARY KEY (FusionID, ArtifactID)
+
+		]]>
+    </rollback>
+  </changeSet>
+  
+  
+
+</databaseChangeLog>

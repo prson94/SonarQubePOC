@@ -211,7 +211,7 @@ WHEN NOT MATCHED THEN
             var company = new CompanyContext(community, new DummyCachingProvider(), new AzureQueueSource(), new UriSecurityContextProvider() { CompanyID = 74, ResourceID = 0, CompanyPrefix = "lmtom", IsAdministrator = true }, true);//getCompanyConnection(companyID);
 
             var bytes = File.ReadAllBytes("Export.xlsx");
-            var export = new ArtifactTypeExportTemplate { Name = "Data Guidance", TemplateFile = bytes, ArtifactTypeID = 10, ExportViewType = d360.core.enums.ExportView.Grouped, IncludeUrl = false, IncludeParent = false, UpdatedBy = 0, UpdatedOn = DateTime.UtcNow, IncludeFields = "0"  };
+            var export = new AssetTypeExportTemplate { Name = "Data Guidance", TemplateFile = bytes, AssetTypeID = 10, ExportViewType = d360.core.enums.ExportView.Grouped, IncludeUrl = false, IncludeParent = false, UpdatedBy = 0, UpdatedOn = DateTime.UtcNow, IncludeFields = "0" };
             company.Add(export);
         }
 
