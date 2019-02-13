@@ -767,7 +767,12 @@ namespace d360.web.Controllers
                         if (f.Type == DataType.Lookup.ToString())  // lookups dont set min / length properties
                             fld.Required = (f.MinimumLength > 0 || f.Length > 0 || f.IsRequired);
                         else
-                            fld.Required = (f.MinimumLength > 0 || f.Length > 0);
+                        {
+                            if (!new[] { "Number", "Decimal" }.Contains(f.Type))
+                            {
+                                fld.Required = (f.MinimumLength > 0 || f.Length > 0);
+                            }
+                        }
 
                         list.Add(fld);
                     }

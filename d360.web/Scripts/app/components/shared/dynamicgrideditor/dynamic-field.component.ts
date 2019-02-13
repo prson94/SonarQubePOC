@@ -40,6 +40,8 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     private typeAheadSub: any;
     private typeAheadValue: EditorDropDownItem = null;
     private Increment: number = 1;
+    private Min: number;
+    private Max: number;
     private colorValue: string = '#000';
 
     private isTaxonomyType: boolean = false; // taxonomy type requires its name be mapped to whatever the setting is set to.
@@ -131,6 +133,17 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                 }
                 else if (validation.rule && validation.rule.startsWith('increment')) {
                     this.Increment = +validation.rule.split("increment=")[1];
+                }
+                else if (validation.rule && validation.rule.startsWith('min')) {
+                    this.Min = +validation.rule.split("minLength=")[1];
+                }
+                else if (validation.rule && validation.rule.startsWith('max')) {
+                    this.Max = +validation.rule.split("maxLength=")[1];
+                }//"length=3,33"
+                else if (validation.rule && validation.rule.startsWith('length')) {
+                    let vals = validation.rule.split("length=")[1];
+                    this.Min = +vals.split(",")[0];
+                    this.Max = +vals.split(",")[1];
                 }
             }
         }
@@ -248,19 +261,15 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         if (errors["required"]) {
             message += `${this.currentFieldName} is required. `;
         }
-        if (errors["increment"]) {
-            message += `${this.currentFieldName} is required to be an increment of ${errors["increment"].incrementValue}. `;
-        }
 
         if (errors["max"]) {
-            message += ` ${this.currentFieldName} maximum value of ${errors["max"].max} exceeded.  Current value is [${errors["max"].actual}] `;
+            message += ` Please enter a maximum value of ${errors["max"].max} `;
         }
 
         if (errors["min"]) {
-            message += ` ${this.currentFieldName} minimum value of ${errors["min"].min} not reached.  Current value is [${errors["min"].actual}] `;
+            message += ` Please enter a minimum value of ${errors["min"].min} `;
         }
-
-
+        
         return message;
     }
 
