@@ -18,6 +18,8 @@ import { SurveyType } from '../../models/survey.model';
 import { StringConstants } from '../../static/string-constants';
 import { SiteUrlHelpers } from "../../static/site-url-helpers";
 import { Permission } from '../../models/responsibility-type.model';
+import { Subscription } from 'rxjs';
+import { finalize } from 'rxjs/operators';
 
 declare var CompanySettings;
 
@@ -62,7 +64,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
             this
                 .loadPermissions(this.permissionsService, StringConstants.ObjectArtifact, artifactId)
                 .then(p => {
-                        this.load(artifactId).then(() => this.isLoading = false);
+                        this.load(artifactId)
                     }
                 )
             ;
@@ -76,12 +78,16 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
         this.clearSidebar();
     }
 
-    private load(id: number): Promise<any> {
+    private load(id: number) {
         this.messages = []; /* clear any messages for this artifact */
-
-        return this
+        this
             .artifactService
             .getArtifact(id)
+            .pipe(
+                finalize(() => {
+                    this.isLoading = false;
+                })
+            )
             .subscribe(
                 artifact => {
                     this.artifact = artifact;
@@ -172,10 +178,11 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
 
                     this.loadItemSurvey(id);
                 },
+                err => {
+                    this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
+                }
             )
-            .catch(err => {
-                this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
-            });
+        ;
     }
 
     private loadItemSurvey(artifactId: number) {
@@ -210,6 +217,6 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
     
     private editArtifact(e: any) {
         this.isLoading = true;
-        this.load(e.ID).then(() => this.isLoading = false);
+        this.load(e.ID);
     }
 };
