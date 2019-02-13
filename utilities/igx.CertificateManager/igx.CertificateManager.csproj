@@ -49,15 +49,10 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
-    <Reference Include="System.Core" />
     <Reference Include="System.Web.Extensions" />
-    <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
-    <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
@@ -107,10 +102,6 @@
     <ProjectReference Include="..\..\d360.core\d360.core.csproj">
       <Project>{9341cca8-d3f2-467a-ae9c-0581054b8de2}</Project>
       <Name>d360.core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\d360.utils.company\d360.utils.company.csproj">
-      <Project>{88bba351-da2a-4551-af28-5f1568952f7e}</Project>
-      <Name>d360.utils.company</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
