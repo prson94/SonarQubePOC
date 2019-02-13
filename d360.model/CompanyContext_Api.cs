@@ -1,5 +1,6 @@
 ﻿using d360.core;
 using d360.core.entities;
+using d360.core.enums;
 using d360.core.enums.Workflow;
 using d360.core.queue;
 using Dapper;
@@ -16,6 +17,11 @@ namespace d360.model
     public class RelationshipsPartiallyProcessedEventArgs : EventArgs
     {
         public List<DatabaseBulkRelationshipResult> Results { get; set; }
+    }
+
+    public class AssetsPartiallyProcessedEventArgs : EventArgs
+    {
+        public List<DatabaseBulkAssetResult> Results { get; set; }
     }
 
     partial class CompanyContext: BaseContext
@@ -43,6 +49,12 @@ namespace d360.model
         #endregion
 
         #region Events specific to API sub-system
+
+        public event EventHandler<AssetsPartiallyProcessedEventArgs> AssetsPartiallyProcessed;
+        protected virtual void OnAssetsPartiallyProcessed(AssetsPartiallyProcessedEventArgs e)
+        {
+            AssetsPartiallyProcessed?.Invoke(this, e);
+        }
 
         public event EventHandler<RelationshipsPartiallyProcessedEventArgs> RelationshipsPartiallyProcessed;
         protected virtual void OnRelationshipsPartiallyProcessed(RelationshipsPartiallyProcessedEventArgs e)
@@ -211,6 +223,398 @@ namespace d360.model
             }
 
             return fieldRows;
+        }
+
+        public List<DatabaseBulkAssetResult> RemoveAssets(ApiExecution execution, AssetType at, AssetDeletes import, int timeout = 3600)
+        {
+            var results = new List<DatabaseBulkAssetResult>();
+            var dt = DateTime.UtcNow;
+
+            #region Build data tables.
+
+            var table = new DataTable();
+            table.Columns.Add("ExecutionID", typeof(Guid));
+            table.Columns.Add("ItemNumber", typeof(int));
+            table.Columns.Add("Uid", typeof(Guid));
+            table.Columns.Add("AssetID", typeof(long));
+            table.Columns.Add("Message", typeof(string));
+            table.Columns.Add("Success", typeof(bool));
+
+            #endregion
+
+            #region Generate data sets
+
+            for (int i = 1; i <= import.Count; i++)
+            {
+                var model = import[i - 1];
+
+                var row = table.NewRow();
+
+                row["ExecutionID"] = execution.ExecutionID;
+                row["ItemNumber"] = i;
+                row["Uid"] = model.Uid;
+
+                table.Rows.Add(row);
+            }
+
+            #endregion
+
+            if (Database.Connection.State != ConnectionState.Open)
+                (Database.Connection as SqlConnection).OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+            SqlBulkCopy bulkCopy = null;
+
+            #region Asset Bulk Copy
+
+            bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection);
+
+            bulkCopy.BatchSize = table.Rows.Count;
+            bulkCopy.DestinationTableName = "api.ExecutionDeletedAsset";
+            bulkCopy.BulkCopyTimeout = timeout;
+
+            bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+            bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+            bulkCopy.ColumnMappings.Add("Uid", "Uid");
+
+            bulkCopy.WriteToServer(table);
+
+            #endregion
+
+            bulkCopy = null;
+
+            #region Resolve assets based on UIDs
+
+            (Database.Connection as SqlConnection).Execute(@"
+update	T
+set		T.Object = S.Object, 
+        T.ObjectID = S.ObjectID, 
+        T.AssetID = S.ID
+from	api.ExecutionDeletedAsset T
+		inner join Asset S on S.Uid = T.Uid and T.ExecutionID = @ExecutionID
+		inner join AssetType ST on ST.Uid = @uid and ST.ID = S.AssetTypeID;", new { execution.ExecutionID, at.uid }, commandTimeout: timeout);
+
+            #endregion
+
+            #region Log lookup errors
+
+            (Database.Connection as SqlConnection).Execute($@"
+update	api.ExecutionDeletedAsset
+set		Success = 0,
+		[Message] = coalesce([Message] + '; ', '') + 'You must provide a valid Uid for this asset when you are attempting to delete it'
+where	ExecutionID = @ExecutionID and ([Uid] is null or [Uid] = CAST(CAST(0 AS BINARY) AS UNIQUEIDENTIFIER)); 
+
+update	api.ExecutionDeletedAsset
+set		Success = 0,
+		[Message] = coalesce([Message] + '; ', '') + 'Not found based on Uid provided'
+where	ExecutionID = @ExecutionID and AssetID is null;", new { execution.ExecutionID }, commandTimeout: timeout);
+
+            #endregion
+
+            int predicateType = 0;
+            switch (at.Object)
+            {
+                case "ArtifactType":
+                case "FusionAttributeType":
+                case "ReferenceItemType":
+                    predicateType = (int)PredicateType.InterTypeHierarchy;
+                    break;
+                case "PolicyType":
+                case "TaxonomyType":
+                    predicateType = (int)PredicateType.IntraTypeHierarchy;
+                    break;
+            }
+
+            int loopSize = 250;
+            int numberOfLoops = (int)Math.Ceiling((decimal)execution.Total / loopSize);
+            int beginItemNumber = 1;
+            int endItemNumber = loopSize;
+
+            for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
+            {
+                var querySuffix = $"S.Success is null and S.ExecutionID = @ExecutionID and S.ItemNumber between {beginItemNumber} and {endItemNumber}";
+                using (var trans = (Database.Connection as SqlConnection).BeginTransaction())
+                {
+                    try
+                    {
+                        #region Get the hierarchy items we also need to remove
+
+                        if (predicateType > 0)
+                        {
+                            (Database.Connection as SqlConnection).Execute($@"
+with h as (
+	select	D.ExecutionID,
+			D.ItemNumber,
+			D.AssetID,
+			D.[Uid],
+			A.Object,
+			A.ObjectID, 
+			D.IntersectID
+	from	api.ExecutionDeletedAsset D
+			inner join Asset A on D.ExecutionID = @ExecutionID and A.ID = D.AssetID
+	where	D.AssetID is not null
+            and D.ItemNumber between {beginItemNumber} and {endItemNumber}
+	union all
+	select	P.ExecutionID,
+			P.ItemNumber,
+			C.ID as AssetID,
+			C.[Uid],
+			C.Object,
+			C.ObjectID, 
+			I.IntersectID
+	from	PredicateIntersect I 
+			inner join h as P on P.ExecutionID = @ExecutionID and I.PredicateType = {predicateType} and P.Object = I.Subject and P.ObjectID = I.SubjectID
+			inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
+    where   P.ItemNumber between {beginItemNumber} and {endItemNumber}
+)
+insert into api.ExecutionDeletedAsset ([ExecutionID],[ItemNumber],[Uid],[AssetID],[IntersectID],[FromHierarchy])
+    select ExecutionID, ItemNumber, [Uid], AssetID, IntersectID, 1 from h where IntersectID is not null", new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                           
+                        }
+
+                        #endregion
+
+                        #region Delete workflow items
+
+                        (Database.Connection as SqlConnection).Execute($@"
+create table #w (ItemID int);
+
+insert into #w
+	select	distinct 
+			wi.ID 
+	from	workflow.[Type] wt
+			inner join workflow.EventRegistration we on we.typeid = wt.id and we.changetype <> 3
+			inner join workflow.[Version] wv on wt.id = wv.typeId
+			inner join workflow.Item wi on 	wv.id = wi.VersionID
+			inner join api.ExecutionDeletedAsset S on S.Object = wi.Object and S.ObjectID = wi.ObjectID and {querySuffix};
+
+insert into #w
+	select	wi.id 
+	from	workflow.Item wi
+			inner join Issue i on wi.object = 'Issue' and i.id = wi.objectid
+			inner join api.ExecutionDeletedAsset S on S.ObjectID = i.ObjectID and {querySuffix};
+
+delete	T
+from	[workflow].[ItemAssignment] T
+		inner join #w S on S.ItemID = T.ItemID;
+
+delete  T
+from	[workflow].[ItemStepTransition] T
+		inner join workflow.itemstep wis on (wis.ID = T.ToItemStepID or wis.ID = T.FromItemStepID)
+		inner join #w S on S.ItemID = wis.ItemID;
+
+delete  workflow.itemstep 
+where	ItemID in (Select ItemID from #w);
+ 
+delete  [workflow].[Item] 
+where	ID in (Select ItemID from #w);
+", new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+
+                        #endregion
+
+                        #region De-index queue / Audit
+
+                        (Database.Connection as SqlConnection).Execute($@"
+INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
+	select	distinct 
+            'ObjectIndex', 'D',	S.Object, S.ObjectID, S.AssetID 
+    from    api.ExecutionDeletedAsset S
+    where   {querySuffix};
+
+insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)
+	select	distinct
+			O.Object, 
+			O.ObjectID,
+			SUBSTRING(O.DisplayValue,1,250), 
+			@r, 
+			@dt, 
+			'Deleted', 
+			O.Object, 
+			O.ObjectID, 
+			O.TypeName, 
+			SUBSTRING(O.DisplayValue,1,250), 
+			'This asset has been removed.' 
+	from	AssetDetail O
+			inner join api.ExecutionDeletedAsset S on S.AssetID = O.ID and {querySuffix};", 
+            new { execution.ExecutionID, r = CurrentResourceID, dt }, transaction: trans, commandTimeout: timeout);
+
+                        #endregion
+
+                        #region Cross-references
+
+                        (Database.Connection as SqlConnection).Execute($@"
+delete	T
+from	AssetCrossReference T
+		inner join api.ExecutionDeletedAsset S on S.[Uid] = T.[Uid] and {querySuffix};
+", new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+
+                        #endregion
+
+                        #region Legacy table
+
+                        var legacyTable = "";
+                        switch (at.Object)
+                        {
+                            case "ArtifactType":
+                                legacyTable = "Artifact";
+                                break;
+                            case "FusionAttributeType":
+                                legacyTable = "FusionAttribute";
+                                break;
+                            case "PolicyType":
+                                legacyTable = "[Policy]";
+                                break;
+                            case "ReferenceItemType":
+                                legacyTable = "ReferenceItem";
+                                break;
+                            case "RuleType":
+                                legacyTable = "[Rule]";
+                                break;
+                            case "TaxonomyType":
+                                legacyTable = "Taxonomy";
+                                break;
+                        }
+
+                        (Database.Connection as SqlConnection).Execute($@"
+delete {legacyTable} where ID in (select S.ObjectID from api.ExecutionDeletedAsset S where {querySuffix})",
+new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+
+                        #endregion
+
+                        #region Attributes
+
+                        (Database.Connection as SqlConnection).Execute($@"
+delete	T
+from	Field T 
+		inner join [Attribute] A on T.ObjectType = 'Attribute' and A.ID = T.ObjectID
+		inner join api.ExecutionDeletedAsset S on S.Object = A.ObjectType and S.ObjectID = A.ObjectID and {querySuffix};
+
+delete	T
+from	[Attribute] T
+		inner join api.ExecutionDeletedAsset S on S.Object = T.ObjectType and S.ObjectID = T.ObjectID and {querySuffix};", 
+        new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+
+                        #endregion
+
+                        #region Delete Intersects
+
+                        if (predicateType > 0)
+                        {
+                            (Database.Connection as SqlConnection).Execute($@"
+delete	T
+from	[Intersect] T 
+		inner join api.ExecutionDeletedAsset S on S.IntersectID = T.ID and {querySuffix};", 
+        new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                        }
+
+                                                    (Database.Connection as SqlConnection).Execute($@"
+delete	T
+from	[Intersect] T
+        inner join api.ExecutionDeletedAsset S on S.Object = T.Subject and S.ObjectID = T.SubjectID and {querySuffix};
+
+delete	T
+from	[Intersect] T
+        inner join api.ExecutionDeletedAsset S on S.Object = T.Object and S.ObjectID = T.ObjectID and {querySuffix};",
+        new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+
+                        #endregion
+
+                        #region Delete Social tables
+
+                        (Database.Connection as SqlConnection).Execute($@"
+delete	T
+from	CommentRelation T
+		inner join api.ExecutionDeletedAsset S on S.Object = T.ObjectType and S.ObjectID = T.ObjectID and {querySuffix};
+
+delete	T
+from	CommentVote T
+		inner join Comment C on C.ID = T.CommentID
+		inner join api.ExecutionDeletedAsset S on S.Object = C.OwnerObjectType and S.ObjectID = C.OwnerObjectID and {querySuffix};
+
+delete	T
+from	Comment T
+		inner join api.ExecutionDeletedAsset S on S.Object = T.OwnerObjectType and S.ObjectID = T.OwnerObjectID and {querySuffix};
+
+delete	T
+from	Favorite T
+		inner join api.ExecutionDeletedAsset S on S.Object = T.Object and S.ObjectID = T.ObjectID and {querySuffix};
+
+delete	T
+from	Follow T
+		inner join api.ExecutionDeletedAsset S on S.Object = T.ObjectType and S.ObjectID = T.ObjectID and {querySuffix};",
+        new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+
+                        #endregion
+
+                        #region Delete subsidiary tables
+
+                        (Database.Connection as SqlConnection).Execute($@"
+delete	T
+from	Field T
+		inner join api.ExecutionDeletedAsset S on S.Object = T.ObjectType and S.ObjectID = T.ObjectID and {querySuffix};
+
+delete	T
+from	Issue T
+		inner join api.ExecutionDeletedAsset S on S.Object = T.Object and S.ObjectID = T.ObjectID and {querySuffix};
+
+delete	T
+from	Nym T
+		inner join api.ExecutionDeletedAsset S on S.Object = T.Object and S.ObjectID = T.ObjectID and {querySuffix};",
+new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+
+                        #endregion
+
+                        #region Delete owner tables
+
+                        (Database.Connection as SqlConnection).Execute($@"
+delete	T
+from	ResponsibilityTypeRelationOverrideItem T
+		inner join api.ExecutionDeletedAsset S on S.AssetID = T.AssetID and {querySuffix};
+
+delete	T
+from	ResponsibilityTypeRelationRuleResult T
+		inner join api.ExecutionDeletedAsset S on S.AssetID = T.AssetID and {querySuffix};",
+new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+
+                        #endregion
+
+                        #region Update success flag
+
+                        (Database.Connection as SqlConnection).Execute($@"
+update	S
+set		S.Success = 1
+from    api.ExecutionDeletedAsset S
+where	{querySuffix} and S.AssetID is not null;", new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+
+                        #endregion
+
+                        trans.Commit();
+                    }
+                    catch (Exception ex)
+                    {
+                        trans.Rollback();
+                        throw ex;
+                    }
+                }
+
+                results.AddRange(
+                    Query<DatabaseBulkAssetResult>(
+                        $"select * from api.ExecutionDeletedAsset where ExecutionID = @ExecutionID and ItemNumber between {beginItemNumber} and {endItemNumber} and FromHierarchy = 0",
+                        new { execution.ExecutionID }
+                    )
+                );
+
+                OnAssetsPartiallyProcessed(new AssetsPartiallyProcessedEventArgs
+                {
+                    Results = results
+                });
+
+                beginItemNumber += loopSize;
+                endItemNumber += loopSize;
+            }
+
+            (Database.Connection as SqlConnection).Close();
+
+            return results;
         }
 
         public List<DatabaseBulkRelationshipResult> ImportRelationships(ApiExecution execution, IntersectType rt, RelationshipInserts import, int timeout = 3600)

@@ -95,6 +95,7 @@ namespace igx.jobs.apiexecutionprocessor
             company = new CompanyContext(community, cache, queue, sec, true);
             storage = new AzureStorageProvider();
 
+            company.AssetsPartiallyProcessed += Company_AssetsPartiallyProcessed;
             company.RelationshipsPartiallyProcessed += Company_RelationshipsPartiallyProcessed;
 
             #endregion
@@ -116,6 +117,7 @@ namespace igx.jobs.apiexecutionprocessor
                     switch (Info.Action)
                     {
                         case ApiExecutionAction.PostAssets:
+                            #region
                             var postAssetsFields = JsonConvert.DeserializeObject<ApiExecutionFields_PostAssets>(dbExecutionItem.Fields);
                             assetType = company.Filter<AssetType>(i => i.uid == postAssetsFields.AssetTypeUid).Single();
                             string postAssetsJson = storage.GetFileContentsAsString(Info.StorageFolder, Info.RequestFileName, Encoding.UTF8);
@@ -131,7 +133,9 @@ namespace igx.jobs.apiexecutionprocessor
                             storage.CreateFile(Info.StorageFolder, Info.ResponseFileName, JsonConvert.SerializeObject(postAssetsResults));
                             log.WriteLine($"POST Assets (Response Storage Complete): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
                             break;
+                            #endregion
                         case ApiExecutionAction.PutAssets:
+                            #region
                             var putAssetsFields = JsonConvert.DeserializeObject<ApiExecutionFields_PutAssets>(dbExecutionItem.Fields);
                             assetType = company.Filter<AssetType>(i => i.uid == putAssetsFields.AssetTypeUid).Single();
                             string putAssetsJson = storage.GetFileContentsAsString(Info.StorageFolder, Info.RequestFileName, Encoding.UTF8);
@@ -147,7 +151,9 @@ namespace igx.jobs.apiexecutionprocessor
                             storage.CreateFile(Info.StorageFolder, Info.ResponseFileName, JsonConvert.SerializeObject(putAssetsResults));
                             log.WriteLine($"PUT Assets (Response Storage Complete): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
                             break;
+                            #endregion
                         case ApiExecutionAction.DeleteAssets:
+                            #region
                             var deleteAssetsFields = JsonConvert.DeserializeObject<ApiExecutionFields_DeleteAssets>(dbExecutionItem.Fields);
                             assetType = company.Filter<AssetType>(i => i.uid == deleteAssetsFields.AssetTypeUid).Single();
 
@@ -155,7 +161,7 @@ namespace igx.jobs.apiexecutionprocessor
                             var deleteAssets = JsonConvert.DeserializeObject<AssetDeletes>(deleteAssetsJson);
 
                             log.WriteLine($"DELETE Assets (DB Start): Total raw assets: {deleteAssets.Count}. Asset Type Uid: {deleteAssetsFields.AssetTypeUid}.");
-                            var deleteAssetsResults = companyConnection.DeleteAssets(queue, Info.CompanyDomainPrefix, Info.CompanyID, dbExecutionItem.ResourceID, assetType, deleteAssets, dbExecutionTimeout);
+                            var deleteAssetsResults = company.RemoveAssets(dbExecutionItem, assetType, deleteAssets, dbExecutionTimeout);
                             dbExecutionItem.Processed = deleteAssetsResults.Count(i => i.Success);
                             dbExecutionItem.Error = deleteAssetsResults.Count(i => !i.Success);
                             log.WriteLine($"DELETE Assets (DB Complete): Total results: {deleteAssetsResults.Count}.");
@@ -164,7 +170,9 @@ namespace igx.jobs.apiexecutionprocessor
                             storage.CreateFile(Info.StorageFolder, Info.ResponseFileName, JsonConvert.SerializeObject(deleteAssetsResults));
                             log.WriteLine($"DELETE Assets (Response Storage Complete): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
                             break;
+                            #endregion
                         case ApiExecutionAction.PostRelationships:
+                            #region
                             var postRelationshipsFields = JsonConvert.DeserializeObject<ApiExecutionFields_PostRelationships>(dbExecutionItem.Fields);
                             intersectType = company.Filter<IntersectType>(i => i.uid == postRelationshipsFields.IntersectTypeUid).Single();
                             string postRelationshipsJson = storage.GetFileContentsAsString(Info.StorageFolder, Info.RequestFileName, Encoding.UTF8);
@@ -180,6 +188,7 @@ namespace igx.jobs.apiexecutionprocessor
                             storage.CreateFile(Info.StorageFolder, Info.ResponseFileName, JsonConvert.SerializeObject(postRelationshipsResults));
                             log.WriteLine($"POST Relationships (Response Storage Complete): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
                             break;
+                            #endregion
                     }
 
                     companyConnection.Close();
@@ -202,6 +211,11 @@ namespace igx.jobs.apiexecutionprocessor
                     { "ResponseFileName", Info.ResponseFileName }
                 });
             }
+        }
+
+        private void Company_AssetsPartiallyProcessed(object sender, AssetsPartiallyProcessedEventArgs e)
+        {
+            storage.CreateFile(Info.StorageFolder, Info.ResponseFileName, JsonConvert.SerializeObject(e.Results));
         }
 
         private void Company_RelationshipsPartiallyProcessed(object sender, RelationshipsPartiallyProcessedEventArgs e)

@@ -782,14 +782,36 @@ order by    P.[Path]
                 if (assets == null)
                     assets = readRequestJsonContent<AssetDeletes>(Request).Result;
 
-                var results = (Company.Database.Connection as SqlConnection).DeleteAssets(
-                    QueueSource,
-                    Company.CurrentCompanyDomain,
-                    Company.CurrentCompanyID,
-                    Company.CurrentResourceID,
-                    assetType,
-                    assets
-                );
+                var execution = new ApiExecution
+                {
+                    ExecutionID = Guid.NewGuid(),
+                    Error = 0,
+                    Processed = 0,
+                    Total = assets.Count,
+                    StartedOn = DateTime.UtcNow,
+                    ResourceID = Company.CurrentResourceID,
+                    Fields = JsonConvert.SerializeObject(new ApiExecutionFields_DeleteAssets { AssetTypeUid = assetTypeUid })
+                };
+                Company.Add(execution);
+
+                List<DatabaseBulkAssetResult> results = null;
+                try
+                {
+                    results = Company.RemoveAssets(execution, assetType, assets);
+
+                    // Close execution record.
+                    execution.Processed = results.Count;
+                    execution.Error = results.Count(i => !i.Success);
+                    execution.CompletedOn = DateTime.UtcNow;
+                    Company.Update(execution);
+                }
+                catch (Exception ex)
+                {
+                    execution.ErrorMessage = ex.GetFullExceptionData(false);
+                    execution.CompletedOn = DateTime.UtcNow;
+                    Company.Update(execution);
+                }
+
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
             catch (Exception ex)

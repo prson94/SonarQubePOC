@@ -1,0 +1,352 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="GOV-6417-AssetTable">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+IF (NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND  TABLE_NAME = 'ExecutionDeletedAsset'))
+BEGIN
+    create table api.ExecutionDeletedAsset (
+        ExecutionID uniqueidentifier not null,
+		ItemNumber int not null,
+        [Uid] uniqueidentifier not null,
+        AssetID bigint null,
+		Object varchar(50) null,
+		ObjectID int null,
+		IntersectID int null,
+		FromHierarchy bit constraint DF_ApiExecutionDeletedAsset_FromHierarchy default(0) not null,
+        [Message] nvarchar(2500) null,
+        Success bit null,
+		CONSTRAINT [PK_ApiExecutionDeletedAsset] PRIMARY KEY CLUSTERED ( [ExecutionID] DESC, [Uid] ASC )
+    );
+	CREATE NONCLUSTERED INDEX IX_ApiExecutionDeletedAsset_Asset ON api.ExecutionDeletedAsset ( ExecutionID DESC, [AssetID] ASC ) INCLUDE ( ItemNumber );
+	CREATE NONCLUSTERED INDEX IX_ApiExecutionDeletedAsset_Intersect ON api.ExecutionDeletedAsset ( ExecutionID DESC, [IntersectID] ASC ) INCLUDE ( ItemNumber );
+	CREATE NONCLUSTERED INDEX IX_ApiExecutionDeletedAsset_Object ON api.ExecutionDeletedAsset ( ExecutionID DESC, [Object] ASC, [ObjectID] ASC ) INCLUDE ( ItemNumber );
+	CREATE NONCLUSTERED INDEX IX_ApiExecutionDeletedAsset_Success ON api.ExecutionDeletedAsset ( ExecutionID DESC, [Success] ASC ) INCLUDE ( ItemNumber );
+END
+]]>
+    </sql>
+    <rollback>
+<![CDATA[
+IF (EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND  TABLE_NAME = 'ExecutionDeletedAsset'))
+BEGIN
+	drop table api.ExecutionDeletedAsset
+END
+]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="GOV-6417-RemoveProc">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+IF (EXISTS (SELECT * FROM INFORMATION_SCHEMA.[ROUTINES] WHERE SPECIFIC_SCHEMA = 'asset' AND  SPECIFIC_NAME = 'BulkDelete'))
+BEGIN
+	drop procedure [asset].[BulkDelete]
+END
+]]>
+    </sql>
+    <rollback>
+<![CDATA[
+IF (NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.[ROUTINES] WHERE SPECIFIC_SCHEMA = 'asset' AND  SPECIFIC_NAME = 'BulkDelete'))
+BEGIN
+	CREATE procedure [asset].[BulkDelete]
+		@uid uniqueidentifier,
+		@r int
+	as
+	begin
+		set nocount on;
+	
+		create table #h (IntersectID int, ID bigint, Object varchar(50), ObjectID int, [Uid] uniqueidentifier, Processed bit null);
+		create table #w (ItemID int);
+		declare @Obj varchar(50),
+				@ObjID int,
+				@dt datetime = getutcdate(),
+				@predicateType int = 0;
+
+		begin 
+			select	@Obj = Object,
+					@ObjID = ObjectID
+			from	AssetType
+			where	Uid = @uid;
+
+			if @Obj = 'ArtifactType' or @Obj = 'FusionAttributeType' or @Obj = 'ReferenceItemType'
+			begin
+				set @predicateType = 3
+			end;
+			if @Obj = 'PolicyType' or @Obj = 'TaxonomyType'
+			begin
+				set @predicateType = 4
+			end;
+		end
+
+		begin 
+			update	T
+			set		T.AssetID = S.ID
+			from	#AssetTable T
+					inner join Asset S on S.Uid = T.Uid
+					inner join AssetType ST on ST.Uid = @uid and ST.ID = S.AssetTypeID;
+	
+			update	#AssetTable
+			set		Success = 0,
+					[Message] = coalesce([Message] + '; ', '') + 'You must provide a valid Uid for this asset when you are attempting to delete it'
+			where	[Uid] is null or [Uid] = CAST(CAST(0 AS BINARY) AS UNIQUEIDENTIFIER); 
+
+			update	#AssetTable
+			set		Success = 0,
+					[Message] = coalesce([Message] + '; ', '') + 'Not found based on Uid provided'
+			where	AssetID is null;
+		end
+
+		begin 
+			insert into #h
+				select	null,
+						T.ID,
+						T.Object,
+						T.ObjectID,
+						T.[Uid],
+						0
+				from	Asset T
+						inner join #AssetTable S on S.Uid = T.Uid and S.Success is null;
+		end
+
+		begin 
+			if @predicateType > 0 
+			begin
+				while exists(select 1 from #h where Processed = 0)
+				begin
+					insert into #h
+						select	I.IntersectID,
+								C.ID,
+								C.Object,
+								C.ObjectID,
+								C.[Uid],
+								null
+						from	#h P
+								inner join PredicateIntersect I on I.PredicateType = @predicateType and I.Subject = P.Object and I.SubjectID = P.ObjectID and P.Processed = 0
+								inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID;
+
+					update	#h set Processed = 1 where Processed = 0;
+					update	#h set Processed = 0 where Processed is null;
+				end
+			end
+		end
+
+		begin 
+			insert into #w
+				select	distinct 
+						wi.ID 
+				from	workflow.[Type] wt
+						inner join workflow.EventRegistration we on we.typeid = wt.id and we.changetype <> 3
+						inner join workflow.[Version] wv on wt.id = wv.typeId
+						inner join workflow.Item wi on 	wv.id = wi.VersionID
+						inner join #h S on S.Object = wi.Object and S.ObjectID = wi.ObjectID;
+
+			insert into #w
+				select	wi.id 
+				from	workflow.Item wi
+						inner join Issue i on wi.object = 'Issue' and i.id = wi.objectid
+						inner join #h S on S.Object = i.Object and S.ObjectID = i.ObjectID;
+		end
+
+		begin try
+			begin 
+				INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
+					select	distinct 'ObjectIndex', 'D',	Object, ObjectID, ID from #h;
+			end
+
+			begin 
+				insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)
+					select	distinct
+							O.Object, 
+							O.ObjectID,
+							SUBSTRING(O.DisplayValue,1,250), 
+							@r, 
+							@dt, 
+							'Deleted', 
+							O.Object, 
+							O.ObjectID, 
+							O.TypeName, 
+							SUBSTRING(O.DisplayValue,1,250), 
+							'This asset has been removed.' 
+					from	AssetDetail O
+							inner join #h I on O.ID = I.ID;
+			end
+
+			begin 
+				delete	T
+				from	AssetCrossReference T
+						inner join #h S on S.[Uid] = T.[Uid];
+			end
+
+			begin 
+				if @Obj = 'ArtifactType'
+				begin
+					delete Artifact where ID in (select ObjectID from #h);
+				end
+
+				if @Obj = 'FusionAttributeType'
+				begin
+					delete FusionAttribute where ID in (select ObjectID from #h);
+				end
+
+				if @Obj = 'PolicyType'
+				begin
+					delete [Policy] where ID in (select ObjectID from #h);
+				end
+
+				if @Obj = 'ReferenceItemType'
+				begin
+					delete ReferenceItem where ID in (select ObjectID from #h);
+				end
+
+				if @Obj = 'RuleType'
+				begin
+					delete [Rule] where ID in (select ObjectID from #h);
+				end
+
+				if @Obj = 'TaxonomyType'
+				begin
+					delete Taxonomy where ID in (select ObjectID from #h);
+				end
+			end
+
+			begin 
+				delete	T
+				from	Field T 
+						inner join [Attribute] A on T.ObjectType = 'Attribute' and A.ID = T.ObjectID
+						inner join #h S on S.Object = A.ObjectType and S.ObjectID = A.ObjectID;
+
+				delete	T
+				from	[Attribute] T
+						inner join #h S on S.Object = T.ObjectType and S.ObjectID = T.ObjectID;
+			end
+
+			begin 
+				if @predicateType > 0	
+				begin
+					delete	T
+					from	[Intersect] T
+							inner join #h S on S.IntersectID = T.ID;
+				end
+			end
+
+			begin 
+				delete	T
+				from	[Intersect] T
+						inner join #h S on S.Object = T.Subject and S.ObjectID = T.SubjectID;
+			end
+
+			begin 
+				delete	T
+				from	[Intersect] T
+						inner join #h S on S.Object = T.Object and S.ObjectID = T.ObjectID;
+			end
+
+			begin 
+				delete	T
+				from	CommentRelation T
+						inner join #h S on S.Object = T.ObjectType and S.ObjectID = T.ObjectID;
+
+				delete	T
+				from	CommentVote T
+						inner join Comment C on C.ID = T.CommentID
+						inner join #h S on S.Object = C.OwnerObjectType and S.ObjectID = C.OwnerObjectID;
+
+				delete	T
+				from	Comment T
+						inner join #h S on S.Object = T.OwnerObjectType and S.ObjectID = T.OwnerObjectID;
+			end
+
+			begin 
+				delete	T
+				from	Favorite T
+						inner join #h S on S.Object = T.Object and S.ObjectID = T.ObjectID;
+			end
+
+			begin 
+				delete	T
+				from	Follow T
+						inner join #h S on S.Object = T.ObjectType and S.ObjectID = T.ObjectID;
+			end
+
+			begin 
+				delete	T
+				from	Field T
+						inner join #h S on S.Object = T.ObjectType and S.ObjectID = T.ObjectID;
+			end
+
+			begin 
+				delete	T
+				from	Issue T
+						inner join #h S on S.Object = T.Object and S.ObjectID = T.ObjectID;
+			end
+
+			begin 
+				delete	T
+				from	Nym T
+						inner join #h S on S.Object = T.Object and S.ObjectID = T.ObjectID;
+			end
+
+			begin 
+				delete	T
+				from	ResponsibilityTypeRelationOverrideItem T
+						inner join #h S on S.ID = T.AssetID;
+
+				delete	T
+				from	ResponsibilityTypeRelationRuleResult T
+						inner join #h S on S.ID = T.AssetID;
+			end
+
+			begin 
+				delete	T
+				from	[workflow].[ItemAssignment] T
+						inner join #w S on S.ItemID = T.ItemID;
+
+				delete  T
+				from	[workflow].[ItemStepTransition] T
+						inner join workflow.itemstep wis on (wis.ID = T.ToItemStepID or wis.ID = T.FromItemStepID)
+						inner join #w S on S.ItemID = wis.ItemID;
+
+				delete  workflow.itemstep 
+				where	ItemID in (Select ItemID from #w);
+ 
+				delete  [workflow].[Item] 
+				where	ID in (Select ItemID from #w);
+			end
+
+			begin 
+				update	#AssetTable
+				set		Success = 1
+				where	Success is null
+						and AssetID is not null;
+			end
+		end try
+		begin catch
+			DECLARE @ErrorMessage NVARCHAR(4000)
+			SELECT	@ErrorMessage = ERROR_MESSAGE()
+		
+			update	#AssetTable
+			set		Success = 0,
+					[Message] = @ErrorMessage
+			where	Success is null
+					and AssetID is not null;
+		end catch
+	
+		select * from #AssetTable
+	end
+END
+]]>
+    </rollback>
+  </changeSet>
+  
+</databaseChangeLog>
