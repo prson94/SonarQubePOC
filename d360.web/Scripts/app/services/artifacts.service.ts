@@ -1,29 +1,51 @@
-
+import { Observable } from "rxjs";
+import { HttpClient, HttpHandler, HttpHeaders } from '@angular/common/http';
 import {catchError, map} from 'rxjs/operators';
 import { Injectable } from '@angular/core';
 import { Headers, Http, Response, ResponseContentType } from '@angular/http';
+
 import { MessagesService } from './messages.service';
-import { BaseService } from './base.service';
+import { BaseObservableService } from './baseObservable.service';
 import { Artifacts, Artifact } from '../models/artifacts.model';
 import { ArtifactType, AssetTypeExportTemplate } from '../models/artifact-type.model';
 import { SortOrder } from '../models/enums.model';
-import { GridFilterExpression, GridRelationshipFilterExpression, GridFilterFieldType, GridAttributeFilterExpression, GridOwnerFilter } from '../models/grid-definition.model';
+import {
+    GridFilterExpression,
+    GridRelationshipFilterExpression,
+    GridFilterFieldType,
+    GridAttributeFilterExpression,
+    GridOwnerFilter
+} from '../models/grid-definition.model';
 import { Count } from '../models/counts.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { AssetDetail } from '../models/asset.model';
-import { Observable } from "rxjs";
 
 @Injectable()
-export class ArtifactService extends BaseService {
+export class ArtifactService extends BaseObservableService {
 
-    constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
+    constructor(
+        private http: HttpClient,
+        messagesService: MessagesService
+    ) {
+        super(messagesService);
+    }
 
-    getArtifacts(artifactTypeId: number, pagesize: number, pagenum: number, sortfield: string, sortorder: SortOrder, filters?: GridFilterExpression[], relationships?: GridRelationshipFilterExpression[], attributes?: GridAttributeFilterExpression[], simpleFilter?: string, owner?: GridOwnerFilter): Observable<Artifacts> {
+    getArtifacts(
+        artifactTypeId: number,
+        pagesize: number,
+        pagenum: number,
+        sortfield: string,
+        sortorder: SortOrder,
+        filters?: GridFilterExpression[],
+        relationships?: GridRelationshipFilterExpression[],
+        attributes?: GridAttributeFilterExpression[],
+        simpleFilter?: string,
+        owner?: GridOwnerFilter
+    ): Observable<Artifacts> {
         let sortOrderText = sortorder == SortOrder.None ? "" : (sortorder == SortOrder.Descending ? "desc" : "asc");
         let uri = `internal/artifacts/ArtifactsByType?id=${artifactTypeId}&pagesize=${pagesize}&pagenum=${pagenum}&sortDataField=${sortfield}&sortOrder=${sortOrderText}`;
 
         if (filters != undefined) {
-
             //#region regular fields
 
             let normalFilters = filters.filter(f => f.fieldtype == GridFilterFieldType.Normal);
@@ -93,28 +115,53 @@ export class ArtifactService extends BaseService {
             uri += `&ownerUsers=${owner.ownerUsers.join(',')}&ownerGroups=${owner.ownerGroups.join(',')}`;
         }
         
-        return this.http.get(uri).pipe(
-            map(response => {
-                return response.json()
-            }),
-            map(item => { return <Artifacts>item }),
-            catchError(err => this.handleError(err)),);
-        
+        return this
+            .http
+            .get(uri)
+            .pipe(
+                map(response => response),
+                map(item => { return <Artifacts>item }),
+                catchError(err => this.handleError(err))
+            )
+        ;
     }   
 
-    getArtifactByParentAndArtifactType(parentId: number, artifactTypeId: number, filter: string, pagesize: number, pagenum: number, sortfield: string, sortorder: SortOrder): Promise<Artifacts> {
+    getArtifactByParentAndArtifactType(
+        parentId: number,
+        artifactTypeId: number,
+        filter: string,
+        pagesize: number,
+        pagenum: number,
+        sortfield: string,
+        sortorder: SortOrder
+    ): Observable<Artifacts> {
         let sortOrderText = sortorder == SortOrder.None ? "" : (sortorder == SortOrder.Descending ? "desc" : "asc");
         let uri = `internal/artifacts/artifactsbyparent?parentID=${parentId}&childArtifactTypeID=${artifactTypeId}&pagesize=${pagesize}&pagenum=${pagenum}&sortDataField=${sortfield}&sortOrder=${sortOrderText}&filter=${filter ? filter : ''}`;
 
-        return this.http.get(uri)
-            .toPromise()
-            .then(response => <Artifacts>response.json())
-            .catch(err => this.handleError(err));
+        return this
+            .http
+            .get(uri)
+            .pipe(
+                map(response => <Artifacts>response),
+                catchError(err => this.handleError(err))
+            )
+        ;
     }
 
-    getArtifactsXls(listableOnly: boolean, artifactType: ArtifactType, sortfield: string, sortorder: SortOrder, filters?: GridFilterExpression[], relationships?: GridRelationshipFilterExpression[], attributes?: GridAttributeFilterExpression[], simpleFilter?: string, owner?: GridOwnerFilter) {
-        let sortOrderText = sortorder == SortOrder.None ? "" : (sortorder == SortOrder.Descending ? "desc" : "asc");
+    getArtifactsXls(
+        listableOnly: boolean,
+        artifactType: ArtifactType,
+        sortfield: string,
+        sortorder: SortOrder,
+        filters?: GridFilterExpression[],
+        relationships?: GridRelationshipFilterExpression[],
+        attributes?: GridAttributeFilterExpression[],
+        simpleFilter?: string,
+        owner?: GridOwnerFilter
+    ) {
+        const sortOrderText = sortorder == SortOrder.None ? "" : (sortorder == SortOrder.Descending ? "desc" : "asc");
         let uri = `internal/artifacts/download/excel/${artifactType.ID}.xls?&sortDataField=${sortfield}&sortOrder=${sortOrderText}&listableOnly=${listableOnly}`;
+        
         if (filters != undefined) {
             //regular fields
             let normalFilters = filters.filter(f => f.fieldtype == GridFilterFieldType.Normal);
@@ -175,16 +222,28 @@ export class ArtifactService extends BaseService {
             uri += `&ownerUsers=${owner.ownerUsers.join(',')}&ownerGroups=${owner.ownerGroups.join(',')}`;
         }
 
-        this.http.get(uri, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data, artifactType.Name));              
+        this
+            .http
+            .get(
+                uri,
+                {
+                    responseType: 'blob'
+                }
+            )
+            .subscribe(data => this.downloadFile(data, artifactType.Name))
+        ;
     }
 
-    downloadFile(data: Response, artifactTypeName: string) {        
+    downloadFile(
+        data: Blob,
+        artifactTypeName: string
+    ) {        
         var filename = `Filtered ${artifactTypeName} List ${new Date().toDateString()}.xlsx`;
+
         if (window.navigator.msSaveOrOpenBlob) {
-            window.navigator.msSaveOrOpenBlob(data.blob(), filename );
-        }
-        else {
-            var url = window.URL.createObjectURL(data.blob());
+            window.navigator.msSaveOrOpenBlob(data, filename );
+        } else {
+            var url = window.URL.createObjectURL(data);
             var anchor = document.createElement("a");
             anchor.setAttribute("style", "display:none;");
             document.body.appendChild(anchor);
@@ -194,60 +253,107 @@ export class ArtifactService extends BaseService {
         }
     }
 
-    getArtifact(id: number): Promise<Artifact> {
-        return this.http.get(`api/artifact/${id}`)
-            .toPromise()
-            .then(response => <Artifact>response.json())
-            .catch(err => this.handleError(err));        
+    getArtifact(id: number): Observable<Artifact> {
+        return this
+            .http
+            .get(`api/artifact/${id}`)
+            .pipe(
+                map(response => <Artifact>response),
+                catchError(err => this.handleError(err))
+            )
+        ;
     }
 
-    deleteArtifact(id: number): Promise<JsonResult> {
+    deleteArtifact(id: number): Observable<JsonResult> {
         return this.deleteDynamicWithResult(this.http, 'artifact', id);
     }
 
-    saveArtifact(artifact: any): Promise<JsonResult> {
+    saveArtifact(artifact: any): Observable<JsonResult> {
+        let methodName;
+
         if (artifact.ID == undefined || !artifact.ID) {
-            return this.postDynamic(this.http, 'artifact', artifact);
+            methodName = 'postDynamic';
+        } else {
+            methodName = 'putDynamic';
         }
-        return this.putDynamic(this.http, 'artifact', artifact);
+
+        return this[methodName](this.http, 'artifact', artifact);
     }
 
-    getActivityCount(daysToLookBack: number): Promise<Count[]> {
-        return this.http.get(`api/count/activity/${daysToLookBack}`)
-            .toPromise()
-            .then(response => <Count[]>response.json())
-            .catch(err => this.handleError(err));
+    getActivityCount(daysToLookBack: number): Observable<Count[]> {
+        return this
+            .http
+            .get(`api/count/activity/${daysToLookBack}`)
+            .pipe(
+                map(response => <Count[]>response),
+                catchError(err => this.handleError(err))
+            )
+        ;
     }
 
-    getActivityDetails(artifactTypeId: number, daysToLookBack): Promise<AssetDetail[]> {
-        return this.http.get(`api/countitems/activity/${artifactTypeId}/${daysToLookBack}`)
-            .toPromise()
-            .then(response => <AssetDetail[]>response.json())
-            .catch(err => this.handleError(err));
+    getActivityDetails(
+        artifactTypeId: number,
+        daysToLookBack
+    ): Observable<AssetDetail[]> {
+        return this
+            .http
+            .get(`api/countitems/activity/${artifactTypeId}/${daysToLookBack}`)
+            .pipe(
+                map(response => <AssetDetail[]>response),
+                catchError(err => this.handleError(err))
+            )
+        ;
     }
 
-    getSimilarArtifactNames(typeID: number, query: string): Promise<any[]> {
-        return this.http.get(`form/Artifact_SimilarItems?typeID=${typeID}&query=${query}`)
-            .toPromise()
-            .then(response => <any[]>response.json())
-            .catch(err => this.handleError(err));
+    getSimilarArtifactNames(
+        typeID: number,
+        query: string
+    ): Observable<any[]> {
+        return this
+            .http
+            .get(`form/Artifact_SimilarItems?typeID=${typeID}&query=${query}`)
+            .pipe(
+                map(response => <any[]>response),
+                catchError(err => this.handleError(err))
+            )
+        ;
     }
 
-    requestCertification(objectId: number): Promise<JsonResult> {
-        let headers = new Headers({
+    requestCertification(objectId: number): Observable<JsonResult> {
+        const headers = new HttpHeaders({
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', //pass as text since its a dynamic object and mvc has issue with dynamic models                        
         });
                 
         return this.http
-            .post('form/RequestCertification', `ID=${objectId}`, { headers: headers })
-            .toPromise()
-            .then(res => <JsonResult>res.json())
-            .catch(err => this.handleError(err));
+            .post(
+                'form/RequestCertification',
+                `ID=${objectId}`,
+                {
+                    headers: headers
+                }
+            )
+            .pipe(
+                map(res => <JsonResult>res),
+                catchError(err => this.handleError(err))
+            )
+        ;
     }
 
-    getArtifactsCustomXls(templateId: number, listableOnly: boolean, artifactType: ArtifactType, sortfield: string, sortorder: SortOrder, filters?: GridFilterExpression[], relationships?: GridRelationshipFilterExpression[], attributes?: GridAttributeFilterExpression[], simpleFilter?: string, owner?: GridOwnerFilter) {
+    getArtifactsCustomXls(
+        templateId: number,
+        listableOnly: boolean,
+        artifactType: ArtifactType,
+        sortfield: string,
+        sortorder: SortOrder,
+        filters?: GridFilterExpression[],
+        relationships?: GridRelationshipFilterExpression[],
+        attributes?: GridAttributeFilterExpression[],
+        simpleFilter?: string,
+        owner?: GridOwnerFilter
+    ) {
         let sortOrderText = sortorder == SortOrder.None ? "" : (sortorder == SortOrder.Descending ? "desc" : "asc");
         let uri = `internal/artifacts/download/customexcel/${templateId}/${artifactType.ID}.xls?&sortDataField=${sortfield}&sortOrder=${sortOrderText}&listableOnly=${listableOnly}`;
+        
         if (filters != undefined) {
             //regular fields
             let normalFilters = filters.filter(f => f.fieldtype == GridFilterFieldType.Normal);
@@ -308,6 +414,14 @@ export class ArtifactService extends BaseService {
             uri += `&ownerUsers=${owner.ownerUsers.join(',')}&ownerGroups=${owner.ownerGroups.join(',')}`;
         }
 
-        this.http.get(uri, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data, artifactType.Name));              
+        this
+            .http
+            .get(
+                uri,
+                {
+                    responseType: 'blob'
+                }
+            )
+            .subscribe(data => this.downloadFile(data, artifactType.Name));
     }
 }

@@ -1,5 +1,7 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute }       from '@angular/router';
+import { Title } from '@angular/platform-browser';
+
 import { ArtifactService } from '../../services/artifacts.service';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { RightSidebarService } from '../../services/right-sidebar.service';
@@ -10,7 +12,6 @@ import { Artifact } from '../../models/artifacts.model';
 import { ArtifactGridComponent } from './artifact-grid.component';
 import { ArtifactBaseComponent } from './artifact-base.component';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { Title } from '@angular/platform-browser';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
 import { MessageBarItem } from '../../models/message-bar-item.model';
 import { SurveyType } from '../../models/survey.model';
@@ -33,10 +34,10 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
     private messages: MessageBarItem[]=[];
     private surveyType: SurveyType;
     private showSurvey: boolean = false;
-
     private showSocialScoreBar: boolean = true;
 
-    constructor(private route: ActivatedRoute,
+    constructor(
+        private route: ActivatedRoute,
         rightSidebarService: RightSidebarService,
         private router: Router,
         private artifactService: ArtifactService,        
@@ -50,7 +51,6 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
     }
 
     ngOnInit() {
-        
         this.sub = this.route.params.subscribe(params => {
             let artifactId = +params['artifactId']; // (+) converts string 'id' to a number
             this.artifactTypeId = +params['artifactTypeId']; // (+) converts string 'id' to a number
@@ -59,9 +59,13 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
             this.isLoading = true;
             this.messages = [];
             
-            this.loadPermissions(this.permissionsService, StringConstants.ObjectArtifact, artifactId).then(p => {
-                this.load(artifactId).then(() => this.isLoading = false);
-            });
+            this
+                .loadPermissions(this.permissionsService, StringConstants.ObjectArtifact, artifactId)
+                .then(p => {
+                        this.load(artifactId).then(() => this.isLoading = false);
+                    }
+                )
+            ;
             
             this.showSocialScoreBar = (CompanySettings.ShowSocialScoreBar != 'false');
         });
@@ -73,37 +77,118 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
     }
 
     private load(id: number): Promise<any> {
-        this.messages = []; //clear any messages for this artifact
-        return this.artifactService.getArtifact(id)
-            .then(artifact => {
-                this.artifact = artifact;
-                this.headerBreadcrumbService.clearBreadcrumbs();
-                let index = 0;
-                for (let breadcrumb of this.artifact.Breadcrumbs) {
-                    index++;
-                    if (index == this.artifact.Breadcrumbs.length)
-                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(breadcrumb.Name, breadcrumb.Url, breadcrumb.Active, 'Artifact', this.artifactTypeId));
-                    else if (index == 1) //top level link
-                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.area, this.areaLink, breadcrumb.Active));
-                    else
-                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(breadcrumb.Name, breadcrumb.Url, breadcrumb.Active));
-                }
-                this.setBrowserTitle(this.titleService, this.artifact.DisplayValue);
+        this.messages = []; /* clear any messages for this artifact */
 
-                this.setObjectInfo('Artifact', this.artifact.ID, this.artifact.DisplayValue, this.artifact.AssetID, this.artifact.AssetTypeID, this.artifact.Uid);
-                this.setCommonRightSideBar(true, this.hasPermission(Permission.ReadResponsibilities), this.artifact.HasDashboards, true, true, this.hasPermission(Permission.ReadRelationships), true, true);
-                if (this.artifact.HasChildArtifacts) this.rightSidebarService.showItem(new RightSidebarItem('Children', 'children', ['fa-sitemap'], `/sidebar/children${this.objectContextUrl()}`));
+        return this
+            .artifactService
+            .getArtifact(id)
+            .subscribe(
+                artifact => {
+                    this.artifact = artifact;
+                    this.headerBreadcrumbService.clearBreadcrumbs();
+                    let index = 0;
 
-                this.loadItemSurvey(id);
-            }).catch(err => {
+                    for (let breadcrumb of this.artifact.Breadcrumbs) {
+                        index++;
+
+                        if (index == this.artifact.Breadcrumbs.length) {
+                            this
+                                .headerBreadcrumbService
+                                .showBreadcrumb(
+                                    new Breadcrumb(
+                                        breadcrumb.Name,
+                                        breadcrumb.Url,
+                                        breadcrumb.Active,
+                                        'Artifact',
+                                        this.artifactTypeId
+                                    )
+                                )
+                            ;
+                        } else if (index == 1) {
+                            //top level link
+                            this
+                                .headerBreadcrumbService
+                                .showBreadcrumb(
+                                    new Breadcrumb(
+                                        this.area,
+                                        this.areaLink,
+                                        breadcrumb.Active
+                                    )
+                                )
+                            ;
+                        } else {
+                            this
+                                .headerBreadcrumbService
+                                .showBreadcrumb(
+                                    new Breadcrumb(
+                                        breadcrumb.Name,
+                                        breadcrumb.Url,
+                                        breadcrumb.Active
+                                    )
+                                )
+                            ;
+                        }
+                    }
+
+                    this.setBrowserTitle(this.titleService, this.artifact.DisplayValue);
+
+                    this
+                        .setObjectInfo(
+                            'Artifact',
+                            this.artifact.ID,
+                            this.artifact.DisplayValue,
+                            this.artifact.AssetID,
+                            this.artifact.AssetTypeID,
+                            this.artifact.Uid
+                        )
+                    ;
+                    
+                    this
+                        .setCommonRightSideBar(
+                            true,
+                            this.hasPermission(Permission.ReadResponsibilities),
+                            this.artifact.HasDashboards,
+                            true,
+                            true,
+                            this.hasPermission(Permission.ReadRelationships),
+                            true,
+                            true
+                        )
+                    ;
+                    
+                    if (this.artifact.HasChildArtifacts) {
+                        this
+                            .rightSidebarService
+                            .showItem(
+                                new RightSidebarItem(
+                                    'Children',
+                                    'children',
+                                    ['fa-sitemap'],
+                                    `/sidebar/children${this.objectContextUrl()}`
+                                )
+                            )
+                        ;
+                    }
+
+                    this.loadItemSurvey(id);
+                },
+            )
+            .catch(err => {
                 this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
             });
     }
 
     private loadItemSurvey(artifactId: number) {
-        this.surveysService.getObjectSurvey(this.artifactTypeId, 'ArtifactType', artifactId, 'Artifact')        
+        this
+            .surveysService
+            .getObjectSurvey(
+                this.artifactTypeId,
+                'ArtifactType',
+                artifactId, 'Artifact'
+            )
             .then(result => {
                 this.surveyType = undefined;
+                
                 if (result) {
                     this.surveyType = result;
                     this.messages.push({
@@ -113,13 +198,14 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
 
             });
     }
-    
 
     private completeSurvey() {
         this.showSurvey = false;
         var index = this.messages.findIndex(x => x.data == 'Survey');
-        if (index >= 0 && index < this.messages.length)
+
+        if (index >= 0 && index < this.messages.length) {
             this.messages.splice(index, 1);
+        }
     }
     
     private editArtifact(e: any) {
