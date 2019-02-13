@@ -173,7 +173,8 @@ namespace d360.model
                 await cnn.ExecuteAsync(@"
                                     merge [dbo].[ResponsibilityRuleResultAsset] as T
 			                using	(
-					                select	T.ID as AssetTypeID							                
+					                select	T.ID as AssetTypeID,		
+                                            R.ID as RuleID
 					                from	AssetType T
 							                inner join ResponsibilityTypeRelationRule R on R.Object = T.Object and R.ObjectID = T.ObjectID							                
 						                where 
