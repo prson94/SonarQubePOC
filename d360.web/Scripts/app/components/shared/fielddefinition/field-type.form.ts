@@ -442,6 +442,14 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         
         this.loadDefaultValueOptions(type, id);
         this.loadHierarchyOptions(type, id);
+
+        //clear the validated fields and error message
+        this.model.FieldType.MaximumLength = null;
+        this.model.FieldType.MinimumLength = null;
+        this.model.FieldType.Increment = null;
+        this.validateNumber(this.model.FieldType.Type);
+        
+
         return this.loadTokens(type, id);
     }
 
@@ -957,19 +965,32 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             let max = +this.model.FieldType.MaximumLength;
             let defaultNum = +this.model.FieldType.DefaultValue;
 
+            if (+this.model.FieldType.Increment < 0) {
+                this.errorMessage = 'Please enter a positive number for the increment.';
+                return;
+            } else {
+                this.errorMessage = "";
+            }
+
             if (defaultNum) {
-                if (min && defaultNum < min)
+                if (min && defaultNum < min) {
                     this.errorMessage = 'Please enter a minimum value of ' + this.model.FieldType.MinimumLength + '.';
-                else if (max && defaultNum > max)
+                    return;
+                }
+                else if (max && defaultNum > max) {
                     this.errorMessage = 'Please enter a maximum value of ' + this.model.FieldType.MaximumLength + '.';
+                    return;
+                }
                 else {
                     this.errorMessage = '';
                 }
-            } else if (min > 0 && max > 0) 
+            } else if (min && max)
                 if (min > max)
-                    this.errorMessage = 'Please set Minimum Value to be lower than Maximum Value.';
+                    this.errorMessage = 'Please enter a minimum value which is lower than the maximum value.';
                 else
                     this.errorMessage = '';
+        } else {
+            this.errorMessage = "";
         }
     }
 
