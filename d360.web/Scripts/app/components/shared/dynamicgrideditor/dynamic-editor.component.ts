@@ -240,9 +240,6 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 else if (validation.rule && validation.rule.startsWith('required')) {
                     validators.push(Validators.compose([Validators.required]));
                 }
-                else if (validation.rule && validation.rule.startsWith('increment')) {
-                    validators.push(FormHelpers.incrementValidator(+validation.rule.split("increment=")[1]));
-                }
                 else if (validation.rule && validation.rule.startsWith('minLength=')) {
                     minLen = +validation.rule.split('=').pop();
                     if (field.FieldType == 'Number' || field.FieldType == 'Decimal') {

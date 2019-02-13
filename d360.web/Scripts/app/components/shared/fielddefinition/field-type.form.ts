@@ -943,49 +943,33 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
     }
 
-    private validateIncrement(value: string) {
+    private validateNumber(value: string) {
         if (value == 'Number' || value == 'Decimal') {
 
-            if (this.model.FieldType.Increment > 0) {
-
-                if (value == 'Number') {
-                    if (this.model.FieldType.Increment % 1 != 0) {
-                        this.errorMessage = value + ' input type requires a valid integer.';  
-                        return;
-                    } 
-                }
-
-                if (this.model.FieldType.MinimumLength && this.model.FieldType.MinimumLength % this.model.FieldType.Increment != 0) {
-                    this.errorMessage = 'Minimum value is not an increment of ' + this.model.FieldType.Increment;
-                }
-                else if (this.model.FieldType.MaximumLength && this.model.FieldType.MaximumLength % this.model.FieldType.Increment != 0) {
-                    this.errorMessage = 'Maximum value is not an increment of ' + this.model.FieldType.Increment;
-                }
-                else if (this.model.FieldType.DefaultValue && +this.model.FieldType.DefaultValue % this.model.FieldType.Increment != 0) {
-                    this.errorMessage = 'Default value invalid. Default [' + this.model.FieldType.DefaultValue + '] is not an increment of [' + this.model.FieldType.Increment + ']';
-                }
-                else if (this.model.FieldType.DefaultValue && this.model.FieldType.MinimumLength &&
-                    (+this.model.FieldType.DefaultValue < +this.model.FieldType.MinimumLength)) {
-                    this.errorMessage = 'Default value invalid. Default [' + this.model.FieldType.DefaultValue + '] must be more than Minimum [' + this.model.FieldType.MinimumLength + ']';
-                }
-                else if (this.model.FieldType.DefaultValue && this.model.FieldType.MaximumLength &&
-                    (+this.model.FieldType.DefaultValue > +this.model.FieldType.MaximumLength)) {
-                    this.errorMessage = 'Default value invalid. Default [' + this.model.FieldType.DefaultValue + '] cannot be more than Maximum [' + this.model.FieldType.MaximumLength + ']';
-                } else {
-                    this.errorMessage = '';
-                } 
-            } else {
-                if (this.model.FieldType.DefaultValue && this.model.FieldType.MinimumLength &&
-                        (+this.model.FieldType.DefaultValue < +this.model.FieldType.MinimumLength)) {
-                    this.errorMessage = 'Default value invalid. Default [' + this.model.FieldType.DefaultValue + '] must be more than Minimum [' + this.model.FieldType.MinimumLength + ']';
-                }
-                else if (this.model.FieldType.DefaultValue && this.model.FieldType.MaximumLength &&
-                         (+this.model.FieldType.DefaultValue > +this.model.FieldType.MaximumLength)) {
-                    this.errorMessage = 'Default value invalid. Default [' + this.model.FieldType.DefaultValue + '] cannot be more than Maximum [' + this.model.FieldType.MaximumLength + ']';
-                } else {
-                    this.errorMessage = '';
+            if (value == 'Number') {
+                if (this.model.FieldType.Increment % 1 != 0) {
+                    this.errorMessage = 'Please enter a valid integer.';
+                    return;
                 }
             }
+
+            let min = +this.model.FieldType.MinimumLength;
+            let max = +this.model.FieldType.MaximumLength;
+            let defaultNum = +this.model.FieldType.DefaultValue;
+
+            if (defaultNum) {
+                if (min && defaultNum < min)
+                    this.errorMessage = 'Please enter a minimum value of ' + this.model.FieldType.MinimumLength + '.';
+                else if (max && defaultNum > max)
+                    this.errorMessage = 'Please enter a maximum value of ' + this.model.FieldType.MaximumLength + '.';
+                else {
+                    this.errorMessage = '';
+                }
+            } else if (min > 0 && max > 0) 
+                if (min > max)
+                    this.errorMessage = 'Please set Minimum Value to be lower than Maximum Value.';
+                else
+                    this.errorMessage = '';
         }
     }
 
