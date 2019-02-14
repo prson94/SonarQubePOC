@@ -551,6 +551,9 @@ order by    P.[Path]
         /// <summary>
         /// Retrieves assets for the given asset type unique identifier.
         /// </summary>
+        /// <remarks>
+        /// In addition to the below query parameters a field name for the asset type can be specified to filter by exact match. For example MyCustomField=someExactValue.
+        /// </remarks>
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
@@ -562,7 +565,6 @@ order by    P.[Path]
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by AssetId.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("<field name>", "A field to filter on the asset by exact match, for example CustomField=someExactValue", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_predicateUid", "The Uid of a predicate type to return relationships for. If specified the results will include relationships of this predicate type. Assets without this type of relationship defined will be omitted.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_subjectUid", "The Uid of the subject side of a relationship to filter by in addition to filtering by predicate type. _predicateUid is required.", DataType = "string", ParameterType = "query", Required = false),
 

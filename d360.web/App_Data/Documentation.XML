@@ -2872,6 +2872,9 @@
             <summary>
             Retrieves assets for the given asset type unique identifier.
             </summary>
+            <remarks>
+            In addition to the below query parameters a field name for the asset type can be specified to filter by exact match. For example MyCustomField=someExactValue.
+            </remarks>
             <param name="assetTypeUid">The unique identifier of the asset type.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
