@@ -52,6 +52,9 @@ namespace igx.jobs.markitlineageprocessor
                 foreach (var c in companies)
                 {
 
+                    if (c.CompanyID != 1183)
+                        continue;
+
                     try
                     {
                         #region Create EF connection

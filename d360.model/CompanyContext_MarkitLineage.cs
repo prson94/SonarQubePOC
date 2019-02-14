@@ -126,7 +126,7 @@ namespace d360.model
             var nextMaps = maps.Where(m => m.SourceFusionAttributeID == currentMap?.TargetFusionAttributeID && !processedList.Contains(m.ID));
 
             //find a business object mapping if we don't already have one
-            if (rootObjectMap == null)
+            if (rootObjectMap == null || objectMaps.FirstOrDefault(o => o.FusionAttributeID == currentMap.SourceFusionAttributeID) != null)
                 rootObjectMap = objectMaps.FirstOrDefault(o => o.FusionAttributeID == currentMap.SourceFusionAttributeID);
 
             if (currentMap.SourceAssetID != null)
@@ -135,41 +135,12 @@ namespace d360.model
             //if we have a source/target pair we might have a valid mapping
             if (sourceAssets.Any() && currentMap.TargetAssetID != null)
             {
-                var targetObjectMap = objectMaps.FirstOrDefault(o => o.FusionAttributeID == currentMap.TargetFusionAttributeID);
-                bool hasSourceAndTarget = false;
-
                 //if no business mapping check the target attribute too
                 if (rootObjectMap == null)
-                    rootObjectMap = targetObjectMap;
-                else if (targetObjectMap != null && targetObjectMap != rootObjectMap)
-                    hasSourceAndTarget = true;
+                    rootObjectMap = objectMaps.FirstOrDefault(o => o.FusionAttributeID == currentMap.TargetFusionAttributeID);
 
                 if (rootObjectMap != null)
                 {
-                    //special case when everything is populated, need to create another mapping
-                    if (hasSourceAndTarget)
-                    {
-                        var source = sourceAssets.Peek();
-
-                        //if the mapping doesn't exist create it
-                        if (!mappings.Any(m => m.MapID == currentMap.ID && m.SourceFusionAttributeID == source.FusionAttributeID
-                        && m.TargetFusionAttributeID == currentMap.TargetFusionAttributeID && m.SourceAssetID == source.AssetID && m.TargetAssetID == currentMap.TargetAssetID
-                        && m.ObjectAssetID == (rootObjectMap == null ? 0 : rootObjectMap.ObjectAssetID)))
-                        {
-                            mappings.Add(new FusionMarkitSourceTargetMapping
-                            {
-                                MapID = currentMap.ID,
-                                SourceFusionAttributeID = (int)source.FusionAttributeID,
-                                TargetFusionAttributeID = (int)currentMap.TargetFusionAttributeID,
-                                SourceAssetID = (long)source.AssetID,
-                                TargetAssetID = (long)currentMap.TargetAssetID,
-                                ObjectAssetID = (rootObjectMap == null ? 0 : rootObjectMap.ObjectAssetID)
-                            });
-                        }
-                        rootObjectMap = targetObjectMap;
-                    }
-
-
                     var current = new FusionMarkitParentMapping
                     {
                         MapID = currentMap.ID,
@@ -208,14 +179,9 @@ namespace d360.model
                         current = previous;
                     }
 
-                    sourceAssets.Push(new FusionMarkitParentMapping
-                    {
-                        MapID = currentMap.ID,
-                        FusionAttributeID = (int)currentMap.TargetFusionAttributeID,
-                        AssetID = (long)currentMap.TargetAssetID
-                    });
+                    //the business mapping has been used, clear it out
+                    rootObjectMap = null;
                 }
-                
             }
 
             //process the next nodes in the lineage
