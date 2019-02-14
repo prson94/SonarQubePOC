@@ -679,7 +679,11 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
 
         if (this.model.FieldType.Type == 'Link') {
-            this.model.FieldType.DefaultValue = this.defaultLinkName != null ? this.defaultLinkName : '' + '|' + this.defaultLinkAdress != null ? this.defaultLinkAdress : '';
+            {
+                this.model.FieldType.DefaultValue = this.defaultLinkName != null ? this.defaultLinkName : '';// + '|' + this.defaultLinkAdress != null ? this.defaultLinkAdress : '';
+                this.model.FieldType.DefaultValue += '|';
+                this.model.FieldType.DefaultValue += this.defaultLinkAdress != null ? this.defaultLinkAdress : '';
+            }
         }
         this.isLoading = true;
         if (this.model.FieldType.ID > 0) {
