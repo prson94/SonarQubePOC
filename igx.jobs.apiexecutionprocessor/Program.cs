@@ -104,9 +104,6 @@ namespace igx.jobs.apiexecutionprocessor
 
             try
             {
-                var companyConnection = CompanyConnectionUtils.GetCompanyConnection(Info.CompanyID);
-                companyConnection.OpenWithRetry(RetryPolicy.DefaultProgressive);
-
                 if (dbExecutionItem != null)
                 {
                     AssetType assetType = null;
@@ -124,7 +121,7 @@ namespace igx.jobs.apiexecutionprocessor
                             var postAssets = JsonConvert.DeserializeObject<List<AssetInsert>>(postAssetsJson);
 
                             log.WriteLine($"POST Assets (DB Start): Total raw assets: {postAssets.Count}. Asset Type Uid: {postAssetsFields.AssetTypeUid}.");
-                            var postAssetsResults = companyConnection.UpsertAssets(queue, Info.CompanyDomainPrefix, Info.CompanyID, dbExecutionItem.ResourceID, assetType, postAssets, true, dbExecutionTimeout);
+                            var postAssetsResults = company.ImportAssets(dbExecutionItem, assetType, postAssets, true, dbExecutionTimeout);
                             dbExecutionItem.Processed = postAssetsResults.Count(i => i.Success);
                             dbExecutionItem.Error = postAssetsResults.Count(i => !i.Success);
                             log.WriteLine($"POST Assets (DB Complete): Total results: {postAssetsResults.Count}.");
@@ -142,7 +139,7 @@ namespace igx.jobs.apiexecutionprocessor
                             var putAssets = JsonConvert.DeserializeObject<List<AssetUpdate>>(putAssetsJson);
 
                             log.WriteLine($"PUT Assets (DB Start): Total raw assets: {putAssets.Count}. Asset Type Uid: {putAssetsFields.AssetTypeUid}.");
-                            var putAssetsResults = companyConnection.UpsertAssets(queue, Info.CompanyDomainPrefix, Info.CompanyID, dbExecutionItem.ResourceID, assetType, putAssets, false, dbExecutionTimeout);
+                            var putAssetsResults = company.ImportAssets(dbExecutionItem, assetType, putAssets, false, dbExecutionTimeout);
                             dbExecutionItem.Processed = putAssetsResults.Count(i => i.Success);
                             dbExecutionItem.Error = putAssetsResults.Count(i => !i.Success);
                             log.WriteLine($"PUT Assets (DB Complete): Total results: {putAssetsResults.Count}.");
@@ -190,8 +187,6 @@ namespace igx.jobs.apiexecutionprocessor
                             break;
                             #endregion
                     }
-
-                    companyConnection.Close();
 
                     dbExecutionItem.CompletedOn = DateTime.UtcNow;
                     company.Update(dbExecutionItem);

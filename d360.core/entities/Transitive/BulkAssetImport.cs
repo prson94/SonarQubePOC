@@ -10,6 +10,8 @@ namespace d360.core.entities
     {
         Guid Uid { get; set; }
 
+        Guid? ExecutionItemUid { get; set; }
+
         Guid? ParentUid { get; set; }
 
         Dictionary<string, string> Fields { get; set; }
@@ -20,6 +22,9 @@ namespace d360.core.entities
     {
         [IgnoreDataMember]
         public Guid Uid { get; set; }
+
+        [DataMember]
+        public Guid? ExecutionItemUid { get; set; }
 
         [DataMember]
         public Guid? ParentUid { get; set; }
@@ -33,6 +38,9 @@ namespace d360.core.entities
     {
         [DataMember]
         public Guid Uid { get; set; }
+
+        [DataMember]
+        public Guid? ExecutionItemUid { get; set; }
 
         [IgnoreDataMember]
         public Guid? ParentUid { get; set; }
@@ -53,6 +61,9 @@ namespace d360.core.entities
     {
         [DataMember]
         public Guid Uid { get; set; }
+
+        [DataMember]
+        public Guid? ExecutionItemUid { get; set; }
     }
 
     public class AssetImportResult
@@ -73,6 +84,8 @@ namespace d360.core.entities
         public int ItemNumber { get; set; }
         [DataMember]
         public Guid uid { get; set; }
+        [DataMember]
+        public Guid? ExecutionItemUid { get; set; }
 
         [DataMember]
         public string Message { get; set; }
