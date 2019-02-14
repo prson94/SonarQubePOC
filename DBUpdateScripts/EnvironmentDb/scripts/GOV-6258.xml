@@ -86,6 +86,7 @@
     
 
 alter   VIEW [dbo].[ResponsibilityDetail] AS  
+		-- users
        select 
 	      r.id as RuleID,
 	      r.ResponsibilityTypeID as ResponsibilityTypeID,  
@@ -101,7 +102,7 @@ alter   VIEW [dbo].[ResponsibilityDetail] AS
          r.ApplyToType,  
          rrel.PermissionsBitMask,  
          r.IsVisible,  
-         orides.ID as OverrideID,  
+         NULL as OverrideID,  
          A.Object,  
          coalesce(A.ObjectID, 0) as ObjectID,  
          T.Object as [Type],  
@@ -110,14 +111,14 @@ alter   VIEW [dbo].[ResponsibilityDetail] AS
 	      responsibilitytyperelationrule r
 	      inner join ResponsibilityTypeRelation rrel on (r.ResponsibilityTypeID = rrel.ResponsibilityTypeID and r.[Object] = rrel.[ObjectType] and r.ObjectID = rrel.ObjectID)
 	      inner join [ResponsibilityRuleResultAsset] rasset on (r.ID = rasset.RuleID)
-	      inner join [ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)
-	      left join [responsibilitytyperelationoverrideitem] orides on (r.ResponsibilityTypeID = orides.ResponsibilityTypeID and rasset.AssetID = orides.AssetID)
+	      inner join [ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)	      
          inner join ResponsibilityType RT on RT.ID = r.ResponsibilityTypeID  
          left join Asset A on ( (A.ID = rasset.AssetID) OR (rasset.AssetID = 0 and A.AssetTypeID = rasset.AssetTypeID) )           
 		 inner join AssetType T on T.ID = A.AssetTypeID  
          inner join reporting.Global_Resource RES on RES.ResourceID = rresource.SecurityAssetID and rresource.SecurityAsset = 'R' 
-       where orides.id is null  and RES.State=1
+       where RES.State=1
 	   union
+	   -- groups
 	   select 
 	      r.id as RuleID,
 	      r.ResponsibilityTypeID as ResponsibilityTypeID,  
@@ -133,7 +134,7 @@ alter   VIEW [dbo].[ResponsibilityDetail] AS
          r.ApplyToType,  
          rrel.PermissionsBitMask,  
          r.IsVisible,  
-         orides.ID as OverrideID,  
+         NULL as OverrideID,  
          A.Object,  
          coalesce(A.ObjectID, 0) as ObjectID,  
          T.Object as [Type],  
@@ -142,16 +143,16 @@ alter   VIEW [dbo].[ResponsibilityDetail] AS
 	      responsibilitytyperelationrule r
 	      inner join ResponsibilityTypeRelation rrel on (r.ResponsibilityTypeID = rrel.ResponsibilityTypeID and r.[Object] = rrel.[ObjectType] and r.ObjectID = rrel.ObjectID)
 	      inner join [ResponsibilityRuleResultAsset] rasset on (r.ID = rasset.RuleID)
-	      inner join [ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)
-	      left join [responsibilitytyperelationoverrideitem] orides on (r.ResponsibilityTypeID = orides.ResponsibilityTypeID and rasset.AssetID = orides.AssetID)
+	      inner join [ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)	      
          inner join ResponsibilityType RT on RT.ID = r.ResponsibilityTypeID  
          left join Asset A on ( (A.ID = rasset.AssetID) OR (rasset.AssetID = 0 and A.AssetTypeID = rasset.AssetTypeID) )           
 		 inner join AssetType T on T.ID = A.AssetTypeID  
          inner join [Group] G on rresource.SecurityAsset = 'G' and G.ID = rresource.SecurityAssetID  
          inner join ResourceGroup RG on RG.GroupID = G.ID           
          inner join reporting.Global_Resource RES on RES.ResourceID = RG.ResourceID
-       where orides.id is null  and RES.State=1
+       where RES.State=1
 	   union
+	   -- organizations
 	   select 
 	      r.id as RuleID,
 	      r.ResponsibilityTypeID as ResponsibilityTypeID,  
@@ -167,7 +168,7 @@ alter   VIEW [dbo].[ResponsibilityDetail] AS
          r.ApplyToType,  
          rrel.PermissionsBitMask,  
          r.IsVisible,  
-         orides.ID as OverrideID,  
+         NULL as OverrideID,  
          A.Object,  
          coalesce(A.ObjectID, 0) as ObjectID,  
          T.Object as [Type],  
@@ -176,16 +177,44 @@ alter   VIEW [dbo].[ResponsibilityDetail] AS
 	      responsibilitytyperelationrule r
 	      inner join ResponsibilityTypeRelation rrel on (r.ResponsibilityTypeID = rrel.ResponsibilityTypeID and r.[Object] = rrel.[ObjectType] and r.ObjectID = rrel.ObjectID)
 	      inner join [ResponsibilityRuleResultAsset] rasset on (r.ID = rasset.RuleID)
-	      inner join [ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)
-	      left join [responsibilitytyperelationoverrideitem] orides on (r.ResponsibilityTypeID = orides.ResponsibilityTypeID and rasset.AssetID = orides.AssetID)
+	      inner join [ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)	      
          inner join ResponsibilityType RT on RT.ID = r.ResponsibilityTypeID  
          left join Asset A on ( (A.ID = rasset.AssetID) OR (rasset.AssetID = 0 and A.AssetTypeID = rasset.AssetTypeID) )           
 		 inner join AssetType T on T.ID = A.AssetTypeID  
          inner join [Organization] D on rresource.SecurityAsset = 'O' and D.ID = rresource.SecurityAssetID  
          inner join OrganizationResource RD on RD.OrganizationID = D.ID
          inner join reporting.Global_Resource RES on RES.ResourceID = RD.ResourceID
-       where orides.id is null  and RES.State=1
-    ]]>
+       where RES.State=1
+	   union
+	   -- overrides only store users
+	   select
+		 0 as RuleID,
+	     rr.ResponsibilityTypeID as ResponsibilityTypeID,  
+	     RT.Name as ResponsibilityTypeName,  
+         oride.AssetID,  
+         att.ID as AssetTypeID,  
+         RES.ResourceID as ResourceID,  
+         RES.FirstName + ' ' + RES.LastName as ResourceName,  
+         oride.SecurityAsset,  
+         oride.SecurityAssetID,  
+         RES.FirstName + ' ' + RES.LastName as SecurityAssetName,    
+         oride.Context,  
+         cast(0 as bit) as ApplyToType,  
+         RR.PermissionsBitMask,  
+         cast(1 as bit) as IsVisible,  
+         oride.ID as OverrideID,  
+         A.Object,  
+         coalesce(A.ObjectID, 0) as ObjectID,  
+         ATT.Object as [Type],  
+         ATT.ObjectID as TypeID  
+		from 
+			[dbo].[ResponsibilityTypeRelationOverrideItem] oride
+			inner join ResponsibilityType RT on RT.ID = oride.ResponsibilityTypeID  
+			inner join [dbo].asset a on (a.id = oride.assetID)
+			inner join [dbo].assettype att on (att.id = a.assettypeid)
+			inner join [dbo].[ResponsibilityTypeRelation] RR on (att.[object] = RR.[objectType] and att.objectid = RR.[Objectid] and RR.ResponsibilityTypeID = oride.ResponsibilityTypeID)			
+			inner join reporting.Global_Resource RES on RES.ResourceID = oride.SecurityAssetID and oride.SecurityAsset = 'R' and RES.State = 1		
+		    ]]>
     </sql>
     <rollback>
       <![CDATA[
@@ -257,9 +286,9 @@ alter   VIEW [dbo].[ResponsibilityDetail] AS
 			        inner join dbo.AssetType T on T.ID = rasset.AssetTypeID			
 			        inner join reporting.Global_Resource RES on RES.ResourceID = rresource.SecurityAssetID
 	        where	
-			        not exists (select 1 from dbo.[responsibilitytyperelationoverrideitem] orides where r.ResponsibilityTypeID = orides.ResponsibilityTypeID and rasset.AssetID = orides.AssetID)
-			        and rresource.SecurityAsset != 'G' and rresource.SecurityAsset !='O')
+			        rresource.SecurityAsset != 'G' and rresource.SecurityAsset !='O')
 	        union
+			-- groups
 	        (select	r.ID as RuleID,
 			        r.ResponsibilityTypeID,
 			        RT.Name as ResponsibilityTypeName,
@@ -286,9 +315,9 @@ alter   VIEW [dbo].[ResponsibilityDetail] AS
 			        inner join dbo.[Group] G on G.ID = rresource.SecurityAssetID
 			        inner join dbo.ResourceGroup RG on RG.GroupID = G.ID			
 			        inner join reporting.Global_Resource RES on RES.ResourceID = RG.ResourceID
-	        where	not exists (select 1 from dbo.[responsibilitytyperelationoverrideitem] orides where r.ResponsibilityTypeID = orides.ResponsibilityTypeID and rasset.AssetID = orides.AssetID)
-			        and rresource.SecurityAsset = 'G')
+	        where	rresource.SecurityAsset = 'G')
 	        union
+			-- organizations
 	        (select	r.ID as RuleID,
 			        r.ResponsibilityTypeID,
 			        RT.Name as ResponsibilityTypeName,
@@ -316,9 +345,35 @@ alter   VIEW [dbo].[ResponsibilityDetail] AS
 			        inner join dbo.OrganizationResource RD on RD.OrganizationID = D.ID
 			        inner join reporting.Global_Resource RES on RES.ResourceID = RD.ResourceID
 	        where	
-			        not exists (select 1 from dbo.[responsibilitytyperelationoverrideitem] orides where r.ResponsibilityTypeID = orides.ResponsibilityTypeID and rasset.AssetID = orides.AssetID)
-			        and rresource.SecurityAsset = 'O')
-        
+			        rresource.SecurityAsset = 'O')
+			union
+			   -- overrides only store users
+			   select
+				 0 as RuleID,
+				 rr.ResponsibilityTypeID as ResponsibilityTypeID,  
+				 RT.Name as ResponsibilityTypeName,  
+				 oride.AssetID,  
+				 att.ID as AssetTypeID,  
+				 RES.ResourceID as ResourceID,  
+				 RES.FirstName + ' ' + RES.LastName as ResourceName,  
+				 oride.SecurityAsset,  
+				 oride.SecurityAssetID,  
+				 RES.FirstName + ' ' + RES.LastName as SecurityAssetName,    
+				 oride.Context,  
+				 cast(0 as bit) as ApplyToType,  
+				 RR.PermissionsBitMask,  
+				 cast(1 as bit) as IsVisible,  
+				 oride.ID as OverrideID,  				 
+				 ATT.Object as [Type],  
+				 ATT.ObjectID as TypeID  
+				from 
+					[dbo].[ResponsibilityTypeRelationOverrideItem] oride
+					inner join [dbo].ResponsibilityType RT on RT.ID = oride.ResponsibilityTypeID  
+					inner join [dbo].asset a on (a.id = oride.assetID)
+					inner join [dbo].assettype att on (att.id = a.assettypeid)
+					inner join [dbo].[ResponsibilityTypeRelation] RR on (att.[object] = RR.[objectType] and att.objectid = RR.[Objectid] and RR.ResponsibilityTypeID = oride.ResponsibilityTypeID)
+					inner join [dbo].[responsibilitytyperelationrule] R on (RR.ResponsibilityTypeID = R.ResponsibilityTypeID and RR.ObjectType = R.[Object] and RR.ObjectID = R.ObjectID)	
+					inner join reporting.Global_Resource RES on RES.ResourceID = oride.SecurityAssetID and oride.SecurityAsset = 'R' and RES.[State] = 1 				
     ]]>
     </sql>
     <rollback>
@@ -431,28 +486,50 @@ alter   VIEW [dbo].[ResponsibilityDetail] AS
             splitStatements="true"
             stripComments="true">
       <![CDATA[
-    create or alter view [dbo].[responsibilitytyperelationruleresult]
-    as
-    select 
-	    r.ID as RuleID,
-	    r.ResponsibilityTypeID,
-	    rasset.AssetID,
-	    rasset.AssetTypeID,
-	    rresource.SecurityAsset,
-	    rresource.SecurityAssetID,
-	    r.Context,
-	    r.ApplyToType,
-	    rrel.PermissionsBitMask,
-	    r.IsVisible,
-	    CASE WHEN orides.id IS NULL THEN 0 ELSE 1 END as Overriden,
-	    orides.id as OverrideID
-    from
-	    responsibilitytyperelationrule r
-	    inner join ResponsibilityTypeRelation rrel on (r.ResponsibilityTypeID = rrel.ResponsibilityTypeID and r.[Object] = rrel.[ObjectType] and r.ObjectID = rrel.ObjectID)
-	    inner join [ResponsibilityRuleResultAsset] rasset on (r.ID = rasset.RuleID)
-	    inner join [ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)
-	    left join [responsibilitytyperelationoverrideitem] orides on (r.ResponsibilityTypeID = orides.ResponsibilityTypeID and rasset.AssetID = orides.AssetID)
-
+          create or alter view [dbo].[responsibilitytyperelationruleresult] with SCHEMABINDING
+          as
+          select 
+	          r.ID as RuleID,
+	          r.ResponsibilityTypeID,
+	          rasset.AssetID,
+	          rasset.AssetTypeID,
+	          rresource.SecurityAsset,
+	          rresource.SecurityAssetID,
+	          r.Context,
+	          r.ApplyToType,
+	          rrel.PermissionsBitMask,
+	          r.IsVisible,
+	          0 as Overriden,
+	          NULL as OverrideID
+          from
+	          [dbo].responsibilitytyperelationrule r
+	          inner join [dbo].ResponsibilityTypeRelation rrel on (r.ResponsibilityTypeID = rrel.ResponsibilityTypeID and r.[Object] = rrel.[ObjectType] and r.ObjectID = rrel.ObjectID)
+	          inner join [dbo].[ResponsibilityRuleResultAsset] rasset on (r.ID = rasset.RuleID)
+	          inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)
+	      union
+		  -- overrides	     
+		 select
+		      0 as RuleID,
+	          rr.ResponsibilityTypeID,
+	          oride.AssetID,
+	          0 as AssetTypeID,
+	          oride.SecurityAsset,
+	          oride.SecurityAssetID,
+	          oride.Context,
+	          1 as ApplyToType,
+	          rr.PermissionsBitMask,
+	          1 as IsVisible,
+		      0 as Overriden,
+	          oride.id as OverrideID
+	      from 
+		      [dbo].[ResponsibilityTypeRelationOverrideItem] oride
+		      inner join [dbo].ResponsibilityType RT on RT.ID = oride.ResponsibilityTypeID  
+		      inner join [dbo].asset a on (a.id = oride.assetID)
+		      inner join [dbo].assettype att on (att.id = a.assettypeid)
+		      inner join [dbo].[ResponsibilityTypeRelation] RR on (att.[object] = RR.[objectType] and att.objectid = RR.[Objectid] and RR.ResponsibilityTypeID = oride.ResponsibilityTypeID)
+		      inner join [dbo].[responsibilitytyperelationrule] R on (RR.ResponsibilityTypeID = R.ResponsibilityTypeID and RR.ObjectType = R.[Object] and RR.ObjectID = R.ObjectID)	
+		      inner join reporting.Global_Resource RES on RES.ResourceID = oride.SecurityAssetID and oride.SecurityAsset = 'R' and RES.[State] = 1	      
+	   
     ]]>
     </sql>
     <rollback>
@@ -478,6 +555,7 @@ alter   VIEW [dbo].[ResponsibilityDetail] AS
         RETURN 
         (
 	        -- Add the SELECT statement with parameter references here
+			-- user
 	        select 
 		        rel.PermissionsBitMask,
 		        rasset.AssetID,
@@ -491,6 +569,7 @@ alter   VIEW [dbo].[ResponsibilityDetail] AS
 	        where 
 		        rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = @ResourceID and a.AssetTypeID = @AssetTypeID
 	        union
+			-- group
 		        select 
 		        rel.PermissionsBitMask,
 		        rasset.AssetID,
@@ -506,6 +585,7 @@ alter   VIEW [dbo].[ResponsibilityDetail] AS
 	        where 
 		        RG.ResourceID = @resourceId
 	        union
+			-- organization
 	        select 
 		        rel.PermissionsBitMask,
 		        rasset.AssetID,
@@ -519,7 +599,22 @@ alter   VIEW [dbo].[ResponsibilityDetail] AS
 		        inner join dbo.[Organization] D on rresource.SecurityAsset = 'O' and D.ID = rresource.SecurityAssetID
 		        inner join dbo.OrganizationResource RD on RD.OrganizationID = D.ID
 	        where 
-		        RD.ResourceID = @ResourceID and a.AssetTypeID = @AssetTypeID	
+		        RD.ResourceID = @ResourceID and a.AssetTypeID = @AssetTypeID
+			-- overrides
+			union 
+			select
+				rr.PermissionsBitMask,
+				oride.AssetID,
+				att.ID as AssetTypeID
+			from 
+					[dbo].[ResponsibilityTypeRelationOverrideItem] oride
+					inner join [dbo].ResponsibilityType RT on RT.ID = oride.ResponsibilityTypeID  
+					inner join [dbo].asset a on (a.id = oride.assetID)
+					inner join [dbo].assettype att on (att.id = a.assettypeid)
+					inner join [dbo].[ResponsibilityTypeRelation] RR on (att.[object] = RR.[objectType] and att.objectid = RR.[Objectid] and RR.ResponsibilityTypeID = oride.ResponsibilityTypeID)					
+					inner join reporting.Global_Resource RES on RES.ResourceID = oride.SecurityAssetID and oride.SecurityAsset = 'R'
+				where
+					a.AssetTypeID = @AssetTypeID							
         )
     ]]>
     </sql>
@@ -561,7 +656,16 @@ alter   VIEW [dbo].[ResponsibilityDetail] AS
 							)
 						and
 							not exists (select 1 from [dbo].[ResponsibilityTypeRelationOverrideItem] oride where oride.AssetID = A.ID and oride.ResponsibilityTypeID = R.ResponsibilityTypeID)
-				
+					union
+						select
+							oride.AssetID as AssetID
+						from 
+							[dbo].[ResponsibilityTypeRelationOverrideItem] oride
+							inner join [dbo].asset a on (a.id = oride.assetID)
+							inner join [dbo].assettype att on (att.id = a.assettypeid)
+							inner join [dbo].[ResponsibilityTypeRelation] RR on (att.[object] = RR.[objectType] and att.objectid = RR.[Objectid] and RR.ResponsibilityTypeID = oride.ResponsibilityTypeID)							
+						where
+							RR.PermissionsBitMask & 1 = 0 and Att.ID = @AssetTypeID
 		        )
     ]]>
     </sql>
@@ -622,6 +726,113 @@ alter   VIEW [dbo].[ResponsibilityDetail] AS
     </sql>       
   </changeSet>
 
+  <changeSet author="KMcNamee" id="GOV-6258-Drop-orid-trigger-upsert">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[    
+      IF EXISTS (SELECT * FROM sys.triggers WHERE object_id = OBJECT_ID(N'[dbo].[ResponsibilityTypeRelationOverrideItem_AfterUpsert]'))
+      DROP TRIGGER [dbo].[ResponsibilityTypeRelationOverrideItem_AfterUpsert]
+    ]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+      CREATE TRIGGER [dbo].[ResponsibilityTypeRelationOverrideItem_AfterUpsert]
+           ON  [dbo].[ResponsibilityTypeRelationOverrideItem]
+           AFTER INSERT, UPDATE
+        AS 
+        BEGIN
+	        SET NOCOUNT ON;
+
+	
+	        update	T
+	        set		T.Overridden = 1,
+			        T.OverrideID = S.ID
+	        from	ResponsibilityTypeRelationRuleResult T
+			        inner join inserted S on S.AssetID = T.AssetID and S.ResponsibilityTypeID = T.ResponsibilityTypeID and T.RuleID <> 0;
+
+	
+	        merge	ResponsibilityTypeRelationRuleResult as T
+	        using	(
+			        select	0 as RuleID,
+					        I.ID,
+					        I.ResponsibilityTypeID,
+					        A.ID as AssetID,
+					        A.Object,
+					        A.ObjectID,
+					        A.AssetTypeID,
+					        T.Object as Type,
+					        T.ObjectID as TypeID,
+					        I.SecurityAsset,
+					        I.SecurityAssetID,
+					        R.PermissionsBitMask,
+					        I.Context
+			        from	Asset A
+					        inner join AssetType T on T.ID = A.AssetTypeID
+					        inner join ResponsibilityTypeRelation R on R.ObjectType = T.Object and R.ObjectID = T.ObjectID
+					        inner join inserted I on I.AssetID = A.ID and I.ResponsibilityTypeID = R.ResponsibilityTypeID
+			        ) as S 
+	        on		(
+			        S.RuleID = T.RuleID
+			        and S.ID = T.OverrideID
+			        )
+	        when	matched then
+	        update	set
+			        T.SecurityAsset = S.SecurityAsset,
+			        T.SecurityAssetID = S.SecurityAssetID,
+			        T.PermissionsBitMask = S.PermissionsBitMask,
+			        T.Context = S.Context,
+			        T.ResponsibilityTypeID = S.ResponsibilityTypeID
+	        when	not matched by target then
+			        insert (RuleID, ResponsibilityTypeID, AssetID, AssetTypeID, SecurityAsset, SecurityAssetID, PermissionsBitMask, Context, ApplyToType, IsVisible, Overridden, OverrideID)
+			        values (S.RuleID, S.ResponsibilityTypeID, S.AssetID, S.AssetTypeID, S.SecurityAsset, S.SecurityAssetID, S.PermissionsBitMask, S.Context, 0, 1, 0, S.ID);
+        END
+
+
+        ALTER TABLE [dbo].[ResponsibilityTypeRelationOverrideItem] ENABLE TRIGGER [ResponsibilityTypeRelationOverrideItem_AfterUpsert]
+
+    ]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="KMcNamee" id="GOV-6258-Drop-orid-trigger-delete">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[    
+      IF EXISTS (SELECT * FROM sys.triggers WHERE object_id = OBJECT_ID(N'[dbo].[ResponsibilityTypeRelationOverrideItem_AfterDelete]'))
+      DROP TRIGGER [dbo].[ResponsibilityTypeRelationOverrideItem_AfterDelete]   
+    ]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+      CREATE TRIGGER [dbo].[ResponsibilityTypeRelationOverrideItem_AfterDelete]
+           ON  [dbo].[ResponsibilityTypeRelationOverrideItem]
+           AFTER DELETE
+        AS 
+        BEGIN
+	        SET NOCOUNT ON;
+
+	        delete	T
+	        from	ResponsibilityTypeRelationRuleResult T
+			        inner join deleted S on T.RuleID = 0 and T.OverrideID = S.ID;
+
+	        update	T
+	        set		T.Overridden = 0,
+			        T.OverrideID = 0
+	        from	ResponsibilityTypeRelationRuleResult T
+			        inner join deleted S on T.RuleID <> 0 and T.OverrideID = S.ID;
+        END
+        GO
+
+        ALTER TABLE [dbo].[ResponsibilityTypeRelationOverrideItem] ENABLE TRIGGER [ResponsibilityTypeRelationOverrideItem_AfterDelete]
+        GO
+    ]]>
+    </rollback>
+  </changeSet>
+
   <changeSet author="KMcNamee" id="GOV-6258-Trigger-Rebuild">
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -632,4 +843,5 @@ alter   VIEW [dbo].[ResponsibilityDetail] AS
     ]]>
     </sql>    
   </changeSet>
+
 </databaseChangeLog>
