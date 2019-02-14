@@ -3526,8 +3526,10 @@ namespace d360.web.Controllers
                         throw new ConflictException("Error Occurred!", "You may not have a minimum length that is greater than the maximum length.");
                     }
                 }
-
-                if (!model.FieldType.IsRequired) model.FieldType.MinimumLength = 0;
+                if (!new[] { "Number", "Decimal" }.Contains(model.FieldType.Type))
+                {
+                    if (!model.FieldType.IsRequired) model.FieldType.MinimumLength = 0;
+                }
 
                 var val = model.Validation();
                 if (!val.Valid)
@@ -3842,8 +3844,11 @@ namespace d360.web.Controllers
             var a = Company.GetById<FieldType>(id);
             if (a == null) return null;
             var used = Company.Any<Field>(i => i.FieldTypeID == id);
-            
-            if (!a.IsRequired) a.MinimumLength = 0;
+
+            if (!new[] { "Number", "Decimal" }.Contains(a.Type))
+            {
+                if (!a.IsRequired) a.MinimumLength = 0;
+            }
 
             var model = new FieldTypeEditorModel
             {
@@ -3956,11 +3961,17 @@ namespace d360.web.Controllers
 
                 ft.IsRequired = model.FieldType.IsRequired;
 
-                ft.MinimumLength = model.FieldType.MinimumLength;
                 ft.MaximumLength = model.FieldType.MaximumLength;
                 ft.Pattern = model.FieldType.Pattern;
 
-                if (!ft.IsRequired) ft.MinimumLength = 0;
+                if (new[] { "Number", "Decimal" }.Contains(ft.Type))
+                {
+                    ft.MinimumLength = model.FieldType.MinimumLength;
+                }
+                else
+                {
+                    if (!ft.IsRequired) ft.MinimumLength = 0;
+                }
 
                 bool isNew;
 
