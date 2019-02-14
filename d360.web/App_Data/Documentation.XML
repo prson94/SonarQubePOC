@@ -2726,7 +2726,7 @@
             Update  style for a template
             </summary>
             <param name="id">style id</param>
-            <param name="model">ArtifactTypeExportTemplateStyle</param>
+            <param name="model">AssetTypeExportTemplateStyle</param>
             <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.V2.ExportTemplatesController.DeleteStyle(System.Int32)">

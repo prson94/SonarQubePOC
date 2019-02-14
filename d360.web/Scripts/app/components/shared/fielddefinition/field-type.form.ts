@@ -18,6 +18,7 @@ import { ObjectDetailService } from '../../../services/object-detail.service';
 import { BaseComponent } from '../../shared/base.component';
 
 import * as _ from 'lodash';
+import { createWriteStream } from 'fs';
 
 @Component({
     selector: 'd3s-field-type-form',
@@ -441,6 +442,14 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         
         this.loadDefaultValueOptions(type, id);
         this.loadHierarchyOptions(type, id);
+
+        //clear the validated fields and error message
+        this.model.FieldType.MaximumLength = null;
+        this.model.FieldType.MinimumLength = null;
+        this.model.FieldType.Increment = null;
+        this.validateNumber(this.model.FieldType.Type);
+        
+
         return this.loadTokens(type, id);
     }
 
@@ -942,36 +951,57 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
     }
 
-    private validateIncrement(value: string) {
-        if (this.model.FieldType.Increment > 0) {
+    private validateNumber(value: string) {
+        if (value == 'Number' || value == 'Decimal') {
 
             if (value == 'Number') {
                 if (this.model.FieldType.Increment % 1 != 0) {
-                    this.errorMessage = value + ' input type requires a valid integer.';  
+                    this.errorMessage = 'Please enter a valid integer.';
                     return;
-                } 
+                }
             }
 
-            if (this.model.FieldType.MinimumLength && this.model.FieldType.MinimumLength % this.model.FieldType.Increment != 0) {
-                this.errorMessage = 'Minimum value is not an increment of ' + this.model.FieldType.Increment;
+            let min = +this.model.FieldType.MinimumLength;
+            let max = +this.model.FieldType.MaximumLength;
+            let defaultNum = +this.model.FieldType.DefaultValue;
+
+            if (+this.model.FieldType.Increment < 0) {
+                this.errorMessage = 'Please enter a positive number for the increment.';
+                return;
+            } else {
+                this.errorMessage = "";
             }
-            else if (this.model.FieldType.MaximumLength && this.model.FieldType.MaximumLength % this.model.FieldType.Increment != 0) {
-                this.errorMessage = 'Maximum value is not an increment of ' + this.model.FieldType.Increment;
-            }
-            else if (this.model.FieldType.DefaultValue && +this.model.FieldType.DefaultValue % this.model.FieldType.Increment != 0) {
-                this.errorMessage = 'Default value invalid. Default [' + this.model.FieldType.DefaultValue + '] is not an increment of [' + this.model.FieldType.Increment + ']';
-            }
-            else if (this.model.FieldType.DefaultValue && (+this.model.FieldType.DefaultValue > this.model.FieldType.MinimumLength)) {
-                this.errorMessage = 'Default value invalid. Default [' + this.model.FieldType.DefaultValue + '] cannot be more than Minimum [' + this.model.FieldType.MinimumLength +']';
-            }
-            else if (this.model.FieldType.DefaultValue && (+this.model.FieldType.DefaultValue > this.model.FieldType.MaximumLength)) {
-                this.errorMessage = 'Default value invalid. Default [' + this.model.FieldType.DefaultValue + '] cannot be more than Maximum [' + this.model.FieldType.MaximumLength + ']';
-            }
-            else {
-                this.errorMessage = '';
-            } 
+
+            if (defaultNum) {
+                if (min && defaultNum < min) {
+                    this.errorMessage = 'Please enter a minimum value of ' + this.model.FieldType.MinimumLength + '.';
+                    return;
+                }
+                else if (max && defaultNum > max) {
+                    this.errorMessage = 'Please enter a maximum value of ' + this.model.FieldType.MaximumLength + '.';
+                    return;
+                }
+                else {
+                    this.errorMessage = '';
+                }
+            } else if (min && max)
+                if (min > max)
+                    this.errorMessage = 'Please enter a minimum value which is lower than the maximum value.';
+                else
+                    this.errorMessage = '';
         } else {
-            this.errorMessage = '';
+            this.errorMessage = "";
+        }
+    }
+
+    private CheckMinRequired(fem: FieldTypeEditorModel) {
+        if (!fem) {
+            return;
+        }
+        if (fem.FieldType.Type == 'Number' || fem.FieldType.Type == 'Decimal') {
+            return false;
+        } else {
+            return !fem.FieldType.IsRequired;
         }
     }
 
@@ -1018,7 +1048,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private anyDisplayFieldsSelected(e: any) {
         if (this.model.FieldType.Type != 'ComplexRelationLookup') {
             this.displayFieldSelected = true;
-            this.cardinalFieldFromRelationshipSelected(parseInt(this.lookups.Field_FieldFromRelRelationships[0].value));
+            if (this.lookups.Field_FieldFromRelRelationships.length > 0)
+                this.cardinalFieldFromRelationshipSelected(parseInt(this.lookups.Field_FieldFromRelRelationships[0].value));
             return;
         }
         if (e == true) {

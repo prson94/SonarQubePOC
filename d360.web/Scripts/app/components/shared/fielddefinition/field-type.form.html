@@ -156,11 +156,11 @@
                 </div>
                 <div class="col s3">
                     <div id='MinimumLengthTip' class="FieldName">Minimum {{model.FieldType.Type == 'Text' ? "Length" : "Value"}}</div>
-                    <input name="minLength" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}" [disabled]="!model.FieldType.IsRequired" [(ngModel)]="model.FieldType.MinimumLength" (change)="validateIncrement(model.FieldType.Type)" style="width: 98%; display: block;" />
+                    <input name="minLength" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}" [disabled]="CheckMinRequired(model)" [(ngModel)]="model.FieldType.MinimumLength" (change)="validateNumber(model.FieldType.Type)" style="width: 98%; display: block;" />
                 </div>
                 <div class="col s3">
                     <div id='MaximumLengthTip' class="FieldName">Maximum {{model.FieldType.Type == 'Text' ? "Length" : "Value"}}</div> 
-                    <input name="maxLength" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}" [(ngModel)]="model.FieldType.MaximumLength" (change)="validateIncrement(model.FieldType.Type)" style="width: 98%; display: block;" />
+                    <input name="maxLength" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}" [(ngModel)]="model.FieldType.MaximumLength" (change)="validateNumber(model.FieldType.Type)" style="width: 98%; display: block;" />
                 </div>
             </div>
             <div class="row" *ngIf="model.FieldType.Pattern?.length > 0 || model.FieldType.Increment > 0">
@@ -189,6 +189,9 @@
                 <div class="col l6 m6 s12" *ngIf="model.FieldType.Type == 'Lookup'">
                     <div class="FieldName">Allow ALL Value Selection</div>
                 </div>
+                <div class="col l6 m6 s12" *ngIf="model.FieldType.Type == 'Number'">
+                    <div class="FieldName" style="display:block">Increment</div>
+                </div>
             </div>
             <div class="row">
                 <div class="col l6 m6 s12">
@@ -202,6 +205,9 @@
                 </div>
                 <div class="col l5 m5 s12" *ngIf="model.FieldType.Type == 'Lookup'">
                     <input pInputText type="text" [(ngModel)]="model.FieldType.AllowAllLabel" [ngModelOptions]="{standalone: true}" style="width: 100%" [disabled]="!model.FieldType.AllowAllValue" />
+                </div>
+                <div class="col l5 m5 s12" *ngIf="model.FieldType.Type == 'Number'">
+                    <input name="validationIncrement" type="number" [(ngModel)]="model.FieldType.Increment" (change)="validateNumber(model.FieldType.Type)" style="width: 98%; display: block;" />
                 </div>
             </div>
         </simple-accordion>

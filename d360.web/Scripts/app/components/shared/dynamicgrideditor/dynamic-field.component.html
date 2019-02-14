@@ -114,8 +114,8 @@
                 </ng-template>
             </p-table>
         </div>
-        <input *ngSwitchCase="'Number'" [(ngModel)]="field.Value" [formControlName]="field.FieldName"  style="width: 100%;" type="number" step="{{Increment ? Increment : 1}}">
-        <input *ngSwitchCase="'Decimal'" [(ngModel)]="field.Value" [formControlName]="field.FieldName" style="width: 100%;" type="number" step="{{Increment ? Increment : 1}}">
+        <input *ngSwitchCase="'Number'" [(ngModel)]="field.Value" [formControlName]="field.FieldName"  style="width: 100%;" type="number" step="{{Increment ? Increment : 1}}" min="{{Min}}" max="{{Max}}">
+        <input *ngSwitchCase="'Decimal'" [(ngModel)]="field.Value" [formControlName]="field.FieldName" style="width: 100%;" type="number" step="{{Increment ? Increment : 1}}" min="{{Min}}" max="{{Max}}" (keyup)="clamp($event, 0, 1, 3)">
         <input *ngSwitchCase="'Percentage'" [formControlName]="field.FieldName" style="width: 100%;" type="number" step="0.01" min="0.00" max="1.00" (keyup)="clamp($event, 0, 1, 3)">
         <div *ngSwitchCase="'Color'">
             <p-colorPicker [(ngModel)]="colorValue" [formControlName]="field.FieldName"></p-colorPicker>

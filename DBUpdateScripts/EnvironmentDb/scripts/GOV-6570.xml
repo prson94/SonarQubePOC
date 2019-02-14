@@ -1,0 +1,92 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Bhoward" id="GOV-6570">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+	<![CDATA[
+	ALTER view [dbo].[SiteNavAvailable] as
+	select
+		u.ID,
+		u.ObjectID as ObjectID,
+		u.[Name],
+		u.[url] as [Route],
+		u.[Object],
+		null as SortOrder,
+		null as ParentID
+	from
+	(
+
+		select
+			A.ID,
+			A.ObjectID,
+			A.[Object],
+			A.[Name],
+			dbo.GenerateAssetTypeUrl(A.ID) As [url]
+		from AssetType A
+		where A.[Object] in ('ArtifactType', 'TaxonomyType', 'PolicyType', 'RuleType')
+	) u
+	left join SiteNav v on v.Object = u.Object and v.ObjectID = u.ObjectID
+	where v.ObjectID is null and u.ID not in (
+		select distinct 
+			C.ChildAssetTypeID 
+		from SiteNav n
+		inner join AssetType T on T.Object = n.Object and T.ObjectID = n.Objectid
+		cross apply dbo.GetAssetTypeChildrenByID(T.ID) C
+	)and u.ID not in (
+		select distinct AT.ID
+		from [dbo].[IntersectType] 
+		inner join [dbo].[IntersectType] IT on IT.ObjectID = u.ObjectID and IT.Object = u.Object
+		inner join AssetType AT on AT.Object = IT.Object and AT.ObjectID = IT.ObjectID
+		WHERE IT.PredicateID in (SELECT ID from Predicate WHERE Type = 3)
+		)
+	]]>
+    </sql>
+    <rollback>
+<![CDATA[
+    ALTER view [dbo].[SiteNavAvailable] as
+	select
+		u.ID,
+		u.ObjectID as ObjectID,
+		u.[Name],
+		u.[url] as [Route],
+		u.[Object],
+		null as SortOrder,
+		null as ParentID
+	from
+	(
+
+		select
+			A.ID,
+			A.ObjectID,
+			A.[Object],
+			A.[Name],
+			dbo.GenerateAssetTypeUrl(A.ID) As [url]
+		from AssetType A
+		where A.[Object] in ('ArtifactType', 'TaxonomyType', 'PolicyType', 'RuleType')
+	) u
+	left join SiteNav v on v.Object = u.Object and v.ObjectID = u.ObjectID
+	where v.ObjectID is null and u.ID not in (
+		select distinct 
+			C.ChildAssetTypeID 
+		from SiteNav n
+		inner join AssetType T on T.Object = n.Object and T.ObjectID = n.Objectid
+		cross apply dbo.GetAssetTypeChildrenByID(T.ID) C
+	)and u.ID not in (
+		select distinct 
+			C.ChildAssetTypeID 
+		from AssetType T
+		cross apply dbo.GetAssetTypeChildrenByID(T.ID) C
+	);
+]]>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>
+
