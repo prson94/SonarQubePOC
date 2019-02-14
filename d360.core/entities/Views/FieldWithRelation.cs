@@ -29,8 +29,8 @@ namespace d360.core.entities
         public int? LookupObjectID { get; set; }
         public string LookupDisplayFormat { get; set; }
         public int? Length { get; set; }
-        public int? MaximumLength { get; set; }
-        public int? MinimumLength { get; set; }
+        public decimal? MaximumLength { get; set; }
+        public decimal? MinimumLength { get; set; }
         public string Pattern { get; set; }
 
         /* FieldTypeRelation Properties */

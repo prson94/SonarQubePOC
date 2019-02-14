@@ -462,7 +462,7 @@ namespace d360.web.Controllers
             return $"select AssetTypeID from ResponsibilityDetail where AssetID = 0 and ((PermissionsBitMask & {(int)Permission.ReadAsset}) = 0) and ResourceID = {(string.IsNullOrEmpty(identifier) ? Company.CurrentResourceID.ToString() : identifier)}";
         }
 
-        internal List<FieldValidationModel> checkAndAddValidation(string fieldType, string friendlyName, bool required, string pattern, int? minLength, int? maxLength, string validationMessage = "", decimal? Increment = null)
+        internal List<FieldValidationModel> checkAndAddValidation(string fieldType, string friendlyName, bool required, string pattern, decimal? minLength, decimal? maxLength, string validationMessage = "", decimal? Increment = null)
         {
             var models = new List<FieldValidationModel>();
 
@@ -767,7 +767,12 @@ namespace d360.web.Controllers
                         if (f.Type == DataType.Lookup.ToString())  // lookups dont set min / length properties
                             fld.Required = (f.MinimumLength > 0 || f.Length > 0 || f.IsRequired);
                         else
-                            fld.Required = (f.MinimumLength > 0 || f.Length > 0);
+                        {
+                            if (!new[] { "Number", "Decimal" }.Contains(f.Type))
+                            {
+                                fld.Required = (f.MinimumLength > 0 || f.Length > 0);
+                            }
+                        }
 
                         list.Add(fld);
                     }
