@@ -1,0 +1,48 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+  <changeSet author="vkyrychuk" id="GOV-6460">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+IF( select Count(*) as GroupTypeCount
+ FROM [dbo].[AssetType] where Object='Grouptype' )>1
+begin 
+	 delete FROM [dbo].[AssetType] 	 
+	 where Object='Grouptype'   and uid=N'00000001-0000-0000-0000-B00000000012'
+
+  UPDATE [dbo].[AssetType]
+	 SET uid=N'00000001-0000-0000-0000-B00000000012'
+	 where Object='Grouptype' 
+	 
+ end
+ 
+ IF (NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS
+	WHERE CONSTRAINT_NAME ='AssetType_Object_ObjectId'))
+		BEGIN
+
+		ALTER TABLE [dbo].[AssetType] 
+			ADD  CONSTRAINT [AssetType_Object_ObjectId]  Unique(Object,ObjectID) 
+		END
+ELSE
+	BEGIN 
+
+		ALTER TABLE [dbo].[AssetType] 
+			DROP CONSTRAINT [AssetType_Object_ObjectId]   
+
+
+		ALTER TABLE [dbo].[AssetType] 
+			ADD  CONSTRAINT [AssetType_Object_ObjectId]  Unique(Object,ObjectID) 
+	END
+
+
+    </sql>
+	<rollback>
+		 
+    </rollback>
+	</changeSet>
+</databaseChangeLog>
