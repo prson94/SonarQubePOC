@@ -90,6 +90,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private errorMessage: string = "";
     private isListableRelationship: boolean = false;
 
+    public defaultDate: any;
+    public defaultLinkName: any;
+    public defaultLinkAdress: any;
+
     constructor(private fieldsService: FieldsService, private messagesService: MessagesService, private objectDetailService: ObjectDetailService) {
         super();
         this.model = new FieldTypeEditorModel();
@@ -417,6 +421,15 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.model.FieldType.LookupObjectType = null;
                 break;
         }
+        if (this.model.FieldType.Type == 'Date' && this.model.FieldType.DefaultValue != null) {
+            this.defaultDate = new Date(this.model.FieldType.DefaultValue);
+        }
+
+        if (this.model.FieldType.Type == 'Link' && this.model.FieldType.DefaultValue != null) {
+            var link = this.model.FieldType.DefaultValue.split('|');
+            this.defaultLinkName = link[0];
+            this.defaultLinkAdress = link[1];
+        }
         return Promise.all(promises).then(() => {
         });
     }
@@ -665,6 +678,13 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.model.FilteredLookupItem = item;
         }
 
+        if (this.model.FieldType.Type == 'Link') {
+            {
+                this.model.FieldType.DefaultValue = this.defaultLinkName != null ? this.defaultLinkName : '';// + '|' + this.defaultLinkAdress != null ? this.defaultLinkAdress : '';
+                this.model.FieldType.DefaultValue += '|';
+                this.model.FieldType.DefaultValue += this.defaultLinkAdress != null ? this.defaultLinkAdress : '';
+            }
+        }
         this.isLoading = true;
         if (this.model.FieldType.ID > 0) {
             this.fieldsService.putFieldType(this.model)
@@ -1051,7 +1071,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             if (this.lookups.Field_FieldFromRelRelationships.length > 0)
                 this.cardinalFieldFromRelationshipSelected(parseInt(this.lookups.Field_FieldFromRelRelationships[0].value));
             return;
-        }
+        }  
         if (e == true) {
             this.displayFieldSelected = true;
             return;
@@ -1066,7 +1086,12 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             });
         });
     }
-
+    private onDateSelectMethod(e: Date)
+    {
+        this.model.FieldType.DefaultValue = e.toLocaleDateString("en-US");
+        this.defaultDate = e;
+    }
+  
     public isRelationshipWithMultipleCardinality(): boolean {
         
         return true;
