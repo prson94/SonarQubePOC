@@ -76,6 +76,7 @@ When modifying content on assets, please be aware that you will need to use the 
                     c.OperationFilter<Consumes>();
                     c.OperationFilter<Produces>();
                     c.OperationFilter<ExamplesOperationFilter>();
+                    c.OperationFilter<SwaggerParameterAttributeFilter>();
                     c.PrettyPrint();
                     c.MultipleApiVersions(versionSupportResolver, versionInfoBuilder);
                     c.ApiKey("ApiKey")
