@@ -21,9 +21,24 @@ begin
 	 
  end
  
- ALTER TABLE [dbo].[AssetType] 
+ IF (NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS
+	WHERE CONSTRAINT_NAME ='AssetType_Object_ObjectId'))
+		BEGIN
 
-ADD  CONSTRAINT [AssetType_Object_ObjectId]  Unique(Object,ObjectID) 
+		ALTER TABLE [dbo].[AssetType] 
+			ADD  CONSTRAINT [AssetType_Object_ObjectId]  Unique(Object,ObjectID) 
+		END
+ELSE
+	BEGIN 
+
+		ALTER TABLE [dbo].[AssetType] 
+			DROP CONSTRAINT [AssetType_Object_ObjectId]   
+
+
+		ALTER TABLE [dbo].[AssetType] 
+			ADD  CONSTRAINT [AssetType_Object_ObjectId]  Unique(Object,ObjectID) 
+	END
+
 
     </sql>
 	<rollback>
