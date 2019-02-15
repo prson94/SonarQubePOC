@@ -21,9 +21,6 @@ namespace d360.core.entities
         [IgnoreDataMember]
         public virtual ArtifactType ArtifactType { get; set; }
 
-        [IgnoreDataMember]
-        public virtual ICollection<Fusion> OwnedFusions { get; set; }
-
         public EventObjectInfo GetEventObjectInfo()
         {
             return new EventObjectInfo

@@ -8,54 +8,8 @@ import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-shortcut-list',
-    template: ` 
-<header>
-    Shortcuts
-    <d3s-tile-actions [hasAdd]="formMode == FormMode.Default" (addClick)="add()"></d3s-tile-actions>
-</header>
-<div [ngSwitch]="formMode">
-    <div *ngSwitchCase="FormMode.Default">
-        <p-table #dt [value]="shortcuts" selectionMode="single" [metaKeySelection]="true" [pageLinks]="3" [paginator]="true" [rows]="10">
-            <ng-template pTemplate="header">
-                <tr>
-                    <th>Name</th>
-                    <th></th>
-                </tr>
-            </ng-template>
-            <ng-template pTemplate="body" let-item>
-                <tr [pSelectableRow]="item">
-                    <td>{{item.Name}}</td>
-                    <td>
-                        <div class="RowTools">
-                            <a (click)="moveUp(item.ID)" style="cursor:pointer;"><i class="fa fa-caret-up"></i></a>
-                            <a (click)="moveDown(item.ID)" style="cursor:pointer;"><i class="fa fa-caret-down"></i></a>
-                            <a (click)="edit(item.ID)"><i class="fa fa-pencil"></i></a>
-                            <a (click)="delete(item.ID)"><i class="fa fa-trash-o"></i></a>
-                        </div>
-                    </td>
-                </tr>
-            </ng-template>
-            <ng-template pTemplate="summary">
-                <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
-            </ng-template>
-        </p-table>
-    </div>
-    <div *ngSwitchCase="FormMode.Adding">
-        <d3s-shortcut-item (onSave)="cancel()" (onCancel)="cancel()"></d3s-shortcut-item>
-    </div>
-    <div *ngSwitchCase="FormMode.Editing">
-        <d3s-shortcut-item [shortcut]="selectedShortcut" (onSave)="cancel()" (onCancel)="cancel()"></d3s-shortcut-item>
-    </div>
-    <div *ngSwitchCase="FormMode.Deleting">
-        <div>
-            Are you sure you want to delete the [{{selectedShortcut.Name}}] shortcut?
-        </div>
-        <button pButton type="button" label="Delete" (click)="confirmDelete()"></button>
-        <button pButton type="button" label="Cancel" (click)="formMode = FormMode.Default"></button>
-    </div>
-</div>
-                `
-    ,providers: [ShortcutService]
+    templateUrl: './shortcut-list.component.html',
+    providers: [ShortcutService]
 })
 
 export class ShortcutListComponent extends BaseComponent implements OnInit {

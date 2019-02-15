@@ -41,6 +41,9 @@ namespace d360.core.entities
 
         [DataMember]
         public virtual ICollection<Field> Fields { get; set; }
+
+        [IgnoreDataMember]
+        public virtual ICollection<Fusion> OwnedFusions { get; set; }
     }
 
     [DataContract(Namespace = NAMESPACE)]
