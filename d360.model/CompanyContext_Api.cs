@@ -858,7 +858,7 @@ from	ResponsibilityTypeRelationOverrideItem T
 		inner join api.ExecutionDeletedAsset S on S.AssetID = T.AssetID and {querySuffix};
 
 delete	T
-from	ResponsibilityTypeRelationRuleResult T
+from	ResponsibilityRuleResultAsset T
 		inner join api.ExecutionDeletedAsset S on S.AssetID = T.AssetID and {querySuffix};",
                             new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
 
