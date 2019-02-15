@@ -16,6 +16,7 @@ BEGIN
     create table api.ExecutionDeletedAsset (
         ExecutionID uniqueidentifier not null,
 		ItemNumber int not null,
+		ExecutionItemUid uniqueidentifier null,
         [Uid] uniqueidentifier not null,
         AssetID bigint null,
 		Object varchar(50) null,
