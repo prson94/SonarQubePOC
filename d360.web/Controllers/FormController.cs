@@ -3526,8 +3526,10 @@ namespace d360.web.Controllers
                         throw new ConflictException("Error Occurred!", "You may not have a minimum length that is greater than the maximum length.");
                     }
                 }
-
-                if (!model.FieldType.IsRequired) model.FieldType.MinimumLength = 0;
+                if (!new[] { "Number", "Decimal" }.Contains(model.FieldType.Type))
+                {
+                    if (!model.FieldType.IsRequired) model.FieldType.MinimumLength = 0;
+                }
 
                 var val = model.Validation();
                 if (!val.Valid)
@@ -3842,8 +3844,11 @@ namespace d360.web.Controllers
             var a = Company.GetById<FieldType>(id);
             if (a == null) return null;
             var used = Company.Any<Field>(i => i.FieldTypeID == id);
-            
-            if (!a.IsRequired) a.MinimumLength = 0;
+
+            if (!new[] { "Number", "Decimal" }.Contains(a.Type))
+            {
+                if (!a.IsRequired) a.MinimumLength = 0;
+            }
 
             var model = new FieldTypeEditorModel
             {
@@ -3956,11 +3961,17 @@ namespace d360.web.Controllers
 
                 ft.IsRequired = model.FieldType.IsRequired;
 
-                ft.MinimumLength = model.FieldType.MinimumLength;
                 ft.MaximumLength = model.FieldType.MaximumLength;
                 ft.Pattern = model.FieldType.Pattern;
 
-                if (!ft.IsRequired) ft.MinimumLength = 0;
+                if (new[] { "Number", "Decimal" }.Contains(ft.Type))
+                {
+                    ft.MinimumLength = model.FieldType.MinimumLength;
+                }
+                else
+                {
+                    if (!ft.IsRequired) ft.MinimumLength = 0;
+                }
 
                 bool isNew;
 
@@ -4557,7 +4568,7 @@ namespace d360.web.Controllers
                 {
                     Text = i.Name,
                     Value = $"{i.ID}",
-                    Selected = a.FusionOwners.Any(c => c.ID == i.ID)
+                    Selected = a.FusionOwners.Any(c => c.ObjectID == i.ID && c.Object=="Artifact")
                 }).ToList();
                         
             list.Add(new EditableField { Row = 6, Column = 1, Required = true, FieldName = "Owners", Name = "Owners", FieldDescription = "You must assign one or more owners for this configuration.", FieldType = DataType.Lookup.ToString(), MultiSelect = true, Items = owners });
@@ -4599,7 +4610,7 @@ namespace d360.web.Controllers
 
                 var items = rawOwners.Split(',').ToList().Select(i => int.Parse(i)).ToList();
 
-                var ownerArtifacts = Company.Filter<Artifact>(i => items.Contains(i.ID)).ToList();
+                var ownerArtifacts = Company.Filter<Asset>(i => items.Contains(i.ObjectID) && i.Object=="Artifact").ToList();
 
                 var model = new Fusion
                 {
@@ -4684,7 +4695,7 @@ namespace d360.web.Controllers
 
                 var items = rawOwners.Split(',').ToList().Select(i => int.Parse(i)).ToList();
 
-                var ownerArtifacts = Company.Filter<Artifact>(i => items.Contains(i.ID)).ToList();
+                var ownerArtifacts = Company.Filter<Asset>(i => items.Contains(i.ObjectID) && i.Object=="Artifact").ToList();
 
                 model.Description = parseTextField(form, "Description");
                 model.Enabled = parseBooleanField(form, "Enabled");
@@ -4706,7 +4717,7 @@ namespace d360.web.Controllers
                 #endregion
 
                 #region See which ones to delete.
-                var ownersToRemove = new List<Artifact>();
+                var ownersToRemove = new List<Asset>();
                 foreach(var co in model.FusionOwners)
                 {
                     if (!ownerArtifacts.Any(no => no.ID == co.ID))

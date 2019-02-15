@@ -33,6 +33,13 @@ namespace d360.core.entities
         public long ObjectAssetID { get; set; }
     }
 
+    public class FusionMarkitParentMapping
+    {
+        public int MapID { get; set; }
+        public int FusionAttributeID { get; set; }
+        public long AssetID { get; set; }
+    }
+
     public class FusionMarkitSourceTargetMapping
     {
         public int MapID { get; set; }
