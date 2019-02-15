@@ -70,14 +70,21 @@ namespace d360.model
             #region Administrator Editability Sql Syntax
 
             var editRightsColumnStatement = "1 as P_CanEdit, 1 as P_CanDelete,";
-            var editRightsJoinStatement = "";
-
+            
             if (!CurrentResourceIsAdmin)
             {
-                editRightsColumnStatement = " IIF(S_E.[Count] = 0, 0, 1) as P_CanEdit, IIF(S_D.[Count] = 0, 0, 1) as P_CanDelete, ";
-                editRightsJoinStatement = $@"
-cross apply (select count(1) as [Count] from ResponsibilityAllAsset where ResourceID = @r and ( (AssetID = A.ID) or (AssetTypeID = A.AssetTypeID and AssetID = 0) ) and PermissionsBitMask & {(int)Permission.ModifyAsset} = {(int)Permission.ModifyAsset}) as S_E 
-cross apply (select count(1) as [Count] from ResponsibilityAllAsset where ResourceID = @r and ( (AssetID = A.ID) or (AssetTypeID = A.AssetTypeID and AssetID = 0) ) and PermissionsBitMask & {(int)Permission.DeleteAsset} = {(int)Permission.DeleteAsset}) as S_D ";
+                editRightsColumnStatement = @" case when exists (
+							 select 1 from UserAssetPermissions(@r,AssetTypeID) u where u.PermissionsBitMask & 2 = 2 and u.AssetID = pvt.AssetID
+						   ) 
+						   then 1 
+						   else 0 
+						end as P_CanEdit,
+						 case when exists (
+							 select 1 from UserAssetPermissions(@r,AssetTypeID) u where u.PermissionsBitMask & 4 = 4 and u.AssetID = pvt.AssetID
+						   ) 
+						   then 1 
+						   else 0 
+						end as P_CanDelete, ";            
             }            
 
             #endregion
@@ -388,11 +395,12 @@ select SubjectID from [Intersect]{tableHints} where IntersectTypeID = @{paramPre
             }
 
             var filterWhereString = "";
+            var filterWhereStringRaw = "";
             if (filterWhereList.Count > 0)
             {
-                filterWhereString = string.Join(" and ", filterWhereList);
-                if (!string.IsNullOrEmpty(filterWhereString))
-                    filterWhereString = $"and {filterWhereString}";
+                filterWhereStringRaw = string.Join(" and ", filterWhereList);
+                if (!string.IsNullOrEmpty(filterWhereStringRaw))
+                    filterWhereString = $"and {filterWhereStringRaw}";
             }
 
             #endregion
@@ -455,8 +463,7 @@ from	Asset A{tableHints}
         {filterJoinString}         
 where	A.AssetTypeID = @atID
 		and A.State = 1
-        and not exists (select 1 from ResponsibilityAllAsset where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = @r and ( (AssetTypeID = A.AssetTypeID and AssetID = 0) ))
-        and not exists (select 1 from ResponsibilityAllAsset where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = @r and ( (AssetID = A.ID)  ))
+        and not exists (select 1 from AssetTypesUserCantRead(@r) u where u.AssetTypeID = @atID) and not exists (select 1 from AssetsByTypeUserCantRead(@r,@atID) u where u.AssetID = A.ID) 
         {filterWhereString}
 OPTION (RECOMPILE)";
             
@@ -466,13 +473,17 @@ OPTION (RECOMPILE)";
             if (pageSize < 0)
                 pageSize = 25;
             pageNumber = ((pageNumber < 0) ? 0 : pageNumber) * pageSize;
- 
+
+            var whereClause = " where ";
+
+            if (string.IsNullOrEmpty(filterWhereStringRaw)) whereClause = "";
+            
                 var sql = $@"
 select	*
 from	(
 		select	AssetID, Object, ObjectID, Type, TypeID, 
-               {parentOuterSqlColumn}  
-                P_CanEdit, P_CanDelete,
+               {editRightsColumnStatement}
+               {parentOuterSqlColumn}                  
 				{selectFieldString} 
 		from	(
 				select	A.ID as AssetID,
@@ -482,8 +493,7 @@ from	(
 						AST.Object as Type,
 						AST.ObjectID as TypeID,
                         {parentSqlColumn}
-						FT.ID as FieldTypeID,  
-                        {editRightsColumnStatement}
+						FT.ID as FieldTypeID,                        
 						case 
 							when FT.AllowAllValue = 1 and F_O.Value = '0' then FT.AllowAllLabel 
                             when F_O.Value is not null then F_O.FormattedValue
@@ -495,19 +505,18 @@ from	(
 				from	Asset A{tableHints} 
                         {parentSqlJoin} 
                         inner join AssetType AST{tableHints} on AST.ID = A.AssetTypeID and AST.ID = @atID and A.State = 1  
-                        {filterJoinString}     
-                        {editRightsJoinStatement} 
+                        {filterJoinString}
 						inner join FieldType FT{tableHints} on FT.ID in ({selectFieldIDs}) and FT.AssetTypeID = A.AssetTypeID
 						left join Field F_O{tableHints} on F_O.AssetID = A.ID and F_O.FieldTypeID = FT.ID
 						{relationshipJoinStatement}
 						{fieldFromRelationshipJoinStatement} 
-                where   not exists (select 1 from ResponsibilityAllAsset where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = @r and ( (AssetID = A.ID)  ) )
-                        and not exists (select 1 from ResponsibilityAllAsset where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = @r and (  (AssetID = 0 and AssetTypeID = A.AssetTypeID) ) )
-                        {filterWhereString}
+                {whereClause}                         
+                        {filterWhereStringRaw}
 				) A
 		pivot	(
 				MIN([Field]) for FieldTypeID in ({pivotFieldIDs})
-				) pvt
+				) pvt        
+        where not exists (select 1 from AssetTypesUserCantRead(@r) u where u.AssetTypeID = @atID) and not exists (select 1 from AssetsByTypeUserCantRead(@r,@atID) u where u.AssetID = pvt.AssetID)  
 		ORDER BY {orderFieldString}
 		OFFSET({pageNumber}) ROWS FETCH NEXT ({pageSize}) ROWS ONLY
 		) A
