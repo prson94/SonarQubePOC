@@ -7045,7 +7045,7 @@ where v.id = {0}", id)).FirstOrDefault();
             }
             else
             {
-                permissions = Company.GetPermissions(asset.Type, asset.TypeID, asset.Object, asset.ObjectID);
+                permissions = Company.GetPermissions(asset.ID, asset.AssetTypeID);
             }
 
             return permissions;
