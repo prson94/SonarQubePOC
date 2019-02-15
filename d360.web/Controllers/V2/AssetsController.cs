@@ -9,6 +9,7 @@ using d360.web.Models;
 using Dapper;
 using Microsoft.Web.Http;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
@@ -64,7 +65,36 @@ namespace d360.web.Controllers.V2
                 json = await request.Content.ReadAsStringAsync();
             }
 
-            return JsonConvert.DeserializeObject<T>(json);
+            if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+                return default(T);
+            else
+            {
+                if ((json.StartsWith("{") && json.EndsWith("}")) || //For object
+                        (json.StartsWith("[") && json.EndsWith("]"))) //For array
+                {
+                    bool isValid = false;
+                    try
+                    {
+                        var obj = JToken.Parse(json);
+                        isValid = true;
+                        obj = null;
+                    }
+                    catch
+                    {
+                        isValid = false;
+                    }
+
+                    if (isValid)
+                        return JsonConvert.DeserializeObject<T>(json);
+                    else
+                        return default(T);
+                }
+                else
+                {
+                    return default(T);
+                }
+            }
+                
         }
 
         private string getFieldDataType(FieldType field)
@@ -676,6 +706,9 @@ order by    P.[Path]
                 if (assets == null)
                     assets = readRequestJsonContent<List<AssetInsert>>(Request).Result;
 
+                if (assets == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
+
                 var execution = new ApiExecution
                 {
                     ExecutionID = Guid.NewGuid(),
@@ -755,6 +788,9 @@ order by    P.[Path]
                 if (assets == null)
                     assets = readRequestJsonContent<List<AssetUpdate>>(Request).Result;
 
+                if (assets == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
+
                 var execution = new ApiExecution
                 {
                     ExecutionID = Guid.NewGuid(),
@@ -832,6 +868,9 @@ order by    P.[Path]
 
                 if (assets == null)
                     assets = readRequestJsonContent<AssetDeletes>(Request).Result;
+
+                if (assets == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
 
                 var execution = new ApiExecution
                 {
@@ -913,6 +952,9 @@ order by    P.[Path]
 
                 if (assets == null)
                     assets = readRequestJsonContent<List<AssetInsert>>(Request).Result;
+
+                if (assets == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
 
                 var executionInfo = new ApiExecutionInfo
                 {
@@ -1001,6 +1043,9 @@ order by    P.[Path]
                 if (assets == null)
                     assets = readRequestJsonContent<List<AssetUpdate>>(Request).Result;
 
+                if (assets == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
+
                 var executionInfo = new ApiExecutionInfo
                 {
                     CompanyID = Company.CurrentCompanyID,
@@ -1087,6 +1132,9 @@ order by    P.[Path]
 
                 if (assets == null)
                     assets = readRequestJsonContent<AssetDeletes>(Request).Result;
+
+                if (assets == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
 
                 var executionInfo = new ApiExecutionInfo
                 {

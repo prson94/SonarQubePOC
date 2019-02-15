@@ -114,7 +114,7 @@ from    api.ExecutionAsset T
             new { executionID, assetTypeID }, commandTimeout: timeout);
         }
 
-        private void LogAssetAndParentErrors(Guid executionID, int timeout = 3600)
+        private void LogAssetErrors(Guid executionID, int timeout = 3600)
         {
             Connection.Execute(@"
 update	api.ExecutionAsset
@@ -122,8 +122,13 @@ set		Success = 0,
 		[Message] = coalesce([Message] + '; ', '') + 'Asset cannot be found based on Uid value'
 where	ExecutionID = @executionID
         and AssetID is null
-		and Uid is not null;
+		and Uid is not null;",
+            new { executionID }, commandTimeout: timeout);
+        }
 
+        private void LogParentErrors(Guid executionID, int timeout = 3600)
+        {
+            Connection.Execute(@"
 update	api.ExecutionAsset
 set		Success = 0,
 		[Message] = coalesce([Message] + '; ', '') + 'Asset does not contain a valid ParentUid value'
@@ -498,8 +503,8 @@ from    api.ExecutionAsset T
             T.ParentObjectID = S.ObjectID
     from    api.ExecutionAsset T
             inner join Asset S on T.ExecutionID = @executionID and S.Uid = T.ParentUid and T.ParentUid is not null
-            inner join AssetType ST on ST.ID = S.AssetTypeID and ST.Object = T.ParentObjectType and ST.ObjectID = T.ParentObjectTypeID;
-    ", new { executionID, assetTypeID }, commandTimeout: timeout);
+            inner join AssetType ST on ST.ID = S.AssetTypeID and ST.Object = T.ParentObjectType and ST.ObjectID = T.ParentObjectTypeID;", 
+            new { executionID, assetTypeID }, commandTimeout: timeout);
         }
 
         #endregion
@@ -1153,9 +1158,13 @@ from	ResponsibilityRuleResultAsset T
                 LogFieldLookupErrors(execution.ExecutionID, at.Object, at.ObjectID, "Asset", timeout);
                 ValidateAssetAndParent(execution.ExecutionID, at.ID, timeout);
 
-                if (!isInsert)
+                if (isInsert)
                 {
-                    LogAssetAndParentErrors(execution.ExecutionID, timeout);        // If you cannot find asset and/or parent based on Uids provided.
+                    LogParentErrors(execution.ExecutionID, timeout);                // If you cannot find parent based on Uids provided.
+                }
+                else
+                {
+                    LogAssetErrors(execution.ExecutionID, timeout);                 // If you cannot find asset based on Uids provided.
                     LoadMissingKeyFields(execution.ExecutionID, at.ID, timeout);    // Get missing key fields if this is an update.
                 }
 
