@@ -68,6 +68,10 @@ with h as	(
 		)
    insert into @h  
     select ID from h;  
+	
+   insert into @h
+  Select  @OwnerSourceID
+  
   end  
   
  delete @tbl  
