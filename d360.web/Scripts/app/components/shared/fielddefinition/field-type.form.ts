@@ -974,31 +974,41 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private validateNumber(value: string) {
         if (value == 'Number' || value == 'Decimal') {
 
-            if (value == 'Number') {
-                if (this.model.FieldType.Increment % 1 != 0) {
-                    this.errorMessage = 'Please enter a valid integer.';
-                    return;
-                }
-            }
 
             let min = +this.model.FieldType.MinimumLength;
             let max = +this.model.FieldType.MaximumLength;
             let defaultNum = +this.model.FieldType.DefaultValue;
+            let increment = +this.model.FieldType.Increment; 
+            
+            if (value == 'Number') {
+                if (increment && increment % 1 != 0) {
+                    this.errorMessage = 'Please enter a valid integer.';
+                    return;
+                } else if (min && min % 1 != 0) {
+                    this.errorMessage = 'Please enter a valid integer.';
+                    return;
+                } else if (max && max % 1 != 0) {
+                    this.errorMessage = 'Please enter a valid integer.';
+                    return;
+                } else {
+                    this.errorMessage = '';
+                }
+            }
 
-            if (+this.model.FieldType.Increment < 0) {
+            if (increment < 0) {
                 this.errorMessage = 'Please enter a positive number for the increment.';
                 return;
             } else {
-                this.errorMessage = "";
+                this.errorMessage = '';
             }
 
             if (defaultNum) {
                 if (min && defaultNum < min) {
-                    this.errorMessage = 'Please enter a minimum value of ' + this.model.FieldType.MinimumLength + '.';
+                    this.errorMessage = 'Please enter a minimum value of ' + min + '.';
                     return;
                 }
                 else if (max && defaultNum > max) {
-                    this.errorMessage = 'Please enter a maximum value of ' + this.model.FieldType.MaximumLength + '.';
+                    this.errorMessage = 'Please enter a maximum value of ' + max + '.';
                     return;
                 }
                 else {
@@ -1010,7 +1020,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 else
                     this.errorMessage = '';
         } else {
-            this.errorMessage = "";
+            this.errorMessage = '';
         }
     }
 
