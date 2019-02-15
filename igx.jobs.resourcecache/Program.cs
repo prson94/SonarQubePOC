@@ -212,7 +212,7 @@ when	not matched by target then
                             try
                             {
                                 companyConnection.Execute("delete ResponsibilityTypeRelationOverrideItem where SecurityAsset = 'R' and SecurityAssetID not in (select ResourceID from reporting.Global_Resource)");
-                                companyConnection.Execute("delete ResponsibilityTypeRelationRuleResult where SecurityAsset = 'R' and SecurityAssetID not in (select ResourceID from reporting.Global_Resource)");
+                                companyConnection.Execute("delete [dbo].[ResponsibilityRuleResultSecurityAsset] where SecurityAsset = 'R' and SecurityAssetID not in (select ResourceID from reporting.Global_Resource)");
                             }
                             catch (Exception ex)
                             {

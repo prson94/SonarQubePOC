@@ -184,9 +184,12 @@ order by RT.Name", new { id }).AsQueryable();
 		    inner join AssetType T on T.ID = A.AssetTypeID and T.Object = @ObjectType and T.ObjectID = @ObjectID;
 
     delete	O 
-    from	ResponsibilityTypeRelationRuleResult O
-		    inner join Asset A on A.ID = O.AssetID and O.ResponsibilityTypeID = @ResponsibilityTypeID
-		    inner join AssetType T on T.ID = A.AssetTypeID and T.Object = @ObjectType and T.ObjectID = @ObjectID;
+    from	[dbo].[ResponsibilityRuleResultSecurityAsset] O
+            inner join ResponsibilityTypeRelationRule R on O.RuleID = R.ID and R.[Object] = @ObjectType and R.[ObjectID] = @ObjectID		    
+
+    delete	O 
+    from	[dbo].[ResponsibilityRuleResultAsset] O
+            inner join ResponsibilityTypeRelationRule R on O.RuleID = R.ID and R.[Object] = @ObjectType and R.[ObjectID] = @ObjectID
 
     delete	ResponsibilityTypeRelationRule
     where	ResponsibilityTypeID = @ResponsibilityTypeID
