@@ -116,13 +116,11 @@ where   A.Type = 'ArtifactType'
 
             if (string.IsNullOrEmpty(filterSql))
             {
-                sql += $" where not exists (select 1 from ResponsibilityAllAsset where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = {Company.CurrentResourceID} and ( (AssetTypeID = @typeId and AssetID = 0)))";
-                sql += $" and not exists (select 1 from ResponsibilityAllAsset where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = {Company.CurrentResourceID} and ((AssetID = A.AssetID) ))";
+                sql += $" where not exists(select 1 from AssetTypesUserCantRead({Company.CurrentResourceID})u where u.AssetTypeID = @typeId) and not exists(select 1 from AssetsByTypeUserCantRead({Company.CurrentResourceID}, @typeId) u where u.AssetID = A.AssetID) ";                
             }
             else
             {
-                sql += $" and not exists (select 1 from ResponsibilityAllAsset where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = {Company.CurrentResourceID} and ( (AssetTypeID = @typeId and AssetID = 0)))";
-                sql += $" and not exists (select 1 from ResponsibilityAllAsset where PermissionsBitMask & {(int)Permission.ReadAsset} = 0 and ResourceID = {Company.CurrentResourceID} and ((AssetID = A.AssetID) ))";
+                sql += $" and not exists(select 1 from AssetTypesUserCantRead({Company.CurrentResourceID})u where u.AssetTypeID = @typeId) and not exists(select 1 from AssetsByTypeUserCantRead({Company.CurrentResourceID}, @typeId) u where u.AssetID = A.AssetID) ";
             }
 
             if (string.IsNullOrEmpty(sortDataField))
@@ -243,7 +241,8 @@ from	AssetDetail A
 where   A.Type = 'ArtifactType' 
         and A.TypeID = @id 
         and A.[State] = 1 
-        and A.ID not in ({GetNoReadSqlStatement()})";
+        and not exists(select 1 from AssetTypesUserCantRead({ Company.CurrentResourceID})u where u.AssetTypeID = @id) and not exists(select 1 from AssetsByTypeUserCantRead({ Company.CurrentResourceID}, @id) u where u.AssetID = A.ID) ";                
+
 
             #endregion
 

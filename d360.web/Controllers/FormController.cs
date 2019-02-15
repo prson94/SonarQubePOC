@@ -12630,7 +12630,7 @@ order by	case
         }
 
         [HttpPut, ValidateInput(false),  ActionName("ResponsibilityTypeRelationRule"), Route("ResponsibilityTypeRelationRule")]
-        public JsonResult PutResponsibilityTypeRelationRule(ResponsibilityTypeRelationRule model)
+        public async Task<JsonResult> PutResponsibilityTypeRelationRule(ResponsibilityTypeRelationRule model)
         {
             try
             {
@@ -12668,7 +12668,7 @@ order by	case
                 // Re-process this rule.
                 if (definitionIsDifferent)
                 {
-                    (Company.Database.Connection as System.Data.SqlClient.SqlConnection).ProcessResponsibilityRelationRules(existing.ID);
+                    await ((Company.Database.Connection as System.Data.SqlClient.SqlConnection).ProcessResponsibilityRelationRules(existing.ID));
                 }
                 
 
@@ -12686,7 +12686,7 @@ order by	case
         }
 
         [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false),  ActionName("ResponsibilityTypeRelationRule"), Route("ResponsibilityTypeRelationRule")]
-        public JsonResult PostResponsibilityTypeRelationRule(ResponsibilityTypeRelationRule model)
+        public async Task<JsonResult> PostResponsibilityTypeRelationRule(ResponsibilityTypeRelationRule model)
         {
             try
             {
@@ -12703,7 +12703,7 @@ order by	case
                 Company.Add(model);
 
                 // Process this rule.
-                (Company.Database.Connection as System.Data.SqlClient.SqlConnection).ProcessResponsibilityRelationRules(model.ID);
+                await ((Company.Database.Connection as System.Data.SqlClient.SqlConnection).ProcessResponsibilityRelationRules(model.ID));
 
                 return jsonSuccess("Item successfully created and processed.", model.ID.ToString(), "add", HttpStatusCode.Created);
             }

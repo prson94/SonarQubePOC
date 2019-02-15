@@ -86,6 +86,7 @@
   <include file="scripts/GOV-4770-B.xml"/> 
   <include file="scripts/GOV-6299.xml"/>
   <include file="scripts/GOV-6570.xml"/>
+  <include file="scripts/GOV-6258.xml"/>
   <include file="scripts/GOV-6460.xml"/>
   <include file="scripts/GOV-6377.xml"/>
   <include file="scripts/GOV-6587.xml"/>
