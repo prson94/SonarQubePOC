@@ -362,9 +362,10 @@ namespace d360.model
 
         #endregion
 
-        public static void RemoveRelationRuleResultsByRule(this DbConnection cnn, int ruleID)
-        {
-            cnn.Execute("delete ResponsibilityTypeRelationRuleResult where RuleID <> 0 and RuleID = ruleID", commandTimeout: 7200);
+        public static async Task RemoveRelationRuleResultsByRule(this DbConnection cnn, int ruleID)
+        {            
+            await (cnn.ExecuteAsync("delete [dbo].[ResponsibilityRuleResultSecurityAsset] where RuleID = @givenRuleID", new { givenRuleID = ruleID }, commandTimeout: 7200));
+            await (cnn.ExecuteAsync("delete [dbo].[ResponsibilityRuleResultAsset] where RuleID = @givenRuleID", new { givenRuleID = ruleID }, commandTimeout: 7200));
         }
 
         public static void ClearInvalidRelationRuleResults(this DbConnection cnn)
