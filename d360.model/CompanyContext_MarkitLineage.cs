@@ -79,7 +79,7 @@ namespace d360.model
                     null,
                     currentMap,
                     objectMaps,
-                    objectMaps.FirstOrDefault(o => o.FusionAttributeID == currentMap.SourceFusionAttributeID)); //root object map
+                    objectMaps.Where(o => o.FusionAttributeID == currentMap.SourceFusionAttributeID).ToList()); //root object map
             }
 
 
@@ -111,35 +111,59 @@ namespace d360.model
             Stack<FusionMarkitParentMapping> sourceAssets,
             FusionMarkitLineageData root,
             IEnumerable<FusionMarkitObjectMapping> objectMaps,
-            FusionMarkitObjectMapping rootObjectMap)
+            List<FusionMarkitObjectMapping> businessMaps)
         {
 
             if (processedList == null)
                 processedList = new List<int>();
             if (sourceAssets == null)
                 sourceAssets = new Stack<FusionMarkitParentMapping>();
+            if (businessMaps == null)
+                businessMaps = new List<FusionMarkitObjectMapping>();
 
             //add current item to list of processed nodes
             processedList.Add(currentMap.ID);
 
             //get next items to process
             var nextMaps = maps.Where(m => m.SourceFusionAttributeID == currentMap?.TargetFusionAttributeID && !processedList.Contains(m.ID));
+            var isLeaf = !nextMaps.Any();
 
             //find a business object mapping if we don't already have one
-            if (rootObjectMap == null || objectMaps.FirstOrDefault(o => o.FusionAttributeID == currentMap.SourceFusionAttributeID) != null)
-                rootObjectMap = objectMaps.FirstOrDefault(o => o.FusionAttributeID == currentMap.SourceFusionAttributeID);
+            var newBussinesMap = objectMaps.FirstOrDefault(o => o.FusionAttributeID == currentMap.SourceFusionAttributeID && !businessMaps.Any(b => b.FusionAttributeID == o.FusionAttributeID && b.ObjectAssetID == o.ObjectAssetID));
 
-            if (currentMap.SourceAssetID != null)
+            if (newBussinesMap != null)
+                businessMaps.Add(newBussinesMap);
+
+            //if (rootObjectMap == null || objectMaps.FirstOrDefault(o => o.FusionAttributeID == currentMap.SourceFusionAttributeID) != null)
+            //    rootObjectMap = objectMaps.FirstOrDefault(o => o.FusionAttributeID == currentMap.SourceFusionAttributeID);
+
+            if (currentMap.SourceAssetID != null && (sourceAssets.Any() ? sourceAssets.Peek().AssetID != currentMap.SourceAssetID : true))
                 sourceAssets.Push(new FusionMarkitParentMapping { MapID = currentMap.ID, FusionAttributeID = (int)currentMap.SourceFusionAttributeID, AssetID = (long)currentMap.SourceAssetID });
+
+
+            if (isLeaf) //on leaf nodes we need to check final target too
+            {
+
+                //if (currentMap.TargetAssetID != null && (sourceAssets.Any() ? sourceAssets.Peek().AssetID != currentMap.TargetAssetID : true))
+                //    sourceAssets.Push(new FusionMarkitParentMapping { MapID = currentMap.ID, FusionAttributeID = (int)currentMap.TargetFusionAttributeID, AssetID = (long)currentMap.TargetAssetID });
+
+            }
 
             //if we have a source/target pair we might have a valid mapping
             if (sourceAssets.Any() && currentMap.TargetAssetID != null)
             {
-                //if no business mapping check the target attribute too
-                if (rootObjectMap == null)
-                    rootObjectMap = objectMaps.FirstOrDefault(o => o.FusionAttributeID == currentMap.TargetFusionAttributeID);
 
-                if (rootObjectMap != null)
+                //if no business mapping check the target attribute too
+                //if (rootObjectMap == null)
+                //    rootObjectMap = objectMaps.FirstOrDefault(o => o.FusionAttributeID == currentMap.TargetFusionAttributeID);
+
+                //need to check final target too
+                var targetBusinessMap = objectMaps.FirstOrDefault(o => o.FusionAttributeID == currentMap.TargetFusionAttributeID && !businessMaps.Any(b => b.FusionAttributeID == o.FusionAttributeID && b.ObjectAssetID == o.ObjectAssetID));
+
+                if (targetBusinessMap != null)
+                    businessMaps.Add(targetBusinessMap);
+
+                if (businessMaps.Any())
                 {
                     var current = new FusionMarkitParentMapping
                     {
@@ -159,34 +183,50 @@ namespace d360.model
                             continue;
                         }
 
-                        //if the mapping doesn't exist create it
-                        if (!mappings.Any(m => m.MapID == current.MapID && m.SourceFusionAttributeID == previous.FusionAttributeID
-                        && m.TargetFusionAttributeID == current.FusionAttributeID && m.SourceAssetID == previous.AssetID && m.TargetAssetID == current.AssetID
-                        && m.ObjectAssetID == (rootObjectMap == null ? 0 : rootObjectMap.ObjectAssetID)))
+                        foreach (var businessMap in businessMaps)
                         {
-                            mappings.Add(new FusionMarkitSourceTargetMapping
+                            //if the mapping doesn't exist create it
+                            if (!mappings.Any(m => m.MapID == current.MapID && m.SourceFusionAttributeID == previous.FusionAttributeID
+                            && m.TargetFusionAttributeID == current.FusionAttributeID && m.SourceAssetID == previous.AssetID && m.TargetAssetID == current.AssetID
+                            && m.ObjectAssetID == businessMap.ObjectAssetID))
                             {
-                                MapID = current.MapID,
-                                SourceFusionAttributeID = (int)previous.FusionAttributeID,
-                                TargetFusionAttributeID = (int)current.FusionAttributeID,
-                                SourceAssetID = (long)previous.AssetID,
-                                TargetAssetID = (long)current.AssetID,
-                                ObjectAssetID = (rootObjectMap == null ? 0 : rootObjectMap.ObjectAssetID)
-                            });
+                                mappings.Add(new FusionMarkitSourceTargetMapping
+                                {
+                                    MapID = current.MapID,
+                                    SourceFusionAttributeID = (int)previous.FusionAttributeID,
+                                    TargetFusionAttributeID = (int)current.FusionAttributeID,
+                                    SourceAssetID = (long)previous.AssetID,
+                                    TargetAssetID = (long)current.AssetID,
+                                    ObjectAssetID = businessMap.ObjectAssetID
+                                });
+                            }
                         }
 
-
                         current = previous;
+                        //if (!sourceAssets.Any())
+                        //{
+                        //    sourceAssets.Push(current);
+                        //    //var lastBusinessMap = businessMaps?.Last();
+                        //    //businessMaps = new List<FusionMarkitObjectMapping>();
+                        //    //if (targetBusinessMap != null)
+                        //    //    businessMaps.Add(targetBusinessMap);
+
+                        //    break;
+                        //}
+                            
                     }
 
+                    
                     //the business mapping has been used, clear it out
-                    rootObjectMap = null;
+                    //rootObjectMap = null;
                 }
             }
 
             //process the next nodes in the lineage
             foreach (var next in nextMaps)
-                UpdateSourceTargetObjectMap(maps, next, mappings, processedList, sourceAssets, root, objectMaps, rootObjectMap);
+            {
+                UpdateSourceTargetObjectMap(maps, next, mappings, processedList, sourceAssets, root, objectMaps, businessMaps);
+            }
         }
 
         private async Task SaveMarkitLineageRunDetails(int rows, int techRows, int businessRows)
