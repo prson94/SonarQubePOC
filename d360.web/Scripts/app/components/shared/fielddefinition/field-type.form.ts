@@ -1002,19 +1002,21 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.errorMessage = '';
             }
 
-            if (defaultNum) {
-                if (min && defaultNum < min) {
+            if (!isNaN(defaultNum)) {
+                if (!isNaN(min) && defaultNum < min) {
                     this.errorMessage = 'Please enter a minimum value of ' + min + '.';
                     return;
                 }
-                else if (max && defaultNum > max) {
+                else if (!isNaN(max) && defaultNum > max) {
                     this.errorMessage = 'Please enter a maximum value of ' + max + '.';
                     return;
                 }
-                else {
+                else { 
                     this.errorMessage = '';
                 }
-            } else if (min && max)
+            }
+
+            if (!isNaN(min) && !isNaN(max))
                 if (min > max)
                     this.errorMessage = 'Please enter a minimum value which is lower than the maximum value.';
                 else
