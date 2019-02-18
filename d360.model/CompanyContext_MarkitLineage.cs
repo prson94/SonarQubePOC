@@ -46,8 +46,8 @@ namespace d360.model
     {
         private object processLock = new object();
         private object mappingLock = new object();
-        private int numThreads = 8;
-        private int maxComplexity = 50;
+        private const int  numThreads = 8;
+        private const int maxComplexity = 50;
 
         public async Task GenerateMarkitBusinessLineage()
         {
@@ -73,18 +73,18 @@ namespace d360.model
             var mappings = new List<FusionMarkitSourceTargetMapping>();
 
             //build map dictionary
-            Dictionary<int, List<FusionMarkitLineageData>> mapDictionary = new Dictionary<int, List<FusionMarkitLineageData>>();
+            Dictionary<int, List<FusionMarkitLineageData>> sourceMap = new Dictionary<int, List<FusionMarkitLineageData>>();
             foreach(var map in maps)
             {
                 if (map.SourceFusionAttributeID == null)
                     continue;
-                if (!mapDictionary.ContainsKey((int)map.SourceFusionAttributeID))
+                if (!sourceMap.ContainsKey((int)map.SourceFusionAttributeID))
                 {
-                    mapDictionary.Add((int)map.SourceFusionAttributeID, new List<FusionMarkitLineageData>() { map });
+                    sourceMap.Add((int)map.SourceFusionAttributeID, new List<FusionMarkitLineageData>() { map });
                 }
                 else
                 {
-                    var list = mapDictionary[(int)map.SourceFusionAttributeID];
+                    var list = sourceMap[(int)map.SourceFusionAttributeID];
                     list.Add(map);
                 }
             }
@@ -92,7 +92,7 @@ namespace d360.model
             Parallel.ForEach(leftmostMaps, new ParallelOptions { MaxDegreeOfParallelism = numThreads }, currentMap =>
              {
                  UpdateSourceTargetObjectMap(
-                    mapDictionary,
+                    sourceMap,
                     maps,
                     currentMap,
                     mappings,
@@ -125,7 +125,7 @@ namespace d360.model
 
 
         private void UpdateSourceTargetObjectMap(
-            Dictionary<int, List<FusionMarkitLineageData>> mapDictionary,
+            Dictionary<int, List<FusionMarkitLineageData>> sourceMap,
             IEnumerable<FusionMarkitLineageData> maps,
             FusionMarkitLineageData currentMap,
             List<FusionMarkitSourceTargetMapping> mappings,
@@ -154,11 +154,8 @@ namespace d360.model
                 processedList.Add(currentMap.ID);
                 
                 //get next items to process
-                if (currentMap != null && currentMap.TargetFusionAttributeID != null && mapDictionary.ContainsKey((int)currentMap.TargetFusionAttributeID))
-                {
-                    nextMaps = mapDictionary[(int)currentMap.TargetFusionAttributeID].Where(m => !processedList.Contains(m.ID)).ToList();
-                }
-                //nextMaps = maps.Where(m => m.SourceFusionAttributeID == currentMap?.TargetFusionAttributeID && !processedList.Contains(m.ID)).ToList();
+                if (currentMap != null && currentMap.TargetFusionAttributeID != null && sourceMap.ContainsKey((int)currentMap.TargetFusionAttributeID))
+                    nextMaps = sourceMap[(int)currentMap.TargetFusionAttributeID].Where(m => !processedList.Contains(m.ID)).ToList();
             }
 
             //find a business object mapping if we don't already have one
@@ -170,11 +167,9 @@ namespace d360.model
             if (currentMap.SourceAssetID != null && (sourceAssets.Any() ? sourceAssets.Peek().AssetID != currentMap.SourceAssetID : true))
                 sourceAssets.Push(new FusionMarkitParentMapping { MapID = currentMap.ID, FusionAttributeID = (int)currentMap.SourceFusionAttributeID, AssetID = (long)currentMap.SourceAssetID });
 
-
             //if we have a source/target pair we might have a valid mapping
             if (sourceAssets.Any() && currentMap.TargetAssetID != null)
             {
-
                 //need to check final target too
                 var targetBusinessMap = objectMaps.FirstOrDefault(o => o.FusionAttributeID == currentMap.TargetFusionAttributeID && !businessMaps.Any(b => b.FusionAttributeID == o.FusionAttributeID && b.ObjectAssetID == o.ObjectAssetID));
 
@@ -253,10 +248,10 @@ namespace d360.model
 
             //process the next nodes in the lineage
             if (nextMaps.Count() == 1)
-                UpdateSourceTargetObjectMap(mapDictionary, maps, nextMaps.First(), mappings, processedList, sourceAssets, root, objectMaps, businessMaps, ++complexity);
+                UpdateSourceTargetObjectMap(sourceMap, maps, nextMaps.First(), mappings, processedList, sourceAssets, root, objectMaps, businessMaps, ++complexity);
             else
                 foreach (var next in nextMaps)
-                    UpdateSourceTargetObjectMap(mapDictionary, maps, next, mappings, new HashSet<int>(processedList), new Stack<FusionMarkitParentMapping>(sourceAssets), root, objectMaps, new List<FusionMarkitObjectMapping>(businessMaps), complexity + nextMaps.Count());
+                    UpdateSourceTargetObjectMap(sourceMap, maps, next, mappings, new HashSet<int>(processedList), new Stack<FusionMarkitParentMapping>(sourceAssets), root, objectMaps, new List<FusionMarkitObjectMapping>(businessMaps), complexity + nextMaps.Count());
         }
 
         private async Task SaveMarkitLineageRunDetails(int rows, int techRows, int businessRows)
