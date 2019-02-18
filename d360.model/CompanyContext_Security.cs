@@ -85,9 +85,9 @@ order by RT.Name", new { id }).AsQueryable();
         {
             var permissions = Permission.DeleteAsset.GetList();
 
-            var responsibilityAssignments = Query<int>(@"select PermissionsBitMask from ResponsibilityAllAsset where ResourceID = @ResourceID and AssetTypeID = @AssetTypeID
-                                                                    union select PermissionsBitMask from ResponsibilityAllAsset where ResourceID = @ResourceID and AssetID = @AssetID ", new { ResourceID = CurrentResourceID, AssetTypeID = assetTypeId, AssetID = assetId });
-                   
+            var responsibilityAssignments = Query<int>(@"select PermissionsBitMask from UserAssetPermissions(@r,@assetTypeId) where AssetID = 0
+                                                        union select PermissionsBitMask from UserAssetPermissions(@r,@assetTypeId) where AssetID = @assetId", new { r = CurrentResourceID, assetTypeId, assetId });
+
             permissions.ForEach(p =>
             {
                 p.Selected = responsibilityAssignments.Any(i => (i & p.Value) == p.Value);
