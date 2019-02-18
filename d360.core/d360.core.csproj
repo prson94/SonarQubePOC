@@ -182,13 +182,12 @@
     <Compile Include="entities\Quality\PolicyTypeLevel.cs" />
     <Compile Include="entities\Nym.cs" />
     <Compile Include="entities\NymRelation.cs" />
+    <Compile Include="entities\Transitive\ApiVersion2Models.cs" />
     <Compile Include="entities\Transitive\AzureGraphModels.cs" />
     <Compile Include="entities\Transitive\AssetWithoutReadPermission.cs" />
     <Compile Include="entities\Transitive\BulkOwnerImport.cs" />
-    <Compile Include="entities\Transitive\BulkRelationshipImport.cs" />
     <Compile Include="entities\Transitive\BulkMetricImport.cs" />
     <Compile Include="entities\Transitive\GenerateAssetTypeSqlModel.cs" />
-    <Compile Include="entities\Transitive\BulkAssetImport.cs" />
     <Compile Include="entities\Transitive\BulkLoadGetLoadColumnsModel.cs" />
     <Compile Include="entities\Transitive\AssetDetail.cs" />
     <Compile Include="entities\Transitive\CacheObject.cs" />
