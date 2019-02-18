@@ -64,7 +64,6 @@ namespace d360.model
             var maps = await LoadMarkitMapRawData();
             var objectMaps = await LoadMarkitMapItemMapData();
 
-
             var mapCount = maps.Count();
 
             client.TrackEvent($"Loaded {mapCount} Markit Map Records");
@@ -73,13 +72,31 @@ namespace d360.model
             var leftmostMaps = maps.Where(m => m.SourceAssetID != null).ToList();
             var mappings = new List<FusionMarkitSourceTargetMapping>();
 
+            //build map dictionary
+            Dictionary<int, List<FusionMarkitLineageData>> mapDictionary = new Dictionary<int, List<FusionMarkitLineageData>>();
+            foreach(var map in maps)
+            {
+                if (map.SourceFusionAttributeID == null)
+                    continue;
+                if (!mapDictionary.ContainsKey((int)map.SourceFusionAttributeID))
+                {
+                    mapDictionary.Add((int)map.SourceFusionAttributeID, new List<FusionMarkitLineageData>() { map });
+                }
+                else
+                {
+                    var list = mapDictionary[(int)map.SourceFusionAttributeID];
+                    list.Add(map);
+                }
+            }
+
             Parallel.ForEach(leftmostMaps, new ParallelOptions { MaxDegreeOfParallelism = numThreads }, currentMap =>
              {
                  UpdateSourceTargetObjectMap(
+                    mapDictionary,
                     maps,
                     currentMap,
                     mappings,
-                    new List<int>(),
+                    new HashSet<int>(),
                     new Stack<FusionMarkitParentMapping>(),
                     currentMap,
                     objectMaps,
@@ -108,10 +125,11 @@ namespace d360.model
 
 
         private void UpdateSourceTargetObjectMap(
+            Dictionary<int, List<FusionMarkitLineageData>> mapDictionary,
             IEnumerable<FusionMarkitLineageData> maps,
             FusionMarkitLineageData currentMap,
             List<FusionMarkitSourceTargetMapping> mappings,
-            List<int> processedList,
+            HashSet<int> processedList,
             Stack<FusionMarkitParentMapping> sourceAssets,
             FusionMarkitLineageData root,
             IEnumerable<FusionMarkitObjectMapping> objectMaps,
@@ -136,7 +154,11 @@ namespace d360.model
                 processedList.Add(currentMap.ID);
                 
                 //get next items to process
-                nextMaps = maps.Where(m => m.SourceFusionAttributeID == currentMap?.TargetFusionAttributeID && !processedList.Contains(m.ID)).ToList();
+                if (currentMap != null && currentMap.TargetFusionAttributeID != null && mapDictionary.ContainsKey((int)currentMap.TargetFusionAttributeID))
+                {
+                    nextMaps = mapDictionary[(int)currentMap.TargetFusionAttributeID].Where(m => !processedList.Contains(m.ID)).ToList();
+                }
+                //nextMaps = maps.Where(m => m.SourceFusionAttributeID == currentMap?.TargetFusionAttributeID && !processedList.Contains(m.ID)).ToList();
             }
 
             //find a business object mapping if we don't already have one
@@ -231,10 +253,10 @@ namespace d360.model
 
             //process the next nodes in the lineage
             if (nextMaps.Count() == 1)
-                UpdateSourceTargetObjectMap(maps, nextMaps.First(), mappings, processedList, sourceAssets, root, objectMaps, businessMaps, ++complexity);
+                UpdateSourceTargetObjectMap(mapDictionary, maps, nextMaps.First(), mappings, processedList, sourceAssets, root, objectMaps, businessMaps, ++complexity);
             else
                 foreach (var next in nextMaps)
-                    UpdateSourceTargetObjectMap(maps, next, mappings, new List<int>(processedList), new Stack<FusionMarkitParentMapping>(sourceAssets), root, objectMaps, new List<FusionMarkitObjectMapping>(businessMaps), complexity + nextMaps.Count());
+                    UpdateSourceTargetObjectMap(mapDictionary, maps, next, mappings, new HashSet<int>(processedList), new Stack<FusionMarkitParentMapping>(sourceAssets), root, objectMaps, new List<FusionMarkitObjectMapping>(businessMaps), complexity + nextMaps.Count());
         }
 
         private async Task SaveMarkitLineageRunDetails(int rows, int techRows, int businessRows)
