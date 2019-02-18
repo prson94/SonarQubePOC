@@ -44,7 +44,11 @@ namespace d360.model
 
     partial class CompanyContext : BaseContext
     {
-        
+        private object processLock = new object();
+        private object mappingLock = new object();
+        private const int  numThreads = 8;
+        private const int maxComplexity = 50;
+
         public async Task GenerateMarkitBusinessLineage()
         {
             TelemetryClient client = new TelemetryClient();
@@ -64,23 +68,40 @@ namespace d360.model
 
             client.TrackEvent($"Loaded {mapCount} Markit Map Records");
 
-            //find source/target mappings by traversing possible paths along the technical lineage
-            var leftmostMaps = maps.Where(m => !maps.Any(n => n.TargetFusionAttributeID == m.SourceFusionAttributeID)).ToList();
+            //find source records to start from
+            var leftmostMaps = maps.Where(m => m.SourceAssetID != null).ToList();
             var mappings = new List<FusionMarkitSourceTargetMapping>();
 
-
-            foreach (var currentMap in leftmostMaps)
+            //build map dictionary
+            Dictionary<int, List<FusionMarkitLineageData>> sourceMap = new Dictionary<int, List<FusionMarkitLineageData>>();
+            foreach(var map in maps)
             {
-                UpdateSourceTargetObjectMap(
+                if (map.SourceFusionAttributeID == null)
+                    continue;
+                if (!sourceMap.ContainsKey((int)map.SourceFusionAttributeID))
+                {
+                    sourceMap.Add((int)map.SourceFusionAttributeID, new List<FusionMarkitLineageData>() { map });
+                }
+                else
+                {
+                    var list = sourceMap[(int)map.SourceFusionAttributeID];
+                    list.Add(map);
+                }
+            }
+
+            Parallel.ForEach(leftmostMaps, new ParallelOptions { MaxDegreeOfParallelism = numThreads }, currentMap =>
+             {
+                 UpdateSourceTargetObjectMap(
+                    sourceMap,
                     maps,
                     currentMap,
                     mappings,
-                    null,
-                    null,
+                    new HashSet<int>(),
+                    new Stack<FusionMarkitParentMapping>(),
                     currentMap,
                     objectMaps,
-                    objectMaps.FirstOrDefault(o => o.FusionAttributeID == currentMap.SourceFusionAttributeID)); //root object map
-            }
+                    objectMaps.Where(o => o.FusionAttributeID == currentMap.SourceFusionAttributeID).ToList());
+             });
 
 
             if (Database.Connection.State != ConnectionState.Open)
@@ -104,42 +125,58 @@ namespace d360.model
 
 
         private void UpdateSourceTargetObjectMap(
+            Dictionary<int, List<FusionMarkitLineageData>> sourceMap,
             IEnumerable<FusionMarkitLineageData> maps,
             FusionMarkitLineageData currentMap,
             List<FusionMarkitSourceTargetMapping> mappings,
-            List<int> processedList,
+            HashSet<int> processedList,
             Stack<FusionMarkitParentMapping> sourceAssets,
             FusionMarkitLineageData root,
             IEnumerable<FusionMarkitObjectMapping> objectMaps,
-            FusionMarkitObjectMapping rootObjectMap)
+            List<FusionMarkitObjectMapping> businessMaps,
+            int complexity = 0)
         {
+            if (complexity > maxComplexity)
+                return;
 
-            if (processedList == null)
-                processedList = new List<int>();
-            if (sourceAssets == null)
-                sourceAssets = new Stack<FusionMarkitParentMapping>();
+            List<FusionMarkitLineageData> nextMaps = new List<FusionMarkitLineageData>();
 
-            //add current item to list of processed nodes
-            processedList.Add(currentMap.ID);
+            lock (processLock)
+            {
+                
+                if (processedList.Any(p => currentMap.ID == p)
+                    || maps.Any(m => processedList.Contains(m.ID)
+                    && m.TargetFusionAttributeID == currentMap.SourceFusionAttributeID
+                    && m.SourceFusionAttributeID == currentMap.TargetFusionAttributeID))
+                    return;
 
-            //get next items to process
-            var nextMaps = maps.Where(m => m.SourceFusionAttributeID == currentMap?.TargetFusionAttributeID && !processedList.Contains(m.ID));
+                //add current item to list of processed nodes
+                processedList.Add(currentMap.ID);
+                
+                //get next items to process
+                if (currentMap != null && currentMap.TargetFusionAttributeID != null && sourceMap.ContainsKey((int)currentMap.TargetFusionAttributeID))
+                    nextMaps = sourceMap[(int)currentMap.TargetFusionAttributeID].Where(m => !processedList.Contains(m.ID)).ToList();
+            }
 
             //find a business object mapping if we don't already have one
-            if (rootObjectMap == null || objectMaps.FirstOrDefault(o => o.FusionAttributeID == currentMap.SourceFusionAttributeID) != null)
-                rootObjectMap = objectMaps.FirstOrDefault(o => o.FusionAttributeID == currentMap.SourceFusionAttributeID);
+            var newBussinesMap = objectMaps.FirstOrDefault(o => o.FusionAttributeID == currentMap.SourceFusionAttributeID && !businessMaps.Any(b => b.FusionAttributeID == o.FusionAttributeID && b.ObjectAssetID == o.ObjectAssetID));
 
-            if (currentMap.SourceAssetID != null)
+            if (newBussinesMap != null)
+                businessMaps.Add(newBussinesMap);
+
+            if (currentMap.SourceAssetID != null && (sourceAssets.Any() ? sourceAssets.Peek().AssetID != currentMap.SourceAssetID : true))
                 sourceAssets.Push(new FusionMarkitParentMapping { MapID = currentMap.ID, FusionAttributeID = (int)currentMap.SourceFusionAttributeID, AssetID = (long)currentMap.SourceAssetID });
 
             //if we have a source/target pair we might have a valid mapping
             if (sourceAssets.Any() && currentMap.TargetAssetID != null)
             {
-                //if no business mapping check the target attribute too
-                if (rootObjectMap == null)
-                    rootObjectMap = objectMaps.FirstOrDefault(o => o.FusionAttributeID == currentMap.TargetFusionAttributeID);
+                //need to check final target too
+                var targetBusinessMap = objectMaps.FirstOrDefault(o => o.FusionAttributeID == currentMap.TargetFusionAttributeID && !businessMaps.Any(b => b.FusionAttributeID == o.FusionAttributeID && b.ObjectAssetID == o.ObjectAssetID));
 
-                if (rootObjectMap != null)
+                if (targetBusinessMap != null)
+                    businessMaps.Add(targetBusinessMap);
+
+                if (businessMaps.Any())
                 {
                     var current = new FusionMarkitParentMapping
                     {
@@ -159,34 +196,62 @@ namespace d360.model
                             continue;
                         }
 
-                        //if the mapping doesn't exist create it
-                        if (!mappings.Any(m => m.MapID == current.MapID && m.SourceFusionAttributeID == previous.FusionAttributeID
-                        && m.TargetFusionAttributeID == current.FusionAttributeID && m.SourceAssetID == previous.AssetID && m.TargetAssetID == current.AssetID
-                        && m.ObjectAssetID == (rootObjectMap == null ? 0 : rootObjectMap.ObjectAssetID)))
+                        if (sourceAssets.Any())
                         {
-                            mappings.Add(new FusionMarkitSourceTargetMapping
+                            lock (mappingLock)
                             {
-                                MapID = current.MapID,
-                                SourceFusionAttributeID = (int)previous.FusionAttributeID,
-                                TargetFusionAttributeID = (int)current.FusionAttributeID,
-                                SourceAssetID = (long)previous.AssetID,
-                                TargetAssetID = (long)current.AssetID,
-                                ObjectAssetID = (rootObjectMap == null ? 0 : rootObjectMap.ObjectAssetID)
-                            });
+                                var businessMap = businessMaps.First();
+                                if (!mappings.Any(m => m.MapID == current.MapID && m.SourceFusionAttributeID == previous.FusionAttributeID
+                                   && m.TargetFusionAttributeID == current.FusionAttributeID && m.SourceAssetID == previous.AssetID && m.TargetAssetID == current.AssetID
+                                   && m.ObjectAssetID == businessMap.ObjectAssetID))
+                                {
+                                    mappings.Add(new FusionMarkitSourceTargetMapping
+                                    {
+                                        MapID = current.MapID,
+                                        SourceFusionAttributeID = (int)previous.FusionAttributeID,
+                                        TargetFusionAttributeID = (int)current.FusionAttributeID,
+                                        SourceAssetID = (long)previous.AssetID,
+                                        TargetAssetID = (long)current.AssetID,
+                                        ObjectAssetID = businessMap.ObjectAssetID
+                                    });
+                                }
+                            }
                         }
-
-
-                        current = previous;
+                        else
+                        {
+                            foreach (var businessMap in businessMaps)
+                            {
+                                lock(mappingLock)
+                                {
+                                    //if the mapping doesn't exist create it
+                                    if (!mappings.Any(m => m.MapID == current.MapID && m.SourceFusionAttributeID == previous.FusionAttributeID
+                                    && m.TargetFusionAttributeID == current.FusionAttributeID && m.SourceAssetID == previous.AssetID && m.TargetAssetID == current.AssetID
+                                    && m.ObjectAssetID == businessMap.ObjectAssetID))
+                                    {
+                                        mappings.Add(new FusionMarkitSourceTargetMapping
+                                        {
+                                            MapID = current.MapID,
+                                            SourceFusionAttributeID = (int)previous.FusionAttributeID,
+                                            TargetFusionAttributeID = (int)current.FusionAttributeID,
+                                            SourceAssetID = (long)previous.AssetID,
+                                            TargetAssetID = (long)current.AssetID,
+                                            ObjectAssetID = businessMap.ObjectAssetID
+                                        });
+                                    }
+                                }
+                            }
+                        }                  
+                        current = previous;                         
                     }
-
-                    //the business mapping has been used, clear it out
-                    rootObjectMap = null;
                 }
             }
 
             //process the next nodes in the lineage
-            foreach (var next in nextMaps)
-                UpdateSourceTargetObjectMap(maps, next, mappings, processedList, sourceAssets, root, objectMaps, rootObjectMap);
+            if (nextMaps.Count() == 1)
+                UpdateSourceTargetObjectMap(sourceMap, maps, nextMaps.First(), mappings, processedList, sourceAssets, root, objectMaps, businessMaps, ++complexity);
+            else
+                foreach (var next in nextMaps)
+                    UpdateSourceTargetObjectMap(sourceMap, maps, next, mappings, new HashSet<int>(processedList), new Stack<FusionMarkitParentMapping>(sourceAssets), root, objectMaps, new List<FusionMarkitObjectMapping>(businessMaps), complexity + nextMaps.Count());
         }
 
         private async Task SaveMarkitLineageRunDetails(int rows, int techRows, int businessRows)
