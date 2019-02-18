@@ -4960,7 +4960,19 @@ select	O.ID as AssetID,
         D.Name as Dimension,
         dbo.GenerateAssetUrl(O.ID) as Url,
         {0}
-        A.RuleTypeID
+        A.RuleTypeID,
+        case when exists (
+							 select 1 from UserAssetPermissions(@r,O.AssetTypeID) u where u.PermissionsBitMask & 2 = 2 and u.AssetID = O.ID
+						   ) 
+						   then 1 
+						   else 0 
+		end as P_CanEdit,
+		case when exists (
+							 select 1 from UserAssetPermissions(@r,O.AssetTypeID) u where u.PermissionsBitMask & 4 = 4 and u.AssetID = O.ID
+						   ) 
+						   then 1 
+						   else 0 
+		end as P_CanDelete
 from	[Rule] A
         inner join Asset O on O.Object = 'Rule' and O.ObjectID = A.ID 
         {1} 

@@ -140,7 +140,7 @@
             </div>
         </simple-accordion>
 
-        <simple-accordion header="Validation" active="true" *ngIf="model.FieldType.Type == 'Text' || model.FieldType.Type == 'Number' || model.FieldType.Type == 'Decimal'">
+        <simple-accordion header="Validation" active="true" *ngIf="['Text','Number','Decimal'].indexOf(model.FieldType.Type) > -1">
             <div class="row">
                 <div *ngIf="model.FieldType.Type == 'Text'" class="col s3">
                     <div id='PatternTip' class="FieldName">Validation Pattern</div>
@@ -159,7 +159,7 @@
                     <input name="maxLength" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}" [(ngModel)]="model.FieldType.MaximumLength" (change)="validateNumber(model.FieldType.Type)" style="width: 98%; display: block;" />
                 </div>
             </div>
-            <div class="row" *ngIf="model.FieldType.Pattern?.length > 0 || model.FieldType.Increment > 0">
+            <div class="row" *ngIf="model.FieldType.Pattern?.length > 0">
                 <div *ngIf="model.FieldType.Type == 'Text'" class="col s3">
                     <div class="FieldNameRequired">Test Pattern</div>
                     <input name="testPattern" pInputText type="text" [(ngModel)]="testPattern" (change)="validatePattern()" style="width: 98%; display: block;" />
@@ -170,14 +170,14 @@
                 </div>
             </div>
             <div class="row" *ngIf="model.FieldType.Pattern?.length > 0 || model.FieldType.MinimumLength > 0 || model.FieldType.IsRequired">
-                <div *ngIf="model.FieldType.Type != 'Number'" class="col s12">
-                    <div id='ValidationDescriptionTip' class="FieldName">Validation Message</div>
+                <div *ngIf="['Number', 'Decimal'].indexOf(model.FieldType.Type) == -1" class="col s12"> 
+                    <div id='ValidationDescriptionTip' class="FieldName">Validation Message</div> 
                     <textarea pInputTextarea autoResize="'true'" [(ngModel)]="model.FieldType.ValidationDescription" [ngModelOptions]="{standalone: true}"></textarea>
                 </div>
             </div>
         </simple-accordion>
 
-        <simple-accordion header="Value Selection" active="true" *ngIf="model.FieldType.Type == 'Lookup' || model.FieldType.Type == 'Text' || model.FieldType.Type == 'Boolean' || model.FieldType.Type == 'Number' || model.FieldType.Type == 'Html'|| model.FieldType.Type == 'Date' || model.FieldType.Type == 'Link' || model.FieldType.Type == 'Decimal'">
+        <simple-accordion header="Value Selection" active="true" *ngIf="['Lookup','Text','Boolean','Number','Html','Date','Link','Decimal'].indexOf(model.FieldType.Type) > -1">
             <div class="row">
                 <div class="col l6 m6 s12">
                     <div class="FieldName">Default Value (if any)</div>
@@ -185,7 +185,7 @@
                 <div class="col l6 m6 s12" *ngIf="model.FieldType.Type == 'Lookup'">
                     <div class="FieldName">Allow ALL Value Selection</div>
                 </div>
-                <div class="col l6 m6 s12" *ngIf="model.FieldType.Type == 'Number' || model.FieldType.Type == 'Decimal'">
+                <div class="col l6 m6 s12" *ngIf="['Number','Decimal'].indexOf(model.FieldType.Type) > -1">
                     <div class="FieldName" style="display:block">Increment</div>
                 </div>
             </div>
@@ -202,7 +202,7 @@
                         <input [(ngModel)]="defaultLinkAdress" style="width: 100%;" type="string" [ngModelOptions]="{standalone: true}">
                         <div>(Link Url: Your Url should start with a protocol prefix.  For example 'http://' or 'https://')</div>
                     </div>
-                    <input *ngIf="model.FieldType.Type == 'Number' || model.FieldType.Type == 'Decimal'" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}"  (change)="validateIncrement(model.FieldType.Type)" [(ngModel)]="model.FieldType.DefaultValue" style="width: 98%; display: block;" [ngModelOptions]="{standalone: true}" />
+                    <input *ngIf="['Number','Decimal'].indexOf(model.FieldType.Type) > -1" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}" (change)="validateNumber(model.FieldType.Type)" [(ngModel)]="model.FieldType.DefaultValue" style="width: 98%; display: block;" [ngModelOptions]="{standalone: true}" />
                 </div>
                 <div class="col l1 m1 s12" *ngIf="model.FieldType.Type == 'Lookup'">
                     <p-checkbox binary="true" [(ngModel)]="model.FieldType.AllowAllValue" [ngModelOptions]="{standalone: true}"></p-checkbox>

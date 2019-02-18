@@ -12308,22 +12308,11 @@ order by case Object
 
                 var existing = Company.Filter<ResponsibilityTypeRelation>(r => r.ObjectType == model.ObjectType && r.ObjectID == model.ObjectID && r.ResponsibilityTypeID == model.ResponsibilityTypeID).SingleOrDefault();
                 if (existing == null) throw new NotFoundException("responsibility type relation");
-
-                var oldPermissionsMask = existing.PermissionsBitMask;
-
+                                
                 existing.PermissionsBitMask = model.Permissions.Where(i => i.Selected).Sum(i => i.Value);
 
                 Company.Update(existing);
-
-                if (oldPermissionsMask != existing.PermissionsBitMask)
-                {
-                    // We need to mass-update the role results.
-                    Company.Database.Connection.Execute(
-                        "update ResponsibilityTypeRelationRuleResult set PermissionsBitMask = @m where ResponsibilityTypeID = @r and AssetTypeID = @a", 
-                        new { r = model.ResponsibilityTypeID, a = model.AssetTypeID, m = existing.PermissionsBitMask },
-                        commandTimeout: 120 );
-                }
-
+                
                 return jsonSuccess("Item successfully updated.", model.ResponsibilityTypeID.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
@@ -12580,7 +12569,7 @@ order by	case
         #region Form Get/Post
 
         [HttpDelete,  Route("DeleteResponsibilityTypeRelationRuleByID"), NonNullableParameters]
-        public JsonResult DeleteResponsibilityTypeRelationRuleByID(int id)
+        public async Task<JsonResult> DeleteResponsibilityTypeRelationRuleByID(int id)
         {
             try
             {
@@ -12591,7 +12580,7 @@ order by	case
                 if (model == null) throw new NotFoundException("responsibility type rule");
 
                 Company.Delete(model);
-                (Company.Database.Connection as System.Data.SqlClient.SqlConnection).RemoveRelationRuleResultsByRule(id);
+                await ((Company.Database.Connection as System.Data.SqlClient.SqlConnection).RemoveRelationRuleResultsByRule(id));
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }

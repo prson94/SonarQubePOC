@@ -85,9 +85,9 @@ order by RT.Name", new { id }).AsQueryable();
         {
             var permissions = Permission.DeleteAsset.GetList();
 
-            var responsibilityAssignments = Query<int>(@"select PermissionsBitMask from ResponsibilityAllAsset where ResourceID = @ResourceID and AssetTypeID = @AssetTypeID
-                                                                    union select PermissionsBitMask from ResponsibilityAllAsset where ResourceID = @ResourceID and AssetID = @AssetID ", new { ResourceID = CurrentResourceID, AssetTypeID = assetTypeId, AssetID = assetId });
-                   
+            var responsibilityAssignments = Query<int>(@"select PermissionsBitMask from UserAssetPermissions(@r,@assetTypeId) where AssetID = 0
+                                                        union select PermissionsBitMask from UserAssetPermissions(@r,@assetTypeId) where AssetID = @assetId", new { r = CurrentResourceID, assetTypeId, assetId });
+
             permissions.ForEach(p =>
             {
                 p.Selected = responsibilityAssignments.Any(i => (i & p.Value) == p.Value);
@@ -107,8 +107,8 @@ order by RT.Name", new { id }).AsQueryable();
             if (!hasPermission)
             {
                 var assetTypeID = Query<int>("select AssetTypeID from Asset where Object = @type and ObjectID = @id", new { type, id }).FirstOrDefault();
-                if (assetTypeID <= 0) return true; // objects not in asset table we grant permission
-                hasPermission = Query<int>($"select count(1) from ResponsibilityDetail where ( (Object = @type and ObjectID = @id) or (AssetID = 0 and AssetTypeID = @t) ) and ResourceID = {CurrentResourceID} and PermissionsBitMask & {(int)permission} = 0", new { type, id, t = assetTypeID }).Single() == 0;
+                if (assetTypeID <= 0) return true; // objects not in asset table we grant permission               
+               hasPermission = hasPermission = HasPermission(type, id, assetTypeID, permission);
             }
 
             return hasPermission;
@@ -131,11 +131,43 @@ order by RT.Name", new { id }).AsQueryable();
                 }
                 if (assetTypeID.HasValue)
                 {
-                    hasPermission = Query<bool>($"select cast(IIF(count(1) > 0, 1, 0) as bit) from ResponsibilityDetail where ( (Object = @type and ObjectID = @id) or (AssetID = 0 and AssetTypeID = @t) ) and ResourceID = {CurrentResourceID} and PermissionsBitMask & {(int)permission} = {(int)permission}", new { type, id, t = assetTypeID.Value }).Single();
+                    hasPermission = HasPermission(type, id, assetTypeID.Value, permission);                    
                 }
             }
 
             return hasPermission;
+        }
+
+        private bool HasPermission(string type, int objectId, int assetTypeId, Permission permission)
+        {
+            return Database.Connection.QuerySingle<bool>($@"	if exists(select 1 from UserAssetPermissions(@r,@t) ua where ua.PermissionsBitMask & {(int)permission} = {(int)permission} and ua.AssetTypeID = @t)
+                                                                                        begin
+                                                                                            select 1;
+                                                                                            end
+				                                                                        else if exists(select 1 from UserAssetPermissions(@r, @t) ua inner join asset a on(ua.AssetID = a.id and a.Object = @type and a.ObjectID = @id) where ua.PermissionsBitMask & {(int)permission} = {(int)permission})
+                                                                                        begin
+                                                                                            select 1;
+                                                                                            end
+				                                                                        else
+				                                                                        begin
+                                                                                            select 0;
+                                                                                        end", new { type, id = objectId, t = assetTypeId, r = CurrentResourceID });
+        }
+
+        private bool HasPermission(long assetId, int assetTypeId, Permission permission)
+        {
+            return Database.Connection.QuerySingle<bool>($@"if exists(select 1 from UserAssetPermissions(@r,@t) ua where ua.PermissionsBitMask & {(int)permission} = {(int)permission} and ua.AssetTypeID = @t)
+                                                                                        begin
+                                                                                            select 1;
+                                                                                            end
+				                                                                        else if exists(select 1 from UserAssetPermissions(@r, @t) ua where ua.PermissionsBitMask & {(int)permission} = {(int)permission} and ua.AssetID = @assetId)
+                                                                                        begin
+                                                                                            select 1;
+                                                                                            end
+				                                                                        else
+				                                                                        begin
+                                                                                            select 0;
+                                                                                        end", new { assetId, t = assetTypeId, r = CurrentResourceID });
         }
 
         public bool HasAssetPermission(long id, Permission permission)
@@ -144,7 +176,7 @@ order by RT.Name", new { id }).AsQueryable();
             if (!hasPermission)
             {
                 var assetTypeID = Query<int>("select AssetTypeID from Asset where ID = @id", new { id }).Single();                
-                hasPermission = Query<bool>($"select cast(IIF(count(1) > 0, 1, 0) as bit) from ResponsibilityDetail where (AssetID = @id or (AssetID = 0 and AssetTypeID = @t)) and ResourceID = {CurrentResourceID} and PermissionsBitMask & {(int)permission} = {(int)permission}", new { id, t = assetTypeID }).Single();
+                hasPermission = HasPermission(id, assetTypeID, permission);
             }
 
             return hasPermission;
@@ -160,7 +192,15 @@ order by RT.Name", new { id }).AsQueryable();
             bool hasPermission = CurrentResourceIsAdmin;
             if (!hasPermission)
             {
-                hasPermission = Query<bool>($"select cast(IIF(count(1) > 0, 1, 0) as bit) from ResponsibilityDetail where [Type] = @type and TypeID = @id and AssetID = 0 and ResourceID = {CurrentResourceID} and PermissionsBitMask & {(int)permission} = {(int)permission}", new { type, id }).Single();
+                var assetTypeID = Query<int>("select ID from AssetType where [Object] = @type and [ObjectID] = @id", new { id, type }).Single();
+                hasPermission = Database.Connection.QuerySingle<bool>($@"if exists(select 1 from UserAssetPermissions(@r,@t) ua where ua.PermissionsBitMask & {(int)permission} = {(int)permission} and ua.AssetTypeID = @t)
+                                                                                        begin
+                                                                                            select 1;
+                                                                                        end				                                                                        
+				                                                                        else
+				                                                                        begin
+                                                                                            select 0;
+                                                                                        end", new { t = assetTypeID, r = CurrentResourceID });
             }
 
             return hasPermission;
@@ -184,9 +224,12 @@ order by RT.Name", new { id }).AsQueryable();
 		    inner join AssetType T on T.ID = A.AssetTypeID and T.Object = @ObjectType and T.ObjectID = @ObjectID;
 
     delete	O 
-    from	ResponsibilityTypeRelationRuleResult O
-		    inner join Asset A on A.ID = O.AssetID and O.ResponsibilityTypeID = @ResponsibilityTypeID
-		    inner join AssetType T on T.ID = A.AssetTypeID and T.Object = @ObjectType and T.ObjectID = @ObjectID;
+    from	[dbo].[ResponsibilityRuleResultSecurityAsset] O
+            inner join ResponsibilityTypeRelationRule R on O.RuleID = R.ID and R.[Object] = @ObjectType and R.[ObjectID] = @ObjectID		    
+
+    delete	O 
+    from	[dbo].[ResponsibilityRuleResultAsset] O
+            inner join ResponsibilityTypeRelationRule R on O.RuleID = R.ID and R.[Object] = @ObjectType and R.[ObjectID] = @ObjectID
 
     delete	ResponsibilityTypeRelationRule
     where	ResponsibilityTypeID = @ResponsibilityTypeID
