@@ -26,8 +26,13 @@ namespace d360.core.entities
         Dictionary<string, string> Fields { get; set; }
     }
 
+    public interface IExecutionItem
+    {
+        Guid? ExecutionItemUid { get; set; }
+    }
+
     [DataContract(Name = "asset")]
-    public class AssetInsert : IAssetUpsert
+    public class AssetInsert : IAssetUpsert, IExecutionItem
     {
         [IgnoreDataMember]
         public Guid Uid { get; set; }
@@ -43,7 +48,7 @@ namespace d360.core.entities
     }
 
     [DataContract(Name = "asset")]
-    public class AssetUpdate : IAssetUpsert
+    public class AssetUpdate : IAssetUpsert, IExecutionItem
     {
         [DataMember]
         public Guid Uid { get; set; }
@@ -66,7 +71,7 @@ namespace d360.core.entities
     }
 
     [DataContract(Name = "asset")]
-    public class AssetDelete
+    public class AssetDelete: IExecutionItem
     {
         [DataMember]
         public Guid Uid { get; set; }

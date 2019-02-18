@@ -35,6 +35,9 @@ namespace igx.jobs.apiexecutionprocessor
             config.UseTimers();
             config.UseDevelopmentSettings();
 #endif
+            config.Queues.BatchSize = 2;
+            config.Queues.VisibilityTimeout = TimeSpan.FromHours(6);
+
             var host = new JobHost(config);
             host.RunAndBlock();
         }
@@ -55,7 +58,7 @@ namespace igx.jobs.apiexecutionprocessor
                 CompanyDomainPrefix = "mpappas.eng",
                 CompanyID = 2,
                 ResourceID = 2,
-                ExecutionID = new Guid("9CA02DA6-7611-48EF-B4F6-AD2074FD331C") };
+                ExecutionID = new Guid("4687CCAF-E694-42D3-8866-8AAB521ADF18") };
 #else
             info = JsonConvert.DeserializeObject<ApiExecutionInfo>(myQueueItem);
 #endif
