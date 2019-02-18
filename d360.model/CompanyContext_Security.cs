@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace d360.model
 {
@@ -80,17 +81,13 @@ order by RT.Name", new { id }).AsQueryable();
             return permissions;
         }
 
-        public List<PermissionInfo> GetPermissions(string type, int typeID, string @object, int objectID)
+        public List<PermissionInfo> GetPermissions(long assetId, int assetTypeId)
         {
             var permissions = Permission.DeleteAsset.GetList();
 
-            var responsibilityAssignments = Filter<ResponsibilityDetail>(i => 
-            (
-                (i.Object == @object && i.ObjectID == objectID) ||
-                (i.AssetID == 0 && i.Type == type && i.TypeID == typeID)
-            )
-            && i.ResourceID == CurrentResourceID).Select(i => i.PermissionsBitMask).Distinct().ToList();
-
+            var responsibilityAssignments = Query<int>(@"select PermissionsBitMask from ResponsibilityAllAsset where ResourceID = @ResourceID and AssetTypeID = @AssetTypeID
+                                                                    union select PermissionsBitMask from ResponsibilityAllAsset where ResourceID = @ResourceID and AssetID = @AssetID ", new { ResourceID = CurrentResourceID, AssetTypeID = assetTypeId, AssetID = assetId });
+                   
             permissions.ForEach(p =>
             {
                 p.Selected = responsibilityAssignments.Any(i => (i & p.Value) == p.Value);
@@ -187,9 +184,12 @@ order by RT.Name", new { id }).AsQueryable();
 		    inner join AssetType T on T.ID = A.AssetTypeID and T.Object = @ObjectType and T.ObjectID = @ObjectID;
 
     delete	O 
-    from	ResponsibilityTypeRelationRuleResult O
-		    inner join Asset A on A.ID = O.AssetID and O.ResponsibilityTypeID = @ResponsibilityTypeID
-		    inner join AssetType T on T.ID = A.AssetTypeID and T.Object = @ObjectType and T.ObjectID = @ObjectID;
+    from	[dbo].[ResponsibilityRuleResultSecurityAsset] O
+            inner join ResponsibilityTypeRelationRule R on O.RuleID = R.ID and R.[Object] = @ObjectType and R.[ObjectID] = @ObjectID		    
+
+    delete	O 
+    from	[dbo].[ResponsibilityRuleResultAsset] O
+            inner join ResponsibilityTypeRelationRule R on O.RuleID = R.ID and R.[Object] = @ObjectType and R.[ObjectID] = @ObjectID
 
     delete	ResponsibilityTypeRelationRule
     where	ResponsibilityTypeID = @ResponsibilityTypeID
