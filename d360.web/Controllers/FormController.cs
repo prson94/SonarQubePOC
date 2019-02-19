@@ -3546,6 +3546,15 @@ namespace d360.web.Controllers
 
                 switch (model.FieldType.Type)
                 {
+                    case "Date":
+                        var stringDate = model.FieldType.DefaultValue;
+                        DateTime dateVal = DateTime.MinValue;
+                        if (DateTime.TryParse(stringDate, out dateVal))
+                        {
+                            model.FieldType.DefaultValue = dateVal.ToShortDateString();
+                        }
+                        Company.Add<FieldType>(model.FieldType);
+                        break;
                     case "Html":
                         model.FieldType.MinimumLength = (!model.FieldType.IsRequired) ? (int?)null : 1;
                         model.FieldType.MaximumLength = null;
@@ -3978,6 +3987,16 @@ namespace d360.web.Controllers
                 var defs = Company.Filter<FieldTypeFusionLookupDefinition>(i => i.FieldTypeID == ft.ID, i => i.FieldTypeFusionLookupDisplayFields).ToList();
                 var efli = Company.Filter<FieldTypeFilteredLookupDefinition>(i => i.FieldTypeID == ft.ID, i => i.FieldTypeFilteredLookupDisplayFields).FirstOrDefault();
                 var fl = Company.Filter<FieldTypeLookup>(i => i.FieldTypeID == ft.ID).FirstOrDefault();
+
+                if (ft.Type == "Date")
+                {
+                    var stringDate = ft.DefaultValue;
+                    DateTime dateVal = DateTime.MinValue;
+                    if (DateTime.TryParse(stringDate, out dateVal))
+                    {
+                        ft.DefaultValue = dateVal.ToShortDateString();
+                    }
+                }
 
                 if (used)
                 {

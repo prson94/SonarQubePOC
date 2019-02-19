@@ -1100,7 +1100,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     }
     private onDateSelectMethod(e: Date)
     {
-        this.model.FieldType.DefaultValue = e.toLocaleDateString("en-US");
+        let date = e;
+        date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+
+        this.model.FieldType.DefaultValue = date.toUTCString();
         this.defaultDate = e;
     }
   
