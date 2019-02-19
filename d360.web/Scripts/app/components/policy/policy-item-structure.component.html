@@ -66,18 +66,18 @@
                     </div>
                 </td>
                 <td>
-                    <div *ngIf="hasModifyAssetPermissions()"
-                        class="RowTools">
-                        <a style="cursor:pointer;"
-                            (click)="selected=rowNode.node;showEditor=true;"><i class="fa fa-pencil"></i></a>
-                    </div>
+                    <div class="RowTools"
+                         *ngIf="item.P_CanEdit">                        
+                            <a style="cursor:pointer;"
+                               (click)="selected=rowNode.node;showEditor=true;"><i class="fa fa-pencil"></i></a>
+                        </div>
                 </td>
                 <td>
-                    <div *ngIf="hasDeleteAssetPermissions()"
-                        class="RowTools">
+                    <div class="RowTools"
+                         *ngIf="item.P_CanDelete">                        
                         <a *ngIf="!rowNode.node.children"
-                            style="cursor:pointer;"
-                            (click)="selected=rowNode.node;showDelete=true;"><i class="fa fa-trash-o"></i></a>
+                           style="cursor:pointer;"
+                           (click)="selected=rowNode.node;showDelete=true;"><i class="fa fa-trash-o"></i></a>
                     </div>
                 </td>
             </tr>
