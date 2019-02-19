@@ -4951,6 +4951,26 @@ order by    Name
                 var columns = "";
                 getDynamicFieldJoinStatements(id, "Rule", out joins, out columns, false, false);
 
+                var permissionSql = @"case when exists (
+                                        select 1 from UserAssetPermissions(@r, O.AssetTypeID) u where u.PermissionsBitMask & 2 = 2 and u.AssetID = O.ID
+						                ) 
+						                    then 1
+						                    else 0
+
+                                        end as P_CanEdit,
+		                                case when exists(
+                                                             select 1 from UserAssetPermissions(@r, O.AssetTypeID) u where u.PermissionsBitMask & 4 = 4 and u.AssetID = O.ID
+						                                   ) 
+						                                   then 1
+						                                   else 0
+
+                                        end as P_CanDelete";
+
+                if (Company.CurrentResourceIsAdmin)
+                {
+                    permissionSql = "1 as P_CanEdit, 1 as P_CanDelete";
+                }
+
                 var querySql = string.Format(@"
 select	O.ID as AssetID,
         O.[Uid],
@@ -4961,25 +4981,14 @@ select	O.ID as AssetID,
         dbo.GenerateAssetUrl(O.ID) as Url,
         {0}
         A.RuleTypeID,
-        case when exists (
-							 select 1 from UserAssetPermissions(@r,O.AssetTypeID) u where u.PermissionsBitMask & 2 = 2 and u.AssetID = O.ID
-						   ) 
-						   then 1 
-						   else 0 
-		end as P_CanEdit,
-		case when exists (
-							 select 1 from UserAssetPermissions(@r,O.AssetTypeID) u where u.PermissionsBitMask & 4 = 4 and u.AssetID = O.ID
-						   ) 
-						   then 1 
-						   else 0 
-		end as P_CanDelete
+        {2}
 from	[Rule] A
         inner join Asset O on O.Object = 'Rule' and O.ObjectID = A.ID 
         {1} 
         left join RuleDimension D on D.ID = A.RuleDimensionID 
 where   A.RuleTypeID = @id 
         and O.ID not in (" + GetNoReadSqlStatement("@r") + ")" +
-        "and O.AssetTypeID not in (" + GetAssetTypeNoReadSqlStatement("@r") + ")", columns, joins);
+        "and O.AssetTypeID not in (" + GetAssetTypeNoReadSqlStatement("@r") + ")", columns, joins, permissionSql);
 
                 var query = Company.Query<dynamic>(querySql, dbArgs);
 
