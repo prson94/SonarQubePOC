@@ -675,7 +675,7 @@ alter   VIEW [dbo].[ResponsibilityDetail] AS
     ]]>
     </rollback>
   </changeSet>
-  <changeSet author="KMcNamee" id="GOV-6258-TVF-Type">
+  <changeSet author="KMcNamee" id="GOV-6258-TVF-Type-fix">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -699,9 +699,9 @@ alter   VIEW [dbo].[ResponsibilityDetail] AS
 			      where 
 				      RR.PermissionsBitMask & 1 = 0
 				       and 
-					      exists( select 1 from [dbo].[ResponsibilityRuleResultSecurityAsset] rresource where rresource.RuleID = R.ID and rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = @ResourceID )
+					      ( exists( select 1 from [dbo].[ResponsibilityRuleResultSecurityAsset] rresource where rresource.RuleID = R.ID and rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = @ResourceID )
 					      or exists( select 1 from [dbo].[ResponsibilityRuleResultSecurityAsset] rresource inner join dbo.[Organization] D on rresource.SecurityAsset = 'O' and D.ID = rresource.SecurityAssetID inner join dbo.OrganizationResource RD on RD.OrganizationID = D.ID where rresource.RuleID = R.ID and RD.ResourceID = @ResourceID )
-					      or exists( select 1 from [dbo].[ResponsibilityRuleResultSecurityAsset] rresource inner join dbo.[Group] G on G.ID = rresource.SecurityAssetID and rresource.SecurityAsset = 'G' inner join dbo.ResourceGroup RG on RG.GroupID = G.ID  where rresource.RuleID = R.ID and RG.ResourceID =  @ResourceID )
+					      or exists( select 1 from [dbo].[ResponsibilityRuleResultSecurityAsset] rresource inner join dbo.[Group] G on G.ID = rresource.SecurityAssetID and rresource.SecurityAsset = 'G' inner join dbo.ResourceGroup RG on RG.GroupID = G.ID  where rresource.RuleID = R.ID and RG.ResourceID =  @ResourceID ) )
 	
 		      )
     ]]>
