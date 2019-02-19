@@ -4559,6 +4559,26 @@ from	    PolicyType FAT
             var columns = "";
             getDynamicFieldJoinStatements(id, "Policy", out joins, out columns, false, false);
 
+            var permissionSql = @"case when exists (
+                                        select 1 from UserAssetPermissions(@r, O.AssetTypeID) u where u.PermissionsBitMask & 2 = 2 and u.AssetID = O.ID
+						                ) 
+						                    then 1
+						                    else 0
+
+                                        end as P_CanEdit,
+		                                case when exists(
+                                                             select 1 from UserAssetPermissions(@r, O.AssetTypeID) u where u.PermissionsBitMask & 4 = 4 and u.AssetID = O.ID
+						                                   ) 
+						                                   then 1
+						                                   else 0
+
+                                        end as P_CanDelete";
+
+            if (Company.CurrentResourceIsAdmin)
+            {
+                permissionSql = "1 as P_CanEdit, 1 as P_CanDelete";
+            }
+
             var querySql = $@"
 select	top 100 percent 
         A.ID, 
@@ -4567,7 +4587,8 @@ select	top 100 percent
         P.SubjectID as ParentID,
         TD.DisplayValue,
         {columns}
-        A.[Level]
+        A.[Level],
+        {permissionSql}
 from	[Policy] A 
         inner join Asset OA on OA.Object = 'Policy' and OA.ObjectID = A.ID and A.PolicyTypeID = @id 
         {joins} 
@@ -4587,7 +4608,7 @@ where   OA.ID not in ({GetNoReadSqlStatement()})
 
             sql += " order by A.DisplayValue";
 
-            var policies = Company.Query<dynamic>(sql, new { id = id }).ToList();
+            var policies = Company.Query<dynamic>(sql, new { id = id, r = Company.CurrentResourceID }).ToList();
 
             return policies;
         }
