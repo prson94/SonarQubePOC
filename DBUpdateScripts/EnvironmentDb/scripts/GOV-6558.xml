@@ -6,7 +6,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="dhridin" id="GOV-6558">
+  <changeSet author="dhridin" id="GOV-6558_1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true">
