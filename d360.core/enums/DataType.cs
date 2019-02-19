@@ -58,7 +58,9 @@ namespace d360.core
         [Description("Field from Relationship")]
         FieldFromRelationship= 1 << 22,
         [Description("Reference Item List from Relationship")]
-        RefListRelationship= 1 << 23
+        RefListRelationship= 1 << 23,
+        [Description("JSON")]
+        JSON = 1 << 24
     } 
 
     public class DataTypeInfo

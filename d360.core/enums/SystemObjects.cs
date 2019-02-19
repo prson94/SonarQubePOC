@@ -8,25 +8,29 @@ namespace d360.core
 {
     public enum SystemObjects
     {
-        [Description("Artifact"), EnableAudit(true), IsType(false)]
+        [Description("Artifact"), EnableAudit(true), IsType(false),
+         ExcludeDataType(DataType.JSON)]
         Artifact = 1,
-        [Description("Synonym"), AllowSurvey(false), EnableAudit(false), IsType(false)]
+        [Description("Synonym"), AllowSurvey(false), EnableAudit(false), IsType(false),
+         ExcludeDataType(DataType.JSON)]
         Synonym,
-        [Description("Synonym Type"), AllowSurvey(false), EnableAudit(false), IsType(true)]
+        [Description("Synonym Type"), AllowSurvey(false), EnableAudit(false), IsType(true),
+         ExcludeDataType(DataType.JSON)]
         SynonymType,
-        [Description("Artifact Type"), AllowSurvey(true), EnableAudit(true), IsType(true)]
+        [Description("Artifact Type"), AllowSurvey(true), EnableAudit(true), IsType(true),
+         ExcludeDataType(DataType.JSON)]
         ArtifactType,
-        [Description("Attribute"), AllowOwnership(false), EnableAudit(true), IsType(false)]
+        [Description("Attribute"), AllowOwnership(false), EnableAudit(true), IsType(false),ExcludeDataType(DataType.JSON)]
         Attribute,
         [Description("Attribute Group"), EnableAudit(false), IsType(true), 
          ExcludeDataType(DataType.FieldFromRelationship | DataType.FilteredLookup | DataType.FusionLookup | 
-            DataType.OwnershipLookup | DataType.RefListRelationship | DataType.ComplexRelationLookup |DataType.Relationship)]
+            DataType.OwnershipLookup | DataType.RefListRelationship | DataType.ComplexRelationLookup |DataType.Relationship | DataType.JSON)]
         AttributeType,
-        [Description("Email Template"), AllowOwnership(false), EnableAudit(true), IsType(false)]
+        [Description("Email Template"), AllowOwnership(false), EnableAudit(true), IsType(false), ExcludeDataType(DataType.JSON)]
         EmailTemplate,
-        [Description("Fusion"), EnableAudit(true), IsType(false)]
+        [Description("Fusion"), EnableAudit(true), IsType(false), ExcludeDataType(DataType.JSON)]
         Fusion,
-        [Description("Fusion Attribute"), EnableAudit(false), IsType(false)]
+        [Description("Fusion Attribute"), EnableAudit(false), IsType(false), ExcludeDataType(DataType.JSON)]
         FusionAttribute,
         [Description("Fusion Attribute Type"), EnableAudit(true), IsType(true), 
         ExcludeDataType(DataType.FilteredLookup | DataType.FusionLookup | DataType.OwnershipLookup | DataType.RefListRelationship)]
@@ -34,126 +38,127 @@ namespace d360.core
         [Description("Fusion Type"), EnableAudit(true), IsType(true), 
             ExcludeDataType(DataType.FieldFromRelationship | DataType.FilteredLookup |
             DataType.FusionLookup | DataType.Link | DataType.Lookup | DataType.OwnershipLookup |
-            DataType.RefListRelationship | DataType.ComplexRelationLookup | DataType.Relationship)]
+            DataType.RefListRelationship | DataType.ComplexRelationLookup | DataType.Relationship | DataType.JSON)]
         FusionType,
-        [Description("Group"), EnableAudit(true), IsType(false)]
+        [Description("Group"), EnableAudit(true), IsType(false),
+         ExcludeDataType(DataType.JSON)]
         Group,
-        [Description("Intersect"), EnableAudit(false), IsType(false)]
+        [Description("Intersect"), EnableAudit(false), IsType(false), ExcludeDataType(DataType.JSON)]
         Intersect,
         [Description("Intersect Type"), EnableAudit(true), IsType(true), 
             ExcludeDataType(DataType.FieldFromRelationship | DataType.FilteredLookup | DataType.FusionLookup |
-            DataType.OwnershipLookup | DataType.RefListRelationship | DataType.ComplexRelationLookup | DataType.Relationship)]
+            DataType.OwnershipLookup | DataType.RefListRelationship | DataType.ComplexRelationLookup | DataType.Relationship | DataType.JSON)]
         IntersectType,
-        [Description("Lookup Item"), EnableAudit(false), IsType(false)]
+        [Description("Lookup Item"), EnableAudit(false), IsType(false),ExcludeDataType(DataType.JSON)]
         Lookup,
-        [Description("Lookup Type"), AllowSurvey(true), EnableAudit(true), IsType(true)]
+        [Description("Lookup Type"), AllowSurvey(true), EnableAudit(true), IsType(true),ExcludeDataType(DataType.JSON)]
         LookupType,
-        [Description("Resource"), AllowOwnership(false), EnableAudit(false), IsType(false)]
+        [Description("Resource"), AllowOwnership(false), EnableAudit(false), IsType(false),ExcludeDataType(DataType.JSON)]
         Resource,
         [Description("Resource Type"), AllowOwnership(false), AllowSurvey(true), EnableAudit(false), IsType(true),
             ExcludeDataType(DataType.FieldFromRelationship | DataType.FilteredLookup | DataType.FusionLookup |
-            DataType.OwnershipLookup | DataType.RefListRelationship )]
+            DataType.OwnershipLookup | DataType.RefListRelationship | DataType.JSON)]
         ResourceType,
-        [Description("Survey Type"), AllowSurvey(false), EnableAudit(true), IsType(true)]
+        [Description("Survey Type"), AllowSurvey(false), EnableAudit(true), IsType(true),ExcludeDataType(DataType.JSON)]
         SurveyType,
-        [Description("Taxonomy"), EnableAudit(true), IsType(false)]
+        [Description("Taxonomy"), EnableAudit(true), IsType(false),ExcludeDataType(DataType.JSON)]
         Taxonomy,
         [Description("Taxonomy Type"), AllowSurvey(true), EnableAudit(true), IsType(true), 
-            ExcludeDataType(DataType.FilteredLookup | DataType.FusionLookup)]
+            ExcludeDataType(DataType.FilteredLookup | DataType.FusionLookup | DataType.JSON)]
         TaxonomyType,
-        [Description("Tooltip  Template"), AllowOwnership(false), EnableAudit(false), IsType(false)]
+        [Description("Tooltip  Template"), AllowOwnership(false), EnableAudit(false), IsType(false),ExcludeDataType(DataType.JSON)]
         TooltipTemplate,
-        [Description("Field"), EnableAudit(false), IsType(false)]
+        [Description("Field"), EnableAudit(false), IsType(false),ExcludeDataType(DataType.JSON)]
         Field,
-        [Description("Field Type"), AllowSurvey(false), EnableAudit(true), IsType(true)]
+        [Description("Field Type"), AllowSurvey(false), EnableAudit(true), IsType(true),ExcludeDataType(DataType.JSON)]
         FieldType,
-        [Description("Response Type"), AllowSurvey(false), EnableAudit(false), IsType(true)]
+        [Description("Response Type"), AllowSurvey(false), EnableAudit(false), IsType(true),ExcludeDataType(DataType.JSON)]
         ResponseType,
-        [Description("Score"), AllowSurvey(false), EnableAudit(false), IsType(false)]
+        [Description("Score"), AllowSurvey(false), EnableAudit(false), IsType(false),ExcludeDataType(DataType.JSON)]
         Score,
-        [Description("Score Type"), AllowSurvey(false), EnableAudit(true), IsType(false)]
+        [Description("Score Type"), AllowSurvey(false), EnableAudit(true), IsType(false),ExcludeDataType(DataType.JSON)]
         ScoreType,
-        [Description("Responsibility"), AllowSurvey(false), EnableAudit(true), IsType(false)]
+        [Description("Responsibility"), AllowSurvey(false), EnableAudit(true), IsType(false),ExcludeDataType(DataType.JSON)]
         Responsibility,
-        [Description("Responsibility Type"), AllowSurvey(false), EnableAudit(true), IsType(true)]
+        [Description("Responsibility Type"), AllowSurvey(false), EnableAudit(true), IsType(true),ExcludeDataType(DataType.JSON)]
         ResponsibilityType,
-        [Description("Responsibility Type Claim"), AllowSurvey(false), EnableAudit(false), IsType(false)]
+        [Description("Responsibility Type Claim"), AllowSurvey(false), EnableAudit(false), IsType(false),ExcludeDataType(DataType.JSON)]
         ResponsibilityTypeClaim,
-        [Description("Claim"), AllowSurvey(false), EnableAudit(false), IsType(false)]
+        [Description("Claim"), AllowSurvey(false), EnableAudit(false), IsType(false),ExcludeDataType(DataType.JSON)]
         Claim,
-        [Description("Bulk Load"), AllowSurvey(false), EnableAudit(false), IsType(false)]
+        [Description("Bulk Load"), AllowSurvey(false), EnableAudit(false), IsType(false),ExcludeDataType(DataType.JSON)]
         Load,
-        [Description("Report"), AllowSurvey(false), EnableAudit(true), IsType(false)]
+        [Description("Report"), AllowSurvey(false), EnableAudit(true), IsType(false),ExcludeDataType(DataType.JSON)]
         Report,
-        [Description("Attribute Type Category"), AllowSurvey(false), EnableAudit(false), IsType(false)]
+        [Description("Attribute Type Category"), AllowSurvey(false), EnableAudit(false), IsType(false),ExcludeDataType(DataType.JSON)]
         AttributeTypeCategory,
-        [Description("Policy"), AllowSurvey(false), EnableAudit(true), IsType(false)]
+        [Description("Policy"), AllowSurvey(false), EnableAudit(true), IsType(false),ExcludeDataType(DataType.JSON)]
         Policy,
         [Description("Policy Type"), AllowSurvey(false), EnableAudit(true), IsType(true),
-              ExcludeDataType(DataType.FilteredLookup | DataType.FusionLookup)]
+              ExcludeDataType(DataType.FilteredLookup | DataType.FusionLookup | DataType.JSON)]
         PolicyType,
-        [Description("Rule"), AllowSurvey(false), EnableAudit(true), IsType(false)]
+        [Description("Rule"), AllowSurvey(false), EnableAudit(true), IsType(false),ExcludeDataType(DataType.JSON)]
         Rule,
         [Description("Rule Type"), AllowSurvey(false), EnableAudit(true), IsType(true), 
-            ExcludeDataType(DataType.FilteredLookup | DataType.FusionLookup)]
+            ExcludeDataType(DataType.FilteredLookup | DataType.FusionLookup | DataType.JSON)]
         RuleType,
-        [Description("Fusion Execution"), AllowSurvey(false), EnableAudit(false), IsType(false)]
+        [Description("Fusion Execution"), AllowSurvey(false), EnableAudit(false), IsType(false),ExcludeDataType(DataType.JSON)]
         FusionExecution,
-        [Description("Workflow Relation"), AllowSurvey(false), EnableAudit(false), IsType(false)]
+        [Description("Workflow Relation"), AllowSurvey(false), EnableAudit(false), IsType(false),ExcludeDataType(DataType.JSON)]
         WorkflowTypeRelation,
-        [Description("Predicate"), AllowSurvey(false), EnableAudit(true), IsType(false)]
+        [Description("Predicate"), AllowSurvey(false), EnableAudit(true), IsType(false),ExcludeDataType(DataType.JSON)]
         Predicate,
-        [Description("Group Type"), AllowSurvey(false), EnableAudit(false), IsType(true)]
+        [Description("Group Type"), AllowSurvey(false), EnableAudit(false), IsType(true),ExcludeDataType(DataType.JSON)]
         GroupType,
-        [Description("Rule Dimension"), AllowSurvey(false), EnableAudit(true), IsType(false)]
+        [Description("Rule Dimension"), AllowSurvey(false), EnableAudit(true), IsType(false),ExcludeDataType(DataType.JSON)]
         RuleDimension,        
-        [Description("Map"), AllowSurvey(false), EnableAudit(true), IsType(false)]
+        [Description("Map"), AllowSurvey(false), EnableAudit(true), IsType(false),ExcludeDataType(DataType.JSON)]
         Map,
-        [Description("Map Type"), AllowSurvey(false), EnableAudit(true), IsType(true)]
+        [Description("Map Type"), AllowSurvey(false), EnableAudit(true), IsType(true),ExcludeDataType(DataType.JSON)]
         MapType,
-        [Description("Reference Item"), AllowSurvey(false), EnableAudit(true), IsType(false)]
+        [Description("Reference Item"), AllowSurvey(false), EnableAudit(true), IsType(false),ExcludeDataType(DataType.JSON)]
         ReferenceItem,
         [Description("Reference Item Type"), AllowSurvey(false), EnableAudit(true), IsType(true),
-               ExcludeDataType(DataType.FilteredLookup | DataType.FusionLookup)]
+               ExcludeDataType(DataType.FilteredLookup | DataType.FusionLookup | DataType.JSON)]
         ReferenceItemType,
-        [Description("Fusion Query Attribute"), EnableAudit(false), IsType(false)]
+        [Description("Fusion Query Attribute"), EnableAudit(false), IsType(false),ExcludeDataType(DataType.JSON)]
         FusionQueryAttribute,
         [Description("Fusion Query Attribute Type"), EnableAudit(true), IsType(true),
                     ExcludeDataType(DataType.FieldFromRelationship | DataType.FilteredLookup |
                     DataType.FusionLookup | DataType.Link | DataType.Lookup | DataType.OwnershipLookup |
-                    DataType.RefListRelationship | DataType.ComplexRelationLookup | DataType.Relationship)]
+                    DataType.RefListRelationship | DataType.ComplexRelationLookup | DataType.Relationship | DataType.JSON)]
         FusionQueryAttributeType,
-        [Description("Monitor"), AllowSurvey(false), EnableAudit(false), IsType(false)]
+        [Description("Monitor"), AllowSurvey(false), EnableAudit(false), IsType(false),ExcludeDataType(DataType.JSON)]
         Monitor,
         [Description("Issue Type"), EnableAudit(true), IsType(true), 
             ExcludeDataType(DataType.FieldFromRelationship | DataType.FilteredLookup | DataType.FusionLookup |
-            DataType.OwnershipLookup | DataType.RefListRelationship | DataType.ComplexRelationLookup | DataType.Relationship)]
+            DataType.OwnershipLookup | DataType.RefListRelationship | DataType.ComplexRelationLookup | DataType.Relationship | DataType.JSON)]
         IssueType,
-        [Description("Issue"), EnableAudit(false), IsType(false)]
+        [Description("Issue"), EnableAudit(false), IsType(false),ExcludeDataType(DataType.JSON)]
         Issue,
-        [Description("Rule Implementation"), EnableAudit(true), IsType(false)]
+        [Description("Rule Implementation"), EnableAudit(true), IsType(false),ExcludeDataType(DataType.JSON)]
         RuleImplementation,
-        [Description("Score Type Metric"), EnableAudit(true), IsType(false)]
+        [Description("Score Type Metric"), EnableAudit(true), IsType(false),ExcludeDataType(DataType.JSON)]
         ScoreTypeMetric,
-        [Description("Organization"), EnableAudit(false), IsType(false)]
+        [Description("Organization"), EnableAudit(false), IsType(false),ExcludeDataType(DataType.JSON)]
         Organization,
-        [Description("Organization Domain"), EnableAudit(false), IsType(false)]
+        [Description("Organization Domain"), EnableAudit(false), IsType(false),ExcludeDataType(DataType.JSON)]
         OrganizationDomain,
-        [Description("Organization Invitation"), EnableAudit(false), IsType(false)]
+        [Description("Organization Invitation"), EnableAudit(false), IsType(false),ExcludeDataType(DataType.JSON)]
         OrganizationInvitation,
-        [Description("Contract"), EnableAudit(true), IsType(false)]
+        [Description("Contract"), EnableAudit(true), IsType(false),ExcludeDataType(DataType.JSON)]
         Contract,
-        [Description("Shopping Cart Type"), EnableAudit(true), IsType(true)]
+        [Description("Shopping Cart Type"), EnableAudit(true), IsType(true),ExcludeDataType(DataType.JSON)]
         ShoppingCartType,
-        [Description("Shopping Cart"), EnableAudit(true), IsType(false)]
+        [Description("Shopping Cart"), EnableAudit(true), IsType(false),ExcludeDataType(DataType.JSON)]
         ShoppingCart,
-        [Description("Rule Implementation Type"), EnableAudit(true), IsType(true)]
+        [Description("Rule Implementation Type"), EnableAudit(true), IsType(true),ExcludeDataType(DataType.JSON)]
         RuleImplementationType,
         [Description("Organization Type"), EnableAudit(true), IsType(true), 
             ExcludeDataType(DataType.FieldFromRelationship | DataType.FilteredLookup | DataType.FusionLookup |
-            DataType.OwnershipLookup | DataType.RefListRelationship | DataType.ComplexRelationLookup | DataType.Relationship)]
+            DataType.OwnershipLookup | DataType.RefListRelationship | DataType.ComplexRelationLookup | DataType.Relationship | DataType.JSON)]
         OrganizationType,
-        [Description("Export Template"), EnableAudit(true), IsType(true)]
+        [Description("Export Template"), EnableAudit(true), IsType(true),ExcludeDataType(DataType.JSON)]
         ExportTemplate
     }
 
