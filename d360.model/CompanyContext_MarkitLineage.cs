@@ -351,9 +351,6 @@ namespace d360.model
         {
             var sql = @"SELECT [ID]
                           ,[MapRuleItemID]
-                          ,[ParentID]
-                          ,[UltimateParentID]
-                          ,[Level]
                           ,[SourceFusionAttributeID]
                           ,[SourceFusionAttributeTypeID]
                           ,[SourceObject]
