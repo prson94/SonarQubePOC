@@ -76,6 +76,7 @@ When modifying content on assets, please be aware that you will need to use the 
                     c.OperationFilter<Consumes>();
                     c.OperationFilter<Produces>();
                     c.OperationFilter<ExamplesOperationFilter>();
+                    c.OperationFilter<SwaggerParameterAttributeFilter>();
                     c.PrettyPrint();
                     c.MultipleApiVersions(versionSupportResolver, versionInfoBuilder);
                     c.ApiKey("ApiKey")
@@ -104,6 +105,8 @@ When modifying content on assets, please be aware that you will need to use the 
             config.Formatters.JsonFormatter.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
             config.Formatters.JsonFormatter.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
             config.Formatters.JsonFormatter.SerializerSettings.DateTimeZoneHandling = Newtonsoft.Json.DateTimeZoneHandling.Utc;
+            // default is "yyyy'-'MM'-'dd'T'HH':'mm':'ss.FFFFFFFK" capital f's mean include none zero values so between 0 and 7 precision lower case f means always DQ+ cant handle big F's
+            config.Formatters.JsonFormatter.SerializerSettings.DateFormatString = "yyyy'-'MM'-'dd'T'HH':'mm':'ss.fff'Z'";
             config.Formatters.JsonFormatter.MediaTypeMappings.Add(new RequestHeaderMapping("Accept", "text/html", StringComparison.InvariantCultureIgnoreCase, true, "application/json"));
             config.MessageHandlers.Add(new HeadHandler());
             config.MessageHandlers.Add(new ErrorMessageHandler());

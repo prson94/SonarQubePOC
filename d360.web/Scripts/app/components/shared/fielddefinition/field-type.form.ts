@@ -18,6 +18,7 @@ import { ObjectDetailService } from '../../../services/object-detail.service';
 import { BaseComponent } from '../../shared/base.component';
 
 import * as _ from 'lodash';
+import { createWriteStream } from 'fs';
 
 @Component({
     selector: 'd3s-field-type-form',
@@ -88,6 +89,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
     private errorMessage: string = "";
     private isListableRelationship: boolean = false;
+
+    public defaultDate: any;
+    public defaultLinkName: any;
+    public defaultLinkAdress: any;
 
     constructor(private fieldsService: FieldsService, private messagesService: MessagesService, private objectDetailService: ObjectDetailService) {
         super();
@@ -416,6 +421,15 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.model.FieldType.LookupObjectType = null;
                 break;
         }
+        if (this.model.FieldType.Type == 'Date' && this.model.FieldType.DefaultValue != null) {
+            this.defaultDate = new Date(this.model.FieldType.DefaultValue);
+        }
+
+        if (this.model.FieldType.Type == 'Link' && this.model.FieldType.DefaultValue != null) {
+            var link = this.model.FieldType.DefaultValue.split('|');
+            this.defaultLinkName = link[0];
+            this.defaultLinkAdress = link[1];
+        }
         return Promise.all(promises).then(() => {
         });
     }
@@ -441,6 +455,14 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         
         this.loadDefaultValueOptions(type, id);
         this.loadHierarchyOptions(type, id);
+
+        //clear the validated fields and error message
+        this.model.FieldType.MaximumLength = null;
+        this.model.FieldType.MinimumLength = null;
+        this.model.FieldType.Increment = null;
+        this.validateNumber(this.model.FieldType.Type);
+        
+
         return this.loadTokens(type, id);
     }
 
@@ -656,6 +678,13 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.model.FilteredLookupItem = item;
         }
 
+        if (this.model.FieldType.Type == 'Link') {
+            {
+                this.model.FieldType.DefaultValue = this.defaultLinkName != null ? this.defaultLinkName : '';// + '|' + this.defaultLinkAdress != null ? this.defaultLinkAdress : '';
+                this.model.FieldType.DefaultValue += '|';
+                this.model.FieldType.DefaultValue += this.defaultLinkAdress != null ? this.defaultLinkAdress : '';
+            }
+        }
         this.isLoading = true;
         if (this.model.FieldType.ID > 0) {
             this.fieldsService.putFieldType(this.model)
@@ -942,36 +971,69 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
     }
 
-    private validateIncrement(value: string) {
-        if (this.model.FieldType.Increment > 0) {
+    private validateNumber(value: string) {
+        if (value == 'Number' || value == 'Decimal') {
 
+
+            let min = +this.model.FieldType.MinimumLength;
+            let max = +this.model.FieldType.MaximumLength;
+            let defaultNum = +this.model.FieldType.DefaultValue;
+            let increment = +this.model.FieldType.Increment; 
+            
             if (value == 'Number') {
-                if (this.model.FieldType.Increment % 1 != 0) {
-                    this.errorMessage = value + ' input type requires a valid integer.';  
+                if (increment && increment % 1 != 0) {
+                    this.errorMessage = 'Please enter a valid integer.';
                     return;
-                } 
+                } else if (min && min % 1 != 0) {
+                    this.errorMessage = 'Please enter a valid integer.';
+                    return;
+                } else if (max && max % 1 != 0) {
+                    this.errorMessage = 'Please enter a valid integer.';
+                    return;
+                } else {
+                    this.errorMessage = '';
+                }
             }
 
-            if (this.model.FieldType.MinimumLength && this.model.FieldType.MinimumLength % this.model.FieldType.Increment != 0) {
-                this.errorMessage = 'Minimum value is not an increment of ' + this.model.FieldType.Increment;
-            }
-            else if (this.model.FieldType.MaximumLength && this.model.FieldType.MaximumLength % this.model.FieldType.Increment != 0) {
-                this.errorMessage = 'Maximum value is not an increment of ' + this.model.FieldType.Increment;
-            }
-            else if (this.model.FieldType.DefaultValue && +this.model.FieldType.DefaultValue % this.model.FieldType.Increment != 0) {
-                this.errorMessage = 'Default value invalid. Default [' + this.model.FieldType.DefaultValue + '] is not an increment of [' + this.model.FieldType.Increment + ']';
-            }
-            else if (this.model.FieldType.DefaultValue && (+this.model.FieldType.DefaultValue > this.model.FieldType.MinimumLength)) {
-                this.errorMessage = 'Default value invalid. Default [' + this.model.FieldType.DefaultValue + '] cannot be more than Minimum [' + this.model.FieldType.MinimumLength +']';
-            }
-            else if (this.model.FieldType.DefaultValue && (+this.model.FieldType.DefaultValue > this.model.FieldType.MaximumLength)) {
-                this.errorMessage = 'Default value invalid. Default [' + this.model.FieldType.DefaultValue + '] cannot be more than Maximum [' + this.model.FieldType.MaximumLength + ']';
-            }
-            else {
+            if (increment < 0) {
+                this.errorMessage = 'Please enter a positive number for the increment.';
+                return;
+            } else {
                 this.errorMessage = '';
-            } 
+            }
+
+            if (!isNaN(defaultNum)) {
+                if (!isNaN(min) && defaultNum < min) {
+                    this.errorMessage = 'Please enter a minimum value of ' + min + '.';
+                    return;
+                }
+                else if (!isNaN(max) && defaultNum > max) {
+                    this.errorMessage = 'Please enter a maximum value of ' + max + '.';
+                    return;
+                }
+                else { 
+                    this.errorMessage = '';
+                }
+            }
+
+            if (!isNaN(min) && !isNaN(max))
+                if (min > max)
+                    this.errorMessage = 'Please enter a minimum value which is lower than the maximum value.';
+                else
+                    this.errorMessage = '';
         } else {
             this.errorMessage = '';
+        }
+    }
+
+    private CheckMinRequired(fem: FieldTypeEditorModel) {
+        if (!fem) {
+            return;
+        }
+        if (fem.FieldType.Type == 'Number' || fem.FieldType.Type == 'Decimal') {
+            return false;
+        } else {
+            return !fem.FieldType.IsRequired;
         }
     }
 
@@ -1018,9 +1080,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private anyDisplayFieldsSelected(e: any) {
         if (this.model.FieldType.Type != 'ComplexRelationLookup') {
             this.displayFieldSelected = true;
-            this.cardinalFieldFromRelationshipSelected(parseInt(this.lookups.Field_FieldFromRelRelationships[0].value));
+            if (this.lookups.Field_FieldFromRelRelationships.length > 0)
+                this.cardinalFieldFromRelationshipSelected(parseInt(this.lookups.Field_FieldFromRelRelationships[0].value));
             return;
-        }
+        }  
         if (e == true) {
             this.displayFieldSelected = true;
             return;
@@ -1035,7 +1098,12 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             });
         });
     }
-
+    private onDateSelectMethod(e: Date)
+    {
+        this.model.FieldType.DefaultValue = e.toISOString();
+        this.defaultDate = e;
+    }
+  
     public isRelationshipWithMultipleCardinality(): boolean {
         
         return true;

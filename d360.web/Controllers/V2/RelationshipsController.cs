@@ -161,14 +161,42 @@ namespace d360.web.Controllers.V2
 
                 if (intersectType == null)
                     return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Relationship Type with Uid {intersectTypeUid} could not be found.")));
+
                 if (relationships == null)
                     relationships = readRequestJsonContent<RelationshipInserts>(Request).Result;
 
-                var results = (Company.Database.Connection as SqlConnection).BulkRelationshipsImport(
-                    QueueSource,
-                    Company.CurrentCompanyDomain, Company.CurrentCompanyID, Company.CurrentResourceID,
-                    intersectType,
-                    relationships);
+                if (relationships == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
+
+                var execution = new ApiExecution
+                {
+                    ExecutionID = Guid.NewGuid(),
+                    Error = 0,
+                    Processed = 0,
+                    Total = relationships.Count,
+                    StartedOn = DateTime.UtcNow,
+                    ResourceID = Company.CurrentResourceID,
+                    Fields = JsonConvert.SerializeObject(new ApiExecutionFields_PostRelationships { IntersectTypeUid = intersectTypeUid })
+                };
+                Company.Add(execution);
+
+                List<DatabaseBulkRelationshipResult> results = null;
+                try
+                {
+                    results = Company.ImportRelationships(execution, intersectType, relationships);
+
+                    // Close execution record.
+                    execution.Processed = results.Count;
+                    execution.Error = results.Count(i => !i.Success);
+                    execution.CompletedOn = DateTime.UtcNow;
+                    Company.Update(execution);
+                }
+                catch (Exception ex)
+                {
+                    execution.ErrorMessage = ex.GetFullExceptionData(false);
+                    execution.CompletedOn = DateTime.UtcNow;
+                    Company.Update(execution);
+                }
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
@@ -216,9 +244,13 @@ namespace d360.web.Controllers.V2
                 if (relationships == null)
                     relationships = readRequestJsonContent<RelationshipInserts>(Request).Result;
 
+                if (relationships == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
+
                 var executionInfo = new ApiExecutionInfo
                 {
                     CompanyID = Company.CurrentCompanyID,
+                    ResourceID = Company.CurrentResourceID,
                     CompanyDomainPrefix = Company.CurrentCompanyDomain,
                     ExecutionID = Guid.NewGuid(),
                     Action = ApiExecutionAction.PostRelationships

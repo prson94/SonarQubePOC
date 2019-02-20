@@ -47,29 +47,16 @@
     <OutputPath>bin\Debug\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Dapper, Version=1.50.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Dapper.1.50.4\lib\net451\Dapper.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.ApplicationInsights, Version=2.4.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.ApplicationInsights.2.4.0\lib\net45\Microsoft.ApplicationInsights.dll</HintPath>
-    </Reference>
     <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.11.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.configuration" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Data.Entity" />
-    <Reference Include="System.Diagnostics.DiagnosticSource, Version=4.0.2.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Diagnostics.DiagnosticSource.4.4.1\lib\net45\System.Diagnostics.DiagnosticSource.dll</HintPath>
-    </Reference>
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
@@ -92,6 +79,7 @@
     <Compile Include="entities\AssetType.cs" />
     <Compile Include="entities\AssetTypeExportTemplate.cs" />
     <Compile Include="entities\AssetTypeExportTemplateStyle.cs" />
+    <Compile Include="entities\AssetTypeLevel.cs" />
     <Compile Include="entities\Community\Client.cs" />
     <Compile Include="entities\Community\CompanyHelpResource.cs" />
     <Compile Include="entities\Community\HelpResource.cs" />
@@ -106,8 +94,6 @@
     <Compile Include="entities\Fusion\FusionRuleFilter.cs" />
     <Compile Include="entities\Fusion\FusionAttributeTypeCustomQuery.cs" />
     <Compile Include="entities\Fusion\FusionSchedule.cs" />
-    <Compile Include="entities\Glossary\ArtifactTypeExportTemplate.cs" />
-    <Compile Include="entities\Glossary\ArtifactTypeExportTemplateStyle.cs" />
     <Compile Include="entities\Integration\IntegrationAssetTypeRelationItemTarget.cs" />
     <Compile Include="entities\Integration\IntegrationAssetTypeRoleItem.cs" />
     <Compile Include="entities\Integration\IntegrationAssetTypeRelationItem.cs" />
@@ -197,13 +183,12 @@
     <Compile Include="entities\Quality\PolicyTypeLevel.cs" />
     <Compile Include="entities\Nym.cs" />
     <Compile Include="entities\NymRelation.cs" />
+    <Compile Include="entities\Transitive\ApiVersion2Models.cs" />
     <Compile Include="entities\Transitive\AzureGraphModels.cs" />
     <Compile Include="entities\Transitive\AssetWithoutReadPermission.cs" />
     <Compile Include="entities\Transitive\BulkOwnerImport.cs" />
-    <Compile Include="entities\Transitive\BulkRelationshipImport.cs" />
     <Compile Include="entities\Transitive\BulkMetricImport.cs" />
     <Compile Include="entities\Transitive\GenerateAssetTypeSqlModel.cs" />
-    <Compile Include="entities\Transitive\BulkAssetImport.cs" />
     <Compile Include="entities\Transitive\BulkLoadGetLoadColumnsModel.cs" />
     <Compile Include="entities\Transitive\AssetDetail.cs" />
     <Compile Include="entities\Transitive\CacheObject.cs" />

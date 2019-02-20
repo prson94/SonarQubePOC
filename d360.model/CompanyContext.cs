@@ -89,11 +89,10 @@ namespace d360.model
 
         public DbSet<Artifact> Artifacts { get; set; }
 
-        public DbSet<ArtifactTypeExportTemplate> ArtifactTypeExportTemplates { get; set; }
+
 
         public DbSet<AssetTypeExportTemplate> AssetTypeExportTemplates { get; set; }
 
-        public DbSet<ArtifactTypeExportTemplateStyle> ArtifactTypeExportTemplateStyles { get; set; }
 
         public DbSet<AssetTypeExportTemplateStyle> AssetTypeExportTemplateStyles { get; set; }
 
@@ -260,6 +259,8 @@ namespace d360.model
         public DbSet<Taxonomy> Taxonomies { get; set; }
 
         public DbSet<TaxonomyTypeLevel> TaxonomyTypeLevels { get; set; }
+
+        public DbSet<AssetTypeLevel> AssetTypeLevels { get; set; }
 
         public DbSet<TaxonomyType> TaxonomyTypes { get; set; }
 
@@ -2000,8 +2001,8 @@ where	R.SourceObject = 'FusionAttribute'
             modelBuilder.Entity<FieldTypeLookup>().HasRequired(t => t.FieldType).WithOptional(t => t.FieldTypeLookup).WillCascadeOnDelete(true);
             modelBuilder.Entity<core.entities.Rule>().Property(x => x.Threshold).HasPrecision(4, 3);
 
-            modelBuilder.Entity<Fusion>().HasMany<Artifact>(i => i.FusionOwners).WithMany(i => i.OwnedFusions).Map(i => {
-                i.MapLeftKey("FusionID").MapRightKey("ArtifactID").ToTable("FusionOwner");
+            modelBuilder.Entity<Fusion>().HasMany<Asset>(i => i.FusionOwners).WithMany(i => i.OwnedFusions).Map(i => {
+                i.MapLeftKey("FusionID").MapRightKey("AssetID").ToTable("FusionOwner");
             });
             modelBuilder.Entity<Question>().HasMany<QuestionTypeOption>(i => i.QuestionTypeOptions).WithMany(i => i.Questions).Map(i => {
                 i.MapLeftKey("QuestionID").MapRightKey("QuestionTypeOptionID").ToTable("QuestionOption");

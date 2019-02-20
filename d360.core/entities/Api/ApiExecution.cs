@@ -27,6 +27,9 @@ namespace d360.core.entities
         public string Fields { get; set; }
 
         [DataMember]
+        public string ErrorMessage { get; set; }
+
+        [DataMember]
         public DateTime StartedOn { get; set; }
 
         [DataMember]

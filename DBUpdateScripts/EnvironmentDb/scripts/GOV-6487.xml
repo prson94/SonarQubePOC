@@ -1,0 +1,39 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Sebastian Abraham" id="GOV-6487">
+  
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+  
+			insert into AssetTypeLevel
+			(AssetTypeID,[Level],[Name],[Description])
+			Select AT.ID,TL.[Level],TL.[Name],TL.Description from AssetType AT 
+			inner join TaxonomyTypeLevel TL on AT.ObjectID= TL.TaxonomyTypeID and AT.Object='TaxonomyType'
+			where not exists (Select 1 from AssetTypeLevel where AssetTypeID=AT.ID and Level=TL.[Level] )
+
+
+			insert into AssetTypeLevel
+			(AssetTypeID,[Level],[Name],[Description])
+			Select AT.ID,TL.[Level],TL.[Name],TL.Description from AssetType AT 
+			inner join PolicyTypeLevel TL on AT.ObjectID= TL.PolicyTypeID and AT.Object='PolicyType'
+			where not exists (Select 1 from AssetTypeLevel where AssetTypeID=AT.ID and Level=TL.[Level] )
+			
+    </sql>
+	<rollback>
+		<![CDATA[
+			delete from AssetTypeLevel
+		]]>
+    </rollback>
+  </changeSet>
+  
+  
+
+</databaseChangeLog>

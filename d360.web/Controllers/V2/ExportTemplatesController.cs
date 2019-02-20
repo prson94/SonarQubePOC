@@ -207,7 +207,7 @@ namespace d360.web.Controllers.V2
         /// Update  style for a template
         /// </summary>
         /// <param name="id">style id</param>
-        /// <param name="model">ArtifactTypeExportTemplateStyle</param>
+        /// <param name="model">AssetTypeExportTemplateStyle</param>
         /// <returns></returns>
         [
             HttpPut,

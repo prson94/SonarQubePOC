@@ -147,6 +147,16 @@ namespace d360.web.Controllers
             }
         }
 
+        private string ConverDate(string date)
+        {
+            var stringDate = date;
+            DateTime dateVal = DateTime.MinValue;
+            if (DateTime.TryParse(stringDate, out dateVal))
+            {
+                return  dateVal.ToShortDateString();
+            }
+            return null;
+        }
         #endregion
 
         #region Parse Methods
@@ -1347,10 +1357,11 @@ namespace d360.web.Controllers
                             throw new GenericException(HttpStatusCode.BadRequest, "Invalid Maximum Level", "Invalid Maximum Model level specified must be a value between 1 and 10");
 
                         Company.Add(t);
-
+                        var assetType = Company.Filter<AssetType>(x => x.ObjectID == t.ID && x.Object == "TaxonomyType").SingleOrDefault();
+                        if (assetType == null) throw new NotFoundException("asset type");
                         for (int i = 1; i <= t.MaximumDepth; i++)
                         {
-                            Company.Set<TaxonomyTypeLevel>().Add(new TaxonomyTypeLevel { Description = string.Format("Level {0}", i), Level = i, Name = string.Format("Level {0}", i), TaxonomyTypeID = t.ID });
+                            Company.Set<AssetTypeLevel>().Add(new AssetTypeLevel { Description = string.Format("Level {0}", i), Level = i, Name = string.Format("Level {0}", i), AssetTypeID = assetType.ID });
                         }
                         Company.SaveChanges();
                         
@@ -1519,9 +1530,10 @@ namespace d360.web.Controllers
                         parentType = SystemObjects.ReferenceItemType;
                         break;
                     case SystemObjects.TaxonomyType:
-                        var t = Company.GetById<TaxonomyType>(model.AssetType.ObjectID, i => i.TaxonomyTypeLevels);
+                        var t = Company.GetById<TaxonomyType>(model.AssetType.ObjectID);
+                        var assetType = Company.GetById<AssetType>(model.AssetType.ID, x => x.AssetTypeLevels);
                         if (t == null) throw new NotFoundException("model type");
-
+                        if (assetType == null) throw new NotFoundException("asset type");
                         t.Name = model.AssetType.Name;
                         t.DisplayFormat = model.AssetType.DisplayFormat;
                         t.Description = model.AssetType.Description;
@@ -1534,13 +1546,13 @@ namespace d360.web.Controllers
 
                         for (int i = 1; i <= t.MaximumDepth; i++)
                         {
-                            var level = t.TaxonomyTypeLevels.SingleOrDefault(l => l.Level == i);
+                            var level = assetType.AssetTypeLevels.SingleOrDefault(l => l.Level == i);
                             if (level == null)
                             {
-                                Company.Set<TaxonomyTypeLevel>().Add(new TaxonomyTypeLevel { Description = string.Format("Level {0}", i), Level = i, Name = string.Format("Level {0}", i), TaxonomyTypeID = t.ID });
+                                Company.Set<AssetTypeLevel>().Add(new AssetTypeLevel { Description = string.Format("Level {0}", i), Level = i, Name = string.Format("Level {0}", i), AssetTypeID =assetType.ID });
                             }
                         }
-                        Company.Delete<TaxonomyTypeLevel>(l => l.Level > t.MaximumDepth);
+                        Company.Delete<AssetTypeLevel>(l => l.Level > t.MaximumDepth);
                         Company.SaveChanges();
 
                         parentType = SystemObjects.TaxonomyType;
@@ -3526,8 +3538,10 @@ namespace d360.web.Controllers
                         throw new ConflictException("Error Occurred!", "You may not have a minimum length that is greater than the maximum length.");
                     }
                 }
-
-                if (!model.FieldType.IsRequired) model.FieldType.MinimumLength = 0;
+                if (!new[] { "Number", "Decimal" }.Contains(model.FieldType.Type))
+                {
+                    if (!model.FieldType.IsRequired) model.FieldType.MinimumLength = 0;
+                }
 
                 var val = model.Validation();
                 if (!val.Valid)
@@ -3544,6 +3558,15 @@ namespace d360.web.Controllers
 
                 switch (model.FieldType.Type)
                 {
+                    case "Date":
+
+                        var date = ConverDate(model.FieldType.DefaultValue);
+                        if (date != null)
+                        {
+                            model.FieldType.DefaultValue = date;
+                        }
+                        Company.Add<FieldType>(model.FieldType);
+                        break;
                     case "Html":
                         model.FieldType.MinimumLength = (!model.FieldType.IsRequired) ? (int?)null : 1;
                         model.FieldType.MaximumLength = null;
@@ -3842,8 +3865,11 @@ namespace d360.web.Controllers
             var a = Company.GetById<FieldType>(id);
             if (a == null) return null;
             var used = Company.Any<Field>(i => i.FieldTypeID == id);
-            
-            if (!a.IsRequired) a.MinimumLength = 0;
+
+            if (!new[] { "Number", "Decimal" }.Contains(a.Type))
+            {
+                if (!a.IsRequired) a.MinimumLength = 0;
+            }
 
             var model = new FieldTypeEditorModel
             {
@@ -3956,17 +3982,30 @@ namespace d360.web.Controllers
 
                 ft.IsRequired = model.FieldType.IsRequired;
 
-                ft.MinimumLength = model.FieldType.MinimumLength;
                 ft.MaximumLength = model.FieldType.MaximumLength;
                 ft.Pattern = model.FieldType.Pattern;
 
-                if (!ft.IsRequired) ft.MinimumLength = 0;
+                if (new[] { "Number", "Decimal" }.Contains(ft.Type))
+                {
+                    ft.MinimumLength = model.FieldType.MinimumLength;
+                }
+                else
+                {
+                    if (!ft.IsRequired) ft.MinimumLength = 0;
+                }
 
                 bool isNew;
 
                 var defs = Company.Filter<FieldTypeFusionLookupDefinition>(i => i.FieldTypeID == ft.ID, i => i.FieldTypeFusionLookupDisplayFields).ToList();
                 var efli = Company.Filter<FieldTypeFilteredLookupDefinition>(i => i.FieldTypeID == ft.ID, i => i.FieldTypeFilteredLookupDisplayFields).FirstOrDefault();
                 var fl = Company.Filter<FieldTypeLookup>(i => i.FieldTypeID == ft.ID).FirstOrDefault();
+
+                if (ft.Type == "Date")
+                {
+                    var date = ConverDate(ft.DefaultValue);
+                    if (date != null)
+                        ft.DefaultValue = date;
+                }
 
                 if (used)
                 {
@@ -4557,7 +4596,7 @@ namespace d360.web.Controllers
                 {
                     Text = i.Name,
                     Value = $"{i.ID}",
-                    Selected = a.FusionOwners.Any(c => c.ID == i.ID)
+                    Selected = a.FusionOwners.Any(c => c.ObjectID == i.ID && c.Object=="Artifact")
                 }).ToList();
                         
             list.Add(new EditableField { Row = 6, Column = 1, Required = true, FieldName = "Owners", Name = "Owners", FieldDescription = "You must assign one or more owners for this configuration.", FieldType = DataType.Lookup.ToString(), MultiSelect = true, Items = owners });
@@ -4599,7 +4638,7 @@ namespace d360.web.Controllers
 
                 var items = rawOwners.Split(',').ToList().Select(i => int.Parse(i)).ToList();
 
-                var ownerArtifacts = Company.Filter<Artifact>(i => items.Contains(i.ID)).ToList();
+                var ownerArtifacts = Company.Filter<Asset>(i => items.Contains(i.ObjectID) && i.Object=="Artifact").ToList();
 
                 var model = new Fusion
                 {
@@ -4684,7 +4723,7 @@ namespace d360.web.Controllers
 
                 var items = rawOwners.Split(',').ToList().Select(i => int.Parse(i)).ToList();
 
-                var ownerArtifacts = Company.Filter<Artifact>(i => items.Contains(i.ID)).ToList();
+                var ownerArtifacts = Company.Filter<Asset>(i => items.Contains(i.ObjectID) && i.Object=="Artifact").ToList();
 
                 model.Description = parseTextField(form, "Description");
                 model.Enabled = parseBooleanField(form, "Enabled");
@@ -4706,7 +4745,7 @@ namespace d360.web.Controllers
                 #endregion
 
                 #region See which ones to delete.
-                var ownersToRemove = new List<Artifact>();
+                var ownersToRemove = new List<Asset>();
                 foreach(var co in model.FusionOwners)
                 {
                     if (!ownerArtifacts.Any(no => no.ID == co.ID))
@@ -10020,17 +10059,21 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
                 if (!form.HasKeys()) throw new NoFormDataException("policy type level");
 
-                var a = new PolicyTypeLevel
+                var assetType = Company.Filter<AssetType>(x => x.ObjectID == id && x.Object == "PolicyType").SingleOrDefault();
+
+                if (assetType == null) throw new NotFoundException("asset type");
+
+                var a = new AssetTypeLevel
                 {
-                    PolicyTypeID = id,
+                    AssetTypeID = assetType.ID,
                     Level = level,
                     Name = parseTextField(form, "Name"),
                     Description = parseTextField(form, "Description"),
                 };
 
-                Company.Add<PolicyTypeLevel>(a);
+                Company.Add<AssetTypeLevel>(a);
 
-                return jsonSuccess(a.Name + " successfully created.", a.PolicyTypeID.ToString(), "add", HttpStatusCode.Created);
+                return jsonSuccess(a.Name + " successfully created.", a.AssetTypeID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -10066,7 +10109,11 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 if (!Company.HasAssetTypePermission(SystemObjects.PolicyType, id, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
-                Company.Delete<PolicyTypeLevel>(i => i.PolicyTypeID == id && i.Level == level);
+                var assetType = Company.Filter<AssetType>(x => x.ObjectID == id && x.Object == "PolicyType").SingleOrDefault();
+
+                if (assetType == null) throw new NotFoundException("asset type");
+
+                Company.Delete<AssetTypeLevel>(i => i.AssetTypeID == assetType.ID && i.Level == level);
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -10090,8 +10137,14 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
                 var id = parseIntField(form, "ID");
                 var level = parseIntField(form, "Level");
-                var model = Company.Filter<PolicyTypeLevel>(i => i.PolicyTypeID == id && i.Level == level).SingleOrDefault();
+
+                var assetType = Company.Filter<AssetType>(x => x.ObjectID == id && x.Object == "PolicyType").SingleOrDefault();
+
+                if (assetType == null) throw new NotFoundException("asset type");
+
+                var model = Company.Filter<AssetTypeLevel>(i => i.AssetTypeID == assetType.ID && i.Level == level).SingleOrDefault();
                 if (model == null) throw new NotFoundException("policy type level");
+
 
                 if (!Company.HasAssetTypePermission(SystemObjects.PolicyType, id, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
@@ -10099,7 +10152,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 model.Name = parseTextField(form, "Name");
                 model.Description = parseTextField(form, "Description");
 
-                Company.Update<PolicyTypeLevel>(model);
+                Company.Update<AssetTypeLevel>(model);
 
                 return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
@@ -10338,7 +10391,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             {
                 var parent = Company.GetParentObject(id, SystemObjects.ReferenceItem);
                 var sql = "select DisplayValue, ObjectID from assetdetail where [object] = 'Referenceitem' and TypeID = @id";
-                list.Add(new EditableField { Row = row++, Column = 1, FieldName = "ParentID", Name = parentType.Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = false, Items = Company.Query<dynamic>(sql, new { id = parentType.ID }).Select(i => new SelectListItem { Text = i.DisplayValue, Value = string.Format("{0}", i.ObjectID), Selected = i.ObjectID == (parent != null ? parent.ID : 0)  }).ToList() });
+                list.Add(new EditableField { Row = row++, Column = 1, FieldName = "ParentID", Name = parentType.Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = false, Items = Company.Query<dynamic>(sql, new { id = parentType.ObjectID }).Select(i => new SelectListItem { Text = i.DisplayValue, Value = string.Format("{0}", i.ObjectID), Selected = i.ObjectID == (parent != null ? parent.ObjectID : 0)  }).ToList() });
             }
 
             list = loadDynamicFields(SystemObjects.ReferenceItem.ToString(), id, list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, a.ReferenceItemTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.ReferenceItem, id).ToList(), row);
@@ -12297,22 +12350,11 @@ order by case Object
 
                 var existing = Company.Filter<ResponsibilityTypeRelation>(r => r.ObjectType == model.ObjectType && r.ObjectID == model.ObjectID && r.ResponsibilityTypeID == model.ResponsibilityTypeID).SingleOrDefault();
                 if (existing == null) throw new NotFoundException("responsibility type relation");
-
-                var oldPermissionsMask = existing.PermissionsBitMask;
-
+                                
                 existing.PermissionsBitMask = model.Permissions.Where(i => i.Selected).Sum(i => i.Value);
 
                 Company.Update(existing);
-
-                if (oldPermissionsMask != existing.PermissionsBitMask)
-                {
-                    // We need to mass-update the role results.
-                    Company.Database.Connection.Execute(
-                        "update ResponsibilityTypeRelationRuleResult set PermissionsBitMask = @m where ResponsibilityTypeID = @r and AssetTypeID = @a", 
-                        new { r = model.ResponsibilityTypeID, a = model.AssetTypeID, m = existing.PermissionsBitMask },
-                        commandTimeout: 120 );
-                }
-
+                
                 return jsonSuccess("Item successfully updated.", model.ResponsibilityTypeID.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
@@ -12569,7 +12611,7 @@ order by	case
         #region Form Get/Post
 
         [HttpDelete,  Route("DeleteResponsibilityTypeRelationRuleByID"), NonNullableParameters]
-        public JsonResult DeleteResponsibilityTypeRelationRuleByID(int id)
+        public async Task<JsonResult> DeleteResponsibilityTypeRelationRuleByID(int id)
         {
             try
             {
@@ -12580,7 +12622,7 @@ order by	case
                 if (model == null) throw new NotFoundException("responsibility type rule");
 
                 Company.Delete(model);
-                (Company.Database.Connection as System.Data.SqlClient.SqlConnection).RemoveRelationRuleResultsByRule(id);
+                await ((Company.Database.Connection as System.Data.SqlClient.SqlConnection).RemoveRelationRuleResultsByRule(id));
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -12619,7 +12661,7 @@ order by	case
         }
 
         [HttpPut, ValidateInput(false),  ActionName("ResponsibilityTypeRelationRule"), Route("ResponsibilityTypeRelationRule")]
-        public JsonResult PutResponsibilityTypeRelationRule(ResponsibilityTypeRelationRule model)
+        public async Task<JsonResult> PutResponsibilityTypeRelationRule(ResponsibilityTypeRelationRule model)
         {
             try
             {
@@ -12657,7 +12699,7 @@ order by	case
                 // Re-process this rule.
                 if (definitionIsDifferent)
                 {
-                    (Company.Database.Connection as System.Data.SqlClient.SqlConnection).ProcessResponsibilityRelationRules(existing.ID);
+                    await ((Company.Database.Connection as System.Data.SqlClient.SqlConnection).ProcessResponsibilityRelationRules(existing.ID));
                 }
                 
 
@@ -12675,7 +12717,7 @@ order by	case
         }
 
         [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false),  ActionName("ResponsibilityTypeRelationRule"), Route("ResponsibilityTypeRelationRule")]
-        public JsonResult PostResponsibilityTypeRelationRule(ResponsibilityTypeRelationRule model)
+        public async Task<JsonResult> PostResponsibilityTypeRelationRule(ResponsibilityTypeRelationRule model)
         {
             try
             {
@@ -12692,7 +12734,7 @@ order by	case
                 Company.Add(model);
 
                 // Process this rule.
-                (Company.Database.Connection as System.Data.SqlClient.SqlConnection).ProcessResponsibilityRelationRules(model.ID);
+                await ((Company.Database.Connection as System.Data.SqlClient.SqlConnection).ProcessResponsibilityRelationRules(model.ID));
 
                 return jsonSuccess("Item successfully created and processed.", model.ID.ToString(), "add", HttpStatusCode.Created);
             }
@@ -15457,23 +15499,24 @@ new { t = a.TaxonomyTypeID, currentLevel = a.Level ?? 1, maxLevel = a.TaxonomyTy
             {
                 var id = parseIntField(form, "ID");
                 var level = parseIntField(form, "Level");
-
+                var assetType = Company.Filter<AssetType>(x => x.ObjectID == id && x.Object == "TaxonomyType").SingleOrDefault();
+                if (assetType == null) throw new NotFoundException("asset type");
                 if (!Company.HasAssetTypePermission(SystemObjects.TaxonomyType, id, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 if (!form.HasKeys()) throw new NoFormDataException("taxonomy type level");
 
-                var a = new TaxonomyTypeLevel
+                var a = new AssetTypeLevel
                 {
-                    TaxonomyTypeID = id,
+                    AssetTypeID = assetType.ID,
                     Level = level,
                     Name = parseTextField(form, "Name"),
                     Description = parseTextField(form, "Description"),
                 };
 
-                Company.Add<TaxonomyTypeLevel>(a);
+                Company.Add<AssetTypeLevel>(a);
 
-                return jsonSuccess(a.Name + " successfully created.", a.TaxonomyTypeID.ToString(), "add", HttpStatusCode.Created);
+                return jsonSuccess(a.Name + " successfully created.", a.AssetTypeID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -15508,7 +15551,9 @@ new { t = a.TaxonomyTypeID, currentLevel = a.Level ?? 1, maxLevel = a.TaxonomyTy
                 if (!Company.HasAssetTypePermission(SystemObjects.TaxonomyType, id, Permission.DeleteAsset))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
-                Company.Delete<TaxonomyTypeLevel>(i => i.TaxonomyTypeID == id && i.Level == level);
+                var assetType = Company.Filter<AssetType>(x => x.ObjectID == id && x.Object == "TaxonomyType").SingleOrDefault();
+                if (assetType == null) throw new NotFoundException("asset type");
+                Company.Delete<AssetTypeLevel>(i => i.AssetTypeID == assetType.ID && i.Level == level);
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
@@ -15531,7 +15576,8 @@ new { t = a.TaxonomyTypeID, currentLevel = a.Level ?? 1, maxLevel = a.TaxonomyTy
 
                 var id = parseIntField(form, "ID");
                 var level = parseIntField(form, "Level");
-                var model = Company.Filter<TaxonomyTypeLevel>(i => i.TaxonomyTypeID == id && i.Level == level).SingleOrDefault();
+                var assetType = Company.Filter<AssetType>(x => x.ObjectID == id && x.Object == "TaxonomyType").SingleOrDefault();
+                var model = Company.Filter<AssetTypeLevel>(i => i.AssetTypeID == assetType.ID && i.Level == level).SingleOrDefault();
                 if (model == null) throw new NotFoundException("taxonomy type level");
 
                 if (!Company.HasAssetTypePermission(SystemObjects.TaxonomyType, id, Permission.ModifyAsset))
@@ -15540,7 +15586,7 @@ new { t = a.TaxonomyTypeID, currentLevel = a.Level ?? 1, maxLevel = a.TaxonomyTy
                 model.Name = parseTextField(form, "Name");
                 model.Description = parseTextField(form, "Description");
 
-                Company.Update<TaxonomyTypeLevel>(model);
+                Company.Update<AssetTypeLevel>(model);
 
                 return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }

@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace igx.jobs.responsibilityruleprocessor
 {
@@ -35,23 +36,21 @@ namespace igx.jobs.responsibilityruleprocessor
 #else
         const string timerSettings = "0 */3 * * * *";
 #endif
-        public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log) //   
+        public static async Task Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log) //   
         {
             try
             {
-#if DEBUG
-                var companies = CoreFunction.GetCompaniesByCurrentSlot().Where(i => i.CompanyID == 2).ToList();
-#else
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
-#endif
-                //companies.ForEach(c =>
-                companies.AsParallel().ForAll(c =>
+
+                foreach (var c in companies)
                 {
                     try
                     {
                         var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password);
 
                         company.OpenWithRetry(RetryPolicy.DefaultFixed);
+
+                        CoreFunction.AITrackEvent(functionName, "ResponsibilityRuleProcessor Job Starting", new Dictionary<string, string> { { "CompanyID", c.CompanyID.ToString() } });
 
                         try
                         {
@@ -66,7 +65,7 @@ namespace igx.jobs.responsibilityruleprocessor
 
                         try
                         {
-                            company.ProcessResponsibilityRelationRules();
+                            await company.ProcessResponsibilityRelationRules();
                         }
                         catch (Exception ex)
                         {
@@ -74,6 +73,8 @@ namespace igx.jobs.responsibilityruleprocessor
                             log.WriteLine($"Company [{c.CompanyID}]: [{ex.GetFullExceptionData()}]");
                             CoreFunction.AIFlush();
                         }
+
+                        CoreFunction.AITrackEvent(functionName, "ResponsibilityRuleProcessor Job Completed", new Dictionary<string, string> { { "CompanyID", c.CompanyID.ToString() } });
                     }
                     catch (Exception ex)
                     {
@@ -81,7 +82,7 @@ namespace igx.jobs.responsibilityruleprocessor
                         log.WriteLine($"Company [{c.CompanyID}]: [{ex.GetFullExceptionData()}]");
                         CoreFunction.AIFlush();
                     }
-                });
+                }
             }
             catch (Exception ex)
             {

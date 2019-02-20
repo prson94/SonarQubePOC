@@ -203,7 +203,7 @@ order by wi.StartedOn desc",
 select		distinct 
             null as WorkflowID
 			,wi.ID as WorkflowItemID
-            ,c.Body
+            ,coalesce(c.Body,DD.Value) as Body
 		    ,I.CommentID
 			,I.CreatedBy as RaisedByResourceID
 			,wi.StartedOn as DateStarted
@@ -241,6 +241,13 @@ from	    Issue I
 			left outer join reporting.Global_Resource R on R.ResourceID = I.CreatedBy
 			left outer join Comment C on C.ID = I.CommentID
             left join workflow.ItemAssignment IA on IA.ItemID = wi.ID and IA.ResourceObject = 'Resource'
+            outer apply (select  top 1
+                f.FormattedValue as [Value]
+                from
+                fieldtype ft
+                inner
+                join field f on (ft.id = f.fieldtypeid and f.[objecttype] = 'Issue' and f.objectid = I.ID
+                and ft.FriendlyName = 'Description')) as DD
 order by wi.StartedOn desc";
 
             var list = Company.Query<dynamic>(sql, new { id = objectid, obj = objecttype });
@@ -2332,7 +2339,7 @@ order by wi.StartedOn desc";
         [Route("versionstep/form/lookups/{objectType}/{objectId:int}"), HttpGet]
         public HttpResponseMessage GetWorkflowVersionStepFormLookups(string objectType, int objectId)
         {
-            var sql = @"select ft.ID as value, ft.FriendlyName + ' (' + coalesce( ri.Name, lt.Name) + ')' as [label] from 
+            var sql = @"select ft.ID as value, ft.FriendlyName + ' (' + coalesce( ri.Name, lt.Name,ft.LookupObjectType) + ')' as [label] from 
                  FieldType ft
                  left join AssetType ri on ri.objectid = ft.lookupobjectid and ri.[object] = 'ReferenceItemType' and ft.LookupObjectType = 'ReferenceItem'
                  left join LookupType lt on lt.id = lookupobjectid and ft.lookupobjecttype = 'Lookup'
