@@ -10375,7 +10375,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             {
                 var parent = Company.GetParentObject(id, SystemObjects.ReferenceItem);
                 var sql = "select DisplayValue, ObjectID from assetdetail where [object] = 'Referenceitem' and TypeID = @id";
-                list.Add(new EditableField { Row = row++, Column = 1, FieldName = "ParentID", Name = parentType.Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = false, Items = Company.Query<dynamic>(sql, new { id = parentType.ID }).Select(i => new SelectListItem { Text = i.DisplayValue, Value = string.Format("{0}", i.ObjectID), Selected = i.ObjectID == (parent != null ? parent.ID : 0)  }).ToList() });
+                list.Add(new EditableField { Row = row++, Column = 1, FieldName = "ParentID", Name = parentType.Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = false, Items = Company.Query<dynamic>(sql, new { id = parentType.ObjectID }).Select(i => new SelectListItem { Text = i.DisplayValue, Value = string.Format("{0}", i.ObjectID), Selected = i.ObjectID == (parent != null ? parent.ObjectID : 0)  }).ToList() });
             }
 
             list = loadDynamicFields(SystemObjects.ReferenceItem.ToString(), id, list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, a.ReferenceItemTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.ReferenceItem, id).ToList(), row);
