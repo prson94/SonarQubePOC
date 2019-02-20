@@ -2339,7 +2339,7 @@ order by wi.StartedOn desc";
         [Route("versionstep/form/lookups/{objectType}/{objectId:int}"), HttpGet]
         public HttpResponseMessage GetWorkflowVersionStepFormLookups(string objectType, int objectId)
         {
-            var sql = @"select ft.ID as value, ft.FriendlyName + ' (' + coalesce( ri.Name, lt.Name) + ')' as [label] from 
+            var sql = @"select ft.ID as value, ft.FriendlyName + ' (' + coalesce( ri.Name, lt.Name,ft.LookupObjectType) + ')' as [label] from 
                  FieldType ft
                  left join AssetType ri on ri.objectid = ft.lookupobjectid and ri.[object] = 'ReferenceItemType' and ft.LookupObjectType = 'ReferenceItem'
                  left join LookupType lt on lt.id = lookupobjectid and ft.lookupobjecttype = 'Lookup'

@@ -147,6 +147,16 @@ namespace d360.web.Controllers
             }
         }
 
+        private string ConverDate(string date)
+        {
+            var stringDate = date;
+            DateTime dateVal = DateTime.MinValue;
+            if (DateTime.TryParse(stringDate, out dateVal))
+            {
+                return  dateVal.ToShortDateString();
+            }
+            return null;
+        }
         #endregion
 
         #region Parse Methods
@@ -3548,6 +3558,15 @@ namespace d360.web.Controllers
 
                 switch (model.FieldType.Type)
                 {
+                    case "Date":
+
+                        var date = ConverDate(model.FieldType.DefaultValue);
+                        if (date != null)
+                        {
+                            model.FieldType.DefaultValue = date;
+                        }
+                        Company.Add<FieldType>(model.FieldType);
+                        break;
                     case "Html":
                         model.FieldType.MinimumLength = (!model.FieldType.IsRequired) ? (int?)null : 1;
                         model.FieldType.MaximumLength = null;
@@ -3980,6 +3999,13 @@ namespace d360.web.Controllers
                 var defs = Company.Filter<FieldTypeFusionLookupDefinition>(i => i.FieldTypeID == ft.ID, i => i.FieldTypeFusionLookupDisplayFields).ToList();
                 var efli = Company.Filter<FieldTypeFilteredLookupDefinition>(i => i.FieldTypeID == ft.ID, i => i.FieldTypeFilteredLookupDisplayFields).FirstOrDefault();
                 var fl = Company.Filter<FieldTypeLookup>(i => i.FieldTypeID == ft.ID).FirstOrDefault();
+
+                if (ft.Type == "Date")
+                {
+                    var date = ConverDate(ft.DefaultValue);
+                    if (date != null)
+                        ft.DefaultValue = date;
+                }
 
                 if (used)
                 {
@@ -10365,7 +10391,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             {
                 var parent = Company.GetParentObject(id, SystemObjects.ReferenceItem);
                 var sql = "select DisplayValue, ObjectID from assetdetail where [object] = 'Referenceitem' and TypeID = @id";
-                list.Add(new EditableField { Row = row++, Column = 1, FieldName = "ParentID", Name = parentType.Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = false, Items = Company.Query<dynamic>(sql, new { id = parentType.ID }).Select(i => new SelectListItem { Text = i.DisplayValue, Value = string.Format("{0}", i.ObjectID), Selected = i.ObjectID == (parent != null ? parent.ID : 0)  }).ToList() });
+                list.Add(new EditableField { Row = row++, Column = 1, FieldName = "ParentID", Name = parentType.Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = false, Items = Company.Query<dynamic>(sql, new { id = parentType.ObjectID }).Select(i => new SelectListItem { Text = i.DisplayValue, Value = string.Format("{0}", i.ObjectID), Selected = i.ObjectID == (parent != null ? parent.ObjectID : 0)  }).ToList() });
             }
 
             list = loadDynamicFields(SystemObjects.ReferenceItem.ToString(), id, list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, a.ReferenceItemTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.ReferenceItem, id).ToList(), row);

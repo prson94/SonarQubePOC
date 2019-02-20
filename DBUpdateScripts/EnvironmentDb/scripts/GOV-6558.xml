@@ -6,7 +6,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="dhridin" id="GOV-6558">
+  <changeSet author="dhridin" id="GOV-6558_1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true">
@@ -22,9 +22,8 @@ BEGIN
 		--7 Type
 		--8 LookupObjectType
 		--9 LookupObjectID
-		--34 AllowMultipleValues
 		--10 LookupDisplayFormat
-		--24 DefaultValue
+		--34 AllowMultipleValues
 		
 
 		--declare @Col smallint , @exp smallint , @byte smallint , @power int
@@ -48,7 +47,10 @@ BEGIN
 						inner join inserted FT on FT.ID = F.FieldTypeID and FT.LookupObjectType is not null
 		END	
 
-		IF (substring( columns_updated() , 3 , 1 ) & power( 2, 7 ) > 0)
+		--24 DefaultValue
+		--25 DefaultFormattedValue
+		IF ((substring( columns_updated() , 3 , 1 ) & power( 2, 7 ) > 0) or
+		(substring( columns_updated() , 4 , 1 ) & power( 2, 0 ) > 0))
 		BEGIN
 				update	FT	
 				set		FT.defaultformattedvalue  = [utility].[GetFormattedFieldLookupValueWrapper](FT.[Type],FT.[LookupDisplayFormat],FT.[LookupObjectType],FT.[LookupObjectID],FT.[DefaultValue])
