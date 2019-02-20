@@ -95,4 +95,5 @@
   <include file="scripts/GOV-6587-S2.xml"/>
   <include file="scripts/GOV-6533.xml"/>
   <include file="scripts/GOV-6596.xml"/>
+  <include file="scripts/GOV-6616.xml"/>
 </databaseChangeLog>
