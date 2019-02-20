@@ -4561,14 +4561,14 @@ from	    PolicyType FAT
             getDynamicFieldJoinStatements(id, "Policy", out joins, out columns, false, false);
 
             var permissionSql = @"case when exists (
-                                        select 1 from UserAssetPermissions(@r, O.AssetTypeID) u where u.PermissionsBitMask & 2 = 2 and u.AssetID = O.ID
+                                        select 1 from UserAssetPermissions(@r, OA.AssetTypeID) u where u.PermissionsBitMask & 2 = 2 and u.AssetID = OA.ID
 						                ) 
 						                    then 1
 						                    else 0
 
                                         end as P_CanEdit,
 		                                case when exists(
-                                                             select 1 from UserAssetPermissions(@r, O.AssetTypeID) u where u.PermissionsBitMask & 4 = 4 and u.AssetID = O.ID
+                                                             select 1 from UserAssetPermissions(@r, OA.AssetTypeID) u where u.PermissionsBitMask & 4 = 4 and u.AssetID = OA.ID
 						                                   ) 
 						                                   then 1
 						                                   else 0
