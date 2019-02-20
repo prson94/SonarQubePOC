@@ -147,6 +147,16 @@ namespace d360.web.Controllers
             }
         }
 
+        private string ConverDate(string date)
+        {
+            var stringDate = date;
+            DateTime dateVal = DateTime.MinValue;
+            if (DateTime.TryParse(stringDate, out dateVal))
+            {
+                return  dateVal.ToShortDateString();
+            }
+            return null;
+        }
         #endregion
 
         #region Parse Methods
@@ -3546,6 +3556,15 @@ namespace d360.web.Controllers
 
                 switch (model.FieldType.Type)
                 {
+                    case "Date":
+
+                        var date = ConverDate(model.FieldType.DefaultValue);
+                        if (date != null)
+                        {
+                            model.FieldType.DefaultValue = date;
+                        }
+                        Company.Add<FieldType>(model.FieldType);
+                        break;
                     case "Html":
                         model.FieldType.MinimumLength = (!model.FieldType.IsRequired) ? (int?)null : 1;
                         model.FieldType.MaximumLength = null;
@@ -3978,6 +3997,13 @@ namespace d360.web.Controllers
                 var defs = Company.Filter<FieldTypeFusionLookupDefinition>(i => i.FieldTypeID == ft.ID, i => i.FieldTypeFusionLookupDisplayFields).ToList();
                 var efli = Company.Filter<FieldTypeFilteredLookupDefinition>(i => i.FieldTypeID == ft.ID, i => i.FieldTypeFilteredLookupDisplayFields).FirstOrDefault();
                 var fl = Company.Filter<FieldTypeLookup>(i => i.FieldTypeID == ft.ID).FirstOrDefault();
+
+                if (ft.Type == "Date")
+                {
+                    var date = ConverDate(ft.DefaultValue);
+                    if (date != null)
+                        ft.DefaultValue = date;
+                }
 
                 if (used)
                 {
