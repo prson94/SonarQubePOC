@@ -18,7 +18,13 @@
         <i *ngIf="(field.Value || '').toUpperCase() == 'TRUE'" class="fa fa-check enabled" title="True"></i>
         <i *ngIf="(field.Value || '').toUpperCase() == 'FALSE'" class="fa fa-times disabled" title="False"></i>
     </div>
-    <div *ngIf="field.Type == DetailFieldType.Field && field.Name != 'Email' && field.DataType != 'date' && field.DataType != 'text' && field.DataType != 'bool'" class="FieldDisplayContent" [innerHtml]="field.Value | safeHtml" [ngStyle]="{'font-weight':(field.Name == 'Name' ? 'bold':'')}"></div>
+    <div *ngIf="field.Type == DetailFieldType.Field && field.Name != 'Email' && field.DataType == 'JSON'" class="FieldDisplayContent">
+        <div *ngIf="GetJSON(field.Value) == 'Error'; else showJSON">{{field.Value}}</div>
+        <ng-template #showJSON>
+            <ngx-json-view [data]="GetJSON(field.Value)"></ngx-json-view>
+        </ng-template>
+    </div>
+    <div *ngIf="field.Type == DetailFieldType.Field && field.Name != 'Email' && field.DataType != 'date' && field.DataType != 'text' && field.DataType != 'bool' && field.DataType != 'JSON'" class="FieldDisplayContent" [innerHtml]="field.Value | safeHtml" [ngStyle]="{'font-weight':(field.Name == 'Name' ? 'bold':'')}"></div>
     <div *ngIf="field.Type == DetailFieldType.Tooltip" class="FieldDisplayContent">
         <d3s-preview-tooltip *ngIf="field.TooltipContext == 'Preview';else listTooltip" [objectType]="field.TooltipType" [objectId]="field.TooltipID">
             <a (click)="navigate(field.TooltipUrl)">{{field.Value}}</a>

@@ -45,7 +45,7 @@
 	<include file="scripts/GOV-6359.xml"/>
 	<!-- 6265,6266 are editing the same table and should be executed on this order  -->
 	<include file="scripts/GOV-6265.xml"/>
-	<include file="scripts/GOV-6266.xml"/>
+	<include file="scripts/GOV-6266.xml"/> 
 	<!-- 6265,6266 are editing the same table and should be executed on this order  -->
 	<include file="scripts/GOV-6205.xml"/>
 	<include file="scripts/GOV-6331.xml"/>
@@ -94,4 +94,5 @@
   <include file="scripts/GOV-6558.xml"/>
   <include file="scripts/GOV-6587-S2.xml"/>
   <include file="scripts/GOV-6533.xml"/>
+  <include file="scripts/GOV-6596.xml"/>
 </databaseChangeLog>

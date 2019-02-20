@@ -12,22 +12,28 @@
     <span *ngSwitchCase="'number'">{{formatAsNumber()}}</span>
     <span *ngSwitchCase="'bool'">
         <i *ngIf="fieldValue == 'TRUE'"
-            class="fa fa-check enabled"
-            title="True"></i>
+           class="fa fa-check enabled"
+           title="True"></i>
         <i *ngIf="fieldValue == 'FALSE'"
-            class="fa fa-times disabled"
-            title="False"></i>
+           class="fa fa-times disabled"
+           title="False"></i>
     </span>
     <span *ngSwitchCase="'lookup'">
         <d3s-lookup-tooltip [objectType]="item[column.objectfield]"
-            [objectId]="item[column.objectidfield]">
+                            [objectId]="item[column.objectidfield]">
             <a (click)="navigate(item[column.urlfield])"
-                [innerText]="fieldValue"></a>
+               [innerText]="fieldValue"></a>
         </d3s-lookup-tooltip>
     </span>
     <span *ngSwitchCase="'string'">{{fieldValue}}</span>
+    <span *ngSwitchCase="'JSON'">
+        <span *ngIf="GetJSON(field.Value) == 'Error'; else showJSON">{{field.Value}}</span>
+        <ng-template #showJSON>
+            <ngx-json-view [data]="GetJSON(field.Value)"></ngx-json-view>
+        </ng-template>
+    </span>
     <ng-template ngSwitchDefault>
         <span *ngIf="fieldValue != null"
-            [innerHtml]="fieldValue"></span>
+              [innerHtml]="fieldValue"></span>
     </ng-template>
 </span>

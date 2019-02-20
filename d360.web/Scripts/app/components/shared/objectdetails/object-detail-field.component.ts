@@ -22,5 +22,12 @@ export class ObjectDetailFieldComponent {
     navigate(url: string) {        
         this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(url));
     }    
+    private GetJSON(value: string) {
+        try {
+            return JSON.parse(value);
+        } catch{
+            return "Error";
+        }
+    }
 }
 

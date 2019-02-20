@@ -127,7 +127,7 @@ namespace d360.web.Controllers
                                 Value = (ft.LookupDisplayFormat == formattedValue) ? "" : formattedValue,
                                 FieldDescription = ft.DisplayDescription,
                                 FieldName = ft.Name,
-                                DataType = ""
+                                DataType = !string.IsNullOrEmpty(ft.Type) ? ft.Type : ""
                             };
                             
                             if (ft.Type == DataType.Date.ToString()) ro.DataType = "date";
