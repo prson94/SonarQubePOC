@@ -241,7 +241,7 @@ from	AssetDetail A
 where   A.Type = 'ArtifactType' 
         and A.TypeID = @id 
         and A.[State] = 1 
-        and not exists(select 1 from AssetTypesUserCantRead({ Company.CurrentResourceID})u where u.AssetTypeID = @id) and not exists(select 1 from AssetsByTypeUserCantRead({ Company.CurrentResourceID}, @id) u where u.AssetID = A.ID) ";                
+        and not exists(select 1 from AssetTypesUserCantRead({ Company.CurrentResourceID})u where u.AssetTypeID = A.AssetTypeID) and not exists(select 1 from AssetsByTypeUserCantRead({ Company.CurrentResourceID}, A.AssetTypeID) u where u.AssetID = A.ID) ";        
 
 
             #endregion
