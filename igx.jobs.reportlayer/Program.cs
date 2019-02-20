@@ -754,7 +754,7 @@ SELECT  A.ID as AssetID,
 FROM    p
 		inner join Asset A on A.Object = 'Policy' and A.ObjectID = p.ID
 		inner join AssetType T on T.ID = A.AssetTypeID
-        left Join PolicyTypeLevel ptl on ptl.PolicyTypeID = T.ObjectID and ptl.[Level] = p.[level]";
+        left Join AssetTypeLevel ptl on ptl.AssetTypeID = T.ID and ptl.[Level] = p.[level]";
 
                             objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 

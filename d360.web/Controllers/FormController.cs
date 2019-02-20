@@ -1357,10 +1357,11 @@ namespace d360.web.Controllers
                             throw new GenericException(HttpStatusCode.BadRequest, "Invalid Maximum Level", "Invalid Maximum Model level specified must be a value between 1 and 10");
 
                         Company.Add(t);
-
+                        var assetType = Company.Filter<AssetType>(x => x.ObjectID == t.ID && x.Object == "TaxonomyType").SingleOrDefault();
+                        if (assetType == null) throw new NotFoundException("asset type");
                         for (int i = 1; i <= t.MaximumDepth; i++)
                         {
-                            Company.Set<TaxonomyTypeLevel>().Add(new TaxonomyTypeLevel { Description = string.Format("Level {0}", i), Level = i, Name = string.Format("Level {0}", i), TaxonomyTypeID = t.ID });
+                            Company.Set<AssetTypeLevel>().Add(new AssetTypeLevel { Description = string.Format("Level {0}", i), Level = i, Name = string.Format("Level {0}", i), AssetTypeID = assetType.ID });
                         }
                         Company.SaveChanges();
                         
@@ -1529,9 +1530,10 @@ namespace d360.web.Controllers
                         parentType = SystemObjects.ReferenceItemType;
                         break;
                     case SystemObjects.TaxonomyType:
-                        var t = Company.GetById<TaxonomyType>(model.AssetType.ObjectID, i => i.TaxonomyTypeLevels);
+                        var t = Company.GetById<TaxonomyType>(model.AssetType.ObjectID);
+                        var assetType = Company.GetById<AssetType>(model.AssetType.ID, x => x.AssetTypeLevels);
                         if (t == null) throw new NotFoundException("model type");
-
+                        if (assetType == null) throw new NotFoundException("asset type");
                         t.Name = model.AssetType.Name;
                         t.DisplayFormat = model.AssetType.DisplayFormat;
                         t.Description = model.AssetType.Description;
@@ -1544,13 +1546,13 @@ namespace d360.web.Controllers
 
                         for (int i = 1; i <= t.MaximumDepth; i++)
                         {
-                            var level = t.TaxonomyTypeLevels.SingleOrDefault(l => l.Level == i);
+                            var level = assetType.AssetTypeLevels.SingleOrDefault(l => l.Level == i);
                             if (level == null)
                             {
-                                Company.Set<TaxonomyTypeLevel>().Add(new TaxonomyTypeLevel { Description = string.Format("Level {0}", i), Level = i, Name = string.Format("Level {0}", i), TaxonomyTypeID = t.ID });
+                                Company.Set<AssetTypeLevel>().Add(new AssetTypeLevel { Description = string.Format("Level {0}", i), Level = i, Name = string.Format("Level {0}", i), AssetTypeID =assetType.ID });
                             }
                         }
-                        Company.Delete<TaxonomyTypeLevel>(l => l.Level > t.MaximumDepth);
+                        Company.Delete<AssetTypeLevel>(l => l.Level > t.MaximumDepth);
                         Company.SaveChanges();
 
                         parentType = SystemObjects.TaxonomyType;
@@ -10057,17 +10059,21 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
                 if (!form.HasKeys()) throw new NoFormDataException("policy type level");
 
-                var a = new PolicyTypeLevel
+                var assetType = Company.Filter<AssetType>(x => x.ObjectID == id && x.Object == "PolicyType").SingleOrDefault();
+
+                if (assetType == null) throw new NotFoundException("asset type");
+
+                var a = new AssetTypeLevel
                 {
-                    PolicyTypeID = id,
+                    AssetTypeID = assetType.ID,
                     Level = level,
                     Name = parseTextField(form, "Name"),
                     Description = parseTextField(form, "Description"),
                 };
 
-                Company.Add<PolicyTypeLevel>(a);
+                Company.Add<AssetTypeLevel>(a);
 
-                return jsonSuccess(a.Name + " successfully created.", a.PolicyTypeID.ToString(), "add", HttpStatusCode.Created);
+                return jsonSuccess(a.Name + " successfully created.", a.AssetTypeID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -10103,7 +10109,11 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 if (!Company.HasAssetTypePermission(SystemObjects.PolicyType, id, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
-                Company.Delete<PolicyTypeLevel>(i => i.PolicyTypeID == id && i.Level == level);
+                var assetType = Company.Filter<AssetType>(x => x.ObjectID == id && x.Object == "PolicyType").SingleOrDefault();
+
+                if (assetType == null) throw new NotFoundException("asset type");
+
+                Company.Delete<AssetTypeLevel>(i => i.AssetTypeID == assetType.ID && i.Level == level);
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -10127,8 +10137,14 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
                 var id = parseIntField(form, "ID");
                 var level = parseIntField(form, "Level");
-                var model = Company.Filter<PolicyTypeLevel>(i => i.PolicyTypeID == id && i.Level == level).SingleOrDefault();
+
+                var assetType = Company.Filter<AssetType>(x => x.ObjectID == id && x.Object == "PolicyType").SingleOrDefault();
+
+                if (assetType == null) throw new NotFoundException("asset type");
+
+                var model = Company.Filter<AssetTypeLevel>(i => i.AssetTypeID == assetType.ID && i.Level == level).SingleOrDefault();
                 if (model == null) throw new NotFoundException("policy type level");
+
 
                 if (!Company.HasAssetTypePermission(SystemObjects.PolicyType, id, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
@@ -10136,7 +10152,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 model.Name = parseTextField(form, "Name");
                 model.Description = parseTextField(form, "Description");
 
-                Company.Update<PolicyTypeLevel>(model);
+                Company.Update<AssetTypeLevel>(model);
 
                 return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
@@ -15483,23 +15499,24 @@ new { t = a.TaxonomyTypeID, currentLevel = a.Level ?? 1, maxLevel = a.TaxonomyTy
             {
                 var id = parseIntField(form, "ID");
                 var level = parseIntField(form, "Level");
-
+                var assetType = Company.Filter<AssetType>(x => x.ObjectID == id && x.Object == "TaxonomyType").SingleOrDefault();
+                if (assetType == null) throw new NotFoundException("asset type");
                 if (!Company.HasAssetTypePermission(SystemObjects.TaxonomyType, id, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 if (!form.HasKeys()) throw new NoFormDataException("taxonomy type level");
 
-                var a = new TaxonomyTypeLevel
+                var a = new AssetTypeLevel
                 {
-                    TaxonomyTypeID = id,
+                    AssetTypeID = assetType.ID,
                     Level = level,
                     Name = parseTextField(form, "Name"),
                     Description = parseTextField(form, "Description"),
                 };
 
-                Company.Add<TaxonomyTypeLevel>(a);
+                Company.Add<AssetTypeLevel>(a);
 
-                return jsonSuccess(a.Name + " successfully created.", a.TaxonomyTypeID.ToString(), "add", HttpStatusCode.Created);
+                return jsonSuccess(a.Name + " successfully created.", a.AssetTypeID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -15534,7 +15551,9 @@ new { t = a.TaxonomyTypeID, currentLevel = a.Level ?? 1, maxLevel = a.TaxonomyTy
                 if (!Company.HasAssetTypePermission(SystemObjects.TaxonomyType, id, Permission.DeleteAsset))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
-                Company.Delete<TaxonomyTypeLevel>(i => i.TaxonomyTypeID == id && i.Level == level);
+                var assetType = Company.Filter<AssetType>(x => x.ObjectID == id && x.Object == "TaxonomyType").SingleOrDefault();
+                if (assetType == null) throw new NotFoundException("asset type");
+                Company.Delete<AssetTypeLevel>(i => i.AssetTypeID == assetType.ID && i.Level == level);
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
@@ -15557,7 +15576,8 @@ new { t = a.TaxonomyTypeID, currentLevel = a.Level ?? 1, maxLevel = a.TaxonomyTy
 
                 var id = parseIntField(form, "ID");
                 var level = parseIntField(form, "Level");
-                var model = Company.Filter<TaxonomyTypeLevel>(i => i.TaxonomyTypeID == id && i.Level == level).SingleOrDefault();
+                var assetType = Company.Filter<AssetType>(x => x.ObjectID == id && x.Object == "TaxonomyType").SingleOrDefault();
+                var model = Company.Filter<AssetTypeLevel>(i => i.AssetTypeID == assetType.ID && i.Level == level).SingleOrDefault();
                 if (model == null) throw new NotFoundException("taxonomy type level");
 
                 if (!Company.HasAssetTypePermission(SystemObjects.TaxonomyType, id, Permission.ModifyAsset))
@@ -15566,7 +15586,7 @@ new { t = a.TaxonomyTypeID, currentLevel = a.Level ?? 1, maxLevel = a.TaxonomyTy
                 model.Name = parseTextField(form, "Name");
                 model.Description = parseTextField(form, "Description");
 
-                Company.Update<TaxonomyTypeLevel>(model);
+                Company.Update<AssetTypeLevel>(model);
 
                 return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
