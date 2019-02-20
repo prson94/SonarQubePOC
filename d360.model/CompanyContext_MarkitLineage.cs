@@ -69,8 +69,7 @@ namespace d360.model
             client.TrackEvent($"Loaded {mapCount} Markit Map Records");
 
             //find source records to start from
-            //var leftmostMaps = maps.Where(m => m.SourceAssetID != null).ToList();
-            var leftmostMaps = maps.Where(m => m.SourceFusionAttributeID == 136035);
+            var leftmostMaps = maps.Where(m => m.SourceAssetID != null).ToList();
             var mappings = new List<FusionMarkitSourceTargetMapping>();
 
             //build source map dictionary, much faster than searching the list
@@ -119,7 +118,6 @@ namespace d360.model
 
             client.TrackEvent($"Completed lineage generation for company id {CurrentCompanyID}");
 
-
             await SaveMarkitLineageRunDetails(maps.Count(), mappings.Count(), objectMaps.Count());
 
         }
@@ -140,10 +138,6 @@ namespace d360.model
             if (complexity > maxComplexity)
                 return;
 
-            if (currentMap.TargetFusionAttributeID == 116092)
-            {
-                Console.WriteLine($"reached with {businessMaps.Count()} business items and {sourceAssets.Count()} source assets");
-            }
             List<FusionMarkitLineageData> nextMaps = new List<FusionMarkitLineageData>();
 
             lock (processLock)
@@ -204,57 +198,36 @@ namespace d360.model
                             current = previous;
                             continue;
                         }
-                        if (false && sourceAssets.Any())
+                        
+                        foreach (var businessMap in businessMaps)
                         {
-                            //on the last asset we only associate with the last term (which is either the target of this record
-                            //or the only mapping)
-
                             lock (mappingLock)
                             {
-                                var businessMap = businessMaps.Last();
+                                var previousAssetID = previous.AssetID;
+
+                                //if there's already a previous mapping on this path & business object, 
+                                //take that mapping's target asset id instead so the lineage is connected
+                                var prevMapping = mappings.LastOrDefault(m => processedList.Contains(m.MapID) && m.MapID != currentMap.ID && m.TargetAssetID != previous.AssetID && m.ObjectAssetID == businessMap.ObjectAssetID);
+                                if (prevMapping != null)
+                                    previousAssetID = prevMapping.TargetAssetID;
+                                
+                                //if the mapping doesn't exist create it
                                 if (!mappings.Any(m => m.MapID == current.MapID && m.SourceFusionAttributeID == previous.FusionAttributeID
-                                   && m.TargetFusionAttributeID == current.FusionAttributeID && m.SourceAssetID == previous.AssetID && m.TargetAssetID == current.AssetID
-                                   && m.ObjectAssetID == businessMap.ObjectAssetID))
-                                //if (!mappings.Any(m => m.MapID == current.MapID && m.SourceFusionAttributeID == previous.FusionAttributeID
-                                //&& m.TargetFusionAttributeID == current.FusionAttributeID && m.TargetAssetID == current.AssetID
-                                //&& m.ObjectAssetID == businessMap.ObjectAssetID))
+                                && m.TargetFusionAttributeID == current.FusionAttributeID && m.SourceAssetID == previousAssetID && m.TargetAssetID == current.AssetID
+                                && m.ObjectAssetID == businessMap.ObjectAssetID))
                                 {
                                     mappings.Add(new FusionMarkitSourceTargetMapping
                                     {
                                         MapID = current.MapID,
                                         SourceFusionAttributeID = (int)previous.FusionAttributeID,
                                         TargetFusionAttributeID = (int)current.FusionAttributeID,
-                                        SourceAssetID = (long)previous.AssetID,
+                                        SourceAssetID = (long)previousAssetID,
                                         TargetAssetID = (long)current.AssetID,
                                         ObjectAssetID = businessMap.ObjectAssetID
                                     });
                                 }
                             }
-                        }
-                        else
-                        {
-                            foreach (var businessMap in businessMaps)
-                            {
-                                lock (mappingLock)
-                                {
-                                    //if the mapping doesn't exist create it
-                                    if (!mappings.Any(m => m.MapID == current.MapID && m.SourceFusionAttributeID == previous.FusionAttributeID
-                                    && m.TargetFusionAttributeID == current.FusionAttributeID && m.SourceAssetID == previous.AssetID && m.TargetAssetID == current.AssetID
-                                    && m.ObjectAssetID == businessMap.ObjectAssetID))
-                                    {
-                                        mappings.Add(new FusionMarkitSourceTargetMapping
-                                        {
-                                            MapID = current.MapID,
-                                            SourceFusionAttributeID = (int)previous.FusionAttributeID,
-                                            TargetFusionAttributeID = (int)current.FusionAttributeID,
-                                            SourceAssetID = (long)previous.AssetID,
-                                            TargetAssetID = (long)current.AssetID,
-                                            ObjectAssetID = businessMap.ObjectAssetID
-                                        });
-                                    }
-                                }
-                            }
-                        }
+                        }                       
                         current = previous;
                     }
                 }
