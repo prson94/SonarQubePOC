@@ -3996,7 +3996,7 @@ SELECT  R.ResponsibilityTypeName,
         'Preview' as ResourceItemContext, 
         '/resource/' + cast(R.ResourceID as varchar) as ResourceItemUrl,
         R.Context
-from    [dbo].[ResponsibilityAllAsset] R
+from    [dbo].[ResponsibilityDetail] R
         inner join Asset A on A.ID = @assetId
         inner join AssetType T on T.ID = A.AssetTypeID and T.ID = R.AssetTypeID
         inner join reporting.Global_Resource U on U.ResourceID = R.ResourceID and U.State = 1 
