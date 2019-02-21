@@ -1437,18 +1437,18 @@ from	api.ExecutionAsset T
                     int beginItemNumber = currentLocation.HighestItemNumberProcessed + 1;
                     int endItemNumber = currentLocation.HighestItemNumberProcessed + loopSize;
 
-                    #region common sql
-
-                    var executionAssetWhereSql = $"ExecutionID = @ExecutionID and Success is null and ItemNumber between {beginItemNumber} and {endItemNumber}";
-                    var updateAssetInfoOnExecutionRecordsSql = $@"update  T
-        set     T.AssetID = S.ID, T.Uid = S.Uid
-        from    api.ExecutionAsset T
-                inner join Asset S on T.Executionid = @ExecutionID and S.AssetTypeID = @AssetTypeID and S.Object = T.Object and S.ObjectID = T.ObjectID;";
-                    
-                    #endregion
-
                     for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
                     {
+                        #region common sql
+
+                        var executionAssetWhereSql = $"ExecutionID = @ExecutionID and Success is null and ItemNumber between {beginItemNumber} and {endItemNumber}";
+                        var updateAssetInfoOnExecutionRecordsSql = $@"update  T
+set     T.AssetID = S.ID, T.Uid = S.Uid
+from    api.ExecutionAsset T
+        inner join Asset S on T.Executionid = @ExecutionID and S.AssetTypeID = @AssetTypeID and S.Object = T.Object and S.ObjectID = T.ObjectID and T.ItemNumber between {beginItemNumber} and {endItemNumber};";
+
+                        #endregion
+
                         using (var trans = Connection.BeginTransaction())
                         {
                             try
