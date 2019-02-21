@@ -1473,7 +1473,7 @@ on      (T.ArtifactTypeID = @ObjectID and T.SourceID = @NonExistentUid)
 when    not matched then
 insert  (ArtifactTypeID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
 values  (@ObjectID, @R, @D, @R, @D)
-output  inserted.ID, S.ITemNumber into #ObjectMergeTableResult;
+output  inserted.ID, S.ItemNumber into #ObjectMergeTableResult;
 
 update  T
 set     T.Object = 'Artifact',
