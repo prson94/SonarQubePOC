@@ -8021,7 +8021,7 @@ where	Type = 'ReferenceItemType'
             {
                 relations.Insert(0,parent);
 
-                parent = Company.GetParentType(parent.ID, SystemObjects.ReferenceItemType);
+                parent = Company.GetParentType(parent.ObjectID, SystemObjects.ReferenceItemType);
                                 
                 maxLoops--;
             }
@@ -8068,7 +8068,7 @@ where	Type = 'ReferenceItemType'
 
                 foreach(var parentRefList in relations)
                 {
-                    var key = $"Rel{parentRefList.ID}";
+                    var key = $"Rel{parentRefList.ObjectID}";
 
                     if (rowDict.ContainsKey(key))
                     {
