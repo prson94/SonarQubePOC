@@ -77,13 +77,13 @@
     </rollback>
   </changeSet>
 
-  <changeSet author="KMcNamee" id="GOV-6258-Update-ResDetail-View-a">
+  <changeSet author="KMcNamee" id="GOV-6258-Update-ResDetail-View-B">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="true">
       <![CDATA[      
-  CREATE or alter VIEW [dbo].[ResponsibilityDetail] AS  		
+  create or alter  VIEW [dbo].[ResponsibilityDetail] AS  		
        select 
 	      r.id as RuleID,
 	      r.ResponsibilityTypeID as ResponsibilityTypeID,  
@@ -139,7 +139,7 @@
 	      inner join [ResponsibilityRuleResultAsset] rasset on (r.ID = rasset.RuleID)
 	      inner join [ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)	      
          inner join ResponsibilityType RT on RT.ID = r.ResponsibilityTypeID  
-         left join Asset A on ( (A.ID = rasset.AssetID) /*OR (rasset.AssetID = 0 and A.AssetTypeID = rasset.AssetTypeID)*/ )           		 
+         left join Asset A on ( (A.ID = rasset.AssetID)  )           		 
          inner join [Group] G on rresource.SecurityAsset = 'G' and G.ID = rresource.SecurityAssetID  
          inner join ResourceGroup RG on RG.GroupID = G.ID           
          inner join reporting.Global_Resource RES on RES.ResourceID = RG.ResourceID
@@ -202,6 +202,35 @@
 			inner join [dbo].assettype att on (att.id = a.assettypeid)
 			inner join [dbo].[ResponsibilityTypeRelation] RR on (att.[object] = RR.[objectType] and att.objectid = RR.[Objectid] and RR.ResponsibilityTypeID = oride.ResponsibilityTypeID)			
 			inner join reporting.Global_Resource RES on RES.ResourceID = oride.SecurityAssetID and oride.SecurityAsset = 'R' and RES.State = 1
+	union  select
+		 0 as RuleID,
+	     rr.ResponsibilityTypeID as ResponsibilityTypeID,  
+	     RT.Name as ResponsibilityTypeName,  
+         oride.AssetID,  
+         att.ID as AssetTypeID,  
+         RES.ResourceID as ResourceID,  
+         RES.FirstName + ' ' + RES.LastName as ResourceName,  
+         oride.SecurityAsset,  
+         oride.SecurityAssetID,  
+         G.[Name] as SecurityAssetName,    
+         oride.Context,  
+         cast(0 as bit) as ApplyToType,  
+         RR.PermissionsBitMask,  
+         cast(1 as bit) as IsVisible,  
+         oride.ID as OverrideID,  
+         A.Object,  
+         coalesce(A.ObjectID, 0) as ObjectID,  
+         ATT.Object as [Type],  
+         ATT.ObjectID as TypeID  
+		from 
+			[dbo].[ResponsibilityTypeRelationOverrideItem] oride
+			inner join ResponsibilityType RT on RT.ID = oride.ResponsibilityTypeID  
+			inner join [dbo].asset a on (a.id = oride.assetID)
+			inner join [dbo].assettype att on (att.id = a.assettypeid)
+			inner join [dbo].[ResponsibilityTypeRelation] RR on (att.[object] = RR.[objectType] and att.objectid = RR.[Objectid] and RR.ResponsibilityTypeID = oride.ResponsibilityTypeID)						
+			inner join [Group] G on oride.SecurityAsset = 'G' and G.ID = oride.SecurityAssetID  
+			inner join ResourceGroup RG on RG.GroupID = G.ID           
+			inner join reporting.Global_Resource RES on RES.ResourceID = RG.ResourceID
 		    ]]>
     </sql>
     <rollback>
@@ -526,15 +555,16 @@
     ]]>
     </rollback>
   </changeSet>
-  <changeSet author="KMcNamee" id="GOV-6258-TVF">
+  <changeSet author="KMcNamee" id="GOV-6258-TVF-a">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="true">
       <![CDATA[    
-        CREATE or alter FUNCTION UserAssetPermissions 
+        
+CREATE OR ALTER FUNCTION [dbo].[UserAssetPermissions] 
         (	
-	        -- Add the parameters for the function here
+	        
 	        @ResourceID int, 
 	        @AssetTypeID int
         )
@@ -542,8 +572,8 @@
         AS
         RETURN 
         (
-	        -- Add the SELECT statement with parameter references here
-			-- user
+	        
+			
 	        select 
 		        rel.PermissionsBitMask,
 		        rasset.AssetID,
@@ -557,7 +587,7 @@
 	        where 
 		        rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = @ResourceID and a.AssetTypeID = @AssetTypeID
 	        union
-			-- group
+			
 		        select 
 		        rel.PermissionsBitMask,
 		        rasset.AssetID,
@@ -573,7 +603,7 @@
 	        where 
 		        RG.ResourceID = @resourceId
 	        union
-			-- organization
+			
 	        select 
 		        rel.PermissionsBitMask,
 		        rasset.AssetID,
@@ -588,7 +618,7 @@
 		        inner join dbo.OrganizationResource RD on RD.OrganizationID = D.ID
 	        where 
 		        RD.ResourceID = @ResourceID and a.AssetTypeID = @AssetTypeID
-			-- overrides
+			
 			union 
 			select
 				rr.PermissionsBitMask,
@@ -602,7 +632,23 @@
 					inner join [dbo].[ResponsibilityTypeRelation] RR on (att.[object] = RR.[objectType] and att.objectid = RR.[Objectid] and RR.ResponsibilityTypeID = oride.ResponsibilityTypeID)					
 					inner join reporting.Global_Resource RES on RES.ResourceID = oride.SecurityAssetID and oride.SecurityAsset = 'R'
 				where
-					a.AssetTypeID = @AssetTypeID							
+					a.AssetTypeID = @AssetTypeID and RES.ResourceID = @ResourceID							
+
+			union 
+			select
+				rr.PermissionsBitMask,
+				oride.AssetID,
+				att.ID as AssetTypeID
+			from 
+					[dbo].[ResponsibilityTypeRelationOverrideItem] oride
+					inner join [dbo].ResponsibilityType RT on RT.ID = oride.ResponsibilityTypeID  
+					inner join [dbo].asset a on (a.id = oride.assetID)
+					inner join [dbo].assettype att on (att.id = a.assettypeid)
+					inner join [dbo].[ResponsibilityTypeRelation] RR on (att.[object] = RR.[objectType] and att.objectid = RR.[Objectid] and RR.ResponsibilityTypeID = oride.ResponsibilityTypeID)										
+					inner join dbo.[Group] G on G.ID = oride.SecurityAssetID and oride.SecurityAsset = 'G'
+					inner join dbo.ResourceGroup RG on RG.GroupID = G.ID and a.AssetTypeID = @AssetTypeID		
+				where
+					a.AssetTypeID = @AssetTypeID and RG.ResourceID = @ResourceID	
         )
     ]]>
     </sql>
