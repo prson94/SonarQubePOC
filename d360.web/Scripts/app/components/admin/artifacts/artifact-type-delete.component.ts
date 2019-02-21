@@ -1,11 +1,11 @@
-﻿import { CommonModule } from '@angular/common';
-import { NgModule, Input, Output, Component, EventEmitter, OnInit } from '@angular/core';
+﻿import { Input, Output, Component, EventEmitter, OnInit } from '@angular/core';
 
 import { ArtifactTypeService } from '../../../services/artifact-type.service';
 import { ArtifactService } from '../../../services/artifacts.service';
 import { ArtifactType } from '../../../models/artifact-type.model';
 import { SortOrder } from '../../../models/enums.model';
 import { BaseComponent } from '../../shared/base.component';
+import { forkJoin } from 'rxjs';
 
 @Component({
     selector: 'd3s-artifact-type-delete',
@@ -34,25 +34,21 @@ export class ArtifactTypeDeleteComponent extends BaseComponent implements OnInit
     }
 
     private load() {
-        this
-            .artifactTypeService
-            .getArtifactTypeDetails(this.artifactTypeId)
-            .subscribe(
-                result=>{
-                    this.artifactType = result;            
-                }
-            )
-        ;
-
-        this
-            .artifactService
-            .getArtifacts(this.artifactTypeId, 10, 1, '', SortOrder.Ascending)
-            .subscribe(
-                result => {
-                    this.count = result.total;
-                }
-            )
-        ;
+        forkJoin(
+            this.artifactTypeService.getArtifactTypeDetails(this.artifactTypeId),
+            this.artifactService.getArtifacts(this.artifactTypeId, 10, 1, '', SortOrder.Ascending)
+        )
+        .subscribe(
+            (
+                [
+                    getArtifactTypeDetailsResponse,
+                    getArtifactsResponse
+                ]
+            ) => {
+                this.artifactType = getArtifactTypeDetailsResponse;
+                this.count = getArtifactsResponse.total;
+            }
+        );
     }
 
     private delete(): void {
