@@ -268,7 +268,7 @@ select ObjectID from AttributeDetail{tableHints} where AttributeTypeID = @{param
                                     break;
                             }
 
-                            filterWhereList.Add($"A.ID in (select AssetID from ResponsibilityAllAsset{tableHints} where SecurityAsset = '{securityAsset}' and SecurityAssetID = {o.SecurityAssetID} and ResponsibilityTypeID = {o.ResponsibilityTypeID} )");
+                            filterWhereList.Add($"A.ID in (select AssetID from ResponsibilityDetail{tableHints} where SecurityAsset = '{securityAsset}' and SecurityAssetID = {o.SecurityAssetID} and ResponsibilityTypeID = {o.ResponsibilityTypeID} )");
 
                             index++;
                         }
