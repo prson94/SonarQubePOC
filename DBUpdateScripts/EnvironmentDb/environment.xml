@@ -45,7 +45,7 @@
 	<include file="scripts/GOV-6359.xml"/>
 	<!-- 6265,6266 are editing the same table and should be executed on this order  -->
 	<include file="scripts/GOV-6265.xml"/>
-	<include file="scripts/GOV-6266.xml"/>
+	<include file="scripts/GOV-6266.xml"/> 
 	<!-- 6265,6266 are editing the same table and should be executed on this order  -->
 	<include file="scripts/GOV-6205.xml"/>
 	<include file="scripts/GOV-6331.xml"/>
@@ -84,5 +84,18 @@
   <include file="scripts/GOV-4770.xml"/> 
   <include file="scripts/GOV-5969-2.xml"/>
   <include file="scripts/GOV-4770-B.xml"/> 
+  <include file="scripts/GOV-6299.xml"/>
   <include file="scripts/GOV-6570.xml"/>
+  <include file="scripts/GOV-6258.xml"/>
+  <include file="scripts/GOV-6460.xml"/>
+  <include file="scripts/GOV-6377.xml"/>
+  <include file="scripts/GOV-6417-drop.xml"/> 
+  <include file="scripts/GOV-6490.xml"/> 
+  <include file="scripts/GOV-6558.xml"/>
+  <include file="scripts/GOV-6587-S2.xml"/>
+  <include file="scripts/GOV-6487.xml"/>
+  <include file="scripts/GOV-6533.xml"/>
+  <include file="scripts/GOV-6596.xml"/>
+  <include file="scripts/GOV-6616.xml"/>
+  <include file="scripts/GOV-4770-C.xml"/> 
 </databaseChangeLog>

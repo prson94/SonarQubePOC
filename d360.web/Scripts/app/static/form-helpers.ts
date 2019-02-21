@@ -29,22 +29,7 @@ export class FormHelpers {
         }
     }
 
-    static incrementValidator(number: number): ValidatorFn {
-        return (control: AbstractControl): { [key: string]: any } | null => {
-            let valid = true;
-            if (!control.value || control.value == "") {
-                return null;
-            }
-            let valueAsnumber = +control.value;
-            if (valueAsnumber % number != 0) {
-                valid = false;
-            }
-            return !valid ? {
-                "increment": { incrementValue: number }
-            } : null;
-        };
-    }
-
+    
     //clamp a numeric value between min and max inclusive, to precision decimal places
     static clamp(val: any, min: number, max: number, precision: number): any {
         if (val == null)

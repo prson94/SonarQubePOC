@@ -1,0 +1,87 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+   <changeSet author="VKyrychuk" id="GOV-6596">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER TRIGGER [dbo].[FieldType_AfterUpsert]
+   ON  [dbo].[FieldType] 
+   AFTER INSERT,UPDATE
+AS 
+  
+BEGIN
+
+		--Logic to find updated column
+		--7 Type
+		--8 LookupObjectType
+		--9 LookupObjectID
+		--10 LookupDisplayFormat
+		--34 AllowMultipleValues
+		
+
+		--declare @Col smallint , @exp smallint , @byte smallint , @power int
+
+		--select @Col = 7 , @exp = ( @Col - 1 ) % 8,
+		--@byte = ( ( @Col - 1 ) / 8 ) + 1
+		--if substring( columns_updated() , @byte , 1 ) & power( 2, @exp ) > 0
+		--print( 'Column #7 was updated -- Type')
+		--Select @byte,@exp 
+	
+		IF ((substring( columns_updated() , 1 , 1 ) & power( 2, 6 ) > 0) or
+		(substring( columns_updated() , 1 , 1 ) & power( 2, 7 ) > 0) or
+		(substring( columns_updated() , 2 , 1 ) & power( 2, 0 ) > 0) or
+		(substring( columns_updated() , 2 , 1 ) & power( 2, 1 ) > 0) or
+		(substring( columns_updated() , 5 , 1 ) & power( 2, 1 ) > 0))
+		BEGIN
+
+				UPDATE	F
+				set		F.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)
+				FROM	Field F
+						inner join inserted FT on FT.ID = F.FieldTypeID and FT.LookupObjectType is not null
+		END	
+
+		--24 DefaultValue
+		--25 DefaultFormattedValue
+		IF ((substring( columns_updated() , 3 , 1 ) & power( 2, 7 ) > 0) or
+		(substring( columns_updated() , 4 , 1 ) & power( 2, 0 ) > 0))
+		BEGIN
+				update	FT	
+				set		FT.defaultformattedvalue  = [utility].[GetFormattedFieldLookupValueWrapper](FT.[Type],FT.[LookupDisplayFormat],FT.[LookupObjectType],FT.[LookupObjectID],FT.[DefaultValue])
+				from	FieldType FT
+						inner join inserted ins on ins.ID = FT.ID and ins.LookupObjectType is not null
+
+				update	FT	
+				set		FT.defaultformattedvalue  = [utility].[GetFormattedFieldLookupValueWrapper](FT.[Type],FT.[LookupDisplayFormat],FT.[LookupObjectType],FT.[LookupObjectID],FT.[DefaultValue])
+				from	FieldType FT
+						inner join inserted ins on ins.ID = FT.ID and ins.LookupObjectType is null and FT.Type='Link'
+		END
+		
+		
+		IF (EXISTS (SELECT * FROM DELETED))
+		BEGIN
+			INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+				select 'Update', [queue].WriteIndexXml('', Object, ObjectID, UpdatedBy), 'FieldType', ID from inserted;
+		END
+		ELSE IF (NOT EXISTS (SELECT * FROM DELETED))
+		BEGIN
+			INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+				select 'Add', [queue].WriteIndexXml('', Object, ObjectID, UpdatedBy), 'FieldType', ID from inserted;
+		END
+END
+]]>
+    </sql>
+	 
+	</changeSet>
+</databaseChangeLog>

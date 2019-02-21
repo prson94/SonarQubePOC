@@ -1,0 +1,2584 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="KMcNamee" id="GOV-6258-Table-Asset">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+          <![CDATA[
+            IF (NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND  TABLE_NAME = 'ResponsibilityRuleResultAsset'))
+            BEGIN
+	            CREATE TABLE [dbo].[ResponsibilityRuleResultAsset](	
+	            [RuleID][bigint] NOT NULL,
+	            [AssetID][bigint] NOT NULL default(0),
+	            [AssetTypeID][int] NOT NULL default(0),	
+	            [UpdatedOn] datetime not null,
+	            [UpdatedBy] int not null
+            CONSTRAINT [PK_ResponsibilityRuleResultAsset] PRIMARY KEY CLUSTERED 
+            (
+	            [RuleID] ASC, [AssetID] ASC, [AssetTypeID] ASC
+            ))
+                        
+            CREATE NONCLUSTERED INDEX [IX_ResonsibilityRuleResultAsset_AssetTypeID-AssetID] ON [dbo].[ResponsibilityRuleResultAsset] ([AssetTypeID], [AssetID])
+
+            END
+
+          ]]>
+    </sql>
+    <rollback>
+        <![CDATA[
+        IF (EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND  TABLE_NAME = 'ResponsibilityRuleResultAsset'))
+        BEGIN
+            drop table [dbo].[ResponsibilityRuleResultAsset]
+        END
+        ]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="KMcNamee" id="GOV-6258-Table-Resource">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+        IF (NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND  TABLE_NAME = 'ResponsibilityRuleResultSecurityAsset'))
+        BEGIN
+		
+          CREATE TABLE [dbo].[ResponsibilityRuleResultSecurityAsset](	
+	          [RuleID][bigint] NOT NULL,
+	          [SecurityAsset] char(1) NOT NULL,
+	          [SecurityAssetID][int] NOT NULL,	
+	          [UpdatedOn] datetime not null,
+	          [UpdatedBy] int not null
+          CONSTRAINT [PK_ResponsibilityRuleResultSecurityAsset] PRIMARY KEY CLUSTERED 
+          (
+	          [RuleID] ASC, [SecurityAsset] ASC, [SecurityAssetID] ASC
+          ))
+          
+          CREATE NONCLUSTERED INDEX [IX_ResponsibilityRuleResultSecurityAsset_SecurityAsset-SecurityAssetID] ON [dbo].[ResponsibilityRuleResultSecurityAsset] ([SecurityAsset],[SecurityAssetID])          
+
+        END
+
+        ]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+      IF (EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND  TABLE_NAME = 'ResponsibilityRuleResultSecurityAsset'))
+      BEGIN
+          drop table [dbo].[ResponsibilityRuleResultSecurityAsset]
+      END
+      ]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="KMcNamee" id="GOV-6258-Update-ResDetail-View-a">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[      
+  CREATE or alter VIEW [dbo].[ResponsibilityDetail] AS  		
+       select 
+	      r.id as RuleID,
+	      r.ResponsibilityTypeID as ResponsibilityTypeID,  
+	      RT.Name as ResponsibilityTypeName,  
+         rasset.AssetID,  
+         rasset.AssetTypeID,  
+         rresource.SecurityAssetID as ResourceID,  
+         RES.FirstName + ' ' + RES.LastName as ResourceName,  
+         rresource.SecurityAsset,  
+         rresource.SecurityAssetID,  
+         RES.FirstName + ' ' + RES.LastName as SecurityAssetName,    
+         r.Context,  
+         r.ApplyToType,  
+         rrel.PermissionsBitMask,  
+         r.IsVisible,  
+         NULL as OverrideID,  
+         A.Object,  
+         coalesce(A.ObjectID, 0) as ObjectID,  
+         r.Object as [Type],  
+         r.ObjectID as TypeID  
+       from 
+	      responsibilitytyperelationrule r
+	      inner join ResponsibilityTypeRelation rrel on (r.ResponsibilityTypeID = rrel.ResponsibilityTypeID and r.[Object] = rrel.[ObjectType] and r.ObjectID = rrel.ObjectID)
+	      inner join [ResponsibilityRuleResultAsset] rasset on (r.ID = rasset.RuleID)
+	      inner join [ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)	      
+         inner join ResponsibilityType RT on RT.ID = r.ResponsibilityTypeID  
+         left join Asset A on ( (A.ID = rasset.AssetID)  )           		 
+         inner join reporting.Global_Resource RES on RES.ResourceID = rresource.SecurityAssetID and rresource.SecurityAsset = 'R' 
+       where RES.State=1
+	   union select 
+	      r.id as RuleID,
+	      r.ResponsibilityTypeID as ResponsibilityTypeID,  
+	      RT.Name as ResponsibilityTypeName,  
+         rasset.AssetID,  
+         rasset.AssetTypeID,  
+         RG.ResourceID as ResourceID,  
+         RES.FirstName + ' ' + RES.LastName as ResourceName,  
+         rresource.SecurityAsset,  
+         rresource.SecurityAssetID,  
+         G.Name as SecurityAssetName,    
+         r.Context,  
+         r.ApplyToType,  
+         rrel.PermissionsBitMask,  
+         r.IsVisible,  
+         NULL as OverrideID,  
+         A.Object,  
+         coalesce(A.ObjectID, 0) as ObjectID,  
+         r.Object as [Type],  
+         r.ObjectID as TypeID  
+       from 
+	      responsibilitytyperelationrule r
+	      inner join ResponsibilityTypeRelation rrel on (r.ResponsibilityTypeID = rrel.ResponsibilityTypeID and r.[Object] = rrel.[ObjectType] and r.ObjectID = rrel.ObjectID)
+	      inner join [ResponsibilityRuleResultAsset] rasset on (r.ID = rasset.RuleID)
+	      inner join [ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)	      
+         inner join ResponsibilityType RT on RT.ID = r.ResponsibilityTypeID  
+         left join Asset A on ( (A.ID = rasset.AssetID) /*OR (rasset.AssetID = 0 and A.AssetTypeID = rasset.AssetTypeID)*/ )           		 
+         inner join [Group] G on rresource.SecurityAsset = 'G' and G.ID = rresource.SecurityAssetID  
+         inner join ResourceGroup RG on RG.GroupID = G.ID           
+         inner join reporting.Global_Resource RES on RES.ResourceID = RG.ResourceID
+       where RES.State=1
+	   union select 
+	      r.id as RuleID,
+	      r.ResponsibilityTypeID as ResponsibilityTypeID,  
+	      RT.Name as ResponsibilityTypeName,  
+         rasset.AssetID,  
+         rasset.AssetTypeID,  
+         RD.ResourceID as ResourceID,  
+         RES.FirstName + ' ' + RES.LastName as ResourceName,  
+         rresource.SecurityAsset,  
+         rresource.SecurityAssetID,  
+         D.Name as SecurityAssetName,    
+         r.Context,  
+         r.ApplyToType,  
+         rrel.PermissionsBitMask,  
+         r.IsVisible,  
+         NULL as OverrideID,  
+         A.Object,  
+         coalesce(A.ObjectID, 0) as ObjectID,  
+         r.Object as [Type],  
+         r.ObjectID as TypeID  
+       from 
+	      responsibilitytyperelationrule r
+	      inner join ResponsibilityTypeRelation rrel on (r.ResponsibilityTypeID = rrel.ResponsibilityTypeID and r.[Object] = rrel.[ObjectType] and r.ObjectID = rrel.ObjectID)
+	      inner join [ResponsibilityRuleResultAsset] rasset on (r.ID = rasset.RuleID)
+	      inner join [ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)	      
+         inner join ResponsibilityType RT on RT.ID = r.ResponsibilityTypeID  
+         left join Asset A on ( (A.ID = rasset.AssetID) )           		 
+         inner join [Organization] D on rresource.SecurityAsset = 'O' and D.ID = rresource.SecurityAssetID  
+         inner join OrganizationResource RD on RD.OrganizationID = D.ID
+         inner join reporting.Global_Resource RES on RES.ResourceID = RD.ResourceID
+       where RES.State=1
+	   union  select
+		 0 as RuleID,
+	     rr.ResponsibilityTypeID as ResponsibilityTypeID,  
+	     RT.Name as ResponsibilityTypeName,  
+         oride.AssetID,  
+         att.ID as AssetTypeID,  
+         RES.ResourceID as ResourceID,  
+         RES.FirstName + ' ' + RES.LastName as ResourceName,  
+         oride.SecurityAsset,  
+         oride.SecurityAssetID,  
+         RES.FirstName + ' ' + RES.LastName as SecurityAssetName,    
+         oride.Context,  
+         cast(0 as bit) as ApplyToType,  
+         RR.PermissionsBitMask,  
+         cast(1 as bit) as IsVisible,  
+         oride.ID as OverrideID,  
+         A.Object,  
+         coalesce(A.ObjectID, 0) as ObjectID,  
+         ATT.Object as [Type],  
+         ATT.ObjectID as TypeID  
+		from 
+			[dbo].[ResponsibilityTypeRelationOverrideItem] oride
+			inner join ResponsibilityType RT on RT.ID = oride.ResponsibilityTypeID  
+			inner join [dbo].asset a on (a.id = oride.assetID)
+			inner join [dbo].assettype att on (att.id = a.assettypeid)
+			inner join [dbo].[ResponsibilityTypeRelation] RR on (att.[object] = RR.[objectType] and att.objectid = RR.[Objectid] and RR.ResponsibilityTypeID = oride.ResponsibilityTypeID)			
+			inner join reporting.Global_Resource RES on RES.ResourceID = oride.SecurityAssetID and oride.SecurityAsset = 'R' and RES.State = 1
+		    ]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+        CREATE or ALTER VIEW [dbo].[ResponsibilityDetail] AS  
+         select O.RuleID,  
+           O.ResponsibilityTypeID,  
+           RT.Name as ResponsibilityTypeName,  
+           O.AssetID,  
+           O.AssetTypeID,  
+           coalesce(RD.ResourceID, RG.ResourceID, O.SecurityAssetID) as ResourceID,  
+           R.FirstName + ' ' + R.LastName as ResourceName,  
+           O.SecurityAsset,  
+           O.SecurityAssetID,  
+           coalesce(D.Name, G.Name, R.FirstName + ' ' + R.LastName) as SecurityAssetName,    
+           O.Context,  
+           O.ApplyToType,  
+           O.PermissionsBitMask,  
+           O.IsVisible,  
+           O.OverrideID,  
+           A.Object,  
+           coalesce(A.ObjectID, 0) as ObjectID,  
+           T.Object as [Type],  
+           T.ObjectID as TypeID  
+         from ResponsibilityTypeRelationRuleResult O  
+           inner join ResponsibilityType RT on RT.ID = O.ResponsibilityTypeID  
+           inner join AssetType T on T.ID = O.AssetTypeID  
+           left join Asset A on A.ID = O.AssetID and A.AssetTypeID = T.ID --( (A.ID = O.AssetID) OR (O.AssetID = 0 and A.AssetTypeID = O.AssetTypeID) )  
+           left join [Group] G on O.SecurityAsset = 'G' and G.ID = O.SecurityAssetID  
+           left join ResourceGroup RG on RG.GroupID = G.ID  
+           left join [Organization] D on O.SecurityAsset = 'O' and D.ID = O.SecurityAssetID  
+           left join OrganizationResource RD on RD.OrganizationID = D.ID  
+           inner join reporting.Global_Resource R on R.ResourceID = coalesce(RD.ResourceID, RG.ResourceID, O.SecurityAssetID)  
+         where O.Overridden = 0  and R.State=1
+        
+    ]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="KMcNamee" id="GOV-6258-UpdateAllAssetView">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[        
+        CREATE or ALTER VIEW [dbo].[ResponsibilityAllAsset] with SCHEMABINDING as 
+	        -- users
+	        (select	r.ID as RuleID,
+			        r.ResponsibilityTypeID,
+			        RT.Name as ResponsibilityTypeName,
+			        rasset.AssetID,
+			        rasset.AssetTypeID,
+			        rresource.SecurityAssetID as ResourceID,
+			        RES.FirstName + ' ' + RES.LastName as ResourceName,
+			        rresource.SecurityAsset,
+			        rresource.SecurityAssetID,
+			        (RES.FirstName + ' ' + RES.LastName) as SecurityAssetName,  
+			        r.Context,
+			        r.ApplyToType,
+			        rrel.PermissionsBitMask,
+			        r.IsVisible,
+			        0 as OverrideID,
+			        T.Object as [Type],
+			        T.ObjectID as TypeID
+	        from	dbo.responsibilitytyperelationrule r
+			        inner join dbo.ResponsibilityTypeRelation rrel on (r.ResponsibilityTypeID = rrel.ResponsibilityTypeID and r.[Object] = rrel.[ObjectType] and r.ObjectID = rrel.ObjectID)
+			        inner join dbo.[ResponsibilityRuleResultAsset] rasset on (r.ID = rasset.RuleID)
+			        inner join dbo.[ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)			
+			        inner join dbo.ResponsibilityType RT on RT.ID = r.ResponsibilityTypeID
+			        inner join dbo.AssetType T on T.ID = rasset.AssetTypeID			
+			        inner join reporting.Global_Resource RES on RES.ResourceID = rresource.SecurityAssetID
+	        where	
+			        rresource.SecurityAsset != 'G' and rresource.SecurityAsset !='O')
+	        union
+			-- groups
+	        (select	r.ID as RuleID,
+			        r.ResponsibilityTypeID,
+			        RT.Name as ResponsibilityTypeName,
+			        rasset.AssetID,
+			        rasset.AssetTypeID,
+			        RG.ResourceID as ResourceID,
+			        RES.FirstName + ' ' + RES.LastName as ResourceName,
+			        rresource.SecurityAsset,
+			        rresource.SecurityAssetID,
+			        G.Name as SecurityAssetName,  
+			        r.Context,
+			        r.ApplyToType,
+			        rrel.PermissionsBitMask,
+			        r.IsVisible,
+			        0 as OverrideID,			
+			        T.Object as [Type],
+			        T.ObjectID as TypeID
+	        from	dbo.responsibilitytyperelationrule r
+			        inner join dbo.ResponsibilityTypeRelation rrel on (r.ResponsibilityTypeID = rrel.ResponsibilityTypeID and r.[Object] = rrel.[ObjectType] and r.ObjectID = rrel.ObjectID)
+			        inner join dbo.[ResponsibilityRuleResultAsset] rasset on (r.ID = rasset.RuleID)
+			        inner join dbo.[ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)			
+			        inner join dbo.ResponsibilityType RT on RT.ID = r.ResponsibilityTypeID
+			        inner join dbo.AssetType T on T.ID = rasset.AssetTypeID			
+			        inner join dbo.[Group] G on G.ID = rresource.SecurityAssetID
+			        inner join dbo.ResourceGroup RG on RG.GroupID = G.ID			
+			        inner join reporting.Global_Resource RES on RES.ResourceID = RG.ResourceID
+	        where	rresource.SecurityAsset = 'G')
+	        union
+			-- organizations
+	        (select	r.ID as RuleID,
+			        r.ResponsibilityTypeID,
+			        RT.Name as ResponsibilityTypeName,
+			        rasset.AssetID,
+			        rasset.AssetTypeID,
+			        RD.ResourceID as ResourceID,
+			        RES.FirstName + ' ' + RES.LastName as ResourceName,
+			        rresource.SecurityAsset,
+			        rresource.SecurityAssetID,
+			        D.Name as SecurityAssetName,  
+			        r.Context,
+			        r.ApplyToType,
+			        rrel.PermissionsBitMask,
+			        r.IsVisible,
+			        0 as OverrideID,			
+			        T.Object as [Type],
+			        T.ObjectID as TypeID
+	        from	dbo.responsibilitytyperelationrule r
+			        inner join dbo.ResponsibilityTypeRelation rrel on (r.ResponsibilityTypeID = rrel.ResponsibilityTypeID and r.[Object] = rrel.[ObjectType] and r.ObjectID = rrel.ObjectID)
+			        inner join dbo.[ResponsibilityRuleResultAsset] rasset on (r.ID = rasset.RuleID)
+			        inner join dbo.[ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)
+			        inner join dbo.ResponsibilityType RT on RT.ID = r.ResponsibilityTypeID
+			        inner join dbo.AssetType T on T.ID = rasset.AssetTypeID			
+			        inner join dbo.[Organization] D on rresource.SecurityAsset = 'O' and D.ID = rresource.SecurityAssetID
+			        inner join dbo.OrganizationResource RD on RD.OrganizationID = D.ID
+			        inner join reporting.Global_Resource RES on RES.ResourceID = RD.ResourceID
+	        where	
+			        rresource.SecurityAsset = 'O')
+			union
+			   -- overrides only store users
+			   select
+				 0 as RuleID,
+				 rr.ResponsibilityTypeID as ResponsibilityTypeID,  
+				 RT.Name as ResponsibilityTypeName,  
+				 oride.AssetID,  
+				 att.ID as AssetTypeID,  
+				 RES.ResourceID as ResourceID,  
+				 RES.FirstName + ' ' + RES.LastName as ResourceName,  
+				 oride.SecurityAsset,  
+				 oride.SecurityAssetID,  
+				 RES.FirstName + ' ' + RES.LastName as SecurityAssetName,    
+				 oride.Context,  
+				 cast(0 as bit) as ApplyToType,  
+				 RR.PermissionsBitMask,  
+				 cast(1 as bit) as IsVisible,  
+				 oride.ID as OverrideID,  				 
+				 ATT.Object as [Type],  
+				 ATT.ObjectID as TypeID  
+				from 
+					[dbo].[ResponsibilityTypeRelationOverrideItem] oride
+					inner join [dbo].ResponsibilityType RT on RT.ID = oride.ResponsibilityTypeID  
+					inner join [dbo].asset a on (a.id = oride.assetID)
+					inner join [dbo].assettype att on (att.id = a.assettypeid)
+					inner join [dbo].[ResponsibilityTypeRelation] RR on (att.[object] = RR.[objectType] and att.objectid = RR.[Objectid] and RR.ResponsibilityTypeID = oride.ResponsibilityTypeID)
+					inner join [dbo].[responsibilitytyperelationrule] R on (RR.ResponsibilityTypeID = R.ResponsibilityTypeID and RR.ObjectType = R.[Object] and RR.ObjectID = R.ObjectID)	
+					inner join reporting.Global_Resource RES on RES.ResourceID = oride.SecurityAssetID and oride.SecurityAsset = 'R' and RES.[State] = 1 				
+    ]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+        CREATE VIEW [dbo].[ResponsibilityAllAsset] with SCHEMABINDING as 
+	      -- users
+	      (select	O.RuleID,
+			      O.ResponsibilityTypeID,
+			      RT.Name as ResponsibilityTypeName,
+			      O.AssetID,
+			      O.AssetTypeID,
+			      O.SecurityAssetID as ResourceID,
+			      R.FirstName + ' ' + R.LastName as ResourceName,
+			      O.SecurityAsset,
+			      O.SecurityAssetID,
+			      (R.FirstName + ' ' + R.LastName) as SecurityAssetName,  
+			      O.Context,
+			      O.ApplyToType,
+			      O.PermissionsBitMask,
+			      O.IsVisible,
+			      O.OverrideID,			
+			      T.Object as [Type],
+			      T.ObjectID as TypeID
+	      from	dbo.ResponsibilityTypeRelationRuleResult O
+			      inner join dbo.ResponsibilityType RT on RT.ID = O.ResponsibilityTypeID
+			      inner join dbo.AssetType T on T.ID = O.AssetTypeID			
+			      inner join reporting.Global_Resource R on R.ResourceID = O.SecurityAssetID
+	      where	O.Overridden = 0 and O.SecurityAsset != 'G' and O.SecurityAsset !='O')
+	      union
+	      (select	O.RuleID,
+			      O.ResponsibilityTypeID,
+			      RT.Name as ResponsibilityTypeName,
+			      O.AssetID,
+			      O.AssetTypeID,
+			      RG.ResourceID as ResourceID,
+			      R.FirstName + ' ' + R.LastName as ResourceName,
+			      O.SecurityAsset,
+			      O.SecurityAssetID,
+			      G.Name as SecurityAssetName,  
+			      O.Context,
+			      O.ApplyToType,
+			      O.PermissionsBitMask,
+			      O.IsVisible,
+			      O.OverrideID,			
+			      T.Object as [Type],
+			      T.ObjectID as TypeID
+	      from	dbo.ResponsibilityTypeRelationRuleResult O
+			      inner join dbo.ResponsibilityType RT on RT.ID = O.ResponsibilityTypeID
+			      inner join dbo.AssetType T on T.ID = O.AssetTypeID			
+			      inner join dbo.[Group] G on G.ID = O.SecurityAssetID
+			      inner join dbo.ResourceGroup RG on RG.GroupID = G.ID			
+			      inner join reporting.Global_Resource R on R.ResourceID = RG.ResourceID
+	      where	O.Overridden = 0 and O.SecurityAsset = 'G')
+	      union
+	      (select	O.RuleID,
+			      O.ResponsibilityTypeID,
+			      RT.Name as ResponsibilityTypeName,
+			      O.AssetID,
+			      O.AssetTypeID,
+			      RD.ResourceID as ResourceID,
+			      R.FirstName + ' ' + R.LastName as ResourceName,
+			      O.SecurityAsset,
+			      O.SecurityAssetID,
+			      D.Name as SecurityAssetName,  
+			      O.Context,
+			      O.ApplyToType,
+			      O.PermissionsBitMask,
+			      O.IsVisible,
+			      O.OverrideID,			
+			      T.Object as [Type],
+			      T.ObjectID as TypeID
+	      from	dbo.ResponsibilityTypeRelationRuleResult O
+			      inner join dbo.ResponsibilityType RT on RT.ID = O.ResponsibilityTypeID
+			      inner join dbo.AssetType T on T.ID = O.AssetTypeID			
+			      inner join dbo.[Organization] D on O.SecurityAsset = 'O' and D.ID = O.SecurityAssetID
+			      inner join dbo.OrganizationResource RD on RD.OrganizationID = D.ID
+			      inner join reporting.Global_Resource R on R.ResourceID = RD.ResourceID
+	      where	O.Overridden = 0 and O.SecurityAsset = 'O')
+      
+]]>
+    </rollback>
+  </changeSet>
+
+
+  <changeSet author="KMcNamee" id="GOV-6258-Rename-Existing">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+    <![CDATA[
+    IF (NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND  TABLE_NAME = 'responsibilitytyperelationruleresult_backup'))
+      BEGIN
+        exec sp_rename '[dbo].[responsibilitytyperelationruleresult]', 'responsibilitytyperelationruleresult_backup'
+      END
+    ]]>
+    </sql>
+    <rollback>
+    <![CDATA[
+    IF (EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND  TABLE_NAME = 'responsibilitytyperelationruleresult_backup'))
+      BEGIN
+        exec sp_rename '[dbo].[responsibilitytyperelationruleresult_backup]', 'responsibilitytyperelationruleresult'
+      END
+    ]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="KMcNamee" id="GOV-6258-CreateR-Resp-View">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+          create or alter view [dbo].[responsibilitytyperelationruleresult] with SCHEMABINDING
+          as
+          select 
+	          r.ID as RuleID,
+	          r.ResponsibilityTypeID,
+	          rasset.AssetID,
+	          rasset.AssetTypeID,
+	          rresource.SecurityAsset,
+	          rresource.SecurityAssetID,
+	          r.Context,
+	          r.ApplyToType,
+	          rrel.PermissionsBitMask,
+	          r.IsVisible,
+	          0 as Overriden,
+	          NULL as OverrideID
+          from
+	          [dbo].responsibilitytyperelationrule r
+	          inner join [dbo].ResponsibilityTypeRelation rrel on (r.ResponsibilityTypeID = rrel.ResponsibilityTypeID and r.[Object] = rrel.[ObjectType] and r.ObjectID = rrel.ObjectID)
+	          inner join [dbo].[ResponsibilityRuleResultAsset] rasset on (r.ID = rasset.RuleID)
+	          inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)
+	      union
+		  -- overrides	     
+		 select
+		      0 as RuleID,
+	          rr.ResponsibilityTypeID,
+	          oride.AssetID,
+	          0 as AssetTypeID,
+	          oride.SecurityAsset,
+	          oride.SecurityAssetID,
+	          oride.Context,
+	          1 as ApplyToType,
+	          rr.PermissionsBitMask,
+	          1 as IsVisible,
+		      0 as Overriden,
+	          oride.id as OverrideID
+	      from 
+		      [dbo].[ResponsibilityTypeRelationOverrideItem] oride
+		      inner join [dbo].ResponsibilityType RT on RT.ID = oride.ResponsibilityTypeID  
+		      inner join [dbo].asset a on (a.id = oride.assetID)
+		      inner join [dbo].assettype att on (att.id = a.assettypeid)
+		      inner join [dbo].[ResponsibilityTypeRelation] RR on (att.[object] = RR.[objectType] and att.objectid = RR.[Objectid] and RR.ResponsibilityTypeID = oride.ResponsibilityTypeID)
+		      inner join [dbo].[responsibilitytyperelationrule] R on (RR.ResponsibilityTypeID = R.ResponsibilityTypeID and RR.ObjectType = R.[Object] and RR.ObjectID = R.ObjectID)	
+		      inner join reporting.Global_Resource RES on RES.ResourceID = oride.SecurityAssetID and oride.SecurityAsset = 'R' and RES.[State] = 1	      
+	   
+    ]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+      drop view [dbo].[responsibilitytyperelationruleresult]
+    ]]>
+    </rollback>
+  </changeSet>
+  <changeSet author="KMcNamee" id="GOV-6258-TVF">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[    
+        CREATE or alter FUNCTION UserAssetPermissions 
+        (	
+	        -- Add the parameters for the function here
+	        @ResourceID int, 
+	        @AssetTypeID int
+        )
+        RETURNS TABLE  with Schemabinding
+        AS
+        RETURN 
+        (
+	        -- Add the SELECT statement with parameter references here
+			-- user
+	        select 
+		        rel.PermissionsBitMask,
+		        rasset.AssetID,
+		        rasset.AssetTypeID
+	        from 
+		        [dbo].[asset] a		
+		        inner join [dbo].[ResponsibilityRuleResultAsset] rasset on (rasset.AssetID = a.ID or (rasset.AssetID = 0 and rasset.AssetTypeID = @AssetTypeID))		
+		        inner join [dbo].[responsibilitytyperelationrule] r on (r.id = rasset.RuleID)		
+		        inner join [dbo].[ResponsibilityTypeRelation] rel on (rel.ObjectID = r.ObjectID and rel.ResponsibilityTypeID = r.ResponsibilityTypeID and rel.ObjectType = r.[Object])
+		        inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rresource on (r.id = rresource.RuleID)
+	        where 
+		        rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = @ResourceID and a.AssetTypeID = @AssetTypeID
+	        union
+			-- group
+		        select 
+		        rel.PermissionsBitMask,
+		        rasset.AssetID,
+		        rasset.AssetTypeID
+	        from 
+		        [dbo].[asset] a				
+		        inner join [dbo].[ResponsibilityRuleResultAsset] rasset on (rasset.AssetID = a.id or (rasset.AssetID = 0 and rasset.AssetTypeID = @AssetTypeID))
+		        inner join [dbo].[responsibilitytyperelationrule] r on (r.id = rasset.RuleID)
+		        inner join [dbo].[ResponsibilityTypeRelation] rel on (rel.ObjectID = r.ObjectID and rel.ResponsibilityTypeID = r.ResponsibilityTypeID and rel.ObjectType = r.[Object])
+		        inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rresource on (r.id = rresource.RuleID)
+		        inner join dbo.[Group] G on G.ID = rresource.SecurityAssetID and rresource.SecurityAsset = 'G'
+		        inner join dbo.ResourceGroup RG on RG.GroupID = G.ID and a.AssetTypeID = @AssetTypeID		
+	        where 
+		        RG.ResourceID = @resourceId
+	        union
+			-- organization
+	        select 
+		        rel.PermissionsBitMask,
+		        rasset.AssetID,
+		        rasset.AssetTypeID
+	        from 
+		        [dbo].[asset] a			
+		        inner join [dbo].[ResponsibilityRuleResultAsset] rasset on (rasset.AssetID = a.ID or (rasset.AssetID = 0 and rasset.AssetTypeID = @AssetTypeID))
+		        inner join [dbo].[responsibilitytyperelationrule] r on (r.id = rasset.RuleID)
+		        inner join [dbo].[ResponsibilityTypeRelation] rel on (rel.ObjectID = r.ObjectID and rel.ResponsibilityTypeID = r.ResponsibilityTypeID and rel.ObjectType = r.[Object])
+		        inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rresource  on (r.id = rresource.RuleID)
+		        inner join dbo.[Organization] D on rresource.SecurityAsset = 'O' and D.ID = rresource.SecurityAssetID
+		        inner join dbo.OrganizationResource RD on RD.OrganizationID = D.ID
+	        where 
+		        RD.ResourceID = @ResourceID and a.AssetTypeID = @AssetTypeID
+			-- overrides
+			union 
+			select
+				rr.PermissionsBitMask,
+				oride.AssetID,
+				att.ID as AssetTypeID
+			from 
+					[dbo].[ResponsibilityTypeRelationOverrideItem] oride
+					inner join [dbo].ResponsibilityType RT on RT.ID = oride.ResponsibilityTypeID  
+					inner join [dbo].asset a on (a.id = oride.assetID)
+					inner join [dbo].assettype att on (att.id = a.assettypeid)
+					inner join [dbo].[ResponsibilityTypeRelation] RR on (att.[object] = RR.[objectType] and att.objectid = RR.[Objectid] and RR.ResponsibilityTypeID = oride.ResponsibilityTypeID)					
+					inner join reporting.Global_Resource RES on RES.ResourceID = oride.SecurityAssetID and oride.SecurityAsset = 'R'
+				where
+					a.AssetTypeID = @AssetTypeID							
+        )
+    ]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+      drop function [dbo].[UserAssetPermissions]
+    ]]>
+    </rollback>
+  </changeSet>
+  <changeSet author="KMcNamee" id="GOV-6258-TVF-AssetType">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[            
+        CREATE or alter FUNCTION AssetsByTypeUserCantRead
+        (		        
+	        @ResourceID int,
+			    @AssetTypeID int
+            )
+            RETURNS TABLE  with Schemabinding
+            AS
+            RETURN 
+            (
+			        select 
+				        A.ID as AssetID
+			        from 
+				        [dbo].[ResponsibilityTypeRelation] RR
+				        inner join [dbo].[responsibilitytyperelationrule] R on (RR.ResponsibilityTypeID = R.ResponsibilityTypeID and RR.ObjectType = R.[Object] and RR.ObjectID = R.ObjectID)	
+				        inner join [dbo].[AssetType] Ast on (Ast.[Object] = R.[Object] and Ast.ObjectID = R.ObjectID)
+				        inner join [dbo].[Asset] A on (A.AssetTypeID = Ast.ID)
+				        inner join [dbo].[ResponsibilityRuleResultAsset] rasset on (rasset.assettypeid = 0 and rasset.AssetID = A.ID and rasset.ruleid = r.id)				
+			        where 
+				        RR.PermissionsBitMask & 1 = 0 and Ast.ID = @AssetTypeID
+				         and 
+					        ( exists( select 1 from [dbo].[ResponsibilityRuleResultSecurityAsset] rresource where rresource.RuleID = R.ID and rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = @ResourceID )
+					        or exists( select 1 from [dbo].[ResponsibilityRuleResultSecurityAsset] rresource inner join dbo.[Organization] D on rresource.SecurityAsset = 'O' and D.ID = rresource.SecurityAssetID inner join dbo.OrganizationResource RD on RD.OrganizationID = D.ID where rresource.RuleID = R.ID and RD.ResourceID = @ResourceID )
+					        or exists( select 1 from [dbo].[ResponsibilityRuleResultSecurityAsset] rresource inner join dbo.[Group] G on G.ID = rresource.SecurityAssetID and rresource.SecurityAsset = 'G' inner join dbo.ResourceGroup RG on RG.GroupID = G.ID  where rresource.RuleID = R.ID and RG.ResourceID =  @ResourceID ) 
+							)
+						and
+							not exists (select 1 from [dbo].[ResponsibilityTypeRelationOverrideItem] oride where oride.AssetID = A.ID and oride.ResponsibilityTypeID = R.ResponsibilityTypeID)
+					union
+						select
+							oride.AssetID as AssetID
+						from 
+							[dbo].[ResponsibilityTypeRelationOverrideItem] oride
+							inner join [dbo].asset a on (a.id = oride.assetID)
+							inner join [dbo].assettype att on (att.id = a.assettypeid)
+							inner join [dbo].[ResponsibilityTypeRelation] RR on (att.[object] = RR.[objectType] and att.objectid = RR.[Objectid] and RR.ResponsibilityTypeID = oride.ResponsibilityTypeID)							
+						where
+							RR.PermissionsBitMask & 1 = 0 and Att.ID = @AssetTypeID
+		        )
+    ]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+      drop function [dbo].[AssetsByTypeUserCantRead]
+    ]]>
+    </rollback>
+  </changeSet>
+  <changeSet author="KMcNamee" id="GOV-6258-TVF-Type-fix">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[    
+        CREATE or alter FUNCTION AssetTypesUserCantRead
+        (		        
+	        @ResourceID int
+        )
+        RETURNS TABLE  with Schemabinding
+        AS
+        RETURN 
+        (
+			      select 
+				      Ast.ID as AssetTypeID
+			      from 
+				      [dbo].[ResponsibilityTypeRelation] RR
+				      inner join [dbo].[responsibilitytyperelationrule] R on (RR.ResponsibilityTypeID = R.ResponsibilityTypeID and RR.ObjectType = R.[Object] and RR.ObjectID = R.ObjectID)	
+				      inner join [dbo].[AssetType] Ast on (Ast.[Object] = R.[Object] and Ast.ObjectID = R.ObjectID)
+				      inner join [dbo].[ResponsibilityRuleResultAsset] rasset on (rasset.assetid = 0 and rasset.AssetTypeID = Ast.ID and rasset.ruleid = r.id)				
+			      where 
+				      RR.PermissionsBitMask & 1 = 0
+				       and 
+					      ( exists( select 1 from [dbo].[ResponsibilityRuleResultSecurityAsset] rresource where rresource.RuleID = R.ID and rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = @ResourceID )
+					      or exists( select 1 from [dbo].[ResponsibilityRuleResultSecurityAsset] rresource inner join dbo.[Organization] D on rresource.SecurityAsset = 'O' and D.ID = rresource.SecurityAssetID inner join dbo.OrganizationResource RD on RD.OrganizationID = D.ID where rresource.RuleID = R.ID and RD.ResourceID = @ResourceID )
+					      or exists( select 1 from [dbo].[ResponsibilityRuleResultSecurityAsset] rresource inner join dbo.[Group] G on G.ID = rresource.SecurityAssetID and rresource.SecurityAsset = 'G' inner join dbo.ResourceGroup RG on RG.GroupID = G.ID  where rresource.RuleID = R.ID and RG.ResourceID =  @ResourceID ) )
+	
+		      )
+    ]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+      drop function [dbo].[AssetTypesUserCantRead]
+    ]]>
+    </rollback>
+  </changeSet>
+  <changeSet author="KMcNamee" id="GOV-6258-Missing-Index">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[    
+      IF (NOT EXISTS (SELECT * FROM sys.indexes WHERE name='IX_ResponsibilityTypeRelationRule_Object-ObjectID' AND object_id = OBJECT_ID('dbo.ResponsibilityTypeRelationRule')))
+      BEGIN
+        CREATE NONCLUSTERED INDEX [IX_ResponsibilityTypeRelationRule_Object-ObjectID] ON [dbo].[ResponsibilityTypeRelationRule] ([Object],[ObjectID])
+      END       
+    ]]>
+    </sql>       
+  </changeSet>
+
+  <changeSet author="KMcNamee" id="GOV-6258-Drop-orid-trigger-upsert">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[    
+      IF EXISTS (SELECT * FROM sys.triggers WHERE object_id = OBJECT_ID(N'[dbo].[ResponsibilityTypeRelationOverrideItem_AfterUpsert]'))
+      DROP TRIGGER [dbo].[ResponsibilityTypeRelationOverrideItem_AfterUpsert]
+    ]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+      CREATE TRIGGER [dbo].[ResponsibilityTypeRelationOverrideItem_AfterUpsert]
+           ON  [dbo].[ResponsibilityTypeRelationOverrideItem]
+           AFTER INSERT, UPDATE
+        AS 
+        BEGIN
+	        SET NOCOUNT ON;
+
+	
+	        update	T
+	        set		T.Overridden = 1,
+			        T.OverrideID = S.ID
+	        from	ResponsibilityTypeRelationRuleResult T
+			        inner join inserted S on S.AssetID = T.AssetID and S.ResponsibilityTypeID = T.ResponsibilityTypeID and T.RuleID <> 0;
+
+	
+	        merge	ResponsibilityTypeRelationRuleResult as T
+	        using	(
+			        select	0 as RuleID,
+					        I.ID,
+					        I.ResponsibilityTypeID,
+					        A.ID as AssetID,
+					        A.Object,
+					        A.ObjectID,
+					        A.AssetTypeID,
+					        T.Object as Type,
+					        T.ObjectID as TypeID,
+					        I.SecurityAsset,
+					        I.SecurityAssetID,
+					        R.PermissionsBitMask,
+					        I.Context
+			        from	Asset A
+					        inner join AssetType T on T.ID = A.AssetTypeID
+					        inner join ResponsibilityTypeRelation R on R.ObjectType = T.Object and R.ObjectID = T.ObjectID
+					        inner join inserted I on I.AssetID = A.ID and I.ResponsibilityTypeID = R.ResponsibilityTypeID
+			        ) as S 
+	        on		(
+			        S.RuleID = T.RuleID
+			        and S.ID = T.OverrideID
+			        )
+	        when	matched then
+	        update	set
+			        T.SecurityAsset = S.SecurityAsset,
+			        T.SecurityAssetID = S.SecurityAssetID,
+			        T.PermissionsBitMask = S.PermissionsBitMask,
+			        T.Context = S.Context,
+			        T.ResponsibilityTypeID = S.ResponsibilityTypeID
+	        when	not matched by target then
+			        insert (RuleID, ResponsibilityTypeID, AssetID, AssetTypeID, SecurityAsset, SecurityAssetID, PermissionsBitMask, Context, ApplyToType, IsVisible, Overridden, OverrideID)
+			        values (S.RuleID, S.ResponsibilityTypeID, S.AssetID, S.AssetTypeID, S.SecurityAsset, S.SecurityAssetID, S.PermissionsBitMask, S.Context, 0, 1, 0, S.ID);
+        END
+
+
+        ALTER TABLE [dbo].[ResponsibilityTypeRelationOverrideItem] ENABLE TRIGGER [ResponsibilityTypeRelationOverrideItem_AfterUpsert]
+
+    ]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="KMcNamee" id="GOV-6258-Drop-orid-trigger-delete">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[    
+      IF EXISTS (SELECT * FROM sys.triggers WHERE object_id = OBJECT_ID(N'[dbo].[ResponsibilityTypeRelationOverrideItem_AfterDelete]'))
+      DROP TRIGGER [dbo].[ResponsibilityTypeRelationOverrideItem_AfterDelete]   
+    ]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+      CREATE TRIGGER [dbo].[ResponsibilityTypeRelationOverrideItem_AfterDelete]
+           ON  [dbo].[ResponsibilityTypeRelationOverrideItem]
+           AFTER DELETE
+        AS 
+        BEGIN
+	        SET NOCOUNT ON;
+
+	        delete	T
+	        from	ResponsibilityTypeRelationRuleResult T
+			        inner join deleted S on T.RuleID = 0 and T.OverrideID = S.ID;
+
+	        update	T
+	        set		T.Overridden = 0,
+			        T.OverrideID = 0
+	        from	ResponsibilityTypeRelationRuleResult T
+			        inner join deleted S on T.RuleID <> 0 and T.OverrideID = S.ID;
+        END
+        GO
+
+        ALTER TABLE [dbo].[ResponsibilityTypeRelationOverrideItem] ENABLE TRIGGER [ResponsibilityTypeRelationOverrideItem_AfterDelete]
+        GO
+    ]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="KMcNamee" id="GOV-6258-Trigger-Rebuild">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[    
+      update responsibilitytyperelationrule set LastRunOn = null      
+    ]]>
+    </sql>    
+  </changeSet>
+
+
+  <changeSet author="KMcNamee" id="GOV-6258-DeleteObject">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[    
+      
+ALTER procedure [dbo].[DeleteObject]
+ @ObjTemp varchar(50),
+ @ObjectIDTemp int,
+ @ResourceIDTemp int
+as 
+begin
+	set nocount on
+	declare    @Obj varchar(50) = @ObjTemp,
+		@ObjectID int = @ObjectIDTemp,
+		@ResourceID int = @ResourceIDTemp
+	
+	declare    @Object varchar(50) = @Obj,
+		@CurrentDate datetime = getutcdate(),
+		@predicateType int = 0,
+		@trans varchar(25) = 'Trans',
+		@current int = 1,
+		@max int,
+		@IsType bit = 0
+
+	declare @h table (IntersectID int, ID bigint, ObjectID int, Processed bit null)
+	declare @ht table (IntersectTypeID int, ID int, ObjectID int, Processed bit null)
+	declare @workflowItem table (ItemId int)
+	declare @ClearAttributes bit = 0,
+			@ClearComments bit = 0,
+			@ClearIntersects bit = 0,
+			@ClearFavorites bit = 0,
+			@ClearFields bit = 0,
+			@ClearFollows bit = 0,
+			@ClearIssues bit = 0,
+			@ClearNyms bit = 0,
+			@ClearResponsibilities bit = 0,
+			@ClearSiteNav bit = 0,
+			@ClearPromotion bit = 0
+			
+
+	if charindex('Type', @Object) > 0
+	begin
+		set @IsType = 1
+	end
+
+	begin try
+		begin transaction @trans
+
+		insert into @workflowItem
+			select   distinct wi.Id from workflow.type wt
+			inner join workflow.EventRegistration we on
+			we.typeid = wt.id
+			inner join workflow.version wv on
+			wt.id = wv.typeId
+			inner join [workflow].[Item] wi on
+			wv.id = wi.VersionID
+			where  we.changetype <> 3 and wi.[object]=@Obj and wi.objectId=@ObjectID 
+
+		insert into @workflowItem
+			select wi.id from workflow.item wi
+			inner join Issue i on i.id = wi.objectid and wi.object = 'Issue'
+			where i.object = @Obj and i.objectid = @ObjectID
+
+		if @Obj = 'Artifact' or @Obj = 'ArtifactType' or @Obj = 'FusionAttribute' or @Obj = 'FusionAttributeType' or @Obj = 'ReferenceItem' or @Obj = 'ReferenceItemType' or @Obj = 'Rule'
+		begin
+			set @predicateType = 3
+		end
+		if @Obj = 'Policy' or @Obj = 'PolicyType' or @Obj = 'Taxonomy' or @Obj = 'TaxonomyType'
+		begin
+			set @predicateType = 4
+		end
+
+		if @predicateType > 0
+		begin
+			if @IsType = 1
+				begin
+					insert into @ht
+						select	null,
+								ID,
+								ObjectID,
+								0
+						from	AssetType
+						where	[Object] = @Obj and ObjectID = @ObjectID
+
+					while exists(select 1 from @ht where Processed = 0)
+					begin
+						insert into @ht
+							select	I.ID,
+									C.ID,
+									C.ObjectID,
+									null
+							from	AssetType C
+									inner join IntersectType I on I.Subject = @Obj and I.Object = @Obj and I.ObjectID = C.ObjectID and C.[Object] = @Obj
+									inner join [Predicate] PR on PR.ID = I.PredicateID and PR.[Type] = @predicateType
+									inner join AssetType P on P.Object = I.Subject and P.ObjectID = I.SubjectID
+									inner join @ht T on T.ID = P.ID and T.Processed = 0
+
+						update	@ht set Processed = 1 where Processed = 0
+						update	@ht set Processed = 0 where Processed is null
+					end
+
+					
+					insert into @h 
+						select null, ID, ObjectID, 1 from Asset where AssetTypeID in (select ID from @ht)
+				end
+			else
+				begin
+					insert into @h
+						select	null,
+								ID,
+								ObjectID,
+								0
+						from	Asset
+						where	[Object] = @Obj and ObjectID = @ObjectID
+
+					while exists(select 1 from @h where Processed = 0)
+					begin
+						insert into @h
+							select	I.IntersectID,
+									C.ID,
+									C.ObjectID,
+									null
+							from	Asset C
+									inner join PredicateIntersect I on I.PredicateType = @predicateType and I.Subject = @Obj and I.Object = @Obj and I.ObjectID = C.ObjectID
+									inner join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
+									inner join @h T on T.ID = P.ID and T.Processed = 0
+
+						update	@h set Processed = 1 where Processed = 0
+						update	@h set Processed = 0 where Processed is null
+					end
+				end
+		end
+		
+		
+		INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
+			select	'ObjectIndex', 
+					'D',
+					O.Object, 
+					O.ObjectID,
+					O.ID
+			from	Asset O
+					inner join @h I on O.ID = I.ID
+
+		
+		insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)
+			select	O.Object, 
+					O.ObjectID,
+					SUBSTRING(O.DisplayValue,1,250), 
+					@ResourceID, 
+					@CurrentDate, 
+					'Deleted', 
+					O.Object, 
+					O.ObjectID, 
+					O.TypeName, 
+					SUBSTRING(O.DisplayValue,1,250), 
+					'This asset has been removed.' 
+			from	AssetDetail O
+					inner join @h I on O.ID = I.ID
+			union
+			select	O.Object, 
+					O.ObjectID, 
+					O.Name, 
+					@ResourceID, 
+					@CurrentDate, 
+					'Deleted', 
+					O.Object, 
+					O.ObjectID, 
+					O.Name, 
+					O.Name, 
+					'This asset type has been removed.' 
+			from	AssetType O
+					inner join @ht I on O.ID = I.ID
+
+		
+
+		delete	AssetCrossReference
+		where	[Uid] in (select [Uid] 
+						  from Asset A
+							   inner join @h I on I.ID = A.ID)
+
+
+		delete	AssetCrossReference
+		where	[Uid] in (select [Uid] 
+						  from AssetType O
+								inner join @ht I on O.ID = I.ID)
+
+		
+
+		if @Object = 'Artifact'
+		begin
+			set @ClearAttributes = 1
+			set @ClearComments = 1
+			set @ClearIntersects = 1
+			set @ClearFavorites = 1
+			set @ClearFields = 1
+			set @ClearFollows = 1
+			set @ClearIssues = 1
+			set @ClearNyms = 1
+			set @ClearResponsibilities = 1
+			set @ClearPromotion = 1
+
+			delete Artifact where ID in (select ObjectID from @h)
+		end
+
+		if @Object = 'ArtifactType'
+		begin
+			set @ClearAttributes = 1
+			set @ClearComments = 1
+			set @ClearIntersects = 1
+			set @ClearFavorites = 1
+			set @ClearFields = 1
+			set @ClearFollows = 1
+			set @ClearIssues = 1
+			set @ClearNyms = 1
+			set @ClearResponsibilities = 1
+			set @ClearSiteNav = 1			
+			
+			delete	ArtifactTypeExportTemplate
+			where	ArtifactTypeID in (select ObjectID from @ht)
+
+			delete	Artifact
+			where	ID in (select ObjectID from @h)
+
+			delete	ArtifactType			
+			where	ID in (select ObjectID from @ht)
+		end
+
+		if @Object = 'AttributeType'
+		begin
+			declare @at table (ID int)
+			declare @a table (ID int);
+
+			with ht as	(
+						select	ID, 
+								ParentID
+						from	AttributeType
+						where	ID = @ObjectID
+						union all
+						select	C.ID,
+								C.ParentID
+						from	AttributeType C
+								inner join ht P on P.ID = C.ParentID
+						)
+
+			insert into @at 
+				select ID from ht
+
+			insert into @a
+				select ID from Attribute where AttributeTypeID in (select ID from @at)
+
+			
+			insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)
+				select	A.Object, 
+						A.ObjectID, 
+						A.DisplayValue, 
+						@ResourceID, 
+						@CurrentDate, 
+						'Deleted', 
+						'Attribute', 
+						O.ID, 
+						O.Name, 
+						O.FormattedValue, 
+						'This attribute has been removed.' 
+				from	AttributeDetail O
+						inner join AssetDetail A on A.Object = O.ObjectType and A.ObjectID = O.ObjectID
+						inner join @a I on O.ID = I.ID
+				union
+				select	A.Object, 
+						A.ObjectID, 
+						A.Name, 
+						@ResourceID, 
+						@CurrentDate, 
+						'Deleted', 
+						'AttributeType', 
+						O.ID, 
+						'Attribute Type', 
+						O.Name, 
+						'This attribute type has been removed.' 
+				from	AttributeType O
+						inner join @at I on O.ID = I.ID
+						inner join AttributeTypeRelation R on R.AttributeTypeID = O.ID
+						inner join AssetType A on A.Object = R.ObjectType and A.ObjectID = R.ObjectID
+
+			update	T
+			set		T.UpdatedBy = @ResourceID,
+					T.UpdatedOn = @CurrentDate
+			from	Asset T
+					inner join [Attribute] S on S.ObjectType = T.Object and S.ObjectID = T.ObjectID and S.ID in (select ID from @a)
+
+			update	T
+			set		T.UpdatedBy = @ResourceID,
+					T.UpdatedOn = @CurrentDate
+			from	AssetType T
+					inner join AttributeTypeRelation S on S.ObjectType = T.Object and S.ObjectID = T.ObjectID 
+					inner join AttributeType A on A.ID = S.AttributeTypeID and A.ID in (select ID from @at)
+
+			delete Field					where ObjectType = 'Attribute' and ObjectID in (select ID from @a)
+			delete Attribute				where ID in (select ID from @a)
+			delete FieldType				where Object = 'AttributeType' and ObjectID in (select ID from @at)
+			delete AttributeTypeRelation	where AttributeTypeID in (select ID from @at)
+			delete AttributeType			where ID in (select ID from @at)
+		end
+
+		if @Object = 'FieldType'
+		begin
+			
+			insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)
+				select	A.Object, 
+						A.ObjectID, 
+						A.DisplayValue, 
+						@ResourceID, 
+						@CurrentDate, 
+						'Deleted', 
+						A.Object, 
+						A.ObjectID, 
+						T.Name, 
+						O.FormattedValue, 
+						'This field has been removed.' 
+				from	Field O
+						inner join FieldType T on T.ID = O.FieldTypeID and T.ID = @ObjectID
+						inner join AssetDetail A on A.Object = O.ObjectType and A.ObjectID = O.ObjectID
+				union
+				select	A.Object, 
+						A.ObjectID, 
+						A.Name, 
+						@ResourceID, 
+						@CurrentDate, 
+						'Deleted', 
+						'FieldType', 
+						O.ID, 
+						'Field Type', 
+						O.Name, 
+						'This field type has been removed.' 
+				from	FieldType O
+						inner join AssetType A on A.Object = O.Object and A.ObjectID = O.ObjectID and O.ID = @ObjectID
+
+			update	T
+			set		T.UpdatedBy = @ResourceID,
+					T.UpdatedOn = @CurrentDate
+			from	Asset T
+					inner join Field S on S.ObjectType = T.Object and S.ObjectID = T.ObjectID and S.FieldTypeID = @ObjectID
+
+			update	T
+			set		T.UpdatedBy = @ResourceID,
+					T.UpdatedOn = @CurrentDate
+			from	AssetType T
+					inner join FieldType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ID = @ObjectID
+
+			delete	Field 
+			where	FieldTypeID = @ObjectID
+			
+			update	FieldType 
+			set		ParentFieldTypeID = null 
+			where	ParentFieldTypeID = @ObjectID
+
+			delete	FieldType 
+			where	ID = @ObjectID
+		end
+
+		if @Object = 'FusionAttribute'
+		begin
+			set @ClearAttributes = 1
+			set @ClearComments = 1
+			set @ClearIntersects = 1
+			set @ClearFavorites = 1
+			set @ClearFields = 1
+			set @ClearFollows = 1
+			set @ClearIssues = 1
+			set @ClearNyms = 1
+			set @ClearResponsibilities = 1
+			set @ClearPromotion = 1
+
+			delete FusionAttribute where ID in (select ObjectID from @h)
+		end
+
+		if @Object = 'FusionAttributeType'
+		begin
+			set @ClearAttributes = 1
+			set @ClearComments = 1
+			set @ClearIntersects = 1
+			set @ClearFavorites = 1
+			set @ClearFields = 1
+			set @ClearFollows = 1
+			set @ClearIssues = 1
+			set @ClearNyms = 1
+			set @ClearResponsibilities = 1
+
+			delete FusionAttribute		where ID in (select ObjectID from @h)
+			delete FusionAttributeType	where ID in (select ObjectID from @ht)
+		end
+
+		if @Object = 'Fusion'
+		begin
+			set @ClearAttributes = 1
+			set @ClearComments = 1
+			set @ClearFavorites = 1
+			set @ClearFields = 1
+			set @ClearFollows = 1
+			set @ClearIssues = 1
+			set @ClearNyms = 1
+			set @ClearResponsibilities = 1
+
+			
+			
+			
+			
+			
+			
+			
+			
+
+			insert into @h								
+				select I.ID, null, F.ID, null 
+				from [Intersect] I
+				inner join IntersectType T on T.ID = I.IntersectTypeID
+				inner join [Predicate] P on P.ID = T.PredicateID and P.[Type] = 3
+				inner join FusionAttribute F on I.[Subject] = 'FusionAttribute' and I.[Object] = 'FusionAttribute'
+					and (I.SubjectID = F.ID or I.ObjectID = F.ID) and F.FusionID = @ObjectID;
+
+			delete FusionAttribute where FusionID = @ObjectID
+			delete Fusion where ID = @ObjectID
+		end
+
+		if @Object = 'FusionType'
+		begin
+			set @ClearAttributes = 1
+			set @ClearComments = 1
+			set @ClearIntersects = 1
+			set @ClearFavorites = 1
+			set @ClearFields = 1
+			set @ClearFollows = 1
+			set @ClearIssues = 1
+			set @ClearNyms = 1
+			set @ClearResponsibilities = 1
+
+			insert into @ht
+				select	ID, null, null, null
+				from	IntersectType
+				where	Subject = 'FusionAttributeType' 
+						and Object = 'FusionAttributeType' 
+						and (
+							SubjectID in (select ID from FusionAttributeType where FusionTypeID = @ObjectID)
+							or ObjectID in (select ID from FusionAttributeType where FusionTypeID = @ObjectID)
+							)
+
+			insert into @h
+				select ID, null, null, null from [Intersect] where IntersectTypeID in (select IntersectTypeID from @ht)
+
+			delete FusionAttribute where FusionAttributeTypeID in (select ID from FusionAttributeType where FusionTypeID = @ObjectID)
+			delete Fusion where FusionTypeID = @ObjectID
+			delete FusionAttributeType where FusionTypeID = @ObjectID
+			delete FusionType where ID = @ObjectID
+		end
+
+		if @Object = 'Intersect'
+		begin
+			update [Intersect] set Deleted = 1 where ID = @ObjectID
+		end
+
+		if @Object = 'IntersectType'
+		begin
+			set @ClearAttributes = 1
+			set @ClearFields = 1
+
+			delete [Intersect] where IntersectTypeID = @ObjectID
+			delete IntersectType where ID = @ObjectID
+		end
+
+		if @Object = 'LookupType'
+		begin
+			set @ClearFields = 1
+
+			delete [Lookup] where LookupTypeID = @ObjectID
+			delete  LookupType where ID=@ObjectID
+		end
+
+		if @Object = 'Policy'
+		begin
+			set @ClearAttributes = 1
+			set @ClearComments = 1
+			set @ClearIntersects = 1
+			set @ClearFavorites = 1
+			set @ClearFields = 1
+			set @ClearFollows = 1
+			set @ClearIssues = 1
+			set @ClearNyms = 1
+			set @ClearResponsibilities = 1
+			set @ClearPromotion = 1
+
+			delete [Policy] where ID in (select ObjectID from @h)
+		end
+
+		if @Object = 'PolicyType'
+		begin
+			set @ClearAttributes = 1
+			set @ClearComments = 1
+			set @ClearIntersects = 1
+			set @ClearFavorites = 1
+			set @ClearFields = 1
+			set @ClearFollows = 1
+			set @ClearIssues = 1
+			set @ClearNyms = 1
+			set @ClearResponsibilities = 1
+			set @ClearSiteNav = 1
+
+			delete [Policy] where PolicyTypeID in (select ObjectID from @ht)
+			delete PolicyTypeLevel where PolicyTypeID in (select ObjectID from @ht)
+			delete PolicyType where ID in (select ObjectID from @ht)
+		end
+
+		if @Object = 'ReferenceItem'
+		begin
+			set @ClearAttributes = 1
+			set @ClearComments = 1
+			set @ClearIntersects = 1
+			set @ClearFavorites = 1
+			set @ClearFields = 1
+			set @ClearFollows = 1
+			set @ClearIssues = 1
+			set @ClearNyms = 1
+			set @ClearResponsibilities = 1
+
+			delete ReferenceItem where ID = @ObjectID			
+		end
+
+		if @Object = 'ReferenceItemType'
+		begin
+			set @ClearAttributes = 1
+			set @ClearComments = 1
+			set @ClearIntersects = 1
+			set @ClearFavorites = 1
+			set @ClearFields = 1
+			set @ClearFollows = 1
+			set @ClearIssues = 1
+			set @ClearNyms = 1
+			set @ClearResponsibilities = 1
+
+			delete ReferenceItem where ReferenceItemTypeID = @ObjectID
+			delete ReferenceItemType where ID = @ObjectID
+		end
+
+		if @Object = 'ResponsibilityType'
+		begin
+			delete ResponsibilityTypeRelationOverrideItem where ResponsibilityTypeID = @ObjectID			
+			delete O from [dbo].[ResponsibilityRuleResultSecurityAsset] O inner join ResponsibilityTypeRelationRule R on O.RuleID = R.ID and R.ResponsibilityTypeID = @ObjectID
+			delete O from [dbo].[ResponsibilityRuleResultAsset] O inner join ResponsibilityTypeRelationRule R on O.RuleID = R.ID and R.ResponsibilityTypeID = @ObjectID
+			delete ResponsibilityTypeRelationRule where ResponsibilityTypeID = @ObjectID
+			delete ResponsibilityType where ID = @ObjectID
+		end
+
+		if @Object = 'Rule'
+		begin
+			set @ClearAttributes = 1
+			set @ClearComments = 1
+			set @ClearIntersects = 1
+			set @ClearFavorites = 1
+			set @ClearFields = 1
+			set @ClearFollows = 1
+			set @ClearIssues = 1
+			set @ClearNyms = 1
+			set @ClearResponsibilities = 1
+
+			
+			delete T
+			from   RuleResultQualifierType T
+				   inner join RuleImplementation I on I.ID = T.RuleImplementationID and I.RuleID = @ObjectID
+
+			delete	Q
+			from	RuleResultQualifier Q 
+					inner join RuleResult S on S.ID = Q.RuleResultID
+					inner join RuleImplementation I on I.ID = S.RuleImplementationID and I.RuleID = @ObjectID
+
+			delete	F
+			from	RuleResultFusionAttribute F
+					inner join RuleResult S on S.ID = F.RuleResultID
+					inner join RuleImplementation I on I.ID = S.RuleImplementationID and I.RuleID = @ObjectID
+
+			delete	RuleImplementation where RuleID = @ObjectID
+
+			delete	[Rule] where ID = @ObjectID
+		end
+
+		if @Object = 'RuleType'
+		begin
+			set @ClearAttributes = 1
+			set @ClearComments = 1
+			set @ClearIntersects = 1
+			set @ClearFavorites = 1
+			set @ClearFields = 1
+			set @ClearFollows = 1
+			set @ClearIssues = 1
+			set @ClearNyms = 1
+			set @ClearResponsibilities = 1
+
+			delete	Q
+			from	RuleResultQualifier Q 
+					inner join RuleResult S on S.ID = Q.RuleResultID
+					inner join RuleImplementation I on I.ID = S.RuleImplementationID
+					inner join [Rule] R on R.ID = I.RuleID and R.RuleTypeID = @ObjectID
+
+			delete	F
+			from	RuleResultQualifierType F
+					inner join RuleImplementation I on I.ID = F.RuleImplementationID
+					inner join [Rule] R on R.ID = I.RuleID and R.RuleTypeID = @ObjectID
+
+			delete	F
+			from	RuleResultFusionAttribute F
+					inner join RuleResult S on S.ID = F.RuleResultID
+					inner join RuleImplementation I on I.ID = S.RuleImplementationID
+					inner join [Rule] R on R.ID = I.RuleID and R.RuleTypeID = @ObjectID
+
+			delete	S
+			from	RuleResult S
+					inner join RuleImplementation I on I.ID = S.RuleImplementationID
+					inner join [Rule] R on R.ID = I.RuleID and R.RuleTypeID = @ObjectID
+
+			delete [RuleImplementation] where RuleID in (select ID from [Rule] where RuleTypeID = @ObjectID)
+
+			delete [Rule] where RuleTypeID = @ObjectID
+
+			delete RuleType where ID = @ObjectID
+		end
+
+		if @Object = 'SurveyType'
+		begin
+			delete Survey where SurveyTypeID = @ObjectID
+			delete SurveyType where ID = @ObjectID
+		end
+
+		if @Object = 'Taxonomy'
+		begin
+			set @ClearAttributes = 1
+			set @ClearComments = 1
+			set @ClearIntersects = 1
+			set @ClearFavorites = 1
+			set @ClearFields = 1
+			set @ClearFollows = 1
+			set @ClearIssues = 1
+			set @ClearNyms = 1
+			set @ClearResponsibilities = 1
+			set @ClearPromotion = 1
+
+			delete Taxonomy where ID in (select ObjectID from @h)
+		end
+
+		if @Object = 'TaxonomyType'
+		begin
+			set @ClearAttributes = 1
+			set @ClearComments = 1
+			set @ClearIntersects = 1
+			set @ClearFavorites = 1
+			set @ClearFields = 1
+			set @ClearFollows = 1
+			set @ClearIssues = 1
+			set @ClearNyms = 1
+			set @ClearResponsibilities = 1
+			set @ClearSiteNav = 1
+
+			delete Taxonomy where TaxonomyTypeID = @ObjectID
+			delete TaxonomyTypeLevel where TaxonomyTypeID = @ObjectID
+			delete TaxonomyType where ID = @ObjectID
+		end
+
+		
+
+		
+		IF @ClearAttributes = 1 AND @IsType = 0
+		BEGIN
+			delete Field where ObjectType = 'Attribute' and ObjectID in (select ID from Attribute where ObjectType = @Object and ObjectID in (select ObjectID from @h))
+			delete Attribute where ObjectType = @Object and ObjectID in (select ObjectID from @h)
+		END
+
+		
+		IF @ClearIntersects = 1
+		BEGIN
+			DECLARE @tblIntersectIDs table (ID int)
+
+			INSERT INTO @tblIntersectIDs
+				SELECT	ID
+				FROM	[Intersect]
+				WHERE	(Subject = @Object and SubjectID in (select ObjectID from @h)) OR (Object = @Object and ObjectID in (select ObjectID from @h))
+
+			
+			
+			
+
+			delete [Intersect] where ID in (select ID from @tblIntersectIDs)
+		END
+
+		
+		IF @ClearComments = 1 AND @IsType = 0
+		BEGIN
+			delete	CommentRelation
+			where	ObjectType = @Object 
+					and ObjectID in (select ObjectID from @h)
+
+			delete	CommentVote
+			where	CommentID in (
+								select	ID
+								from	Comment
+								where	OwnerObjectType = @Object 
+										and OwnerObjectID in (select ObjectID from @h)			
+								)
+
+			delete	Comment
+			where	OwnerObjectType = @Object 
+					and OwnerObjectID in (select ObjectID from @h)
+		END
+
+		
+		IF @ClearSiteNav = 1
+		BEGIN
+			delete sitenav where objectid = @ObjectID and [object] = @Object
+			
+			
+			delete nav
+			from sitenav nav
+			inner join @ht t on t.ObjectID = nav.ObjectID and nav.Object = @Object;
+		END
+
+		IF @ClearPromotion = 1
+		BEGIN
+			delete from fusion.rulepromotion where objecttype = @Object and objectid = @ObjectID
+		END 
+
+		
+		IF @ClearFavorites = 1
+		BEGIN
+			IF @IsType = 1
+				BEGIN
+					delete	Favorite
+					where	Object = @Object 
+							and ObjectID in (select ObjectID from @ht)
+				END
+			ELSE
+				BEGIN 
+					delete	Favorite
+					where	Object = @Object
+							and ObjectID in (select ObjectID from @h)
+				END
+		END
+
+		
+		IF @ClearFields = 1
+		BEGIN
+			IF @IsType = 1
+				BEGIN
+					delete	FieldType
+					where	[Object] = @Object 
+							and ObjectID in (select ObjectID from @ht)
+				END
+			ELSE
+				BEGIN
+					delete	Field
+					where	ObjectType = @Object 
+							and ObjectID in (select ObjectID from @h)
+				END
+		END
+
+		
+		IF @ClearFollows = 1
+		BEGIN
+			IF @IsType = 1
+				BEGIN
+					delete	Follow
+					where	ObjectType = @Object 
+							and ObjectID in (select ObjectID from @ht)
+				END
+			ELSE
+				BEGIN 
+					delete	Follow
+					where	ObjectType = @Object
+							and ObjectID in (select ObjectID from @h)
+				END
+		END
+
+		
+		IF @ClearIssues = 1 AND @IsType = 0
+		BEGIN
+			delete	Issue
+			where	Object = @Object 
+					and ObjectID in (select ObjectID from @h)
+		END
+
+		
+		IF @ClearNyms = 1 AND @IsType = 0
+		BEGIN
+			IF @IsType = 1
+				BEGIN 
+					delete	NymRelation
+					where	Object = @Object 
+							and ObjectID in (select ObjectID from @ht)			
+				END
+			ELSE
+				BEGIN
+					delete	Nym
+					where	Object = @Object 
+							and ObjectID in (select ObjectID from @h)
+				END
+		END
+
+		
+		IF @ClearResponsibilities = 1 AND @IsType = 0
+		BEGIN
+			IF @IsType = 1
+				BEGIN
+					delete ResponsibilityTypeRelation		where ObjectType = @Obj and ObjectID in (select ObjectID from @ht)
+				END
+			ELSE
+				BEGIN
+					delete	T
+					from	ResponsibilityTypeRelationOverrideItem T
+					where   T.AssetID  in (select ID from @h)
+
+					delete	T
+					from	[ResponsibilityRuleResultAsset] T
+					where   T.AssetID in (select ID from @h)
+				END
+		END
+		
+
+		if @IsType = 1
+		begin
+			delete AttributeTypeRelation			where ObjectType = @Obj AND ObjectID in (select ObjectID from @ht)
+			delete IntersectType					where (Object = @Obj and ObjectID in (select ObjectID from @ht)) OR (Subject = @Obj and SubjectID in (select ObjectID from @ht))
+			delete ObjectStyle						where ObjectType = @Obj AND ObjectID in (select ObjectID from @ht)
+		end
+
+		if exists(Select 1 from @workflowItem)
+		begin
+
+					Delete from [workflow].[ItemAssignment]   
+						where ItemID in (Select wfi.ItemID from @workflowItem wfi )
+
+					Delete  from [workflow].[ItemStepTransition] 
+						where FromItemStepID in (select  wis.ID from workflow.itemstep wis
+								where wis.ItemID in (Select wfi.ItemID from @workflowItem wfi))
+							or ToItemStepID in (select  wis.ID from workflow.itemstep wis
+								where wis.ItemID in (Select wfi.ItemID from @workflowItem wfi));
+
+					Delete  from workflow.itemstep 
+						where ItemID in (Select wfi.ItemID from @workflowItem wfi)
+ 
+					Delete  from [workflow].[Item] 
+						where Id in (Select wfi.ItemID from @workflowItem wfi)
+
+		end
+	
+		
+		commit transaction @trans
+	end try
+	begin catch
+		DECLARE @ErrorMessage NVARCHAR(4000)
+		DECLARE @ErrorSeverity INT
+	    DECLARE @ErrorState INT
+
+		SELECT 
+			@ErrorMessage = ERROR_MESSAGE(),
+			@ErrorSeverity = ERROR_SEVERITY(),
+			@ErrorState = ERROR_STATE()
+
+		
+		
+		
+		RAISERROR (@ErrorMessage, 
+				   @ErrorSeverity, 
+				   @ErrorState 
+				   )
+
+		rollback transaction @trans
+	end catch
+end
+    ]]>
+    </sql>
+    <rollback>
+    <![CDATA[    
+      ALTER procedure [dbo].[DeleteObject]
+ @ObjTemp varchar(50),
+ @ObjectIDTemp int,
+ @ResourceIDTemp int
+as 
+begin
+	set nocount on
+	declare    @Obj varchar(50) = @ObjTemp,
+		@ObjectID int = @ObjectIDTemp,
+		@ResourceID int = @ResourceIDTemp
+	
+	declare    @Object varchar(50) = @Obj,
+		@CurrentDate datetime = getutcdate(),
+		@predicateType int = 0,
+		@trans varchar(25) = 'Trans',
+		@current int = 1,
+		@max int,
+		@IsType bit = 0
+
+	declare @h table (IntersectID int, ID bigint, ObjectID int, Processed bit null)
+	declare @ht table (IntersectTypeID int, ID int, ObjectID int, Processed bit null)
+	declare @workflowItem table (ItemId int)
+	declare @ClearAttributes bit = 0,
+			@ClearComments bit = 0,
+			@ClearIntersects bit = 0,
+			@ClearFavorites bit = 0,
+			@ClearFields bit = 0,
+			@ClearFollows bit = 0,
+			@ClearIssues bit = 0,
+			@ClearNyms bit = 0,
+			@ClearResponsibilities bit = 0,
+			@ClearSiteNav bit = 0,
+			@ClearPromotion bit = 0
+			
+
+	if charindex('Type', @Object) > 0
+	begin
+		set @IsType = 1
+	end
+
+	begin try
+		begin transaction @trans
+
+		insert into @workflowItem
+			select   distinct wi.Id from workflow.type wt
+			inner join workflow.EventRegistration we on
+			we.typeid = wt.id
+			inner join workflow.version wv on
+			wt.id = wv.typeId
+			inner join [workflow].[Item] wi on
+			wv.id = wi.VersionID
+			where  we.changetype <> 3 and wi.[object]=@Obj and wi.objectId=@ObjectID 
+
+		insert into @workflowItem
+			select wi.id from workflow.item wi
+			inner join Issue i on i.id = wi.objectid and wi.object = 'Issue'
+			where i.object = @Obj and i.objectid = @ObjectID
+
+		if @Obj = 'Artifact' or @Obj = 'ArtifactType' or @Obj = 'FusionAttribute' or @Obj = 'FusionAttributeType' or @Obj = 'ReferenceItem' or @Obj = 'ReferenceItemType' or @Obj = 'Rule'
+		begin
+			set @predicateType = 3
+		end
+		if @Obj = 'Policy' or @Obj = 'PolicyType' or @Obj = 'Taxonomy' or @Obj = 'TaxonomyType'
+		begin
+			set @predicateType = 4
+		end
+
+		if @predicateType > 0
+		begin
+			if @IsType = 1
+				begin
+					insert into @ht
+						select	null,
+								ID,
+								ObjectID,
+								0
+						from	AssetType
+						where	[Object] = @Obj and ObjectID = @ObjectID
+
+					while exists(select 1 from @ht where Processed = 0)
+					begin
+						insert into @ht
+							select	I.ID,
+									C.ID,
+									C.ObjectID,
+									null
+							from	AssetType C
+									inner join IntersectType I on I.Subject = @Obj and I.Object = @Obj and I.ObjectID = C.ObjectID and C.[Object] = @Obj
+									inner join [Predicate] PR on PR.ID = I.PredicateID and PR.[Type] = @predicateType
+									inner join AssetType P on P.Object = I.Subject and P.ObjectID = I.SubjectID
+									inner join @ht T on T.ID = P.ID and T.Processed = 0
+
+						update	@ht set Processed = 1 where Processed = 0
+						update	@ht set Processed = 0 where Processed is null
+					end
+
+					
+					insert into @h 
+						select null, ID, ObjectID, 1 from Asset where AssetTypeID in (select ID from @ht)
+				end
+			else
+				begin
+					insert into @h
+						select	null,
+								ID,
+								ObjectID,
+								0
+						from	Asset
+						where	[Object] = @Obj and ObjectID = @ObjectID
+
+					while exists(select 1 from @h where Processed = 0)
+					begin
+						insert into @h
+							select	I.IntersectID,
+									C.ID,
+									C.ObjectID,
+									null
+							from	Asset C
+									inner join PredicateIntersect I on I.PredicateType = @predicateType and I.Subject = @Obj and I.Object = @Obj and I.ObjectID = C.ObjectID
+									inner join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
+									inner join @h T on T.ID = P.ID and T.Processed = 0
+
+						update	@h set Processed = 1 where Processed = 0
+						update	@h set Processed = 0 where Processed is null
+					end
+				end
+		end
+		
+		
+		INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
+			select	'ObjectIndex', 
+					'D',
+					O.Object, 
+					O.ObjectID,
+					O.ID
+			from	Asset O
+					inner join @h I on O.ID = I.ID
+
+		
+		insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)
+			select	O.Object, 
+					O.ObjectID,
+					SUBSTRING(O.DisplayValue,1,250), 
+					@ResourceID, 
+					@CurrentDate, 
+					'Deleted', 
+					O.Object, 
+					O.ObjectID, 
+					O.TypeName, 
+					SUBSTRING(O.DisplayValue,1,250), 
+					'This asset has been removed.' 
+			from	AssetDetail O
+					inner join @h I on O.ID = I.ID
+			union
+			select	O.Object, 
+					O.ObjectID, 
+					O.Name, 
+					@ResourceID, 
+					@CurrentDate, 
+					'Deleted', 
+					O.Object, 
+					O.ObjectID, 
+					O.Name, 
+					O.Name, 
+					'This asset type has been removed.' 
+			from	AssetType O
+					inner join @ht I on O.ID = I.ID
+
+		
+
+		delete	AssetCrossReference
+		where	[Uid] in (select [Uid] 
+						  from Asset A
+							   inner join @h I on I.ID = A.ID)
+
+
+		delete	AssetCrossReference
+		where	[Uid] in (select [Uid] 
+						  from AssetType O
+								inner join @ht I on O.ID = I.ID)
+
+		
+
+		if @Object = 'Artifact'
+		begin
+			set @ClearAttributes = 1
+			set @ClearComments = 1
+			set @ClearIntersects = 1
+			set @ClearFavorites = 1
+			set @ClearFields = 1
+			set @ClearFollows = 1
+			set @ClearIssues = 1
+			set @ClearNyms = 1
+			set @ClearResponsibilities = 1
+			set @ClearPromotion = 1
+
+			delete Artifact where ID in (select ObjectID from @h)
+		end
+
+		if @Object = 'ArtifactType'
+		begin
+			set @ClearAttributes = 1
+			set @ClearComments = 1
+			set @ClearIntersects = 1
+			set @ClearFavorites = 1
+			set @ClearFields = 1
+			set @ClearFollows = 1
+			set @ClearIssues = 1
+			set @ClearNyms = 1
+			set @ClearResponsibilities = 1
+			set @ClearSiteNav = 1			
+			
+			delete	ArtifactTypeExportTemplate
+			where	ArtifactTypeID in (select ObjectID from @ht)
+
+			delete	Artifact
+			where	ID in (select ObjectID from @h)
+
+			delete	ArtifactType			
+			where	ID in (select ObjectID from @ht)
+		end
+
+		if @Object = 'AttributeType'
+		begin
+			declare @at table (ID int)
+			declare @a table (ID int);
+
+			with ht as	(
+						select	ID, 
+								ParentID
+						from	AttributeType
+						where	ID = @ObjectID
+						union all
+						select	C.ID,
+								C.ParentID
+						from	AttributeType C
+								inner join ht P on P.ID = C.ParentID
+						)
+
+			insert into @at 
+				select ID from ht
+
+			insert into @a
+				select ID from Attribute where AttributeTypeID in (select ID from @at)
+
+			
+			insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)
+				select	A.Object, 
+						A.ObjectID, 
+						A.DisplayValue, 
+						@ResourceID, 
+						@CurrentDate, 
+						'Deleted', 
+						'Attribute', 
+						O.ID, 
+						O.Name, 
+						O.FormattedValue, 
+						'This attribute has been removed.' 
+				from	AttributeDetail O
+						inner join AssetDetail A on A.Object = O.ObjectType and A.ObjectID = O.ObjectID
+						inner join @a I on O.ID = I.ID
+				union
+				select	A.Object, 
+						A.ObjectID, 
+						A.Name, 
+						@ResourceID, 
+						@CurrentDate, 
+						'Deleted', 
+						'AttributeType', 
+						O.ID, 
+						'Attribute Type', 
+						O.Name, 
+						'This attribute type has been removed.' 
+				from	AttributeType O
+						inner join @at I on O.ID = I.ID
+						inner join AttributeTypeRelation R on R.AttributeTypeID = O.ID
+						inner join AssetType A on A.Object = R.ObjectType and A.ObjectID = R.ObjectID
+
+			update	T
+			set		T.UpdatedBy = @ResourceID,
+					T.UpdatedOn = @CurrentDate
+			from	Asset T
+					inner join [Attribute] S on S.ObjectType = T.Object and S.ObjectID = T.ObjectID and S.ID in (select ID from @a)
+
+			update	T
+			set		T.UpdatedBy = @ResourceID,
+					T.UpdatedOn = @CurrentDate
+			from	AssetType T
+					inner join AttributeTypeRelation S on S.ObjectType = T.Object and S.ObjectID = T.ObjectID 
+					inner join AttributeType A on A.ID = S.AttributeTypeID and A.ID in (select ID from @at)
+
+			delete Field					where ObjectType = 'Attribute' and ObjectID in (select ID from @a)
+			delete Attribute				where ID in (select ID from @a)
+			delete FieldType				where Object = 'AttributeType' and ObjectID in (select ID from @at)
+			delete AttributeTypeRelation	where AttributeTypeID in (select ID from @at)
+			delete AttributeType			where ID in (select ID from @at)
+		end
+
+		if @Object = 'FieldType'
+		begin
+			
+			insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)
+				select	A.Object, 
+						A.ObjectID, 
+						A.DisplayValue, 
+						@ResourceID, 
+						@CurrentDate, 
+						'Deleted', 
+						A.Object, 
+						A.ObjectID, 
+						T.Name, 
+						O.FormattedValue, 
+						'This field has been removed.' 
+				from	Field O
+						inner join FieldType T on T.ID = O.FieldTypeID and T.ID = @ObjectID
+						inner join AssetDetail A on A.Object = O.ObjectType and A.ObjectID = O.ObjectID
+				union
+				select	A.Object, 
+						A.ObjectID, 
+						A.Name, 
+						@ResourceID, 
+						@CurrentDate, 
+						'Deleted', 
+						'FieldType', 
+						O.ID, 
+						'Field Type', 
+						O.Name, 
+						'This field type has been removed.' 
+				from	FieldType O
+						inner join AssetType A on A.Object = O.Object and A.ObjectID = O.ObjectID and O.ID = @ObjectID
+
+			update	T
+			set		T.UpdatedBy = @ResourceID,
+					T.UpdatedOn = @CurrentDate
+			from	Asset T
+					inner join Field S on S.ObjectType = T.Object and S.ObjectID = T.ObjectID and S.FieldTypeID = @ObjectID
+
+			update	T
+			set		T.UpdatedBy = @ResourceID,
+					T.UpdatedOn = @CurrentDate
+			from	AssetType T
+					inner join FieldType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ID = @ObjectID
+
+			delete	Field 
+			where	FieldTypeID = @ObjectID
+			
+			update	FieldType 
+			set		ParentFieldTypeID = null 
+			where	ParentFieldTypeID = @ObjectID
+
+			delete	FieldType 
+			where	ID = @ObjectID
+		end
+
+		if @Object = 'FusionAttribute'
+		begin
+			set @ClearAttributes = 1
+			set @ClearComments = 1
+			set @ClearIntersects = 1
+			set @ClearFavorites = 1
+			set @ClearFields = 1
+			set @ClearFollows = 1
+			set @ClearIssues = 1
+			set @ClearNyms = 1
+			set @ClearResponsibilities = 1
+			set @ClearPromotion = 1
+
+			delete FusionAttribute where ID in (select ObjectID from @h)
+		end
+
+		if @Object = 'FusionAttributeType'
+		begin
+			set @ClearAttributes = 1
+			set @ClearComments = 1
+			set @ClearIntersects = 1
+			set @ClearFavorites = 1
+			set @ClearFields = 1
+			set @ClearFollows = 1
+			set @ClearIssues = 1
+			set @ClearNyms = 1
+			set @ClearResponsibilities = 1
+
+			delete FusionAttribute		where ID in (select ObjectID from @h)
+			delete FusionAttributeType	where ID in (select ObjectID from @ht)
+		end
+
+		if @Object = 'Fusion'
+		begin
+			set @ClearAttributes = 1
+			set @ClearComments = 1
+			set @ClearFavorites = 1
+			set @ClearFields = 1
+			set @ClearFollows = 1
+			set @ClearIssues = 1
+			set @ClearNyms = 1
+			set @ClearResponsibilities = 1
+
+			
+			
+			
+			
+			
+			
+			
+			
+
+			insert into @h								
+				select I.ID, null, F.ID, null 
+				from [Intersect] I
+				inner join IntersectType T on T.ID = I.IntersectTypeID
+				inner join [Predicate] P on P.ID = T.PredicateID and P.[Type] = 3
+				inner join FusionAttribute F on I.[Subject] = 'FusionAttribute' and I.[Object] = 'FusionAttribute'
+					and (I.SubjectID = F.ID or I.ObjectID = F.ID) and F.FusionID = @ObjectID;
+
+			delete FusionAttribute where FusionID = @ObjectID
+			delete Fusion where ID = @ObjectID
+		end
+
+		if @Object = 'FusionType'
+		begin
+			set @ClearAttributes = 1
+			set @ClearComments = 1
+			set @ClearIntersects = 1
+			set @ClearFavorites = 1
+			set @ClearFields = 1
+			set @ClearFollows = 1
+			set @ClearIssues = 1
+			set @ClearNyms = 1
+			set @ClearResponsibilities = 1
+
+			insert into @ht
+				select	ID, null, null, null
+				from	IntersectType
+				where	Subject = 'FusionAttributeType' 
+						and Object = 'FusionAttributeType' 
+						and (
+							SubjectID in (select ID from FusionAttributeType where FusionTypeID = @ObjectID)
+							or ObjectID in (select ID from FusionAttributeType where FusionTypeID = @ObjectID)
+							)
+
+			insert into @h
+				select ID, null, null, null from [Intersect] where IntersectTypeID in (select IntersectTypeID from @ht)
+
+			delete FusionAttribute where FusionAttributeTypeID in (select ID from FusionAttributeType where FusionTypeID = @ObjectID)
+			delete Fusion where FusionTypeID = @ObjectID
+			delete FusionAttributeType where FusionTypeID = @ObjectID
+			delete FusionType where ID = @ObjectID
+		end
+
+		if @Object = 'Intersect'
+		begin
+			update [Intersect] set Deleted = 1 where ID = @ObjectID
+		end
+
+		if @Object = 'IntersectType'
+		begin
+			set @ClearAttributes = 1
+			set @ClearFields = 1
+
+			delete [Intersect] where IntersectTypeID = @ObjectID
+			delete IntersectType where ID = @ObjectID
+		end
+
+		if @Object = 'LookupType'
+		begin
+			set @ClearFields = 1
+
+			delete [Lookup] where LookupTypeID = @ObjectID
+			delete  LookupType where ID=@ObjectID
+		end
+
+		if @Object = 'Policy'
+		begin
+			set @ClearAttributes = 1
+			set @ClearComments = 1
+			set @ClearIntersects = 1
+			set @ClearFavorites = 1
+			set @ClearFields = 1
+			set @ClearFollows = 1
+			set @ClearIssues = 1
+			set @ClearNyms = 1
+			set @ClearResponsibilities = 1
+			set @ClearPromotion = 1
+
+			delete [Policy] where ID in (select ObjectID from @h)
+		end
+
+		if @Object = 'PolicyType'
+		begin
+			set @ClearAttributes = 1
+			set @ClearComments = 1
+			set @ClearIntersects = 1
+			set @ClearFavorites = 1
+			set @ClearFields = 1
+			set @ClearFollows = 1
+			set @ClearIssues = 1
+			set @ClearNyms = 1
+			set @ClearResponsibilities = 1
+			set @ClearSiteNav = 1
+
+			delete [Policy] where PolicyTypeID in (select ObjectID from @ht)
+			delete PolicyTypeLevel where PolicyTypeID in (select ObjectID from @ht)
+			delete PolicyType where ID in (select ObjectID from @ht)
+		end
+
+		if @Object = 'ReferenceItem'
+		begin
+			set @ClearAttributes = 1
+			set @ClearComments = 1
+			set @ClearIntersects = 1
+			set @ClearFavorites = 1
+			set @ClearFields = 1
+			set @ClearFollows = 1
+			set @ClearIssues = 1
+			set @ClearNyms = 1
+			set @ClearResponsibilities = 1
+
+			delete ReferenceItem where ID = @ObjectID			
+		end
+
+		if @Object = 'ReferenceItemType'
+		begin
+			set @ClearAttributes = 1
+			set @ClearComments = 1
+			set @ClearIntersects = 1
+			set @ClearFavorites = 1
+			set @ClearFields = 1
+			set @ClearFollows = 1
+			set @ClearIssues = 1
+			set @ClearNyms = 1
+			set @ClearResponsibilities = 1
+
+			delete ReferenceItem where ReferenceItemTypeID = @ObjectID
+			delete ReferenceItemType where ID = @ObjectID
+		end
+
+		if @Object = 'ResponsibilityType'
+		begin
+			delete ResponsibilityTypeRelationOverrideItem where ResponsibilityTypeID = @ObjectID
+			delete ResponsibilityTypeRelationRuleResult where ResponsibilityTypeID = @ObjectID
+			delete ResponsibilityTypeRelationRule where ResponsibilityTypeID = @ObjectID
+			delete ResponsibilityType where ID = @ObjectID
+		end
+
+		if @Object = 'Rule'
+		begin
+			set @ClearAttributes = 1
+			set @ClearComments = 1
+			set @ClearIntersects = 1
+			set @ClearFavorites = 1
+			set @ClearFields = 1
+			set @ClearFollows = 1
+			set @ClearIssues = 1
+			set @ClearNyms = 1
+			set @ClearResponsibilities = 1
+
+			
+			delete T
+			from   RuleResultQualifierType T
+				   inner join RuleImplementation I on I.ID = T.RuleImplementationID and I.RuleID = @ObjectID
+
+			delete	Q
+			from	RuleResultQualifier Q 
+					inner join RuleResult S on S.ID = Q.RuleResultID
+					inner join RuleImplementation I on I.ID = S.RuleImplementationID and I.RuleID = @ObjectID
+
+			delete	F
+			from	RuleResultFusionAttribute F
+					inner join RuleResult S on S.ID = F.RuleResultID
+					inner join RuleImplementation I on I.ID = S.RuleImplementationID and I.RuleID = @ObjectID
+
+			delete	RuleImplementation where RuleID = @ObjectID
+
+			delete	[Rule] where ID = @ObjectID
+		end
+
+		if @Object = 'RuleType'
+		begin
+			set @ClearAttributes = 1
+			set @ClearComments = 1
+			set @ClearIntersects = 1
+			set @ClearFavorites = 1
+			set @ClearFields = 1
+			set @ClearFollows = 1
+			set @ClearIssues = 1
+			set @ClearNyms = 1
+			set @ClearResponsibilities = 1
+
+			delete	Q
+			from	RuleResultQualifier Q 
+					inner join RuleResult S on S.ID = Q.RuleResultID
+					inner join RuleImplementation I on I.ID = S.RuleImplementationID
+					inner join [Rule] R on R.ID = I.RuleID and R.RuleTypeID = @ObjectID
+
+			delete	F
+			from	RuleResultQualifierType F
+					inner join RuleImplementation I on I.ID = F.RuleImplementationID
+					inner join [Rule] R on R.ID = I.RuleID and R.RuleTypeID = @ObjectID
+
+			delete	F
+			from	RuleResultFusionAttribute F
+					inner join RuleResult S on S.ID = F.RuleResultID
+					inner join RuleImplementation I on I.ID = S.RuleImplementationID
+					inner join [Rule] R on R.ID = I.RuleID and R.RuleTypeID = @ObjectID
+
+			delete	S
+			from	RuleResult S
+					inner join RuleImplementation I on I.ID = S.RuleImplementationID
+					inner join [Rule] R on R.ID = I.RuleID and R.RuleTypeID = @ObjectID
+
+			delete [RuleImplementation] where RuleID in (select ID from [Rule] where RuleTypeID = @ObjectID)
+
+			delete [Rule] where RuleTypeID = @ObjectID
+
+			delete RuleType where ID = @ObjectID
+		end
+
+		if @Object = 'SurveyType'
+		begin
+			delete Survey where SurveyTypeID = @ObjectID
+			delete SurveyType where ID = @ObjectID
+		end
+
+		if @Object = 'Taxonomy'
+		begin
+			set @ClearAttributes = 1
+			set @ClearComments = 1
+			set @ClearIntersects = 1
+			set @ClearFavorites = 1
+			set @ClearFields = 1
+			set @ClearFollows = 1
+			set @ClearIssues = 1
+			set @ClearNyms = 1
+			set @ClearResponsibilities = 1
+			set @ClearPromotion = 1
+
+			delete Taxonomy where ID in (select ObjectID from @h)
+		end
+
+		if @Object = 'TaxonomyType'
+		begin
+			set @ClearAttributes = 1
+			set @ClearComments = 1
+			set @ClearIntersects = 1
+			set @ClearFavorites = 1
+			set @ClearFields = 1
+			set @ClearFollows = 1
+			set @ClearIssues = 1
+			set @ClearNyms = 1
+			set @ClearResponsibilities = 1
+			set @ClearSiteNav = 1
+
+			delete Taxonomy where TaxonomyTypeID = @ObjectID
+			delete TaxonomyTypeLevel where TaxonomyTypeID = @ObjectID
+			delete TaxonomyType where ID = @ObjectID
+		end
+
+		
+
+		
+		IF @ClearAttributes = 1 AND @IsType = 0
+		BEGIN
+			delete Field where ObjectType = 'Attribute' and ObjectID in (select ID from Attribute where ObjectType = @Object and ObjectID in (select ObjectID from @h))
+			delete Attribute where ObjectType = @Object and ObjectID in (select ObjectID from @h)
+		END
+
+		
+		IF @ClearIntersects = 1
+		BEGIN
+			DECLARE @tblIntersectIDs table (ID int)
+
+			INSERT INTO @tblIntersectIDs
+				SELECT	ID
+				FROM	[Intersect]
+				WHERE	(Subject = @Object and SubjectID in (select ObjectID from @h)) OR (Object = @Object and ObjectID in (select ObjectID from @h))
+
+			
+			
+			
+
+			delete [Intersect] where ID in (select ID from @tblIntersectIDs)
+		END
+
+		
+		IF @ClearComments = 1 AND @IsType = 0
+		BEGIN
+			delete	CommentRelation
+			where	ObjectType = @Object 
+					and ObjectID in (select ObjectID from @h)
+
+			delete	CommentVote
+			where	CommentID in (
+								select	ID
+								from	Comment
+								where	OwnerObjectType = @Object 
+										and OwnerObjectID in (select ObjectID from @h)			
+								)
+
+			delete	Comment
+			where	OwnerObjectType = @Object 
+					and OwnerObjectID in (select ObjectID from @h)
+		END
+
+		
+		IF @ClearSiteNav = 1
+		BEGIN
+			delete sitenav where objectid = @ObjectID and [object] = @Object
+			
+			
+			delete nav
+			from sitenav nav
+			inner join @ht t on t.ObjectID = nav.ObjectID and nav.Object = @Object;
+		END
+
+		IF @ClearPromotion = 1
+		BEGIN
+			delete from fusion.rulepromotion where objecttype = @Object and objectid = @ObjectID
+		END 
+
+		
+		IF @ClearFavorites = 1
+		BEGIN
+			IF @IsType = 1
+				BEGIN
+					delete	Favorite
+					where	Object = @Object 
+							and ObjectID in (select ObjectID from @ht)
+				END
+			ELSE
+				BEGIN 
+					delete	Favorite
+					where	Object = @Object
+							and ObjectID in (select ObjectID from @h)
+				END
+		END
+
+		
+		IF @ClearFields = 1
+		BEGIN
+			IF @IsType = 1
+				BEGIN
+					delete	FieldType
+					where	[Object] = @Object 
+							and ObjectID in (select ObjectID from @ht)
+				END
+			ELSE
+				BEGIN
+					delete	Field
+					where	ObjectType = @Object 
+							and ObjectID in (select ObjectID from @h)
+				END
+		END
+
+		
+		IF @ClearFollows = 1
+		BEGIN
+			IF @IsType = 1
+				BEGIN
+					delete	Follow
+					where	ObjectType = @Object 
+							and ObjectID in (select ObjectID from @ht)
+				END
+			ELSE
+				BEGIN 
+					delete	Follow
+					where	ObjectType = @Object
+							and ObjectID in (select ObjectID from @h)
+				END
+		END
+
+		
+		IF @ClearIssues = 1 AND @IsType = 0
+		BEGIN
+			delete	Issue
+			where	Object = @Object 
+					and ObjectID in (select ObjectID from @h)
+		END
+
+		
+		IF @ClearNyms = 1 AND @IsType = 0
+		BEGIN
+			IF @IsType = 1
+				BEGIN 
+					delete	NymRelation
+					where	Object = @Object 
+							and ObjectID in (select ObjectID from @ht)			
+				END
+			ELSE
+				BEGIN
+					delete	Nym
+					where	Object = @Object 
+							and ObjectID in (select ObjectID from @h)
+				END
+		END
+
+		
+		IF @ClearResponsibilities = 1 AND @IsType = 0
+		BEGIN
+			IF @IsType = 1
+				BEGIN
+					delete ResponsibilityTypeRelation		where ObjectType = @Obj and ObjectID in (select ObjectID from @ht)
+				END
+			ELSE
+				BEGIN
+					delete	T
+					from	ResponsibilityTypeRelationOverrideItem T
+					where   T.AssetID  in (select ID from @h)
+
+					delete	T
+					from	ResponsibilityTypeRelationRuleResult T
+					where   T.AssetID in (select ID from @h)
+				END
+		END
+		
+
+		if @IsType = 1
+		begin
+			delete AttributeTypeRelation			where ObjectType = @Obj AND ObjectID in (select ObjectID from @ht)
+			delete IntersectType					where (Object = @Obj and ObjectID in (select ObjectID from @ht)) OR (Subject = @Obj and SubjectID in (select ObjectID from @ht))
+			delete ObjectStyle						where ObjectType = @Obj AND ObjectID in (select ObjectID from @ht)
+		end
+
+		if exists(Select 1 from @workflowItem)
+		begin
+
+					Delete from [workflow].[ItemAssignment]   
+						where ItemID in (Select wfi.ItemID from @workflowItem wfi )
+
+					Delete  from [workflow].[ItemStepTransition] 
+						where FromItemStepID in (select  wis.ID from workflow.itemstep wis
+								where wis.ItemID in (Select wfi.ItemID from @workflowItem wfi))
+							or ToItemStepID in (select  wis.ID from workflow.itemstep wis
+								where wis.ItemID in (Select wfi.ItemID from @workflowItem wfi));
+
+					Delete  from workflow.itemstep 
+						where ItemID in (Select wfi.ItemID from @workflowItem wfi)
+ 
+					Delete  from [workflow].[Item] 
+						where Id in (Select wfi.ItemID from @workflowItem wfi)
+
+		end
+	
+		
+		commit transaction @trans
+	end try
+	begin catch
+		DECLARE @ErrorMessage NVARCHAR(4000)
+		DECLARE @ErrorSeverity INT
+	    DECLARE @ErrorState INT
+
+		SELECT 
+			@ErrorMessage = ERROR_MESSAGE(),
+			@ErrorSeverity = ERROR_SEVERITY(),
+			@ErrorState = ERROR_STATE()
+
+		
+		
+		
+		RAISERROR (@ErrorMessage, 
+				   @ErrorSeverity, 
+				   @ErrorState 
+				   )
+
+		rollback transaction @trans
+	end catch
+end
+    ]]>    
+    </rollback>
+  </changeSet>
+
+</databaseChangeLog>

@@ -33,6 +33,7 @@ import { DynamicGridComponent } from './dynamic-grid.component';
 import { MultiSelectGridComponent } from './multiselect-grid.component';
 import { SimpleAccordionModule } from '../simple-accordion.part';
 import { DirectivesModule } from '../../../directives/directives.module';
+import { NgxJsonViewModule } from 'ng-json-view';
 
 @NgModule({
     imports: [CommonModule,
@@ -64,6 +65,9 @@ import { DirectivesModule } from '../../../directives/directives.module';
 
         //color picker
         ColorPickerModule,
+
+        //JSON Viewer module
+        NgxJsonViewModule,
     ],
     declarations: [
         DynamicEditorComponent,
