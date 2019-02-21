@@ -72,7 +72,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                 </td>
                                 <td>{{item.IssueTypeName}}</td>
                                 <td>
-                                    <span [innerHtml]="item?.Body"></span>
+                                    <span *ngIf="item.Body" [innerHtml]="item?.Body"></span>
                                 </td>
                                 <td>
                                     <d3s-preview-tooltip [objectType]="item.Object" [objectId]="item.ObjectID">{{item.Name}}</d3s-preview-tooltip>
