@@ -15,7 +15,7 @@
         begin
           DELETE
           FROM assettype
-          WHERE [Object] = 'OrganizationType' and ID NOT IN(SELECT MIN(ID) from assettype where [object] = 'OrganizationType' and objectid = 1)
+          WHERE [Object] = 'OrganizationType' and [ObjectID] = 1 and ID NOT IN(SELECT MIN(ID) from assettype where [object] = 'OrganizationType' and objectid = 1)
         end
       ]]>
     </sql>    
