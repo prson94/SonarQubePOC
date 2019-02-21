@@ -3922,6 +3922,7 @@ namespace d360.web.Controllers
                 ft.ColumnWidth = model.FieldType.ColumnWidth;
                 ft.AllowMultipleValues = model.FieldType.AllowMultipleValues;
                 ft.Increment = model.FieldType.Increment;
+                ft.Precision = model.FieldType.Precision;
                 if (model.FieldType.Type == DataType.Lookup.ToString())
                     ft.ParentFieldTypeID = model.FieldType.ParentFieldTypeID;
                 else

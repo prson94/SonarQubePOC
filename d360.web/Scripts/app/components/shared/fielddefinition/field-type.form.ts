@@ -19,6 +19,8 @@ import { BaseComponent } from '../../shared/base.component';
 
 import * as _ from 'lodash';
 import { createWriteStream } from 'fs';
+import { FormHelper } from '../../../models/form.model';
+import { FormHelpers } from '../../../static/form-helpers';
 
 @Component({
     selector: 'd3s-field-type-form',
@@ -972,22 +974,15 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     }
 
     private validateNumber(value: string) {
-        if (value == 'Number' || value == 'Decimal') {
-
-
-            let min = +this.model.FieldType.MinimumLength;
-            let max = +this.model.FieldType.MaximumLength;
-            let defaultNum = +this.model.FieldType.DefaultValue;
-            let increment = +this.model.FieldType.Increment; 
-            
+        if (value == 'Number' || value == 'Decimal') {            
             if (value == 'Number') {
-                if (increment && increment % 1 != 0) {
+                if (this.model.FieldType.Increment && this.model.FieldType.Increment % 1 != 0) {
                     this.errorMessage = 'Please enter a valid integer.';
                     return;
-                } else if (min && min % 1 != 0) {
+                } else if (this.model.FieldType.MinimumLength && this.model.FieldType.MinimumLength % 1 != 0) {
                     this.errorMessage = 'Please enter a valid integer.';
                     return;
-                } else if (max && max % 1 != 0) {
+                } else if (this.model.FieldType.MaximumLength && this.model.FieldType.MaximumLength % 1 != 0) {
                     this.errorMessage = 'Please enter a valid integer.';
                     return;
                 } else {
@@ -995,20 +990,20 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 }
             }
 
-            if (increment < 0) {
+            if (this.model.FieldType.Increment < 0) {
                 this.errorMessage = 'Please enter a positive number for the increment.';
                 return;
             } else {
                 this.errorMessage = '';
             }
 
-            if (!isNaN(defaultNum)) {
-                if (!isNaN(min) && defaultNum < min) {
-                    this.errorMessage = 'Please enter a minimum value of ' + min + '.';
+            if (FormHelpers.isNumber(this.model.FieldType.DefaultValue)) {
+                if (FormHelpers.isNumber(this.model.FieldType.MinimumLength) && +this.model.FieldType.DefaultValue < this.model.FieldType.MinimumLength) {
+                    this.errorMessage = 'Please enter a minimum value of ' + this.model.FieldType.MinimumLength + '.';
                     return;
                 }
-                else if (!isNaN(max) && defaultNum > max) {
-                    this.errorMessage = 'Please enter a maximum value of ' + max + '.';
+                else if (FormHelpers.isNumber(this.model.FieldType.MaximumLength) && +this.model.FieldType.DefaultValue > this.model.FieldType.MaximumLength) {
+                    this.errorMessage = 'Please enter a maximum value of ' + this.model.FieldType.MaximumLength + '.';
                     return;
                 }
                 else { 
@@ -1016,8 +1011,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 }
             }
 
-            if (!isNaN(min) && !isNaN(max))
-                if (min > max)
+            if (FormHelpers.isNumber(this.model.FieldType.MinimumLength) && FormHelpers.isNumber(this.model.FieldType.MaximumLength))
+                if (this.model.FieldType.MinimumLength > this.model.FieldType.MaximumLength)
                     this.errorMessage = 'Please enter a minimum value which is lower than the maximum value.';
                 else
                     this.errorMessage = '';
@@ -1025,7 +1020,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.errorMessage = '';
         }
     }
-
+    
     private CheckMinRequired(fem: FieldTypeEditorModel) {
         if (!fem) {
             return;

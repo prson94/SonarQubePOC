@@ -1,0 +1,31 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="BHoward" id="GOV-6299-b">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[
+			IF COL_LENGTH('[dbo].[FieldType]','Precision') IS NULL
+			BEGIN
+			  ALTER TABLE [dbo].[FieldType]
+			  ADD Precision int 
+			END
+		]]>
+    </sql>
+    <rollback>
+	<![CDATA[
+		IF COL_LENGTH('[dbo].[FieldType]','Precision') IS NOT NULL
+		BEGIN
+		  ALTER TABLE [dbo].[FieldType]
+		  DROP COLUMN Precision
+		END
+      ]]>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>
