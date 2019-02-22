@@ -232,7 +232,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             if (this.field.FieldType == 'Number') {
                 if (elem.value.split('.').length > 1 ||
                     elem.value.split('+').length > 1 ||
-                    elem.value.split('-').length > 1 ||
+                    (elem.value.indexOf('-') != 0 && elem.value.split('-').length > 1) ||
                     elem.value.split('e').length > 1 ||
                     elem.value.split('E').length > 1) {
                     if (this.field.FieldName == elem.name) {
@@ -242,7 +242,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             } else if (this.field.FieldType == 'Decimal') {
                 if (elem.value.split('.').length > 2 ||
                     elem.value.split('+').length > 1 ||
-                    elem.value.split('-').length > 1 ||
+                    (elem.value.indexOf('-') != 0 && elem.value.split('-').length > 1) ||
                     elem.value.split('e').length > 1 ||
                     elem.value.split('E').length > 1) {
                     if (this.field.FieldName == elem.name) {
