@@ -77,13 +77,13 @@
     </rollback>
   </changeSet>
 
-  <changeSet author="KMcNamee" id="GOV-6258-Update-ResDetail-View-B">
+  <changeSet author="KMcNamee" id="GOV-6258-Update-ResDetail-View-C">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="true">
       <![CDATA[      
-  create or alter  VIEW [dbo].[ResponsibilityDetail] AS  		
+  create or alter VIEW [dbo].[ResponsibilityDetail] AS  		
        select 
 	      r.id as RuleID,
 	      r.ResponsibilityTypeID as ResponsibilityTypeID,  
@@ -111,7 +111,7 @@
 	      inner join [ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)	      
          inner join ResponsibilityType RT on RT.ID = r.ResponsibilityTypeID  
          left join Asset A on ( (A.ID = rasset.AssetID)  )           		 
-         inner join reporting.Global_Resource RES on RES.ResourceID = rresource.SecurityAssetID and rresource.SecurityAsset = 'R' 
+         inner join reporting.Global_Resource RES on RES.ResourceID = rresource.SecurityAssetID and rresource.SecurityAsset = 'R'
        where RES.State=1
 	   union select 
 	      r.id as RuleID,
@@ -230,7 +230,7 @@
 			inner join [dbo].[ResponsibilityTypeRelation] RR on (att.[object] = RR.[objectType] and att.objectid = RR.[Objectid] and RR.ResponsibilityTypeID = oride.ResponsibilityTypeID)						
 			inner join [Group] G on oride.SecurityAsset = 'G' and G.ID = oride.SecurityAssetID  
 			inner join ResourceGroup RG on RG.GroupID = G.ID           
-			inner join reporting.Global_Resource RES on RES.ResourceID = RG.ResourceID
+			inner join reporting.Global_Resource RES on RES.ResourceID = RG.ResourceID and RES.[State] = 1
 		    ]]>
     </sql>
     <rollback>
