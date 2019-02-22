@@ -1,0 +1,793 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="MDonato" id="GOV-4770-C-procs">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[
+ALTER procedure [fusion].[LoadMarkitMapLineageData]
+	@fusionID int
+as
+begin
+	SET NOCOUNT, ANSI_PADDING ON;
+	SET ANSI_WARNINGS ON;
+
+	declare @databaseName varchar(100);
+	declare @sourceFieldTypeID int;
+	declare @targetFieldTypeID int;		
+	declare @mapFusionAttributeTypeID int = 710; 
+	declare @viewColumnFusionAttributeTypeID int = 715; 
+	
+	
+	select @sourceFieldTypeID = id from fieldtype where [object] = 'FusionAttributeType' and [objectid] = @mapFusionAttributeTypeID and name = 'source';
+	select @targetFieldTypeID = id from fieldtype where [object] = 'FusionAttributeType' and [objectid] = @mapFusionAttributeTypeID and name = 'target';
+	
+	IF @sourceFieldTypeID IS NULL
+	begin		
+		raiserror('ERROR - Cannot find the Markit Fusion Map Source Field.  Please make sure the latest markit fusion attribute types have been pushed to this environment', 16, -1);
+		return;
+	end
+
+	IF @targetFieldTypeID IS NULL
+	begin		
+		raiserror('ERROR - Cannot find the Markit Fusion Map Target Field.  Please make sure the latest markit fusion attribute types have been pushed to this environment', 16, -1);
+		return;
+	end
+
+	
+	select top 1 @databaseName = substring(sourceid, 0,charindex('.',sourceid)+1) from fusionattribute where fusionid = @fusionID and fusionattributetypeid = 711 and sourceid like '%.%';	
+
+	if @databaseName is null
+	begin
+		raiserror('ERROR - Cannot determine the database name to strip from markit fusion attribute data', 16, -1);
+		return;
+	end
+
+	
+	declare @fusionTypeId int;
+	select @fusionTypeId = FusionTypeID from [dbo].[Fusion] where ID = @fusionID;
+	if @fusionTypeId != 13
+	begin
+		raiserror('ERROR - The fusion lineage generation process may only be run for the Markit Fusion Type', 16, -1);
+		return;
+	end
+
+	
+	if not exists( select 1 from fusionattribute where fusionid = @fusionID and fusionattributetypeid = @mapFusionAttributeTypeID )
+	begin
+		raiserror('ERROR - No Markit Fusion Map records exist for the specified Fusion ID', 16, -1);
+		return;
+	end
+
+	
+	declare @fusionName nvarchar(250);
+	select @fusionName = name from [dbo].[fusion] where id = @fusionID;
+
+	begin
+		print 'Running For Fusion:' + @fusionName;
+		print 'Using Target Field ID:' + cast(@targetFieldTypeID as varchar(100));
+		print 'Using Source Field ID:' + cast(@sourceFieldTypeID as varchar(100));
+		print 'Using Database prefix:' + @databaseName;
+	end
+	
+
+	
+	declare @viewTableIntersectTypeId int;
+	select @viewTableIntersectTypeId = id from intersecttype where [object] = 'FusionAttributeType' and [Subject] = 'FusionAttributeType' and [subjectid] = 714 and [objectid] = 712
+	if @viewTableIntersectTypeId is null
+	begin
+		raiserror('ERROR - Cannot identify the intersecttypeid for markit view/table relations', 16, -1);
+		return;
+	end
+
+	
+	declare @viewViewIntersectTypeId int;
+	select @viewViewIntersectTypeId = id from intersecttype where [object] = 'FusionAttributeType' and [Subject] = 'FusionAttributeType' and [subjectid] = 714 and [objectid] = 714
+	if @viewViewIntersectTypeId is null
+	begin
+		raiserror('ERROR - Cannot identify the intersecttypeid for markit view/view relations', 16, -1);
+		return;
+	end
+
+	IF OBJECT_ID('tempdb..#maps') IS NOT NULL
+		DROP TABLE #maps;
+
+	create table #maps (	
+		ID int identity primary key,			
+		MapRuleItemID int,
+		SourceFusionAttributeID int,
+		SourceFusionAttributeTypeID int,
+		SourceObject nvarchar(500),		
+		SourceParentObject nvarchar(max),
+		SourceParentObjectFusionAttributeID int,
+		SourceParentObjectFusionAttributeTypeID int,
+		TargetFusionAttributeID int,
+		TargetFusionAttributeTypeID int,
+		TargetObject nvarchar(500),
+		TargetParentObject nvarchar(max),
+		TargetParentObjectFusionAttributeID int,
+		TargetParentObjectFusionAttributeTypeID int,					
+		SourceAssetID bigint,
+		TargetAssetID bigint
+	);
+
+	CREATE NONCLUSTERED INDEX [CIX_TempMaps] ON #maps ( SourceFusionAttributeID ASC, TargetFusionAttributeID ASC );
+
+	insert into #maps
+		(SourceObject, TargetObject)
+		select distinct
+			replace(cast(F_source.formattedValue as nvarchar(500)), @databaseName, '') as SourceObject						
+			, replace(cast(F_target.formattedValue as nvarchar(500)), @databaseName, '') as TargetObject			
+		from 
+			FusionAttribute FA
+			inner join Field F_source on F_source.ObjectType = 'FusionAttribute' and F_source.ObjectID = FA.ID and F_source.FieldTypeID = @sourceFieldTypeID 
+			inner join Field F_target on F_target.ObjectType = 'FusionAttribute' and F_target.ObjectID = FA.ID and F_target.FieldTypeID = @targetFieldTypeID 
+		where 
+			FA.FusionID = @fusionID
+				and
+			FA.FusionAttributeTypeID = @mapFusionAttributeTypeID
+			
+
+	
+	declare @mapRecordCount int;
+	select @mapRecordCount = count(1) from #maps
+	if @fusionTypeId > 0
+		begin
+			print 'Loaded [' + cast(@mapRecordCount as varchar) + '] map records';			
+		end
+	else
+		begin
+			raiserror('ERROR - Could not load any map records this is most likely because there are no corresponding fusionattributes for the markit source/target mappings.', 16, -1);
+			return;
+		end
+
+			
+	
+	update	T
+	set		T.SourceFusionAttributeID = S.ID, T.SourceFusionAttributeTypeID = S.FusionAttributeTypeID
+	from	#maps T			
+			inner join fusionattribute S on (S.TextPath = T.SourceObject and S.FusionID = @fusionID)
+
+	
+	update	T
+	set		T.TargetFusionAttributeID = S.ID, T.TargetFusionAttributeTypeID = S.FusionAttributeTypeID
+	from	#maps T			
+			inner join fusionattribute S on (S.TextPath = T.TargetObject and S.FusionID = @fusionID)
+
+	
+	delete from #maps where SourceFusionAttributeID is null or TargetFusionAttributeID is null		
+	
+	
+	update T
+	set T.SourceParentObject = FA_p.TextPath, T.SourceParentObjectFusionAttributeID = FA_p.ID, T.SourceParentObjectFusionAttributeTypeID = FA_p.FusionAttributeTypeID
+	from #maps T
+		inner join fusionattribute FA on (FA.ID = T.SourceFusionAttributeID)
+		inner join fusionattribute FA_p on (FA_p.ID = FA.ParentID)
+
+	
+	update T
+	set T.TargetParentObject = FA_p.TextPath, T.TargetParentObjectFusionAttributeID = FA_p.ID, T.TargetParentObjectFusionAttributeTypeID = FA_p.FusionAttributeTypeID
+	from #maps T
+		inner join fusionattribute FA on (FA.ID = T.TargetFusionAttributeID)
+		inner join fusionattribute FA_p on (FA_p.ID = FA.ParentID)
+
+	
+	delete from #maps where SourceFusionAttributeID = TargetFusionAttributeID;
+
+	
+	insert into #maps
+		(SourceFusionAttributeID, SourceFusionAttributeTypeID, SourceObject, SourceParentObjectFusionAttributeID, SourceParentObject, SourceParentObjectFusionAttributeTypeID, TargetFusionAttributeID, TargetFusionAttributeTypeID, TargetObject, TargetParentObjectFusionAttributeID, TargetParentObject, TargetParentObjectFusionAttributeTypeID)
+		select 	distinct
+			m.TargetFusionAttributeID as SourceFusionAttributeID,
+			m.TargetFusionAttributeTypeID as SourceFusionAttributeTypeID,
+			m.TargetObject as SourceObject,
+			m.TargetParentObjectFusionAttributeID as SourceParentObjectFusionAttributeID,
+			m.TargetParentObject as SourceParentObject,
+			m.TargetParentObjectFusionAttributeTypeID as SourceParentObjectFusionAttributeTypeID,
+			T.id as TargetFusionAttributeID,
+			T.fusionattributetypeid as TargetFusionAttributeTypeID,
+			T.textpath as TargetObject,
+			i.objectid as TargetParentObjectFusionAttributeID,
+			T_p.name as TargetParentObject,
+			T_p.fusionattributetypeid as TargetParentObjectFusionAttributeTypeID			
+		 from 
+			#maps m			
+			inner join [intersect] i on (i.subjectid = m.TargetParentObjectFusionAttributeID and i.[subject] = 'FusionAttribute')	
+			inner join fusionattribute T_p on (T_p.id = i.objectid)
+			inner join fusionattribute T on(T.parentid = T_p.id and T.Textpath = T_p.TextPath + replace(m.TargetObject,m.TargetParentObject,'')) 
+		where 
+			m.TargetFusionAttributeTypeID = @viewColumnFusionAttributeTypeID
+				and
+			i.intersecttypeid = @viewTableIntersectTypeId
+				and
+			m.id not in(select m_2.id from #maps m_2 where (m_2.SourceFusionAttributeID = m.TargetFusionAttributeID and m_2.TargetFusionAttributeID = T.Id) or (m_2.TargetFusionAttributeID = m.TargetFusionAttributeID and m_2.SourceFusionAttributeID = T.id)) 
+	
+	
+	insert into #maps
+		(TargetFusionAttributeID, TargetFusionAttributeTypeID, TargetObject, TargetParentObjectFusionAttributeID, TargetParentObject, TargetParentObjectFusionAttributeTypeID, SourceFusionAttributeID, SourceFusionAttributeTypeID, SourceObject, SourceParentObjectFusionAttributeID, SourceParentObject, SourceParentObjectFusionAttributeTypeID)
+		select 	distinct
+			m.SourceFusionAttributeID as TargetFusionAttributeID,
+			m.SourceFusionAttributeTypeID as TargetFusionAttributeTypeID,
+			m.SourceObject as TargetObject,
+			m.SourceParentObjectFusionAttributeID as TargetParentObjectFusionAttributeID,
+			m.SourceParentObject as TargetParentObject,
+			m.SourceParentObjectFusionAttributeTypeID as TargetParentObjectFusionAttributeTypeID,
+			T.id as SourceFusionAttributeID,
+			T.fusionattributetypeid as SourceFusionAttributeTypeID,
+			T.textpath as SourceObject,
+			i.objectid as SourceParentObjectFusionAttributeID,
+			T_p.name as SourceParentObject,
+			T_p.fusionattributetypeid as SourceParentObjectFusionAttributeTypeID			
+		 from 
+			#maps m			
+			inner join [intersect] i on (i.subjectid = m.SourceParentObjectFusionAttributeID and i.[subject] = 'FusionAttribute')	
+			inner join fusionattribute T_p on (T_p.id = i.objectid)
+			inner join fusionattribute T on(T.parentid = T_p.id and T.Textpath = T_p.TextPath + replace(m.SourceObject,m.SourceParentObject,'')) 
+		where 
+			m.SourceFusionAttributeTypeID = @viewColumnFusionAttributeTypeID
+				and
+			i.intersecttypeid = @viewTableIntersectTypeId
+				and
+			m.id not in(select m_2.id from #maps m_2 where (m_2.SourceFusionAttributeID = T.Id and m_2.TargetFusionAttributeID = m.SourceFusionAttributeID) or (m_2.TargetFusionAttributeID = T.id  and m_2.SourceFusionAttributeID = m.SourceFusionAttributeID)) 
+					
+	
+	insert into #maps
+		(SourceFusionAttributeID, SourceFusionAttributeTypeID, SourceObject, SourceParentObjectFusionAttributeID, SourceParentObject, SourceParentObjectFusionAttributeTypeID, TargetFusionAttributeID, TargetFusionAttributeTypeID, TargetObject, TargetParentObjectFusionAttributeID, TargetParentObject, TargetParentObjectFusionAttributeTypeID)
+		select 	distinct
+			m.TargetFusionAttributeID as SourceFusionAttributeID,
+			m.TargetFusionAttributeTypeID as SourceFusionAttributeTypeID,
+			m.TargetObject as SourceObject,
+			m.TargetParentObjectFusionAttributeID as SourceParentObjectFusionAttributeID,
+			m.TargetParentObject as SourceParentObject,
+			m.TargetParentObjectFusionAttributeTypeID as SourceParentObjectFusionAttributeTypeID,
+			T.id as TargetFusionAttributeID,
+			T.fusionattributetypeid as TargetFusionAttributeTypeID,
+			T.textpath as TargetObject,
+			i.objectid as TargetParentObjectFusionAttributeID,
+			T_p.name as TargetParentObject,
+			T_p.fusionattributetypeid as TargetParentObjectFusionAttributeTypeID			
+		 from 
+			#maps m			
+			inner join [intersect] i on (i.objectid = m.TargetParentObjectFusionAttributeID and i.[object] = 'FusionAttribute')	
+			inner join fusionattribute T_p on (T_p.id = i.subjectid)
+			inner join fusionattribute T on(T.FusionId = @fusionId and T.deleted = 0 and T.parentid = T_p.id and T.Textpath = T_p.TextPath + replace(m.TargetObject,m.TargetParentObject,'')) 
+		where 
+			m.TargetFusionAttributeTypeID = @viewColumnFusionAttributeTypeID
+				and
+			i.intersecttypeid = @viewViewIntersectTypeId
+				and
+			m.id not in(select m_2.id from #maps m_2 where (m_2.SourceFusionAttributeID = m.TargetFusionAttributeID and m_2.TargetFusionAttributeID = T.Id) or (m_2.TargetFusionAttributeID = m.TargetFusionAttributeID and m_2.SourceFusionAttributeID = T.id)) 
+
+	
+	insert into #maps
+		(TargetFusionAttributeID, TargetFusionAttributeTypeID, TargetObject, TargetParentObjectFusionAttributeID, TargetParentObject, TargetParentObjectFusionAttributeTypeID, SourceFusionAttributeID, SourceFusionAttributeTypeID, SourceObject, SourceParentObjectFusionAttributeID, SourceParentObject, SourceParentObjectFusionAttributeTypeID)
+		select 	distinct
+			m.SourceFusionAttributeID as TargetFusionAttributeID,
+			m.SourceFusionAttributeTypeID as TargetFusionAttributeTypeID,
+			m.SourceObject as TargetObject,
+			m.SourceParentObjectFusionAttributeID as TargetParentObjectFusionAttributeID,
+			m.SourceParentObject as TargetParentObject,
+			m.SourceParentObjectFusionAttributeTypeID as TargetParentObjectFusionAttributeTypeID,
+			T.id as SourceFusionAttributeID,
+			T.fusionattributetypeid as SourceFusionAttributeTypeID,
+			T.textpath as SourceObject,
+			i.objectid as SourceParentObjectFusionAttributeID,
+			T_p.name as SourceParentObject,
+			T_p.fusionattributetypeid as SourceParentObjectFusionAttributeTypeID			
+		 from 
+			#maps m			
+			inner join [intersect] i on (i.subjectid = m.SourceParentObjectFusionAttributeID and i.[subject] = 'FusionAttribute')	
+			inner join fusionattribute T_p on (T_p.id = i.objectid)
+			inner join fusionattribute T on(T.FusionId = @fusionId and T.deleted = 0 and T.parentid = T_p.id and T.Textpath = T_p.TextPath + replace(m.SourceObject,m.SourceParentObject,'')) 
+		where 
+			m.SourceFusionAttributeTypeID = @viewColumnFusionAttributeTypeID
+				and
+			i.intersecttypeid = @viewViewIntersectTypeId
+				and
+			m.id not in(select m_2.id from #maps m_2 where (m_2.SourceFusionAttributeID = T.Id and m_2.TargetFusionAttributeID = m.SourceFusionAttributeID) or (m_2.TargetFusionAttributeID = T.id  and m_2.SourceFusionAttributeID = m.SourceFusionAttributeID)) 
+
+
+	IF OBJECT_ID('tempdb..#objectmap') IS NOT NULL
+	DROP TABLE #objectmap;
+
+	create table #objectmap (
+		FusionAttributeID int,
+		ObjectAssetID bigint	
+	)
+
+	CREATE NONCLUSTERED INDEX [CIX_TempObjectMap] ON #objectmap ( FusionAttributeID ASC, ObjectAssetID ASC );
+	
+	
+	insert into #objectMap (FusionAttributeID, ObjectAssetID)
+	select distinct 
+		M.FusionAttributeID, 
+		A.ID as ObjectAssetID
+	from
+	(
+	select  SourceFusionAttributeID as FusionAttributeID from #maps
+	union all
+	select  TargetFusionAttributeID as FusionAttributeID from #maps
+	) M
+	inner join [IntersectDetail] OI on OI.[Subject] <> 'FusionAttribute' and OI.[Object] = 'FusionAttribute' and OI.ObjectID = M.FusionAttributeID and OI.PredicateType = 8	
+	inner join Asset A on A.[Object] = OI.[Subject] and A.ObjectID = OI.SubjectID
+
+	update T
+	set T.sourceAssetId = A.ID
+	from #maps T
+		inner join [IntersectDetail] OI on OI.Subject <> 'FusionAttribute' and OI.Object = 'FusionAttribute' and OI.ObjectID = T.SourceParentObjectFusionAttributeID  and OI.PredicateType = 8 
+		inner join Asset A on A.[object] = OI.[subject] and A.ObjectID = OI.subjectid
+	
+	
+	update T
+	set T.targetAssetId = A.ID
+	from #maps T
+		inner join [IntersectDetail] OI on OI.Subject <> 'FusionAttribute' and OI.Object = 'FusionAttribute' and OI.ObjectID = T.TargetParentObjectFusionAttributeID and OI.PredicateType = 8
+		inner join Asset A on A.[object] = OI.subject and A.ObjectID = OI.subjectID
+	
+
+	
+	truncate table [fusion].MarkitLineageData
+	truncate table [fusion].MarkitLineageMapToBusinessItems
+
+	--populate source/target later to avoid duplicates
+	insert into [fusion].MarkitLineageData (MapRuleItemID,SourceFusionAttributeID,SourceFusionAttributeTypeID,SourceObject,		
+SourceParentObject,SourceParentObjectFusionAttributeID,SourceParentObjectFusionAttributeTypeID,TargetFusionAttributeID,
+TargetFusionAttributeTypeID,TargetObject,TargetParentObject,TargetParentObjectFusionAttributeID,TargetParentObjectFusionAttributeTypeID,					
+UpdatedOn,SourceAssetId,TargetAssetId)
+		select distinct
+			MapRuleItemID,
+			SourceFusionAttributeID,
+			SourceFusionAttributeTypeID,
+			null as SourceObject,		
+			null as SourceParentObject,
+			SourceParentObjectFusionAttributeID,
+			SourceParentObjectFusionAttributeTypeID,
+			TargetFusionAttributeID,
+			TargetFusionAttributeTypeID,
+			null as TargetObject,
+			null as TargetParentObject,
+			TargetParentObjectFusionAttributeID,
+			TargetParentObjectFusionAttributeTypeID,					
+			getutcdate() as UpdatedOn,
+			SourceAssetId,
+			TargetAssetId
+		from
+			#maps;
+
+	update D
+	set D.SourceObject = M.SourceObject,
+	D.SourceParentObject = M.SourceParentObject,
+	D.TargetObject = M.TargetObject,
+	D.TargetParentObject = M.TargetParentObject
+	from [fusion].MarkitLineageData D
+	cross apply (
+		select top 1 SourceObject, SourceParentObject, TargetObject, TargetParentObject from #maps s
+		where s.SourceFusionAttributeID = D.SourceFusionAttributeID and s.TargetFusionAttributeID = D.TargetFusionAttributeID) M;
+
+
+	insert into [fusion].MarkitLineageMapToBusinessItems (FusionAttributeID, ObjectAssetID)
+		select
+			FusionAttributeID,
+			ObjectAssetID
+		from 
+			#objectmap;
+
+		print 'Saved results to temporary table for webjob processing'
+end
+			
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+ALTER procedure [fusion].[LoadMarkitMapLineageData]
+	@fusionID int
+as
+begin
+	SET NOCOUNT, ANSI_PADDING ON;
+	SET ANSI_WARNINGS ON;
+
+	declare @databaseName varchar(100);
+	declare @sourceFieldTypeID int;
+	declare @targetFieldTypeID int;		
+	declare @mapFusionAttributeTypeID int = 710; 
+	declare @viewColumnFusionAttributeTypeID int = 715; 
+	
+	
+	select @sourceFieldTypeID = id from fieldtype where [object] = 'FusionAttributeType' and [objectid] = @mapFusionAttributeTypeID and name = 'source';
+	select @targetFieldTypeID = id from fieldtype where [object] = 'FusionAttributeType' and [objectid] = @mapFusionAttributeTypeID and name = 'target';
+	
+	IF @sourceFieldTypeID IS NULL
+	begin		
+		raiserror('ERROR - Cannot find the Markit Fusion Map Source Field.  Please make sure the latest markit fusion attribute types have been pushed to this environment', 16, -1);
+		return;
+	end
+
+	IF @targetFieldTypeID IS NULL
+	begin		
+		raiserror('ERROR - Cannot find the Markit Fusion Map Target Field.  Please make sure the latest markit fusion attribute types have been pushed to this environment', 16, -1);
+		return;
+	end
+
+	
+	select top 1 @databaseName = substring(sourceid, 0,charindex('.',sourceid)+1) from fusionattribute where fusionid = @fusionID and fusionattributetypeid = 711 and sourceid like '%.%';	
+
+	if @databaseName is null
+	begin
+		raiserror('ERROR - Cannot determine the database name to strip from markit fusion attribute data', 16, -1);
+		return;
+	end
+
+	
+	declare @fusionTypeId int;
+	select @fusionTypeId = FusionTypeID from [dbo].[Fusion] where ID = @fusionID;
+	if @fusionTypeId != 13
+	begin
+		raiserror('ERROR - The fusion lineage generation process may only be run for the Markit Fusion Type', 16, -1);
+		return;
+	end
+
+	
+	if not exists( select 1 from fusionattribute where fusionid = @fusionID and fusionattributetypeid = @mapFusionAttributeTypeID )
+	begin
+		raiserror('ERROR - No Markit Fusion Map records exist for the specified Fusion ID', 16, -1);
+		return;
+	end
+
+	
+	declare @fusionName nvarchar(250);
+	select @fusionName = name from [dbo].[fusion] where id = @fusionID;
+
+	begin
+		print 'Running For Fusion:' + @fusionName;
+		print 'Using Target Field ID:' + cast(@targetFieldTypeID as varchar(100));
+		print 'Using Source Field ID:' + cast(@sourceFieldTypeID as varchar(100));
+		print 'Using Database prefix:' + @databaseName;
+	end
+	
+
+	
+	declare @viewTableIntersectTypeId int;
+	select @viewTableIntersectTypeId = id from intersecttype where [object] = 'FusionAttributeType' and [Subject] = 'FusionAttributeType' and [subjectid] = 714 and [objectid] = 712
+	if @viewTableIntersectTypeId is null
+	begin
+		raiserror('ERROR - Cannot identify the intersecttypeid for markit view/table relations', 16, -1);
+		return;
+	end
+
+	
+	declare @viewViewIntersectTypeId int;
+	select @viewViewIntersectTypeId = id from intersecttype where [object] = 'FusionAttributeType' and [Subject] = 'FusionAttributeType' and [subjectid] = 714 and [objectid] = 714
+	if @viewViewIntersectTypeId is null
+	begin
+		raiserror('ERROR - Cannot identify the intersecttypeid for markit view/view relations', 16, -1);
+		return;
+	end
+
+	IF OBJECT_ID('tempdb..#maps') IS NOT NULL
+		DROP TABLE #maps;
+
+	create table #maps (	
+		ID int identity primary key,			
+		MapRuleItemID int,
+		[ParentID] int,
+		[UltimateParentID] int,
+		[Level] int,
+		SourceFusionAttributeID int,
+		SourceFusionAttributeTypeID int,
+		SourceObject nvarchar(500),		
+		SourceParentObject nvarchar(max),
+		SourceParentObjectFusionAttributeID int,
+		SourceParentObjectFusionAttributeTypeID int,
+		TargetFusionAttributeID int,
+		TargetFusionAttributeTypeID int,
+		TargetObject nvarchar(500),
+		TargetParentObject nvarchar(max),
+		TargetParentObjectFusionAttributeID int,
+		TargetParentObjectFusionAttributeTypeID int,					
+		SourceAssetID bigint,
+		TargetAssetID bigint
+	);
+
+	CREATE NONCLUSTERED INDEX [CIX_TempMaps] ON #maps ( SourceFusionAttributeID ASC, TargetFusionAttributeID ASC );
+
+	insert into #maps
+		(SourceObject, TargetObject)
+		select distinct
+			replace(cast(F_source.formattedValue as nvarchar(500)), @databaseName, '') as SourceObject						
+			, replace(cast(F_target.formattedValue as nvarchar(500)), @databaseName, '') as TargetObject			
+		from 
+			FusionAttribute FA
+			inner join Field F_source on F_source.ObjectType = 'FusionAttribute' and F_source.ObjectID = FA.ID and F_source.FieldTypeID = @sourceFieldTypeID 
+			inner join Field F_target on F_target.ObjectType = 'FusionAttribute' and F_target.ObjectID = FA.ID and F_target.FieldTypeID = @targetFieldTypeID 
+		where 
+			FA.FusionID = @fusionID
+				and
+			FA.FusionAttributeTypeID = @mapFusionAttributeTypeID
+			
+
+	
+	declare @mapRecordCount int;
+	select @mapRecordCount = count(1) from #maps
+	if @fusionTypeId > 0
+		begin
+			print 'Loaded [' + cast(@mapRecordCount as varchar) + '] map records';			
+		end
+	else
+		begin
+			raiserror('ERROR - Could not load any map records this is most likely because there are no corresponding fusionattributes for the markit source/target mappings.', 16, -1);
+			return;
+		end
+
+			
+	
+	update	T
+	set		T.SourceFusionAttributeID = S.ID, T.SourceFusionAttributeTypeID = S.FusionAttributeTypeID
+	from	#maps T			
+			inner join fusionattribute S on (S.TextPath = T.SourceObject and S.FusionID = @fusionID)
+
+	
+	update	T
+	set		T.TargetFusionAttributeID = S.ID, T.TargetFusionAttributeTypeID = S.FusionAttributeTypeID
+	from	#maps T			
+			inner join fusionattribute S on (S.TextPath = T.TargetObject and S.FusionID = @fusionID)
+
+	
+	delete from #maps where SourceFusionAttributeID is null or TargetFusionAttributeID is null		
+	
+	
+	update T
+	set T.SourceParentObject = FA_p.TextPath, T.SourceParentObjectFusionAttributeID = FA_p.ID, T.SourceParentObjectFusionAttributeTypeID = FA_p.FusionAttributeTypeID
+	from #maps T
+		inner join fusionattribute FA on (FA.ID = T.SourceFusionAttributeID)
+		inner join fusionattribute FA_p on (FA_p.ID = FA.ParentID)
+
+	
+	update T
+	set T.TargetParentObject = FA_p.TextPath, T.TargetParentObjectFusionAttributeID = FA_p.ID, T.TargetParentObjectFusionAttributeTypeID = FA_p.FusionAttributeTypeID
+	from #maps T
+		inner join fusionattribute FA on (FA.ID = T.TargetFusionAttributeID)
+		inner join fusionattribute FA_p on (FA_p.ID = FA.ParentID)
+
+	
+	delete from #maps where SourceFusionAttributeID = TargetFusionAttributeID;
+
+	
+	insert into #maps
+		(SourceFusionAttributeID, SourceFusionAttributeTypeID, SourceObject, SourceParentObjectFusionAttributeID, SourceParentObject, SourceParentObjectFusionAttributeTypeID, TargetFusionAttributeID, TargetFusionAttributeTypeID, TargetObject, TargetParentObjectFusionAttributeID, TargetParentObject, TargetParentObjectFusionAttributeTypeID)
+		select 	distinct
+			m.TargetFusionAttributeID as SourceFusionAttributeID,
+			m.TargetFusionAttributeTypeID as SourceFusionAttributeTypeID,
+			m.TargetObject as SourceObject,
+			m.TargetParentObjectFusionAttributeID as SourceParentObjectFusionAttributeID,
+			m.TargetParentObject as SourceParentObject,
+			m.TargetParentObjectFusionAttributeTypeID as SourceParentObjectFusionAttributeTypeID,
+			T.id as TargetFusionAttributeID,
+			T.fusionattributetypeid as TargetFusionAttributeTypeID,
+			T.textpath as TargetObject,
+			i.objectid as TargetParentObjectFusionAttributeID,
+			T_p.name as TargetParentObject,
+			T_p.fusionattributetypeid as TargetParentObjectFusionAttributeTypeID			
+		 from 
+			#maps m			
+			inner join [intersect] i on (i.subjectid = m.TargetParentObjectFusionAttributeID and i.[subject] = 'FusionAttribute')	
+			inner join fusionattribute T_p on (T_p.id = i.objectid)
+			inner join fusionattribute T on(T.parentid = T_p.id and T.Textpath = T_p.TextPath + replace(m.TargetObject,m.TargetParentObject,'')) 
+		where 
+			m.TargetFusionAttributeTypeID = @viewColumnFusionAttributeTypeID
+				and
+			i.intersecttypeid = @viewTableIntersectTypeId
+				and
+			m.id not in(select m_2.id from #maps m_2 where (m_2.SourceFusionAttributeID = m.TargetFusionAttributeID and m_2.TargetFusionAttributeID = T.Id) or (m_2.TargetFusionAttributeID = m.TargetFusionAttributeID and m_2.SourceFusionAttributeID = T.id)) 
+	
+	
+	insert into #maps
+		(TargetFusionAttributeID, TargetFusionAttributeTypeID, TargetObject, TargetParentObjectFusionAttributeID, TargetParentObject, TargetParentObjectFusionAttributeTypeID, SourceFusionAttributeID, SourceFusionAttributeTypeID, SourceObject, SourceParentObjectFusionAttributeID, SourceParentObject, SourceParentObjectFusionAttributeTypeID)
+		select 	distinct
+			m.SourceFusionAttributeID as TargetFusionAttributeID,
+			m.SourceFusionAttributeTypeID as TargetFusionAttributeTypeID,
+			m.SourceObject as TargetObject,
+			m.SourceParentObjectFusionAttributeID as TargetParentObjectFusionAttributeID,
+			m.SourceParentObject as TargetParentObject,
+			m.SourceParentObjectFusionAttributeTypeID as TargetParentObjectFusionAttributeTypeID,
+			T.id as SourceFusionAttributeID,
+			T.fusionattributetypeid as SourceFusionAttributeTypeID,
+			T.textpath as SourceObject,
+			i.objectid as SourceParentObjectFusionAttributeID,
+			T_p.name as SourceParentObject,
+			T_p.fusionattributetypeid as SourceParentObjectFusionAttributeTypeID			
+		 from 
+			#maps m			
+			inner join [intersect] i on (i.subjectid = m.SourceParentObjectFusionAttributeID and i.[subject] = 'FusionAttribute')	
+			inner join fusionattribute T_p on (T_p.id = i.objectid)
+			inner join fusionattribute T on(T.parentid = T_p.id and T.Textpath = T_p.TextPath + replace(m.SourceObject,m.SourceParentObject,'')) 
+		where 
+			m.SourceFusionAttributeTypeID = @viewColumnFusionAttributeTypeID
+				and
+			i.intersecttypeid = @viewTableIntersectTypeId
+				and
+			m.id not in(select m_2.id from #maps m_2 where (m_2.SourceFusionAttributeID = T.Id and m_2.TargetFusionAttributeID = m.SourceFusionAttributeID) or (m_2.TargetFusionAttributeID = T.id  and m_2.SourceFusionAttributeID = m.SourceFusionAttributeID)) 
+					
+	
+	insert into #maps
+		(SourceFusionAttributeID, SourceFusionAttributeTypeID, SourceObject, SourceParentObjectFusionAttributeID, SourceParentObject, SourceParentObjectFusionAttributeTypeID, TargetFusionAttributeID, TargetFusionAttributeTypeID, TargetObject, TargetParentObjectFusionAttributeID, TargetParentObject, TargetParentObjectFusionAttributeTypeID)
+		select 	distinct
+			m.TargetFusionAttributeID as SourceFusionAttributeID,
+			m.TargetFusionAttributeTypeID as SourceFusionAttributeTypeID,
+			m.TargetObject as SourceObject,
+			m.TargetParentObjectFusionAttributeID as SourceParentObjectFusionAttributeID,
+			m.TargetParentObject as SourceParentObject,
+			m.TargetParentObjectFusionAttributeTypeID as SourceParentObjectFusionAttributeTypeID,
+			T.id as TargetFusionAttributeID,
+			T.fusionattributetypeid as TargetFusionAttributeTypeID,
+			T.textpath as TargetObject,
+			i.objectid as TargetParentObjectFusionAttributeID,
+			T_p.name as TargetParentObject,
+			T_p.fusionattributetypeid as TargetParentObjectFusionAttributeTypeID			
+		 from 
+			#maps m			
+			inner join [intersect] i on (i.objectid = m.TargetParentObjectFusionAttributeID and i.[object] = 'FusionAttribute')	
+			inner join fusionattribute T_p on (T_p.id = i.subjectid)
+			inner join fusionattribute T on(T.FusionId = @fusionId and T.deleted = 0 and T.parentid = T_p.id and T.Textpath = T_p.TextPath + replace(m.TargetObject,m.TargetParentObject,'')) 
+		where 
+			m.TargetFusionAttributeTypeID = @viewColumnFusionAttributeTypeID
+				and
+			i.intersecttypeid = @viewViewIntersectTypeId
+				and
+			m.id not in(select m_2.id from #maps m_2 where (m_2.SourceFusionAttributeID = m.TargetFusionAttributeID and m_2.TargetFusionAttributeID = T.Id) or (m_2.TargetFusionAttributeID = m.TargetFusionAttributeID and m_2.SourceFusionAttributeID = T.id)) 
+
+	
+	insert into #maps
+		(TargetFusionAttributeID, TargetFusionAttributeTypeID, TargetObject, TargetParentObjectFusionAttributeID, TargetParentObject, TargetParentObjectFusionAttributeTypeID, SourceFusionAttributeID, SourceFusionAttributeTypeID, SourceObject, SourceParentObjectFusionAttributeID, SourceParentObject, SourceParentObjectFusionAttributeTypeID)
+		select 	distinct
+			m.SourceFusionAttributeID as TargetFusionAttributeID,
+			m.SourceFusionAttributeTypeID as TargetFusionAttributeTypeID,
+			m.SourceObject as TargetObject,
+			m.SourceParentObjectFusionAttributeID as TargetParentObjectFusionAttributeID,
+			m.SourceParentObject as TargetParentObject,
+			m.SourceParentObjectFusionAttributeTypeID as TargetParentObjectFusionAttributeTypeID,
+			T.id as SourceFusionAttributeID,
+			T.fusionattributetypeid as SourceFusionAttributeTypeID,
+			T.textpath as SourceObject,
+			i.objectid as SourceParentObjectFusionAttributeID,
+			T_p.name as SourceParentObject,
+			T_p.fusionattributetypeid as SourceParentObjectFusionAttributeTypeID			
+		 from 
+			#maps m			
+			inner join [intersect] i on (i.subjectid = m.SourceParentObjectFusionAttributeID and i.[subject] = 'FusionAttribute')	
+			inner join fusionattribute T_p on (T_p.id = i.objectid)
+			inner join fusionattribute T on(T.FusionId = @fusionId and T.deleted = 0 and T.parentid = T_p.id and T.Textpath = T_p.TextPath + replace(m.SourceObject,m.SourceParentObject,'')) 
+		where 
+			m.SourceFusionAttributeTypeID = @viewColumnFusionAttributeTypeID
+				and
+			i.intersecttypeid = @viewViewIntersectTypeId
+				and
+			m.id not in(select m_2.id from #maps m_2 where (m_2.SourceFusionAttributeID = T.Id and m_2.TargetFusionAttributeID = m.SourceFusionAttributeID) or (m_2.TargetFusionAttributeID = T.id  and m_2.SourceFusionAttributeID = m.SourceFusionAttributeID)) 
+
+
+	IF OBJECT_ID('tempdb..#objectmap') IS NOT NULL
+	DROP TABLE #objectmap;
+
+	create table #objectmap (
+		FusionAttributeID int,
+		ObjectAssetID bigint	
+	)
+
+	CREATE NONCLUSTERED INDEX [CIX_TempObjectMap] ON #objectmap ( FusionAttributeID ASC, ObjectAssetID ASC );
+	
+	
+	insert into #objectMap (FusionAttributeID, ObjectAssetID)
+	select distinct 
+		M.FusionAttributeID, 
+		A.ID as ObjectAssetID
+	from
+	(
+	select  SourceFusionAttributeID as FusionAttributeID from #maps
+	union all
+	select  TargetFusionAttributeID as FusionAttributeID from #maps
+	) M
+	inner join [IntersectDetail] OI on OI.[Subject] <> 'FusionAttribute' and OI.[Object] = 'FusionAttribute' and OI.ObjectID = M.FusionAttributeID and OI.PredicateType = 8	
+	inner join Asset A on A.[Object] = OI.[Subject] and A.ObjectID = OI.SubjectID
+
+	update T
+	set T.sourceAssetId = A.ID
+	from #maps T
+		inner join [IntersectDetail] OI on OI.Subject <> 'FusionAttribute' and OI.Object = 'FusionAttribute' and OI.ObjectID = T.SourceParentObjectFusionAttributeID  and OI.PredicateType = 8 
+		inner join Asset A on A.[object] = OI.[subject] and A.ObjectID = OI.subjectid
+	
+	
+	update T
+	set T.targetAssetId = A.ID
+	from #maps T
+		inner join [IntersectDetail] OI on OI.Subject <> 'FusionAttribute' and OI.Object = 'FusionAttribute' and OI.ObjectID = T.TargetParentObjectFusionAttributeID and OI.PredicateType = 8
+		inner join Asset A on A.[object] = OI.subject and A.ObjectID = OI.subjectID
+	
+
+	
+	truncate table [fusion].MarkitLineageData
+	truncate table [fusion].MarkitLineageMapToBusinessItems
+
+	insert into [fusion].MarkitLineageData (MapRuleItemID,[ParentID],[UltimateParentID],[Level],SourceFusionAttributeID,SourceFusionAttributeTypeID,SourceObject,		
+SourceParentObject,SourceParentObjectFusionAttributeID,SourceParentObjectFusionAttributeTypeID,TargetFusionAttributeID,
+TargetFusionAttributeTypeID,TargetObject,TargetParentObject,TargetParentObjectFusionAttributeID,TargetParentObjectFusionAttributeTypeID,					
+UpdatedOn,SourceAssetId,TargetAssetId)
+		select 
+			MapRuleItemID,
+			[ParentID],
+			[UltimateParentID],
+			[Level],
+			SourceFusionAttributeID,
+			SourceFusionAttributeTypeID,
+			SourceObject,		
+			SourceParentObject,
+			SourceParentObjectFusionAttributeID,
+			SourceParentObjectFusionAttributeTypeID,
+			TargetFusionAttributeID,
+			TargetFusionAttributeTypeID,
+			TargetObject,
+			TargetParentObject,
+			TargetParentObjectFusionAttributeID,
+			TargetParentObjectFusionAttributeTypeID,					
+			getutcdate() as UpdatedOn,
+			SourceAssetId,
+			TargetAssetId
+		from
+			#maps;
+
+	insert into [fusion].MarkitLineageMapToBusinessItems (FusionAttributeID, ObjectAssetID)
+		select
+			FusionAttributeID,
+			ObjectAssetID
+		from 
+			#objectmap;
+
+		print 'Saved results to temporary table for webjob processing'
+end
+
+		]]>
+	</rollback>
+  </changeSet>
+    <changeSet author="MDonato" id="GOV-4770-C-tables">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[
+			IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE  TABLE_NAME = 'MarkitLineageData' AND COLUMN_NAME = 'ParentID' AND TABLE_SCHEMA='fusion')
+			BEGIN
+				alter table [fusion].[MarkitLineageData] drop column ParentID;
+			END
+			IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE  TABLE_NAME = 'MarkitLineageData' AND COLUMN_NAME = 'UltimateParentID' AND TABLE_SCHEMA='fusion')
+			BEGIN
+				alter table [fusion].[MarkitLineageData] drop column UltimateParentID;
+			END
+			IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE  TABLE_NAME = 'MarkitLineageData' AND COLUMN_NAME = 'Level' AND TABLE_SCHEMA='fusion')
+			BEGIN
+				alter table [fusion].[MarkitLineageData] drop column [Level];
+			END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+		IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE  TABLE_NAME = 'MarkitLineageData' AND COLUMN_NAME = 'ParentID' AND TABLE_SCHEMA='fusion')
+		BEGIN
+			alter table [fusion].[MarkitLineageData] add ParentID int null;
+		END
+		IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE  TABLE_NAME = 'MarkitLineageData' AND COLUMN_NAME = 'UltimateParentID' AND TABLE_SCHEMA='fusion')
+		BEGIN
+			alter table [fusion].[MarkitLineageData] add UltimateParentID int null;
+		END
+		IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE  TABLE_NAME = 'MarkitLineageData' AND COLUMN_NAME = 'Level' AND TABLE_SCHEMA='fusion')
+		BEGIN
+			alter table [fusion].[MarkitLineageData] add [Level] int null;
+		END
+		]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>

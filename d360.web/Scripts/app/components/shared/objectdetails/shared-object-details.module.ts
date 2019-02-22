@@ -24,6 +24,7 @@ import { DynamicLookupGridComponent } from './dynamic-lookup-grid.component';
 import { ObjectDetailComponent } from './object-detail.component';
 import { ObjectDetailFieldComponent } from './object-detail-field.component';
 import { PipesModule } from '../../../pipes/pipes.module';
+import { NgxJsonViewModule } from 'ng-json-view';
 
 @NgModule({
     imports: [CommonModule,
@@ -43,6 +44,8 @@ import { PipesModule } from '../../../pipes/pipes.module';
         SharedModule,
         TooltipModule,
         TableModule,
+        //JSON Viewer module
+        NgxJsonViewModule,
     ],
     declarations: [
         DynamicLookupGridComponent,

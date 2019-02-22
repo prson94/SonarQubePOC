@@ -51,6 +51,10 @@ namespace igx.jobs.markitlineageprocessor
                 {
                     try
                     {
+#if DEBUG
+                        if (c.CompanyID != 1183)
+                            continue;
+#endif
                         #region Create EF connection
 
                         var sec = new UriSecurityContextProvider()

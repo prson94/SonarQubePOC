@@ -58,7 +58,7 @@ namespace d360.web.Controllers
             var objectDetail = Company.GetObjectDetail(owner.ToString(), ownerID);
                         
             var list = new List<ToolbarItemNg>();
-            var hasModifyPermission = Company.HasAssetTypePermission(objectDetail.Type, objectDetail.TypeID, Permission.ModifyAttributes);
+            var hasModifyPermission = Company.HasAssetPermission(objectDetail.AssetID.GetValueOrDefault(), Permission.ModifyAttributes);
 
             if (attributeID.HasValue)
             {
@@ -69,7 +69,7 @@ namespace d360.web.Controllers
                 
                 if (hasModifyPermission)
                     list.Add(new ToolbarItemNg { Title = "edit attribute", Icon = "pencil",  Action = "edit", Params = p });
-                if (Company.HasAssetTypePermission(objectDetail.Type, objectDetail.TypeID, Permission.DeleteAttributes))
+                if (Company.HasAssetPermission(objectDetail.AssetID.GetValueOrDefault(), Permission.DeleteAttributes))
                     list.Add(new ToolbarItemNg { Title = "delete attribute", Icon = "trash-o", Action = "delete", Params = p });
             }
 

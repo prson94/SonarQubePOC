@@ -313,6 +313,14 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         return message;
     }
 
+    private GetJSON(value: string) {
+        try {
+            return JSON.parse(value);
+        } catch{
+            return "Error";
+        }
+    }
+
     setColorPickerValue(e: any) {
         this.form.controls[this.field.FieldName].setValue(e);
         this.field.Value = e;
