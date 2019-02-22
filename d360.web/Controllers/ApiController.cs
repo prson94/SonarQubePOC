@@ -4561,14 +4561,14 @@ from	    PolicyType FAT
             getDynamicFieldJoinStatements(id, "Policy", out joins, out columns, false, false);
 
             var permissionSql = @"case when exists (
-                                        select 1 from UserAssetPermissions(@r, OA.AssetTypeID) u where u.PermissionsBitMask & 2 = 2 and (u.AssetID = OA.ID  or u.AssetTypeID = OA.AssetTypeID)
+                                        select 1 from UserAssetPermissions(@r, OA.AssetTypeID) u where u.PermissionsBitMask & 2 = 2 and (u.AssetID = OA.ID  or (u.AssetID = 0 and u.AssetTypeID = OA.AssetTypeID))
 						                ) 
 						                    then 1
 						                    else 0
 
                                         end as P_CanEdit,
 		                                case when exists(
-                                                             select 1 from UserAssetPermissions(@r, OA.AssetTypeID) u where u.PermissionsBitMask & 4 = 4 and (u.AssetID = OA.ID  or u.AssetTypeID = OA.AssetTypeID)
+                                                             select 1 from UserAssetPermissions(@r, OA.AssetTypeID) u where u.PermissionsBitMask & 4 = 4 and (u.AssetID = OA.ID  or (u.AssetID = 0 and u.AssetTypeID = OA.AssetTypeID))
 						                                   ) 
 						                                   then 1
 						                                   else 0
@@ -4978,14 +4978,14 @@ order by    Name
                 getDynamicFieldJoinStatements(id, "Rule", out joins, out columns, false, false);
 
                 var permissionSql = @"case when exists (
-                                        select 1 from UserAssetPermissions(@r, O.AssetTypeID) u where u.PermissionsBitMask & 2 = 2 and (u.AssetID = O.ID  or u.AssetTypeID = O.AssetTypeID)
+                                        select 1 from UserAssetPermissions(@r, O.AssetTypeID) u where u.PermissionsBitMask & 2 = 2 and (u.AssetID = O.ID  or (u.AssetID = 0 and u.AssetTypeID = O.AssetTypeID))
 						                ) 
 						                    then 1
 						                    else 0
 
                                         end as P_CanEdit,
 		                                case when exists(
-                                                             select 1 from UserAssetPermissions(@r, O.AssetTypeID) u where u.PermissionsBitMask & 4 = 4 and (u.AssetID = O.ID  or u.AssetTypeID = O.AssetTypeID)
+                                                             select 1 from UserAssetPermissions(@r, O.AssetTypeID) u where u.PermissionsBitMask & 4 = 4 and (u.AssetID = O.ID  or (u.AssetID = 0 and u.AssetTypeID = O.AssetTypeID))
 						                                   ) 
 						                                   then 1
 						                                   else 0
