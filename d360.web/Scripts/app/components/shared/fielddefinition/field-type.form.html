@@ -99,7 +99,7 @@
                                     (ngModelChange)="model.FieldType.AllowMultipleValues=$event;model.FieldType.IsPartOfKey=false;"
                                     label="Allow Multiple Items?"
                                     [ngModelOptions]="{standalone: true}"
-                                    [disabled]="['Lookup','JSON'].indexOf(model.FieldType.Type) == -1"></p-checkbox>
+                                    [disabled]="['Lookup'].indexOf(model.FieldType.Type) == -1"></p-checkbox>
                     </div>
                 </simple-accordion>
             </div>
