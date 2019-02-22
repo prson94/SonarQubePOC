@@ -2627,4 +2627,16 @@ end
     </rollback>
   </changeSet>
 
+  <changeSet author="KMcNamee" id="GOV-6258-override-index">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[    
+        CREATE NONCLUSTERED INDEX [IX_ResponsibilityTypeRelationOverrideItem_SecurityAsset-SecurityAssetID-AssetID] 
+ON [dbo].[ResponsibilityTypeRelationOverrideItem] ([SecurityAsset], [SecurityAssetID], [AssetID]) INCLUDE ([ResponsibilityTypeID]) WITH (ONLINE = ON)
+    ]]>
+    </sql>    
+  </changeSet>
+
 </databaseChangeLog>
