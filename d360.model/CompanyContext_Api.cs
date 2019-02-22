@@ -114,7 +114,7 @@ where	E.ExecutionID = @executionID;",
          new { executionID }).SingleOrDefault();
         }
 
-        private void LoadMissingKeyFields(Guid executionID, int assetTypeID, int timeout = 3600)
+        private void LoadMissingKeyFields(Guid executionID, AssetType at, int timeout = 3600)
         {
             Connection.Execute(@"
 insert into [api].[ExecutionField] (ExecutionID, ItemNumber, FieldName, FieldValue, FieldTypeID, LookupValue, Ignore)
@@ -140,7 +140,45 @@ set     T.ParentUid = S.Uid,
 from    api.ExecutionAsset T
         inner join [Intersect] I on T.ExecutionID = @executionID and I.IntersectTypeID = T.IntersectTypeID and I.Object = T.Object and I.ObjectID = T.ObjectID
         inner join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID;",
-            new { executionID, assetTypeID }, commandTimeout: timeout);
+            new { executionID, assetTypeID = at.ID }, commandTimeout: timeout);
+
+            if (at.Class == AssetTypeClass.Reference)
+            {
+                Connection.Execute(@"
+insert into [api].[ExecutionField] (ExecutionID, ItemNumber, FieldName, FieldValue, FieldTypeID, LookupValue, Ignore)
+	select	A.ExecutionID,
+            A.ItemNumber,
+			'Code',
+			R.Code,
+			0,
+			R.Code,
+			1
+	from	[api].[ExecutionAsset] A
+            inner join ReferenceItem R on A.Object = 'ReferenceItem' and R.ID = A.ObjectID
+			left join [api].[ExecutionField] F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldName = 'Code'
+	where	A.ExecutionID = @executionID 
+            and F.ItemNumber is null;",
+                new { executionID }, commandTimeout: timeout);
+            }
+
+            if (at.Class == AssetTypeClass.FusionAttribute)
+            {
+                Connection.Execute(@"
+insert into [api].[ExecutionField] (ExecutionID, ItemNumber, FieldName, FieldValue, FieldTypeID, LookupValue, Ignore)
+	select	A.ExecutionID,
+            A.ItemNumber,
+			'Name',
+			R.Name,
+			0,
+			R.Name,
+			1
+	from	[api].[ExecutionAsset] A
+            inner join FusionAttribute R on A.Object = 'FusionAttribute' and R.ID = A.ObjectID
+			left join [api].[ExecutionField] F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldName = 'Name'
+	where	A.ExecutionID = @executionID 
+            and F.ItemNumber is null;",
+                new { executionID }, commandTimeout: timeout);
+            }
         }
 
         private void LogAssetErrors(Guid executionID, int timeout = 3600)
@@ -342,7 +380,7 @@ from    api.ExecutionAsset T
         #region Validation
 
         private List<DataRow> ValidateFields(
-            string ot, int otid,
+            string ot, int otid, bool isInsert,
             List<FieldType> fieldTypes, List<string> requiredFieldTypeNames,
             Dictionary<string, string> fields, Guid executionID, int itemNumber,
             DataTable fieldTable, out bool success, out string errorMessage)
@@ -357,7 +395,7 @@ from    api.ExecutionAsset T
             // Contains all required fields?
             var missingFields = requiredFieldTypeNames.Except(fields.Select(f => f.Key));
 
-            if (missingFields.Any())
+            if (missingFields.Any() && isInsert) // Only check for required fields on insert.
             {
                 success = false;
                 bool isSinglar = (missingFields.Count() == 1);
@@ -398,7 +436,7 @@ from    api.ExecutionAsset T
 
                     if (fieldType.IsRequired)
                     {
-                        if (string.IsNullOrEmpty(fieldValue))
+                        if (string.IsNullOrEmpty(fieldValue) && isInsert)
                         {
                             success = false;
                             errorMessage += $"{fieldName} is a required field; ";
@@ -1069,7 +1107,7 @@ from	ResponsibilityRuleResultAsset T
                         {
                             bool success;
                             string errorMessage;
-                            var fieldRows = ValidateFields(at.Object, at.ObjectID, fieldTypes, requiredFieldTypeNames, model.Fields, execution.ExecutionID, i, fieldTable, out success, out errorMessage);
+                            var fieldRows = ValidateFields(at.Object, at.ObjectID, isInsert, fieldTypes, requiredFieldTypeNames, model.Fields, execution.ExecutionID, i, fieldTable, out success, out errorMessage);
 
                             if (success && isInsert && parentObjectID.HasValue && predicateType == PredicateType.InterTypeHierarchy)
                             {
@@ -1245,7 +1283,7 @@ from	ResponsibilityRuleResultAsset T
                     else
                     {
                         LogAssetErrors(execution.ExecutionID, timeout);                 // If you cannot find asset based on Uids provided.
-                        LoadMissingKeyFields(execution.ExecutionID, at.ID, timeout);    // Get missing key fields if this is an update.
+                        LoadMissingKeyFields(execution.ExecutionID, at, timeout);    // Get missing key fields if this is an update.
                     }
 
                     #region Generate proposed key quasi-hash and compare against existing data.
@@ -1399,18 +1437,18 @@ from	api.ExecutionAsset T
                     int beginItemNumber = currentLocation.HighestItemNumberProcessed + 1;
                     int endItemNumber = currentLocation.HighestItemNumberProcessed + loopSize;
 
-                    #region common sql
-
-                    var executionAssetWhereSql = $"ExecutionID = @ExecutionID and Success is null and ItemNumber between {beginItemNumber} and {endItemNumber}";
-                    var updateAssetInfoOnExecutionRecordsSql = $@"update  T
-        set     T.AssetID = S.ID, T.Uid = S.Uid
-        from    api.ExecutionAsset T
-                inner join Asset S on T.Executionid = @ExecutionID and S.AssetTypeID = @AssetTypeID and S.Object = T.Object and S.ObjectID = T.ObjectID;";
-                    
-                    #endregion
-
                     for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
                     {
+                        #region common sql
+
+                        var executionAssetWhereSql = $"ExecutionID = @ExecutionID and Success is null and ItemNumber between {beginItemNumber} and {endItemNumber}";
+                        var updateAssetInfoOnExecutionRecordsSql = $@"update  T
+set     T.AssetID = S.ID, T.Uid = S.Uid
+from    api.ExecutionAsset T
+        inner join Asset S on T.Executionid = @ExecutionID and S.AssetTypeID = @AssetTypeID and S.Object = T.Object and S.ObjectID = T.ObjectID and T.ItemNumber between {beginItemNumber} and {endItemNumber};";
+
+                        #endregion
+
                         using (var trans = Connection.BeginTransaction())
                         {
                             try
@@ -1435,7 +1473,7 @@ on      (T.ArtifactTypeID = @ObjectID and T.SourceID = @NonExistentUid)
 when    not matched then
 insert  (ArtifactTypeID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
 values  (@ObjectID, @R, @D, @R, @D)
-output  inserted.ID, S.ITemNumber into #ObjectMergeTableResult;
+output  inserted.ID, S.ItemNumber into #ObjectMergeTableResult;
 
 update  T
 set     T.Object = 'Artifact',
@@ -1883,7 +1921,7 @@ when not matched by target then
 
                         bool success;
                         string errorMessage;
-                        var fieldRows = ValidateFields("IntersectType", rt.ID, fieldTypes, requiredFieldTypeNames, model.Fields, execution.ExecutionID, i, fieldTable, out success, out errorMessage);
+                        var fieldRows = ValidateFields("IntersectType", rt.ID, true, fieldTypes, requiredFieldTypeNames, model.Fields, execution.ExecutionID, i, fieldTable, out success, out errorMessage);
 
                         if (success)
                         {
