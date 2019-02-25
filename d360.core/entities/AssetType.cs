@@ -55,6 +55,9 @@ namespace d360.core.entities
         public bool CanOwnFusion { get; set; }
         [DataMember]
         public bool AutoDisplayDescription { get; set; }
+
+        [IgnoreDataMember, ForeignKey("AssetTypeID")]
+        public virtual ICollection<AssetTypeLevel> AssetTypeLevels { get; set; }
     }
 
 

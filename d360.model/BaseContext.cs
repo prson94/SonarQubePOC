@@ -86,6 +86,8 @@ namespace d360.model
             }
         }
 
+        public SqlConnection Connection { get { return (Database.Connection as SqlConnection); } }
+
         public BaseContext()
         {
 

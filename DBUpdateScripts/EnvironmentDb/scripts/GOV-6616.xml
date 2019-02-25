@@ -1,0 +1,24 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="MDonato" id="GOV-6616">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[
+update A
+	set A.ItemStepID = IST.ID
+from workflow.ItemAssignment A 
+inner join workflow.ItemStep IST on IST.ItemID = A.ItemID
+join workflow.versionstep vs on vs.id = IST.stepid 
+where vs.ActivityType = 3 and A.ItemStepID is null
+		]]>
+    </sql>
+  </changeSet>
+  </databaseChangeLog>

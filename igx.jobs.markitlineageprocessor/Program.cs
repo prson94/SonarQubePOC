@@ -47,16 +47,14 @@ namespace igx.jobs.markitlineageprocessor
                 CoreFunction.AITrackJobStart(functionName);
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
-               
-
                 foreach (var c in companies)
                 {
-
-                    if (c.CompanyID != 1183)
-                        continue;
-
                     try
                     {
+#if DEBUG
+                        if (c.CompanyID != 1183)
+                            continue;
+#endif
                         #region Create EF connection
 
                         var sec = new UriSecurityContextProvider()

@@ -25,6 +25,7 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
 using System.Xml.Linq;
+using d360.core.resources;
 
 namespace d360.web.Controllers
 {
@@ -3995,7 +3996,7 @@ SELECT  R.ResponsibilityTypeName,
         'Preview' as ResourceItemContext, 
         '/resource/' + cast(R.ResourceID as varchar) as ResourceItemUrl,
         R.Context
-from    [dbo].[ResponsibilityAllAsset] R
+from    [dbo].[ResponsibilityDetail] R
         inner join Asset A on A.ID = @assetId
         inner join AssetType T on T.ID = A.AssetTypeID and T.ID = R.AssetTypeID
         inner join reporting.Global_Resource U on U.ResourceID = R.ResourceID and U.State = 1 
@@ -4559,6 +4560,26 @@ from	    PolicyType FAT
             var columns = "";
             getDynamicFieldJoinStatements(id, "Policy", out joins, out columns, false, false);
 
+            var permissionSql = @"case when exists (
+                                        select 1 from UserAssetPermissions(@r, OA.AssetTypeID) u where u.PermissionsBitMask & 2 = 2 and (u.AssetID = OA.ID  or (u.AssetID = 0 and u.AssetTypeID = OA.AssetTypeID))
+						                ) 
+						                    then 1
+						                    else 0
+
+                                        end as P_CanEdit,
+		                                case when exists(
+                                                             select 1 from UserAssetPermissions(@r, OA.AssetTypeID) u where u.PermissionsBitMask & 4 = 4 and (u.AssetID = OA.ID  or (u.AssetID = 0 and u.AssetTypeID = OA.AssetTypeID))
+						                                   ) 
+						                                   then 1
+						                                   else 0
+
+                                        end as P_CanDelete";
+
+            if (Company.CurrentResourceIsAdmin)
+            {
+                permissionSql = "1 as P_CanEdit, 1 as P_CanDelete";
+            }
+
             var querySql = $@"
 select	top 100 percent 
         A.ID, 
@@ -4567,7 +4588,8 @@ select	top 100 percent
         P.SubjectID as ParentID,
         TD.DisplayValue,
         {columns}
-        A.[Level]
+        A.[Level],
+        {permissionSql}
 from	[Policy] A 
         inner join Asset OA on OA.Object = 'Policy' and OA.ObjectID = A.ID and A.PolicyTypeID = @id 
         {joins} 
@@ -4587,16 +4609,20 @@ where   OA.ID not in ({GetNoReadSqlStatement()})
 
             sql += " order by A.DisplayValue";
 
-            var policies = Company.Query<dynamic>(sql, new { id = id }).ToList();
+            var policies = Company.Query<dynamic>(sql, new { id = id, r = Company.CurrentResourceID }).ToList();
 
             return policies;
         }
 
 
         [Route("PolicyType/{id:int}/levels")]
-        public IQueryable<PolicyTypeLevel> GetPolicyTypeLevels(int id)
+        public IQueryable<dynamic> GetPolicyTypeLevels(int id)
         {
-            return Company.Filter<PolicyTypeLevel>(i => i.PolicyTypeID == id).OrderBy(i => i.Level);
+               return Company.Query<dynamic>(@"Select AT.ObjectId as PolicyTypeID,ATL.Level,ATL.Name,ATL.Description
+                                            From AssetTypeLevel ATL
+                                            inner join AssetType AT on AT.Id = ATL.AssetTypeID
+                                            WHERE  [object]='PolicyType' and ObjectId=@ObjectId
+                                            order by Level", new { ObjectId = id }).AsQueryable();
         }
 
 
@@ -4951,6 +4977,26 @@ order by    Name
                 var columns = "";
                 getDynamicFieldJoinStatements(id, "Rule", out joins, out columns, false, false);
 
+                var permissionSql = @"case when exists (
+                                        select 1 from UserAssetPermissions(@r, O.AssetTypeID) u where u.PermissionsBitMask & 2 = 2 and (u.AssetID = O.ID  or (u.AssetID = 0 and u.AssetTypeID = O.AssetTypeID))
+						                ) 
+						                    then 1
+						                    else 0
+
+                                        end as P_CanEdit,
+		                                case when exists(
+                                                             select 1 from UserAssetPermissions(@r, O.AssetTypeID) u where u.PermissionsBitMask & 4 = 4 and (u.AssetID = O.ID  or (u.AssetID = 0 and u.AssetTypeID = O.AssetTypeID))
+						                                   ) 
+						                                   then 1
+						                                   else 0
+
+                                        end as P_CanDelete";
+
+                if (Company.CurrentResourceIsAdmin)
+                {
+                    permissionSql = "1 as P_CanEdit, 1 as P_CanDelete";
+                }
+
                 var querySql = string.Format(@"
 select	O.ID as AssetID,
         O.[Uid],
@@ -4960,14 +5006,15 @@ select	O.ID as AssetID,
         D.Name as Dimension,
         dbo.GenerateAssetUrl(O.ID) as Url,
         {0}
-        A.RuleTypeID
+        A.RuleTypeID,
+        {2}
 from	[Rule] A
         inner join Asset O on O.Object = 'Rule' and O.ObjectID = A.ID 
         {1} 
         left join RuleDimension D on D.ID = A.RuleDimensionID 
 where   A.RuleTypeID = @id 
         and O.ID not in (" + GetNoReadSqlStatement("@r") + ")" +
-        "and O.AssetTypeID not in (" + GetAssetTypeNoReadSqlStatement("@r") + ")", columns, joins);
+        "and O.AssetTypeID not in (" + GetAssetTypeNoReadSqlStatement("@r") + ")", columns, joins, permissionSql);
 
                 var query = Company.Query<dynamic>(querySql, dbArgs);
 
@@ -5195,15 +5242,21 @@ where    A.RuleID = @id", new { id });
                 #endregion
                 case SystemObjects.Taxonomy:
                     #region Fields
-                    var taxonomy = Company.GetById<Taxonomy>(id);
+                    var taxonomy = Company.Query<dynamic>(@"Select  A.ObjectId,AT.Name as TypeName,AP.TextPath ,ATL.Name as LevelName
+		                                                    from Asset A
+		                                                    inner join AssetType AT on
+		                                                    AT.ID  =A.AssetTypeID
+		                                                    inner join AssetTypeLevel ATL on
+		                                                    ATL.AssetTypeID =AT.ID 
+		                                                    cross apply [dbo].[GetAssetTextPathById](A.ID,'/') AP
+		                                                    where A.object='Taxonomy' and A.objectId=@objectId", new { objectId = id }).SingleOrDefault();
                     if (taxonomy != null)
                     {
-                        var levelInfo = Company.Filter<TaxonomyTypeLevel>(i => i.TaxonomyTypeID == taxonomy.TaxonomyTypeID && i.Level == taxonomy.Level).SingleOrDefault();
 
-                        list.Add(new DisplayField { FriendlyName = "ID", Name = "ID", Value = taxonomy.ID.ToString() });
-                        list.Add(new DisplayField { FriendlyName = taxonomy.GetName(i => i.TaxonomyTypeID), Name = "TaxonomyType", Value = taxonomy.TaxonomyType.Name });
-                        list.Add(new DisplayField { FriendlyName = taxonomy.GetName(i => i.TextPath), Name = "TextPath", Value = taxonomy.TextPath });
-                        list.Add(new DisplayField { FriendlyName = "Level", Name = "Level", Value = levelInfo.Name });
+                        list.Add(new DisplayField { FriendlyName = "ID", Name = "ID", Value = taxonomy.ObjectId.ToString() });
+                        list.Add(new DisplayField { FriendlyName = Fields.Type_Name, Name = "TaxonomyType", Value = taxonomy.TypeName });
+                        list.Add(new DisplayField { FriendlyName = Fields.Path_Name, Name = "TextPath", Value = taxonomy.TextPath });
+                        list.Add(new DisplayField { FriendlyName = "Level", Name = "Level", Value = taxonomy.LevelName });
                         loadDisplayFields(list, type, id);
                     }
                     taxonomy = null;
@@ -5993,10 +6046,24 @@ where    A.RuleID = @id", new { id });
                 #endregion
                 case SystemObjects.Policy:
                     #region Fields
-                    var policy = Company.GetById<Policy>(id);
+                     var policy = Company.Query<dynamic>(@"
+                                                            select	A.ID as AssetId,
+                                                                    A.UID as UID,
+		                                                            A.ObjectID ,
+		                                                            T.ID as AssetTypeId,
+		                                                            P.TextPath,
+		                                                            L.Level
+                                                            from	Asset A
+		                                                            inner join AssetType T on T.ID = A.AssetTypeID
+		                                                            cross apply dbo.GetAssetTextPathById(A.ID, '/') P
+		                                                            cross apply dbo.GetAssetLevelById(A.ID) L
+                                                            where	A.Object = 'Policy' and A.ObjectID = @id
+                                                            ", new { id }).SingleOrDefault();
                     if (policy != null)
                     {
-                        var policyLevelInfo = Company.Filter<PolicyTypeLevel>(i => i.PolicyTypeID == policy.PolicyTypeID && i.Level == policy.Level).SingleOrDefault();
+                        var policyAssetTypeID = (int)policy.AssetTypeId;
+                        var policyLevel = (int)policy.Level;
+                        var policyLevelInfo = Company.Filter<AssetTypeLevel>(i => i.AssetTypeID == policyAssetTypeID && i.Level == policyLevel).SingleOrDefault();
 
                         if (policyLevelInfo != null)
                         {
@@ -6009,7 +6076,7 @@ where    A.RuleID = @id", new { id });
                                 },
                                 SecondColumnFields = new List<ReadOnlyField>
                                 {
-                                    new ReadOnlyField { Name = "Level Number", Value = policy.Level.ToString() }
+                                    new ReadOnlyField { Name = "Level Number", Value = policyLevel.ToString() }
                                 }
                             });
                         }
@@ -6019,7 +6086,7 @@ where    A.RuleID = @id", new { id });
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = policy.GetName(i => i.TextPath), FieldName = "PolicyTextPath", FieldDescription = policy.GetDescription(i => i.TextPath), Value = policy.TextPath }
+                                new ReadOnlyField { Name =Fields.Path_Name, FieldName = "PolicyTextPath", FieldDescription =Fields.Path_Description, Value = policy.TextPath }
                             }
                         });
 
@@ -6048,7 +6115,7 @@ where    A.RuleID = @id", new { id });
                         {
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = policy.GetName(i => i.ID), FieldName = "PolicyID", FieldDescription = policy.GetDescription(i => i.ID), Value = $"{policy.ID}" }
+                                    new ReadOnlyField { Name = "ID", FieldName = "PolicyID", FieldDescription = Fields.Type_Description, Value = $"{policy.ObjectID}" }
                                 }
                         });
                     }
@@ -6658,7 +6725,7 @@ where    A.RuleID = @id", new { id });
 select	A.ID as AssetID,
         A.UID as UID,
 		A.ObjectID,
-		T.ObjectID as TypeID,
+		T.ID as TypeID,
 		P.TextPath,
 		L.Level
 from	Asset A
@@ -6679,9 +6746,9 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
                             }
                         });
 
-                        var taxonomyTypeID = (int)taxonomy.TypeID;
+                        var assetTypeID = (int)taxonomy.TypeID;
                         var taxonomyLevel = (int)taxonomy.Level;
-                        var levelInfo = Company.Filter<TaxonomyTypeLevel>(i => i.TaxonomyTypeID == taxonomyTypeID && i.Level == taxonomyLevel).SingleOrDefault();
+                        var levelInfo = Company.Filter<AssetTypeLevel>(i => i.AssetTypeID == assetTypeID && i.Level == taxonomyLevel).SingleOrDefault();
 
                         if (levelInfo != null)
                         {
@@ -7701,9 +7768,13 @@ from	    TaxonomyType FAT
         }
 
         [Route("TaxonomyType/{id:int}/levels")]
-        public IQueryable<TaxonomyTypeLevel> GetTaxonomyTypeLevels(int id)
+        public IQueryable<dynamic> GetTaxonomyTypeLevels(int id)
         {
-            return Company.Filter<TaxonomyTypeLevel>(i => i.TaxonomyTypeID == id).OrderBy(i => i.Level);
+            return Company.Query<dynamic>(@"Select AT.ObjectId as TaxonomyTypeID,ATL.Level,ATL.Name,ATL.Description
+                                            From AssetTypeLevel ATL
+                                            inner join AssetType AT on AT.Id = ATL.AssetTypeID
+                                            WHERE  [object]='TaxonomyType' and ObjectId=@ObjectId
+                                            order by Level", new { ObjectId = id }).AsQueryable();
         }
 
         [Route("catalogs/{typeID:int}")]
@@ -7950,7 +8021,7 @@ where	Type = 'ReferenceItemType'
             {
                 relations.Insert(0,parent);
 
-                parent = Company.GetParentType(parent.ID, SystemObjects.ReferenceItemType);
+                parent = Company.GetParentType(parent.ObjectID, SystemObjects.ReferenceItemType);
                                 
                 maxLoops--;
             }
@@ -7997,7 +8068,7 @@ where	Type = 'ReferenceItemType'
 
                 foreach(var parentRefList in relations)
                 {
-                    var key = $"Rel{parentRefList.ID}";
+                    var key = $"Rel{parentRefList.ObjectID}";
 
                     if (rowDict.ContainsKey(key))
                     {

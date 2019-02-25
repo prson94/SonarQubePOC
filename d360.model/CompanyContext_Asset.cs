@@ -74,13 +74,13 @@ namespace d360.model
             if (!CurrentResourceIsAdmin)
             {
                 editRightsColumnStatement = @" case when exists (
-							 select 1 from UserAssetPermissions(@r,AssetTypeID) u where u.PermissionsBitMask & 2 = 2 and u.AssetID = pvt.AssetID
+							 select 1 from UserAssetPermissions(@r,AssetTypeID) u where u.PermissionsBitMask & 2 = 2 and (u.AssetID = pvt.AssetID or (u.AssetID = 0 and u.AssetTypeID = pvt.AssetTypeID))
 						   ) 
 						   then 1 
 						   else 0 
 						end as P_CanEdit,
 						 case when exists (
-							 select 1 from UserAssetPermissions(@r,AssetTypeID) u where u.PermissionsBitMask & 4 = 4 and u.AssetID = pvt.AssetID
+							 select 1 from UserAssetPermissions(@r,AssetTypeID) u where u.PermissionsBitMask & 4 = 4 and (u.AssetID = pvt.AssetID or (u.AssetID = 0 and u.AssetTypeID = pvt.AssetTypeID))
 						   ) 
 						   then 1 
 						   else 0 
@@ -268,7 +268,7 @@ select ObjectID from AttributeDetail{tableHints} where AttributeTypeID = @{param
                                     break;
                             }
 
-                            filterWhereList.Add($"A.ID in (select AssetID from ResponsibilityAllAsset{tableHints} where SecurityAsset = '{securityAsset}' and SecurityAssetID = {o.SecurityAssetID} and ResponsibilityTypeID = {o.ResponsibilityTypeID} )");
+                            filterWhereList.Add($"A.ID in (select AssetID from ResponsibilityDetail{tableHints} where SecurityAsset = '{securityAsset}' and SecurityAssetID = {o.SecurityAssetID} and ResponsibilityTypeID = {o.ResponsibilityTypeID} )");
 
                             index++;
                         }
