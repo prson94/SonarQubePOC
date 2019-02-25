@@ -4,6 +4,7 @@ using d360.web.Models.Attributes;
 using Dapper;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 
 namespace d360.web.Controllers
@@ -30,37 +31,9 @@ where ResourceID = @r and Type = @t and TypeID = @i", new { r = resourceID, t = 
         }
         
         [Route("ResponsibilityTypeBreakdown"), NonNullableParameters]
-        public JsonNetResult GetResponsibilityTypeBreakdown()
+        public async Task<JsonNetResult> GetResponsibilityTypeBreakdown()
         {
-            var query = Company.Query<dynamic>(@"
-select
-	ResponsibilityTypeID, 
-	ResponsibilityType, 
-	sum(ResponsibilityCount * AssetCount) as [Count] 
-from
-(
-	select		ResponsibilityTypeID,
-				ResponsibilityTypeName as ResponsibilityType,
-				count(1) as [ResponsibilityCount],
-				C.[Count] as AssetCount
-	from		[dbo].[ResponsibilityDetail] R
-	cross apply (
-					select 
-						case when R.ApplyToType = 1 and R.AssetID = 0 then 
-							(select count(*) from Asset where AssetTypeID = R.AssetTypeID) 
-						else 
-							1
-				end as [Count]
-				) C
-	where		IsVisible = 1
-	group by	ResponsibilityTypeID,
-				ResponsibilityTypeName,
-				C.[Count]
-) X
-group by 
-	ResponsibilityTypeID,
-	ResponsibilityType
-");
+            var query = await Company.QueryAsync<dynamic>(@"exec [dbo].[GetResponsibilityTypeBreakdown]");
 
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }

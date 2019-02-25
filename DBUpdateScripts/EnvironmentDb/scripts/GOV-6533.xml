@@ -5,22 +5,34 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="BHoward" id="GOV-6533">
+  <changeSet author="BHoward" id="GOV-6533-update">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="true">
-		BEGIN
-		  UPDATE FieldType Set 
-			[Type] = 'JSON',
-			[IsListable] = 0, 
-			[IsPartOfKey] = 0, 
-			[IsEditable] = 0, 
-			[AllowMultipleValues] = 0, 
-			[IsPrimaryFilter] = 0
-			WHERE ID in (select ID from fieldtype where (objectid = 1820 and [object] = 'FusionAttributeType' and [Name] = 'NormalizedAsset')			
-						or (objectid = 1820 and [object] = 'FusionAttributeType' and [Name] = 'TechnologyAsset'))
-		END
+      BEGIN
+      UPDATE FieldType Set
+      [Type] = 'Text',
+      [IsListable] = 1,
+      [IsPartOfKey] = 0,
+      [IsEditable] = 0,
+      [AllowMultipleValues] = 0,
+      [IsPrimaryFilter] = 0
+      WHERE ID in (select ID from fieldtype where (objectid = 1820 and [object] = 'FusionAttributeType' and [Name] = 'NormalizedAsset')
+      or (objectid = 1820 and [object] = 'FusionAttributeType' and [Name] = 'TechnologyAsset'))
+      END
+
+      BEGIN
+      UPDATE FieldType Set
+      [Type] = 'JSON',
+      [IsListable] = 0,
+      [IsPartOfKey] = 0,
+      [IsEditable] = 0,
+      [AllowMultipleValues] = 0,
+      [IsPrimaryFilter] = 0
+      WHERE ID in (select ID from fieldtype where (objectid = 1820 and [object] = 'FusionAttributeType' and [Name] = 'NormalizedAssetProperties')
+      or (objectid = 1820 and [object] = 'FusionAttributeType' and [Name] = 'TechnologyAssetProperties'))
+      END
     </sql>
     <rollback>
 		BEGIN
