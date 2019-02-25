@@ -1,22 +1,10 @@
-import { NgModule } from '@angular/core';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { HttpErrorResponse, HttpClient, HttpHeaders } from '@angular/common/http';
-import { XHRBackend } from '@angular/http';
-
-import { AuthenticationConnectionBackend } from '../../app/authentication-connection-backend';
-import { MessagesService } from './messages.service';
-import { JsonResult } from '../models/jsonresult.model';
 import { catchError, map } from 'rxjs/operators';
 
-@NgModule({
-    providers: [
-        {
-            provide: XHRBackend,
-            useClass: AuthenticationConnectionBackend
-        },
-    ]
-})
+import { MessagesService } from './messages.service';
+import { JsonResult } from '../models/jsonresult.model';
 
 @Injectable()
 export class BaseObservableService {

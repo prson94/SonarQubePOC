@@ -1,15 +1,13 @@
-
 import {throwError as observableThrowError,  Observable } from 'rxjs';
 
 import {catchError} from 'rxjs/operators';
 import {XHRBackend, Request, XHRConnection, Response, RequestMethod} from '@angular/http';
 
-
-
-
 export class AuthenticationConnectionBackend extends XHRBackend {
-    createConnection(request: Request): XHRConnection {        
-        let xhrConnection = super.createConnection(request);    
+    /* https://blog.angularindepth.com/insiders-guide-into-interceptors-and-httpclient-mechanics-in-angular-103fbdb397bf */
+    createConnection(request: Request): XHRConnection {
+        let xhrConnection = super.createConnection(request);
+
         if (xhrConnection.request.method == RequestMethod.Post) {
             xhrConnection.request.headers.append('RequestVerificationToken', (<HTMLInputElement>document.getElementById('antiForgeryToken')).value);
             xhrConnection.request.headers.append('X-Requested-With', 'XMLHttpRequest');
@@ -20,8 +18,10 @@ export class AuthenticationConnectionBackend extends XHRBackend {
                 console.log('The authentication session expires or the user is not authorized. Forcing refresh of the current page.');
                 window.location.href = '/slo';
             }
+
             return observableThrowError(error);
         }));
+        
         return xhrConnection;
     }
 }
