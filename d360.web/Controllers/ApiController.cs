@@ -1173,23 +1173,28 @@ where   h.ID <> @t order by h.[Level] desc;
         }
 
         [Route("artifacttypes")]
-        public IEnumerable<ArtifactType> GetArtifactTypes()
+        public IEnumerable<dynamic> GetArtifactTypes()
         {
-            var artifactTypes = Company.Table<ArtifactType>().ToList().OrderBy<ArtifactType,string>(x=>x.Name);
+            var sql = @"select		AT.ObjectID as ID,
+			                IT.ParentID,
+			                AT.Name,
+			                AT.Description,
+			                AT.DisplayFormat,
+			                AT.CanOwnFusion,
+			                AT.AutoDisplayDescription
+                from		AssetType as AT
+			                outer apply (
+				                select	IT.SubjectID as ParentID
+				                from	IntersectType IT 
+						                inner join [Predicate] P on IT.Object = 'ArtifactType' and IT.ObjectID = AT.ObjectID and P.ID = IT.PredicateID and P.Type = 3
+			                ) IT
+	                Where AT.Object = 'ArtifactType'
+                order by	IT.ParentID,
+			                AT.Name
+                ";
+            var artifactTypes = Company.Query<dynamic>(sql).ToList();
 
-            //get intersecttypes for intra parent so we can determine parents
 
-            var artifactParentRelations = Company.IntersectTypeDetails.Where(x => x.PredicateType == PredicateType.InterTypeHierarchy && x.Object == "ArtifactType" && x.Subject == "ArtifactType").ToList();
-           
-            foreach (var artifactType in artifactTypes)
-            {              
-                var parents = artifactParentRelations.Where(x => x.ObjectID == artifactType.ID).FirstOrDefault();
-
-                if(parents != null)
-                {
-                    artifactType.ParentID = parents.SubjectID;
-                }
-            }
 
             return artifactTypes;
         }
@@ -7965,11 +7970,20 @@ from	    AssetType T where T.Object = 'TaxonomyType' ");
         #region Reference - new replaces domain
 
         [HttpGet, Route("referenceItemTypes")]
-        public IEnumerable<ReferenceItemType> GetReferenceItemTypes()
+        public IEnumerable<dynamic> GetReferenceItemTypes()
         {
-            var sql = "select rit.*, ast.id as AssetTypeID from referenceitemtype rit inner join assettype ast on rit.id = ast.objectid and ast.[object] = 'ReferenceItemType'";
+            var sql = @"select 
+		                AT.ObjectID as ID,
+		                AT.Name,
+		                AT.Description,
+		                AT.DisplayFormat,
+		                AT.AutoDisplayDescription,
+		                AT.id as AssetTypeID
+		                from
+                  Assettype AT 
+                  where  AT.[object] = 'ReferenceItemType'";
 
-            return Company.Query<ReferenceItemType>(sql);            
+            return Company.Query<dynamic>(sql);            
         }
 
         [HttpGet, Route("canReadReferenceItemType/{id:int}")]
