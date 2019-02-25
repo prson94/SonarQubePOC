@@ -190,6 +190,7 @@ namespace d360.web.Controllers.V2
                         Company.ApiEntityFieldTypeMultiSelectFields.AddRange(
                             model.MultiSelectFields.Select(i => new ApiEntityFieldTypeMultiSelectField { EntityFieldTypeID = model.ID, FieldTypeID = i.FieldTypeID }).ToList());
                     }
+                    Company.SaveChanges();
                 }
                 else
                 {
