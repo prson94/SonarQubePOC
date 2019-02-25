@@ -165,16 +165,16 @@ namespace d360.extensions
         /// <param name="companyID">The current company ID</param>
         /// <param name="items">The current company ID</param>
         /// <exception cref="TooManyTypesException">Method will throw an exception if more than one type is detected in the list of items.</exception>
-        void ReIndex(int companyID, List<AddToIndexModel> items);
+        void ReIndex(int companyID, IEnumerable<AddToIndexModel> items);
 
         /// <summary>
         /// Adds the item to the remove queue for removal from the index.
         /// </summary>
         /// <param name="item">The item to remove from the index.</param>
         void RemoveFromIndex(RemoveFromIndexModel item);
-        void RemoveFromIndex(List<RemoveFromIndexModel> items);
+        void RemoveFromIndex(IEnumerable<RemoveFromIndexModel> items);
 
         void UpdateInIndex(UpdateInIndexModel item);
-        void UpdateInIndex(List<UpdateInIndexModel> items);
+        void UpdateInIndex(IEnumerable<UpdateInIndexModel> items);
     }
 }
