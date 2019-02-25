@@ -394,16 +394,11 @@ where	[AllowChangeDetection] = 0").ToList();
         {
             try
             {
-                if (e != null)
+                string error = $"Status={e.StatusCode.ToString()}, Error={e.ErrorMessage}; ";
+                if (!ExecutionAssetType.ErrorMessage.Contains(error))
                 {
-                    string error = $"Status={e.StatusCode}";
-                    if (!string.IsNullOrEmpty(e.ErrorMessage))
-                        error += $", Error={e.ErrorMessage}; ";
-                    if (!ExecutionAssetType.ErrorMessage.Contains(error))
-                    {
-                        ExecutionAssetType.ErrorMessage += error;
-                        Company.Update(ExecutionAssetType);
-                    }
+                    ExecutionAssetType.ErrorMessage += error;
+                    Company.Update(ExecutionAssetType);
                 }
             }
             catch (Exception ex)
