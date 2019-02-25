@@ -99,5 +99,6 @@
   <include file="scripts/GOV-6596.xml"/>
   <include file="scripts/GOV-6616.xml"/>
   <include file="scripts/GOV-4770-C.xml"/>
+  <include file="scripts/GOV-6652.xml"/>
   <include file="scripts/GOV-6653.xml"/>
 </databaseChangeLog>
