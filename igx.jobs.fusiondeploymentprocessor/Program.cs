@@ -84,12 +84,10 @@ namespace igx.jobs.fusiondeploymentprocessor
 #else
         const string timerSettings = "0 */15 * * * *";
 #endif
-        public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log) //   
+        public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
         {
             try
             {
-                //CoreFunction.AITrackJobStart(functionName);
-
                 var community = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
                 community.OpenWithRetry(RetryPolicy.DefaultProgressive);
 
@@ -121,10 +119,6 @@ from	plugin.FusionAttributeType A
                     try
                     {
                         #region Lists
-
-                        //#if DEBUG
-                        //                        clientFusionTypes = clientFusionTypes.Where(i => i.FusionTypeID == 26).ToList();
-                        //#endif
 
                         var c_FusionTypes = (
                             from cft in clientFusionTypes
