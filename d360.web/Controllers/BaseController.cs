@@ -462,7 +462,7 @@ namespace d360.web.Controllers
             return $"select AssetTypeID from ResponsibilityDetail where AssetID = 0 and ((PermissionsBitMask & {(int)Permission.ReadAsset}) = 0) and ResourceID = {(string.IsNullOrEmpty(identifier) ? Company.CurrentResourceID.ToString() : identifier)}";
         }
 
-        internal List<FieldValidationModel> checkAndAddValidation(string fieldType, string friendlyName, bool required, string pattern, decimal? minLength, decimal? maxLength, string validationMessage = "", decimal? Increment = null)
+        internal List<FieldValidationModel> checkAndAddValidation(string fieldType, string friendlyName, bool required, string pattern, decimal? minLength, decimal? maxLength, string validationMessage = "", decimal? Increment = null, int? Precision = null)
         {
             var models = new List<FieldValidationModel>();
 
@@ -498,6 +498,11 @@ namespace d360.web.Controllers
                 if (Increment.HasValue)
                 {
                     models.Add(new FieldValidationModel { message = validationMessage, rule = string.Format("increment={0}", Increment.Value) });
+                }
+                //Precision for decimals
+                if (Precision.HasValue)
+                {
+                    models.Add(new FieldValidationModel { message = validationMessage, rule = string.Format("precision={0}", Precision.Value) });
                 }
 
                 // Min/Max next precedent
@@ -614,7 +619,7 @@ namespace d360.web.Controllers
                             Name = f.FriendlyName,
                             FieldType = f.Type.ToString(),
                             FieldDescription = f.FormDescription,
-                            Validations = checkAndAddValidation(f.Type.ToString(), f.FriendlyName, f.IsRequired, f.Pattern, f.MinimumLength, f.MaximumLength, patternMessage, f.Increment),
+                            Validations = checkAndAddValidation(f.Type.ToString(), f.FriendlyName, f.IsRequired, f.Pattern, f.MinimumLength, f.MaximumLength, patternMessage, f.Increment, f.Precision),
                             Category = f.Category,
                             FieldTypeID = f.ID
                         };
@@ -826,7 +831,7 @@ namespace d360.web.Controllers
                             Name = ft.FriendlyName,
                             FieldType = ft.Type.ToString(),
                             FieldDescription = ft.FormDescription,
-                            Validations = checkAndAddValidation(ft.Type.ToString(), ft.FriendlyName, ft.IsRequired, ft.Pattern, ft.MinimumLength, ft.MaximumLength, patternMessage, ft.Increment),
+                            Validations = checkAndAddValidation(ft.Type.ToString(), ft.FriendlyName, ft.IsRequired, ft.Pattern, ft.MinimumLength, ft.MaximumLength, patternMessage, ft.Increment, ft.Precision),
                             Category = ft.Category,
                             FieldTypeID = ft.ID
                         };

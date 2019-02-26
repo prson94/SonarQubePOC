@@ -961,6 +961,7 @@ order by    P.[Path]
                     CompanyID = Company.CurrentCompanyID,
                     CompanyDomainPrefix = Company.CurrentCompanyDomain,
                     ExecutionID = Guid.NewGuid(),
+                    ResourceID = Company.CurrentResourceID,
                     Action = ApiExecutionAction.PostAssets
                 };
 
@@ -1051,6 +1052,7 @@ order by    P.[Path]
                     CompanyID = Company.CurrentCompanyID,
                     CompanyDomainPrefix = Company.CurrentCompanyDomain,
                     ExecutionID = Guid.NewGuid(),
+                    ResourceID = Company.CurrentResourceID,
                     Action = ApiExecutionAction.PutAssets
                 };
 
@@ -1141,6 +1143,7 @@ order by    P.[Path]
                     CompanyID = Company.CurrentCompanyID,
                     CompanyDomainPrefix = Company.CurrentCompanyDomain,
                     ExecutionID = Guid.NewGuid(),
+                    ResourceID = Company.CurrentResourceID,
                     Action = ApiExecutionAction.DeleteAssets
                 };
 

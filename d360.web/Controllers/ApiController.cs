@@ -3996,7 +3996,7 @@ SELECT  R.ResponsibilityTypeName,
         'Preview' as ResourceItemContext, 
         '/resource/' + cast(R.ResourceID as varchar) as ResourceItemUrl,
         R.Context
-from    [dbo].[ResponsibilityAllAsset] R
+from    [dbo].[ResponsibilityDetail] R
         inner join Asset A on A.ID = @assetId
         inner join AssetType T on T.ID = A.AssetTypeID and T.ID = R.AssetTypeID
         inner join reporting.Global_Resource U on U.ResourceID = R.ResourceID and U.State = 1 
@@ -4561,14 +4561,14 @@ from	    PolicyType FAT
             getDynamicFieldJoinStatements(id, "Policy", out joins, out columns, false, false);
 
             var permissionSql = @"case when exists (
-                                        select 1 from UserAssetPermissions(@r, OA.AssetTypeID) u where u.PermissionsBitMask & 2 = 2 and u.AssetID = OA.ID
+                                        select 1 from UserAssetPermissions(@r, OA.AssetTypeID) u where u.PermissionsBitMask & 2 = 2 and (u.AssetID = OA.ID  or (u.AssetID = 0 and u.AssetTypeID = OA.AssetTypeID))
 						                ) 
 						                    then 1
 						                    else 0
 
                                         end as P_CanEdit,
 		                                case when exists(
-                                                             select 1 from UserAssetPermissions(@r, OA.AssetTypeID) u where u.PermissionsBitMask & 4 = 4 and u.AssetID = OA.ID
+                                                             select 1 from UserAssetPermissions(@r, OA.AssetTypeID) u where u.PermissionsBitMask & 4 = 4 and (u.AssetID = OA.ID  or (u.AssetID = 0 and u.AssetTypeID = OA.AssetTypeID))
 						                                   ) 
 						                                   then 1
 						                                   else 0
@@ -4978,14 +4978,14 @@ order by    Name
                 getDynamicFieldJoinStatements(id, "Rule", out joins, out columns, false, false);
 
                 var permissionSql = @"case when exists (
-                                        select 1 from UserAssetPermissions(@r, O.AssetTypeID) u where u.PermissionsBitMask & 2 = 2 and u.AssetID = O.ID
+                                        select 1 from UserAssetPermissions(@r, O.AssetTypeID) u where u.PermissionsBitMask & 2 = 2 and (u.AssetID = O.ID  or (u.AssetID = 0 and u.AssetTypeID = O.AssetTypeID))
 						                ) 
 						                    then 1
 						                    else 0
 
                                         end as P_CanEdit,
 		                                case when exists(
-                                                             select 1 from UserAssetPermissions(@r, O.AssetTypeID) u where u.PermissionsBitMask & 4 = 4 and u.AssetID = O.ID
+                                                             select 1 from UserAssetPermissions(@r, O.AssetTypeID) u where u.PermissionsBitMask & 4 = 4 and (u.AssetID = O.ID  or (u.AssetID = 0 and u.AssetTypeID = O.AssetTypeID))
 						                                   ) 
 						                                   then 1
 						                                   else 0
@@ -8021,7 +8021,7 @@ where	Type = 'ReferenceItemType'
             {
                 relations.Insert(0,parent);
 
-                parent = Company.GetParentType(parent.ID, SystemObjects.ReferenceItemType);
+                parent = Company.GetParentType(parent.ObjectID, SystemObjects.ReferenceItemType);
                                 
                 maxLoops--;
             }
@@ -8068,7 +8068,7 @@ where	Type = 'ReferenceItemType'
 
                 foreach(var parentRefList in relations)
                 {
-                    var key = $"Rel{parentRefList.ID}";
+                    var key = $"Rel{parentRefList.ObjectID}";
 
                     if (rowDict.ContainsKey(key))
                     {

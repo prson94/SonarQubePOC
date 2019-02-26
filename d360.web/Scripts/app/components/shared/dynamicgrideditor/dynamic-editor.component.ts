@@ -209,8 +209,8 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
     private getFieldValidators(field: EditorField) {        
         var validators = [];
-        let minLen = -9223372036854776;
-        let maxLen = 9223372036854776;
+        let minLen = Number.MIN_SAFE_INTEGER;
+        let maxLen = Number.MAX_SAFE_INTEGER;
         if (field.Validations) {
             for (let validation of field.Validations) {
                 if (validation.rule && validation.rule.startsWith('length=')) {
@@ -267,10 +267,21 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         if (field.Required)
             validators.push(Validators.required);
 
-        if (field.FieldType == 'Number')
+        if (field.FieldType == 'Number') {
             validators.push(FormHelpers.integerValidator);
-        if (field.FieldType == 'Decimal')
+            if (validators.indexOf(Validators.min) == -1)
+                validators.push(Validators.min(minLen));
+            if (validators.indexOf(Validators.max) == -1)
+                validators.push(Validators.max(maxLen));
+
+        }
+        if (field.FieldType == 'Decimal') {
             validators.push(FormHelpers.numberValidator);
+            if (validators.indexOf(Validators.min) == -1)
+                validators.push(Validators.min(minLen));
+            if (validators.indexOf(Validators.max) == -1)
+                validators.push(Validators.max(maxLen));
+        }
         
         return validators.length > 0 ? validators : null;
     }

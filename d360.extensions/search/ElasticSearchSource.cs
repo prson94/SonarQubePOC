@@ -780,7 +780,7 @@ namespace d360.extensions.search
             return default(T);
         }
 
-        public void ReIndex(int companyID, List<AddToIndexModel> items)
+        public void ReIndex(int companyID, IEnumerable<AddToIndexModel> items)
         {
             ClearIndex(companyID);
             AddToIndex(items);
@@ -798,13 +798,15 @@ namespace d360.extensions.search
                 throw new ApplicationException(response.StatusMessage);
         }
 
-        public void RemoveFromIndex(List<RemoveFromIndexModel> items)
+        public void RemoveFromIndex(IEnumerable<RemoveFromIndexModel> items)
         {
-            if (items == null || items.Count < 0) return;
+            var firstItem = items.FirstOrDefault();
 
-            var companyID = items[0].CompanyID;
+            if (firstItem == null) return;
 
-            createIndexIfNotExists(companyID);
+            var companyId = firstItem.CompanyID;
+
+            createIndexIfNotExists(companyId);
 
             StringBuilder sb = new StringBuilder();
 
@@ -813,7 +815,7 @@ namespace d360.extensions.search
                 sb.Append("{ \"delete\" : { \"_type\" : \"" + item.Group + "\", \"_id\" : \"" + createItemID(item) + "\"}}\n");
             }
                         
-            var webReq = createWebRequest("POST", $"{getCompanyIndexName(items[0].CompanyID)}/_bulk", companyID);
+            var webReq = createWebRequest("POST", $"{getCompanyIndexName(companyId)}/_bulk", companyId);
             loadMessageInRequestBody(webReq, sb.ToString());
             var response = getJsonResponse(webReq);
             if (response.Status != HttpStatusCode.OK)
@@ -842,13 +844,15 @@ namespace d360.extensions.search
                 throw new ApplicationException(response.StatusMessage);
         }
 
-        public void UpdateInIndex(List<UpdateInIndexModel> items)
+        public void UpdateInIndex(IEnumerable<UpdateInIndexModel> items)
         {
-            if (items == null || items.Count < 0) return;
+            var firstItem = items.FirstOrDefault();
 
-            var companyID = items[0].CompanyID;
+            if (firstItem == null) return;
 
-            createIndexIfNotExists(companyID);
+            var companyId = firstItem.CompanyID;
+
+            createIndexIfNotExists(companyId);
 
             StringBuilder sb = new StringBuilder();
 
@@ -873,7 +877,7 @@ namespace d360.extensions.search
                 sb.Append(" } }\n");
             }
 
-            var webReq = createWebRequest("POST", $"{getCompanyIndexName(items[0].CompanyID)}/_bulk", companyID);
+            var webReq = createWebRequest("POST", $"{getCompanyIndexName(companyId)}/_bulk", companyId);
             loadMessageInRequestBody(webReq, sb.ToString());
             var response = getJsonResponse(webReq);
             if (response.Status != HttpStatusCode.OK)
