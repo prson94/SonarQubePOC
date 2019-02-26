@@ -1,5 +1,4 @@
-﻿using ApplicationInsights.Helpers.WebJobs;
-using d360.core.entities;
+﻿using d360.core.entities;
 using Dapper;
 using Microsoft.Azure.WebJobs;
 using Newtonsoft.Json;

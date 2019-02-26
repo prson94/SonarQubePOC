@@ -40,7 +40,7 @@ namespace igx.jobs.databasetaskprocessor
     {
         public ObjectIndexCollectionModel()
         {
-            Adds = new ConcurrentBag<AddToIndexModel>();
+            Adds = new ConcurrentBag<AddToIndexModel>(); 
             Deletes = new ConcurrentBag<RemoveFromIndexModel>();
             Updates = new ConcurrentBag<UpdateInIndexModel>();
         }
