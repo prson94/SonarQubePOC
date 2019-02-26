@@ -11,7 +11,7 @@ import { ResponsibilityTypeRelationPermission } from '../../../models/responsibi
     templateUrl: './object-relationships.component.html'
 })
 
-export class ObjectRelationshipsComponent extends BaseComponent implements OnChanges {
+export class ObjectRelationshipsComponent extends BaseComponent implements  OnChanges {
     @Input() objectType: string;
     @Input() objectID: number;
     @Input() objectName: string;
@@ -34,7 +34,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
     constructor(protected relationshipsService: RelationshipsService) {
         super();
     }
-
+  
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         this.load();
     }
@@ -55,7 +55,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
         this.relationshipsService.getRelationshipCounts(this.objectType, this.objectID)
             .then(result => {
                 this.relationshipItems = result;
-                this.selected = null;
+                this.selected = this.relationshipItems.length > 0 ? this.relationshipItems[0] : null;
                 for (let relation of this.relationshipItems) {
                     if (relation.Count > 0) {
                         this.selected = relation;
