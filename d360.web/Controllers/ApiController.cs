@@ -1478,22 +1478,21 @@ order by 'Name'";
         public IEnumerable<dynamic> GetRuleFusionOwners(int fusionID)
         {
             var sql = @"
-                      with cte as (
-
-					select	b.objectId AS ID,
+                     with cte as (
+	                select	a.objectId as ID,
 			                I.SubjectID as ParentID,
-			                b.TypeID,
+			                a.TypeID,
 			                d.DisplayValue
 	                from	FusionOwner fo
-						 inner join AssetDetail b on
-							 b.ID = fo.AssetID
+			                inner join AssetWithType a on a.ID = fo.AssetID 
 			                left join IntersectTypeDetail ITD on ITD.PredicateType = 3 and ITD.[Object] = 'ArtifactType' 
-				                and ITD.ObjectID = b.TypeID and ITD.[Subject] = 'ArtifactType'
-			                left join [Intersect] I on I.IntersectTypeID = ITD.ID and I.ObjectID = b.ObjectID
-			                cross apply dbo.GetAssetDisplayValueById(b.ID) d
-	                where	fo.fusionID = @fusionID
+				                and ITD.ObjectID = a.TypeID and ITD.[Subject] = 'ArtifactType'
+			                left join [Intersect] I on I.IntersectTypeID = ITD.ID and I.ObjectID = a.ObjectID
+			                cross apply dbo.GetAssetDisplayValueById(a.ID) d
+							where a.[Object] = 'Artifact' and fo.fusionID = @fusionID
+	                	
 	                union all
-	                select	c.ObjectID,
+	                select	c.ObjectID as ID,
 			                x.SubjectID as ParentID,
 			                c.TypeID,
 			                d.DisplayValue
@@ -1503,17 +1502,20 @@ order by 'Name'";
 				                inner join IntersectTypeDetail ITD on ITD.PredicateType = 3 and ITD.[Object] = 'ArtifactType' 
 					                and ITD.ObjectID = c.TypeID and ITD.[Subject] = 'ArtifactType'
 					                and I.IntersectTypeID = ITD.ID
-				                where I.ObjectID = c.ObjectID
+				                where I.ObjectID = c.ObjectID 
 			                ) x
 			                cross apply dbo.GetAssetDisplayValueById(c.ID) d
-			                inner join ArtifactType ct on ct.ID = c.TypeID and ct.CanOwnFusion = 1
-			                inner join cte p on p.ID = c.ObjectID
+							cross apply [dbo].[GetParentByAssetID] (c.ID) as PA
+							cross apply (Select objectId from  Asset where Id = PA.ID )PAA  
+							inner join AssetType ct on ct.ID = c.AssetTypeId and ct.CanOwnFusion = 1
+			                inner join cte p on p.ID = PAA.objectID
+							where  c.Object='Artifact'
                 )
 
-                select	a.ID,
+                select distinct	a.ID,
 		                t.Name + ': ' + a.DisplayValue as Name
                 from	cte a
-		                inner join ArtifactType t on t.ID = a.TypeID";
+		                inner join AssetType t on t.ID = a.TypeID";
 
             return Company.Query<dynamic>(sql, new { fusionID });
         }
