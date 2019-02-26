@@ -243,7 +243,7 @@ where	[AllowChangeDetection] = 0").ToList();
         {
             CoreFunction.AppInsightsInstrumentationKey(CoreFunction.GetConfigValueByKey("IGC_APPINSIGHTS_INSTRUMENTATIONKEY"));
 #if DEBUG
-            var queueModel = new IntegrationQueueModel { CompanyID = 122, ExecutionID = 60964, IntegrationSettingID = 1, SynchedAssetTypeID = 49, To = QueueAction.Integration, UrlPrefix = "statestreet.uat" };
+            var queueModel = new IntegrationQueueModel { CompanyID = 126, ExecutionID = 63718, IntegrationSettingID = 1, SynchedAssetTypeID = 29, To = QueueAction.Integration, UrlPrefix = "statestreet" };
 #else
             var queueModel = JsonConvert.DeserializeObject<IntegrationQueueModel>(myQueueItem);
 #endif
@@ -1470,22 +1470,43 @@ where	[AllowChangeDetection] = 0").ToList();
                                         if (prop.Value.ToString() != "{}" && !string.IsNullOrEmpty(prop.Value.ToString()))
                                         {
                                             var relationshipCollection = JsonConvert.DeserializeObject<IgcRelationshipCollection>(prop.Value.ToString());
-                                            if (relationshipCollection.paging.numTotal > 0)
+                                            if (relationshipCollection.items != null && relationshipCollection.paging != null)
                                             {
-                                                OnRelationshipBreakdownModelsUpdated(new RelationshipBreakdownModelsUpdatedEventArgs
+                                                if (relationshipCollection.paging.numTotal > 0)
                                                 {
-                                                    Updates = (
-                                                              from rci in relationshipCollection.items
-                                                              join rtc in RelationshipTargetComparisons on rci._type equals rtc.SourceAssetType
-                                                              where rtc.SourceField == prop.Name
-                                                              group rtc by new { rtc.SourceAssetType, rtc.IntersectTypeID } into g
-                                                              select new IGCAssetRelationshipBreakdownModel {
-                                                                  AssetTypeName = g.Key.SourceAssetType,
-                                                                  FieldName = prop.Name,
-                                                                  IntersectTypeID = g.Key.IntersectTypeID,
-                                                                  Count = g.Count()
-                                                              }).ToList()
-                                                });
+                                                    OnRelationshipBreakdownModelsUpdated(new RelationshipBreakdownModelsUpdatedEventArgs
+                                                    {
+                                                        Updates = (
+                                                                    from rci in relationshipCollection.items
+                                                                    join rtc in RelationshipTargetComparisons on rci._type equals rtc.SourceAssetType
+                                                                    where rtc.SourceField == prop.Name
+                                                                    group rtc by new { rtc.SourceAssetType, rtc.IntersectTypeID } into g
+                                                                    select new IGCAssetRelationshipBreakdownModel
+                                                                    {
+                                                                        AssetTypeName = g.Key.SourceAssetType,
+                                                                        FieldName = prop.Name,
+                                                                        IntersectTypeID = g.Key.IntersectTypeID,
+                                                                        Count = g.Count()
+                                                                    }).ToList()
+                                                    });
+                                                }
+                                            }
+                                            else
+                                            {
+                                                var relationshipItem = JsonConvert.DeserializeObject<GenericIgcContextModel>(prop.Value.ToString());
+                                                if (relationshipItem != null)
+                                                {
+                                                    var rtc = RelationshipTargetComparisons.FirstOrDefault(r => r.SourceField == prop.Name);
+                                                    if (rtc != null)
+                                                    {
+                                                        OnRelationshipBreakdownModelsUpdated(new RelationshipBreakdownModelsUpdatedEventArgs
+                                                        {
+                                                            Updates = new List<IGCAssetRelationshipBreakdownModel>() {
+                                                                new IGCAssetRelationshipBreakdownModel { AssetTypeName = relationshipItem._type, Count = 1, FieldName = prop.Name, IntersectTypeID = rtc.IntersectTypeID }
+                                                            }
+                                                        });
+                                                    }
+                                                }
                                             }
                                         }
                                         #endregion
