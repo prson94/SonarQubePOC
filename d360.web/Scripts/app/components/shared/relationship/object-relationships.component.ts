@@ -11,7 +11,7 @@ import { ResponsibilityTypeRelationPermission } from '../../../models/responsibi
     templateUrl: './object-relationships.component.html'
 })
 
-export class ObjectRelationshipsComponent extends BaseComponent implements  OnChanges {
+export class ObjectRelationshipsComponent extends BaseComponent implements OnChanges {
     @Input() objectType: string;
     @Input() objectID: number;
     @Input() objectName: string;
@@ -55,7 +55,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements  OnCh
         this.relationshipsService.getRelationshipCounts(this.objectType, this.objectID)
             .then(result => {
                 this.relationshipItems = result;
-                this.selected = this.relationshipItems.length > 0 ? this.relationshipItems[0] : null;
+                this.selected = null;
                 for (let relation of this.relationshipItems) {
                     if (relation.Count > 0) {
                         this.selected = relation;
@@ -131,7 +131,10 @@ export class ObjectRelationshipsComponent extends BaseComponent implements  OnCh
     private updateCardinality() {
         if (this.selected != null) {
             this.cardinalityShow = (this.selected.Cardinality == 2) || (this.selected.Count == 0 && this.selected.Cardinality != 2);
+            this.hasAdd = this.cardinalityShow && this.hasRelationships && this.selected && this.hasModifyRelationshipsPermissions() && !this.readOnly;
         }
-        this.hasAdd = this.cardinalityShow && this.hasRelationships && this.selected && this.hasModifyRelationshipsPermissions() && !this.readOnly;
+        else {
+            this.hasAdd = true;
+        }
     }
 }

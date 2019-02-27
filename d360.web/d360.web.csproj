@@ -975,6 +975,7 @@
     <None Include="Properties\PublishProfiles\d3s-ui-us-east-UAT - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\LocalFolder.pubxml" />
     <Content Include="Views\Authentication\NoAccess.cshtml" />
+    <Content Include="Scripts\app\components\shared\relationship\dynamic-relationship-grid.component.html" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
