@@ -110,6 +110,8 @@ namespace d360.web.Controllers
 
         internal List<string> CalculatedFieldTypes = new List<string>() { DataType.Attribute.ToString(), DataType.ComplexRelationLookup.ToString(), DataType.DataTableSelect.ToString(), DataType.File.ToString(), DataType.FilteredLookup.ToString(), DataType.OwnershipLookup.ToString() };
 
+        internal const int MAX_SYNCHRONOUS_API_ITEM_COUNT = 250;
+
         public BaseApiController(CommunityContext community, CompanyContext company)
         {
             Community = community;
