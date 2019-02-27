@@ -974,7 +974,23 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     }
 
     private validateNumber(value: string) {
-        if (value == 'Number' || value == 'Decimal') {            
+        if (value == 'Number' || value == 'Decimal') {
+            if (this.model.FieldType.MinimumLength && this.model.FieldType.MinimumLength > Number.MAX_SAFE_INTEGER) {
+                this.errorMessage = 'Please enter a smaller Minimum Value';
+                return;
+            } else if (this.model.FieldType.MinimumLength && this.model.FieldType.MinimumLength < Number.MIN_SAFE_INTEGER) {
+                this.errorMessage = 'Please enter a larger Minimum Value';
+                return;
+            } else if (this.model.FieldType.MaximumLength && this.model.FieldType.MaximumLength > Number.MAX_SAFE_INTEGER) {
+                this.errorMessage = 'Please enter a smaller Maximum Value';
+                return;
+            } else if (this.model.FieldType.MaximumLength && this.model.FieldType.MaximumLength < Number.MIN_SAFE_INTEGER) {
+                this.errorMessage = 'Please enter a larger Maximum Value';
+                return;
+            } else {
+                this.errorMessage = '';
+            }
+
             if (value == 'Number') {
                 if (this.model.FieldType.Increment && this.model.FieldType.Increment % 1 != 0) {
                     this.errorMessage = 'Please enter a valid integer.';
@@ -990,8 +1006,20 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 }
             }
 
+
+            if (value == 'Decimal') {
+                if (this.model.FieldType.Precision
+                    && this.model.FieldType.Precision < 0 || this.model.FieldType.Precision > 38) {
+                    this.errorMessage = 'please enter decimal places between 0 and 38.';
+                    return;
+                }
+            }
+
             if (this.model.FieldType.Increment < 0) {
                 this.errorMessage = 'Please enter a positive number for the increment.';
+                return;
+            } else if (this.model.FieldType.Increment > Number.MAX_SAFE_INTEGER) {
+                this.errorMessage = 'Please enter a smaller number for the increment.';
                 return;
             } else {
                 this.errorMessage = '';
