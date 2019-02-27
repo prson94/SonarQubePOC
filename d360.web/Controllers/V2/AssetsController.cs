@@ -180,7 +180,7 @@ namespace d360.web.Controllers.V2
                 var orderBySql = "";
                 var offsetSql = "";
                 var pageNum = -1;
-                var pageSize = 200;
+                var pageSize = -1;
 
                 //add base sort if none is specified
                 if (!queryParams.Any(p => p.Key == "_order"))
