@@ -54,14 +54,15 @@
                                     [(ngModel)]="model.FieldType.IsDisplayable"
                                     label="Show In Detail Tile?"
                                     [ngModelOptions]="{standalone: true}"
-                                    [disabled]="model.FieldType.Type == 'FusionLookup' || model.FieldType.Type == 'ComplexRelationLookup' || model.FieldType.Type == 'FilteredLookup' || model.FieldType.Type == 'OwnershipLookup'"></p-checkbox>
+                                    [disabled]="['FusionLookup','ComplexRelationLookup','FilteredLookup','OwnershipLookup'].indexOf(model.FieldType.Type) > -1">
+                        </p-checkbox>
                     </div>
                     <div>
                         <p-checkbox binary="true"
                                     [(ngModel)]="model.FieldType.IsEditable"
                                     label="Is Editable?"
                                     [ngModelOptions]="{standalone: true}"
-                                    [disabled]="model.FieldType.Type == 'ComplexRelationLookup' || model.FieldType.Type == 'FilteredLookup' || model.FieldType.Type == 'OwnershipLookup'"></p-checkbox>
+                                    [disabled]="['ComplexRelationLookup','FilteredLookup','OwnershipLookup','JSON'].indexOf(model.FieldType.Type) > -1"></p-checkbox>
                     </div>
                     <div *ngIf="showIsListable">
                         <p-checkbox binary="true"
@@ -69,28 +70,28 @@
                                     label="Is Listable?"
                                     [ngModelOptions]="{standalone: true}"
                                     (ngModelChange)="!$event ? model.FieldType.SortOrder=0:model.FieldType.SortOrder=model.FieldType.SortOrder"
-                                    [disabled]="model.FieldType.Type == 'FusionLookup' || model.FieldType.Type == 'ComplexRelationLookup' || model.FieldType.Type == 'FilteredLookup' || model.FieldType.Type == 'OwnershipLookup' || model.FieldType.Type == 'RefListRelationship' || (model.FieldType.Type == 'Relationship' && !isListableRelationship)"></p-checkbox>
+                                    [disabled]="['FusionLookup','ComplexRelationLookup','FilteredLookup','OwnershipLookup','RefListRelationship','JSON'].indexOf(model.FieldType.Type) > -1 || (model.FieldType.Type == 'Relationship' && !isListableRelationship)"></p-checkbox>
                     </div>
                     <div>
                         <p-checkbox binary="true"
                                     [(ngModel)]="model.FieldType.IsRequired"
                                     label="Is Required?"
                                     [ngModelOptions]="{standalone: true}"
-                                    [disabled]="model.FieldType.Type == 'Relationship' || model.FieldType.Type == 'FieldFromRelationship' || model.FieldType.Type == 'ComplexRelationLookup' || model.FieldType.Type == 'FilteredLookup' || model.FieldType.Type == 'OwnershipLookup'"></p-checkbox>
+                                    [disabled]="['Relationship','FieldFromRelationship','ComplexRelationLookup','FilteredLookup','OwnershipLookup'].indexOf(model.FieldType.Type) > -1"></p-checkbox>
                     </div>
                     <div *ngIf="showIsPartOfKey">
                         <p-checkbox binary="true"
                                     [(ngModel)]="model.FieldType.IsPartOfKey"
                                     label="Part Of Key?"
                                     [ngModelOptions]="{standalone: true}"
-                                    [disabled]="model.FieldType.Type == 'Relationship' || model.FieldType.Type == 'FieldFromRelationship' || model.FieldType.Type == 'ComplexRelationLookup' || model.FieldType.Type == 'FilteredLookup' || model.FieldType.Type == 'OwnershipLookup' || model.FieldType.AllowMultipleValues"></p-checkbox>
+                                    [disabled]="['Relationship','FieldFromRelationship','ComplexRelationLookup','FilteredLookup','OwnershipLookup','JSON'].indexOf(model.FieldType.Type) > -1  || model.FieldType.AllowMultipleValues"></p-checkbox>
                     </div>
                     <div>
                         <p-checkbox binary="true"
                                     [(ngModel)]="model.FieldType.IsPrimaryFilter"
                                     label="Show As Top Level Filter?"
                                     [ngModelOptions]="{standalone: true}"
-                                    [disabled]="!supportsPrimaryFilterOption || model.FieldType.Type == 'Relationship' || model.FieldType.Type == 'FieldFromRelationship' || model.FieldType.Type == 'ComplexRelationLookup' || model.FieldType.Type == 'FilteredLookup' || model.FieldType.Type == 'OwnershipLookup'"></p-checkbox>
+                                    [disabled]="!supportsPrimaryFilterOption || ['Relationship','FieldFromRelationship', 'ComplexRelationLookup', 'FilteredLookup','OwnershipLookup','JSON'].indexOf(model.FieldType.Type) > -1"></p-checkbox>
                     </div>
                     <div>
                         <p-checkbox binary="true"
