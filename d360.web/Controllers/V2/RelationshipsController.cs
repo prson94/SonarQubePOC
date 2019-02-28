@@ -132,7 +132,7 @@ namespace d360.web.Controllers.V2
         #region Bulk Relationships
 
         /// <summary>
-        /// Takes a given set of relationships and bulk inserts/updates them.
+        /// Takes a given set of relationships and inserts/updates them. Use this endpoint if you want to process under 250 items and need immediate results.
         /// </summary>
         /// <param name="intersectTypeUid">The unique identifier of the intersect type.</param>
         /// <param name="relationships">The payload of your request. Must include SubjectAssetUid and ObjectAssetUid.</param>
@@ -167,6 +167,9 @@ namespace d360.web.Controllers.V2
 
                 if (relationships == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
+
+                if (relationships.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} relationships in this request. Please call the BATCH API to submit more than {MAX_SYNCHRONOUS_API_ITEM_COUNT} items."));
 
                 var execution = new ApiExecution
                 {

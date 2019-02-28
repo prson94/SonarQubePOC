@@ -673,7 +673,7 @@ order by    P.[Path]
         }
 
         /// <summary>
-        /// Adds a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 200 items and need immediate results.
+        /// Adds a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 250 items and need immediate results.
         /// </summary>
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
         /// <param name="assets">The payload of your request.</param>
@@ -708,6 +708,9 @@ order by    P.[Path]
 
                 if (assets == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
+
+                if (assets.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} assets in this request. Please call the BATCH API to submit more than {MAX_SYNCHRONOUS_API_ITEM_COUNT} items."));
 
                 var execution = new ApiExecution
                 {
@@ -755,7 +758,7 @@ order by    P.[Path]
         }
 
         /// <summary>
-        /// Updates a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 200 items and need immediate results.
+        /// Updates a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 250 items and need immediate results.
         /// </summary>
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
         /// <param name="assets">The payload of your request.</param>
@@ -790,6 +793,9 @@ order by    P.[Path]
 
                 if (assets == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
+
+                if (assets.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} assets in this request. Please call the BATCH API to submit more than {MAX_SYNCHRONOUS_API_ITEM_COUNT} items."));
 
                 var execution = new ApiExecution
                 {
@@ -837,7 +843,7 @@ order by    P.[Path]
         }
 
         /// <summary>
-        /// Removes a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 200 items and need immediate results.
+        /// Removes a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 250 items and need immediate results.
         /// </summary>
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
         /// <param name="assets">The payload of your request.</param>
@@ -871,6 +877,9 @@ order by    P.[Path]
 
                 if (assets == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
+
+                if (assets.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} assets in this request. Please call the BATCH API to submit more than {MAX_SYNCHRONOUS_API_ITEM_COUNT} items."));
 
                 var execution = new ApiExecution
                 {

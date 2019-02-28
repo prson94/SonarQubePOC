@@ -2830,7 +2830,7 @@
         </member>
         <member name="M:d360.web.Controllers.V2.RelationshipsController.PostRelationshipsAsync(System.Guid,d360.core.entities.RelationshipInserts)">
             <summary>
-            Takes a given set of relationships and bulk inserts/updates them.
+            Takes a given set of relationships and inserts/updates them. Use this endpoint if you want to process under 250 items and need immediate results.
             </summary>
             <param name="intersectTypeUid">The unique identifier of the intersect type.</param>
             <param name="relationships">The payload of your request. Must include SubjectAssetUid and ObjectAssetUid.</param>
@@ -2887,7 +2887,7 @@
         </member>
         <member name="M:d360.web.Controllers.V2.AssetsController.PostAssetsAsync(System.Guid,System.Collections.Generic.List{d360.core.entities.AssetInsert})">
             <summary>
-            Adds a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 200 items and need immediate results.
+            Adds a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 250 items and need immediate results.
             </summary>
             <param name="assetTypeUid">The unique identifier of the asset type.</param>
             <param name="assets">The payload of your request.</param>
@@ -2895,7 +2895,7 @@
         </member>
         <member name="M:d360.web.Controllers.V2.AssetsController.PutAssetsAsync(System.Guid,System.Collections.Generic.List{d360.core.entities.AssetUpdate})">
             <summary>
-            Updates a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 200 items and need immediate results.
+            Updates a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 250 items and need immediate results.
             </summary>
             <param name="assetTypeUid">The unique identifier of the asset type.</param>
             <param name="assets">The payload of your request.</param>
@@ -2903,7 +2903,7 @@
         </member>
         <member name="M:d360.web.Controllers.V2.AssetsController.DeleteAssetsAsync(System.Guid,d360.core.entities.AssetDeletes)">
             <summary>
-            Removes a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 200 items and need immediate results.
+            Removes a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 250 items and need immediate results.
             </summary>
             <param name="assetTypeUid">The unique identifier of the asset type.</param>
             <param name="assets">The payload of your request.</param>
