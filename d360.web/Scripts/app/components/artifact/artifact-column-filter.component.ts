@@ -135,7 +135,7 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
     }
         
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        debugger;
+      
         var bHasInternalFilters = this.internalFilters.length > 0;
         if (changes["fields"] && this.fields != null && this.fields.length > 0) {            
             this.availableFilters = [];
