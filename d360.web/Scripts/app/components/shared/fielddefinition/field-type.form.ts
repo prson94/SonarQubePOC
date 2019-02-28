@@ -975,16 +975,16 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
     private validateNumber(value: string) {
         if (value == 'Number' || value == 'Decimal') {
-            if (this.model.FieldType.MinimumLength && this.model.FieldType.MinimumLength > Number.MAX_SAFE_INTEGER) {
+            if (this.model.FieldType.MinimumLength && this.model.FieldType.MinimumLength > 9999999999) {
                 this.errorMessage = 'Please enter a smaller Minimum Value';
                 return;
-            } else if (this.model.FieldType.MinimumLength && this.model.FieldType.MinimumLength < Number.MIN_SAFE_INTEGER) {
+            } else if (this.model.FieldType.MinimumLength && this.model.FieldType.MinimumLength < -9999999999) {
                 this.errorMessage = 'Please enter a larger Minimum Value';
                 return;
-            } else if (this.model.FieldType.MaximumLength && this.model.FieldType.MaximumLength > Number.MAX_SAFE_INTEGER) {
+            } else if (this.model.FieldType.MaximumLength && this.model.FieldType.MaximumLength > 9999999999) {
                 this.errorMessage = 'Please enter a smaller Maximum Value';
                 return;
-            } else if (this.model.FieldType.MaximumLength && this.model.FieldType.MaximumLength < Number.MIN_SAFE_INTEGER) {
+            } else if (this.model.FieldType.MaximumLength && this.model.FieldType.MaximumLength < -9999999999) {
                 this.errorMessage = 'Please enter a larger Maximum Value';
                 return;
             } else {
@@ -1009,8 +1009,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
             if (value == 'Decimal') {
                 if (this.model.FieldType.Precision
-                    && this.model.FieldType.Precision < 0 || this.model.FieldType.Precision > 38) {
-                    this.errorMessage = 'please enter decimal places between 0 and 38.';
+                    && this.model.FieldType.Precision < 0 || this.model.FieldType.Precision > 18) {
+                    this.errorMessage = 'please enter decimal places between 0 and 18.';
                     return;
                 }
             }
