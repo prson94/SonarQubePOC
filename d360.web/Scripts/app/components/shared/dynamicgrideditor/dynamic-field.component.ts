@@ -42,6 +42,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     private Increment: number = 1;
     private Min: number;
     private Max: number;
+    private Precision: number;
     private colorValue: string = '#000';
 
     private isTaxonomyType: boolean = false; // taxonomy type requires its name be mapped to whatever the setting is set to.
@@ -139,11 +140,13 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                 }
                 else if (validation.rule && validation.rule.startsWith('max')) {
                     this.Max = +validation.rule.split("maxLength=")[1];
-                }//"length=3,33"
+                }
                 else if (validation.rule && validation.rule.startsWith('length')) {
                     let vals = validation.rule.split("length=")[1];
                     this.Min = +vals.split(",")[0];
                     this.Max = +vals.split(",")[1];
+                } else if (validation.rule && validation.rule.startsWith('precision')) {
+                    this.Precision = +validation.rule.split("precision=")[1];
                 }
             }
         }
@@ -197,7 +200,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         this.cascadeSub.unsubscribe();
         this.relationSub.unsubscribe();
         this.quill = null;
-        this.ed = null;
+        this.ed = null; 
     }
 
     get isValid() {
@@ -213,6 +216,42 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
         if (this.form.controls[this.field.FieldName] == undefined) return true;
         if (this.form.controls[this.field.FieldName].disabled) return true;
+
+        const numInputs = document.querySelectorAll('input[type=number]')
+        for (var i = 0; i < numInputs.length; i++) {
+            let elem = numInputs[i] as HTMLInputElement;
+            
+            if (elem.validity.badInput && elem.validationMessage == "Please enter a number.") {
+                if (this.field.FieldType == 'Number' && this.field.FieldName == elem.name) {
+                    this.form.controls[this.field.FieldName].setErrors({ integer: true });
+                }
+                if (this.field.FieldType == 'Decimal' && this.field.FieldName == elem.name) {
+                    this.form.controls[this.field.FieldName].setErrors({ number: true });
+                }                
+            }
+            if (this.field.FieldType == 'Number') {
+                if (elem.value.split('.').length > 1 ||
+                    elem.value.split('+').length > 1 ||
+                    (elem.value.indexOf('-') != 0 && elem.value.split('-').length > 1) ||
+                    elem.value.split('e').length > 1 ||
+                    elem.value.split('E').length > 1) {
+                    if (this.field.FieldName == elem.name) {
+                        this.form.controls[this.field.FieldName].setErrors({ integer: true });
+                    }
+                }
+            } else if (this.field.FieldType == 'Decimal') {
+                if (elem.value.split('.').length > 2 ||
+                    elem.value.split('+').length > 1 ||
+                    (elem.value.indexOf('-') != 0 && elem.value.split('-').length > 1) ||
+                    elem.value.split('e').length > 1 ||
+                    elem.value.split('E').length > 1) {
+                    if (this.field.FieldName == elem.name) {
+                        this.form.controls[this.field.FieldName].setErrors({ number: true });
+                    }
+                }
+            }
+            
+        }
 
         return this.form.controls[this.field.FieldName].valid;
     }
@@ -285,6 +324,23 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     setColorPickerValue(e: any) {
         this.form.controls[this.field.FieldName].setValue(e);
         this.field.Value = e;
+    }
+
+    private toDecimalPlaces(e: any, precision: number) {
+        if (e == null || e.target == null || precision == null)
+            return;
+        let asString = '' + e.target.value;
+        if (asString.split('.').length > 1 && asString.split('.')[1].length < precision) {
+            return;
+        }
+
+        let val = +e.target.value;
+        let newVal = +val.toFixed(precision);
+        
+        if (newVal != null && (newVal != 0 || newVal != +val) && !isNaN(newVal)) {
+            this.form.controls[this.field.FieldName].setValue(newVal);
+            this.field.Value = newVal;
+        }
     }
 
     private clamp(e: any, min: number, max: number, precision: number) {

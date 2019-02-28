@@ -1,5 +1,6 @@
 ﻿using d360.core.queue;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -39,14 +40,14 @@ namespace igx.jobs.databasetaskprocessor
     {
         public ObjectIndexCollectionModel()
         {
-            Adds = new List<AddToIndexModel>();
-            Deletes = new List<RemoveFromIndexModel>();
-            Updates = new List<UpdateInIndexModel>();
+            Adds = new ConcurrentBag<AddToIndexModel>(); 
+            Deletes = new ConcurrentBag<RemoveFromIndexModel>();
+            Updates = new ConcurrentBag<UpdateInIndexModel>();
         }
 
-        public List<AddToIndexModel> Adds { get; set; }
-        public List<RemoveFromIndexModel> Deletes { get; set; }
-        public List<UpdateInIndexModel> Updates { get; set; }
+        public ConcurrentBag<AddToIndexModel> Adds { get; set; }
+        public ConcurrentBag<RemoveFromIndexModel> Deletes { get; set; }
+        public ConcurrentBag<UpdateInIndexModel> Updates { get; set; }
     }
 
     public class QueueTask

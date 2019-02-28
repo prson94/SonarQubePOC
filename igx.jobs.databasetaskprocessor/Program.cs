@@ -72,12 +72,15 @@ namespace igx.jobs.databasetaskprocessor
         const int markitLineageSettingID = 62;
         
 
-        public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
+        public static void Run([TimerTrigger(timerSettings, RunOnStartup = true)]TimerInfo myTimer, TextWriter log)
         {
             try
             {
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
-                
+
+#if DEBUG
+                companies = companies.Where(i => i.CompanyID == 193).ToList();
+#endif
 
                 companies.Shuffle(); //Randomize
 
@@ -108,11 +111,8 @@ namespace igx.jobs.databasetaskprocessor
 
                                 if (string.IsNullOrEmpty(o)) return "";
 
-                            // ignore intersects we dont want to add them to the search index.
-                            if (string.Compare(o, "IntersectType", true) == 0
-                                        || string.Compare(o, "Event", true) == 0
-                                        || string.Compare(o, "EventType", true) == 0
-                                        || string.Compare(o, "EventGroup", true) == 0
+                                // ignore intersects we dont want to add them to the search index.
+                                if (string.Compare(o, "IntersectType", true) == 0
                                         || string.Compare(o, "ResponsibilityType", true) == 0
                                         || string.Compare(o, "FusionAttributeType", true) == 0
                                         || string.Compare(o, "Intersect", true) == 0
@@ -120,9 +120,9 @@ namespace igx.jobs.databasetaskprocessor
                                         || string.Compare(o, "LookupType", true) == 0
                                         ) return "";
 
-                            #region Load Info for Object
+                                #region Load Info for Object
 
-                            detail = companyConnection.Query<ObjectDetail>("SELECT * FROM utility.ObjectDetail(@t, @i)", new { t = o, i = oid }).SingleOrDefault();
+                                detail = companyConnection.Query<ObjectDetail>("SELECT * FROM utility.ObjectDetail(@t, @i)", new { t = o, i = oid }).SingleOrDefault();
                                 var fldInfo = companyConnection.Query<FieldWithRelation>(
                                     "SELECT * from FieldWithRelation where ObjectType = @t and ObjectID = @i order by SortOrder",
                                     new { t = new Dapper.DbString { Value = o.ToString(), IsAnsi = true }, i = oid }
@@ -137,8 +137,6 @@ namespace igx.jobs.databasetaskprocessor
                                 var itemParentType = detail != null ? detail.ParentType : "";
                                 var itemParentId = detail != null ? (detail.ParentID ?? 0) : 0;
 
-                            //if the item 
-                            
                                 long assetId = givenAssetId;
 
                                 if (detail != null)
@@ -208,12 +206,12 @@ namespace igx.jobs.databasetaskprocessor
                                     }
                                 }
 
-                            #endregion
+                                #endregion
 
-                            switch (a)
+                                switch (a)
                                 {
                                     case "A":   //Add
-                                    var add = new AddToIndexModel { CompanyID = c.CompanyID, Fields = fields, Group = o, ID = oid, RelativeUrl = itemUrl, To = QueueAction.AddToIndex, Type = itemTypeName };
+                                        var add = new AddToIndexModel { CompanyID = c.CompanyID, Fields = fields, Group = o, ID = oid, RelativeUrl = itemUrl, To = QueueAction.AddToIndex, Type = itemTypeName };
                                         if (o == "Synonym")
                                         {
                                             add.ItemUniqueID = $"custom|{itemName}|{itemParentType}|{itemParentId}";
@@ -225,7 +223,7 @@ namespace igx.jobs.databasetaskprocessor
                                         indexCollectionModel.Adds.Add(add);
                                         break;
                                     case "U":   //Update
-                                    var update = new UpdateInIndexModel { CompanyID = c.CompanyID, Fields = fields, Group = o, ID = oid, RelativeUrl = itemUrl, To = QueueAction.UpdateInIndex, Type = itemTypeName };
+                                        var update = new UpdateInIndexModel { CompanyID = c.CompanyID, Fields = fields, Group = o, ID = oid, RelativeUrl = itemUrl, To = QueueAction.UpdateInIndex, Type = itemTypeName };
                                         if (o == "Synonym")
                                         {
                                             update.ItemUniqueID = $"custom|{itemName}|{itemParentType}|{itemParentId}";
@@ -237,7 +235,7 @@ namespace igx.jobs.databasetaskprocessor
                                         indexCollectionModel.Updates.Add(update);
                                         break;
                                     case "D":   //Delete
-                                    var delete = new RemoveFromIndexModel { CompanyID = c.CompanyID, Fields = fields, Group = o, ID = oid, RelativeUrl = "#", To = QueueAction.RemoveFromIndex }; //, Type = detail.TypeName                                
+                                        var delete = new RemoveFromIndexModel { CompanyID = c.CompanyID, Fields = fields, Group = o, ID = oid, RelativeUrl = "#", To = QueueAction.RemoveFromIndex }; //, Type = detail.TypeName                                
                                         if (o == "Artifact" && givenAssetId > 0) delete.ItemUniqueID = givenAssetId.ToString();
                                         if (o == "Artifact" && assetId > 0) delete.ItemUniqueID = assetId.ToString();
                                         indexCollectionModel.Deletes.Add(delete);
@@ -283,16 +281,15 @@ from    [queue].[Task] T
                                                 case "Add":
                                                 #region
                                                 addAuditEntry(companyConnection, q.Object, q.ObjectID, "Created", q.Custom, q.AssetID);
-
-                                                    resolveIndexItem(companyConnection, q.Object, q.ObjectID, "A", q.AssetID);
-                                                    break;
-                                            #endregion
-                                            case "Delete":
+                                                resolveIndexItem(companyConnection, q.Object, q.ObjectID, "A", q.AssetID);
+                                                break;
+                                                #endregion
+                                                case "Delete":
                                                 #region
                                                 resolveIndexItem(companyConnection, q.Object, q.ObjectID, "D", q.AssetID);
-                                                    break;
-                                            #endregion
-                                            case "EventTopicNotification":
+                                                break;
+                                                #endregion
+                                                case "EventTopicNotification":
                                                 #region
                                                 if (!string.IsNullOrEmpty(q.Custom))
                                                     {
@@ -354,13 +351,13 @@ from    [queue].[Task] T
 
                                                     break;
                                             #endregion                                            
-                                            case "FusionCache":
-                                                    #region
+                                                case "FusionCache":
+                                                #region
                                                 bool useNewMarkitLineage = settings.Any(s => s.SettingID == markitLineageSettingID && s.Value.ToLower() == "true");
                                                 companyConnection.Execute("exec fusion.ProcessFusionCacheInQueue @FusionID, @useNewMarkitLineage", new { FusionID = q.ObjectID, useNewMarkitLineage }, null, 10800);    // 180 minute timeout.
                                                 break;
-                                            #endregion
-                                            case "Notify":
+                                                #endregion
+                                                case "Notify":
                                                 #region
                                                 switch (q.Object)
                                                     {
@@ -395,12 +392,12 @@ from    [queue].[Task] T
                                                 }
                                                     break;
                                             #endregion
-                                            case "ObjectIndex":
+                                                case "ObjectIndex":
                                                 #region
                                                 resolveIndexItem(companyConnection, q.Object, q.ObjectID, q.Custom, q.AssetID);
                                                     break;
                                             #endregion
-                                            case "Update":
+                                                case "Update":
                                                 #region
                                                 addAuditEntry(companyConnection, q.Object, q.ObjectID, "Update", q.Custom, q.AssetID);
 
@@ -408,7 +405,7 @@ from    [queue].[Task] T
                                                         resolveIndexItem(companyConnection, q.Object, q.ObjectID, "U", q.AssetID);
                                                     break;
                                                 #endregion
-                                        }
+                                            }
 
                                             companyConnection.Execute("delete [queue].[Task] where ID = @queueID", new { queueID = q.ID }, null, 500);
                                         }

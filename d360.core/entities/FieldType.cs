@@ -118,6 +118,9 @@ namespace d360.core.entities
         [DataMember]
         public decimal? Increment { get; set; }
 
+        [DataMember]
+        public int? Precision { get; set; }
+
         [IgnoreDataMember, ForeignKey("FieldTypeID")]
         public virtual ICollection<Field> Fields { get; set; }
 
