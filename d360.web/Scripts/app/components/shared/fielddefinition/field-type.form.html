@@ -161,7 +161,7 @@
                 </div>
 				<div *ngIf="model.FieldType.Type == 'Decimal'" class="col s3">
                     <div id='decimalPlaces' class="FieldName">Decimal Places</div>
-                    <input name="Precision" pInputText type="number" [(ngModel)]="model.FieldType.Precision" (change)="validateNumber(model.FieldType.Type)" min="0" max="38" style="width: 98%; display: block;" />
+                    <input name="Precision" pInputText type="number" [(ngModel)]="model.FieldType.Precision" (change)="validateNumber(model.FieldType.Type)" min="0" max="5" style="width: 98%; display: block;" />
                 </div>
             </div>
             <div class="row" *ngIf="model.FieldType.Pattern?.length > 0">
