@@ -1,32 +1,33 @@
-﻿import { NgModule, LOCALE_ID } from '@angular/core';
-import { CommonModule, DeprecatedI18NPipesModule } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
-import { BrowserModule, Title  } from '@angular/platform-browser';
-import { AppComponent }   from './app.component';
-import { AppRoutingModule }        from './app.routes';
-import { HttpModule, XHRBackend  }     from '@angular/http';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+﻿import {NgModule, LOCALE_ID} from '@angular/core';
+import {CommonModule, DeprecatedI18NPipesModule} from '@angular/common';
+import {HTTP_INTERCEPTORS, HttpClientModule} from '@angular/common/http';
+import {BrowserModule, Title} from '@angular/platform-browser';
+import {AppComponent} from './app.component';
+import {AppRoutingModule} from './app.routes';
+import {HttpModule, XHRBackend} from '@angular/http';
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 
 import {
-    GrowlModule,    
+    GrowlModule,
 } from 'primeng/components/growl/growl';
 
-import { RightsidebarModule } from './components/shared/rightsidebar/right-sidebar.module';
-import { SiteMenuModule } from './components/shared/menu/site-menu.module';
-import { HeaderModule } from './components/shared/header/header.module';
+import {RightsidebarModule} from './components/shared/rightsidebar/right-sidebar.module';
+import {SiteMenuModule} from './components/shared/menu/site-menu.module';
+import {HeaderModule} from './components/shared/header/header.module';
 
-import { AdminUserGuard } from './guards/admin-user.guard';
+import {AdminUserGuard} from './guards/admin-user.guard';
 
-import { AuthenticationService } from './services/authentication.service';
-import { MessagesService } from './services/messages.service';
-import { HeaderBreadcrumbService } from './services/header-breadcrumb.service';
-import { HeaderActionsService } from './services/header-actions.service';
-import { RightSidebarService } from './services/right-sidebar.service';
-import { StateService } from './services/state.service';
-import { WebAnalyticsService } from './services/web-analytics.service';
-import { TooltipSingletonService } from './services/tooltip-singleton.service'
+import {AuthenticationService} from './services/authentication.service';
+import {MessagesService} from './services/messages.service';
+import {HeaderBreadcrumbService} from './services/header-breadcrumb.service';
+import {HeaderActionsService} from './services/header-actions.service';
+import {RightSidebarService} from './services/right-sidebar.service';
+import {StateService} from './services/state.service';
+import {WebAnalyticsService} from './services/web-analytics.service';
+import {TooltipSingletonService} from './services/tooltip-singleton.service'
 
-import { AuthenticationConnectionBackend } from './authentication-connection-backend';
+import {AuthenticationConnectionBackend} from './authentication-connection-backend';
+import {GovernHeadersInterceptor} from "./http-interceptors/govern-headers.interceptor";
 
 export function getLocale() {
     console.log(navigator.language);
@@ -35,8 +36,8 @@ export function getLocale() {
 
 
 @NgModule({
-    declarations: [          
-        AppComponent,                          
+    declarations: [
+        AppComponent,
     ],
     imports: [
         CommonModule,
@@ -54,25 +55,34 @@ export function getLocale() {
         //d3s modules                                            
         RightsidebarModule,
         SiteMenuModule,
-        HeaderModule,                                 
+        HeaderModule,
     ],
     bootstrap: [AppComponent],
     providers: [
         AdminUserGuard,
-        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
-        AuthenticationService,        
+        {provide: XHRBackend, useClass: AuthenticationConnectionBackend},
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: GovernHeadersInterceptor,
+            multi: true
+        },
+        AuthenticationService,
         Title,
         HeaderActionsService,
         HeaderBreadcrumbService,
-        MessagesService,        
+        MessagesService,
         RightSidebarService,
         WebAnalyticsService,
         TooltipSingletonService,
         StateService,
         {
             provide: LOCALE_ID,
-            useFactory: () => { navigator.language }
+            useFactory: () => {
+                navigator.language
+            }
         }
-    ],    
+    ],
 })
-export class AppModule { }
+
+export class AppModule {
+}

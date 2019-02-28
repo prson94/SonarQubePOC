@@ -1,30 +1,30 @@
-﻿import { NgModule }       from '@angular/core';
-import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
-import { FormsModule }    from '@angular/forms';
-import { HttpModule, XHRBackend  }     from '@angular/http';
-import { RouterModule } from '@angular/router';
+﻿import {NgModule} from '@angular/core';
+import {CommonModule, DeprecatedI18NPipesModule} from '@angular/common';
+import {FormsModule} from '@angular/forms';
+import {HttpModule, XHRBackend} from '@angular/http';
+import {RouterModule} from '@angular/router';
 
-import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
+import {AuthenticationConnectionBackend} from '../../../authentication-connection-backend';
 
-import { AdminModule } from '../admin.module';
-import { CoreModule } from '../../shared/core.module';
-import { PipesModule } from '../../../pipes/pipes.module';
-import { TilesModule  } from '../../shared/tiles/tiles.module';
-import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.component';
-import { SharedDeleteFormModule } from '../../shared/delete.form';
+import {AdminModule} from '../admin.module';
+import {CoreModule} from '../../shared/core.module';
+import {PipesModule} from '../../../pipes/pipes.module';
+import {TilesModule} from '../../shared/tiles/tiles.module';
+import {SharedGridPagingInfoModule} from '../../shared/grid-paging-info.component';
+import {SharedDeleteFormModule} from '../../shared/delete.form';
 
-import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-object-details.module';
-import { SharedResponsibilitiesModule } from '../../shared/responsibilities/shared-responsibilities.module';
-import { SharedFieldDefinitionModule } from '../../shared/fielddefinition/shared-field-definition.module';
-import { SharedAssetTypeEditorModule } from '../../shared/assettypeeditor/shared-asset-type-editor.module';
-import { AdminRelationshipEditorModule } from '../../shared/relationshipeditor/admin-relationship-editor.module';
+import {SharedObjectDetailsModule} from '../../shared/objectdetails/shared-object-details.module';
+import {SharedResponsibilitiesModule} from '../../shared/responsibilities/shared-responsibilities.module';
+import {SharedFieldDefinitionModule} from '../../shared/fielddefinition/shared-field-definition.module';
+import {SharedAssetTypeEditorModule} from '../../shared/assettypeeditor/shared-asset-type-editor.module';
+import {AdminRelationshipEditorModule} from '../../shared/relationshipeditor/admin-relationship-editor.module';
 
-import { AdminArtifactsComponent } from './admin-artifacts.component';
+import {AdminArtifactsComponent} from './admin-artifacts.component';
 
-import { AdminArtifactsRoutingModule } from './admin-artifacts.routes';
+import {AdminArtifactsRoutingModule} from './admin-artifacts.routes';
 
-import { SimpleAccordionModule } from '../../shared/simple-accordion.part';
-import { ArtifactTypeDeleteComponent } from './artifact-type-delete.component';
+import {SimpleAccordionModule} from '../../shared/simple-accordion.part';
+import {ArtifactTypeDeleteComponent} from './artifact-type-delete.component';
 
 import {
     ButtonModule,
@@ -35,10 +35,10 @@ import {
     EditorModule,
     InputTextModule,
     MultiSelectModule,
-    SharedModule,    
+    SharedModule,
     TreeTableModule,
 } from 'primeng/primeng';
-import { AdminResponsibilitiesModule } from '../responsibilities/admin-responsibilities.module';
+import {AdminResponsibilitiesModule} from '../responsibilities/admin-responsibilities.module';
 
 
 @NgModule({
@@ -57,7 +57,7 @@ import { AdminResponsibilitiesModule } from '../responsibilities/admin-responsib
         EditorModule,
         InputTextModule,
         MultiSelectModule,
-        SharedModule,        
+        SharedModule,
         TreeTableModule,
 
         //color picker 
@@ -75,7 +75,7 @@ import { AdminResponsibilitiesModule } from '../responsibilities/admin-responsib
 
         AdminResponsibilitiesModule,
 
-        SharedObjectDetailsModule,       
+        SharedObjectDetailsModule,
         SharedFieldDefinitionModule,
         SharedResponsibilitiesModule,
         TilesModule,
@@ -85,7 +85,9 @@ import { AdminResponsibilitiesModule } from '../responsibilities/admin-responsib
         ArtifactTypeDeleteComponent,
     ],
     providers: [
-        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
+        {provide: XHRBackend, useClass: AuthenticationConnectionBackend},
     ]
 })
-export class AdminArtifactsModule { }
+
+export class AdminArtifactsModule {
+}

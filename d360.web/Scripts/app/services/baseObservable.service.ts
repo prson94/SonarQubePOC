@@ -21,7 +21,7 @@ export class BaseObservableService {
                 } else {
                     // server side error
                     console.error('An error occurred[server side]', error);
-                    if (this && this.messages && error.status !== 0) {
+                    if (error.status !== 0) {
                         let errorMessage = "";
                         const isError_body = Object.keys(error).indexOf("_body") > -1;
 

@@ -56,6 +56,7 @@ import {
 } from 'primeng/primeng';
 
 import { TableModule } from 'primeng/table';
+import {GovernHeadersInterceptor} from "../../http-interceptors/govern-headers.interceptor";
 
 
 @NgModule({
@@ -109,9 +110,15 @@ import { TableModule } from 'primeng/table';
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
         {
+            provide: HTTP_INTERCEPTORS,
+            useClass: GovernHeadersInterceptor,
+            multi: true
+        },
+        {
             provide: HighchartsStatic,
             useFactory: highchartsFactory
         },
     ]
 })
+
 export class ArtifactModule { }
