@@ -1009,8 +1009,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
             if (value == 'Decimal') {
                 if (this.model.FieldType.Precision
-                    && this.model.FieldType.Precision < 0 || this.model.FieldType.Precision > 18) {
-                    this.errorMessage = 'please enter decimal places between 0 and 18.';
+                    && this.model.FieldType.Precision < 0 || this.model.FieldType.Precision > 5) {
+                    this.errorMessage = 'please enter decimal places between 0 and 5.';
                     return;
                 }
             }
