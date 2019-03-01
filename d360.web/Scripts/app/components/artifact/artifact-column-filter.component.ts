@@ -135,8 +135,8 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
     }
         
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-      
-        var bHasInternalFilters = this.internalFilters.length > 0;
+        var bHasInternalFilters = this.internalFilters.filter(x => x.Type == FilterFieldType.Field).length > 0;
+
         if (changes["fields"] && this.fields != null && this.fields.length > 0) {            
             this.availableFilters = [];
             for (let field of this.fields) {                
@@ -162,7 +162,9 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
             else if (this.relationshipFilters.length > 0 && !bHasInternalFilters) {
                 // dont clear the relationship filters
             }
-            else if (!bHasInternalFilters) {                
+            else if (this.attributeFilters && this.attributeFilters.length == 0 && !this.ownerFilter && this.relationshipFilters
+                   && this.relationshipFilters.length == 0 && this.filters && this.filters.length == 0 && this.internalFilters.length == 0) {    
+
                 this.resetFilters();
             }
 
