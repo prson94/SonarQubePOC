@@ -2092,6 +2092,74 @@ where	ExecutionID = @ExecutionID and Object is null or ObjectID is null;",
 
                 #endregion
 
+                #region Cardinality Validation
+
+                if (rt.SubjectCardinality == Cardinality.One)
+                {
+                    Connection.Execute(@"
+update	T
+set		T.Message = coalesce(T.Message + '; ', '') + 'Object already related to one item and cardinality is set to one.',
+		T.Success = 0
+from	api.ExecutionRelationship T
+		inner join	(
+					select	ER.ExecutionID,
+							ER.ItemNumber,
+							count(1) as RelationshipCount
+					from	api.ExecutionRelationship ER
+							inner join Asset O on O.Uid = ER.ObjectUid and ER.ExecutionID = @ExecutionID
+							inner join [Intersect] I on I.IntersectTypeID = @IntersectTypeID and I.Object = O.Object and I.ObjectID = O.ObjectID
+					group by ER.ExecutionID, ER.ItemNumber
+					) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
+
+update	T
+set		T.Message = coalesce(T.Message + '; ', '') + 'Object already referenced in this batch and cannot be used again due to cardinality restrictions.',
+		T.Success = 0
+from	api.ExecutionRelationship T
+		inner join	(
+					select	ER.ExecutionID,
+							ER.ObjectUid,
+							min(ER.ItemNumber) as ItemNumber
+					from	api.ExecutionRelationship ER
+							inner join Asset O on O.Uid = ER.ObjectUid and ER.ExecutionID = @ExecutionID
+					group by ER.ExecutionID, ER.ObjectUid
+					) S on S.ExecutionID = T.ExecutionID and S.ObjectUid = T.ObjectUid and S.ItemNumber < T.ItemNumber;",
+                    new { execution.ExecutionID, IntersectTypeID = rt.ID }, commandTimeout: timeout);
+                }
+
+                if (rt.ObjectCardinality == Cardinality.One)
+                {
+                    Connection.Execute(@"
+update	T
+set		T.Message = coalesce(T.Message + '; ', '') + 'Subject already related to one item and cardinality is set to one.',
+		T.Success = 0
+from	api.ExecutionRelationship T
+		inner join	(
+					select	ER.ExecutionID,
+							ER.ItemNumber,
+							count(1) as RelationshipCount
+					from	api.ExecutionRelationship ER
+							inner join Asset O on O.Uid = ER.ObjectUid and ER.ExecutionID = @ExecutionID
+							inner join [Intersect] I on I.IntersectTypeID = @IntersectTypeID and I.Subject = O.Object and I.SubjectID = O.ObjectID
+					group by ER.ExecutionID, ER.ItemNumber
+					) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
+
+update	T
+set		T.Message = coalesce(T.Message + '; ', '') + 'Subject already referenced in this batch and cannot be used again due to cardinality restrictions.',
+		T.Success = 0
+from	api.ExecutionRelationship T
+		inner join	(
+					select	ER.ExecutionID,
+							ER.SubjectUid,
+							min(ER.ItemNumber) as ItemNumber
+					from	api.ExecutionRelationship ER
+							inner join Asset O on O.Uid = ER.SubjectUid and ER.ExecutionID = @ExecutionID
+					group by ER.ExecutionID, ER.SubjectUid
+					) S on S.ExecutionID = T.ExecutionID and S.SubjectUid = T.SubjectUid and S.ItemNumber < T.ItemNumber;",
+                    new { execution.ExecutionID, IntersectTypeID = rt.ID }, commandTimeout: timeout);
+                }
+
+                #endregion
+
                 generalChecksCompleted = true;
             }
             catch (Exception generalEx)
