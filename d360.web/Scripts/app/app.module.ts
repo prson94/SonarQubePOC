@@ -27,7 +27,7 @@ import {WebAnalyticsService} from './services/web-analytics.service';
 import {TooltipSingletonService} from './services/tooltip-singleton.service'
 
 import {AuthenticationConnectionBackend} from './authentication-connection-backend';
-import {GovernHeadersInterceptor} from "./http-interceptors/govern-headers.interceptor";
+import {GovernPostRequestInterceptor} from "./http-interceptors/govern-post-request.interceptor";
 
 export function getLocale() {
     console.log(navigator.language);
@@ -63,7 +63,7 @@ export function getLocale() {
         {provide: XHRBackend, useClass: AuthenticationConnectionBackend},
         {
             provide: HTTP_INTERCEPTORS,
-            useClass: GovernHeadersInterceptor,
+            useClass: GovernPostRequestInterceptor,
             multi: true
         },
         AuthenticationService,

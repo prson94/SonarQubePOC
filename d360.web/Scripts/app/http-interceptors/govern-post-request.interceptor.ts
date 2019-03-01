@@ -3,7 +3,7 @@ import {Injectable} from "@angular/core";
 import {Observable} from "rxjs";
 
 @Injectable()
-export class GovernHeadersInterceptor implements HttpInterceptor {
+export class GovernPostRequestInterceptor implements HttpInterceptor {
     intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
         let returnResult;
 

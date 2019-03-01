@@ -41,7 +41,7 @@ import {TableModule} from 'primeng/table';
 import {SimpleAccordionModule} from '../../shared/simple-accordion.part';
 import {ErrorNotifyInterceptor} from '../../../http-interceptors/error-notify-interceptor';
 import {DirectivesModule} from '../../../directives/directives.module';
-import {GovernHeadersInterceptor} from "../../../http-interceptors/govern-headers.interceptor";
+import {GovernPostRequestInterceptor} from "../../../http-interceptors/govern-post-request.interceptor";
 
 @NgModule({
     imports: [CommonModule,
@@ -99,7 +99,7 @@ import {GovernHeadersInterceptor} from "../../../http-interceptors/govern-header
         },
         {
             provide: HTTP_INTERCEPTORS,
-            useClass: GovernHeadersInterceptor,
+            useClass: GovernPostRequestInterceptor,
             multi: true
         }
     ]

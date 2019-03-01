@@ -56,7 +56,7 @@ import {
 } from 'primeng/primeng';
 
 import { TableModule } from 'primeng/table';
-import {GovernHeadersInterceptor} from "../../http-interceptors/govern-headers.interceptor";
+import {GovernPostRequestInterceptor} from "../../http-interceptors/govern-post-request.interceptor";
 
 
 @NgModule({
@@ -111,7 +111,7 @@ import {GovernHeadersInterceptor} from "../../http-interceptors/govern-headers.i
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
         {
             provide: HTTP_INTERCEPTORS,
-            useClass: GovernHeadersInterceptor,
+            useClass: GovernPostRequestInterceptor,
             multi: true
         },
         {
