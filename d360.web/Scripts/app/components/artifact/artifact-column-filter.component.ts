@@ -27,7 +27,7 @@ import { FilterField, FilterFieldType, FilterExpression } from '../../models/fil
                     <div *ngFor="let filter of internalFilters;let first=first;let last=last;let index=index" class="row filter">
                         <div class="col s1 FieldName">Filter:</div>
                         <div class="col s4">
-                            <select [name]="'FilterField_' + index" required [ngModel]="filter.Field" (ngModelChange)="filter.Field = $event;changeFilterField($event,filter)" style="width:100%;">
+                            <select [name]="'FilterField_' + index" required [(ngModel)]="filter.Field" (ngModelChange)="filter.Field = $event;changeFilterField($event,filter)" style="width:100%;">
                                <option  [value]=""></option>
                                 <option *ngFor="let p of availableFilters" [ngValue]="p">{{p.Name}}</option>
                             </select>
@@ -135,8 +135,8 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
     }
         
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-
         var bHasInternalFilters = this.internalFilters.filter(x => x.Type == FilterFieldType.Field).length > 0;
+
         if (changes["fields"] && this.fields != null && this.fields.length > 0) {            
             this.availableFilters = [];
             for (let field of this.fields) {                
@@ -149,11 +149,14 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
                 this.internalFilters = this.internalFilters.filter(x => x.Type != FilterFieldType.Field);
 
                 for (let filter of this.filters) {
-                    this.internalFilters.push({
+                    let f = {
                         Type: FilterFieldType.Field,
                         Data: filter,
                         Field: this.availableFilters.filter(x => x.Type == FilterFieldType.Field && x.Data.datafield == filter.field)[0],
-                    });
+                    };
+                    if (f.Field)
+                        this.changeFilterField(f.Field, f);
+                    this.internalFilters.push(f);
                 }
             }
             else if (this.relationshipFilters.length > 0 && !bHasInternalFilters) {
@@ -235,9 +238,10 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
     }
 
     private changeFilterField(target, filter) {    
-        console.log('changeFilterField', target, filter);
+
         if (target.Type == FilterFieldType.Field) {
-            filter.Data = new GridFilterExpression();
+            if (!filter.Data)
+                filter.Data = new GridFilterExpression();
             filter.Data.field = target.Data.datafield;
             filter.Type = FilterFieldType.Field;
             
