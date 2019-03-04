@@ -34,7 +34,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
     constructor(protected relationshipsService: RelationshipsService) {
         super();
     }
-
+  
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         this.load();
     }
@@ -131,7 +131,10 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
     private updateCardinality() {
         if (this.selected != null) {
             this.cardinalityShow = (this.selected.Cardinality == 2) || (this.selected.Count == 0 && this.selected.Cardinality != 2);
+            this.hasAdd = this.cardinalityShow && this.hasRelationships && this.selected && this.hasModifyRelationshipsPermissions() && !this.readOnly;
         }
-        this.hasAdd = this.cardinalityShow && this.hasRelationships && this.selected && this.hasModifyRelationshipsPermissions() && !this.readOnly;
+        else {
+            this.hasAdd = this.hasModifyRelationshipsPermissions() && !this.readOnly;
+        }
     }
 }
