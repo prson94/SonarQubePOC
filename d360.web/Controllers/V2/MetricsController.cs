@@ -618,7 +618,7 @@ for		json path").ToList();
 
             try
             {
-                var results = (Company.Database.Connection as SqlConnection).BulkMetricsImport(model);
+                var results = Company.BulkMetricsImport(model);
 
                 return ResponseMessage(Request.CreateResponse<List<BulkMetricTemporaryTableModel>>(HttpStatusCode.OK, results));                
             }

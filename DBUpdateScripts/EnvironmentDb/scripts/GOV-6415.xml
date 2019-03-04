@@ -1,0 +1,45 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+  <changeSet author="Pappas" id="GOV-6415">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+IF (NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND  TABLE_NAME = 'ExecutionMetric'))
+BEGIN
+	CREATE TABLE [api].[ExecutionMetric](
+		ExecutionID uniqueidentifier NOT NULL,
+		ItemNumber int NOT NULL,
+		AssetUid uniqueidentifier NOT NULL,
+		MetricAssetUid uniqueidentifier NOT NULL,
+		EffectiveDate date NOT NULL,
+		Result bit NOT NULL,
+		IsValidAsset bit NULL,
+        IsValidMetric bit NULL,
+        IsValidMetricDate bit NULL,			
+		Message nvarchar(2500) NULL,
+		Success bit NULL,
+		CONSTRAINT [PK_ApiExecutionMetric] PRIMARY KEY CLUSTERED ( [ExecutionID] ASC, [ItemNumber] ASC )
+	);
+	
+	CREATE NONCLUSTERED INDEX IX_ApiExecutionMetric_AssetUid ON [api].[ExecutionMetric] ( AssetUid ASC );
+	CREATE NONCLUSTERED INDEX IX_ApiExecutionMetric_MetricAssetUid ON [api].[ExecutionMetric] ( MetricAssetUid ASC );
+	CREATE NONCLUSTERED INDEX IX_ApiExecutionMetric_Success ON [api].[ExecutionMetric] ( Success ASC );
+END
+]]>
+    </sql>
+    <rollback>
+<![CDATA[
+IF (EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND  TABLE_NAME = 'ExecutionMetric'))
+BEGIN
+    drop table [api].[ExecutionMetric]
+END
+]]>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>
