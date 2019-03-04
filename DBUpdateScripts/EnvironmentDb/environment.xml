@@ -104,4 +104,5 @@
   <include file="scripts/GOV-6662.xml"/>
   <!-- Sprint 3 2019 Start -->
   <include file="scripts/GOV-6415.xml"/>  
+  <include file="scripts/GOV-6646.xml"/>
 </databaseChangeLog>

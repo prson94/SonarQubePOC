@@ -12218,7 +12218,7 @@ order by TP.TextPath";
                 int allPermissions = Permission.DeleteAsset.GetList().Sum(i => i.Value);
                 model.ResponsibilityTypeRelations.ToList().
                     ForEach( x => { x.PermissionsBitMask = allPermissions;});
-
+                model.UID = Guid.NewGuid();
                 Company.Add(model);
 
                 return jsonSuccess("Item successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created);
