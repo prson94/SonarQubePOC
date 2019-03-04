@@ -572,20 +572,28 @@
     <EmbeddedResource Include="Content\Swagger\swagger.css">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
+    <Content Include="Scripts\app\components\admin\artifacts\artifact-type-delete.component.html" />
+    <Content Include="Scripts\app\components\artifact\artifact-column-filter.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-grid.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-item.component.html" />
     <Content Include="Scripts\app\components\rule\rule-list.component.html" />
+    <Content Include="Scripts\app\components\artifact\artifact-list.component.html" />
+    <Content Include="Scripts\app\components\artifact\artifact-top-level-list.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-promotion-history.component.html" />
+    <Content Include="Scripts\app\components\home\activity-details-tile.component.html" />
+    <Content Include="Scripts\app\components\home\activity-tile.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-template-tool.component.html" />
     <Content Include="Scripts\app\components\shared\dynamicgrideditor\dynamic-field-value.component.html" />
     <Content Include="Scripts\app\components\shared\editor-header.component.html" />
     <Content Include="Scripts\app\components\model\model-item-structure.component.html" />
     <Content Include="Scripts\app\components\policy\policy-item-structure.component.html" />
     <Content Include="Scripts\app\components\shared\object-definition.tile.html" />
+    <Content Include="Scripts\app\components\shared\objectgovernance\artifact-status.component.html" />
     <Content Include="Scripts\app\components\shared\objectdetails\object-detail-field.component.html" />
     <Content Include="Scripts\app\components\shared\preview-tooltip.component.html" />
     <Content Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-editor.component.html" />
     <Content Include="Scripts\app\components\shared\shortcuts\shortcut-list.component.html" />
+    <Content Include="Scripts\app\components\sidebar\children\artifact-item-child-grid.component.html" />
     <Content Include="Scripts\app\components\workflowmonitor\workflowmonitor-list.component.html" />
     <Content Include="fonts\fontawesome-webfont.svg" />
     <Content Include="images\error.png" />
@@ -1379,6 +1387,7 @@
     <TypeScriptCompile Include="Scripts\app\directives\text-highlight-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\guards\api-key-users.gurard.ts" />
     <TypeScriptCompile Include="Scripts\app\http-interceptors\error-notify-interceptor.ts" />
+    <TypeScriptCompile Include="Scripts\app\http-interceptors\govern-post-request.interceptor.ts" />
     <TypeScriptCompile Include="Scripts\app\models\authentication-properties.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\asset.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\cascade.model.ts" />
@@ -1401,6 +1410,7 @@
     <TypeScriptCompile Include="Scripts\app\pipes\utc-date.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\safe-html.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\services\asset-type.services.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\baseObservable.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\cascade.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\custom-api.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\diagram.service.ts" />
