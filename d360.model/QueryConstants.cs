@@ -783,29 +783,29 @@ order by case when (Subject = @type and SubjectID = @id) then ObjectName else Su
 
         public static string PolicySettingsItem = @"
 select	T.*, R.*
-from	PolicyType T 
+from	AssetType T 
 		cross apply (
 					select	case 
 								when count(1) > 0 then cast(1 as bit)
 								else cast(0 as bit)
 							end as AllowAttributes
 					from	AttributeTypeRelation
-					where	ObjectType = 'PolicyType' and ObjectID = T.ID
+					where	ObjectType = 'PolicyType' and ObjectID = T.ObjectID
 					) R
-where	T.ID = @id";
+where T.[object]='PolicyType' and	T.ObjectID = @id";
 
         public static string RuleSettingsItem = @"
 select	T.*, R.*
-from	RuleType T 
+from	AssetType T 
 		cross apply ( 
 					select	case 
 								when count(1) > 0 then cast(1 as bit)
 								else cast(0 as bit)
 							end as AllowAttributes
 					from	AttributeTypeRelation
-					where	ObjectType = 'RuleType' and ObjectID = T.ID
+					where	ObjectType = 'RuleType' and ObjectID = T.ObjectID
 					) R
-where	T.ID = @id";
+where	T.ObjectID = @id";
 
         public static string PromotionHistoryList = @"
 select	ID,

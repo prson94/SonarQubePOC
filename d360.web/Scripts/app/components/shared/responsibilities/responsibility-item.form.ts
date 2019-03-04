@@ -187,7 +187,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
     }
 
     private showResourceGrid() {
-        debugger;
+       
         let resTypeId;
         let securityAsset;
         let securityAssetId;
