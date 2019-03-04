@@ -7,8 +7,6 @@ export class GovernPostRequestInterceptor implements HttpInterceptor {
     intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
         let returnResult;
 
-        console.log(`req ${req}`);
-
         if (req.method === 'POST') {
             returnResult = req.clone(
                 {
