@@ -258,6 +258,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     ff['@label'] = f['@label'];
                     ff['@FieldName'] = 'Form :: ' + f['@label'];
                     ff['@type'] = f['@type'];
+                    if (f['@referenceFieldId'] != null)
+                        ff['@referenceFieldId'] = f['@referenceFieldId'];
+                    if (f['@intersectTypeId'] != null)
+                        ff['@intersectTypeId'] = f['@intersectTypeId'];
                     ff['@stepId'] = (<NodeModel>n).key;
                     ff['@VersionStepID'] = (<NodeModel>n).key;
 

@@ -162,8 +162,6 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         if (this.ed != null && this.ed.quill != null)
             this.quill = this.ed.quill;
 
-        //console.log(this.quill == null, this.step.settings.MessageBodyTemplate, e);
-
         if (this.quill != null) {
             let pos = this.quill.getSelection(true);
             let len = pos.index || this.quill.getLength();
@@ -191,12 +189,12 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
 
         let upstreamSteps = [];
         this.traverseDiagram(this.step.key, upstreamSteps);
-        //console.log('upstreamSteps',upstreamSteps, fields);
         fields.forEach(f => {
             let k = upstreamSteps.filter(u => u == f['@stepId']);
             if (k != null && k.length > 0) {
                 f['@FormFieldId'] = f['@id'] + '|' + f['@stepId'];
                 f['@FormLabel'] = 'Form :: ' + f['@label'];
+                
                 this.formFields.push(f);
                 if (f['@type'] == 'relationshipType') {
                     this.formRelationshipFields.push(f);

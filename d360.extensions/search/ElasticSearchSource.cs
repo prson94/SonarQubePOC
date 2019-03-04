@@ -872,6 +872,8 @@ namespace d360.extensions.search
                         sb.Append(", ");
                     else
                         bFirst = false;
+
+                    if (f.Value == null) continue;
                     sb.Append(" \"" + f.Key + "\" : \"" + f.Value.Replace("\r", "").Replace("\n", "").Replace("\t", "") + "\" ");
                 }
                 sb.Append(" } }\n");

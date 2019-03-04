@@ -423,7 +423,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.model.FieldType.LookupObjectType = null;
                 break;
         }
-        if (this.model.FieldType.Type == 'Date' && this.model.FieldType.DefaultValue != null) {
+        if (this.model.FieldType.Type == 'Date' && this.model.FieldType.DefaultValue != null) {            
             this.defaultDate = new Date(this.model.FieldType.DefaultValue);
         }
 
@@ -1093,10 +1093,17 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             });
         });
     }
-    private onDateSelectMethod(e: Date)
+
+    public onDateSelectMethod(e: Date)
     {
-        this.model.FieldType.DefaultValue = e.toISOString();
-        this.defaultDate = e;
+        this.model.FieldType.DefaultValue = this.getGovernDate(e);        
+    }
+
+    private getGovernDate(e: Date) {
+        if (e === null || e === undefined) {
+            return "";
+        }
+        return (e.getMonth() +1) + '/' + e.getDate() + '/' + e.getFullYear();
     }
   
     public isRelationshipWithMultipleCardinality(): boolean {

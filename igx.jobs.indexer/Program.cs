@@ -1,5 +1,4 @@
-﻿using ApplicationInsights.Helpers.WebJobs;
-using d360.core;
+﻿using d360.core;
 using d360.core.queue;
 using d360.extensions.search;
 using d360.utils.company;
