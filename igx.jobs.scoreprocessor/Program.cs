@@ -39,7 +39,7 @@ namespace igx.jobs.scoreprocessor
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
 #if DEBUG
-                companies = companies.Where(x => x.CompanyID == 6).ToList();
+                //companies = companies.Where(x => x.CompanyID == 6).ToList();
 #endif
 
                 companies.AsParallel().WithDegreeOfParallelism(3).ForAll(c =>
@@ -50,13 +50,19 @@ namespace igx.jobs.scoreprocessor
                         {
                             company.OpenWithRetry(RetryPolicy.DefaultFixed);
                             company.Execute("metrics.LoadFromStaging", commandTimeout: 1400);
-                            log.WriteLine("Processed scores for company {0}...", c.CompanyID);
+                            lock (log)
+                            {
+                                log.WriteLine("Processed scores for company {0}...", c.CompanyID);
+                            }
                         }
                     }
                     catch (Exception ex)
                     {
                         CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                        log.WriteLine($"Company [{c.CompanyID}]: [{ex.GetFullExceptionData()}]");
+                        lock (log)
+                        {
+                            log.WriteLine($"Company [{c.CompanyID}]: [{ex.GetFullExceptionData()}]");
+                        }
                     }
                 });
 

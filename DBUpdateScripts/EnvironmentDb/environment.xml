@@ -98,8 +98,10 @@
   <include file="scripts/GOV-6533.xml"/>
   <include file="scripts/GOV-6596.xml"/>
   <include file="scripts/GOV-6616.xml"/>
-  <include file="scripts/GOV-4770-C.xml"/>
+  <include file="scripts/GOV-4770-C.xml"/>  
   <include file="scripts/GOV-6652.xml"/>
   <include file="scripts/GOV-6653.xml"/>
-  <include file="scripts/GOV-6415.xml"/>
+  <include file="scripts/GOV-6662.xml"/>
+  <!-- Sprint 3 2019 Start -->
+  <include file="scripts/GOV-6415.xml"/>  
 </databaseChangeLog>

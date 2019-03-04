@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -594,6 +594,7 @@
     <Content Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-editor.component.html" />
     <Content Include="Scripts\app\components\shared\shortcuts\shortcut-list.component.html" />
     <Content Include="Scripts\app\components\sidebar\children\artifact-item-child-grid.component.html" />
+    <Content Include="Scripts\app\components\shared\tiles\tile-actions.component.html" />
     <Content Include="Scripts\app\components\workflowmonitor\workflowmonitor-list.component.html" />
     <Content Include="fonts\fontawesome-webfont.svg" />
     <Content Include="images\error.png" />
@@ -987,6 +988,7 @@
     <None Include="Properties\PublishProfiles\d3s-ui-us-east-UAT - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\LocalFolder.pubxml" />
     <Content Include="Views\Authentication\NoAccess.cshtml" />
+    <Content Include="Scripts\app\components\shared\relationship\dynamic-relationship-grid.component.html" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
