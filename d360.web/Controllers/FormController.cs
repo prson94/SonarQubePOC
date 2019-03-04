@@ -3038,7 +3038,11 @@ namespace d360.web.Controllers
             var targetObjectTypeID = isSubject ? intersectType.ObjectID : intersectType.SubjectID;
 
             var list = Company.Filter<FieldType>(f => f.Object == targetObjectType && f.ObjectID == targetObjectTypeID)
-                .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.ComplexRelationLookup.ToString() && i.Type != DataType.Relationship.ToString())
+                .Where(i => i.Type != DataType.Attribute.ToString() && 
+                        i.Type != DataType.FusionLookup.ToString() && 
+                        i.Type != DataType.ComplexRelationLookup.ToString() && 
+                        i.Type != DataType.Relationship.ToString() &&
+                        i.Type != DataType.JSON.ToString())
                 .Select(i => new { i.ID, i.Name })
                 .Distinct()
                 .ToDictionary(i => i.Name, i => i.ID);
