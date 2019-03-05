@@ -7243,7 +7243,8 @@ where v.id = {0}", id)).FirstOrDefault();
                                 cross apply dbo.GetAssetTextPathById(IA.ID, '{(isTargetFusion ? '.' : '/')}') P";
                 }
 
-                innerSql = $@"select	I.ID,
+                innerSql = $@"select	I.[Uid],
+                                I.ID,
                                 IntersectTypeID,
                                 case when I.Subject = @type and I.SubjectID = @id then I.Object else I.Subject end as Object,
 		                        case when I.Subject = @type and I.SubjectID = @id then I.ObjectID else I.SubjectID end as ObjectID,
@@ -7287,7 +7288,8 @@ where v.id = {0}", id)).FirstOrDefault();
 		                        cross apply dbo.GetAssetTextPathById(IA.ID, '{(isTargetFusion ? '.' : '/')}') P";
                 }
 
-                innerSql = $@"select	I.ID,
+                innerSql = $@"select	I.[Uid],
+                        I.ID,
                         IntersectTypeID,
                         case when I.Subject = @type and I.SubjectID = @id then
                             I.Object
@@ -7336,7 +7338,8 @@ where v.id = {0}", id)).FirstOrDefault();
                                 cross apply dbo.GetAssetTextPathById(IA.ID, '{(isTargetFusion ? '.' : '/')}') P";
                 }
 
-                innerSql = $@"select	I.ID,
+                innerSql = $@"select	I.[Uid],
+                    I.ID,
                     IntersectTypeID,
                     case when I.Object = @type and I.ObjectID = @id then
                         I.Subject
@@ -7367,18 +7370,8 @@ where v.id = {0}", id)).FirstOrDefault();
             where( (I.Object = @type and I.ObjectID = @id) {(includeInverse ? " or (I.Subject = @type  and I.SubjectID = @id) " : "")})
                     and IntersectTypeID = {intersectTypeID}";
             }
-
             
-
-            var querySql = $@"
-select  {columns} 
-        A.*
-from	(
-            {innerSql}
-        ) A 
-{joins} 
-";
-
+            var querySql = $"select {columns} A.* from ({innerSql}) A {joins}";
 
             var sql = string.Format(@"select * from ({0}) AA", querySql);
             sql = applyFilteringSuffix(sql, Request);
@@ -7391,8 +7384,6 @@ from	(
         [Route("export/{type}/{id:int}/relationships/{targetType}/{targetID:int}/{intersectTypeID:int}/excel.xls"), HttpGet]
         public HttpResponseMessage RelationshipsForObjectByTargetTypeExportExcel(SystemObjects type, int id, SystemObjects targetType, int targetID, int intersectTypeID)
         {
-
-
             var results = this.RelationshipsForObjectByTargetType(type, id, targetType, targetID, intersectTypeID);
 
             //get the fields for the spreadsheet
@@ -7407,6 +7398,7 @@ from	(
 
             var colIndex = 0;
 
+            document.SetCellValue(1, ++colIndex, "Uid");
             document.SetCellValue(1, ++colIndex, "Name");
             document.SetCellValue(1, ++colIndex, "Critical");
 
@@ -7426,6 +7418,7 @@ from	(
                 var dataColIndex = 0;
                 rowIndex++;
 
+                document.SetCellValue(rowIndex, ++dataColIndex, row.Uid ?? "");
                 document.SetCellValue(rowIndex, ++dataColIndex, row.Name ?? "");
                 document.SetCellValue(rowIndex, ++dataColIndex, row.Critical == 1 ? "Critical" : "Normal");
 
@@ -7470,8 +7463,6 @@ from	(
 
             var document = new SLDocument();
             document.AddWorksheet("MapItems");
-
-            
 
             #region Create the list sheet
 
@@ -7554,7 +7545,6 @@ from	(
                 models
             );
         }
-
 
         [Route("{type}/{id:int}/nymAllocations")]
         public HttpResponseMessage GetNymAllocations(SystemObjects type, int id)

@@ -765,6 +765,7 @@ where	(I.Subject = @obj and I.SubjectID = @objid and I.ObjectType = @objtype and
 
         public static string ObjectRelationships = @"
 select	ID,
+        [Uid],
         IntersectTypeID,
         case when (Subject = @type and SubjectID = @id) then Object else Subject end as Object,
 		case when (Subject = @type and SubjectID = @id) then ObjectID else SubjectID end as ObjectID,
