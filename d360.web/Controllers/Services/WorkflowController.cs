@@ -3078,8 +3078,11 @@ order by wi.StartedOn desc";
                                 }
                             }
 
+                            var userHasOpenAssignment = Company.WorkflowItemAssignments.Any(i => i.ItemID == detail.ItemID && (i.ItemStepID == detail.ItemStepID || i.ItemStepID == null) && i.ResourceObject == "Resource"
+                                && i.ResourceObjectID == Company.CurrentResourceID);
+
                             detail.AssignedUsers = users;
-                            detail.IsAssignedLoginUser = users.Where(x => x.ResourceID == Company.CurrentResourceID).Count() == 0 ? false : true;
+                            detail.IsAssignedLoginUser = userHasOpenAssignment && users.Any(x => x.ResourceID == Company.CurrentResourceID);
                         }
                     }
 

@@ -1,0 +1,51 @@
+<div class="row">
+    <div class="col s12">
+        <d3s-loading [isLoading]="isLoading"></d3s-loading>
+        <div class="tile tile-detail"
+            *ngIf="!isLoading">
+            <header>Glossary</header>
+            <input type="text"
+                [(ngModel)]="searchValue"
+                placeholder="Search"
+                style="width: 100%;margin-bottom:10px;">
+            <p-treeTable [value]="ArtifactTypes | treeSearch: searchValue:'Name'"
+                selectionMode="single"
+                [(selection)]="selectedRow"
+                (selectionChange)="navigate($event.data)"
+                [style]="{ 'width': '100%' }">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="width: 20%">Name</th>
+                        <th style="width: 70%">Description</th>
+                        <th style="width: 5%">Item Count</th>
+                        <th style="width: 5%">Select Item</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body"
+                    let-rowNode
+                    let-item="rowData">
+                    <tr [ttSelectableRow]="rowNode">
+                        <td>
+                            <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
+                            {{item.Name}}
+                        </td>
+                        <td *ngIf="item.Description;else other_content"
+                            [innerHtml]="item.Description"></td>
+                        <ng-template #other_content>
+                            <td>&nbsp;</td>
+                        </ng-template>
+                        <td style="overflow: auto; padding-left: 15px; text-align: center">
+                            {{item.kount}}
+                        </td>
+                        <td style="overflow: auto; padding-left: 15px; text-align: center">
+                            <d3s-preview-tooltip objectType="ArtifactType"
+                                [objectId]="item.ID"
+                                icon="info"
+                                (click)="navigate(item)"></d3s-preview-tooltip>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-treeTable>
+        </div>
+    </div>
+</div>

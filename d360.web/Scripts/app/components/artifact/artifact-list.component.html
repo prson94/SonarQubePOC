@@ -1,0 +1,9 @@
+<div class="row">
+    <div class="col s12">
+        <d3s-loading [isLoading]="isLoading"></d3s-loading>
+        <div class="tile tile-detail"
+            *ngIf="!isLoading">
+            <d3s-artifact-grid [artifactType]="artifactType"></d3s-artifact-grid>
+        </div>
+    </div>
+</div>

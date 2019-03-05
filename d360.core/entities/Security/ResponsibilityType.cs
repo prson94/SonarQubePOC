@@ -23,6 +23,8 @@ namespace d360.core.entities
 
         public int? UpdatedBy { get; set; }
 
+        public Guid UID { get; set; }
+
         #endregion
         
         [IgnoreDataMember, ForeignKey("ResponsibilityTypeID")]
