@@ -128,6 +128,7 @@
     <Compile Include="entities\Relation\MapTypeTemplateItem.cs" />
     <Compile Include="entities\ReportResponsibility.cs" />
     <Compile Include="entities\ResourcePasswordReset.cs" />
+    <Compile Include="entities\Security\ResponsibilityTypeAllocationViewModel.cs" />
     <Compile Include="entities\Security\ResponsibilityTypeRelationOverrideItem.cs" />
     <Compile Include="entities\Security\ResponsibilityTypeRelationRule.cs" />
     <Compile Include="entities\ShoppingCart.cs" />
