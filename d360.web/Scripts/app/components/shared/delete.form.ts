@@ -15,6 +15,7 @@ import { SharedFormMessageModule } from './form-message.part';
 export class DeleteForm  {
     @Input() model: any;
     @Input() uri: string;
+    @Input() deleteButtonText: string;
     @Input() method: string = 'post';
     @Input() prompt: string;
     @Input() callback: Function;
