@@ -2940,6 +2940,23 @@
             <param name="executionUid">The execution's unique identifier to retrieve status for.</param>
             <returns></returns>
         </member>
+        <member name="T:d360.web.Controllers.V2.ResponsibilitiesController">
+            <summary>
+            This service houses all endpoints handling glossary-related data such as artifacts and models.
+            </summary>
+        </member>
+        <member name="M:d360.web.Controllers.V2.ResponsibilitiesController.GetResponsibilityTypesAsync">
+            <summary>
+            Retrieves a list of all responsibility types.
+            </summary>
+            <returns>Returns a list of responsibility types.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.ResponsibilitiesController.GetResponsibilityTypeDetailsAsync">
+            <summary>
+            Retrieves a list of all responsibility types.  The allocations for those types and any rules defined for those types.
+            </summary>
+            <returns>Returns a list of responsibility types.</returns>
+        </member>
         <member name="M:d360.web.Controllers.D3SApiController.GetFieldFiltersByType(d360.core.SystemObjects,System.Int32)">
             <summary>
             Gets a list of available field-level filters for a grid in the UI. This includes standard/custom fields, relationships, attributes, owner.

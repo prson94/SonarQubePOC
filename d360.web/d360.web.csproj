@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -297,6 +297,7 @@
     <Compile Include="Controllers\V2\MetricsController.cs" />
     <Compile Include="Controllers\V2\RelationshipsController.cs" />
     <Compile Include="Controllers\V2\AssetsController.cs" />
+    <Compile Include="Controllers\V2\ResponsibilitiesController.cs" />
     <Compile Include="Controllers\WebAnalyticsController.cs" />
     <Compile Include="Controllers\Services\AgentController.cs" />
     <Compile Include="Controllers\Services\WorkflowController.cs" />
