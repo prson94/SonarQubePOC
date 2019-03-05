@@ -1210,23 +1210,22 @@ order by wi.StartedOn desc";
                 return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Cannot find the specified workflow instance.");
 
             // get the itemsteps for this workflow instance
-
             var sql = @"
                 select 
 	                si.* 
                 from 
 	                workflow.itemstep si 
 	                outer apply (
-		                select case when vs.Settings.value('/settings[1]/WaitForAllTransitions[1]','varchar(max)') = 'true' and vs.StepType = 2 and vs.ActivityType = 3 then
+		                select case when vs.Settings.value('/settings[1]/WaitForAllTransitions[1]','varchar(max)') = 'true' then
 			                1
 		                else
 			                0
 		                end as [value]
 		                from workflow.versionstep vs where vs.id = si.stepid
-	                ) waitForAllForm
+	                ) waitForAll
                 where 
-	                si.itemid = @itemId 
-	                and (waitForAllForm.[value] = 0 or (waitForAllForm.[value] = 1 and si.Fields.value('fields[1]/@TotalResources[1]','varchar(max)') is not null))
+	                si.itemid = @itemId
+	                and (waitForAll.[value] = 0 or (waitForAll.[value] = 1 and si.id = (select max(id) from workflow.itemstep where itemid = si.itemid and stepid = si.stepid)))
                 order by si.id";
 
             var itemSteps = Company.Query<WorkflowItemStep>(sql, new { itemId });
