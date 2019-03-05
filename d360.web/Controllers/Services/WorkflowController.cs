@@ -1211,7 +1211,25 @@ order by wi.StartedOn desc";
 
             // get the itemsteps for this workflow instance
 
-            var itemSteps = Company.WorkflowItemSteps.Where(x => x.ItemID == itemId);
+            var sql = @"
+                select 
+	                si.* 
+                from 
+	                workflow.itemstep si 
+	                outer apply (
+		                select case when vs.Settings.value('/settings[1]/WaitForAllTransitions[1]','varchar(max)') = 'true' and vs.StepType = 2 and vs.ActivityType = 3 then
+			                1
+		                else
+			                0
+		                end as [value]
+		                from workflow.versionstep vs where vs.id = si.stepid
+	                ) waitForAllForm
+                where 
+	                si.itemid = @itemId 
+	                and (waitForAllForm.[value] = 0 or (waitForAllForm.[value] = 1 and si.Fields.value('fields[1]/@TotalResources[1]','varchar(max)') is not null))
+                order by si.id";
+
+            var itemSteps = Company.Query<WorkflowItemStep>(sql, new { itemId });
 
             var stepIDs = itemSteps.Select(y => y.StepID).ToArray();
             var steps = Company.WorkflowVersionSteps.Where(x => stepIDs.Contains(x.ID)).ToList();
