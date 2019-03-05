@@ -14,7 +14,7 @@ export class AuditService extends BaseService {
     getAuditData(objectID: number, objectType: string, pageNum: number, pageSize: number, sortOrder: SortOrder, sortField?: string, filters?: GridFilterExpression[]): Promise<AuditResults> {
         let sortCol = sortField != undefined ? sortField : "";
 
-        let url = `overlays/${objectType}/${objectID}/auditcombined.json?pagenum=${pageNum}&pagesize=${pageSize}&sortdatafield=${sortField}&sortorder=${sortOrder == SortOrder.None ? "" : (sortOrder == SortOrder.Ascending ? "asc" : "desc")}`;
+        let url = `api/v2/audit/${objectType}/${objectID}/auditcombined.json?pagenum=${pageNum}&pagesize=${pageSize}&sortdatafield=${sortField}&sortorder=${sortOrder == SortOrder.None ? "" : (sortOrder == SortOrder.Ascending ? "asc" : "desc")}`;
         let indx = 0;
 
         if (filters != undefined) {
@@ -33,7 +33,7 @@ export class AuditService extends BaseService {
     }
 
     exportToExcel(objectID: number, objectType: string, name: string, filters?: GridFilterExpression[]) {        
-        let url = `overlays/${objectType}/${objectID}/download/excel/audit.xls`;
+        let url = `api/v2/audit/${objectType}/${objectID}/download/excel/audit.xls`;
         let indx = 0;
 
         if (filters != undefined) {
