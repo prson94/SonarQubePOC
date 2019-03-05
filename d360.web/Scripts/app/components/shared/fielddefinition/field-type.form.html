@@ -153,15 +153,15 @@
                 </div>
                 <div class="col s3">
                     <div id='MinimumLengthTip' class="FieldName">Minimum {{model.FieldType.Type == 'Text' ? "Length" : "Value"}}</div>
-                    <input name="minLength" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}" [disabled]="CheckMinRequired(model)" [(ngModel)]="model.FieldType.MinimumLength" (change)="validateNumber(model.FieldType.Type)" style="width: 98%; display: block;" />
+                    <input name="minLength" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}" [disabled]="CheckMinRequired(model)" [(ngModel)]="model.FieldType.MinimumLength" (keyup)="validateNumber(model.FieldType.Type)" style="width: 98%; display: block;" />
                 </div>
                 <div class="col s3">
                     <div id='MaximumLengthTip' class="FieldName">Maximum {{model.FieldType.Type == 'Text' ? "Length" : "Value"}}</div>
-                    <input name="maxLength" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}" [(ngModel)]="model.FieldType.MaximumLength" (change)="validateNumber(model.FieldType.Type)" style="width: 98%; display: block;" />
+                    <input name="maxLength" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}" [(ngModel)]="model.FieldType.MaximumLength" (keyup)="validateNumber(model.FieldType.Type)" style="width: 98%; display: block;" />
                 </div>
 				<div *ngIf="model.FieldType.Type == 'Decimal'" class="col s3">
                     <div id='decimalPlaces' class="FieldName">Decimal Places</div>
-                    <input name="Precision" pInputText type="number" [(ngModel)]="model.FieldType.Precision" (change)="validateNumber(model.FieldType.Type)" min="0" max="5" style="width: 98%; display: block;" />
+                    <input name="Precision" type="number" [(ngModel)]="model.FieldType.Precision" (change)="validateNumber(model.FieldType.Type)" min="0" max="5" style="width: 98%; display: block;" />
                 </div>
             </div>
             <div class="row" *ngIf="model.FieldType.Pattern?.length > 0">
@@ -207,7 +207,7 @@
                         <input [(ngModel)]="defaultLinkAdress" style="width: 100%;" type="string" [ngModelOptions]="{standalone: true}">
                         <div>(Link Url: Your Url should start with a protocol prefix.  For example 'http://' or 'https://')</div>
                     </div>
-                    <input *ngIf="['Number','Decimal'].indexOf(model.FieldType.Type) > -1" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}" (change)="validateNumber(model.FieldType.Type)" [(ngModel)]="model.FieldType.DefaultValue" style="width: 98%; display: block;" [ngModelOptions]="{standalone: true}" />
+                    <input *ngIf="['Number','Decimal'].indexOf(model.FieldType.Type) > -1" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}" (keyup)="validateNumber(model.FieldType.Type)" [(ngModel)]="model.FieldType.DefaultValue" style="width: 98%; display: block;" [ngModelOptions]="{standalone: true}" />
                 </div>
                 <div class="col l1 m1 s12" *ngIf="model.FieldType.Type == 'Lookup'">
                     <p-checkbox binary="true" [(ngModel)]="model.FieldType.AllowAllValue" [ngModelOptions]="{standalone: true}"></p-checkbox>
@@ -216,7 +216,7 @@
                     <input pInputText type="text" [(ngModel)]="model.FieldType.AllowAllLabel" [ngModelOptions]="{standalone: true}" style="width: 100%" [disabled]="!model.FieldType.AllowAllValue" />
                 </div>
                 <div class="col l5 m5 s12" *ngIf="model.FieldType.Type == 'Number' || model.FieldType.Type == 'Decimal'">
-                    <input name="validationIncrement" type="number" [(ngModel)]="model.FieldType.Increment" (change)="validateNumber(model.FieldType.Type)" style="width: 98%; display: block;" />
+                    <input name="validationIncrement" type="number" [(ngModel)]="model.FieldType.Increment" (keyup)="validateNumber(model.FieldType.Type)" style="width: 98%; display: block;" />
                 </div>
             </div>
         </simple-accordion>
