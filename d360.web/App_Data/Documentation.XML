@@ -2941,11 +2941,11 @@
             </summary>
             <returns>Returns a list of responsibility types.</returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.ResponsibilitiesController.GetResponsibilityTypeDetailsAsync">
+        <member name="M:d360.web.Controllers.V2.ResponsibilitiesController.GetResponsibilityTypeAllocationsAsync(System.Guid)">
             <summary>
-            Retrieves a list of all responsibility types.  The allocations for those types and any rules defined for those types.
+            Retrieves a list of all allocations for the specified responsibility type.
             </summary>
-            <returns>Returns a list of responsibility types.</returns>
+            <returns>Returns a list of asset types a responsibility rule is allocated to.</returns>
         </member>
         <member name="M:d360.web.Controllers.D3SApiController.GetFieldFiltersByType(d360.core.SystemObjects,System.Int32)">
             <summary>

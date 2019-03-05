@@ -66,21 +66,21 @@ namespace d360.web.Controllers.V2
                 return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
             }
         }
-
+        
         /// <summary>
-        /// Retrieves a list of all responsibility types.  The allocations for those types and any rules defined for those types.
+        /// Retrieves a list of all allocations for the specified responsibility type.
         /// </summary>
-        /// <returns>Returns a list of responsibility types.</returns>
+        /// <returns>Returns a list of asset types a responsibility rule is allocated to.</returns>
         [
             HttpGet,
-            Route("typedetails"),
+            Route("types/{responsibilityTypeUid:Guid}/allocations"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
-            SwaggerResponse(HttpStatusCode.OK, "A list of responsibility types.", typeof(List<ResponsibilityTypeViewModel>)),
+            SwaggerResponse(HttpStatusCode.OK, "A list of asset type allocations for the given responsibility type uid.", typeof(List<ResponsibilityTypeAllocationViewModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
-        public async Task<HttpResponseMessage> GetResponsibilityTypeDetailsAsync()
+        public async Task<HttpResponseMessage> GetResponsibilityTypeAllocationsAsync(Guid responsibilityTypeUid)
         {
-            var prefix = "Responsibilities.GetResponsibilityTypesAsync => ";
+            var prefix = "Responsibilities.GetResponsibilityTypeAllocationsAsync => ";
             var errorMessage = "";
 
             if (!Company.CurrentResourceIsAdmin)
@@ -88,11 +88,21 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                var responsibilityTypes = await Company.QueryAsync<ResponsibilityTypeViewModel>(@"
-                            select [Name], [Description], [uid], [UpdatedOn], [UpdatedBy] from [dbo].[responsibilitytype] order by [Name] asc
-                            ");
+                var responsibilityTypeAllocations = await Company.QueryAsync<ResponsibilityTypeAllocationViewModel>(@"
+                            select 
+	                            att.Class as AssetClass,
+	                            att.[Name] as AssetTypeName,
+	                            att.[uid] as AssetTypeUid,
+	                            rtr.PermissionsBitMask as PermissionsMask
+                            from 
+	                            [dbo].responsibilitytype rt
+	                            inner join [dbo].responsibilitytyperelation rtr on (rt.id = rtr.ResponsibilityTypeID)
+	                            inner join [dbo].assettype att on(att.[Object] = rtr.ObjectType and att.ObjectID = rtr.ObjectID)
+                            where
+	                            rt.[uid] = @uid
+                            ", new { uid = responsibilityTypeUid.ToString() });
 
-                return Request.CreateResponse(HttpStatusCode.OK, responsibilityTypes);
+                return Request.CreateResponse(HttpStatusCode.OK, responsibilityTypeAllocations);
             }
             catch (Exception ex)
             {
@@ -104,5 +114,6 @@ namespace d360.web.Controllers.V2
                 return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
             }
         }
+
     }
 }
