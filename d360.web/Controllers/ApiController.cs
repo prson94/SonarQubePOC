@@ -4467,7 +4467,8 @@ select  R.ID,
         R.Name, 
         R.Context,
         D.Name as ObjectName, 
-        O.Name as ResponsibilityType 
+        O.Name as ResponsibilityType, 
+		R.LastRunOn 
 from    ResponsibilityTypeRelationRule R 
         inner join ResponsibilityType O on O.ID = R.ResponsibilityTypeID and O.ID = @id 
         left join AssetType D on D.Object = R.Object and D.ObjectID = R.ObjectID", 

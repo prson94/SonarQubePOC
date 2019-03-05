@@ -12642,6 +12642,32 @@ order by	case
             }
         }
 
+        [HttpDelete, Route("DeleteResponsibilityTypeRelationRuleDateByID"), NonNullableParameters]
+        public JsonResult DeleteResponsibilityTypeRelationRuleDateByID(int id)
+        {
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                var model = Company.GetById<ResponsibilityTypeRelationRule>(id);
+                if (model == null) throw new NotFoundException("responsibility type rule");
+
+                model.LastRunOn = null;
+                Company.Update(model);
+                return jsonSuccess("Item date successfully removed.", id.ToString(), "edit", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
         [HttpGet, ActionName("ResponsibilityTypeRelationRule"), Route("ResponsibilityTypeRelationRule"), NonNullableParameters]
         public JsonNetResult GetResponsibilityTypeRelationRule(int id)
         {
