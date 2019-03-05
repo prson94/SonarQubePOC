@@ -1,63 +1,14 @@
-﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
-import { NgForm } from '@angular/forms';
-import { FieldsService } from '../../../services/fields.service';
-import { AttributeTypeService } from '../../../services/attribute-type.service';
-import { AttributeType } from '../../../models/attribute-type.model';
-import { DropdownOption } from '../../../models/dropdown.model';
+﻿import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {FieldsService} from '../../../services/fields.service';
+import {AttributeTypeService} from '../../../services/attribute-type.service';
+import {AttributeType} from '../../../models/attribute-type.model';
+import {DropdownOption} from '../../../models/dropdown.model';
 
 import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-admin-attribute-type-editor',
-    template: ` 
-                <header>{{action}} Attribute Group</header>                
-                <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <div class="row" *ngIf="!isLoading">
-                    <div class="form-instructions">Add a report to the list of reports, which can then be exposed in other areas of this system.</div>            
-                    <form (ngSubmit)="onSubmit()" #attributeForm="ngForm">                                                
-                        <div class="col l8 s12">
-                            <div class="FieldName">Name</div>
-                            <div><input required style="width: 100%;" name="name" type="string" [(ngModel)]="editedAttribute.Name" #name="ngModel" maxlength="250"></div>     
-                            <div [hidden]="name.valid || name.pristine">A name is required</div>                                                   
-                        </div>   
-                        <div class="col l4 s12">
-                            <div class="FieldName">Show Name In Tree</div>
-                            <div><input name="showInTree" type="checkbox" [(ngModel)]="editedAttribute.ShowNameInTree" /></div>
-                        </div>                                                      
-                        <div *ngIf="!(editedAttribute.ParentID > 0)" class="col s12">
-                            <div class="FieldName">Category</div>
-                            <div>                                
-                                <select required [(ngModel)]="editedAttribute.AttributeTypeCategoryID" name="category" #category="ngModel" style="width:100%;">
-                                  <option *ngFor="let p of categoryTypes" [value]="p.value">{{p.title}}</option>
-                                </select>
-                            </div>       
-                            <div [hidden]="category.valid || category.pristine">A category is required</div>                     
-                        </div>                           
-                        <div *ngIf="attribute" class="col l6 s12">
-                            <div class="FieldName">Text Format</div>
-                            <div><input style="width: 100%;" name="textFormat" type="string" [(ngModel)]="editedAttribute.DisplayFormat"></div>                                        
-                        </div>                                                
-                        <div *ngIf="attribute" class="col l6 s12">
-                            <div class="FieldName">Field Tokens</div>
-                            <div>
-                                <select name="fieldTokens" style="width:100%;" (change)="fieldTokenSelect($event.target)">                                    
-                                    <option></option>
-                                  <option *ngFor="let p of fieldTypes" [value]="p.value">{{p.title}}</option>
-                                </select>
-                            </div>
-                        </div>                                                
-                        <div class="col s12">
-                            <div class="FieldName">Description</div>
-                            <p-editor name="description" [style]="{'height':'150px'}" [(ngModel)]="editedAttribute.Description"></p-editor>
-                        </div>                           
-                        <div class="col s12">&nbsp;</div>
-                        <div class="col s12">
-                            <button pButton type="submit" [disabled]="!attributeForm.form.valid" style="width: 150px;" label="Save"></button>                            
-                            <button pButton type="button" (click)="closeClick.emit();" label="Close" style="width: 150px;"></button>
-                        </div>                    
-                    </form>                           
-                </div>
-                `,
+    templateUrl: './admin-attribute-type-editor.component.html',
     providers: [AttributeTypeService, FieldsService],
 })
 
@@ -67,25 +18,25 @@ export class AdminAttributeTypeEditor {
 
     @Output() closeClick = new EventEmitter();
     @Output() saveClick = new EventEmitter();
+
     action: string = "Edit";
     isLoading: boolean = false;
 
     editedAttribute: AttributeType;
     categoryTypes: DropdownOption[] = [];
     fieldTypes: DropdownOption[] = [];
-    
 
-    constructor(private attributeTypeService: AttributeTypeService, private fieldsService: FieldsService) {
-        
-    }
+    constructor(
+        private attributeTypeService: AttributeTypeService,
+        private fieldsService: FieldsService
+    ) {}
 
-    ngOnInit() {        
+    ngOnInit() {
         if (this.attribute != undefined) {
             this.editedAttribute = _.cloneDeep(this.attribute);
-            if (this.editedAttribute.DisplayFormat == null) this.editedAttribute.DisplayFormat = "";          
+            if (this.editedAttribute.DisplayFormat == null) this.editedAttribute.DisplayFormat = "";
             this.loadAttributeFields();
-        }
-        else {
+        } else {
             this.editedAttribute = new AttributeType();
             this.editedAttribute.ParentID = this.parentID;
             this.editedAttribute.ShowNameInTree = true;
@@ -93,12 +44,16 @@ export class AdminAttributeTypeEditor {
             this.editedAttribute.AttributeTypeCategoryID = 0;
             this.action = "Add";
         }
-        if (this.editedAttribute.ParentID <= 0 && this.editedAttribute.AttributeTypeCategoryID == null) this.editedAttribute.AttributeTypeCategoryID = 0;
-        this.loadCategoryTypes(this.editedAttribute.ParentID);        
+
+        if (this.editedAttribute.ParentID <= 0 && this.editedAttribute.AttributeTypeCategoryID == null) {
+            this.editedAttribute.AttributeTypeCategoryID = 0;
+        }
+
+        this.loadCategoryTypes(this.editedAttribute.ParentID);
     }
 
     onSubmit() {
-        this.saveClick.emit({ attribute: this.editedAttribute, action: this.attribute ? "new" : "edit"});
+        this.saveClick.emit({attribute: this.editedAttribute, action: this.attribute ? "new" : "edit"});
     }
 
     private loadAttributeFields() {
@@ -106,15 +61,18 @@ export class AdminAttributeTypeEditor {
             .then(result => {
                 this.fieldTypes = [];
                 for (let field of result) {
-                    this.fieldTypes.push({ title: field.FriendlyName, value: '{' + field.Name + '}' });                    
+                    this.fieldTypes.push({title: field.FriendlyName, value: '{' + field.Name + '}'});
                 }
             });
     }
 
-    private loadCategoryTypes(parentID? : number) {
+    private loadCategoryTypes(parentID?: number) {
         this.isLoading = true;
-        this.attributeTypeService.getAttributeCategoryTypes()
-            .then(result => {                
+
+        this
+            .attributeTypeService
+            .getAttributeCategoryTypes()
+            .subscribe(result => {
                 this.categoryTypes = result;
                 this.isLoading = false;
             });
@@ -123,4 +81,4 @@ export class AdminAttributeTypeEditor {
     private fieldTokenSelect(item) {
         this.editedAttribute.DisplayFormat += item.value;
     }
-};
+}

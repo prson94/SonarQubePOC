@@ -1,0 +1,82 @@
+<header>{{action}} Attribute Group</header>
+<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div class="row"
+     *ngIf="!isLoading">
+    <div class="form-instructions">Add a report to the list of reports, which can then be exposed in other areas of this
+        system.
+    </div>
+    <form (ngSubmit)="onSubmit()"
+          #attributeForm="ngForm">
+        <div class="col l8 s12">
+            <div class="FieldName">Name</div>
+            <div><input required style="width: 100%;"
+                        name="name"
+                        type="string"
+                        [(ngModel)]="editedAttribute.Name"
+                        #name="ngModel"
+                        maxlength="250"></div>
+            <div [hidden]="name.valid || name.pristine">A name is required</div>
+        </div>
+        <div class="col l4 s12">
+            <div class="FieldName">Show Name In Tree</div>
+            <div><input name="showInTree"
+                        type="checkbox"
+                        [(ngModel)]="editedAttribute.ShowNameInTree"/></div>
+        </div>
+        <div *ngIf="!(editedAttribute.ParentID > 0)"
+             class="col s12">
+            <div class="FieldName">Category</div>
+            <div>
+                <select required
+                        [(ngModel)]="editedAttribute.AttributeTypeCategoryID"
+                        name="category"
+                        #category="ngModel"
+                        style="width:100%;">
+                    <option *ngFor="let p of categoryTypes"
+                            [value]="p.value">{{p.title}}</option>
+                </select>
+            </div>
+            <div [hidden]="category.valid || category.pristine">A category is required</div>
+        </div>
+        <div *ngIf="attribute"
+             class="col l6 s12">
+            <div class="FieldName">Text Format</div>
+            <div><input style="width: 100%;"
+                        name="textFormat"
+                        type="string"
+                        [(ngModel)]="editedAttribute.DisplayFormat"></div>
+        </div>
+        <div *ngIf="attribute"
+             class="col l6 s12">
+            <div class="FieldName">Field Tokens</div>
+            <div>
+                <select name="fieldTokens"
+                        style="width:100%;"
+                        (change)="fieldTokenSelect($event.target)">
+                    <option></option>
+                    <option *ngFor="let p of fieldTypes"
+                            [value]="p.value">{{p.title}}</option>
+                </select>
+            </div>
+        </div>
+        <div class="col s12">
+            <div class="FieldName">Description</div>
+            <p-editor name="description"
+                      [style]="{'height':'150px'}"
+                      [(ngModel)]="editedAttribute.Description"></p-editor>
+        </div>
+        <div class="col s12">&nbsp;</div>
+        <div class="col s12">
+            <button pButton
+                    type="submit"
+                    [disabled]="!attributeForm.form.valid"
+                    style="width: 150px;"
+                    label="Save"></button>
+            <button pButton
+                    type="button"
+                    (click)="closeClick.emit();"
+                    label="Close"
+                    style="width: 150px;"></button>
+        </div>
+    </form>
+</div>
