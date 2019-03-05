@@ -33,4 +33,23 @@ namespace d360.core.entities
         [IgnoreDataMember, ForeignKey("ResponsibilityTypeID")]
         public virtual ICollection<ResponsibilityTypeRelation> ResponsibilityTypeRelations { get; set; }
     }
+
+    [DataContract(Namespace = NAMESPACE)]
+    public class ResponsibilityTypeViewModel : BaseObject
+    {
+        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public Guid uid { get; set; }
+
+        [DataMember]
+        public string Name { get; set; }
+
+        [DataMember]
+        public string Description { get; set; }
+
+        [DataMember]
+        public DateTime? UpdatedOn { get; set; }
+
+        [DataMember]
+        public int? UpdatedBy { get; set; }
+    }
 }
