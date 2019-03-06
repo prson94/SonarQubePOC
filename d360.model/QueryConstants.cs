@@ -765,6 +765,7 @@ where	(I.Subject = @obj and I.SubjectID = @objid and I.ObjectType = @objtype and
 
         public static string ObjectRelationships = @"
 select	ID,
+        [Uid],
         IntersectTypeID,
         case when (Subject = @type and SubjectID = @id) then Object else Subject end as Object,
 		case when (Subject = @type and SubjectID = @id) then ObjectID else SubjectID end as ObjectID,
@@ -790,7 +791,7 @@ from	AssetType T
 								else cast(0 as bit)
 							end as AllowAttributes
 					from	AttributeTypeRelation
-					where	ObjectType = 'PolicyType' and ObjectID = T.ObjectID
+					where	ObjectType = 'PolicyType' and ObjectID = T.ObjectID  
 					) R
 where T.[object]='PolicyType' and	T.ObjectID = @id";
 
@@ -803,9 +804,9 @@ from	AssetType T
 								else cast(0 as bit)
 							end as AllowAttributes
 					from	AttributeTypeRelation
-					where	ObjectType = 'RuleType' and ObjectID = T.ObjectID
+					where	ObjectType = 'RuleType' and ObjectID = T.ObjectID 
 					) R
-where	T.ObjectID = @id";
+where T.[object]='RuleType' and		T.ObjectID = @id";
 
         public static string PromotionHistoryList = @"
 select	ID,

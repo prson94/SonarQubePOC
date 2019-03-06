@@ -1046,6 +1046,10 @@ from    api.ExecutionAsset T
             else
             {
                 var uidDupes = import.GroupBy(i => i.Uid).Where(i => i.Count() > 1).Select(i => new { Uid = i.Key, Count = i.Count() }).ToList();
+                if (isInsert)
+                {
+                    uidDupes.RemoveAll(i => i.Uid == Guid.Empty); // No need to count empty Uids if this is an insert.
+                }
                 if (uidDupes.Any())
                 {
                     execution.ErrorMessage = $"Duplicate Asset Uids: {string.Join(", ", uidDupes.Select(i => i.Uid.ToString()))}. Identifiers must be unique within a batch.";

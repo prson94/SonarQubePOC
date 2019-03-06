@@ -1210,8 +1210,25 @@ order by wi.StartedOn desc";
                 return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Cannot find the specified workflow instance.");
 
             // get the itemsteps for this workflow instance
+            var sql = @"
+                select 
+	                si.* 
+                from 
+	                workflow.itemstep si 
+	                outer apply (
+		                select case when vs.Settings.value('/settings[1]/WaitForAllTransitions[1]','varchar(max)') = 'true' then
+			                1
+		                else
+			                0
+		                end as [value]
+		                from workflow.versionstep vs where vs.id = si.stepid
+	                ) waitForAll
+                where 
+	                si.itemid = @itemId
+	                and (waitForAll.[value] = 0 or (waitForAll.[value] = 1 and si.id = (select max(id) from workflow.itemstep where itemid = si.itemid and stepid = si.stepid)))
+                order by si.id";
 
-            var itemSteps = Company.WorkflowItemSteps.Where(x => x.ItemID == itemId);
+            var itemSteps = Company.Query<WorkflowItemStep>(sql, new { itemId });
 
             var stepIDs = itemSteps.Select(y => y.StepID).ToArray();
             var steps = Company.WorkflowVersionSteps.Where(x => stepIDs.Contains(x.ID)).ToList();
@@ -3078,8 +3095,11 @@ order by wi.StartedOn desc";
                                 }
                             }
 
+                            var userHasOpenAssignment = Company.WorkflowItemAssignments.Any(i => i.ItemID == detail.ItemID && (i.ItemStepID == detail.ItemStepID || i.ItemStepID == null) && i.ResourceObject == "Resource"
+                                && i.ResourceObjectID == Company.CurrentResourceID);
+
                             detail.AssignedUsers = users;
-                            detail.IsAssignedLoginUser = users.Where(x => x.ResourceID == Company.CurrentResourceID).Count() == 0 ? false : true;
+                            detail.IsAssignedLoginUser = userHasOpenAssignment && users.Any(x => x.ResourceID == Company.CurrentResourceID);
                         }
                     }
 
