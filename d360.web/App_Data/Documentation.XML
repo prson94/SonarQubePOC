@@ -2951,10 +2951,18 @@
             </summary>
             <returns>Returns a list of responsibility types.</returns>
         </member>
+        <member name="M:d360.web.Controllers.V2.ResponsibilitiesController.GetResponsibilityTypesByAssetTypeAsync(System.Guid)">
+            <summary>
+            Retrieves a list of responsibility types that are applicable for the specified AssetTypeUid.
+            </summary>
+            <param name="assetTypeUid">The unique identifier of the asset type.</param>
+            <returns>Returns a list of responsibility types.</returns>
+        </member>
         <member name="M:d360.web.Controllers.V2.ResponsibilitiesController.GetResponsibilityTypeAllocationsAsync(System.Guid)">
             <summary>
             Retrieves a list of all allocations for the specified responsibility type.
             </summary>
+            <param name="responsibilityTypeUid">The unique identifier of the responsibility type to get allocations for.</param>
             <returns>Returns a list of asset types a responsibility rule is allocated to.</returns>
         </member>
         <member name="M:d360.web.Controllers.D3SApiController.GetFieldFiltersByType(d360.core.SystemObjects,System.Int32)">
