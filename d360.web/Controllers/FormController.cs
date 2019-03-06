@@ -2946,8 +2946,14 @@ namespace d360.web.Controllers
         public JsonNetResult FieldType_RelationLookup_DisplayFields(int intersectTypeID, SystemObjects type, int id)
         {
             var list = Company.GetFieldTypesByObject(type, id)
-                .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.Relationship.ToString()  && i.Type != DataType.OwnershipLookup.ToString() && i.Type != DataType.RefListRelationship.ToString()
-              && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.FilteredLookup.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
+                .Where(i => i.Type != DataType.Attribute.ToString()
+                        && i.Type != DataType.Relationship.ToString()
+                        && i.Type != DataType.OwnershipLookup.ToString()
+                        && i.Type != DataType.RefListRelationship.ToString()
+                        && i.Type != DataType.FusionLookup.ToString()
+                        && i.Type != DataType.FilteredLookup.ToString()
+                        && i.Type != DataType.ComplexRelationLookup.ToString()
+                        && i.Type != DataType.JSON.ToString())
                 .Select(i => new { i.ID, i.Name })
                 .ToDictionary(i => i.Name, i => i.ID);
 
