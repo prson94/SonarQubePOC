@@ -168,5 +168,59 @@ namespace d360.web.Controllers.V2
             }
         }
 
+        /// <summary>
+        /// Retrieves a list of responsibility type ownership rules for the specified responsibility type.
+        /// </summary>
+        /// <param name="responsibilityTypeUid">The unique identifier of the responsibility type to get responsibility type ownership rules for.</param>
+        /// <returns>Returns a list of responsibility type ownership rules.</returns>
+        [
+            HttpGet,
+            Route("types/{responsibilityTypeUid:Guid}/ownershiprules"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of responsibility type ownership rules for the given responsibility type uid.", typeof(List<ResponsibilityTypeRuleViewModel>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(List<ResponsibilityTypeRuleViewModel>))
+        ]
+        public async Task<HttpResponseMessage> GetResponsibilityRulesForTypeAsync(Guid responsibilityTypeUid)
+        {
+            var prefix = "Responsibilities.GetResponsibilityRulesForTypeAsync => ";
+            var errorMessage = "";
+
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+
+            try
+            {
+                var responsibilityTypeRules = await Company.QueryAsync<ResponsibilityTypeRuleViewModel>(@"
+                            select
+	                            rtr.[name]
+	                            ,rtr.Context
+	                            ,rtr.IsVisible
+	                            ,rtr.ApplyToType
+	                            ,rtr.LastRunOn
+	                            ,rtr.[Definition] as [DefinitionRaw]
+	                            ,att.[uid] as AssetTypeUid
+	                            ,att.[Name] as AssetTypeName
+	                            ,att.Class	 
+                            from [dbo].[responsibilitytyperelationrule] rtr
+	                            inner join [dbo].ResponsibilityType r on (rtr.responsibilitytypeid = r.id)
+	                            inner join [dbo].[AssetType] att on (rtr.[Object] = att.[Object] and rtr.ObjectID = att.ObjectID)
+                            where 
+	                            r.[uid] = @uid 
+                            ", new { uid = responsibilityTypeUid.ToString() });
+
+                return Request.CreateResponse(HttpStatusCode.OK, responsibilityTypeRules);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+        }
+
     }
 }
