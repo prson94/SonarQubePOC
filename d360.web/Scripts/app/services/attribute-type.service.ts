@@ -65,7 +65,6 @@ export class AttributeTypeService extends BaseObservableService {
         objectTypeId: number,
         objectType: string
     ): Observable<JsonResult> {
-        /* GOV-6578: continue from here */
         const deleteAttributeTypeAllocationsUrl = `form/DeleteAttributeTypeRelationWithUri?AttributeTypeID=${attributeTypeId}&ObjectType=${encodeURIComponent(objectType)}&ObjectID=${objectTypeId}`;
 
         return this

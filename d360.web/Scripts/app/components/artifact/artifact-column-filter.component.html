@@ -6,7 +6,7 @@
         <div class="col s4">
             <select [name]="'FilterField_' + index"
                 required
-                [ngModel]="filter.Field"
+                [(ngModel)]="filter.Field"
                 (ngModelChange)="filter.Field = $event;changeFilterField($event,filter)"
                 style="width:100%;">
                 <option [value]=""></option>
