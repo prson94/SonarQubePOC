@@ -2955,6 +2955,13 @@
             <param name="responsibilityTypeUid">The unique identifier of the responsibility type to get allocations for.</param>
             <returns>Returns a list of asset types a responsibility rule is allocated to.</returns>
         </member>
+        <member name="M:d360.web.Controllers.V2.ResponsibilitiesController.GetResponsibilityRulesForTypeAsync(System.Guid)">
+            <summary>
+            Retrieves a list of responsibility type ownership rules for the specified responsibility type.
+            </summary>
+            <param name="responsibilityTypeUid">The unique identifier of the responsibility type to get responsibility type ownership rules for.</param>
+            <returns>Returns a list of responsibility type ownership rules.</returns>
+        </member>
         <member name="M:d360.web.Controllers.D3SApiController.GetFieldFiltersByType(d360.core.SystemObjects,System.Int32)">
             <summary>
             Gets a list of available field-level filters for a grid in the UI. This includes standard/custom fields, relationships, attributes, owner.
