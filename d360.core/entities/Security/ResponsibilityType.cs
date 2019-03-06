@@ -48,8 +48,5 @@ namespace d360.core.entities
 
         [DataMember]
         public DateTime? UpdatedOn { get; set; }
-
-        [DataMember]
-        public int? UpdatedBy { get; set; }
     }
 }

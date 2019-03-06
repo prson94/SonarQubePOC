@@ -38,7 +38,8 @@ namespace d360.web.Controllers.V2
             Route("types"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "A list of responsibility types.", typeof(List<ResponsibilityTypeViewModel>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(List<ResponsibilityTypeViewModel>))
         ]
         public async Task<HttpResponseMessage> GetResponsibilityTypesAsync()
         {
@@ -51,7 +52,7 @@ namespace d360.web.Controllers.V2
             try
             {
                 var responsibilityTypes = await Company.QueryAsync<ResponsibilityTypeViewModel>(@"
-                            select [Name], [Description], [uid], [UpdatedOn], [UpdatedBy] from [dbo].[responsibilitytype] order by [Name] asc
+                            select [Name], [Description], [uid], [UpdatedOn] from [dbo].[responsibilitytype] order by [Name] asc
                             ");
 
                 return Request.CreateResponse(HttpStatusCode.OK, responsibilityTypes);
@@ -66,17 +67,69 @@ namespace d360.web.Controllers.V2
                 return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
             }
         }
-        
+
+        /// <summary>
+        /// Retrieves a list of responsibility types that are applicable for the specified AssetTypeUid.
+        /// </summary>
+        /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
+        /// <returns>Returns a list of responsibility types.</returns>
+        [
+            HttpGet,
+            Route("types/{assetTypeUid:guid}"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of responsibility types.", typeof(List<ResponsibilityTypeViewModel>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(List<ResponsibilityTypeViewModel>))
+        ]
+        public async Task<HttpResponseMessage> GetResponsibilityTypesByAssetTypeAsync(Guid assetTypeUid)
+        {
+            var prefix = "Responsibilities.GetResponsibilityTypesAsync => ";
+            var errorMessage = "";
+
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+
+            try
+            {
+                var responsibilityTypes = await Company.QueryAsync<ResponsibilityTypeViewModel>(@"
+                            select 
+	                            rt.[Name], 
+	                            rt.[Description], 
+	                            rt.[uid], 
+	                            rt.[UpdatedOn]
+                            from [dbo].[responsibilitytype] rt
+	                            inner join [dbo].[ResponsibilityTypeRelation] rtr on (rt.id = rtr.ResponsibilityTypeID)
+	                            inner join [dbo].[AssetType] att on (att.[Object] = rtr.ObjectType and att.ObjectID = rtr.ObjectID)
+                            where
+	                            att.[uid] = @uid
+                            order by [Name] asc
+                            ", new { uid = assetTypeUid });
+
+                return Request.CreateResponse(HttpStatusCode.OK, responsibilityTypes);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+        }
+
         /// <summary>
         /// Retrieves a list of all allocations for the specified responsibility type.
         /// </summary>
+        /// <param name="responsibilityTypeUid">The unique identifier of the responsibility type to get allocations for.</param>
         /// <returns>Returns a list of asset types a responsibility rule is allocated to.</returns>
         [
             HttpGet,
             Route("types/{responsibilityTypeUid:Guid}/allocations"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "A list of asset type allocations for the given responsibility type uid.", typeof(List<ResponsibilityTypeAllocationViewModel>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(List<ResponsibilityTypeViewModel>))
         ]
         public async Task<HttpResponseMessage> GetResponsibilityTypeAllocationsAsync(Guid responsibilityTypeUid)
         {
