@@ -1525,7 +1525,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                 order by t.Name asc";
 
         public static string WorkflowVersionStepHistory = @"
-   select 
+  select 
 	IST.ID as ItemStepID, 
 	convert(varchar(max),IST.Fields) as Fields,
 	IST.StartedOn,
@@ -1600,8 +1600,17 @@ from
 	left join reporting.Global_resource RC on RC.ResourceID = IST.CompletedBy
 	inner join workflow.[Version] V on V.ID = VS.VersionID
 	inner join workflow.[Type] T on T.ID = V.TypeID
+	outer apply (
+		select case when vsw.Settings.value('/settings[1]/WaitForAllTransitions[1]','varchar(max)') = 'true' then
+			1
+		else
+			0
+		end as [value]
+		from workflow.versionstep vsw where vsw.id = ist.stepid
+	) waitForAll
 where 
 	VS.ID = @id
+	and (waitForAll.[value] = 0 or (waitForAll.[value] = 1 and ist.id = (select max(id) from workflow.itemstep where itemid = ist.itemid and stepid = ist.stepid)))
 order by IST.StartedOn desc, IST.CompletedOn desc
 ";
 
