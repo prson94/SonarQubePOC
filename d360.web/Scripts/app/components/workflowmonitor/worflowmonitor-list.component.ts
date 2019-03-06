@@ -165,7 +165,7 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
         this.loadData();
     }
     private loadWorkflowMonitorItems(event: LazyLoadEvent) {
-        //debugger;
+     
         this.rowsPerPage = event.rows;
         this.sortOrder = event.sortField == undefined ? SortOrder.Descending: event.sortOrder;
         this.sortField = event.sortField == undefined ? "" : event.sortField;

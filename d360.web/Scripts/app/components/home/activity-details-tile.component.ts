@@ -1,5 +1,6 @@
 ﻿import { Component, OnInit, Output, EventEmitter, Input} from '@angular/core';
 import { Router } from '@angular/router';
+
 import { BaseComponent } from '../shared/base.component';
 import { ArtifactService } from '../../services/artifacts.service';
 import { Count} from '../../models/counts.model';
@@ -9,65 +10,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 @Component({
     selector: 'd3s-activity-details-tile',
     providers: [ArtifactService],
-    template: `
-                <div class="tile tile-detail">
-                   <header>Activity for {{objectName}}
-                    <d3s-tile-actions [hasAdd]="false" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
-                   </header>
-                    <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                    <span *ngIf="!isLoading">
-                       <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-                        <p-table #dt [value]="items" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['DisplayValue','CreatedOn','UpdatedOn']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected">
-                            <ng-template pTemplate="header">
-                                <tr>
-                                    <th [pSortableColumn]="'DisplayValue'">
-                                        Name
-                                        <d3s-sortIcon [field]="'DisplayValue'"></d3s-sortIcon>
-                                    </th>
-                                    <th [pSortableColumn]="'CreatedOn'" style="width: 150px">
-                                        Created
-                                        <d3s-sortIcon [field]="'CreatedOn'"></d3s-sortIcon>
-                                    </th>
-                                    <th [pSortableColumn]="'UpdatedOn'" style="width: 150px">
-                                        Updated
-                                        <d3s-sortIcon [field]="'UpdatedOn'"></d3s-sortIcon>
-                                    </th>
-                                    <th style="width: 40px"></th>
-                                </tr>
-                                <tr [hidden]="showSimpleFilter">
-                                    <th><d3s-column-filter [field]="'DisplayValue'" [datatype]="'text'"></d3s-column-filter></th>
-                                    <th><d3s-column-filter [field]="'CreatedOn'" [datatype]="'text'"></d3s-column-filter></th>
-                                    <th><d3s-column-filter [field]="'UpdatedOn'" [datatype]="'text'"></d3s-column-filter></th>
-                                    <th></th>
-                                </tr>
-                            </ng-template>
-                            <ng-template pTemplate="body" let-item>
-                                <tr  (dblclick)="selected=item;navigateToArtifact();" [pSelectableRow]="item">
-                                    <td>
-                                         <a (click)="artifactLink(item.TypeID, item.ObjectID)">{{item.DisplayValue}}</a>
-                                    </td>
-                                    <td>
-                                            <span>{{item.CreatedOn | date: 'shortDate'}}</span>
-                                    </td>
-                                    <td>
-                                            <span>{{item.UpdatedOn | date: 'shortDate'}}</span>
-                                    </td>
-                                    <td>
-                                            <div class="RowTools">
-                                                <d3s-preview-tooltip objectType="Artifact" [objectId]="item.ObjectID" (click)="selectArtifact(item)" icon="info"></d3s-preview-tooltip>
-                                            </div>
-                                     </td>
-                                </tr>
-                            </ng-template>
-                            <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
-                                <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
-                            </ng-template>
-                        </p-table>
-     
-                    </span>
-                    <button pButton type="button" (click)="close.emit();" label="Close" style="width:150px;margin-top:10px"></button>                    
-                </div>
-                `
+    templateUrl: './activity-details-tile.component.html'
 })
 
 export class ActivityDetailsTile extends BaseComponent implements OnInit {    
@@ -76,36 +19,48 @@ export class ActivityDetailsTile extends BaseComponent implements OnInit {
 
     @Input() objectName: string;
     @Input() objectId: number = 0;
-    
     @Input() daysToLookBack: number = 7;
-
     @Output() close = new EventEmitter();
 
-    constructor(private router: Router, private artifactService: ArtifactService) {
+    constructor(
+        private router: Router,
+        private artifactService: ArtifactService
+    ) {
         super();
     }
 
     ngOnInit() {
-        if (this.objectId > 0)
+        if (this.objectId > 0) {
             this.load();
+        }
     }
 
     private navigateToArtifact() {
-        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${this.selected.TypeID}/${this.selected.ObjectID}`);
+        this
+            .router
+            .navigateByUrl(`${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${this.selected.TypeID}/${this.selected.ObjectID}`);
     }
 
-    private artifactLink(artifactTypeId, artifactId) {
-        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${artifactTypeId}/${artifactId}`);           
+    private artifactLink(
+        artifactTypeId,
+        artifactId
+    ) {
+        this
+            .router
+            .navigateByUrl(`${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${artifactTypeId}/${artifactId}`);           
     }
 
     private load() {
         this.isLoading = true;
-        this.artifactService.getActivityDetails(this.objectId, this.daysToLookBack)
-            .then(res => {
-                this.items = res;
-                this.isLoading = false;
-            });
+        this
+            .artifactService
+            .getActivityDetails(this.objectId, this.daysToLookBack)
+            .subscribe(
+                res => {
+                    this.items = res;
+                    this.isLoading = false;
+                }
+            )
+        ;
     }
 }
-
-

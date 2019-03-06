@@ -1,5 +1,8 @@
 ﻿import { Component, NgZone, OnDestroy } from '@angular/core';
 import { TreeNode } from 'primeng/primeng';
+import { Title } from '@angular/platform-browser';
+import { Router } from '@angular/router';
+
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { RightSidebarService } from '../../../services/right-sidebar.service';
@@ -8,11 +11,8 @@ import { StateService } from '../../../services/state.service';
 import { ArtifactTypeService } from '../../../services/artifact-type.service';
 import { MessagesService } from '../../../services/messages.service';
 import { AdminBaseComponent } from '../admin-base.component'
-import { Title } from '@angular/platform-browser';
-import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { AssetTypeClass } from "../../../models/asset.model";
-
 
 @Component({
     selector: 'd3s-admin-artifacts',
@@ -34,7 +34,8 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
     ArtifactTypes: TreeNode[];
     theDeleteCallback: Function;
 
-    constructor(private stateService: StateService,
+    constructor(
+        private stateService: StateService,
         rightSidebarService: RightSidebarService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         private artifactsService: ArtifactTypeService,
@@ -63,7 +64,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
     load() {
         this.isLoading = true;
         this.artifactsService.getArtifactTypeTree()
-            .then(data => {
+            .subscribe(data => {
                 this.ArtifactTypes = data;                
                 this.selectedRow = this.ArtifactTypes[0];
                 this.isLoading = false;
@@ -85,10 +86,12 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
     }
 
     add(id: number) {
-        if (id == 0)
+        if (id == 0) {
             this.selectedRow = { data: { ID: 0 } };
-        else
+        } else {
             this.selectedRow = this.artifactsService.findArtifactType(this.ArtifactTypes, id);
+        }
+
         this.isEditing = false;
         this.isAdding = true;
         this.isDeleting = false;
@@ -132,7 +135,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
     }
 
     private deleteArtifactType(id: number) {        
-        this.artifactsService.deleteArtifactType(id).then(result => {            
+        this.artifactsService.deleteArtifactType(id).subscribe(result => {
             this.showMessageForResult(this.messagesService, result);    
             this.isDeleting = false;
             this.load();    
@@ -140,5 +143,3 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
         })
     }
 }
-
-

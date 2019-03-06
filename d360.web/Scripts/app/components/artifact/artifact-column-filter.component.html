@@ -1,0 +1,110 @@
+<form (ngSubmit)="onSubmit()"
+    #filterForm="ngForm">
+    <div *ngFor="let filter of internalFilters;let first=first;let last=last;let index=index"
+        class="row filter">
+        <div class="col s1 FieldName">Filter:</div>
+        <div class="col s4">
+            <select [name]="'FilterField_' + index"
+                required
+                [ngModel]="filter.Field"
+                (ngModelChange)="filter.Field = $event;changeFilterField($event,filter)"
+                style="width:100%;">
+                <option [value]=""></option>
+                <option *ngFor="let p of availableFilters"
+                    [ngValue]="p">{{p.Name}}</option>
+            </select>
+        </div>
+        <div [ngSwitch]="filter.Type"
+            class="col s4">
+            <span *ngSwitchCase="filterFieldType.Relationship">
+                <p-multiSelect required
+                    [name]="'predicates_' + index"
+                    [options]="filter?.Data?.options"
+                    [style]="{width:'100%'}"
+                    [ngModel]="filter?.Data?.objectIds"
+                    (ngModelChange)="filter.Data.objectIds = $event"></p-multiSelect>
+                <p-selectButton [name]="'relationIncludeType_' + index"
+                    [options]="connectors"
+                    [ngModel]="filter?.Data?.includeType"
+                    (ngModelChange)="filter.Data.includeType = $event;"></p-selectButton>
+            </span>
+            <span *ngSwitchCase="filterFieldType.Attribute">
+                <select [name]="'attributeValue_' + index"
+                    style="width:100%;"
+                    placeholder="Choose a value"
+                    [ngModel]="filter?.Data?.attributeSearchValue"
+                    (ngModelChange)="filter.Data.attributeSearchValue = $event">
+                    <option></option>
+                    <option *ngFor="let p of attributeValues"
+                        [value]="p">{{p}}</option>
+                </select>
+            </span>
+            <span *ngSwitchCase="filterFieldType.Owner">
+                <p-multiSelect name="owners"
+                    [options]="ownerValues"
+                    [style]="{width:'100%'}"
+                    [ngModel]="filter?.Data"
+                    (ngModelChange)="filter.Data = $event"></p-multiSelect>
+            </span>
+            <span *ngSwitchDefault>
+                <span [ngSwitch]="filter.Field?.Data?.filtertype">
+                    <span *ngSwitchCase="'list' || 'checkedlist'">
+                        <d3s-loading [isLoading]="isLoadingFilter"></d3s-loading>
+                        <select *ngIf="!isLoadingFilter"
+                            [name]="'FilterValue_' + index"
+                            [ngModel]="filter?.Data?.value"
+                            (ngModelChange)="filter.Data.value = $event"
+                            required
+                            style="width:100%;"
+                            placeholder="Choose a field">
+                            <option *ngFor="let p of filter.Field?.Data?.filteritems"
+                                [value]="p">{{p}}</option>
+                        </select>
+                    </span>
+                    <input *ngSwitchDefault
+                        [name]="'FilterValue_' + index"
+                        type="text"
+                        required
+                        [ngModel]="filter?.Data?.value"
+                        (ngModelChange)="filter.Data.value = $event"
+                        placeholder="Enter a value"
+                        style="width:100%;">
+                </span>
+            </span>
+        </div>
+        <div class="col s3">
+            <a (click)="addFilter()"
+                class="fa-stack fa-lg overlayed-primary"
+                pTooltip="Add Filter">
+                <i class="fa fa-filter fa-stack-1x"></i>
+                <i class="fa fa-plus fa-stack-1x overlayed-add"></i>
+            </a>
+            <a *ngIf="internalFilters.length > 1"
+                (click)="removeFilter(filter)"
+                class="fa-stack fa-lg overlayed-primary"
+                pTooltip="Remove Filter">
+                <i class="fa fa-filter fa-stack-1x"></i>
+                <i class="fa fa-minus fa-stack-1x overlayed-remove"></i>
+            </a>
+        </div>
+    </div>
+    <div class="row">
+        <div *ngIf="hasMultipleOwners()"
+            class="red-text center"
+            style="font-weight:bold">**Warning: Only a single owner filter is supported at a time!</div>
+        <div class="col s12 buttons">
+            <button pButton
+                *ngIf="internalFilters.length > 0"
+                type="submit"
+                [disabled]="!filterForm.form.valid || hasMultipleOwners()"
+                style="width: '150px';"
+                label="Filter Results"></button>
+            <button pButton
+                *ngIf="internalFilters.length"
+                type="button"
+                style="width: '150px';"
+                label="Clear all Filters"
+                (click)="resetFilters()"></button>
+        </div>
+    </div>
+</form>

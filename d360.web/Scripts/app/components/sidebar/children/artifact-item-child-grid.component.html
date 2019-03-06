@@ -1,0 +1,51 @@
+<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<span *ngIf="!isLoading">
+    <input type="text"
+        [hidden]="!showSimpleFilter"
+        pInputText
+        size="100"
+        (keyup)="checkSimpleSearchEnter($event,dt);"
+        placeholder="Search..."
+        class="grid-simple-filter">
+    <p-table #dt
+        [value]="artifacts?.results"
+        [lazy]="true"
+        [totalRecords]="artifacts?.total"
+        (onLazyLoad)="loadArtifactsLazy($event)"
+        selectionMode="single"
+        [metaKeySelection]="true"
+        [globalFilterFields]="globalFilterFields"
+        [pageLinks]="3"
+        [paginator]="true"
+        [rows]="numberOfRows"
+        [rowsPerPageOptions]="defaultPagingOptions">
+        <ng-template pTemplate="header">
+            <tr>
+                <th *ngFor="let column of columns"
+                    [pSortableColumn]="column.sortable ? column.datafield : null">
+                    {{column.text}}
+                    <d3s-sortIcon *ngIf="column.sortable"
+                        [field]="column.datafield"></d3s-sortIcon>
+                </th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body"
+            let-item>
+            <tr [pSelectableRow]="item">
+                <td *ngFor="let column of columns">
+                    <a (click)="selectArtifact(item)">
+                        <d3s-dynamic-field-value [column]="column"
+                            [fields]="fields"
+                            [item]="item"></d3s-dynamic-field-value>
+                    </a>
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template *ngIf="dt.totalRecords"
+            pTemplate="summary">
+            <d3s-grid-paging-info [first]="dt.first"
+                [rows]="dt.rows"
+                [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+        </ng-template>
+    </p-table>
+</span>

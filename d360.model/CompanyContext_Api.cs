@@ -1046,6 +1046,10 @@ from    api.ExecutionAsset T
             else
             {
                 var uidDupes = import.GroupBy(i => i.Uid).Where(i => i.Count() > 1).Select(i => new { Uid = i.Key, Count = i.Count() }).ToList();
+                if (isInsert)
+                {
+                    uidDupes.RemoveAll(i => i.Uid == Guid.Empty); // No need to count empty Uids if this is an insert.
+                }
                 if (uidDupes.Any())
                 {
                     execution.ErrorMessage = $"Duplicate Asset Uids: {string.Join(", ", uidDupes.Select(i => i.Uid.ToString()))}. Identifiers must be unique within a batch.";
@@ -2100,12 +2104,12 @@ end",
 update	api.ExecutionRelationship
 set		Success = 0,
 		[Message] = coalesce([Message] + '; ', '') + 'Not able to resolve subject of this relationship to a valid asset.'
-where	ExecutionID = @ExecutionID and Subject is null or SubjectID is null;
+where	ExecutionID = @ExecutionID and (Subject is null or SubjectID is null);
 	
 update	api.ExecutionRelationship
 set		Success = 0,
 		[Message] = coalesce([Message] + '; ', '') + 'Not able to resolve object of this relationship to a valid asset.'
-where	ExecutionID = @ExecutionID and Object is null or ObjectID is null;", 
+where	ExecutionID = @ExecutionID and (Object is null or ObjectID is null);", 
                 new { execution.ExecutionID }, commandTimeout: timeout);
 
                 #endregion

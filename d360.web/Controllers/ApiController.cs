@@ -1146,20 +1146,18 @@ where   h.ID <> @t order by h.[Level] desc;
         [Route("artifacts/{typeID:int}")]
         public Dictionary<string, object> GetArtifactType(int typeID)
         {
-            var artifactType = Company.GetById<ArtifactType>(typeID);
-            if (artifactType == null) throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
 
-            var assetType = Company.Filter<AssetType>(i => i.Object == "ArtifactType" && i.ObjectID == artifactType.ID).SingleOrDefault();
+            var assetType = Company.Filter<AssetType>(i => i.Object == "ArtifactType" && i.ObjectID == typeID).SingleOrDefault();
             if (assetType == null) throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
 
             var model = new Dictionary<string, object>();
 
-            model.Add("ID", artifactType.ID);
-            model.Add("Name", artifactType.Name);
-            model.Add("Description", artifactType.Description);
-            model.Add("ParentID", Company.GetParentType(artifactType.ID, SystemObjects.ArtifactType)?.ObjectID ?? null);
+            model.Add("ID", assetType.ObjectID);
+            model.Add("Name", assetType.Name);
+            model.Add("Description", assetType.Description);
+            model.Add("ParentID", Company.GetParentType(assetType.ObjectID, SystemObjects.ArtifactType)?.ObjectID ?? null);
             model.Add("CanOwnFusion", assetType.CanOwnFusion);
-            model.Add("HasCustomExportTemplates", Company.AssetTypeExportTemplates.Where(x => x.AssetTypeID == assetType.ID).Any());
+            model.Add("HasCustomExportTemplates", Company.AssetTypeExportTemplates.Where(x => x.AssetTypeID == assetType.ObjectID).Any());
             model.Add("AutoDisplayDescription", assetType.AutoDisplayDescription);
 
             bool hasDashboards = Company.Filter<Report>(x => x.ObjectType == "ArtifactType" && x.ObjectID == typeID && x.ReportType != "legacy").Any();
@@ -1175,23 +1173,28 @@ where   h.ID <> @t order by h.[Level] desc;
         }
 
         [Route("artifacttypes")]
-        public IEnumerable<ArtifactType> GetArtifactTypes()
+        public IEnumerable<dynamic> GetArtifactTypes()
         {
-            var artifactTypes = Company.Table<ArtifactType>().ToList().OrderBy<ArtifactType,string>(x=>x.Name);
+            var sql = @"select		AT.ObjectID as ID,
+			                IT.ParentID,
+			                AT.Name,
+			                AT.Description,
+			                AT.DisplayFormat,
+			                AT.CanOwnFusion,
+			                AT.AutoDisplayDescription
+                from		AssetType as AT
+			                outer apply (
+				                select	IT.SubjectID as ParentID
+				                from	IntersectType IT 
+						                inner join [Predicate] P on IT.Object = 'ArtifactType' and IT.ObjectID = AT.ObjectID and P.ID = IT.PredicateID and P.Type = 3
+			                ) IT
+	                Where AT.Object = 'ArtifactType'
+                order by	IT.ParentID,
+			                AT.Name
+                ";
+            var artifactTypes = Company.Query<dynamic>(sql).ToList();
 
-            //get intersecttypes for intra parent so we can determine parents
 
-            var artifactParentRelations = Company.IntersectTypeDetails.Where(x => x.PredicateType == PredicateType.InterTypeHierarchy && x.Object == "ArtifactType" && x.Subject == "ArtifactType").ToList();
-           
-            foreach (var artifactType in artifactTypes)
-            {              
-                var parents = artifactParentRelations.Where(x => x.ObjectID == artifactType.ID).FirstOrDefault();
-
-                if(parents != null)
-                {
-                    artifactType.ParentID = parents.SubjectID;
-                }
-            }
 
             return artifactTypes;
         }
@@ -1478,22 +1481,21 @@ order by 'Name'";
         public IEnumerable<dynamic> GetRuleFusionOwners(int fusionID)
         {
             var sql = @"
-                      with cte as (
-
-					select	b.objectId AS ID,
+                     with cte as (
+	                select	a.objectId as ID,
 			                I.SubjectID as ParentID,
-			                b.TypeID,
+			                a.TypeID,
 			                d.DisplayValue
 	                from	FusionOwner fo
-						 inner join AssetDetail b on
-							 b.ID = fo.AssetID
+			                inner join AssetWithType a on a.ID = fo.AssetID 
 			                left join IntersectTypeDetail ITD on ITD.PredicateType = 3 and ITD.[Object] = 'ArtifactType' 
-				                and ITD.ObjectID = b.TypeID and ITD.[Subject] = 'ArtifactType'
-			                left join [Intersect] I on I.IntersectTypeID = ITD.ID and I.ObjectID = b.ObjectID
-			                cross apply dbo.GetAssetDisplayValueById(b.ID) d
-	                where	fo.fusionID = @fusionID
+				                and ITD.ObjectID = a.TypeID and ITD.[Subject] = 'ArtifactType'
+			                left join [Intersect] I on I.IntersectTypeID = ITD.ID and I.ObjectID = a.ObjectID
+			                cross apply dbo.GetAssetDisplayValueById(a.ID) d
+							where a.[Object] = 'Artifact' and fo.fusionID = @fusionID
+	                	
 	                union all
-	                select	c.ObjectID,
+	                select	c.ObjectID as ID,
 			                x.SubjectID as ParentID,
 			                c.TypeID,
 			                d.DisplayValue
@@ -1503,17 +1505,20 @@ order by 'Name'";
 				                inner join IntersectTypeDetail ITD on ITD.PredicateType = 3 and ITD.[Object] = 'ArtifactType' 
 					                and ITD.ObjectID = c.TypeID and ITD.[Subject] = 'ArtifactType'
 					                and I.IntersectTypeID = ITD.ID
-				                where I.ObjectID = c.ObjectID
+				                where I.ObjectID = c.ObjectID 
 			                ) x
 			                cross apply dbo.GetAssetDisplayValueById(c.ID) d
-			                inner join ArtifactType ct on ct.ID = c.TypeID and ct.CanOwnFusion = 1
-			                inner join cte p on p.ID = c.ObjectID
+							cross apply [dbo].[GetParentByAssetID] (c.ID) as PA
+							cross apply (Select objectId from  Asset where Id = PA.ID )PAA  
+							inner join AssetType ct on ct.ID = c.AssetTypeId and ct.CanOwnFusion = 1
+			                inner join cte p on p.ID = PAA.objectID
+							where  c.Object='Artifact'
                 )
 
-                select	a.ID,
+                select distinct	a.ID,
 		                t.Name + ': ' + a.DisplayValue as Name
                 from	cte a
-		                inner join ArtifactType t on t.ID = a.TypeID";
+		                inner join AssetType t on t.ID = a.TypeID";
 
             return Company.Query<dynamic>(sql, new { fusionID });
         }
@@ -4462,7 +4467,8 @@ select  R.ID,
         R.Name, 
         R.Context,
         D.Name as ObjectName, 
-        O.Name as ResponsibilityType 
+        O.Name as ResponsibilityType, 
+		R.LastRunOn 
 from    ResponsibilityTypeRelationRule R 
         inner join ResponsibilityType O on O.ID = R.ResponsibilityTypeID and O.ID = @id 
         left join AssetType D on D.Object = R.Object and D.ObjectID = R.ObjectID", 
@@ -4521,18 +4527,17 @@ from    ResponsibilityTypeRelationRule R
             return Request.CreateResponse<dynamic>(
                 HttpStatusCode.OK,
                 Company.Query<PolicyType>(@"
-select	    FAT.ID,
-		    FAT.Name,
-            FAT.Description,
-		    FAT.MaximumDepth,
-			FAT.DisplayFormat,
-			T.CreatedBy,
-			T.CreatedOn,
-			T.UpdatedBy,
-		    T.UpdatedOn,
-            T.ID as AssetTypeID
-from	    PolicyType FAT
-		    inner join AssetType T on T.Object = 'PolicyType' and T.ObjectID = FAT.ID")
+	                    select	    AT.ObjectID as ID,
+	                    AT.Name,
+	                    AT.Description,
+	                    AT.HierarchyMaximumDepth,
+	                    AT.DisplayFormat,
+	                    AT.CreatedBy,
+	                    AT.CreatedOn,
+	                    AT.UpdatedBy,
+	                    AT.UpdatedOn,
+	                    AT.ID as AssetTypeID
+	                    from	    AssetType AT where AT.Object = 'PolicyType'")
             .Select(i => new { i.Description, i.ID, i.MaximumDepth, i.Name, i.AssetTypeID })
             );
         }
@@ -4543,12 +4548,12 @@ from	    PolicyType FAT
             var row = Company.Query<dynamic>(QueryConstants.PolicySettingsItem, new { id }).Single();
             return Request.CreateResponse<dynamic>(
                 new Dictionary<string, object>() {
-                    { "ID", row.ID },
+                    { "ID", row.ObjectID },
                     { "Name", row.Name },
                     { "Description", row.Description },
                     { "AllowAttributes", (bool)row.AllowAttributes },
                     { "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = id, ot = new DbString {Value = "PolicyType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
-                    { "MaximumDepth", row.MaximumDepth }
+                    { "MaximumDepth", row.HierarchyMaximumDepth }
                 }
             );
         }
@@ -4633,11 +4638,11 @@ where   OA.ID not in ({GetNoReadSqlStatement()})
         [Route("qualifier/resolutiontypes")]
         public IQueryable<dynamic> GetQualifierResolutionObjects()
         {
-            return Company.Query<dynamic>(@"select ID, 'ArtifactType' as [Type],  'ArtifactType|' + cast(ID as varchar(50)) as [value],  'Artifact :: ' + [Name] as [label] from ArtifactType
-                union all
-                select ID, 'TaxonomyType' as [Type], 'TaxonomyType|' + cast(ID as varchar(50)) as [value],  'Model :: ' + [Name] as [label] from TaxonomyType
-                union all
-                select ID, 'ReferenceItemType' as [Type], 'ReferenceItemType|' + cast(ID as varchar(50)) as [value], 'Reference :: ' + [Name] as [label] from ReferenceItemType").AsQueryable();
+            return Company.Query<dynamic>(@"select objectId as ID, 'ArtifactType' as [Type],  'ArtifactType|' + cast(objectId as varchar(50)) as [value],  'Artifact :: ' + [Name] as [label] from AssetType where [Object]='ArtifactType'
+                        union all
+                        select objectId as ID, 'TaxonomyType' as [Type], 'TaxonomyType|' + cast(objectId as varchar(50)) as [value],  'Model :: ' + [Name] as [label] from AssetType where [Object]='TaxonomyType'
+                        union all
+                        select  objectId as ID, 'ReferenceItemType' as [Type], 'ReferenceItemType|' + cast(objectId as varchar(50)) as [value], 'Reference :: ' + [Name] as [label] from AssetType where [Object]='ReferenceItemType'").AsQueryable();
         }
 
         #endregion
@@ -4662,40 +4667,40 @@ where   OA.ID not in ({GetNoReadSqlStatement()})
             var items = Company.Query<dynamic>(@"
 select      *
 from        (                 
-            select      'ArtifactType|' + cast(ID as varchar(15)) as value,
+            select      'ArtifactType|' + cast(ObjectId as varchar(15)) as value,
                         'Artifact Type : ' + Name as title
-            from        ArtifactType                        
+            from        AssetType where [object]='ArtifactType'                        
             union       
-            select      'Artifact|' + cast(ID as varchar(15)) as value,
+            select      'Artifact|' + cast(ObjectId as varchar(15)) as value,
                         'Artifact Instance : ' + Name as title
-            from        ArtifactType            
+            from       AssetType where [object]='ArtifactType'          
             union
             select      'Resource|1' as value,
                         'Resource' as title
             union
-            select      'Taxonomy|' + cast(ID as varchar(15)) as value,
+            select      'Taxonomy|' + cast(ObjectId as varchar(15)) as value,
                         'Model Instance : ' + Name as title
-            from        TaxonomyType
+            from         AssetType where [object]='TaxonomyType' 
             union
-            select      'TaxonomyType|' + cast(ID as varchar(15)) as value,
+            select      'TaxonomyType|' + cast(ObjectId as varchar(15)) as value,
                         'Model Type : ' + Name as title
-            from        TaxonomyType
+            from        AssetType where [object]='TaxonomyType' 
             union
-            select      'Policy|' + cast(ID as varchar(15)) as value,
+            select      'Policy|' + cast(ObjectId as varchar(15)) as value,
                         'Policy Instance : ' + Name as title
-            from        PolicyType
+            from         AssetType where [object]='PolicyType' 
             union
-            select      'PolicyType|' + cast(ID as varchar(15)) as value,
+            select      'PolicyType|' + cast(ObjectId as varchar(15)) as value,
                         'Policy Type : ' + Name as title
-            from        PolicyType
+            from        AssetType where [object]='PolicyType' 
             union
-            select      'RuleType|' + cast(ID as varchar(15)) as value,
+            select      'RuleType|' + cast(ObjectId as varchar(15)) as value,
                         'Rule Type : ' + Name as title
-            from        RuleType
+            from         AssetType where [object]='RuleType' 
             union
-            select      'FusionType|' + cast(ID as varchar(15)) as value,
+            select      'FusionType|' + cast(ObjectId as varchar(15)) as value,
                         'Fusion Type : ' + Name as title
-            from        FusionType
+            from         AssetType where [object]='FusionType' 
 ) O
 order by    title
 
@@ -5370,7 +5375,7 @@ where    A.RuleID = @id", new { id });
                 #endregion
                 case SystemObjects.ArtifactType:
                     #region Fields
-                    var artifactType = Company.GetById<ArtifactType>(id);
+                    var artifactType = Company.Filter<AssetType>(i=>i.ObjectID==id && i.Object=="ArtifactType").SingleOrDefault();
                     if (artifactType != null)
                     {
 
@@ -5378,10 +5383,10 @@ where    A.RuleID = @id", new { id });
                         {
                             columns = 2,
                             FirstColumnFields = new List<ReadOnlyField> {
-                                new ReadOnlyField { Name = artifactType.GetName(i => i.Name), FieldName = "ArtifactTypeName", FieldDescription = artifactType.GetDescription(i => i.Name), Value = artifactType.Name }
+                                new ReadOnlyField { Name = Fields.Name_Name, FieldDescription = Fields.Name_Description, Value = artifactType.Name }
                             },
                             SecondColumnFields = new List<ReadOnlyField> {
-                                new ReadOnlyField { Name = artifactType.GetName(i => i.ID), FieldName = "ArtifactTypeID", FieldDescription = artifactType.GetDescription(i => i.ID), Value = artifactType.ID.ToString() }
+                                new ReadOnlyField { Name = Fields.ID_Name, FieldName = "ArtifactTypeID", FieldDescription = Fields.ID_Description, Value = artifactType.ID.ToString() }
                             }
                         });
 
@@ -5389,7 +5394,7 @@ where    A.RuleID = @id", new { id });
                         {
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField> {
-                                new ReadOnlyField { Name = artifactType.GetName(i => i.Description), FieldName = "ArtifactTypeDescription", FieldDescription = artifactType.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(artifactType.Description) ? "None provided" : artifactType.Description }
+                                new ReadOnlyField { Name =Fields.Description_Name, FieldName = "ArtifactTypeDescription", FieldDescription =Fields.Description_Description, Value = string.IsNullOrEmpty(artifactType.Description) ? "None provided" : artifactType.Description }
                             }
                         });
 
@@ -5397,7 +5402,7 @@ where    A.RuleID = @id", new { id });
                         {
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField> {
-                                new ReadOnlyField { Name = artifactType.GetName(i => i.CanOwnFusion), FieldName = "ArtifactTypeCanOwnFusion", FieldDescription = artifactType.GetDescription(i => i.CanOwnFusion), Value = artifactType.CanOwnFusion.FormatBooleanReadOnlyValue() }
+                                new ReadOnlyField { Name = Fields.CanOwnFusion_Name, FieldName = "ArtifactTypeCanOwnFusion", FieldDescription = Fields.CanOwnFusion_Description, Value = artifactType.CanOwnFusion.FormatBooleanReadOnlyValue() }
                             }
                         });
 
@@ -5419,7 +5424,7 @@ where    A.RuleID = @id", new { id });
                 #endregion
                 case SystemObjects.AttributeType:
                     #region Fields
-                    var attributeType = Company.GetById<AttributeType>(id);
+                    var attributeType = Company.Filter<AssetType>(i=>i.ObjectID==id && i.Object== "AttributeType").SingleOrDefault();
                     if (attributeType != null)
                     {
                         model.rows.Add(new DetailReadOnlyRowModel
@@ -5427,7 +5432,7 @@ where    A.RuleID = @id", new { id });
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = attributeType.GetName(i => i.ID), FieldName = "AttributeTypeID", FieldDescription = attributeType.GetDescription(i => i.ID), Value = attributeType.ID.ToString() }
+                                new ReadOnlyField { Name =Fields.ID_Name, FieldName = "AttributeTypeID", FieldDescription = Fields.ID_Description, Value = attributeType.ObjectID.ToString() }
                             }
                         });
 
@@ -5436,11 +5441,11 @@ where    A.RuleID = @id", new { id });
                             columns = 2,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = attributeType.GetName(i => i.Name), FieldName = "AttributeTypeName", FieldDescription = attributeType.GetDescription(i => i.Name), Value = attributeType.Name }
+                                new ReadOnlyField { Name = Fields.Name_Name, FieldName = "AttributeTypeName", FieldDescription = Fields.Name_Description, Value = attributeType.Name }
                             },
                             SecondColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = attributeType.GetName(i => i.DisplayFormat), FieldName = "AttributeTypeDisplayFormat", FieldDescription = attributeType.GetDescription(i => i.DisplayFormat), Value = attributeType.DisplayFormat }
+                                new ReadOnlyField { Name = Fields.DisplayFormat_Name, FieldName = "AttributeTypeDisplayFormat", FieldDescription =Fields.DisplayFormat_Description, Value = attributeType.DisplayFormat }
                             }
                         });
 
@@ -5449,7 +5454,7 @@ where    A.RuleID = @id", new { id });
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = attributeType.GetName(i => i.Description), FieldName = "AttributeTypeDescription", FieldDescription = attributeType.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(attributeType.Description) ? "None provided" : attributeType.Description }
+                                new ReadOnlyField { Name = Fields.Description_Name, FieldName = "AttributeTypeDescription", FieldDescription = Fields.Description_Description, Value = string.IsNullOrEmpty(attributeType.Description) ? "None provided" : attributeType.Description }
                             }
                         });
                     }
@@ -5876,7 +5881,7 @@ where    A.RuleID = @id", new { id });
                 #endregion
                 case SystemObjects.FusionType:
                     #region Fields
-                    var fusionType = Company.GetById<FusionType>(id);
+                    var fusionType = Company.Filter<AssetType>(i=>i.ObjectID==id && i.Object== "FusionType").SingleOrDefault();
                     var fusionDetail = Company.GetObjectDetail("FusionType", id);
                     if (fusionType != null)
                     {
@@ -5885,11 +5890,11 @@ where    A.RuleID = @id", new { id });
                             columns = 2,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = fusionType.GetName(i => i.Name), FieldName = "FusionTypeName", FieldDescription = fusionType.GetDescription(i => i.Name), Value = fusionType.Name }
+                                new ReadOnlyField { Name = Fields.Name_Name, FieldName = "FusionTypeName", FieldDescription =Fields.Name_Description, Value = fusionType.Name }
                             },
                             SecondColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = fusionType.GetName(i => i.ID), FieldName = "FusionTypeID", FieldDescription = fusionType.GetDescription(i => i.ID), Value = fusionType.ID.ToString() }
+                                new ReadOnlyField { Name = Fields.ID_Name, FieldName = "FusionTypeID", FieldDescription = Fields.ID_Description, Value = fusionType.ObjectID.ToString() }
                             }
                         });
                         model.rows.Add(new DetailReadOnlyRowModel
@@ -5905,7 +5910,7 @@ where    A.RuleID = @id", new { id });
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = fusionType.GetName(i => i.Description), FieldName = "FusionTypeDescription", FieldDescription = fusionType.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(fusionType.Description) ? "None provided" : fusionType.Description }
+                                new ReadOnlyField { Name =Fields.Description_Name, FieldName = "FusionTypeDescription", FieldDescription = Fields.Description_Description, Value = string.IsNullOrEmpty(fusionType.Description) ? "None provided" : fusionType.Description }
                             }
                         });
                     }
@@ -6273,7 +6278,7 @@ where    A.RuleID = @id", new { id });
                 #endregion
                 case SystemObjects.RuleType:
                     #region Fields
-                    var ruleType = Company.GetById<RuleType>(id);
+                    var ruleType = Company.Filter<AssetType>(i=>i.ObjectID==id && i.Object== "RuleType").SingleOrDefault();
                     var ruleDetail = Company.GetObjectDetail("RuleType", id);
                     if (ruleType != null)
                     {
@@ -6286,7 +6291,7 @@ where    A.RuleID = @id", new { id });
                             },
                             SecondColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = Resources.FieldInfo.ID_Name, FieldName = "RuleTypeID", Value = ruleType.ID.ToString() }
+                                new ReadOnlyField { Name = Resources.FieldInfo.ID_Name, FieldName = "RuleTypeID", Value = ruleType.ObjectID.ToString() }
                             }
                         });
                         model.rows.Add(new DetailReadOnlyRowModel
@@ -6331,7 +6336,7 @@ where    A.RuleID = @id", new { id });
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField{ Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = responsibilityDetail.UID.ToString()  }
+                                new ReadOnlyField{ Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = responsibilityType.UID.ToString()  }
                             }
                         });
                         if (!string.IsNullOrEmpty(responsibilityType.Description))
@@ -6351,7 +6356,7 @@ where    A.RuleID = @id", new { id });
                 #endregion
                 case SystemObjects.PolicyType:
                     #region Fields
-                    var policyType = Company.GetById<PolicyType>(id);
+                    var policyType = Company.Filter<AssetType>(x=>x.ObjectID==id && x.Object== "PolicyType").SingleOrDefault();
                     var objectDetail = Company.GetObjectDetail("PolicyType", id);
                     if (policyType != null)
                     {
@@ -6360,11 +6365,11 @@ where    A.RuleID = @id", new { id });
                             columns = 2,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = policyType.GetName(i => i.Name), FieldName = "PolicyTypeName", FieldDescription = policyType.GetDescription(i => i.Name), Value = policyType.Name }
+                                new ReadOnlyField { Name = Fields.Name_Name, FieldName = "PolicyTypeName", FieldDescription = Fields.Name_Description, Value = policyType.Name }
                             },
                             SecondColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = policyType.GetName(i => i.ID), FieldName = "PolicyTypeID", FieldDescription = policyType.GetDescription(i => i.ID), Value = policyType.ID.ToString() }
+                                new ReadOnlyField { Name = Fields.ID_Name, FieldName = "PolicyTypeID", FieldDescription = Fields.ID_Description, Value = policyType.ObjectID.ToString() }
                             }
                         });
                         model.rows.Add(new DetailReadOnlyRowModel
@@ -6380,7 +6385,7 @@ where    A.RuleID = @id", new { id });
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = policyType.GetName(i => i.Description), FieldName = "PolicyTypeDescription", FieldDescription = policyType.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(policyType.Description) ? "None provided" : policyType.Description }
+                                new ReadOnlyField { Name = Fields.Description_Name, FieldName = "PolicyTypeDescription", FieldDescription = Fields.Description_Description, Value = string.IsNullOrEmpty(policyType.Description) ? "None provided" : policyType.Description }
                             }
                         });
                     }
@@ -6577,34 +6582,34 @@ where    A.RuleID = @id", new { id });
                         switch (report.ObjectType)
                         {
                             case "Artifact":
-                                sql = "select 'Artifact Instance : ' + Name from ArtifactType where ID = @id";
+                                sql = "select 'Artifact Instance : ' + Name from AssetType where objectid = @id and [Object]='ArtifactType'";
                                 break;
                             case "ArtifactType":
-                                sql = "select 'Artifact Type : ' + Name from ArtifactType where ID = @id";
+                                sql = "select 'Artifact Type : ' + Name from AssetType where objectid = @id and [Object]='ArtifactType'";
                                 break;
                             case "Resource":
                                 sql = "select 'Resource Instance'";
                                 break;
                             case "Policy":
-                                sql = "select 'Policy Instance : ' + Name from PolicyType where ID = @id";
+                                sql = "select 'Policy Instance : ' + Name from AssetType where objectid = @id and [Object]='PolicyType'";
                                 break;
                             case "PolicyType":
-                                sql = "select 'Policy Type : ' + Name from PolicyType where ID = @id";
+                                sql = "select 'Policy Type : ' + Name from AssetType where objectid = @id and [Object]='PolicyType'";
                                 break;
                             case "Rule":
-                                sql = "select 'Rule Instance : ' + Name from RuleType where ID = @id";
+                                sql = "select 'Rule Instance : ' + Name from AssetType where objectid = @id and [Object]='RuleType'";
                                 break;
                             case "RuleType":
-                                sql = "select 'Rule Type : ' + Name from RuleType where ID = @id";
+                                sql = "select 'Rule Type : ' + Name from AssetType where objectid = @id and [Object]='RuleType'";
                                 break;
                             case "Taxonomy":
-                                sql = "select 'Model Instance : ' + Name from TaxonomyType where ID = @id";
+                                sql = "select 'Model Instance : ' + Name from AssetType where objectid = @id and [Object]='TaxonomyType'";
                                 break;
                             case "TaxonomyType":
-                                sql = "select 'Model Type : ' + Name from TaxonomyType where ID = @id";
+                                sql = "select 'Model Type : ' + Name from AssetType where objectid = @id and [Object]='TaxonomyType'";
                                 break;
                             case "FusionType":
-                                sql = "select 'Fusion Type : ' + Name from FusionType where ID = @id";
+                                sql = "select 'Fusion Type : ' + Name from AssetType where objectid = @id and [Object]='FusionType'";
                                 break;
                         }
 
@@ -6670,7 +6675,7 @@ where    A.RuleID = @id", new { id });
                 #endregion
                 case SystemObjects.ResourceType:
                     #region Fields
-                    var resourceType = Community.GetById<ResourceType>(id);
+                    var resourceType = Community.Filter<AssetType>(i=>i.ObjectID==id && i.Object == "ResourceType").SingleOrDefault();
                     if (resourceType != null)
                     {
                         model.columns = 1;
@@ -6680,7 +6685,7 @@ where    A.RuleID = @id", new { id });
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = resourceType.GetName(i => i.Name), FieldName = "ResourceTypeName", FieldDescription = resourceType.GetDescription(i => i.Name), Value = resourceType.Name }
+                                new ReadOnlyField { Name =Fields.Name_Name, FieldName = "ResourceTypeName", FieldDescription = Fields.Name_Description, Value = resourceType.Name }
                             }
                         });
                     }
@@ -6793,7 +6798,7 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
                 #endregion
                 case SystemObjects.TaxonomyType:
                     #region Fields
-                    var taxonomyType = Company.GetById<TaxonomyType>(id);
+                    var taxonomyType = Company.Filter<AssetType>(i=> i.ObjectID==id && i.Object== "TaxonomyType").SingleOrDefault();
                     var taxonomyObjectDetail = Company.GetObjectDetail("TaxonomyType", id);
                     if (taxonomyType != null)
                     {
@@ -6802,11 +6807,11 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
                             columns = 2,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = taxonomyType.GetName(i => i.Name), FieldName = "TaxonomyTypeName", FieldDescription = taxonomyType.GetDescription(i => i.Name), Value = taxonomyType.Name }
+                                new ReadOnlyField { Name = Fields.Name_Name, FieldName = "TaxonomyTypeName", FieldDescription = Fields.Name_Description, Value = taxonomyType.Name }
                             },
                             SecondColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = taxonomyType.GetName(i => i.ID), FieldName = "TaxonomyTypeID", FieldDescription = taxonomyType.GetDescription(i => i.ID), Value = taxonomyType.ID.ToString() }
+                                new ReadOnlyField { Name =Fields.ID_Name, FieldName = "TaxonomyTypeID", FieldDescription = Fields.ID_Description, Value = taxonomyType.ObjectID.ToString() }
                             }
                         });
 
@@ -6815,7 +6820,7 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
                             columns = 2,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = taxonomyType.GetName(i => i.MaximumDepth), FieldName = "TaxonomyTypeMaximumDepth", FieldDescription = taxonomyType.GetDescription(i => i.MaximumDepth), Value = taxonomyType.MaximumDepth.ToString() }
+                                new ReadOnlyField { Name = Fields.MaximumDepth_Name, FieldName = "TaxonomyTypeMaximumDepth", FieldDescription = Fields.MaximumDepth_Description, Value = taxonomyType.HierarchyMaximumDepth.ToString() }
                             },
                             SecondColumnFields = new List<ReadOnlyField>
                             {
@@ -6828,7 +6833,7 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = taxonomyType.GetName(i => i.Description), FieldName = "TaxonomyTypeDescription", FieldDescription = taxonomyType.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(taxonomyType.Description) ? "None provided" : taxonomyType.Description }
+                                new ReadOnlyField { Name = Fields.Description_Name, FieldName = "TaxonomyTypeDescription", FieldDescription = Fields.Description_Description, Value = string.IsNullOrEmpty(taxonomyType.Description) ? "None provided" : taxonomyType.Description }
                             }
                         });
                     }
@@ -7756,13 +7761,12 @@ SELECT (
         public HttpResponseMessage GetTaxonomyTypes()
         {
             var query = Company.Query<dynamic>(@"
-select	    FAT.ID,
-		    FAT.Name,
-            ISNULL(FAT.Description,'') as Description,
-		    FAT.MaximumDepth,
+select	    T.ObjectId as ID,
+		    T.Name,
+            ISNULL(T.Description,'') as Description,
+		    T.HierarchyMaximumDepth as MaximumDepth,
             T.ID as AssetTypeID
-from	    TaxonomyType FAT
-		    inner join AssetType T on T.Object = 'TaxonomyType' and T.ObjectID = FAT.ID");
+from	    AssetType T where T.Object = 'TaxonomyType' ");
 
             return Request.CreateResponse<dynamic>(HttpStatusCode.OK, query);
         }
@@ -7969,11 +7973,20 @@ from	    TaxonomyType FAT
         #region Reference - new replaces domain
 
         [HttpGet, Route("referenceItemTypes")]
-        public IEnumerable<ReferenceItemType> GetReferenceItemTypes()
+        public IEnumerable<dynamic> GetReferenceItemTypes()
         {
-            var sql = "select rit.*, ast.id as AssetTypeID from referenceitemtype rit inner join assettype ast on rit.id = ast.objectid and ast.[object] = 'ReferenceItemType'";
+            var sql = @"select 
+		                AT.ObjectID as ID,
+		                AT.Name,
+		                AT.Description,
+		                AT.DisplayFormat,
+		                AT.AutoDisplayDescription,
+		                AT.id as AssetTypeID
+		                from
+                  Assettype AT 
+                  where  AT.[object] = 'ReferenceItemType'";
 
-            return Company.Query<ReferenceItemType>(sql);            
+            return Company.Query<dynamic>(sql);            
         }
 
         [HttpGet, Route("canReadReferenceItemType/{id:int}")]

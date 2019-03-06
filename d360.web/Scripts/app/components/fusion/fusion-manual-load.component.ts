@@ -9,37 +9,7 @@ import { JsonResult } from '../../models/jsonresult.model';
 
 @Component({
     selector: 'd3s-fusion-manual-load',
-    template: ` 
-                <div class="row">
-                    <div class="col s12">
-                        <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                        <div class="tile tile-detail" *ngIf="!isLoading">
-                            <header>Manual Load Fusion Data</header>   
-                            <div class="form-instructions">Please ensure that you have the original column headers in your spreadsheet.  Choose an appropriate type that you want to load.  Then choose your spreadsheet.  The layout of the spreadsheet should correspond exactly with the template available for download on the Fusion configuration page.</div> 
-                            <div class="row">
-                                <div class="col l2 m12 s12">
-                                    <d3s-fusion-structure-tree [fusion]="fusion" [(fusionAttributeTypeId)]="selectedFusionAttributeTypeId"></d3s-fusion-structure-tree>
-                                </div>
-                                <div class="col l10 m12 s12">
-                                    <p><a style="cursor:pointer" (click)="downloadTemplate()">Download Template</a> - Use the template to load new data to the {{fusionName}} fusion data.</p>
-                                    <div class="row">
-                                        <h4 style="margin-top:20px;margin-bottom:5px;">Upload Data from a spreadsheet</h4>
-                                        <p-fileUpload name="file[]" [url]="fileUploadUrl()" (onUpload)="onUpload($event)" (onError)="onErrorFileUpload($event)"
-                                                multiple="multiple" accept=".xls,.xlsx" maxFileSize="10000000">
-                                            <ng-template pTemplate="content">
-                                                <ul *ngIf="uploadedFiles.length">
-                                                    <li *ngFor="let file of uploadedFiles">{{file.name}} - {{file.size}} bytes</li>
-                                                </ul>
-                                            </ng-template>        
-                                        </p-fileUpload>
-                                        <em>To see the progress of your upload view the <a (click)="goToFusion()" style="cursor:pointer">Execution Status</a> area of Fusion or click the History tab to the right.</em>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-          `,
+    templateUrl: './fusion-manual-load.component.html',
     providers: [FusionService],
 })
 
@@ -121,7 +91,7 @@ export class FusionManualLoadComponent extends BaseComponent implements OnInit, 
     }
 
     private downloadTemplate() {
-        if (!this.fusionID || !this.fusionTypeID || !this.selectedFusionAttributeTypeId) {
+        if (this.fusionID == undefined|| this.fusionID == null || !this.fusionTypeID || !this.selectedFusionAttributeTypeId) {
             console.log("ERROR - NO FUSION / FUSIONATTRIBUTE TYPE ID POPULATED");
 
             return;

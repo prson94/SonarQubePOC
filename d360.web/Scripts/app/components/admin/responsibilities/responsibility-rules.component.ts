@@ -22,22 +22,25 @@ export class ResponsibilityRulesComponent extends BaseComponent implements OnCha
     @Output() onAdd = new EventEmitter();
     @Output() onDelete = new EventEmitter();
     @Output() onCancel = new EventEmitter();
+    @Output() onDeleteDate = new EventEmitter();
     @Output() onFieldsChanged = new EventEmitter();
 
     @Input() isEditing = false;
     @Input() isAdding = false;
     @Input() isDeleting = false;
+    @Input() isDeletingDate = false;
 
     private rows = new Array<ResponsibilityTypeRelationRuleSummary>();
     private selectedRow = new ResponsibilityTypeRelationRuleSummary();
 
     private theDeleteCallback: Function;
-
+    private theDeleteDateCallback: Function;
     
     constructor(private responsibilityTypeService: ResponsibilityTypeService, private messagesService: MessagesService) {
         super();
 
         this.theDeleteCallback = this.deleteRule.bind(this);
+        this.theDeleteDateCallback = this.deleteDate.bind(this);
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -47,6 +50,7 @@ export class ResponsibilityRulesComponent extends BaseComponent implements OnCha
                 this.isEditing = false;
                 this.isAdding = false;
                 this.isDeleting = false;
+                this.isDeletingDate = false;
             }
         }
         this.load();
@@ -63,7 +67,7 @@ export class ResponsibilityRulesComponent extends BaseComponent implements OnCha
             .then(data => {
                 this.rows = data;                
                 this.selectedRow = null;
-                this.isLoading = false;
+                this.isLoading = false; 
             });
     }
 
@@ -89,6 +93,15 @@ export class ResponsibilityRulesComponent extends BaseComponent implements OnCha
         this.isAdding = false;
         this.onDelete.emit();
     }
+
+    clearDate(id: number): void {
+        this.selectedRow = this.rows.find(f => f.ID == id);
+        this.isEditing = false;
+        this.isDeleting = false;
+        this.isAdding = false;
+        this.isDeletingDate = true;
+        this.onDeleteDate.emit();
+    }
     
     editComplete(event) {
         this.isEditing = false;
@@ -108,6 +121,17 @@ export class ResponsibilityRulesComponent extends BaseComponent implements OnCha
                 this.onFieldsChanged.emit();
             }
         });        
+    }
+
+    deleteDate(id: number) {
+        this.responsibilityTypeService.deleteDate(id).then(res => {
+            this.showMessageForResult(this.messagesService, res);
+            if (!res.isError) {
+                this.isDeletingDate = false;
+                this.load();
+                this.onFieldsChanged.emit();
+            }
+        });    
     }
 
     private htmlDecode(val: string): string {
