@@ -69,7 +69,6 @@ namespace d360.model
             client.TrackEvent($"Loaded {mapCount} Markit Map Records");
 
             //find source records to start from
-            //var leftmostMaps = maps.Where(m => m.SourceAssetID != null).ToList();
             var leftmostMaps = maps.Where(m => !maps.Any(r => r.TargetFusionAttributeID == m.SourceFusionAttributeID)).ToList();
 
             //var leftmostMaps = maps.Where(m => m.SourceFusionAttributeID == 138507).ToList();
@@ -140,24 +139,6 @@ namespace d360.model
         {
             if (complexity > maxComplexity)
                 return;
-
-
-            //if (currentMap.SourceFusionAttributeID == 230097)
-            //{
-            //    var assetsstr = "";
-            //    var busstr = "";
-
-            //    businessMaps.ForEach(m =>
-            //    {
-            //        busstr += $"{m.ObjectAssetID}, {m.FusionAttributeID}\n";
-            //    });
-            //    sourceAssets.ToList().ForEach(f =>
-            //    {
-            //        assetsstr += $"{f.AssetID}, {f.FusionAttributeID}, {f.MapID}\n";
-            //    });
-            //    Console.WriteLine($"Found map with {sourceAssets.Count()} source asset and {businessMaps.Count} business objects");
-            //    Console.WriteLine($"{assetsstr}\n\n{busstr}");
-            //}
 
             List<FusionMarkitLineageData> nextMaps = new List<FusionMarkitLineageData>();
 
@@ -249,16 +230,6 @@ namespace d360.model
 && m.TargetFusionAttributeID == current.FusionAttributeID && (m.SourceAssetID == previousAssetId || m.SourceAssetID == previous.AssetID) && m.TargetAssetID == current.AssetID
 && m.ObjectAssetID == businessMap.ObjectAssetID))
                                 {
-                                    if (current.FusionAttributeID == 113856 && businessMap.ObjectAssetID == 412252)
-                                    {
-                                        Console.WriteLine($"[previous] mid: {previous.MapID}, fid: {previous.FusionAttributeID}, aid: {previous.AssetID}");
-                                        Console.WriteLine($"[current] mid: {current.MapID}, fid: {current.FusionAttributeID}, aid: {current.AssetID}");
-                                        if (prevMapping == null)
-                                            Console.WriteLine("[prevMapping]: null");
-                                        else
-                                            Console.WriteLine($"[prevMapping] mid: {prevMapping?.MapID}, sfid: {prevMapping?.SourceFusionAttributeID}, tfid: {prevMapping?.TargetFusionAttributeID}, oid: {prevMapping?.ObjectAssetID},  said: {prevMapping?.SourceAssetID}, taid: {prevMapping?.TargetAssetID}");
-                                    }
-
                                     mappings.Add(new FusionMarkitSourceTargetMapping
                                     {
                                         MapID = current.MapID,
