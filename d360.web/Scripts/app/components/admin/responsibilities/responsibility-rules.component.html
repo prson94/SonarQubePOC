@@ -1,8 +1,8 @@
 ﻿<div *ngIf="id">
     <div *ngIf="!isLoading && !isEditing && !isDeleting">
         <header>
-            {{title}}            
-            <d3s-tile-actions *ngIf="!isLoading && !isEditing && !isDeleting" [hasAdd]="showAddButton" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
+            {{title}}
+            <d3s-tile-actions *ngIf="!isLoading && !isEditing && !isDeleting" [hasAdd]="showAddButton" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
         </header>
     </div>
     <div *ngIf="isLoading" style="width:100%; text-align:center;">
@@ -10,14 +10,22 @@
     </div>
     <div *ngIf="isEditing">
         <d3s-responsibility-rule-form [ruleId]="id" [id]="selectedRow?.ID" (onCancel)="isEditing = false; onCancel.emit()" (onComplete)="editComplete($event)"></d3s-responsibility-rule-form>
-    </div>    
+    </div>
     <d3s-delete-form *ngIf="isDeleting"
                      [callback]="theDeleteCallback"
                      [itemId]="selectedRow?.ID"
                      [method]="'callback'"
                      [prompt]="'Are you sure you want to delete the rule [' + [selectedRow?.Name] + ']?'"
                      (onCancel)="isDeleting=false; onCancel.emit();"></d3s-delete-form>
-    <div *ngIf="!isLoading && !isEditing && !isDeleting">
+    <d3s-delete-form *ngIf="isDeletingDate"
+                     [callback]="theDeleteDateCallback"
+                     [itemId]="selectedRow?.ID"
+                     [deleteButtonText]="'Clear Date'"
+                     [method]="'callback'"
+                     [prompt]="'Are you sure you want to clear the Date for [' + [selectedRow?.Name] + ']?'"
+                     (onCancel)="isDeletingDate=false; onCancel.emit();"></d3s-delete-form>
+
+    <div *ngIf="!isLoading && !isEditing && !isDeleting && !isDeletingDate">
         <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
         <p-table #dt [value]="rows" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name','ObjectName','Context']" [(selection)]="selectedRow" [rows]="20" [pageLinks]="3" [paginator]="true">
             <ng-template pTemplate="header">
@@ -30,13 +38,16 @@
                         Type
                         <d3s-sortIcon [field]="'ObjectName'"></d3s-sortIcon>
                     </th>
-                    <th style="min-width: 60%">Context</th>
+                    <th style="min-width: 40%">Context</th>
+                    <th style="min-width: 20%">Last Run Date</th>
+                    <th style="width: 50px"></th>
                     <th style="width: 50px"></th>
                     <th style="width: 50px"></th>
                 </tr>
                 <tr [hidden]="showSimpleFilter">
                     <th><d3s-column-filter [field]="'Name'" [datatype]="'text'"></d3s-column-filter></th>
                     <th><d3s-column-filter [field]="'ObjectName'" [datatype]="'text'"></d3s-column-filter></th>
+                    <th></th>
                     <th></th>
                     <th></th>
                     <th></th>
@@ -48,6 +59,12 @@
                     <td>{{item.ObjectName}}</td>
                     <td>
                         <span *ngIf="item.Context" [innerHtml]="item.Context"></span>
+                    </td>
+                    <td>{{item.LastRunOn | date:'short'}}</td>
+                    <td>
+                        <div class="RowTools">
+                            <a (click)="clearDate(item.ID)" style="cursor:pointer;"><i class="fa fa-cogs"></i></a>
+                        </div>
                     </td>
                     <td>
                         <div class="RowTools">

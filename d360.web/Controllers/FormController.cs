@@ -478,8 +478,6 @@ namespace d360.web.Controllers
                     return EditPredicate(form);
                 case "REFERENCEITEM":
                     return EditReferenceItem(form);
-                case "REFERENCEITEMTYPE":
-                    return EditReferenceItemType(form);
                 case "REPORT":
                     return await EditReport(form);
                 case "REPORTTILE":
@@ -567,8 +565,6 @@ namespace d360.web.Controllers
                     return DeletePredicate(form);
                 case "REFERENCEITEM":
                     return DeleteReferenceItem(form);
-                case "REFERENCEITEMTYPE":
-                    return DeleteReferenceItemType(form);
                 case "REPORT":
                     return await DeleteReport(form);
                 case "REPORTTILE":
@@ -671,8 +667,6 @@ namespace d360.web.Controllers
                     return AddPredicate(form);
                 case "REFERENCEITEM":
                     return AddReferenceItem(form);
-                case "REFERENCEITEMTYPE":
-                    return AddReferenceItemType(form);
                 case "REPORT":
                     return await AddReport(form);
                 case "REPORTTILE":
@@ -10535,158 +10529,6 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         
         #endregion
 
-        #region Reference Item Types
-
-        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddReferenceItemType")]
-        public JsonResult AddReferenceItemType(FormCollection form)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                if (!form.HasKeys()) throw new NoFormDataException("ReferenceItemType");
-
-                var model = new ReferenceItemType
-                {
-                    Name = parseTextField(form, "Name"),
-                    Description = parseTextField(form, "Description"),
-                    SourceNotes = parseTextField(form, "SourceNotes"),
-                    DisplayFormat = parseTextField(form, "DisplayFormat"),
-                    UpdatedBy = Company.CurrentResourceID,
-                    UpdatedOn = DateTime.UtcNow,
-                    CreatedBy = Company.CurrentResourceID,
-                    CreatedOn = DateTime.UtcNow
-                };
-
-                Company.Add(model);
-
-                if (model.ID > 0)
-                {
-                    Company.Add(new FieldType
-                    {
-                        ObjectID = model.ID,
-                        Object = SystemObjects.ReferenceItemType.ToString(),
-                        IsListable = true,
-                        IsRequired = true,
-                        IsEditable = true,
-                        FriendlyName = "Long Description",
-                        Name = "LongDesc",
-                        MaximumLength = 500,
-                        MinimumLength = 1,
-                        SortOrder = 1,
-                        Type = DataType.Text.ToString(),
-                        IsDisplayable = true
-                    });
-                }
-
-                dynamic custom = new
-                {
-                    model.Name,
-                    action = "add",
-                    Context = form["_context"]
-                };
-
-                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpDelete, Route("DeleteReferenceItemType")]
-        public JsonResult DeleteReferenceItemType(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("ReferenceItemType");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<ReferenceItemType>(id);
-                if (model == null) throw new NotFoundException("ReferenceItemType");
-
-                //check if the reference list is the parent of any other reference item types
-                if (Company.TypeHasChildren(SystemObjects.ReferenceItemType, id)) throw new Exception("The selected Reference List Is the parent to one or more Reference List(s).  Please delete those first.");
-
-                if (Company.Filter<FieldType>(x => x.LookupObjectType == "ReferenceItem" && x.LookupObjectID == id).Count() > 0)
-                    throw new ConflictException("Error", "The reference list you are trying to delete is in use");
-
-                if (!Company.HasAssetTypePermission(SystemObjects.ReferenceItemType, id, Permission.DeleteAsset))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                Company.Delete(SystemObjects.ReferenceItemType, model.ID);
-
-                dynamic custom = new
-                {
-                    model.Name,
-                    action = "delete",
-                    Context = form["_context"]
-                };
-
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpPut, ValidateInput(false), Route("EditReferenceItemType")]
-        public JsonResult EditReferenceItemType(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("ReferenceItemType");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<ReferenceItemType>(id);
-                if (model == null) throw new NotFoundException("ReferenceItemType");
-
-                if (!Company.HasAssetTypePermission(SystemObjects.ReferenceItemType, id, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                model.Name = parseTextField(form, "Name");
-                model.Description = parseTextField(form, "Description");
-                model.SourceNotes = parseTextField(form, "SourceNotes");
-                model.DisplayFormat = parseTextField(form, "DisplayFormat");
-                model.UpdatedBy = Company.CurrentResourceID;
-                model.UpdatedOn = DateTime.UtcNow;
-
-                Company.Update(model);
-
-                dynamic custom = new
-                {
-                    Name = model.Name,
-                    action = "edit",
-                    Context = form["_context"]
-                };
-
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
         #region Relationship
 
         #region Field Generation
@@ -12630,6 +12472,32 @@ order by	case
                 await ((Company.Database.Connection as System.Data.SqlClient.SqlConnection).RemoveRelationRuleResultsByRule(id));
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
+            }
+            catch (BaseException ex)
+            {
+                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+            }
+            catch (Exception ex)
+            {
+                SendException(ex);
+                return jsonException(ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        [HttpDelete, Route("DeleteResponsibilityTypeRelationRuleDateByID"), NonNullableParameters]
+        public JsonResult DeleteResponsibilityTypeRelationRuleDateByID(int id)
+        {
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                var model = Company.GetById<ResponsibilityTypeRelationRule>(id);
+                if (model == null) throw new NotFoundException("responsibility type rule");
+
+                model.LastRunOn = null;
+                Company.Update(model);
+                return jsonSuccess("Item date successfully removed.", id.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {

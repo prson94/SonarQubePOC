@@ -105,6 +105,7 @@ export class ResponsibilityTypeRelationRuleSummary {
     ResponsibilityTypeID: number;
     ResponsibilityType: string;
     Name: string;
+    LastRunOn: string;
 }
 
 export class ResponsibilityTypeRelationRule {
