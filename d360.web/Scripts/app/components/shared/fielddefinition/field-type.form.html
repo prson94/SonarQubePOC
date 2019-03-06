@@ -175,10 +175,10 @@
                     <div id='MaximumLengthTip' class="FieldName">Maximum {{model.FieldType.Type == 'Text' ? "Length" : "Value"}}</div>
                     <input name="maxLength" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}" [(ngModel)]="model.FieldType.MaximumLength" (keyup)="validateNumber(model.FieldType.Type)" style="width: 98%; display: block;" />
                 </div>
-				<div *ngIf="model.FieldType.Type == 'Decimal'" class="col s3">
+				        <div *ngIf="model.FieldType.Type == 'Decimal'" class="col s3">
                     <div id='decimalPlaces' class="FieldName">Decimal Places</div>
-                    <input name="Precision" type="number" [(ngModel)]="model.FieldType.Precision" (change)="validateNumber(model.FieldType.Type)" min="0" max="5" style="width: 98%; display: block;" />
-                </div>
+                    <input name="Precision" type="number" [(ngModel)]="model.FieldType.Precision" (keyup)="validateNumber(model.FieldType.Type)" min="0" max="5" style="width: 98%; display: block;" />
+                 </div>
             </div>
             <div class="row" *ngIf="model.FieldType.Pattern?.length > 0">
                 <div *ngIf="model.FieldType.Type == 'Text'" class="col s3">

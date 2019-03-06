@@ -69,7 +69,9 @@ namespace d360.model
             client.TrackEvent($"Loaded {mapCount} Markit Map Records");
 
             //find source records to start from
-            var leftmostMaps = maps.Where(m => m.SourceAssetID != null).ToList();
+            var leftmostMaps = maps.Where(m => !maps.Any(r => r.TargetFusionAttributeID == m.SourceFusionAttributeID)).ToList();
+
+            //var leftmostMaps = maps.Where(m => m.SourceFusionAttributeID == 138507).ToList();
             var mappings = new List<FusionMarkitSourceTargetMapping>();
 
             //build source map dictionary, much faster than searching the list
@@ -203,25 +205,37 @@ namespace d360.model
                         {
                             lock (mappingLock)
                             {
-                                var previousAssetID = previous.AssetID;
+                                var previousAssetId = previous.AssetID;
+                                var previousFusionId = previous.FusionAttributeID;
+                                var mapId = current.MapID;
 
                                 //if there's already a previous mapping on this path & business object, 
                                 //take that mapping's target asset id instead so the lineage is connected
                                 var prevMapping = mappings.LastOrDefault(m => processedList.Contains(m.MapID) && m.MapID != currentMap.ID && m.TargetAssetID != previous.AssetID && m.ObjectAssetID == businessMap.ObjectAssetID);
                                 if (prevMapping != null)
-                                    previousAssetID = prevMapping.TargetAssetID;
-                                
+                                {
+                                    previousAssetId = prevMapping.TargetAssetID;
+                                    previousFusionId = prevMapping.TargetFusionAttributeID;
+                                    mapId = prevMapping.MapID;
+                                    //sourceAssets.Clear();
+                                }
+
+
                                 //if the mapping doesn't exist create it
-                                if (!mappings.Any(m => m.MapID == current.MapID && m.SourceFusionAttributeID == previous.FusionAttributeID
-                                && m.TargetFusionAttributeID == current.FusionAttributeID && m.SourceAssetID == previousAssetID && m.TargetAssetID == current.AssetID
-                                && m.ObjectAssetID == businessMap.ObjectAssetID))
+                                //if (!mappings.Any(m => m.MapID == current.MapID && m.SourceFusionAttributeID == previous.FusionAttributeID
+                                //&& m.TargetFusionAttributeID == current.FusionAttributeID && m.SourceAssetID == previousAssetID && m.TargetAssetID == current.AssetID
+                                //&& m.ObjectAssetID == businessMap.ObjectAssetID) && previousAssetID != current.AssetID
+                                //&& !mappings.Any(m => ((m.SourceFusionAttributeID == previous.FusionAttributeID && m.SourceAssetID == previousAssetID) || (m.TargetFusionAttributeID == current.FusionAttributeID && m.TargetAssetID == current.AssetID)) && m.ObjectAssetID == businessMap.ObjectAssetID))
+                                if (!mappings.Any(m => (m.MapID == current.MapID || m.MapID == mapId) && (m.SourceFusionAttributeID == previousFusionId || m.SourceFusionAttributeID == previous.FusionAttributeID)
+&& m.TargetFusionAttributeID == current.FusionAttributeID && (m.SourceAssetID == previousAssetId || m.SourceAssetID == previous.AssetID) && m.TargetAssetID == current.AssetID
+&& m.ObjectAssetID == businessMap.ObjectAssetID))
                                 {
                                     mappings.Add(new FusionMarkitSourceTargetMapping
                                     {
                                         MapID = current.MapID,
-                                        SourceFusionAttributeID = (int)previous.FusionAttributeID,
+                                        SourceFusionAttributeID = (int)previousFusionId,
                                         TargetFusionAttributeID = (int)current.FusionAttributeID,
-                                        SourceAssetID = (long)previousAssetID,
+                                        SourceAssetID = (long)previousAssetId,
                                         TargetAssetID = (long)current.AssetID,
                                         ObjectAssetID = businessMap.ObjectAssetID
                                     });
