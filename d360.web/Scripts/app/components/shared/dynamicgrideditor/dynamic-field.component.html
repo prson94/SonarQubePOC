@@ -50,41 +50,73 @@
             </header>
         </p-editor>
         <div *ngSwitchCase="'Lookup'">
-            <p-multiSelect *ngIf="field?.MultiSelect; else singleSelect" [formControlName]="field.FieldName" [ngModel]="field.Value" (ngModelChange)="listItemChange.emit({field:field,value:$event});field.Value=$event;" [options]="field.Items | dropdownItemToSelectItemPipe" [style]="{width:'100%'}" ngDefaultControl [defaultLabel]="multiselectLabel()"></p-multiSelect>
-            <ng-template #singleSelect>
-                <ng-container *ngIf="!field.UseTypeahead">
-                    <select [formControlName]="field.FieldName" style="height:auto;width:100%;" [ngModel]="field.Value" (ngModelChange)="listItemChange.emit({field:field,value:$event});field.Value=$event;">
-                        <option *ngIf="field.ParentFieldTypeName && (!field.Items || field.Items.length == 0);else blankOption" value="" disabled selected>Select a {{field.ParentFieldTypeName}}</option>
-                        <ng-template #blankOption>
-                            <option value=""></option>
-                        </ng-template>
-                        <option *ngFor="let opt of field.Items" [value]="opt.Value">{{opt.Text}}</option>
-                    </select>
-                </ng-container>
-                <ng-container *ngIf="field.UseTypeahead">
-                    <p-autoComplete [placeholder]="'Start typing to select an item'"
-                                    [delay]="350"
-                                    [field]="'Text'"
-                                    [style]="{'width':'100%'}"
-                                    [inputStyle]="{'width':'100%' }"
-                                    [formControlName]="field.FieldName"
-                                    [ngModel]="typeAheadValue"
-                                    (onSelect)="onSelect($event)"
-                                    [suggestions]="field.Items"
-                                    (completeMethod)="search($event)"
-                                    [forceSelection]="field.Required"
-                                    (onClear)="clearTypeahead($event)"
-                                    [dropdown]="false">
-                        <ng-template let-item pTemplate="item">
-                            <div *ngIf="item.Selected" style="font-weight: bold; color: #fff; background: #54a4da">
-                                {{item.Text}}
-                            </div>
-                            <div *ngIf="!item.Selected">
-                                {{item.Text}}
-                            </div>
-                        </ng-template>
-                    </p-autoComplete>
-                </ng-container>
+            <ng-container *ngIf="!field.DelayedLoadType else delayedLoadType">
+                <p-multiSelect *ngIf="field?.MultiSelect; else singleSelect" [formControlName]="field.FieldName" [ngModel]="field.Value" (ngModelChange)="listItemChange.emit({field:field,value:$event});field.Value=$event;" [options]="field.Items | dropdownItemToSelectItemPipe" [style]="{width:'100%'}" ngDefaultControl [defaultLabel]="multiselectLabel()"></p-multiSelect>
+                <ng-template #singleSelect>
+                    <ng-container *ngIf="!field.UseTypeahead">
+                        <select [formControlName]="field.FieldName" style="height:auto;width:100%;" [ngModel]="field.Value" (ngModelChange)="listItemChange.emit({field:field,value:$event});field.Value=$event;">
+                            <option *ngIf="field.ParentFieldTypeName && (!field.Items || field.Items.length == 0);else blankOption" value="" disabled selected>Select a {{field.ParentFieldTypeName}}</option>
+                            <ng-template #blankOption>
+                                <option value=""></option>
+                            </ng-template>
+                            <option *ngFor="let opt of field.Items" [value]="opt.Value">{{opt.Text}}</option>
+                        </select>
+                    </ng-container>
+                    <ng-container *ngIf="field.UseTypeahead">
+                        <p-autoComplete [placeholder]="'Start typing to select an item'"
+                                        [delay]="350"
+                                        [field]="'Text'"
+                                        [style]="{'width':'100%'}"
+                                        [inputStyle]="{'width':'100%' }"
+                                        [formControlName]="field.FieldName"
+                                        [ngModel]="typeAheadValue"
+                                        (onSelect)="onSelect($event)"
+                                        [suggestions]="field.Items"
+                                        (completeMethod)="search($event)"
+                                        [forceSelection]="field.Required"
+                                        (onClear)="clearTypeahead($event)"
+                                        [dropdown]="false">
+                            <ng-template let-item pTemplate="item">
+                                <div *ngIf="item.Selected" style="font-weight: bold; color: #fff; background: #54a4da">
+                                    {{item.Text}}
+                                </div>
+                                <div *ngIf="!item.Selected">
+                                    {{item.Text}}
+                                </div>
+                            </ng-template>
+                        </p-autoComplete>
+                    </ng-container>
+                </ng-template>
+            </ng-container>
+            <ng-template #delayedLoadType>
+                <p-multiSelect *ngIf="field?.MultiSelect; else singleSelect"
+                               [formControlName]="field.FieldName"
+                               [ngModel]="field.Value"
+                               (ngModelChange)="listItemChange.emit({field:field,value:$event});field.Value=$event;"
+                               [options]="field.Items | selectItemTextToLabel"
+                               [style]="{width: filterException == '' ? '100%' : '90%'}"
+                               ngDefaultControl [defaultLabel]="multiselectLabel()">
+                    <ng-template let-item pTemplate="item">
+                        <span>{{item.Text}}</span><span style="color:#848484;float:right;">{{item.Info}}</span>
+                    </ng-template>
+                </p-multiSelect>
+                <ng-template #singleSelect>
+                    <ng-container *ngIf="!field.UseTypeahead">
+                        <p-dropdown [formControlName]="field.FieldName"
+                                    [style]="{'height':'auto',width: filterException == '' ? '100%' : '90%'}"
+                                    [ngModel]="field.Value"
+                                    [options]="field.Items | selectItemTextToLabel"
+                                    (ngModelChange)="listItemChange.emit({field:field,value:$event});field.Value=$event;">
+                            <ng-template let-item pTemplate="item">
+                                <span>{{item.Text}}</span><span style="color:#848484;float:right;">{{item.Info}}</span>
+                            </ng-template>
+                        </p-dropdown>
+                    </ng-container>
+                </ng-template>
+                <span *ngIf="filterException" class="fa-stack" style="font-size:smaller;" title="{{filterException}}">
+                    <i class="fa fa-filter fa-stack-2x"></i>
+                    <i class="fa fa-times fa-stack-1x" style="padding-left:0.5em;padding-top:0.5em;color:red;"></i>
+                </span>
             </ng-template>
         </div>
         <div *ngSwitchCase="'Relationship'">

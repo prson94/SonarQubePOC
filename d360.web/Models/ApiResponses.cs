@@ -67,4 +67,9 @@ namespace d360.web.Models
         [DataMember]
         public string message { get; set; } = "error";
     }
+
+    public class SelectListInfoItem : System.Web.Mvc.SelectListItem
+    {
+        public string Info { get; set; }
+    }
 }

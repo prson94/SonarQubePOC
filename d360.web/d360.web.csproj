@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -1410,6 +1410,7 @@
     <TypeScriptCompile Include="Scripts\app\pipes\metric-condition-disabled-filter.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\responsibilitytypeallocation-filter.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\permission-filter.pipe.ts" />
+    <TypeScriptCompile Include="Scripts\app\pipes\selectitem-text-to-label.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\utc-date.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\safe-html.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\services\asset-type.services.ts" />

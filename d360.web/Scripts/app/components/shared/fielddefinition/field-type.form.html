@@ -139,6 +139,22 @@
                     </select>
                 </div>
             </div>
+            <div class="row" *ngIf="listFilterable">
+                <div class="col s6">
+                    <div class="FieldName">Filter Relationship Predicate</div>
+                    <p-dropdown name="filterpredicate" (ngModelChange)="selectPredicate($event)" [options]="listFilterPredicates" [(ngModel)]="listFilterPredicate" [style]="{ 'width': '98%' }" ngDefaultControl></p-dropdown>
+                </div>
+            </div>
+            <div class="row" *ngIf="listFilterable">
+                <div class=" col s9">
+                    <div class="FieldName">Filter by Related Assets in Field</div>
+                    <p-dropdown name="filterassetfield" [options]="listFilterRelatedFields" [(ngModel)]="model.FieldType.FilterFieldTypeID" [style]="{ 'width': '98%' }" ngDefaultControl>
+                        <ng-template let-item pTemplate="item">
+                            <span>{{item.label}}</span><span style="color:#848484;float:right;">{{item.info}}</span>
+                        </ng-template>
+                    </p-dropdown>
+                </div>
+            </div>
         </simple-accordion>
 
         <simple-accordion header="Validation" active="true" *ngIf="['Text','Number','Decimal'].indexOf(model.FieldType.Type) > -1">

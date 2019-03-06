@@ -22,6 +22,8 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     @Input() form: FormGroup;
     @Input() object: string;
     @Input() objectID: number = null;
+    @Input() selectedObject: string;
+    @Input() selectedObjectID: number;
 
     @ViewChild('ed') ed: Editor;
     private quill;
@@ -44,6 +46,8 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     private Max: number;
     private Precision: number;
     private colorValue: string = '#000';
+
+    private filterException: string = '';
 
     private isTaxonomyType: boolean = false; // taxonomy type requires its name be mapped to whatever the setting is set to.
     private hasCascadeLoaded: boolean = false;
@@ -107,7 +111,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                         this.listItemChange.emit({ field: this.field, value: null });
                     }
                 }
-            });
+           });
 
         this.relationSub = this.fieldsService.getRelationshipFieldItems(this.relationSource$)
             .subscribe(res => {
@@ -126,6 +130,16 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                 this.field.Items = <EditorDropDownItem[]>res;
                 this.ref.markForCheck();
             });
+
+        if (this.field.DelayedLoadType == 'Predicate') {
+            this.fieldsService.getLookupFilteredByPredicate(this.field.FieldTypeID, this.selectedObject, this.selectedObjectID).then(
+                res => {
+                    this.field.Items = res.items;
+                    this.filterException = res.exceptionMessage;
+                    this.ref.markForCheck();
+                }
+            )
+        }
 
         if (this.field && this.field.Validations) {
             for (let validation of this.field.Validations) {
