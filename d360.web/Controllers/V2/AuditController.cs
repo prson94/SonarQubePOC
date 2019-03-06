@@ -35,7 +35,10 @@ namespace d360.web.Controllers.V2
 
         }
 
-        [Route("{type}/{id:int}/auditcombined.json")]
+        [
+            HttpGet,
+            Route("{type}/{id:int}/auditcombined.json")
+        ]
         public async Task<IHttpActionResult> AuditCombined(SystemObjects type, int id, string sortDataField, string sortOrder, int pagenum, int pagesize)
         {
             try
