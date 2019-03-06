@@ -11,6 +11,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
+using Dapper;
 
 namespace d360.web.Controllers.V2
 {
@@ -222,5 +223,90 @@ namespace d360.web.Controllers.V2
             }
         }
 
+
+        /// <summary>
+        /// Retrieves a list of responsibility type ownership rules for the specified responsibility type.
+        /// </summary>
+        /// <param name="responsibilityTypeRuleUid">The unique identifier of the responsibility type ownership rule to get stats for.</param>
+        /// <returns>Returns a stats for the specified responsibility type ownership rules.</returns>
+        [
+            HttpGet,
+            Route("rules/{responsibilityTypeRuleUid:Guid}/stats"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "Ownership rule statistics for the given responsibility type rule uid.", typeof(ResponsibilityTypeRuleStatsViewModel)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ResponsibilityTypeRuleStatsViewModel))
+        ]
+        public async Task<HttpResponseMessage> GetResponsibilityRulesStats(Guid responsibilityTypeRuleUid)
+        {
+            var prefix = "Responsibilities.GetResponsibilityRulesStats => ";
+            var errorMessage = "";
+
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+
+            try
+            {
+                var responsibilityTypeRuleStats = new ResponsibilityTypeRuleStatsViewModel();
+                responsibilityTypeRuleStats.AssignedUsers = await Company.Database.Connection.QueryFirstOrDefaultAsync<int>(@"                            
+                                    select sum(a.cnt) from 
+                                    (select 
+	                                    count(1) as cnt
+                                    from
+	                                    [dbo].[ResponsibilityTypeRelationRule] rtr
+	                                    inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rsa on (rsa.RuleID = rtr.id)
+	                                    inner join [reporting].Global_Resource r on (r.resourceid = rsa.securityassetid and rsa.securityasset = 'R')
+                                    where rtr.[uid] = @uid
+                                    union all
+                                    select 
+	                                    count(1) as cnt
+                                    from
+	                                    [dbo].[ResponsibilityTypeRelationRule] rtr
+	                                    inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rsa on (rsa.RuleID = rtr.id)
+	                                    inner join [dbo].ResourceGroup gr on (gr.groupid = rsa.securityassetid and rsa.securityasset = 'G')
+                                    where rtr.[uid] = @uid
+                                    union all
+                                    select 
+	                                    count(1) as cnt
+                                    from
+	                                    [dbo].[ResponsibilityTypeRelationRule] rtr
+	                                    inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rsa on (rsa.RuleID = rtr.id)		
+	                                    inner join [dbo].OrganizationResource og on (og.OrganizationID = rsa.SecurityAssetID and rsa.SecurityAsset = 'O')
+                                    where rtr.[uid] = @uid
+                                    ) a
+                            ", new { uid = responsibilityTypeRuleUid.ToString() });
+
+                responsibilityTypeRuleStats.AssignedAssets = await Company.Database.Connection.QueryFirstOrDefaultAsync<int>(@"                            
+                                    select sum(a.cnt) from 
+                                    (
+	                                    select
+		                                    count(1) as cnt
+	                                    from [dbo].[ResponsibilityTypeRelationRule] rtr
+		                                    inner join [dbo].ResponsibilityRuleResultAsset ra on (rtr.id = ra.RuleID)	
+	                                    where
+		                                    rtr.ApplyToType = 0 and rtr.[uid] = @uid
+	                                    union all
+	                                    select
+		                                    count(1) as cnt
+	                                    from [dbo].[ResponsibilityTypeRelationRule] rtr
+		                                    inner join [dbo].ResponsibilityRuleResultAsset ra on (rtr.id = ra.RuleID)	
+		                                    inner join [dbo].asset a on(ra.AssetTypeID = a.AssetTypeID)
+	                                    where
+		                                    rtr.ApplyToType = 1 and rtr.[uid] = @uid
+                                    ) a                                    
+                            ", new { uid = responsibilityTypeRuleUid.ToString() });
+
+                return Request.CreateResponse(HttpStatusCode.OK, responsibilityTypeRuleStats);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+        }
     }
 }

@@ -131,6 +131,7 @@
     <Compile Include="entities\Security\ResponsibilityTypeAllocationViewModel.cs" />
     <Compile Include="entities\Security\ResponsibilityTypeRelationOverrideItem.cs" />
     <Compile Include="entities\Security\ResponsibilityTypeRelationRule.cs" />
+    <Compile Include="entities\Security\ResponsibilityTypeRuleStatsViewModel.cs" />
     <Compile Include="entities\Security\ResponsibilityTypeRuleViewModel.cs" />
     <Compile Include="entities\ShoppingCart.cs" />
     <Compile Include="entities\ShoppingCartItem.cs" />
