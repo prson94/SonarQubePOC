@@ -13,6 +13,7 @@
 
 export class ReferenceItem {
     ID: number;
+    AssetTypeID: number;
     ReferenceItemTypeID: number;
     DisplayValue: string;
     CreatedOn: Date;
