@@ -174,7 +174,8 @@ when	matched then
 when	not matched by target then
 		insert (ResourceID, FirstName, LastName, LastLoggedInOn, Email, [State], IsAdministrator, CreatedOn)
 		values (S.ResourceID, S.FirstName, S.LastName, S.LastLoggedInOn, S.Email, S.[State], S.IsAdministrator, getutcdate());",
-                                transaction: transaction
+                                transaction: transaction,
+                                commandTimeout: 300
                                 );
 
                                 log.WriteLine("Upserted {0} users for company {1}.", resources.Count, c.CompanyID);

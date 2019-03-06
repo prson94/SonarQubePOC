@@ -765,6 +765,7 @@ where	(I.Subject = @obj and I.SubjectID = @objid and I.ObjectType = @objtype and
 
         public static string ObjectRelationships = @"
 select	ID,
+        [Uid],
         IntersectTypeID,
         case when (Subject = @type and SubjectID = @id) then Object else Subject end as Object,
 		case when (Subject = @type and SubjectID = @id) then ObjectID else SubjectID end as ObjectID,
@@ -783,29 +784,29 @@ order by case when (Subject = @type and SubjectID = @id) then ObjectName else Su
 
         public static string PolicySettingsItem = @"
 select	T.*, R.*
-from	PolicyType T 
+from	AssetType T 
 		cross apply (
 					select	case 
 								when count(1) > 0 then cast(1 as bit)
 								else cast(0 as bit)
 							end as AllowAttributes
 					from	AttributeTypeRelation
-					where	ObjectType = 'PolicyType' and ObjectID = T.ID
+					where	ObjectType = 'PolicyType' and ObjectID = T.ObjectID  
 					) R
-where	T.ID = @id";
+where T.[object]='PolicyType' and	T.ObjectID = @id";
 
         public static string RuleSettingsItem = @"
 select	T.*, R.*
-from	RuleType T 
+from	AssetType T 
 		cross apply ( 
 					select	case 
 								when count(1) > 0 then cast(1 as bit)
 								else cast(0 as bit)
 							end as AllowAttributes
 					from	AttributeTypeRelation
-					where	ObjectType = 'RuleType' and ObjectID = T.ID
+					where	ObjectType = 'RuleType' and ObjectID = T.ObjectID 
 					) R
-where	T.ID = @id";
+where T.[object]='RuleType' and		T.ObjectID = @id";
 
         public static string PromotionHistoryList = @"
 select	ID,
@@ -1370,7 +1371,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
         #region Workflow
 
         public static string WorkflowDiagramNodes = @"
-            select 
+	   select 
 	            cast(vs.ID as varchar) as [Key],
 	            vs.XPosition,
 	            vs.YPosition,
@@ -1383,10 +1384,18 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
             from workflow.[type] t
             inner join workflow.[version] v on v.typeid = t.id
             inner join workflow.[versionstep] vs on vs.versionid = v.id
-			left join (
-				select stepid, count(stepid) as RunCount from workflow.itemstep
-				group by stepid
-			) i on i.stepid = vs.id
+			outer apply (
+				select 
+					s.stepid, 
+					case when vs.Settings.value('/settings[1]/WaitForAllTransitions[1]','varchar(max)') = 'true' then
+						count(s.stepid) / coalesce((select count(*) from workflow.versionsteptransition vst where vst.toversionstepid = vs.id), 1)
+					else
+						count(s.stepid) 
+					end as RunCount
+				from workflow.itemstep s 
+				where s.stepid = vs.id
+				group by s.stepid
+			) i 
             where t.id = @id and vs.[State] = 1 and v.id = coalesce((select top 1 id from workflow.version where typeid = @id and version = @version), (select top 1 id from workflow.version where typeid = @id order by [version] desc))
 ";
 

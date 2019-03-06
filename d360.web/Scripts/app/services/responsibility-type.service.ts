@@ -208,6 +208,13 @@ export class ResponsibilityTypeService extends BaseService implements IResponsib
             .catch(err => this.handleError(err));
     }
 
+    deleteDate(id: number): Promise<any> {
+        return this.http.delete(`form/DeleteResponsibilityTypeRelationRuleDateByID?id=${id}`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+    
     testWhen(rule: ResponsibilityTypeRelationRule): Promise<ResponsibilityTypeRelationRuleDefinitionWhenTestRow[]> {
         return this.http.post(`form/ResponsibilityTypeRelationRule_WhenTest`, rule)
             .toPromise()

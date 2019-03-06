@@ -16,6 +16,10 @@ export class FormHelpers {
         }
     }
 
+    static isNumber(n) {
+        return !isNaN(parseFloat(n)) && isFinite(n);
+    }
+
     static integerValidator(f: AbstractControl) {
         if (f.value == null || f.value == '')
             return null;

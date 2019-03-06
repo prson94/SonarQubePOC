@@ -1,0 +1,29 @@
+<header>Confirm Deletion of {{artifactType?.Name}} Artifact Type</header>
+<div class="row">
+    <div *ngIf="isLoading;else notLoading"
+        style="text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
+    <ng-template #notLoading>
+        <div class="col s12">Are you sure you want to delete the artifact type {{artifactType?.Name}}.</div>
+        <div class="col s12"
+            *ngIf="count > 0">&nbsp;</div>
+        <div class="col s12"
+            *ngIf="count > 0">
+            <p-checkbox [(ngModel)]="signoff"
+                binary="true"></p-checkbox><i class="fa fa-exclamation-triangle"
+                aria-hidden="true"></i> The selected Artifact Type contains <b>{{count}}</b> artifacts that will also
+            be deleted. These actions cannot be undone. Please check this box if you would like to continue.
+        </div>
+    </ng-template>
+</div>
+<div class="row">
+    <div class="col s12">&nbsp;</div>
+</div>
+<div class="row">
+    <button pButton
+        (click)="delete()"
+        label="Delete"
+        [disabled]="isLoading || (count > 0 && !signoff)"></button>
+    <button pButton
+        (click)="cancel()"
+        label="Cancel"></button>
+</div>

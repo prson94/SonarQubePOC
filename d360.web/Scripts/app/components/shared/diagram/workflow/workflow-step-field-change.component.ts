@@ -1,4 +1,4 @@
-﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter, Input, OnChanges } from '@angular/core';
+﻿import { Component, NgZone , Output, EventEmitter, Input, OnChanges } from '@angular/core';
 import { BaseComponent } from '../../../shared/base.component';
 import {
     WorkflowEventRegistration,
@@ -28,7 +28,7 @@ import * as _ from 'lodash';
     templateUrl: 'workflow-step-field-change.component.html'
 })
 
-export class WorkflowStepFieldChangeComponent extends BaseComponent implements OnInit, OnChanges {
+export class WorkflowStepFieldChangeComponent extends BaseComponent implements OnChanges {
     @Input() objectId: number;
     @Input() objectType: string;
     @Input() fieldUpdate: any = {};
@@ -57,10 +57,6 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         super();
     }
 
-    ngOnInit() {
-        //console.log(_.cloneDeep(this.formFields));
-    }
-
     ngOnChanges() {
         this.load();
     }
@@ -74,7 +70,6 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         this.workflowService.getWorkflowFieldTypes(this.objectId, this.objectType, true)
             .then(r => {
                 this.fields = r;
-                //console.log(this.fields);
             })
             .then(() => {
 
@@ -114,14 +109,17 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
     selectField(i: number) {
         this.selectedFieldIndex = i;
         this.selectedField = this.fieldUpdate.Field[i];
-        //console.log(this.selectedField);
     }
 
     select(e: any, clear: boolean = true) {
         this.field = null;
         this.selectedField['@FieldId'] = e;
-        if (clear)
+        if (clear) {
+            delete this.selectedField['@FormStepId'];
+            delete this.selectedField['@FormFieldId'];
             delete this.selectedField['@Value'];
+            this.selectedFormFieldId = null;
+        }
 
         let f = this.fields.find(f => f.ID == +e);
         if (f) this.field = f;
@@ -155,7 +153,6 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
             delete this.selectedField['@FormStepId'];
             delete this.selectedField['@FormLabel'];
         }
-        //this.fieldUpdateChange.emit(this.fieldUpdate);
     }
 
     changeFormValue(e: any) {
@@ -168,8 +165,6 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         this.selectedField['@FormFieldId'] = field['@id'];
         this.selectedField['@FormStepId'] = field['@stepId'];
         this.selectedField['@FormLabel'] = field['@label'];
-
-        //this.fieldUpdateChange.emit(this.fieldUpdate);
     }
 
     add() {
@@ -184,9 +179,6 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
     save() {
         let field = _.cloneDeep(this.selectedField);
         let fieldTypeIndex = this.fields.findIndex(f => f.ID.toString() == field['@FieldId'].toString());
-
-        //console.log('save', field);
-
 
         if (this.field.Type.toLowerCase() == 'lookup') {
             //join multiselect value into a comma delimited string
@@ -269,7 +261,6 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
     }
 
     edit(i: any) {
-        //console.log('edit', this.valueType, i);
         this.selectedFieldIndex = i;
         this.selectedField = _.cloneDeep(this.fieldUpdate.Field[i]);
         this.selectedFormFieldId = null;
@@ -337,7 +328,6 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
     }
 
     valid() {
-
         //TODO: enforce single Field item per field
         if (this.selectedField == null) return false;
         if (this.selectedField['@FieldId'] == null) return false;
@@ -358,7 +348,6 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
 
         }
 
-        //console.log(this.selectedField);
         return true;
     }
 
@@ -405,7 +394,6 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
     }
 
     isHtml(i: any): boolean {
-        //console.log('isHtml', i, this.fields);
         if (i == null) return false;
         let f = this.usedFields.find(f => f.ID == +i['@FieldId']);
         if (f == null) return false;
@@ -426,6 +414,34 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         }
 
         return val;
+    }
+
+
+    get availableFormFields(): any[] {
+        let field = this.fields.find(f => f.ID.toString() == this.selectedField['@FieldId']);
+
+        if (field == null)
+            return null;
+
+        let fieldType = field.Type;
+
+        switch (fieldType) {
+            case 'Lookup':
+                return this.formFields.filter(f => f['@type'] == 'list' && f['@referenceFieldId'] == field.ID.toString());
+            case 'Number':
+            case 'Decimal':
+                return this.formFields.filter(f => f['@type'] == 'integer');
+            case 'Boolean':
+                return this.formFields.filter(f => f['@type'] == 'boolean');
+            case 'Date':
+            case 'DateTime':
+                return this.formFields.filter(f => f['@type'] == 'date');
+            case 'Text':
+            case 'Html':
+            default:
+                return this.formFields;
+        }
+
     }
 }
 

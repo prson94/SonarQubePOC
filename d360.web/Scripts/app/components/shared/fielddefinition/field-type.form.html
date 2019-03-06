@@ -1,4 +1,4 @@
-﻿<div *ngIf="isLoading" style="text-align:center;">
+<div *ngIf="isLoading" style="text-align:center;">
     <i class="fa fa-spinner fa-spin fa-2x"></i>
 </div>
 <div *ngIf="!isLoading">
@@ -99,7 +99,7 @@
                                     (ngModelChange)="model.FieldType.AllowMultipleValues=$event;model.FieldType.IsPartOfKey=false;"
                                     label="Allow Multiple Items?"
                                     [ngModelOptions]="{standalone: true}"
-                                    [disabled]="['Lookup','JSON'].indexOf(model.FieldType.Type) == -1"></p-checkbox>
+                                    [disabled]="['Lookup'].indexOf(model.FieldType.Type) == -1"></p-checkbox>
                     </div>
                 </simple-accordion>
             </div>
@@ -153,12 +153,16 @@
                 </div>
                 <div class="col s3">
                     <div id='MinimumLengthTip' class="FieldName">Minimum {{model.FieldType.Type == 'Text' ? "Length" : "Value"}}</div>
-                    <input name="minLength" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}" [disabled]="CheckMinRequired(model)" [(ngModel)]="model.FieldType.MinimumLength" (change)="validateNumber(model.FieldType.Type)" style="width: 98%; display: block;" />
+                    <input name="minLength" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}" [disabled]="CheckMinRequired(model)" [(ngModel)]="model.FieldType.MinimumLength" (keyup)="validateNumber(model.FieldType.Type)" style="width: 98%; display: block;" />
                 </div>
                 <div class="col s3">
                     <div id='MaximumLengthTip' class="FieldName">Maximum {{model.FieldType.Type == 'Text' ? "Length" : "Value"}}</div>
-                    <input name="maxLength" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}" [(ngModel)]="model.FieldType.MaximumLength" (change)="validateNumber(model.FieldType.Type)" style="width: 98%; display: block;" />
+                    <input name="maxLength" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}" [(ngModel)]="model.FieldType.MaximumLength" (keyup)="validateNumber(model.FieldType.Type)" style="width: 98%; display: block;" />
                 </div>
+				        <div *ngIf="model.FieldType.Type == 'Decimal'" class="col s3">
+                    <div id='decimalPlaces' class="FieldName">Decimal Places</div>
+                    <input name="Precision" type="number" [(ngModel)]="model.FieldType.Precision" (keyup)="validateNumber(model.FieldType.Type)" min="0" max="5" style="width: 98%; display: block;" />
+                 </div>
             </div>
             <div class="row" *ngIf="model.FieldType.Pattern?.length > 0">
                 <div *ngIf="model.FieldType.Type == 'Text'" class="col s3">
@@ -194,7 +198,7 @@
                 <div class="col l6 m6 s12">
                     <p-dropdown *ngIf="model.FieldType.Type == 'Boolean'" [options]="booleanDefaultValueOptions" [(ngModel)]="model.FieldType.DefaultValue" [style]="{ 'width': '98%' }" ngDefaultControl [ngModelOptions]="{standalone: true}"></p-dropdown>
                     <p-dropdown *ngIf="model.FieldType.Type == 'Lookup'" [options]="lookupDefaultValueOptions" [(ngModel)]="model.FieldType.DefaultValue" [style]="{ 'width': '98%' }" ngDefaultControl [ngModelOptions]="{standalone: true}"></p-dropdown>
-                    <p-calendar *ngIf="model.FieldType.Type == 'Date'" [ngModelOptions]="{standalone: true}" [(ngModel)]="defaultDate" (onSelect)="onDateSelectMethod($event)"></p-calendar>
+                    <p-calendar *ngIf="model.FieldType.Type == 'Date'" [ngModelOptions]="{standalone: true}" [(ngModel)]="defaultDate" (onSelect)="onDateSelectMethod($event)" [dateFormat]="getLocaleDateString()"></p-calendar>
                     <input *ngIf="model.FieldType.Type == 'Text' " pInputText type="text" [(ngModel)]="model.FieldType.DefaultValue" style="width: 98%; display: block;" [ngModelOptions]="{standalone: true}" />
                     <p-editor *ngIf="model.FieldType.Type == 'Html'" [(ngModel)]="model.FieldType.DefaultValue" [ngModelOptions]="{standalone: true}"></p-editor>
                     <div *ngIf="model.FieldType.Type == 'Link'">
@@ -203,7 +207,7 @@
                         <input [(ngModel)]="defaultLinkAdress" style="width: 100%;" type="string" [ngModelOptions]="{standalone: true}">
                         <div>(Link Url: Your Url should start with a protocol prefix.  For example 'http://' or 'https://')</div>
                     </div>
-                    <input *ngIf="['Number','Decimal'].indexOf(model.FieldType.Type) > -1" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}" (change)="validateNumber(model.FieldType.Type)" [(ngModel)]="model.FieldType.DefaultValue" style="width: 98%; display: block;" [ngModelOptions]="{standalone: true}" />
+                    <input *ngIf="['Number','Decimal'].indexOf(model.FieldType.Type) > -1" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}" (keyup)="validateNumber(model.FieldType.Type)" [(ngModel)]="model.FieldType.DefaultValue" style="width: 98%; display: block;" [ngModelOptions]="{standalone: true}" />
                 </div>
                 <div class="col l1 m1 s12" *ngIf="model.FieldType.Type == 'Lookup'">
                     <p-checkbox binary="true" [(ngModel)]="model.FieldType.AllowAllValue" [ngModelOptions]="{standalone: true}"></p-checkbox>
@@ -212,7 +216,7 @@
                     <input pInputText type="text" [(ngModel)]="model.FieldType.AllowAllLabel" [ngModelOptions]="{standalone: true}" style="width: 100%" [disabled]="!model.FieldType.AllowAllValue" />
                 </div>
                 <div class="col l5 m5 s12" *ngIf="model.FieldType.Type == 'Number' || model.FieldType.Type == 'Decimal'">
-                    <input name="validationIncrement" type="number" [(ngModel)]="model.FieldType.Increment" (change)="validateNumber(model.FieldType.Type)" style="width: 98%; display: block;" />
+                    <input name="validationIncrement" type="number" [(ngModel)]="model.FieldType.Increment" (keyup)="validateNumber(model.FieldType.Type)" style="width: 98%; display: block;" />
                 </div>
             </div>
         </simple-accordion>
@@ -525,4 +529,3 @@
         </div>
     </form>
 </div>
-

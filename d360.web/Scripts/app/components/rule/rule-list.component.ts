@@ -19,87 +19,7 @@ import * as _ from 'lodash';
 @Component({
     selector: 'd3s-rule-list',
     providers: [GridDefinitionService, RulesService, PermissionsService],
-    template: ` 
-                <div class="row">
-                    <div class="col s12">
-                        <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                        <div class="tile tile-detail" >    
-                            <div class="row" *ngIf="!isLoading && !showDelete && !showEditor">                        
-                                <div class="col s12">
-                                    <header>{{modelGroup}} Rules                                
-                                        <d3s-tile-actions [hasAdd]="hasModifyAssetPermissions()" (addClick)="showAddRule()" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                                                     
-                                    </header>
-                                        <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-                                        <p-table #dt [value]="rules" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="globalFilterFields" sortField="Name" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected">
-                                            <ng-template pTemplate="header">
-                                                <tr>
-                                                    <th [pSortableColumn]="'ID'" style="width: 5%">
-                                                        ID
-                                                        <d3s-sortIcon [field]="'ID'"></d3s-sortIcon>
-                                                    </th>
-                                                    <th [pSortableColumn]="'Dimension'" style="width:20%">
-                                                        Dimension
-                                                        <d3s-sortIcon [field]="'Dimension'"></d3s-sortIcon>
-                                                    </th>
-                                                     <th *ngFor="let col of columns" [pSortableColumn]="col.sortable ? col.datafield : null" >
-                                                        {{col.text}}
-                                                        <d3s-sortIcon *ngIf="col.sortable" [field]="col.datafield"></d3s-sortIcon>
-                                                    </th>
-                                                    <th style="width: 40px;"></th>
-                                                    <th style="width: 40px;"></th>
-                                                </tr>
-                                                <tr [hidden]="showSimpleFilter">
-                                                    <th><d3s-column-filter [field]="'ID'" [datatype]="'text'"></d3s-column-filter></th>
-                                                    <th><d3s-column-filter [field]="'Dimension'" [datatype]="'text'"></d3s-column-filter></th>
-                                                    <th *ngFor="let col of columns">
-                                                          <d3s-column-filter [field]="col.datafield" [datatype]="'text'"></d3s-column-filter>
-                                                      </th>
-                                                    <th></th>
-                                                    <th></th>
-                                                </tr>
-                                            </ng-template>
-                                            <ng-template pTemplate="body" let-item>
-                                                <tr [pSelectableRow]="item">
-                                                    <td>
-                                                            <a (click)="selected=item;showRule(selected);">{{item["ID"]}}</a>
-                                                    </td>
-                                                    <td>
-                                                            <a (click)="selected=item;showRule(selected);">{{item["Dimension"]}}</a>
-                                                    </td>
-                                                    <td *ngFor="let column of columns">
-                                                            <a (click)="selected=item;showRule(selected);"><d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value></a>
-                                                    </td>
-                                                    <td>
-                                                            <div class="RowTools" *ngIf="item.P_CanEdit">
-                                                                <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>
-                                                            </div>
-                                                    </td>
-                                                    <td>
-                                                            <div class="RowTools" *ngIf="item.P_CanDelete">
-                                                                <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>
-                                                            </div>
-                                                    </td>
-                                                </tr>
-                                            </ng-template>
-                                            <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
-                                                <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
-                                            </ng-template>
-                                        </p-table>
-
-                                </div>
-                            </div>
-                            <d3s-dynamic-editor *ngIf="showEditor" [objectID]="ruleType?.ID" [objectType]="'Rule'" [title]="'Rule'" [selection]="selected" (saveClick)="saveRule($event)" (closeClick)="showEditor = false;"></d3s-dynamic-editor>
-                            <d3s-delete-form *ngIf="showDelete"
-                                                    [callback]="theDeleteCallback"
-                                                    [itemId]="selected?.ID"
-                                                    [method]="'callback'"
-                                                    [prompt]="'Are you sure you want to delete the selected item?'"                                         
-                                                    (onCancel)="showDelete=false;"
-                            ></d3s-delete-form>  
-                        </div>                        
-                    </div>
-                </div>
-                `
+    templateUrl: './rule-list.component.html'
 })
 
 export class RuleListComponent extends BaseComponent implements OnInit, OnDestroy {
@@ -141,7 +61,6 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
         return f;
     }
 
-
     ngOnInit() {
         this.sub = this.route.params.subscribe(params => {
 
@@ -172,7 +91,6 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
                 });
         });
     }
-
     ngOnDestroy() {
         this.clearSidebar();
         this.sub.unsubscribe();
@@ -185,6 +103,34 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
                 this.filtercolumns = result.FilterColumns;
                 this.fields = result.Fields;
             });
+    }
+
+    customSort($event: {data: any[], field: any, order: number}) {
+        $event.data.sort((data1, data2) => {
+            const value1 = data1[$event.field];
+            const value2 = data2[$event.field];
+            let result = 0;
+
+            if (!value1 && value2)
+                result = -1;
+            else if (value1 && !value2)
+                result = 1;
+            else if (!value1 && !value2)
+                result = 0;
+            else if (typeof value1 === 'string' && typeof value2 === 'string') {
+                if (!isNaN(Date.parse(value1)) && !isNaN(Date.parse(value2))) {
+                    const date1 = new Date(value1).getTime();
+                    const date2 = new Date(value2).getTime();
+                    result = (date1 < date2) ? -1 : (date1 > date2) ? 1 : 0;
+                } else {
+                    result = value1.localeCompare(value2);
+                }
+            }
+            else
+                result = (value1 < value2) ? -1 : (value1 > value2) ? 1 : 0;
+        
+            return ($event.order * result);
+        });
     }
 
     private loadRules() {

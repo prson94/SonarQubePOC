@@ -73,7 +73,7 @@ export class WorkflowMonitorService extends BaseService {
     }
 
     downloadFile(data: Response, name: string) {
-        debugger;
+        
         var filename = `${name} Workflow Items ${new Date().toDateString()}.xlsx`;
         if (window.navigator.msSaveOrOpenBlob) {
             window.navigator.msSaveOrOpenBlob(data.blob(), filename);
