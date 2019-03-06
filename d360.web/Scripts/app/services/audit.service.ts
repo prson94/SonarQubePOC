@@ -1,20 +1,36 @@
-﻿import { Injectable } from '@angular/core';
-import { Headers, Http, Response, ResponseContentType } from '@angular/http';
-import { MessagesService } from './messages.service';
-import { BaseService } from './base.service';
-import { Audit, AuditResults } from '../models/audit.model';
-import { SortOrder } from '../models/enums.model';
-import { GridFilterExpression } from '../models/grid-definition.model';
+﻿import {Injectable} from '@angular/core';
+import {Response, ResponseContentType} from '@angular/http';
+import {HttpClient} from "@angular/common/http";
+import {Observable} from "rxjs";
+import {catchError, map} from "rxjs/operators";
+
+import {BaseObservableService} from './baseObservable.service';
+import {MessagesService} from './messages.service';
+import {AuditResults} from '../models/audit.model';
+import {SortOrder} from '../models/enums.model';
+import {GridFilterExpression} from '../models/grid-definition.model';
 
 @Injectable()
-export class AuditService extends BaseService {
+export class AuditService extends BaseObservableService {
+    constructor(
+        private http: HttpClient,
+        messagesService: MessagesService
+    ) {
+        super(messagesService);
+    }
 
-    constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
-
-    getAuditData(objectID: number, objectType: string, pageNum: number, pageSize: number, sortOrder: SortOrder, sortField?: string, filters?: GridFilterExpression[]): Promise<AuditResults> {
+    getAuditData(
+        objectID: number,
+        objectType: string,
+        pageNum: number,
+        pageSize: number,
+        sortOrder: SortOrder,
+        sortField?: string,
+        filters?: GridFilterExpression[]
+    ): Observable<AuditResults> {
         let sortCol = sortField != undefined ? sortField : "";
-
-        let url = `overlays/${objectType}/${objectID}/auditcombined.json?pagenum=${pageNum}&pagesize=${pageSize}&sortdatafield=${sortField}&sortorder=${sortOrder == SortOrder.None ? "" : (sortOrder == SortOrder.Ascending ? "asc" : "desc")}`;
+        let sortOrderType = (sortOrder == SortOrder.None) ? "" : (sortOrder == SortOrder.Ascending ? "asc" : "desc");
+        let url = `overlays/${objectType}/${objectID}/auditcombined.json?pagenum=${pageNum}&pagesize=${pageSize}&sortdatafield=${sortField}&sortorder=${sortOrderType}`;
         let indx = 0;
 
         if (filters != undefined) {
@@ -26,13 +42,21 @@ export class AuditService extends BaseService {
             }
         }
 
-        return this.http.get(url)
-            .toPromise()
-            .then(response => <AuditResults>response.json())
-            .catch(err => this.handleError(err));
+        return this
+            .http
+            .get(url)
+            .pipe(
+                map(response => <AuditResults>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    exportToExcel(objectID: number, objectType: string, name: string, filters?: GridFilterExpression[]) {        
+    exportToExcel(
+        objectID: number,
+        objectType: string,
+        name: string,
+        filters?: GridFilterExpression[]
+    ) {
         let url = `overlays/${objectType}/${objectID}/download/excel/audit.xls`;
         let indx = 0;
 
@@ -45,17 +69,27 @@ export class AuditService extends BaseService {
             }
         }
 
-        this.http.get(url, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data, name));
+        this
+            .http
+            .get(
+                url,
+                {responseType: 'blob'}
+            )
+            .subscribe(data => this.downloadFile(data, name));
     }
 
-    downloadFile(data: Response, name: string) {
+    downloadFile(
+        data: Blob,
+        name: string
+    ) {
         var filename = `${name} Audit Data ${new Date().toDateString()}.xlsx`;
+
         if (window.navigator.msSaveOrOpenBlob) {
-            window.navigator.msSaveOrOpenBlob(data.blob(), filename);
-        }
-        else {
-            var url = window.URL.createObjectURL(data.blob());
+            window.navigator.msSaveOrOpenBlob(data, filename);
+        } else {
+            var url = window.URL.createObjectURL(data);
             var anchor = document.createElement("a");
+
             anchor.setAttribute("style", "display:none;");
             document.body.appendChild(anchor);
             anchor.setAttribute("download", filename);
@@ -63,5 +97,4 @@ export class AuditService extends BaseService {
             anchor.click();
         }
     }
-
 }
