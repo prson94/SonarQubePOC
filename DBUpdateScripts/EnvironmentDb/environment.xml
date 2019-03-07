@@ -113,4 +113,5 @@
   <include file="scripts/GOV-6715.xml"/>
   <include file="scripts/GOV-5263.xml"/>
   <include file="scripts/GOV-6450.xml"/>
+  <include file="scripts/GOV-6643.xml"/>
 </databaseChangeLog>
