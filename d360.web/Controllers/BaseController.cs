@@ -1467,11 +1467,22 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
                     {
                         var isReferenceItemType = (relationFieldInfo.Object == SystemObjects.ReferenceItemType.ToString());
                         var isFusionAttributeType = (relationFieldInfo.Object == SystemObjects.FusionAttributeType.ToString());
+                        var isTaxonomyType = (relationFieldInfo.Object == SystemObjects.TaxonomyType.ToString());
+
                         var tableName = isReferenceItemType ? relationFieldInfo.Object : relationFieldInfo.Object.Replace("Type", "");
                         var typeIDColumnName = relationFieldInfo.Object + "ID";
 
                         if (includeIdColumn) columns += $"{name}_T.ID as [{name}ID], ";
-                        columns += ((isReferenceItemType || isFusionAttributeType) ? $"{name}_OT.Name" : $"{name}_OTD.DisplayValue") + $" as [{(useFriendlyName ? friendlyName : name)}], ";
+
+                        if (isReferenceItemType || isFusionAttributeType)
+                            columns += $"{name}_OT.Name";
+                        else if (isTaxonomyType)
+                            columns += $"{name}_OTT.TextPath";
+                        else
+                            columns += $"{name}_OTD.DisplayValue";
+
+                        columns += $" as [{(useFriendlyName ? friendlyName : name)}],";
+                        //columns += ((isReferenceItemType || isFusionAttributeType) ? $"{name}_OT.Name" : $"{name}_OTD.DisplayValue") + $" as [{(useFriendlyName ? friendlyName : name)}], ";
 
                         joins += $" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and";
                         joins += relationFieldInfo.IsSubject ? $" {name}_T.Subject = '{type.Replace("Type", "")}' and {name}_T.SubjectID = {idColumn}" : $" {name}_T.Object = '{type.Replace("Type", "")}' and {name}_T.ObjectID = {idColumn}";
@@ -1480,7 +1491,12 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
                             : $" left join [{tableName}] {name}_OT on {name}_OT.{typeIDColumnName} = {relationFieldInfo.ObjectID} AND ";
                         joins += $"{name}_OT.ID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
 
-                        if (!isReferenceItemType && !isFusionAttributeType)
+                        if (isTaxonomyType)
+                        {
+                            joins += $" left join asset {name}_AS on {name}_AS.Object = '{tableName}' and  {name}_AS.ObjectId = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
+                            joins += $" outer apply [dbo].GetAssetTextPathById({name}_AS.ID, '/') {name}_OTT";
+                        }
+                        else if (!isReferenceItemType && !isFusionAttributeType)
                         {
                             joins += $" left join asset {name}_AS on {name}_AS.Object = '{tableName}' and  {name}_AS.ObjectId = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
                             joins += $" cross apply [dbo].GetAssetDisplayValueById({name}_AS.ID) {name}_OTD";
