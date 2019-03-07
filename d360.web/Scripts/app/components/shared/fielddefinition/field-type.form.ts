@@ -557,7 +557,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         if (objectType != "DomainItem" && objectType != "ReferenceItemType" && objectType != "TaxonomyType") objectType += 'Type';
 
         //List filter options only available for field defintions for Action Type, and then type of list is Models or Artifacts
-        console.log(this.objectType, objectType);
         if (this.objectType != 'IssueType')
             return;
         if (objectType != 'ArtifactType' && objectType != 'TaxonomyType')
