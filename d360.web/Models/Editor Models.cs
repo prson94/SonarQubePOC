@@ -211,6 +211,9 @@ namespace d360.web.Models
         [DataMember]
         public bool UseTypeahead{ get; set; }
 
+        [DataMember]
+        public string DelayedLoadType { get; set; }
+
     }
 
     [DataContract(Namespace = constants.NAMESPACE)]

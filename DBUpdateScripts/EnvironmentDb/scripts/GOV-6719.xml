@@ -1,0 +1,395 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="GOV-6719">
+  
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[
+if exists(select * from [INFORMATION_SCHEMA].[ROUTINES] where SPECIFIC_SCHEMA = 'utility' and SPECIFIC_NAME = 'ClearDatabase')
+begin
+	DROP PROCEDURE [utility].[ClearDatabase]
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+if not exists(select * from [INFORMATION_SCHEMA].[ROUTINES] where SPECIFIC_SCHEMA = 'utility' and SPECIFIC_NAME = 'ClearDatabase')
+begin
+	CREATE procedure [utility].[ClearDatabase]
+	as
+	begin
+		truncate table [analytics].[Statistic];
+		truncate table [analytics].[Action];
+		truncate table [analytics].[BrowserLanguage];
+		truncate table [analytics].[Host];
+		truncate table [analytics].[Ip];
+		truncate table [analytics].[Object];
+		truncate table [analytics].[UserAgent];
+
+		delete [Artifact];
+		DBCC CHECKIDENT ('dbo.Artifact', RESEED, 1);
+
+		truncate table AssetDataQualityImplementationResultFusion;
+		truncate table AssetDataQualityImplementationResultQualifier;
+		delete AssetDataQualityImplementationResult
+		DBCC CHECKIDENT ('dbo.AssetDataQualityImplementationResult', RESEED, 1);
+		
+		delete [AssetDataQualityProperty];
+
+		delete [AssetDataQualityImplementationQualifierType];
+		DBCC CHECKIDENT ('dbo.AssetDataQualityImplementationQualifierType', RESEED, 1);
+
+		delete AssetDataQualityImplementation;
+		DBCC CHECKIDENT ('dbo.AssetDataQualityImplementation', RESEED, 1);
+
+		delete AssetDataQualityDimension;
+		DBCC CHECKIDENT ('dbo.AssetDataQualityDimension', RESEED, 1);
+
+
+
+		delete Asset;
+		DBCC CHECKIDENT ('dbo.Asset', RESEED, 1);
+
+
+
+
+		delete AssetType;
+		DBCC CHECKIDENT ('dbo.AssetType', RESEED, 1);
+
+
+		delete [ArtifactType];
+		DBCC CHECKIDENT ('dbo.ArtifactType', RESEED, 1);
+		SET IDENTITY_INSERT dbo.ArtifactType ON;
+		INSERT INTO ArtifactType (ID, Name, CanOwnFusion, UpdatedOn, UpdatedBy, AllowHierarchy) VALUES (1, 'Business Term', 0, getutcdate(), 0, 0);
+		INSERT INTO ArtifactType (ID, Name, CanOwnFusion, UpdatedOn, UpdatedBy, AllowHierarchy) VALUES (2, 'Application', 1, getutcdate(), 0, 0);
+		SET IDENTITY_INSERT dbo.ArtifactType OFF;
+
+		truncate table [Attribute];
+		truncate table [AttributeTypeRelation];
+		delete [AttributeType];
+		DBCC CHECKIDENT ('dbo.AttributeType', RESEED, 1);
+		delete AttributeTypeCategory;
+		DBCC CHECKIDENT ('dbo.AttributeTypeCategory', RESEED, 1);
+		SET IDENTITY_INSERT dbo.AttributeTypeCategory ON;
+		INSERT INTO AttributeTypeCategory (ID, Name) VALUES (1, 'Characteristics');
+		SET IDENTITY_INSERT dbo.AttributeTypeCategory OFF;
+
+		truncate table CommentRelation;
+		truncate table CommentVote;
+		delete Comment;
+		DBCC CHECKIDENT ('dbo.Comment', RESEED, 1);
+
+		delete [Contract];
+		DBCC CHECKIDENT ('dbo.Contract', RESEED, 1);
+
+		truncate table [Favorite];
+
+		
+		truncate table [Field];
+		
+		
+
+		delete [FieldTypeFilteredLookupDefinition];
+		DBCC CHECKIDENT ('dbo.FieldTypeFilteredLookupDefinition', RESEED, 1);
+		truncate table [FieldTypeFilteredLookupDisplayField];
+		DBCC CHECKIDENT ('dbo.FieldTypeFilteredLookupDisplayField', RESEED, 1);
+
+		delete [FieldTypeFusionLookupDefinition];
+		DBCC CHECKIDENT ('dbo.FieldTypeFusionLookupDefinition', RESEED, 1);
+		truncate table [FieldTypeFusionLookupDisplayField];
+		DBCC CHECKIDENT ('dbo.FieldTypeFusionLookupDisplayField', RESEED, 1);
+
+		truncate table [FieldTypeLookup];
+
+		
+		
+		delete [FieldType];
+		DBCC CHECKIDENT ('dbo.FieldType', RESEED, 1);
+		
+
+
+		truncate table [Follow];
+
+		truncate table [FusionFilter];
+		truncate table [FusionOwner];
+
+		truncate table [FusionAttribute];
+		delete [FusionAttributeType];
+		DBCC CHECKIDENT ('dbo.FusionAttributeType', RESEED, 1);
+
+		truncate table [FusionQueryAttribute];
+		delete [FusionQueryAttributeType];
+		DBCC CHECKIDENT ('dbo.FusionQueryAttributeType', RESEED, 1);
+
+		truncate table [FusionSchedule];
+		truncate table [FusionStatusLog];
+
+		delete [Fusion];
+		DBCC CHECKIDENT ('dbo.Fusion', RESEED, 1);
+
+		delete [FusionType];
+		DBCC CHECKIDENT ('dbo.FusionType', RESEED, 1);
+
+		truncate table [ResourceGroup];
+		delete [Group];
+		DBCC CHECKIDENT ('dbo.Group', RESEED, 1);
+
+		delete [Intersect];
+		DBCC CHECKIDENT ('dbo.Intersect', RESEED, 1);
+
+		truncate table [IntersectGroupItem];
+
+		delete [IntersectGroup];
+		DBCC CHECKIDENT ('dbo.IntersectGroup', RESEED, 1);
+
+		delete [IntersectType];
+		DBCC CHECKIDENT ('dbo.IntersectType', RESEED, 1);
+
+		delete [Predicate] where IsSystem = 0;
+		DBCC CHECKIDENT ('dbo.Predicate', RESEED, 9);
+
+		INSERT INTO [IntersectType] ( [UpdatedOn],[UpdatedBy],[Subject],[SubjectID],[Object],[ObjectID],[IsSystem],[CreatedBy],[CreatedOn],[PredicateID])
+		VALUES ( getutcdate(),0,'ArtifactType',1,'ArtifactType',1,0,0,getutcdate(),2);
+
+		INSERT INTO [IntersectType] ( [UpdatedOn],[UpdatedBy],[Subject],[SubjectID],[Object],[ObjectID],[IsSystem],[CreatedBy],[CreatedOn],[PredicateID])
+		VALUES ( getutcdate(),0,'ArtifactType',2,'ArtifactType',1,0,0,getutcdate(),1);
+
+		truncate table [Issue];
+		delete [IssueType] where IsSystem = 0;
+		DBCC CHECKIDENT ('dbo.IssueType', RESEED, 3);
+
+		truncate table [LoadItemColumn];
+		delete [LoadItem];
+		delete [LoadColumn];
+		delete [Load];
+		DBCC CHECKIDENT ('dbo.Load', RESEED, 1);
+
+		truncate table [Lookup];
+		DBCC CHECKIDENT ('dbo.Lookup', RESEED, 1);
+		delete [LookupType];
+		DBCC CHECKIDENT ('dbo.LookupType', RESEED, 1);
+
+
+		truncate table [MapItemMap];
+		truncate table [MapRuleItemMapItem];
+		truncate table [MapRuleItemMapRule];
+		truncate table [MapRuleMap];
+		truncate table [MapSequenceContext];
+		delete MapSequence;
+		DBCC CHECKIDENT ('dbo.MapSequence', RESEED, 1);
+
+		delete Map;
+		DBCC CHECKIDENT ('dbo.Map', RESEED, 1);
+
+		truncate table NymRelation;
+		truncate table Nym;
+
+		truncate table [ObjectStyle];
+		truncate table [OrganizationDomain];
+		truncate table [OrganizationInvitation];
+		truncate table [OrganizationRegistration];
+		truncate table [OrganizationResource];
+
+		delete Organization;
+		DBCC CHECKIDENT ('dbo.Organization', RESEED, 1);
+
+		truncate table [Policy];
+		delete PolicyTypeLevel;
+		delete PolicyType;
+		DBCC CHECKIDENT ('dbo.PolicyType', RESEED, 1);
+		delete PolicyTypeClass;
+		DBCC CHECKIDENT ('dbo.PolicyTypeClass', RESEED, 1);
+		insert into PolicyTypeClass ([Name], [UpdatedOn], [UpdatedBy]) values ('Regulatory', getutcdate(), 0);
+
+		truncate table [QuestionOption];
+		delete [Question];
+		DBCC CHECKIDENT ('dbo.Question', RESEED, 1);
+		delete QuestionTypeOption;
+		DBCC CHECKIDENT ('dbo.QuestionTypeOption', RESEED, 1);
+		delete QuestionType;
+		DBCC CHECKIDENT ('dbo.QuestionType', RESEED, 1);
+
+		truncate table ReferenceItem;
+		DBCC CHECKIDENT ('dbo.ReferenceItem', RESEED, 1);
+		delete ReferenceItemType;
+		DBCC CHECKIDENT ('dbo.ReferenceItemType', RESEED, 1);
+
+		truncate table [ReportResponsibility];
+		DBCC CHECKIDENT ('dbo.ReportResponsibility', RESEED, 1);
+		truncate table [ReportTile];
+		DBCC CHECKIDENT ('dbo.ReportTile', RESEED, 1);
+		delete [Report];
+		DBCC CHECKIDENT ('dbo.Report', RESEED, 1);
+
+		truncate table ResourcePasswordReset;
+
+		truncate table [ResponsibilityTypeRelation];
+		delete ResponsibilityType;
+		DBCC CHECKIDENT ('dbo.ResponsibilityType', RESEED, 1);
+
+		SET IDENTITY_INSERT dbo.ResponsibilityType ON;
+		INSERT INTO ResponsibilityType	([ID], [Name],[ResponsibilityTypeGroup],[UpdatedOn],[UpdatedBy]) 
+		VALUES							(1, 'Data Steward', 1, getutcdate(), 0);
+		INSERT INTO ResponsibilityType	([ID], [Name],[ResponsibilityTypeGroup],[UpdatedOn],[UpdatedBy]) 
+		VALUES							(2, 'Business Owner', 1, getutcdate(), 0);
+		INSERT INTO ResponsibilityType	([ID], [Name],[ResponsibilityTypeGroup],[UpdatedOn],[UpdatedBy]) 
+		VALUES							(3, 'Technical Custodian', 1, getutcdate(), 0);
+		SET IDENTITY_INSERT dbo.ResponsibilityType OFF;
+
+		INSERT INTO ResponsibilityTypeRelation (ResponsibilityTypeID, ObjectType, ObjectID) VALUES (1,'ArtifactType',1);
+		INSERT INTO ResponsibilityTypeRelation (ResponsibilityTypeID, ObjectType, ObjectID) VALUES (2,'ArtifactType',1);
+		INSERT INTO ResponsibilityTypeRelation (ResponsibilityTypeID, ObjectType, ObjectID) VALUES (3,'ArtifactType',2);
+
+
+
+		delete [ResponsibilityTypeRelationRuleResult];
+
+
+
+
+		delete [ResponsibilityTypeRelationOverrideItem];
+		DBCC CHECKIDENT ('dbo.ResponsibilityTypeRelationOverrideItem', RESEED, 1);
+
+
+		truncate table RuleResultFusionAttribute;
+		DBCC CHECKIDENT ('dbo.RuleResultFusionAttribute', RESEED, 1);
+
+		truncate table RuleResultQualifier;
+
+		delete RuleResultQualifierType;
+		DBCC CHECKIDENT ('dbo.RuleResultQualifierType', RESEED, 1);
+
+		delete RuleResult;
+		DBCC CHECKIDENT ('dbo.RuleResult', RESEED, 1);
+
+		delete RuleImplementation;
+		DBCC CHECKIDENT ('dbo.RuleImplementation', RESEED, 1);
+
+		delete [Rule];
+		DBCC CHECKIDENT ('dbo.Rule', RESEED, 1);
+
+		delete [RuleType] where ID > 4;
+		delete [RuleDimension] where IsSystemDefined = 0;
+
+		truncate table metrics.MapResult;
+		delete metrics.Score;
+		DBCC CHECKIDENT ('metrics.Score', RESEED, 1);
+		truncate table metrics.ConditionValue;
+		delete metrics.Condition;
+		delete metrics.Map;
+		DBCC CHECKIDENT ('metrics.Map', RESEED, 1);
+		delete metrics.Item;
+		DBCC CHECKIDENT ('metrics.Item', RESEED, 1);
+		delete metrics.[Group];
+		DBCC CHECKIDENT ('metrics.Group', RESEED, 1);
+
+		truncate table ShoppingCartItem;
+		delete ShoppingCart;
+		DBCC CHECKIDENT ('dbo.ShoppingCart', RESEED, 1);
+
+		delete SiteNavPermission where SiteNavID > 9;
+		delete SiteNav where ID > 9;
+
+		delete Survey;
+		DBCC CHECKIDENT ('dbo.Survey', RESEED, 1);
+		delete SurveyType;
+		DBCC CHECKIDENT ('dbo.SurveyType', RESEED, 1);
+
+		truncate table Taxonomy;
+		DBCC CHECKIDENT ('dbo.Taxonomy', RESEED, 1);
+
+		delete TaxonomyTypeLevel;
+
+		delete TaxonomyType;
+		DBCC CHECKIDENT ('dbo.TaxonomyType', RESEED, 1);
+
+		SET IDENTITY_INSERT dbo.TaxonomyType ON;
+		INSERT INTO TaxonomyType (ID, Name, MaximumDepth, TaxonomyTypeClassID, UpdatedOn, UpdatedBy) VALUES (1, 'Investments', 3, 1, getutcdate(), 0);
+		SET IDENTITY_INSERT dbo.TaxonomyType OFF;
+
+		insert into TaxonomyTypeLevel values (1, 1, 'Level 1', null);
+		insert into TaxonomyTypeLevel values (1, 2, 'Level 2', null);
+		insert into TaxonomyTypeLevel values (1, 3, 'Level 3', null);
+
+		delete TaxonomyTypeClass where ID > 3;
+
+		truncate table [fusion].[AgentErrorItem];
+		DBCC CHECKIDENT ('fusion.AgentErrorItem', RESEED, 1);
+		delete [fusion].[AgentError];
+		DBCC CHECKIDENT ('fusion.AgentError', RESEED, 1);
+
+		truncate table [fusion].[Error];
+		truncate table [fusion].[Result];
+
+		truncate table [fusion].[RuleFilter];
+		DBCC CHECKIDENT ('fusion.RuleFilter', RESEED, 1);
+		truncate table [fusion].[RuleItem];
+		DBCC CHECKIDENT ('fusion.RuleItem', RESEED, 1);
+		truncate table [fusion].[RuleLog];
+		DBCC CHECKIDENT ('fusion.RuleLog', RESEED, 1);
+		truncate table [fusion].[RulePromotion];
+		DBCC CHECKIDENT ('fusion.RulePromotion', RESEED, 1);
+
+		truncate table [fusion].[RuleStepMapping];
+		DBCC CHECKIDENT ('fusion.RuleStepMapping', RESEED, 1);
+		truncate table [fusion].[RuleStepSetting];
+
+		delete fusion.[RuleStep];
+		DBCC CHECKIDENT ('fusion.RuleStep', RESEED, 1);
+
+		delete fusion.[Rule];
+		DBCC CHECKIDENT ('fusion.Rule', RESEED, 1);
+
+
+		truncate table fusion.StagingFileItem;
+		DBCC CHECKIDENT ('fusion.StagingFileItem', RESEED, 1);
+		delete fusion.StagingFile;
+		DBCC CHECKIDENT ('fusion.StagingFile', RESEED, 1);
+
+		truncate table fusion.StagingRelation;
+		DBCC CHECKIDENT ('fusion.StagingRelation', RESEED, 1);
+		truncate table  fusion.StagingRelationUnresolved;
+		DBCC CHECKIDENT ('fusion.StagingRelationUnresolved', RESEED, 1);
+
+		delete fusion.Execution
+		DBCC CHECKIDENT ('fusion.Execution', RESEED, 1);
+
+		truncate table [queue].Task;
+
+		truncate table [reporting].[Global_FieldAudit];
+		delete [reporting].[Global_Audit];
+		DBCC CHECKIDENT ('reporting.Global_Audit', RESEED, 1);
+
+		truncate table [workflow].[EventRegistration];
+		DBCC CHECKIDENT ('workflow.EventRegistration', RESEED, 1);
+
+		truncate table [workflow].[ItemAssignment];
+		DBCC CHECKIDENT ('workflow.ItemAssignment', RESEED, 1);
+		truncate table [workflow].[ItemStepTransition];
+		delete [workflow].[ItemStep];
+		DBCC CHECKIDENT ('workflow.ItemStep', RESEED, 1);
+
+		delete [workflow].[VersionStepTransition];
+		DBCC CHECKIDENT ('workflow.VersionStepTransition', RESEED, 1);
+		delete [workflow].[VersionStep];
+		DBCC CHECKIDENT ('workflow.VersionStep', RESEED, 1);
+		update [workflow].[Type] set PublishedVersionID = null;
+		delete [workflow].[Version];
+		DBCC CHECKIDENT ('workflow.Version', RESEED, 1);
+		delete [workflow].[Type];
+		DBCC CHECKIDENT ('workflow.Type', RESEED, 1);
+	end
+end
+		]]>
+    </rollback>
+  </changeSet> 
+
+</databaseChangeLog>

@@ -85,6 +85,12 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private selectedFormatToken = null;
     private fieldsFromRelation: SelectItem[] = [];
 
+    private listFilterable: boolean = false;
+    private listFilterOptions = new Map();
+    private listFilterPredicate: string = null;
+    private listFilterPredicates: any[] = [];
+    private listFilterRelatedFields: any[] = [];
+
     private supportsPrimaryFilterOption: boolean = false;
     private displayFieldSelected: boolean = true;    
     public listParentFields: SelectItem[] = [];
@@ -136,7 +142,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.actionName = 'Edit';
             this.isLoading = true;                        
             this.fieldsService.getFieldTypeEditor(this.id)
-                .then(data => {                    
+                .then(data => {
                     this.model = data;
                     this.model.cardinalRelationship = null;
                     this.model.selectedLookup = null;
@@ -457,6 +463,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         
         this.loadDefaultValueOptions(type, id);
         this.loadHierarchyOptions(type, id);
+        this.loadListFilterOptions(type, id);
 
         //clear the validated fields and error message
         this.model.FieldType.MaximumLength = null;
@@ -541,6 +548,75 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             }
         });
     }
+
+    private loadListFilterOptions(objectType: string, objectId: number): void {
+        this.listFilterable = false;
+        this.listFilterPredicates = [];
+        this.listFilterRelatedFields = [];
+        this.listFilterOptions.clear();
+        if (objectType != "DomainItem" && objectType != "ReferenceItemType" && objectType != "TaxonomyType") objectType += 'Type';
+
+        //List filter options only available for field defintions for Action Type, and then type of list is Models or Artifacts
+        console.log(this.objectType, objectType);
+        if (this.objectType != 'IssueType')
+            return;
+        if (objectType != 'ArtifactType' && objectType != 'TaxonomyType')
+            return;
+
+        this.listFilterable = true;
+
+        this.fieldsService.getListFilterOptions(objectType, objectId, this.objectType, this.objectID).then(r => {
+            r.forEach(d => {
+                if (!this.listFilterOptions.has(d.PredicateValue)) {
+                    this.listFilterOptions.set(d.PredicateValue, {
+                        value: d.PredicateValue,
+                        label: d.PredicateName,
+                        fieldtypeOptions: [{
+                            value: null,
+                            label: "Action Subject",
+                            info: "Model/Artifact"
+                        }]
+                    });
+                }
+                if (d.FieldTypeID != null) {
+                    this.listFilterOptions.get(d.PredicateValue).fieldtypeOptions.push({
+                        value: d.FieldTypeID,
+                        label: d.FriendlyName,
+                        info: d.Info
+                    });
+                }
+            });
+            this.listFilterPredicates.push({ value: null, label: 'Choose...'});
+            this.listFilterOptions.forEach(d => {
+                this.listFilterPredicates.push({ value: d.value, label: d.label});
+            });
+            if (this.model.FieldType.FilterPredicateID != null && this.model.FieldType.FilterPredicateDirection != null) {
+                this.selectPredicate( this.model.FieldType.FilterPredicateID + '|' + (this.model.FieldType.FilterPredicateDirection ? '1' : '0'));
+            } else {
+                this.selectPredicate(null);
+            }
+            this
+        });
+    }
+
+    private selectPredicate(value: string) {
+        if (this.listFilterOptions.has(value)) {
+            this.listFilterRelatedFields = this.listFilterOptions.get(value).fieldtypeOptions;
+        } else {
+            this.listFilterRelatedFields = [];
+
+        }
+        if (value == null || value == '' || value == 'null') {
+            this.model.FieldType.FilterPredicateID = null;
+            this.model.FieldType.FilterPredicateDirection = null;
+        } else {
+            this.model.FieldType.FilterPredicateID = parseInt(value.split('|')[0]);
+            this.model.FieldType.FilterPredicateDirection = parseInt(value.split('|')[1]);
+        }
+        this.listFilterPredicate = value;
+        return;
+    }
+
 
     private loadDefaultValueOptions(objectType: string, objectId: number): Promise<void> {
         if (this.model.FieldType.LookupObjectType == undefined || this.model.FieldType.LookupObjectID == undefined) {

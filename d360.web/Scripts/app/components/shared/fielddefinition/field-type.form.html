@@ -139,6 +139,27 @@
                     </select>
                 </div>
             </div>
+            <ng-container *ngIf="listFilterable">
+                <div class="form-instructions">
+                    Lists of Artifacts and Models may be filtered to those related to the Action Subject or values in other lists.
+                </div>
+                <div class="row">
+                    <div class="col s12">
+                        <div class="FieldName">Filter Relationship Predicate</div>
+                        <p-dropdown name="filterpredicate" (ngModelChange)="selectPredicate($event)" [options]="listFilterPredicates" [(ngModel)]="listFilterPredicate" [style]="{ 'width': '98%' }" ngDefaultControl></p-dropdown>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class=" col s12">
+                        <div class="FieldName">Filter by Related Assets in Field</div>
+                        <p-dropdown name="filterassetfield" [options]="listFilterRelatedFields" [(ngModel)]="model.FieldType.FilterFieldTypeID" [style]="{ 'width': '98%' }" ngDefaultControl>
+                            <ng-template let-item pTemplate="item">
+                                <span>{{item.label}}</span><span style="color:#848484;float:right;">{{item.info}}</span>
+                            </ng-template>
+                        </p-dropdown>
+                    </div>
+                </div>
+            </ng-container>
         </simple-accordion>
 
         <simple-accordion header="Validation" active="true" *ngIf="['Text','Number','Decimal'].indexOf(model.FieldType.Type) > -1">
@@ -159,10 +180,10 @@
                     <div id='MaximumLengthTip' class="FieldName">Maximum {{model.FieldType.Type == 'Text' ? "Length" : "Value"}}</div>
                     <input name="maxLength" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}" [(ngModel)]="model.FieldType.MaximumLength" (keyup)="validateNumber(model.FieldType.Type)" style="width: 98%; display: block;" />
                 </div>
-				<div *ngIf="model.FieldType.Type == 'Decimal'" class="col s3">
+				        <div *ngIf="model.FieldType.Type == 'Decimal'" class="col s3">
                     <div id='decimalPlaces' class="FieldName">Decimal Places</div>
-                    <input name="Precision" type="number" [(ngModel)]="model.FieldType.Precision" (change)="validateNumber(model.FieldType.Type)" min="0" max="5" style="width: 98%; display: block;" />
-                </div>
+                    <input name="Precision" type="number" [(ngModel)]="model.FieldType.Precision" (keyup)="validateNumber(model.FieldType.Type)" min="0" max="5" style="width: 98%; display: block;" />
+                 </div>
             </div>
             <div class="row" *ngIf="model.FieldType.Pattern?.length > 0">
                 <div *ngIf="model.FieldType.Type == 'Text'" class="col s3">

@@ -111,8 +111,7 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
                 this.showMessageForResult(this.messagesService, result);
 
                 if (result.type != 'error') {
-                    let index = this.referenceTypes.findIndex(x => x.ID == id);
-
+                    let index = this.referenceTypes.findIndex(x => x.AssetTypeID == id);
                     if (index >= 0 && index < this.referenceTypes.length) {
                         this.referenceTypes.splice(index, 1);
                     }
