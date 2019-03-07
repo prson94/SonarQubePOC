@@ -39,7 +39,8 @@
     </NuGetPackageImportStamp>
     <ApplicationInsightsResourceId>/subscriptions/ab4c26b1-281d-488b-9657-894d862f9816/resourcegroups/d3s-ui/providers/microsoft.insights/components/UI-Nightly</ApplicationInsightsResourceId>
     <UseGlobalApplicationHostFile />
-    <Use64BitIISExpress>true</Use64BitIISExpress>
+    <Use64BitIISExpress>
+    </Use64BitIISExpress>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Autofac, Version=4.6.2.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
@@ -299,7 +300,6 @@
     <Compile Include="Controllers\V2\AssetsController.cs" />
     <Compile Include="Controllers\V2\SocialController.cs" />
     <Compile Include="Controllers\WebAnalyticsController.cs" />
-    <Compile Include="Controllers\Services\AgentController.cs" />
     <Compile Include="Controllers\Services\WorkflowController.cs" />
     <Compile Include="Controllers\Services\EventsController.cs" />
     <Compile Include="Controllers\Services\GlossaryController.cs" />

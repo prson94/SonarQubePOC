@@ -2095,19 +2095,6 @@
             <param name="id">The ID of the organization you want to retrieve history for.</param>
             <returns></returns>
         </member>
-        <member name="M:d360.web.Controllers.Services.AgentController.GetPackages">
-            <summary>
-            Get a list of packages.
-            </summary>
-            <returns>A list of packages.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.AgentController.GetPackageContents(System.Int32)">
-            <summary>
-            Gets the ZIP file containing the contents outlined.
-            </summary>
-            <param name="id">The package ID</param>
-            <returns>Artifact</returns>
-        </member>
         <member name="M:d360.web.Controllers.Services.WorkflowController.GetWorkflowDiagram(System.Int32,System.Nullable{System.Int32})">
             <summary>
             Gets the status of a given workflow, containing all steps executed as well as assignments.
