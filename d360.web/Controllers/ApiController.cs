@@ -4239,29 +4239,14 @@ order by C.DisplayValue";
                 Company.DeleteRelationship(id);
                 msg.StatusCode = HttpStatusCode.OK;
                 msg.ReasonPhrase = "Relationship successfully removed.";
-            }
-            catch (BaseException ex)
-            {
-                msg.StatusCode = ex.StatusCode;
-                msg.ReasonPhrase = ex.StatusMessage;
-            }
+            }            
             catch (SqlException ex)
             {
-                if (ex.Number == 16)    //this is an app-specific error
-                {
-                    msg.StatusCode = HttpStatusCode.Conflict;
-                    msg.ReasonPhrase = ex.Message;
-                }
-                else
-                {
-                    msg.StatusCode = HttpStatusCode.InternalServerError;
-                    msg.ReasonPhrase = ex.Message;
-                }
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.GetFullExceptionData());
             }
             catch (Exception ex)
             {
-                msg.StatusCode = HttpStatusCode.InternalServerError;
-                msg.ReasonPhrase = ex.Message;
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.GetFullExceptionData());
             }
 
             return msg;

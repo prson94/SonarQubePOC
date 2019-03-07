@@ -127,7 +127,7 @@ namespace d360.core.enums
             return list.OrderBy(i => i.Name).ToList();
         }
 
-        public static AssetTypeClassInfo GetInfo(this AssetTypeClass type)
+        public static AssetTypeClassInfo AsInfoModel(this AssetTypeClass type)
         {
             var info = new AssetTypeClassInfo();
 

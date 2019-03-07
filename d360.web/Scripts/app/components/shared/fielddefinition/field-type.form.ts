@@ -554,12 +554,13 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.listFilterPredicates = [];
         this.listFilterRelatedFields = [];
         this.listFilterOptions.clear();
+        if (objectType != "DomainItem" && objectType != "ReferenceItemType" && objectType != "TaxonomyType") objectType += 'Type';
 
         //List filter options only available for field defintions for Action Type, and then type of list is Models or Artifacts
-        if (this.objectType != 'IssueType' && objectType != 'Artifact' && objectType != 'Taxonomy') {
+        if (this.objectType != 'IssueType')
             return;
-        }
-        if (objectType != "DomainItem" && objectType != "ReferenceItemType" && objectType != "TaxonomyType") objectType += 'Type';
+        if (objectType != 'ArtifactType' && objectType != 'TaxonomyType')
+            return;
 
         this.listFilterable = true;
 

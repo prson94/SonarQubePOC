@@ -1,8 +1,11 @@
-﻿using System;
+﻿using d360.core.entities;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 
 namespace d360.core.enums
 {
@@ -131,16 +134,33 @@ namespace d360.core.enums
         ObjectOwnerhip = 11            
     }
 
-    public class PredicateTypeInfo
+    public class PredicateTypeInfo : BaseObject
     {
+        [DataMember]
         public PredicateType ID { get; set; }
+
+        [DataMember]
         public string Name { get; set; }
+
+        [DataMember]
         public string Description { get; set; }
+
+        [JsonIgnore]
         public bool AllowIntersectTypeAssignment { get; set; }
+
+        [JsonIgnore]
         public bool AllowMultiplePredicates { get; set; }
+
+        [JsonIgnore]
         public bool AllowDifferentSubjectObject { get; set; }
+
+        [JsonIgnore]
         public bool ForceDifferentSubjectObject { get; set; }
+
+        [JsonIgnore]
         public bool AllowEditFromRelationshipEditor { get; set; }
+
+        [JsonIgnore]
         public bool ReadOnly { get; set; }
     }
 

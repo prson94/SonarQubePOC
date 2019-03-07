@@ -1366,7 +1366,7 @@ insert into #Keys
 		    left join Asset P on P.Object = 'FusionAttribute' and P.ObjectID = O.ParentID and O.ParentID is not null
 		    left join (
 			    select		A.ID,
-						    STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by ColumnOrder asc, F.ID asc) as ProposedKey
+						    STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ProposedKey
 			    from		Asset A 
 						    inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
 						    left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
@@ -1408,7 +1408,7 @@ insert into #Keys
                         {
                             var activeKeySql = $@"
 select		A.ID,
-			STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by ColumnOrder asc, F.ID asc) as ProposedKey
+			STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ProposedKey
 from		Asset A 
 			inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
 			left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID

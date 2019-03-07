@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using d360.core.enums;
+using System;
 
 namespace d360.core.entities
 {
@@ -10,6 +11,9 @@ namespace d360.core.entities
     {
         [DataMember, Key, Column(Order = 1)]
         public int ID { get; set; }
+
+        [DataMember]
+        public Guid Uid { get; set; }
 
         [DataMember, Key, Column(Order = 2, TypeName = "varchar"), StringLength(50)]
         public string Subject { get; set; }
