@@ -8213,12 +8213,11 @@ where	Type = 'ReferenceItemType'
         #region Cascading dropdown values
 
         [Route("FieldType_CascadingListValues/{fieldTypeID:int}")]
-        public List<System.Web.Mvc.SelectListItem> GetCascadingDropdownFieldValues(int fieldTypeID, string parentItemId, string parentValues)
+        public List<SelectListInfoItem> GetCascadingDropdownFieldValues(int fieldTypeID, string parentItemId, string parentValues)
         {
-            var predicateTypeId = 3;
             string[] parents = null;
 
-            List<System.Web.Mvc.SelectListItem> items = new List<System.Web.Mvc.SelectListItem>();
+            List<SelectListInfoItem> items = new List<SelectListInfoItem>();
 
             var fieldType = Company.FieldTypes.Where(x => x.ID == fieldTypeID).FirstOrDefault();
 
@@ -8234,23 +8233,57 @@ where	Type = 'ReferenceItemType'
                 var sqlParent = "select value from fieldlookupvalue where fieldtypeid = @id and text in @vals";
                 parents = Company.Query<string>(sqlParent, new { id = fieldType.ParentFieldTypeID, vals = parentValues.Split(',')}).ToArray();
             }
-            
-            if((fieldType.LookupObjectType ?? "").ToUpper() != "REFERENCEITEM") throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
 
-            var referenceListType = Company.ReferenceItemTypes.Where(x => x.ID == fieldType.LookupObjectID).FirstOrDefault();
+            if (fieldType.FilterFieldTypeID > 0)
+            {
+                var filterFieldType = Company.FieldTypes.Where(x => x.ID == fieldType.FilterFieldTypeID).FirstOrDefault();
 
-            if(referenceListType == null) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
-                        
-            var parentReferenceListType = Company.GetParentType(referenceListType.ID, SystemObjects.ReferenceItemType);
+                var sql = @"select V.Text, V.Value";
+                var join = "";
 
-            if(parentReferenceListType == null) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
+                if (fieldType.FilterPredicateDirection == true)
+                {
+                    sql += @", concat(I.PredicateName,' ', I.SubjectShortName) as Info ";
+                    join = " on I.ObjectID = V.Value and V.LookupObjectType = I.Object and V.lookupObjectID = I.ObjectTypeID";
+                }
+                else
+                {
+                    sql += @", concat(I.PredicateInverse,' ', I.ObjectShortName) as Info ";
+                    join = " on I.SubjectID = V.Value and V.LookupObjectType = I.Subject and V.lookupObjectID = i.SubjectTypeID";
+                }
+                sql += $@"from fieldlookupvalue V
+                        inner join IntersectDetail I {join} 
+                        where V.fieldTypeID = @id and I.PredicateId = @PredcateId and I.{(fieldType.FilterPredicateDirection == true ? "SubjectID" : "ObjectID")} in @Parents";
 
-            var sql = @"select flv.Text, flv.Value from fieldlookupvalue flv 
+                items = Company.Query<SelectListInfoItem>(sql, new {
+                    id = fieldTypeID,
+                    PredcateId = fieldType.FilterPredicateID,
+                    Parents = parents
+                }).ToList();
+
+            }
+            else
+            {
+                //Cascading list should be reference items
+                var predicateTypeId = 3;
+
+                if((fieldType.LookupObjectType ?? "").ToUpper() != "REFERENCEITEM") throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
+
+                var referenceListType = Company.ReferenceItemTypes.Where(x => x.ID == fieldType.LookupObjectID).FirstOrDefault();
+
+                if(referenceListType == null) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
+
+                var parentReferenceListType = Company.GetParentType(referenceListType.ID, SystemObjects.ReferenceItemType);
+
+                if(parentReferenceListType == null) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
+
+                var sql = @"select flv.Text, flv.Value from fieldlookupvalue flv 
                         inner join[intersectdetail] id on(id.subjecttype = 'ReferenceItemType' and id.objecttype = 'ReferenceItemType' and id.predicatetype = @predicate and id.objectid = flv.value and id.objecttypeid = flv.lookupobjectid and id.subjecttypeid = @parentReferenceListTypeId)
                         inner join[referenceitem] ri on(ri.referenceitemtypeid = id.subjecttypeid and ri.id = id.subjectid and ri.id in @parentReferenceItemId)
                         where flv.fieldTypeID = @id";
 
-            items = Company.Query<System.Web.Mvc.SelectListItem>(sql, new { id = fieldTypeID, predicate = predicateTypeId, parentReferenceItemId = parents, parentReferenceListTypeId = parentReferenceListType.ObjectID }).ToList();
+                items = Company.Query<SelectListInfoItem>(sql, new { id = fieldTypeID, predicate = predicateTypeId, parentReferenceItemId = parents, parentReferenceListTypeId = parentReferenceListType.ObjectID }).ToList();
+            }
 
             return items;
 

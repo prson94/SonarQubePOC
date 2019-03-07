@@ -1410,6 +1410,7 @@
     <TypeScriptCompile Include="Scripts\app\pipes\metric-condition-disabled-filter.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\responsibilitytypeallocation-filter.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\permission-filter.pipe.ts" />
+    <TypeScriptCompile Include="Scripts\app\pipes\selectitem-text-to-label.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\utc-date.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\safe-html.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\services\asset-type.services.ts" />

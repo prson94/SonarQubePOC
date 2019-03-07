@@ -32,6 +32,7 @@ export class EditorField {
     FieldTypeID: number;
     RecordCount: number;
     UseTypeahead: boolean;
+    DelayedLoadType: string;
 }
 
 export class EditorCategory {

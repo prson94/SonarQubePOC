@@ -669,6 +669,25 @@ namespace d360.web.Controllers
 
                                     if (parent != null) fld.ParentFieldTypeName = parent.FriendlyName;
                                 }
+                                else if (f.FilterFieldTypeID > 0 || f.FilterPredicateID > 0)
+                                {
+//                                    fld.ParentFieldTypeName = "Parents field type name should go here";
+                                    if(f.FilterFieldTypeID > 0)
+                                    {
+                                        fld.DelayedLoadType = "FieldFilter";
+                                        //Field filter works similar to ParentFieldType, so we'll overload those parameters
+                                        var filterParent = Company.FieldTypes.Where(x => x.ID == f.FilterFieldTypeID).FirstOrDefault();
+                                        if (filterParent != null)
+                                        {
+                                            fld.ParentFieldTypeID = f.FilterFieldTypeID;
+                                            fld.ParentFieldTypeName = filterParent.FriendlyName;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        fld.DelayedLoadType = "Predicate";
+                                    }
+                                }
                                 else
                                 {
                                     if (!f.IsRequired && !f.AllowMultipleValues)

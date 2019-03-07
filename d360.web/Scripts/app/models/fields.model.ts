@@ -113,6 +113,9 @@ export class FieldType {
     ParentFieldTypeID: number;
     Increment: number;
     Precision: number;
+    FilterPredicateID: number;
+    FilterPredicateDirection: number;
+    FilterFieldTypeID: number;
 }
 
 export class Field {
