@@ -1347,20 +1347,32 @@ set     T.ProposedKey = S.ProposedKey
 from    api.ExecutionAsset T
 		inner join	(
 					select		A.ItemNumber,
-								COALESCE(cast(A.ParentUid as nvarchar(50))+'|', '') + F.FieldValue as ProposedKey
+								COALESCE(cast(A.ParentUid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.LookupValue, F.FieldValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ProposedKey
 					from		api.ExecutionAsset A
-								inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldName = 'Name'
+								inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber
+								left join FieldType FT on FT.AssetTypeID = @ID and FT.ID = F.FieldTypeID
 					where		A.ExecutionID = @ExecutionID	
+								and (F.FieldName = 'Name' OR FT.IsPartOfKey = 1)
+					group by	A.ItemNumber, A.ParentUid
 					) S on T.ExecutionID = @ExecutionID and S.ItemNumber = T.ItemNumber;
 
 {keyTableTempCreation}
 
 insert into #Keys
     select	A.ID,
-			COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + O.Name as ProposedKey
+		    COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + O.Name + COALESCE('|'+DF.ProposedKey,'') as ProposedKey
     from	Asset A 
-			inner join FusionAttribute O on A.Object = 'FusionAttribute' and O.ID = A.ObjectID
-			left join Asset P on P.Object = 'FusionAttribute' and P.ObjectID = O.ParentID and O.ParentID is not null
+		    inner join FusionAttribute O on A.Object = 'FusionAttribute' and O.ID = A.ObjectID
+		    left join Asset P on P.Object = 'FusionAttribute' and P.ObjectID = O.ParentID and O.ParentID is not null
+		    left join (
+			    select		A.ID,
+						    STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by ColumnOrder asc, F.ID asc) as ProposedKey
+			    from		Asset A 
+						    inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
+						    left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
+			    where	    A.AssetTypeID = @ID
+			    group by    A.ID
+		    ) DF on DF.ID = A.ID
     where	A.AssetTypeID = @ID;
 
 {keyComparisonUpdateStatement}",

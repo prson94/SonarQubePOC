@@ -3096,7 +3096,7 @@ namespace d360.web.Controllers
                 PredicateName = i.PredicateName,
                 FieldTypeID = i.FieldTypeID,
                 FriendlyName = i.FriendlyName,
-                Info = "List(" + (AssetTypeClass)i.Class + " : " + i.Name + ")" //@TODO use i.Type instead of hardcoded field type
+                Info = string.IsNullOrEmpty(i.Name) ? "" : "List(" + (AssetTypeClass)i.Class + " : " + i.Name + ")" //@TODO use i.Type instead of hardcoded field type
             })};
         }
 
