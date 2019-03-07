@@ -2135,6 +2135,15 @@ where	R.SourceObject = 'FusionAttribute'
                     o.CreatedOn = DateTime.UtcNow;
                 }
                 #endregion
+
+                #region Business logic : IUIDMetadata
+                if (entry.Entity is IUIDMetadata)
+                {
+                    var o = entry.Entity as IUIDMetadata;
+                    o.UID = Guid.NewGuid();
+                }
+                #endregion
+
             }
 
             foreach (var entry in ObjectContext.ObjectStateManager.GetObjectStateEntries(EntityState.Added | EntityState.Modified | EntityState.Deleted))
