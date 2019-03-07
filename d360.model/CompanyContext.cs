@@ -480,9 +480,9 @@ select	I.Id,
 		I.State as State,
         coalesce(I.IsSystem, 0) as IsSystem,
 		P.UID as 'Predicate.Uid',
-		P.[Type] as 'Predicate.Type',
-		P.Name as 'Predicate.Name',
-		P.Inverse as 'Predicate.Inverse',
+		coalesce(P.[Type],0) as 'Predicate.Type',
+		coalesce(P.Name,'') as 'Predicate.Name',
+		coalesce(P.Inverse,'') as 'Predicate.Inverse',
 		coalesce(SI.Uid, S.Uid) as 'Subject.Uid',
 		case 
 			when I.Subject = 'IntersectType' then SI.SubjectName + ' ' + SI.PredicateName + ' ' + SI.ObjectName + ' relationship'
