@@ -63,7 +63,7 @@ import { AssetTypeService } from '../../services/asset-type.services';
                        </d3s-asset-type-editor>
                     <d3s-delete-form *ngIf="showDelete"
                         [callback]="theDeleteCallback"
-                        [itemId]="selected?.ID"
+                        [itemId]="selected?.AssetTypeID"
                         [method]="'callback'"
                         [prompt]="'Are you sure you want to delete the selected item?'"                                         
                         (onCancel)="showDelete=false;"
@@ -157,7 +157,7 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
             .then(result => {
                 this.showMessageForResult(this.messagesService, result);
                 if (result.type != 'error') {
-                    let index = this.referenceTypes.findIndex(x => x.ID == id);
+                    let index = this.referenceTypes.findIndex(x => x.AssetTypeID == id);
                     if (index >= 0 && index < this.referenceTypes.length) {
                         this.referenceTypes.splice(index, 1);
                     }

@@ -15,6 +15,9 @@ namespace d360.core.entities
         public Intersect()
         { }
 
+        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public Guid uid { get; set; }
+
         [DataMember]
         public int IntersectTypeID { get; set; }
 

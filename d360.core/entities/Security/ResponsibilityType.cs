@@ -9,7 +9,7 @@ using d360.core.enums;
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE)]
-    public class ResponsibilityType : BaseIntObject, IIntObject, IUpdatedMetadata
+    public class ResponsibilityType : BaseIntObject, IIntObject, IUpdatedMetadata, ICreatedMetadata
     {
         #region Properties
 
@@ -25,8 +25,11 @@ namespace d360.core.entities
 
         public Guid UID { get; set; }
 
+        public DateTime? CreatedOn { get; set; }
+        public int? CreatedBy { get; set; }
+
         #endregion
-        
+
         [IgnoreDataMember, ForeignKey("ResponsibilityTypeID")]
         public virtual ICollection<ResponsibilityTypeRelation> ResponsibilityTypeRelations { get; set; }
     }
