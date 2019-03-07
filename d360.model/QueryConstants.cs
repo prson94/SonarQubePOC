@@ -765,6 +765,7 @@ where	(I.Subject = @obj and I.SubjectID = @objid and I.ObjectType = @objtype and
 
         public static string ObjectRelationships = @"
 select	ID,
+        [Uid],
         IntersectTypeID,
         case when (Subject = @type and SubjectID = @id) then Object else Subject end as Object,
 		case when (Subject = @type and SubjectID = @id) then ObjectID else SubjectID end as ObjectID,
@@ -790,7 +791,7 @@ from	AssetType T
 								else cast(0 as bit)
 							end as AllowAttributes
 					from	AttributeTypeRelation
-					where	ObjectType = 'PolicyType' and ObjectID = T.ObjectID
+					where	ObjectType = 'PolicyType' and ObjectID = T.ObjectID  
 					) R
 where T.[object]='PolicyType' and	T.ObjectID = @id";
 
@@ -803,9 +804,9 @@ from	AssetType T
 								else cast(0 as bit)
 							end as AllowAttributes
 					from	AttributeTypeRelation
-					where	ObjectType = 'RuleType' and ObjectID = T.ObjectID
+					where	ObjectType = 'RuleType' and ObjectID = T.ObjectID 
 					) R
-where	T.ObjectID = @id";
+where T.[object]='RuleType' and		T.ObjectID = @id";
 
         public static string PromotionHistoryList = @"
 select	ID,
@@ -1524,7 +1525,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                 order by t.Name asc";
 
         public static string WorkflowVersionStepHistory = @"
-   select 
+  select 
 	IST.ID as ItemStepID, 
 	convert(varchar(max),IST.Fields) as Fields,
 	IST.StartedOn,
@@ -1599,8 +1600,17 @@ from
 	left join reporting.Global_resource RC on RC.ResourceID = IST.CompletedBy
 	inner join workflow.[Version] V on V.ID = VS.VersionID
 	inner join workflow.[Type] T on T.ID = V.TypeID
+	outer apply (
+		select case when vsw.Settings.value('/settings[1]/WaitForAllTransitions[1]','varchar(max)') = 'true' then
+			1
+		else
+			0
+		end as [value]
+		from workflow.versionstep vsw where vsw.id = ist.stepid
+	) waitForAll
 where 
 	VS.ID = @id
+	and (waitForAll.[value] = 0 or (waitForAll.[value] = 1 and ist.id = (select max(id) from workflow.itemstep where itemid = ist.itemid and stepid = ist.stepid)))
 order by IST.StartedOn desc, IST.CompletedOn desc
 ";
 

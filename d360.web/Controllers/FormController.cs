@@ -2997,8 +2997,8 @@ namespace d360.web.Controllers
             });
 
             var sType = type.ToString();
-            var relatedTypeList = Company.Filter<IntersectTypeDetail>(i => 
-                (i.Subject == sType && i.SubjectID == id) || 
+            var relatedTypeList = Company.Filter<IntersectTypeDetail>(i =>
+                (i.Subject == sType && i.SubjectID == id) ||
                 (i.Object == sType && i.ObjectID == id)
                 ).ToList().Select(i => new {
                     ID = i.ID,
@@ -3022,6 +3022,82 @@ namespace d360.web.Controllers
                 Data = list.Select(i => new { title = i.Key, value = $"{i.Value}|{i.Key}" }),
                 Formatting = Newtonsoft.Json.Formatting.None
             };
+        }
+
+        [Route("FieldType_ListFilter"), NonNullableParameters]
+        public JsonNetResult FieldType_ListFilter(SystemObjects objectType, int objectId, SystemObjects type, int id)
+        {
+            string sql = $@"SELECT 
+                        Concat(A.PredicateID, '|',A.Direction) as PredicateValue, 
+                        A.PredicateName, 
+                        A.ObjectName, 
+                        A.[Object], 
+                        A.[ObjectID], 
+                        B.FieldTypeID, 
+                        B.[FriendlyName],
+						B.Type,
+                        B.Class,
+                        B.Name
+                    FROM ( 
+                        SELECT 
+                            it.[ID] as IntersectTypeID, 
+                            0 AS Direction, 
+                            p.[ID] as PredicateID, 
+                            p.[Name] as PredicateName, 
+                            ot.[Name] as ObjectName, 
+                            it.[Object] as [Object], 
+                            it.[ObjectID] as [ObjectID] 
+                        FROM [dbo].[IntersectType] it 
+                            join [dbo].[Predicate] p on it.[PredicateID] = p.[ID] 
+                            join [dbo].[AssetType] ot on ot.[Object] = it.[Object] and ot.[ObjectId] = it.[ObjectID] 
+                            join [dbo].[AssetType] st on st.[Object] = it.[Subject] and st.[ObjectId] = it.[SubjectID] 
+                        where it.[Subject] = @objectType 
+                        and it.[SubjectID] = @objectId
+                        UNION ALL 
+                        SELECT 
+                            it.[ID], 
+                            1 AS Direction, 
+                            p.[ID] as PredicateID, 
+                            p.[Inverse] as PredicateName,
+                            st.[Name] as ObjectName, 
+                            it.[Subject] as [Object], 
+                            it.[SubjectID] as [ObjectID] 
+                        FROM [dbo].[IntersectType] it 
+                            join [dbo].[Predicate] p on it.[PredicateID] = p.[ID] 
+                            join [dbo].[AssetType] ot on ot.[Object] = it.[Object] and ot.[ObjectId] = it.[ObjectID] 
+                            join [dbo].[AssetType] st on st.[Object] = it.[Subject] and st.[ObjectId] = it.[SubjectID] 
+                         where it.[Object] = @objectType 
+                         and it.[ObjectID] = @objectId 
+                        ) A LEFT OUTER JOIN
+                    (SELECT 
+                        ft.[ID] as FieldTypeID,
+                        ft.[FriendlyName], 
+                        ft.[Object], 
+                        ft.[ObjectID], 
+                        at.Object as LookupObject, 
+                        ft.LookupObjectID,
+                        ft.Type,
+                        at.Class,
+                        at.Name
+                    FROM [dbo].[FieldType] ft
+                    INNER JOIN [dbo].[AssetType] at ON ft.LookupObjectType +'Type' = at.Object AND ft.LookupObjectID = at.ObjectID
+                    WHERE ft.[ObjectID] = @id AND ft.[Object] = @type  
+                    ) B ON A.[Object] = B.LookupObject AND A.ObjectID = B.LookupObjectID";
+            var parms = new
+            {
+                objectType = objectType.ToString(),
+                objectId = objectId,
+                type = type.ToString(),
+                id = id
+            };
+
+            return new JsonNetResult { Data = Company.Query<dynamic>(sql, parms).Select(i => new {
+                PredicateValue = i.PredicateValue,
+                PredicateName = i.PredicateName,
+                FieldTypeID = i.FieldTypeID,
+                FriendlyName = i.FriendlyName,
+                Info = "List(" + (AssetTypeClass)i.Class + " : " + i.Name + ")" //@TODO use i.Type instead of hardcoded field type
+            })};
         }
 
         [Route("FieldType_FieldFromRelationship_Fields"), NonNullableParameters]
@@ -3097,6 +3173,171 @@ namespace d360.web.Controllers
                 Data = list.Select(i => new { title = i.Key, value = "{" + i.Value + "}" }),
                 Formatting = Newtonsoft.Json.Formatting.None
             };
+        }
+
+        [Route("FieldType_Lookup_FilteredByPredicate"), NonNullableParameters]
+        public JsonNetResult FieldType_Lookup_FilteredByPredicate(int fieldTypeId, string objectType, int ObjectID )
+        {
+            var selectList = new List<SelectListInfoItem>();
+            IntersectType it;
+            string exceptionMessage = "";
+
+            try
+            {
+                var filterObject = Company.Filter<Asset>(i => i.ObjectID == ObjectID && i.Object == objectType).SingleOrDefault();
+                if (filterObject == null)
+                {
+                    exceptionMessage = "Action subject is not an asset. Filter disabled.";
+                }
+
+                var ft = Company.GetById<FieldType>(fieldTypeId);
+                string selectedValue = string.IsNullOrWhiteSpace(ft.DefaultValue) ? "" : ft.DefaultValue;
+
+                if (!ft.IsRequired && !ft.AllowMultipleValues)
+                    selectList.Add(new SelectListInfoItem { Text = "Choose...", Value = "" });
+
+                if (ft.AllowAllValue)
+                    selectList.Add(new SelectListInfoItem { Text = ft.AllowAllLabel, Value = "0" });
+
+                if (exceptionMessage == "")
+                {
+                    if (ft.FilterPredicateDirection == true)
+                    {
+                        it = Company.Filter<IntersectType>(i =>
+                            i.Object == ft.LookupObjectType + "Type" &&
+                            i.ObjectID == ft.LookupObjectID &&
+                            i.Subject == filterObject.AssetType.Object &&
+                            i.SubjectID == filterObject.AssetType.ObjectID &&
+                            i.PredicateID == ft.FilterPredicateID
+                        ).SingleOrDefault();
+                    }
+                    else
+                    {
+                        it = Company.Filter<IntersectType>(i =>
+                            i.Subject == ft.LookupObjectType + "Type" &&
+                            i.SubjectID == ft.LookupObjectID &&
+                            i.Object == filterObject.AssetType.Object &&
+                            i.ObjectID == filterObject.AssetType.ObjectID &&
+                            i.PredicateID == ft.FilterPredicateID
+                        ).SingleOrDefault();
+                    }
+
+                    if (it == null)
+                    {
+                        exceptionMessage = $@"Filtering for this list has been disabled as we cannot filter a list by the action subject";  //@TODO: Expand on error message
+                    }
+                }
+                else
+                {
+                    //Not really used at this point
+                    it = new IntersectType();
+                }
+
+                if (exceptionMessage == "")
+                {
+                    var columns = $@"
+                V.Value,
+                V.Text";
+
+                    var selectedSql = $@"select {columns} , '' as Info
+                from FieldLookupValue V 
+                where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId and V.Value = @selectedValue 
+                union
+                ";
+
+                    if (ft.FilterPredicateDirection == true)
+                    {
+                        columns += @", concat(I.PredicateName,' ', I.SubjectShortName) as Info";
+                    }
+                    else
+                    {
+                        columns += @", concat(I.PredicateInverse,' ', I.ObjectShortName) as Info";
+                    }
+
+                    var resourceJoin = $@"
+                inner join reporting.Global_resource R on R.ResourceID = V.Value and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com'
+                ";
+
+                    var itemsSql = $@"
+                {(string.IsNullOrWhiteSpace(selectedValue) ? "" : selectedSql)}
+                select {columns}
+                from FieldLookupValue V
+                {(HideData3SixtyUsers() && ft.LookupObjectType == "Resource" ? resourceJoin : "")}
+                inner join [IntersectDetail] I on I.{ (ft.FilterPredicateDirection == true ? "ObjectID" : "SubjectID") } = V.Value
+                where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId 
+                and I.IntersectTypeID = @IntersectTypeID and I.{(ft.FilterPredicateDirection == true ? "SubjectID" : "ObjectID")} = @ObjecctID
+                ";
+
+                    var items = Company.Query<SelectListInfoItem>(itemsSql, new
+                    {
+                        fieldTypeId = ft.ID,
+                        lookupObjectType = ft.LookupObjectType,
+                        lookupObjectId = ft.LookupObjectID,
+                        IntersectTypeID = it.ID,
+                        ObjecctID = ObjectID,
+                        selectedValue
+                    }).ToList();
+
+                    selectList.AddRange(items.Select(i => new SelectListInfoItem
+                    {
+                        Text = i.Text,
+                        Value = i.Value.ToString(),
+                        Selected = string.IsNullOrEmpty(selectedValue) ? false : i.Value.ToString() == selectedValue,
+                        Info = i.Info
+                    }));
+                }
+                else
+                {
+                    var selectedSql = $@"select V.Value, V.Text, '' as Info
+                from FieldLookupValue V 
+                where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId and V.Value = @selectedValue 
+                union
+                ";
+
+                    var resourceJoin = $@"
+                inner join reporting.Global_resource R on R.ResourceID = V.Value and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com'
+                ";
+
+                    var itemsSql = $@"
+                {(string.IsNullOrWhiteSpace(selectedValue) ? "" : selectedSql)}
+                select V.Value, V.Text, '' as Info
+                from FieldLookupValue V
+                {(HideData3SixtyUsers() && ft.LookupObjectType == "Resource" ? resourceJoin : "")}
+                where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId 
+                ";
+
+                    var items = Company.Query<SelectListInfoItem>(itemsSql, new
+                    {
+                        fieldTypeId = ft.ID,
+                        lookupObjectType = ft.LookupObjectType,
+                        lookupObjectId = ft.LookupObjectID,
+                        selectedValue
+                    }).ToList();
+
+                    selectList.AddRange(items.Select(i => new SelectListInfoItem
+                    {
+                        Text = i.Text,
+                        Value = i.Value.ToString(),
+                        Selected = string.IsNullOrEmpty(selectedValue) ? false : i.Value.ToString() == selectedValue,
+                        Info = i.Info
+                    }));
+                }
+            }
+            catch
+            {
+                if(exceptionMessage == "")
+                {
+                    exceptionMessage = "Filter disabled. An error occured when attempting to apply it.";
+                }
+            }
+            selectList = selectList.OrderBy(i => i.Selected ? 0 : 1).ToList();
+
+            return new JsonNetResult
+            {
+                Data = new { items = selectList, exceptionMessage = exceptionMessage },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+
         }
 
         [Route("Reference_Hierarchy"), NonNullableParameters]
@@ -4327,6 +4568,11 @@ namespace d360.web.Controllers
                             Company.FieldTypeFusionLookupDefinitions.RemoveRange(defs);
                         if (efli != null)
                             Company.Set<FieldTypeFilteredLookupDefinition>().Remove(efli);
+
+                        ft.FilterPredicateID = model.FieldType.FilterPredicateID;
+                        ft.FilterPredicateDirection = model.FieldType.FilterPredicateDirection;
+                        ft.FilterFieldTypeID = model.FieldType.FilterFieldTypeID;
+
                         break;
                     #endregion
                     case "ComplexRelationLookup":
