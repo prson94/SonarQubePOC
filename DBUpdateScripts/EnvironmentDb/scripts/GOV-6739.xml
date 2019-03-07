@@ -1,0 +1,171 @@
+﻿<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Sebastian Abraham" id="GOV-6739">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+			<![CDATA[
+ALTER PROCEDURE [dbo].[GetAllowedIntersectionTypesByIntersect]    
+    
+ @IntersectID int    
+    
+AS    
+BEGIN    
+ SET NOCOUNT ON;    
+    
+ declare @intersectTypeID int    
+    
+ select @intersectTypeID = IntersectTypeID from [Intersect] where ID = @intersectID    
+    
+ declare @tbl table (IntersectTypeID int, TargetType varchar(50), TargetTypeID int, TargetName nvarchar(500), ParentIntersectID int);    
+    
+ insert into @tbl    
+  select ID,    
+    Object,    
+    ObjectID,    
+    ObjectName,    
+    @IntersectID    
+  from IntersectTypeDetail    
+  where Subject = 'IntersectType'     
+    and SubjectID = @intersectTypeID     
+    
+     
+    
+ declare @OwnerSourceType varchar(50),    
+   @OwnerSourceID int,@OwnerAssetId bigint    
+    
+ select top 1    
+  @OwnerSourceType = I.Subject,    
+  @OwnerSourceID = I.SubjectID,
+  @OwnerAssetId = A.ID  
+ from [Intersect] I    
+ inner join Asset A on I.Subject = 'Artifact' and A.ObjectID = I.SubjectID and A.[Object]='Artifact'   
+ and I.ID = @IntersectID    
+ inner join AssetType AT on AT.ID = A.AssetTypeID and AT.CanOwnFusion = 1    
+    
+ declare @h table (ID int);    
+    
+ if @OwnerSourceType = 'Artifact'    
+  begin    
+with h as (  
+  select A.ID,  
+    PA.ID as ParentID  
+  from Asset A with(nolock)  
+    cross apply [dbo].[GetParentByAssetID] (A.ID) as PA  
+    where A.[Object]='Artifact' and A.ObjectID=@OwnerSourceID  
+  union all  
+  select AA.ID,  
+    PA.ID as ParentID  
+  from Asset AA with(nolock)  
+    cross apply [dbo].[GetParentByAssetID] (AA.ID) as PA  
+    inner join h as C on C.ParentID =AA.ID  
+  )  
+   insert into @h    
+    select ID from h;    
+   
+   insert into @h  
+  Select  @OwnerAssetId 
+    
+  end    
+    
+ delete @tbl    
+ where TargetType = 'FusionAttributeType'    
+   and TargetTypeID not in (    
+         select  T.ID    
+         from  FusionOwner O    
+            inner join @h h on h.ID = O.AssetID    
+            inner join Fusion F on F.ID = O.FusionID    
+            inner join FusionAttributeType T on T.FusionTypeID = F.FusionTypeID    
+         )    
+    
+ select * from @tbl order by TargetName    
+END
+]]>
+    </sql>
+	<rollback>
+	<![CDATA[
+ALTER PROCEDURE [dbo].[GetAllowedIntersectionTypesByIntersect]    
+    
+ @IntersectID int    
+    
+AS    
+BEGIN    
+ SET NOCOUNT ON;    
+    
+ declare @intersectTypeID int    
+    
+ select @intersectTypeID = IntersectTypeID from [Intersect] where ID = @intersectID    
+    
+ declare @tbl table (IntersectTypeID int, TargetType varchar(50), TargetTypeID int, TargetName nvarchar(500), ParentIntersectID int);    
+    
+ insert into @tbl    
+  select ID,    
+    Object,    
+    ObjectID,    
+    ObjectName,    
+    @IntersectID    
+  from IntersectTypeDetail    
+  where Subject = 'IntersectType'     
+    and SubjectID = @intersectTypeID     
+    
+     
+    
+ declare @OwnerSourceType varchar(50),    
+   @OwnerSourceID int    
+    
+ select top 1    
+  @OwnerSourceType = I.Subject,    
+  @OwnerSourceID = I.SubjectID    
+ from [Intersect] I    
+ inner join Asset A on I.Subject = 'Artifact' and A.ObjectID = I.SubjectID and A.[Object]='Artifact'   
+ and I.ID = @IntersectID    
+ inner join AssetType AT on AT.ID = A.AssetTypeID and AT.CanOwnFusion = 1    
+    
+ declare @h table (ID int);    
+    
+ if @OwnerSourceType = 'Artifact'    
+  begin    
+with h as (  
+  select A.ID,  
+    PA.ID as ParentID  
+  from Asset A with(nolock)  
+    cross apply [dbo].[GetParentByAssetID] (A.ID) as PA  
+    where A.[Object]='Artifact' and A.ObjectID=@OwnerSourceID  
+  union all  
+  select AA.ID,  
+    PA.ID as ParentID  
+  from Asset AA with(nolock)  
+    cross apply [dbo].[GetParentByAssetID] (AA.ID) as PA  
+    inner join h as C on C.ParentID =AA.ID  
+  )  
+   insert into @h    
+    select ID from h;    
+   
+   insert into @h  
+  Select  @OwnerSourceID  
+    
+  end    
+    
+ delete @tbl    
+ where TargetType = 'FusionAttributeType'    
+   and TargetTypeID not in (    
+         select  T.ID    
+         from  FusionOwner O    
+            inner join @h h on h.ID = O.AssetID    
+            inner join Fusion F on F.ID = O.FusionID    
+            inner join FusionAttributeType T on T.FusionTypeID = F.FusionTypeID    
+         )    
+    
+ select * from @tbl order by TargetName    
+END
+]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>
