@@ -75,7 +75,7 @@ export class GroupService extends BaseService implements IGroupService {
     }
     
     getResponsibilityBreakdownByGroup(id: number): Promise<CountObject[]> {
-        return this.http.get(`tiles/ResponsibilityBreakdownByGroup?id=${id}`)
+        return this.http.get(`/api/v2/social//ResponsibilityBreakdownByGroup?id=${id}`)
             .toPromise()
             .then(response => <CountObject[]>response.json())
             .catch(err => this.handleError(err));
