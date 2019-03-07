@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 
 namespace d360.core.enums
 {
@@ -24,6 +26,7 @@ namespace d360.core.enums
     public class StateInfo
     {
         public State ID { get; set;  }
+
         public string Name { get; set; }
     }
 
@@ -44,6 +47,17 @@ namespace d360.core.enums
             }
 
             return list;
+        }
+
+        public static StateInfo AsInfoModel(this State type)
+        {
+            var t = type.GetType().GetMember(type.ToString()).First();
+            return
+                new StateInfo
+                {
+                    Name = ((NameAttribute)t.GetCustomAttribute(typeof(NameAttribute))).Name,
+                    ID = type,
+                };
         }
     }
 }
