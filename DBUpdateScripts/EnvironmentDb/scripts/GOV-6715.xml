@@ -1,0 +1,187 @@
+﻿<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Sebastian Abraham" id="GOV-6715">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+
+      ALTER TABLE [dbo].[ResponsibilityType]
+      ADD [CreatedOn] [datetime] NOT NULL
+      CONSTRAINT [DF_ResponsibilityType_CreatedOn] DEFAULT (getdate()) WITH VALUES,
+      [CreatedBy] [int] NOT NULL
+      CONSTRAINT [DF_ResponsibilityType_CreatedBy] DEFAULT (0)
+      WITH VALUES
+
+      ALTER TABLE [dbo].ResponsibilityTypeRelation
+      ADD [CreatedOn] [datetime] NOT NULL
+      CONSTRAINT [DF_ResponsibilityTypeRelation_CreatedOn] DEFAULT (getdate()) WITH VALUES,
+      [CreatedBy] [int] NOT NULL
+      CONSTRAINT [DF_ResponsibilityTypeRelation_CreatedBy] DEFAULT (0) WITH VALUES,
+      [UpdatedOn] [datetime] NOT NULL
+      CONSTRAINT [DF_ResponsibilityTypeRelation_UpdatedOn] DEFAULT (getdate()) WITH VALUES,
+      [UpdatedBy] [int] NOT NULL
+      CONSTRAINT [DF_ResponsibilityTypeRelation_UpdatedBy] DEFAULT (0) WITH VALUES
+
+      ALTER TABLE [dbo].ResponsibilityTypeRelationRule
+      ADD [CreatedOn] [datetime] NOT NULL
+      CONSTRAINT [DF_ResponsibilityTypeRelationRule_CreatedOn] DEFAULT (getdate()) WITH VALUES,
+      [CreatedBy] [int] NOT NULL
+      CONSTRAINT [DF_ResponsibilityTypeRelationRule_CreatedBy] DEFAULT (0) WITH VALUES,
+      [UpdatedBy] [int] NOT NULL
+      CONSTRAINT [DF_ResponsibilityTypeRelationRule_UpdatedBy] DEFAULT (0) WITH VALUES
+      
+    </sql>
+	<rollback>
+    if exists(select 1 from sys.default_constraints
+    where name = 'DF_ResponsibilityType_CreatedOn')
+    begin
+    ALTER TABLE [dbo].[ResponsibilityType]
+    drop CONSTRAINT [DF_ResponsibilityType_CreatedOn]
+    end
+
+    If exists(Select 1 from
+    information_schema.Columns where column_name ='CreatedOn' and
+    table_name='ResponsibilityType' and TABLE_SCHEMA='DBO')
+    begin
+    ALTER TABLE [dbo].[ResponsibilityType]
+    drop column [CreatedOn]
+    end
+
+
+    if exists(select 1 from sys.default_constraints
+    where name = 'DF_ResponsibilityType_CreatedBy')
+    begin
+    ALTER TABLE [dbo].[ResponsibilityType]
+    drop CONSTRAINT [DF_ResponsibilityType_CreatedBy]
+    end
+
+    If exists(Select 1 from
+    information_schema.Columns where column_name ='CreatedBy' and
+    table_name='ResponsibilityType' and TABLE_SCHEMA='DBO')
+    begin
+    ALTER TABLE [dbo].[ResponsibilityType]
+    drop column [CreatedBy]
+    end
+
+
+    if exists(select 1 from sys.default_constraints
+    where name = 'DF_ResponsibilityTypeRelation_CreatedOn')
+    begin
+    ALTER TABLE [dbo].[ResponsibilityTypeRelation]
+    drop CONSTRAINT [DF_ResponsibilityTypeRelation_CreatedOn]
+    end
+
+    If exists(Select 1 from
+    information_schema.Columns where column_name ='CreatedOn' and
+    table_name='ResponsibilityTypeRelation' and TABLE_SCHEMA='DBO')
+    begin
+    ALTER TABLE [dbo].[ResponsibilityTypeRelation]
+    drop column [CreatedOn]
+    end
+
+
+    if exists(select 1 from sys.default_constraints
+    where name = 'DF_ResponsibilityTypeRelation_CreatedBy')
+    begin
+    ALTER TABLE [dbo].[ResponsibilityTypeRelation]
+    drop CONSTRAINT [DF_ResponsibilityTypeRelation_CreatedBy]
+    end
+
+    If exists(Select 1 from
+    information_schema.Columns where column_name ='CreatedBy' and
+    table_name='ResponsibilityTypeRelation' and TABLE_SCHEMA='DBO')
+    begin
+    ALTER TABLE [dbo].[ResponsibilityTypeRelation]
+    drop column [CreatedBy]
+    end
+
+    if exists(select 1 from sys.default_constraints
+    where name = 'DF_ResponsibilityTypeRelation_UpdatedOn')
+    begin
+    ALTER TABLE [dbo].[ResponsibilityTypeRelation]
+    drop CONSTRAINT [DF_ResponsibilityTypeRelation_UpdatedOn]
+    end
+
+    If exists(Select 1 from
+    information_schema.Columns where column_name ='UpdatedOn' and
+    table_name='ResponsibilityTypeRelation' and TABLE_SCHEMA='DBO')
+    begin
+    ALTER TABLE [dbo].[ResponsibilityTypeRelation]
+    drop column [UpdatedOn]
+    end
+
+    if exists(select 1 from sys.default_constraints
+    where name = 'DF_ResponsibilityTypeRelation_UpdatedBy')
+    begin
+    ALTER TABLE [dbo].[ResponsibilityTypeRelation]
+    drop CONSTRAINT [DF_ResponsibilityTypeRelation_UpdatedBy]
+    end
+
+    If exists(Select 1 from
+    information_schema.Columns where column_name ='UpdatedBy' and
+    table_name='ResponsibilityTypeRelation' and TABLE_SCHEMA='DBO')
+    begin
+    ALTER TABLE [dbo].[ResponsibilityTypeRelation]
+    drop column [UpdatedBy]
+    end
+
+
+    if exists(select 1 from sys.default_constraints
+    where name = 'DF_ResponsibilityTypeRelationRule_CreatedOn')
+    begin
+    ALTER TABLE [dbo].[ResponsibilityTypeRelationRule]
+    drop CONSTRAINT [DF_ResponsibilityTypeRelationRule_CreatedOn]
+    end
+
+    If exists(Select 1 from
+    information_schema.Columns where column_name ='CreatedOn' and
+    table_name='ResponsibilityTypeRelationRule' and TABLE_SCHEMA='DBO')
+    begin
+    ALTER TABLE [dbo].[ResponsibilityTypeRelationRule]
+    drop column [CreatedOn]
+    end
+
+
+    if exists(select 1 from sys.default_constraints
+    where name = 'DF_ResponsibilityTypeRelationRule_CreatedBy')
+    begin
+    ALTER TABLE [dbo].[ResponsibilityTypeRelationRule]
+    drop CONSTRAINT [DF_ResponsibilityTypeRelationRule_CreatedBy]
+    end
+
+    If exists(Select 1 from
+    information_schema.Columns where column_name ='CreatedBy' and
+    table_name='ResponsibilityTypeRelationRule' and TABLE_SCHEMA='DBO')
+    begin
+    ALTER TABLE [dbo].[ResponsibilityTypeRelationRule]
+    drop column [CreatedBy]
+    end
+
+
+
+    if exists(select 1 from sys.default_constraints
+    where name = 'DF_ResponsibilityTypeRelationRule_UpdatedBy')
+    begin
+    ALTER TABLE [dbo].[ResponsibilityTypeRelationRule]
+    drop CONSTRAINT [DF_ResponsibilityTypeRelationRule_UpdatedBy]
+    end
+
+    If exists(Select 1 from
+    information_schema.Columns where column_name ='UpdatedBy' and
+    table_name='ResponsibilityTypeRelationRule' and TABLE_SCHEMA='DBO')
+    begin
+    ALTER TABLE [dbo].[ResponsibilityTypeRelationRule]
+    drop column [UpdatedBy]
+    end
+
+  </rollback>
+  </changeSet>
+
+  </databaseChangeLog>
