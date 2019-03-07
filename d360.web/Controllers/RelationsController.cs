@@ -216,7 +216,9 @@ namespace d360.web.Controllers
         [Route("_IntersectTypes/excel.xls"), FileDownload, HttpGet]        
         public async Task<FileResult> _IntersectTypesExcel()
         {
-            var models = await Company.GetActiveIntersectTypes();
+            var queryParams = new List<KeyValuePair<string, string>>();
+            queryParams.Add(new KeyValuePair<string, string>("state", "1"));
+            var models = await Company.GetIntersectTypes(queryParams);
             var document = new SLDocument();
             document.AddWorksheet("Items");
 
@@ -225,12 +227,13 @@ namespace d360.web.Controllers
             #region Header
 
             int index = 1;
-            document.SetCellValue(1, index++, "ID");
+            document.SetCellValue(1, index++, "Id");
+            document.SetCellValue(1, index++, "Uid");
             document.SetCellValue(1, index++, "Subject");
-            document.SetCellValue(1, index++, "Subject Type");
+            document.SetCellValue(1, index++, "Subject Class");
             document.SetCellValue(1, index++, "Predicate");            
             document.SetCellValue(1, index++, "Object");
-            document.SetCellValue(1, index++, "Object Type");
+            document.SetCellValue(1, index++, "Object Class");
 
             #endregion
 
@@ -239,12 +242,13 @@ namespace d360.web.Controllers
             {
                 index = 1;
                 rowNumber++;
-                document.SetCellValue(rowNumber, index++, row.ID);
-                document.SetCellValue(rowNumber, index++, row.SubjectTypeName);
-                document.SetCellValue(rowNumber, index++, row.Subject);
-                document.SetCellValue(rowNumber, index++, row.PredicateName);
-                document.SetCellValue(rowNumber, index++, row.ObjectTypeName);
-                document.SetCellValue(rowNumber, index++, row.Object);                
+                document.SetCellValue(rowNumber, index++, row.Id);
+                document.SetCellValue(rowNumber, index++, row.Uid.ToString());
+                document.SetCellValue(rowNumber, index++, row.Subject.Name);
+                document.SetCellValue(rowNumber, index++, row.Subject.Class.ToString());
+                document.SetCellValue(rowNumber, index++, row.Predicate.Name);
+                document.SetCellValue(rowNumber, index++, row.Object.Name);
+                document.SetCellValue(rowNumber, index++, row.Object.Class.ToString());                
             }
 
             #endregion

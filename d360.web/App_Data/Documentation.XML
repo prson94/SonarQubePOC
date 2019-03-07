@@ -2816,10 +2816,13 @@
             This service houses all endpoints handling glossary-related data such as artifacts and models.
             </summary>
         </member>
-        <member name="M:d360.web.Controllers.V2.RelationshipsController.GetRelationshipTypesAsync">
+        <member name="M:d360.web.Controllers.V2.RelationshipsController.GetRelationshipTypesAsync(System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{d360.core.enums.State})">
             <summary>
             GET a list of relationship types.
             </summary>
+            <param name="AssetTypeUid">Allows for filtering of an asset type unique identifier, looking at the subject or object type.</param>
+            <param name="PredicateUid">Allows for filtering of relaitonship types by predicate unique identifier.</param>
+            <param name="State">Allows for filtering by the relationship type's state.</param>
             <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.V2.RelationshipsController.GetRelationshipTypesAsync(System.Int32,System.String)">

@@ -78,7 +78,7 @@ namespace d360.core.entities
             get { return _ClassID; }
             set {
                 _ClassID = value;
-                this.Class = _ClassID.GetInfo();
+                this.Class = _ClassID.AsInfoModel();
             }
         }
 
