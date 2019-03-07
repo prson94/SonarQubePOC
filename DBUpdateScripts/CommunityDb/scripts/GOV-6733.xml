@@ -4,12 +4,12 @@
     xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
-  <changeSet author="McNamee" id="GOV-6733-package">
+  <changeSet author="McNamee" id="GOV-6733-package-b">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="true">
-      DROP TABLE [plugin].[Package]
+      DROP TABLE IF EXISTS [plugin].[Package]
     </sql>
 	  <rollback>
       CREATE TABLE [plugin].[Package](
@@ -28,12 +28,12 @@
       ALTER TABLE [plugin].[Package] ADD  DEFAULT (getutcdate()) FOR [DateUpdated]      
     </rollback>
   </changeSet>
-  <changeSet author="McNamee" id="GOV-6733-packagedetail">
+  <changeSet author="McNamee" id="GOV-6733-packagedetail-b">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="true">
-      DROP TABLE [plugin].[Package]
+      DROP TABLE IF EXISTS [plugin].[PackageContent]
     </sql>
     <rollback>
       CREATE TABLE [plugin].[PackageContent](
