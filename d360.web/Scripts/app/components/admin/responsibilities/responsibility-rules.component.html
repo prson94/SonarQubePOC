@@ -43,10 +43,12 @@
                     <th style="width: 50px"></th>
                     <th style="width: 50px"></th>
                     <th style="width: 50px"></th>
+                    <th style="width: 50px"></th>
                 </tr>
                 <tr [hidden]="showSimpleFilter">
                     <th><d3s-column-filter [field]="'Name'" [datatype]="'text'"></d3s-column-filter></th>
                     <th><d3s-column-filter [field]="'ObjectName'" [datatype]="'text'"></d3s-column-filter></th>
+                    <th></th>
                     <th></th>
                     <th></th>
                     <th></th>
@@ -61,6 +63,11 @@
                         <span *ngIf="item.Context" [innerHtml]="item.Context"></span>
                     </td>
                     <td>{{item.LastRunOn | date:'short'}}</td>
+                     <td>
+                         <div class="RowTools">
+                             <d3s-preview-tooltip objectType="ResponsibilityTypeRelationRule" [objectId]="item.ID" icon="info"></d3s-preview-tooltip>
+                         </div>
+                    </td>
                     <td>
                         <div class="RowTools">
                             <a (click)="clearDate(item.ID)" style="cursor:pointer;"><i class="fa fa-cogs"></i></a>

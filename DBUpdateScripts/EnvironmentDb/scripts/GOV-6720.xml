@@ -1,0 +1,27 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Sebastian Abraham" id="GOV-6720">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+ALTER TABLE [dbo].[ResponsibilityTypeRelationRule] ADD 	[uid] [uniqueidentifier] NOT NULL
+CONSTRAINT [DF_ResponsibilityTypeRelationRule_uid]  DEFAULT (newid())
+]]>
+
+    </sql>
+	<rollback>
+	<![CDATA[
+	ALTER TABLE [dbo].[ResponsibilityTypeRelationRule] drop constraint [DF_ResponsibilityTypeRelationRule_uid]
+	ALTER TABLE [dbo].[ResponsibilityTypeRelationRule] drop column uid
+]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>
