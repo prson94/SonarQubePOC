@@ -12,6 +12,7 @@ import { ResponsibilityTypeRelationAllocationOptionFilterPipe } from './responsi
 import { SafeHtmlPipe } from './safe-html.pipe';
 import { UtcDatePipe } from './utc-date.pipe';
 import { MetricConditionDisabledFilterPipe } from './metric-condition-disabled-filter.pipe';
+import { SelectItemTextToLabelPipe } from './selectitem-text-to-label.pipe';
 
 @NgModule({
     imports: [CommonModule],
@@ -26,7 +27,8 @@ import { MetricConditionDisabledFilterPipe } from './metric-condition-disabled-f
         ScoreDisplayPipe,
         TechnicalNameToDisplayValuePipe,
         SafeHtmlPipe,
-        UtcDatePipe
+        UtcDatePipe,
+        SelectItemTextToLabelPipe
     ],
     exports: [
         ArrayToSelectItemPipe,
@@ -39,7 +41,8 @@ import { MetricConditionDisabledFilterPipe } from './metric-condition-disabled-f
         ScoreDisplayPipe,
         TechnicalNameToDisplayValuePipe,
         SafeHtmlPipe,
-        UtcDatePipe
+        UtcDatePipe,
+        SelectItemTextToLabelPipe
     ]
 })
 export class PipesModule { }

@@ -75,6 +75,13 @@ export class FieldsService extends BaseService implements IFieldsService {
             .catch(err => this.handleError(err));
     }
 
+    getListFilterOptions(objectType: string, objectId: number, type: string, id: number ): Promise<any> {
+        return this.http.get(`form/FieldType_ListFilter?objectType=${objectType}&objectId=${objectId}&type=${type}&id=${id}`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
     getLookupDefaultValueOptions(id: number, type: string): Promise<SelectItem[]> {
         return this.http.get(`form/FieldType_Lookup_DefaultValueOptions?id=${id}&type=${type}`)
             .toPromise()
@@ -268,13 +275,15 @@ export class FieldsService extends BaseService implements IFieldsService {
             }),);
     }
 
+    getLookupFilteredByPredicate(fieldTypeID: number, objectType: string, id:number): Promise<any> {
+        return this.http.get(`form/FieldType_Lookup_FilteredByPredicate?fieldTypeId=${fieldTypeID}&objectType=${objectType}&ObjectID=${id}`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
 }
-
-
 
 class FtItem {
     title: string;
     value: string;
 }
-
-

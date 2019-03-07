@@ -1,0 +1,97 @@
+﻿<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Sebastian Abraham" id="GOV-6664-1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+
+ALTER TRIGGER [dbo].[ReferenceItemType_AfterInsert]
+   ON  [dbo].[ReferenceItemType]
+   AFTER INSERT
+AS 
+	SET NOCOUNT ON;
+	insert into AssetType (Name, Description, Class, DisplayFormat, [State],  [Hierarchical], [HierarchyMaximumDepth], [Object], [ObjectID], [CreatedOn], [CreatedBy], [UpdatedOn], [UpdatedBy],[Notes])
+		select Name, Description, 9, coalesce(DisplayFormat, '{Name}'), 1, 0, 1, 'ReferenceItemType', ID, coalesce(UpdatedOn, getutcdate()), UpdatedBy, coalesce(UpdatedOn, getutcdate()), UpdatedBy,SourceNotes from inserted;
+
+
+    </sql>
+	<rollback>
+
+ALTER TRIGGER [dbo].[ReferenceItemType_AfterInsert]
+   ON  [dbo].[ReferenceItemType]
+   AFTER INSERT
+AS 
+	SET NOCOUNT ON;
+	insert into AssetType (Name, Description, Class, DisplayFormat, [State],  [Hierarchical], [HierarchyMaximumDepth], [Object], [ObjectID], [CreatedOn], [CreatedBy], [UpdatedOn], [UpdatedBy])
+		select Name, Description, 9, coalesce(DisplayFormat, '{Name}'), 1, 0, 1, 'ReferenceItemType', ID, coalesce(UpdatedOn, getutcdate()), UpdatedBy, coalesce(UpdatedOn, getutcdate()), UpdatedBy from inserted;
+
+	</rollback>
+  </changeSet>
+   <changeSet author="Sebastian Abraham" id="GOV-6664-2">
+   
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+
+
+ALTER TRIGGER [dbo].[ReferenceItemType_AfterUpdate]
+   ON  [dbo].[ReferenceItemType] 
+   AFTER UPDATE
+AS 
+	SET NOCOUNT ON;
+	update	T
+	set		T.Name = S.Name,
+			T.Description = S.Description,
+			T.DisplayFormat = S.DisplayFormat,
+			T.UpdatedBy = S.UpdatedBy,
+			T.UpdatedOn = S.UpdatedOn,
+			T.Notes = S.SourceNotes
+	from	AssetType T
+			inner join inserted S on T.Object = 'ReferenceItemType' and T.ObjectID = S.ID;
+
+    </sql>
+	<rollback>
+
+ALTER TRIGGER [dbo].[ReferenceItemType_AfterUpdate]
+   ON  [dbo].[ReferenceItemType] 
+   AFTER UPDATE
+AS 
+	SET NOCOUNT ON;
+	update	T
+	set		T.Name = S.Name,
+			T.Description = S.Description,
+			T.DisplayFormat = S.DisplayFormat,
+			T.UpdatedBy = S.UpdatedBy,
+			T.UpdatedOn = S.UpdatedOn
+	from	AssetType T
+			inner join inserted S on T.Object = 'ReferenceItemType' and T.ObjectID = S.ID;
+
+	</rollback>
+  </changeSet>
+  <changeSet author="Sebastian Abraham" id="GOV-6664-3">
+   
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+
+	update	T
+	set		T.Notes = S.SourceNotes
+	from	AssetType T
+			inner join [dbo].[ReferenceItemType] S
+			 on T.Object = 'ReferenceItemType' and T.ObjectID = S.ID;
+
+
+    </sql>
+	<rollback>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>

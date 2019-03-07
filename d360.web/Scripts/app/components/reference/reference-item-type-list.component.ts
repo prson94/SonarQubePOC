@@ -6,6 +6,7 @@ import { MessagesService } from '../../services/messages.service';
 import { PermissionsService } from '../../services/permissions.service';
 import { ReferenceItemType } from '../../models/reference.model';
 import { FormMode } from '../../models/form.model';
+import { AssetTypeService } from '../../services/asset-type.services';
 
 
 @Component({
@@ -62,14 +63,14 @@ import { FormMode } from '../../models/form.model';
                        </d3s-asset-type-editor>
                     <d3s-delete-form *ngIf="showDelete"
                         [callback]="theDeleteCallback"
-                        [itemId]="selected?.ID"
+                        [itemId]="selected?.AssetTypeID"
                         [method]="'callback'"
                         [prompt]="'Are you sure you want to delete the selected item?'"                                         
                         (onCancel)="showDelete=false;"
                     ></d3s-delete-form>  
                 </div>
               `,
-    providers: [ReferenceService, PermissionsService],
+    providers: [ReferenceService, PermissionsService,AssetTypeService],
 })
 
 export class ReferenceItemTypeGridComponent extends BaseComponent implements OnInit {
@@ -112,6 +113,7 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
     
     constructor(private referenceService: ReferenceService,
         private permissionsService: PermissionsService,
+        private assetTypeService: AssetTypeService,
         private messagesService: MessagesService) {
         super();
         this.showDelete = false;
@@ -151,11 +153,11 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
 
     private deleteReferenceItemType(id: number) {
         this.isLoading = true;
-        this.referenceService.deleteReferenceItemType(id).then(
-            result => {
+        this.assetTypeService.deleteAssetType(id)
+            .then(result => {
                 this.showMessageForResult(this.messagesService, result);
-                if (result.type != 'error') {                    
-                    let index = this.referenceTypes.findIndex(x => x.ID == id);
+                if (result.type != 'error') {
+                    let index = this.referenceTypes.findIndex(x => x.AssetTypeID == id);
                     if (index >= 0 && index < this.referenceTypes.length) {
                         this.referenceTypes.splice(index, 1);
                     }
@@ -166,7 +168,8 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
                 }
                 this.isLoading = false;
                 this.showDelete = false;
-            });        
+            });
+
     }
 
     private saveReferenceItemType(event) {                
