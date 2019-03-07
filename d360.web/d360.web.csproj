@@ -573,10 +573,15 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <Content Include="Scripts\app\components\admin\artifacts\artifact-type-delete.component.html" />
+    <Content Include="Scripts\app\components\admin\attributes\admin-attribute-allocation.component.html" />
+    <Content Include="Scripts\app\components\admin\attributes\admin-attribute-type-editor.component.html" />
+    <Content Include="Scripts\app\components\admin\attributes\admin-attributes.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-column-filter.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-grid.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-item.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-manual-load.component.html" />
+    <Content Include="Scripts\app\components\reference\reference-item-type-list.component.html" />
+    <Content Include="Scripts\app\components\rule\rule-column-filter.component.html" />
     <Content Include="Scripts\app\components\rule\rule-list.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-list.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-top-level-list.component.html" />
@@ -594,6 +599,7 @@
     <Content Include="Scripts\app\components\shared\preview-tooltip.component.html" />
     <Content Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-editor.component.html" />
     <Content Include="Scripts\app\components\shared\shortcuts\shortcut-list.component.html" />
+    <Content Include="Scripts\app\components\sidebar\audit\audit.component.html" />
     <Content Include="Scripts\app\components\sidebar\children\artifact-item-child-grid.component.html" />
     <Content Include="Scripts\app\components\shared\tiles\tile-actions.component.html" />
     <Content Include="Scripts\app\components\workflowmonitor\workflowmonitor-list.component.html" />

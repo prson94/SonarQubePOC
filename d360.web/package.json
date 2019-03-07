@@ -7,7 +7,9 @@
   "scripts": {
     "tsc": "tsc",
     "tsc:w": "tsc -w",
-    "typings": "typings"
+    "typings": "typings",
+    "webpackGlobal": "webpack --watch --progress",
+    "webpackLocal": "node_modules\\.bin\\webpack --watch --progress"
   },
   "license": "ISC",
   "dependencies": {
