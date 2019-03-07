@@ -50,7 +50,7 @@ BEGIN
  and I.ID = @IntersectID    
  inner join AssetType AT on AT.ID = A.AssetTypeID and AT.CanOwnFusion = 1    
     
- declare @h table (ID int);    
+ declare @h table (ID bigint);    
     
  if @OwnerSourceType = 'Artifact'    
   begin    
