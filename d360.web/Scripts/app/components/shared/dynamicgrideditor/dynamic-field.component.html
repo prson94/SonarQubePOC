@@ -89,34 +89,36 @@
                 </ng-template>
             </ng-container>
             <ng-template #delayedLoadType>
-                <p-multiSelect *ngIf="field?.MultiSelect; else singleSelect"
-                               [formControlName]="field.FieldName"
-                               [ngModel]="field.Value"
-                               (ngModelChange)="listItemChange.emit({field:field,value:$event});field.Value=$event;"
-                               [options]="field.Items | selectItemTextToLabel"
-                               [style]="{width: filterException == '' ? '100%' : '90%'}"
-                               ngDefaultControl [defaultLabel]="multiselectLabel()">
-                    <ng-template let-item pTemplate="item">
-                        <span>{{item.Text}}</span><span style="color:#848484;float:right;">{{item.Info}}</span>
-                    </ng-template>
-                </p-multiSelect>
-                <ng-template #singleSelect>
-                    <ng-container *ngIf="!field.UseTypeahead">
-                        <p-dropdown [formControlName]="field.FieldName"
-                                    [style]="{'height':'auto',width: filterException == '' ? '100%' : '90%'}"
-                                    [ngModel]="field.Value"
-                                    [options]="field.Items | selectItemTextToLabel"
-                                    (ngModelChange)="listItemChange.emit({field:field,value:$event});field.Value=$event;">
-                            <ng-template let-item pTemplate="item">
-                                <span>{{item.Text}}</span><span style="color:#848484;float:right;">{{item.Info}}</span>
-                            </ng-template>
-                        </p-dropdown>
-                    </ng-container>
-                </ng-template>
-                <span *ngIf="filterException" class="fa-stack" style="font-size:smaller;" title="{{filterException}}">
+                <div *ngIf="filterException" class="fa-stack" style="width:2em;font-size:smaller;float:right;" title="{{filterException}}">
                     <i class="fa fa-filter fa-stack-2x"></i>
                     <i class="fa fa-times fa-stack-1x" style="padding-left:0.5em;padding-top:0.5em;color:red;"></i>
-                </span>
+                </div>
+                <div [style.margin-right]="(filterException == '') ? 'auto' : '2.5em'">
+                    <p-multiSelect *ngIf="field?.MultiSelect; else singleSelect"
+                                   [formControlName]="field.FieldName"
+                                   [ngModel]="field.Value"
+                                   (ngModelChange)="listItemChange.emit({field:field,value:$event});field.Value=$event;"
+                                   [options]="field.Items | selectItemTextToLabel"
+                                   [style]="{width: '100%'}"
+                                   ngDefaultControl [defaultLabel]="multiselectLabel()">
+                        <ng-template let-item pTemplate="item">
+                            <span>{{item.Text}}</span><span style="color:#848484;float:right;">{{item.Info}}</span>
+                        </ng-template>
+                    </p-multiSelect>
+                    <ng-template #singleSelect>
+                        <ng-container *ngIf="!field.UseTypeahead">
+                            <p-dropdown [formControlName]="field.FieldName"
+                                        [style]="{'height':'auto',width: '100%'}"
+                                        [ngModel]="field.Value"
+                                        [options]="field.Items | selectItemTextToLabel"
+                                        (ngModelChange)="listItemChange.emit({field:field,value:$event});field.Value=$event;">
+                                <ng-template let-item pTemplate="item">
+                                    <span>{{item.Text}}</span><span style="color:#848484;float:right;">{{item.Info}}</span>
+                                </ng-template>
+                            </p-dropdown>
+                        </ng-container>
+                    </ng-template>
+                </div>
             </ng-template>
         </div>
         <div *ngSwitchCase="'Relationship'">
