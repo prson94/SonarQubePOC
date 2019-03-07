@@ -236,6 +236,10 @@ namespace d360.web.Controllers.V2
                                 {
                                     orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + "FA.SourceID";
                                 }
+                                else if (assetType.Object == "FusionAttributeType" && q.Value.ToLower() == "textpath")
+                                {
+                                    orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + "FA.TextPath";
+                                }
                                 else if (assetType.Object == "ReferenceItemType" && q.Value.ToLower() == "code")
                                 {
                                     orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + "RI.Code";
@@ -285,6 +289,11 @@ namespace d360.web.Controllers.V2
                             {
                                 whereStatements.Add($"FA.[SourceID] = @sourceID");
                                 dbArgs.Add($"@sourceID", q.Value);
+                            }
+                            else if (assetType.Object == "FusionAttributeType" && key == "textpath")
+                            {
+                                whereStatements.Add($"FA.[TextPath] = @textpath");
+                                dbArgs.Add($"@textpath", q.Value);
                             }
                             else if (assetType.Object == "ReferenceItemType" && key == "code")
                             {
@@ -434,7 +443,7 @@ order by    P.[Path]
                     A.UpdatedOn,
                     A.CreatedOn
                     {(assetType.Object == "ReferenceItemType" ? " , RI.Code" : "")} 
-                    {(assetType.Object == "FusionAttributeType" ? " , FA.SourceID, FA.Name" : "")} 
+                    {(assetType.Object == "FusionAttributeType" ? " , FA.SourceID, FA.Name, FA.TextPath" : "")} 
                     {"{0}"}
                 from Asset A
                 {(assetType.Object == "ReferenceItemType" ? " inner join ReferenceItem RI on RI.ID = A.ObjectID" : "")} 
