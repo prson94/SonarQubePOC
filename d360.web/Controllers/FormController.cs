@@ -11086,7 +11086,7 @@ if @OwnerSourceType = 'Artifact'
         insert into @h select id from @Owners
 
 
-select	'FusionAttribute' as [Object], 
+select distinct 'FusionAttribute' as [Object], 
         FA.ID as ObjectID, 
         F.Name + '.' + FA.TextPath as Name
 from	FusionAttribute FA with(nolock)
@@ -11098,7 +11098,7 @@ where	FA.ID not in (
 					from	[IntersectDetail]
 					where	IntersectTypeID = @it and ( (Subject = @source and SubjectID = @id) AND (ObjectType = @targetType and ObjectTypeID = @targetTypeID) )
 					)
-order by F.Name, FA.TextPath";
+order by 3";
                     }
                     break;
                 #endregion
