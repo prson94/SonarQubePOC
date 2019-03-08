@@ -1046,6 +1046,20 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         else {
             this.testPatternValidationText = '';
         }
+        if (this.model.FieldType.Type == 'Text') {
+            this.validateDefaultWithPattern();
+        }
+    }
+    private validateDefaultWithPattern() {
+        if (this.model.FieldType.Type == 'Text' && this.model.FieldType.Pattern > "") {
+            if (this.model.FieldType.DefaultValue > "") {
+                var patternRegex = new RegExp(this.model.FieldType.Pattern);
+                this.errorMessage = (patternRegex.test(this.model.FieldType.DefaultValue)) ? '' : 'Default Value does not match Validation Pattern';
+            }
+            else {
+                this.errorMessage = '';
+            }
+        }
     }
 
     private validateNumber(value: string) {
