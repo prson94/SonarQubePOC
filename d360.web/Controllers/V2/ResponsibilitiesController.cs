@@ -40,7 +40,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "A list of responsibility types.", typeof(List<ResponsibilityTypeViewModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(List<ResponsibilityTypeViewModel>))
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied")
         ]
         public async Task<HttpResponseMessage> GetResponsibilityTypesAsync()
         {
@@ -80,7 +80,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "A list of responsibility types.", typeof(List<ResponsibilityTypeViewModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(List<ResponsibilityTypeViewModel>))
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied")
         ]
         public async Task<HttpResponseMessage> GetResponsibilityTypesByAssetTypeAsync(Guid assetTypeUid)
         {
@@ -130,7 +130,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "A list of asset type allocations for the given responsibility type uid.", typeof(List<ResponsibilityTypeAllocationViewModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(List<ResponsibilityTypeViewModel>))
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied")
         ]
         public async Task<HttpResponseMessage> GetResponsibilityTypeAllocationsAsync(Guid responsibilityTypeUid)
         {
@@ -180,7 +180,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "A list of responsibility type ownership rules for the given responsibility type uid.", typeof(List<ResponsibilityTypeRuleViewModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(List<ResponsibilityTypeRuleViewModel>))
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied")
         ]
         public async Task<HttpResponseMessage> GetResponsibilityRulesForTypeAsync(Guid responsibilityTypeUid)
         {
@@ -194,7 +194,8 @@ namespace d360.web.Controllers.V2
             {
                 var responsibilityTypeRules = await Company.QueryAsync<ResponsibilityTypeRuleViewModel>(@"
                             select
-	                            rtr.[name]
+                                rtr.[uid]
+	                            ,rtr.[name]
 	                            ,rtr.Context
 	                            ,rtr.IsVisible
 	                            ,rtr.ApplyToType
@@ -225,7 +226,7 @@ namespace d360.web.Controllers.V2
 
 
         /// <summary>
-        /// Retrieves a list of responsibility type ownership rules for the specified responsibility type.
+        /// Retrieves a list of responsibility type ownership rules for the specified responsibility type.  Rules applied to groups and organizations are enumerated to the actual count of users contained therein.  Rules applying to a type are enumerated down to the count of assets within the given type.
         /// </summary>
         /// <param name="responsibilityTypeRuleUid">The unique identifier of the responsibility type ownership rule to get stats for.</param>
         /// <returns>Returns a stats for the specified responsibility type ownership rules.</returns>
@@ -235,7 +236,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "Ownership rule statistics for the given responsibility type rule uid.", typeof(ResponsibilityTypeRuleStatsViewModel)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ResponsibilityTypeRuleStatsViewModel))
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied")
         ]
         public async Task<HttpResponseMessage> GetResponsibilityRulesStats(Guid responsibilityTypeRuleUid)
         {

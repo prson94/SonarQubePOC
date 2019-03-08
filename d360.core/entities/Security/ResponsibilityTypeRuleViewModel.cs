@@ -12,6 +12,9 @@ namespace d360.core.entities
     public class ResponsibilityTypeRuleViewModel : BaseObject
     {
         [DataMember]
+        public Guid uid { get; set; }
+
+        [DataMember]
         public string Name { get; set; }
 
         [DataMember]
@@ -72,6 +75,5 @@ namespace d360.core.entities
                 return null;
             }
         }
-
     }
 }

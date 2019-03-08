@@ -1,5 +1,6 @@
 ﻿using d360.core.enums;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
@@ -39,6 +40,22 @@ namespace d360.core.entities
         }
 
         [DataMember]
-        public int PermissionsMask { get; set; }        
+        public int PermissionsMask { get; set; }
+
+        [DataMember]
+        public List<PermissionInfo> Permissions
+        {
+            get
+            {
+                var permissions = Permission.DeleteAsset.GetList();
+                
+                permissions.ForEach(p =>
+                {
+                    p.Selected = (PermissionsMask & p.Value) == p.Value;
+                });
+
+                return permissions;
+            }
+        }
     }
 }

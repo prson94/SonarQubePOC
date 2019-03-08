@@ -2964,7 +2964,7 @@
         </member>
         <member name="M:d360.web.Controllers.V2.ResponsibilitiesController.GetResponsibilityRulesStats(System.Guid)">
             <summary>
-            Retrieves a list of responsibility type ownership rules for the specified responsibility type.
+            Retrieves a list of responsibility type ownership rules for the specified responsibility type.  Rules applied to groups and organizations are enumerated to the actual count of users contained therein.  Rules applying to a type are enumerated down to the count of assets within the given type.
             </summary>
             <param name="responsibilityTypeRuleUid">The unique identifier of the responsibility type ownership rule to get stats for.</param>
             <returns>Returns a stats for the specified responsibility type ownership rules.</returns>
