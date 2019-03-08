@@ -1076,6 +1076,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 } else if (this.model.FieldType.MaximumLength && this.model.FieldType.MaximumLength % 1 != 0) {
                     this.errorMessage = 'Please enter a valid integer.';
                     return;
+                } else if (this.model.FieldType.DefaultValue && +this.model.FieldType.DefaultValue % 1 != 0) {
+                    this.errorMessage = 'Please enter a valid integer.';
+                    return;
                 } else {
                     this.errorMessage = '';
                 }
@@ -1088,6 +1091,20 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     this.errorMessage = 'please enter decimal places between 0 and 5.';
                     return;
                 }
+                if (this.model.FieldType.Precision && FormHelpers.isNumber(this.model.FieldType.DefaultValue)) {
+
+                    let asString = '' + this.model.FieldType.DefaultValue;
+                    if (asString.split('.').length > 1 && asString.split('.')[1].length < this.model.FieldType.Precision) {
+                        return;
+                    }
+
+                    let val = +this.model.FieldType.DefaultValue;
+                    let newVal = +val.toFixed(this.model.FieldType.Precision);
+
+                    if (newVal != null && (newVal != 0 || newVal != +val) && !isNaN(newVal)) {
+                        this.model.FieldType.DefaultValue = ''+newVal;
+                    }
+                }
             }
 
             if (this.model.FieldType.Increment < 0) {
@@ -1099,6 +1116,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             } else {
                 this.errorMessage = '';
             }
+
 
             if (FormHelpers.isNumber(this.model.FieldType.DefaultValue)) {
                 if (FormHelpers.isNumber(this.model.FieldType.MinimumLength) && +this.model.FieldType.DefaultValue < this.model.FieldType.MinimumLength) {
