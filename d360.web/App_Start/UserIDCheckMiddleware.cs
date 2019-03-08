@@ -219,7 +219,7 @@ from	Resource R
                 else if (!string.IsNullOrEmpty(apiCredentials))
                 {
                     var authValues = apiCredentials.Split(';');
-                    if (authValues.Length == 2)
+                    if (authValues.Length == 2 && authValues[0].Length == 25 && authValues[1].Length == 50)
                     {
                         u = cachedUsers.FirstOrDefault(i => i.CompanyID == companyID && i.APIPrivateKey == authValues[1] && i.APIPublicKey == authValues[0]);
                         if (u == null)
