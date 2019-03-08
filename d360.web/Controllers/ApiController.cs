@@ -2355,8 +2355,6 @@ from    [Intersect] I
 
         #region Lineage
 
-
-
         [HttpGet, Route("maps/{source}/{sourceID:int}/{target}/{targetID:int}/mapitems")]
         public HttpResponseMessage MapItems(string source, int sourceID, string target, int targetID)
         {
@@ -7113,13 +7111,23 @@ where v.id = {0}", id)).FirstOrDefault();
         [Route("{obj}/{objid:int}/relationships/counts")]
         public IEnumerable<dynamic> GetRelationshipCountsByObject(SystemObjects obj, int objid)
         {
-            if(obj == SystemObjects.FusionAttribute)
-                return Company.Query<dynamic>(QueryConstants.FusionAttributeRelationshipAllCountsWithZero, new { objid });
-            else if(obj == SystemObjects.FusionQueryAttribute)
-                return Company.Query<dynamic>(QueryConstants.FusionQueryAttributeRelationshipAllCountsWithZero, new { objid });
-            else if(obj == SystemObjects.ReferenceItemType)
-                return Company.Query<dynamic>(QueryConstants.ReferenceListTypeRelationshipsAllCountsWithZero, new { obj = new Dapper.DbString { IsAnsi = true, Value = obj.ToString(), IsFixedLength = true, Length = 50 }, objid});
-            return Company.Query<dynamic>(QueryConstants.ObjectRelationshipAllCountsWithZero, new { obj = new Dapper.DbString { IsAnsi = true, Value = obj.ToString(), IsFixedLength = true, Length = 50 }, objid });
+            var predicateTypeInfo = new PredicateType().GetAsList();
+            var disallowEditIds = predicateTypeInfo.Where(p => p.AllowEditFromRelationshipEditor == false).Select(p => (int)p.ID).ToList();
+            string disallowEditFilter = string.Join(", ", disallowEditIds);
+
+            var sql = "";
+
+            if (obj == SystemObjects.FusionAttribute)
+                sql = string.Format(QueryConstants.FusionAttributeRelationshipAllCountsWithZero, disallowEditFilter);
+            else if (obj == SystemObjects.FusionQueryAttribute)
+                sql = string.Format(QueryConstants.FusionQueryAttributeRelationshipAllCountsWithZero, disallowEditFilter);
+            else if (obj == SystemObjects.ReferenceItemType)
+                sql = string.Format(QueryConstants.ReferenceListTypeRelationshipsAllCountsWithZero, disallowEditFilter);
+            else
+                sql = string.Format(QueryConstants.ObjectRelationshipAllCountsWithZero, disallowEditFilter);
+
+            return Company.Query<dynamic>(sql, new { obj = new DbString { IsAnsi = true, Value = obj.ToString(), IsFixedLength = true, Length = 50 }, objid });
+
         }
 
         [Route("{obj}/{objid:int}/relationships/{targettype}/{targettypeid:int}/fields")]

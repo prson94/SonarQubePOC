@@ -595,7 +595,11 @@ select	IT.ID as IntersectTypeID,
 		case 
 			when (IT.Subject = 'FusionAttributeType' and IT.SubjectID = fa.FusionAttributeTypeID) then IT.[ObjectCardinality] 
 			else IT.SubjectCardinality
-		end as Cardinality
+		end as Cardinality,
+        case
+            when IT.PredicateType in ({0}) then cast(0 as bit)
+            else cast(1 as bit)
+        end as AllowEditFromRelationshipEditor
 from	[dbo].[fusionattribute] fa	
 		inner join IntersectTypeDetail IT on ( 
 										(IT.Subject = 'FusionAttributeType' and IT.SubjectID = fa.fusionattributetypeid) OR 
@@ -643,7 +647,11 @@ select	IT.ID as IntersectTypeID,
 		case 
 			when (IT.Subject = 'FusionQueryAttributeType' and IT.SubjectID = fa.fusionqueryattributetypeid) then IT.[ObjectCardinality] 
 			else IT.SubjectCardinality
-		end as Cardinality
+		end as Cardinality,
+        case
+            when IT.PredicateType in ({0}) then cast(0 as bit)
+            else cast(1 as bit)
+        end as AllowEditFromRelationshipEditor
 from	[dbo].[fusionQueryattribute] fa	
 		inner join IntersectTypeDetail IT on ( 
 										(IT.Subject = 'FusionQueryAttributeType' and IT.SubjectID = fa.fusionqueryattributetypeid) OR 
@@ -686,7 +694,11 @@ select	IT.ID as IntersectTypeID,
 		case 
 			when (IT.Subject = 'ReferenceItemType' and IT.SubjectID = 0) then IT.ObjectCardinality
 			else IT.SubjectCardinality
-		end as Cardinality
+		end as Cardinality,
+        case
+            when IT.PredicateType in ({0}) then cast(0 as bit)
+            else cast(1 as bit)
+        end as AllowEditFromRelationshipEditor
 from	IntersectTypeDetail IT 
 		left join [Predicate] P on P.ID = IT.PredicateID
 		cross apply (
@@ -729,7 +741,11 @@ select	IT.ID as IntersectTypeID,
 		case 
 			when (IT.Subject = T.Object and IT.SubjectID = T.ObjectID) then IT.[ObjectCardinality] 
 			else IT.SubjectCardinality
-		end as Cardinality
+		end as Cardinality,
+        case
+            when IT.PredicateType in ({0}) then cast(0 as bit)
+            else cast(1 as bit)
+        end as AllowEditFromRelationshipEditor
 from	Asset A
 		inner join AssetType T on T.ID = A.AssetTypeID	
 		inner join IntersectTypeDetail IT on ( 
