@@ -1332,20 +1332,20 @@ from    api.ExecutionAsset T
                             LoadMissingKeyFields(execution.ExecutionID, at, timeout);    // Get missing key fields if this is an update.
                         }
 
-                        #region Generate proposed key quasi-hash and compare against existing data.
+                        #region Generate proposed key hash and compare against existing data.
 
-                        string keyTableTempCreation = @"CREATE TABLE #Keys (AssetID bigint, ActiveKey nvarchar(500)); CREATE CLUSTERED INDEX CIX_TempApiExecutionKeys ON #Keys ( ActiveKey ASC ); ";
+                        string keyTableTempCreation = @"CREATE TABLE #Keys (AssetID bigint, ActiveKey nvarchar(max), ActiveKeyHash varchar(100)); CREATE CLUSTERED INDEX CIX_TempApiExecutionKeys ON #Keys ( ActiveKeyHash ASC ); ";
                         string keyComparisonUpdateStatement = @"update  T 
 set     T.Success = 0, 
         T.Message = 'Key values match another asset under a different set of key fields. '
 from    api.ExecutionAsset T 
-        inner join #Keys S on T.ExecutionID = @ExecutionID and S.ActiveKey = T.ProposedKey and ((S.AssetID <> T.AssetID and T.AssetID is not null) OR (T.AssetID is null)); ";
+        inner join #Keys S on T.ExecutionID = @ExecutionID and S.ActiveKeyHash = T.ProposedKey and ((S.AssetID <> T.AssetID and T.AssetID is not null) OR (T.AssetID is null)); ";
 
                         if (at.Object == "FusionAttributeType")
                         {
                             Connection.Execute($@"
 update  T
-set     T.ProposedKey = S.ProposedKey 						
+set     T.ProposedKey = utility.GetHash(S.ProposedKey)
 from    api.ExecutionAsset T
 		inner join	(
 					select		A.ItemNumber,
@@ -1362,7 +1362,8 @@ from    api.ExecutionAsset T
 
 insert into #Keys
     select	A.ID,
-		    COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + O.Name + COALESCE('|'+DF.ProposedKey,'') as ProposedKey
+		    COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + O.Name + COALESCE('|'+DF.ProposedKey,'') as ActiveKey,
+            utility.GetHash(COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + O.Name + COALESCE('|'+DF.ProposedKey,'')) as ActiveKeyHash
     from	Asset A 
 		    inner join FusionAttribute O on A.Object = 'FusionAttribute' and O.ID = A.ObjectID
 		    left join Asset P on P.Object = 'FusionAttribute' and P.ObjectID = O.ParentID and O.ParentID is not null
@@ -1384,7 +1385,7 @@ insert into #Keys
                         {
                             Connection.Execute($@"
 update  T
-set     T.ProposedKey = S.ProposedKey 						
+set     T.ProposedKey = utility.GetHash(S.ProposedKey) 
 from    api.ExecutionAsset T
 		inner join	(
 					select		A.ItemNumber,
@@ -1398,7 +1399,8 @@ from    api.ExecutionAsset T
 
 insert into #Keys
     select		A.ID,
-			    O.Code as ActiveKey
+			    O.Code as ActiveKey, 
+                utility.GetHash(O.Code) as ActiveKeyHash 
     from		Asset A 
 			    inner join ReferenceItem O on A.Object = 'ReferenceItem' and O.ID = A.ObjectID
     where	    A.AssetTypeID = @ID;
@@ -1410,7 +1412,8 @@ insert into #Keys
                         {
                             var activeKeySql = $@"
 select		A.ID,
-			STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ProposedKey
+			STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ActiveKey,
+            utility.GetHash(STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKeyHash 
 from		Asset A 
 			inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
 			left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
@@ -1421,7 +1424,8 @@ group by    A.ID;";
                             {
                                 activeKeySql = $@"
 select		A.ID,
-			COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ProposedKey
+			COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ActiveKey,
+            utility.GetHash(COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKeyHash 
 from		Asset A 
 			inner join [Intersect] I on I.IntersectTypeID = @intersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
 			inner join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
@@ -1433,7 +1437,7 @@ group by	A.ID, P.Uid";
 
                             Connection.Execute($@"
 update  T
-set     T.ProposedKey = S.ProposedKey 
+set     T.ProposedKey = utility.GetHash(S.ProposedKey) 
 from    api.ExecutionAsset T
 		inner join	(
 					select		A.ItemNumber,
