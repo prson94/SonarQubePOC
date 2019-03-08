@@ -3966,7 +3966,7 @@ select  case
         end 
 from    ResponsibilityDetail R
 inner join Asset A on A.[Object] = @type and A.ObjectID = @id
-inner join AssetType T on T.ID = A.AssetTypeID and T.ID = R.AssetTypeID
+left join AssetType T on T.ID = A.AssetTypeID and T.ID = R.AssetTypeID
 where R.IsVisible = 1 and ((R.Object = @type 
 		and R.ObjectID = @id) or (R.ApplyToType = 1 and R.AssetTypeID = T.ID))";
 
