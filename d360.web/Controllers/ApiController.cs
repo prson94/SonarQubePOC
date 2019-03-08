@@ -4943,7 +4943,7 @@ order by    Name
             var row = Company.Query<dynamic>(QueryConstants.RuleSettingsItem, new { id }).Single();
             return Request.CreateResponse<dynamic>(
                 new Dictionary<string, object>() {
-                    { "ID", row.ID },
+                    { "ID", row.ObjectID },
                     { "Name", row.Name },
                     { "Description", row.Description },
                     { "AllowAttributes", (bool)row.AllowAttributes }, 
