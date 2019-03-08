@@ -750,7 +750,8 @@ from    api.ExecutionAsset T
 			    D.[Uid],
 			    A.Object,
 			    A.ObjectID, 
-			    D.IntersectID
+			    D.IntersectID,
+                0 as [Level]
 	    from	api.ExecutionDeletedAsset D
 			    inner join Asset A on D.ExecutionID = @ExecutionID and A.ID = D.AssetID
 	    where	D.AssetID is not null
@@ -762,14 +763,15 @@ from    api.ExecutionAsset T
 			    C.[Uid],
 			    C.Object,
 			    C.ObjectID, 
-			    I.IntersectID
+			    I.IntersectID,
+                P.[Level] + 1 as [Level]
 	    from	PredicateIntersect I 
 			    inner join h as P on P.ExecutionID = @ExecutionID and I.PredicateType = {(int)predicateType} and P.Object = I.Subject and P.ObjectID = I.SubjectID
 			    inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
         where   P.ItemNumber between {beginItemNumber} and {endItemNumber}
     )
     insert into api.ExecutionDeletedAsset ([ExecutionID],[ItemNumber],[Uid],[AssetID],[IntersectID],[FromHierarchy])
-        select ExecutionID, ItemNumber, [Uid], AssetID, IntersectID, 1 from h where IntersectID is not null",
+        select ExecutionID, ItemNumber, [Uid], AssetID, IntersectID, 1 from h where IntersectID is not null and [Level] > 0",
                                             new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
                                         }
 
@@ -818,7 +820,7 @@ from    api.ExecutionAsset T
 	    select	distinct 
                 'ObjectIndex', 'D',	S.Object, S.ObjectID, S.AssetID 
         from    api.ExecutionDeletedAsset S
-        where   {querySuffix};
+        where   {querySuffix} and S.Object is not null and S.ObjectID is not null;
 
     insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)
 	    select	distinct
@@ -834,7 +836,7 @@ from    api.ExecutionAsset T
 			    SUBSTRING(O.DisplayValue,1,250), 
 			    'This asset has been removed.' 
 	    from	AssetDetail O
-			    inner join api.ExecutionDeletedAsset S on S.AssetID = O.ID and {querySuffix};",
+			    inner join api.ExecutionDeletedAsset S on S.AssetID = O.ID and {querySuffix} and S.Object is not null and S.ObjectID is not null;",
                                         new { execution.ExecutionID, r = CurrentResourceID, dt }, transaction: trans, commandTimeout: timeout);
 
                                         #endregion
