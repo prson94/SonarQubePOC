@@ -2142,6 +2142,7 @@ from	api.ExecutionRelationship T
 					from	api.ExecutionRelationship ER
 							inner join Asset O on O.Uid = ER.ObjectUid and ER.ExecutionID = @ExecutionID
 							inner join [Intersect] I on I.IntersectTypeID = @IntersectTypeID and I.Object = O.Object and I.ObjectID = O.ObjectID
+                            inner join Asset S on S.Uid <> ER.SubjectUid and S.Object = I.Subject and S.ObjectID = I.SubjectID 
 					group by ER.ExecutionID, ER.ItemNumber
 					) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
 
@@ -2172,8 +2173,9 @@ from	api.ExecutionRelationship T
 							ER.ItemNumber,
 							count(1) as RelationshipCount
 					from	api.ExecutionRelationship ER
-							inner join Asset O on O.Uid = ER.ObjectUid and ER.ExecutionID = @ExecutionID
-							inner join [Intersect] I on I.IntersectTypeID = @IntersectTypeID and I.Subject = O.Object and I.SubjectID = O.ObjectID
+							inner join Asset S on S.Uid = ER.SubjectUid and ER.ExecutionID = @ExecutionID
+							inner join [Intersect] I on I.IntersectTypeID = @IntersectTypeID and I.Subject = S.Object and I.SubjectID = S.ObjectID
+                            inner join Asset O on O.Uid <> ER.ObjectUid and O.Object = I.Object and O.ObjectID = I.ObjectID 
 					group by ER.ExecutionID, ER.ItemNumber
 					) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
 
