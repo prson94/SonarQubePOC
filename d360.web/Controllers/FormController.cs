@@ -10869,13 +10869,19 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 var source = parseTextField(form, "Source");
                 var sourceID = parseIntField(form, "SourceID");
                 int typeID = parseIntField(form, "IntersectTypeID");
-                var relationshipType = Company.GetById<IntersectType>(typeID);
+                var relationshipType = Company.GetById<IntersectType>(typeID, p => p.Predicate);
                 var sourceObject = Company.GetObjectDetail(source, sourceID);
 
                 if (!Company.HasAssetPermission(source, sourceID, Permission.ModifyRelationships))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 if (relationshipType == null) throw new NotFoundException("relationship");
+
+                var predicateTypeInfo = relationshipType.Predicate.Type.AsInfoModel();
+
+                if (!predicateTypeInfo.AllowEditFromRelationshipEditor)
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
 
                 var targetCardinality = Cardinality.Many;
                 if (relationshipType.Subject == sourceObject.Type && relationshipType.SubjectID == sourceObject.TypeID)
@@ -10933,9 +10939,15 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 if (!form.HasKeys()) throw new NoFormDataException("relationship");
 
                 int id = parseIntField(form, "ID");
-                var intersect = Company.GetById<Intersect>(id, i => i.IntersectType);
+                var intersect = Company.GetById<Intersect>(id);
 
                 if (intersect == null) throw new NotFoundException("relationship");
+
+                var intersectType = Company.GetById<IntersectType>(intersect.IntersectTypeID, p => p.Predicate);
+                var predicateTypeInfo = intersectType.Predicate.Type.AsInfoModel();
+                
+                if (!predicateTypeInfo.AllowEditFromRelationshipEditor)
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 if (!Company.HasAssetPermission(intersect.Subject, intersect.SubjectID, Permission.ModifyRelationships) &&
                     !Company.HasAssetPermission(intersect.Object, intersect.ObjectID, Permission.ModifyRelationships))
