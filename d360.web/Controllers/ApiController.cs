@@ -3964,9 +3964,8 @@ select  case
         end 
 from    ResponsibilityDetail R
 inner join Asset A on A.[Object] = @type and A.ObjectID = @id
-inner join AssetType T on T.ID = A.AssetTypeID and T.ID = R.AssetTypeID
 where R.IsVisible = 1 and ((R.Object = @type 
-		and R.ObjectID = @id) or (R.ApplyToType = 1 and R.AssetTypeID = T.ID))";
+		and R.ObjectID = @id) or (R.ApplyToType = 1 and R.AssetTypeID = A.AssetTypeID))";
 
             return Company.Query<bool>(sql, new { type, id }).First();
         }
@@ -4000,10 +3999,9 @@ SELECT  R.ResponsibilityTypeName,
         '/resource/' + cast(R.ResourceID as varchar) as ResourceItemUrl,
         R.Context
 from    [dbo].[ResponsibilityDetail] R
-        inner join Asset A on A.ID = @assetId
-        inner join AssetType T on T.ID = A.AssetTypeID and T.ID = R.AssetTypeID
+        inner join Asset A on A.ID = @assetId        
         inner join reporting.Global_Resource U on U.ResourceID = R.ResourceID and U.State = 1 
-where   R.IsVisible = 1 and ((R.AssetID = @assetId) or (R.ApplyToType = 1 and R.AssetTypeID = T.ID))";
+where   R.IsVisible = 1 and ((R.AssetID = @assetId) or (R.ApplyToType = 1 and R.AssetTypeID = A.AssetTypeID))";
 
                 gridFields.Add(new GridField { name = "ResponsibilityTypeName", type = "string" });
                 gridFields.Add(new GridField { name = "ResourceName", type = "lookup" });
