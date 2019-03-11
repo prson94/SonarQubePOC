@@ -2803,6 +2803,23 @@
             This service houses all endpoints handling glossary-related data such as artifacts and models.
             </summary>
         </member>
+        <member name="M:d360.web.Controllers.V2.RelationshipsController.GetRelationshipsAsync(System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{d360.core.enums.State},System.Nullable{System.Int32},System.Nullable{System.Int32})">
+            <summary>
+            GET a list of relationships.
+            </summary>
+            <remarks>
+            In addition to the below query parameters a field name for the relationship type can be specified to filter by exact match. For example MyCustomField=someExactValue. 
+            This must be used in conjunction with the RelationshipTypeUid query parameter.
+            </remarks>
+            <param name="RelationshipTypeUid">Allows for filtering by an relationship type's unique identifier. Using this parameter will also provide any field values for the relationships, if applicable.</param>
+            <param name="PredicateUid">Allows for filtering by an predicate's unique identifier.</param>
+            <param name="SubjectUid">Allows for filtering by a subject asset's unique identifier.</param>
+            <param name="ObjectUid">Allows for filtering by an object asset's unique identifier.</param>
+            <param name="State"></param>
+            <param name="_pageNum"></param>
+            <param name="_pageSize"></param>
+            <returns></returns>
+        </member>
         <member name="M:d360.web.Controllers.V2.RelationshipsController.GetRelationshipTypesAsync(System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{d360.core.enums.State})">
             <summary>
             GET a list of relationship types.

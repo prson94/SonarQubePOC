@@ -41,7 +41,7 @@ namespace d360.web.Handlers
                         }
                         else
                         {
-                            var httpError = responseContent as HttpError;
+                            var httpError = responseContent as Controllers.BaseApiController.GenericHttpError;
 
                             if (httpError != null)
                             {
