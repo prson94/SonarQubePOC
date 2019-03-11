@@ -12280,7 +12280,9 @@ order by TP.TextPath";
                 {
                     if (!existing.ResponsibilityTypeRelations.Any(i => i.ObjectType == nr.ObjectType && i.ObjectID == nr.ObjectID))
                     {
-                        existing.ResponsibilityTypeRelations.Add(new ResponsibilityTypeRelation { ObjectType = nr.ObjectType, ObjectID = nr.ObjectID, ResponsibilityTypeID = existing.ID, PermissionsBitMask = 0 });
+                        existing.ResponsibilityTypeRelations.Add(new ResponsibilityTypeRelation { ObjectType = nr.ObjectType, ObjectID = nr.ObjectID, ResponsibilityTypeID = existing.ID, PermissionsBitMask = 0,
+                            CreatedBy =Company.CurrentResourceID,CreatedOn= DateTime.UtcNow,UpdatedBy=Company.CurrentResourceID,UpdatedOn= DateTime.UtcNow
+                        });
                     }
                 }
 
