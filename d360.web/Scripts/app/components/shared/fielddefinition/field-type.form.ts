@@ -577,7 +577,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                         }]
                     });
                 }
-                if (d.FieldTypeID != null) {
+                if (d.FieldTypeID != null && d.FieldTypeID != this.id) {
                     this.listFilterOptions.get(d.PredicateValue).fieldtypeOptions.push({
                         value: d.FieldTypeID,
                         label: d.FriendlyName,
