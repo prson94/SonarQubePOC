@@ -18,15 +18,31 @@
 </sql>
     <rollback>
       <![CDATA[
-create FUNCTION [dbo].[FieldLookupValueByFieldTypeID]
+CREATE FUNCTION [dbo].[FieldLookupValueByFieldTypeID]
 (
 	@fieldTypeID int
 )
-RETURNS  TABLE 
-
+RETURNS 
+@lookupValues TABLE 
+(
+	-- Add the column definitions for the TABLE variable here
+	FieldTypeID int not null, 
+	LookupObjectType varchar(20) not null,
+	LookupObjectID int not null,
+	[Value] int not null,
+	[Text] nvarchar(max) null
+)
 AS
-return(
-	SELECT	T.ID as FieldTypeID,
+	Begin
+	Declare @targetLookupType varchar(20);
+	Declare @targetLookupObjectId int;
+
+	select @targetLookupType = LookupObjectType, @targetLookupObjectId = LookupObjectID from FieldType where ID = @fieldTypeID;
+
+	if (@targetLookupType = 'Artifact')
+	Begin
+		/* Artifacts with no parents and matching display value just show the display value */
+		Insert into @lookupValues SELECT	T.ID as FieldTypeID,
 				T.LookupObjectType,
 				T.LookupObjectID,
 				A.ObjectID as Value,			
@@ -36,7 +52,7 @@ return(
 				INNER JOIN AssetType ATT on (A.AssetTypeID = ATT.ID)
 		WHERE	not exists ( select 1 from intersecttype it inner join [predicate] p on it.predicateid = p.id and p.[type] = 3 and it.[subject] = 'ArtifactType' and it.[object] = 'ArtifactType' and it.objectid = A.TypeID)
 				and  coalesce(T.LookupEditFormat, T.LookupDisplayFormat) = ATT.DisplayFormat and T.ID = @fieldTypeID
-				and T.LookupObjectType = 'Artifact'
+
 		UNION ALL
 
 		/* Artifacts with no parents and different display value just show the display value */
@@ -50,7 +66,7 @@ return(
 				INNER JOIN AssetType ATT on (Att.[Object] = 'ArtifactType' and ATT.ObjectID = A.ArtifactTypeID)
 		WHERE	not exists ( select 1 from intersecttype it inner join [predicate] p on it.predicateid = p.id and p.[type] = 3 and it.[subject] = 'ArtifactType' and it.[object] = 'ArtifactType' and it.objectid = A.ArtifactTypeID)
 				and  coalesce(T.LookupEditFormat, T.LookupDisplayFormat) <> ATT.DisplayFormat and T.ID = @fieldTypeID
-				and T.LookupObjectType = 'Artifact'
+
 		UNION ALL
 		/* Artifacts with parents need to show the path which is slower */
 		SELECT	T.ID as FieldTypeID,
@@ -61,62 +77,83 @@ return(
 		FROM	FieldType T 
 				INNER JOIN Artifact A ON T.LookupObjectID = A.ArtifactTypeID						
 		WHERE	exists ( select 1 from intersecttype it inner join [predicate] p on it.predicateid = p.id and p.[type] = 3 and it.[subject] = 'ArtifactType' and it.[object] = 'ArtifactType' and it.objectid = A.ArtifactTypeID) and T.ID = @fieldTypeID
-			and T.LookupObjectType = 'Artifact'		
-		union
-		SELECT	T.ID as FieldTypeID,
-				T.LookupObjectType as LookupObjectType,
-				T.LookupObjectID as LookupObjectID,
+
+	END
+
+	IF (@targetLookupType = 'Resource')
+	Begin
+		Insert into @lookupValues SELECT	T.ID as FieldTypeID,
+				@targetLookupType as LookupObjectType,
+				@targetLookupObjectId as LookupObjectID,
 				R.ResourceID as Value,	
 				utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, R.ResourceID) as Text
 		FROM	FieldType T 
-				INNER JOIN reporting.Global_Resource R on T.ID = @fieldTypeID
-		where T.LookupObjectType = 'Resource'	
-		union	
-		SELECT	T.ID as FieldTypeID,
+				INNER JOIN reporting.Global_Resource R on T.ID = @fieldTypeID		
+	End
+
+	IF (@targetLookupType = 'Lookup')
+	Begin
+		Insert into @lookupValues SELECT	T.ID as FieldTypeID,
 				T.LookupObjectType,
 				T.LookupObjectID,
 				L.ID as Value,	
 				utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, L.ID) as Text
 		FROM	FieldType T 			
 				INNER JOIN Lookup L ON T.LookupObjectID = L.LookupTypeID			
-		WHERE	T.ID = @fieldTypeID and T.LookupObjectType = 'Lookup'
-		union
-		SELECT	T.ID as FieldTypeID,
+		WHERE	T.ID = @fieldTypeID
+	End
+
+	
+	IF (@targetLookupType = 'ReferenceItem')
+	Begin
+		Insert into @lookupValues SELECT	T.ID as FieldTypeID,
 				T.LookupObjectType,
 				T.LookupObjectID,
 				RI.ID as Value,	
 				utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, RI.ID) as Text
 		FROM	FieldType T 			
 				INNER JOIN ReferenceItem RI ON T.LookupObjectID = RI.ReferenceItemTypeID
-		WHERE	T.ID = @fieldTypeID and T.LookupObjectType = 'ReferenceItem'
-		union
-		SELECT	T.ID as FieldTypeID,
+		WHERE	T.ID = @fieldTypeID
+				
+	end
+
+	IF(@targetLookupType = 'ReferenceItemType')
+	BEGIN
+		Insert into @lookupValues SELECT	T.ID as FieldTypeID,
 				T.LookupObjectType,
 				T.LookupObjectID,
 				RIT.ID as Value,	
 				utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, RIT.ID) as Text
 		FROM	FieldType T 			
-				INNER JOIN ReferenceItemType RIT ON T.ID = @fieldTypeID	
-		where	T.LookupObjectType = 'ReferenceItemType'
-		union
-		SELECT	T.ID as FieldTypeID,
+				INNER JOIN ReferenceItemType RIT ON T.ID = @fieldTypeID		
+	END
+
+	IF(@targetLookupType = 'Taxonomy')
+	BEGIN
+		Insert into @lookupValues SELECT	T.ID as FieldTypeID,
 				T.LookupObjectType,
 				T.LookupObjectID,
 				TAX.ID as Value,	
 				utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, TAX.ID) as Text
 		FROM	FieldType T 			
 				INNER JOIN Taxonomy TAX ON T.LookupObjectID = TAX.TaxonomyTypeID			
-		WHERE	T.ID = @fieldTypeID	and T.LookupObjectType = 'Taxonomy'
-		union 
-		SELECT	T.ID as FieldTypeID,
+		WHERE	T.ID = @fieldTypeID
+	END
+	
+	IF(@targetLookupType = 'TaxonomyType')
+	BEGIN
+		Insert into @lookupValues SELECT	T.ID as FieldTypeID,
 				T.LookupObjectType,
 				T.LookupObjectID,
 				TAXTYPE.ID as Value,	
 				utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, TAXTYPE.ID) as Text
 		FROM	FieldType T 			
 				INNER JOIN TaxonomyType TAXTYPE ON T.ID = @fieldTypeID
-		where T.LookupObjectType = 'TaxonomyType'
-	)
+	END
+
+	
+	RETURN 
+END
 
 ]]>
     </rollback>
