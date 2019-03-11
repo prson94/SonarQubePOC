@@ -219,7 +219,7 @@
                 <div class="row">
                     <div class="col l6 m6 s12">
                         <p-dropdown *ngIf="model.FieldType.Type == 'Boolean'" [options]="booleanDefaultValueOptions" [(ngModel)]="model.FieldType.DefaultValue" [style]="{ 'width': '98%' }" ngDefaultControl [ngModelOptions]="{standalone: true}"></p-dropdown>
-                        <p-dropdown *ngIf="model.FieldType.Type == 'Lookup'" [options]="lookupDefaultValueOptions" [(ngModel)]="model.FieldType.DefaultValue" [style]="{ 'width': '98%' }" ngDefaultControl [ngModelOptions]="{standalone: true}"></p-dropdown>
+                        <p-dropdown *ngIf="model.FieldType.Type == 'Lookup'" [options]="lookupDefaultValueOptions" [(ngModel)]="model.FieldType.DefaultValue" [style]="{ 'width': '98%' }" ngDefaultControl [ngModelOptions]="{standalone: true}" [disabled]="listFilterPredicate != null"></p-dropdown>
                         <p-calendar *ngIf="model.FieldType.Type == 'Date'" [ngModelOptions]="{standalone: true}" [(ngModel)]="defaultDate" (onSelect)="onDateSelectMethod($event)" [dateFormat]="getLocaleDateString()"></p-calendar>
                         <input *ngIf="model.FieldType.Type == 'Text' " pInputText type="text" [(ngModel)]="model.FieldType.DefaultValue" style="width: 98%; display: block;" [ngModelOptions]="{standalone: true}" (change)="validateDefaultWithPattern()"/>
                         <p-editor *ngIf="model.FieldType.Type == 'Html'" [(ngModel)]="model.FieldType.DefaultValue" [ngModelOptions]="{standalone: true}"></p-editor>

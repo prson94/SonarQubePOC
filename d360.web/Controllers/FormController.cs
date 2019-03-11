@@ -4577,6 +4577,8 @@ namespace d360.web.Controllers
                             Company.Set<FieldTypeFilteredLookupDefinition>().Remove(efli);
 
                         ft.FilterPredicateID = model.FieldType.FilterPredicateID;
+                        if (model.FieldType.FilterPredicateID != null) //Filtered lists should not have default values
+                            ft.DefaultValue = null;
                         ft.FilterPredicateDirection = model.FieldType.FilterPredicateDirection;
                         ft.FilterFieldTypeID = model.FieldType.FilterFieldTypeID;
 
