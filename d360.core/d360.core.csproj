@@ -211,7 +211,6 @@
     <Compile Include="entities\Contracts\IGuidObject.cs" />
     <Compile Include="entities\Community\DatabaseServer.cs" />
     <Compile Include="entities\Community\CompanyFeature.cs" />
-    <Compile Include="entities\Fusion\FusionFilter.cs" />
     <Compile Include="entities\Fusion\FusionStatusLog.cs" />
     <Compile Include="entities\LoadColumn.cs" />
     <Compile Include="entities\LoadItemColumn.cs" />

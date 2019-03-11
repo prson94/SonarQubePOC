@@ -1,6 +1,6 @@
 ﻿import { Input, Output, Component, EventEmitter, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { FusionConfiguration, FusionType, FusionFilter, FusionSchedule, FusionScheduleDay } from '../../../models/fusion.model';
+import { FusionConfiguration, FusionType, FusionSchedule, FusionScheduleDay } from '../../../models/fusion.model';
 import { FusionService } from '../../../services/fusion.service';
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesService } from '../../../services/messages.service';
