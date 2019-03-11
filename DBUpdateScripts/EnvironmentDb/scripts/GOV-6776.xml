@@ -1,0 +1,239 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="McNamee" id="GOV-6776-drop">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+  drop function [dbo].[FieldLookupValueByFieldTypeID]
+ ]]>
+
+</sql>
+    <rollback>
+      <![CDATA[
+create FUNCTION [dbo].[FieldLookupValueByFieldTypeID]
+(
+	@fieldTypeID int
+)
+RETURNS  TABLE 
+
+AS
+return(
+	SELECT	T.ID as FieldTypeID,
+				T.LookupObjectType,
+				T.LookupObjectID,
+				A.ObjectID as Value,			
+				A.DisplayValue as Text
+		FROM	FieldType T 			
+				INNER JOIN AssetDetail A on T.LookupObjectID = A.TypeID	and A.[Object] = 'Artifact'		
+				INNER JOIN AssetType ATT on (A.AssetTypeID = ATT.ID)
+		WHERE	not exists ( select 1 from intersecttype it inner join [predicate] p on it.predicateid = p.id and p.[type] = 3 and it.[subject] = 'ArtifactType' and it.[object] = 'ArtifactType' and it.objectid = A.TypeID)
+				and  coalesce(T.LookupEditFormat, T.LookupDisplayFormat) = ATT.DisplayFormat and T.ID = @fieldTypeID
+				and T.LookupObjectType = 'Artifact'
+		UNION ALL
+
+		/* Artifacts with no parents and different display value just show the display value */
+		SELECT	T.ID as FieldTypeID,
+				T.LookupObjectType,
+				T.LookupObjectID,
+				A.ID as Value,	
+				utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, A.ID) as Text		
+		FROM	FieldType T 
+				INNER JOIN Artifact A ON T.LookupObjectID = A.ArtifactTypeID						
+				INNER JOIN AssetType ATT on (Att.[Object] = 'ArtifactType' and ATT.ObjectID = A.ArtifactTypeID)
+		WHERE	not exists ( select 1 from intersecttype it inner join [predicate] p on it.predicateid = p.id and p.[type] = 3 and it.[subject] = 'ArtifactType' and it.[object] = 'ArtifactType' and it.objectid = A.ArtifactTypeID)
+				and  coalesce(T.LookupEditFormat, T.LookupDisplayFormat) <> ATT.DisplayFormat and T.ID = @fieldTypeID
+				and T.LookupObjectType = 'Artifact'
+		UNION ALL
+		/* Artifacts with parents need to show the path which is slower */
+		SELECT	T.ID as FieldTypeID,
+				T.LookupObjectType,
+				T.LookupObjectID,
+				A.ID as Value,	
+				utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, A.ID) as Text		
+		FROM	FieldType T 
+				INNER JOIN Artifact A ON T.LookupObjectID = A.ArtifactTypeID						
+		WHERE	exists ( select 1 from intersecttype it inner join [predicate] p on it.predicateid = p.id and p.[type] = 3 and it.[subject] = 'ArtifactType' and it.[object] = 'ArtifactType' and it.objectid = A.ArtifactTypeID) and T.ID = @fieldTypeID
+			and T.LookupObjectType = 'Artifact'		
+		union
+		SELECT	T.ID as FieldTypeID,
+				T.LookupObjectType as LookupObjectType,
+				T.LookupObjectID as LookupObjectID,
+				R.ResourceID as Value,	
+				utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, R.ResourceID) as Text
+		FROM	FieldType T 
+				INNER JOIN reporting.Global_Resource R on T.ID = @fieldTypeID
+		where T.LookupObjectType = 'Resource'	
+		union	
+		SELECT	T.ID as FieldTypeID,
+				T.LookupObjectType,
+				T.LookupObjectID,
+				L.ID as Value,	
+				utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, L.ID) as Text
+		FROM	FieldType T 			
+				INNER JOIN Lookup L ON T.LookupObjectID = L.LookupTypeID			
+		WHERE	T.ID = @fieldTypeID and T.LookupObjectType = 'Lookup'
+		union
+		SELECT	T.ID as FieldTypeID,
+				T.LookupObjectType,
+				T.LookupObjectID,
+				RI.ID as Value,	
+				utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, RI.ID) as Text
+		FROM	FieldType T 			
+				INNER JOIN ReferenceItem RI ON T.LookupObjectID = RI.ReferenceItemTypeID
+		WHERE	T.ID = @fieldTypeID and T.LookupObjectType = 'ReferenceItem'
+		union
+		SELECT	T.ID as FieldTypeID,
+				T.LookupObjectType,
+				T.LookupObjectID,
+				RIT.ID as Value,	
+				utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, RIT.ID) as Text
+		FROM	FieldType T 			
+				INNER JOIN ReferenceItemType RIT ON T.ID = @fieldTypeID	
+		where	T.LookupObjectType = 'ReferenceItemType'
+		union
+		SELECT	T.ID as FieldTypeID,
+				T.LookupObjectType,
+				T.LookupObjectID,
+				TAX.ID as Value,	
+				utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, TAX.ID) as Text
+		FROM	FieldType T 			
+				INNER JOIN Taxonomy TAX ON T.LookupObjectID = TAX.TaxonomyTypeID			
+		WHERE	T.ID = @fieldTypeID	and T.LookupObjectType = 'Taxonomy'
+		union 
+		SELECT	T.ID as FieldTypeID,
+				T.LookupObjectType,
+				T.LookupObjectID,
+				TAXTYPE.ID as Value,	
+				utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, TAXTYPE.ID) as Text
+		FROM	FieldType T 			
+				INNER JOIN TaxonomyType TAXTYPE ON T.ID = @fieldTypeID
+		where T.LookupObjectType = 'TaxonomyType'
+	)
+
+]]>
+    </rollback>
+
+  </changeSet>
+  <changeSet author="McNamee" id="GOV-6776-create">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+create FUNCTION [dbo].[FieldLookupValueByFieldTypeID]
+(
+	@fieldTypeID int
+)
+RETURNS  TABLE 
+
+AS
+return(
+	SELECT	T.ID as FieldTypeID,
+				T.LookupObjectType,
+				T.LookupObjectID,
+				A.ObjectID as Value,			
+				A.DisplayValue as Text
+		FROM	FieldType T 			
+				INNER JOIN AssetDetail A on T.LookupObjectID = A.TypeID	and A.[Object] = 'Artifact'		
+				INNER JOIN AssetType ATT on (A.AssetTypeID = ATT.ID)
+		WHERE	not exists ( select 1 from intersecttype it inner join [predicate] p on it.predicateid = p.id and p.[type] = 3 and it.[subject] = 'ArtifactType' and it.[object] = 'ArtifactType' and it.objectid = A.TypeID)
+				and  coalesce(T.LookupEditFormat, T.LookupDisplayFormat) = ATT.DisplayFormat and T.ID = @fieldTypeID
+				and T.LookupObjectType = 'Artifact'
+		UNION ALL
+
+		/* Artifacts with no parents and different display value just show the display value */
+		SELECT	T.ID as FieldTypeID,
+				T.LookupObjectType,
+				T.LookupObjectID,
+				A.ID as Value,	
+				utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, A.ID) as Text		
+		FROM	FieldType T 
+				INNER JOIN Artifact A ON T.LookupObjectID = A.ArtifactTypeID						
+				INNER JOIN AssetType ATT on (Att.[Object] = 'ArtifactType' and ATT.ObjectID = A.ArtifactTypeID)
+		WHERE	not exists ( select 1 from intersecttype it inner join [predicate] p on it.predicateid = p.id and p.[type] = 3 and it.[subject] = 'ArtifactType' and it.[object] = 'ArtifactType' and it.objectid = A.ArtifactTypeID)
+				and  coalesce(T.LookupEditFormat, T.LookupDisplayFormat) <> ATT.DisplayFormat and T.ID = @fieldTypeID
+				and T.LookupObjectType = 'Artifact'
+		UNION ALL
+		/* Artifacts with parents need to show the path which is slower */
+		SELECT	T.ID as FieldTypeID,
+				T.LookupObjectType,
+				T.LookupObjectID,
+				A.ID as Value,	
+				utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, A.ID) as Text		
+		FROM	FieldType T 
+				INNER JOIN Artifact A ON T.LookupObjectID = A.ArtifactTypeID						
+		WHERE	exists ( select 1 from intersecttype it inner join [predicate] p on it.predicateid = p.id and p.[type] = 3 and it.[subject] = 'ArtifactType' and it.[object] = 'ArtifactType' and it.objectid = A.ArtifactTypeID) and T.ID = @fieldTypeID
+			and T.LookupObjectType = 'Artifact'		
+		union
+		SELECT	T.ID as FieldTypeID,
+				T.LookupObjectType as LookupObjectType,
+				T.LookupObjectID as LookupObjectID,
+				R.ResourceID as Value,	
+				utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, R.ResourceID) as Text
+		FROM	FieldType T 
+				INNER JOIN reporting.Global_Resource R on T.ID = @fieldTypeID
+		where T.LookupObjectType = 'Resource'	
+		union	
+		SELECT	T.ID as FieldTypeID,
+				T.LookupObjectType,
+				T.LookupObjectID,
+				L.ID as Value,	
+				utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, L.ID) as Text
+		FROM	FieldType T 			
+				INNER JOIN Lookup L ON T.LookupObjectID = L.LookupTypeID			
+		WHERE	T.ID = @fieldTypeID and T.LookupObjectType = 'Lookup'
+		union
+		SELECT	T.ID as FieldTypeID,
+				T.LookupObjectType,
+				T.LookupObjectID,
+				RI.ID as Value,	
+				utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, RI.ID) as Text
+		FROM	FieldType T 			
+				INNER JOIN ReferenceItem RI ON T.LookupObjectID = RI.ReferenceItemTypeID
+		WHERE	T.ID = @fieldTypeID and T.LookupObjectType = 'ReferenceItem'
+		union
+		SELECT	T.ID as FieldTypeID,
+				T.LookupObjectType,
+				T.LookupObjectID,
+				RIT.ID as Value,	
+				utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, RIT.ID) as Text
+		FROM	FieldType T 			
+				INNER JOIN ReferenceItemType RIT ON T.ID = @fieldTypeID	
+		where	T.LookupObjectType = 'ReferenceItemType'
+		union
+		SELECT	T.ID as FieldTypeID,
+				T.LookupObjectType,
+				T.LookupObjectID,
+				TAX.ID as Value,	
+				utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, TAX.ID) as Text
+		FROM	FieldType T 			
+				INNER JOIN Taxonomy TAX ON T.LookupObjectID = TAX.TaxonomyTypeID			
+		WHERE	T.ID = @fieldTypeID	and T.LookupObjectType = 'Taxonomy'
+		union 
+		SELECT	T.ID as FieldTypeID,
+				T.LookupObjectType,
+				T.LookupObjectID,
+				TAXTYPE.ID as Value,	
+				utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, TAXTYPE.ID) as Text
+		FROM	FieldType T 			
+				INNER JOIN TaxonomyType TAXTYPE ON T.ID = @fieldTypeID
+		where T.LookupObjectType = 'TaxonomyType'
+	)
+
+]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+      drop function [dbo].[FieldLookupValueByFieldTypeID]
+      ]]>
+    </rollback>
+	</changeSet>
+  </databaseChangeLog>
