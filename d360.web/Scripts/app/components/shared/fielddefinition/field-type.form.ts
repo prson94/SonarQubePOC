@@ -90,6 +90,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private listFilterPredicate: string = null;
     private listFilterPredicates: any[] = [];
     private listFilterRelatedFields: any[] = [];
+    private expandFilterConfiguration: boolean = false;
 
     private supportsPrimaryFilterOption: boolean = false;
     private displayFieldSelected: boolean = true;    
@@ -591,8 +592,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             });
             if (this.model.FieldType.FilterPredicateID != null && this.model.FieldType.FilterPredicateDirection != null) {
                 this.selectPredicate( this.model.FieldType.FilterPredicateID + '|' + (this.model.FieldType.FilterPredicateDirection ? '1' : '0'));
+                this.expandFilterConfiguration = true;
             } else {
                 this.selectPredicate(null);
+                this.expandFilterConfiguration = false;
             }
             this
         });
