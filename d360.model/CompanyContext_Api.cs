@@ -771,7 +771,16 @@ from    api.ExecutionAsset T
         where   P.ItemNumber between {beginItemNumber} and {endItemNumber}
     )
     insert into api.ExecutionDeletedAsset ([ExecutionID],[ItemNumber],[Uid],[AssetID],[IntersectID],[FromHierarchy])
-        select ExecutionID, ItemNumber, [Uid], AssetID, IntersectID, 1 from h where IntersectID is not null and [Level] > 0",
+        select  ExecutionID, 
+                ItemNumber, 
+                [Uid], 
+                AssetID, 
+                IntersectID, 
+                1 
+        from    h 
+        where   IntersectID is not null 
+                and [Level] > 0 
+                and Uid not in (select Uid from api.ExecutionDeletedAsset where ExecutionID = @ExecutionID)",
                                             new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
                                         }
 
