@@ -619,7 +619,7 @@ where	[AllowChangeDetection] = 0").ToList();
 
             var setting = Company.GetById<IntegrationSetting>(QueueModel.IntegrationSettingID);
             string baseUri = setting.SourceUri;
-            int defaultPageSize = setting.PageSize;
+            int defaultPageSize = SynchedAssetType.PageSize ?? setting.PageSize;
             int defaultRefreshInterval = setting.RefreshInterval;
             DefaultResourceID = setting.TargetResourceID;
             AuthenticationHeaderValue = $"Basic {Convert.ToBase64String(System.Text.Encoding.GetEncoding("ISO-8859-1").GetBytes(setting.SourceUser + ":" + setting.SourcePassword))}";
