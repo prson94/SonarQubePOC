@@ -108,6 +108,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                     }
                     else {
                         this.field.Value = null;
+                        this.field.Items = [];
                         this.listItemChange.emit({ field: this.field, value: null });
                     }
                 }
