@@ -1,4 +1,4 @@
-﻿import { Input, Component, OnInit, ChangeDetectionStrategy, Output, EventEmitter} from '@angular/core';
+﻿import { Input, Component, OnInit, ChangeDetectionStrategy, Output, EventEmitter, AfterViewInit} from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../base.component';
 import { StateService } from '../../../services/state.service';
@@ -12,15 +12,14 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 @Component({
     selector: 'd3s-site-menu-category',    
     template: ` 
-                    <li #item [ngClass]="{'menu-category':true,'menu-parent':menu && (menu.NavigationItems),'menu-active':menu?.isActiveItem}" (click)="toggle(item)">
-                        <span *ngIf="menu && menu.NavigationItems && menu.NavigationItems.length > 0" [pTooltip]="title" tooltipZIndex="10001"><i *ngIf="url" [class]="'fa ' + rootIconName" [routerLink]="url"></i><i *ngIf="!url" [class]="'fa ' + rootIconName"></i></span>
-                        <span *ngIf="!menu || !menu.NavigationItems || menu.NavigationItems.length == 0" [pTooltip]="title" tooltipZIndex="10001"><i [class]="'fa ' + rootIconName" [routerLink]="url"></i></span>
+                    <li #item [ngClass]="{'menu-category':true,'menu-parent':menu && (menu.NavigationItems),'menu-active':menu?.isActiveItem}" (mouseenter)="show(item)" (mouseleave)="hide(item)" [routerLink]="url ? url : []" style="cursor: pointer;" >
+                        <span *ngIf="menu && menu.NavigationItems && menu.NavigationItems.length > 0" [pTooltip]="!expanded ? title : null" tooltipZIndex="10001"><i [class]="'fa ' + rootIconName"></i></span>
+                        <span *ngIf="!menu || !menu.NavigationItems || menu.NavigationItems.length == 0" [pTooltip]="!expanded ? title : null"  tooltipZIndex="10001"><i [class]="'fa ' + rootIconName"></i></span>
                         <span *ngIf='expanded'> {{title}} <i *ngIf="menu && menu.NavigationItems && menu.NavigationItems.length > 0" class="fa fa-angle-right pull-right menu-category"></i></span>
-                        <div *ngIf="menu && menu.NavigationItems && menu.NavigationItems.length > 0" class="menu-child megamenu-panel">
+                        <div *ngIf="menu && menu.NavigationItems && menu.NavigationItems.length > 0" class="menu-child megamenu-panel" (click)="stopNavigation($event)">
                             <div>
                                 <div class="megamenu-title truncate">
-                                    <span *ngIf="expanded"><input style="color: #000000;" type="search" placeholder="{{title}}"/> </span>
-                                    <span *ngIf="!expanded">{{title}} </span>
+                                <span><input style="color: #000000;" type="search" placeholder="{{title}}"/> </span>
                                     <span class="megamenu-tools" *ngIf="showClearButton">
                                         <i (click)="clearClick.emit(true)" class="fa fa-eraser" [pTooltip]="'Clear ' + title + ' List'" tooltipZIndex="10001"></i>
                                     </span>
@@ -28,7 +27,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                                 <div class="row">
                                     <div [class]="getColumnClass(menu)" *ngFor="let item of menu.NavigationItems">
                                         <ul class="menu-group">                                        
-                                            <d3s-site-menu-mega-item [item]="item" [level]="0" [(active)]="menu.isActiveItem"></d3s-site-menu-mega-item>
+                                            <d3s-site-menu-mega-item [item]="item" [level]="0" [(active)]="menu.isActiveItem" [parent]="menu.Title"></d3s-site-menu-mega-item>
                                         </ul>
                                     </div>
                                 </div>
@@ -39,7 +38,8 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
     changeDetection: ChangeDetectionStrategy.OnPush    
 })
 
-export class SiteMenuCategoryComponent extends BaseComponent {
+export class SiteMenuCategoryComponent extends BaseComponent implements AfterViewInit {
+   
     @Input() url: string;
     @Input() title: string;
     @Input() rootIconName: string; 
@@ -50,6 +50,7 @@ export class SiteMenuCategoryComponent extends BaseComponent {
     @Output() clearClick = new EventEmitter();
     
     public showing: boolean = false;
+    viewReady: boolean;
 
     constructor() {
         super();
@@ -75,6 +76,10 @@ export class SiteMenuCategoryComponent extends BaseComponent {
         }
     }
 
+    ngAfterViewInit(): void {
+        this.viewReady = true;
+    }
+
     private toggle(item) {
         this.showing = !this.showing;
         if (this.showing)
@@ -83,7 +88,9 @@ export class SiteMenuCategoryComponent extends BaseComponent {
             this.hide(item);
         
     }
-
+    private stopNavigation(event) {
+        event.stopPropagation();
+    }
     repositionMenuToFit(windowHeight, element) {        
         var dims = element.getBoundingClientRect();
 
@@ -110,7 +117,7 @@ export class SiteMenuCategoryComponent extends BaseComponent {
 
     private getColumnClass(menu: SiteMenu) {
         let len = menu.NavigationItems.length;
-
+        return "col s12";
         switch (len) {
             case 1: 
                 return "col s12";

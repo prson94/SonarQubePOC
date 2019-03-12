@@ -94,6 +94,7 @@ nav.top, .left-side-nav {
     margin-top: 40px;
     overflow-y: visible;
     border-right: 1px solid rgba(255, 255, 255, 0.15);
+    transition: width .1s;
 
     li {
         padding: 0;
@@ -136,6 +137,7 @@ nav.top, .left-side-nav {
     margin-top: 40px;
     overflow-y: visible;
     border-right: 1px solid rgba(255, 255, 255, 0.15);
+    transition: width .1s;
 
     li {
         padding: 0;
@@ -237,16 +239,16 @@ nav.top, .left-side-nav {
 
 
 @media only screen and (min-width : 601px) {
-  .megamenu-panel { 
-    min-width:600px;   
-    max-width:800px;
-  } }
+    .megamenu-panel {
+        min-width: 500px;
+        max-width: 550px;
+    } }
 
 @media only screen and (min-width : 993px) {
-  .megamenu-panel {
-    min-width:800px;    
-    max-width:1000px;
-  } }
+    .megamenu-panel {
+        min-width: 500px;
+        max-width: 550px;
+    } }
 
 .menu-level-indicator-0, .menu-level-indicator-1, .menu-level-indicator-2, .menu-level-indicator-3, .menu-level-indicator-4, .menu-level-indicator-5, .menu-level-indicator-n{
     color: @igx-menu-else;            
@@ -317,19 +319,27 @@ d3s-navbar-item {
     }
 }
 
-
+.d3s-badge {
+    background-color: #848484;
+    color: #fff;
+    display: inline-block;
+    padding-left: 8px;
+    padding-right: 8px;
+    text-align: center;
+    border-radius: 40%;
+}
 /* end side menu*/
-
 /* main content*/
-
 .maincontent {
-  margin-left:70px;
-  margin-right:40px;
+    margin-left: 70px;
+    margin-right: 40px;
+    transition: width .1s;
 }
 
 .maincontent-open {
     margin-left: 270px;
     margin-right: 40px;
+    transition: width .1s;
 }
 
 .panel-section ul,

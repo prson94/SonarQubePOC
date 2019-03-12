@@ -23,8 +23,8 @@ declare var CompanySettings;
                     </ng-template>                  
                     <d3s-site-menu-category *ngIf="isAdmin" [expanded]="menuOpen" [title]="'Administration'" rootIconName="fa-cog" [menu]="adminMenu"></d3s-site-menu-category>  
                     <span class="set-bottom">
-                        <d3s-site-menu-category *ngIf="!menuOpen" [title]="'Expand'" showClearButton="true" (click)="toggleMenu(); menuChanged.emit(this.menuOpen)" rootIconName="fa-arrow-right"></d3s-site-menu-category>  
-                        <d3s-site-menu-category *ngIf="menuOpen" [title]="'Collapse'" showClearButton="false" (click)="toggleMenu(); menuChanged.emit(this.menuOpen)" rootIconName="fa-arrow-left"></d3s-site-menu-category>
+                        <d3s-site-menu-category *ngIf="!menuOpen" [title]="'Expand'" (click)="toggleMenu(); menuChanged.emit(this.menuOpen)" rootIconName="fa-arrow-right"></d3s-site-menu-category>  
+                        <d3s-site-menu-category *ngIf="menuOpen" [title]="'Collapse'" (click)="toggleMenu(); menuChanged.emit(this.menuOpen)" rootIconName="fa-arrow-left"></d3s-site-menu-category>
                     </span>
                 </ul>
                 `,    

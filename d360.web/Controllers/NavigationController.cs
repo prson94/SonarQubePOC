@@ -775,6 +775,54 @@ order by	f.SortOrder";
 
         }
 
+        [HttpGet, Route("GetItemCount/{type}/{item}")]
+        public JsonNetResult GetItemCount(string type, string item)
+        {
+            int count = 0;
+            switch (type)
+            {
+                case "Data Quality":
+                    count = Company.Query<int>(@"
+                        select	K.kount
+                        from    AssetType AT
+			            left join (SELECT count(a.AssetTypeID) kount,a.AssetTypeID
+							            FROM [dbo].[Asset] a
+							            inner join AssetType b on a.AssetTypeID = b.ID
+							            group by AssetTypeID
+						            ) K on K.AssetTypeID = AT.ID 
+		                outer apply (
+					                select	IT.SubjectID
+					                from	IntersectType IT 
+							                inner join [Predicate] P on IT.Object = 'ArtifactType' and IT.ObjectID = AT.ObjectID and P.ID = IT.PredicateID and P.Type = 3
+					                ) IT
+			            where  AT.Object = 'RuleType'
+                        and  AT.Name = '"+ item +"' order by AT.Name").AsQueryable().FirstOrDefault();
+                    break;
+                case "Business Assets":
+                    count = Company.Query<int>(@"
+                        select	COALESCE(K.kount,0)
+                        from    AssetType AT
+			            left join (SELECT count(a.AssetTypeID) kount,a.AssetTypeID
+							            FROM [dbo].[Asset] a
+							            inner join AssetType b on a.AssetTypeID = b.ID
+							            group by AssetTypeID
+						            ) K on K.AssetTypeID = AT.ID 
+		                outer apply (
+					                select	IT.SubjectID
+					                from	IntersectType IT 
+							                inner join [Predicate] P on IT.Object = 'ArtifactType' and IT.ObjectID = AT.ObjectID and P.ID = IT.PredicateID and P.Type = 3
+					                ) IT
+			            where  AT.Object = 'ArtifactType'
+                        and  AT.Name = '" + item + "' order by AT.Name").AsQueryable().FirstOrDefault();
+                    break;
+            }
+            return new JsonNetResult
+            {
+                Data = count,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
         #endregion
 
         List<NavigationItem> parseXmlNavigationDocument(XElement xml, List<CompanyFeature> features)

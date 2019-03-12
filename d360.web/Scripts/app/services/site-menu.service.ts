@@ -146,4 +146,12 @@ export class SiteMenuService extends BaseService {
             .then(response => <any[]>response.json())
             .catch(err => this.handleError(err));
     }
+
+    getItemCount(type: string, item: string) {
+
+        return this.http.get(`navigation/GetItemCount/${type}/${item}`)
+            .toPromise()
+            .then(response => <number>response.json())
+            .catch(err => this.handleError(err));
+    }
 }
