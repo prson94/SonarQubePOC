@@ -7409,7 +7409,7 @@ where v.id = {0}", id)).FirstOrDefault();
                 var dataColIndex = 0;
                 rowIndex++;
 
-                document.SetCellValue(rowIndex, ++dataColIndex, row.Uid ?? "");
+                document.SetCellValue(rowIndex, ++dataColIndex, (row.Uid ?? "").ToString());
                 document.SetCellValue(rowIndex, ++dataColIndex, row.Name ?? "");
                 document.SetCellValue(rowIndex, ++dataColIndex, row.Critical == 1 ? "Critical" : "Normal");
 
