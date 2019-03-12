@@ -210,10 +210,11 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         let links = <any[]>(<go.GraphLinksModel>this.diagram.model).linkDataArray;
 
         let step = steps.find(s => s.key == key);
-        let toLinks = links.filter(l => l.to == key);
+       let toLinks = links.filter(l => l.to == key);
 
+        if (_.includes(upstreamSteps, key)) return;
         upstreamSteps.push(step.key);
-
+       
         if (toLinks == null || toLinks.length < 1) return;
 
         toLinks.forEach(l => this.traverseDiagram(l.from, upstreamSteps));
