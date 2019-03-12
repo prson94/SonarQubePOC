@@ -19,6 +19,7 @@ using System.Web.Http;
 using System.Web.Http.Description;
 using d360.core;
 using d360.web.Filters;
+using d360.core.exceptions;
 
 namespace d360.web.Controllers.V2
 {
@@ -594,8 +595,9 @@ for		json path").ToList();
         /// <summary>
         /// Adds one or more metric results for processing and scoring.
         /// </summary>
+        /// <remarks>If you do not provide an effective date for a metric result, the current date (UTC) will be used.</remarks>
         /// <param name="model">The list of raw metrics to save for processing.</param>
-        /// <returns>he list of staging results.</returns>
+        /// <returns>The list of staging results.</returns>
         [
             HttpPost,
             Route("results"),
@@ -620,14 +622,18 @@ for		json path").ToList();
             {
                 var results = Company.BulkMetricsImport(model);
 
-                return ResponseMessage(Request.CreateResponse<List<BulkMetricTemporaryTableModel>>(HttpStatusCode.OK, results));                
+                return ResponseMessage(Request.CreateResponse<List<BulkMetricTemporaryTableModel>>(HttpStatusCode.OK, results));
+            }
+            catch (GenericException ex)
+            {
+                return errorMessageResponse(ex.StatusCode, ex.StatusMessage, ex.StatusDescription);
             }
             catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
 
-                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage));
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Server Error", errorMessage);
             }
         }
     }

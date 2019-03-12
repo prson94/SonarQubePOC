@@ -2795,8 +2795,9 @@
             <summary>
             Adds one or more metric results for processing and scoring.
             </summary>
+            <remarks>If you do not provide an effective date for a metric result, the current date (UTC) will be used.</remarks>
             <param name="model">The list of raw metrics to save for processing.</param>
-            <returns>he list of staging results.</returns>
+            <returns>The list of staging results.</returns>
         </member>
         <member name="T:d360.web.Controllers.V2.RelationshipsController">
             <summary>
