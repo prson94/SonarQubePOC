@@ -3059,6 +3059,7 @@ namespace d360.web.Controllers
                         where it.[Subject] = @objectType 
                         and it.[SubjectID] = @objectId
                         and p.Type IN ({predicateTypes})
+                        and it.[Object] in ('ArtifactType', 'TaxonomyType')
                         UNION ALL 
                         SELECT 
                             it.[ID], 
@@ -3075,6 +3076,7 @@ namespace d360.web.Controllers
                          where it.[Object] = @objectType 
                          and it.[ObjectID] = @objectId 
                          and p.Type IN ({predicateTypes})
+                         and it.[Subject] in ('ArtifactType', 'TaxonomyType')
                         ) A LEFT OUTER JOIN
                     (SELECT 
                         ft.[ID] as FieldTypeID,

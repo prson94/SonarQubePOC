@@ -671,7 +671,6 @@ namespace d360.web.Controllers
                                 }
                                 else if (f.FilterFieldTypeID > 0 || f.FilterPredicateID > 0)
                                 {
-//                                    fld.ParentFieldTypeName = "Parents field type name should go here";
                                     if(f.FilterFieldTypeID > 0)
                                     {
                                         fld.DelayedLoadType = "FieldFilter";
@@ -908,6 +907,26 @@ namespace d360.web.Controllers
                                         else if (!string.IsNullOrWhiteSpace(ft.DefaultValue))
                                             fld.Value = ft.DefaultValue;
                                     }
+                                }
+                                else if (ft.FilterFieldTypeID > 0 || ft.FilterPredicateID > 0)
+                                {
+                                    if (ft.FilterFieldTypeID > 0)
+                                    {
+                                        fld.DelayedLoadType = "FieldFilter";
+                                        //Field filter works similar to ParentFieldType, so we'll overload those parameters
+                                        var filterParent = Company.FieldTypes.Where(x => x.ID == ft.FilterFieldTypeID).FirstOrDefault();
+                                        if (filterParent != null)
+                                        {
+                                            fld.ParentFieldTypeID = ft.FilterFieldTypeID;
+                                            fld.ParentFieldTypeName = filterParent.FriendlyName;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        fld.DelayedLoadType = "Predicate";
+                                    }
+                                    if (ft.AllowMultipleValues && f != null && !string.IsNullOrWhiteSpace(f.Value))
+                                        fld.Value = f.Value;
                                 }
                                 else
                                 {

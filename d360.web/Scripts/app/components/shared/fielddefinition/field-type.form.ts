@@ -555,27 +555,26 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.listFilterPredicates = [];
         this.listFilterRelatedFields = [];
         this.listFilterOptions.clear();
-        if (objectType != "DomainItem" && objectType != "ReferenceItemType" && objectType != "TaxonomyType") objectType += 'Type';
 
-        //List filter options only available for field defintions for Action Type, and then type of list is Models or Artifacts
-        if (this.objectType != 'IssueType')
+        //List filter options only available for field defintions for thes asset types
+        if (['IssueType', 'AtifactType', 'TaxonomyType', 'PolicyType', 'RuleType'].indexOf(this.objectType) == -1)
             return;
-        if (objectType != 'ArtifactType' && objectType != 'TaxonomyType')
+        //List filter options are only available for lists of Artifacts for Taxonomies
+        if (objectType != 'Artifact' && objectType != 'Taxonomy')
             return;
-
         this.listFilterable = true;
 
-        this.fieldsService.getListFilterOptions(objectType, objectId, this.objectType, this.objectID).then(r => {
+        this.fieldsService.getListFilterOptions(objectType+'Type', objectId, this.objectType, this.objectID).then(r => {
             r.forEach(d => {
                 if (!this.listFilterOptions.has(d.PredicateValue)) {
                     this.listFilterOptions.set(d.PredicateValue, {
                         value: d.PredicateValue,
                         label: d.PredicateName,
-                        fieldtypeOptions: [{
+                        fieldtypeOptions: (this.objectType == 'IssueType') ? [{
                             value: null,
                             label: "Action Subject",
                             info: "Model/Artifact"
-                        }]
+                        }] : []
                     });
                 }
                 if (d.FieldTypeID != null && d.FieldTypeID != this.id) {
@@ -588,7 +587,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             });
             this.listFilterPredicates.push({ value: null, label: 'Choose...'});
             this.listFilterOptions.forEach(d => {
-                this.listFilterPredicates.push({ value: d.value, label: d.label});
+                if (d.fieldtypeOptions.length > 0)
+                    this.listFilterPredicates.push({ value: d.value, label: d.label});
             });
             if (this.model.FieldType.FilterPredicateID != null && this.model.FieldType.FilterPredicateDirection != null) {
                 this.selectPredicate( this.model.FieldType.FilterPredicateID + '|' + (this.model.FieldType.FilterPredicateDirection ? '1' : '0'));
@@ -604,9 +604,12 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private selectPredicate(value: string) {
         if (this.listFilterOptions.has(value)) {
             this.listFilterRelatedFields = this.listFilterOptions.get(value).fieldtypeOptions;
+            if (this.model.FieldType.FilterFieldTypeID == null && this.listFilterRelatedFields.length > 0) {
+                this.model.FieldType.FilterFieldTypeID = this.listFilterRelatedFields[0].value;
+            }
         } else {
             this.listFilterRelatedFields = [];
-
+            this.model.FieldType.FilterFieldTypeID = null;
         }
         if (value == null || value == '' || value == 'null') {
             this.model.FieldType.FilterPredicateID = null;
