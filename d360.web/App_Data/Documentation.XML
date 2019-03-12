@@ -2980,14 +2980,6 @@
             Used in the Filter By Relationship tile on artifact list pages.
             </summary>
         </member>
-        <member name="M:d360.web.Controllers.D3SApiController.GetFieldForObject(d360.core.SystemObjects,System.Int32)">
-            <summary>
-            Used mainly by the client-side search tool.
-            </summary>
-            <param name="type">The type of object</param>
-            <param name="id">The ID of the object</param>
-            <returns>A list of fields with the name, friendly name, and value.</returns>
-        </member>
         <member name="T:d360.web.Controllers.BaseController.RelationshipDirectionFieldInfo">
             <summary>
             Only used in the method below.
