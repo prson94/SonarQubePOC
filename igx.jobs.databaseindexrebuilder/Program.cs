@@ -25,7 +25,7 @@ namespace igx.jobs.databaseindexrebuilder
             host.RunAndBlock();
         }
     }
-    public static class DatabasIndexRebuilder
+    public static class DatabaseIndexRebuilder
     {
         const string functionName = "DatabaseTask_IndexRebuilder";
 #if DEBUG
