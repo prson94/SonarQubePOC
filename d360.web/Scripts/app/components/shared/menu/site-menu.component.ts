@@ -1,4 +1,4 @@
-﻿import { Input, Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef} from '@angular/core';
+﻿import { Input, Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter} from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { MessagesService } from '../../../services/messages.service';
 import { HeaderActionsService } from '../../../services/header-actions.service';
@@ -16,12 +16,16 @@ declare var CompanySettings;
 @Component({
     selector: 'd3s-site-menu',    
     template: ` 
-                <ul class="left-side-nav">
-                    <d3s-site-menu-category *ngIf="favorites" [title]="'My Favorites'" showClearButton="true" (clearClick)="clearFavorites()" [menu]="favorites" rootIconName="fa-star"></d3s-site-menu-category>
+                <ul [class.left-side-nav]="!menuOpen" [class.left-side-nav-open]='menuOpen'>
+                    <d3s-site-menu-category *ngIf="favorites" [expanded]="menuOpen" [title]="'My Favorites'" showClearButton="true" (clearClick)="clearFavorites()" [menu]="favorites" rootIconName="fa-star"></d3s-site-menu-category>
                     <ng-template ngFor let-menu [ngForOf]="siteMenu">
-                        <d3s-site-menu-category *ngIf="menu.ShouldDisplay" [url]="menu.ngUrl" [title]="menu.Title" [rootIconName]="menu.Icon" [menu]="menu"></d3s-site-menu-category>
+                        <d3s-site-menu-category *ngIf="menu.ShouldDisplay" [expanded]="menuOpen" [url]="menu.ngUrl" [title]="menu.Title" [rootIconName]="menu.Icon" [menu]="menu"></d3s-site-menu-category>
                     </ng-template>                  
-                    <d3s-site-menu-category *ngIf="isAdmin" [title]="'Administration'" rootIconName="fa-cog" [menu]="adminMenu"></d3s-site-menu-category>                    
+                    <d3s-site-menu-category *ngIf="isAdmin" [expanded]="menuOpen" [title]="'Administration'" rootIconName="fa-cog" [menu]="adminMenu"></d3s-site-menu-category>  
+                    <span class="set-bottom">
+                        <d3s-site-menu-category *ngIf="!menuOpen" [title]="'Expand'" showClearButton="true" (click)="toggleMenu(); menuChanged.emit(this.menuOpen)" rootIconName="fa-arrow-right"></d3s-site-menu-category>  
+                        <d3s-site-menu-category *ngIf="menuOpen" [title]="'Collapse'" showClearButton="false" (click)="toggleMenu(); menuChanged.emit(this.menuOpen)" rootIconName="fa-arrow-left"></d3s-site-menu-category>
+                    </span>
                 </ul>
                 `,    
     providers: [SiteMenuService, FavoritesService],
@@ -29,7 +33,9 @@ declare var CompanySettings;
 })
 
 export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestroy {
-        
+
+    @Input() menuOpen: boolean;
+    @Output() menuChanged = new EventEmitter<boolean>();
     public isAdmin: boolean = false;
     public siteMenu: SiteMenu[] = [];
     public favorites: SiteMenu;
@@ -156,11 +162,15 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
             })
             .then(() => this.headerActionsService.emitFavoritesChange());
     }
+
+    private toggleMenu() {
+        this.menuOpen = !this.menuOpen;
+        this.menuChanged.emit(this.menuOpen);
+    }
     
     private buildAdminMenu() {
         this.adminMenu = new SiteMenu();
         this.adminMenu.NavigationItems = [];
-
         let metaMenu = new SiteMenuItem();
         metaMenu.Name = "MetaModel";
         metaMenu.Items = [];

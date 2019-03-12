@@ -83,7 +83,48 @@ nav.top, .left-side-nav {
 
 
 /* side menu*/
+.left-side-nav-open {
+    left: 0;
+    top: 0;
+    z-index: 10000;
+    height: 100%;
+    position: fixed;
+    background-color: @igx-left-side-nav;
+    width: 200px;
+    margin-top: 40px;
+    overflow-y: visible;
+    border-right: 1px solid rgba(255, 255, 255, 0.15);
 
+    li {
+        padding: 0;
+    }
+
+    a {
+        display: block;
+    }
+
+    ul, a {
+        height: auto;
+        line-height: normal;
+    }
+
+    .menu-category {
+        padding: 0 15px;
+        color: white;
+        font-size: 1rem;
+        height: 35px;
+        line-height: 35px;
+        position: relative;
+
+        &:hover {
+            background: @igx-gray-color;
+        }
+
+        i {
+            cursor: pointer;
+        }
+    }
+}
 .left-side-nav {
     left: 0;
     top: 0;
@@ -284,6 +325,11 @@ d3s-navbar-item {
 .maincontent {
   margin-left:70px;
   margin-right:40px;
+}
+
+.maincontent-open {
+    margin-left: 270px;
+    margin-right: 40px;
 }
 
 .panel-section ul,
