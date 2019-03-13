@@ -8,6 +8,7 @@ import { StateService } from './services/state.service';
 import { SiteMessage } from './models/site-message.model';
 import { Subscription } from 'rxjs';
 import { Message } from 'primeng/components/common/api';
+import { CookieService } from './services/cookie.service';
 
 
 
@@ -38,7 +39,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     constructor(                
         private messagesService: MessagesService,
-        protected headerActionsService: HeaderActionsService) {
+        protected headerActionsService: HeaderActionsService,
+        private cookieService: CookieService) {
         this.msgs = [];
         this.subscription = messagesService.errorMessage$.subscribe(
             errorMsg => {
@@ -48,6 +50,13 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             infoMsg => {
                 this.msgs.push({ severity: 'info', summary: infoMsg.summary, detail: infoMsg.detail });
             });
+        let menuState = cookieService.get("MenuState");
+        if (!menuState) {
+            cookieService.set("MenuState", "true");
+            this.handleMenuChange(true);
+        } else {
+            this.handleMenuChange(menuState == "true");
+        }
     }
 
     ngAfterViewInit() {        
@@ -56,6 +65,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
     private handleMenuChange(v: boolean) {
         this.menuOpen = v;
+        this.cookieService.set("MenuState", v + "");
     }
 
     ngOnDestroy() {        

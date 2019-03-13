@@ -1454,6 +1454,7 @@
     <TypeScriptCompile Include="Scripts\app\services\asset-type.services.ts" />
     <TypeScriptCompile Include="Scripts\app\services\baseObservable.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\cascade.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\cookie.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\custom-api.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\diagram.service.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-item.component.ts" />
