@@ -26,6 +26,8 @@ namespace d360.model
 
         public DbSet<MetricAssetVersionCondition> MetricAssetVersionConditions { get; set; }
 
+        public DbSet <MetricDataProfile> MetricDataProfiles { get; set; }
+
         #endregion
 
         #region Engine Methods

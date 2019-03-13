@@ -2811,6 +2811,13 @@
             <param name="model">The list of raw metrics to save for processing.</param>
             <returns>he list of staging results.</returns>
         </member>
+        <member name="M:d360.web.Controllers.V2.ProfilesController.InsertDataProfile(System.Collections.Generic.List{d360.core.entities.Metric.MetricDataProfile})">
+            <summary>
+            
+            </summary>
+            <param name="model"></param>
+            <returns>An HTTP status code with an appropriate status message.</returns>
+        </member>
         <member name="T:d360.web.Controllers.V2.RelationshipsController">
             <summary>
             This service houses all endpoints handling glossary-related data such as artifacts and models.
