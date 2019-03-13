@@ -527,12 +527,14 @@ namespace igx.jobs.bulkloadprocessor
                     company.Update(load);
                 }
                 catch (Exception ex)
-                {
+                {                    
                     if (load != null)
                     {
                         load.DateCompleted = DateTime.UtcNow;
                         company.Update(load);
                     }
+
+                    CoreFunction.AITrackException(functionName, ex, loadInfo.CompanyID);
                 }
             }
             catch (Exception ex)
