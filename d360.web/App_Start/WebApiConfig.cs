@@ -14,6 +14,7 @@ using System.Web.Http.Routing;
 using Microsoft.Web.Http.Routing;
 using Microsoft.Web.Http.Versioning;
 using d360.web.Models;
+using System.Linq;
 
 namespace d360.web
 {
@@ -57,7 +58,7 @@ namespace d360.web
             var versionSupportResolver = new Func<ApiDescription, string, bool>((apiDescription, version) => apiDescription.GetGroupName() == version);
 
             var versionInfoBuilder = new Action<VersionInfoBuilder>(info => {
-                foreach (var group in apiExplorer.ApiDescriptions)
+                foreach (var group in apiExplorer.ApiDescriptions.OrderByDescending(i=>i.Name) )
                 {
                     info
                     .Version(group.Name, $"Govern REST API v{group.ApiVersion}")
