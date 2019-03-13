@@ -13,41 +13,45 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
     selector: 'd3s-site-menu-mega-item',    
     template: ` 
                 <a (click)="itemClick()" class="menu-item truncate" [ngStyle]="{'margin-left': getMargin()}">
-                   <i [class]="'fa fa-circle menu-level-indicator-' + level" aria-hidden="true"></i>{{item.Name}}<ng-container *ngIf="item.IsHomePage">&nbsp;&nbsp;<span class="fa fa-home"></span></ng-container><span *ngIf="count > 0" class="d3s-badge pull-right">{{count}}</span></a>
-                <d3s-site-menu-mega-item *ngFor="let sub of item.Items" [item]="sub" [level]="level + 1" [active]="active" (activeChange)="active=$event;activeChange.emit(active);"></d3s-site-menu-mega-item>                
+                    <span (click)="handleArrowClick($event)">
+                        <i *ngIf="item.Items" [class]="!displayChild ? 'fa fa-caret-right' : 'fa fa-caret-down'" aria-hidden="true"></i>
+                    </span>
+                    {{item.Name}}<ng-container *ngIf="item.IsHomePage">&nbsp;&nbsp;<span class="fa fa-home"></span></ng-container>
+                    <span *ngIf="countTest > 0" class="d3s-badge pull-right">{{countTest}}</span>
+                </a>
+                <div *ngIf="displayChild">
+                    <d3s-site-menu-mega-item  *ngFor="let sub of item.Items" [item]="sub" [level]="level + 1" [active]="active" (activeChange)="active=$event;activeChange.emit(active);"></d3s-site-menu-mega-item>                
+                </div>
                 `,
     changeDetection: ChangeDetectionStrategy.OnPush    
 })
 
-export class SiteMenuMegaItemComponent extends BaseComponent implements OnInit{
+export class SiteMenuMegaItemComponent extends BaseComponent {
    
     @Input() item: SiteMenuItem;    
     @Input() level: number;
-    @Input() parent: string;
     @Input() active: boolean;
+    @Input() countTest: number;
     @Output() activeChange = new EventEmitter();
     count: number;
     numberLoading: boolean;
-
+    displayChild: boolean = true;
 
     constructor(private router: Router, private menuService: SiteMenuService) {
         super();
     }
 
-    ngOnInit(): void {
-        this.getItemCount();
-    }
+    
 
     getMargin() {        
         return (this.level * 10) + 'px';
     }
 
-    private getItemCount() {
-        if (this.parent) {
-            this.numberLoading = true;
-            this.menuService.getItemCount(this.parent, this.item.Name).then((result) => { this.count = result; this.numberLoading = false });
-        }
+    private handleArrowClick(event) {
+        event.stopPropagation();
+        this.displayChild = !this.displayChild;
     }
+
 
     itemClick() {
         if (this.item.Url == null)

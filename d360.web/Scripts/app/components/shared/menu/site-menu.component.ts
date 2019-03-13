@@ -86,7 +86,8 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                     Url: favorite.Route,
                     IsLink: false,
                     Items: null,
-                    IsHomePage: favorite.IsHomePage
+                    IsHomePage: favorite.IsHomePage,
+                    count: null
                 });
             }
             this.ref.markForCheck();
@@ -174,24 +175,24 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         let metaMenu = new SiteMenuItem();
         metaMenu.Name = "MetaModel";
         metaMenu.Items = [];
-        metaMenu.Items.push({ Name: 'Artifacts', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ARTIFACTS}`, Items: null, IsLink: false, IsHomePage: false });
-        metaMenu.Items.push({ Name: 'Attributes', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ATTRIBUTES}`, Items: null, IsLink: false, IsHomePage: false });
-        metaMenu.Items.push({ Name: 'Lookups', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_LOOKUPS}`, Items: null, IsLink: false, IsHomePage: false });
-        metaMenu.Items.push({ Name: 'Models', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_MODELS}`, Items: null, IsLink: false, IsHomePage: false });
-        metaMenu.Items.push({ Name: 'Policies', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_POLICIES}`, Items: null, IsLink: false, IsHomePage: false });
-        metaMenu.Items.push({ Name: 'Predicates', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_PREDICATES}`, Items: null, IsLink: false, IsHomePage: false });
-        metaMenu.Items.push({ Name: 'Relationships', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RELATIONSHIPS}`, Items: null, IsLink: false, IsHomePage: false });
-        metaMenu.Items.push({ Name: 'Rules', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RULES}`, Items: null, IsLink: false, IsHomePage: false });
-        metaMenu.Items.push({ Name: 'Surveys', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SURVEYS}`, Items: null, IsLink: false, IsHomePage: false });
+        metaMenu.Items.push({ Name: 'Artifacts', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ARTIFACTS}`, Items: null, IsLink: false, IsHomePage: false, count:null });
+        metaMenu.Items.push({ Name: 'Attributes', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ATTRIBUTES}`, Items: null, IsLink: false, IsHomePage: false, count:null });
+        metaMenu.Items.push({ Name: 'Lookups', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_LOOKUPS}`, Items: null, IsLink: false, IsHomePage: false, count:null });
+        metaMenu.Items.push({ Name: 'Models', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_MODELS}`, Items: null, IsLink: false, IsHomePage: false, count:null });
+        metaMenu.Items.push({ Name: 'Policies', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_POLICIES}`, Items: null, IsLink: false, IsHomePage: false, count:null });
+        metaMenu.Items.push({ Name: 'Predicates', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_PREDICATES}`, Items: null, IsLink: false, IsHomePage: false, count:null });
+        metaMenu.Items.push({ Name: 'Relationships', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RELATIONSHIPS}`, Items: null, IsLink: false, IsHomePage: false, count:null });
+        metaMenu.Items.push({ Name: 'Rules', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RULES}`, Items: null, IsLink: false, IsHomePage: false, count:null });
+        metaMenu.Items.push({ Name: 'Surveys', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SURVEYS}`, Items: null, IsLink: false, IsHomePage: false, count:null });
         this.adminMenu.NavigationItems.push(metaMenu);
         
         let integrationMenu = new SiteMenuItem();
         integrationMenu.Name = "Integration";
         integrationMenu.Items = [];
-        integrationMenu.Items.push({ Name: 'API', Url: '/swagger/ui/index', Items: null, IsLink: true, IsHomePage: false});
-        integrationMenu.Items.push({ Name: 'Bulk Loader', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_BULK_LOAD}`, Items: null, IsLink: false, IsHomePage: false });
-        if (CompanySettings.ShowCustomAPIAdmin != 'false') integrationMenu.Items.push({ Name: 'Custom API', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_CUSTOM_API}`, Items: null, IsLink: false, IsHomePage: false });
-        integrationMenu.Items.push({ Name: 'Fusion', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_FUSION}`, Items: null, IsLink: false, IsHomePage: false});
+        integrationMenu.Items.push({ Name: 'API', Url: '/swagger/ui/index', Items: null, IsLink: true, IsHomePage: false, count: null });
+        integrationMenu.Items.push({ Name: 'Bulk Loader', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_BULK_LOAD}`, Items: null, IsLink: false, IsHomePage: false, count:null  });
+        if (CompanySettings.ShowCustomAPIAdmin != 'false') integrationMenu.Items.push({ Name: 'Custom API', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_CUSTOM_API}`, Items: null, IsLink: false, IsHomePage: false, count:null });
+        integrationMenu.Items.push({ Name: 'Fusion', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_FUSION}`, Items: null, IsLink: false, IsHomePage: false, count: null });
 
         this.adminMenu.NavigationItems.push(integrationMenu);
 
@@ -199,25 +200,25 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         securityMenu.Name = "Security";
         securityMenu.Items = [];
 
-        securityMenu.Items.push({ Name: 'Groups', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_GROUPS}`, Items: null, IsLink: false, IsHomePage: false });
+        securityMenu.Items.push({ Name: 'Groups', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_GROUPS}`, Items: null, IsLink: false, IsHomePage: false, count:null });
 
         if (CompanySettings.EnableOrganizations)
-            securityMenu.Items.push({ Name: 'Organizations', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ORGANIZATIONS}`, Items: null, IsLink: false, IsHomePage: false });
+            securityMenu.Items.push({ Name: 'Organizations', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ORGANIZATIONS}`, Items: null, IsLink: false, IsHomePage: false, count:null });
 
-        securityMenu.Items.push({ Name: 'Responsibilities', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RESPONSIBILITIES}`, Items: null, IsLink: false, IsHomePage: false });
-        securityMenu.Items.push({ Name: 'Users', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RESOURCES}`, Items: null, IsLink: false, IsHomePage: false });
+        securityMenu.Items.push({ Name: 'Responsibilities', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RESPONSIBILITIES}`, Items: null, IsLink: false, IsHomePage: false, count:null });
+        securityMenu.Items.push({ Name: 'Users', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RESOURCES}`, Items: null, IsLink: false, IsHomePage: false, count:null });
 
         this.adminMenu.NavigationItems.push(securityMenu);
 
-        this.adminMenu.NavigationItems.push({ Name: 'Settings', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SETTINGS}`, IsLink: false, IsHomePage: false });
+        this.adminMenu.NavigationItems.push({ Name: 'Settings', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SETTINGS}`, IsLink: false, IsHomePage: false, count:null });
 
-        this.adminMenu.NavigationItems.push({ Name: 'Export Templates', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_EXPORT_TEMPLATES}`, IsLink: false, IsHomePage: false });
+        this.adminMenu.NavigationItems.push({ Name: 'Export Templates', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_EXPORT_TEMPLATES}`, IsLink: false, IsHomePage: false, count:null });
         
         let metricsMenu = new SiteMenuItem();
         metricsMenu.Name = "Metrics";
         metricsMenu.Items = [];
-        metricsMenu.Items.push({ Name: 'Analytics', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ANALYTICS}`, Items: null, IsLink: false, IsHomePage: false});
-        metricsMenu.Items.push({ Name: 'Dashboard', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_DASHBOARDS}`, Items: null, IsLink: false, IsHomePage: false});
+        metricsMenu.Items.push({ Name: 'Analytics', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ANALYTICS}`, Items: null, IsLink: false, IsHomePage: false, count:null });
+        metricsMenu.Items.push({ Name: 'Dashboard', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_DASHBOARDS}`, Items: null, IsLink: false, IsHomePage: false, count: null });
         this.adminMenu.NavigationItems.push(metricsMenu);
         
 
@@ -225,12 +226,12 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         workflowMenu.Name = "Workflow";
         workflowMenu.Items = [];
 
-        workflowMenu.Items.push({ Name: 'Workflow', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_WORKFLOW}`, IsLink: false, IsHomePage: false });
-        workflowMenu.Items.push({ Name: 'Action Types', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ISSUE_TYPES}`, IsLink: false, IsHomePage: false });
+        workflowMenu.Items.push({ Name: 'Workflow', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_WORKFLOW}`, IsLink: false, IsHomePage: false, count:null });
+        workflowMenu.Items.push({ Name: 'Action Types', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ISSUE_TYPES}`, IsLink: false, IsHomePage: false, count:null });
         
         this.adminMenu.NavigationItems.push(workflowMenu);
 
-        this.adminMenu.NavigationItems.push({ Name: 'Style Customizations', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_CUSTOMIZATIONS}`, IsLink: false, IsHomePage: false });        
+        this.adminMenu.NavigationItems.push({ Name: 'Style Customizations', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_CUSTOMIZATIONS}`, IsLink: false, IsHomePage: false, count:null });        
         
     }
 };

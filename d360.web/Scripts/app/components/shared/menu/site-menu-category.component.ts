@@ -8,26 +8,27 @@ import { SiteMenuService } from '../../../services/site-menu.service';
 import { SiteMenu, SiteMenuItem, SiteNav } from '../../../models/site-menu.model';
 import { Favorite } from '../../../models/favorite.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
+import { forEach } from '@angular/router/src/utils/collection';
 
 @Component({
     selector: 'd3s-site-menu-category',    
     template: ` 
-                    <li #item [ngClass]="{'menu-category':true,'menu-parent':menu && (menu.NavigationItems),'menu-active':menu?.isActiveItem}" (mouseenter)="show(item)" (mouseleave)="hide(item)" [routerLink]="url ? url : []" style="cursor: pointer;" >
-                        <span *ngIf="menu && menu.NavigationItems && menu.NavigationItems.length > 0" [pTooltip]="!expanded ? title : null" tooltipZIndex="10001"><i [class]="'fa ' + rootIconName"></i></span>
-                        <span *ngIf="!menu || !menu.NavigationItems || menu.NavigationItems.length == 0" [pTooltip]="!expanded ? title : null"  tooltipZIndex="10001"><i [class]="'fa ' + rootIconName"></i></span>
+                    <li #item [ngClass]="{'menu-category':true,'menu-parent':menu && (menu.NavigationItems),'menu-active':menu?.isActiveItem}" [pTooltip]="(!expanded && !menuhasItems(menu)) ? title : null" tooltipZIndex="10001" (mouseenter)="show(item)" (mouseleave)="hide(item)" [routerLink]="url ? url : []" style="cursor: pointer;" >
+                        <span *ngIf="menuhasItems(menu)"><i [class]="'fa ' + rootIconName"></i></span>
+                        <span *ngIf="!menuhasItems(menu)"><i [class]="'fa ' + rootIconName"></i></span>
                         <span *ngIf='expanded'> {{title}} <i *ngIf="menu && menu.NavigationItems && menu.NavigationItems.length > 0" class="fa fa-angle-right pull-right menu-category"></i></span>
                         <div *ngIf="menu && menu.NavigationItems && menu.NavigationItems.length > 0" class="menu-child megamenu-panel" (click)="stopNavigation($event)">
                             <div>
-                                <div class="megamenu-title truncate">
-                                <span><input style="color: #000000;" type="search" placeholder="{{title}}"/> </span>
+                                <div class="row megamenu-title truncate">
+                                <span><input type="search" [(ngModel)]=searchText placeholder="{{title}}"/><i class="fa fa-search"></i></span>
                                     <span class="megamenu-tools" *ngIf="showClearButton">
                                         <i (click)="clearClick.emit(true)" class="fa fa-eraser" [pTooltip]="'Clear ' + title + ' List'" tooltipZIndex="10001"></i>
                                     </span>
                                 </div>
-                                <div class="row">
-                                    <div [class]="getColumnClass(menu)" *ngFor="let item of menu.NavigationItems">
+                                <div class="row megamenu-items">
+                                    <div [class]="getColumnClass(menu)" *ngFor="let item of menu.NavigationItems | simpleSearch: {Name:searchText}">
                                         <ul class="menu-group">                                        
-                                            <d3s-site-menu-mega-item [item]="item" [level]="0" [(active)]="menu.isActiveItem" [parent]="menu.Title"></d3s-site-menu-mega-item>
+                                            <d3s-site-menu-mega-item [item]="item" [level]="0" [(active)]="menu.isActiveItem" [countTest]="item.count"></d3s-site-menu-mega-item>
                                         </ul>
                                     </div>
                                 </div>
@@ -50,9 +51,11 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
     @Output() clearClick = new EventEmitter();
     
     public showing: boolean = false;
-    viewReady: boolean;
+    private viewReady: boolean;
+    private maxMenuHeight: number; 
+    private searchText: string;
 
-    constructor() {
+    constructor(private menuService: SiteMenuService) {
         super();
     }    
     
@@ -78,6 +81,15 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
 
     ngAfterViewInit(): void {
         this.viewReady = true;
+        if (this.menuhasItems(this.menu)) {
+            for (let item of this.menu.NavigationItems) {
+                this.menuService.getItemCount(this.menu.Title, item.Name).then((res) => item.count = res);
+            }
+        }
+    }
+
+    private menuhasItems(menu) {
+        return menu && menu.NavigationItems && menu.NavigationItems.length > 0;
     }
 
     private toggle(item) {
@@ -91,6 +103,7 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
     private stopNavigation(event) {
         event.stopPropagation();
     }
+
     repositionMenuToFit(windowHeight, element) {        
         var dims = element.getBoundingClientRect();
 
@@ -100,8 +113,16 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
             //case where menu is bigger than height of page
             if (dims.height > windowHeight) {                
                 element.style.height = windowHeight + 'px';
-                element.style.overflow = 'auto';
                 element.style.top = '-'+ element.style.top + 'px';
+                element.children[0].children[1].style.height = (windowHeight - 45) + 'px';
+
+                //get the dim values again and check is it outside the bottom after opening and moving top
+                dims = element.getBoundingClientRect();
+                maxHeight = dims.top + dims.height;
+                if (maxHeight > windowHeight) { //case where bottom is below page after resizing
+                    var topOffset = windowHeight - maxHeight;
+                    element.style.top = topOffset + 'px';
+                }            
             }            
             else if (maxHeight > windowHeight) { //case where bottom is below page
                 var topOffset = windowHeight - maxHeight;

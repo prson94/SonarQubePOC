@@ -206,7 +206,7 @@ nav.top, .left-side-nav {
     }
 
     i.fa {
-        font-size: 8px;
+        font-size: 15px;
     }
 }
 
@@ -216,11 +216,14 @@ nav.top, .left-side-nav {
     color: white;
 
     .megamenu-title {
-        font-weight: bold;        
+        font-weight: bold;
         text-transform: none;
         margin-bottom: 10px;
         font-size: 100%;
-        opacity: 0.67;
+        z-index: 1001;
+        color: #ffffff;
+        background: lightgrey;
+
 
         .megamenu-tools {
             font-size: 1rem;
@@ -228,6 +231,43 @@ nav.top, .left-side-nav {
             font-weight: normal;
             float: right;
         }
+
+        input {
+            border: none;
+            background-image: none;
+            background-color: transparent;
+            -webkit-box-shadow: none;
+            -moz-box-shadow: none;
+            box-shadow: none;
+            width: 90%;
+            color: #ffffff;
+            z-index: 1002;
+        }
+
+        ::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+            color: white;
+        }
+
+        ::-moz-placeholder { /* Firefox 19+ */
+            color: white;
+        }
+
+        :-ms-input-placeholder { /* IE 10+ */
+            color: white;
+        }
+
+        :-moz-placeholder { /* Firefox 18- */
+            color: white;
+        }
+
+        i {
+            border: none;
+        }
+    }
+
+    .megamenu-items {
+        overflow-y: auto;
+        overflow-x: hidden;
     }
 }
 

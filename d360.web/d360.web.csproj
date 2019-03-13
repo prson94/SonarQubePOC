@@ -16,7 +16,7 @@
     <AssemblyName>d360.web</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
-    <UseIISExpress>true</UseIISExpress>
+    <UseIISExpress>false</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -1448,6 +1448,7 @@
     <TypeScriptCompile Include="Scripts\app\pipes\responsibilitytypeallocation-filter.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\permission-filter.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\selectitem-text-to-label.pipe.ts" />
+    <TypeScriptCompile Include="Scripts\app\pipes\simple-search-pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\utc-date.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\safe-html.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\services\asset-type.services.ts" />

@@ -4,6 +4,7 @@
     Items: SiteMenuItem[];
     IsLink: boolean;
     IsHomePage: boolean = false;
+    count: number;
 }
 
 export class SiteMenu {
