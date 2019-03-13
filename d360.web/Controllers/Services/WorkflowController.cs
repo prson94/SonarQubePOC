@@ -1305,6 +1305,8 @@ order by wi.StartedOn desc";
             var types = Company.Query<dynamic>(QueryConstants.WorkflowObjectTypes).ToList();
             if (changeType == ChangeType.Loaded)
                 types = types.Where(t => t.type == "Fusion").OrderBy(t => t.name).ToList();
+            else if (changeType == ChangeType.Schedule)
+                types = types.Where(t => t.type == "ArtifactType" || t.type == "TaxonomyType").OrderBy(t => t.name).ToList();
             else
                 types = types.Where(t => t.type != "Fusion").OrderBy(t => t.name).ToList();
 
