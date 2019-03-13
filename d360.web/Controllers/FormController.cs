@@ -3027,6 +3027,11 @@ namespace d360.web.Controllers
         [Route("FieldType_ListFilter"), NonNullableParameters]
         public JsonNetResult FieldType_ListFilter(SystemObjects objectType, int objectId, SystemObjects type, int id)
         {
+            var predicateTypes = string.Join(",", PredicateType.DataLineage.GetAsList()
+                .Where(f => f.AllowEditFromRelationshipEditor && f.AllowIntersectTypeAssignment)
+                .Select(i => ((int)i.ID).ToString())
+                .ToArray());
+
             string sql = $@"SELECT 
                         Concat(A.PredicateID, '|',A.Direction) as PredicateValue, 
                         A.PredicateName, 
@@ -3053,6 +3058,8 @@ namespace d360.web.Controllers
                             join [dbo].[AssetType] st on st.[Object] = it.[Subject] and st.[ObjectId] = it.[SubjectID] 
                         where it.[Subject] = @objectType 
                         and it.[SubjectID] = @objectId
+                        and p.Type IN ({predicateTypes})
+                        and it.[Object] in ('ArtifactType', 'TaxonomyType')
                         UNION ALL 
                         SELECT 
                             it.[ID], 
@@ -3068,6 +3075,8 @@ namespace d360.web.Controllers
                             join [dbo].[AssetType] st on st.[Object] = it.[Subject] and st.[ObjectId] = it.[SubjectID] 
                          where it.[Object] = @objectType 
                          and it.[ObjectID] = @objectId 
+                         and p.Type IN ({predicateTypes})
+                         and it.[Subject] in ('ArtifactType', 'TaxonomyType')
                         ) A LEFT OUTER JOIN
                     (SELECT 
                         ft.[ID] as FieldTypeID,
@@ -4570,6 +4579,8 @@ namespace d360.web.Controllers
                             Company.Set<FieldTypeFilteredLookupDefinition>().Remove(efli);
 
                         ft.FilterPredicateID = model.FieldType.FilterPredicateID;
+                        if (model.FieldType.FilterPredicateID != null) //Filtered lists should not have default values
+                            ft.DefaultValue = null;
                         ft.FilterPredicateDirection = model.FieldType.FilterPredicateDirection;
                         ft.FilterFieldTypeID = model.FieldType.FilterFieldTypeID;
 

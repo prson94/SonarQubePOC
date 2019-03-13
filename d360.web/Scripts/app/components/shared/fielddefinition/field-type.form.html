@@ -139,414 +139,415 @@
                     </select>
                 </div>
             </div>
-            <ng-container *ngIf="listFilterable">
-                <div class="form-instructions">
-                    Lists of Artifacts and Models may be filtered to those related to the Action Subject or values in other lists.
+        </simple-accordion>
+        <simple-accordion header="Filter Configuration" [active]="expandFilterConfiguration" *ngIf="model.FieldType.Type == 'Lookup' && listFilterable">
+            <div class="form-instructions">
+                You can optionally filter a list of artifacts or models based on a relationship with another artifact or model, by choosing the predicate of the relationship you wish to filter by.
+                <span *ngIf="objectType == 'IssueType'">For example, choose 'stores' and 'Action Subject' to filter a list of applications to include only those which store the subject asset of a form.</span>
+            </div>
+            <div class="row">
+                <div class="col s12">
+                    <div class="FieldName">Filter Relationship Predicate</div>
+                    <p-dropdown name="filterpredicate" (ngModelChange)="selectPredicate($event)" [options]="listFilterPredicates" [(ngModel)]="listFilterPredicate" [style]="{ 'width': '98%' }" ngDefaultControl></p-dropdown>
+                </div>
+            </div>
+            <div class="row">
+                <div class=" col s12">
+                    <div class="FieldName">Filter by Related Assets in Field</div>
+                    <p-dropdown name="filterassetfield" [options]="listFilterRelatedFields" [(ngModel)]="model.FieldType.FilterFieldTypeID" [style]="{ 'width': '98%' }"  [disabled]="listFilterPredicate == null" ngDefaultControl>
+                        <ng-template let-item pTemplate="item">
+                            <span>{{item.label}}</span><span style="color:#848484;float:right;">{{item.info}}</span>
+                        </ng-template>
+                    </p-dropdown>
+                </div>
+            </div>
+        </simple-accordion>
+
+            <simple-accordion header="Validation" active="true" *ngIf="['Text','Number','Decimal'].indexOf(model.FieldType.Type) > -1">
+                <div class="row">
+                    <div *ngIf="model.FieldType.Type == 'Text'" class="col s3">
+                        <div id='PatternTip' class="FieldName">Validation Pattern</div>
+                        <input name="validationPattern" pInputText type="text" [(ngModel)]="model.FieldType.Pattern" (change)="validatePattern()" style="width: 98%; display: block;" />
+                    </div>
+                    <div *ngIf="model.FieldType.Type == 'Text'" class="col s3">
+                        <div class="FieldName" style="display:block">&nbsp;</div>
+                        <p-dropdown name="validationPattersOpt" [options]="lookups.Patterns" (onChange)="model.FieldType.Pattern = $event.value; validatePattern()" [style]="{ 'width': '98%' }" ngDefaultControl></p-dropdown>
+                    </div>
+                    <div class="col s3">
+                        <div id='MinimumLengthTip' class="FieldName">Minimum {{model.FieldType.Type == 'Text' ? "Length" : "Value"}}</div>
+                        <input name="minLength" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}" [disabled]="CheckMinRequired(model)" [(ngModel)]="model.FieldType.MinimumLength" (keyup)="validateNumber(model.FieldType.Type)" style="width: 98%; display: block;" />
+                    </div>
+                    <div class="col s3">
+                        <div id='MaximumLengthTip' class="FieldName">Maximum {{model.FieldType.Type == 'Text' ? "Length" : "Value"}}</div>
+                        <input name="maxLength" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}" [(ngModel)]="model.FieldType.MaximumLength" (keyup)="validateNumber(model.FieldType.Type)" style="width: 98%; display: block;" />
+                    </div>
+                    <div *ngIf="model.FieldType.Type == 'Decimal'" class="col s3">
+                        <div id='decimalPlaces' class="FieldName">Decimal Places</div>
+                        <input name="Precision" type="number" [(ngModel)]="model.FieldType.Precision" (keyup)="validateNumber(model.FieldType.Type)" min="0" max="5" style="width: 98%; display: block;" />
+                    </div>
+                </div>
+                <div class="row" *ngIf="model.FieldType.Pattern?.length > 0">
+                    <div *ngIf="model.FieldType.Type == 'Text'" class="col s3">
+                        <div class="FieldNameRequired">Test Pattern</div>
+                        <input name="testPattern" pInputText type="text" [(ngModel)]="testPattern" (change)="validatePattern()" style="width: 98%; display: block;" />
+                    </div>
+                    <div class="col s3">
+                        <div for="FieldNameRequired">&nbsp;</div>
+                        <div>{{testPatternValidationText}}</div>
+                    </div>
+                </div>
+                <div class="row" *ngIf="model.FieldType.Pattern?.length > 0 || model.FieldType.MinimumLength > 0 || model.FieldType.IsRequired">
+                    <div *ngIf="['Number', 'Decimal'].indexOf(model.FieldType.Type) == -1" class="col s12">
+                        <div id='ValidationDescriptionTip' class="FieldName">Validation Message</div>
+                        <textarea pInputTextarea autoResize="'true'" [(ngModel)]="model.FieldType.ValidationDescription" [ngModelOptions]="{standalone: true}"></textarea>
+                    </div>
+                </div>
+            </simple-accordion>
+
+            <simple-accordion header="Value Selection" active="true" *ngIf="['Lookup','Text','Boolean','Number','Html','Date','Link','Decimal'].indexOf(model.FieldType.Type) > -1">
+                <div class="row">
+                    <div class="col l6 m6 s12">
+                        <div class="FieldName">Default Value (if any)</div>
+                    </div>
+                    <div class="col l6 m6 s12" *ngIf="model.FieldType.Type == 'Lookup'">
+                        <div class="FieldName">Allow ALL Value Selection</div>
+                    </div>
+                    <div class="col l6 m6 s12" *ngIf="['Number','Decimal'].indexOf(model.FieldType.Type) > -1">
+                        <div class="FieldName" style="display:block">Increment</div>
+                    </div>
                 </div>
                 <div class="row">
-                    <div class="col s12">
-                        <div class="FieldName">Filter Relationship Predicate</div>
-                        <p-dropdown name="filterpredicate" (ngModelChange)="selectPredicate($event)" [options]="listFilterPredicates" [(ngModel)]="listFilterPredicate" [style]="{ 'width': '98%' }" ngDefaultControl></p-dropdown>
+                    <div class="col l6 m6 s12">
+                        <p-dropdown *ngIf="model.FieldType.Type == 'Boolean'" [options]="booleanDefaultValueOptions" [(ngModel)]="model.FieldType.DefaultValue" [style]="{ 'width': '98%' }" ngDefaultControl [ngModelOptions]="{standalone: true}"></p-dropdown>
+                        <p-dropdown *ngIf="model.FieldType.Type == 'Lookup'" [options]="lookupDefaultValueOptions" [(ngModel)]="model.FieldType.DefaultValue" [style]="{ 'width': '98%' }" ngDefaultControl [ngModelOptions]="{standalone: true}" [disabled]="listFilterPredicate != null"></p-dropdown>
+                        <p-calendar *ngIf="model.FieldType.Type == 'Date'" [ngModelOptions]="{standalone: true}" [(ngModel)]="defaultDate" (onSelect)="onDateSelectMethod($event)" [dateFormat]="getLocaleDateString()"></p-calendar>
+                        <input *ngIf="model.FieldType.Type == 'Text' " pInputText type="text" [(ngModel)]="model.FieldType.DefaultValue" style="width: 98%; display: block;" [ngModelOptions]="{standalone: true}" (change)="validateDefaultWithPattern()"/>
+                        <p-editor *ngIf="model.FieldType.Type == 'Html'" [(ngModel)]="model.FieldType.DefaultValue" [ngModelOptions]="{standalone: true}"></p-editor>
+                        <div *ngIf="model.FieldType.Type == 'Link'">
+                            <input [(ngModel)]="defaultLinkName" style="width: 100%;" type="string" [ngModelOptions]="{standalone: true}">
+                            <div>(Link Name)</div>
+                            <input [(ngModel)]="defaultLinkAdress" style="width: 100%;" type="string" [ngModelOptions]="{standalone: true}">
+                            <div>(Link Url: Your Url should start with a protocol prefix.  For example 'http://' or 'https://')</div>
+                        </div>
+                        <input *ngIf="['Number','Decimal'].indexOf(model.FieldType.Type) > -1" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}" (keyup)="validateNumber(model.FieldType.Type)" [(ngModel)]="model.FieldType.DefaultValue" style="width: 98%; display: block;" [ngModelOptions]="{standalone: true}" />
+                    </div>
+                    <div class="col l1 m1 s12" *ngIf="model.FieldType.Type == 'Lookup'">
+                        <p-checkbox binary="true" [(ngModel)]="model.FieldType.AllowAllValue" [ngModelOptions]="{standalone: true}"></p-checkbox>
+                    </div>
+                    <div class="col l5 m5 s12" *ngIf="model.FieldType.Type == 'Lookup'">
+                        <input pInputText type="text" [(ngModel)]="model.FieldType.AllowAllLabel" [ngModelOptions]="{standalone: true}" style="width: 100%" [disabled]="!model.FieldType.AllowAllValue" />
+                    </div>
+                    <div class="col l5 m5 s12" *ngIf="model.FieldType.Type == 'Number' || model.FieldType.Type == 'Decimal'">
+                        <input name="validationIncrement" type="number" [(ngModel)]="model.FieldType.Increment" (keyup)="validateNumber(model.FieldType.Type)" style="width: 98%; display: block;" />
                     </div>
                 </div>
+            </simple-accordion>
+
+            <!-- fusion lookup -->
+            <simple-accordion header="Fusion Lookup" active="true" *ngIf="model.FieldType.Type == 'FusionLookup'">
                 <div class="row">
-                    <div class=" col s12">
-                        <div class="FieldName">Filter by Related Assets in Field</div>
-                        <p-dropdown name="filterassetfield" [options]="listFilterRelatedFields" [(ngModel)]="model.FieldType.FilterFieldTypeID" [style]="{ 'width': '98%' }" ngDefaultControl>
-                            <ng-template let-item pTemplate="item">
-                                <span>{{item.label}}</span><span style="color:#848484;float:right;">{{item.info}}</span>
-                            </ng-template>
-                        </p-dropdown>
+                    <div class="col s12" style="margin: 10px 0 10px 0">
+                        <table class="highlight, striped" cellpadding="5">
+                            <thead>
+                                <tr>
+                                    <th>Target Item</th>
+                                    <th>Reference Type</th>
+                                    <th>Reference Item</th>
+                                    <th>Reference Columns</th>
+                                    <th>Table Settings</th>
+                                    <th style="width: 50px; text-align: right">
+                                        <a style="text-decoration:none; color:#000; cursor: pointer; font-size:1.5em; padding:5px" (click)="addFusion()"><i class='fa fa-plus' title='Add fusion item'></i></a>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody *ngFor="let item of model.FusionItems; let i=index;">
+                                <tr>
+                                    <td>
+                                        <p-dropdown [ngModelOptions]="{standalone: true}" [options]="lookups.FusionAttributeTypes" [(ngModel)]="item.SourceFusionAttributeType" [style]="{ 'width' : '95%' }" (onChange)="loadTargetFusionAttributes(item)"></p-dropdown>
+                                    </td>
+                                    <td>
+                                        <p-dropdown [ngModelOptions]="{standalone: true}" [options]="lookups.ReferenceTypes" [(ngModel)]="item.ReferenceType" [style]="{ 'width' : '95%' }" (onChange)="loadTargetFusionAttributes(item)"></p-dropdown>
+                                    </td>
+                                    <td>
+                                        <p-dropdown [ngModelOptions]="{standalone: true}" [options]="item.TargetFusionAttributeTypes" [(ngModel)]="item.TargetFusionAttributeType" [style]="{ 'width' : '95%' }" (onChange)="loadFusionDisplayFields(item)"></p-dropdown>
+                                    </td>
+                                    <td>
+                                        <p-multiSelect [ngModelOptions]="{standalone: true}" [options]="item.FusionDisplayFields" [(ngModel)]="item.DisplayFields" [style]="{ 'width' : '95%' }"></p-multiSelect>
+                                    </td>
+                                    <td>
+                                        <div><input pCheckbox type="checkbox" [(ngModel)]="item.HideHeader" [ngModelOptions]="{standalone: true}" /> Hide Header?</div>
+                                        <div><input pCheckbox type="checkbox" [(ngModel)]="item.HideFooter" [ngModelOptions]="{standalone: true}" /> Hide Footer?</div>
+                                    </td>
+                                    <td><a style="text-decoration:none; color:#000; cursor: pointer; font-size:1.5em; padding:5px" (click)="removeFusion(i)"><i class='fa fa-trash' title='Remove'></i></a></td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-            </ng-container>
-        </simple-accordion>
+            </simple-accordion>
 
-        <simple-accordion header="Validation" active="true" *ngIf="['Text','Number','Decimal'].indexOf(model.FieldType.Type) > -1">
-            <div class="row">
-                <div *ngIf="model.FieldType.Type == 'Text'" class="col s3">
-                    <div id='PatternTip' class="FieldName">Validation Pattern</div>
-                    <input name="validationPattern" pInputText type="text" [(ngModel)]="model.FieldType.Pattern" (change)="validatePattern()" style="width: 98%; display: block;" />
-                </div>
-                <div *ngIf="model.FieldType.Type == 'Text'" class="col s3">
-                    <div class="FieldName" style="display:block">&nbsp;</div>
-                    <p-dropdown name="validationPattersOpt" [options]="lookups.Patterns" (onChange)="model.FieldType.Pattern = $event.value; validatePattern()" [style]="{ 'width': '98%' }" ngDefaultControl></p-dropdown>
-                </div>
-                <div class="col s3">
-                    <div id='MinimumLengthTip' class="FieldName">Minimum {{model.FieldType.Type == 'Text' ? "Length" : "Value"}}</div>
-                    <input name="minLength" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}" [disabled]="CheckMinRequired(model)" [(ngModel)]="model.FieldType.MinimumLength" (keyup)="validateNumber(model.FieldType.Type)" style="width: 98%; display: block;" />
-                </div>
-                <div class="col s3">
-                    <div id='MaximumLengthTip' class="FieldName">Maximum {{model.FieldType.Type == 'Text' ? "Length" : "Value"}}</div>
-                    <input name="maxLength" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}" [(ngModel)]="model.FieldType.MaximumLength" (keyup)="validateNumber(model.FieldType.Type)" style="width: 98%; display: block;" />
-                </div>
-				        <div *ngIf="model.FieldType.Type == 'Decimal'" class="col s3">
-                    <div id='decimalPlaces' class="FieldName">Decimal Places</div>
-                    <input name="Precision" type="number" [(ngModel)]="model.FieldType.Precision" (keyup)="validateNumber(model.FieldType.Type)" min="0" max="5" style="width: 98%; display: block;" />
-                 </div>
-            </div>
-            <div class="row" *ngIf="model.FieldType.Pattern?.length > 0">
-                <div *ngIf="model.FieldType.Type == 'Text'" class="col s3">
-                    <div class="FieldNameRequired">Test Pattern</div>
-                    <input name="testPattern" pInputText type="text" [(ngModel)]="testPattern" (change)="validatePattern()" style="width: 98%; display: block;" />
-                </div>
-                <div class="col s3">
-                    <div for="FieldNameRequired">&nbsp;</div>
-                    <div>{{testPatternValidationText}}</div>
-                </div>
-            </div>
-            <div class="row" *ngIf="model.FieldType.Pattern?.length > 0 || model.FieldType.MinimumLength > 0 || model.FieldType.IsRequired">
-                <div *ngIf="['Number', 'Decimal'].indexOf(model.FieldType.Type) == -1" class="col s12"> 
-                    <div id='ValidationDescriptionTip' class="FieldName">Validation Message</div> 
-                    <textarea pInputTextarea autoResize="'true'" [(ngModel)]="model.FieldType.ValidationDescription" [ngModelOptions]="{standalone: true}"></textarea>
-                </div>
-            </div>
-        </simple-accordion>
+            <!-- complex relation lookup -->
+            <simple-accordion header="Relation Lookup" active="true" *ngIf="model.FieldType.Type == 'ComplexRelationLookup'">
+                <div class="row">
+                    <div class="col s12" style="margin: 10px 0 10px 0; overflow-x: auto">
+                        <table cellpadding="5" class="relation-table">
+                            <thead>
+                                <tr>
+                                    <th>&nbsp;</th>
+                                    <th>Relation</th>
+                                    <th>Lookup Type</th>
+                                    <th>Relationship Type</th>
+                                    <th>Table Settings</th>
+                                </tr>
+                            </thead>
+                            <tbody *ngFor="let i of model.RelationItems; let x=index;">
+                                <tr [style.background-color]="x%2 == 1 ? '#fff' : '#fff'">
+                                    <td colspan="5">&nbsp;</td>
+                                </tr>
+                                <tr style="height: 10px; font-size: 9px; background-color: #f2f2f2;">
+                                    <td colspan="5">&nbsp;</td>
+                                </tr>
+                                <tr [style.background-color]="x%2 == 1 ? '#f2f2f2' : '#f2f2f2'">
+                                    <td rowspan="3" style="width: 3%">&nbsp;</td>
 
-        <simple-accordion header="Value Selection" active="true" *ngIf="['Lookup','Text','Boolean','Number','Html','Date','Link','Decimal'].indexOf(model.FieldType.Type) > -1">
-            <div class="row">
-                <div class="col l6 m6 s12">
-                    <div class="FieldName">Default Value (if any)</div>
-                </div>
-                <div class="col l6 m6 s12" *ngIf="model.FieldType.Type == 'Lookup'">
-                    <div class="FieldName">Allow ALL Value Selection</div>
-                </div>
-                <div class="col l6 m6 s12" *ngIf="['Number','Decimal'].indexOf(model.FieldType.Type) > -1">
-                    <div class="FieldName" style="display:block">Increment</div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col l6 m6 s12">
-                    <p-dropdown *ngIf="model.FieldType.Type == 'Boolean'" [options]="booleanDefaultValueOptions" [(ngModel)]="model.FieldType.DefaultValue" [style]="{ 'width': '98%' }" ngDefaultControl [ngModelOptions]="{standalone: true}"></p-dropdown>
-                    <p-dropdown *ngIf="model.FieldType.Type == 'Lookup'" [options]="lookupDefaultValueOptions" [(ngModel)]="model.FieldType.DefaultValue" [style]="{ 'width': '98%' }" ngDefaultControl [ngModelOptions]="{standalone: true}"></p-dropdown>
-                    <p-calendar *ngIf="model.FieldType.Type == 'Date'" [ngModelOptions]="{standalone: true}" [(ngModel)]="defaultDate" (onSelect)="onDateSelectMethod($event)" [dateFormat]="getLocaleDateString()"></p-calendar>
-                    <input *ngIf="model.FieldType.Type == 'Text' " pInputText type="text" [(ngModel)]="model.FieldType.DefaultValue" style="width: 98%; display: block;" [ngModelOptions]="{standalone: true}" (change)="validateDefaultWithPattern()"/>
-                    <p-editor *ngIf="model.FieldType.Type == 'Html'" [(ngModel)]="model.FieldType.DefaultValue" [ngModelOptions]="{standalone: true}"></p-editor>
-                    <div *ngIf="model.FieldType.Type == 'Link'">
-                        <input [(ngModel)]="defaultLinkName" style="width: 100%;" type="string" [ngModelOptions]="{standalone: true}">
-                        <div>(Link Name)</div>
-                        <input [(ngModel)]="defaultLinkAdress" style="width: 100%;" type="string" [ngModelOptions]="{standalone: true}">
-                        <div>(Link Url: Your Url should start with a protocol prefix.  For example 'http://' or 'https://')</div>
+                                    <td style="vertical-align: top; width:29%" *ngIf="x == 0">{{objectName}}</td>
+                                    <td style="vertical-align: top; width:29%" *ngIf="x > 0">{{i.displayValue}}</td>
+
+                                    <td style="vertical-align: top; width:29%">
+                                        <select [ngModelOptions]="{standalone: true}" [(ngModel)]="i.ReferenceType" style="width:95%" (ngModelChange)="changeRefType(x)" [disabled]="x < relationItemCount-1">
+                                            <option *ngFor="let j of lookups.ComplexLookupRelations" [value]="j.ID">{{j.DisplayName}}</option>
+                                        </select>
+                                    </td>
+
+                                    <td *ngIf="i.relationsLoading" style="vertical-align: top; width:29%">
+                                        <span><i class="fa fa-spinner fa-spin"></i></span>
+                                    </td>
+                                    <td *ngIf="!i.relationsLoading" style="vertical-align: top; width:29%">
+                                        <select [ngModelOptions]="{standalone: true}" [(ngModel)]="i.selectedRelationItemID" style="width:95%" (ngModelChange)="changeRel(x)" [disabled]="x < relationItemCount-1">
+                                            <option *ngFor="let j of i.relationItems" [value]="j.value">{{j.title}}</option>
+                                        </select>
+                                    </td>
+
+                                    <td rowspan="3" style="vertical-align: top">
+                                        <div *ngIf="x == 0">
+                                            <div><input [ngModelOptions]="{standalone: true}" type="checkbox" [(ngModel)]="i.HideFooter" /> Hide Footer?</div>
+                                            <div><input [ngModelOptions]="{standalone: true}" type="checkbox" [(ngModel)]="i.HideHeader" /> Hide Header?</div>
+                                            <div><input [ngModelOptions]="{standalone: true}" type="checkbox" [(ngModel)]="i.HideFilter" /> Hide Search?</div>
+                                        </div>
+                                        <div class="RowTools">
+                                            <a *ngIf="i.selectedRelationItemID != null && x == relationItemCount-1" (click)="addRelation(i)" style="cursor: pointer; display: inline-block;"><i class="fa fa-plus"></i></a>
+                                            <a *ngIf="x == relationItemCount-1 && x > 0" (click)="removeRelation(i)" style="cursor: pointer; display: inline-block;"><i class="fa fa-trash-o"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr [style.background-color]="x%2 == 1 ? '#fff' : '#fff'">
+                                    <td colspan="3" class="display-table-title">Reference Columns</td>
+                                </tr>
+                                <tr [style.background-color]="x%2 == 1 ? '#fff' : '#fff'">
+                                    <td colspan="3">
+                                        <table class="striped highlight display-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Name</th>
+                                                    <th>Display Name Override</th>
+                                                    <th>Show?</th>
+                                                    <th>Column Width (px)</th>
+                                                    <th>Column Order</th>
+                                                    <th>Sort Order</th>
+                                                    <th>Filter</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr *ngFor="let d of i.DisplayFields">
+                                                    <td style="width: 20%; word-break:break-all">{{d.FieldTypeName}}</td>
+                                                    <td style="width: 20%;">
+                                                        <input [ngModelOptions]="{standalone: true}" type="text" [(ngModel)]="d.OverrideDisplayName" style="width:95%" />
+                                                    </td>
+                                                    <td style="width: 10%; max-width: 64px">
+                                                        <input [ngModelOptions]="{standalone: true}" type="checkbox" [ngModel]="d.Show" (ngModelChange)="d.Show=$event; anyDisplayFieldsSelected($event);" style="width:95%" />
+                                                    </td>
+                                                    <td style="width: 10%; max-width: 64px">
+                                                        <input [ngModelOptions]="{standalone: true}" type="number" [(ngModel)]="d.Width" style="width:95%"/>
+                                                    </td>
+                                                    <td style="width: 10%; min-width: 64px">
+                                                        <select [ngModelOptions]="{standalone: true}" [(ngModel)]="d.DisplayOrder" style="width:95%" (ngModelChange)="changeDisplayOrder(d, i)">
+                                                            <option *ngFor="let j of i.SortOrderList" [value]="j.id">{{j.text}}</option>
+                                                        </select>
+                                                    </td>
+                                                    <td style="width: 10%; min-width: 64px">
+                                                        <select [ngModelOptions]="{standalone: true}" [(ngModel)]="d.SortOrder" style="width:95%">
+                                                            <option></option>
+                                                            <option *ngFor="let j of i.SortOrderList" [value]="j.id">{{j.text}}</option>
+                                                        </select>
+                                                    </td>
+                                                    <td style="width:15%; max-width: 100px">
+                                                        <input [ngModelOptions]="{standalone: true}" type="text" [(ngModel)]="d.FilterValue" style="width:95%" />
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr style="height: 10px; font-size: 9px; background-color: #f2f2f2;">
+                                    <td colspan="7">&nbsp;</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
-                    <input *ngIf="['Number','Decimal'].indexOf(model.FieldType.Type) > -1" type="number" step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}" (keyup)="validateNumber(model.FieldType.Type)" [(ngModel)]="model.FieldType.DefaultValue" style="width: 98%; display: block;" [ngModelOptions]="{standalone: true}" />
                 </div>
-                <div class="col l1 m1 s12" *ngIf="model.FieldType.Type == 'Lookup'">
-                    <p-checkbox binary="true" [(ngModel)]="model.FieldType.AllowAllValue" [ngModelOptions]="{standalone: true}"></p-checkbox>
+            </simple-accordion>
+
+            <!-- relation -->
+            <simple-accordion header="Relationship" active="true" *ngIf="model.FieldType.Type == 'Relationship'">
+                <div class="row">
+                    <div class="col s12" style="margin: 10px 0 10px 0">
+                        <div class="FieldName">Relationship</div>
+                        <p-dropdown [ngModelOptions]="{standalone: true}" [options]="lookups.Field_Relationships" [ngModel]="model.cardinalRelationship" (ngModelChange)="model.cardinalRelationship=$event;cardinalRelationshipSelected($event);" [style]="{ 'width': '98%' }" ngDefaultControl></p-dropdown>
+                    </div>
                 </div>
-                <div class="col l5 m5 s12" *ngIf="model.FieldType.Type == 'Lookup'">
-                    <input pInputText type="text" [(ngModel)]="model.FieldType.AllowAllLabel" [ngModelOptions]="{standalone: true}" style="width: 100%" [disabled]="!model.FieldType.AllowAllValue" />
+            </simple-accordion>
+
+            <!-- field from relation -->
+            <simple-accordion header="Field from Relationship" active="true" *ngIf="model.FieldType.Type == 'FieldFromRelationship'">
+                <div class="row">
+                    <div class="col l6 m6 s12" style="margin: 10px 0 10px 0">
+                        <div class="FieldName">One-to-Many Relationship</div>
+                        <p-dropdown [ngModelOptions]="{standalone: true}" [options]="lookups.Field_FieldFromRelRelationships" [ngModel]="model.cardinalRelationship" (ngModelChange)="model.cardinalRelationship=$event;cardinalFieldFromRelationshipSelected($event);" [style]="{ 'width': '98%' }" ngDefaultControl></p-dropdown>
+                    </div>
+                    <div class="col l6 m6 s12" style="margin: 10px 0 10px 0">
+                        <div class="FieldName">Selected Field</div>
+                        <p-dropdown [ngModelOptions]="{standalone: true}" [options]="fieldsFromRelation" [ngModel]="model.FieldType.LookupObjectFieldTypeID"  (ngModelChange)="cardinalFieldFromRelationship_FieldSelected($event);" [style]="{ 'width': '98%' }" ngDefaultControl></p-dropdown>
+                    </div>
                 </div>
-                <div class="col l5 m5 s12" *ngIf="model.FieldType.Type == 'Number' || model.FieldType.Type == 'Decimal'">
-                    <input name="validationIncrement" type="number" [(ngModel)]="model.FieldType.Increment" (keyup)="validateNumber(model.FieldType.Type)" style="width: 98%; display: block;" />
+            </simple-accordion>
+
+            <!-- reference list from relation -->
+            <simple-accordion header="Reference Item List from Relationship" active="true" *ngIf="model.FieldType.Type == 'RefListRelationship'">
+                <div class="row">
+                    <div class="col s12" style="margin: 10px 0 10px 0">
+                        <div class="FieldNameRequired">One-to-Many Relationship</div>
+                        <p-dropdown required [ngModelOptions]="{standalone: true}" [options]="lookups.Field_CardinalReferenceRelationships" [ngModel]="model.cardinalRelationship" (ngModelChange)="model.cardinalRelationship=$event;cardinalReferenceItemListFromRelationshipSelected($event);" [style]="{ 'width': '98%' }" ngDefaultControl></p-dropdown>
+                    </div>
+                </div>
+            </simple-accordion>
+
+            <!-- filtered lookup -->
+            <simple-accordion header="Filtered Lookup" active="true" *ngIf="model.FieldType.Type == 'FilteredLookup'">
+                <div class="row">
+                    <div class="col s12" style="margin: 10px 0 10px 0">
+                        <table cellpadding="5">
+                            <thead>
+                                <tr>
+                                    <th style="width:25%">List</th>
+                                    <th>Reference Columns</th>
+                                    <th>Table Settings</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="vertical-align: top">
+                                        <select [ngModelOptions]="{standalone: true}" [(ngModel)]="filteredLookup" (ngModelChange)="changeFilteredLookup()" style="width:100%">
+                                            <option></option>
+                                            <option *ngFor="let i of lookups.FilteredLookups" [value]="i.value">{{i.title}}</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <table class="striped highlight">
+                                            <thead>
+                                                <tr>
+                                                    <th>
+                                                        Name
+                                                    </th>
+                                                    <th>
+                                                        Show
+                                                    </th>
+                                                    <th>
+                                                        Sort
+                                                    </th>
+                                                    <th>
+                                                        Filter by Current Object?
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr *ngFor="let d of filteredLookupDisplayFields">
+                                                    <td>
+                                                        {{d.title}}
+                                                    </td>
+                                                    <td>
+                                                        <input type="checkbox" [(ngModel)]="d.Show" [ngModelOptions]="{standalone: true}" />
+                                                    </td>
+                                                    <td>
+                                                        <select [ngModelOptions]="{standalone: true}" [(ngModel)]="d.SortOrder" style="width:95%">
+                                                            <option></option>
+                                                            <option *ngFor="let j of filteredSortOrderList" [value]="j.id">{{j.text}}</option>
+                                                        </select>
+                                                    </td>
+                                                    <td>
+                                                        <input type="checkbox" [(ngModel)]="d.Filter" [ngModelOptions]="{standalone: true}" [disabled]="!d.AllowFilter" />
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <input type="checkbox" [(ngModel)]="filteredLookupHideHeader" [ngModelOptions]="{standalone: true}" /> Hide Header? <br />
+                                        <input type="checkbox" [(ngModel)]="filteredLookupHideFooter" [ngModelOptions]="{standalone: true}" /> Hide Footer?
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </simple-accordion>
+
+            <!-- ownership lookup -->
+            <simple-accordion header="Ownership Lookup" active="true" *ngIf="model.FieldType.Type == 'OwnershipLookup' && model.OwnershipLookupSettings">
+                <div class="row">
+                    <div class="col l3 m3 s6" style="margin: 10px 0 10px 0">
+                        <input name="expandGroupMembership" pCheckbox type="checkbox" [(ngModel)]="model.OwnershipLookupSettings.ExpandGroupMembership" />Expand Group Membership?
+                    </div>
+                    <div class="col l3 m3 s6" style="margin: 10px 0 10px 0">
+                        <input name="displayAssignmentSource" pCheckbox type="checkbox" [(ngModel)]="model.OwnershipLookupSettings.DisplayAssignmentSource" />Display Assignment Source?
+                    </div>
+                    <div class="col l2 m2 s6" style="margin: 10px 0 10px 0">
+                        <input name="hideFilter" pCheckbox type="checkbox" [(ngModel)]="model.OwnershipLookupSettings.HideFilter" />Hide Grid Filter?
+                    </div>
+                    <div class="col l2 m2 s6" style="margin: 10px 0 10px 0">
+                        <input name="hideFooter" pCheckbox type="checkbox" [(ngModel)]="model.OwnershipLookupSettings.HideFooter" />Hide Grid Footer?
+                    </div>
+                    <div class="col l2 m2 s12" style="margin: 10px 0 10px 0">
+                        <input name="hideHeader" pCheckbox type="checkbox" [(ngModel)]="model.OwnershipLookupSettings.HideHeader" />Hide Grid Column Headers?
+                    </div>
+                </div>
+            </simple-accordion>
+
+            <simple-accordion header="Descriptions" active="false">
+                <div class="row">
+                    <div class="col s6">
+                        <div id='DisplayDescriptionTip' class="FieldName">Display Description</div>
+                        <textarea pInputTextarea autoResize="'true'" [(ngModel)]="model.FieldType.DisplayDescription" [ngModelOptions]="{standalone: true}"></textarea>
+                    </div>
+                    <div class="col s6">
+                        <div id='FormDescriptionTip' class="FieldName">Form Description</div>
+                        <textarea pInputTextarea autoResize="'true'" [(ngModel)]="model.FieldType.FormDescription" [ngModelOptions]="{standalone: true}"></textarea>
+                    </div>
+                </div>
+            </simple-accordion>
+
+            <div class="row" *ngIf="errorMessage != ''">
+                <div class="col s12">
+                    <div style="color:red">{{errorMessage}}</div>
                 </div>
             </div>
-        </simple-accordion>
 
-        <!-- fusion lookup -->
-        <simple-accordion header="Fusion Lookup" active="true" *ngIf="model.FieldType.Type == 'FusionLookup'">
             <div class="row">
-                <div class="col s12" style="margin: 10px 0 10px 0">
-                    <table class="highlight, striped" cellpadding="5">
-                        <thead>
-                            <tr>
-                                <th>Target Item</th>
-                                <th>Reference Type</th>
-                                <th>Reference Item</th>
-                                <th>Reference Columns</th>
-                                <th>Table Settings</th>
-                                <th style="width: 50px; text-align: right">
-                                    <a style="text-decoration:none; color:#000; cursor: pointer; font-size:1.5em; padding:5px" (click)="addFusion()"><i class='fa fa-plus' title='Add fusion item'></i></a>
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody *ngFor="let item of model.FusionItems; let i=index;">
-                            <tr>
-                                <td>
-                                    <p-dropdown [ngModelOptions]="{standalone: true}" [options]="lookups.FusionAttributeTypes" [(ngModel)]="item.SourceFusionAttributeType" [style]="{ 'width' : '95%' }" (onChange)="loadTargetFusionAttributes(item)"></p-dropdown>
-                                </td>
-                                <td>
-                                    <p-dropdown [ngModelOptions]="{standalone: true}" [options]="lookups.ReferenceTypes" [(ngModel)]="item.ReferenceType" [style]="{ 'width' : '95%' }" (onChange)="loadTargetFusionAttributes(item)"></p-dropdown>
-                                </td>
-                                <td>
-                                    <p-dropdown [ngModelOptions]="{standalone: true}" [options]="item.TargetFusionAttributeTypes" [(ngModel)]="item.TargetFusionAttributeType" [style]="{ 'width' : '95%' }" (onChange)="loadFusionDisplayFields(item)"></p-dropdown>
-                                </td>
-                                <td>
-                                    <p-multiSelect [ngModelOptions]="{standalone: true}" [options]="item.FusionDisplayFields" [(ngModel)]="item.DisplayFields" [style]="{ 'width' : '95%' }"></p-multiSelect>
-                                </td>
-                                <td>
-                                    <div><input pCheckbox type="checkbox" [(ngModel)]="item.HideHeader" [ngModelOptions]="{standalone: true}" /> Hide Header?</div>
-                                    <div><input pCheckbox type="checkbox" [(ngModel)]="item.HideFooter" [ngModelOptions]="{standalone: true}" /> Hide Footer?</div>
-                                </td>
-                                <td><a style="text-decoration:none; color:#000; cursor: pointer; font-size:1.5em; padding:5px" (click)="removeFusion(i)"><i class='fa fa-trash' title='Remove'></i></a></td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div class="col s12">
+                    <div style="padding-top:10px">
+                        <button pButton type="submit" [disabled]="!fieldEditor.form.valid || !displayFieldSelected ||  !valid() || errorMessage != ''" label="Save"></button>
+                        <button pButton type="button" label="Cancel" (click)="cancel()"></button>
+                    </div>
                 </div>
             </div>
-        </simple-accordion>
-
-        <!-- complex relation lookup -->
-        <simple-accordion header="Relation Lookup" active="true" *ngIf="model.FieldType.Type == 'ComplexRelationLookup'">
-            <div class="row">
-                <div class="col s12" style="margin: 10px 0 10px 0; overflow-x: auto">
-                    <table cellpadding="5" class="relation-table">
-                        <thead>
-                            <tr>
-                                <th>&nbsp;</th>
-                                <th>Relation</th>
-                                <th>Lookup Type</th>
-                                <th>Relationship Type</th>
-                                <th>Table Settings</th>
-                            </tr>
-                        </thead>
-                        <tbody *ngFor="let i of model.RelationItems; let x=index;">
-                            <tr [style.background-color]="x%2 == 1 ? '#fff' : '#fff'">
-                                <td colspan="5">&nbsp;</td>
-                            </tr>
-                            <tr style="height: 10px; font-size: 9px; background-color: #f2f2f2;">
-                                <td colspan="5">&nbsp;</td>
-                            </tr>
-                            <tr [style.background-color]="x%2 == 1 ? '#f2f2f2' : '#f2f2f2'">
-                                <td rowspan="3" style="width: 3%">&nbsp;</td>
-
-                                <td style="vertical-align: top; width:29%" *ngIf="x == 0">{{objectName}}</td>
-                                <td style="vertical-align: top; width:29%" *ngIf="x > 0">{{i.displayValue}}</td>
-
-                                <td style="vertical-align: top; width:29%">
-                                    <select [ngModelOptions]="{standalone: true}" [(ngModel)]="i.ReferenceType" style="width:95%" (ngModelChange)="changeRefType(x)" [disabled]="x < relationItemCount-1">
-                                        <option *ngFor="let j of lookups.ComplexLookupRelations" [value]="j.ID">{{j.DisplayName}}</option>
-                                    </select>
-                                </td>
-
-                                <td *ngIf="i.relationsLoading" style="vertical-align: top; width:29%">
-                                    <span><i class="fa fa-spinner fa-spin"></i></span>
-                                </td>
-                                <td *ngIf="!i.relationsLoading" style="vertical-align: top; width:29%">
-                                    <select [ngModelOptions]="{standalone: true}" [(ngModel)]="i.selectedRelationItemID" style="width:95%" (ngModelChange)="changeRel(x)" [disabled]="x < relationItemCount-1">
-                                        <option *ngFor="let j of i.relationItems" [value]="j.value">{{j.title}}</option>
-                                    </select>
-                                </td>
-
-                                <td rowspan="3" style="vertical-align: top">
-                                    <div *ngIf="x == 0">
-                                        <div><input [ngModelOptions]="{standalone: true}" type="checkbox" [(ngModel)]="i.HideFooter" /> Hide Footer?</div>
-                                        <div><input [ngModelOptions]="{standalone: true}" type="checkbox" [(ngModel)]="i.HideHeader" /> Hide Header?</div>
-                                        <div><input [ngModelOptions]="{standalone: true}" type="checkbox" [(ngModel)]="i.HideFilter" /> Hide Search?</div>
-                                    </div>
-                                    <div class="RowTools">
-                                        <a *ngIf="i.selectedRelationItemID != null && x == relationItemCount-1" (click)="addRelation(i)" style="cursor: pointer; display: inline-block;"><i class="fa fa-plus"></i></a>
-                                        <a *ngIf="x == relationItemCount-1 && x > 0" (click)="removeRelation(i)" style="cursor: pointer; display: inline-block;"><i class="fa fa-trash-o"></i></a>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr [style.background-color]="x%2 == 1 ? '#fff' : '#fff'">
-                                <td colspan="3" class="display-table-title">Reference Columns</td>
-                            </tr>
-                            <tr [style.background-color]="x%2 == 1 ? '#fff' : '#fff'">
-                                <td colspan="3">
-                                    <table class="striped highlight display-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Name</th>
-                                                <th>Display Name Override</th>
-                                                <th>Show?</th>
-                                                <th>Column Width (px)</th>
-                                                <th>Column Order</th>
-                                                <th>Sort Order</th>
-                                                <th>Filter</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr *ngFor="let d of i.DisplayFields">
-                                                <td style="width: 20%; word-break:break-all">{{d.FieldTypeName}}</td>
-                                                <td style="width: 20%;">
-                                                    <input [ngModelOptions]="{standalone: true}" type="text" [(ngModel)]="d.OverrideDisplayName" style="width:95%" />
-                                                </td>
-                                                <td style="width: 10%; max-width: 64px">
-                                                    <input [ngModelOptions]="{standalone: true}" type="checkbox" [ngModel]="d.Show" (ngModelChange)="d.Show=$event; anyDisplayFieldsSelected($event);" style="width:95%" />
-                                                </td>
-                                                <td style="width: 10%; max-width: 64px">
-                                                    <input [ngModelOptions]="{standalone: true}" type="number" [(ngModel)]="d.Width" style="width:95%"/>
-                                                </td>
-                                                <td style="width: 10%; min-width: 64px">
-                                                    <select [ngModelOptions]="{standalone: true}" [(ngModel)]="d.DisplayOrder" style="width:95%" (ngModelChange)="changeDisplayOrder(d, i)">
-                                                        <option *ngFor="let j of i.SortOrderList" [value]="j.id">{{j.text}}</option>
-                                                    </select>
-                                                </td>
-                                                <td style="width: 10%; min-width: 64px">
-                                                    <select [ngModelOptions]="{standalone: true}" [(ngModel)]="d.SortOrder" style="width:95%">
-                                                        <option></option>
-                                                        <option *ngFor="let j of i.SortOrderList" [value]="j.id">{{j.text}}</option>
-                                                    </select>
-                                                </td>
-                                                <td style="width:15%; max-width: 100px">
-                                                    <input [ngModelOptions]="{standalone: true}" type="text" [(ngModel)]="d.FilterValue" style="width:95%" />
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </td>
-                            </tr>
-                            <tr style="height: 10px; font-size: 9px; background-color: #f2f2f2;">
-                                <td colspan="7">&nbsp;</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </simple-accordion>
-
-        <!-- relation -->
-        <simple-accordion header="Relationship" active="true" *ngIf="model.FieldType.Type == 'Relationship'">
-            <div class="row">
-                <div class="col s12" style="margin: 10px 0 10px 0">
-                    <div class="FieldName">Relationship</div>
-                    <p-dropdown [ngModelOptions]="{standalone: true}" [options]="lookups.Field_Relationships" [ngModel]="model.cardinalRelationship" (ngModelChange)="model.cardinalRelationship=$event;cardinalRelationshipSelected($event);" [style]="{ 'width': '98%' }" ngDefaultControl></p-dropdown>
-                </div>
-            </div>
-        </simple-accordion>
-
-        <!-- field from relation -->
-        <simple-accordion header="Field from Relationship" active="true" *ngIf="model.FieldType.Type == 'FieldFromRelationship'">
-            <div class="row">
-                <div class="col l6 m6 s12" style="margin: 10px 0 10px 0">
-                    <div class="FieldName">One-to-Many Relationship</div>
-                    <p-dropdown [ngModelOptions]="{standalone: true}" [options]="lookups.Field_FieldFromRelRelationships" [ngModel]="model.cardinalRelationship" (ngModelChange)="model.cardinalRelationship=$event;cardinalFieldFromRelationshipSelected($event);" [style]="{ 'width': '98%' }" ngDefaultControl></p-dropdown>
-                </div>
-                <div class="col l6 m6 s12" style="margin: 10px 0 10px 0">
-                    <div class="FieldName">Selected Field</div>
-                    <p-dropdown [ngModelOptions]="{standalone: true}" [options]="fieldsFromRelation" [ngModel]="model.FieldType.LookupObjectFieldTypeID"  (ngModelChange)="cardinalFieldFromRelationship_FieldSelected($event);" [style]="{ 'width': '98%' }" ngDefaultControl></p-dropdown>
-                </div>
-            </div>
-        </simple-accordion>
-
-        <!-- reference list from relation -->
-        <simple-accordion header="Reference Item List from Relationship" active="true" *ngIf="model.FieldType.Type == 'RefListRelationship'">
-            <div class="row">
-                <div class="col s12" style="margin: 10px 0 10px 0">
-                    <div class="FieldNameRequired">One-to-Many Relationship</div>
-                    <p-dropdown required [ngModelOptions]="{standalone: true}" [options]="lookups.Field_CardinalReferenceRelationships" [ngModel]="model.cardinalRelationship" (ngModelChange)="model.cardinalRelationship=$event;cardinalReferenceItemListFromRelationshipSelected($event);" [style]="{ 'width': '98%' }" ngDefaultControl></p-dropdown>
-                </div>
-            </div>
-        </simple-accordion>
-
-        <!-- filtered lookup -->
-        <simple-accordion header="Filtered Lookup" active="true" *ngIf="model.FieldType.Type == 'FilteredLookup'">
-            <div class="row">
-                <div class="col s12" style="margin: 10px 0 10px 0">
-                    <table cellpadding="5">
-                        <thead>
-                            <tr>
-                                <th style="width:25%">List</th>
-                                <th>Reference Columns</th>
-                                <th>Table Settings</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td style="vertical-align: top">
-                                    <select [ngModelOptions]="{standalone: true}" [(ngModel)]="filteredLookup" (ngModelChange)="changeFilteredLookup()" style="width:100%">
-                                        <option></option>
-                                        <option *ngFor="let i of lookups.FilteredLookups" [value]="i.value">{{i.title}}</option>
-                                    </select>
-                                </td>
-                                <td>
-                                    <table class="striped highlight">
-                                        <thead>
-                                            <tr>
-                                                <th>
-                                                    Name
-                                                </th>
-                                                <th>
-                                                    Show
-                                                </th>
-                                                <th>
-                                                    Sort
-                                                </th>
-                                                <th>
-                                                    Filter by Current Object?
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr *ngFor="let d of filteredLookupDisplayFields">
-                                                <td>
-                                                    {{d.title}}
-                                                </td>
-                                                <td>
-                                                    <input type="checkbox" [(ngModel)]="d.Show" [ngModelOptions]="{standalone: true}" />
-                                                </td>
-                                                <td>
-                                                    <select [ngModelOptions]="{standalone: true}" [(ngModel)]="d.SortOrder" style="width:95%">
-                                                        <option></option>
-                                                        <option *ngFor="let j of filteredSortOrderList" [value]="j.id">{{j.text}}</option>
-                                                    </select>
-                                                </td>
-                                                <td>
-                                                    <input type="checkbox" [(ngModel)]="d.Filter" [ngModelOptions]="{standalone: true}" [disabled]="!d.AllowFilter" />
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </td>
-                                <td>
-                                    <input type="checkbox" [(ngModel)]="filteredLookupHideHeader" [ngModelOptions]="{standalone: true}" /> Hide Header? <br />
-                                    <input type="checkbox" [(ngModel)]="filteredLookupHideFooter" [ngModelOptions]="{standalone: true}" /> Hide Footer?
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </simple-accordion>
-
-        <!-- ownership lookup -->
-        <simple-accordion header="Ownership Lookup" active="true" *ngIf="model.FieldType.Type == 'OwnershipLookup' && model.OwnershipLookupSettings">
-            <div class="row">
-                <div class="col l3 m3 s6" style="margin: 10px 0 10px 0">
-                    <input name="expandGroupMembership" pCheckbox type="checkbox" [(ngModel)]="model.OwnershipLookupSettings.ExpandGroupMembership" />Expand Group Membership?
-                </div>
-                <div class="col l3 m3 s6" style="margin: 10px 0 10px 0">
-                    <input name="displayAssignmentSource" pCheckbox type="checkbox" [(ngModel)]="model.OwnershipLookupSettings.DisplayAssignmentSource" />Display Assignment Source?
-                </div>
-                <div class="col l2 m2 s6" style="margin: 10px 0 10px 0">
-                    <input name="hideFilter" pCheckbox type="checkbox" [(ngModel)]="model.OwnershipLookupSettings.HideFilter" />Hide Grid Filter?
-                </div>
-                <div class="col l2 m2 s6" style="margin: 10px 0 10px 0">
-                    <input name="hideFooter" pCheckbox type="checkbox" [(ngModel)]="model.OwnershipLookupSettings.HideFooter" />Hide Grid Footer?
-                </div>
-                <div class="col l2 m2 s12" style="margin: 10px 0 10px 0">
-                    <input name="hideHeader" pCheckbox type="checkbox" [(ngModel)]="model.OwnershipLookupSettings.HideHeader" />Hide Grid Column Headers?
-                </div>
-            </div>
-        </simple-accordion>
-
-        <simple-accordion header="Descriptions" active="false">
-            <div class="row">
-                <div class="col s6">
-                    <div id='DisplayDescriptionTip' class="FieldName">Display Description</div>
-                    <textarea pInputTextarea autoResize="'true'" [(ngModel)]="model.FieldType.DisplayDescription" [ngModelOptions]="{standalone: true}"></textarea>
-                </div>
-                <div class="col s6">
-                    <div id='FormDescriptionTip' class="FieldName">Form Description</div>
-                    <textarea pInputTextarea autoResize="'true'" [(ngModel)]="model.FieldType.FormDescription" [ngModelOptions]="{standalone: true}"></textarea>
-                </div>
-            </div>
-        </simple-accordion>
-
-        <div class="row" *ngIf="errorMessage != ''">
-            <div class="col s12">
-                <div style="color:red">{{errorMessage}}</div>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col s12">
-                <div style="padding-top:10px">
-                    <button pButton type="submit" [disabled]="!fieldEditor.form.valid || !displayFieldSelected ||  !valid() || errorMessage != ''" label="Save"></button>
-                    <button pButton type="button" label="Cancel" (click)="cancel()"></button>
-                </div>
-            </div>
-        </div>
     </form>
 </div>

@@ -7904,23 +7904,39 @@ where	Type = 'ReferenceItemType'
 
                 if (fieldType.FilterPredicateDirection == true)
                 {
-                    sql += @", concat(I.PredicateName,' ', I.SubjectShortName) as Info ";
+                    sql += @", I.PredicateName as Predicate, I.SubjectShortName as ShortName ";
                     join = " on I.ObjectID = V.Value and V.LookupObjectType = I.Object and V.lookupObjectID = I.ObjectTypeID";
                 }
                 else
                 {
-                    sql += @", concat(I.PredicateInverse,' ', I.ObjectShortName) as Info ";
+                    sql += @", I.PredicateInverse  as Predicate, I.ObjectShortName as ShortName ";
                     join = " on I.SubjectID = V.Value and V.LookupObjectType = I.Subject and V.lookupObjectID = i.SubjectTypeID";
                 }
                 sql += $@"from fieldlookupvalue V
                         inner join IntersectDetail I {join} 
                         where V.fieldTypeID = @id and I.PredicateId = @PredcateId and I.{(fieldType.FilterPredicateDirection == true ? "SubjectID" : "ObjectID")} in @Parents";
-
-                items = Company.Query<SelectListInfoItem>(sql, new {
+                var rawItems = Company.Query<dynamic>(sql, new
+                {
                     id = fieldTypeID,
                     PredcateId = fieldType.FilterPredicateID,
                     Parents = parents
-                }).ToList();
+                }).OrderBy(i => i.Text).ToList();
+
+                foreach(var rawItem in rawItems) {
+                    SelectListInfoItem match = items.FirstOrDefault(i => i.Value == rawItem.Value.ToString());
+                    if (match != null)
+                    {
+                        match.Info += ", " + rawItem.ShortName;
+                    } else
+                    {
+                        items.Add(new SelectListInfoItem
+                        {
+                            Text = rawItem.Text,
+                            Value = rawItem.Value.ToString(),
+                            Info = rawItem.Predicate + " " +rawItem.ShortName
+                        });
+                    }
+                }
 
             }
             else
