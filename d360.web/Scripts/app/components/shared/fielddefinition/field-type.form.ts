@@ -608,6 +608,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.model.FieldType.FilterFieldTypeID = this.listFilterRelatedFields[0].value;
             }
         } else {
+            value = null;
             this.listFilterRelatedFields = [];
             this.model.FieldType.FilterFieldTypeID = null;
         }
