@@ -7904,12 +7904,12 @@ where	Type = 'ReferenceItemType'
 
                 if (fieldType.FilterPredicateDirection == true)
                 {
-                    sql += @", I.PredicateName as Predicate, I.SubjectShortName as ShortName ";
+                    sql += @", I.PredicateInverse as Predicate, I.SubjectShortName as ShortName ";
                     join = " on I.ObjectID = V.Value and V.LookupObjectType = I.Object and V.lookupObjectID = I.ObjectTypeID";
                 }
                 else
                 {
-                    sql += @", I.PredicateInverse  as Predicate, I.ObjectShortName as ShortName ";
+                    sql += @", I.PredicateName  as Predicate, I.ObjectShortName as ShortName ";
                     join = " on I.SubjectID = V.Value and V.LookupObjectType = I.Subject and V.lookupObjectID = i.SubjectTypeID";
                 }
                 sql += $@"from fieldlookupvalue V

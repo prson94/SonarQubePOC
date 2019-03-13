@@ -3233,7 +3233,15 @@ namespace d360.web.Controllers
 
                     if (it == null)
                     {
-                        exceptionMessage = $@"Filtering for this list has been disabled as we cannot filter a list by the action subject";  //@TODO: Expand on error message
+                        var lookupObjectType = Company.Filter<AssetType>(i => i.ObjectID == ft.LookupObjectID && i.Object == ft.LookupObjectType + "Type").SingleOrDefault();
+                        string listObjectType = lookupObjectType.Class + ":" + lookupObjectType.Name; ;
+                        Predicate pred = Company.GetById<Predicate>(ft.FilterPredicateID.GetValueOrDefault());
+                        string predicate = (ft.FilterPredicateDirection == true) ? pred.Inverse  : pred.Name;
+                        var filterObjectDetail = Company.Filter<AssetDetail>(i => i.ObjectID == ObjectID && i.Object == objectType).SingleOrDefault();
+                        string actionSubject = filterObjectDetail.DisplayValue;
+                        string actionSubjectType = filterObject.AssetType.Class + ":" + filterObject.AssetType.Name;
+                        exceptionMessage = $@"Filtering for this list has been disabled as we cannot filter a list of types {listObjectType} by the action subject {actionSubject}.";
+                        exceptionMessage += $@" The relationship {listObjectType} - {predicate} - {actionSubjectType} does not exist.";
                     }
                 }
                 else
@@ -3256,11 +3264,11 @@ namespace d360.web.Controllers
 
                     if (ft.FilterPredicateDirection == true)
                     {
-                        columns += @", concat(I.PredicateName,' ', I.SubjectShortName) as Info";
+                        columns += @", concat(I.PredicateInverse,' ', I.SubjectShortName) as Info";
                     }
                     else
                     {
-                        columns += @", concat(I.PredicateInverse,' ', I.ObjectShortName) as Info";
+                        columns += @", concat(I.PredicateName,' ', I.ObjectShortName) as Info";
                     }
 
                     var resourceJoin = $@"
