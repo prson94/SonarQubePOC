@@ -5,15 +5,15 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 
-namespace d360.core.entities.Metric
+namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE), Table("DataProfile", Schema = "metrics")]
-    public class MetricDataProfile : BaseCreatedAndUpdatedObject
+    [DataContract(Namespace = NAMESPACE), Table("AssetDataProfile", Schema = "dbo")]
+    public class AssetDataProfile : BaseCreatedAndUpdatedObject
     {
         [DataMember, Key, Column(Order = 1)]
-        public Guid AssetUid { get; set; }
+        public long AssetId { get; set; }
         [DataMember, Key, Column(Order = 2)]
-        public DateTime? EffectiveDate { get; set; }
+        public DateTime EffectiveDate { get; set; }
         [DataMember]
         public int RowCount { get; set; }
         [DataMember]
@@ -42,11 +42,8 @@ namespace d360.core.entities.Metric
         public decimal? Median { get; set; }
         [DataMember]
         public decimal? StandardDeviation { get; set; }
-        [DataMember, NotMapped]
-        public List<string> Top10Values{ get; set; }
-        [IgnoreDataMember, Column("Top10Values")]
-        public string Top10ValuesString { get; set; }
-
+        [DataMember]
+        public string Top10Values { get; set; }
         public string ProcessIdentifier { get; set; }
     }
 }

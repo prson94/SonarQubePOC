@@ -49,11 +49,11 @@ namespace d360.web.Controllers.V2
             HttpPost,
             Route(""),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "A list of data profile results, including any error messages.", typeof(List<MetricDataProfilePostResult>)),
+            SwaggerResponse(HttpStatusCode.OK, "A list of data profile results, including any error messages.", typeof(List<AssetDataProfileResult>)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You do not have permissions to add data profiles.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error indicating the request is malformed or contains no data profiles.", typeof(ErrorResponse)),
         ]
-        public async Task<IHttpActionResult> InsertDataProfile(List<MetricDataProfile> model)
+        public async Task<IHttpActionResult> InsertDataProfile(List<AssetDataProfile> model)
         {
             if (!Company.CurrentResourceIsAdmin)
             {
@@ -64,27 +64,28 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Error adding data profile", "The request is malformed or contains no data profiles."));
             }
 
-            var results = new List<MetricDataProfilePostResult>();
+            var results = new List<AssetDataProfileResult>();
             foreach (var profile in model)
             {
-                bool assetExists = (await Company.QueryAsync<int>("select count(1) from asset with (nolock) where uid = @assetUid", new { profile.AssetUid })).First() > 0;
+                bool assetExists = (await Company.QueryAsync<int>("select count(1) from asset with (nolock) where assetid = @assetId", new { profile.AssetId })).First() > 0;
 
                 if (assetExists)
                 {
-                    if (!profile.EffectiveDate.HasValue)
-                    {
-                        profile.EffectiveDate = DateTime.UtcNow;
-                    }
+                    //TODO: fix for null from post
+                    //if (!profile.EffectiveDate.HasValue)
+                    //{
+                    //    profile.EffectiveDate = DateTime.UtcNow;
+                    //}
 
-                    bool profileExists = (await Company.QueryAsync<int>("select count(1) from metrics.dataprofile with (nolock) where assetuid = @assetuid and effectivedate = @effectivedate", new { profile.AssetUid, profile.EffectiveDate })).First() > 0;
+                    bool profileExists = (await Company.QueryAsync<int>("select count(1) from metrics.dataprofile with (nolock) where assetid = @assetid and effectivedate = @effectivedate", new { profile.AssetId, profile.EffectiveDate })).First() > 0;
 
                     if (profileExists)
                     {
-                        results.Add(new MetricDataProfilePostResult()
+                        results.Add(new AssetDataProfileResult()
                         {
                             Success = false,
                             Message = "A profile for this asset and effective date already exists",
-                            AssetUid = profile.AssetUid,
+                            AssetUid = new Guid(), //TODO: profile.AssetUid,
                             EffectiveDate = ((DateTime)profile.EffectiveDate).ToShortDateString()
                         });
                     }
@@ -94,41 +95,41 @@ namespace d360.web.Controllers.V2
                         {
                             if (string.IsNullOrEmpty(profile.DataType))
                             {
-                                results.Add(new MetricDataProfilePostResult()
+                                results.Add(new AssetDataProfileResult()
                                 {
                                     Success = false,
                                     Message = "A data type was not provided",
-                                    AssetUid = profile.AssetUid,
+                                    AssetUid = new Guid(), //TODO: profile.AssetId,
                                     EffectiveDate = ((DateTime)profile.EffectiveDate).ToShortDateString()
                                 });
 
                                 continue;
                             }
 
+                            //TODO: fix for new data model
+                            //if (profile.Top10Values == null)
+                            //    profile.Top10Values = new List<string>();
 
-                            if (profile.Top10Values == null)
-                                profile.Top10Values = new List<string>();
-
-                            profile.Top10ValuesString = JsonConvert.SerializeObject(profile.Top10Values.Take(10).ToList());
+                            //profile.Top10ValuesString = JsonConvert.SerializeObject(profile.Top10Values.Take(10).ToList());
 
                             Company.Add(profile);
                             Company.SaveChanges();
-                            results.Add(new MetricDataProfilePostResult()
+                            results.Add(new AssetDataProfileResult()
                             {
                                 Success = true,
                                 Message = "",
-                                AssetUid = profile.AssetUid,
+                                AssetUid = new Guid(), //TODO: profile.AssetUid,
                                 EffectiveDate = ((DateTime)profile.EffectiveDate).ToShortDateString()
                             });
 
                         }
                         catch(Exception ex)
                         {
-                            results.Add(new MetricDataProfilePostResult()
+                            results.Add(new AssetDataProfileResult()
                             {
                                 Success = false,
                                 Message = "An error occurred when inserting the data profile record",
-                                AssetUid = profile.AssetUid,
+                                AssetUid = new Guid(), //TODO: profile.AssetUid,
                                 EffectiveDate = ((DateTime)profile.EffectiveDate).ToShortDateString()
                             });
                         }
@@ -136,11 +137,11 @@ namespace d360.web.Controllers.V2
                 }
                 else
                 {
-                    results.Add(new MetricDataProfilePostResult()
+                    results.Add(new AssetDataProfileResult()
                     {
                         Success = false,
                         Message = "The technology asset for the provided Uid was not found",
-                        AssetUid = profile.AssetUid,
+                        AssetUid = new Guid(), //TODO: profile.AssetUid,
                         EffectiveDate = ((DateTime)profile.EffectiveDate).ToShortDateString()
                     });
                 }
@@ -160,7 +161,7 @@ namespace d360.web.Controllers.V2
             HttpDelete,
             Route(""),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "A list of data profile results, including any error messages.", typeof(List<MetricDataProfileDeleteResult>)),
+            SwaggerResponse(HttpStatusCode.OK, "A list of data profile results, including any error messages.", typeof(List<AssetDataProfileDeleteResult>)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You do not have permissions to delete data profiles.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error indicating the request is malformed or contains no data profiles.", typeof(ErrorResponse)),
         ]
@@ -175,14 +176,14 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Error deleting data profile", "The request is malformed or contains no data profiles."));
             }
 
-            var results = new List<MetricDataProfileDeleteResult>();
+            var results = new List<AssetDataProfileDeleteResult>();
 
             foreach(var profile in model)
             {
 
                 if (!profile.EffectiveStartDate.HasValue || !profile.EffectiveEndDate.HasValue)
                 {
-                    results.Add(new MetricDataProfileDeleteResult()
+                    results.Add(new AssetDataProfileDeleteResult()
                     {
                         Success = false,
                         Message = "Effective date range was not specified.",
@@ -198,7 +199,7 @@ namespace d360.web.Controllers.V2
 
                 if (recordCount < 1)
                 {
-                    results.Add(new MetricDataProfileDeleteResult()
+                    results.Add(new AssetDataProfileDeleteResult()
                     {
                         Success = false,
                         Message = "There were no records found for this asset and effective date range.",
@@ -212,7 +213,7 @@ namespace d360.web.Controllers.V2
                     {
                         Company.Execute(@"delete from metrics.dataprofile where assetUid = @assetUid and effectivedate between @EffectiveStartDate and @EffectiveEndDate", new { profile.AssetUid, profile.EffectiveStartDate, profile.EffectiveEndDate });
 
-                        results.Add(new MetricDataProfileDeleteResult()
+                        results.Add(new AssetDataProfileDeleteResult()
                         {
                             Success = true,
                             Message = "",
@@ -222,7 +223,7 @@ namespace d360.web.Controllers.V2
                     }
                     catch (Exception ex)
                     {
-                        results.Add(new MetricDataProfileDeleteResult()
+                        results.Add(new AssetDataProfileDeleteResult()
                         {
                             Success = false,
                             Message = "An unknown error occurred when deleting the data profiles",

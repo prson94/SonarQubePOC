@@ -108,7 +108,7 @@
     <Compile Include="entities\Metric\MetricAsset.cs" />
     <Compile Include="entities\Metric\MetricAssetVersion.cs" />
     <Compile Include="entities\Metric\MetricAssetVersionCondition.cs" />
-    <Compile Include="entities\Metric\MetricDataProfile.cs" />
+    <Compile Include="entities\AssetDataProfile.cs" />
     <Compile Include="entities\Organization\ContractAcceptance.cs" />
     <Compile Include="entities\Organization\OrganizationType.cs" />
     <Compile Include="entities\Organization\OrganizationRegistration.cs" />
