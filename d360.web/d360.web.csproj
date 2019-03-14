@@ -285,9 +285,9 @@
     <Compile Include="App_Start\Startup.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\Services\CommunityController.cs" />
-    <Compile Include="Controllers\Services\AssetsController.cs" />
+    <Compile Include="Controllers\Services\Obsolete\AssetsController.cs" />
     <Compile Include="Controllers\Services\CustomController.cs" />
-    <Compile Include="Controllers\Services\ReferenceController.cs" />
+    <Compile Include="Controllers\Services\Obsolete\ReferenceController.cs" />
     <Compile Include="Controllers\Services\ReportsController.cs" />
     <Compile Include="Controllers\Services\OrganizationsController.cs" />
     <Compile Include="Controllers\V2\CrossReferencesController.cs" />
@@ -297,7 +297,7 @@
     <Compile Include="Controllers\V2\ExportTemplatesController.cs" />
     <Compile Include="Controllers\V2\MetricsController.cs" />
     <Compile Include="Controllers\V2\RelationshipsController.cs" />
-    <Compile Include="Controllers\V2\AssetsController.cs" />    
+    <Compile Include="Controllers\V2\AssetsController.cs" />
     <Compile Include="Controllers\V2\ResponsibilitiesController.cs" />
     <Compile Include="Controllers\V2\SocialController.cs" />
     <Compile Include="Controllers\WebAnalyticsController.cs" />
