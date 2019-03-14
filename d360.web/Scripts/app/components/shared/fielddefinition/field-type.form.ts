@@ -557,7 +557,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.listFilterOptions.clear();
 
         //List filter options only available for field defintions for thes asset types
-        if (['IssueType', 'AtifactType', 'TaxonomyType', 'PolicyType', 'RuleType'].indexOf(this.objectType) == -1)
+        if (['IssueType', 'ArtifactType', 'TaxonomyType', 'PolicyType', 'RuleType'].indexOf(this.objectType) == -1)
             return;
         //List filter options are only available for lists of Artifacts for Taxonomies
         if (objectType != 'Artifact' && objectType != 'Taxonomy')
