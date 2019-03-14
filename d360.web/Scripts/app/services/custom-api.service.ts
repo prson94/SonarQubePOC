@@ -1,163 +1,274 @@
-﻿import { Injectable } from '@angular/core';
-import { Headers, Http } from '@angular/http';
-import { MessagesService } from './messages.service';
-import { BaseService } from './base.service';
-import { ApiService, ApiEndpoint, ApiVersion, ApiField, ApiUri, ApiNamespace } from '../models/custom-api.model';
-import { JsonResult } from '../models/jsonresult.model';
+﻿import {Injectable} from '@angular/core';
+import {HttpClient} from "@angular/common/http";
+import {Observable} from "rxjs";
+import {catchError, map} from "rxjs/operators";
+
+import {ApiEndpoint, ApiField, ApiNamespace, ApiService, ApiUri, ApiVersion} from '../models/custom-api.model';
+import {JsonResult} from '../models/jsonresult.model';
+
+import {MessagesService} from './messages.service';
+import {BaseObservableService} from "./baseObservable.service";
 
 @Injectable()
-export class CustomAPIService extends BaseService {
-
-    constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
-
-    getServices(): Promise<ApiService[]> {
-        return this.http.get(`api/custom/services`)
-            .toPromise()
-            .then(response => <ApiService[]>response.json())
-            .catch(err => this.handleError(err));
+export class CustomAPIService extends BaseObservableService {
+    constructor(
+        private http: HttpClient,
+        messagesService: MessagesService
+    ) {
+        super(messagesService);
     }
 
-    getService(id: number): Promise<ApiService> {
-        return this.http.get(`api/custom/service/${id}`)
-            .toPromise()
-            .then(response => <ApiService>response.json())
-            .catch(err => this.handleError(err));
+    getServices(): Observable<ApiService[]> {
+        return this
+            .http
+            .get(`api/custom/services`)
+            .pipe(
+                map(response => <ApiService[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getEndpoints(id: number): Promise<ApiEndpoint[]> {
-        return this.http.get(`api/custom/service/${id}/endpoints`)
-            .toPromise()
-            .then(response => <ApiEndpoint[]>response.json())
-            .catch(err => this.handleError(err));
+    getService(id: number): Observable<ApiService> {
+        return this
+            .http
+            .get(`api/custom/service/${id}`)
+            .pipe(
+                map(response => <ApiService>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getEndpoint(id: number): Promise<ApiEndpoint> {
-        return this.http.get(`api/custom/endpoint/${id}`)
-            .toPromise()
-            .then(response => <ApiEndpoint>response.json())
-            .catch(err => this.handleError(err));
+    getEndpoints(id: number): Observable<ApiEndpoint[]> {
+        return this
+            .http
+            .get(`api/custom/service/${id}/endpoints`)
+            .pipe(
+                map(response => <ApiEndpoint[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    deleteEndpoint(id: number): Promise<JsonResult> {
-        return this.deleteDynamicWithResult(this.http, 'endpoint', id);
+    getEndpoint(id: number): Observable<ApiEndpoint> {
+        return this
+            .http
+            .get(`api/custom/endpoint/${id}`)
+            .pipe(
+                map(response => <ApiEndpoint>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getEndpointVersions(id: number): Promise<ApiVersion[]> {
-        return this.http.get(`api/custom/endpoint/${id}/versions`)
-            .toPromise()
-            .then(response => <ApiVersion[]>response.json())
-            .catch(err => this.handleError(err));
+    deleteEndpoint(id: number): Observable<JsonResult> {
+        return this
+            .deleteDynamicWithResult(
+                this.http,
+                'endpoint',
+                id
+            );
     }
 
-    deleteEndpointVersion(id: number): Promise<JsonResult> {
-        return this.deleteDynamicWithResult(this.http, 'version', id);
+    getEndpointVersions(id: number): Observable<ApiVersion[]> {
+        return this
+            .http
+            .get(`api/custom/endpoint/${id}/versions`)
+            .pipe(
+                map(response => <ApiVersion[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getEndpointVersionFields(id: number): Promise<ApiField[]> {
-        return this.http.get(`api/custom/version/${id}/fields`)
-            .toPromise()
-            .then(response => <ApiField[]>response.json())
-            .catch(err => this.handleError(err));
+    deleteEndpointVersion(id: number): Observable<JsonResult> {
+        return this.deleteDynamicWithResult(
+            this.http,
+            'version',
+            id
+        );
     }
 
-    getEndpointVersionUris(id: number): Promise<ApiUri[]> {
-        return this.http.get(`api/custom/version/${id}/uritypes`)
-            .toPromise()
-            .then(response => <ApiUri[]>response.json())
-            .catch(err => this.handleError(err));
+    getEndpointVersionFields(id: number): Observable<ApiField[]> {
+        return this
+            .http
+            .get(`api/custom/version/${id}/fields`)
+            .pipe(
+                map(response => <ApiField[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getNamespaces(id: number): Promise<ApiNamespace[]> {
-        return this.http.get(`api/custom/service/${id}/namespaces`)
-            .toPromise()
-            .then(response => <ApiNamespace[]>response.json())
-            .catch(err => this.handleError(err));
+    getEndpointVersionUris(id: number): Observable<ApiUri[]> {
+        return this
+            .http
+            .get(`api/custom/version/${id}/uritypes`)
+            .pipe(
+                map(response => <ApiUri[]>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    getNamespaces(id: number): Observable<ApiNamespace[]> {
+        return this
+            .http
+            .get(`api/custom/service/${id}/namespaces`)
+            .pipe(
+                map(response => <ApiNamespace[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
 
-    getEndpointVersionFieldEditorModel(id: number): Promise<any> {
-        return this.http.get(`/api/v2/customendpoints/Version/FieldEditor/model?id=${id}`)
-            .toPromise()
-            .then(response => <any>response.json())
-            .catch(err => this.handleError(err));
+    getEndpointVersionFieldEditorModel(id: number): Observable<any> {
+        return this
+            .http
+            .get(`/api/v2/customendpoints/Version/FieldEditor/model?id=${id}`)
+            .pipe(
+                map(response => <any>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getEndpointVersionField_FieldTypes(versionId: number) : Promise<any[]> {
-        return this.http.get(`/api/v2/customendpoints/Version/FieldEditor/FieldTypes?versionId=${versionId}`)
-            .toPromise()
-            .then(response => <any[]>response.json())
-            .catch(err => this.handleError(err));
+    getEndpointVersionField_FieldTypes(versionId: number): Observable<any[]> {
+        return this
+            .http
+            .get(`/api/v2/customendpoints/Version/FieldEditor/FieldTypes?versionId=${versionId}`)
+            .pipe(
+                map(response => <any[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getEndpointVersionField_LookupFieldTypes(fieldTypeId: number): Promise<any[]> {
-        return this.http.get(`/api/v2/customendpoints/Version/FieldEditor/LookupFields?fieldTypeId=${fieldTypeId}`)
-            .toPromise()
-            .then(response => <any[]>response.json())
-            .catch(err => this.handleError(err));
+    getEndpointVersionField_LookupFieldTypes(fieldTypeId: number): Observable<any[]> {
+        return this
+            .http
+            .get(`/api/v2/customendpoints/Version/FieldEditor/LookupFields?fieldTypeId=${fieldTypeId}`)
+            .pipe(
+                map(response => <any[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    saveEndpointVersionField(model: ApiField): Promise<any> {
-        return this.http.post(`/api/v2/customendpoints/Version/FieldEditor/Field`, model)
-            .toPromise()
-            .then(response => <any>response.json())
-            .catch(err => this.handleError(err));
+    saveEndpointVersionField(model: ApiField): Observable<any> {
+        return this
+            .http
+            .post(`/api/v2/customendpoints/Version/FieldEditor/Field`, model)
+            .pipe(
+                map(response => <any>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    deleteEndpointUri(id: number): Promise<JsonResult> {
-        return this.deleteDynamicWithResult(this.http, 'uri', id);
+    deleteEndpointUri(id: number): Observable<JsonResult> {
+        return this.deleteDynamicWithResult(
+            this.http,
+            'uri',
+            id
+        );
     }
 
-    saveService(service: ApiService): Promise<JsonResult> {
+    saveService(service: ApiService): Observable<JsonResult> {
+        let methodName = "putDynamic"; /* as default value */
+
         if (service.ID == undefined || !service.ID) {
-            return this.postDynamic(this.http, 'service', service);
+            methodName = "postDynamic";
         }
-        return this.putDynamic(this.http, 'service', service);
+
+        return this[methodName](
+            this.http,
+            'service',
+            service
+        );
     }
 
-    deleteService(id: number): Promise<JsonResult> {
-        return this.deleteDynamicWithResult(this.http, 'service', id);
+    deleteService(id: number): Observable<JsonResult> {
+        return this.deleteDynamicWithResult(
+            this.http,
+            'service',
+            id
+        );
     }
 
-    saveField(field: ApiField): Promise<JsonResult> {
+    saveField(field: ApiField): Observable<JsonResult> {
+        let methodName = "putDynamic"; /* as default value */
+
         if (field.ID == undefined || !field.ID) {
-            return this.postDynamic(this.http, 'apifield', field);
+            methodName = "postDynamic";
         }
-        return this.putDynamic(this.http, 'apifield', field);        
+
+        return this[methodName](
+            this.http,
+            'apifield',
+            field
+        );
     }
 
-    deleteField(id: number): Promise<JsonResult> {
-        return this.deleteDynamicWithResult(this.http, 'apifield', id);
+    deleteField(id: number): Observable<JsonResult> {
+        return this.deleteDynamicWithResult(
+            this.http,
+            'apifield',
+            id
+        );
     }
 
-    saveEndpoint(endpoint: ApiEndpoint): Promise<JsonResult> {
+    saveEndpoint(endpoint: ApiEndpoint): Observable<JsonResult> {
+        let methodName = "putDynamic"; /* as default value */
+
         if (endpoint.ID == undefined || !endpoint.ID) {
-            return this.postDynamic(this.http, 'endpoint', endpoint);
+            methodName = "postDynamic";
         }
-        return this.putDynamic(this.http, 'endpoint', endpoint);
+
+        return this[methodName](
+            this.http,
+            'endpoint',
+            endpoint
+        );
     }
 
-    saveVersion(version: ApiVersion): Promise<JsonResult> {
+    saveVersion(version: ApiVersion): Observable<JsonResult> {
+        let methodName = "putDynamic"; /* as default value */
+
         if (version.ID == undefined || !version.ID) {
-            return this.postDynamic(this.http, 'version', version);
+            methodName = "postDynamic";
         }
-        return this.putDynamic(this.http, 'version', version);
+
+        return this[methodName](
+            this.http,
+            'version',
+            version
+        );
     }
 
-    saveEndpointUri(uri: ApiUri): Promise<JsonResult> {
+    saveEndpointUri(uri: ApiUri): Observable<JsonResult> {
+        let methodName = "putDynamic"; /* as default value */
+
         if (uri.ID == undefined || !uri.ID) {
-            return this.postDynamic(this.http, 'uri', uri);
+            methodName = "postDynamic";
         }
-        return this.putDynamic(this.http, 'uri', uri);
+
+        return this[methodName](
+            this.http,
+            'uri',
+            uri
+        );
     }
 
-    saveNamespace(ns: ApiNamespace): Promise<JsonResult> {
+    saveNamespace(ns: ApiNamespace): Observable<JsonResult> {
+        let methodName = "putDynamic"; /* as default value */
+
         if (ns.ID == undefined || !ns.ID) {
-            return this.postDynamic(this.http, 'namespace', ns);
+            methodName = "postDynamic";
         }
-        return this.putDynamic(this.http, 'namespace', ns);
+
+        return this[methodName](
+            this.http,
+            'namespace',
+            ns
+        );
     }
 
-    deleteNamespace(id: number): Promise<JsonResult> {
-        return this.deleteDynamicWithResult(this.http, 'namespace', id);
+    deleteNamespace(id: number): Observable<JsonResult> {
+        return this.deleteDynamicWithResult(
+            this.http,
+            'namespace',
+            id
+        );
     }
 }

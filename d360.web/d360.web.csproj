@@ -297,7 +297,7 @@
     <Compile Include="Controllers\V2\ExportTemplatesController.cs" />
     <Compile Include="Controllers\V2\MetricsController.cs" />
     <Compile Include="Controllers\V2\RelationshipsController.cs" />
-    <Compile Include="Controllers\V2\AssetsController.cs" />    
+    <Compile Include="Controllers\V2\AssetsController.cs" />
     <Compile Include="Controllers\V2\ResponsibilitiesController.cs" />
     <Compile Include="Controllers\V2\SocialController.cs" />
     <Compile Include="Controllers\WebAnalyticsController.cs" />
@@ -577,6 +577,15 @@
     <Content Include="Scripts\app\components\admin\attributes\admin-attribute-allocation.component.html" />
     <Content Include="Scripts\app\components\admin\attributes\admin-attribute-type-editor.component.html" />
     <Content Include="Scripts\app\components\admin\attributes\admin-attributes.component.html" />
+    <Content Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint-detail.component.html" />
+    <Content Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint-version-fields-editor.component.html" />
+    <Content Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint-version-fields.component.html" />
+    <Content Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint-version-uris.component.html" />
+    <Content Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint-version.component.html" />
+    <Content Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint.component.html" />
+    <Content Include="Scripts\app\components\admin\customapi\admin-customapi-service-detail.component.html" />
+    <Content Include="Scripts\app\components\admin\customapi\admin-customapi-service-namespace.component.html" />
+    <Content Include="Scripts\app\components\admin\customapi\admin-customapi.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-column-filter.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-grid.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-item.component.html" />
