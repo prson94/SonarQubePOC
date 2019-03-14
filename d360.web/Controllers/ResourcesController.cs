@@ -1003,6 +1003,11 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                         dispName = predicate == null ? "" : ($"{predicate.Name} / {predicate.Inverse}");
                         uid = predicate?.UID.ToString();
                     }
+                    else if (objectType == "ResponsibilityTypeRelationRule")
+                    {                       
+                        var responbilityReleationRule = Company.GetById<ResponsibilityTypeRelationRule>(objectID);
+                        uid = responbilityReleationRule?.UID.ToString();
+                    }
                 }
 
                 return Json(

@@ -6,7 +6,6 @@ import { RouterModule } from '@angular/router';
 
 import { AuthenticationConnectionBackend } from '../../authentication-connection-backend';
 
-
 import {
     GrowlModule,
     InputSwitchModule,
@@ -102,7 +101,7 @@ import { ResourceMultiSelectGridComponent } from './resource-multiselect-grid.co
         SharedGridPagingInfoModule,
         SharedObjectDetailsModule,
         SimpleAccordionModule,        
-        TilesModule,    
+        TilesModule,
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

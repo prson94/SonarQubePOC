@@ -27,6 +27,7 @@ import { ObjectRelationshipsComponent } from './object-relationships.component';
 import { RelationshipTechnicalRelationsComponent } from './relationship-technical-relations.component';
 import { DynamicRelationshipGridComponent } from './dynamic-relationship-grid.component';
 import { SharedDeleteFormModule } from '../../shared/delete.form';
+import { DirectivesModule } from '../../../directives/directives.module';
 
 @NgModule({
     imports: [CommonModule,
@@ -49,6 +50,8 @@ import { SharedDeleteFormModule } from '../../shared/delete.form';
         SharedModule,
         TooltipModule,
         TableModule,
+        DirectivesModule,
+        TooltipModule,
     ],
     declarations: [
         ObjectRelationshipsComponent,

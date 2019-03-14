@@ -15,24 +15,24 @@ import { BaseComponent } from '../../shared/base.component';
                 <div  *ngIf="!showEditor && !showDelete && !isLoading" class="row">                    
                     <div class="col s12">
                         <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-                        <p-table #dt [value]="relationships" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['ID','SubjectTypeName','PredicateName','ObjectTypeName']" [pageLinks]="3" [paginator]="true" [rows]="20"  [selection]="selected" (selectionChange)="selected=$event;selectedChange.emit(selected)">
+                        <p-table #dt [value]="relationships" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Id','Subject.Name','Predicate.Name','Predicate.Inverse','Object.Name']" [pageLinks]="3" [paginator]="true" [rows]="20"  [selection]="selected" (selectionChange)="selected=$event;selectedChange.emit(selected)">
                             <ng-template pTemplate="header">
                                 <tr>
-                                    <th [pSortableColumn]="'ID'" style="width: 10%;">
+                                    <th [pSortableColumn]="'Id'" style="width: 10%;">
                                         ID
-                                        <d3s-sortIcon [field]="'ID'"></d3s-sortIcon>
+                                        <d3s-sortIcon [field]="'Id'"></d3s-sortIcon>
                                     </th>
-                                    <th [pSortableColumn]="'SubjectTypeName'">
+                                    <th [pSortableColumn]="'Subject.Name'">
                                         Subject
-                                        <d3s-sortIcon [field]="'SubjectTypeName'"></d3s-sortIcon>
+                                        <d3s-sortIcon [field]="'Subject.Name'"></d3s-sortIcon>
                                     </th>
-                                    <th [pSortableColumn]="'PredicateName'">
+                                    <th [pSortableColumn]="'Predicate.Name'">
                                         Predicate
-                                        <d3s-sortIcon [field]="'PredicateName'"></d3s-sortIcon>
+                                        <d3s-sortIcon [field]="'Predicate.Name'"></d3s-sortIcon>
                                     </th>
-                                    <th [pSortableColumn]="'ObjectTypeName'">
+                                    <th [pSortableColumn]="'Object.Name'">
                                         Object
-                                        <d3s-sortIcon [field]="'ObjectTypeName'"></d3s-sortIcon>
+                                        <d3s-sortIcon [field]="'Object.Name'"></d3s-sortIcon>
                                     </th>
                                     <th style="width: 40px"></th>
                                     <th style="width: 40px"></th>
@@ -40,10 +40,10 @@ import { BaseComponent } from '../../shared/base.component';
                                     <th style="width: 40px"></th>
                                 </tr>
                                 <tr [hidden]="showSimpleFilter">
-                                    <th><d3s-column-filter [field]="'ID'" [datatype]="'text'"></d3s-column-filter></th>
-                                    <th><d3s-column-filter [field]="'SubjectTypeName'" [datatype]="'text'"></d3s-column-filter></th>
-                                    <th><d3s-column-filter [field]="'PredicateName'" [datatype]="'text'"></d3s-column-filter></th>
-                                    <th><d3s-column-filter [field]="'ObjectTypeName'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th><d3s-column-filter [field]="'Id'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th><d3s-column-filter [field]="'Subject.Name'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th><d3s-column-filter [field]="'Predicate.Name'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th><d3s-column-filter [field]="'Object.Name'" [datatype]="'text'"></d3s-column-filter></th>
                                     <th></th>
                                     <th></th>
                                     <th></th>
@@ -52,18 +52,18 @@ import { BaseComponent } from '../../shared/base.component';
                             </ng-template>
                             <ng-template pTemplate="body" let-item>
                                 <tr (dblclick)="selected=item;selectedChange.emit(selected);showEditor=true;" [pSelectableRow]="item">
-                                    <td>{{item.ID}}</td>
+                                    <td>{{item.Id}}</td>
                                     <td>
-                                        <span>{{item?.SubjectTypeName}}<span style="color: #999;font-size:75%;"> ({{displayTypeName(item?.SubjectClass.Name)}})</span></span>
+                                        <span>{{item?.Subject.Name}}<span style="color: #999;font-size:75%;"> ({{item?.Subject.Class}})</span></span>
                                     </td>
                                     <td>
-                                        <span *ngIf="item.PredicateName && item.PredicateInverse">{{item.PredicateName}} / {{item.PredicateInverse}}</span>
+                                        <span *ngIf="item.Predicate.Name && item.Predicate.Inverse">{{item.Predicate.Name}} / {{item.Predicate.Inverse}}</span>
                                     </td>
                                     <td>
-                                        <span>{{item?.ObjectTypeName}}<span style="color: #999;font-size:75%;"> ({{displayTypeName(item?.ObjectClass.Name)}})</span></span>
+                                        <span>{{item?.Object.Name}}<span style="color: #999;font-size:75%;"> ({{item?.Object.Class}})</span></span>
                                     </td>
                                     <td class="RowTools">
-                                        <d3s-preview-tooltip objectType="IntersectType" [objectId]="item.ID" icon="info"></d3s-preview-tooltip>
+                                        <d3s-preview-tooltip objectType="IntersectType" [objectId]="item.Id" icon="info"></d3s-preview-tooltip>
                                     </td>
                                     <td>
                                         <div class="RowTools">
@@ -92,10 +92,10 @@ import { BaseComponent } from '../../shared/base.component';
                     [callback]="theDeleteCallback"
                     [itemId]="selected?.ID"
                     [method]="'callback'"
-                    [prompt]="'Are you sure you want to delete the relationship [' + [selected?.SubjectTypeName] + ' / ' + [selected?.ObjectTypeName]  + ']?'"
+                    [prompt]="'Are you sure you want to delete the relationship [' + [selected?.Subject.Name] + ' / ' + [selected?.Object.Name]  + ']?'"
                     (onCancel)="showDelete=false;"
                 ></d3s-delete-form>  
-                <d3s-admin-relationships-editor *ngIf="showEditor" [relationshipID]="selected?.ID" (saveClick)="saveRelationship($event)" (closeClick)="closeEditor()"></d3s-admin-relationships-editor>
+                <d3s-admin-relationships-editor *ngIf="showEditor" [relationshipID]="selected?.Id" (saveClick)="saveRelationship($event)" (closeClick)="closeEditor()"></d3s-admin-relationships-editor>
             `    
 })
 
@@ -137,10 +137,12 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
         if (this.filterToName && this.filterToName.length > 0) {
             var search = this.filterToName.toLowerCase();
             this.relationships = this.relationships.filter(item =>
-                item.Object && item.Object.toLowerCase().includes(search) ||
-                item.Subject && item.Subject.toLowerCase().includes(search) ||
-                item.ObjectTypeName && item.ObjectTypeName.toLowerCase().includes(search) ||
-                item.SubjectTypeName && item.SubjectTypeName.toLowerCase().includes(search)
+                item.Predicate && item.Predicate.Name.toLowerCase().includes(search) ||
+                item.Predicate && item.Predicate.Inverse.toLowerCase().includes(search) ||
+                item.Object && item.Object.Class.toLowerCase().includes(search) ||
+                item.Object && item.Object.Name.toLowerCase().includes(search) ||
+                item.Subject && item.Subject.Class.toLowerCase().includes(search) ||
+                item.Subject && item.Subject.Name.toLowerCase().includes(search)
             );
         }
     }
@@ -175,7 +177,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
         var index: number = -1;
         for (var relationship of this.relationships) {
             index++;
-            if (relationship.ID == id) return index;
+            if (relationship.Id == id) return index;
         }
     }
 

@@ -1,0 +1,101 @@
+<form #filterForm="ngForm"
+      (ngSubmit)="onSubmit()">
+    <div *ngFor="let filter of internalFilters;let first=first;let last=last;let index=index"
+         class="row filter">
+        <div class="col s1 FieldName">Filter:</div>
+        <div class="col s4">
+            <select (ngModelChange)="filter.Field = $event;changeFilterField($event,filter)"
+                    [name]="'FilterField_' + index"
+                    [ngModel]="filter.Field"
+                    required
+                    style="width:100%;">
+                <option *ngFor="let p of availableFilters"
+                        [ngValue]="p">{{p.Name}}</option>
+            </select>
+        </div>
+        <div [ngSwitch]="filter.Type"
+             class="col s4">
+            <span *ngSwitchCase="filterFieldType.Relationship">
+                <p-multiSelect (ngModelChange)="filter.Data.objectIds = $event"
+                               [ngModel]="filter?.Data?.objectIds"
+                               [options]="relationshipValues"
+                               [style]="{width:'100%'}"
+                               name="predicates"></p-multiSelect>
+                <p-selectButton (ngModelChange)="filter.Data.includeType = $event;"
+                                [ngModel]="filter?.Data?.includeType"
+                                [options]="connectors"
+                                name="relationIncludeType"></p-selectButton>
+            </span>
+            <span *ngSwitchCase="filterFieldType.Attribute">
+                <select (ngModelChange)="filter.Data.attributeSearchValue = $event"
+                        [ngModel]="filter?.Data?.attributeSearchValue" name="attributeValue"
+                        placeholder="Choose a value"
+                        style="width:100%;">
+                      <option></option>
+                      <option *ngFor="let p of attributeValues"
+                              [value]="p">{{p}}</option>
+                </select>
+            </span>
+            <span *ngSwitchDefault>
+                <span [ngSwitch]="filter.Field?.Data?.columntype">
+                    <span *ngSwitchCase="'dropdownlist'">
+                        <select (ngModelChange)="filter.Data.value = $event"
+                                [name]="'FilterValue_' + index"
+                                [ngModel]="filter?.Data?.value"
+                                placeholder="Choose a field"
+                                required
+                                style="width:100%;">
+                            <option *ngFor="let p of filter.Field?.Data?.filteritems"
+                                    [value]="p">{{p}}</option>
+                        </select>
+                    </span>
+                    <input (ngModelChange)="filter.Data.value = $event"
+                           *ngSwitchDefault
+                           [name]="'FilterValue_' + index"
+                           [ngModel]="filter?.Data?.value"
+                           placeholder="Enter a value" required
+                           style="width:100%;" type="text">
+                </span>
+            </span>
+        </div>
+        <div class="col s3">
+            <a (click)="addFilter()"
+               class="fa-stack fa-lg overlayed-primary"
+               pTooltip="Add Filter">
+                <i class="fa fa-filter fa-stack-1x"></i>
+                <i class="fa fa-plus fa-stack-1x overlayed-add"></i>
+            </a>
+            <a (click)="removeFilter(filter)"
+               *ngIf="internalFilters.length > 1"
+               class="fa-stack fa-lg overlayed-primary"
+               pTooltip="Remove Filter">
+                <i class="fa fa-filter fa-stack-1x"></i>
+                <i class="fa fa-minus fa-stack-1x overlayed-remove"></i>
+            </a>
+        </div>
+    </div>
+    <div class="row">
+        <div *ngIf="hasMultipleAttributes()"
+             class="red-text center"
+             style="font-weight:bold">**Warning: Only a single attribute filter is supported at a time!
+        </div>
+        <div *ngIf="hasMultipleRelationships()"
+             class="red-text center"
+             style="font-weight:bold">**Warning: Only a single relationship filter is supported at a time!
+        </div>
+        <div class="col s12 buttons">
+            <button *ngIf="internalFilters.length > 0 || relationshipFilter || attributeFilter"
+                    [disabled]="!filterForm.form.valid || hasMultipleAttributes() || hasMultipleRelationships()"
+                    label="Filter Results"
+                    pButton
+                    style="width: '150px';"
+                    type="submit"></button>
+            <button (click)="resetFilters()"
+                    *ngIf="internalFilters.length || relationshipFilter || attributeFilter"
+                    label="Clear all Filters"
+                    pButton
+                    style="width: '150px';"
+                    type="button"></button>
+        </div>
+    </div>
+</form>

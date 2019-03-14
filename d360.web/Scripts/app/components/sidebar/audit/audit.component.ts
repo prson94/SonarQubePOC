@@ -1,14 +1,14 @@
-﻿import { Component, Input, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
-import { Breadcrumb } from '../../../models/breadcrumb.model';
-import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { AuditService } from '../../../services/audit.service';
-import { Audit } from '../../../models/audit.model';
-import { LazyLoadEvent } from 'primeng/primeng';
-import { SortOrder } from '../../../models/enums.model';
-import { GridFilterExpression } from '../../../models/grid-definition.model';
-import { BaseComponent } from '../../shared/base.component';
-import { ObjectDetailService } from '../../../services/object-detail.service';
+﻿import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit} from '@angular/core';
+import {ActivatedRoute, Router} from '@angular/router';
+import {LazyLoadEvent} from 'primeng/primeng';
+
+import {BaseComponent} from '../../shared/base.component';
+import {HeaderBreadcrumbService} from '../../../services/header-breadcrumb.service';
+import {ObjectDetailService} from '../../../services/object-detail.service';
+import {AuditService} from '../../../services/audit.service';
+import {Audit} from '../../../models/audit.model';
+import {SortOrder} from '../../../models/enums.model';
+import {GridFilterExpression} from '../../../models/grid-definition.model';
 
 @Component({
     selector: 'd3s-audit',
@@ -45,14 +45,25 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        this.sub = this.route.params.subscribe(params => {
-            this.objectID = +params['objectId']; // (+) converts string 'id' to a number
-            this.objectType = params['objectType'];
+        this.sub = this
+            .route
+            .params
+            .subscribe(params => {
+                this.objectID = +params['objectId']; // (+) converts string 'id' to a number
+                this.objectType = params['objectType'];
 
-            this.objectDetailService.getObject(this.objectID, this.objectType).then(res => {
-                if (res) this.objectName = res.Name ? res.Name : res.DisplayValue;
+                this
+                    .objectDetailService
+                    .getObject(
+                        this.objectID,
+                        this.objectType
+                    )
+                    .then(res => {
+                        if (res) {
+                            this.objectName = res.Name ? res.Name : res.DisplayValue;
+                        }
+                    });
             });
-        });
     }
 
     ngOnDestroy() {
@@ -61,8 +72,19 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
 
     private getData() {
         this.isLoading = true;
-        this.auditService.getAuditData(this.objectID, this.objectType, this.currentPageNumber, this.rowsPerPage, this.sortOrder, this.sortField, this.filters)
-            .then(result => {
+
+        this
+            .auditService
+            .getAuditData(
+                this.objectID,
+                this.objectType,
+                this.currentPageNumber,
+                this.rowsPerPage,
+                this.sortOrder,
+                this.sortField,
+                this.filters
+            )
+            .subscribe(result => {
                 this.isLoading = false;
                 this.audits = result.results;
                 this.totalRecords = result.total;
@@ -79,14 +101,16 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
         this.filters.splice(0, this.filters.length);
 
         for (var key in event.filters) {
-            var filter = event.filters[key];
+            const filter = event.filters[key];
+            let gridFilter = new GridFilterExpression();
 
-            var gridFilter = new GridFilterExpression();
-            gridFilter.condition = "CONTAINS"
+            gridFilter.condition = "CONTAINS";
             gridFilter.field = key;
             gridFilter.value = filter.value;
+
             this.filters.push(gridFilter);
         }
+
         this.sortOrder = event.sortOrder;
         this.sortField = event.sortField == undefined ? "" : event.sortField;
         this.rowsPerPage = event.rows;
@@ -95,6 +119,13 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
     }
 
     public export() {
-        this.auditService.exportToExcel(this.objectID, this.objectType, this.objectName, this.filters);
+        this
+            .auditService
+            .exportToExcel(
+                this.objectID,
+                this.objectType,
+                this.objectName,
+                this.filters
+            );
     }
 }

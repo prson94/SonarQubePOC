@@ -64,10 +64,10 @@ export class ResourcesService extends BaseService {
     getResponsibilityBreakdownByResource(id: number, responsibilityTypeId: number = 0): Promise<CountObject[]> {
         var url = "";
         if (responsibilityTypeId > 0) {
-            url = `tiles/ResponsibilityBreakdownByResource?id=${id}&responsibilityTypeID=${responsibilityTypeId}`;
+            url = `/api/v2/social/ResponsibilityBreakdownByResource?id=${id}&responsibilityTypeID=${responsibilityTypeId}`;
         }
         else {
-            url = `tiles/ResponsibilityBreakdownByResource?id=${id}`;
+            url = `/api/v2/social/ResponsibilityBreakdownByResource?id=${id}`;
         }
 
         return this.http.get(url)
@@ -77,7 +77,7 @@ export class ResourcesService extends BaseService {
     }
 
     getFollowingBreakdownByResource(id: number): Promise<CountObject[]> {
-        return this.http.get(`tiles/FollowingBreakdownByResource?id=${id}`)
+        return this.http.get(`/api/v2/social/FollowingBreakdownByResource?id=${id}`)
             .toPromise()
             .then(response => <CountObject[]>response.json())
             .catch(err => this.handleError(err));

@@ -86,6 +86,7 @@
     <Compile Include="entities\Community\Plugins\ClientFusionType.cs" />
     <Compile Include="entities\Contracts\ICreatedMetadata.cs" />
     <Compile Include="entities\Contracts\IEventTrackedEntity.cs" />
+    <Compile Include="entities\Contracts\IUIDMetadata.cs" />
     <Compile Include="entities\FieldValue.cs" />
     <Compile Include="entities\Fusion\FusionMarkitLineageData.cs" />
     <Compile Include="entities\Fusion\FusionMarkitLineageMapToBusinessItems.cs" />
@@ -128,8 +129,11 @@
     <Compile Include="entities\Relation\MapTypeTemplateItem.cs" />
     <Compile Include="entities\ReportResponsibility.cs" />
     <Compile Include="entities\ResourcePasswordReset.cs" />
+    <Compile Include="entities\Security\ResponsibilityTypeAllocationViewModel.cs" />
     <Compile Include="entities\Security\ResponsibilityTypeRelationOverrideItem.cs" />
     <Compile Include="entities\Security\ResponsibilityTypeRelationRule.cs" />
+    <Compile Include="entities\Security\ResponsibilityTypeRuleStatsViewModel.cs" />
+    <Compile Include="entities\Security\ResponsibilityTypeRuleViewModel.cs" />
     <Compile Include="entities\ShoppingCart.cs" />
     <Compile Include="entities\ShoppingCartItem.cs" />
     <Compile Include="entities\ShoppingCartType.cs" />
@@ -207,7 +211,6 @@
     <Compile Include="entities\Contracts\IGuidObject.cs" />
     <Compile Include="entities\Community\DatabaseServer.cs" />
     <Compile Include="entities\Community\CompanyFeature.cs" />
-    <Compile Include="entities\Fusion\FusionFilter.cs" />
     <Compile Include="entities\Fusion\FusionStatusLog.cs" />
     <Compile Include="entities\LoadColumn.cs" />
     <Compile Include="entities\LoadItemColumn.cs" />

@@ -1,7 +1,9 @@
 ﻿using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using d360.core.entities.Contracts;
 using System.Collections.Generic;
+using System;
 
 namespace d360.core.entities
 {
@@ -9,7 +11,7 @@ namespace d360.core.entities
     /// Defines what types of artifacts can be assigned as a source for a given responsibility type.
     /// </summary>
     [DataContract(Namespace = NAMESPACE)]
-    public class ResponsibilityTypeRelation : BaseObject
+    public class ResponsibilityTypeRelation : BaseObject, IUpdatedMetadata, ICreatedMetadata
     {
         [Key, Column(Order = 1), DataMember]
         public int ResponsibilityTypeID { get; set; }
@@ -24,5 +26,13 @@ namespace d360.core.entities
         public int PermissionsBitMask { get; set; }
 
         public virtual ResponsibilityType ResponsibilityType { get; set; }
+
+        public DateTime? CreatedOn { get; set; }
+        public int? CreatedBy { get; set; }
+
+        public DateTime? UpdatedOn { get; set; }
+
+        public int? UpdatedBy { get; set; }
+
     }
 }

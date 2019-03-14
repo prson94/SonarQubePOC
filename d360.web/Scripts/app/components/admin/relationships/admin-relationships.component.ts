@@ -31,7 +31,7 @@ export class AdminRelationshipsComponent extends AdminBaseComponent implements O
         if (this.auditSidebar) {
             this.auditSidebar.hasDynamicUrl = true;
             this.auditSidebar.dynamicUrlCallback = (() => {
-                return `/sidebar/audit/IntersectType/${this.selected.ID}`
+                return `/sidebar/audit/IntersectType/${this.selected.Id}`
             });
         }
 
@@ -43,7 +43,7 @@ export class AdminRelationshipsComponent extends AdminBaseComponent implements O
         fields.title = 'Field Definitions'
         fields.url = '/sidebar/fields'
         fields.dynamicUrlCallback = (() => {
-            return `/sidebar/fields/IntersectType/${this.selected.ID}`
+            return `/sidebar/fields/IntersectType/${this.selected.Id}`
         });
 
         this.rightSidebarService.showItem(fields);

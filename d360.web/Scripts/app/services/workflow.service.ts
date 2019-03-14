@@ -292,12 +292,6 @@ export class WorkflowService extends BaseService {
             .then(response => <boolean>response.json())
             .catch(err => this.handleError(err));
     }
-    getFusionLookupList(id: number): Promise<any[]> {
-        return this.http.get(`api/fusionlookup/list/${id}`)
-            .toPromise()
-            .then(response => <any[]>response.json())
-            .catch(err => this.handleError(err));
-    }
 
     deleteWorkflowType(id: number): Promise<number> {
         return this.http.delete(`services/workflow/type/${id}/delete`)

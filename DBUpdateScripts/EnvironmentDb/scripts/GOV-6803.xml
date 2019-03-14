@@ -1,0 +1,29 @@
+﻿<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Sebastian Abraham" id="GOV-6803">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+	Update F
+	Set F.AssetTypeID =AT.ID
+	FROM dbo.FieldType F
+	inner join AssetType AT on
+	f.objectid= AT.objectId and
+	f.object = AT.object
+	where f.object not in ('IssueType','LookupType','IntersectType','EventType')
+	and F.AssetTypeID is null
+ ]]>
+    </sql>
+	<rollback>
+
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>

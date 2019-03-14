@@ -37,6 +37,8 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     @Input() newActionName: string = "New";
     @Input() hasHeader = true;
     @Input() copy: boolean;
+    @Input() selectedObject: string;
+    @Input() selectedObjectID: number;
 
     @Output() closeClick = new EventEmitter();
     @Output() saveClick = new EventEmitter();

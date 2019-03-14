@@ -32,6 +32,14 @@ namespace d360.model
 
         public List<BulkMetricTemporaryTableModel> BulkMetricsImport(BulkMetricsImport model)
         {
+            //Set effective date for any results that do not have a date set.
+            model.ForEach(m => {
+                if (!m.EffectiveDate.HasValue)
+                {
+                    m.EffectiveDate = DateTime.UtcNow.Date;
+                }
+            });
+
             var dupes = model
                 .GroupBy(i => new { i.AssetUid, i.MetricAssetUid, i.EffectiveDate })
                 .Where(i => i.Count() > 1)
@@ -40,7 +48,7 @@ namespace d360.model
             if (dupes)
             {
                 throw new GenericException(
-                    System.Net.HttpStatusCode.BadRequest, 
+                    System.Net.HttpStatusCode.BadRequest,
                     "Duplicate items found in request", 
                     "The request contains duplicate combinations of AssetUid, MetricAssetUid, and EffectiveDate. You must send in unique combinations for those three fields.");
             }

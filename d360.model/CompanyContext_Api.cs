@@ -750,7 +750,8 @@ from    api.ExecutionAsset T
 			    D.[Uid],
 			    A.Object,
 			    A.ObjectID, 
-			    D.IntersectID
+			    D.IntersectID,
+                0 as [Level]
 	    from	api.ExecutionDeletedAsset D
 			    inner join Asset A on D.ExecutionID = @ExecutionID and A.ID = D.AssetID
 	    where	D.AssetID is not null
@@ -762,14 +763,24 @@ from    api.ExecutionAsset T
 			    C.[Uid],
 			    C.Object,
 			    C.ObjectID, 
-			    I.IntersectID
+			    I.IntersectID,
+                P.[Level] + 1 as [Level]
 	    from	PredicateIntersect I 
 			    inner join h as P on P.ExecutionID = @ExecutionID and I.PredicateType = {(int)predicateType} and P.Object = I.Subject and P.ObjectID = I.SubjectID
 			    inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
         where   P.ItemNumber between {beginItemNumber} and {endItemNumber}
     )
     insert into api.ExecutionDeletedAsset ([ExecutionID],[ItemNumber],[Uid],[AssetID],[IntersectID],[FromHierarchy])
-        select ExecutionID, ItemNumber, [Uid], AssetID, IntersectID, 1 from h where IntersectID is not null",
+        select  ExecutionID, 
+                ItemNumber, 
+                [Uid], 
+                AssetID, 
+                IntersectID, 
+                1 
+        from    h 
+        where   IntersectID is not null 
+                and [Level] > 0 
+                and Uid not in (select Uid from api.ExecutionDeletedAsset where ExecutionID = @ExecutionID)",
                                             new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
                                         }
 
@@ -818,7 +829,7 @@ from    api.ExecutionAsset T
 	    select	distinct 
                 'ObjectIndex', 'D',	S.Object, S.ObjectID, S.AssetID 
         from    api.ExecutionDeletedAsset S
-        where   {querySuffix};
+        where   {querySuffix} and S.Object is not null and S.ObjectID is not null;
 
     insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)
 	    select	distinct
@@ -834,7 +845,7 @@ from    api.ExecutionAsset T
 			    SUBSTRING(O.DisplayValue,1,250), 
 			    'This asset has been removed.' 
 	    from	AssetDetail O
-			    inner join api.ExecutionDeletedAsset S on S.AssetID = O.ID and {querySuffix};",
+			    inner join api.ExecutionDeletedAsset S on S.AssetID = O.ID and {querySuffix} and S.Object is not null and S.ObjectID is not null;",
                                         new { execution.ExecutionID, r = CurrentResourceID, dt }, transaction: trans, commandTimeout: timeout);
 
                                         #endregion
@@ -1330,37 +1341,50 @@ from    api.ExecutionAsset T
                             LoadMissingKeyFields(execution.ExecutionID, at, timeout);    // Get missing key fields if this is an update.
                         }
 
-                        #region Generate proposed key quasi-hash and compare against existing data.
+                        #region Generate proposed key hash and compare against existing data.
 
-                        string keyTableTempCreation = @"CREATE TABLE #Keys (AssetID bigint, ActiveKey nvarchar(500)); CREATE CLUSTERED INDEX CIX_TempApiExecutionKeys ON #Keys ( ActiveKey ASC ); ";
+                        string keyTableTempCreation = @"CREATE TABLE #Keys (AssetID bigint, ActiveKey nvarchar(max), ActiveKeyHash varchar(100)); CREATE CLUSTERED INDEX CIX_TempApiExecutionKeys ON #Keys ( ActiveKeyHash ASC ); ";
                         string keyComparisonUpdateStatement = @"update  T 
 set     T.Success = 0, 
         T.Message = 'Key values match another asset under a different set of key fields. '
 from    api.ExecutionAsset T 
-        inner join #Keys S on T.ExecutionID = @ExecutionID and S.ActiveKey = T.ProposedKey and ((S.AssetID <> T.AssetID and T.AssetID is not null) OR (T.AssetID is null)); ";
+        inner join #Keys S on T.ExecutionID = @ExecutionID and S.ActiveKeyHash = T.ProposedKey and ((S.AssetID <> T.AssetID and T.AssetID is not null) OR (T.AssetID is null)); ";
 
                         if (at.Object == "FusionAttributeType")
                         {
                             Connection.Execute($@"
 update  T
-set     T.ProposedKey = S.ProposedKey 						
+set     T.ProposedKey = utility.GetHash(S.ProposedKey)
 from    api.ExecutionAsset T
 		inner join	(
 					select		A.ItemNumber,
-								COALESCE(cast(A.ParentUid as nvarchar(50))+'|', '') + F.FieldValue as ProposedKey
+								COALESCE(cast(A.ParentUid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.LookupValue, F.FieldValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ProposedKey
 					from		api.ExecutionAsset A
-								inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldName = 'Name'
+								inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber
+								left join FieldType FT on FT.AssetTypeID = @ID and FT.ID = F.FieldTypeID
 					where		A.ExecutionID = @ExecutionID	
+								and (F.FieldName = 'Name' OR FT.IsPartOfKey = 1)
+					group by	A.ItemNumber, A.ParentUid
 					) S on T.ExecutionID = @ExecutionID and S.ItemNumber = T.ItemNumber;
 
 {keyTableTempCreation}
 
 insert into #Keys
     select	A.ID,
-			COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + O.Name as ProposedKey
+		    COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + O.Name + COALESCE('|'+DF.ProposedKey,'') as ActiveKey,
+            utility.GetHash(COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + O.Name + COALESCE('|'+DF.ProposedKey,'')) as ActiveKeyHash
     from	Asset A 
-			inner join FusionAttribute O on A.Object = 'FusionAttribute' and O.ID = A.ObjectID
-			left join Asset P on P.Object = 'FusionAttribute' and P.ObjectID = O.ParentID and O.ParentID is not null
+		    inner join FusionAttribute O on A.Object = 'FusionAttribute' and O.ID = A.ObjectID
+		    left join Asset P on P.Object = 'FusionAttribute' and P.ObjectID = O.ParentID and O.ParentID is not null
+		    left join (
+			    select		A.ID,
+						    STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ProposedKey
+			    from		Asset A 
+						    inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
+						    left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
+			    where	    A.AssetTypeID = @ID
+			    group by    A.ID
+		    ) DF on DF.ID = A.ID
     where	A.AssetTypeID = @ID;
 
 {keyComparisonUpdateStatement}",
@@ -1370,7 +1394,7 @@ insert into #Keys
                         {
                             Connection.Execute($@"
 update  T
-set     T.ProposedKey = S.ProposedKey 						
+set     T.ProposedKey = utility.GetHash(S.ProposedKey) 
 from    api.ExecutionAsset T
 		inner join	(
 					select		A.ItemNumber,
@@ -1384,7 +1408,8 @@ from    api.ExecutionAsset T
 
 insert into #Keys
     select		A.ID,
-			    O.Code as ActiveKey
+			    O.Code as ActiveKey, 
+                utility.GetHash(O.Code) as ActiveKeyHash 
     from		Asset A 
 			    inner join ReferenceItem O on A.Object = 'ReferenceItem' and O.ID = A.ObjectID
     where	    A.AssetTypeID = @ID;
@@ -1396,7 +1421,8 @@ insert into #Keys
                         {
                             var activeKeySql = $@"
 select		A.ID,
-			STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by ColumnOrder asc, F.ID asc) as ProposedKey
+			STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ActiveKey,
+            utility.GetHash(STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKeyHash 
 from		Asset A 
 			inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
 			left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
@@ -1407,7 +1433,8 @@ group by    A.ID;";
                             {
                                 activeKeySql = $@"
 select		A.ID,
-			COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ProposedKey
+			COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ActiveKey,
+            utility.GetHash(COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKeyHash 
 from		Asset A 
 			inner join [Intersect] I on I.IntersectTypeID = @intersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
 			inner join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
@@ -1419,7 +1446,7 @@ group by	A.ID, P.Uid";
 
                             Connection.Execute($@"
 update  T
-set     T.ProposedKey = S.ProposedKey 
+set     T.ProposedKey = utility.GetHash(S.ProposedKey) 
 from    api.ExecutionAsset T
 		inner join	(
 					select		A.ItemNumber,
@@ -2130,6 +2157,7 @@ from	api.ExecutionRelationship T
 					from	api.ExecutionRelationship ER
 							inner join Asset O on O.Uid = ER.ObjectUid and ER.ExecutionID = @ExecutionID
 							inner join [Intersect] I on I.IntersectTypeID = @IntersectTypeID and I.Object = O.Object and I.ObjectID = O.ObjectID
+                            inner join Asset S on S.Uid <> ER.SubjectUid and S.Object = I.Subject and S.ObjectID = I.SubjectID 
 					group by ER.ExecutionID, ER.ItemNumber
 					) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
 
@@ -2160,8 +2188,9 @@ from	api.ExecutionRelationship T
 							ER.ItemNumber,
 							count(1) as RelationshipCount
 					from	api.ExecutionRelationship ER
-							inner join Asset O on O.Uid = ER.ObjectUid and ER.ExecutionID = @ExecutionID
-							inner join [Intersect] I on I.IntersectTypeID = @IntersectTypeID and I.Subject = O.Object and I.SubjectID = O.ObjectID
+							inner join Asset S on S.Uid = ER.SubjectUid and ER.ExecutionID = @ExecutionID
+							inner join [Intersect] I on I.IntersectTypeID = @IntersectTypeID and I.Subject = S.Object and I.SubjectID = S.ObjectID
+                            inner join Asset O on O.Uid <> ER.ObjectUid and O.Object = I.Object and O.ObjectID = I.ObjectID 
 					group by ER.ExecutionID, ER.ItemNumber
 					) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
 

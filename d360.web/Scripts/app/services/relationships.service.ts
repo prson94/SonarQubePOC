@@ -13,7 +13,7 @@ export class RelationshipsService extends BaseService {
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
     getRelationshipTypes(): Promise<RelationshipType[]> {
-        return this.http.get('api/v2/relationships/types')
+        return this.http.get('api/v2/relationships/types?state=1')
             .toPromise()
             .then(response => <RelationshipType[]>response.json())
             .catch(err => this.handleError(err));
@@ -27,7 +27,7 @@ export class RelationshipsService extends BaseService {
     }
 
     exportRelationshipTypeItems(relType: RelationshipType) {
-        this.http.get(`relations/_intersectTypeItems/${relType.ID}/excel.xls`, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data, 'relationship type items'));
+        this.http.get(`relations/_intersectTypeItems/${relType.Id}/excel.xls`, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data, 'relationship type items'));
     }
 
     exportRelationshipTypes() {        
