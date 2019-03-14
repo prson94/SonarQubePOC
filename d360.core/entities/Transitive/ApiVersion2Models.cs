@@ -166,4 +166,28 @@ namespace d360.core.entities
 
         public int ObjectID { get { return IntersectID; } set { } }
     }
+
+    public class MetricDataProfilePostResult
+    {
+        public Guid AssetUid { get; set; }
+        public string EffectiveDate { get; set; }
+        public string Message { get; set; }
+        public bool Success { get; set; }
+    }
+
+    public class MetricDataProfileDeleteResult
+    {
+        public Guid AssetUid { get; set; }
+        public string EffectiveStartDate { get; set; }
+        public string EffectiveEndDate { get; set; }
+        public string Message { get; set; }
+        public bool Success { get; set; }
+    }
+
+    public class MetricDataProfileDelete
+    {
+        public Guid AssetUid { get; set; }
+        public DateTime? EffectiveStartDate { get; set; }
+        public DateTime? EffectiveEndDate { get; set; }
+    }
 }
