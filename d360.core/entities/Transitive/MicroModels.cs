@@ -176,6 +176,21 @@ namespace d360.core.entities
         public List<NavigationItem> NavigationItems { get; set; }
         public int SortOrder { get; set; }
         public string Icon { get; set; }
+        public string ImageIconUrl { get; set; }
+        public string FullURL
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(this.ImageIconUrl))
+                {
+                    return null;
+                }
+                else
+                {
+                    return constants.COMPANY_RESOURCES_URL + this.ImageIconUrl;
+                }
+            }
+        }
         public string Title { get; set; }
 
     }

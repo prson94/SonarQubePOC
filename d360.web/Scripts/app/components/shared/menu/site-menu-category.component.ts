@@ -14,8 +14,10 @@ import { forEach } from '@angular/router/src/utils/collection';
     selector: 'd3s-site-menu-category',    
     template: ` 
                     <li #item [ngClass]="{'menu-category':true,'menu-parent':menu && (menu.NavigationItems),'menu-active':menu?.isActiveItem}" [pTooltip]="(!expanded && !menuhasItems(menu)) ? title : null" tooltipZIndex="10001" (mouseenter)="show(item)" (mouseleave)="hide(item)" [routerLink]="url ? url : []" style="cursor: pointer;" >
-                        <span *ngIf="menuhasItems(menu)"><i [class]="'fa ' + rootIconName"></i></span>
-                        <span *ngIf="!menuhasItems(menu)"><i [class]="'fa ' + rootIconName"></i></span>
+                        <span *ngIf="menuhasItems(menu)">
+                            <i *ngIf="rootIconName" [class]="'fa ' + rootIconName"></i>
+                            <img *ngIf="imageUrl" [src]="imageUrl" style="max-width: 15px; max-height: 15px;" />
+                        </span>
                         <span *ngIf='expanded'> {{title}} <i *ngIf="menu && menu.NavigationItems && menu.NavigationItems.length > 0" class="fa fa-angle-right pull-right menu-category"></i></span>
                         <div *ngIf="menu && menu.NavigationItems && menu.NavigationItems.length > 0" class="menu-child megamenu-panel" (click)="stopNavigation($event)">
                             <div>
@@ -47,6 +49,7 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
     @Input() menu: SiteMenu;
     @Input() showClearButton: boolean = false;
     @Input() expanded: boolean;
+    @Input() imageUrl: string;
 
     @Output() clearClick = new EventEmitter();
     

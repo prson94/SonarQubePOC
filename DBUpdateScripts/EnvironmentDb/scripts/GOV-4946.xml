@@ -1,0 +1,39 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="BHoward" id="GOV-4649">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[
+  UPDATE [dbo].[SiteNav] SET Title = 'Glossary', SortOrder = 1 WHERE ID = 4
+  UPDATE [dbo].[SiteNav] SET SortOrder = 2 WHERE ID = 5
+  UPDATE [dbo].[SiteNav] SET SortOrder = 3 WHERE ID = 6
+  UPDATE [dbo].[SiteNav] SET Title = 'Rules', SortOrder = 6, Icon = 'fa-check-square' WHERE ID = 1
+  UPDATE [dbo].[SiteNav] SET Title = 'Data Assets', SortOrder = 5 WHERE ID = 8
+  UPDATE [dbo].[SiteNav] SET SortOrder = 7 WHERE ID = 9
+
+  DELETE FROM[dbo].[SiteNav] WHERE ID = 7
+  DELETE FROM[dbo].[SiteNav] WHERE ID = 2
+		]]>
+    </sql>
+    <rollback>
+	<![CDATA[
+			UPDATE [dbo].[SiteNav] SET [Name] = N'#Data Quality', [SortOrder] = 1, [Icon] = N'fa-pie-chart', [Title] = N'Data Quality' WHERE ID = 1 						   		 	  
+			UPDATE [dbo].[SiteNav] SET [Name] = N'#Glossary', [SortOrder] = 3, [Icon] = N'fa-book', [Title] = N'Business Assets' WHERE ID = 4					   		 
+			UPDATE [dbo].[SiteNav] SET [Name] = N'#Models',	[SortOrder] = 4, [Icon] = N'fa-sitemap', [Title] = N'Models' WHERE ID = 5						   		 
+			UPDATE [dbo].[SiteNav] SET [Name] = N'#Policy',	[SortOrder] = 5, [Icon] = N'fa-university', [Title] = N'Policies' WHERE ID = 6							   		 	 
+			UPDATE [dbo].[SiteNav] SET [Name] = N'#Fusion',	[SortOrder] = 7, [Icon] = N'fa-database', [Title] = N'Fusion' WHERE ID = 8						   		 	  
+			UPDATE [dbo].[SiteNav] SET [Name] = N'#Community', [SortOrder] = 8, [Icon] = N'fa-group', [Title] = N'Community' WHERE ID = 9	
+			
+			INSERT [dbo].[SiteNav] ([ParentID], [Name], [Route], [SortOrder], [ObjectID], [Object], [Icon], [Title]) VALUES (NULL, N'#Monitor', NULL, 2, NULL, NULL, N'fa-usb', N'Workflow')
+			INSERT [dbo].[SiteNav] ([ParentID], [Name], [Route], [SortOrder], [ObjectID], [Object], [Icon], [Title]) VALUES (NULL, N'#Reference', NULL, 6, NULL, NULL, N'fa-cubes', N'Reference')
+      ]]>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>

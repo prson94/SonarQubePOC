@@ -15,6 +15,7 @@ using d360.extensions;
 using d360.web.Filters;
 using Resources;
 using System.Net;
+using System.IO;
 
 namespace d360.web.Controllers
 {
@@ -22,10 +23,11 @@ namespace d360.web.Controllers
     public class NavigationController : BaseController
     {
         #region DI
-
-        public NavigationController(CommunityContext community, CompanyContext company)
+        IStorageProvider Storage;
+        public NavigationController(CommunityContext community, CompanyContext company, IStorageProvider storage)
             : base(community, company)
         {
+            Storage = storage;
         }
 
         #endregion
@@ -185,7 +187,11 @@ namespace d360.web.Controllers
                 var folder = Company.GetById<SiteNav>(id);
                 if (folder == null)
                     throw new Exception($"Folder id ${id} not found");
-
+                string originalImage = folder.ImageIconUrl;
+                if (!string.IsNullOrEmpty(originalImage))
+                {
+                    Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, originalImage);
+                }
                 //clear out permissions
                 folder.Permissions = new List<SiteNavPermission>();
                 SetSiteNavPermissions(folder);
@@ -222,6 +228,27 @@ namespace d360.web.Controllers
             {
                 if (string.IsNullOrWhiteSpace(model.Folder.Name))
                     throw new Exception("Folder name cannot be empty.");
+
+                if (!string.IsNullOrEmpty(model.Folder.IconPayload))
+                {
+                    var imageMatch = MimeTypeExtensionsMap.RegEx.Match(model.Folder.IconPayload);
+
+                    var imageMime = imageMatch.Groups["mime"].Value;
+                    var imageData = imageMatch.Groups["data"].Value;
+                    var imageExtension = MimeTypeExtensionsMap.GetExtension(imageMime);
+                    var imageByteArray = Convert.FromBase64String(imageData);
+                    var imageGuid = Guid.NewGuid();
+
+                    using (var imageStream = new MemoryStream(imageByteArray))
+                    {
+                        var imageFileName = string.Format("{0}.menuicon.{1}{2}", Company.CurrentCompanyID, imageGuid, imageExtension);
+                        Storage.CreateFile(constants.COMPANY_RESOURCES_FOLDER, imageFileName, imageStream);
+
+                        model.Folder.ImageIconUrl = $"{imageFileName}";
+
+                    }
+                }
+
                 model.Folder.SortOrder = 9999;
                 var folder = Company.SiteNav.Add(model.Folder);
 
@@ -338,9 +365,39 @@ namespace d360.web.Controllers
                 var siteNav = Company.GetById<SiteNav>(folder.ID);
                 if (siteNav == null)
                     throw new Exception($"Folder Id ${folder.ID} not found.");
+                string originalImage = siteNav.ImageIconUrl;
+
+                if (!string.IsNullOrEmpty(originalImage))
+                {
+                    Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, originalImage);
+                }
+
+                if (!string.IsNullOrEmpty(folder.IconPayload))
+                {
+                    var imageMatch = MimeTypeExtensionsMap.RegEx.Match(folder.IconPayload);
+
+                    var imageMime = imageMatch.Groups["mime"].Value;
+                    var imageData = imageMatch.Groups["data"].Value;
+                    var imageExtension = MimeTypeExtensionsMap.GetExtension(imageMime);
+                    var imageByteArray = Convert.FromBase64String(imageData);
+                    var imageGuid = Guid.NewGuid();
+
+                    using (var imageStream = new MemoryStream(imageByteArray))
+                    {
+                        var imageFileName = string.Format("{0}.menuicon.{1}{2}", Company.CurrentCompanyID, imageGuid, imageExtension);
+                        Storage.CreateFile(constants.COMPANY_RESOURCES_FOLDER, imageFileName, imageStream);
+
+                        folder.ImageIconUrl = $"{imageFileName}";
+
+                    }
+                }
+
+
+
                 siteNav.Name = folder.Name;
                 siteNav.Icon = folder.Icon;
                 siteNav.Title = folder.Title ?? folder.Name;
+                siteNav.ImageIconUrl = folder.ImageIconUrl;
                 Company.SaveChanges();
                 SetSiteNavPermissions(folder);
                 message = "Folder updated successfully.";

@@ -17,9 +17,10 @@ declare var CompanySettings;
     selector: 'd3s-site-menu',    
     template: ` 
                 <ul [class.left-side-nav]="!menuOpen" [class.left-side-nav-open]='menuOpen'>
-                    <d3s-site-menu-category *ngIf="favorites" [expanded]="menuOpen" [title]="'My Favorites'" showClearButton="true" (clearClick)="clearFavorites()" [menu]="favorites" rootIconName="fa-star"></d3s-site-menu-category>
+                    <d3s-site-menu-category [expanded]="menuOpen" [title]="'Home'" [url]="'home'" rootIconName="fa-home"></d3s-site-menu-category>  
+                    <d3s-site-menu-category *ngIf="favorites" [expanded]="menuOpen" [title]="'Favorites'" showClearButton="true" (clearClick)="clearFavorites()" [menu]="favorites" rootIconName="fa-star"></d3s-site-menu-category>
                     <ng-template ngFor let-menu [ngForOf]="siteMenu">
-                        <d3s-site-menu-category *ngIf="menu.ShouldDisplay" [expanded]="menuOpen" [url]="menu.ngUrl" [title]="menu.Title" [rootIconName]="menu.Icon" [menu]="menu"></d3s-site-menu-category>
+                        <d3s-site-menu-category *ngIf="menu.ShouldDisplay" [expanded]="menuOpen" [url]="menu.ngUrl" [title]="menu.Title" [rootIconName]="menu.Icon" [imageUrl]="menu.FullURL" [menu]="menu"></d3s-site-menu-category>
                     </ng-template>                  
                     <d3s-site-menu-category *ngIf="isAdmin" [expanded]="menuOpen" [title]="'Administration'" rootIconName="fa-cog" [menu]="adminMenu"></d3s-site-menu-category>  
                     <span class="set-bottom">
@@ -139,7 +140,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                             }
                             break;
                     }
-                    if (!menu.Icon) menu.Icon = 'fa-folder';
+                    if (!menu.Icon && !menu.FullURL) menu.Icon = 'fa-folder';
                 }
                 
                 this.siteMenu = _.sortBy(result.MenuItems, 'SortOrder'); // sort the menu's by display order
