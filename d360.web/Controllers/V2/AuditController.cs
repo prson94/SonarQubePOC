@@ -128,9 +128,8 @@ namespace d360.web.Controllers.V2
                 countSql = base.applyFilteringSuffix(countSql, Request);
                 int total = Company.Query<int>(countSql, dbArgs).First();
 
-                sql = base.applyFilteringSuffix(sql, Request);
-                var stFieldType = sortDataField == null || sortDataField == "Date" ? "DateTime" : "string";
-                sql = base.applySortSuffix(sql, Request,sortDataField);
+                sql = base.applyFilteringSuffix(sql, Request);                
+                sql = base.applySortSuffix(sql, Request, "Date");
                 sql = base.applyPagingSuffix(sql, Request);
 
                 var query = Company.Query<dynamic>(sql, dbArgs);
@@ -174,14 +173,15 @@ namespace d360.web.Controllers.V2
             ";
 
             var sql = string.Format(@"select * from ({0}) A", querySql);
-            sql = base.applySortSuffix(sql, Request);
+
+            sql = base.applyFilteringSuffix(sql, Request);
+            sql = base.applySortSuffix(sql, Request, "Date");
 
 
             var dbArgs = new Dapper.DynamicParameters();
             dbArgs.Add("objType", new DbString { Value = type.ToString(), IsAnsi = true, IsFixedLength = true, Length = 50 });
             dbArgs.Add("objId", id);
-
-            sql = base.applyFilteringSuffix(sql, Request);
+                       
 
             var query = Company.Query<dynamic>(sql, dbArgs);
 
@@ -232,10 +232,39 @@ namespace d360.web.Controllers.V2
             #endregion
 
             var detail = Company.GetObjectDetail(type.ToString(), id);
-
             var stream = new MemoryStream();
             document.SaveAs(stream);
-            return Ok(stream.ToArray());
+            var len = stream.Length;
+
+            var result = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new ByteArrayContent(stream.GetBuffer())
+            };
+            result.Content.Headers.ContentLength = stream.Length;
+            result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
+            {
+                FileName = "audit.xlsx"
+            };
+            result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
+
+            return ResponseMessage(result);
+            /*var stream = new MemoryStream();
+            document.SaveAs(stream);
+            var len = stream.Length;
+            stream.Position = 0;
+            HttpResponseMessage result = null;
+            // serve the file to the client      
+            result = Request.CreateResponse(HttpStatusCode.OK);
+
+            result.Content = new StreamContent(stream);
+            
+            result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
+            result.Content.Headers.ContentLength = stream.Length;
+            result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
+            {
+                FileName = $"Reference Items.xlsx"
+            };
+            return Ok(result);*/
         }
     }
 }
