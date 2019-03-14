@@ -1,0 +1,113 @@
+﻿<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Sebastian Abraham" id="GOV-6777">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+  ALTER   FUNCTION [dbo].[AssetsByTypeUserCantRead]
+        (		        
+	        @ResourceID int,
+			    @AssetTypeID int
+            )
+            RETURNS TABLE  with Schemabinding
+            AS
+            RETURN 
+            (
+			        select 
+				        A.ID as AssetID
+			        from 
+				        [dbo].[ResponsibilityTypeRelation] RR
+				        inner join [dbo].[responsibilitytyperelationrule] R on (RR.ResponsibilityTypeID = R.ResponsibilityTypeID and RR.ObjectType = R.[Object] and RR.ObjectID = R.ObjectID)	
+				        inner join [dbo].[AssetType] Ast on (Ast.[Object] = R.[Object] and Ast.ObjectID = R.ObjectID)
+				        inner join [dbo].[Asset] A on (A.AssetTypeID = Ast.ID)
+				        inner join [dbo].[ResponsibilityRuleResultAsset] rasset on (rasset.assettypeid = 0 and rasset.AssetID = A.ID and rasset.ruleid = r.id)				
+			        where 
+				        RR.PermissionsBitMask & 1 = 0 and Ast.ID = @AssetTypeID
+				         and 
+					        ( exists( select 1 from [dbo].[ResponsibilityRuleResultSecurityAsset] rresource where rresource.RuleID = R.ID and rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = @ResourceID )
+					        or exists( select 1 from [dbo].[ResponsibilityRuleResultSecurityAsset] rresource inner join dbo.[Organization] D on rresource.SecurityAsset = 'O' and D.ID = rresource.SecurityAssetID inner join dbo.OrganizationResource RD on RD.OrganizationID = D.ID where rresource.RuleID = R.ID and RD.ResourceID = @ResourceID )
+					        or exists( select 1 from [dbo].[ResponsibilityRuleResultSecurityAsset] rresource inner join dbo.[Group] G on G.ID = rresource.SecurityAssetID and rresource.SecurityAsset = 'G' inner join dbo.ResourceGroup RG on RG.GroupID = G.ID  where rresource.RuleID = R.ID and RG.ResourceID =  @ResourceID ) 
+							)
+						and
+							not exists (select 1 from [dbo].[ResponsibilityTypeRelationOverrideItem] oride where oride.AssetID = A.ID and oride.ResponsibilityTypeID = R.ResponsibilityTypeID)
+					union -- user overrides
+						select
+							oride.AssetID as AssetID
+						from 
+							[dbo].[ResponsibilityTypeRelationOverrideItem] oride
+							inner join [dbo].ResponsibilityType RT on RT.ID = oride.ResponsibilityTypeID  
+							inner join [dbo].asset a on (a.id = oride.assetID)
+							inner join [dbo].assettype att on (att.id = a.assettypeid)
+							inner join [dbo].[ResponsibilityTypeRelation] RR on (att.[object] = RR.[objectType] and att.objectid = RR.[Objectid] and RR.ResponsibilityTypeID = oride.ResponsibilityTypeID)							
+							inner join reporting.Global_Resource RES on RES.ResourceID = oride.SecurityAssetID and oride.SecurityAsset = 'R' and RES.State = 1
+						where
+							RR.PermissionsBitMask & 1 = 0 and Att.ID = @AssetTypeID and oride.SecurityAsset = 'R' and oride.SecurityAssetID = @ResourceID
+					union -- group overrides
+						select
+							oride.AssetID as AssetID
+						from 
+							[dbo].[ResponsibilityTypeRelationOverrideItem] oride
+							inner join [dbo].ResponsibilityType RT on RT.ID = oride.ResponsibilityTypeID  
+							inner join [dbo].asset a on (a.id = oride.assetID)
+							inner join [dbo].assettype att on (att.id = a.assettypeid)
+							inner join [dbo].[ResponsibilityTypeRelation] RR on (att.[object] = RR.[objectType] and att.objectid = RR.[Objectid] and RR.ResponsibilityTypeID = oride.ResponsibilityTypeID)							
+							inner join [dbo].[Group] G on oride.SecurityAsset = 'G' and G.ID = oride.SecurityAssetID  
+							inner join [dbo].ResourceGroup RG on RG.GroupID = G.ID           							
+						where
+							RR.PermissionsBitMask & 1 = 0 and Att.ID = @AssetTypeID and RG.ResourceID =  @ResourceID
+		        )
+
+
+ ]]>
+    </sql>
+	<rollback>
+<![CDATA[	
+ALTER   FUNCTION [dbo].[AssetsByTypeUserCantRead]
+        (		        
+	        @ResourceID int,
+			    @AssetTypeID int
+            )
+            RETURNS TABLE  with Schemabinding
+            AS
+            RETURN 
+            (
+			        select 
+				        A.ID as AssetID
+			        from 
+				        [dbo].[ResponsibilityTypeRelation] RR
+				        inner join [dbo].[responsibilitytyperelationrule] R on (RR.ResponsibilityTypeID = R.ResponsibilityTypeID and RR.ObjectType = R.[Object] and RR.ObjectID = R.ObjectID)	
+				        inner join [dbo].[AssetType] Ast on (Ast.[Object] = R.[Object] and Ast.ObjectID = R.ObjectID)
+				        inner join [dbo].[Asset] A on (A.AssetTypeID = Ast.ID)
+				        inner join [dbo].[ResponsibilityRuleResultAsset] rasset on (rasset.assettypeid = 0 and rasset.AssetID = A.ID and rasset.ruleid = r.id)				
+			        where 
+				        RR.PermissionsBitMask & 1 = 0 and Ast.ID = @AssetTypeID
+				         and 
+					        ( exists( select 1 from [dbo].[ResponsibilityRuleResultSecurityAsset] rresource where rresource.RuleID = R.ID and rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = @ResourceID )
+					        or exists( select 1 from [dbo].[ResponsibilityRuleResultSecurityAsset] rresource inner join dbo.[Organization] D on rresource.SecurityAsset = 'O' and D.ID = rresource.SecurityAssetID inner join dbo.OrganizationResource RD on RD.OrganizationID = D.ID where rresource.RuleID = R.ID and RD.ResourceID = @ResourceID )
+					        or exists( select 1 from [dbo].[ResponsibilityRuleResultSecurityAsset] rresource inner join dbo.[Group] G on G.ID = rresource.SecurityAssetID and rresource.SecurityAsset = 'G' inner join dbo.ResourceGroup RG on RG.GroupID = G.ID  where rresource.RuleID = R.ID and RG.ResourceID =  @ResourceID ) 
+							)
+						and
+							not exists (select 1 from [dbo].[ResponsibilityTypeRelationOverrideItem] oride where oride.AssetID = A.ID and oride.ResponsibilityTypeID = R.ResponsibilityTypeID)
+					union
+						select
+							oride.AssetID as AssetID
+						from 
+							[dbo].[ResponsibilityTypeRelationOverrideItem] oride
+							inner join [dbo].asset a on (a.id = oride.assetID)
+							inner join [dbo].assettype att on (att.id = a.assettypeid)
+							inner join [dbo].[ResponsibilityTypeRelation] RR on (att.[object] = RR.[objectType] and att.objectid = RR.[Objectid] and RR.ResponsibilityTypeID = oride.ResponsibilityTypeID)							
+						where
+							RR.PermissionsBitMask & 1 = 0 and Att.ID = @AssetTypeID
+		        )
+]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>

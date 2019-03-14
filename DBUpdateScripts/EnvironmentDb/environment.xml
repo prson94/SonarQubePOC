@@ -102,6 +102,8 @@
   <include file="scripts/GOV-6652.xml"/>
   <include file="scripts/GOV-6653.xml"/>
   <include file="scripts/GOV-6662.xml"/>
+  <!-- Sprint 2 2019 Patches-->
+  <include file="scripts/GOV-6808.xml"/>
   <!-- Sprint 3 2019 Start -->
   <include file="scripts/GOV-6415.xml"/>  
   <include file="scripts/GOV-6646.xml"/>
