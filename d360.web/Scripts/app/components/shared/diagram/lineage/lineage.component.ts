@@ -1,33 +1,25 @@
-﻿import { Component, Input, OnInit, AfterViewInit, ElementRef, OnDestroy, ViewChild, HostListener } from '@angular/core';
-import { PermissionsService } from '../../../../services/permissions.service';
-import { DiagramService } from '../../../../services/diagram.service';
-import { DiagramBaseComponent } from '../diagram-base.component';
-import {
-    DiagramObjectType,
-    LinkModel,
-    NodeModel,
-    MapItem,
-    Responsibility,
-    TechnicalRelation,
-    LineageView,
-} from '../../../../models/lineage.model';
-
-import { MenuItem } from 'primeng/primeng';
-
-import * as go from 'gojs';
+﻿import * as go from 'gojs';
 import * as _ from 'lodash';
+import {AfterViewInit, Component, ElementRef, HostListener, Input, OnInit, ViewChild} from '@angular/core';
+import {MenuItem} from 'primeng/primeng';
+
+import {DiagramObjectType, LineageView, LinkModel, NodeModel,} from '../../../../models/lineage.model';
+
+import {PermissionsService} from '../../../../services/permissions.service';
+import {DiagramService} from '../../../../services/diagram.service';
+
+import {DiagramBaseComponent} from '../diagram-base.component';
 
 declare var window: any;
-
 
 //NOTE: this is the deprecated legacy lineage component, to be removed eventually
 @Component({
     selector: 'd3s-lineage',
     templateUrl: './lineage.component.html',
-    providers: [ PermissionsService, DiagramService ]
+    providers: [PermissionsService, DiagramService]
 })
 
-export class LineageComponent extends DiagramBaseComponent implements OnInit, AfterViewInit  {
+export class LineageComponent extends DiagramBaseComponent implements OnInit, AfterViewInit {
     @Input() objectID: number = 0;
     @Input() objectType: string;
     @Input() objectName: string;
@@ -67,8 +59,11 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
     private headerText = 'Info';
     private zoomLevel: number = 50;
 
-
-    constructor(private myElement: ElementRef, protected permissionsService: PermissionsService, private diagramService: DiagramService) {
+    constructor(
+        private myElement: ElementRef,
+        protected permissionsService: PermissionsService,
+        private diagramService: DiagramService
+    ) {
         super();
     }
 
@@ -85,7 +80,6 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
         this.loadPermissions(this.permissionsService, this.objectType, this.objectID);
 
         this.initializeDiagram();
-        
     }
 
     public ngAfterViewInit() {
@@ -99,23 +93,12 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
 
     //#region helper methods
 
-    private sizePanel() {
-        //var windowHeight = $(window).innerHeight();
-        //var tileTopOffset = $(w).offset();
-        //var height = windowHeight - tileTopOffset.top - 75; //height();
-        //$('#LineageDiagram').height(height);
-    }
-
-    private unsubscribe() {
-        
-    }
-
     changeNameOnly() {
         for (var i = 0; i < this.diagram.model.nodeDataArray.length; i++) {
             let model: NodeModel = this.diagram.model.nodeDataArray[i] as NodeModel;
             model.name = this.nameOnly ? model.shortname : model.textpath;
-            //console.log(model.name);
         }
+
         this.diagram.rebuildParts();
     }
 
@@ -149,18 +132,19 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
 
         this.isWindowVisible = false;
 
-        return this.diagramService.getLineageDiagram(this.objectType, this.objectID, this.view, this.usageOnly)
-            .then(data => {
-                //console.log(data);
-                this.parseData(data);
-            })
-            .then(() => {
-                this.reOrderLayout();
-                this.diagram.zoomToFit();
-                this.zoomLevel = _.clamp(this.diagram.scale * 75, 0, 100);
-                this.isLoading = false;
-                this.isWindowVisible = windowVisible;
-            });
+        return this.diagramService.getLineageDiagram(
+            this.objectType,
+            this.objectID,
+            this.view, this.usageOnly
+        ).then(data => {
+            this.parseData(data);
+        }).then(() => {
+            this.reOrderLayout();
+            this.diagram.zoomToFit();
+            this.zoomLevel = _.clamp(this.diagram.scale * 75, 0, 100);
+            this.isLoading = false;
+            this.isWindowVisible = windowVisible;
+        });
     }
 
     private parseData(data: any) {
@@ -175,7 +159,6 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
 
         if (data.nodes) {
             for (var i = 0; i < data.nodes.length; i++) {
-
                 var d = data.nodes[i];
                 var model = new NodeModel();
 
@@ -191,11 +174,9 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
 
                 if (this.nameOnly) {
                     model.name = model.shortname;
-                }
-                else {
+                } else {
                     model.name = model.textpath;
                 }
-                
 
                 model.typeName = d.typeName;
                 model.fore = d.fore;
@@ -213,8 +194,9 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
 
                 model.mapItems = d.mapItems;
 
-                if (d.other)
+                if (d.other) {
                     model.other = this.htmlDecode(d.other);
+                }
 
                 modelList.push(model);
             }
@@ -260,9 +242,9 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
 
     private htmlDecode(val: string): string {
         val = val.replace(/&#39;/g, '\'');
-        val = val.replace(/&amp;/g, '&')
-        val = val.replace(/&lt;/g, '<')
-        val = val.replace(/&gt;/g, '>')
+        val = val.replace(/&amp;/g, '&');
+        val = val.replace(/&lt;/g, '<');
+        val = val.replace(/&gt;/g, '>');
         val = val.replace(/&#34;/g, '"');
 
         return val;
@@ -279,8 +261,11 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
             this.showNodeTabs = data.diagramObjectType == DiagramObjectType.Node;
             this.showLinkTabs = data.diagramObjectType == DiagramObjectType.Link;
 
-            if (this.showLinkTabs) this.selectTab('exchange');
-            else if (this.showNodeTabs) this.selectTab('info');
+            if (this.showLinkTabs) {
+                this.selectTab('exchange');
+            } else if (this.showNodeTabs) {
+                this.selectTab('info');
+            }
         } else {
             this.showNodeTabs = false;
             this.showLinkTabs = false;
@@ -294,12 +279,12 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
         let edit: MenuItem = {
             icon: 'fa fa-pencil',
             items: []
-        }
+        };
 
         let editSubItem: MenuItem[] = [
-            { label: 'Edit Source Rules' },
-            { label: 'Edit Business Lineage' },
-            { label: 'Edit Technical Lineage'}
+            {label: 'Edit Source Rules'},
+            {label: 'Edit Business Lineage'},
+            {label: 'Edit Technical Lineage'}
         ];
 
         edit.items = editSubItem;
@@ -307,12 +292,12 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
         let view: MenuItem = {
             icon: 'fa fa-eye',
             items: []
-        }
+        };
 
         let viewSubItem: MenuItem[] = [
-            { label: 'Business System Flow' },
-            { label: 'Business Data Flow' },
-            { label: 'Technical Lineage' }
+            {label: 'Business System Flow'},
+            {label: 'Business Data Flow'},
+            {label: 'Technical Lineage'}
         ];
 
         view.items = viewSubItem;
@@ -327,25 +312,30 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
                 icon: this.usageOnly ? 'fa fa-check-square-o' : 'fa fa-square-o',
                 label: 'Usage only?'
             },
-            { label: 'Name only?', icon: this.nameOnly ? 'fa fa-check-square-o' : 'fa fa-square-o'}            
+            {label: 'Name only?', icon: this.nameOnly ? 'fa fa-check-square-o' : 'fa fa-square-o'}
         ];
 
         settings.items = settingSubItem;
-        
+
         this.menuItems.push(edit);
-        this.menuItems.push(view); 
+        this.menuItems.push(view);
         this.menuItems.push(settings);
-        
+
         this.menuItems.push(this.createMenuItem('', 'fa fa-search-minus'));
-        this.menuItems.push(this.createMenuItem('', 'fa fa-search-plus'));        
+        this.menuItems.push(this.createMenuItem('', 'fa fa-search-plus'));
         this.menuItems.push(this.createMenuItem('', 'fa fa-refresh'));
         this.menuItems.push(this.createMenuItem('', 'fa fa-info-circle'));
     }
 
-    private createMenuItem(label?: string, icon?: string): MenuItem {
+    private createMenuItem(
+        label?: string,
+        icon?: string
+    ): MenuItem {
         let menu: MenuItem = {};
+
         menu.label = label;
         menu.icon = icon;
+
         return menu;
     }
 
@@ -360,7 +350,7 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
                 this.source = this.objectType;
                 this.sourceId = this.objectID;
 
-                if (data.obj && data.objid) {                   
+                if (data.obj && data.objid) {
                     this.target = data.obj;
                     this.targetId = data.objid;
                 }
@@ -374,6 +364,7 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
                     this.source = from.obj;
                     this.sourceId = from.objid;
                 }
+
                 if (to.obj && to.objid) {
                     this.target = to.obj;
                     this.targetId = to.objid;
@@ -386,15 +377,27 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
         this.diagram.layout.invalidateLayout();
         this.diagram.requestUpdate();
     }
-    
+
     private selectTab(val: string) {
         switch (val) {
-            case 'info': this.headerText = 'Info'; break;
-            case 'code': this.headerText = 'Source Rules'; break;
-            case 'user': this.headerText = 'Responsibilities'; break;
-            case 'database': this.headerText = 'Fusion Relationships'; break;
-            case 'exchange': this.headerText = 'Mapping Rules'; break;
-            default: this.headerText = ''; break;
+            case 'info':
+                this.headerText = 'Info';
+                break;
+            case 'code':
+                this.headerText = 'Source Rules';
+                break;
+            case 'user':
+                this.headerText = 'Responsibilities';
+                break;
+            case 'database':
+                this.headerText = 'Fusion Relationships';
+                break;
+            case 'exchange':
+                this.headerText = 'Mapping Rules';
+                break;
+            default:
+                this.headerText = '';
+                break;
         }
         this.tab = val;
     }
@@ -432,16 +435,9 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
 
     private zoomDiagram(v: number) {
         this.diagram.scale = v;
-        //console.log('zoomDiagram', v, this.myDiagram);
     }
 
     private ViewPortBoundsChanged() {
-        //var s = this.myDiagram.scale;
-        //var h = 500;
-        //if (s > 1) {
-        //    h = h * s;
-        //}
-        //this.zoomLevel = this.myDiagram.scale;
     }
 
     private ChangedSelection(e: any) {
@@ -463,6 +459,7 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
 
     private ObjectDoubleClicked(e: any) {
         var obj = e.diagram.selection.first().data;
+
         if (obj != null) {
             if (obj.diagramObjectType == DiagramObjectType.Node) {
                 this.objectType = obj.obj;
@@ -481,12 +478,16 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
             this.populateDiagram();
         } else if (e.icon == 'fa fa-search-plus') {
             this.diagram.scale += .1;
-            if (this.diagram.scale > 2.5)
+
+            if (this.diagram.scale > 2.5) {
                 this.diagram.scale = 2.5;
+            }
         } else if (e.icon == 'fa fa-search-minus') {
             this.diagram.scale -= .1;
-            if (this.diagram.scale < .1)
+
+            if (this.diagram.scale < .1) {
                 this.diagram.scale = .1;
+            }
         } else if (e.icon == 'fa fa-info-circle') {
             this.isWindowVisible = !this.isWindowVisible;
         } else if (e.label == 'Business System Flow') {
@@ -529,15 +530,13 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
     //#region templates
 
     private createDiagram(): go.Diagram {
-
-
         let dg = this.g(go.Diagram, 'LineageDiagram', {
             initialContentAlignment: go.Spot.Left,
             allowDrop: true,
             initialAutoScale: go.Diagram.UniformToFill,
             scrollMode: go.Diagram.DocumentScroll,
             initialPosition: new go.Point(125, 125),
-            layout: this.g(go.LayeredDigraphLayout, { direction: 0, columnSpacing: 50, layerSpacing: 50 }),
+            layout: this.g(go.LayeredDigraphLayout, {direction: 0, columnSpacing: 50, layerSpacing: 50}),
             "undoManager.isEnabled": true
         });
 
@@ -559,22 +558,23 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
         let nodeHeight = 150;
         let nodeBorderColor = '#000000';
         let nodeFontSize = 14;
+
         return this.g(go.Node, "Spot",
             {
                 mouseEnter: this.onMouseEnterNode,
                 mouseLeave: this.onMouseLeaveNode
             },
             this.g(go.Panel, "Auto", {
-                width: nodeWidth,
-                height: nodeHeight
-            },
-                this.g(go.Shape, "RoundedRectangle", {
-                    stroke: nodeBorderColor,
-                    strokeWidth: 2,
-                    spot1: go.Spot.TopLeft,
-                    spot2: go.Spot.BottomRight,
-                    name: "NodeShape"
+                    width: nodeWidth,
+                    height: nodeHeight
                 },
+                this.g(go.Shape, "RoundedRectangle", {
+                        stroke: nodeBorderColor,
+                        strokeWidth: 2,
+                        spot1: go.Spot.TopLeft,
+                        spot2: go.Spot.BottomRight,
+                        name: "NodeShape"
+                    },
                     new go.Binding("fill", "back").makeTwoWay()
                 ),
                 this.g(go.Panel,
@@ -587,41 +587,38 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
                     this.makeIconPanel("\uf126", "Source rule defined", "hasSourceRules", nodeFontSize),
                     this.makeIconPanel("\uf0ec", "Mapping rule defined", "hasMappingRules", nodeFontSize),
                     this.makeIconPanel("\uf074", "Transformation rule defined", "hasTransformations", nodeFontSize)
-                    //this.makeIconPanel("\uf059", "Challenge exists on this item", "hasChallenges", nodeFontSize),
-                    //this.makeIconPanel("\uf188", "Item has open events", "hasOpenEvents", nodeFontSize),
-                    //this.makeIconPanel("\uf071", "Item has open issues", "hasOpenIssues", nodeFontSize)
                 ),
                 this.g(go.Panel, "Table",
                     this.g(go.TextBlock, {
-                        row: 0,
-                        margin: 3,
-                        alignment: go.Spot.Top,
-                        editable: false,
-                        maxSize: new go.Size(nodeWidth - 20, nodeHeight - 10),
-                        font: "bold " + nodeFontSize + "pt sans-serif"
-                    },
+                            row: 0,
+                            margin: 3,
+                            alignment: go.Spot.Top,
+                            editable: false,
+                            maxSize: new go.Size(nodeWidth - 20, nodeHeight - 10),
+                            font: "bold " + nodeFontSize + "pt sans-serif"
+                        },
                         new go.Binding("text", "name").makeTwoWay(),
                         new go.Binding("stroke", "fore").makeTwoWay()
                     ),
                     this.g(go.TextBlock, {
-                        row: 1,
-                        margin: 3,
-                        maxSize: new go.Size(180, NaN),
-                        font: (nodeFontSize - 2) + "pt sans-serif"
-                    },
+                            row: 1,
+                            margin: 3,
+                            maxSize: new go.Size(180, NaN),
+                            font: (nodeFontSize - 2) + "pt sans-serif"
+                        },
                         new go.Binding("stroke", "fore").makeTwoWay(),
                         new go.Binding("text", "typeName").makeTwoWay()
                     )
                 )),
             this.g(go.Panel, "Vertical", {
-                alignment: go.Spot.Left,
-                alignmentFocus: new go.Spot(0, 0.5, -8, 0)
-            },
+                    alignment: go.Spot.Left,
+                    alignmentFocus: new go.Spot(0, 0.5, -8, 0)
+                },
                 [this.makePort("IN", false)]),
             this.g(go.Panel, "Vertical", {
-                alignment: go.Spot.Right,
-                alignmentFocus: new go.Spot(1, 0.5, 8, 0)
-            },
+                    alignment: go.Spot.Right,
+                    alignmentFocus: new go.Spot(1, 0.5, 8, 0)
+                },
                 [this.makePort("OUT", false)]));
     }
 
@@ -637,16 +634,16 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
                 mouseLeave: this.onMouseLeaveNode
             },
             this.g(go.Panel, "Auto", {
-                width: nodeWidth,
-                height: nodeHeight
-            },
-                this.g(go.Shape, "RoundedRectangle", {
-                    stroke: nodeBorderColor,
-                    strokeWidth: 2,
-                    spot1: go.Spot.TopLeft,
-                    spot2: go.Spot.BottomRight,
-                    name: "NodeShape"
+                    width: nodeWidth,
+                    height: nodeHeight
                 },
+                this.g(go.Shape, "RoundedRectangle", {
+                        stroke: nodeBorderColor,
+                        strokeWidth: 2,
+                        spot1: go.Spot.TopLeft,
+                        spot2: go.Spot.BottomRight,
+                        name: "NodeShape"
+                    },
                     new go.Binding("fill", "back").makeTwoWay()
                 ),
                 this.g(go.Panel,
@@ -659,41 +656,38 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
                     this.makeIconPanel("\uf126", "Source rule defined", "hasSourceRules", nodeFontSize),
                     this.makeIconPanel("\uf0ec", "Mapping rule defined", "hasMappingRules", nodeFontSize),
                     this.makeIconPanel("\uf074", "Transformation rule defined", "hasTransformations", nodeFontSize)
-                    //this.makeIconPanel("\uf059", "Challenge exists on this item", "hasChallenges", nodeFontSize),
-                    //this.makeIconPanel("\uf188", "Item has open events", "hasOpenEvents", nodeFontSize),
-                    //this.makeIconPanel("\uf071", "Item has open issues", "hasOpenIssues", nodeFontSize)
                 ),
                 this.g(go.Panel, "Table",
                     this.g(go.TextBlock, {
-                        row: 0,
-                        margin: 3,
-                        alignment: go.Spot.Top,
-                        editable: false,
-                        maxSize: new go.Size(nodeWidth - 20, nodeHeight - 10),
-                        font: "bold " + nodeFontSize + "pt sans-serif"
-                    },
+                            row: 0,
+                            margin: 3,
+                            alignment: go.Spot.Top,
+                            editable: false,
+                            maxSize: new go.Size(nodeWidth - 20, nodeHeight - 10),
+                            font: "bold " + nodeFontSize + "pt sans-serif"
+                        },
                         new go.Binding("text", "name").makeTwoWay(),
                         new go.Binding("stroke", "fore").makeTwoWay()
                     ),
                     this.g(go.TextBlock, {
-                        row: 1,
-                        margin: 3,
-                        maxSize: new go.Size(180, NaN),
-                        font: (nodeFontSize - 2) + "pt sans-serif"
-                    },
+                            row: 1,
+                            margin: 3,
+                            maxSize: new go.Size(180, NaN),
+                            font: (nodeFontSize - 2) + "pt sans-serif"
+                        },
                         new go.Binding("stroke", "fore").makeTwoWay(),
                         new go.Binding("text", "typeName").makeTwoWay()
                     )
                 )),
             this.g(go.Panel, "Vertical", {
-                alignment: go.Spot.Left,
-                alignmentFocus: new go.Spot(0, 0.5, -8, 0)
-            },
+                    alignment: go.Spot.Left,
+                    alignmentFocus: new go.Spot(0, 0.5, -8, 0)
+                },
                 [this.makePort("IN", false)]),
             this.g(go.Panel, "Vertical", {
-                alignment: go.Spot.Right,
-                alignmentFocus: new go.Spot(1, 0.5, 8, 0)
-            },
+                    alignment: go.Spot.Right,
+                    alignmentFocus: new go.Spot(1, 0.5, 8, 0)
+                },
                 [this.makePort("OUT", false)]));
     }
 
@@ -709,16 +703,16 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
                 mouseLeave: this.onMouseLeaveNode
             },
             this.g(go.Panel, "Auto", {
-                width: nodeWidth,
-                height: nodeHeight
-            },
-                this.g(go.Shape, "RoundedRectangle", {
-                    stroke: nodeBorderColor,
-                    strokeWidth: 2,
-                    spot1: go.Spot.TopLeft,
-                    spot2: go.Spot.BottomRight,
-                    name: "NodeShape"
+                    width: nodeWidth,
+                    height: nodeHeight
                 },
+                this.g(go.Shape, "RoundedRectangle", {
+                        stroke: nodeBorderColor,
+                        strokeWidth: 2,
+                        spot1: go.Spot.TopLeft,
+                        spot2: go.Spot.BottomRight,
+                        name: "NodeShape"
+                    },
                     new go.Binding("fill", "back").makeTwoWay()
                 ),
                 this.g(go.Panel,
@@ -731,41 +725,38 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
                     this.makeIconPanel("\uf126", "Source rule defined", "hasSourceRules", nodeFontSize),
                     this.makeIconPanel("\uf0ec", "Mapping rule defined", "hasMappingRules", nodeFontSize),
                     this.makeIconPanel("\uf074", "Transformation rule defined", "hasTransformations", nodeFontSize)
-                    //this.makeIconPanel("\uf059", "Challenge exists on this item", "hasChallenges", nodeFontSize),
-                    //this.makeIconPanel("\uf188", "Item has open events", "hasOpenEvents", nodeFontSize),
-                    //this.makeIconPanel("\uf071", "Item has open issues", "hasOpenIssues", nodeFontSize)
                 ),
                 this.g(go.Panel, "Table",
                     this.g(go.TextBlock, {
-                        row: 0,
-                        margin: 3,
-                        alignment: go.Spot.Top,
-                        editable: false,
-                        maxSize: new go.Size(nodeWidth - 20, nodeHeight - 10),
-                        font: "bold " + nodeFontSize + "pt sans-serif"
-                    },
+                            row: 0,
+                            margin: 3,
+                            alignment: go.Spot.Top,
+                            editable: false,
+                            maxSize: new go.Size(nodeWidth - 20, nodeHeight - 10),
+                            font: "bold " + nodeFontSize + "pt sans-serif"
+                        },
                         new go.Binding("text", "name").makeTwoWay(),
                         new go.Binding("stroke", "fore").makeTwoWay()
                     ),
                     this.g(go.TextBlock, {
-                        row: 1,
-                        margin: 3,
-                        maxSize: new go.Size(180, NaN),
-                        font: (nodeFontSize - 2) + "pt sans-serif"
-                    },
+                            row: 1,
+                            margin: 3,
+                            maxSize: new go.Size(180, NaN),
+                            font: (nodeFontSize - 2) + "pt sans-serif"
+                        },
                         new go.Binding("stroke", "fore").makeTwoWay(),
                         new go.Binding("text", "typeName").makeTwoWay()
                     )
                 )),
             this.g(go.Panel, "Vertical", {
-                alignment: go.Spot.Left,
-                alignmentFocus: new go.Spot(0, 0.5, -8, 0)
-            },
+                    alignment: go.Spot.Left,
+                    alignmentFocus: new go.Spot(0, 0.5, -8, 0)
+                },
                 [this.makePort("IN", false)]),
             this.g(go.Panel, "Vertical", {
-                alignment: go.Spot.Right,
-                alignmentFocus: new go.Spot(1, 0.5, 8, 0)
-            },
+                    alignment: go.Spot.Right,
+                    alignmentFocus: new go.Spot(1, 0.5, 8, 0)
+                },
                 [this.makePort("OUT", false)]));
 
     }
@@ -782,16 +773,16 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
                 mouseLeave: this.onMouseLeaveNode
             },
             this.g(go.Panel, "Auto", {
-                width: nodeWidth,
-                height: nodeHeight
-            },
-                this.g(go.Shape, "RoundedRectangle", {
-                    stroke: nodeBorderColor,
-                    strokeWidth: 2,
-                    spot1: go.Spot.TopLeft,
-                    spot2: go.Spot.BottomRight,
-                    name: "NodeShape"
+                    width: nodeWidth,
+                    height: nodeHeight
                 },
+                this.g(go.Shape, "RoundedRectangle", {
+                        stroke: nodeBorderColor,
+                        strokeWidth: 2,
+                        spot1: go.Spot.TopLeft,
+                        spot2: go.Spot.BottomRight,
+                        name: "NodeShape"
+                    },
                     new go.Binding("fill", "back").makeTwoWay()
                 ),
                 this.g(go.Panel,
@@ -804,41 +795,38 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
                     this.makeIconPanel("\uf126", "Source rule defined", "hasSourceRules", nodeFontSize),
                     this.makeIconPanel("\uf0ec", "Mapping rule defined", "hasMappingRules", nodeFontSize),
                     this.makeIconPanel("\uf074", "Transformation rule defined", "hasTransformations", nodeFontSize)
-                    ///this.makeIconPanel("\uf059", "Challenge exists on this item", "hasChallenges", nodeFontSize),
-                    ///this.makeIconPanel("\uf188", "Item has open events", "hasOpenEvents", nodeFontSize),
-                    ///this.makeIconPanel("\uf071", "Item has open issues", "hasOpenIssues", nodeFontSize)
                 ),
                 this.g(go.Panel, "Table",
                     this.g(go.TextBlock, {
-                        row: 0,
-                        margin: 3,
-                        alignment: go.Spot.Top,
-                        editable: false,
-                        maxSize: new go.Size(nodeWidth - 20, nodeHeight - 10),
-                        font: "bold " + nodeFontSize + "pt sans-serif"
-                    },
+                            row: 0,
+                            margin: 3,
+                            alignment: go.Spot.Top,
+                            editable: false,
+                            maxSize: new go.Size(nodeWidth - 20, nodeHeight - 10),
+                            font: "bold " + nodeFontSize + "pt sans-serif"
+                        },
                         new go.Binding("text", "name").makeTwoWay(),
                         new go.Binding("stroke", "fore").makeTwoWay()
                     ),
                     this.g(go.TextBlock, {
-                        row: 1,
-                        margin: 3,
-                        maxSize: new go.Size(180, NaN),
-                        font: (nodeFontSize - 2) + "pt sans-serif"
-                    },
+                            row: 1,
+                            margin: 3,
+                            maxSize: new go.Size(180, NaN),
+                            font: (nodeFontSize - 2) + "pt sans-serif"
+                        },
                         new go.Binding("stroke", "fore").makeTwoWay(),
                         new go.Binding("text", "typeName").makeTwoWay()
                     )
                 )),
             this.g(go.Panel, "Vertical", {
-                alignment: go.Spot.Left,
-                alignmentFocus: new go.Spot(0, 0.5, -8, 0)
-            },
+                    alignment: go.Spot.Left,
+                    alignmentFocus: new go.Spot(0, 0.5, -8, 0)
+                },
                 [this.makePort("IN", false)]),
             this.g(go.Panel, "Vertical", {
-                alignment: go.Spot.Right,
-                alignmentFocus: new go.Spot(1, 0.5, 8, 0)
-            },
+                    alignment: go.Spot.Right,
+                    alignmentFocus: new go.Spot(1, 0.5, 8, 0)
+                },
                 [this.makePort("OUT", false)]));
     }
 
@@ -854,61 +842,60 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
                 mouseLeave: this.onMouseLeaveNode
             },
             this.g(go.Panel, "Auto", {
-                width: nodeWidth,
-                height: nodeHeight
-            },
-                this.g(go.Shape, "RoundedRectangle", {
-                    stroke: nodeBorderColor,
-                    strokeWidth: 2,
-                    spot1: go.Spot.TopLeft,
-                    spot2: go.Spot.BottomRight,
-                    name: "NodeShape"
+                    width: nodeWidth,
+                    height: nodeHeight
                 },
+                this.g(go.Shape, "RoundedRectangle", {
+                        stroke: nodeBorderColor,
+                        strokeWidth: 2,
+                        spot1: go.Spot.TopLeft,
+                        spot2: go.Spot.BottomRight,
+                        name: "NodeShape"
+                    },
                     new go.Binding("fill", "back").makeTwoWay()
                 ),
                 this.g(go.Panel, "Table",
                     this.g(go.TextBlock, {
-                        row: 0,
-                        margin: 3,
-                        alignment: go.Spot.Top,
-                        editable: false,
-                        maxSize: new go.Size(nodeWidth - 20, nodeHeight - 10),
-                        font: "bold " + nodeFontSize + "pt sans-serif"
-                    },
+                            row: 0,
+                            margin: 3,
+                            alignment: go.Spot.Top,
+                            editable: false,
+                            maxSize: new go.Size(nodeWidth - 20, nodeHeight - 10),
+                            font: "bold " + nodeFontSize + "pt sans-serif"
+                        },
                         new go.Binding("text", "name").makeTwoWay(),
                         new go.Binding("stroke", "fore").makeTwoWay()
                     ),
                     this.g(go.TextBlock, {
-                        row: 1,
-                        margin: 3,
-                        maxSize: new go.Size(180, NaN),
-                        font: (nodeFontSize - 2) + "pt sans-serif"
-                    },
+                            row: 1,
+                            margin: 3,
+                            maxSize: new go.Size(180, NaN),
+                            font: (nodeFontSize - 2) + "pt sans-serif"
+                        },
                         new go.Binding("stroke", "fore").makeTwoWay(),
                         new go.Binding("text", "typeName").makeTwoWay()
                     ),
                     this.g(go.TextBlock, {
-                        row: 2,
-                        margin: 3,
-                        maxSize: new go.Size(180, NaN),
-                        font: 'bold ' + (nodeFontSize - 2) + "pt sans-serif"
-                    },
+                            row: 2,
+                            margin: 3,
+                            maxSize: new go.Size(180, NaN),
+                            font: 'bold ' + (nodeFontSize - 2) + "pt sans-serif"
+                        },
                         new go.Binding("stroke", "fore").makeTwoWay(),
                         new go.Binding("text", "other").makeTwoWay()
                     )
                 )),
             this.g(go.Panel, "Vertical", {
-                alignment: go.Spot.Left,
-                alignmentFocus: new go.Spot(0, 0.5, -8, 0)
-            },
+                    alignment: go.Spot.Left,
+                    alignmentFocus: new go.Spot(0, 0.5, -8, 0)
+                },
                 [this.makePort("IN", false)]),
             this.g(go.Panel, "Vertical", {
-                alignment: go.Spot.Right,
-                alignmentFocus: new go.Spot(1, 0.5, 8, 0)
-            },
+                    alignment: go.Spot.Right,
+                    alignmentFocus: new go.Spot(1, 0.5, 8, 0)
+                },
                 [this.makePort("OUT", false)]));
     }
-
 
     private createDefaultLink(): go.Link {
         return this.g(
@@ -920,24 +907,34 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
             }, // the whole link panel
             new go.Binding("curve", "curve", go.Binding.parseEnum(go.Link, go.Link.JumpOver)),
             this.g(go.Shape, {
-                stroke: "gray", strokeWidth: 2
-            },
-                new go.Binding("strokeWidth", "hasProperties", function (h) { return h ? 3 : 2; }),
-                new go.Binding("stroke", "hasProperties", function (h) { return h ? "black" : "gray" })), // the link shape
-            this.g(go.Shape, { toArrow: "standard", fill: "gray", stroke: "gray" }), // the arrowhead
+                    stroke: "gray", strokeWidth: 2
+                },
+                new go.Binding("strokeWidth", "hasProperties", function (h) {
+                    return h ? 3 : 2;
+                }),
+                new go.Binding("stroke", "hasProperties", function (h) {
+                    return h ? "black" : "gray"
+                })), // the link shape
+            this.g(go.Shape, {toArrow: "standard", fill: "gray", stroke: "gray"}), // the arrowhead
             this.g(go.Panel, "Auto",
                 this.g(go.Shape, {
-                    visible: false,
-                    fill: this.g(go.Brush, "Radial", { 0: "rgb(255, 255, 255)", 0.3: "rgb(255, 255, 255)", 1: "rgba(255, 255, 255, 0)" }),
-                    stroke: '#999',
-                    strokeDashArray: [3, 2]
-                },
+                        visible: false,
+                        fill: this.g(go.Brush, "Radial", {
+                            0: "rgb(255, 255, 255)",
+                            0.3: "rgb(255, 255, 255)",
+                            1: "rgba(255, 255, 255, 0)"
+                        }),
+                        stroke: '#999',
+                        strokeDashArray: [3, 2]
+                    },
                     //only visible if there's a label
-                    new go.Binding("visible", "text", function (a) { return (a ? true : false) })
+                    new go.Binding("visible", "text", function (a) {
+                        return !!a
+                    })
                 ), // the link shape
                 this.g(go.TextBlock, {
-                    textAlign: "center", font: "9pt helvetica, arial, sans-serif", stroke: "#000", margin: 4
-                },
+                        textAlign: "center", font: "9pt helvetica, arial, sans-serif", stroke: "#000", margin: 4
+                    },
                     // the label
                     new go.Binding("text", "text").makeTwoWay()
                 )
@@ -954,23 +951,33 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
                 relinkableTo: false
             }, // the whole link panel
             this.g(go.Shape, {
-                stroke: "blue", strokeWidth: 2
-            },
-                new go.Binding("strokeWidth", "hasProperties", function (h) { return h ? 3 : 2; }),
-                new go.Binding("stroke", "hasProperties", function (h) { return h ? "black" : "gray" })), // the link shape
+                    stroke: "blue", strokeWidth: 2
+                },
+                new go.Binding("strokeWidth", "hasProperties", function (h) {
+                    return h ? 3 : 2;
+                }),
+                new go.Binding("stroke", "hasProperties", function (h) {
+                    return h ? "black" : "gray"
+                })), // the link shape
             this.g(go.Panel, "Auto",
                 this.g(go.Shape, {
-                    visible: false,
-                    fill: this.g(go.Brush, "Radial", { 0: "rgb(255, 255, 255)", 0.3: "rgb(255, 255, 255)", 1: "rgba(255, 255, 255, 0)" }),
-                    stroke: '#999',
-                    strokeDashArray: [3, 2]
-                },
+                        visible: false,
+                        fill: this.g(go.Brush, "Radial", {
+                            0: "rgb(255, 255, 255)",
+                            0.3: "rgb(255, 255, 255)",
+                            1: "rgba(255, 255, 255, 0)"
+                        }),
+                        stroke: '#999',
+                        strokeDashArray: [3, 2]
+                    },
                     //only visible if there's a label
-                    new go.Binding("visible", "text", function (a) { return (a ? true : false) })
+                    new go.Binding("visible", "text", function (a) {
+                        return !!a
+                    })
                 ), // the link shape
                 this.g(go.TextBlock, {
-                    textAlign: "center", font: "9pt helvetica, arial, sans-serif", stroke: "#000", margin: 4
-                },
+                        textAlign: "center", font: "9pt helvetica, arial, sans-serif", stroke: "#000", margin: 4
+                    },
                     // the label
                     new go.Binding("text", "text").makeTwoWay()
                 )
@@ -990,7 +997,10 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
             this.g(go.Shape, "Circle",
                 {
                     stroke: null,
-                    toolTip: this.g(go.Adornment, "Auto", this.g(go.Shape, { fill: "lightyellow" }), this.g(go.Panel, "Vertical", this.g(go.TextBlock, { margin: 3, text: tooltip })))
+                    toolTip: this.g(go.Adornment, "Auto", this.g(go.Shape, {fill: "lightyellow"}), this.g(go.Panel, "Vertical", this.g(go.TextBlock, {
+                        margin: 3,
+                        text: tooltip
+                    })))
                 },
                 new go.Binding("fill", "fore")),
             this.g(go.TextBlock,
@@ -1001,7 +1011,10 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
                     editable: false,
                     font: (fontSize) + "pt FontAwesome",
                     text: icon,
-                    toolTip: this.g(go.Adornment, "Auto", this.g(go.Shape, { fill: "lightyellow" }), this.g(go.Panel, "Vertical", this.g(go.TextBlock, { margin: 3, text: tooltip })))
+                    toolTip: this.g(go.Adornment, "Auto", this.g(go.Shape, {fill: "lightyellow"}), this.g(go.Panel, "Vertical", this.g(go.TextBlock, {
+                        margin: 3,
+                        text: tooltip
+                    })))
                 },
                 new go.Binding("stroke", "back")
             ),
@@ -1036,6 +1049,7 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
             panel.alignment = go.Spot.TopRight;
             panel.add(port);
         }
+
         return panel;
     }
 

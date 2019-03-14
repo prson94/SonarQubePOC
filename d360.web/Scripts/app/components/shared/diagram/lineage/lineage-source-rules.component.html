@@ -1,0 +1,26 @@
+<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div *ngIf="!isLoading"
+     class="rule-list">
+    <table>
+        <thead>
+        <tr>
+            <th style="padding-right:5px">Order</th>
+            <th>Source</th>
+        </tr>
+        </thead>
+        <tbody *ngFor="let i of items">
+        <tr class="rule-item-name">
+            <td class="rule-item"
+                rowspan="3"
+                style="text-align:center">{{i.Sequence}}</td>
+            <td class="rule-item">{{i.SubjectTypeName}} : {{i.SubjectName}}</td>
+        </tr>
+        <tr>
+            <td><i>Contexts: </i><span [innerHtml]="i.Contexts"></span></td>
+        </tr>
+        <tr>
+            <td><i>Description: </i><span [innerHtml]="i.Description"></span></td>
+        </tr>
+        </tbody>
+    </table>
+</div>

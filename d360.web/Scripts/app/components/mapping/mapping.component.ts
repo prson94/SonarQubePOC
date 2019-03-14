@@ -1,99 +1,20 @@
-﻿import { Component, OnInit, ChangeDetectionStrategy, OnDestroy } from '@angular/core';
-import { BaseComponent } from '../shared/base.component';
-import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
-import { Breadcrumb } from '../../models/breadcrumb.model';
-import { DiagramService } from '../../services/diagram.service';
-import { RightSidebarService } from '../../services/right-sidebar.service';
-import { MessagesService } from '../../services/messages.service';
-import { PermissionsService } from '../../services/permissions.service';
+﻿import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Title} from '@angular/platform-browser';
+
+import {Breadcrumb} from '../../models/breadcrumb.model';
+
+import {HeaderBreadcrumbService} from '../../services/header-breadcrumb.service';
+import {DiagramService} from '../../services/diagram.service';
+import {RightSidebarService} from '../../services/right-sidebar.service';
+import {MessagesService} from '../../services/messages.service';
+import {PermissionsService} from '../../services/permissions.service';
+
+import {BaseComponent} from '../shared/base.component';
 
 @Component({
     selector: 'd3s-mapping-component',
-    template: `
-        <div class="row">
-            <div class="col s12">
-                <d3s-loading [isLoading]="isLoading"></d3s-loading>                                 
-                <div class="tile tile-detail" *ngIf="!isLoading">                            
-                    <header *ngIf="!showDelete && !showEditor">Mappings
-                                <d3s-tile-actions [hasAdd]="true" (addClick)="selected=null;showEditor=true;" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
-                    </header>  
-                    <span *ngIf="!showDelete && !showEditor">
-                       <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-                        <p-table #dt [value]="mappings" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name','Transformation','MapClassName','MapType','MapTypeDescription']" sortField="Name" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected">
-                            <ng-template pTemplate="header">
-                                <tr>
-                                    <th [pSortableColumn]="'Name'">
-                                        Name
-                                        <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
-                                    </th>
-                                    <th [pSortableColumn]="'Transformation'">
-                                        Transformation
-                                        <d3s-sortIcon [field]="'Transformation'"></d3s-sortIcon>
-                                    </th>
-                                    <th [pSortableColumn]="'MapClassName'">
-                                        Classification
-                                        <d3s-sortIcon [field]="'MapClassName'"></d3s-sortIcon>
-                                    </th>
-                                    <th [pSortableColumn]="'MapType'">
-                                        Type
-                                        <d3s-sortIcon [field]="'MapType'"></d3s-sortIcon>
-                                    </th>
-                                    <th [pSortableColumn]="'MapTypeDescription'">
-                                        Type Description
-                                        <d3s-sortIcon [field]="'MapTypeDescription'"></d3s-sortIcon>
-                                    </th>
-                                    <th style="width: 28px"></th>
-                                    <th style="width: 28px"></th>
-                                </tr>
-                                <tr [hidden]="showSimpleFilter">
-                                    <th><d3s-column-filter [field]="'Name'" [datatype]="'text'"></d3s-column-filter></th>
-                                    <th><d3s-column-filter [field]="'Transformation'" [datatype]="'text'"></d3s-column-filter></th>
-                                    <th><d3s-column-filter [field]="'MapClassName'" [datatype]="'text'"></d3s-column-filter></th>
-                                    <th><d3s-column-filter [field]="'MapType'" [datatype]="'text'"></d3s-column-filter></th>
-                                    <th><d3s-column-filter [field]="'MapTypeDescription'" [datatype]="'text'"></d3s-column-filter></th>
-                                    <th></th>
-                                    <th></th>
-                                </tr>
-                            </ng-template>
-                            <ng-template pTemplate="body" let-item>
-                                <tr [pSelectableRow]="item">
-                                    <td>{{item.Name}}</td>
-                                    <td>{{item.Transformation}}</td>
-                                    <td>{{item.MapClassName}}</td>
-                                    <td>{{item.MapType}}</td>
-                                    <td>{{item.MapTypeDescription}}</td>
-                                    <td>
-                                        <div class="RowTools">
-                                                <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>
-                                            </div>
-                                   </td>
-                                    <td>
-                                             <div class="RowTools">
-                                                <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>
-                                            </div>
-                                    </td>
-                                </tr>
-                            </ng-template>
-                            <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
-                                <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
-                            </ng-template>
-                        </p-table>
-                    </span>
-                    <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [objectType]="'Map'" [title]="'Map'" [selection]="selected" (saveClick)="saveMap($event)" (closeClick)="showEditor = false;"></d3s-dynamic-editor>
-                    <d3s-delete-form *ngIf="showDelete"
-                        [callback]="theDeleteCallback"
-                        [itemId]="selected?.ID"
-                        [method]="'callback'"
-                        [prompt]="'Are you sure you want to delete the selected item?'"                                         
-                        (onCancel)="showDelete=false;"
-                    ></d3s-delete-form> 
-                </div>
-            </div>
-        </div>
-         `,
+    templateUrl: './mapping.component.html',
     providers: [DiagramService, PermissionsService]
-    //changeDetection: ChangeDetectionStrategy.OnPush,
 })
 
 export class MappingComponent extends BaseComponent implements OnInit, OnDestroy {
@@ -103,7 +24,8 @@ export class MappingComponent extends BaseComponent implements OnInit, OnDestroy
     private showDelete: boolean = false;
     private theDeleteCallback: Function;
 
-    constructor(protected titleService: Title,
+    constructor(
+        protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected diagramService: DiagramService,
         protected messagesService: MessagesService,
@@ -112,9 +34,7 @@ export class MappingComponent extends BaseComponent implements OnInit, OnDestroy
     ) {
         super();
         this.rightSidebarService = rightSidebarService;
-
-        this.setCommonRightSideBar(true, false,false,false,false,true);
-
+        this.setCommonRightSideBar(true, false, false, false, false, true);
         this.theDeleteCallback = this.deleteMapping.bind(this);
     }
 
@@ -131,36 +51,43 @@ export class MappingComponent extends BaseComponent implements OnInit, OnDestroy
     }
 
     ngOnDestroy() {
-        this.clearSidebar();        
+        this.clearSidebar();
     }
 
     private load(): void {
         this.isLoading = true;
-        this.diagramService.getLineageMappings()
-            .then(res => {
+        this.diagramService.getLineageMappings().subscribe(
+            res => {
                 this.isLoading = false;
+
                 for (let item of res) {
                     if (item.MapClass == 1) item.MapClassName = "Source To Target";
                 }
+
                 this.mappings = res;
-                if (this.selected == null && this.mappings.length > 0) this.selected = this.mappings[0];
+
+                if (this.selected == null && this.mappings.length > 0) {
+                    this.selected = this.mappings[0];
+                }
             });
     }
 
     private deleteMapping(id: number): void {
-        this.diagramService.deleteLineageMapping(id);        
+        this.diagramService.deleteLineageMapping(id);
         this.mappings = this.mappings.filter(x => x.ID != id);
         this.showDelete = false;
     }
 
     private saveMap(event): void {
-        this.diagramService.saveLineageMapping(event.item)
-            .then(result => {
+        this.diagramService.saveLineageMapping(event.item).subscribe(
+            result => {
                 this.showMessageForResult(this.messagesService, result);
+
                 if (result.type != 'error') {
-                    this.load();                                        
+                    this.load();
                 }
+
                 this.showEditor = false;
-            });        
+            });
     }
-};
+}

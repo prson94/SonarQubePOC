@@ -1,63 +1,25 @@
-﻿import { Component, Input, OnInit, AfterViewInit, ElementRef, ViewChild, HostListener, OnDestroy } from '@angular/core';
-import { DiagramBaseComponent } from './diagram-base.component';
-import { DiagramService } from '../../../services/diagram.service';
-import { HierarchyDiagramModel } from '../../../models/model.model';
-import { MenuItem } from 'primeng/primeng';
-
-import * as go from 'gojs';
+﻿import * as go from 'gojs';
 import * as _ from 'lodash';
+import {AfterViewInit, Component, ElementRef, HostListener, Input, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {MenuItem} from 'primeng/primeng';
+
+import {HierarchyDiagramModel} from '../../../models/model.model';
+
+import {DiagramService} from '../../../services/diagram.service';
+
+import {DiagramBaseComponent} from './diagram-base.component';
 
 declare var window: any;
 
-
 @Component({
     selector: 'd3s-model-diagram',
-    template: `
-<div class="tile tile-detail">
-    <header>
-        <span>Hierarchy</span>
-        <span *ngIf="isLoading" id="LoadingProgress" style="color: #e2792a"><i class="fa fa-refresh fa-spin fa-lg fa-fw"></i>Loading...</span>
-        <d3s-tile-actions hasMenu="true" [menuItems]="menuItems" (menuClick)="menuAction($event)" ></d3s-tile-actions>
-    </header>
-    <div style="position:relative;left: 100%; display: inline; width: 1px; top: 5px">
-        <d3s-overlay-window width="500" maxHeight="400" padding="15" [(visible)]="isWindowVisible" [headerText]="(selectedNode != null) ? headerText : ''">
-            <div *ngIf="selectedNode == null">Nothing selected</div>
-            <ul class="tab-menu" *ngIf="selectedNode != null">
-                <li (click)="selectTab('info')" class="tab-item" [class.selected]="tab == 'info'" *ngIf="selectedNode != null">
-                    <i class="fa fa-info-circle fa-2x"></i>
-                </li>
-                <li (click)="selectTab('user')" class="tab-item" [class.selected]="tab == 'user'" *ngIf="selectedNode != null">
-                    <i class="fa fa-user fa-2x"></i>
-                </li>
-                <li (click)="selectTab('relations')" class="tab-item" [class.selected]="tab == 'relations'" *ngIf="selectedNode != null">
-                    <i class="fa fa-retweet fa-2x"></i>
-                </li>
-            </ul>
-            <div [ngSwitch]="tab">
-                <div *ngSwitchCase="'info'">
-                    <d3s-lineage-object-detail *ngIf="selectedNode != null" [objectType]="(selectedNode.key == 0) ? 'TaxonomyType' : 'Taxonomy'" [objectId]="(selectedNode.key == 0) ? id : selectedNode.key"></d3s-lineage-object-detail>
-                </div>
-                <div *ngSwitchCase="'user'">
-                    <d3s-lineage-responsibilities *ngIf="selectedNode != null" [assetId]="selectedNode.key"></d3s-lineage-responsibilities>
-                </div>
-                <div *ngSwitchCase="'relations'">
-                    <d3s-lineage-relations *ngIf="selectedNode != null" objectType="Taxonomy" [objectId]="selectedNode.key"></d3s-lineage-relations>
-                </div>
-            </div>
-        </d3s-overlay-window>
-    </div>
-
-    <div id="HierarchyDiagram" style="overflow: hidden;" class="diagram" #diagram></div>
-
-</div>
-`,
+    templateUrl: './model-diagram.component.html',
     providers: [DiagramService]
 })
 
 export class ModelDiagramComponent extends DiagramBaseComponent implements OnInit, AfterViewInit, OnDestroy {
     @Input() id: number = 0;
     @ViewChild('diagram') diagramRef;
-
 
     private items: HierarchyDiagramModel[] = [];
     public selectedNode: any = null;
@@ -67,18 +29,19 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
     public isWindowVisible = false;
     public headerText = 'Info';
     public tab = 'info';
-    
-    constructor(private myElement: ElementRef, private diagramService: DiagramService) {
+
+    constructor(
+        private myElement: ElementRef,
+        private diagramService: DiagramService
+    ) {
         super();
     }
 
     public ngOnInit() {
-        this.menuItems.push({
-            icon: 'fa fa-refresh menu-icon'
-        });
-        this.menuItems.push({
-            icon: 'fa fa-info-circle menu-icon'
-        });
+        this.menuItems.push(
+            { icon: 'fa fa-refresh menu-icon' },
+            { icon: 'fa fa-info-circle menu-icon' }
+        );
 
         this.initializeDiagram();
     }
@@ -102,19 +65,19 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
         this.diagram.addDiagramListener('ViewPortBoundsChanged', () => this.ViewPortBoundsChanged());
 
         this.populateDiagram();
-
     }
 
     private populateDiagram() {
         this.isLoading = true;
-        this.diagramService.getCatalogDiagram(this.id)
-            .then(data => {
+        this.diagramService.getCatalogDiagram(this.id).subscribe(
+            data => {
                 this.items = data;
                 delete this.items[0].parent;
 
                 this.diagram.model = new go.TreeModel(this.items);
                 this.isLoading = false;
-            });
+            }
+        );
 
     }
 
@@ -145,6 +108,7 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
         if (this.diagramRef.nativeElement.offsetParent) {
             offset += this.diagramRef.nativeElement.offsetParent.offsetTop;
         }
+
         this.diagramRef.nativeElement.style.height = (height - offset - 50) + 'px';
     }
 
@@ -154,11 +118,11 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
         if (s > 1) {
             h = h * s;
         }
+
         this.zoomLevel = _.clamp(_.round(this.diagram.scale * 75), 0, 100);
     }
 
     private ChangedSelection(e: any) {
-
         let node = e.diagram.selection.first();
 
         if (node == null) {
@@ -168,7 +132,6 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
 
         this.selectedNode = node.data;
     }
-    
 
     public menuAction(e: MenuItem) {
         if (e.icon == 'fa fa-refresh menu-icon') {
@@ -176,16 +139,24 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
         } else if (e.icon == 'fa fa-info-circle menu-icon') {
             this.isWindowVisible = !this.isWindowVisible;
         }
-
     }
 
     private selectTab(val: string) {
         switch (val) {
-            case 'info': this.headerText = 'Info'; break;
-            case 'user': this.headerText = 'Responsibilities'; break;
-            case 'relations': this.headerText = 'Relationships'; break;
-            default: this.headerText = ''; break;
+            case 'info':
+                this.headerText = 'Info';
+                break;
+            case 'user':
+                this.headerText = 'Responsibilities';
+                break;
+            case 'relations':
+                this.headerText = 'Relationships';
+                break;
+            default:
+                this.headerText = '';
+                break;
         }
+
         this.tab = val;
     }
 
@@ -196,19 +167,32 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
     private createDiagram(): go.Diagram {
         return this.g(go.Diagram,
             "HierarchyDiagram",
-            { allowCopy: false, layout: this.g(go.TreeLayout, { angle: 90, nodeSpacing: 10, layerSpacing: 40, layerStyle: go.TreeLayout.LayerUniform }) }
+            {
+                allowCopy: false,
+                layout: this.g(go.TreeLayout, {
+                    angle: 90,
+                    nodeSpacing: 10,
+                    layerSpacing: 40,
+                    layerStyle: go.TreeLayout.LayerUniform
+                })
+            }
         );
     }
 
     private createNodeTemplate(): go.Node {
         return this.g(go.Node, "Auto",
-            { deletable: false },
+            {deletable: false},
             new go.Binding("text", "name"),
             this.g(go.Shape, "Rectangle",
-                { fill: "lightgray", stroke: "black", stretch: go.GraphObject.Fill, alignment: go.Spot.Center }
+                {fill: "lightgray", stroke: "black", stretch: go.GraphObject.Fill, alignment: go.Spot.Center}
             ),
             this.g(go.TextBlock,
-                { font: "bold 8pt Helvetica, bold Arial, sans-serif", textAlign: "center", margin: 6, maxSize: new go.Size(90, NaN) },
+                {
+                    font: "bold 8pt Helvetica, bold Arial, sans-serif",
+                    textAlign: "center",
+                    margin: 6,
+                    maxSize: new go.Size(90, NaN)
+                },
                 new go.Binding("text", "name")
             )
         );
@@ -216,12 +200,10 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
 
     private createLinkTemplate(): go.Link {
         return this.g(go.Link,
-            { routing: go.Link.Orthogonal, corner: 5, selectable: false },
+            {routing: go.Link.Orthogonal, corner: 5, selectable: false},
             this.g(go.Shape)
         );
     }
 
     //#endregion
 }
-
-

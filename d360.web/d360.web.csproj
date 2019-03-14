@@ -590,6 +590,7 @@
     <Content Include="Scripts\app\components\artifact\artifact-grid.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-item.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-manual-load.component.html" />
+    <Content Include="Scripts\app\components\mapping\mapping.component.html" />
     <Content Include="Scripts\app\components\reference\reference-item-type-list.component.html" />
     <Content Include="Scripts\app\components\rule\rule-column-filter.component.html" />
     <Content Include="Scripts\app\components\rule\rule-list.component.html" />
@@ -598,6 +599,14 @@
     <Content Include="Scripts\app\components\fusion\fusion-promotion-history.component.html" />
     <Content Include="Scripts\app\components\home\activity-details-tile.component.html" />
     <Content Include="Scripts\app\components\home\activity-tile.component.html" />
+    <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-editor-preview.component.html" />
+    <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-mapping-rules.component.html" />
+    <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-relationships.component.html" />
+    <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-responsibilities.component.html" />
+    <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-source-rule-editor.component.html" />
+    <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-source-rules.component.html" />
+    <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-technical-relationships.component.html" />
+    <Content Include="Scripts\app\components\shared\diagram\model-diagram.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-template-tool.component.html" />
     <Content Include="Scripts\app\components\shared\dynamicgrideditor\dynamic-field-value.component.html" />
     <Content Include="Scripts\app\components\shared\editor-header.component.html" />
