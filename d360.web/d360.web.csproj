@@ -612,6 +612,8 @@
     <Content Include="Scripts\app\components\sidebar\audit\audit.component.html" />
     <Content Include="Scripts\app\components\sidebar\children\artifact-item-child-grid.component.html" />
     <Content Include="Scripts\app\components\shared\tiles\tile-actions.component.html" />
+    <Content Include="Scripts\app\components\sidebar\dashboard\dashboard.component.html" />
+    <Content Include="Scripts\app\components\sidebar\dashboard\powerbi-viewer.component.html" />
     <Content Include="Scripts\app\components\workflowmonitor\workflowmonitor-list.component.html" />
     <Content Include="fonts\fontawesome-webfont.svg" />
     <Content Include="images\error.png" />
