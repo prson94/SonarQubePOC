@@ -170,7 +170,6 @@ namespace d360.core.entities
     public class AssetDataProfileResult
     {
         public Guid AssetUid { get; set; }
-        public string EffectiveDate { get; set; }
         public string Message { get; set; }
         public bool Success { get; set; }
     }
@@ -178,16 +177,12 @@ namespace d360.core.entities
     public class AssetDataProfileDeleteResult
     {
         public Guid AssetUid { get; set; }
-        public string EffectiveStartDate { get; set; }
-        public string EffectiveEndDate { get; set; }
         public string Message { get; set; }
         public bool Success { get; set; }
     }
 
-    public class MetricDataProfileDelete
+    public class AssetDataProfileDelete
     {
         public Guid AssetUid { get; set; }
-        public DateTime? EffectiveStartDate { get; set; }
-        public DateTime? EffectiveEndDate { get; set; }
     }
 }
