@@ -322,7 +322,6 @@
     <Compile Include="Controllers\FusionController.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Controllers\OverlaysController.cs" />
     <Compile Include="Controllers\DiagramsController.cs" />
     <Compile Include="Controllers\ReportsController.cs" />
     <Compile Include="Controllers\QueriesController.cs" />
