@@ -1,4 +1,4 @@
-﻿<div class="row">
+<div class="row">
     <div class="col s12">
         <div class="tile tile-detail">
             <header>Audit History for {{objectName}}<d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="export()"></d3s-tile-actions></header>
@@ -102,7 +102,9 @@
                     </tr>
                 </ng-template>
                 <ng-template pTemplate="summary">
-                    <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                    <d3s-grid-paging-info [first]="dt.first"
+                                          [rows]="dt.rows"
+                                          [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
                 </ng-template>
             </p-table>
         </div>

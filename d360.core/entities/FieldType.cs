@@ -121,6 +121,15 @@ namespace d360.core.entities
         [DataMember]
         public int? Precision { get; set; }
 
+        [DataMember]
+        public int? FilterPredicateID { get; set; }
+
+        [DataMember]
+        public bool? FilterPredicateDirection { get; set; }
+
+        [DataMember]
+        public int? FilterFieldTypeID { get; set; }
+
         [IgnoreDataMember, ForeignKey("FieldTypeID")]
         public virtual ICollection<Field> Fields { get; set; }
 

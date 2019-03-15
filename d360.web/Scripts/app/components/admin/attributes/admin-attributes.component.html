@@ -1,0 +1,82 @@
+<div class="row">
+    <div class="col l4 s12">
+        <div class="tile tile-detail">
+            <header *ngIf="!isLoading && !showDelete && !showEditor">Attribute Types
+                <d3s-tile-actions (addClick)="add()"
+                                  [hasAdd]="true"></d3s-tile-actions>
+            </header>
+            <d3s-loading [isLoading]="isLoading"></d3s-loading>
+            <span *ngIf="!isLoading && !showDelete && !showEditor">
+                                <input [(ngModel)]="searchValue"
+                                       pInputText
+                                       placeholder="Search..."
+                                       style="width: 100%;margin-bottom:10px;"
+                                       type="text">
+                                <p-treeTable [(selection)]="selected"
+                                             [value]="attributes | treeSearch: searchValue:'Name'"
+                                             dataKey="ID"
+                                             selectionMode="single">
+                                    <ng-template pTemplate="header">
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Name</th>
+                                            <th></th>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template let-item="rowData"
+                                                 let-rowNode
+                                                 pTemplate="body">
+                                        <tr [ttSelectableRow]="rowNode">
+                                            <td>
+                                                <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
+                                                {{item.ID}}
+                                            </td>
+                                            <td>{{item.Name}}</td>
+                                            <td>
+                                                <div class="RowTools">
+                                                    <a (click)="add(item.ID)"
+                                                       style="cursor:pointer;"><i class="fa fa-plus"></i></a>
+                                                    <a (click)="selected=rowNode.node;showEditor=true"
+                                                       style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
+                                                    <a (click)="selected=rowNode.node;showDelete=true"
+                                                       style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </ng-template>
+                                </p-treeTable>
+                            </span>
+            <d3s-delete-form (onCancel)="showDelete=false;"
+                             *ngIf="showDelete"
+                             [callback]="theDeleteCallback"
+                             [itemId]="selected?.data?.ID"
+                             [method]="'callback'"
+                             [prompt]="'Are you sure you want to delete the attribute type [' + [selected?.data?.Name] + ']?'"
+            ></d3s-delete-form>
+            <d3s-admin-attribute-type-editor (closeClick)="closeEditor()"
+                                             (saveClick)="saveAttributeType($event)"
+                                             *ngIf="showEditor && !isLoading"
+                                             [attribute]="selected?.data"
+                                             [parentID]="parentID"></d3s-admin-attribute-type-editor>
+        </div>
+    </div>
+    <div *ngIf="!showDelete && !showEditor"
+         class="col l8 s12">
+        <div class="row">
+            <div class="col s12">
+                <div class="tile tile-detail">
+                    <d3s-field-definition-tile [objectID]="selected?.data?.ID"
+                                               [objectType]="'AttributeType'"
+                                               [showIsListable]="false"></d3s-field-definition-tile>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col s12">
+                <div class="tile tile-detail">
+                    <d3s-admin-attribute-allocation [attributeID]="selected?.data?.ID"></d3s-admin-attribute-allocation>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

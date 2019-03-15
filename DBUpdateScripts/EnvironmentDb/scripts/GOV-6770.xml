@@ -1,0 +1,113 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Bhoward" id="GOV-6770">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+ALTER   PROCEDURE [dbo].[AzureSQLMaintenance]
+@Operation NVARCHAR(30) ='reindex' 
+,@From INT = 30 
+,@To INT = 100
+,@MinNumberOfPages INT = 10
+AS
+
+DECLARE @SQLString NVARCHAR(4000), @Schema NVARCHAR(40), @Table NVARCHAR(100), @Index NVARCHAR(100), @TypeID int;
+
+IF(@Operation = 'reindex') 
+BEGIN
+	DECLARE TableIndexCursor CURSOR FOR 
+	
+	SELECT dbschemas.[name] as 'Schema'
+	,dbtables.[name] as 'Table'
+	, dbindexes.[name] AS 'Index'
+	, dbindexes.[type] AS 'TypeID'
+	FROM sys.dm_db_index_physical_stats (DB_ID(), NULL, NULL, NULL, NULL) AS indexstats
+	INNER JOIN sys.tables dbtables on dbtables.[object_id] = indexstats.[object_id]
+	INNER JOIN sys.schemas dbschemas on dbtables.[schema_id] = dbschemas.[schema_id]
+	INNER JOIN sys.indexes AS dbindexes ON dbindexes.[object_id] = indexstats.[object_id]
+	AND indexstats.index_id = dbindexes.index_id
+	WHERE indexstats.database_id = DB_ID() AND dbindexes.[name] IS NOT NULL 
+	   AND indexstats.avg_fragmentation_in_percent BETWEEN @From AND @To
+     AND indexstats.page_count > @MinNumberOfPages
+	ORDER BY indexstats.avg_fragmentation_in_percent DESC
+
+	OPEN TableIndexCursor
+	FETCH NEXT FROM TableIndexCursor INTO @Schema, @Table, @Index, @TypeID
+	WHILE @@FETCH_STATUS = 0  
+	BEGIN  
+	DECLARE @OnlineFlag varchar(50)
+
+	if(@TypeID in (3,4,5,6))
+	 SET @OnlineFlag = 'OFF'
+	ELSE
+	SET @OnlineFlag = 'ON'
+	 
+	 SET @SQLString = 'ALTER INDEX [' + @Index + '] ON [' + @Schema + '].[' + @Table + '] REBUILD with (online=' + @OnlineFlag + ')';
+	 SELECT @SQLString AS Cmd_Run;
+	 EXECUTE sp_executesql @SQLString;
+	 FETCH NEXT FROM TableIndexCursor INTO  @Schema, @Table, @Index, @TypeID
+	END 
+	
+	CLOSE TableIndexCursor  
+	DEALLOCATE TableIndexCursor 
+	
+END
+]]>
+
+    </sql>
+	<rollback>
+<![CDATA[
+	ALTER   PROCEDURE [dbo].[AzureSQLMaintenance]
+@Operation NVARCHAR(30) ='reindex' 
+,@From INT = 30 
+,@To INT = 100
+,@MinNumberOfPages INT = 10
+AS
+
+DECLARE @SQLString NVARCHAR(4000), @Schema NVARCHAR(40), @Table NVARCHAR(100), @Index NVARCHAR(100);
+
+IF(@Operation = 'reindex') 
+BEGIN
+	DECLARE TableIndexCursor CURSOR FOR 
+	
+	SELECT dbschemas.[name] as 'Schema'
+	,dbtables.[name] as 'Table'
+	, dbindexes.[name] AS 'Index'
+	FROM sys.dm_db_index_physical_stats (DB_ID(), NULL, NULL, NULL, NULL) AS indexstats
+	INNER JOIN sys.tables dbtables on dbtables.[object_id] = indexstats.[object_id]
+	INNER JOIN sys.schemas dbschemas on dbtables.[schema_id] = dbschemas.[schema_id]
+	INNER JOIN sys.indexes AS dbindexes ON dbindexes.[object_id] = indexstats.[object_id]
+	AND indexstats.index_id = dbindexes.index_id
+	WHERE indexstats.database_id = DB_ID() AND dbindexes.[name] IS NOT NULL 
+	   AND indexstats.avg_fragmentation_in_percent BETWEEN @From AND @To
+     AND indexstats.page_count > @MinNumberOfPages
+	ORDER BY indexstats.avg_fragmentation_in_percent DESC
+
+	OPEN TableIndexCursor
+	FETCH NEXT FROM TableIndexCursor INTO @Schema, @Table, @Index
+	WHILE @@FETCH_STATUS = 0  
+	BEGIN  
+
+	 
+	 SET @SQLString = 'ALTER INDEX [' + @Index + '] ON [' + @Schema + '].[' + @Table + '] REBUILD with (online=ON)';
+	 SELECT @SQLString AS Cmd_Run;
+	 EXECUTE sp_executesql @SQLString;
+	 FETCH NEXT FROM TableIndexCursor INTO  @Schema, @Table, @Index
+	END 
+	
+	CLOSE TableIndexCursor  
+	DEALLOCATE TableIndexCursor 
+	
+END
+]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>

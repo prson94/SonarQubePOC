@@ -49,10 +49,7 @@ namespace d360.core.entities
 
         [IgnoreDataMember, ForeignKey("FusionID")]
         public virtual ICollection<FusionAttribute> FusionAttributes { get; set; }
-
-        [IgnoreDataMember, ForeignKey("FusionID")]
-        public virtual ICollection<FusionFilter> FusionFilters { get; set; }
-
+        
         [IgnoreDataMember]
         public virtual ICollection<Asset> FusionOwners { get; set; }
 

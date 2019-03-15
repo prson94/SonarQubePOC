@@ -1,18 +1,23 @@
-﻿export class RelationshipType {
-    ID: number;
+﻿export class RelationshipTypePredicate {
     Uid: string;
+    Type: string;
+    Name: string;
+    Inverse: string;
+}
+export class RelationshipTypeEdge {
+    Uid: string;
+    Name: string;
+    Class: string;
+    Cardinality: string;
+}
+export class RelationshipType {
+    Id: number;
+    Uid: string;
+    State: string;
     IsSystem: boolean;
-    Object: string;
-    ObjectID: number;
-    ObjectUid: string;
-    ObjectTypeName: string;
-    PredicateID: number;
-    PredicateName: string;
-    PredicateInverse: string;
-    Subject: string;
-    SubjectID: number;
-    SubjectUid: string;
-    SubjectTypeName: string;
+    Predicate: RelationshipTypePredicate;
+    Subject: RelationshipTypeEdge;
+    Object: RelationshipTypeEdge;
 }
 
 export class RelationshipDetail {
@@ -49,6 +54,7 @@ export class ObjectRelationshipCount {
     Count: number;
     IntersectTypeID: number;
     Cardinality: number;
+    AllowEditFromRelationshipEditor: boolean;
 }
 
 

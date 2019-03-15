@@ -19,6 +19,10 @@ export class ObjectDetailFieldComponent {
                 this.field.Value = null;
     }
 
+    private formatAsNumber(fieldValue): string {
+        return fieldValue !== '' && fieldValue != null ? Number(fieldValue).toLocaleString() : "";
+    }
+
     navigate(url: string) {        
         this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(url));
     }    

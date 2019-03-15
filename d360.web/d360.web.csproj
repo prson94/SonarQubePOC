@@ -39,7 +39,8 @@
     </NuGetPackageImportStamp>
     <ApplicationInsightsResourceId>/subscriptions/ab4c26b1-281d-488b-9657-894d862f9816/resourcegroups/d3s-ui/providers/microsoft.insights/components/UI-Nightly</ApplicationInsightsResourceId>
     <UseGlobalApplicationHostFile />
-    <Use64BitIISExpress />
+    <Use64BitIISExpress>
+    </Use64BitIISExpress>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Autofac, Version=4.6.2.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
@@ -284,9 +285,9 @@
     <Compile Include="App_Start\Startup.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\Services\CommunityController.cs" />
-    <Compile Include="Controllers\Services\AssetsController.cs" />
+    <Compile Include="Controllers\Services\Obsolete\AssetsController.cs" />
     <Compile Include="Controllers\Services\CustomController.cs" />
-    <Compile Include="Controllers\Services\ReferenceController.cs" />
+    <Compile Include="Controllers\Services\Obsolete\ReferenceController.cs" />
     <Compile Include="Controllers\Services\ReportsController.cs" />
     <Compile Include="Controllers\Services\OrganizationsController.cs" />
     <Compile Include="Controllers\V2\AuditController.cs" />
@@ -298,8 +299,9 @@
     <Compile Include="Controllers\V2\MetricsController.cs" />
     <Compile Include="Controllers\V2\RelationshipsController.cs" />
     <Compile Include="Controllers\V2\AssetsController.cs" />
+    <Compile Include="Controllers\V2\ResponsibilitiesController.cs" />
+    <Compile Include="Controllers\V2\SocialController.cs" />
     <Compile Include="Controllers\WebAnalyticsController.cs" />
-    <Compile Include="Controllers\Services\AgentController.cs" />
     <Compile Include="Controllers\Services\WorkflowController.cs" />
     <Compile Include="Controllers\Services\EventsController.cs" />
     <Compile Include="Controllers\Services\GlossaryController.cs" />
@@ -342,7 +344,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Controllers\TaxonomyController.cs" />
-    <Compile Include="Controllers\TilesController.cs" />
     <Compile Include="Filters\AjaxValidationAntiForgeryTokenAttribute.cs" />
     <Compile Include="Filters\ExceptionHandlingAttribute.cs" />
     <Compile Include="Filters\SwaggerContentTypesAttribute.cs" />
@@ -573,10 +574,15 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <Content Include="Scripts\app\components\admin\artifacts\artifact-type-delete.component.html" />
+    <Content Include="Scripts\app\components\admin\attributes\admin-attribute-allocation.component.html" />
+    <Content Include="Scripts\app\components\admin\attributes\admin-attribute-type-editor.component.html" />
+    <Content Include="Scripts\app\components\admin\attributes\admin-attributes.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-column-filter.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-grid.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-item.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-manual-load.component.html" />
+    <Content Include="Scripts\app\components\reference\reference-item-type-list.component.html" />
+    <Content Include="Scripts\app\components\rule\rule-column-filter.component.html" />
     <Content Include="Scripts\app\components\rule\rule-list.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-list.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-top-level-list.component.html" />
@@ -594,6 +600,7 @@
     <Content Include="Scripts\app\components\shared\preview-tooltip.component.html" />
     <Content Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-editor.component.html" />
     <Content Include="Scripts\app\components\shared\shortcuts\shortcut-list.component.html" />
+    <Content Include="Scripts\app\components\sidebar\audit\audit.component.html" />
     <Content Include="Scripts\app\components\sidebar\children\artifact-item-child-grid.component.html" />
     <Content Include="Scripts\app\components\shared\tiles\tile-actions.component.html" />
     <Content Include="Scripts\app\components\workflowmonitor\workflowmonitor-list.component.html" />
@@ -1411,6 +1418,7 @@
     <TypeScriptCompile Include="Scripts\app\pipes\metric-condition-disabled-filter.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\responsibilitytypeallocation-filter.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\permission-filter.pipe.ts" />
+    <TypeScriptCompile Include="Scripts\app\pipes\selectitem-text-to-label.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\utc-date.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\safe-html.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\services\asset-type.services.ts" />

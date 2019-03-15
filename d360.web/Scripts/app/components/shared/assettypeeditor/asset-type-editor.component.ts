@@ -80,8 +80,14 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
                 break;
         }
 
-        this.assetTypeService.getAssetTypeEditor(this.theAssetTypeClass, this.id, this.parentID)
-            .then(data => {
+        this
+            .assetTypeService
+            .getAssetTypeEditor(
+                this.theAssetTypeClass,
+                this.id,
+                this.parentID
+            )
+            .subscribe(data => {
                 this.model = data;
 
                 this.spinNum = this.model.AssetType.HierarchyMaximumDepth;
@@ -114,22 +120,32 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
     private save(): void {
         this.isSaving = true;
         this.model.AssetType.HierarchyMaximumDepth = this.spinNum;
+
         if (this.model.AssetType.ID > 0)
-            this.assetTypeService.putAssetType(this.model)
-                .then(data => {
+        {
+            this
+                .assetTypeService
+                .putAssetType(this.model)
+                .subscribe(data => {
                     this.showMessageForResult(this.messagesService, data);
+
                     if (data.type != "error") {
                         this.isSaving = false;
                         this.onSuccess.emit(data);
                         this.onComplete.emit(data);
                     } else {
-                        this.isSaving = false; 
+                        this.isSaving = false;
                     }
                 });
+        }
         else
-            this.assetTypeService.postAssetType(this.model)
-                .then(data => {
+        {
+            this
+                .assetTypeService
+                .postAssetType(this.model)
+                .subscribe(data => {
                     this.showMessageForResult(this.messagesService, data);
+
                     if (data.type != "error") {
                         this.isSaving = false;
                         this.onSuccess.emit(data);
@@ -138,6 +154,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
                         this.isSaving = false;
                     }
                 });
+        }
     }
 
     private selectToken(e: any) {

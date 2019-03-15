@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE)]
-    public class ResponsibilityTypeRelationRule : BaseIntObject, IIntObject
+    public class ResponsibilityTypeRelationRule : BaseIntObject, IIntObject, IUpdatedMetadata, ICreatedMetadata, IUIDMetadata
     {
         [DataMember]
         public int ResponsibilityTypeID { get; set; }
@@ -65,8 +65,16 @@ namespace d360.core.entities
         }
 
         [DataMember]
-        public DateTime UpdatedOn { get; set; }
-        
+        public DateTime? UpdatedOn { get; set; }
+
+        public DateTime? CreatedOn { get; set; }
+        public int? CreatedBy { get; set; }
+
+
+        public int? UpdatedBy { get; set; }
+
+        public Guid? UID { get; set; }
+
     }
 
     public class ResponsibilityRuleDefinition

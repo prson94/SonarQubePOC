@@ -22,6 +22,8 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     @Input() form: FormGroup;
     @Input() object: string;
     @Input() objectID: number = null;
+    @Input() selectedObject: string;
+    @Input() selectedObjectID: number;
 
     @ViewChild('ed') ed: Editor;
     private quill;
@@ -44,6 +46,8 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     private Max: number;
     private Precision: number;
     private colorValue: string = '#000';
+
+    private filterException: string = '';
 
     private isTaxonomyType: boolean = false; // taxonomy type requires its name be mapped to whatever the setting is set to.
     private hasCascadeLoaded: boolean = false;
@@ -104,10 +108,11 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                     }
                     else {
                         this.field.Value = null;
+                        this.field.Items = [];
                         this.listItemChange.emit({ field: this.field, value: null });
                     }
                 }
-            });
+           });
 
         this.relationSub = this.fieldsService.getRelationshipFieldItems(this.relationSource$)
             .subscribe(res => {
@@ -126,6 +131,16 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                 this.field.Items = <EditorDropDownItem[]>res;
                 this.ref.markForCheck();
             });
+
+        if (this.field.DelayedLoadType == 'Predicate') {
+            this.fieldsService.getLookupFilteredByPredicate(this.field.FieldTypeID, this.selectedObject, this.selectedObjectID).then(
+                res => {
+                    this.field.Items = res.items;
+                    this.filterException = res.exceptionMessage;
+                    this.ref.markForCheck();
+                }
+            )
+        }
 
         if (this.field && this.field.Validations) {
             for (let validation of this.field.Validations) {
@@ -363,6 +378,13 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         return "Choose";
     }
 
+    selectDisabled(): boolean {
+        if (this.field.DelayedLoadType =='FieldFilter' && !this.hasCascadeLoaded && (this.field.Items == null || this.field.Items.length == 0)) {
+            return true;
+        }
+        return false;
+    }
+
     OnBlurTrim() {
         let value: string = this.form.controls[this.field.FieldName].value;
         this.form.controls[this.field.FieldName].setValue(value.trim());
@@ -413,6 +435,8 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             this.field.Value = e.Value;
         else
             this.field.Value = null;
+        //Typeahead is a technically a list field, so we should emit an itemchange
+        this.listItemChange.emit({ field: this.field, value: this.field.Value });
     }
 
     private clearTypeahead(e: any) {

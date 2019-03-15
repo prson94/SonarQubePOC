@@ -20,9 +20,9 @@
     <d3s-delete-form *ngIf="isDeletingDate"
                      [callback]="theDeleteDateCallback"
                      [itemId]="selectedRow?.ID"
-                     [deleteButtonText]="'Clear Date'"
+                     [deleteButtonText]="'Run Rule'"
                      [method]="'callback'"
-                     [prompt]="'Are you sure you want to clear the Date for [' + [selectedRow?.Name] + ']?'"
+                     [prompt]="'Are you sure you want to run the rule [' + [selectedRow?.Name] + '] now? The rule will be scheduled to run immediately, clearing the current Last Run Date. Ownership rules are scheduled to run automatically on a regular basis. You should only need to use this feature if you are having issues with ownership rules being applied automatically.'"
                      (onCancel)="isDeletingDate=false; onCancel.emit();"></d3s-delete-form>
 
     <div *ngIf="!isLoading && !isEditing && !isDeleting && !isDeletingDate">
@@ -43,10 +43,12 @@
                     <th style="width: 50px"></th>
                     <th style="width: 50px"></th>
                     <th style="width: 50px"></th>
+                    <th style="width: 50px"></th>
                 </tr>
                 <tr [hidden]="showSimpleFilter">
                     <th><d3s-column-filter [field]="'Name'" [datatype]="'text'"></d3s-column-filter></th>
                     <th><d3s-column-filter [field]="'ObjectName'" [datatype]="'text'"></d3s-column-filter></th>
+                    <th></th>
                     <th></th>
                     <th></th>
                     <th></th>
@@ -61,9 +63,14 @@
                         <span *ngIf="item.Context" [innerHtml]="item.Context"></span>
                     </td>
                     <td>{{item.LastRunOn | date:'short'}}</td>
+                     <td>
+                         <div class="RowTools">
+                             <d3s-preview-tooltip objectType="ResponsibilityTypeRelationRule" [objectId]="item.ID" icon="info"></d3s-preview-tooltip>
+                         </div>
+                    </td>
                     <td>
                         <div class="RowTools">
-                            <a (click)="clearDate(item.ID)" style="cursor:pointer;"><i class="fa fa-cogs"></i></a>
+                            <a (click)="clearDate(item.ID)" style="cursor:pointer;"><i class="fa fa-refresh"></i></a>
                         </div>
                     </td>
                     <td>

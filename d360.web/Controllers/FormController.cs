@@ -478,8 +478,6 @@ namespace d360.web.Controllers
                     return EditPredicate(form);
                 case "REFERENCEITEM":
                     return EditReferenceItem(form);
-                case "REFERENCEITEMTYPE":
-                    return EditReferenceItemType(form);
                 case "REPORT":
                     return await EditReport(form);
                 case "REPORTTILE":
@@ -567,8 +565,6 @@ namespace d360.web.Controllers
                     return DeletePredicate(form);
                 case "REFERENCEITEM":
                     return DeleteReferenceItem(form);
-                case "REFERENCEITEMTYPE":
-                    return DeleteReferenceItemType(form);
                 case "REPORT":
                     return await DeleteReport(form);
                 case "REPORTTILE":
@@ -671,8 +667,6 @@ namespace d360.web.Controllers
                     return AddPredicate(form);
                 case "REFERENCEITEM":
                     return AddReferenceItem(form);
-                case "REFERENCEITEMTYPE":
-                    return AddReferenceItemType(form);
                 case "REPORT":
                     return await AddReport(form);
                 case "REPORTTILE":
@@ -2946,8 +2940,14 @@ namespace d360.web.Controllers
         public JsonNetResult FieldType_RelationLookup_DisplayFields(int intersectTypeID, SystemObjects type, int id)
         {
             var list = Company.GetFieldTypesByObject(type, id)
-                .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.Relationship.ToString()  && i.Type != DataType.OwnershipLookup.ToString() && i.Type != DataType.RefListRelationship.ToString()
-              && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.FilteredLookup.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
+                .Where(i => i.Type != DataType.Attribute.ToString()
+                        && i.Type != DataType.Relationship.ToString()
+                        && i.Type != DataType.OwnershipLookup.ToString()
+                        && i.Type != DataType.RefListRelationship.ToString()
+                        && i.Type != DataType.FusionLookup.ToString()
+                        && i.Type != DataType.FilteredLookup.ToString()
+                        && i.Type != DataType.ComplexRelationLookup.ToString()
+                        && i.Type != DataType.JSON.ToString())
                 .Select(i => new { i.ID, i.Name })
                 .ToDictionary(i => i.Name, i => i.ID);
 
@@ -2997,8 +2997,8 @@ namespace d360.web.Controllers
             });
 
             var sType = type.ToString();
-            var relatedTypeList = Company.Filter<IntersectTypeDetail>(i => 
-                (i.Subject == sType && i.SubjectID == id) || 
+            var relatedTypeList = Company.Filter<IntersectTypeDetail>(i =>
+                (i.Subject == sType && i.SubjectID == id) ||
                 (i.Object == sType && i.ObjectID == id)
                 ).ToList().Select(i => new {
                     ID = i.ID,
@@ -3022,6 +3022,91 @@ namespace d360.web.Controllers
                 Data = list.Select(i => new { title = i.Key, value = $"{i.Value}|{i.Key}" }),
                 Formatting = Newtonsoft.Json.Formatting.None
             };
+        }
+
+        [Route("FieldType_ListFilter"), NonNullableParameters]
+        public JsonNetResult FieldType_ListFilter(SystemObjects objectType, int objectId, SystemObjects type, int id)
+        {
+            var predicateTypes = string.Join(",", PredicateType.DataLineage.GetAsList()
+                .Where(f => f.AllowEditFromRelationshipEditor && f.AllowIntersectTypeAssignment)
+                .Select(i => ((int)i.ID).ToString())
+                .ToArray());
+
+            string sql = $@"SELECT 
+                        Concat(A.PredicateID, '|',A.Direction) as PredicateValue, 
+                        A.PredicateName, 
+                        A.ObjectName, 
+                        A.[Object], 
+                        A.[ObjectID], 
+                        B.FieldTypeID, 
+                        B.[FriendlyName],
+						B.Type,
+                        B.Class,
+                        B.Name
+                    FROM ( 
+                        SELECT 
+                            it.[ID] as IntersectTypeID, 
+                            0 AS Direction, 
+                            p.[ID] as PredicateID, 
+                            p.[Name] as PredicateName, 
+                            ot.[Name] as ObjectName, 
+                            it.[Object] as [Object], 
+                            it.[ObjectID] as [ObjectID] 
+                        FROM [dbo].[IntersectType] it 
+                            join [dbo].[Predicate] p on it.[PredicateID] = p.[ID] 
+                            join [dbo].[AssetType] ot on ot.[Object] = it.[Object] and ot.[ObjectId] = it.[ObjectID] 
+                            join [dbo].[AssetType] st on st.[Object] = it.[Subject] and st.[ObjectId] = it.[SubjectID] 
+                        where it.[Subject] = @objectType 
+                        and it.[SubjectID] = @objectId
+                        and p.Type IN ({predicateTypes})
+                        and it.[Object] in ('ArtifactType', 'TaxonomyType')
+                        UNION ALL 
+                        SELECT 
+                            it.[ID], 
+                            1 AS Direction, 
+                            p.[ID] as PredicateID, 
+                            p.[Inverse] as PredicateName,
+                            st.[Name] as ObjectName, 
+                            it.[Subject] as [Object], 
+                            it.[SubjectID] as [ObjectID] 
+                        FROM [dbo].[IntersectType] it 
+                            join [dbo].[Predicate] p on it.[PredicateID] = p.[ID] 
+                            join [dbo].[AssetType] ot on ot.[Object] = it.[Object] and ot.[ObjectId] = it.[ObjectID] 
+                            join [dbo].[AssetType] st on st.[Object] = it.[Subject] and st.[ObjectId] = it.[SubjectID] 
+                         where it.[Object] = @objectType 
+                         and it.[ObjectID] = @objectId 
+                         and p.Type IN ({predicateTypes})
+                         and it.[Subject] in ('ArtifactType', 'TaxonomyType')
+                        ) A LEFT OUTER JOIN
+                    (SELECT 
+                        ft.[ID] as FieldTypeID,
+                        ft.[FriendlyName], 
+                        ft.[Object], 
+                        ft.[ObjectID], 
+                        at.Object as LookupObject, 
+                        ft.LookupObjectID,
+                        ft.Type,
+                        at.Class,
+                        at.Name
+                    FROM [dbo].[FieldType] ft
+                    INNER JOIN [dbo].[AssetType] at ON ft.LookupObjectType +'Type' = at.Object AND ft.LookupObjectID = at.ObjectID
+                    WHERE ft.[ObjectID] = @id AND ft.[Object] = @type  
+                    ) B ON A.[Object] = B.LookupObject AND A.ObjectID = B.LookupObjectID";
+            var parms = new
+            {
+                objectType = objectType.ToString(),
+                objectId = objectId,
+                type = type.ToString(),
+                id = id
+            };
+
+            return new JsonNetResult { Data = Company.Query<dynamic>(sql, parms).Select(i => new {
+                PredicateValue = i.PredicateValue,
+                PredicateName = i.PredicateName,
+                FieldTypeID = i.FieldTypeID,
+                FriendlyName = i.FriendlyName,
+                Info = string.IsNullOrEmpty(i.Name) ? "" : "List(" + (AssetTypeClass)i.Class + " : " + i.Name + ")" //@TODO use i.Type instead of hardcoded field type
+            })};
         }
 
         [Route("FieldType_FieldFromRelationship_Fields"), NonNullableParameters]
@@ -3097,6 +3182,179 @@ namespace d360.web.Controllers
                 Data = list.Select(i => new { title = i.Key, value = "{" + i.Value + "}" }),
                 Formatting = Newtonsoft.Json.Formatting.None
             };
+        }
+
+        [Route("FieldType_Lookup_FilteredByPredicate"), NonNullableParameters]
+        public JsonNetResult FieldType_Lookup_FilteredByPredicate(int fieldTypeId, string objectType, int ObjectID )
+        {
+            var selectList = new List<SelectListInfoItem>();
+            IntersectType it;
+            string exceptionMessage = "";
+
+            try
+            {
+                var filterObject = Company.Filter<Asset>(i => i.ObjectID == ObjectID && i.Object == objectType).SingleOrDefault();
+                if (filterObject == null)
+                {
+                    exceptionMessage = "Action subject is not an asset. Filter disabled.";
+                }
+
+                var ft = Company.GetById<FieldType>(fieldTypeId);
+                string selectedValue = string.IsNullOrWhiteSpace(ft.DefaultValue) ? "" : ft.DefaultValue;
+
+                if (!ft.IsRequired && !ft.AllowMultipleValues)
+                    selectList.Add(new SelectListInfoItem { Text = "Choose...", Value = "" });
+
+                if (ft.AllowAllValue)
+                    selectList.Add(new SelectListInfoItem { Text = ft.AllowAllLabel, Value = "0" });
+
+                if (exceptionMessage == "")
+                {
+                    if (ft.FilterPredicateDirection == true)
+                    {
+                        it = Company.Filter<IntersectType>(i =>
+                            i.Object == ft.LookupObjectType + "Type" &&
+                            i.ObjectID == ft.LookupObjectID &&
+                            i.Subject == filterObject.AssetType.Object &&
+                            i.SubjectID == filterObject.AssetType.ObjectID &&
+                            i.PredicateID == ft.FilterPredicateID
+                        ).SingleOrDefault();
+                    }
+                    else
+                    {
+                        it = Company.Filter<IntersectType>(i =>
+                            i.Subject == ft.LookupObjectType + "Type" &&
+                            i.SubjectID == ft.LookupObjectID &&
+                            i.Object == filterObject.AssetType.Object &&
+                            i.ObjectID == filterObject.AssetType.ObjectID &&
+                            i.PredicateID == ft.FilterPredicateID
+                        ).SingleOrDefault();
+                    }
+
+                    if (it == null)
+                    {
+                        var lookupObjectType = Company.Filter<AssetType>(i => i.ObjectID == ft.LookupObjectID && i.Object == ft.LookupObjectType + "Type").SingleOrDefault();
+                        string listObjectType = lookupObjectType.Class + ":" + lookupObjectType.Name; ;
+                        Predicate pred = Company.GetById<Predicate>(ft.FilterPredicateID.GetValueOrDefault());
+                        string predicate = (ft.FilterPredicateDirection == true) ? pred.Inverse  : pred.Name;
+                        var filterObjectDetail = Company.Filter<AssetDetail>(i => i.ObjectID == ObjectID && i.Object == objectType).SingleOrDefault();
+                        string actionSubject = filterObjectDetail.DisplayValue;
+                        string actionSubjectType = filterObject.AssetType.Class + ":" + filterObject.AssetType.Name;
+                        exceptionMessage = $@"Filtering for this list has been disabled as we cannot filter a list of types {listObjectType} by the action subject {actionSubject}.";
+                        exceptionMessage += $@" The relationship {listObjectType} - {predicate} - {actionSubjectType} does not exist.";
+                    }
+                }
+                else
+                {
+                    //Not really used at this point
+                    it = new IntersectType();
+                }
+
+                if (exceptionMessage == "")
+                {
+                    var columns = $@"
+                V.Value,
+                V.Text";
+
+                    var selectedSql = $@"select {columns} , '' as Info
+                from FieldLookupValue V 
+                where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId and V.Value = @selectedValue 
+                union
+                ";
+
+                    if (ft.FilterPredicateDirection == true)
+                    {
+                        columns += @", concat(I.PredicateInverse,' ', I.SubjectShortName) as Info";
+                    }
+                    else
+                    {
+                        columns += @", concat(I.PredicateName,' ', I.ObjectShortName) as Info";
+                    }
+
+                    var resourceJoin = $@"
+                inner join reporting.Global_resource R on R.ResourceID = V.Value and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com'
+                ";
+
+                    var itemsSql = $@"
+                {(string.IsNullOrWhiteSpace(selectedValue) ? "" : selectedSql)}
+                select {columns}
+                from FieldLookupValue V
+                {(HideData3SixtyUsers() && ft.LookupObjectType == "Resource" ? resourceJoin : "")}
+                inner join [IntersectDetail] I on I.{ (ft.FilterPredicateDirection == true ? "ObjectID" : "SubjectID") } = V.Value
+                where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId 
+                and I.IntersectTypeID = @IntersectTypeID and I.{(ft.FilterPredicateDirection == true ? "SubjectID" : "ObjectID")} = @ObjecctID
+                ";
+
+                    var items = Company.Query<SelectListInfoItem>(itemsSql, new
+                    {
+                        fieldTypeId = ft.ID,
+                        lookupObjectType = ft.LookupObjectType,
+                        lookupObjectId = ft.LookupObjectID,
+                        IntersectTypeID = it.ID,
+                        ObjecctID = ObjectID,
+                        selectedValue
+                    }).ToList();
+
+                    selectList.AddRange(items.Select(i => new SelectListInfoItem
+                    {
+                        Text = i.Text,
+                        Value = i.Value.ToString(),
+                        Selected = string.IsNullOrEmpty(selectedValue) ? false : i.Value.ToString() == selectedValue,
+                        Info = i.Info
+                    }));
+                }
+                else
+                {
+                    var selectedSql = $@"select V.Value, V.Text, '' as Info
+                from FieldLookupValue V 
+                where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId and V.Value = @selectedValue 
+                union
+                ";
+
+                    var resourceJoin = $@"
+                inner join reporting.Global_resource R on R.ResourceID = V.Value and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com'
+                ";
+
+                    var itemsSql = $@"
+                {(string.IsNullOrWhiteSpace(selectedValue) ? "" : selectedSql)}
+                select V.Value, V.Text, '' as Info
+                from FieldLookupValue V
+                {(HideData3SixtyUsers() && ft.LookupObjectType == "Resource" ? resourceJoin : "")}
+                where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId 
+                ";
+
+                    var items = Company.Query<SelectListInfoItem>(itemsSql, new
+                    {
+                        fieldTypeId = ft.ID,
+                        lookupObjectType = ft.LookupObjectType,
+                        lookupObjectId = ft.LookupObjectID,
+                        selectedValue
+                    }).ToList();
+
+                    selectList.AddRange(items.Select(i => new SelectListInfoItem
+                    {
+                        Text = i.Text,
+                        Value = i.Value.ToString(),
+                        Selected = string.IsNullOrEmpty(selectedValue) ? false : i.Value.ToString() == selectedValue,
+                        Info = i.Info
+                    }));
+                }
+            }
+            catch
+            {
+                if(exceptionMessage == "")
+                {
+                    exceptionMessage = "Filter disabled. An error occured when attempting to apply it.";
+                }
+            }
+            selectList = selectList.OrderBy(i => i.Selected ? 0 : 1).ToList();
+
+            return new JsonNetResult
+            {
+                Data = new { items = selectList, exceptionMessage = exceptionMessage },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+
         }
 
         [Route("Reference_Hierarchy"), NonNullableParameters]
@@ -4327,6 +4585,13 @@ namespace d360.web.Controllers
                             Company.FieldTypeFusionLookupDefinitions.RemoveRange(defs);
                         if (efli != null)
                             Company.Set<FieldTypeFilteredLookupDefinition>().Remove(efli);
+
+                        ft.FilterPredicateID = model.FieldType.FilterPredicateID;
+                        if (model.FieldType.FilterPredicateID != null) //Filtered lists should not have default values
+                            ft.DefaultValue = null;
+                        ft.FilterPredicateDirection = model.FieldType.FilterPredicateDirection;
+                        ft.FilterFieldTypeID = model.FieldType.FilterFieldTypeID;
+
                         break;
                     #endregion
                     case "ComplexRelationLookup":
@@ -10535,158 +10800,6 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         
         #endregion
 
-        #region Reference Item Types
-
-        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddReferenceItemType")]
-        public JsonResult AddReferenceItemType(FormCollection form)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                if (!form.HasKeys()) throw new NoFormDataException("ReferenceItemType");
-
-                var model = new ReferenceItemType
-                {
-                    Name = parseTextField(form, "Name"),
-                    Description = parseTextField(form, "Description"),
-                    SourceNotes = parseTextField(form, "SourceNotes"),
-                    DisplayFormat = parseTextField(form, "DisplayFormat"),
-                    UpdatedBy = Company.CurrentResourceID,
-                    UpdatedOn = DateTime.UtcNow,
-                    CreatedBy = Company.CurrentResourceID,
-                    CreatedOn = DateTime.UtcNow
-                };
-
-                Company.Add(model);
-
-                if (model.ID > 0)
-                {
-                    Company.Add(new FieldType
-                    {
-                        ObjectID = model.ID,
-                        Object = SystemObjects.ReferenceItemType.ToString(),
-                        IsListable = true,
-                        IsRequired = true,
-                        IsEditable = true,
-                        FriendlyName = "Long Description",
-                        Name = "LongDesc",
-                        MaximumLength = 500,
-                        MinimumLength = 1,
-                        SortOrder = 1,
-                        Type = DataType.Text.ToString(),
-                        IsDisplayable = true
-                    });
-                }
-
-                dynamic custom = new
-                {
-                    model.Name,
-                    action = "add",
-                    Context = form["_context"]
-                };
-
-                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpDelete, Route("DeleteReferenceItemType")]
-        public JsonResult DeleteReferenceItemType(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("ReferenceItemType");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<ReferenceItemType>(id);
-                if (model == null) throw new NotFoundException("ReferenceItemType");
-
-                //check if the reference list is the parent of any other reference item types
-                if (Company.TypeHasChildren(SystemObjects.ReferenceItemType, id)) throw new Exception("The selected Reference List Is the parent to one or more Reference List(s).  Please delete those first.");
-
-                if (Company.Filter<FieldType>(x => x.LookupObjectType == "ReferenceItem" && x.LookupObjectID == id).Count() > 0)
-                    throw new ConflictException("Error", "The reference list you are trying to delete is in use");
-
-                if (!Company.HasAssetTypePermission(SystemObjects.ReferenceItemType, id, Permission.DeleteAsset))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                Company.Delete(SystemObjects.ReferenceItemType, model.ID);
-
-                dynamic custom = new
-                {
-                    model.Name,
-                    action = "delete",
-                    Context = form["_context"]
-                };
-
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpPut, ValidateInput(false), Route("EditReferenceItemType")]
-        public JsonResult EditReferenceItemType(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("ReferenceItemType");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<ReferenceItemType>(id);
-                if (model == null) throw new NotFoundException("ReferenceItemType");
-
-                if (!Company.HasAssetTypePermission(SystemObjects.ReferenceItemType, id, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                model.Name = parseTextField(form, "Name");
-                model.Description = parseTextField(form, "Description");
-                model.SourceNotes = parseTextField(form, "SourceNotes");
-                model.DisplayFormat = parseTextField(form, "DisplayFormat");
-                model.UpdatedBy = Company.CurrentResourceID;
-                model.UpdatedOn = DateTime.UtcNow;
-
-                Company.Update(model);
-
-                dynamic custom = new
-                {
-                    Name = model.Name,
-                    action = "edit",
-                    Context = form["_context"]
-                };
-
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
         #region Relationship
 
         #region Field Generation
@@ -10775,13 +10888,19 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 var source = parseTextField(form, "Source");
                 var sourceID = parseIntField(form, "SourceID");
                 int typeID = parseIntField(form, "IntersectTypeID");
-                var relationshipType = Company.GetById<IntersectType>(typeID);
+                var relationshipType = Company.GetById<IntersectType>(typeID, p => p.Predicate);
                 var sourceObject = Company.GetObjectDetail(source, sourceID);
 
                 if (!Company.HasAssetPermission(source, sourceID, Permission.ModifyRelationships))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 if (relationshipType == null) throw new NotFoundException("relationship");
+
+                var predicateTypeInfo = relationshipType.Predicate.Type.AsInfoModel();
+
+                if (!predicateTypeInfo.AllowEditFromRelationshipEditor)
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
 
                 var targetCardinality = Cardinality.Many;
                 if (relationshipType.Subject == sourceObject.Type && relationshipType.SubjectID == sourceObject.TypeID)
@@ -10839,9 +10958,15 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 if (!form.HasKeys()) throw new NoFormDataException("relationship");
 
                 int id = parseIntField(form, "ID");
-                var intersect = Company.GetById<Intersect>(id, i => i.IntersectType);
+                var intersect = Company.GetById<Intersect>(id);
 
                 if (intersect == null) throw new NotFoundException("relationship");
+
+                var intersectType = Company.GetById<IntersectType>(intersect.IntersectTypeID, p => p.Predicate);
+                var predicateTypeInfo = intersectType.Predicate.Type.AsInfoModel();
+                
+                if (!predicateTypeInfo.AllowEditFromRelationshipEditor)
+                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
                 if (!Company.HasAssetPermission(intersect.Subject, intersect.SubjectID, Permission.ModifyRelationships) &&
                     !Company.HasAssetPermission(intersect.Object, intersect.ObjectID, Permission.ModifyRelationships))
@@ -10992,7 +11117,7 @@ if @OwnerSourceType = 'Artifact'
         insert into @h select id from @Owners
 
 
-select	'FusionAttribute' as [Object], 
+select distinct 'FusionAttribute' as [Object], 
         FA.ID as ObjectID, 
         F.Name + '.' + FA.TextPath as Name
 from	FusionAttribute FA with(nolock)
@@ -11004,7 +11129,7 @@ where	FA.ID not in (
 					from	[IntersectDetail]
 					where	IntersectTypeID = @it and ( (Subject = @source and SubjectID = @id) AND (ObjectType = @targetType and ObjectTypeID = @targetTypeID) )
 					)
-order by F.Name, FA.TextPath";
+order by 3";
                     }
                     break;
                 #endregion
@@ -12174,7 +12299,9 @@ order by TP.TextPath";
                 {
                     if (!existing.ResponsibilityTypeRelations.Any(i => i.ObjectType == nr.ObjectType && i.ObjectID == nr.ObjectID))
                     {
-                        existing.ResponsibilityTypeRelations.Add(new ResponsibilityTypeRelation { ObjectType = nr.ObjectType, ObjectID = nr.ObjectID, ResponsibilityTypeID = existing.ID, PermissionsBitMask = 0 });
+                        existing.ResponsibilityTypeRelations.Add(new ResponsibilityTypeRelation { ObjectType = nr.ObjectType, ObjectID = nr.ObjectID, ResponsibilityTypeID = existing.ID, PermissionsBitMask = 0,
+                            CreatedBy =Company.CurrentResourceID,CreatedOn= DateTime.UtcNow,UpdatedBy=Company.CurrentResourceID,UpdatedOn= DateTime.UtcNow
+                        });
                     }
                 }
 

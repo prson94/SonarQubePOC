@@ -269,15 +269,6 @@ from	AttributeDetail A
 group by A.FormattedValue
 order by A.FormattedValue";
 
-        public static string FusionBreadcrumbItem = @"
-select  f.parentID as 'parentID', 
-	    f.name as 'name', 
-	    f.id as 'id', 
-	    f.fusionattributetypeid as 'typeid',
-	    ft.name as 'typename'                                    
-from    fusionattribute f
-        inner join fusionattributetype ft on (f.fusionattributetypeid = ft.id)
-where   f.id = @item";
 
         public static string FusionConfigurationFromFusionAttributeItem = @"
 select  f.name as 'ItemName',
@@ -293,57 +284,7 @@ from    fusionattribute f
 	    left outer join fusionattribute fp on (f.parentID = fp.id)
 where   f.id = @id";
 
-        public static string FusionOwnershipChildAttributeNodeList = @"
-declare @tbl table (ID int, ParentID int);
-
-with at as	(
-			select	ID,
-					ParentID
-			from	FusionAttributeType
-			where	ID = @targetFusionAttributeTypeID
-			union all
-			select	P.ID,
-					P.ParentID
-			from	FusionAttributeType P
-					inner join at C on C.ParentID = P.ID and P.ID <> C.ID
-			)
-insert into @tbl 
-	select * from at
-
-if @currentFusionAttributeTypeID = 0 and @fusionAttributeID = 0
-	begin
-		select		A.ID,
-                    A.ParentID,
-					A.FusionAttributeTypeID,
-					A.Name
-		from		FusionAttribute A
-					inner join @tbl t on t.ParentID is null and A.FusionAttributeTypeiD = t.ID and A.FusionID = @fusionID
-        where       A.ID not in (
-                                select  RI.FusionAttributeID
-                                from    FusionAttributeOwnerRuleItem RI
-                                        inner join FusionAttributeOwnerRule R on R.ID = RI.FusionAttributeOwnerRuleID and R.ID = @ruleID and R.FusionID = @fusionID and RI.FusionAttributeID is not null
-                                )
-		order by	A.Name
-	end
-else
-	begin
-		select		A.ID,
-                    A.ParentID,
-					A.FusionAttributeTypeID,
-					A.Name
-		from		FusionAttribute A
-					inner join @tbl t on t.ParentID = @currentFusionAttributeTypeID 
-								and A.FusionAttributeTypeiD = t.ID 
-								and A.ParentID = @fusionAttributeID
-								and A.FusionID = @fusionID
-        where       A.ID not in (
-                                select  RI.FusionAttributeID
-                                from    FusionAttributeOwnerRuleItem RI
-                                        inner join FusionAttributeOwnerRule R on R.ID = RI.FusionAttributeOwnerRuleID and R.ID = @ruleID and R.FusionID = @fusionID and RI.FusionAttributeID is not null
-                                )
-        order by	Name
-	end";
-
+       
         public static string FusionPromotionChildAttributeNodeList = @"
 declare @tbl table (ID int, ParentID int);
 
@@ -595,7 +536,11 @@ select	IT.ID as IntersectTypeID,
 		case 
 			when (IT.Subject = 'FusionAttributeType' and IT.SubjectID = fa.FusionAttributeTypeID) then IT.[ObjectCardinality] 
 			else IT.SubjectCardinality
-		end as Cardinality
+		end as Cardinality,
+        case
+            when IT.PredicateType in ({0}) then cast(0 as bit)
+            else cast(1 as bit)
+        end as AllowEditFromRelationshipEditor
 from	[dbo].[fusionattribute] fa	
 		inner join IntersectTypeDetail IT on ( 
 										(IT.Subject = 'FusionAttributeType' and IT.SubjectID = fa.fusionattributetypeid) OR 
@@ -643,7 +588,11 @@ select	IT.ID as IntersectTypeID,
 		case 
 			when (IT.Subject = 'FusionQueryAttributeType' and IT.SubjectID = fa.fusionqueryattributetypeid) then IT.[ObjectCardinality] 
 			else IT.SubjectCardinality
-		end as Cardinality
+		end as Cardinality,
+        case
+            when IT.PredicateType in ({0}) then cast(0 as bit)
+            else cast(1 as bit)
+        end as AllowEditFromRelationshipEditor
 from	[dbo].[fusionQueryattribute] fa	
 		inner join IntersectTypeDetail IT on ( 
 										(IT.Subject = 'FusionQueryAttributeType' and IT.SubjectID = fa.fusionqueryattributetypeid) OR 
@@ -686,7 +635,11 @@ select	IT.ID as IntersectTypeID,
 		case 
 			when (IT.Subject = 'ReferenceItemType' and IT.SubjectID = 0) then IT.ObjectCardinality
 			else IT.SubjectCardinality
-		end as Cardinality
+		end as Cardinality,
+        case
+            when IT.PredicateType in ({0}) then cast(0 as bit)
+            else cast(1 as bit)
+        end as AllowEditFromRelationshipEditor
 from	IntersectTypeDetail IT 
 		left join [Predicate] P on P.ID = IT.PredicateID
 		cross apply (
@@ -729,7 +682,11 @@ select	IT.ID as IntersectTypeID,
 		case 
 			when (IT.Subject = T.Object and IT.SubjectID = T.ObjectID) then IT.[ObjectCardinality] 
 			else IT.SubjectCardinality
-		end as Cardinality
+		end as Cardinality,
+        case
+            when IT.PredicateType in ({0}) then cast(0 as bit)
+            else cast(1 as bit)
+        end as AllowEditFromRelationshipEditor
 from	Asset A
 		inner join AssetType T on T.ID = A.AssetTypeID	
 		inner join IntersectTypeDetail IT on ( 
@@ -765,6 +722,7 @@ where	(I.Subject = @obj and I.SubjectID = @objid and I.ObjectType = @objtype and
 
         public static string ObjectRelationships = @"
 select	ID,
+        [Uid],
         IntersectTypeID,
         case when (Subject = @type and SubjectID = @id) then Object else Subject end as Object,
 		case when (Subject = @type and SubjectID = @id) then ObjectID else SubjectID end as ObjectID,
@@ -790,7 +748,7 @@ from	AssetType T
 								else cast(0 as bit)
 							end as AllowAttributes
 					from	AttributeTypeRelation
-					where	ObjectType = 'PolicyType' and ObjectID = T.ObjectID
+					where	ObjectType = 'PolicyType' and ObjectID = T.ObjectID  
 					) R
 where T.[object]='PolicyType' and	T.ObjectID = @id";
 
@@ -803,9 +761,9 @@ from	AssetType T
 								else cast(0 as bit)
 							end as AllowAttributes
 					from	AttributeTypeRelation
-					where	ObjectType = 'RuleType' and ObjectID = T.ObjectID
+					where	ObjectType = 'RuleType' and ObjectID = T.ObjectID 
 					) R
-where	T.ObjectID = @id";
+where T.[object]='RuleType' and		T.ObjectID = @id";
 
         public static string PromotionHistoryList = @"
 select	ID,
@@ -1524,7 +1482,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
                 order by t.Name asc";
 
         public static string WorkflowVersionStepHistory = @"
-   select 
+  select 
 	IST.ID as ItemStepID, 
 	convert(varchar(max),IST.Fields) as Fields,
 	IST.StartedOn,
@@ -1599,8 +1557,17 @@ from
 	left join reporting.Global_resource RC on RC.ResourceID = IST.CompletedBy
 	inner join workflow.[Version] V on V.ID = VS.VersionID
 	inner join workflow.[Type] T on T.ID = V.TypeID
+	outer apply (
+		select case when vsw.Settings.value('/settings[1]/WaitForAllTransitions[1]','varchar(max)') = 'true' then
+			1
+		else
+			0
+		end as [value]
+		from workflow.versionstep vsw where vsw.id = ist.stepid
+	) waitForAll
 where 
 	VS.ID = @id
+	and (waitForAll.[value] = 0 or (waitForAll.[value] = 1 and ist.id = (select max(id) from workflow.itemstep where itemid = ist.itemid and stepid = ist.stepid)))
 order by IST.StartedOn desc, IST.CompletedOn desc
 ";
 
