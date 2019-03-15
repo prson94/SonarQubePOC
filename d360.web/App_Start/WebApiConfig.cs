@@ -66,7 +66,7 @@ namespace d360.web
 When modifying content on assets, please be aware that you will need to use the API Names on field definitions when updating or referencing content.";
 
                     if (group.Name == "v1") {
-                        desc += "  <br><br><b>The v1 Govern API is being deprecated and will shortly be removed.  Please use the v2 API where possible.</b>";
+                        desc += "<br><br><b>The v1 Govern API is being deprecated and will shortly be removed.  Please use the v2 API where possible.</b>";
                     }
 
                     v.Description(desc);
