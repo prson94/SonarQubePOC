@@ -2804,6 +2804,20 @@
             <param name="model">The list of raw metrics to save for processing.</param>
             <returns>The list of staging results.</returns>
         </member>
+        <member name="M:d360.web.Controllers.V2.ProfilesController.InsertDataProfile(System.Collections.Generic.List{d360.core.entities.AssetDataProfileViewModel})">
+            <summary>
+            Adds a set of data profiles based on the given asset Uid, and returns a list of results. If a profile for this asset Uid already exists, it will be overwritten
+            </summary>
+            <param name="model">A list of metric data profiles</param>
+            <returns>An HTTP status code with an appropriate status message.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.ProfilesController.DeleteDataProfile(System.Collections.Generic.List{d360.core.entities.AssetDataProfileDelete})">
+            <summary>
+            Deletes a set of data profiles based on the given asset Uids, and returns a list of results.
+            </summary>
+            <param name="model">A list of metric data profiles</param>
+            <returns>An HTTP status code with an appropriate status message.</returns>
+        </member>
         <member name="T:d360.web.Controllers.V2.RelationshipsController">
             <summary>
             This service houses all endpoints handling glossary-related data such as artifacts and models.

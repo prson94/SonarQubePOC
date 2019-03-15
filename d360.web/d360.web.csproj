@@ -297,6 +297,7 @@
     <Compile Include="Controllers\V2\ErrorsController.cs" />
     <Compile Include="Controllers\V2\ExportTemplatesController.cs" />
     <Compile Include="Controllers\V2\MetricsController.cs" />
+    <Compile Include="Controllers\V2\ProfilesController.cs" />
     <Compile Include="Controllers\V2\RelationshipsController.cs" />
     <Compile Include="Controllers\V2\AssetsController.cs" />
     <Compile Include="Controllers\V2\ResponsibilitiesController.cs" />
@@ -1039,6 +1040,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Content\themes\base\images\" />
+    <Folder Include="Views\Profiles\" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="App_GlobalResources\FormInfo.resx">

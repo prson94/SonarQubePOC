@@ -89,7 +89,7 @@ namespace d360.model
 
         public DbSet<Artifact> Artifacts { get; set; }
 
-
+        public DbSet<AssetDataProfile> AssetDataProfiles { get; set; }
 
         public DbSet<AssetTypeExportTemplate> AssetTypeExportTemplates { get; set; }
 
