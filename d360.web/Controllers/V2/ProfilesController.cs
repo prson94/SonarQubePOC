@@ -1,5 +1,4 @@
-﻿using d360.extensions;
-using d360.model;
+﻿using d360.model;
 using Microsoft.Web.Http;
 using System;
 using System.Collections.Generic;
@@ -14,7 +13,6 @@ using System.Data;
 using System.Data.Entity;
 using Swashbuckle.Swagger.Annotations;
 using d360.web.Filters;
-using d360.core.entities.Metric;
 using d360.web.Models;
 using d360.core.entities;
 using Newtonsoft.Json;
