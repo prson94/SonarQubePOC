@@ -125,7 +125,13 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                 this.ref.markForCheck();
             });
 
-        this.typeAheadSub = this.fieldsService.getTypeaheadItems(this.typeAheadSource$)
+        this.typeAheadSub = (this.field.DelayedLoadType == 'Predicate') ?
+            this.fieldsService.getTypeaheadFilteredByPredicateItems(this.typeAheadSource$, this.selectedObject, this.selectedObjectID)
+                .subscribe(res => {
+                    this.field.Items = <any[]>res;
+                    this.ref.markForCheck();
+                })
+            : this.fieldsService.getTypeaheadItems(this.typeAheadSource$)
             .subscribe(res => {
                 //console.log('sub', res);
                 this.field.Items = <EditorDropDownItem[]>res;
@@ -138,8 +144,12 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                     this.field.Items = res.items;
                     this.filterException = res.exceptionMessage;
                     this.ref.markForCheck();
+                    if (res.useTypeahead) {
+                        //Switch to typeahead. We do not switch back
+                        this.field.UseTypeahead = true;
+                    }
                 }
-            )
+            );
         }
 
         if (this.field && this.field.Validations) {

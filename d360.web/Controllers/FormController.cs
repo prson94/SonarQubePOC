@@ -3185,11 +3185,16 @@ namespace d360.web.Controllers
         }
 
         [Route("FieldType_Lookup_FilteredByPredicate"), NonNullableParameters]
-        public JsonNetResult FieldType_Lookup_FilteredByPredicate(int fieldTypeId, string objectType, int ObjectID )
+        public JsonNetResult FieldType_Lookup_FilteredByPredicate(int fieldTypeId, string objectType, int ObjectID, string value = "", string query = "")
         {
-            var selectList = new List<SelectListInfoItem>();
             IntersectType it;
+            DynamicParameters queryParameters = new DynamicParameters();
+
+            var selectList = new List<SelectListInfoItem>();
             string exceptionMessage = "";
+            Boolean useTypeahead = false;
+
+            int typeaheadThreshold = 1 + int.Parse(Community.GetCompanySettings()["MaxDropdownItems"]);
 
             try
             {
@@ -3200,13 +3205,27 @@ namespace d360.web.Controllers
                 }
 
                 var ft = Company.GetById<FieldType>(fieldTypeId);
-                string selectedValue = string.IsNullOrWhiteSpace(ft.DefaultValue) ? "" : ft.DefaultValue;
 
-                if (!ft.IsRequired && !ft.AllowMultipleValues)
-                    selectList.Add(new SelectListInfoItem { Text = "Choose...", Value = "" });
+                queryParameters.Add("fieldTypeId", ft.ID);
+                queryParameters.Add("lookupObjectType", ft.LookupObjectType);
+                queryParameters.Add("lookupObjectId", ft.LookupObjectID);
 
-                if (ft.AllowAllValue)
-                    selectList.Add(new SelectListInfoItem { Text = ft.AllowAllLabel, Value = "0" });
+                string selectedValue = string.IsNullOrWhiteSpace(value) ? (string.IsNullOrWhiteSpace(ft.DefaultValue) ? "" : ft.DefaultValue) : value;
+                queryParameters.Add("selectedValue", selectedValue);
+
+                if (!string.IsNullOrWhiteSpace(query))
+                {
+                    //If the query is not empty, this is a typeahead query, so our threshold on results is 20
+                    typeaheadThreshold = 20;
+                } else
+                {
+                    //Don't include "choose.." and allow all in typeahead results
+                    if (!ft.IsRequired && !ft.AllowMultipleValues)
+                        selectList.Add(new SelectListInfoItem { Text = "Choose...", Value = "" });
+
+                    if (ft.AllowAllValue)
+                        selectList.Add(new SelectListInfoItem { Text = ft.AllowAllLabel, Value = "0" });
+                }
 
                 if (exceptionMessage == "")
                 {
@@ -3243,25 +3262,25 @@ namespace d360.web.Controllers
                         exceptionMessage = $@"Filtering for this list has been disabled as we cannot filter a list of types {listObjectType} by the action subject {actionSubject}.";
                         exceptionMessage += $@" The relationship {listObjectType} - {predicate} - {actionSubjectType} does not exist.";
                     }
+                    else
+                    {
+                        queryParameters.Add("IntersectTypeID", it.ID);
+                    }
                 }
-                else
-                {
-                    //Not really used at this point
-                    it = new IntersectType();
-                }
+
+                var selectedSql = $@"select TOP ({typeaheadThreshold}) V.Value, V.Text, '' as Info
+                    from FieldLookupValue V 
+                    where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId and V.Value = @selectedValue 
+                    union
+                    ";
+                var columns = $@"
+                    V.Value,
+                    V.Text";
+                var joinSql = "";
+                var whereSql = "where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId ";
 
                 if (exceptionMessage == "")
                 {
-                    var columns = $@"
-                V.Value,
-                V.Text";
-
-                    var selectedSql = $@"select {columns} , '' as Info
-                from FieldLookupValue V 
-                where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId and V.Value = @selectedValue 
-                union
-                ";
-
                     if (ft.FilterPredicateDirection == true)
                     {
                         columns += @", concat(I.PredicateInverse,' ', I.SubjectShortName) as Info";
@@ -3271,74 +3290,44 @@ namespace d360.web.Controllers
                         columns += @", concat(I.PredicateName,' ', I.ObjectShortName) as Info";
                     }
 
-                    var resourceJoin = $@"
-                inner join reporting.Global_resource R on R.ResourceID = V.Value and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com'
-                ";
+                    joinSql = $@" inner join [IntersectDetail] I on I.{ (ft.FilterPredicateDirection == true ? "ObjectID" : "SubjectID") } = V.Value ";
+                    whereSql += $@" and I.IntersectTypeID = @IntersectTypeID and I.{(ft.FilterPredicateDirection == true ? "SubjectID" : "ObjectID")} = @ObjecctID ";
 
-                    var itemsSql = $@"
-                {(string.IsNullOrWhiteSpace(selectedValue) ? "" : selectedSql)}
-                select {columns}
-                from FieldLookupValue V
-                {(HideData3SixtyUsers() && ft.LookupObjectType == "Resource" ? resourceJoin : "")}
-                inner join [IntersectDetail] I on I.{ (ft.FilterPredicateDirection == true ? "ObjectID" : "SubjectID") } = V.Value
-                where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId 
-                and I.IntersectTypeID = @IntersectTypeID and I.{(ft.FilterPredicateDirection == true ? "SubjectID" : "ObjectID")} = @ObjecctID
-                ";
-
-                    var items = Company.Query<SelectListInfoItem>(itemsSql, new
-                    {
-                        fieldTypeId = ft.ID,
-                        lookupObjectType = ft.LookupObjectType,
-                        lookupObjectId = ft.LookupObjectID,
-                        IntersectTypeID = it.ID,
-                        ObjecctID = ObjectID,
-                        selectedValue
-                    }).ToList();
-
-                    selectList.AddRange(items.Select(i => new SelectListInfoItem
-                    {
-                        Text = i.Text,
-                        Value = i.Value.ToString(),
-                        Selected = string.IsNullOrEmpty(selectedValue) ? false : i.Value.ToString() == selectedValue,
-                        Info = i.Info
-                    }));
+                    queryParameters.Add("ObjecctID", ObjectID);
                 }
                 else
                 {
-                    var selectedSql = $@"select V.Value, V.Text, '' as Info
-                from FieldLookupValue V 
-                where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId and V.Value = @selectedValue 
-                union
-                ";
+                    columns += @", '' as Info";
 
-                    var resourceJoin = $@"
-                inner join reporting.Global_resource R on R.ResourceID = V.Value and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com'
-                ";
-
-                    var itemsSql = $@"
-                {(string.IsNullOrWhiteSpace(selectedValue) ? "" : selectedSql)}
-                select V.Value, V.Text, '' as Info
-                from FieldLookupValue V
-                {(HideData3SixtyUsers() && ft.LookupObjectType == "Resource" ? resourceJoin : "")}
-                where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId 
-                ";
-
-                    var items = Company.Query<SelectListInfoItem>(itemsSql, new
-                    {
-                        fieldTypeId = ft.ID,
-                        lookupObjectType = ft.LookupObjectType,
-                        lookupObjectId = ft.LookupObjectID,
-                        selectedValue
-                    }).ToList();
-
-                    selectList.AddRange(items.Select(i => new SelectListInfoItem
-                    {
-                        Text = i.Text,
-                        Value = i.Value.ToString(),
-                        Selected = string.IsNullOrEmpty(selectedValue) ? false : i.Value.ToString() == selectedValue,
-                        Info = i.Info
-                    }));
                 }
+
+                if(!string.IsNullOrWhiteSpace(query))
+                {
+                    whereSql += " and V.Text like '%' + @query + '%' ";
+                    queryParameters.Add("query", query);
+                }
+
+                var itemsSql = $@"
+                    {(string.IsNullOrWhiteSpace(selectedValue) ? "" : selectedSql)}
+                    select {columns}
+                    from FieldLookupValue V
+                    {joinSql}
+                    {whereSql}
+                    ";
+
+                var items = Company.Query<SelectListInfoItem>(itemsSql, queryParameters).ToList();
+
+                if (items.Count() >= typeaheadThreshold)
+                    useTypeahead = true;
+
+                selectList.AddRange(items.Select(i => new SelectListInfoItem
+                {
+                    Text = i.Text,
+                    Value = i.Value.ToString(),
+                    Selected = string.IsNullOrEmpty(selectedValue) ? false : i.Value.ToString() == selectedValue,
+                    Info = i.Info
+                }));
+
             }
             catch
             {
@@ -3351,7 +3340,7 @@ namespace d360.web.Controllers
 
             return new JsonNetResult
             {
-                Data = new { items = selectList, exceptionMessage = exceptionMessage },
+                Data = new { items = selectList, exceptionMessage = exceptionMessage, useTypeahead = useTypeahead },
                 Formatting = Newtonsoft.Json.Formatting.None
             };
 
