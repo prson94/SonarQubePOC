@@ -60,12 +60,19 @@ namespace d360.web
             var versionInfoBuilder = new Action<VersionInfoBuilder>(info => {
                 foreach (var group in apiExplorer.ApiDescriptions.OrderByDescending(i=>i.Name) )
                 {
-                    info
-                    .Version(group.Name, $"Govern REST API v{group.ApiVersion}")
-                    .Description(@"
-Below you will find a list of various REST services to access information or to modify content within your Govern environment. 
-When modifying content on assets, please be aware that you will need to use the API Names on field definitions when updating or referencing content.");
+                    var v = info.Version(group.Name, $"Govern REST API v{group.ApiVersion}");
+
+                    var desc = @"Below you will find a list of various REST services to access information or to modify content within your Govern environment. 
+When modifying content on assets, please be aware that you will need to use the API Names on field definitions when updating or referencing content.";
+
+                    if (group.Name == "v1") {
+                        desc += "  <br><br><b>The v1 Govern API is being deprecated and will shortly be removed.  Please use the v2 API where possible.</b>";
+                    }
+
+                    v.Description(desc);
+
                 }
+                
             });
 
             #endregion
