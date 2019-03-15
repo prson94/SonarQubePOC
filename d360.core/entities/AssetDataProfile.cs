@@ -8,7 +8,7 @@ using System.Runtime.Serialization;
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE), Table("AssetDataProfile", Schema = "dbo")]
-    public class AssetDataProfile: BaseIntObject
+    public class AssetDataProfile: BaseCreatedIntObject
     {
         [DataMember]
         public long AssetId { get; set; }

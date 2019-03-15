@@ -43,7 +43,7 @@ namespace d360.web.Controllers.V2
         #endregion
 
         /// <summary>
-        /// Adds a set of data profiles based on the given asset Uid and effective date, and returns a list of results.
+        /// Adds a set of data profiles based on the given asset Uid, and returns a list of results. If a profile for this asset Uid already exists, it will be overwritten
         /// </summary>
         /// <param name="model">A list of metric data profiles</param>
         /// <returns>An HTTP status code with an appropriate status message.</returns>
@@ -109,6 +109,8 @@ namespace d360.web.Controllers.V2
                 table.Columns.Add("StandardDeviation", typeof(decimal));
                 table.Columns.Add("Top10Values", typeof(string));
                 table.Columns.Add("ProcessIdentifier", typeof(string));
+                table.Columns.Add("CreatedBy", typeof(int));
+                table.Columns.Add("CreatedOn", typeof(DateTime));
 
                 foreach (DataColumn col in table.Columns)
                 {
@@ -150,6 +152,9 @@ namespace d360.web.Controllers.V2
                     row["Median"] = (object)profile.Median ?? DBNull.Value;
                     row["StandardDeviation"] = (object)profile.StandardDeviation ?? DBNull.Value;
                     row["ProcessIdentifier"] = profile.ProcessIdentifier;
+                    row["CreatedBy"] = Company.CurrentResourceID;
+                    row["CreatedOn"] = DateTime.UtcNow;
+
 
                     if (profile.Top10Values == null)
                         profile.Top10Values = new List<string>();
@@ -209,7 +214,9 @@ namespace d360.web.Controllers.V2
                          Median decimal(22,4),
                          StandardDeviation decimal(28,4),
                          Top10Values nvarchar(max),
-                         ProcessIdentifier nvarchar(250)
+                         ProcessIdentifier nvarchar(250),
+                         CreatedBy int,
+                         CreatedOn datetime
                         )
                         ", transaction: trans);
 
@@ -237,6 +244,9 @@ namespace d360.web.Controllers.V2
                         bulkCopy.ColumnMappings.Add("StandardDeviation", "StandardDeviation");
                         bulkCopy.ColumnMappings.Add("Top10Values", "Top10Values");
                         bulkCopy.ColumnMappings.Add("ProcessIdentifier", "ProcessIdentifier");
+                        bulkCopy.ColumnMappings.Add("CreatedBy", "CreatedBy");
+                        bulkCopy.ColumnMappings.Add("CreatedOn", "CreatedOn");
+
 
                         await bulkCopy.WriteToServerAsync(table);
 
@@ -301,12 +311,14 @@ namespace d360.web.Controllers.V2
 		                            T.Median = S.Median,
 		                            T.StandardDeviation = S.StandardDeviation,
 		                            T.Top10Values = S.Top10Values,
-		                            T.ProcessIdentifier = S.ProcessIdentifier
+		                            T.ProcessIdentifier = S.ProcessIdentifier,
+                                    T.CreatedBy = S.CreatedBy,
+                                    T.CreatedOn = S.CreatedOn
                             when not matched then
                             insert (AssetId, [RowCount], Uniqueness, Completeness, NullCount, BlankCount, DataType, MinimumValue, MaximumValue, [Precision], Scale, Average, Median,
-                            StandardDeviation, Top10Values, ProcessIdentifier) values
+                            StandardDeviation, Top10Values, ProcessIdentifier, CreatedBy, CreatedOn) values
                             (S.AssetId, S.[RowCount], S.Uniqueness, S.Completeness, S.NullCount, S.BlankCount, S.DataType, S.MinimumValue, S.MaximumValue, S.[Precision], S.Scale,
-                            S.Average, S.Median, S.StandardDeviation, S.Top10Values, S.ProcessIdentifier);", transaction: trans);
+                            S.Average, S.Median, S.StandardDeviation, S.Top10Values, S.ProcessIdentifier, S.CreatedBy, S.CreatedOn);", transaction: trans);
 
                         trans.Commit();
 
@@ -342,7 +354,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Deletes a set of data profiles based on the given asset Uid and effective date range, and returns a list of results.
+        /// Deletes a set of data profiles based on the given asset Uids, and returns a list of results.
         /// </summary>
         /// <param name="model">A list of metric data profiles</param>
         /// <returns>An HTTP status code with an appropriate status message.</returns>
@@ -464,7 +476,8 @@ namespace d360.web.Controllers.V2
                         conn.Execute(@"update p
                             set p.AssetID = a.ID 
                             from #deleteAssetDataProfile p
-                            inner join Asset a on a.Uid = p.AssetUid", transaction: trans);
+                            inner join Asset a on a.Uid = p.AssetUid
+                            inner join AssetDataProfile ap on ap.AssetId = a.Id", transaction: trans);
 
 
                         var missingAssetId = (await conn.QueryAsync<dynamic>(@"select * from #deleteAssetDataProfile where assetId = 0", transaction: trans)).ToList();
@@ -477,7 +490,7 @@ namespace d360.web.Controllers.V2
                             new AssetDataProfileDeleteResult()
                             {
                                 AssetUid = a.AssetUid,
-                                Message = "Asset with this uid not found",
+                                Message = "Asset Profile with this uid not found",
                                 Success = false
                             }));
                         }
@@ -495,7 +508,7 @@ namespace d360.web.Controllers.V2
 
 
                         //perform the delete
-                        conn.Execute(@"delete from AssetDataProfile P where P.AssetId in (select AssetId from #deleteAssetDataProfile where AssetId <> 0)", transaction: trans);
+                        conn.Execute(@"delete from AssetDataProfile where AssetId in (select d.AssetId from #deleteAssetDataProfile d where d.AssetId <> 0)", transaction: trans);
 
                         trans.Commit();
 
