@@ -1,26 +1,24 @@
-﻿import { Input, Output, Component, EventEmitter, OnInit, OnChanges, SimpleChange } from '@angular/core';
-import { SelectItem, CheckboxModule } from 'primeng/primeng';
+﻿import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChange} from '@angular/core';
+import {SelectItem} from 'primeng/primeng';
 import {
-    FieldType, 
-    FieldTypeEditorModel,
-    FilteredLookupItem,
-    FilteredLookupDisplayField,
-    Lookups,    
-    FieldTypeFusionItemEditorModel,
-    OwnershipLookupSettings,
-    FieldTypeFusionLookupDisplayField,
-    FieldTypeRelationItemEditorModel,
     ComplexLookupRelationType,
-    FieldTypeItemDisplayFieldEditorModel, } from '../../../models/fields.model';
-import { FieldsService } from '../../../services/fields.service';
-import { MessagesService } from '../../../services/messages.service';
-import { ObjectDetailService } from '../../../services/object-detail.service';
-import { BaseComponent } from '../../shared/base.component';
+    FieldType,
+    FieldTypeEditorModel,
+    FieldTypeFusionItemEditorModel,
+    FieldTypeFusionLookupDisplayField,
+    FieldTypeItemDisplayFieldEditorModel,
+    FieldTypeRelationItemEditorModel,
+    FilteredLookupItem,
+    Lookups,
+    OwnershipLookupSettings,
+} from '../../../models/fields.model';
+import {FieldsService} from '../../../services/fields.service';
+import {MessagesService} from '../../../services/messages.service';
+import {ObjectDetailService} from '../../../services/object-detail.service';
+import {BaseComponent} from '../../shared/base.component';
 
 import * as _ from 'lodash';
-import { createWriteStream } from 'fs';
-import { FormHelper } from '../../../models/form.model';
-import { FormHelpers } from '../../../static/form-helpers';
+import {FormHelpers} from '../../../static/form-helpers';
 
 @Component({
     selector: 'd3s-field-type-form',
@@ -144,69 +142,81 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.actionName = 'Edit';
             this.isLoading = true;                        
             this.fieldsService.getFieldTypeEditor(this.id)
-                .then(data => {
-                    this.model = data;
-                    this.model.cardinalRelationship = null;
-                    this.model.selectedLookup = null;
-                    switch (this.model.FieldType.Type) {
-                        case "Lookup":
-                            if (this.model.FieldType.LookupObjectType != null && this.model.FieldType.LookupObjectID != null)
-                                this.model.selectedLookup = this.model.FieldType.LookupObjectType + '|' + this.model.FieldType.LookupObjectID;
-                            break;
-                        case "Relationship":
-                            if (this.model.FieldType.LookupObjectType != null && this.model.FieldType.LookupObjectID != null)
-                                this.model.cardinalRelationship = this.model.FieldType.LookupObjectID;
-                            break;
-                        case "FieldFromRelationship":
-                            if (this.model.FieldType.LookupObjectType != null && this.model.FieldType.LookupObjectID != null)
-                                this.model.cardinalRelationship = this.model.FieldType.LookupObjectID;
-                            break;
-                        case "RefListRelationship":
-                            if (this.model.FieldType.LookupObjectType != null && this.model.FieldType.LookupObjectID != null)
-                                this.model.cardinalRelationship = this.model.FieldType.LookupObjectID;
-                            break;
-                    }
-                })
-                .then(() => this.fieldsService.getLookups(this.model.FieldType.ObjectID, this.model.FieldType.Object))
-                .then(d => {                    
-                    this.lookups = d;
-                    this.lookups.IntersectTypes.forEach(i => {
-                        i.id = i.value.split('|')[0];
-                    });
-
-                    this.lookups.ReferenceTypes = this.fieldsService.getReferenceTypes();
-                })
-                .then(() => { if (this.id > 0) return this.fieldsService.getFormData(this.id) })
-                .then(f => {
-                    if (f) {                        
-                        this.model.OwnershipLookupSettings = f.OwnershipLookupSettings;
-                        this.model.RelationItems = f.RelationItems;
-                        this.model.FusionItems = f.FusionItems;
-                        if (this.model.FusionItems != null)
-                            this.model.FusionItems.forEach(i => {
-                                if (i.SourceFusionAttributeType.toString().indexOf('|') == -1)
-                                    i.SourceFusionAttributeType = 'FusionAttributeType|' + i.SourceFusionAttributeType.toString();
-
-                                for (let j = 0; j < i.DisplayFields.length; j++) {
-                                    let d = i.DisplayFields[j] as FieldTypeFusionLookupDisplayField;
-                                    i.DisplayFields[j] = d.value;
-                                }
-                                
-                            });
-
-                        this.model.FilteredLookupItems = f.FilteredLookupItems;
-
-                        if (this.model.RelationItems && this.model.FieldType.Type == 'ComplexRelationLookup') {
-                            this.loadComplexRelationLookup();
+                .then(
+                    data => {
+                        this.model = data;
+                        this.model.cardinalRelationship = null;
+                        this.model.selectedLookup = null;
+                        switch (this.model.FieldType.Type) {
+                            case "Lookup":
+                                if (this.model.FieldType.LookupObjectType != null && this.model.FieldType.LookupObjectID != null)
+                                    this.model.selectedLookup = this.model.FieldType.LookupObjectType + '|' + this.model.FieldType.LookupObjectID;
+                                break;
+                            case "Relationship":
+                                if (this.model.FieldType.LookupObjectType != null && this.model.FieldType.LookupObjectID != null)
+                                    this.model.cardinalRelationship = this.model.FieldType.LookupObjectID;
+                                break;
+                            case "FieldFromRelationship":
+                                if (this.model.FieldType.LookupObjectType != null && this.model.FieldType.LookupObjectID != null)
+                                    this.model.cardinalRelationship = this.model.FieldType.LookupObjectID;
+                                break;
+                            case "RefListRelationship":
+                                if (this.model.FieldType.LookupObjectType != null && this.model.FieldType.LookupObjectID != null)
+                                    this.model.cardinalRelationship = this.model.FieldType.LookupObjectID;
+                                break;
                         }
                     }
-                })
-                .then(() => {
-                    return this.loadDataType(this.model.FieldType.Type);
-                })
-                .then(() => {           
-                    this.isLoading = false;
-                });
+                )
+                .then(
+                    () => this.fieldsService.getLookups(this.model.FieldType.ObjectID, this.model.FieldType.Object)
+                )
+                .then(
+                    d => {
+                        this.lookups = d;
+                        this.lookups.IntersectTypes.forEach(i => {
+                            i.id = i.value.split('|')[0];
+                        });
+
+                        this.lookups.ReferenceTypes = this.fieldsService.getReferenceTypes();
+                    }
+                )
+                .then(
+                    () => { if (this.id > 0) return this.fieldsService.getFormData(this.id) }
+                )
+                .then(
+                    f => {
+                        if (f) {
+                            this.model.OwnershipLookupSettings = f.OwnershipLookupSettings;
+                            this.model.RelationItems = f.RelationItems;
+                            this.model.FusionItems = f.FusionItems;
+                            if (this.model.FusionItems != null)
+                                this.model.FusionItems.forEach(i => {
+                                    if (i.SourceFusionAttributeType.toString().indexOf('|') == -1)
+                                        i.SourceFusionAttributeType = 'FusionAttributeType|' + i.SourceFusionAttributeType.toString();
+
+                                    for (let j = 0; j < i.DisplayFields.length; j++) {
+                                        let d = i.DisplayFields[j] as FieldTypeFusionLookupDisplayField;
+                                        i.DisplayFields[j] = d.value;
+                                    }
+
+                                });
+
+                            this.model.FilteredLookupItems = f.FilteredLookupItems;
+
+                            if (this.model.RelationItems && this.model.FieldType.Type == 'ComplexRelationLookup') {
+                                this.loadComplexRelationLookup();
+                            }
+                        }
+                    }
+                )
+                .then(
+                    () =>  this.loadDataType(this.model.FieldType.Type)
+                )
+                .then(
+                    () => {
+                        this.isLoading = false;
+                    }
+                );
         } else {
             this.actionName = 'Add';
             this.isLoading = true;

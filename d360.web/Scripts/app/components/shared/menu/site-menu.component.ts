@@ -70,7 +70,8 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
     loadFavorites() {     
         if (CompanySettings.ShowFavorites == 'false') return;
-        this.favoritesService.getFavorites().then(favorites => {            
+        this.favoritesService.getFavorites().subscribe(
+            favorites => {
             favorites = _.sortBy(favorites, 'SortOrder'); // sort the favorites
             this.favorites = new SiteMenu();
             this.favorites.NavigationItems = [];
@@ -84,7 +85,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                 });
             }
             this.ref.markForCheck();
-        });        
+        });
     }
 
     loadMenu() {
@@ -149,8 +150,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     private clearFavorites() {
-        this.favoritesService.deleteCurrentUsersFavorites().
-            then(result => {
+        this.favoritesService.deleteCurrentUsersFavorites().then(result => {
                 this.showMessageForResult(this.messagesService, result);
                 this.loadFavorites(); // reload favorites because the user could still have global favorites.
             })
