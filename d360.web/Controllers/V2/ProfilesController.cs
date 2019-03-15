@@ -229,6 +229,7 @@ namespace d360.web.Controllers.V2
                         bulkCopy.ColumnMappings.Add("BlankCount", "BlankCount");
                         bulkCopy.ColumnMappings.Add("DataType", "DataType");
                         bulkCopy.ColumnMappings.Add("MinimumValue", "MinimumValue");
+                        bulkCopy.ColumnMappings.Add("MaximumValue", "MaximumValue");
                         bulkCopy.ColumnMappings.Add("Precision", "Precision");
                         bulkCopy.ColumnMappings.Add("Scale", "Scale");
                         bulkCopy.ColumnMappings.Add("Average", "Average");
