@@ -35,14 +35,6 @@ export class FusionConfiguration {
     Enabled: boolean;
 }
 
-export class FusionFilter {
-    FusionID: number;
-    FusionAttributeTypeID: number;
-    Filter: string;
-    Name: string; 
-
-}
-
 export class FusionQueryAttributeType {
     ID: number;
     FusionID: number;

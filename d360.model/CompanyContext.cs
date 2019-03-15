@@ -155,9 +155,7 @@ namespace d360.model
         public DbSet<FusionAttributeType> FusionAttributeTypes { get; set; }
 
         public DbSet<FusionAttributeTypeCustomQuery> FusionAttributeTypeCustomQueries { get; set; }
-
-        public DbSet<FusionFilter> FusionFilters { get; set; }
-
+                
         public DbSet<FusionQueryAttribute> FusionQueryAttributes { get; set; }
 
         public DbSet<FusionQueryAttributeType> FusionQueryAttributeTypes { get; set; }
@@ -436,28 +434,64 @@ select	'ResourceType' as ObjectType, 1 as ObjectTypeID, 'User' as Name ").ToList
             return list;
         }
 
-        public Task<IEnumerable<IntersectTypeApiViewModel>> GetActiveIntersectTypes()
+        public async Task<List<IntersectTypeApiViewModel>> GetIntersectTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "")
         {
-            return QueryAsync<IntersectTypeApiViewModel>(@"
-select	I.ID,
+            var dbArgs = new DynamicParameters();
+
+            if (queryParams != null)
+            {
+                if (queryParams.ToList().Any(q => q.Key.ToLower() == "predicateuid"))
+                {
+                    Guid predicateUid;
+                    var predicateUidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "predicateuid").Value;
+                    if (Guid.TryParse(predicateUidString, out predicateUid))
+                    {
+                        dbArgs.Add("@predicateUid", predicateUid);
+                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" P.[UID] = @predicateUid";
+                    }
+                }
+                if (queryParams.ToList().Any(q => q.Key.ToLower() == "assettypeuid"))
+                {
+                    Guid assetTypeUid;
+                    var assetTypeUidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "assettypeuid").Value;
+                    if (Guid.TryParse(assetTypeUidString, out assetTypeUid))
+                    {
+                        dbArgs.Add("@assettypeuid", assetTypeUid);
+                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (I.SubjectUid = @assettypeuid OR I.ObjectUid = @assettypeuid)";
+                    }
+                }
+                if (queryParams.ToList().Any(q => q.Key.ToLower() == "state"))
+                {
+                    State state;
+                    var stateString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "state").Value;
+                    if (Enum.TryParse(stateString, out state))
+                    {
+                        dbArgs.Add("@state", state);
+                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" I.State = @state";
+                    }
+                }
+            }
+
+            var sql = $@"
+select	I.Id,
         I.Uid,
+		I.State as State,
         coalesce(I.IsSystem, 0) as IsSystem,
-		P.Name as PredicateName,
-		P.Inverse as PredicateInverse,
-		P.[Type] as PredicateTypeID,
-		I.Subject,
-		I.SubjectID,
-		I.SubjectUid as SubjectUid,
-		coalesce(S.Class, 0) as SubjectClassID,
+		P.UID as 'Predicate.Uid',
+		coalesce(P.[Type],0) as 'Predicate.Type',
+		coalesce(P.Name,'') as 'Predicate.Name',
+		coalesce(P.Inverse,'') as 'Predicate.Inverse',
+		coalesce(SI.Uid, S.Uid) as 'Subject.Uid',
 		case 
 			when I.Subject = 'IntersectType' then SI.SubjectName + ' ' + SI.PredicateName + ' ' + SI.ObjectName + ' relationship'
 			else coalesce(SFT.Name + ' / ','') + coalesce(SP.[Path], S.Name)
-		end as SubjectTypeName,
-		I.Object,
-		I.ObjectID,
-		I.ObjectUid,
-		coalesce(O.Class, 0) as ObjectClassID,
-		coalesce(OFT.Name + ' / ','') + coalesce(OP.[Path], O.Name) as ObjectTypeName
+		end as 'Subject.Name',
+		coalesce(S.Class, 0) as 'Subject.Class',
+		I.SubjectCardinality as 'Subject.Cardinality',
+		O.Uid as 'Object.Uid',
+		coalesce(OFT.Name + ' / ','') + coalesce(OP.[Path], O.Name)  as 'Object.Name',
+		coalesce(O.Class, 0) as 'Object.Class',
+		I.ObjectCardinality as 'Object.Cardinality'
 from	IntersectType I
 		left join [Predicate] P on P.ID = I.PredicateID
 
@@ -471,45 +505,16 @@ from	IntersectType I
         left join FusionAttributeType OFAT on I.Object = 'FusionAttributeType' and OFAT.ID = I.ObjectID 
         left join FusionType OFT on OFT.ID = OFAT.FusionTypeID 
         outer apply dbo.GetAssetTypeTextPathById(O.ID, '/') OP
-where	I.State = 1");
+{whereClause} for json path";
+
+            var models = await GetDatabaseJsonAsObjectAsync<List<IntersectTypeApiViewModel>>(sql, dbArgs);
+
+            return models;
         }
 
-        public Task<IEnumerable<IntersectTypeApiViewModel>> GetActiveIntersectTypes(int id, string type)
+        public Task<List<IntersectTypeApiViewModel>> GetActiveIntersectTypesByObjectType(int id, SystemObjects type)
         {
-            return QueryAsync<IntersectTypeApiViewModel>(@"
-select	I.ID,
-        I.Uid,
-        coalesce(I.IsSystem, 0) as IsSystem,
-		P.Name as PredicateName,
-		P.Inverse as PredicateInverse,
-		P.[Type] as PredicateTypeID,
-		I.Subject,
-		I.SubjectID,
-		I.SubjectUid as SubjectUid,
-		coalesce(S.Class, 0) as SubjectClassID,
-		case 
-			when I.Subject = 'IntersectType' then SI.SubjectName + ' ' + SI.PredicateName + ' ' + SI.ObjectName + ' relationship'
-			else coalesce(SFT.Name + ' / ','') + coalesce(SP.[Path], S.Name)
-		end as SubjectTypeName,
-		I.Object,
-		I.ObjectID,
-		I.ObjectUid,
-		coalesce(O.Class, 0) as ObjectClassID,
-		coalesce(OFT.Name + ' / ','') + coalesce(OP.[Path], O.Name) as ObjectTypeName
-from	IntersectType I
-		left join [Predicate] P on P.ID = I.PredicateID
-
-		left join AssetType S on (S.uid = I.SubjectUid OR (S.Object = I.Subject and S.ObjectID = I.SubjectID))
-        left join FusionAttributeType SFAT on I.Subject = 'FusionAttributeType' and SFAT.ID = I.SubjectID 
-        left join FusionType SFT on SFT.ID = SFAT.FusionTypeID 
-        outer apply dbo.GetAssetTypeTextPathById(S.ID, '/') SP
-
-		left join IntersectTypeDetail SI on I.Subject = 'IntersectType' and SI.ID = I.SubjectID
-		left join AssetType O on (O.uid = I.ObjectUid OR (O.Object = I.Object and O.ObjectID = I.ObjectID))
-        left join FusionAttributeType OFAT on I.Object = 'FusionAttributeType' and OFAT.ID = I.ObjectID 
-        left join FusionType OFT on OFT.ID = OFAT.FusionTypeID 
-        outer apply dbo.GetAssetTypeTextPathById(O.ID, '/') OP
-where	I.State = 1 and (I.SubjectID = @id and I.[Subject] = @type or I.ObjectID = @id and I.Object = @type)", new { id, type });
+            return GetIntersectTypes(null, $"where I.State = 1 and (I.SubjectID = {id} and I.[Subject] = '{type.ToString()}' or I.ObjectID = {id} and I.Object = '{type.ToString()}')");
         }
 
         public List<AllocationPossibility> GetAllocationOptions()
@@ -778,11 +783,11 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
                 case "RuleType":
                 case "TaxonomyType":
                     countSql = @"select count(*) from AssetWithType A with (nolock)
-                        cross apply GetAssetTextPathById(A.ID, '.') P 
+                        cross apply GetAssetTextPathById(A.ID, '/') P 
                         where A.[Type] = @obj and A.TypeID = @objID and (@query is null or P.TextPath like '%' + @query + '%')";
                     sql = @"select A.ObjectID as Value, P.TextPath as Text, case when I.ID is not null then 1 else 0 end as Selected 
                             from AssetWithType A with (nolock)
-                            cross apply GetAssetTextPathById(A.ID, '.') P 
+                            cross apply GetAssetTextPathById(A.ID, '/') P 
                             left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and 
 	                            ((I.[Subject] = A.[Object] and I.SubjectID = A.ObjectID and I.[Object] = @fieldObject and I.ObjectID = @fieldObjectID) or
 	                            (I.[Object] = A.[Object] and I.ObjectID = A.ObjectID and I.[Subject] = @fieldObject and I.SubjectID = @fieldObjectID))
@@ -839,7 +844,7 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
 
         public Dictionary<string, object> GetFusionAsDictionary(int id)
         {
-            var item = GetById<Fusion>(id, i => i.FusionFilters);
+            var item = GetById<Fusion>(id);
             var sType = SystemObjects.Fusion.ToString();
             var fields = Filter<FieldWithRelation>(i => i.ObjectType == sType && i.ObjectID == item.ID && i.IsListable).ToList();
 
@@ -857,11 +862,6 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
             foreach (var n in fields.Where(f => f.ObjectID == item.ID).OrderBy(f => f.SortOrder))
             {
                 model.Add(n.Name, n.FormattedValue);
-            }
-
-            if (item.FusionFilters.Count > 0)
-            {
-                model.Add("Filters", item.FusionFilters.Select(i => new { i.FusionAttributeTypeID, i.Filter }).ToDictionary(k => k.FusionAttributeTypeID, v => v.Filter));
             }
 
             bool hasDashboards = Filter<Report>(x => x.ObjectType == "FusionType" && x.ObjectID == item.FusionTypeID && x.ReportType == "powerbi").Any();
@@ -1994,6 +1994,14 @@ where	R.SourceObject = 'FusionAttribute'
             }
         }
 
+        public async Task<T> GetDatabaseJsonAsObjectAsync<T>(string query, DynamicParameters dbArgs)
+        {
+            var jsonStrings = await QueryAsync<string>(query, dbArgs);
+            var json = string.Join("", jsonStrings);
+
+            return JsonConvert.DeserializeObject<T>(json);
+        }
+
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             modelBuilder.Entity<FieldTypeFilteredLookupDisplayField>().HasRequired(t => t.FieldTypeFilteredLookupDefinition).WithMany(t => t.FieldTypeFilteredLookupDisplayFields).HasForeignKey(k => k.FieldTypeFilteredLookupDefinitionID).WillCascadeOnDelete(true);
@@ -2120,6 +2128,15 @@ where	R.SourceObject = 'FusionAttribute'
                     o.CreatedOn = DateTime.UtcNow;
                 }
                 #endregion
+
+                #region Business logic : IUIDMetadata
+                if (entry.Entity is IUIDMetadata)
+                {
+                    var o = entry.Entity as IUIDMetadata;
+                    o.UID = Guid.NewGuid();
+                }
+                #endregion
+
             }
 
             foreach (var entry in ObjectContext.ObjectStateManager.GetObjectStateEntries(EntityState.Added | EntityState.Modified | EntityState.Deleted))

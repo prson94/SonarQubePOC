@@ -68,6 +68,9 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// GET a list of relationship types.
         /// </summary>
+        /// <param name="AssetTypeUid">Allows for filtering by an asset type's unique identifier, looking at the subject or object type.</param>
+        /// <param name="PredicateUid">Allows for filtering of relationship types by predicate unique identifier.</param>
+        /// <param name="State">Allows for filtering by the relationship type's state.</param>
         /// <returns></returns>
         [
             HttpGet,
@@ -77,14 +80,29 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "A list of relationship types, including types names of both the subject and object.", typeof(List<IntersectTypeApiViewModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
        ]
-        public async Task<HttpResponseMessage> GetRelationshipTypesAsync()
+        public async Task<HttpResponseMessage> GetRelationshipTypesAsync(Guid? PredicateUid = null, Guid? AssetTypeUid = null, core.enums.State? State = null)
         {
             var prefix = "Relationships.GetRelationshipTypesAsync => ";
             var errorMessage = "";
 
             try
             {
-                var types = await Company.GetActiveIntersectTypes();
+                List<KeyValuePair<string, string>> queryParams = new List<KeyValuePair<string, string>>();
+
+                if (AssetTypeUid.HasValue)
+                {
+                    queryParams.Add(new KeyValuePair<string, string>("AssetTypeUid", AssetTypeUid.Value.ToString()));
+                }
+                if (PredicateUid.HasValue)
+                {
+                    queryParams.Add(new KeyValuePair<string, string>("PredicateUid", PredicateUid.Value.ToString()));
+                }
+                if (State.HasValue)
+                {
+                    queryParams.Add(new KeyValuePair<string, string>("State", State.ToString()));
+                }
+
+                var types = await Company.GetIntersectTypes(queryParams);
 
                 return Request.CreateResponse(HttpStatusCode.OK, types);
             }
@@ -116,9 +134,16 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                var types = await Company.GetActiveIntersectTypes(id, type);
-
-                return Request.CreateResponse(HttpStatusCode.OK, types);
+                SystemObjects systemType;
+                if (Enum.TryParse(type, out systemType))
+                {
+                    var types = await Company.GetActiveIntersectTypesByObjectType(id, systemType);
+                    return Request.CreateResponse(HttpStatusCode.OK, types);
+                }
+                else
+                {
+                    return ReturnApiError(HttpStatusCode.BadRequest, "The type parameter is invalid.");
+                }
             }
             catch (Exception ex)
             {

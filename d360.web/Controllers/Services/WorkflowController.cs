@@ -1210,8 +1210,25 @@ order by wi.StartedOn desc";
                 return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Cannot find the specified workflow instance.");
 
             // get the itemsteps for this workflow instance
+            var sql = @"
+                select 
+	                si.* 
+                from 
+	                workflow.itemstep si 
+	                outer apply (
+		                select case when vs.Settings.value('/settings[1]/WaitForAllTransitions[1]','varchar(max)') = 'true' then
+			                1
+		                else
+			                0
+		                end as [value]
+		                from workflow.versionstep vs where vs.id = si.stepid
+	                ) waitForAll
+                where 
+	                si.itemid = @itemId
+	                and (waitForAll.[value] = 0 or (waitForAll.[value] = 1 and si.id = (select max(id) from workflow.itemstep where itemid = si.itemid and stepid = si.stepid)))
+                order by si.id";
 
-            var itemSteps = Company.WorkflowItemSteps.Where(x => x.ItemID == itemId);
+            var itemSteps = Company.Query<WorkflowItemStep>(sql, new { itemId });
 
             var stepIDs = itemSteps.Select(y => y.StepID).ToArray();
             var steps = Company.WorkflowVersionSteps.Where(x => stepIDs.Contains(x.ID)).ToList();
@@ -1288,6 +1305,8 @@ order by wi.StartedOn desc";
             var types = Company.Query<dynamic>(QueryConstants.WorkflowObjectTypes).ToList();
             if (changeType == ChangeType.Loaded)
                 types = types.Where(t => t.type == "Fusion").OrderBy(t => t.name).ToList();
+            else if (changeType == ChangeType.Schedule)
+                types = types.Where(t => t.type == "ArtifactType" || t.type == "TaxonomyType").OrderBy(t => t.name).ToList();
             else
                 types = types.Where(t => t.type != "Fusion").OrderBy(t => t.name).ToList();
 
@@ -2627,8 +2646,8 @@ order by wi.StartedOn desc";
                     fieldChange.AppendValue = field["@AppendValue"] != null ? field["@AppendValue"] : "";
                     fieldChange.ClearValue = field["@ClearValue"] != null ? field["@ClearValue"] : "";
                     FieldType fieldType = Company.GetById<FieldType>(fieldTypeId);
-                    fieldChange.FieldName = fieldType.FriendlyName;
-                    fieldChange.Type = fieldType.Type;
+                    fieldChange.FieldName = fieldType?.FriendlyName;
+                    fieldChange.Type = fieldType?.Type;
                     string formFieldId = field["@FormFieldId"] != null ? field["@FormFieldId"] : null;
                     int stepId = field["@FormStepId"] != null ? field["@FormStepId"] : 0;
                     if (fieldChange.FormValue && formFieldId != null && stepId != 0)

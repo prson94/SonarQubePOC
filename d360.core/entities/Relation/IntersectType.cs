@@ -7,6 +7,8 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using d360.core.enums;
 using d360.core.queue;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace d360.core.entities
 {
@@ -81,88 +83,52 @@ namespace d360.core.entities
         }
     }
 
-    [DataContract(Namespace = NAMESPACE)]
-    public class IntersectTypeApiViewModel : BaseObject
+    public class IntersectTypeApiPredicateViewModel
+    {
+        public Guid Uid { get; set; }
+
+        [JsonConverter(typeof(StringEnumConverter))]
+        public PredicateType Type { get; set; }
+
+        public string Name { get; set; }
+
+        public string Inverse { get; set; }
+    }
+
+    public class IntersectTypeApiEdgeViewModel
+    {
+        public Guid Uid { get; set; }
+
+        public string Name { get; set; }
+
+        [JsonConverter(typeof(StringEnumConverter))]
+        public AssetTypeClass Class { get; set; }
+
+        [JsonConverter(typeof(StringEnumConverter))]
+        public Cardinality Cardinality { get; set; }
+    }
+
+    public class IntersectTypeApiViewModel: BaseObject
     {
         [DataMember]
-        public int ID { get; set; }
+        public int Id { get; set; }
+
+        [DataMember]
+        public Guid Uid { get; set; }
+
+        [DataMember, JsonConverter(typeof(StringEnumConverter))]
+        public State State { get; set; }
 
         [DataMember]
         public bool IsSystem { get; set; }
 
         [DataMember]
-        public Guid Uid { get; set; }
+        public IntersectTypeApiPredicateViewModel Predicate { get; set; }
 
         [DataMember]
-        public string PredicateName { get; set; }
+        public IntersectTypeApiEdgeViewModel Subject { get; set; }
 
         [DataMember]
-        public string PredicateInverse { get; set; }
-
-        PredicateType _PredicateTypeID;
-        public PredicateType PredicateTypeID
-        {
-            get { return _PredicateTypeID; }
-            set
-            {
-                _PredicateTypeID = value;
-                this.PredicateType = _PredicateTypeID.AsInfoModel();
-            }
-        }
-
-        [DataMember]
-        public PredicateTypeInfo PredicateType { get; set; }
-
-        [DataMember]
-        public Guid SubjectUid { get; set; }
-
-        [DataMember]
-        public string Subject { get; set; }
-
-        [DataMember]
-        public int SubjectID { get; set; }
-
-        AssetTypeClass _SubjectClassID;
-        public AssetTypeClass SubjectClassID
-        {
-            get { return _SubjectClassID; }
-            set
-            {
-                _SubjectClassID = value;
-                this.SubjectClass = _SubjectClassID.GetInfo();
-            }
-        }
-
-        [DataMember]
-        public AssetTypeClassInfo SubjectClass { get; set; }
-
-        [DataMember]
-        public string SubjectTypeName { get; set; }
-
-        [DataMember]
-        public Guid ObjectUid { get; set; }
-
-        [DataMember]
-        public string Object { get; set; }
-
-        [DataMember]
-        public int ObjectID { get; set; }
-
-        AssetTypeClass _ObjectClassID;
-        public AssetTypeClass ObjectClassID
-        {
-            get { return _ObjectClassID; }
-            set
-            {
-                _ObjectClassID = value;
-                this.ObjectClass = _ObjectClassID.GetInfo();
-            }
-        }
-
-        [DataMember]
-        public AssetTypeClassInfo ObjectClass { get; set; }
-
-        [DataMember]
-        public string ObjectTypeName { get; set; }
+        public IntersectTypeApiEdgeViewModel Object { get; set; }
     }
 }

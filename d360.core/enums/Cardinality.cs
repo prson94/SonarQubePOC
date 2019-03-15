@@ -1,7 +1,10 @@
-﻿using System;
+﻿using d360.core.entities;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 
 namespace d360.core.enums
 {
@@ -36,6 +39,17 @@ namespace d360.core.enums
             }
 
             return list;
+        }
+
+        public static CardinalityInfo AsInfoModel(this Cardinality type)
+        {
+            var t = type.GetType().GetMember(type.ToString()).First();
+            return
+                new CardinalityInfo
+                {
+                    Name = ((NameAttribute)t.GetCustomAttribute(typeof(NameAttribute))).Name,
+                    ID = type,
+                };
         }
     }
 }

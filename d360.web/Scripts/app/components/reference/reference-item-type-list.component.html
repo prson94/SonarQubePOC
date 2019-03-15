@@ -1,0 +1,83 @@
+<div class="tile tile-detail">
+    <header *ngIf="!showEditor">Reference Lists
+        <d3s-tile-actions (addClick)="selected=null;showEditor=true;"
+                          [hasAdd]="!showDelete && hasModifyAssetPermissions()"></d3s-tile-actions>
+    </header>
+    <span *ngIf="!showEditor && !showDelete">
+                        <input (input)="dt.filterGlobal($event.target.value, 'contains')"
+                               [hidden]="!showSimpleFilter"
+                               class="grid-simple-filter"
+                               pInputText
+                               placeholder="Search..."
+                               size="100"
+                               type="text">
+                        <p-table #dt
+                                 (selectionChange)="selected=$event;selectedChange.emit(selected);"
+                                 [globalFilterFields]="['Name']"
+                                 [metaKeySelection]="true"
+                                 [pageLinks]="3"
+                                 [paginator]="true"
+                                 [rowsPerPageOptions]="defaultPagingOptions"
+                                 [rows]="defaultInitialItemsPerPage"
+                                 [selection]="selected"
+                                 [sortOrder]="1"
+                                 [value]="referenceTypes"
+                                 selectionMode="single"
+                                 sortField="Name">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th [pSortableColumn]="'Name'">
+                                    Name
+                                    <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+                                </th>
+                                <th *ngIf="hasModifyAssetPermissions()"
+                                    style="width: 28px"></th>
+                                <th *ngIf="hasDeleteAssetPermissions()"
+                                    style="width: 28px"></th>
+                            </tr>
+                            <tr [hidden]="showSimpleFilter">
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                        </ng-template>
+                        <ng-template let-item
+                                     pTemplate="body">
+                            <tr [pSelectableRow]="item">
+                                <td>{{item.Name}}</td>
+                                <td *ngIf="hasModifyAssetPermissions()">
+                                    <div class="RowTools">
+                                        <a (click)="selected=item;showEditor=true;"
+                                           style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
+                                    </div>
+                                </td>
+                                <td *ngIf="hasDeleteAssetPermissions()">
+                                    <div class="RowTools">
+                                        <a (click)="selected=item;showDelete=true;"
+                                           style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="summary">
+                            <d3s-grid-paging-info [first]="dt.first"
+                                                  [rows]="dt.rows"
+                                                  [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                        </ng-template>
+                    </p-table>
+                    </span>
+    <d3s-asset-type-editor (onCancel)="showEditor = false;"
+                           (onComplete)="saveReferenceItemType($event)"
+                           *ngIf="showEditor"
+                           [assetTypeClass]="'RT'"
+                           [id]="selected?.AssetTypeID"
+                           [title]="selected != null ? 'Edit Reference List' : 'Add Reference List'">
+    </d3s-asset-type-editor>
+    <d3s-delete-form (onCancel)="showDelete=false;"
+                     *ngIf="showDelete"
+                     [callback]="theDeleteCallback"
+                     [itemId]="selected?.AssetTypeID"
+                     [method]="'callback'"
+                     [prompt]="'Are you sure you want to delete the selected item?'"
+    ></d3s-delete-form>
+</div>

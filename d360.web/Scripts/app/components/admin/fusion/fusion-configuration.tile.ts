@@ -1,6 +1,6 @@
 ﻿import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
 import { Router } from '@angular/router';
-import { FusionConfiguration, FusionType, FusionFilter } from '../../../models/fusion.model';
+import { FusionConfiguration, FusionType } from '../../../models/fusion.model';
 import { FusionService } from '../../../services/fusion.service';
 import { GridColumn } from '../../../models/grid-definition.model';
 import { BaseComponent } from '../../shared/base.component';
@@ -24,10 +24,6 @@ export class FusionConfigurationTile extends BaseComponent implements OnChanges 
 
     fusionConfigurations: any[];
     selectedRow: any;
-
-    fusionFilters: FusionFilter[];
-    selectedFusionFilter: FusionFilter;
-
 
     columns: GridColumn[];
 

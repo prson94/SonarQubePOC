@@ -1,17 +1,27 @@
-﻿import { Component, EventEmitter, Output, Input, HostBinding, ChangeDetectionStrategy, OnInit, ChangeDetectorRef } from '@angular/core';
-import { Router, NavigationEnd } from '@angular/router';
-import { ToolTipService } from '../../services/tooltip.service';
-import { TooltipInfo, TooltipFieldValue } from '../../models/tooltip-info.model';
-import { TooltipSingletonService } from '../../services/tooltip-singleton.service';
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    HostBinding,
+    Input,
+    Output
+} from '@angular/core';
+import {Router} from '@angular/router';
+import {ToolTipService} from '../../services/tooltip.service';
+import {TooltipInfo} from '../../models/tooltip-info.model';
+import {TooltipSingletonService} from '../../services/tooltip-singleton.service';
+import {Subject, Subscription} from "rxjs";
+import {debounceTime} from "rxjs/operators";
 
 @Component({
     selector: 'd3s-preview-tooltip',
-    templateUrl:'./preview-tooltip.component.html',
+    templateUrl: './preview-tooltip.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [ToolTipService] 
+    providers: [ToolTipService]
 })
 
-export class PreviewTooltipComponent  {        
+export class PreviewTooltipComponent {
     @Input() objectType: string;
     @Input() objectId: number;
     @Input() icon: string;
@@ -20,44 +30,59 @@ export class PreviewTooltipComponent  {
     @HostBinding('style.color') @Input() iconColor: string;
     @HostBinding('style.background') @Input() foreColor: string;
 
-    private hideHandle: number = 0;
-    private showHandle: number = 0;
     public active: boolean = false;
     public data: TooltipInfo = null;
-    private toolTipSub: any;
 
-    @Output() click = new EventEmitter();    
+    private subscriptions: Subscription = new Subscription();
 
-    constructor(private toolTipService: ToolTipService,
+    private pending: boolean = false;
+    public hideDebounce: Subject<any> = new Subject();
+    public mouseIn: boolean = false;
+
+    @Output() click = new EventEmitter();
+
+    constructor(
+        private toolTipService: ToolTipService,
         private router: Router,
         protected tooltipSingletonService: TooltipSingletonService,
-        private ref: ChangeDetectorRef) {
-        this.toolTipSub = this.tooltipSingletonService.tooltipMessage$.subscribe(
+        private ref: ChangeDetectorRef
+    ) {
+        this.tooltipSingletonService.tooltipMessage$.subscribe(
             info => {
                 if (info.objectId == this.objectId && info.objectType == this.objectType) return;
                 this.hide();
             });
+
+        this
+            .hideDebounce
+            .pipe((debounceTime(100)))
+            .subscribe(() => {
+                if (!this.mouseIn) {
+                    this.hide();
+                }
+            });
     }
 
     ngOnDestroy() {
-        this.toolTipSub.unsubscribe();
+        this.subscriptions.unsubscribe();
     }
 
     private load(item, tip) {
-        this.tooltipSingletonService.tooltipShow(this.objectType, this.objectId);
+        this.active = false;
+
         if (!this.data) {
             //get object properties for the tooltip
             this.toolTipService.getTooltipInfo(this.objectType, this.objectId).then(res => {
-                if (!res.ShowTooltip) {
+                if (!res.ShowTooltip || !this.pending) {
                     this.active = false;
                     return;
                 }
+
                 this.data = res;
                 this.showPanel(tip, item);
                 this.ref.markForCheck();
             });
-        }
-        else {
+        } else {
             this.showPanel(tip, item);
             this.ref.markForCheck();
         }
@@ -70,24 +95,21 @@ export class PreviewTooltipComponent  {
             return url;
     }
 
-    show(item, tip) {        
-        if (this.showHandle > 0) return; //pending show ignore new request
-        // check for any pending hides and cancel them
-        if (this.hideHandle > 0) {
-            window.clearTimeout(this.hideHandle);
-            this.hideHandle = 0;
+    show(item, tip) {
+        this.mouseIn = true;
+
+        if (this.pending || this.active) {
+            return;
         }
 
-        this.showHandle = window.setTimeout(() => {
-            this.load(item, tip);
-            this.showHandle = 0;
-        },
-            100);
+        this.pending = true;
+        this.tooltipSingletonService.tooltipShow(this.objectType, this.objectId);
+        this.load(item, tip);
     }
 
     repositionMenuToFit(windowHeight, windowWidth, element) {
         var dims = element.getBoundingClientRect();
-        
+
         if (dims) {
             var maxHeight = dims.top + dims.height;
             var maxWidth = dims.left + dims.width;
@@ -98,7 +120,7 @@ export class PreviewTooltipComponent  {
             }
 
             if (maxWidth > windowWidth) {
-                var leftOffset = windowWidth - dims.width - 30;                
+                var leftOffset = windowWidth - dims.width - 30;
                 element.style.left = leftOffset + 'px';
             }
         }
@@ -109,29 +131,17 @@ export class PreviewTooltipComponent  {
             this.active = true;
             panel.style.zIndex = 1000;
             panel.style.top = item.getBoundingClientRect().bottom + 'px';
-            panel.style.left = item.getBoundingClientRect().left + 'px';;
-            
+            panel.style.left = item.getBoundingClientRect().left + 'px';
+
             window.setTimeout(() => {
                 this.repositionMenuToFit(window.innerHeight, window.innerWidth, panel);
             }, 50);
         }
     }
 
-    hide() {        
-        if (this.hideHandle > 0) return; //pending hide ignore new request
-        //queue up a request to hide the window.
-        // check for any pending hides and cancel them
-        if (this.showHandle > 0) {
-            window.clearTimeout(this.showHandle);
-            this.showHandle = 0;
-        }
-
-        this.hideHandle = window.setTimeout(() => {
-            this.active = false;            
-            this.hideHandle = 0;
-            this.ref.markForCheck();
-        },
-            40);
+    hide() {
+        this.pending = false;
+        this.active = false;
+        this.ref.markForCheck();
     }
-
-};
+}

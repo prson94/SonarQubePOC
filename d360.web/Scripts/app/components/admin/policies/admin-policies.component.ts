@@ -170,14 +170,18 @@ export class AdminPoliciesComponent extends AdminBaseComponent implements OnInit
     }
         
     deletePolicyType(id: number) {
-        this.assetTypeService.deleteAssetType(id)
-            .then(result => {
+        this
+            .assetTypeService
+            .deleteAssetType(id)
+            .subscribe(result => {
                 this.showMessageForResult(this.messagesService, result);
-                this.showDelete = false;                
+                this.showDelete = false;
+
                 if (result.type != 'error') {                    
                     this.policyTypes = this.policyTypes.filter(x => x.AssetTypeID != id);                    
                     this.selected = this.policyTypes.length > 0 ? this.policyTypes[0] : null;
                 }
+
                 this.stateService.reloadLeftNavMenu();
             });
     }

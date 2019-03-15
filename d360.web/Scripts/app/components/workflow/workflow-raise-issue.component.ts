@@ -67,7 +67,7 @@ declare var CompanySettings;
                                     </div>                       
                                     <p *ngIf="issueType" style="padding-left:40px" [innerHtml]="issueType.Description"></p>                   
                                 </div>                                                          
-                                <d3s-dynamic-editor *ngIf="issueType" [hasHeader]="false" [objectID]="issueType?.ID" objectType="Issue" (saveClick)="save($event)" (closeClick)="cancel()"></d3s-dynamic-editor>                                       
+                                <d3s-dynamic-editor *ngIf="issueType" [hasHeader]="false" [objectID]="issueType?.ID" objectType="Issue" [selectedObject]="selectedObjectType" [selectedObjectID]="selectedObjectId" (saveClick)="save($event)" (closeClick)="cancel()"></d3s-dynamic-editor>                                       
                             </div>                        
                     </div>
                 </div>

@@ -495,18 +495,26 @@ order by	ColumnIndex", new { id });
                 }
                 else
                 {
-                    intersectId = existingIntersect.ID;
+                    try
+                    {
+                        intersectId = existingIntersect.ID;
 
-                    BulkLoadStatusMsg = "Relationship successfully removed.";
+                        DeleteRelationship(intersectId);
 
-                    Intersects.Remove(existingIntersect);
+                        BulkLoadStatusMsg = "Relationship successfully removed.";
+                    }
+                    catch(core.exceptions.ConflictException ex)
+                    {
+                        intersectId = 0;
 
-                    SaveChanges();
+                        BulkLoadStatusMsg = $"Relationship could not be removed.  {ex.StatusDescription}";
+                    }
+                    catch(Exception ex)
+                    {
+                        intersectId = 0;
 
-                    //delete any fields to the relationship here
-                    var deleteFieldsSql = @"delete from field where objecttype = 'Intersect' and objectid = @intersectId";
-
-                    await QueryAsync<int>(deleteFieldsSql, new { intersectId = intersectId });
+                        BulkLoadStatusMsg = $"Relationship could not be removed.  {ex.Message}";
+                    }
                 }
             }
             else
