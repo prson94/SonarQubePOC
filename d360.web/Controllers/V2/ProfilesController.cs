@@ -19,6 +19,7 @@ using d360.web.Models;
 using d360.core.entities;
 using Newtonsoft.Json;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
+using d360.core;
 
 namespace d360.web.Controllers.V2
 {
@@ -53,9 +54,13 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "A list of data profile results, including any error messages.", typeof(List<AssetDataProfileResult>)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You do not have permissions to add data profiles.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error indicating the request is malformed or contains no data profiles.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
         ]
         public async Task<IHttpActionResult> InsertDataProfile(List<AssetDataProfileViewModel> model)
         {
+
+            var prefix = "Profiles.InsertDataProfile => ";
+
             if (!Company.CurrentResourceIsAdmin)
             {
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Error adding data profile", "You are not allowed to add data profiles."));
@@ -66,11 +71,22 @@ namespace d360.web.Controllers.V2
             }
 
             var results = new List<AssetDataProfileResult>();
+            var execution = new ApiExecution
+            {
+                ExecutionID = Guid.NewGuid(),
+                Error = 0,
+                Processed = 0,
+                Total = model.Count,
+                StartedOn = DateTime.UtcNow,
+                ResourceID = Company.CurrentResourceID,
+                Fields = ""
+            };
+            Company.Add(execution);
+
+            #region Build DataTable
 
             //load the data into a table
             var table = new DataTable();
-
-
 
             try
             {
@@ -101,6 +117,19 @@ namespace d360.web.Controllers.V2
 
                 foreach (var profile in model)
                 {
+
+                    if (string.IsNullOrEmpty(profile.DataType))
+                    {
+                        results.Add(new AssetDataProfileResult()
+                        {
+                            AssetUid = profile.AssetUid,
+                            Success = false,
+                            Message = "A profile for this asset and effective date already exists."
+                        });
+                        continue;
+                    }
+
+
                     var row = table.NewRow();
 
                     row["Id"] = 0;
@@ -133,9 +162,22 @@ namespace d360.web.Controllers.V2
             }
             catch (Exception ex)
             {
-                throw ex;
+                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                execution.CompletedOn = DateTime.UtcNow;
+                Company.Update(execution);
+
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix },
+                    { "AssetDataProfileCount", $"{((model != null) ? model.Count : 0)}" }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Error adding data profile", "An unknown error occurred while processing this request."));
+
             }
-         
+
+            #endregion
+
+            #region Merge Profiles
 
             using (SqlConnection conn = new SqlConnection(Company.CompanyConnectionString))
             {
@@ -199,22 +241,23 @@ namespace d360.web.Controllers.V2
 
                         //get asset ids based on uid
                         conn.Execute(@"update p
-                        set p.AssetID = a.ID 
-from #postAssetDataProfile p
-inner join Asset a on a.Uid = p.AssetUid", transaction: trans);
+                            set p.AssetID = a.ID 
+                            from #postAssetDataProfile p
+                            inner join Asset a on a.Uid = p.AssetUid", transaction: trans);
 
                         //get profile id based on assetid
                         conn.Execute(@"update p
-                        set p.ID = e.ID 
-from #postAssetDataProfile p
-inner join AssetDataProfile e on e.AssetId = p.AssetId", transaction: trans);
+                            set p.ID = e.ID 
+                            from #postAssetDataProfile p
+                            inner join AssetDataProfile e on e.AssetId = p.AssetId", transaction: trans);
 
-                        var invalidAssetId = (await conn.QueryAsync<dynamic>(@"select * from #postAssetDataProfile where assetId = 0", transaction: trans)).ToList();
+                        var missingAssetId = (await conn.QueryAsync<dynamic>(@"select * from #postAssetDataProfile where assetId = 0", transaction: trans)).ToList();
                         var validAssetId = (await conn.QueryAsync<dynamic>(@"select * from #postAssetDataProfile where assetId <> 0", transaction: trans)).ToList();
+
                         //add errors for records with invalid asset uids
-                        if (invalidAssetId.Any())
+                        if (missingAssetId.Any())
                         {
-                            results.AddRange(invalidAssetId.Select(a =>
+                            results.AddRange(missingAssetId.Select(a =>
                             new AssetDataProfileResult()
                             {
                                 AssetUid = a.AssetUid,
@@ -222,6 +265,7 @@ inner join AssetDataProfile e on e.AssetId = p.AssetId", transaction: trans);
                                 Success = false
                             }));
                         }
+
                         if (validAssetId.Any())
                         {
                             results.AddRange(validAssetId.Select(a =>
@@ -234,47 +278,63 @@ inner join AssetDataProfile e on e.AssetId = p.AssetId", transaction: trans);
                         }
 
                         conn.Execute(@"merge	AssetDataProfile as T
-using	(
-			select	*
-			from	#postAssetDataProfile
-			where AssetId <> 0
-		) S
-on		(T.AssetId = S.AssetId)
-when matched then
-	update set
-		T.[RowCount] = S.[RowCount],
-		T.Uniqueness = S.Uniqueness,
-		T.Completeness = S.Completeness,
-		T.NullCount = S.NullCount,
-		T.BlankCount = S.BlankCount,
-		T.DataType = S.DataType,
-		T.MinimumValue = S.MinimumValue,
-		T.MaximumValue = S.MaximumValue,
-		T.[Precision] = S.[Precision],
-		T.Scale = S.Scale,
-		T.Average = S.Average,
-		T.Median = S.Median,
-		T.StandardDeviation = S.StandardDeviation,
-		T.Top10Values = S.Top10Values,
-		T.ProcessIdentifier = S.ProcessIdentifier
-when not matched then
-insert (AssetId, [RowCount], Uniqueness, Completeness, NullCount, BlankCount, DataType, MinimumValue, MaximumValue, [Precision], Scale, Average, Median,
-StandardDeviation, Top10Values, ProcessIdentifier) values
-(S.AssetId, S.[RowCount], S.Uniqueness, S.Completeness, S.NullCount, S.BlankCount, S.DataType, S.MinimumValue, S.MaximumValue, S.[Precision], S.Scale,
-S.Average, S.Median, S.StandardDeviation, S.Top10Values, S.ProcessIdentifier);", transaction: trans);
+                            using	(
+			                            select	*
+			                            from	#postAssetDataProfile
+			                            where AssetId <> 0
+		                            ) S
+                            on		(T.AssetId = S.AssetId)
+                            when matched then
+	                            update set
+		                            T.[RowCount] = S.[RowCount],
+		                            T.Uniqueness = S.Uniqueness,
+		                            T.Completeness = S.Completeness,
+		                            T.NullCount = S.NullCount,
+		                            T.BlankCount = S.BlankCount,
+		                            T.DataType = S.DataType,
+		                            T.MinimumValue = S.MinimumValue,
+		                            T.MaximumValue = S.MaximumValue,
+		                            T.[Precision] = S.[Precision],
+		                            T.Scale = S.Scale,
+		                            T.Average = S.Average,
+		                            T.Median = S.Median,
+		                            T.StandardDeviation = S.StandardDeviation,
+		                            T.Top10Values = S.Top10Values,
+		                            T.ProcessIdentifier = S.ProcessIdentifier
+                            when not matched then
+                            insert (AssetId, [RowCount], Uniqueness, Completeness, NullCount, BlankCount, DataType, MinimumValue, MaximumValue, [Precision], Scale, Average, Median,
+                            StandardDeviation, Top10Values, ProcessIdentifier) values
+                            (S.AssetId, S.[RowCount], S.Uniqueness, S.Completeness, S.NullCount, S.BlankCount, S.DataType, S.MinimumValue, S.MaximumValue, S.[Precision], S.Scale,
+                            S.Average, S.Median, S.StandardDeviation, S.Top10Values, S.ProcessIdentifier);", transaction: trans);
 
                         trans.Commit();
+
+                        execution.CompletedOn = DateTime.UtcNow;
+                        execution.Error = results.Count(r => r.Success == false);
+                        Company.Update(execution);
+
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         trans.Rollback();
-                        throw ex;
+                        execution.ErrorMessage = ex.GetFullExceptionData(false);
+                        execution.CompletedOn = DateTime.UtcNow;
+                        Company.Update(execution);
+
+                        SendException(ex, new Dictionary<string, string>() {
+                            { "Endpoint Method", prefix },
+                            { "AssetDataProfileCount", $"{((model != null) ? model.Count : 0)}" }
+                        });
+
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Error adding data profile", "An unknown error occurred while processing this request."));
+
                     }
 
                 }
 
             }
-           
+
+            #endregion
 
             return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
 
@@ -292,9 +352,14 @@ S.Average, S.Median, S.StandardDeviation, S.Top10Values, S.ProcessIdentifier);",
             SwaggerResponse(HttpStatusCode.OK, "A list of data profile results, including any error messages.", typeof(List<AssetDataProfileDeleteResult>)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You do not have permissions to delete data profiles.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error indicating the request is malformed or contains no data profiles.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
         ]
         public async Task<IHttpActionResult> DeleteDataProfile(List<AssetDataProfileDelete> model)
         {
+
+            var prefix = "Profiles.DeleteDataProfile => ";
+
+
             if (!Company.CurrentResourceIsAdmin)
             {
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Error deleting data profile", "You are not allowed to delete data profiles."));
@@ -305,62 +370,159 @@ S.Average, S.Median, S.StandardDeviation, S.Top10Values, S.ProcessIdentifier);",
             }
 
             var results = new List<AssetDataProfileDeleteResult>();
+            var execution = new ApiExecution
+            {
+                ExecutionID = Guid.NewGuid(),
+                Error = 0,
+                Processed = 0,
+                Total = model.Count,
+                StartedOn = DateTime.UtcNow,
+                ResourceID = Company.CurrentResourceID,
+                Fields = ""
+            };
+            Company.Add(execution);
 
-            //foreach(var profile in model)
-            //{
+            var table = new DataTable();
 
-            //    if (!profile.EffectiveStartDate.HasValue || !profile.EffectiveEndDate.HasValue)
-            //    {
-            //        results.Add(new AssetDataProfileDeleteResult()
-            //        {
-            //            Success = false,
-            //            Message = "Effective date range was not specified.",
-            //            EffectiveEndDate = ((DateTime)profile.EffectiveEndDate).ToShortDateString(),
-            //            EffectiveStartDate = ((DateTime)profile.EffectiveStartDate).ToShortDateString()
-            //        });
 
-            //        continue;
-            //    }
+            #region Build DataTable
 
-            //    int recordCount = (await Company.QueryAsync<int>(@"select count(1) from metrics.dataprofile with (nolock) where 
-            //        assetUid = @AssetUid and effectiveDate between @EffectiveStartDate and @EffectiveEndDate", new { profile.AssetUid, profile.EffectiveStartDate, profile.EffectiveEndDate })).First();
+            try
+            {
+                table.Columns.Add("AssetUid", typeof(Guid));
+                table.Columns.Add("AssetId", typeof(long));
 
-            //    if (recordCount < 1)
-            //    {
-            //        results.Add(new AssetDataProfileDeleteResult()
-            //        {
-            //            Success = false,
-            //            Message = "There were no records found for this asset and effective date range.",
-            //            EffectiveEndDate = ((DateTime)profile.EffectiveEndDate).ToShortDateString(),
-            //            EffectiveStartDate = ((DateTime)profile.EffectiveStartDate).ToShortDateString()
-            //        });
-            //    }
-            //    else
-            //    {
-            //        try
-            //        {
-            //            Company.Execute(@"delete from metrics.dataprofile where assetUid = @assetUid and effectivedate between @EffectiveStartDate and @EffectiveEndDate", new { profile.AssetUid, profile.EffectiveStartDate, profile.EffectiveEndDate });
 
-            //            results.Add(new AssetDataProfileDeleteResult()
-            //            {
-            //                Success = true,
-            //                Message = "",
-            //                EffectiveEndDate = ((DateTime)profile.EffectiveEndDate).ToShortDateString(),
-            //                EffectiveStartDate = ((DateTime)profile.EffectiveStartDate).ToShortDateString()
-            //            });
-            //        }
-            //        catch (Exception ex)
-            //        {
-            //            results.Add(new AssetDataProfileDeleteResult()
-            //            {
-            //                Success = false,
-            //                Message = "An unknown error occurred when deleting the data profiles",
-            //                EffectiveEndDate = ((DateTime)profile.EffectiveEndDate).ToShortDateString(),
-            //                EffectiveStartDate = ((DateTime)profile.EffectiveStartDate).ToShortDateString()
-            //            });
-            //        }
-            //    }
-            //}
+                foreach (var profile in model)
+                {
+                    if (profile.AssetUid == null || string.IsNullOrEmpty(profile.AssetUid.ToString()))
+                    {
+                        results.Add(new AssetDataProfileDeleteResult()
+                        {
+                            Message = "AssetUid provided is not in a valid format",
+                            Success = false,
+                            AssetUid = profile.AssetUid
+                        });
+                        continue;
+                    }
+
+                    var row = table.NewRow();
+                    row["AssetUid"] = profile.AssetUid;
+                    row["AssetId"] = 0;
+
+                    table.Rows.Add(row);
+                }
+            }
+            catch(Exception ex)
+            {
+                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                execution.CompletedOn = DateTime.UtcNow;
+                Company.Update(execution);
+
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix },
+                    { "AssetDataProfileCount", $"{((model != null) ? model.Count : 0)}" }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Error deleting data profile", "An unknown error occurred while processing this request."));
+
+            }
+
+            #endregion
+
+            #region Delete Profiles
+
+            using (SqlConnection conn = new SqlConnection(Company.CompanyConnectionString))
+            {
+                if (conn.State != ConnectionState.Open)
+                    conn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+                using (SqlTransaction trans = conn.BeginTransaction())
+                {
+                    try
+                    {
+                        conn.Execute(@"
+                        create table #deleteAssetDataProfile
+                        (
+                         AssetID bigint,
+                         AssetUid uniqueidentifier,
+                        )
+                        ", transaction: trans);
+
+                        SqlBulkCopy bulkCopy = new SqlBulkCopy(conn, SqlBulkCopyOptions.KeepNulls, trans);
+                        bulkCopy.BatchSize = table.Rows.Count;
+                        bulkCopy.DestinationTableName = "#deleteAssetDataProfile";
+                        bulkCopy.BulkCopyTimeout = 3600;
+
+                        bulkCopy.ColumnMappings.Add("AssetID", "AssetID");
+                        bulkCopy.ColumnMappings.Add("AssetUid", "AssetUid");
+
+                        await bulkCopy.WriteToServerAsync(table);
+
+                        //get asset ids based on uid
+                        conn.Execute(@"update p
+                            set p.AssetID = a.ID 
+                            from #deleteAssetDataProfile p
+                            inner join Asset a on a.Uid = p.AssetUid", transaction: trans);
+
+
+                        var missingAssetId = (await conn.QueryAsync<dynamic>(@"select * from #deleteAssetDataProfile where assetId = 0", transaction: trans)).ToList();
+                        var validAssetId = (await conn.QueryAsync<dynamic>(@"select * from #deleteAssetDataProfile where assetId <> 0", transaction: trans)).ToList();
+
+                        //add errors for records with invalid asset uids
+                        if (missingAssetId.Any())
+                        {
+                            results.AddRange(missingAssetId.Select(a =>
+                            new AssetDataProfileDeleteResult()
+                            {
+                                AssetUid = a.AssetUid,
+                                Message = "Asset with this uid not found",
+                                Success = false
+                            }));
+                        }
+
+                        if (validAssetId.Any())
+                        {
+                            results.AddRange(validAssetId.Select(a =>
+                            new AssetDataProfileDeleteResult()
+                            {
+                                AssetUid = a.AssetUid,
+                                Message = "",
+                                Success = true
+                            }));
+                        }
+
+
+                        //perform the delete
+                        conn.Execute(@"delete from AssetDataProfile P where P.AssetId in (select AssetId from #deleteAssetDataProfile where AssetId <> 0)", transaction: trans);
+
+                        trans.Commit();
+
+                        execution.CompletedOn = DateTime.UtcNow;
+                        execution.Error = results.Count(r => r.Success == false);
+                        execution.Processed = results.Count(r => r.Success == true);
+                        Company.Update(execution);
+
+                    }
+                    catch (Exception ex)
+                    {
+                        trans.Rollback();
+                        execution.ErrorMessage = ex.GetFullExceptionData(false);
+                        execution.CompletedOn = DateTime.UtcNow;
+                        Company.Update(execution);
+
+                        SendException(ex, new Dictionary<string, string>() {
+                            { "Endpoint Method", prefix },
+                            { "AssetDataProfileCount", $"{((model != null) ? model.Count : 0)}" }
+                        });
+
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Error deleting data profile", "An unknown error occurred while processing this request."));
+
+                    }
+                }
+            }
+
+            #endregion
 
             return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
 
