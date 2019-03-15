@@ -39,6 +39,15 @@ namespace d360.web.Handlers
                         {
                             return response;
                         }
+                        else if(responseContent is Exception)
+                        {
+                            var responseMetadata = new ErrorResponse
+                            {
+                                message = (responseContent as Exception).Message,
+                                title = "Bad request submitted"
+                            };
+                            return request.CreateResponse(response.StatusCode, responseMetadata);
+                        }
                         else
                         {
                             var httpError = responseContent as HttpError;
@@ -54,8 +63,7 @@ namespace d360.web.Handlers
                                 message = errorMessage,
                                 title = "Bad request submitted"
                             };
-                            var result = request.CreateResponse(response.StatusCode, responseMetadata);
-                            return result;
+                            return request.CreateResponse(response.StatusCode, responseMetadata);                            
                         }
                     }
                     catch { } //continue on to return the normal response.
