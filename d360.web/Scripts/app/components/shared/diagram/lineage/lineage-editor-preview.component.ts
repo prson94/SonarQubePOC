@@ -123,23 +123,21 @@ export class LineageEditorPreviewComponent extends DiagramBaseComponent implemen
         }
     }
 
-    private populateDiagram(): Promise<any> {
+    private populateDiagram() {
         this.isLoading = true;
         this.businessModel.Existing = [];
         this.technicalModel.Existing = [];
 
-        return this.diagramService.previewLineage(
+        this.diagramService.previewLineage(
             this.type,
             this.id,
             this.view,
             this.businessModel,
             this.technicalModel
-        ).then(
+        ).subscribe(
             data => {
                 this.parseData(data);
-            }
-        ).then(
-            () => {
+
                 this.diagram.zoomToFit();
 
                 this.isLoading = false;
@@ -355,8 +353,6 @@ export class LineageEditorPreviewComponent extends DiagramBaseComponent implemen
                     this.makeIconPanel("\uf126", "Source rule defined", "hasSourceRules", nodeFontSize),
                     this.makeIconPanel("\uf0ec", "Mapping rule defined", "hasMappingRules", nodeFontSize),
                     this.makeIconPanel("\uf074", "Transformation rule defined", "hasTransformations", nodeFontSize)
-                    //this.makeIconPanel("\uf188", "Item has open events", "hasOpenEvents", nodeFontSize),
-                    //this.makeIconPanel("\uf071", "Item has open issues", "hasOpenIssues", nodeFontSize)
                 ),
                 this.g(go.Panel, "Table",
                     this.g(go.TextBlock, {

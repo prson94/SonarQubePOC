@@ -126,19 +126,19 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
         this.populateDiagram();
     }
 
-    private populateDiagram(): Promise<any> {
+    private populateDiagram() {
         this.isLoading = true;
         let windowVisible = this.isWindowVisible;
 
         this.isWindowVisible = false;
 
-        return this.diagramService.getLineageDiagram(
+        this.diagramService.getLineageDiagram(
             this.objectType,
             this.objectID,
             this.view, this.usageOnly
-        ).then(data => {
+        ).subscribe(data => {
             this.parseData(data);
-        }).then(() => {
+
             this.reOrderLayout();
             this.diagram.zoomToFit();
             this.zoomLevel = _.clamp(this.diagram.scale * 75, 0, 100);

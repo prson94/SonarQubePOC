@@ -1,7 +1,7 @@
-﻿import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {DiagramService} from '../../../../services/diagram.service';
-import {MessagesService} from '../../../../services/messages.service';
-import {BaseComponent} from '../../base.component';
+﻿import * as _ from 'lodash';
+import {forkJoin} from "rxjs";
+import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+
 import {
     AutoCompleteItem,
     LineageEditorMode,
@@ -11,8 +11,11 @@ import {
     LineageView,
 } from '../../../../models/lineage.model';
 
-import * as _ from 'lodash';
+import {DiagramService} from '../../../../services/diagram.service';
+import {MessagesService} from '../../../../services/messages.service';
 import {ResponsibilityTypeService} from '../../../../services/responsibility-type.service';
+
+import {BaseComponent} from '../../base.component';
 
 @Component({
     selector: 'd3s-lineage-technical-editor',
@@ -69,35 +72,41 @@ export class LineageTechnicalEditorComponent extends BaseComponent implements On
     load() {
         this.isLoading = true;
 
-        this.diagramService.getLineageDiagram(this.object, this.objectId, LineageView.MapRuleItemList, false)
-            .then(
-                r => {
-                    this.lineage = r.items;
+        forkJoin(
+            this.diagramService.getLineageDiagram(this.object, this.objectId, LineageView.MapRuleItemList, false),
+            this.diagramService.getLineageDiagram(this.object, this.objectId, LineageView.MapItemList, false)
+        ).subscribe(
+            (
+                [
+                    MapRuleItemList,
+                    MapItemList
+                ]
+            ) => {
+                /* MapRuleItemList */
+                this.lineage = MapRuleItemList.items;
 
-                    if (this.lineage != null && this.lineage.length > 0) {
-                        this.lineage.forEach(i => {
-                            this.initializeLineageRow(i);
-                        });
-                    } else {
-                        this.lineage = [];
-                    }
-                })
-            .then(
-                () => this.diagramService.getLineageDiagram(this.object, this.objectId, LineageView.MapItemList, false)
-            )
-            .then(
-                r => {
-                    this.mapItems = r.items;
-
-                    this.lineage.forEach(l => {
-                        if (l.MapItemID != null) {
-                            l.selectedMapItem = this.mapItems.find(m => m.ID == l.MapItemID);
-                        }
+                if (this.lineage != null && this.lineage.length > 0) {
+                    this.lineage.forEach(i => {
+                        this.initializeLineageRow(i);
                     });
-
-                    this.isLoading = false;
+                } else {
+                    this.lineage = [];
                 }
-            );
+                /* ./MapRuleItemList */
+
+                /* MapItemList */
+                this.mapItems = MapItemList.items;
+
+                this.lineage.forEach(l => {
+                    if (l.MapItemID != null) {
+                        l.selectedMapItem = this.mapItems.find(m => m.ID == l.MapItemID);
+                    }
+                });
+                /* ./MapItemList */
+
+                this.isLoading = false;
+            }
+        );
     }
 
     select(field: string, i: LineageEditorTechnicalRow, e: any) {

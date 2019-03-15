@@ -65,7 +65,6 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
     }
 
     //#region angular
-
     public ngOnInit() {
         this.originalObject = this.objectType;
         this.originalObjectID = this.objectID;
@@ -91,7 +90,6 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
         //garbage collection
         this.diagram.div = null;
     }
-
     //#endregion
 
     private initializeDiagram() {
@@ -231,7 +229,6 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
                     selected: true
                 });
             }
-
         });
     }
 
@@ -268,7 +265,6 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
         });
 
         categories.forEach(c => {
-
             let node = new NodeModel();
             node.key = root.key + '|' + c.type + c.id;
             node.category = 'Category';
@@ -347,24 +343,24 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
 
     private expandNode(node) {
         var diagram = node.diagram;
-        diagram.startTransaction("CollapseExpandTree");
         var data = node.data;
+
+        diagram.startTransaction("CollapseExpandTree");
 
         let nodes = [];
         let links = [];
 
-        let promise = Promise.resolve();
-
         if (!data.everExpanded) {
             this.isLoading = true;
+
             // only create children once per node
             diagram.model.setDataProperty(data, "everExpanded", true);
 
-            promise = this.diagramService.getImpactDiagram(data.obj, data.objid).then(
+            this.diagramService.getImpactDiagram(data.obj, data.objid).subscribe(
                 r => {
                     let hasChildren = false;
 
-                    if (r && r.nodes)
+                    if (r && r.nodes) {
                         r.nodes.forEach(n => {
                             if (!(n.obj == data.obj && n.objid == data.objid)) {
                                 n.everExpanded = false;
@@ -390,8 +386,9 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
                                 }
                             }
                         });
+                    }
 
-                    if (r && r.links)
+                    if (r && r.links) {
                         r.links.forEach(l => {
                             let addLink = true;
                             l.isTreeLink = true;
@@ -424,6 +421,7 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
                                 links.push(l);
                             }
                         });
+                    }
 
                     //if there are no children, hide the expand/collapse button
                     if (!hasChildren) {
@@ -432,33 +430,32 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
                         this.addCategoryLayer(node.data, nodes, links);
                     }
 
-                })
-        }
+                    this.isLoading = false;
 
-        promise.then(() => {
-            this.isLoading = false;
+                    if (node.isTreeExpanded) {
+                        diagram.commandHandler.collapseTree(node);
 
-            if (node.isTreeExpanded) {
-                diagram.commandHandler.collapseTree(node);
-                //need to hide/show non-tree links manually here to workaround issue with child nodes having multiple parents
-                this.diagram.links.each(l => {
-                    if (l.data.from == node.data.key && !l.isTreeLink) {
-                        l.visible = false;
+                        //need to hide/show non-tree links manually here to workaround issue with child nodes having multiple parents
+                        this.diagram.links.each(l => {
+                            if (l.data.from == node.data.key && !l.isTreeLink) {
+                                l.visible = false;
+                            }
+                        });
+                    } else {
+                        diagram.commandHandler.expandTree(node);
+                        this.diagram.links.each(l => {
+                            if (l.data.from == node.data.key && !l.isTreeLink) {
+                                l.visible = true;
+                            }
+                        });
                     }
-                });
-            } else {
-                diagram.commandHandler.expandTree(node);
-                this.diagram.links.each(l => {
-                    if (l.data.from == node.data.key && !l.isTreeLink)
-                        l.visible = true;
-                });
-            }
 
-            diagram.commitTransaction("CollapseExpandTree");
-            this.refreshFilters();
-            this.zoomToFit();
-        });
-
+                    diagram.commitTransaction("CollapseExpandTree");
+                    this.refreshFilters();
+                    this.zoomToFit();
+                }
+            )
+        }
     }
 
     public menuAction(e: MenuItem) {
@@ -469,12 +466,16 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
             this.isFilterVisible = false;
         } else if (e.icon == 'fa fa-search-plus') {
             this.diagram.scale += .1;
-            if (this.diagram.scale > 2.5)
+
+            if (this.diagram.scale > 2.5) {
                 this.diagram.scale = 2.5;
+            }
         } else if (e.icon == 'fa fa-search-minus') {
             this.diagram.scale -= .1;
-            if (this.diagram.scale < .1)
+
+            if (this.diagram.scale < .1) {
                 this.diagram.scale = .1;
+            }
         } else if (e.icon == 'fa fa-filter') {
             this.isFilterVisible = !this.isFilterVisible;
             this.isWindowVisible = false;
@@ -618,8 +619,9 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
         links.forEach(l => {
             links.forEach(k => {
                 if (k.to == l.to && k.from == l.from && k.intersectid != l.intersectid) {
-                    l.text = l.text + ', ' + k.text;
                     let i = this.model.links.findIndex(j => j.intersectid == k.intersectid);
+
+                    l.text = l.text + ', ' + k.text;
                     this.model.links.splice(i, 1);
                 }
             });
@@ -629,6 +631,7 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
             nodes.forEach(m => {
                 if (n.obj == m.obj && n.objid == m.objid && n.intersectid != m.intersectid) {
                     let i = this.model.nodes.findIndex(j => j.key == m.key);
+
                     this.model.nodes.splice(i, 1);
                 }
             });
@@ -642,7 +645,6 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
 
         this.diagram.zoomToFit();
     }
-
 
     //#region events
 
@@ -672,11 +674,14 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
     }
 
     private ViewPortBoundsChanged() {
+        /* FIXME: what this code do? */
         var s = this.diagram.scale;
         var h = 500;
+
         if (s > 1) {
             h = h * s;
         }
+        /* ./FIXME */
 
         this.zoomLevel = _.clamp(_.round(this.diagram.scale * 75), 0, 100);
     }
@@ -706,8 +711,9 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
         if (obj != null) {
             if (obj.key != null) {
                 let node = this.diagram.findNodeForKey(obj.key);
-                if (node && node.findObject('TREEBUTTON').visible)
+                if (node && node.findObject('TREEBUTTON').visible) {
                     this.expandNode(node);
+                }
             }
         }
     }
