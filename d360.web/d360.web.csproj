@@ -290,6 +290,7 @@
     <Compile Include="Controllers\Services\Obsolete\ReferenceController.cs" />
     <Compile Include="Controllers\Services\ReportsController.cs" />
     <Compile Include="Controllers\Services\OrganizationsController.cs" />
+    <Compile Include="Controllers\V2\AuditController.cs" />
     <Compile Include="Controllers\V2\CrossReferencesController.cs" />
     <Compile Include="Controllers\V2\CustomEndpointsController.cs" />
     <Compile Include="Controllers\V2\DataQualityController.cs" />
@@ -323,7 +324,6 @@
     <Compile Include="Controllers\FusionController.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Controllers\OverlaysController.cs" />
     <Compile Include="Controllers\DiagramsController.cs" />
     <Compile Include="Controllers\ReportsController.cs" />
     <Compile Include="Controllers\QueriesController.cs" />
@@ -997,6 +997,7 @@
     <None Include="Properties\PublishProfiles\LocalFolder.pubxml" />
     <Content Include="Views\Authentication\NoAccess.cshtml" />
     <Content Include="Scripts\app\components\shared\relationship\dynamic-relationship-grid.component.html" />
+    <Content Include="Scripts\app\components\sidebar\audit\audit.component.html" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
