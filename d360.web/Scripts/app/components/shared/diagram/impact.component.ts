@@ -350,6 +350,30 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
         let nodes = [];
         let links = [];
 
+        this.isLoading = false;
+
+        if (node.isTreeExpanded) {
+            diagram.commandHandler.collapseTree(node);
+
+            //need to hide/show non-tree links manually here to workaround issue with child nodes having multiple parents
+            this.diagram.links.each(l => {
+                if (l.data.from == node.data.key && !l.isTreeLink) {
+                    l.visible = false;
+                }
+            });
+        } else {
+            diagram.commandHandler.expandTree(node);
+            this.diagram.links.each(l => {
+                if (l.data.from == node.data.key && !l.isTreeLink) {
+                    l.visible = true;
+                }
+            });
+        }
+
+        diagram.commitTransaction("CollapseExpandTree");
+        this.refreshFilters();
+        this.zoomToFit();
+
         if (!data.everExpanded) {
             this.isLoading = true;
 
@@ -391,21 +415,25 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
                     if (r && r.links) {
                         r.links.forEach(l => {
                             let addLink = true;
+
                             l.isTreeLink = true;
 
-                            if (l.to == this.objectType + this.objectID.toString())
+                            if (l.to == this.objectType + this.objectID.toString()) {
                                 addLink = false;
+                            }
 
                             //prevent duplicate links of the same predicate between the same nodes
-                            if (addLink)
+                            if (addLink) {
                                 this.diagram.links.each(k => {
                                     if ((k.data.to == l.to && k.data.from == l.from) || (k.data.to == l.from && k.data.from == l.to)) {
                                         if (k.data.predicateid == l.predicateid) {
                                             addLink = false;
+
                                             return;
                                         }
                                     }
                                 });
+                            }
 
                             //if there's already a link to this node, add the link as a non-tree link to avoid breaking collapse/expand
                             let to = this.diagram.findNodeForKey(l.to);
@@ -429,30 +457,6 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
                     } else {
                         this.addCategoryLayer(node.data, nodes, links);
                     }
-
-                    this.isLoading = false;
-
-                    if (node.isTreeExpanded) {
-                        diagram.commandHandler.collapseTree(node);
-
-                        //need to hide/show non-tree links manually here to workaround issue with child nodes having multiple parents
-                        this.diagram.links.each(l => {
-                            if (l.data.from == node.data.key && !l.isTreeLink) {
-                                l.visible = false;
-                            }
-                        });
-                    } else {
-                        diagram.commandHandler.expandTree(node);
-                        this.diagram.links.each(l => {
-                            if (l.data.from == node.data.key && !l.isTreeLink) {
-                                l.visible = true;
-                            }
-                        });
-                    }
-
-                    diagram.commitTransaction("CollapseExpandTree");
-                    this.refreshFilters();
-                    this.zoomToFit();
                 }
             )
         }
@@ -601,6 +605,7 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
                         } else {
                             name = node.data.typeNamePlural;
                         }
+
                         children.push(node);
                     }
                 }
@@ -711,6 +716,7 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
         if (obj != null) {
             if (obj.key != null) {
                 let node = this.diagram.findNodeForKey(obj.key);
+
                 if (node && node.findObject('TREEBUTTON').visible) {
                     this.expandNode(node);
                 }
@@ -827,6 +833,7 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
                     // create children if the node has never been expanded
                     click: (e, obj) => {  // OBJ is the Button
                         var node = obj.part;  // get the Node containing this Button
+
                         if (node === null) {
                             return;
                         }
@@ -898,6 +905,7 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
                     // create children if the node has never been expanded
                     click: (e, obj) => {  // OBJ is the Button
                         var node = obj.part;  // get the Node containing this Button
+
                         if (node === null) {
                             return;
                         }
@@ -960,6 +968,7 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
                     // create children if the node has never been expanded
                     click: (e, obj) => {  // OBJ is the Button
                         var node = obj.part;  // get the Node containing this Button
+                        
                         if (node === null) {
                             return;
                         }
