@@ -588,8 +588,16 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.listFilterPredicates.push({ value: null, label: 'Choose...'});
             this.listFilterOptions.forEach(d => {
                 if (d.fieldtypeOptions.length > 0)
+                    //only include predicates with possible field options
                     this.listFilterPredicates.push({ value: d.value, label: d.label});
             });
+            if (this.listFilterPredicates.length == 1) {
+                //If we have no predicates to select, turn off filter configuration
+                this.listFilterable = false;
+                this.selectPredicate(null);
+                this.expandFilterConfiguration = false;
+                return;
+            } 
             if (this.model.FieldType.FilterPredicateID != null && this.model.FieldType.FilterPredicateDirection != null) {
                 this.selectPredicate( this.model.FieldType.FilterPredicateID + '|' + (this.model.FieldType.FilterPredicateDirection ? '1' : '0'));
                 this.expandFilterConfiguration = true;
@@ -597,7 +605,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.selectPredicate(null);
                 this.expandFilterConfiguration = false;
             }
-            this
         });
     }
 
