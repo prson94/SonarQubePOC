@@ -132,12 +132,14 @@ export class ArtifactTopLevelFilterComponent extends BaseComponent implements On
     public loadFieldItems(givenparentfield: GridFilterColumn, givenfield: GridFilterColumn): void {
         var fieldId = +givenfield.datafield.replace('Field', '');
         if (givenparentfield.value.length > 0) {
-            this.fieldService.getCascadingListFieldValues(fieldId, undefined, givenparentfield.value).then(res => {
-                givenfield.disabled = false;
-                givenfield.filteritems = res.map(r => r.Text);
+            this.fieldService.getCascadingListFieldValues(fieldId, undefined, givenparentfield.value).subscribe(
+                res => {
+                    givenfield.disabled = false;
+                    givenfield.filteritems = res.map(r => r.Text);
 
-                this.ref.markForCheck();
-            })
+                    this.ref.markForCheck();
+                }
+            )
         } else {
             givenfield.disabled = true;
             givenfield.filteritems = [];

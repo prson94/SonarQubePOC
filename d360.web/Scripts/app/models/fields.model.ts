@@ -8,21 +8,21 @@ export interface IFieldsService {
 
     getFusionLookupDisplayFields(id: number): Observable<SelectItem[]>;
 
-    getFusionLookupTargetAttributeTypes(sourceID: number, referenceTypeID: number): Promise<SelectItem[]>;
+    getFusionLookupTargetAttributeTypes(sourceID: number, referenceTypeID: number): Observable<SelectItem[]>;
 
-    getRelationLookupChildIntersectTypes(id: number): Promise<SelectItem[]>;
+    getRelationLookupChildIntersectTypes(id: number): Observable<SelectItem[]>;
 
-    getRelationLookupDisplayFields(id: number, type: string, intersectTypeID: number): Promise<SelectItem[]>;
+    getRelationLookupDisplayFields(id: number, type: string, intersectTypeID: number): Observable<SelectItem[]>;
 
-    getLookupTokens(id: number, type: string): Promise<SelectItem[]>;
+    getLookupTokens(id: number, type: string): Observable<SelectItem[]>;
 
-    getLookups(id: number, type: string): Promise<Lookups>;
+    getLookups(id: number, type: string): Observable<Lookups>;
 
-    getFormData(id: number): Promise<FieldTypeEditorModel>;
+    getFormData(id: number): Observable<FieldTypeEditorModel>;
 
-    putFieldType(model: FieldTypeEditorModel): Promise<any>;
+    putFieldType(model: FieldTypeEditorModel): Observable<any>;
 
-    postFieldType(model: FieldTypeEditorModel): Promise<any>;
+    postFieldType(model: FieldTypeEditorModel): Observable<any>;
 }
 
 export class FieldDefinition {
