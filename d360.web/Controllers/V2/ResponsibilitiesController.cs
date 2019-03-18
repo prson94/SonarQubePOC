@@ -309,5 +309,170 @@ namespace d360.web.Controllers.V2
                 return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
             }
         }
+
+
+        /// <summary>
+        /// Retrieves a list of responsibility ownership of assets based on the provided parameters.  Administrators can see all ownership.  Regular users ownership results are filtered based on items they can see the ownership for.
+        /// </summary>        
+        /// <returns>Returns a list of assets and there corresponding ownership information.</returns>
+        [
+            HttpGet,
+            Route("assignments"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "Ownership rule statistics for the given responsibility type rule uid.", typeof(ResponsibilityTypeRuleStatsViewModel)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerParameter("_pageSize", "The number of results to return per page. The default and max value is 250.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_assetUid", "The Uid of a asset to return ownership for. If specified the results will include ownership of this asset.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_assetTypeUid", "The Uid of a asset type to return ownership for. If specified the results will include ownership of this asset type only.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_responsibilityTypeUid", "The Uid of a responsibility type to return ownership for. If specified the results will include ownership of assets that include this responsibility type.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_assigneeUid", "The Uid of an assignee to return ownership for. If specified the results will include ownership of this assignee only.", DataType = "string", ParameterType = "query", Required = false),
+        ]
+        public async Task<HttpResponseMessage> GetResponsibilities()
+        {
+            var prefix = "Responsibilities.GetResponsibilities => ";
+            var errorMessage = "";
+
+            var queryParams = Request.GetQueryNameValuePairs();
+
+            //get the assetids based on the input parameters
+            var assets = getOwnershipAssets(queryParams);
+
+            //get the responsibilities that apply to these assets
+
+            try
+            {
+                var res = await Company.Database.Connection.QueryAsync<dynamic>(@"                            
+                                    select sum(a.cnt) from 
+                                    (select 
+	                                    count(1) as cnt
+                                    from
+	                                    [dbo].[ResponsibilityTypeRelationRule] rtr
+	                                    inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rsa on (rsa.RuleID = rtr.id)
+	                                    inner join [reporting].Global_Resource r on (r.resourceid = rsa.securityassetid and rsa.securityasset = 'R')
+                                    where rtr.[uid] = @uid
+                                    union all
+                                    select 
+	                                    count(1) as cnt
+                                    from
+	                                    [dbo].[ResponsibilityTypeRelationRule] rtr
+	                                    inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rsa on (rsa.RuleID = rtr.id)
+	                                    inner join [dbo].ResourceGroup gr on (gr.groupid = rsa.securityassetid and rsa.securityasset = 'G')
+                                    where rtr.[uid] = @uid
+                                    union all
+                                    select 
+	                                    count(1) as cnt
+                                    from
+	                                    [dbo].[ResponsibilityTypeRelationRule] rtr
+	                                    inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rsa on (rsa.RuleID = rtr.id)		
+	                                    inner join [dbo].OrganizationResource og on (og.OrganizationID = rsa.SecurityAssetID and rsa.SecurityAsset = 'O')
+                                    where rtr.[uid] = @uid
+                                    ) a
+                            ");
+
+                return Request.CreateResponse(HttpStatusCode.OK, res);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+        }
+
+        private async Task<IEnumerable<dynamic>> getOwnershipAssets(IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+            DynamicParameters dbArgs = new DynamicParameters();
+            var orderBySql = "order by A.ID";
+            var offsetSql = "";
+            var pageNum = -1;
+            var pageSize = 250;
+            var assetQueryFilterSql = "";
+            var responsibilityQueryFilterSql = "";
+            List<string> assetQueryFilters = new List<string>();
+            List<string> responsibilityQueryFilters = new List<string>();
+
+
+            queryParams.ToList().ForEach(q =>
+                    {
+                        var key = q.Key.ToLower();
+
+                        if (key.StartsWith("_"))
+                        {
+                            switch (key)
+                            {
+                                case "_pagesize":
+                                    break;
+                                case "_pagenum":
+                                    break;
+                                case "_assetuid":
+                                    assetQueryFilters.Add($"rr.uid = @assetUid");
+                                    dbArgs.Add($"@assetUid", q.Value);
+                                    break;
+                                case "_assettypeuid":
+                                    assetQueryFilters.Add($"rr.uid = @assettypeUid");
+                                    dbArgs.Add($"@assettypeUid", q.Value);
+                                    break;
+                                case "_responsibilityTypeUid":
+                                    responsibilityQueryFilters.Add($"rr.uid = @respUid");
+                                    dbArgs.Add($"@respUid", q.Value);
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                    });
+
+            if (pageSize < 1) pageSize = 1;
+            if (pageNum < 1) pageNum = 1;
+            
+            offsetSql = $"offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
+
+            var sql = $@"
+                    (select
+	                    a.id as AssetId,
+	                    a.uid as AssetUid,
+	                    att.uid as AssetTypeUid,
+	                    att.name as AssetTypeName
+                    from 
+	                    asset a
+	                    inner join assetType att on a.AssetTypeID = att.id
+                    where 
+	                    exists (select 1 from ResponsibilityRuleResultAsset rd inner join ResponsibilityTypeRelationRule rr on (rr.id = rd.RuleID) inner join ResponsibilityType rt on (rr.responsibilitytypeid = rt.id) where rd.assetid = a.id and rr.applytotype = 0 {responsibilityQueryFilterSql})		
+                        {assetQueryFilterSql}
+                    union
+                    select
+	                    a.id as AssetId,
+	                    a.uid as AssetUid,
+	                    att.uid as AssetTypeUid,
+	                    att.name as AssetTypeName
+                    from 
+	                    asset a
+	                    inner join assetType att on a.AssetTypeID = att.id
+                    where 
+	                    exists (select 1 from ResponsibilityRuleResultAsset rd inner join ResponsibilityTypeRelationRule rr on (rr.id = rd.RuleID) inner join ResponsibilityType rt on (rr.responsibilitytypeid = rt.id) where rd.assettypeid = a.assettypeid and rr.applytotype = 1  {responsibilityQueryFilterSql})
+                        {assetQueryFilterSql}
+                    union
+                    select
+	                    a.id as AssetId,
+	                    a.uid as AssetUid,
+	                    att.uid as AssetTypeUid,
+	                    att.name as AssetTypeName
+                    from 
+	                    asset a
+	                    inner join assetType att on a.AssetTypeID = att.id
+                    where 
+	                    exists (select 1 from ResponsibilityTypeRelationOverrideItem oride inner join ResponsibilityType rt on(oride.ResponsibilityTypeID = rt.id) where oride.AssetID = a.ID {responsibilityQueryFilterSql})
+                        {assetQueryFilterSql}
+	                    )
+                    {orderBySql}
+                    {offsetSql}
+            ";
+            
+            return await Company.Database.Connection.QueryAsync<dynamic>(sql);            
+        }
     }
 }
