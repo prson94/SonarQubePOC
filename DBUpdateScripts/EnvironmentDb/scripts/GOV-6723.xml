@@ -1,0 +1,93 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="MDonato" id="GOV-6723">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[
+		drop trigger if exists [reporting].[ReportingGlobalResource_AfterInsert];
+		go
+		drop trigger if exists [reporting].[ReportingGlobalResource_AfterUpsert];
+		go
+		
+		CREATE TRIGGER [reporting].[ReportingGlobalResource_AfterUpsert]
+			ON [reporting].[Global_Resource]
+			FOR INSERT, UPDATE
+		AS
+			SET NOCOUNT ON;
+			IF NOT EXISTS (SELECT * FROM DELETED)
+			BEGIN
+				INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+				select 'Add', [queue].WriteIndexXml('', 'Resource', ResourceID, 0), 'Resource', ResourceID from inserted;
+			END
+			
+
+			merge	dbo.Asset as T
+			using	(
+					SELECT	T.ID as AssetTypeID, 
+							1 as [State], 
+							O.ResourceID as SourceID, 
+							'Resource' as Object, 
+							O.ResourceID as ObjectID,
+							O.[uid]
+					FROM	inserted O
+							inner join  AssetType T on T.Object = 'ResourceType' and T.ObjectID = 1
+					) as S
+			on		(T.Object = S.Object and T.ObjectID = S.ObjectID)
+			when	matched then
+			update	set
+					T.[uid] = S.[uid],
+					T.UpdatedOn = getutcdate(),
+					T.UpdatedBy = 0
+			when not matched by target then
+			insert	([AssetTypeID], [State], SourceID, [Object], [ObjectID],[CreatedOn],[CreatedBy],[UpdatedOn],[UpdatedBy],[uid])
+			values	(S.[AssetTypeID], S.[State], S.SourceID, S.[Object], S.[ObjectID], getutcdate(), 0, getutcdate(), 0, S.[uid]);
+			
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+		drop trigger if exists [reporting].[ReportingGlobalResource_AfterInsert];
+		go
+		drop trigger if exists [reporting].[ReportingGlobalResource_AfterUpsert];
+		go
+
+		CREATE TRIGGER [reporting].[ReportingGlobalResource_AfterInsert]
+			ON [reporting].[Global_Resource]
+			FOR INSERT
+		AS
+			SET NOCOUNT ON;
+			INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+				select 'Add', [queue].WriteIndexXml('', 'Resource', ResourceID, 0), 'Resource', ResourceID from inserted;
+
+			merge	dbo.Asset as T
+			using	(
+					SELECT	T.ID as AssetTypeID, 
+							1 as [State], 
+							O.ResourceID as SourceID, 
+							'Resource' as Object, 
+							O.ResourceID as ObjectID
+					FROM	inserted O 
+							inner join  AssetType T on T.Object = 'ResourceType' and T.ObjectID = 1
+					) as S
+			on		(T.Object = S.Object and T.ObjectID = S.ObjectID)
+			when	matched then
+			update	set
+					T.UpdatedOn = getutcdate(),
+					T.UpdatedBy = 0
+			when not matched by target then
+			insert	([AssetTypeID], [State], SourceID, [Object], [ObjectID],[CreatedOn],[CreatedBy],[UpdatedOn],[UpdatedBy])
+			values	(S.[AssetTypeID], S.[State], S.SourceID, S.[Object], S.[ObjectID], getutcdate(), 0, getutcdate(), 0);
+go
+		
+		]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>

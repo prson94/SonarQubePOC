@@ -127,6 +127,10 @@ from [Resource] R inner join CompanyResource C on C.ResourceID = R.ID and C.Comp
                                     table.Columns.Add(columnName, typeof(bool));
                                     bulkCopy.ColumnMappings.Add(columnName, columnName);
 
+                                    columnName = "uid";
+                                    table.Columns.Add(columnName, typeof(Guid));
+                                    bulkCopy.ColumnMappings.Add(columnName, columnName);
+
                                     foreach (var item in resources)
                                     {
                                         var row = table.NewRow();
@@ -142,6 +146,10 @@ from [Resource] R inner join CompanyResource C on C.ResourceID = R.ID and C.Comp
                                         row["Email"] = item.Email;
                                         row["State"] = (int)item.State;
                                         row["IsAdministrator"] = item.IsAdministrator;
+                                        if (item.Uid.HasValue)
+                                            row["uid"] = item.Uid.Value;
+                                        else
+                                            row["uid"] = DBNull.Value;
 
                                         table.Rows.Add(row);
                                     }
@@ -158,7 +166,8 @@ using	(
                 LastLoggedInOn,
                 Email,
                 [State],
-                IsAdministrator
+                IsAdministrator,
+                [uid]
         from	#users
 		) as S
 on		(T.ResourceID = S.ResourceID)
@@ -170,10 +179,11 @@ when	matched then
                 T.Email = S.Email,
                 T.[State] = S.[State],
                 T.IsAdministrator = S.IsAdministrator,
+                T.[uid] = S.[uid],
                 T.CreatedOn = case when T.CreatedOn is null then getutcdate() else T.CreatedOn end
 when	not matched by target then
-		insert (ResourceID, FirstName, LastName, LastLoggedInOn, Email, [State], IsAdministrator, CreatedOn)
-		values (S.ResourceID, S.FirstName, S.LastName, S.LastLoggedInOn, S.Email, S.[State], S.IsAdministrator, getutcdate());",
+		insert (ResourceID, FirstName, LastName, LastLoggedInOn, Email, [State], IsAdministrator, [uid], CreatedOn)
+		values (S.ResourceID, S.FirstName, S.LastName, S.LastLoggedInOn, S.Email, S.[State], S.IsAdministrator, S.[uid], getutcdate());",
                                 transaction: transaction,
                                 commandTimeout: 300
                                 );
