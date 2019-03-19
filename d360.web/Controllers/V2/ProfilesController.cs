@@ -29,6 +29,8 @@ namespace d360.web.Controllers.V2
 
     public class ProfilesController : BaseApiController
     {
+        private const int TechAssetFusionAttributeTypeId = 1820;
+
         #region DI
 
         public ProfilesController
@@ -236,10 +238,12 @@ namespace d360.web.Controllers.V2
                         await bulkCopy.WriteToServerAsync(table);
 
                         //get asset ids based on uid
-                        conn.Execute(@"update p
+                        conn.Execute($@"update p
                             set p.AssetID = a.ID 
                             from #postAssetDataProfile p
-                            inner join Asset a on a.Uid = p.AssetUid", transaction: trans);
+                            inner join Asset a on a.Uid = p.AssetUid
+                            inner join AssetType t on t.id = a.assetTypeId and t.Object = 'FusionAttributeType' and t.ObjectID = {TechAssetFusionAttributeTypeId}"
+                        , transaction: trans);
 
                         //get profile id based on assetid
                         conn.Execute(@"update p
@@ -257,7 +261,7 @@ namespace d360.web.Controllers.V2
                             new AssetDataProfileResult()
                             {
                                 AssetUid = a.AssetUid,
-                                Message = "Asset with this uid not found",
+                                Message = "A Technology Asset with this uid was not found",
                                 Success = false
                             }));
                         }
