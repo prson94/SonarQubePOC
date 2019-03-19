@@ -1,0 +1,30 @@
+<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div *ngIf="!isLoading">
+    <p-table #dt
+             [value]="items"
+             selectionMode="single"
+             [metaKeySelection]="true"
+             [globalFilterFields]="['ObjectName']"
+             [rowsPerPageOptions]="defaultPagingOptions">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Name</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body"
+                     let-item>
+            <tr [pSelectableRow]="item">
+                <td>
+                    <div class="cell-value-name">{{item.ObjectName}}</div>
+                    <div class="cell-value-type">{{item.ObjectTypeName}}</div>
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template *ngIf="dt.totalRecords"
+                     pTemplate="summary">
+            <d3s-grid-paging-info [first]="dt.first"
+                                  [rows]="dt.rows"
+                                  [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+        </ng-template>
+    </p-table>
+</div>

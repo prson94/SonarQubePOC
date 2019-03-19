@@ -1,0 +1,90 @@
+<header>{{ isAdding ? "Add" : "Edit" }} Version Field</header>
+<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div *ngIf="!isLoading">
+    <div class="row"
+         style="padding-top: 10px">
+        <div class="col s6">
+            <div class="FieldName">Field</div>
+            <div>
+                <select [ngModel]="model.FieldTypeID"
+                        (ngModelChange)="changeFieldType($event)"
+                        style="width: 95%">
+                    <option></option>
+                    <option *ngFor="let f of fieldTypes"
+                            [value]="f.ID">{{f.FriendlyName}}</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="row"
+         style="padding-top: 10px">
+        <div class="col s6">
+            <div class="FieldName">Xml Field Override Name</div>
+            <div>
+                <input [(ngModel)]="model.XmlFieldNameOverride"
+                       type="text"
+                       style="width: 95%"/>
+            </div>
+        </div>
+        <div class="col s6">
+            <div class="FieldName">Json Field Override Name</div>
+            <div>
+                <input [(ngModel)]="model.JsonFieldNameOverride"
+                       type="text"
+                       style="width: 95%"/>
+            </div>
+        </div>
+    </div>
+    <div class="row"
+         style="padding-top: 10px">
+        <div class="col s4">
+            <input [(ngModel)]="model.AllowSelect"
+                   type="checkbox"/> Allow Select
+        </div>
+        <div class="col s4">
+            <input [(ngModel)]="model.AllowFilter"
+                   type="checkbox"/> Allow Filter
+        </div>
+        <div class="col s4">
+            <input [(ngModel)]="model.AllowSort"
+                   type="checkbox"/> Allow Sort
+        </div>
+    </div>
+    <div *ngIf="showMultiselectOptions"
+         class="row"
+         style="padding-top: 10px">
+        <div class="col s6">
+            <div class="FieldName">Item Name Override</div>
+            <div>
+                <input [(ngModel)]="model.ItemNameOverride"
+                       type="text"
+                       style="width:95%"/>
+            </div>
+        </div>
+        <div *ngIf="multiSelectFieldTypes != null && multiSelectFieldTypes.length > 0"
+             class="col s6">
+            <div class="FieldName">Multiselect Fields</div>
+            <div>
+                <p-multiSelect [options]="multiSelectFieldTypes"
+                               [(ngModel)]="selectedFields"
+                               optionLabel="Text"
+                               dataKey="Value">
+                </p-multiSelect>
+            </div>
+        </div>
+    </div>
+    <div class="row"
+         style="padding-top: 10px">
+        <div class="col s12">
+            <button pButton
+                    label="Save"
+                    type="button"
+                    (click)="save()"
+                    [disabled]="!valid()"></button>
+            <button pButton
+                    label="Close"
+                    type="button"
+                    (click)="close()"></button>
+        </div>
+    </div>
+</div>
