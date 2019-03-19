@@ -297,6 +297,7 @@ namespace d360.web.Controllers.V2
 	                            update set
 		                            T.[RowCount] = S.[RowCount],
 		                            T.Uniqueness = S.Uniqueness,
+                                    T.UniqueCount = S.UniqueCount,
 		                            T.Completeness = S.Completeness,
 		                            T.NullCount = S.NullCount,
 		                            T.BlankCount = S.BlankCount,
@@ -313,9 +314,9 @@ namespace d360.web.Controllers.V2
                                     T.CreatedBy = S.CreatedBy,
                                     T.CreatedOn = S.CreatedOn
                             when not matched then
-                            insert (AssetId, [RowCount], Uniqueness, Completeness, NullCount, BlankCount, DataType, MinimumValue, MaximumValue, [Precision], Scale, Average, Median,
+                            insert (AssetId, [RowCount], Uniqueness, UniqueCount, Completeness, NullCount, BlankCount, DataType, MinimumValue, MaximumValue, [Precision], Scale, Average, Median,
                             StandardDeviation, Top10Values, ProcessIdentifier, CreatedBy, CreatedOn) values
-                            (S.AssetId, S.[RowCount], S.Uniqueness, S.Completeness, S.NullCount, S.BlankCount, S.DataType, S.MinimumValue, S.MaximumValue, S.[Precision], S.Scale,
+                            (S.AssetId, S.[RowCount], S.Uniqueness, S.UniqueCount, S.Completeness, S.NullCount, S.BlankCount, S.DataType, S.MinimumValue, S.MaximumValue, S.[Precision], S.Scale,
                             S.Average, S.Median, S.StandardDeviation, S.Top10Values, S.ProcessIdentifier, S.CreatedBy, S.CreatedOn);", transaction: trans);
 
                         trans.Commit();
