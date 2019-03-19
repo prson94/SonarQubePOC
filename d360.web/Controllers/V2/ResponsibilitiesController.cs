@@ -343,6 +343,12 @@ namespace d360.web.Controllers.V2
                 var assetIDList = res.items.Select(x => x.AssetID);
                 //get the responsibilities that apply to these assets this should be for <= 250 asset ids only
                 var responsibilities = await getOwnershipForGivenAssets(assetIDList);
+
+                //stitch the two together assets lis will be smaller worst case since it is paged.
+                foreach (var assetItem in res.items)
+                {
+                    assetItem.Responsibilities = responsibilities.Where(a => a.AssetID == assetItem.AssetID).ToList();
+                }
             
                 return Request.CreateResponse(HttpStatusCode.OK, res);
             }
@@ -357,18 +363,19 @@ namespace d360.web.Controllers.V2
             }
         }
 
-        private async Task<IEnumerable<dynamic>> getOwnershipForGivenAssets(IEnumerable<long> assetIDList, int timeout = 300)
+        private async Task<IEnumerable<ResponsibilityApiModel>> getOwnershipForGivenAssets(IEnumerable<long> assetIDList, int timeout = 300)
         {
             if (assetIDList == null) return null;
 
             var sql = @"select 
-                        a.assetid,
+                        a.id as 'AssetID',
 	                    'rule' as 'AssigneeMethod',
 	                    rsa.SecurityAsset,
 	                    rsa.SecurityAssetID,
 	                    rt.[uid] as 'ResponsibilityTypeUid',
 	                    rt.[name] as 'ResponsibilityTypeName',
-	                    1 as 'AssignedToType'
+	                    1 as 'AssignedToType',
+                        null as 'AssigneeUid'
                     from
 	                    [dbo].[ResponsibilityType] rt
 	                    inner join [dbo].[ResponsibilityTypeRelationRule] rr on rr.ResponsibilityTypeID = rt.id
@@ -377,16 +384,17 @@ namespace d360.web.Controllers.V2
 	                    inner join [dbo].[assettype] att on att.[object] = rr.[object] and att.objectid = rr.objectid
 	                    inner join [dbo].asset a on a.AssetTypeID = att.id
                     where
-	                    rr.applytotype = 1 and a.assetid in @assetIds
+	                    rr.applytotype = 1 and a.id in @assetIds
                     union
                     select 
-                        a.assetid,
+                        ra.assetid as 'AssetID',
 	                    'rule' as 'AssigneeMethod',
 	                    rsa.SecurityAsset,
 	                    rsa.SecurityAssetID,
 	                    rt.[uid] as 'ResponsibilityTypeUid',
 	                    rt.[name] as 'ResponsibilityTypeName',
-	                    0 as 'AssignedToType'
+	                    0 as 'AssignedToType',
+                        null as 'AssigneeUid'
                     from
 	                    [dbo].[ResponsibilityType] rt
 	                    inner join [dbo].[ResponsibilityTypeRelationRule] rr on rr.ResponsibilityTypeID = rt.id
@@ -397,23 +405,24 @@ namespace d360.web.Controllers.V2
 	                    rr.applytotype = 0 and ra.assetid in @assetIds
                     union
                     select 
-                        a.assetid,
+                        oride.assetid as 'AssetID',
 	                    'direct' as 'AssigneeMethod',
 	                    oride.SecurityAsset,
 	                    oride.SecurityAssetID,
 	                    rt.[uid] as 'ResponsibilityTypeUid',
 	                    rt.[name] as 'ResponsibilityTypeName',
-	                    0 as 'AssignedToType'
+	                    0 as 'AssignedToType',
+                        a.[uid] as 'AssigneeUid'
                     from
 	                    [dbo].[ResponsibilityType] rt
 	                    inner join [dbo].[ResponsibilityTypeRelationOverrideItem] oride on oride.ResponsibilityTypeID = rt.id	
+                        inner join [dbo].[asset] a on oride.securityassetid = a.objectid and a.[object] = 'Resource'
                     where
 	                    oride.assetid in @assetIds";
 
 
-            var responsibilities = (await Company.Database.Connection.QueryAsync<AssetResponsibilityItemModel>(sql, new { assetIds = assetIDList }, null, timeout)).ToList();
+            return (await Company.Database.Connection.QueryAsync<ResponsibilityApiModel>(sql, new { assetIds = assetIDList }, null, timeout));
 
-            return null;
         }
 
         private async Task<AssetResponsibilitiesApiModel> getOwnershipAssets(IEnumerable<KeyValuePair<string, string>> queryParams, int timeout = 300 )

@@ -27,6 +27,50 @@ namespace d360.core.entities
 
 
     [DataContract(Namespace = NAMESPACE)]
+    public class ResponsibilityApiModel : BaseObject
+    {
+        public long AssetID { get; set; }
+
+        [DataMember]
+        public bool AssignedToType { get; set; }
+
+        [DataMember]
+        public Guid ResponsibilityTypeUid { get; set; }
+
+        [DataMember]
+        public string ResponsibilityName { get; set; }
+
+        [DataMember]
+        public string AssigneeMethod { get; set; }
+
+        [DataMember]
+        public Guid AssigneeUid { get; set; }
+
+        public int SecurityAssetID { get; set; }
+
+        public string SecurityAsset { get; set; }
+
+        [DataMember]
+        public string AssigneeType {
+            get
+            {
+                switch ((SecurityAsset ??"").ToUpper())
+                {
+                    case "R":
+                        return "Resource";
+                    case "G":
+                        return "Group";
+                    case "O":
+                        return "Organization";
+                    default:
+                        return null;
+                }
+            }
+        }
+    }
+
+
+    [DataContract(Namespace = NAMESPACE)]
     public class AssetResponsibilityItemModel : BaseObject
     {
         public long AssetID { get; set; }
@@ -39,5 +83,8 @@ namespace d360.core.entities
 
         [DataMember]
         public string AssetTypeName { get; set; }
+
+        [DataMember]
+        public List<ResponsibilityApiModel> Responsibilities { get; set; }
     }
 }
