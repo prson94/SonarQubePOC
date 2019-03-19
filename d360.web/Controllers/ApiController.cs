@@ -3495,7 +3495,8 @@ outer apply (
                         (
                             (
                                 (fieldTypes == null || fieldTypes.Count == 0) &&
-                                !def.Fields.Any(x => (x.FieldTypeName == "TextPath") || (x.FieldTypeName == "Name" && x.FieldTypeID == 0))
+                                !def.Fields.Any(x => (x.FieldTypeName == "TextPath") || (x.FieldTypeName == "Name" && x.FieldTypeID == 0)
+                                    || (x.FieldTypeName == "DisplayValue" && x.FieldTypeID == 0))
                             )
                         )
                     )
