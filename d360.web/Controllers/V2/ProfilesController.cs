@@ -117,19 +117,6 @@ namespace d360.web.Controllers.V2
 
                 foreach (var profile in model)
                 {
-
-                    if (string.IsNullOrEmpty(profile.DataType))
-                    {
-                        results.Add(new AssetDataProfileResult()
-                        {
-                            AssetUid = profile.AssetUid,
-                            Success = false,
-                            Message = "A profile for this asset and effective date already exists."
-                        });
-                        continue;
-                    }
-
-
                     var row = table.NewRow();
 
                     row["Id"] = 0;
