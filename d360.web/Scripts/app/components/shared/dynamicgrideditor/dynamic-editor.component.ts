@@ -152,8 +152,13 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                     }
 
                     if (f.FieldType && f.FieldType.toUpperCase() == 'BOOLEAN') {
-                        /* checkbox doesnt work binding to a string */
-                        f.Value = f.Value.toUpperCase() == "TRUE";
+                        if (f.Value) {
+                            /* checkbox doesnt work binding to a string */
+                            f.Value = (f.Value.toUpperCase() == "TRUE" ? true : false);
+                        }
+                        else {
+                            f.Value = false;
+                        }
                     }
 
                     let r = rows.find(r => r.Row == (f.Row || 0));
