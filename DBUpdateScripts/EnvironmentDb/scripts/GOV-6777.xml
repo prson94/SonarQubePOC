@@ -1,0 +1,54 @@
+﻿<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Sebastian Abraham" id="GOV-6777">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+  if exists (select 1 from INFORMATION_SCHEMA.TABLES where table_name='FusionFilter' and table_schema='dbo')
+  begin
+	 Drop table [dbo].[FusionFilter]
+  end
+ ]]>
+    </sql>
+	<rollback>
+<![CDATA[	
+CREATE TABLE [dbo].[FusionFilter](
+	[FusionID] [int] NOT NULL,
+	[FusionAttributeTypeID] [int] NOT NULL,
+	[Filter] [nvarchar](500) NOT NULL,
+ CONSTRAINT [PK_FusionFilter] PRIMARY KEY CLUSTERED 
+(
+	[FusionID] ASC,
+	[FusionAttributeTypeID] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[FusionFilter]  WITH CHECK ADD  CONSTRAINT [FK_FusionFilter_Fusion] FOREIGN KEY([FusionID])
+REFERENCES [dbo].[Fusion] ([ID])
+ON DELETE CASCADE
+GO
+
+ALTER TABLE [dbo].[FusionFilter] CHECK CONSTRAINT [FK_FusionFilter_Fusion]
+GO
+
+ALTER TABLE [dbo].[FusionFilter]  WITH CHECK ADD  CONSTRAINT [FK_FusionFilter_FusionAttributeType] FOREIGN KEY([FusionAttributeTypeID])
+REFERENCES [dbo].[FusionAttributeType] ([ID])
+ON DELETE CASCADE
+GO
+
+ALTER TABLE [dbo].[FusionFilter] CHECK CONSTRAINT [FK_FusionFilter_FusionAttributeType]
+GO
+
+]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>

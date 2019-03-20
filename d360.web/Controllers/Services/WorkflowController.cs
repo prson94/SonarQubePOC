@@ -1305,6 +1305,8 @@ order by wi.StartedOn desc";
             var types = Company.Query<dynamic>(QueryConstants.WorkflowObjectTypes).ToList();
             if (changeType == ChangeType.Loaded)
                 types = types.Where(t => t.type == "Fusion").OrderBy(t => t.name).ToList();
+            else if (changeType == ChangeType.Schedule)
+                types = types.Where(t => t.type == "ArtifactType" || t.type == "TaxonomyType").OrderBy(t => t.name).ToList();
             else
                 types = types.Where(t => t.type != "Fusion").OrderBy(t => t.name).ToList();
 
@@ -2644,8 +2646,8 @@ order by wi.StartedOn desc";
                     fieldChange.AppendValue = field["@AppendValue"] != null ? field["@AppendValue"] : "";
                     fieldChange.ClearValue = field["@ClearValue"] != null ? field["@ClearValue"] : "";
                     FieldType fieldType = Company.GetById<FieldType>(fieldTypeId);
-                    fieldChange.FieldName = fieldType.FriendlyName;
-                    fieldChange.Type = fieldType.Type;
+                    fieldChange.FieldName = fieldType?.FriendlyName;
+                    fieldChange.Type = fieldType?.Type;
                     string formFieldId = field["@FormFieldId"] != null ? field["@FormFieldId"] : null;
                     int stepId = field["@FormStepId"] != null ? field["@FormStepId"] : 0;
                     if (fieldChange.FormValue && formFieldId != null && stepId != 0)

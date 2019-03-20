@@ -12,8 +12,7 @@ import {
     FusionAttributeTypeCustomQuery,
     FusionAttributeItem,
     FusionQueryAttributeType,
-    FusionConfiguration,
-    FusionFilter,    
+    FusionConfiguration,    
     Fusion,
     FusionSchedule,
     FusionConfigurationDetails,
@@ -238,35 +237,14 @@ export class FusionService extends BaseService {
             .then(response => <GridColumn[]>response.json().Columns)
             .catch(err => this.handleError(err));
     }
-
-    getFusionConfigurationFilters(fusionTypeID: number, fusionID: number): Promise<FusionFilter[]> {
-        return this.http.get(`api/fusion/${fusionTypeID}/configurations/${fusionID}/filters`)
-            .toPromise()
-            .then(response => <FusionFilter[]>response.json())
-            .catch(err =>  this.handleError(err));
-    }
-
+    
     getFusionAttributeTypeList(fusionID: number): Promise<FusionAttributeType[]> {
         return this.http.get(`form/getfusionattributetypes?fusionID=${fusionID}`)
             .toPromise()
             .then(response => <FusionAttributeType[]>response.json())
             .catch(err => this.handleError(err));
     }
-
-    postFusionConfigurationFilter(filter: FusionFilter): Promise<any> {
-        return this.http.post('form/fusionfilter', filter)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
-    }
-
-    putFusionConfigurationFilter(filter: FusionFilter): Promise<any> {
-        return this.http.put('form/fusionfilter', filter)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
-    }
-
+    
     getFusionQueryAttributeTypes(typeid: number, id: number, query: string = ''): Promise<FusionQueryAttributeType[]> {
         return this.http.get(`services/fusion/${typeid}/configurations/${id}/queryattributetypes?${query}`)
             .toPromise()

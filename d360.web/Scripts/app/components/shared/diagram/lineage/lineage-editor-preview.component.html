@@ -1,0 +1,11 @@
+<header>
+    <span>{{header}}</span>
+    <span *ngIf="isLoading"
+          id="LoadingProgress"
+          style="color: #e2792a"><i class="fa fa-refresh fa-spin fa-lg fa-fw"></i>Loading...</span>
+    <d3s-tile-actions (menuClick)="menuClick($event)"
+                      [menuItems]="menuItems"
+                      hasMenu="true"></d3s-tile-actions>
+</header>
+<div #diagram
+     id="LineagePreviewDiagram"></div>

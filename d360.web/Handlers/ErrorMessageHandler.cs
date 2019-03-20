@@ -39,13 +39,13 @@ namespace d360.web.Handlers
                         {
                             return response;
                         }
-                        else
+                        else if (responseContent is Controllers.BaseApiController.GenericHttpError)
                         {
-                            var httpError = responseContent as HttpError;
+                            var httpError = responseContent as Controllers.BaseApiController.GenericHttpError;
 
                             if (httpError != null)
                             {
-                                errorMessage = httpError.Message;                                
+                                errorMessage = httpError.Message;
                                 responseContent = null;
                             }
 
@@ -56,6 +56,32 @@ namespace d360.web.Handlers
                             };
                             var result = request.CreateResponse(response.StatusCode, responseMetadata);
                             return result;
+                        }
+                        else if(responseContent is Exception)
+                        {
+                            var responseMetadata = new ErrorResponse
+                            {
+                                message = (responseContent as Exception).Message,
+                                title = "Bad request submitted"
+                            };
+                            return request.CreateResponse(response.StatusCode, responseMetadata);
+                        }
+                        else
+                        {
+                            var httpError = responseContent as HttpError;
+
+                            if (httpError != null)
+                            {
+                                errorMessage = httpError.Message;
+                                responseContent = null;
+                            }
+
+                            var responseMetadata = new ErrorResponse
+                            {
+                                message = errorMessage,
+                                title = "Bad request submitted"
+                            };
+                            return request.CreateResponse(response.StatusCode, responseMetadata);                            
                         }
                     }
                     catch { } //continue on to return the normal response.

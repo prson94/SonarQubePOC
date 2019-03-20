@@ -2487,6 +2487,11 @@
             <param name="phrase"></param>
             <returns></returns>
         </member>
+        <member name="T:d360.web.Controllers.V2.AuditController">
+            <summary>
+            
+            </summary>
+        </member>
         <member name="M:d360.web.Controllers.V2.CrossReferencesController.Get">
             <summary>
             Returns all asset cross references.
@@ -2795,13 +2800,45 @@
             <summary>
             Adds one or more metric results for processing and scoring.
             </summary>
+            <remarks>If you do not provide an effective date for a metric result, the current date (UTC) will be used.</remarks>
             <param name="model">The list of raw metrics to save for processing.</param>
-            <returns>he list of staging results.</returns>
+            <returns>The list of staging results.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.ProfilesController.InsertDataProfile(System.Collections.Generic.List{d360.core.entities.AssetDataProfileViewModel})">
+            <summary>
+            Adds a set of data profiles based on the given asset Uid, and returns a list of results. If a profile for this asset Uid already exists, it will be overwritten
+            </summary>
+            <param name="model">A list of metric data profiles</param>
+            <returns>An HTTP status code with an appropriate status message.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.ProfilesController.DeleteDataProfile(System.Collections.Generic.List{d360.core.entities.AssetDataProfileDelete})">
+            <summary>
+            Deletes a set of data profiles based on the given asset Uids, and returns a list of results.
+            </summary>
+            <param name="model">A list of metric data profiles</param>
+            <returns>An HTTP status code with an appropriate status message.</returns>
         </member>
         <member name="T:d360.web.Controllers.V2.RelationshipsController">
             <summary>
             This service houses all endpoints handling glossary-related data such as artifacts and models.
             </summary>
+        </member>
+        <member name="M:d360.web.Controllers.V2.RelationshipsController.GetRelationshipsAsync(System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{d360.core.enums.State},System.Nullable{System.Int32},System.Nullable{System.Int32})">
+            <summary>
+            GET a list of relationships.
+            </summary>
+            <remarks>
+            In addition to the below query parameters a field name for the relationship type can be specified to filter by exact match. For example MyCustomField=someExactValue. 
+            This must be used in conjunction with the RelationshipTypeUid query parameter.
+            </remarks>
+            <param name="RelationshipTypeUid">Filter by an relationship type's unique identifier. Using this parameter will also provide any field values for the relationships, if applicable.</param>
+            <param name="PredicateUid">Filter by an predicate's unique identifier.</param>
+            <param name="SubjectUid">Filter by a subject asset's unique identifier.</param>
+            <param name="ObjectUid">Filter by an object asset's unique identifier.</param>
+            <param name="State">Filter on the state, or status, of a relationship.</param>
+            <param name="_pageNum">Allows for changing the current page of results you are requesting.</param>
+            <param name="_pageSize">Allows for changing the page size of results you are requesting. The maximum page size is 250.</param>
+            <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.V2.RelationshipsController.GetRelationshipTypesAsync(System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{d360.core.enums.State})">
             <summary>
@@ -2816,6 +2853,8 @@
             <summary>
             GET a list of relationship types using an ID and a Type.
             </summary>
+            <param name="id">The legacy type ID of the asset type.</param>
+            <param name="type">The legacy object type of the asset type (ArtifactType, FusioAttributeType, TaxonomyType, etc.).</param>
             <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.V2.RelationshipsController.PostRelationshipsAsync(System.Guid,d360.core.entities.RelationshipInserts)">
@@ -2979,14 +3018,6 @@
             Gets a list of available relationships types based on the source type specified in parameters. 
             Used in the Filter By Relationship tile on artifact list pages.
             </summary>
-        </member>
-        <member name="M:d360.web.Controllers.D3SApiController.GetFieldForObject(d360.core.SystemObjects,System.Int32)">
-            <summary>
-            Used mainly by the client-side search tool.
-            </summary>
-            <param name="type">The type of object</param>
-            <param name="id">The ID of the object</param>
-            <returns>A list of fields with the name, friendly name, and value.</returns>
         </member>
         <member name="T:d360.web.Controllers.BaseController.RelationshipDirectionFieldInfo">
             <summary>

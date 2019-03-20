@@ -89,7 +89,7 @@ namespace d360.model
 
         public DbSet<Artifact> Artifacts { get; set; }
 
-
+        public DbSet<AssetDataProfile> AssetDataProfiles { get; set; }
 
         public DbSet<AssetTypeExportTemplate> AssetTypeExportTemplates { get; set; }
 
@@ -155,9 +155,7 @@ namespace d360.model
         public DbSet<FusionAttributeType> FusionAttributeTypes { get; set; }
 
         public DbSet<FusionAttributeTypeCustomQuery> FusionAttributeTypeCustomQueries { get; set; }
-
-        public DbSet<FusionFilter> FusionFilters { get; set; }
-
+                
         public DbSet<FusionQueryAttribute> FusionQueryAttributes { get; set; }
 
         public DbSet<FusionQueryAttributeType> FusionQueryAttributeTypes { get; set; }
@@ -436,6 +434,7 @@ select	'ResourceType' as ObjectType, 1 as ObjectTypeID, 'User' as Name ").ToList
             return list;
         }
 
+
         public async Task<List<IntersectTypeApiViewModel>> GetIntersectTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "")
         {
             var dbArgs = new DynamicParameters();
@@ -459,7 +458,7 @@ select	'ResourceType' as ObjectType, 1 as ObjectTypeID, 'User' as Name ").ToList
                     if (Guid.TryParse(assetTypeUidString, out assetTypeUid))
                     {
                         dbArgs.Add("@assettypeuid", assetTypeUid);
-                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (I.SubjectUid = @assettypeuid OR I.ObjectUid = @assettypeuid)";
+                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (S.Uid = @assettypeuid OR O.Uid = @assettypeuid)";
                     }
                 }
                 if (queryParams.ToList().Any(q => q.Key.ToLower() == "state"))
@@ -516,7 +515,7 @@ from	IntersectType I
 
         public Task<List<IntersectTypeApiViewModel>> GetActiveIntersectTypesByObjectType(int id, SystemObjects type)
         {
-            return GetIntersectTypes(null, $"where I.State = 1 and (I.SubjectID = {id} and I.[Subject] = '{type.ToString()}' or I.ObjectID = {id} and I.Object = '{type.ToString()}')");
+            return GetRelationshipTypes(null, $"where I.State = 1 and (I.SubjectID = {id} and I.[Subject] = '{type.ToString()}' or I.ObjectID = {id} and I.Object = '{type.ToString()}')");
         }
 
         public List<AllocationPossibility> GetAllocationOptions()
@@ -846,7 +845,7 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
 
         public Dictionary<string, object> GetFusionAsDictionary(int id)
         {
-            var item = GetById<Fusion>(id, i => i.FusionFilters);
+            var item = GetById<Fusion>(id);
             var sType = SystemObjects.Fusion.ToString();
             var fields = Filter<FieldWithRelation>(i => i.ObjectType == sType && i.ObjectID == item.ID && i.IsListable).ToList();
 
@@ -864,11 +863,6 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
             foreach (var n in fields.Where(f => f.ObjectID == item.ID).OrderBy(f => f.SortOrder))
             {
                 model.Add(n.Name, n.FormattedValue);
-            }
-
-            if (item.FusionFilters.Count > 0)
-            {
-                model.Add("Filters", item.FusionFilters.Select(i => new { i.FusionAttributeTypeID, i.Filter }).ToDictionary(k => k.FusionAttributeTypeID, v => v.Filter));
             }
 
             bool hasDashboards = Filter<Report>(x => x.ObjectType == "FusionType" && x.ObjectID == item.FusionTypeID && x.ReportType == "powerbi").Any();
