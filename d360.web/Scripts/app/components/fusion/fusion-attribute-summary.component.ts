@@ -16,7 +16,7 @@ import { StateService } from '../../services/state.service';
     selector: 'd3s-fusion-attribute-summary',    
     template: `                 
                 <div class="tile tile-detail" style="position:initial">
-                    <header>Values<d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="doExport()"></d3s-tile-actions></header>
+                    <header *ngIf ="!hideHeader">Values<d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="doExport()"></d3s-tile-actions></header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading && !showEditor">
                         <d3s-fusion-attribute-summary-filters [filterColumns]="filtercolumns" [filters]="stateService.fusionFilters.filters" (filtersChange)="doFilterResults($event)" [isFiltering]="isFiltering"></d3s-fusion-attribute-summary-filters>                 
@@ -72,7 +72,7 @@ import { StateService } from '../../services/state.service';
                         </p-table>
                     </span>
                     <d3s-dynamic-editor *ngIf="showEditor" [newActionName]="newActionName" [objectID]="fusionAttributeTypeId" objectType="FusionAttribute" [title]="'Item'" [selection]="fusionAttribute" [rowID]="'ID'" (saveClick)="saveItem($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>
-                </div>
+                 </div>
                 `,
     providers: [FusionAttributeService, GridDefinitionService],
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -91,6 +91,9 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
     @Input() fusionQueryAttribute: any;
     @Output() fusionQueryAttributeChange = new EventEmitter();
     @Input() initialFusionQueryAttributeId: number;
+
+    @Input() hideHeader: boolean = false;
+    @Input() isDataProfile: boolean = false;
 
     private fusionObject: string = 'FusionAttributeType';
     private fusionObjectID: number = 0;
@@ -154,8 +157,8 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
 
     getFieldsDefinition() {
         this.isLoading = true;
-
-        this.gridDefinitionService.getGridDefinition(this.fusionObjectID, this.fusionObject, this.fusionId, 'FusionID')
+        let target: string = this.isDataProfile ? 'DataProfile' : 'FusionID';
+        this.gridDefinitionService.getGridDefinition(this.fusionObjectID, this.fusionObject, this.fusionId, target)
             .then(result => {
                 if (result) {
                     this.columns = result.Columns;
@@ -190,6 +193,7 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
             }
         }
         this.isFiltering = true;
+        debugger;
         if (this.fusionObject == "FusionQueryAttributeType") {
             this.fusionAttributeService.getFusionQueryAttributes(this.fusionId, this.fusionObjectID, this.stateService.fusionFilters.currentPageNumber, this.stateService.fusionFilters.rowsPerPage, this.stateService.fusionFilters.sortField, this.stateService.fusionFilters.sortOrder, this.stateService.fusionFilters.filters)
                 .then(res => {
@@ -205,7 +209,8 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
                 });
         }
         else {
-            this.fusionAttributeService.getFusionAttributes(this.fusionId, this.fusionObjectID, this.stateService.fusionFilters.currentPageNumber, this.stateService.fusionFilters.rowsPerPage, this.stateService.fusionFilters.sortField, this.stateService.fusionFilters.sortOrder, this.stateService.fusionFilters.filters)
+            let target: string = this.isDataProfile ? 'DataProfile' : '';
+            this.fusionAttributeService.getFusionAttributes(this.fusionId, this.fusionObjectID,target, this.stateService.fusionFilters.currentPageNumber, this.stateService.fusionFilters.rowsPerPage, this.stateService.fusionFilters.sortField, this.stateService.fusionFilters.sortOrder, this.stateService.fusionFilters.filters)
                 .then(res => {
                     this.results = res;
                     this.isFiltering = false;

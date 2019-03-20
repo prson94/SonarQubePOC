@@ -357,6 +357,29 @@ where   A.FusionID = @f
             dbArgs.Add("f", fusionID);
             dbArgs.Add("t", fusionAttributeTypeID);
 
+            string profileColumns = "";
+            string profileJoins = "";
+            if(queryParameters["target"]=="DataProfile")
+            {
+                profileColumns = @" ,ADP.[RowCount] as RowCounts,
+                                    ADP.Uniqueness,
+                                    ADP.UniqueCount,
+                                    ADP.Completeness,
+                                    ADP.NullCount,
+                                    ADP.BlankCount,
+                                    ADP.DataType,
+                                    ADP.MinimumValue,
+                                    ADP.MaximumValue,
+                                    ADP.Precision,
+                                    ADP.Scale,
+                                    ADP.Average,
+                                    ADP.Median,
+                                    ADP.StandardDeviation,
+                                    ADP.Top10Values,
+                                    ADP.ProcessIdentifier";
+                profileJoins = @"inner join Asset AA on AA.ObjectID=A.ID and AA.Object='FusionAttribute'
+                                 inner join  AssetDataProfile ADP on AA.ID = ADP.AssetID";
+            }
             #region Count SQL
 
             var countSql = $@"
@@ -364,9 +387,12 @@ select  A.ID,
         A.Name, 
         A.FusionAttributeTypeID,
         'FusionAttribute' as [Type]
+        {profileColumns}
         {filtercolumns} 
         {parentFilterColumnText} 
-from	FusionAttribute A {parentQueryJoinText} {filterjoins}
+from	FusionAttribute A
+{profileJoins}
+{parentQueryJoinText} {filterjoins}
 where   A.FusionID = @f 
         and A.FusionAttributeTypeID = @t 
         and A.Deleted = 0";
@@ -386,9 +412,12 @@ select  A.ID
         , A.FusionAttributeTypeID
         , 'FusionAttribute' as [Type]
         , cast({editable} as bit) as IsEditable
+       {profileColumns}
         {columns} 
         {parentQueryColumnText} 
-from	FusionAttribute A {parentQueryJoinText} {joins} 
+from	FusionAttribute A 
+{profileJoins}
+{parentQueryJoinText} {joins} 
 where A.FusionID = @f and A.FusionAttributeTypeID = @t and A.Deleted = 0";
 
             sql = $@"select * from ({sql}) A";

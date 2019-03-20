@@ -10,13 +10,13 @@ import { JsonResult } from '../models/jsonresult.model';
 export class FusionAttributeService extends BaseService {
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
-    getFusionAttributes(fusionId: number, fusionAttributeTypeId: number, pageNumber?: number, pageSize?: number, sortField?: string, sortOrder?: SortOrder, filters?: FusionAttributeFilter[]): Promise<FusionAttributePagedResults> {
+    getFusionAttributes(fusionId: number, fusionAttributeTypeId: number,target?:string, pageNumber?: number, pageSize?: number, sortField?: string, sortOrder?: SortOrder, filters?: FusionAttributeFilter[]): Promise<FusionAttributePagedResults> {
         let sortOrderText = '';
 
         if (sortOrder == SortOrder.Ascending) sortOrderText = 'asc';
         if (sortOrder == SortOrder.Descending) sortOrderText = 'desc';
 
-        var url = `internal/fusion/ItemsByAttributeType?fusionID=${fusionId}&fusionAttributeTypeID=${fusionAttributeTypeId}&pagenum=${pageNumber ? pageNumber : 0}&pagesize=${pageSize ? pageSize : 20}&sortDataField=${sortField ? sortField : ''}&sortOrder=${sortOrderText}`;
+        var url = `internal/fusion/ItemsByAttributeType?fusionID=${fusionId}&fusionAttributeTypeID=${fusionAttributeTypeId}&target=${target}&pagenum=${pageNumber ? pageNumber : 0}&pagesize=${pageSize ? pageSize : 20}&sortDataField=${sortField ? sortField : ''}&sortOrder=${sortOrderText}`;
 
         if (filters && filters.length > 0) {
             url += `&filterscount=${filters.length}`;

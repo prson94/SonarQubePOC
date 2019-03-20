@@ -906,6 +906,17 @@ where   h.ID <> @t order by h.[Level] desc;
                     fields.Add(new GridField { name = "AssetID", type = "number" });
                     fields.Add(new GridField { name = "ID", type = "number" });
                     fields.Add(new GridField { name = "Name", type = "string" });
+                    if (Request.GetQueryString("target") == "DataProfile")
+                    {
+                        filterColumns.Add(new GridFilterColumn { text = "Row Count", datafield = "RowCounts", filtertype = GridColumn.FILTER_TYPE_NUMBER, columntype = GridColumn.COLUMN_TYPE_NUMBER });
+                        filterColumns.Add(new GridFilterColumn { text = "Uniqueness", datafield = "Uniqueness", filtertype = GridColumn.FILTER_TYPE_NUMBER, columntype = GridColumn.COLUMN_TYPE_NUMBER});
+
+                        fields.Add(new GridField { name = "Row Count", type = "number", apiName = "RowCounts" });
+                        fields.Add(new GridField { name = "Uniqueness", type = "number", apiName = "Uniqueness" });
+
+                        columns.Add(new GridColumn { text = "Row Count", datafield = "RowCounts", filteritems = new List<string>() });
+                        columns.Add(new GridColumn { text = "Uniqueness", datafield = "Uniqueness", filteritems = new List<string>() });
+                    }
 
                     parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth);
 

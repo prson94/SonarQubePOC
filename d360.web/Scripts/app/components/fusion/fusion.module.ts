@@ -46,6 +46,8 @@ import { FusionAttributeSummaryFiltersComponent } from './fusion-attribute-summa
 import { FusionQueryListComponent } from './fusion-query-list.component';
 import { FusionQueryAttributeEditorComponent } from './fusion-query-attribute-editor.component';
 import { FusionHistoryComponent } from './fusion-history.component'
+import { FusionAttributeTabsComponent } from './fusion-attribute-tabs.component';
+import { FustionAttributeComponent } from './fusion-attribute.component';
 
 import {
     GrowlModule,
@@ -60,12 +62,15 @@ import {
     TreeModule,
     FileUploadModule,
     SharedModule,
+    TabViewModule,
 } from 'primeng/primeng';
 
 import { TableModule } from 'primeng/table';
 
 import { CodemirrorModule } from 'ng2-codemirror';
 import { HighchartsStatic } from 'angular2-highcharts/dist/HighchartsService';
+
+
 
 declare var require: any;
 
@@ -103,6 +108,7 @@ export function highchartsFactory() {
         FileUploadModule,
         SharedModule,
         TableModule,
+        TabViewModule,
 
         //editor
         CodemirrorModule,
@@ -146,7 +152,9 @@ export function highchartsFactory() {
         FusionTechnicalMappingsComponent,
         FusionStructureTreeComponent,
         FusionQueryListComponent,
-        FusionQueryAttributeEditorComponent,        
+        FusionQueryAttributeEditorComponent,  
+        FusionAttributeTabsComponent,
+        FustionAttributeComponent,
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

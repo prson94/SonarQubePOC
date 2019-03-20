@@ -26,16 +26,8 @@ import { AuthenticationService } from '../../services/authentication.service';
                         </div>
                     </div>
                     <div class="col l9 m12 s12" *ngIf="!isQueryConfigVisible">
-                        <d3s-fusion-attribute-summary [initialFusionAttributeId]="initialFusionAttributeId" [initialFusionQueryAttributeId]="initialFusionQueryAttributeId" [fusionId]="fusionId" [fusionAttributeTypeId]="selectedFusionAttributeTypeId" [fusionQueryAttributeTypeId]="selectedFusionQueryAttributeTypeId" [fusionQueryAttribute]="selectedFusionQueryAttribute" [fusionAttribute]="selectedFusionAttribute" (fusionAttributeChange)="selectedFusionAttribute=$event;" (fusionQueryAttributeChange)="selectedFusionQueryAttribute=$event;"></d3s-fusion-attribute-summary>                        
-                        <div class="tile tile-detail" *ngIf="selectedFusionAttribute">
-                            <d3s-object-definition-tile [objectPermissions]="[]" [objectID]="selectedFusionAttribute?.ID" [objectType]="selectedFusionQueryAttributeTypeId ? 'FusionQueryAttribute':'FusionAttribute'" [hasAttributes]="selectedFusionAttribute?.AllowAttributes" [nymTypes]="selectedFusionAttribute?.NymTypes"></d3s-object-definition-tile>
-                        </div> 
-                        <div *ngIf="selectedFusionAttribute">
-                            <d3s-fusion-attribute-profile-details [fusionAttributeId]="selectedFusionAttribute.ID" [name]="selectedFusionAttribute.Name" [objectType]="selectedFusionQueryAttributeTypeId ? 'FusionQueryAttribute':'FusionAttribute'"></d3s-fusion-attribute-profile-details>
-                        </div>
-                        <div class="tile tile-detail" *ngIf="selectedFusionAttribute">
-                            <d3s-object-relationships [objectPermissions]="permissions" [objectType]="selectedFusionQueryAttributeTypeId ? 'FusionQueryAttribute':'FusionAttribute'" [objectID]="selectedFusionAttribute?.ID" objectName=""></d3s-object-relationships>
-                        </div>                             
+                        <d3s-fusion-attribute *ngIf = "fusionId !=0" [initialFusionAttributeId]="initialFusionAttributeId" [initialFusionQueryAttributeId]="initialFusionQueryAttributeId" [fusionId]="fusionId" [selectedFusionAttributeTypeId]="selectedFusionAttributeTypeId" [selectedFusionQueryAttributeTypeId]="selectedFusionQueryAttributeTypeId" [selectedFusionQueryAttribute]="selectedFusionQueryAttribute" [selectedFusionAttribute]="selectedFusionAttribute"></d3s-fusion-attribute>    
+                        <d3s-fusion-attribute-tabs *ngIf = "fusionId ==0" [initialFusionAttributeId]="initialFusionAttributeId" [initialFusionQueryAttributeId]="initialFusionQueryAttributeId" [fusionId]="fusionId" [selectedFusionAttributeTypeId]="selectedFusionAttributeTypeId" [selectedFusionQueryAttributeTypeId]="selectedFusionQueryAttributeTypeId" [selectedFusionQueryAttribute]="selectedFusionQueryAttribute" [selectedFusionAttribute]="selectedFusionAttribute"></d3s-fusion-attribute-tabs>                        
                     </div>
                     <div class="col l9 m12 s12" *ngIf="isQueryConfigVisible">
                         <d3s-fusion-query-list [fusion]="fusion" (treeRequiresUpdate)="updateTree(tree)"></d3s-fusion-query-list>
