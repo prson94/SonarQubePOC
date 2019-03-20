@@ -197,10 +197,6 @@ namespace igx.jobs.apiexecutionprocessor
             }
             catch (Exception ex)
             {
-                dbExecutionItem.ErrorMessage = ex.GetFullExceptionData(false);
-                dbExecutionItem.CompletedOn = DateTime.UtcNow;
-                company.Update(dbExecutionItem);
-
                 log.WriteLine($"{ex.GetFullExceptionData()}");
                 CoreFunction.AITrackException(functionName, ex, Info.CompanyID, new Dictionary<string, string>() {
                     { "ExecutionID", Info.ExecutionID.ToString() },
@@ -208,6 +204,18 @@ namespace igx.jobs.apiexecutionprocessor
                     { "RequestFileName", Info.RequestFileName },
                     { "ResponseFileName", Info.ResponseFileName }
                 });
+
+                dbExecutionItem.ErrorMessage = ex.GetFullExceptionData(false);
+                dbExecutionItem.CompletedOn = DateTime.UtcNow;
+
+                try
+                {
+                    company.Update(dbExecutionItem);
+                }
+                catch (Exception cex)
+                {
+                    log.WriteLine($"{cex.GetFullExceptionData()}");
+                }                
             }
         }
 
