@@ -37,7 +37,7 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("types"),
-            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of responsibility types.", typeof(List<ResponsibilityTypeViewModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied")
@@ -77,7 +77,7 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("types/{assetTypeUid:guid}"),
-            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of responsibility types.", typeof(List<ResponsibilityTypeViewModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied")
@@ -127,7 +127,7 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("types/{responsibilityTypeUid:Guid}/allocations"),
-            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of asset type allocations for the given responsibility type uid.", typeof(List<ResponsibilityTypeAllocationViewModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied")
@@ -177,7 +177,7 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("types/{responsibilityTypeUid:Guid}/ownershiprules"),
-            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of responsibility type ownership rules for the given responsibility type uid.", typeof(List<ResponsibilityTypeRuleViewModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied")
@@ -233,7 +233,7 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("rules/{responsibilityTypeRuleUid:Guid}/stats"),
-            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Ownership rule statistics for the given responsibility type rule uid.", typeof(ResponsibilityTypeRuleStatsViewModel)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied")
@@ -318,7 +318,7 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("assignments"),
-            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Ownership rule statistics for the given responsibility type rule uid.", typeof(AssetResponsibilityItemModel)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             SwaggerParameter("_pageSize", "The number of results to return per page. The default and max value is 250.", DataType = "integer", ParameterType = "query", Required = false),
@@ -341,6 +341,7 @@ namespace d360.web.Controllers.V2
                 var assetTypeUidFilter = "";
                 var pageSize = 250;
                 var pageNum = -1;
+                var timeout = 300;
 
                 var queryParams = Request.GetQueryNameValuePairs();
 
@@ -377,21 +378,36 @@ namespace d360.web.Controllers.V2
                             case "_assetuid":
                                 assetUidFilter = q.Value;
                                 break;
+                            case "_timeout":
+                                if (int.TryParse(q.Value, out timeout))
+                                {
+                                    if (timeout < 1) timeout = 30; // min timeout
+                                }
+                                break;
                         }
                     }
                 });
 
                 //get the assetids based on the input parameters
-                var res = await getOwnershipAssets(queryParams, assetUidFilter, assetTypeUidFilter, responsibilityUidFilter, assigneeUidFilter, pageSize, pageNum);
+                var res = await getOwnershipAssets(queryParams, assetUidFilter, assetTypeUidFilter, responsibilityUidFilter, assigneeUidFilter, pageSize, pageNum, timeout);
 
                 var assetIDList = res.items.Select(x => x.AssetID);
                 //get the responsibilities that apply to these assets this should be for <= 250 asset ids only
-                var responsibilities = await getOwnershipForGivenAssets(assetIDList, responsibilityUidFilter, assigneeUidFilter);
+                var responsibilities = await getOwnershipForGivenAssets(assetIDList, responsibilityUidFilter, assigneeUidFilter, timeout);
 
-                //stitch the two together assets lis will be smaller worst case since it is paged.
-                foreach (var assetItem in res.items)
+                var assetDictionary = res.items.ToDictionary(t => t.AssetID, t => t);
+                
+                //stitch the two result sets together assets list will be smaller worst case since it is paged. Use a dictionary O(k) lookup time and loop through
+                // the responsibilities O(n) time.  Worse case O(kn)
+                foreach (var responsibility in responsibilities)
                 {
-                    assetItem.Responsibilities = responsibilities.Where(a => a.AssetID == assetItem.AssetID).ToList();
+                    AssetResponsibilityItemModel model = null;
+                    if(assetDictionary.TryGetValue(responsibility.AssetID, out model))
+                    {
+                        if (model.Responsibilities == null) model.Responsibilities = new List<ResponsibilityApiModel>();
+
+                        model.Responsibilities.Add(responsibility);
+                    }                    
                 }
             
                 return Request.CreateResponse(HttpStatusCode.OK, res);
@@ -411,20 +427,30 @@ namespace d360.web.Controllers.V2
         {
             if (assetIDList == null) return null;
             var responsibilityFilterCriteria = "";
+            var assigneeFilterCriteria = "";
+            var overrideAssigneeFilterCriteria = "";
+            var permissionsCriteria = "";
             DynamicParameters dbArgs = new DynamicParameters();
 
             dbArgs.Add("assetIds", assetIDList);
 
             if (!string.IsNullOrEmpty(assigneeUidFilter))
             {
-                responsibilityFilterCriteria = $" and s.[uid] = @assigneeUidFilter";
-                dbArgs.Add("assigneeUid", assigneeUidFilter);
+                assigneeFilterCriteria = $" and s.[uid] = @assigneeUidFilter";
+                overrideAssigneeFilterCriteria = $" and a.[uid] = @assigneeUidFilter";
+                dbArgs.Add("assigneeUidFilter", assigneeUidFilter);
             }
 
             if (!string.IsNullOrEmpty(responsibilityUidFilter))
             {
                 responsibilityFilterCriteria = $" and rt.[uid] = @responsibilityTypeUid";
                 dbArgs.Add("responsibilityTypeUid", responsibilityUidFilter);
+            }
+
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                permissionsCriteria = $" and exists(select 1 from UserAssetPermissions(@r,a.AssetTypeID) u where u.PermissionsBitMask & 64 = 64 and (u.AssetID = a.ID or (u.AssetID = 0 and u.AssetTypeID = a.AssetTypeID)))";
+                dbArgs.Add("r", Company.CurrentResourceID);
             }
 
             var sql = $@"select 
@@ -446,7 +472,7 @@ namespace d360.web.Controllers.V2
                         cross apply [dbo].[GetSecurityAssetUid](rsa.SecurityAsset,rsa.SecurityAssetID) s
                     where
 	                    rr.applytotype = 1 and a.id in @assetIds
-                        {responsibilityFilterCriteria}
+                        {responsibilityFilterCriteria} {assigneeFilterCriteria} {permissionsCriteria}
                     union
                     select 
                         ra.assetid as 'AssetID',
@@ -462,11 +488,12 @@ namespace d360.web.Controllers.V2
 	                    inner join [dbo].[ResponsibilityTypeRelationRule] rr on rr.ResponsibilityTypeID = rt.id
 	                    inner join [dbo].[ResponsibilityTypeRelation] rtr on rtr.ObjectID = rr.ObjectID and rtr.ObjectType = rr.[Object]
 	                    inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rsa on rsa.RuleID = rr.id
-	                    inner join [dbo].[ResponsibilityRuleResultAsset] ra on ra.RuleID = rr.id		
+	                    inner join [dbo].[ResponsibilityRuleResultAsset] ra on ra.RuleID = rr.id	
+                        inner join [dbo].[asset] a on ra.assetid = a.id
                         cross apply [dbo].[GetSecurityAssetUid](rsa.SecurityAsset,rsa.SecurityAssetID) s
                     where
 	                    rr.applytotype = 0 and ra.assetid in @assetIds
-                        {responsibilityFilterCriteria}
+                        {responsibilityFilterCriteria} {assigneeFilterCriteria} {permissionsCriteria}
                     union
                     select 
                         oride.assetid as 'AssetID',
@@ -482,7 +509,7 @@ namespace d360.web.Controllers.V2
 	                    inner join [dbo].[ResponsibilityTypeRelationOverrideItem] oride on oride.ResponsibilityTypeID = rt.id	
                         inner join [dbo].[asset] a on oride.securityassetid = a.objectid and a.[object] = 'Resource'
                     where
-	                    oride.assetid in @assetIds {responsibilityFilterCriteria}";
+	                    oride.assetid in @assetIds {responsibilityFilterCriteria} {overrideAssigneeFilterCriteria} {permissionsCriteria}";
 
 
             return (await Company.Database.Connection.QueryAsync<ResponsibilityApiModel>(sql, dbArgs, null, timeout));
@@ -546,39 +573,22 @@ namespace d360.web.Controllers.V2
             }
 
             permissionsFilter = $" and not exists(select 1 from AssetTypesUserCantRead({ Company.CurrentResourceID}) u where u.AssetTypeID = a.AssetTypeID) and not exists(select 1 from AssetsByTypeUserCantRead({ Company.CurrentResourceID}, a.AssetTypeID) u where u.AssetID = a.ID)";
-            
-            var countSql = $@"select sum(A.cnt) from (
-                    select
-	                    count(1) as cnt
-                    from 
-	                    asset a
-	                    inner join assetType att on a.AssetTypeID = att.id
-                    where 
-	                    exists (select 1 from ResponsibilityRuleResultAsset rd inner join ResponsibilityTypeRelationRule rr on (rr.id = rd.RuleID) inner join ResponsibilityType rt on (rr.responsibilitytypeid = rt.id) {responsibilityQueryAdditionalJoins} where rd.assetid = a.id and rr.applytotype = 0 {responsibilityQueryFilterSql})		
-                        {assetQueryFilterSql}
-                        {permissionsFilter}
-                    union
-                    select
-	                    count(1) as cnt
-                    from 
-	                    asset a
-	                    inner join assetType att on a.AssetTypeID = att.id
-                    where 
-	                    exists (select 1 from ResponsibilityRuleResultAsset rd inner join ResponsibilityTypeRelationRule rr on (rr.id = rd.RuleID) inner join ResponsibilityType rt on (rr.responsibilitytypeid = rt.id) {responsibilityQueryAdditionalJoins} where rd.assettypeid = a.assettypeid and rr.applytotype = 1  {responsibilityQueryFilterSql})
-                        {assetQueryFilterSql}
-                        {permissionsFilter}
-                    union
-                    select
-	                    count(1) as cnt
-                    from 
-	                    asset a
-	                    inner join assetType att on a.AssetTypeID = att.id
-                    where 
-	                    exists (select 1 from ResponsibilityTypeRelationOverrideItem rd inner join ResponsibilityType rt on(rd.ResponsibilityTypeID = rt.id) {responsibilityOverrideQueryAdditionalJoins} where rd.AssetID = a.ID {responsibilityQueryFilterSql})
-                        {assetQueryFilterSql}
-                        {permissionsFilter}
-	                    )   A                   
-            ";
+
+
+            var countSql = $@"        select
+	                                        count(1)
+                                        from 
+	                                        asset a
+	                                        inner join assetType att on a.AssetTypeID = att.id
+                                        where 
+	                                        (exists (select 1 from ResponsibilityRuleResultAsset rd inner join ResponsibilityTypeRelationRule rr on (rr.id = rd.RuleID) inner join ResponsibilityType rt on (rr.responsibilitytypeid = rt.id) {responsibilityQueryAdditionalJoins} where rd.assetid = a.id and rr.applytotype = 0 {responsibilityQueryFilterSql} )		
+							                    or 
+						                    exists (select 1 from ResponsibilityTypeRelationOverrideItem rd inner join ResponsibilityType rt on(rd.ResponsibilityTypeID = rt.id) {responsibilityOverrideQueryAdditionalJoins} where rd.AssetID = a.ID {responsibilityQueryFilterSql} )
+							                    or
+						                    exists (select 1 from ResponsibilityRuleResultAsset rd inner join ResponsibilityTypeRelationRule rr on (rr.id = rd.RuleID) inner join ResponsibilityType rt on (rr.responsibilitytypeid = rt.id) {responsibilityQueryAdditionalJoins} where rd.assetid = a.id and rr.applytotype = 0 {responsibilityQueryFilterSql} )		
+						                    )
+                                             {assetQueryFilterSql}
+                                             {permissionsFilter}            ";
             
             //run the count query if count is zero bail no point in continuing
             res.total = (await Company.Database.Connection.QuerySingleOrDefaultAsync<int>(countSql, dbArgs, null, timeout));
@@ -593,47 +603,25 @@ namespace d360.web.Controllers.V2
                 offsetSql = $"offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
 
                 var sql = $@"
-                    (select
-	                    a.id as AssetId,
-	                    a.uid as AssetUid,
-	                    att.uid as AssetTypeUid,
-	                    att.name as AssetTypeName
-                    from 
-	                    asset a
-	                    inner join assetType att on a.AssetTypeID = att.id
-                    where 
-	                    exists (select 1 from ResponsibilityRuleResultAsset rd inner join ResponsibilityTypeRelationRule rr on (rr.id = rd.RuleID) inner join ResponsibilityType rt on (rr.responsibilitytypeid = rt.id)  {responsibilityQueryAdditionalJoins} where rd.assetid = a.id and rr.applytotype = 0 {responsibilityQueryFilterSql})		
-                        {assetQueryFilterSql}
-                        {permissionsFilter}
-                    union
                     select
 	                    a.id as AssetId,
 	                    a.uid as AssetUid,
 	                    att.uid as AssetTypeUid,
 	                    att.name as AssetTypeName
                     from 
-	                    asset a
-	                    inner join assetType att on a.AssetTypeID = att.id
+	                   asset a
+	                   inner join assetType att on a.AssetTypeID = att.id
                     where 
-	                    exists (select 1 from ResponsibilityRuleResultAsset rd inner join ResponsibilityTypeRelationRule rr on (rr.id = rd.RuleID) inner join ResponsibilityType rt on (rr.responsibilitytypeid = rt.id)  {responsibilityQueryAdditionalJoins} where rd.assettypeid = a.assettypeid and rr.applytotype = 1  {responsibilityQueryFilterSql})
+	                    (exists (select 1 from ResponsibilityRuleResultAsset rd inner join ResponsibilityTypeRelationRule rr on (rr.id = rd.RuleID) inner join ResponsibilityType rt on (rr.responsibilitytypeid = rt.id) {responsibilityQueryAdditionalJoins} where rd.assetid = a.id and rr.applytotype = 0 {responsibilityQueryFilterSql} )		
+						    or 
+                        exists (select 1 from ResponsibilityTypeRelationOverrideItem rd inner join ResponsibilityType rt on(rd.ResponsibilityTypeID = rt.id) {responsibilityOverrideQueryAdditionalJoins} where rd.AssetID = a.ID {responsibilityQueryFilterSql} )
+						    or
+						exists (select 1 from ResponsibilityRuleResultAsset rd inner join ResponsibilityTypeRelationRule rr on (rr.id = rd.RuleID) inner join ResponsibilityType rt on (rr.responsibilitytypeid = rt.id) {responsibilityQueryAdditionalJoins} where rd.assetid = a.id and rr.applytotype = 0 {responsibilityQueryFilterSql} )		
+						)
                         {assetQueryFilterSql}
-                        {permissionsFilter}
-                    union
-                    select
-	                    a.id as AssetId,
-	                    a.uid as AssetUid,
-	                    att.uid as AssetTypeUid,
-	                    att.name as AssetTypeName
-                    from 
-	                    asset a
-	                    inner join assetType att on a.AssetTypeID = att.id
-                    where 
-	                    exists (select 1 from ResponsibilityTypeRelationOverrideItem rd inner join ResponsibilityType rt on(rd.ResponsibilityTypeID = rt.id)  {responsibilityOverrideQueryAdditionalJoins} where rd.AssetID = a.ID {responsibilityQueryFilterSql})
-                        {assetQueryFilterSql}
-                        {permissionsFilter}
-	                    )  
-                    {orderBySql} {offsetSql}
-            ";
+                        {permissionsFilter}   	                    
+                        {orderBySql} {offsetSql} 
+                    ";
 
                 res.items = (await Company.Database.Connection.QueryAsync<AssetResponsibilityItemModel>(sql, dbArgs, null, timeout)).ToList();
 

@@ -2972,7 +2972,7 @@
         </member>
         <member name="M:d360.web.Controllers.V2.ResponsibilitiesController.GetResponsibilities">
             <summary>
-            Retrieves a list of responsibility ownership of assets based on the provided parameters.  Administrators can see all ownership.  Assets and ownership results reflect the users permissions to see the assets and the ownership details for them.
+            Retrieves a list of responsibility ownership of assets based on the provided parameters.  Assets and ownership results reflect the users permissions to see the assets and the ownership details for them.  No filters applied will return all items which have at least one owner.
             </summary>        
             <returns>Returns a list of assets and there corresponding ownership information.</returns>
         </member>

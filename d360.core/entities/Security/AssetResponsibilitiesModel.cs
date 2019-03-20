@@ -57,11 +57,11 @@ namespace d360.core.entities
                 switch ((SecurityAsset ??"").ToUpper())
                 {
                     case "R":
-                        return "Resource";
+                        return "resource";
                     case "G":
-                        return "Group";
+                        return "group";
                     case "O":
-                        return "Organization";
+                        return "organization";
                     default:
                         return null;
                 }
