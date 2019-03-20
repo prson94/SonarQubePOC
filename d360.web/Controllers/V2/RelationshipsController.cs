@@ -17,6 +17,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
+using System.Web.Http.Description;
 
 namespace d360.web.Controllers.V2
 {
@@ -118,9 +119,12 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// GET a list of relationship types using an ID and a Type.
         /// </summary>
+        /// <param name="id">The legacy type ID of the asset type.</param>
+        /// <param name="type">The legacy object type of the asset type (ArtifactType, FusioAttributeType, TaxonomyType, etc.).</param>
         /// <returns></returns>
         [
             HttpGet,
+            ApiExplorerSettings(IgnoreApi = true),
             MapToApiVersion("2.0"),
             Route("types/{id}/{type}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
