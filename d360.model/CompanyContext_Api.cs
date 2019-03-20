@@ -1035,10 +1035,11 @@ from	IntersectType I
 	    from	PredicateIntersect I 
 			    inner join h as P on P.ExecutionID = @ExecutionID and I.PredicateType = {(int)predicateType} and P.Object = I.Subject and P.ObjectID = I.SubjectID
 			    inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
-        where   P.ItemNumber between {beginItemNumber} and {endItemNumber}
+        where   P.ItemNumber between {beginItemNumber} and {endItemNumber} and P.[Level] <= 15
     )
     insert into api.ExecutionDeletedAsset ([ExecutionID],[ItemNumber],[Uid],[AssetID],[IntersectID],[FromHierarchy])
-        select  ExecutionID, 
+        select  distinct 
+                ExecutionID, 
                 ItemNumber, 
                 [Uid], 
                 AssetID, 
