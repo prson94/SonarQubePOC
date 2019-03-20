@@ -588,12 +588,15 @@ from    api.ExecutionAsset T
         {
             var dbArgs = new DynamicParameters();
 
-            var countSql = "from [Intersect] I";
+            var countSql = "from [Intersect] I inner join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID inner join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID";
 
             List<FieldType> fieldTypes = null;
             bool filteringByFields = false;
             int pageNumber = 1;
             int pageSize = 250;
+
+            whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" S.ID not in ({GetNoReadSqlStatement(Permission.ReadRelationships)}) and S.AssetTypeID not in ({GetAssetTypeNoReadSqlStatement(Permission.ReadRelationships)})";
+            whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" O.ID not in ({GetNoReadSqlStatement(Permission.ReadRelationships)}) and O.AssetTypeID not in ({GetAssetTypeNoReadSqlStatement(Permission.ReadRelationships)})";
 
             if (queryParams != null)
             {
@@ -644,7 +647,6 @@ from    api.ExecutionAsset T
                     {
                         dbArgs.Add("@subjectuid", subjectUid);
                         whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (S.Uid = @subjectuid)";
-                        countSql += $" inner join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID and S.[Uid] = @subjectuid";
                     }
                 }
                 if (queryParamsList.Any(q => q.Key.ToLower() == "objectuid"))
@@ -655,7 +657,6 @@ from    api.ExecutionAsset T
                     {
                         dbArgs.Add("@objectuid", objectUid);
                         whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (O.Uid = @objectuid)";
-                        countSql += $" inner join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID and O.[Uid] = @objectuid";
                     }
                 }
                 if (queryParamsList.Any(q => q.Key.ToLower() == "_pagenum"))

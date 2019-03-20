@@ -72,13 +72,13 @@ namespace d360.web.Controllers.V2
         /// In addition to the below query parameters a field name for the relationship type can be specified to filter by exact match. For example MyCustomField=someExactValue. 
         /// This must be used in conjunction with the RelationshipTypeUid query parameter.
         /// </remarks>
-        /// <param name="RelationshipTypeUid">Allows for filtering by an relationship type's unique identifier. Using this parameter will also provide any field values for the relationships, if applicable.</param>
-        /// <param name="PredicateUid">Allows for filtering by an predicate's unique identifier.</param>
-        /// <param name="SubjectUid">Allows for filtering by a subject asset's unique identifier.</param>
-        /// <param name="ObjectUid">Allows for filtering by an object asset's unique identifier.</param>
-        /// <param name="State"></param>
-        /// <param name="_pageNum"></param>
-        /// <param name="_pageSize"></param>
+        /// <param name="RelationshipTypeUid">Filter by an relationship type's unique identifier. Using this parameter will also provide any field values for the relationships, if applicable.</param>
+        /// <param name="PredicateUid">Filter by an predicate's unique identifier.</param>
+        /// <param name="SubjectUid">Filter by a subject asset's unique identifier.</param>
+        /// <param name="ObjectUid">Filter by an object asset's unique identifier.</param>
+        /// <param name="State">Filter on the state, or status, of a relationship.</param>
+        /// <param name="_pageNum">Allows for changing the current page of results you are requesting.</param>
+        /// <param name="_pageSize">Allows for changing the page size of results you are requesting. The maximum page size is 250.</param>
         /// <returns></returns>
         [
             HttpGet,

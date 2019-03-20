@@ -39,13 +39,31 @@ namespace d360.web.Handlers
                         {
                             return response;
                         }
-                        else
+                        else if (responseContent is Controllers.BaseApiController.GenericHttpError)
                         {
                             var httpError = responseContent as Controllers.BaseApiController.GenericHttpError;
 
                             if (httpError != null)
                             {
-                                errorMessage = httpError.Message;                                
+                                errorMessage = httpError.Message;
+                                responseContent = null;
+                            }
+
+                            var responseMetadata = new ErrorResponse
+                            {
+                                message = errorMessage,
+                                title = "Bad request submitted"
+                            };
+                            var result = request.CreateResponse(response.StatusCode, responseMetadata);
+                            return result;
+                        }
+                        else
+                        {
+                            var httpError = responseContent as HttpError;
+
+                            if (httpError != null)
+                            {
+                                errorMessage = httpError.Message;
                                 responseContent = null;
                             }
 
