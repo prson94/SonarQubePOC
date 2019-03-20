@@ -113,7 +113,7 @@ export class ResourcesService extends BaseService {
     }
 
     getMyCredentials(): Promise<ResourceAPICredentials> {
-        return this.http.get('overlays/myapicredentialsng')
+        return this.http.get('resources/myapicredentials')
             .toPromise()
             .then(response => <ResourceAPICredentials>response.json())
             .catch(err => this.handleError(err));

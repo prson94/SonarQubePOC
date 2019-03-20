@@ -1,190 +1,338 @@
-﻿import { Injectable } from '@angular/core';
-import { Headers, Http } from '@angular/http';
-import { BaseService } from './base.service';
-import { MessagesService } from './messages.service';
+﻿import {Injectable} from '@angular/core';
+import {MessagesService} from './messages.service';
 import {
-    MapItem,
-    DiagramObjectType,
-    LinkModel,
-    NodeModel,
-    Responsibility,
-    TechnicalRelation,
-    SourceRule,
-    RelationItem,
     LineageEditorModel,
     LineageEditorTechnicalModel,
     LineagePreviewModel,
+    MapItem,
+    RelationItem,
+    Responsibility,
+    SourceRule,
+    TechnicalRelation,
 } from '../models/lineage.model';
-import { ImpactDiagramModel } from '../models/impact.model';
-import { HierarchyDiagramModel } from '../models/model.model';
-import { JsonResult } from '../models/jsonresult.model';
+import {ImpactDiagramModel} from '../models/impact.model';
+import {HierarchyDiagramModel} from '../models/model.model';
+import {JsonResult} from '../models/jsonresult.model';
+import {BaseObservableService} from "./baseObservable.service";
+import {HttpClient} from "@angular/common/http";
+import {Observable} from "rxjs";
+import {catchError, map} from "rxjs/operators";
 
 @Injectable()
-export class DiagramService extends BaseService {
-    constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
-
-    public getLineageDiagram(type: string, id: number, viewID: number, usageOnly: boolean): Promise<any> {
-        return this.http.get(`diagrams/${type}/${id}/lineage/${viewID}/${usageOnly}`)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+export class DiagramService extends BaseObservableService {
+    constructor(
+        private http: HttpClient,
+        messagesService: MessagesService
+    ) {
+        super(messagesService);
     }
 
-    public getLineageSourceRules(source: string, sourceId: number, target: string, targetId: number): Promise<SourceRule[]> {
-        return this.http.get(`api/${source}/${sourceId}/sources/${target}/${targetId}/rules`)
-            .toPromise()
-            .then(response => <SourceRule[]>response.json())
-            .catch(err => this.handleError(err));
+    public getLineageDiagram(
+        type: string,
+        id: number,
+        viewID: number,
+        usageOnly: boolean
+    ): Observable<any> {
+        return this
+            .http
+            .get(`diagrams/${type}/${id}/lineage/${viewID}/${usageOnly}`)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    public getLineageSourceRulesFocal(focal: string, focalId: number, source: string, sourceId: number, target: string, targetId: number): Promise<SourceRule[]> {
-        return this.http.get(`api/${focal}/${focalId}/${source}/${sourceId}/${target}/${targetId}/rules`)
-            .toPromise()
-            .then(response => <SourceRule[]>response.json())
-            .catch(err => this.handleError(err));
+    public getLineageSourceRules(
+        source: string,
+        sourceId: number,
+        target: string,
+        targetId: number
+    ): Observable<SourceRule[]> {
+        return this
+            .http
+            .get(`api/${source}/${sourceId}/sources/${target}/${targetId}/rules`)
+            .pipe(
+                map(response => <SourceRule[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    public getLineageObjectDetail(type: string, id: number): Promise<any> {
-        return this.http.get(`resources/${type}/${id}/templates/tooltip/preview`)
-            .toPromise()
-            .catch(err => this.handleError(err));
+    public getLineageSourceRulesFocal(
+        focal: string,
+        focalId: number,
+        source: string,
+        sourceId: number,
+        target: string,
+        targetId: number
+    ): Observable<SourceRule[]> {
+        return this
+            .http
+            .get(`api/${focal}/${focalId}/${source}/${sourceId}/${target}/${targetId}/rules`)
+            .pipe(
+                map(response => <SourceRule[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    public getLineageTechnicalRelationships(source: string, sourceId: number, target: string, targetId: number): Promise<TechnicalRelation[]> {
-        return this.http.get(`relations/ChildRelationshipsBySourceAndTarget?s=${source}&sid=${sourceId}&t=${target}&tid=${targetId}`)
-            .toPromise()
-            .then(response => <TechnicalRelation[]>response.json())
-            .catch(err => this.handleError(err));
+    public getLineageObjectDetail(
+        type: string,
+        id: number
+    ): Observable<any> {
+        /* FIXME: non using method */
+
+        return this
+            .http
+            .get(`resources/${type}/${id}/templates/tooltip/preview`)
+            .pipe(
+                map(response => <any>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    public getLineageResponsibilities(assetId: number): Promise<Responsibility[]> {
-        return this.http.get(`api/${assetId}/ownership`)
-            .toPromise()
-            .then(response => <Responsibility[]>response.json())
-            .catch(err => this.handleError(err));
+    public getLineageTechnicalRelationships(
+        source: string,
+        sourceId: number,
+        target: string,
+        targetId: number
+    ): Observable<TechnicalRelation[]> {
+        return this
+            .http
+            .get(`relations/ChildRelationshipsBySourceAndTarget?s=${source}&sid=${sourceId}&t=${target}&tid=${targetId}`)
+            .pipe(
+                map(response => <TechnicalRelation[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    public getLineageMapItems(source: string, sourceId: number, target: string, targetId: number): Promise<MapItem[]> {
-        return this.http.get(`api/maps/${source}/${sourceId}/${target}/${targetId}/mapItems`)
-            .toPromise()
-            .then(response => <MapItem[]>response.json())
-            .catch(err => this.handleError(err));
+    public getLineageResponsibilities(assetId: number): Observable<Responsibility[]> {
+        return this
+            .http
+            .get(`api/${assetId}/ownership`)
+            .pipe(
+                map(response => <Responsibility[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    public getLineageMapItemsExport(source: string, sourceId: number, target: string, targetId: number) {
+    public getLineageMapItems(
+        source: string,
+        sourceId: number,
+        target: string,
+        targetId: number
+    ): Observable<MapItem[]> {
+        return this
+            .http
+            .get(`api/maps/${source}/${sourceId}/${target}/${targetId}/mapItems`)
+            .pipe(
+                map(response => <MapItem[]>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    public static getLineageMapItemsExport(
+        source: string,
+        sourceId: number,
+        target: string,
+        targetId: number
+    ) {
         window.location.assign(`api/export/maps/${source}/${sourceId}/${target}/${targetId}/mapitems/excel.xls`);
     }
 
-    public getLineageMapSequence(object: string, objectId: number): Promise<any> {
-        return this.http.get(`form/mapsequence/${object}/${objectId}/mapitems`)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+    public getLineageMapSequence(
+        object: string,
+        objectId: number
+    ): Observable<any> {
+        return this
+            .http
+            .get(`form/mapsequence/${object}/${objectId}/mapitems`)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
 
     }
 
-    public postLineageMapSequence(object: string, objectId: number, model: any): Promise<any> {
-        return this.http.post(`form/mapsequence/${object}/${objectId}/mapitems`, model)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+    public postLineageMapSequence(
+        object: string,
+        objectId: number,
+        model: any
+    ): Observable<any> {
+        return this
+            .http
+            .post(`form/mapsequence/${object}/${objectId}/mapitems`, model)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    public getImpactDiagram(object: string, objectId: number): Promise<ImpactDiagramModel> {
-        return this.http.get(`diagrams/${object}/${objectId}/ImpactAnalysis`)
-            .toPromise()
-            .then(response => <ImpactDiagramModel>response.json())
-            .catch(err => this.handleError(err));
+    public getImpactDiagram(
+        object: string,
+        objectId: number
+    ): Observable<ImpactDiagramModel> {
+        return this
+            .http
+            .get(`diagrams/${object}/${objectId}/ImpactAnalysis`)
+            .pipe(
+                map(response => <ImpactDiagramModel>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    public getImpactDiagramFusion(object: string, objectId: number): Promise<ImpactDiagramModel> {
-        return this.http.get(`diagrams/${object}/${objectId}/ImpactAnalysisFusion`)
-            .toPromise()
-            .then(response => <ImpactDiagramModel>response.json())
-            .catch(err => this.handleError(err));
+    public getImpactDiagramFusion(
+        object: string,
+        objectId: number
+    ): Observable<ImpactDiagramModel> {
+        /* FIXME: non using method */
+
+        return this
+            .http
+            .get(`diagrams/${object}/${objectId}/ImpactAnalysisFusion`)
+            .pipe(
+                map(response => <ImpactDiagramModel>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    public getCatalogDiagram(id: number): Promise<HierarchyDiagramModel[]> {
-        return this.http.get(`diagrams/${id}/InformationCatalogDiagramData`)
-            .toPromise()
-            .then(response => <HierarchyDiagramModel[]>response.json())
-            .catch(err => this.handleError(err));
+    public getCatalogDiagram(id: number): Observable<HierarchyDiagramModel[]> {
+        return this
+            .http
+            .get(`diagrams/${id}/InformationCatalogDiagramData`)
+            .pipe(
+                map(response => <HierarchyDiagramModel[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    public getRelations(object: string, objectId: number): Promise<RelationItem[]> {
-        return this.http.get(`api/${object}/${objectId}/relations`)
-            .toPromise()
-            .then(response => <RelationItem[]>response.json())
-            .catch(err => this.handleError(err));
+    public getRelations(
+        object: string,
+        objectId: number
+    ): Observable<RelationItem[]> {
+        return this
+            .http
+            .get(`api/${object}/${objectId}/relations`)
+            .pipe(
+                map(response => <RelationItem[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    public queryRelationshipTypes(query: string): Promise<any> {
-        return this.http.get(`api/lineage/query/relationshiptypes?query=${query}`)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+    public queryRelationshipTypes(query: string): Observable<any> {
+        return this
+            .http
+            .get(`api/lineage/query/relationshiptypes?query=${query}`)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    public queryObjects(type: string, id: number, query: string): Promise<any> {
-        return this.http.get(`api/lineage/query/objects/${type}/${id}?query=${query}`)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+    public queryObjects(
+        type: string,
+        id: number,
+        query: string
+    ): Observable<any> {
+        return this
+            .http
+            .get(`api/lineage/query/objects/${type}/${id}?query=${query}`)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    public queryFusionAttributes(query: string): Promise<any> {
-        return this.http.get(`api/lineage/query/fusionattributes?query=${query}`)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+    public queryFusionAttributes(query: string): Observable<any> {
+        return this
+            .http
+            .get(`api/lineage/query/fusionattributes?query=${query}`)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
     public deleteIntersect(intersectID: number) {
-        return this.http.delete(`form/DeleteIntersect?id=${intersectID}`)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+        /* FIXME: non using method */
+
+        return this
+            .http
+            .delete(`form/DeleteIntersect?id=${intersectID}`)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    public updateLineage(model: LineageEditorModel): Promise<LineageEditorModel> {
-        return this.http.post('form/UpdateLineage', model)
-            .toPromise()
-            .then(response => <LineageEditorModel>response.json())
-            .catch(err => this.handleError(err));
+    public updateLineage(model: LineageEditorModel): Observable<LineageEditorModel> {
+        return this
+            .http
+            .post('form/UpdateLineage', model)
+            .pipe(
+                map(response => <LineageEditorModel>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    public updateTechnicalLineage(model: LineageEditorTechnicalModel): Promise<LineageEditorTechnicalModel> {
-        return this.http.post('form/UpdateTechnicalLineage', model)
-            .toPromise()
-            .then(response => <LineageEditorTechnicalModel>response.json())
-            .catch(err => this.handleError(err));
+    public updateTechnicalLineage(model: LineageEditorTechnicalModel): Observable<LineageEditorTechnicalModel> {
+        return this
+            .http
+            .post('form/UpdateTechnicalLineage', model)
+            .pipe(
+                map(response => <LineageEditorTechnicalModel>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    public previewLineage(type: string, id: number, view: number, businessModel: LineageEditorModel = null, technicalModel: LineageEditorTechnicalModel = null): Promise<any> {
+    public previewLineage(
+        type: string,
+        id: number,
+        view: number,
+        businessModel: LineageEditorModel = null,
+        technicalModel: LineageEditorTechnicalModel = null
+    ): Observable<any> {
         let model: LineagePreviewModel = new LineagePreviewModel();
+
         model.BusinessModel = businessModel;
         model.TechnicalModel = technicalModel;
-        return this.http.post(`diagrams/${type}/${id}/lineagepreview/${view}`, model)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+
+        return this
+            .http
+            .post(`diagrams/${type}/${id}/lineagepreview/${view}`, model)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    public getLineageMappings() : Promise<any[]> {
-        return this.http.get('api/lineage/mappings')
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+    public getLineageMappings(): Observable<any[]> {
+        return this
+            .http
+            .get('api/lineage/mappings')
+            .pipe(
+                map(response => <any[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    public deleteLineageMapping(id: number): Promise<JsonResult> {
-        return this.deleteDynamicWithResult(this.http, 'lineagemapping', id);
+    public deleteLineageMapping(id: number): Observable<JsonResult> {
+        return this.deleteDynamicWithResult(
+            this.http,
+            'lineagemapping',
+            id
+        );
     }
 
-    public saveLineageMapping(map: any): Promise<JsonResult> {
+    public saveLineageMapping(map: any): Observable<JsonResult> {
+        let methodName = "putDynamic";
+
         if (map.ID == undefined || !map.ID) {
-            return this.postDynamic(this.http, 'map', map);
+            methodName = "postDynamic";
         }
-        return this.putDynamic(this.http, 'map', map);
+
+        return this[methodName](
+            this.http,
+            'map',
+            map
+        );
     }
 }

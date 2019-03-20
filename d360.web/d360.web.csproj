@@ -290,12 +290,14 @@
     <Compile Include="Controllers\Services\Obsolete\ReferenceController.cs" />
     <Compile Include="Controllers\Services\ReportsController.cs" />
     <Compile Include="Controllers\Services\OrganizationsController.cs" />
+    <Compile Include="Controllers\V2\AuditController.cs" />
     <Compile Include="Controllers\V2\CrossReferencesController.cs" />
     <Compile Include="Controllers\V2\CustomEndpointsController.cs" />
     <Compile Include="Controllers\V2\DataQualityController.cs" />
     <Compile Include="Controllers\V2\ErrorsController.cs" />
     <Compile Include="Controllers\V2\ExportTemplatesController.cs" />
     <Compile Include="Controllers\V2\MetricsController.cs" />
+    <Compile Include="Controllers\V2\ProfilesController.cs" />
     <Compile Include="Controllers\V2\RelationshipsController.cs" />
     <Compile Include="Controllers\V2\AssetsController.cs" />
     <Compile Include="Controllers\V2\ResponsibilitiesController.cs" />
@@ -323,7 +325,6 @@
     <Compile Include="Controllers\FusionController.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Controllers\OverlaysController.cs" />
     <Compile Include="Controllers\DiagramsController.cs" />
     <Compile Include="Controllers\ReportsController.cs" />
     <Compile Include="Controllers\QueriesController.cs" />
@@ -577,10 +578,20 @@
     <Content Include="Scripts\app\components\admin\attributes\admin-attribute-allocation.component.html" />
     <Content Include="Scripts\app\components\admin\attributes\admin-attribute-type-editor.component.html" />
     <Content Include="Scripts\app\components\admin\attributes\admin-attributes.component.html" />
+    <Content Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint-detail.component.html" />
+    <Content Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint-version-fields-editor.component.html" />
+    <Content Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint-version-fields.component.html" />
+    <Content Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint-version-uris.component.html" />
+    <Content Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint-version.component.html" />
+    <Content Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint.component.html" />
+    <Content Include="Scripts\app\components\admin\customapi\admin-customapi-service-detail.component.html" />
+    <Content Include="Scripts\app\components\admin\customapi\admin-customapi-service-namespace.component.html" />
+    <Content Include="Scripts\app\components\admin\customapi\admin-customapi.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-column-filter.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-grid.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-item.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-manual-load.component.html" />
+    <Content Include="Scripts\app\components\mapping\mapping.component.html" />
     <Content Include="Scripts\app\components\reference\reference-item-type-list.component.html" />
     <Content Include="Scripts\app\components\rule\rule-column-filter.component.html" />
     <Content Include="Scripts\app\components\rule\rule-list.component.html" />
@@ -589,6 +600,14 @@
     <Content Include="Scripts\app\components\fusion\fusion-promotion-history.component.html" />
     <Content Include="Scripts\app\components\home\activity-details-tile.component.html" />
     <Content Include="Scripts\app\components\home\activity-tile.component.html" />
+    <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-editor-preview.component.html" />
+    <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-mapping-rules.component.html" />
+    <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-relationships.component.html" />
+    <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-responsibilities.component.html" />
+    <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-source-rule-editor.component.html" />
+    <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-source-rules.component.html" />
+    <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-technical-relationships.component.html" />
+    <Content Include="Scripts\app\components\shared\diagram\model-diagram.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-template-tool.component.html" />
     <Content Include="Scripts\app\components\shared\dynamicgrideditor\dynamic-field-value.component.html" />
     <Content Include="Scripts\app\components\shared\editor-header.component.html" />
@@ -603,6 +622,8 @@
     <Content Include="Scripts\app\components\sidebar\audit\audit.component.html" />
     <Content Include="Scripts\app\components\sidebar\children\artifact-item-child-grid.component.html" />
     <Content Include="Scripts\app\components\shared\tiles\tile-actions.component.html" />
+    <Content Include="Scripts\app\components\sidebar\dashboard\dashboard.component.html" />
+    <Content Include="Scripts\app\components\sidebar\dashboard\powerbi-viewer.component.html" />
     <Content Include="Scripts\app\components\workflowmonitor\workflowmonitor-list.component.html" />
     <Content Include="fonts\fontawesome-webfont.svg" />
     <Content Include="images\error.png" />
@@ -909,6 +930,7 @@
     <Content Include="Content\styles\img\hue.png" />
     <Content Include="Content\styles\img\saturation.png" />
     <Content Include="Content\styles\materialize.less" />
+    <Content Include="Content\styles\selectlistinfoitem.less" />
     <None Include="Content\styles\Tooltip.less" />
     <Content Include="Scripts\app\components\admin\fusion\admin-fusion.component.html" />
     <Content Include="Scripts\app\components\admin\load\admin-load.component.html" />
@@ -997,6 +1019,7 @@
     <None Include="Properties\PublishProfiles\LocalFolder.pubxml" />
     <Content Include="Views\Authentication\NoAccess.cshtml" />
     <Content Include="Scripts\app\components\shared\relationship\dynamic-relationship-grid.component.html" />
+    <Content Include="Scripts\app\components\sidebar\audit\audit.component.html" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -1038,6 +1061,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Content\themes\base\images\" />
+    <Folder Include="Views\Profiles\" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="App_GlobalResources\FormInfo.resx">

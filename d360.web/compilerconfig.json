@@ -40,6 +40,14 @@
     "sourceMap": false
   },
   {
+    "outputFile": "Content/styles/selectlistinfoitem.css",
+    "inputFile": "Content/styles/selectlistinfoitem.less",
+    "minify": {
+      "enabled": true
+    },
+    "sourceMap": false
+  },
+  {
     "outputFile": "Content/styles/angular.css",
     "inputFile": "Content/styles/angular.less",
     "minify": {

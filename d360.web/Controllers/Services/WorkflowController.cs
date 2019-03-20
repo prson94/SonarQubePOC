@@ -2153,110 +2153,6 @@ order by wi.StartedOn desc";
             var sql = string.Format(QueryConstants.WorkflowTypeList, typeSql, issueSql);
             var results = Company.Query<dynamic>(sql, new { filteredObject, filteredObjectId }).ToList();
 
-            #region parse XML
-
-            var responsibilitySql = @"
-                select 
-	                string_agg(r.ResourceName, ', ') + case when max(cnt) > 10 then '...' else '' end as Resources 
-                from
-                (
-	                select  distinct 
-                            top 10
-		                    d.ResourceName 
-	                from    ResponsibilityDetail d
-	                where   ResponsibilityTypeID  = @id
-                ) r
-				cross apply 
-                (
-					select count(*) as cnt from 
-                    (
-					    select  distinct 
-                                ResourceName  
-                        from    ResponsibilityDetail
-					    where   ResponsibilityTypeID = @id
-                    ) x
-				) c";
-
-            try
-            {
-                foreach (dynamic result in results)
-                {
-                    if (result.CurrentStepID != null && result.Settings != null && result.ActivityType != null)
-                    {
-                        var settings = XmlToDynamic(result.Settings);
-                        int resId = 0;
-                        switch ((WorkflowActivityType)result.ActivityType)
-                        {
-                            case WorkflowActivityType.Form:
-                                if (settings.SendFormEmail != null && (bool)settings.SendFormEmail == true)
-                                {
-                                    if (settings.MessageRecipientType == EmailTaskRecipientType.Responsibility)
-                                    {
-                                        if (settings.ResponsibilityTypeID is Newtonsoft.Json.Linq.JArray)
-                                        {
-                                            if (int.TryParse(settings.ResponsibilityTypeID[0].Value, out int d))
-                                                resId = d;
-                                        }
-                                        else if (int.TryParse(settings.ResponsibilityTypeID.Value, out int d))
-                                            resId = d;
-
-                                        if (resId > 0)
-                                        {
-                                            var resources = Company.Query<string>(responsibilitySql, new { id = resId });
-                                            result.ResponsibleUser = resources.FirstOrDefault();
-                                        }
-
-                                    }
-                                    else if (settings.MessageRecipientType == EmailTaskRecipientType.SpecificUser)
-                                    {
-                                        result.ResponsibleUser = settings.MessageToUser;
-                                    }
-                                    else if (settings.MessageRecipientType == EmailTaskRecipientType.Initiator)
-                                    {
-                                        result.ResponsibleUser = result.StartedBy;
-                                    }
-
-                                }
-                                break;
-                            case WorkflowActivityType.EmailNotification:
-                                if (settings.MessageRecipientType == EmailTaskRecipientType.Responsibility)
-                                {
-                                    if (settings.ResponsibilityTypeID is Newtonsoft.Json.Linq.JArray)
-                                    {
-                                        if (int.TryParse(settings.ResponsibilityTypeID[0].Value, out int d))
-                                            resId = d;
-                                    }
-                                    else if (int.TryParse(settings.ResponsibilityTypeID.Value, out int d))
-                                        resId = d;
-
-                                    if (resId > 0)
-                                    {
-                                        var resources = Company.Query<string>(responsibilitySql, new { id = resId });
-                                        result.ResponsibleUser = resources.FirstOrDefault();
-                                    }
-                                }
-                                else if (settings.MessageRecipientType == EmailTaskRecipientType.SpecificUser)
-                                {
-                                    result.ResponsibleUser = settings.MessageToUser;
-                                }
-                                else if (settings.MessageRecipientType == EmailTaskRecipientType.Initiator)
-                                {
-                                    result.ResponsibleUser = result.StartedBy;
-                                }
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                }
-            }
-             catch (Exception )
-            {
-
-            }
-
-            #endregion
-
             return Request.CreateResponse(HttpStatusCode.OK, results);
         }
 
@@ -2646,8 +2542,8 @@ order by wi.StartedOn desc";
                     fieldChange.AppendValue = field["@AppendValue"] != null ? field["@AppendValue"] : "";
                     fieldChange.ClearValue = field["@ClearValue"] != null ? field["@ClearValue"] : "";
                     FieldType fieldType = Company.GetById<FieldType>(fieldTypeId);
-                    fieldChange.FieldName = fieldType.FriendlyName;
-                    fieldChange.Type = fieldType.Type;
+                    fieldChange.FieldName = fieldType?.FriendlyName;
+                    fieldChange.Type = fieldType?.Type;
                     string formFieldId = field["@FormFieldId"] != null ? field["@FormFieldId"] : null;
                     int stepId = field["@FormStepId"] != null ? field["@FormStepId"] : 0;
                     if (fieldChange.FormValue && formFieldId != null && stepId != 0)

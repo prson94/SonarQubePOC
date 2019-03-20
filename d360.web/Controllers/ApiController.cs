@@ -3266,7 +3266,7 @@ outer apply (
 
             var permissionJoin = $@"
                 inner join Asset O{i} on O{i}.Object = '{currentObj}' and O{i}.ObjectID = A{i}.ID ";
-            var permissionsWhere = $" O{i}.ID not in ({GetNoReadSqlStatement()}) ";
+            var permissionsWhere = $" O{i}.ID not in ({Company.GetNoReadSqlStatement()}) ";
             switch (currentObj.ToLower())
             {
                 case "artifact":
@@ -3495,7 +3495,8 @@ outer apply (
                         (
                             (
                                 (fieldTypes == null || fieldTypes.Count == 0) &&
-                                !def.Fields.Any(x => (x.FieldTypeName == "TextPath") || (x.FieldTypeName == "Name" && x.FieldTypeID == 0))
+                                !def.Fields.Any(x => (x.FieldTypeName == "TextPath") || (x.FieldTypeName == "Name" && x.FieldTypeID == 0)
+                                    || (x.FieldTypeName == "DisplayValue" && x.FieldTypeID == 0))
                             )
                         )
                     )
@@ -3712,7 +3713,7 @@ from    ReferenceItem R
         inner join Asset O on O.Object = 'ReferenceItem' and O.ObjectID = R.ID 
         {sqlJoins} 
 where   R.ReferenceItemTypeID = {id} 
-        and O.ID not in ({GetNoReadSqlStatement()})
+        and O.ID not in ({Company.GetNoReadSqlStatement()})
 {sqlOrderBy}";
 
                 results = Company.Query<dynamic>(sqlQuery).Distinct();
@@ -4415,8 +4416,8 @@ from	[Policy] A
                             inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = 'Policy' and I.ObjectID = A.ID
 							inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
 					) P
-where   OA.ID not in ({GetNoReadSqlStatement()})
-        and OA.AssetTypeID not in ({GetAssetTypeNoReadSqlStatement()})";
+where   OA.ID not in ({Company.GetNoReadSqlStatement()})
+        and OA.AssetTypeID not in ({Company.GetAssetTypeNoReadSqlStatement()})";
 
             var sql = string.Format(@"select * from ({0}) A", querySql);
 
@@ -4822,8 +4823,8 @@ from	[Rule] A
         {1} 
         left join RuleDimension D on D.ID = A.RuleDimensionID 
 where   A.RuleTypeID = @id 
-        and O.ID not in (" + GetNoReadSqlStatement("@r") + ")" +
-        "and O.AssetTypeID not in (" + GetAssetTypeNoReadSqlStatement("@r") + ")", columns, joins, permissionSql);
+        and O.ID not in (" + Company.GetNoReadSqlStatement("@r") + ")" +
+        "and O.AssetTypeID not in (" + Company.GetAssetTypeNoReadSqlStatement("@r") + ")", columns, joins, permissionSql);
 
                 var query = Company.Query<dynamic>(querySql, dbArgs);
 

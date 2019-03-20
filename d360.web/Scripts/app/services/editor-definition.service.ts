@@ -1,26 +1,46 @@
-﻿import { Injectable } from '@angular/core';
-import { Headers, Http } from '@angular/http';
-import { MessagesService } from './messages.service';
-import { BaseService } from './base.service';
-import { EditorField } from '../models/editor-field.model';
+﻿import {Injectable} from '@angular/core';
+import {HttpClient} from "@angular/common/http";
+import {Observable} from "rxjs";
+import {catchError, map} from "rxjs/operators";
+
+import {EditorField} from '../models/editor-field.model';
+
+import {MessagesService} from './messages.service';
+import {BaseObservableService} from "./baseObservable.service";
 
 @Injectable()
-export class EditorDefinitionService extends BaseService {
+export class EditorDefinitionService extends BaseObservableService {
+    constructor(
+        private http: HttpClient,
+        messagesService: MessagesService
+    ) {
+        super(messagesService);
+    }
 
-    constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
-
-    getEditorDefinition(ID: number, objectID: number, objectType: string, parentID?: number, targetType?: string, targetTypeID?: number, createParams?: any[], editParams?: any[], action?: string): Promise<EditorField[]> {
+    getEditorDefinition(
+        ID: number,
+        objectID: number,
+        objectType: string,
+        parentID?: number,
+        targetType?: string,
+        targetTypeID?: number,
+        createParams?: any[],
+        editParams?: any[],
+        action?: string
+    ): Observable<EditorField[]> {
         let uri = "";
 
         if (ID == undefined) {
-            if (parentID)
+            if (parentID) {
                 uri = `form/dynamiceditor/new/${objectType}/${objectID}/${parentID}`;
-            else if (targetType && targetTypeID)
+            }
+            else if (targetType && targetTypeID) {
                 uri = `form/dynamiceditorrel/new/${objectType}/${objectID}/${targetType}/${targetTypeID}`;
-            else
+            }
+            else {
                 uri = `form/dynamiceditor/new/${objectType}/${objectID}`;
-        }
-        else {
+            }
+        } else {
             if (action && action == "Copy") {
                 uri = `form/dynamiceditor/copy/${objectType}/${ID}`;
             } else {
@@ -29,23 +49,20 @@ export class EditorDefinitionService extends BaseService {
         }
 
         if (createParams && createParams.length > 0) {
-            return this.http.post(`form/dynamiceditor/new/${objectType}`, createParams)
-                .toPromise()
-                .then(response => <EditorField[]>response.json())
-                .catch(err => this.handleError(err));
+            return this.http.post(`form/dynamiceditor/new/${objectType}`, createParams).pipe(
+                map(response => <EditorField[]>response),
+                catchError(err => this.handleError(err))
+            );
         } else if (editParams && editParams.length > 0) {
-            return this.http.post(`form/dynamiceditor/edit/${objectType}`, editParams)
-                .toPromise()
-                .then(response => <EditorField[]>response.json())
-                .catch(err => this.handleError(err));
+            return this.http.post(`form/dynamiceditor/edit/${objectType}`, editParams).pipe(
+                map(response => <EditorField[]>response),
+                catchError(err => this.handleError(err))
+            );
         } else {
-            return this.http.get(uri)
-                .toPromise()
-                .then(response => <EditorField[]>response.json())
-                .catch(err => this.handleError(err));
+            return this.http.get(uri).pipe(
+                map(response => <EditorField[]>response),
+                catchError(err => this.handleError(err))
+            );
         }
-
-        
-
-    }    
+    }
 }

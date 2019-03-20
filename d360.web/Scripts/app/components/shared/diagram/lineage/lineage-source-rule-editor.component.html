@@ -1,0 +1,65 @@
+<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div *ngIf="!isLoading">
+    <header>
+        Manage Source Rules
+        <d3s-tile-actions hasSave="true"
+                          hasClose="true"
+                          (saveClick)="save()"
+                          (closeClick)="close()"></d3s-tile-actions>
+    </header>
+    <div class="row"
+         *ngFor="let item of items">
+        <div style="margin-top: 25px"
+             class="col s12">
+            <h4 style="font-weight: 600">{{item.Name}}</h4>
+        </div>
+        <div class="col s3">
+            <table class="responsive-table striped">
+                <thead>
+                <tr style="color: #999">
+                    <th>Sources</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody *ngFor="let a of item.Available">
+                <tr>
+                    <td>{{a.Name}}</td>
+                    <td style="width: 25px">
+                        <i class="fa fa-lg fa-plus blue-text"
+                           (click)="add(item, a)"></i>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="col s9">
+            <table class="responsive-table striped">
+                <thead>
+                <tr style="vertical-align: top; color: #999">
+                    <th style="width: 30%">Referenced Sources</th>
+                    <th style="width: 60px; padding-right: 5px">Sequence</th>
+                    <th>Translation</th>
+                    <th style="width: 30px"></th>
+                </tr>
+                </thead>
+                <tbody *ngFor="let s of item.Selected; let i = index">
+                <tr *ngIf="(s.IsDeleting || false) == false">
+                    <td style="vertical-align: top">{{s.SourceName}}</td>
+                    <td style="vertical-align: top">{{s.Sequence}}</td>
+                    <td style="vertical-align: top; background-color: #fff;">
+                        <p-editor [(ngModel)]="s.Description"></p-editor>
+                    </td>
+                    <td style="vertical-align: top; text-align: center; width: 25px">
+                        <a style="cursor: pointer"><i class="fa fa-lg fa-trash red-text"
+                                          (click)="remove(s)"></i></a>
+                        <a style="cursor: pointer"><i class="fa fa-lg fa-arrow-up black-text"
+                                          (click)="moveUp(item, s)"></i></a>
+                        <a style="cursor: pointer"><i class="fa fa-lg fa-arrow-down black-text"
+                                          (click)="moveDown(item, s)"></i></a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

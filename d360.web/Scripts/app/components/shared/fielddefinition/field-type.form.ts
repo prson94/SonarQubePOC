@@ -588,8 +588,16 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.listFilterPredicates.push({ value: null, label: 'Choose...'});
             this.listFilterOptions.forEach(d => {
                 if (d.fieldtypeOptions.length > 0)
+                    //only include predicates with possible field options
                     this.listFilterPredicates.push({ value: d.value, label: d.label});
             });
+            if (this.listFilterPredicates.length == 1) {
+                //If we have no predicates to select, turn off filter configuration
+                this.listFilterable = false;
+                this.selectPredicate(null);
+                this.expandFilterConfiguration = false;
+                return;
+            } 
             if (this.model.FieldType.FilterPredicateID != null && this.model.FieldType.FilterPredicateDirection != null) {
                 this.selectPredicate( this.model.FieldType.FilterPredicateID + '|' + (this.model.FieldType.FilterPredicateDirection ? '1' : '0'));
                 this.expandFilterConfiguration = true;
@@ -597,7 +605,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.selectPredicate(null);
                 this.expandFilterConfiguration = false;
             }
-            this
         });
     }
 
@@ -1058,14 +1065,15 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
     }
     private validateDefaultWithPattern() {
+        this.errorMessage = '';
         if (this.model.FieldType.Type == 'Text' && this.model.FieldType.Pattern > "") {
             if (this.model.FieldType.DefaultValue > "") {
                 var patternRegex = new RegExp(this.model.FieldType.Pattern);
                 this.errorMessage = (patternRegex.test(this.model.FieldType.DefaultValue)) ? '' : 'Default Value does not match Validation Pattern';
             }
-            else {
-                this.errorMessage = '';
-            }
+        }
+        if (this.model.FieldType.Type == 'Text' && this.errorMessage == '') {
+            this.validateNumber(this.model.FieldType.Type);
         }
     }
 
@@ -1123,7 +1131,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     let newVal = +val.toFixed(this.model.FieldType.Precision);
 
                     if (newVal != null && (newVal != 0 || newVal != +val) && !isNaN(newVal)) {
-                        this.model.FieldType.DefaultValue = ''+newVal;
+                        this.model.FieldType.DefaultValue = '' + newVal;
                     }
                 }
             }
@@ -1158,6 +1166,16 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     this.errorMessage = 'Please enter a minimum value which is lower than the maximum value.';
                 else
                     this.errorMessage = '';
+        } else if (value == 'Text') {
+            if (FormHelpers.isNumber(this.model.FieldType.MaximumLength) && this.model.FieldType.DefaultValue.length > this.model.FieldType.MaximumLength) {
+                this.errorMessage = 'Default value is longer than ' + this.model.FieldType.MaximumLength + '.';
+                return;
+            } else if (FormHelpers.isNumber(this.model.FieldType.MinimumLength) && this.model.FieldType.DefaultValue.length < this.model.FieldType.MinimumLength) {
+                this.errorMessage = 'Default value is shorter than ' + this.model.FieldType.MinimumLength + '.';
+                return;
+            } else {
+                this.errorMessage = '';
+            }
         } else {
             this.errorMessage = '';
         }

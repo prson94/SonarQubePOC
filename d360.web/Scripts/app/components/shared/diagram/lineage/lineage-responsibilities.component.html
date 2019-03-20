@@ -1,0 +1,28 @@
+<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div *ngIf="!isLoading">
+    <p-table #dt
+             [value]="items"
+             selectionMode="single"
+             [metaKeySelection]="true"
+             [rowsPerPageOptions]="defaultPagingOptions"
+             [rows]="5">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Role</th>
+                <th>Resource/Group</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body"
+                     let-item>
+            <tr [pSelectableRow]="item">
+                <td>{{item.ResponsibilityTypeName}}</td>
+                <td>{{item.SecurityAssetName}}</td>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="summary">
+            <d3s-grid-paging-info [first]="dt.first"
+                                  [rows]="dt.rows"
+                                  [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+        </ng-template>
+    </p-table>
+</div>
