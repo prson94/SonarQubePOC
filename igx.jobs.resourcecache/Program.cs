@@ -148,10 +148,7 @@ from [Resource] R inner join CompanyResource C on C.ResourceID = R.ID and C.Comp
                                         row["Email"] = item.Email;
                                         row["State"] = (int)item.State;
                                         row["IsAdministrator"] = item.IsAdministrator;
-                                        if (item.Uid.HasValue)
-                                            row["uid"] = item.Uid.Value;
-                                        else
-                                            row["uid"] = DBNull.Value;
+                                        row["uid"] = item.Uid;
 
                                         table.Rows.Add(row);
                                     }
