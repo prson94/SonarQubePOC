@@ -297,7 +297,7 @@
     <Compile Include="Controllers\V2\ExportTemplatesController.cs" />
     <Compile Include="Controllers\V2\MetricsController.cs" />
     <Compile Include="Controllers\V2\RelationshipsController.cs" />
-    <Compile Include="Controllers\V2\AssetsController.cs" />    
+    <Compile Include="Controllers\V2\AssetsController.cs" />
     <Compile Include="Controllers\V2\ResponsibilitiesController.cs" />
     <Compile Include="Controllers\V2\SocialController.cs" />
     <Compile Include="Controllers\WebAnalyticsController.cs" />
