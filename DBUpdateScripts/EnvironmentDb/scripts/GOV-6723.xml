@@ -5,18 +5,78 @@
     xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+<changeSet author="MDonato" id="GOV-6723-column">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[
+			IF NOT EXISTS (SELECT 1 FROM  sys.columns WHERE  object_id = OBJECT_ID('[reporting].[Global_Resource]') AND [name] = 'uid')
+			begin
+				alter table reporting.Global_resource add [uid] uniqueidentifier;
+			end	
+			
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+			IF EXISTS (SELECT 1 FROM  sys.columns WHERE  object_id = OBJECT_ID('[reporting].[Global_Resource]') AND [name] = 'uid')
+			begin
+				alter table reporting.Global_resource drop column [uid];
+			end	
+		
+		]]>
+	</rollback>
+  </changeSet>
+  <changeSet author="MDonato" id="GOV-6723-update">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[
+			--need to populate the uid's with something until the job picks it up so we can make it not null
+			--newid() is a fail safe, I doubt it's needed
+			update R
+			set R.[uid] = coalesce(A.[uid], newid())
+			from reporting.Global_resource R
+			left join Asset A on A.Object = 'Resource' and A.ObjectID = R.ResourceID;
+			
 
-  <changeSet author="MDonato" id="GOV-6723">
+			alter table reporting.Global_resource alter column [uid] uniqueidentifier not null;
+			
+			
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+		
+		]]>
+	</rollback>
+  </changeSet>
+    <changeSet author="MDonato" id="GOV-6723-drop-triggers">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="true">
 		<![CDATA[
 		drop trigger if exists [reporting].[ReportingGlobalResource_AfterInsert];
-		go
 		drop trigger if exists [reporting].[ReportingGlobalResource_AfterUpsert];
-		go
-		
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+		--Either way we're dropping both triggers and creating the correct one
+		drop trigger if exists [reporting].[ReportingGlobalResource_AfterInsert];
+		drop trigger if exists [reporting].[ReportingGlobalResource_AfterUpsert];
+		]]>
+	</rollback>
+  </changeSet>
+  <changeSet author="MDonato" id="GOV-6723-create-trigger">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[		
 		CREATE TRIGGER [reporting].[ReportingGlobalResource_AfterUpsert]
 			ON [reporting].[Global_Resource]
 			FOR INSERT, UPDATE
@@ -48,17 +108,11 @@
 					T.UpdatedBy = 0
 			when not matched by target then
 			insert	([AssetTypeID], [State], SourceID, [Object], [ObjectID],[CreatedOn],[CreatedBy],[UpdatedOn],[UpdatedBy],[uid])
-			values	(S.[AssetTypeID], S.[State], S.SourceID, S.[Object], S.[ObjectID], getutcdate(), 0, getutcdate(), 0, S.[uid]);
-			
+			values	(S.[AssetTypeID], S.[State], S.SourceID, S.[Object], S.[ObjectID], getutcdate(), 0, getutcdate(), 0, S.[uid]);			
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[
-		drop trigger if exists [reporting].[ReportingGlobalResource_AfterInsert];
-		go
-		drop trigger if exists [reporting].[ReportingGlobalResource_AfterUpsert];
-		go
-
 		CREATE TRIGGER [reporting].[ReportingGlobalResource_AfterInsert]
 			ON [reporting].[Global_Resource]
 			FOR INSERT
@@ -84,9 +138,7 @@
 					T.UpdatedBy = 0
 			when not matched by target then
 			insert	([AssetTypeID], [State], SourceID, [Object], [ObjectID],[CreatedOn],[CreatedBy],[UpdatedOn],[UpdatedBy])
-			values	(S.[AssetTypeID], S.[State], S.SourceID, S.[Object], S.[ObjectID], getutcdate(), 0, getutcdate(), 0);
-go
-		
+			values	(S.[AssetTypeID], S.[State], S.SourceID, S.[Object], S.[ObjectID], getutcdate(), 0, getutcdate(), 0);		
 		]]>
 	</rollback>
   </changeSet>
