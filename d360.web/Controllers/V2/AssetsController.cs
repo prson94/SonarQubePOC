@@ -683,6 +683,14 @@ order by    P.[Path]
         /// <summary>
         /// Adds a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 250 items and need immediate results.
         /// </summary>
+        /// <remarks>
+        /// When using the ExecutionItemUid, keep in mind:
+        /// * ExecutionItemUid is optional.
+        /// * If you do not wish to provide an ExecutionItemUid, remove the entire line, including the preceding comma(, "ExecutionItemUid": "00000000-0000-0000-0000-000000000000").
+        /// * If you provide ExecutionItemUids, values must be a unique across the entire request body.
+        /// * You do not have to provide ExecutionItemUid values for all entries in a request.
+        /// * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+        /// </remarks>
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
         /// <param name="assets">The payload of your request.</param>
         /// <returns>An HTTP status code and message.</returns>
@@ -768,6 +776,14 @@ order by    P.[Path]
         /// <summary>
         /// Updates a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 250 items and need immediate results.
         /// </summary>
+        /// <remarks>
+        /// When using the ExecutionItemUid, keep in mind:
+        /// * ExecutionItemUid is optional.
+        /// * If you do not wish to provide an ExecutionItemUid, remove the entire line, including the preceding comma(, "ExecutionItemUid": "00000000-0000-0000-0000-000000000000").
+        /// * If you provide ExecutionItemUids, values must be a unique across the entire request body.
+        /// * You do not have to provide ExecutionItemUid values for all entries in a request.
+        /// * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+        /// </remarks>
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
         /// <param name="assets">The payload of your request.</param>
         /// <returns>An HTTP status code and message.</returns>
@@ -853,6 +869,14 @@ order by    P.[Path]
         /// <summary>
         /// Removes a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 250 items and need immediate results.
         /// </summary>
+        /// <remarks>
+        /// When using the ExecutionItemUid, keep in mind:
+        /// * ExecutionItemUid is optional.
+        /// * If you do not wish to provide an ExecutionItemUid, remove the entire line, including the preceding comma(, "ExecutionItemUid": "00000000-0000-0000-0000-000000000000").
+        /// * If you provide ExecutionItemUids, values must be a unique across the entire request body.
+        /// * You do not have to provide ExecutionItemUid values for all entries in a request.
+        /// * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+        /// </remarks>
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
         /// <param name="assets">The payload of your request.</param>
         /// <returns>An HTTP status code and message.</returns>
@@ -939,6 +963,14 @@ order by    P.[Path]
         /// <summary>
         /// Adds a given set of assets based on the specific asset type unique identifier. This endpoint is meant for a greater number of items as it stores the asset list for asynchronous or batch processing.
         /// </summary>
+        /// <remarks>
+        /// When using the ExecutionItemUid, keep in mind:
+        /// * ExecutionItemUid is optional.
+        /// * If you do not wish to provide an ExecutionItemUid, remove the entire line, including the preceding comma(, "ExecutionItemUid": "00000000-0000-0000-0000-000000000000").
+        /// * If you provide ExecutionItemUids, values must be a unique across the entire request body.
+        /// * You do not have to provide ExecutionItemUid values for all entries in a request.
+        /// * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+        /// </remarks>
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
         /// <param name="assets">The payload of your request.</param>
         /// <returns>An HTTP status code and message.</returns>
@@ -1030,6 +1062,14 @@ order by    P.[Path]
         /// <summary>
         /// Updates a given set of assets based on the specific asset type Uid. This endpoint is meant for a greater number of items as it stores the asset list for asynchronous or batch processing.
         /// </summary>
+        /// <remarks>
+        /// When using the ExecutionItemUid, keep in mind:
+        /// * ExecutionItemUid is optional.
+        /// * If you do not wish to provide an ExecutionItemUid, remove the entire line, including the preceding comma(, "ExecutionItemUid": "00000000-0000-0000-0000-000000000000").
+        /// * If you provide ExecutionItemUids, values must be a unique across the entire request body.
+        /// * You do not have to provide ExecutionItemUid values for all entries in a request.
+        /// * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+        /// </remarks>
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
         /// <param name="assets">The payload of your request.</param>
         /// <returns>An HTTP status code and message.</returns>
@@ -1122,6 +1162,14 @@ order by    P.[Path]
         /// <summary>
         /// Removes a given set of assets based on the specific asset type Uid. This endpoint is meant for a greater number of items as it stores the asset list for asynchronous or batch processing.
         /// </summary>
+        /// <remarks>
+        /// When using the ExecutionItemUid, keep in mind:
+        /// * ExecutionItemUid is optional.
+        /// * If you do not wish to provide an ExecutionItemUid, remove the entire line, including the preceding comma(, "ExecutionItemUid": "00000000-0000-0000-0000-000000000000").
+        /// * If you provide ExecutionItemUids, values must be a unique across the entire request body.
+        /// * You do not have to provide ExecutionItemUid values for all entries in a request.
+        /// * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+        /// </remarks>
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
         /// <param name="assets">The payload of your request.</param>
         /// <returns>An HTTP status code and message.</returns>
