@@ -2853,6 +2853,8 @@
             <summary>
             GET a list of relationship types using an ID and a Type.
             </summary>
+            <param name="id">The legacy type ID of the asset type.</param>
+            <param name="type">The legacy object type of the asset type (ArtifactType, FusioAttributeType, TaxonomyType, etc.).</param>
             <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.V2.RelationshipsController.PostRelationshipsAsync(System.Guid,d360.core.entities.RelationshipInserts)">
