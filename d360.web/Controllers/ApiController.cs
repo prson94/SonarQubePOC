@@ -430,13 +430,7 @@ namespace d360.web.Controllers
             }
             return list;
         }
-
-        [Route("FieldTypes")]
-        public IQueryable<FieldType> GetFieldTypes()
-        {
-            return Company.Table<FieldType>();
-        }
-
+        
         #endregion
 
         #region Grid Definition Methods
@@ -1199,65 +1193,6 @@ where   h.ID <> @t order by h.[Level] desc;
             return artifactTypes;
         }
 
-        [Route("artifacts/{id:int}/{take:int?}")]
-        public ArtifactModelRequestList GetArtifacts(int id, int take = 10)
-        {
-            var list = new ArtifactModelRequestList();
-            var items = Company.Filter<Artifact>(i => i.ArtifactTypeID == id).AsQueryable();            
-            var lItems = items.Take(take).ToList();
-
-            var IDs = lItems.Select(i => i.ID).ToList();
-
-            var sType = SystemObjects.Artifact.ToString();
-            var values = Company.Filter<FieldWithRelation>(i => i.ObjectType == sType && IDs.Contains(i.ObjectID)).ToList();
-
-            foreach (var item in lItems)
-            {
-                var listItem = new ArtifactModelRequest();
-
-                //Static fields
-                listItem.Add("ID", item.ID);
-
-                // Dynamic fields
-                foreach (var f in values.Where(i => i.ObjectID == item.ID).OrderBy(i => i.Name))
-                {
-                    listItem.Add(f.Name, f.FormattedValue);
-                };
-
-                // Add to list
-                list.Add(listItem);
-            }
-           
-            return list;
-        }
-
-        [Route("artifacttype/possibleowners/{artifactTypeId:int}")]
-        public HttpResponseMessage GetArtifactTypePossibleOwners(int artifactTypeId)
-        {
-            var sql = @"
-select  distinct 
-	    cast(ResponsibilityTypeID as varchar) + '|' + cast(SecurityAssetID as varchar) as 'ID', 
-	    '[' + ResponsibilityTypeName + '] - ' + SecurityAssetName  as 'Name', 
-	    case 
-            when SecurityAsset = 'R' or SecurityAsset = 'O' then 'Resource' 
-			when SecurityAsset = 'G' then 'Group' 
-            else [Type] 
-        end as [Type]
-from    ResponsibilityDetail
-where   TypeID = @id 
-        and [Type] = 'ArtifactType' 
-        and IsVisible = 1 
-order by 'Name'";
-
-            return Request.CreateResponse(
-                HttpStatusCode.OK,
-                Company.Query<dynamic>(
-                    sql,
-                    new { id = artifactTypeId }
-                )
-            );
-        }
-
         #endregion
 
         #region Followers
@@ -1322,48 +1257,7 @@ order by 'Name'";
                 )
             );
         }
-
-        [Route("fusion/selectedbreadcrumb/{selectedItemID:int}")]
-        public HttpResponseMessage GetSelectedFusionBreadcrumb(int selectedItemID)
-        {
-            var itemPathData = new List<dynamic>();
-
-            int itemID = selectedItemID;
-
-            while (itemID > 0)
-            {
-                var currentItem = Company.Query<dynamic>(
-                    QueryConstants.FusionBreadcrumbItem,
-                    new { item = itemID }
-                ).FirstOrDefault();
-
-                if (currentItem == null) throw new Exception("invalid item id specified to generate breadcrumb from");
-
-                itemID = currentItem.parentID ?? default(int);
-                itemPathData.Insert(0, currentItem);
-            }
-
-            return Request.CreateResponse(HttpStatusCode.OK, itemPathData);
-        }
-
-        [Route("fusion/ownership/ChildAttributeNodes"), HttpGet]
-        public HttpResponseMessage GetOwnershipChildAttributeNodes(int fusionID, int targetFusionAttributeTypeID, int ruleID, int currentFusionAttributeTypeID = 0, int fusionAttributeID = 0)
-        {
-            var models = Company.Query<dynamic>(
-                QueryConstants.FusionOwnershipChildAttributeNodeList,
-                new
-                {
-                    fusionID,
-                    targetFusionAttributeTypeID,
-                    ruleID,
-                    currentFusionAttributeTypeID,
-                    fusionAttributeID
-                }
-            );
-
-            return Request.CreateResponse(HttpStatusCode.OK, models);
-        }
-
+        
         [Route("fusion/promotion/ChildAttributeNodes"), HttpGet]
         public HttpResponseMessage GetPromotionChildAttributeNodes(int fusionID, int targetFusionAttributeTypeID, int ruleID, int currentFusionAttributeTypeID = 0, int fusionAttributeID = 0)
         {
@@ -1390,24 +1284,7 @@ order by 'Name'";
             return Request.CreateResponse(HttpStatusCode.OK, results);
 
         }
-
-        [Route("fusion/{typeID:int}/configurations/{id:int}/filters")]
-        public HttpResponseMessage GetFilterByFusion(int typeID, int id)
-        {
-            return Request.CreateResponse(
-                HttpStatusCode.OK,
-                Company
-                .Filter<FusionFilter>(i => i.FusionID == id, i => i.FusionAttributeType)
-                .Select(i => new
-                {
-                    i.Filter,
-                    i.FusionAttributeTypeID,
-                    i.FusionID,
-                    Name = i.FusionAttributeType.Name
-                })
-            );
-        }
-        
+                
         [Route("fusion/{fusionID:int}/rules")]
         public HttpResponseMessage GetFusionRules(int fusionID)
         {
@@ -1557,31 +1434,7 @@ order by 'Name'";
         {            
             return Company.Table<MapRuleItemDetail>();
         }
-
-        [Route("fusion/fusionowningartifacts")]
-        public IEnumerable<Artifact> GetArtifactsOwningFusion()
-        {
-            return Company.Filter<Artifact>(i => i.ArtifactType.CanOwnFusion == true);
-        }
-
-        [Route("fusion/textpathautocomplete")]
-        public IEnumerable<string> GetFusionTextpathsAutocomplete(string startsWith, int maxRows)
-        {
-            return (from fusionAttribute in Company.FusionAttributes
-                    where fusionAttribute.TextPath.StartsWith(startsWith)
-                    select fusionAttribute.TextPath).Take(maxRows).AsEnumerable();
-        }
-
-        #region Owner
-
-        [Route("fusion/{typeID:int}/configurations/{fusionID:int}/ownership/options")]
-        public List<FusionOwnerOption> GetFusionOwnerOptions(int typeID, int fusionID)
-        {
-            return Company.GetFusionOwnerOptions();
-        }
-
-        #endregion
-
+        
         #region Promotion
 
         [Route("fusion/{typeID:int}/configurations/{fusionID:int}/promotion/options")]
@@ -1688,13 +1541,7 @@ order by 'Name'";
                     IsMember = i.ResourceGroups.Any(r => r.ResourceID == Company.CurrentResourceID)
                 });
         }
-
-        [Route("groups/{id:int}")]
-        public Group GetGroup(int id)
-        {
-            return Company.GetById<Group>(id);
-        }
-
+        
         [Route("{type}/{id:int}/groups")]
         public IQueryable<Group> GetGroupsByObject(SystemObjects type, int id)
         {
@@ -1764,25 +1611,6 @@ order by 'Name'";
         public IEnumerable<dynamic> GetAllocationsByLookupType(int id)
         {
             return Company.Query<dynamic>(QueryConstants.LookupAllocations, new { type = "Lookup", id });
-        }
-
-        [Route("fusionlookup/list/{id:int}"), HttpGet]
-        public HttpResponseMessage GetFusionLookupList(int id)
-        {
-            var field = Company.FieldTypes.Find(id);
-            var ids = Company.Filter<FieldTypeFusionLookupDefinition>(x => x.FieldTypeID == id).Select(i => i.SourceFusionAttributeTypeID).Distinct().ToList();
-
-            var list = Company.Filter<FusionAttribute>(x => ids.Contains(x.FusionAttributeTypeID), i => i.FusionAttributeType)
-                   .Select(i => new { value = i.ID.ToString(), label = i.TextPath })
-                   .ToList();
-
-            if (!field.IsRequired)
-            {
-                list.Insert(0, new { value = "", label = "" });
-            }
-
-            return Request.CreateResponse(HttpStatusCode.OK, list);
-
         }
 
         [Route("lookup/list/{id:int}"), HttpGet]
@@ -2354,8 +2182,6 @@ from    [Intersect] I
         #endregion
 
         #region Lineage
-
-
 
         [HttpGet, Route("maps/{source}/{sourceID:int}/{target}/{targetID:int}/mapitems")]
         public HttpResponseMessage MapItems(string source, int sourceID, string target, int targetID)
@@ -3669,7 +3495,8 @@ outer apply (
                         (
                             (
                                 (fieldTypes == null || fieldTypes.Count == 0) &&
-                                !def.Fields.Any(x => (x.FieldTypeName == "TextPath") || (x.FieldTypeName == "Name" && x.FieldTypeID == 0))
+                                !def.Fields.Any(x => (x.FieldTypeName == "TextPath") || (x.FieldTypeName == "Name" && x.FieldTypeID == 0)
+                                    || (x.FieldTypeName == "DisplayValue" && x.FieldTypeID == 0))
                             )
                         )
                     )
@@ -3839,12 +3666,6 @@ outer apply (
             return list;
         }
 
-        private bool AnyReferenceListItemsFieldValues(int id)
-        {
-            var sqlQuery = $"select case when count(1) > 0 then cast(1 as bit) else cast(0 as bit) end from ReferenceItem where ReferenceItemTypeID = {id}";
-            return Company.Query<bool>(sqlQuery).First();
-        }
-
         [Route("ReferenceListItemsField/{id:int}/values")]
         public HttpResponseMessage GetReferenceListItemsField(int id)
         {
@@ -3913,6 +3734,13 @@ where   R.ReferenceItemTypeID = {id}
             });
         }
 
+
+        private bool AnyReferenceListItemsFieldValues(int id)
+        {
+            var sqlQuery = $"select case when count(1) > 0 then cast(1 as bit) else cast(0 as bit) end from ReferenceItem where ReferenceItemTypeID = {id}";
+            return Company.Query<bool>(sqlQuery).First();
+        }
+
         #endregion
 
         #region Ownership Lookup Fields
@@ -3966,9 +3794,8 @@ select  case
         end 
 from    ResponsibilityDetail R
 inner join Asset A on A.[Object] = @type and A.ObjectID = @id
-inner join AssetType T on T.ID = A.AssetTypeID and T.ID = R.AssetTypeID
 where R.IsVisible = 1 and ((R.Object = @type 
-		and R.ObjectID = @id) or (R.ApplyToType = 1 and R.AssetTypeID = T.ID))";
+		and R.ObjectID = @id) or (R.ApplyToType = 1 and R.AssetTypeID = A.AssetTypeID))";
 
             return Company.Query<bool>(sql, new { type, id }).First();
         }
@@ -4002,10 +3829,9 @@ SELECT  R.ResponsibilityTypeName,
         '/resource/' + cast(R.ResourceID as varchar) as ResourceItemUrl,
         R.Context
 from    [dbo].[ResponsibilityDetail] R
-        inner join Asset A on A.ID = @assetId
-        inner join AssetType T on T.ID = A.AssetTypeID and T.ID = R.AssetTypeID
+        inner join Asset A on A.ID = @assetId        
         inner join reporting.Global_Resource U on U.ResourceID = R.ResourceID and U.State = 1 
-where   R.IsVisible = 1 and ((R.AssetID = @assetId) or (R.ApplyToType = 1 and R.AssetTypeID = T.ID))";
+where   R.IsVisible = 1 and ((R.AssetID = @assetId) or (R.ApplyToType = 1 and R.AssetTypeID = A.AssetTypeID))";
 
                 gridFields.Add(new GridField { name = "ResponsibilityTypeName", type = "string" });
                 gridFields.Add(new GridField { name = "ResourceName", type = "lookup" });
@@ -4697,13 +4523,7 @@ order by    title
         #endregion
 
         #region Resources
-
-        [HttpGet, Route("resources")]
-        public IQueryable<ResourceType> GetResourceTypes()
-        {
-            return Community.ResourceTypes.OrderBy(i => i.Name).AsQueryable();
-        }
-
+        
          [HttpGet,Route("resources/{typeID:int}")]
         public HttpResponseMessage GetResourcesByType(int typeID,string filter="")
         {
@@ -4943,7 +4763,7 @@ order by    Name
             var row = Company.Query<dynamic>(QueryConstants.RuleSettingsItem, new { id }).Single();
             return Request.CreateResponse<dynamic>(
                 new Dictionary<string, object>() {
-                    { "ID", row.ID },
+                    { "ID", row.ObjectID },
                     { "Name", row.Name },
                     { "Description", row.Description },
                     { "AllowAttributes", (bool)row.AllowAttributes }, 
@@ -5144,135 +4964,6 @@ where    A.RuleID = @id", new { id });
             var sql = "select FormattedValue from field where objecttype = @obj and objectid = @id and fieldtypeid = @fieldId";
 
             return Company.Query<string>(sql, new { obj = new DbString { Value = type.ToString(), IsFixedLength = true, Length = 20, IsAnsi = true }, id = id, fieldId = fieldType.ID }).FirstOrDefault();
-        }
-
-        /// <summary>
-        /// Used mainly by the client-side search tool.
-        /// </summary>
-        /// <param name="type">The type of object</param>
-        /// <param name="id">The ID of the object</param>
-        /// <returns>A list of fields with the name, friendly name, and value.</returns>
-        [Route("{type}/{id:int}/info")]
-        public IQueryable<DisplayField> GetFieldForObject(SystemObjects type, int id)
-        {
-            var list = new List<DisplayField>();
-            switch (type)
-            {
-                case SystemObjects.Artifact:
-                    #region Fields
-                    var artifact = Company.GetById<Artifact>(id, i => i.ArtifactType);
-                    if (artifact != null)
-                    {
-                        list.Add(new DisplayField { FriendlyName = "ID", Name = "ID", Value = artifact.ID.ToString() });
-                        list.Add(new DisplayField { FriendlyName = artifact.GetName(i => i.ArtifactTypeID), Name = "Type", Value = artifact.ArtifactType.Name });
-                        loadDisplayFields(list, type, id);
-                    }
-                    artifact = null;
-                    break;
-                #endregion
-                case SystemObjects.Attribute:
-                    #region Fields
-                    var attr = Company.GetById<core.entities.Attribute>(id);
-                    if (attr != null)
-                    {
-                        loadDisplayFields(list, type, id);
-                    }
-                    attr = null;
-                    break;
-                #endregion
-                case SystemObjects.FusionAttribute:
-                    #region Fields
-                    var fusionAttribute = Company.GetById<FusionAttribute>(id);
-                    if (fusionAttribute != null)
-                    {
-                        list.Add(new DisplayField { FriendlyName = "ID", Name = "ID", Value = fusionAttribute.ID.ToString() });
-                        list.Add(new DisplayField { FriendlyName = fusionAttribute.GetName(i => i.Name), Name = "Name", Value = fusionAttribute.Name });
-                        list.Add(new DisplayField { FriendlyName = fusionAttribute.GetName(i => i.TextPath), Name = "TextPath", Value = fusionAttribute.TextPath });
-                        loadDisplayFields(list, type, id);
-                    }
-                    fusionAttribute = null;
-                    break;
-                #endregion
-                case SystemObjects.Policy:
-                    #region Fields
-                    var policy = Company.GetById<Policy>(id);
-                    if (policy != null)
-                    {
-                        list.Add(new DisplayField { FriendlyName = "ID", Name = "ID", Value = policy.ID.ToString() });
-                        list.Add(new DisplayField { FriendlyName = policy.GetName(i => i.TextPath), Name = "TextPath", Value = policy.TextPath });
-                        loadDisplayFields(list, type, id);
-                    }
-                    policy = null;
-                    break;
-                #endregion
-                case SystemObjects.Rule:
-                    #region Fields
-                    var rule = Company.GetById<Rule>(id, i => i.RuleType);
-                    if (rule != null)
-                    {
-                        list.Add(new DisplayField { FriendlyName = "ID", Name = "ID", Value = rule.ID.ToString() });                        
-                        list.Add(new DisplayField { FriendlyName = Resources.FieldInfo.RuleType_Name, Name = "RuleTypeID", Value = rule.RuleType.Name });
-                        loadDisplayFields(list, type, id);
-                    }
-                    rule = null;
-                    break;
-                #endregion
-                case SystemObjects.Resource:
-                    #region Fields
-                    var resource = Community.GetById<Resource>(id);
-                    if (resource != null)
-                    {
-                        list.Add(new DisplayField { FriendlyName = "ID", Name = "ID", Value = resource.ID.ToString() });
-                        list.Add(new DisplayField { FriendlyName = "Display Name", Name = "DisplayName", Value = resource.FormatDisplayName() });
-                        list.Add(new DisplayField { FriendlyName = resource.GetName(i => i.Email), Name = "Email", Value = resource.Email });
-                        loadDisplayFields(list, type, id);
-                    }
-                    resource = null;
-                    break;
-                #endregion
-                case SystemObjects.Taxonomy:
-                    #region Fields
-                    var taxonomy = Company.Query<dynamic>(@"Select  A.ObjectId,AT.Name as TypeName,AP.TextPath ,ATL.Name as LevelName
-		                                                    from Asset A
-		                                                    inner join AssetType AT on
-		                                                    AT.ID  =A.AssetTypeID
-		                                                    inner join AssetTypeLevel ATL on
-		                                                    ATL.AssetTypeID =AT.ID 
-		                                                    cross apply [dbo].[GetAssetTextPathById](A.ID,'/') AP
-		                                                    where A.object='Taxonomy' and A.objectId=@objectId", new { objectId = id }).SingleOrDefault();
-                    if (taxonomy != null)
-                    {
-
-                        list.Add(new DisplayField { FriendlyName = "ID", Name = "ID", Value = taxonomy.ObjectId.ToString() });
-                        list.Add(new DisplayField { FriendlyName = Fields.Type_Name, Name = "TaxonomyType", Value = taxonomy.TypeName });
-                        list.Add(new DisplayField { FriendlyName = Fields.Path_Name, Name = "TextPath", Value = taxonomy.TextPath });
-                        list.Add(new DisplayField { FriendlyName = "Level", Name = "Level", Value = taxonomy.LevelName });
-                        loadDisplayFields(list, type, id);
-                    }
-                    taxonomy = null;
-                    break;
-                #endregion
-                case SystemObjects.FusionAttributeType:
-                    #region Fields
-
-                    var fields = Company.Filter<FieldType>(x => x.Object == "FusionAttributeType" && x.ObjectID == id);
-
-                    foreach (var field in fields)
-                    {
-                        list.Add(new DisplayField
-                        {
-                            FriendlyName = field.FriendlyName,
-                            Name = field.Name,
-                            Value = field.ID.ToString()
-                        });
-                    }
-
-                    break;
-
-                    #endregion
-            }
-
-            return list.AsQueryable();
         }
 
         [Route("{type}/{id:int}/style")]
@@ -7113,13 +6804,23 @@ where v.id = {0}", id)).FirstOrDefault();
         [Route("{obj}/{objid:int}/relationships/counts")]
         public IEnumerable<dynamic> GetRelationshipCountsByObject(SystemObjects obj, int objid)
         {
-            if(obj == SystemObjects.FusionAttribute)
-                return Company.Query<dynamic>(QueryConstants.FusionAttributeRelationshipAllCountsWithZero, new { objid });
-            else if(obj == SystemObjects.FusionQueryAttribute)
-                return Company.Query<dynamic>(QueryConstants.FusionQueryAttributeRelationshipAllCountsWithZero, new { objid });
-            else if(obj == SystemObjects.ReferenceItemType)
-                return Company.Query<dynamic>(QueryConstants.ReferenceListTypeRelationshipsAllCountsWithZero, new { obj = new Dapper.DbString { IsAnsi = true, Value = obj.ToString(), IsFixedLength = true, Length = 50 }, objid});
-            return Company.Query<dynamic>(QueryConstants.ObjectRelationshipAllCountsWithZero, new { obj = new Dapper.DbString { IsAnsi = true, Value = obj.ToString(), IsFixedLength = true, Length = 50 }, objid });
+            var predicateTypeInfo = new PredicateType().GetAsList();
+            var disallowEditIds = predicateTypeInfo.Where(p => p.AllowEditFromRelationshipEditor == false).Select(p => (int)p.ID).ToList();
+            string disallowEditFilter = string.Join(", ", disallowEditIds);
+
+            var sql = "";
+
+            if (obj == SystemObjects.FusionAttribute)
+                sql = string.Format(QueryConstants.FusionAttributeRelationshipAllCountsWithZero, disallowEditFilter);
+            else if (obj == SystemObjects.FusionQueryAttribute)
+                sql = string.Format(QueryConstants.FusionQueryAttributeRelationshipAllCountsWithZero, disallowEditFilter);
+            else if (obj == SystemObjects.ReferenceItemType)
+                sql = string.Format(QueryConstants.ReferenceListTypeRelationshipsAllCountsWithZero, disallowEditFilter);
+            else
+                sql = string.Format(QueryConstants.ObjectRelationshipAllCountsWithZero, disallowEditFilter);
+
+            return Company.Query<dynamic>(sql, new { obj = new DbString { IsAnsi = true, Value = obj.ToString(), IsFixedLength = true, Length = 50 }, objid });
+
         }
 
         [Route("{obj}/{objid:int}/relationships/{targettype}/{targettypeid:int}/fields")]
@@ -7403,7 +7104,7 @@ where v.id = {0}", id)).FirstOrDefault();
                 var dataColIndex = 0;
                 rowIndex++;
 
-                document.SetCellValue(rowIndex, ++dataColIndex, row.Uid ?? "");
+                document.SetCellValue(rowIndex, ++dataColIndex, (row.Uid ?? "").ToString());
                 document.SetCellValue(rowIndex, ++dataColIndex, row.Name ?? "");
                 document.SetCellValue(rowIndex, ++dataColIndex, row.Critical == 1 ? "Critical" : "Normal");
 
@@ -7773,31 +7474,7 @@ from	    AssetType T where T.Object = 'TaxonomyType' ");
                 }
             );
         }
-
-        [Route("catalogs/{typeID:int}/all")]
-        public IQueryable<Taxonomy> GetTaxonomiesByType(int typeID)
-        {
-            return Company.Filter<Taxonomy>(i => i.TaxonomyTypeID == typeID);
-        }
-
-        [Route("catalogs/{typeID:int}/{id:int}")]
-        public Taxonomy GetTaxonomy(int typeID, int id)
-        {
-            var model = Company.GetById<Taxonomy>(id, i => i.TaxonomyType);
-
-            if (model == null)
-            {
-                throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
-            }
-            else
-            {
-                if (model.TaxonomyTypeID != typeID)
-                    throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
-            }
-
-            return model;
-        }
-
+        
         #endregion
 
         #region Allocations
@@ -8228,23 +7905,39 @@ where	Type = 'ReferenceItemType'
 
                 if (fieldType.FilterPredicateDirection == true)
                 {
-                    sql += @", concat(I.PredicateName,' ', I.SubjectShortName) as Info ";
+                    sql += @", I.PredicateInverse as Predicate, I.SubjectShortName as ShortName ";
                     join = " on I.ObjectID = V.Value and V.LookupObjectType = I.Object and V.lookupObjectID = I.ObjectTypeID";
                 }
                 else
                 {
-                    sql += @", concat(I.PredicateInverse,' ', I.ObjectShortName) as Info ";
+                    sql += @", I.PredicateName  as Predicate, I.ObjectShortName as ShortName ";
                     join = " on I.SubjectID = V.Value and V.LookupObjectType = I.Subject and V.lookupObjectID = i.SubjectTypeID";
                 }
                 sql += $@"from fieldlookupvalue V
                         inner join IntersectDetail I {join} 
                         where V.fieldTypeID = @id and I.PredicateId = @PredcateId and I.{(fieldType.FilterPredicateDirection == true ? "SubjectID" : "ObjectID")} in @Parents";
-
-                items = Company.Query<SelectListInfoItem>(sql, new {
+                var rawItems = Company.Query<dynamic>(sql, new
+                {
                     id = fieldTypeID,
                     PredcateId = fieldType.FilterPredicateID,
                     Parents = parents
-                }).ToList();
+                }).OrderBy(i => i.Text).ToList();
+
+                foreach(var rawItem in rawItems) {
+                    SelectListInfoItem match = items.FirstOrDefault(i => i.Value == rawItem.Value.ToString());
+                    if (match != null)
+                    {
+                        match.Info += ", " + rawItem.ShortName;
+                    } else
+                    {
+                        items.Add(new SelectListInfoItem
+                        {
+                            Text = rawItem.Text,
+                            Value = rawItem.Value.ToString(),
+                            Info = rawItem.Predicate + " " +rawItem.ShortName
+                        });
+                    }
+                }
 
             }
             else
@@ -8359,8 +8052,6 @@ where	Type = 'ReferenceItemType'
             return Company.ApiEntityUris.Where(x => x.EntityID == entity.ID).ToList();
         }
 
-        #endregion
-
-
+        #endregion        
     }
 } 

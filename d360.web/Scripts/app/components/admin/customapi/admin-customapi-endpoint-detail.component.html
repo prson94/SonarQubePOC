@@ -1,0 +1,56 @@
+<div class="row">
+    <div class="col s12">
+        <div class="tile tile-detail">
+            <header>Endpoint: {{endpoint?.Name}}</header>
+            <d3s-loading [isLoading]="isLoading"></d3s-loading>
+            <div *ngIf="!isLoading"
+                 class="row">
+                <div class="col l6 s12">
+                    <div class="row">
+                        <div class="col l6 s12">
+                            <div class="FieldName">URI Segment</div>
+                            <div>{{endpoint?.UriPrefix}}</div>
+                        </div>
+                        <div class="col l6 s12">
+                            <div class="FieldName"># Versions</div>
+                            <div>{{numberOfVersions}}</div>
+                        </div>
+                        <div class="col l6 s12">
+                            <div class="FieldName">Service</div>
+                            <div>{{service?.Name}}</div>
+                        </div>
+                        <div class="col l6 s12">
+                            <div class="FieldName">Path so far</div>
+                            <div>{{service?.UriPrefix}}/{{endpoint?.UriPrefix}}</div>
+                        </div>
+                        <div class="col s12">
+                            <div class="FieldName">Description</div>
+                            <div [innerHtml]="service.Description"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col l6 s12">
+                    &nbsp;<!-- endpoint service metrics chart goes here-->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row" *ngIf="!isLoading">
+    <div class="col l4 s12">
+        <d3s-admin-api-endpoint-versions [endpoint]="endpoint"
+                                         [(selected)]="version"
+                                         [(numberOfVersions)]="numberOfVersions"></d3s-admin-api-endpoint-versions>
+    </div>
+    <div class="col l8 s12"
+         *ngIf="version!=null">
+        <div class="row">
+            <div class="col s12">
+                <d3s-admin-api-endpoint-version-fields [version]="version"></d3s-admin-api-endpoint-version-fields>
+            </div>
+            <div class="col s12">
+                <d3s-admin-api-endpoint-version-uritypes [version]="version"></d3s-admin-api-endpoint-version-uritypes>
+            </div>
+        </div>
+    </div>
+</div>

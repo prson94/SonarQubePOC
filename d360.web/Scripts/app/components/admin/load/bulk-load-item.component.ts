@@ -56,7 +56,7 @@ import { BaseComponent } from '../../shared/base.component'
                             <td *ngFor="let column of columns">{{item[column.datafield]}}</td>
                             <td>{{item.RowIndex}}</td>
                             <td>
-                                <span [innerHtml]="item.StatusMessage"></span>
+                                <span *ngIf="item.StatusMessage" [innerHtml]="item.StatusMessage"></span>
                             </td>
                         </tr>
                     </ng-template>

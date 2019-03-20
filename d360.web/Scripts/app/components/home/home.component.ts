@@ -1,23 +1,27 @@
-﻿import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Router, NavigationEnd } from '@angular/router';
-import { BaseComponent } from '../shared/base.component';
-import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
-import { RightSidebarService } from '../../services/right-sidebar.service';
-import { WebAnalyticsService } from '../../services/web-analytics.service';
-import { Breadcrumb } from '../../models/breadcrumb.model';
-import { SocialCommentType } from '../../models/social.model';
-import { WorkflowType } from '../../models/workflow.model';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import { DashboardService } from '../../services/dashboard.service';
-import { Dashboard } from '../../models/dashboard.model';
+﻿import {Component, OnDestroy, OnInit} from '@angular/core';
+import {NavigationEnd, Router} from '@angular/router';
+import {Title} from '@angular/platform-browser';
+
+import {Breadcrumb} from '../../models/breadcrumb.model';
+import {SocialCommentType} from '../../models/social.model';
+import {WorkflowType} from '../../models/workflow.model';
+import {Dashboard} from '../../models/dashboard.model';
+
+import {HeaderBreadcrumbService} from '../../services/header-breadcrumb.service';
+import {RightSidebarService} from '../../services/right-sidebar.service';
+import {WebAnalyticsService} from '../../services/web-analytics.service';
+import {DashboardService} from '../../services/dashboard.service';
+
+import {SiteUrlHelpers} from '../../static/site-url-helpers';
+
+import {BaseComponent} from '../shared/base.component';
 
 declare var CompanySettings;
 
 @Component({
     selector: 'home',
     templateUrl: './home.component.html',
-    providers: [ DashboardService ]
+    providers: [DashboardService]
 })
 
 export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
@@ -52,7 +56,7 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
 
     constructor(
         protected titleService: Title,
-        protected headerBreadcrumbService: HeaderBreadcrumbService,        
+        protected headerBreadcrumbService: HeaderBreadcrumbService,
         webAnalyticsService: WebAnalyticsService,
         protected router: Router,
         rightSidebarService: RightSidebarService,
@@ -75,14 +79,16 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.clearCurrentObjectInfo();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Home'));
+
         this.clearSidebar();
+
         this.setCommonRightSideBar(false, false, true);
 
-        this.showActivityTile = CompanySettings.ShowHomeActivityTile == 'true' ? true: false;
-        this.showAssignmentTile = CompanySettings.ShowHomeAssignmentTile == 'true' ? true : false;;
-        this.showBoardTile = CompanySettings.ShowHomeBoardTile == 'true' ? true : false;
+        this.showActivityTile = CompanySettings.ShowHomeActivityTile == 'true';
+        this.showAssignmentTile = CompanySettings.ShowHomeAssignmentTile == 'true';
+        this.showBoardTile = CompanySettings.ShowHomeBoardTile == 'true';
 
-        this.showTitle = CompanySettings.ShowHomePageTitle == 'true' ? true : false;
+        this.showTitle = CompanySettings.ShowHomePageTitle == 'true';
         this.title = CompanySettings.BrowserTitlePrefix;
         this.titleSize = CompanySettings.HomePageTitleSize;
         this.titleColor = CompanySettings.HomePageTitleColor;
@@ -98,10 +104,13 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
 
         this.colSize = 12.0 / (this.numTiles == 0 ? 1 : this.numTiles);
 
-        this.dashboardService.getHomePageDashboards().then(r => {
-            if (r && r.length > 0)
-                this.dashboard = r[0];
-        });
+        this.dashboardService.getHomePageDashboards().subscribe(
+            r => {
+                if (r && r.length > 0) {
+                    this.dashboard = r[0];
+                }
+            }
+        );
     }
 
     ngOnDestroy() {
@@ -110,10 +119,10 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
     }
 
     private onShowActivityDetails(event) {
-        this.showActivityDetails = true;        
+        this.showActivityDetails = true;
         this.showBoardDetails = false;
         this.showAssignmentDetails = false;
-        
+
         this.selectedArtifactTypeId = event.Id;
         this.selectedArtifactTypeName = event.name;
     }
@@ -121,7 +130,7 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
     private onShowAssignmentDetails(event) {
         if (event.workflowId)
             this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_LIST_V2}/${event.workflowId}/${event.version}/${event.stepId}`);
-        else 
+        else
             this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_LIST}/${event.workflowType}`);
     }
 
@@ -130,7 +139,7 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
             console.log("ERROR NO SELECTION PASSED ON BOARD DETAILS CLICK.");
             return;
         }
-        switch (event.selected.Name.toUpperCase()) {            
+        switch (event.selected.Name.toUpperCase()) {
             case "COMMENT":
                 this.selectedSocialType = SocialCommentType.Social;
                 break;
@@ -147,8 +156,8 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
 
         this.showBoardDetails = true;
         this.showAssignmentDetails = false;
-        this.showActivityDetails = false;        
-    }    
+        this.showActivityDetails = false;
+    }
 
     private checkHasResults(e: any) {
         this.hasResults = (e != null);

@@ -89,7 +89,7 @@ namespace d360.model
 
         public DbSet<Artifact> Artifacts { get; set; }
 
-
+        public DbSet<AssetDataProfile> AssetDataProfiles { get; set; }
 
         public DbSet<AssetTypeExportTemplate> AssetTypeExportTemplates { get; set; }
 
@@ -155,9 +155,7 @@ namespace d360.model
         public DbSet<FusionAttributeType> FusionAttributeTypes { get; set; }
 
         public DbSet<FusionAttributeTypeCustomQuery> FusionAttributeTypeCustomQueries { get; set; }
-
-        public DbSet<FusionFilter> FusionFilters { get; set; }
-
+                
         public DbSet<FusionQueryAttribute> FusionQueryAttributes { get; set; }
 
         public DbSet<FusionQueryAttributeType> FusionQueryAttributeTypes { get; set; }
@@ -769,7 +767,7 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
 
         public Dictionary<string, object> GetFusionAsDictionary(int id)
         {
-            var item = GetById<Fusion>(id, i => i.FusionFilters);
+            var item = GetById<Fusion>(id);
             var sType = SystemObjects.Fusion.ToString();
             var fields = Filter<FieldWithRelation>(i => i.ObjectType == sType && i.ObjectID == item.ID && i.IsListable).ToList();
 
@@ -787,11 +785,6 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
             foreach (var n in fields.Where(f => f.ObjectID == item.ID).OrderBy(f => f.SortOrder))
             {
                 model.Add(n.Name, n.FormattedValue);
-            }
-
-            if (item.FusionFilters.Count > 0)
-            {
-                model.Add("Filters", item.FusionFilters.Select(i => new { i.FusionAttributeTypeID, i.Filter }).ToDictionary(k => k.FusionAttributeTypeID, v => v.Filter));
             }
 
             bool hasDashboards = Filter<Report>(x => x.ObjectType == "FusionType" && x.ObjectID == item.FusionTypeID && x.ReportType == "powerbi").Any();
