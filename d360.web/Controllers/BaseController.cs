@@ -232,7 +232,7 @@ namespace d360.web.Controllers
 
             foreach (var f in fields)
             {
-                var name = f.Name.Replace("'", "''").Replace("--", "");
+                var name = f.Name.Replace("'", "''").Replace("--", "") + f.ID.ToString();
                 if (!useFieldName)
                 {
                     var fieldName = $"Field{f.ID}";
