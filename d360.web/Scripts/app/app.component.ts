@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, AfterContentInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { MessagesService } from './services/messages.service';
 import { HeaderBreadcrumbService } from './services/header-breadcrumb.service';
@@ -32,10 +32,10 @@ import { CookieService } from './services/cookie.service';
               `
 })
 
-export class AppComponent implements AfterViewInit, OnDestroy {    
+export class AppComponent implements AfterContentInit, OnDestroy {    
     subscription: Subscription;
     msgs: Message[];
-    public menuOpen: boolean = false;
+    public menuOpen: boolean = true;
 
     constructor(                
         private messagesService: MessagesService,
@@ -50,17 +50,19 @@ export class AppComponent implements AfterViewInit, OnDestroy {
             infoMsg => {
                 this.msgs.push({ severity: 'info', summary: infoMsg.summary, detail: infoMsg.detail });
             });
-        let menuState = cookieService.get("MenuState");
-        if (!menuState) {
-            cookieService.set("MenuState", "true");
-            this.handleMenuChange(true);
-        } else {
-            this.handleMenuChange(menuState == "true");
-        }
     }
 
-    ngAfterViewInit() {        
-        this.headerActionsService.emitFavoritesChange(); //on first load when a non-default home page is defined, we need to update the action icons                       
+    ngAfterContentInit() {        
+        this.headerActionsService.emitFavoritesChange();//on first load when a non-default home page is defined, we need to update the action icons
+
+        let menuState = this.cookieService.get("MenuState");
+        if ((menuState + "") == "") {
+            this.cookieService.set("MenuState", "true");
+            this.handleMenuChange(true);
+        } else {
+            this.handleMenuChange(menuState.toLocaleLowerCase() == "true");
+        }
+
     }
 
     private handleMenuChange(v: boolean) {

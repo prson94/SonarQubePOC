@@ -13,16 +13,19 @@ import { forEach } from '@angular/router/src/utils/collection';
 @Component({
     selector: 'd3s-site-menu-category',    
     template: ` 
-                    <li #item [ngClass]="{'menu-category':true,'menu-parent':menu && (menu.NavigationItems),'menu-active':menu?.isActiveItem}" [pTooltip]="(!expanded && !menuhasItems(menu)) ? title : null" tooltipZIndex="10001" (mouseenter)="show(item)" (mouseleave)="hide(item)" [routerLink]="url ? url : []" style="cursor: pointer;" >
-                        <span *ngIf="menuhasItems(menu)">
+                    <li #item [ngClass]="{'menu-category':true,'menu-parent':menu && (menu.NavigationItems),'menu-active':menu?.isActiveItem}" title="{{title}}" (mouseenter)="show(item)" (mouseleave)="hide(item)" [routerLink]="url ? url : []" style="cursor: pointer;" >
+                        <span>
                             <i *ngIf="rootIconName" [class]="'fa ' + rootIconName"></i>
-                            <img *ngIf="imageUrl" [src]="imageUrl" style="max-width: 15px; max-height: 15px;" />
+                            <img *ngIf="imageUrl" [src]="imageUrl" style="max-width: 15px; max-height: 15px; margin: 0px 15px 0px 12px" />
+                            <span [ngClass]="{'caption':true, 'min':!expanded}">
+                                <span [ngClass]="{'icon-active':expanded, 'icon':!expanded}"> {{title}} <i [ngClass]="{'pull-right menu-category fa fa-caret-right':(menu && menu.NavigationItems && menu.NavigationItems.length > 0), 'delay-show':  expanded}"></i></span>
+                            </span>
                         </span>
-                        <span *ngIf='expanded'> {{title}} <i *ngIf="menu && menu.NavigationItems && menu.NavigationItems.length > 0" class="fa fa-angle-right pull-right menu-category"></i></span>
                         <div *ngIf="menu && menu.NavigationItems && menu.NavigationItems.length > 0" class="menu-child megamenu-panel" (click)="stopNavigation($event)">
                             <div>
                                 <div class="row megamenu-title truncate">
-                                <span><input type="search" [(ngModel)]=searchText placeholder="{{title}}"/><i class="fa fa-search"></i></span>
+                                <span>
+                                    <input type="search" [(ngModel)]=searchText placeholder="Search menu..."/><i class="fa fa-search"></i></span>
                                     <span class="megamenu-tools" *ngIf="showClearButton">
                                         <i (click)="clearClick.emit(true)" class="fa fa-eraser" [pTooltip]="'Clear ' + title + ' List'" tooltipZIndex="10001"></i>
                                     </span>
@@ -32,7 +35,7 @@ import { forEach } from '@angular/router/src/utils/collection';
                                         <ul class="menu-group">                                        
                                             <d3s-site-menu-mega-item [item]="item" [level]="0" [(active)]="menu.isActiveItem" [countTest]="item.count"></d3s-site-menu-mega-item>
                                         </ul>
-                                    </div>
+                                    </div> 
                                 </div>
                             </div>
                         </div>
@@ -64,7 +67,7 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
     
     show(item) {        
         if (this.menu && this.menu.NavigationItems) {
-            let submenu = item.children[this.expanded ? 1 : 0].nextElementSibling;
+            let submenu = item.children[0].nextElementSibling;
 
             if (submenu) {
                 this.menu.isActiveItem = true;
@@ -86,7 +89,20 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
         this.viewReady = true;
         if (this.menuhasItems(this.menu)) {
             for (let item of this.menu.NavigationItems) {
-                this.menuService.getItemCount(this.menu.Title, item.Name).then((res) => item.count = res);
+                return;
+                if (!item.Name)
+                    return;
+                if (this.menu.Title && this.menu.MenuID.startsWith('#') && item.Name) {
+                    this.menuService.getItemCount(this.menu.Title, item.Name).then((res) => {
+                        item.count = res
+                    });
+                } else {
+                    if (item.Url) {
+                        this.menuService.getItemCount(item.Url.replace('/','-'), item.Name).then((res) => {
+                            item.count = res
+                        });
+                    }
+                }
             }
         }
     }

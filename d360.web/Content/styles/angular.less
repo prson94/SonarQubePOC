@@ -83,7 +83,7 @@ nav.top, .left-side-nav {
 
 
 /* side menu*/
-.left-side-nav-open {
+.left-side-nav-open, .left-side-nav {
     left: 0;
     top: 0;
     z-index: 10000;
@@ -94,10 +94,44 @@ nav.top, .left-side-nav {
     margin-top: 40px;
     overflow-y: visible;
     border-right: 1px solid rgba(255, 255, 255, 0.15);
-    transition: width .1s;
+    transition: width 200ms ease;
 
     li {
         padding: 0;
+
+        i {
+            font-size: 15px;
+            width: 40px;
+            text-align: center;
+
+            &.subitem {
+                width: 10px;
+            }
+        }
+
+        .caption {
+            width: 150px;
+            display: inline-block;
+            position: fixed;
+
+            &.min {
+                width: 0px;
+            }
+        }
+
+        .icon {
+            display: inline-block;
+            overflow: hidden;
+            width: 0;
+            height: 14px;
+            padding-left: 10px;
+            transition: width 200ms ease;
+        }
+
+        .icon-active {
+            visibility: visible;
+            opacity: 1;
+        }
     }
 
     a {
@@ -110,7 +144,6 @@ nav.top, .left-side-nav {
     }
 
     .menu-category {
-        padding: 0 15px;
         color: white;
         font-size: 1rem;
         height: 35px;
@@ -127,60 +160,50 @@ nav.top, .left-side-nav {
     }
 }
 .left-side-nav {
-    left: 0;
-    top: 0;
-    z-index: 10000;
-    height: 100%;
-    position: fixed;
-    background-color: @igx-left-side-nav;
     width: 50px;
-    margin-top: 40px;
-    overflow-y: visible;
-    border-right: 1px solid rgba(255, 255, 255, 0.15);
-    transition: width .1s;
+    li .caption {
+        width: 0;
+    } 
 
-    li {
-        padding: 0;
-    }
+}
 
-    a {
-        display: block;
-    }
+.menu-toggle-open, .menu-toggle {
+    position: fixed;
+    z-index: 20000;
+    bottom: 0;
+    padding: 10px;
+    width: 200px;
+    color: white;
+    transition: width 200ms ease;
 
-    ul, a {
-        height: auto;
-        line-height: normal;
-    }
-
-    .menu-category {
-        padding: 0 15px;
-        color: white;
-        font-size: 1rem;
-        height: 35px;
-        line-height: 35px;
-        position: relative;
-
-        &:hover {
-            background: @igx-gray-color;
-        }
-
-        i {
-            cursor: pointer;
-        }
+    &:hover {
+        background: @igx-gray-color;
     }
 }
 
+.rotate-right {
+    transform: rotate(180deg);
+    transition: transform 200ms ease;
+}
+.rotate-left {
+    transform: rotate(0deg);
+    transition: transform 200ms ease;
+}
+.menu-toggle {
+    width: 50px;
+}
+
 .menu-parent .menu-child {
-    display:none;
-    width:12.5em;    
-    padding:0.3em;
-    position:absolute;
-    margin:0; 
-    outline:0; 
-    line-height:1.3; 
-    text-decoration:none; 
-    font-size:100%; 
-    list-style:none;    
+    display: none;
+    width: 12.5em;
+    padding: 0.3em;
+    position: absolute;
+    margin: 0;
+    outline: 0;
+    line-height: 1.3;
+    text-decoration: none;
+    font-size: 100%;
+    list-style: none;
 }
 
 .menu-active > .megamenu-panel {
@@ -222,7 +245,7 @@ nav.top, .left-side-nav {
         font-size: 100%;
         z-index: 1001;
         color: #ffffff;
-        background: lightgrey;
+        background: #4e5466;
 
 
         .megamenu-tools {
@@ -373,13 +396,12 @@ d3s-navbar-item {
 .maincontent {
     margin-left: 70px;
     margin-right: 40px;
-    transition: width .1s;
 }
 
 .maincontent-open {
     margin-left: 270px;
     margin-right: 40px;
-    transition: width .1s;
+
 }
 
 .panel-section ul,

@@ -16,18 +16,15 @@ declare var CompanySettings;
 @Component({
     selector: 'd3s-site-menu',    
     template: ` 
-                <ul [class.left-side-nav]="!menuOpen" [class.left-side-nav-open]='menuOpen'>
-                    <d3s-site-menu-category [expanded]="menuOpen" [title]="'Home'" [url]="'home'" rootIconName="fa-home"></d3s-site-menu-category>  
+                <ul [class.left-side-nav-open]="menuOpen" [class.left-side-nav]='!menuOpen'>
+                    <d3s-site-menu-category [expanded]="menuOpen" [title]="'Home'" [url]="'home'" [rootIconName]="'fa-home'"></d3s-site-menu-category>  
                     <d3s-site-menu-category *ngIf="favorites" [expanded]="menuOpen" [title]="'Favorites'" showClearButton="true" (clearClick)="clearFavorites()" [menu]="favorites" rootIconName="fa-star"></d3s-site-menu-category>
                     <ng-template ngFor let-menu [ngForOf]="siteMenu">
                         <d3s-site-menu-category *ngIf="menu.ShouldDisplay" [expanded]="menuOpen" [url]="menu.ngUrl" [title]="menu.Title" [rootIconName]="menu.Icon" [imageUrl]="menu.FullURL" [menu]="menu"></d3s-site-menu-category>
                     </ng-template>                  
                     <d3s-site-menu-category *ngIf="isAdmin" [expanded]="menuOpen" [title]="'Administration'" rootIconName="fa-cog" [menu]="adminMenu"></d3s-site-menu-category>  
-                    <span class="set-bottom">
-                        <d3s-site-menu-category *ngIf="!menuOpen" [title]="'Expand'" (click)="toggleMenu(); menuChanged.emit(this.menuOpen)" rootIconName="fa-arrow-right"></d3s-site-menu-category>  
-                        <d3s-site-menu-category *ngIf="menuOpen" [title]="'Collapse'" (click)="toggleMenu(); menuChanged.emit(this.menuOpen)" rootIconName="fa-arrow-left"></d3s-site-menu-category>
-                    </span>
                 </ul>
+                <div [ngClass]="{'menu-toggle':!menuOpen, 'menu-toggle-open':menuOpen}" title="Toggle full width navigation" (click)="toggleMenu();"><i class="fa fa-arrow-circle-left" [class.rotate-right]="!menuOpen" [class.rotate-left]="menuOpen"></i></div>
                 `,    
     providers: [SiteMenuService, FavoritesService],
     changeDetection: ChangeDetectionStrategy.OnPush

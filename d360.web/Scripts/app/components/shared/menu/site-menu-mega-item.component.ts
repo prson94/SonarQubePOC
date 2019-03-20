@@ -14,7 +14,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
     template: ` 
                 <a (click)="itemClick()" class="menu-item truncate" [ngStyle]="{'margin-left': getMargin()}">
                     <span (click)="handleArrowClick($event)">
-                        <i *ngIf="item.Items" [class]="!displayChild ? 'fa fa-caret-right' : 'fa fa-caret-down'" aria-hidden="true"></i>
+                        <i *ngIf="item.Items" [class]="!displayChild ? 'subitem fa fa-caret-right' : 'subitem fa fa-caret-down'" aria-hidden="true"></i>
                     </span>
                     {{item.Name}}<ng-container *ngIf="item.IsHomePage">&nbsp;&nbsp;<span class="fa fa-home"></span></ng-container>
                     <span *ngIf="countTest > 0" class="d3s-badge pull-right">{{countTest}}</span>

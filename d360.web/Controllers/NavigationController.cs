@@ -836,9 +836,13 @@ order by	f.SortOrder";
         public JsonNetResult GetItemCount(string type, string item)
         {
             int count = 0;
+            if (type.Contains("-"))
+                type = type.Split('-').First();
+
             switch (type)
             {
-                case "Data Quality":
+                case "Rules":
+                case "rules":
                     count = Company.Query<int>(@"
                         select	K.kount
                         from    AssetType AT
@@ -855,7 +859,7 @@ order by	f.SortOrder";
 			            where  AT.Object = 'RuleType'
                         and  AT.Name = '"+ item +"' order by AT.Name").AsQueryable().FirstOrDefault();
                     break;
-                case "Business Assets":
+                case "Glossary":
                     count = Company.Query<int>(@"
                         select	COALESCE(K.kount,0)
                         from    AssetType AT
