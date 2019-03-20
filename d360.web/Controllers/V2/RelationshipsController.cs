@@ -66,6 +66,74 @@ namespace d360.web.Controllers.V2
         #endregion
 
         /// <summary>
+        /// GET a list of relationships.
+        /// </summary>
+        /// <remarks>
+        /// In addition to the below query parameters a field name for the relationship type can be specified to filter by exact match. For example MyCustomField=someExactValue. 
+        /// This must be used in conjunction with the RelationshipTypeUid query parameter.
+        /// </remarks>
+        /// <param name="RelationshipTypeUid">Filter by an relationship type's unique identifier. Using this parameter will also provide any field values for the relationships, if applicable.</param>
+        /// <param name="PredicateUid">Filter by an predicate's unique identifier.</param>
+        /// <param name="SubjectUid">Filter by a subject asset's unique identifier.</param>
+        /// <param name="ObjectUid">Filter by an object asset's unique identifier.</param>
+        /// <param name="State">Filter on the state, or status, of a relationship.</param>
+        /// <param name="_pageNum">Allows for changing the current page of results you are requesting.</param>
+        /// <param name="_pageSize">Allows for changing the page size of results you are requesting. The maximum page size is 250.</param>
+        /// <returns></returns>
+        [
+            HttpGet,
+            MapToApiVersion("2.0"),
+            Route(""),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of relationships.", typeof(GetRelationshipsApiModel)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Object representing one of the query parameter values could not be found.", typeof(ErrorResponse))
+       ]
+        public async Task<HttpResponseMessage> GetRelationshipsAsync(Guid? RelationshipTypeUid = null, Guid? PredicateUid = null, Guid? SubjectUid = null, Guid? ObjectUid = null, core.enums.State? State = null, int? _pageSize = null, int? _pageNum = null)
+        {
+            var prefix = "Relationships.GetRelationshipsAsync => ";
+            var errorMessage = "";
+
+            try
+            {
+                #region Validation
+
+                if (RelationshipTypeUid.HasValue)
+                {
+                    if (!Company.Any<IntersectType>(i => i.uid == RelationshipTypeUid.Value)) return ReturnApiError(HttpStatusCode.NotFound, $"Relationship Type with Uid [{RelationshipTypeUid.Value}] could not be found.");
+                }
+
+                if (PredicateUid.HasValue)
+                {
+                    if (!Company.Any<Predicate>(i => i.UID == PredicateUid.Value)) return ReturnApiError(HttpStatusCode.NotFound, $"Predicate with Uid [{PredicateUid.Value}] could not be found.");
+                }
+
+                if (SubjectUid.HasValue)
+                {
+                    if (!Company.Any<Asset>(i => i.uid == SubjectUid.Value)) return ReturnApiError(HttpStatusCode.NotFound, $"Subject with Uid [{SubjectUid.Value}] could not be found.");
+                }
+
+                if (ObjectUid.HasValue)
+                {
+                    if (!Company.Any<Asset>(i => i.uid == ObjectUid.Value)) return ReturnApiError(HttpStatusCode.NotFound, $"Object with Uid [{ObjectUid.Value}] could not be found.");
+                }
+
+                #endregion
+
+                var queryParams = Request.GetQueryNameValuePairs().ToList();
+                var items = await Company.GetRelationships(queryParams);
+                return Request.CreateResponse(HttpStatusCode.OK, items);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+        }
+
+        /// <summary>
         /// GET a list of relationship types.
         /// </summary>
         /// <param name="AssetTypeUid">Allows for filtering by an asset type's unique identifier, looking at the subject or object type.</param>
@@ -102,7 +170,7 @@ namespace d360.web.Controllers.V2
                     queryParams.Add(new KeyValuePair<string, string>("State", State.ToString()));
                 }
 
-                var types = await Company.GetIntersectTypes(queryParams);
+                var types = await Company.GetRelationshipTypes(queryParams);
 
                 return Request.CreateResponse(HttpStatusCode.OK, types);
             }

@@ -203,7 +203,7 @@ from	Artifact A
         inner join Asset O on O.Object = 'Artifact' and O.ObjectID = A.ID
         {parentJoins} 
 where   A.ArtifactTypeID = @id 
-        and O.ID not in ({GetNoReadSqlStatement()})
+        and O.ID not in ({Company.GetNoReadSqlStatement()})
 for json path";
 
             var jsonResults = Company.Query<string>(querySql, new { id }).ToList();
@@ -387,7 +387,7 @@ from	Artifact A
  left join [PredicateIntersect] PI on PI.PredicateType = {(int)PredicateType.InterTypeHierarchy} and PI.Object = O.Object and PI.ObjectID = O.ObjectID 
  left join Asset P on P.Object = PI.Subject and P.ObjectID = PI.SubjectID
 where   A.ID = @id 
-        and O.ID not in ({GetNoReadSqlStatement()})
+        and O.ID not in ({Company.GetNoReadSqlStatement()})
 for json path";
 
             var jsonResults = Company.Query<string>(querySql, new { id = id }).ToList();
@@ -472,7 +472,7 @@ from	Artifact A
         left join Artifact P on P.ID = A.ParentID 
         left join Asset P_Asset on P_Asset.Object = 'Artifact' and P_Asset.ObjectID = P.ID
         {joins}
-where   O.ID not in ({GetNoReadSqlStatement()}) 
+where   O.ID not in ({Company.GetNoReadSqlStatement()}) 
         and A.ArtifactTypeID = @id ";
 
             var sql = string.Format(@"select * from ({0}) A", querySql);
@@ -706,7 +706,7 @@ from	Taxonomy A
         inner join Asset O on O.Object = 'Taxonomy' and O.ObjectID = A.ID 
         left join Taxonomy P on P.ID = A.ParentID 
         left join Asset P_Asset on P_Asset.Object = 'Taxonomy' and P_Asset.ObjectID = P.ID
-where   O.ID not in ({GetNoReadSqlStatement()}) 
+where   O.ID not in ({Company.GetNoReadSqlStatement()}) 
         and A.TaxonomyTypeID = @id ";
 
             var sql = string.Format(@"select * from ({0}) A", querySql);
