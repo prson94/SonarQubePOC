@@ -139,17 +139,6 @@ namespace d360.web.Controllers
                 );
         }
         
-
-        internal string GetNoReadSqlStatement(string identifier = null)
-        {
-            return $"select AssetID from ResponsibilityDetail where ((PermissionsBitMask & {(int)Permission.ReadAsset}) = 0) and ResourceID = {(string.IsNullOrEmpty(identifier) ? Company.CurrentResourceID.ToString() : identifier)}";
-        }
-
-        internal string GetAssetTypeNoReadSqlStatement(string identifier = null)
-        {
-            return $"select AssetTypeID from ResponsibilityDetail where AssetID = 0 and ((PermissionsBitMask & {(int)Permission.ReadAsset}) = 0) and ResourceID = {(string.IsNullOrEmpty(identifier) ? Company.CurrentResourceID.ToString() : identifier)}";
-        }
-
         #region Error Handling Helper
 
         [System.Runtime.Serialization.DataContract(Name = "Error")]
@@ -232,7 +221,7 @@ namespace d360.web.Controllers
 
             foreach (var f in fields)
             {
-                var name = f.Name.Replace("'", "''").Replace("--", "");
+                var name = f.Name.Replace("'", "''").Replace("--", "") + f.ID.ToString();
                 if (!useFieldName)
                 {
                     var fieldName = $"Field{f.ID}";

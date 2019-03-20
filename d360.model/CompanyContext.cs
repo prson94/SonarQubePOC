@@ -434,6 +434,7 @@ select	'ResourceType' as ObjectType, 1 as ObjectTypeID, 'User' as Name ").ToList
             return list;
         }
 
+
         public async Task<List<IntersectTypeApiViewModel>> GetIntersectTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "")
         {
             var dbArgs = new DynamicParameters();
@@ -514,7 +515,7 @@ from	IntersectType I
 
         public Task<List<IntersectTypeApiViewModel>> GetActiveIntersectTypesByObjectType(int id, SystemObjects type)
         {
-            return GetIntersectTypes(null, $"where I.State = 1 and (I.SubjectID = {id} and I.[Subject] = '{type.ToString()}' or I.ObjectID = {id} and I.Object = '{type.ToString()}')");
+            return GetRelationshipTypes(null, $"where I.State = 1 and (I.SubjectID = {id} and I.[Subject] = '{type.ToString()}' or I.ObjectID = {id} and I.Object = '{type.ToString()}')");
         }
 
         public List<AllocationPossibility> GetAllocationOptions()
