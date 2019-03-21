@@ -19,9 +19,9 @@ import { StateService } from '../../services/state.service';
                     <header *ngIf ="!hideHeader">Values<d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="doExport()"></d3s-tile-actions></header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading && !showEditor">
-                        <d3s-fusion-attribute-summary-filters [filterColumns]="filtercolumns" [filters]="stateService.fusionFilters.filters" (filtersChange)="doFilterResults($event)" [isFiltering]="isFiltering"></d3s-fusion-attribute-summary-filters>                 
+                        <d3s-fusion-attribute-summary-filters [filterColumns]="filtercolumns" [filters]="stateService.getFusionFilter(isDataProfile).filters" (filtersChange)="doFilterResults($event)" [isFiltering]="isFiltering"></d3s-fusion-attribute-summary-filters>                 
                         <p-table #dt [value]="results?.results" selectionMode="single" [resizableColumns]="true" [lazy]="true" [totalRecords]="results?.total" [metaKeySelection]="true" 
-                            [globalFilterFields]="[]" [pageLinks]="3" [paginator]="true" [rows]="stateService.fusionFilters.rowsPerPage" [rowsPerPageOptions]="defaultPagingOptions"
+                            [globalFilterFields]="[]" [pageLinks]="3" [paginator]="true" [rows]="stateService.getFusionFilter(isDataProfile).rowsPerPage" [rowsPerPageOptions]="defaultPagingOptions"
                             [selection]="fusionAttribute" (selectionChange)="fusionAttribute=$event;fusionAttributeChange.emit(fusionAttribute);" (onLazyLoad)="loadFusionAttributesLazy($event)"
                             [style]="{'padding-bottom':'80px'}">
                             <ng-template pTemplate="header">
@@ -114,18 +114,17 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
     ) {
         super();
     }
-
-     
+        
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (changes['fusionAttributeTypeId'] && this.fusionAttributeTypeId) {            
             this.fusionObject = 'FusionAttributeType';
             this.fusionObjectID = this.fusionAttributeTypeId;
             this.fusionQueryAttributeTypeId = null;
 
-            this.stateService.resetFusionAttributeFilterIfRequired(this.fusionObject, this.fusionObjectID);     
+            this.stateService.resetFusionAttributeFilterIfRequired(this.fusionObject, this.fusionObjectID,this.isDataProfile);     
 
             if (this.initialFusionAttributeId > 0)
-                this.stateService.fusionFilters.filters = [{ dataField: 'ID', value: this.initialFusionAttributeId.toString(), condition: 'CONTAINS', columnType: '' }];
+                this.stateService.getFusionFilter(this.isDataProfile).filters = [{ dataField: 'ID', value: this.initialFusionAttributeId.toString(), condition: 'CONTAINS', columnType: '' }];
 
             this.getFieldsDefinition();  
             
@@ -134,7 +133,7 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
             this.fusionObject = 'FusionQueryAttributeType';            
             this.fusionObjectID = this.fusionQueryAttributeTypeId;
             this.fusionAttributeTypeId = null;            
-            this.stateService.resetFusionAttributeFilterIfRequired(this.fusionObject, this.fusionObjectID);      
+            this.stateService.resetFusionAttributeFilterIfRequired(this.fusionObject, this.fusionObjectID,this.isDataProfile);      
 
             this.getFieldsDefinition();            
         } 
@@ -144,9 +143,9 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
             this.fusionObjectID = this.fusionAttributeTypeId;
             this.fusionQueryAttributeTypeId = null;
             if (this.initialFusionAttributeId > 0)
-                this.stateService.fusionFilters.filters = [{ dataField: 'ID', value: this.initialFusionAttributeId.toString(), condition: 'CONTAINS', columnType: '' }];
+                this.stateService.getFusionFilter(this.isDataProfile).filters = [{ dataField: 'ID', value: this.initialFusionAttributeId.toString(), condition: 'CONTAINS', columnType: '' }];
 
-            this.stateService.resetFusionAttributeFilterIfRequired(this.fusionObject, this.fusionObjectID);
+            this.stateService.resetFusionAttributeFilterIfRequired(this.fusionObject, this.fusionObjectID,this.isDataProfile);
 
             this.getFieldsDefinition();            
         }
@@ -172,8 +171,8 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
     }
 
     private doFilterResults(event) {        
-        this.stateService.fusionFilters.filters = event;
-        this.stateService.fusionFilters.currentPageNumber = 0;     
+        this.stateService.getFusionFilter(this.isDataProfile).filters = event;
+        this.stateService.getFusionFilter(this.isDataProfile).currentPageNumber = 0;     
         this.fusionAttribute = null; //reseting the selected row
         this.getData();
     }
@@ -185,18 +184,18 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
         }
 
         //remove any invalid filters
-        if (this.stateService.fusionFilters.filters && this.stateService.fusionFilters.filters.length > 0) {
-            for (var i = this.stateService.fusionFilters.filters.length - 1; i >= 0; i--) {
-                if (!this.stateService.fusionFilters.filters[i].dataField || !this.stateService.fusionFilters.filters[i].value) {
+        if (this.stateService.getFusionFilter(this.isDataProfile).filters && this.stateService.getFusionFilter(this.isDataProfile).filters.length > 0) {
+            for (var i = this.stateService.getFusionFilter(this.isDataProfile).filters.length - 1; i >= 0; i--) {
+                if (!this.stateService.getFusionFilter(this.isDataProfile).filters[i].dataField || !this.stateService.getFusionFilter(this.isDataProfile).filters[i].value) {
                     console.log("REMOVING FILTER", i);
-                    this.stateService.fusionFilters.filters.splice(i, 1);
+                    this.stateService.getFusionFilter(this.isDataProfile).filters.splice(i, 1);
                 }
             }
         }
         this.isFiltering = true;
-
+   
         if (this.fusionObject == "FusionQueryAttributeType") {
-            this.fusionAttributeService.getFusionQueryAttributes(this.fusionId, this.fusionObjectID, this.stateService.fusionFilters.currentPageNumber, this.stateService.fusionFilters.rowsPerPage, this.stateService.fusionFilters.sortField, this.stateService.fusionFilters.sortOrder, this.stateService.fusionFilters.filters)
+            this.fusionAttributeService.getFusionQueryAttributes(this.fusionId, this.fusionObjectID, this.stateService.getFusionFilter(this.isDataProfile).currentPageNumber, this.stateService.getFusionFilter(this.isDataProfile).rowsPerPage, this.stateService.getFusionFilter(this.isDataProfile).sortField, this.stateService.getFusionFilter(this.isDataProfile).sortOrder, this.stateService.getFusionFilter(this.isDataProfile).filters)
                 .then(res => {
                     this.results = res;
                     this.isFiltering = false;
@@ -208,11 +207,12 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
                     }
                     this.fusionAttributeChange.emit(this.fusionAttribute);
                     this.changeDetectorRef.markForCheck();
+
                 });
         }
         else {
             let target: string = this.isDataProfile ? 'DataProfile' : '';
-            this.fusionAttributeService.getFusionAttributes(this.fusionId, this.fusionObjectID,target, this.stateService.fusionFilters.currentPageNumber, this.stateService.fusionFilters.rowsPerPage, this.stateService.fusionFilters.sortField, this.stateService.fusionFilters.sortOrder, this.stateService.fusionFilters.filters)
+            this.fusionAttributeService.getFusionAttributes(this.fusionId, this.fusionObjectID, target, this.stateService.getFusionFilter(this.isDataProfile).currentPageNumber, this.stateService.getFusionFilter(this.isDataProfile).rowsPerPage, this.stateService.getFusionFilter(this.isDataProfile).sortField, this.stateService.getFusionFilter(this.isDataProfile).sortOrder, this.stateService.getFusionFilter(this.isDataProfile).filters)
                 .then(res => {
                     this.results = res;
                     this.isFiltering = false;
@@ -234,17 +234,17 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
         //event.sortOrder = Sort order as number, 1 for asc and -1 for dec
         //filters: FilterMetadata object having field as key and filter value, filter matchMode as value
         this.fusionAttribute = null; //reseting the selected row
-        this.stateService.fusionFilters.sortOrder = event.sortOrder;
-        this.stateService.fusionFilters.sortField = event.sortField == undefined ? "" : event.sortField;
-        this.stateService.fusionFilters.rowsPerPage = event.rows;
-        this.stateService.fusionFilters.currentPageNumber = event.first / event.rows;
+        this.stateService.getFusionFilter(this.isDataProfile).sortOrder = event.sortOrder;
+        this.stateService.getFusionFilter(this.isDataProfile).sortField = event.sortField == undefined ? "" : event.sortField;
+        this.stateService.getFusionFilter(this.isDataProfile).rowsPerPage = event.rows;
+        this.stateService.getFusionFilter(this.isDataProfile).currentPageNumber = event.first / event.rows;
         
         this.getData();
     }
 
     private doExport() {
         this.isLoading = true;
-        this.fusionAttributeService.getFusionAttributeExcel(this.fusionObject, this.fusionId, (this.fusionObject == "FusionQueryAttributeType") ? this.fusionQueryAttributeTypeId : this.fusionAttributeTypeId, this.stateService.fusionFilters.sortField, this.stateService.fusionFilters.sortOrder, this.stateService.fusionFilters.filters)
+        this.fusionAttributeService.getFusionAttributeExcel(this.fusionObject, this.fusionId, (this.fusionObject == "FusionQueryAttributeType") ? this.fusionQueryAttributeTypeId : this.fusionAttributeTypeId, this.stateService.getFusionFilter(this.isDataProfile).sortField, this.stateService.getFusionFilter(this.isDataProfile).sortOrder, this.stateService.getFusionFilter(this.isDataProfile).filters)
             .then(res => {                
                 this.isLoading = false;
                 this.changeDetectorRef.markForCheck();

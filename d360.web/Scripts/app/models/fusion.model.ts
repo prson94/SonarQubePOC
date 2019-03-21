@@ -410,6 +410,6 @@ export class AssetDataProfile {
     Average: number;
     Median: number;
     StandardDeviation: string;
-    Top10Values: string[];
+    Top10Values: string;
     ProcessIdentifier: string;
 }

@@ -6,9 +6,15 @@ import { AssetDataProfile } from "../../models/fusion.model";
     selector: "d3s-fusion-data-profile-detail",
     templateUrl: "./fusion-data-profile-detail.component.html"
 })
-export class FusionDataProfileDetailComponent extends BaseComponent{
+export class FusionDataProfileDetailComponent  extends BaseComponent implements OnChanges{
   
-  
-    @Input() assetDataProfile: AssetDataProfile=null;
+    top10Values: any
+    showTop10Values: boolean = false;
+    
+    @Input() assetDataProfile: AssetDataProfile = null;
+
+    ngOnChanges(changes: SimpleChanges): void {
+        this.top10Values = JSON.parse(this.assetDataProfile.Top10Values)
+    }
   
 }

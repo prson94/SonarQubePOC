@@ -1,5 +1,6 @@
 ﻿import { Component, OnChanges, SimpleChanges, Input, Output, EventEmitter } from "@angular/core";
 import { BaseComponent } from "../shared/base.component";
+import { StateService } from "../../services/state.service";
 
 
 
@@ -9,7 +10,7 @@ import { BaseComponent } from "../shared/base.component";
 })
 export class FusionAttributeTabsComponent extends BaseComponent {
 
-    activeIndex: number = 0;
+    activeIndex: number = this.stateService.fusionState.activeTabIndex;
     @Input() fusionId: number;
 
     @Input() selectedFusionAttributeTypeId: number;
@@ -20,6 +21,9 @@ export class FusionAttributeTabsComponent extends BaseComponent {
     @Input() selectedFusionQueryAttribute: any;
     @Input() initialFusionQueryAttributeId: number;
     
+    constructor(private stateService: StateService) {
+        super();
+    }
 
     tabs: any[] = [
         { key: 'ASSETS', loaded: false },
@@ -31,6 +35,7 @@ export class FusionAttributeTabsComponent extends BaseComponent {
     tabClick(e: any) {
         this.activeIndex = e.index;
         this.activeTab = this.tabs[e.index];
+        this.stateService.fusionState.activeTabIndex = this.activeIndex;
         this.activeTab.loaded = true;
     }
 
