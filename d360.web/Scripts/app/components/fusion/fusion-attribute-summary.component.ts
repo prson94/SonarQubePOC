@@ -19,7 +19,7 @@ import { StateService } from '../../services/state.service';
                     <header *ngIf ="!hideHeader">Values<d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="doExport()"></d3s-tile-actions></header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <span *ngIf="!isLoading && !showEditor">
-                        <d3s-fusion-attribute-summary-filters [filterColumns]="filtercolumns" [filters]="stateService.getFusionFilter(isDataProfile).filters" (filtersChange)="doFilterResults($event)" [isFiltering]="isFiltering"></d3s-fusion-attribute-summary-filters>                 
+                        <d3s-fusion-attribute-summary-filters [hasExport]="showExportOnFilter" (exportClick)="doExport()" [filterColumns]="filtercolumns" [filters]="stateService.getFusionFilter(isDataProfile).filters" (filtersChange)="doFilterResults($event)" [isFiltering]="isFiltering"></d3s-fusion-attribute-summary-filters>                 
                         <p-table #dt [value]="results?.results" selectionMode="single" [resizableColumns]="true" [lazy]="true" [totalRecords]="results?.total" [metaKeySelection]="true" 
                             [globalFilterFields]="[]" [pageLinks]="3" [paginator]="true" [rows]="stateService.getFusionFilter(isDataProfile).rowsPerPage" [rowsPerPageOptions]="defaultPagingOptions"
                             [selection]="fusionAttribute" (selectionChange)="fusionAttribute=$event;fusionAttributeChange.emit(fusionAttribute);" (onLazyLoad)="loadFusionAttributesLazy($event)"
@@ -94,6 +94,7 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
 
     @Input() hideHeader: boolean = false;
     @Input() isDataProfile: boolean = false;
+    @Input() showExportOnFilter: boolean = false;
 
     private fusionObject: string = 'FusionAttributeType';
     private fusionObjectID: number = 0;

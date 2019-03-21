@@ -6,7 +6,7 @@
                     <ng-template pTemplate="content">
                         <div class="row">
                             <div *ngIf="!isLoading">
-                                <d3s-fusion-attribute-summary [hideHeader]="true" [initialFusionAttributeId]="initialFusionAttributeId" [initialFusionQueryAttributeId]="initialFusionQueryAttributeId" [fusionId]="fusionId" [fusionAttributeTypeId]="selectedFusionAttributeTypeId" [fusionQueryAttributeTypeId]="selectedFusionQueryAttributeTypeId" [fusionQueryAttribute]="selectedFusionQueryAttribute" [fusionAttribute]="selectedFusionAttribute" (fusionAttributeChange)="selectedFusionAttribute=$event;" (fusionQueryAttributeChange)="selectedFusionQueryAttribute=$event;"></d3s-fusion-attribute-summary>
+                                <d3s-fusion-attribute-summary [hideHeader]="true" [showExportOnFilter]="true" [initialFusionAttributeId]="initialFusionAttributeId" [initialFusionQueryAttributeId]="initialFusionQueryAttributeId" [fusionId]="fusionId" [fusionAttributeTypeId]="selectedFusionAttributeTypeId" [fusionQueryAttributeTypeId]="selectedFusionQueryAttributeTypeId" [fusionQueryAttribute]="selectedFusionQueryAttribute" [fusionAttribute]="selectedFusionAttribute" (fusionAttributeChange)="selectedFusionAttribute=$event;" (fusionQueryAttributeChange)="selectedFusionQueryAttribute=$event;"></d3s-fusion-attribute-summary>
                             </div>
                         </div>
                     </ng-template>
@@ -15,7 +15,7 @@
                     <ng-template pTemplate="content">
                         <div class="row">
                             <div *ngIf="!isLoading">
-                                <d3s-fusion-attribute-summary [hideHeader]="true" [isDataProfile]="true" [initialFusionAttributeId]="initialFusionAttributeId" [initialFusionQueryAttributeId]="initialFusionQueryAttributeId" [fusionId]="fusionId" [fusionAttributeTypeId]="selectedFusionAttributeTypeId" [fusionQueryAttributeTypeId]="selectedFusionQueryAttributeTypeId" [fusionQueryAttribute]="selectedFusionQueryAttribute" [fusionAttribute]="selectedFusionAttribute" (fusionAttributeChange)="selectedFusionAttribute=$event;" (fusionQueryAttributeChange)="selectedFusionQueryAttribute=$event;"></d3s-fusion-attribute-summary>
+                                <d3s-fusion-attribute-summary [hideHeader]="true" [isDataProfile]="true" [showExportOnFilter]="true" [initialFusionAttributeId]="initialFusionAttributeId" [initialFusionQueryAttributeId]="initialFusionQueryAttributeId" [fusionId]="fusionId" [fusionAttributeTypeId]="selectedFusionAttributeTypeId" [fusionQueryAttributeTypeId]="selectedFusionQueryAttributeTypeId" [fusionQueryAttribute]="selectedFusionQueryAttribute" [fusionAttribute]="selectedFusionAttribute" (fusionAttributeChange)="selectedFusionAttribute=$event;" (fusionQueryAttributeChange)="selectedFusionQueryAttribute=$event;"></d3s-fusion-attribute-summary>
                             </div>
                         </div>
                     </ng-template>
