@@ -128,8 +128,11 @@ namespace d360.web.Controllers.V2
                 countSql = base.applyFilteringSuffix(countSql, Request);
                 int total = Company.Query<int>(countSql, dbArgs).First();
 
-                sql = base.applyFilteringSuffix(sql, Request);                
-                sql = base.applySortSuffix(sql, Request, "Date");
+                sql = base.applyFilteringSuffix(sql, Request);
+
+                var stFieldType = sortDataField == null || sortDataField == "Date" ? "DateTime" : "string";
+
+                sql = base.applySortSuffix(sql, Request, "Date","desc", stFieldType);
                 sql = base.applyPagingSuffix(sql, Request);
 
                 var query = Company.Query<dynamic>(sql, dbArgs);
@@ -174,8 +177,8 @@ namespace d360.web.Controllers.V2
 
             var sql = string.Format(@"select * from ({0}) A", querySql);
 
-            sql = base.applyFilteringSuffix(sql, Request);
-            sql = base.applySortSuffix(sql, Request, "Date");
+            sql = base.applyFilteringSuffix(sql, Request);            
+            sql = base.applySortSuffix(sql, Request, "Date", "desc", "DateTime");
 
 
             var dbArgs = new Dapper.DynamicParameters();
