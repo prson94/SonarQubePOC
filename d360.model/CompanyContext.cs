@@ -515,7 +515,7 @@ from	IntersectType I
 
         public Task<List<IntersectTypeApiViewModel>> GetActiveIntersectTypesByObjectType(int id, SystemObjects type)
         {
-            return GetRelationshipTypes(null, $"where I.State = 1 and (I.SubjectID = {id} and I.[Subject] = '{type.ToString()}' or I.ObjectID = {id} and I.Object = '{type.ToString()}')");
+            return GetRelationshipTypes(null, $"where I.State = 1 and ((I.SubjectID = {id} and I.[Subject] = '{type.ToString()}') or (I.ObjectID = {id} and I.Object = '{type.ToString()}'))");
         }
 
         public List<AllocationPossibility> GetAllocationOptions()
