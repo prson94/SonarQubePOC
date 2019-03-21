@@ -794,7 +794,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
                     if (Guid.TryParse(assetTypeUidString, out assetTypeUid))
                     {
                         dbArgs.Add("@assettypeuid", assetTypeUid);
-                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (I.SubjectUid = @assettypeuid OR I.ObjectUid = @assettypeuid)";
+                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (S.Uid = @assettypeuid OR O.Uid = @assettypeuid)";
                     }
                 }
                 if (queryParams.ToList().Any(q => q.Key.ToLower() == "state"))
