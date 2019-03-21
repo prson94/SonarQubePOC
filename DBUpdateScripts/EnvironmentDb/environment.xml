@@ -119,6 +119,7 @@
   <include file="scripts/GOV-6643.xml"/>
   <include file="scripts/GOV-6739.xml"/>
   <include file="scripts/GOV-6770.xml"/>
+  <include file="scripts/GOV-6770-b.xml"/>
   <include file="scripts/GOV-6776.xml"/>
   <include file="scripts/GOV-6777.xml"/>
   <include file="scripts/GOV-6803.xml"/>
