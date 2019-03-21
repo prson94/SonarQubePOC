@@ -341,11 +341,16 @@ namespace d360.web.Controllers
             return sql;
         }
 
-        internal string applySortSuffix(string sql, System.Net.Http.HttpRequestMessage Request, string sortDefaultField = "Name")
+        internal bool isValidFieldName(string field)
+        {
+            var nameRegex = new System.Text.RegularExpressions.Regex(@"^[a-zA-Z][a-zA-Z0-9._-]+$");
+            return nameRegex.IsMatch(field);
+        }
+
+        internal string applySortSuffix(string sql, System.Net.Http.HttpRequestMessage Request, string sortDefaultField = "Name", string sortOrder = "asc", string sortFieldType = "string")
         {
             string sortDataField = "";
-            string sortOrder = "asc";
-
+            
             var query = Request.GetQueryStrings();
 
             if (query.ContainsKey("sortDataField")) {
@@ -356,10 +361,26 @@ namespace d360.web.Controllers
                 sortOrder = query["sortOrder"];
             }
 
+            
+
             if (string.IsNullOrEmpty(sortDataField))
                 sortDataField = sortDefaultField;
 
-            sql += " ORDER BY [" + sortDataField + "] " + sortOrder;
+            // make sure its a valid field name
+            if (!isValidFieldName(sortDataField))
+            {
+                throw new Exception("Invalid sort field specified");
+            }
+
+            if ((sortFieldType ?? "").ToUpper() == "NUMBER")
+                sql += " ORDER BY TRY_CAST(+ [" + sortDataField + "] AS bigint)" + sortOrder;
+            else if ((sortFieldType ?? "").ToUpper() == "DATE")
+                sql += " ORDER BY TRY_CAST(+ [" + sortDataField + "] AS date)" + sortOrder;
+            else if ((sortFieldType ?? "").ToUpper() == "DATETIME")
+                sql += " ORDER BY TRY_CAST(+ [" + sortDataField + "] AS datetime)" + sortOrder;
+            else
+                sql += " ORDER BY [" + sortDataField + "] " + sortOrder;
+
 
             return sql;
         }
