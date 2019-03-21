@@ -1,4 +1,4 @@
-﻿import { Input, Component, OnInit, ChangeDetectionStrategy, Output, EventEmitter, AfterViewInit} from '@angular/core';
+﻿import { Input, Component, OnInit, ChangeDetectionStrategy, Output, EventEmitter, AfterViewInit, ViewChild} from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../base.component';
 import { StateService } from '../../../services/state.service';
@@ -24,16 +24,18 @@ import { forEach } from '@angular/router/src/utils/collection';
                         <div *ngIf="menu && menu.NavigationItems && menu.NavigationItems.length > 0" class="menu-child megamenu-panel" (click)="stopNavigation($event)">
                             <div>
                                 <div class="row megamenu-title truncate">
-                                <span>
-                                    <input type="search" [(ngModel)]=searchText placeholder="Search menu..."/><i class="fa fa-search"></i></span>
-                                    <span class="megamenu-tools" *ngIf="showClearButton">
-                                        <i (click)="clearClick.emit(true)" class="fa fa-eraser" [pTooltip]="'Clear ' + title + ' List'" tooltipZIndex="10001"></i>
+                                    <span>
+                                        <input #searchinput type="search" [(ngModel)]=searchText placeholder="Search menu..."/>
+                                        <i (click)="clearInput()" class="fa fa-times"></i>
                                     </span>
                                 </div>
+                                    <span class="megamenu-tools" *ngIf="showClearButton">
+                                        <i (click)="clearClick.emit(true)" class=" pull-right fa fa-eraser" [pTooltip]="'Clear ' + title + ' List'" tooltipZIndex="10001"></i>
+                                    </span>
                                 <div class="row megamenu-items">
-                                    <div [class]="getColumnClass(menu)" *ngFor="let item of menu.NavigationItems | simpleSearch: {Name:searchText}">
+                                    <div [class]="getColumnClass(menu)" *ngFor="let item of menu.NavigationItems | simpleSearch: searchText">
                                         <ul class="menu-group">                                        
-                                            <d3s-site-menu-mega-item [item]="item" [level]="0" [(active)]="menu.isActiveItem" [countTest]="item.count"></d3s-site-menu-mega-item>
+                                            <d3s-site-menu-mega-item [item]="item" [level]="0" [searchText]="searchText" [(active)]="menu.isActiveItem" [countTest]="item.count"></d3s-site-menu-mega-item>
                                         </ul>
                                     </div> 
                                 </div>
@@ -55,7 +57,8 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
     @Input() imageUrl: string;
 
     @Output() clearClick = new EventEmitter();
-    
+
+
     public showing: boolean = false;
     private viewReady: boolean;
     private maxMenuHeight: number; 
@@ -64,6 +67,8 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
     constructor(private menuService: SiteMenuService) {
         super();
     }    
+
+    @ViewChild('searchinput') searchInput: any;
     
     show(item) {        
         if (this.menu && this.menu.NavigationItems) {
@@ -74,16 +79,22 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
                 
                 submenu.style.zIndex = ++SiteNav.zindex;
 
-                submenu.style.top = '0px';
+                submenu.style.top = '0px'; 
 
                 submenu.style.left = item.offsetWidth + 'px';
-                
+
+                window.setTimeout(() => {
+                    this.searchInput.nativeElement.focus();
+                }, 350);
+
                 window.setTimeout(() => {                    
                     this.repositionMenuToFit(window.innerHeight, submenu);                    
                 }, 150);
             }
         }
     }
+
+
 
     ngAfterViewInit(): void {
         this.viewReady = true;
@@ -105,20 +116,15 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
                 }
             }
         }
+        if (this.searchInput) {
+            this.searchInput.nativeElement.focus();
+        }
     }
 
     private menuhasItems(menu) {
         return menu && menu.NavigationItems && menu.NavigationItems.length > 0;
     }
 
-    private toggle(item) {
-        this.showing = !this.showing;
-        if (this.showing)
-           this.show(item);
-        else 
-            this.hide(item);
-        
-    }
     private stopNavigation(event) {
         event.stopPropagation();
     }
@@ -151,23 +157,15 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
     }
 
     hide(item) {
-        if(this.menu)
+        if (this.menu)
             this.menu.isActiveItem = false;
     }
 
+    clearInput() {
+        this.searchText = '';
+    }
+
     private getColumnClass(menu: SiteMenu) {
-        let len = menu.NavigationItems.length;
         return "col s12";
-        switch (len) {
-            case 1: 
-                return "col s12";
-            case 2:
-            case 3:
-                return "col s6";
-            case 4:
-                return "col s6";
-            default:
-                return "col s6";
-        }
     }
 };

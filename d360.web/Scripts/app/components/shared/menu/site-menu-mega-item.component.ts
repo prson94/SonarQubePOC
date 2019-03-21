@@ -16,11 +16,12 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                     <span (click)="handleArrowClick($event)">
                         <i *ngIf="item.Items" [class]="!displayChild ? 'subitem fa fa-caret-right' : 'subitem fa fa-caret-down'" aria-hidden="true"></i>
                     </span>
-                    {{item.Name}}<ng-container *ngIf="item.IsHomePage">&nbsp;&nbsp;<span class="fa fa-home"></span></ng-container>
+                   <span [innerHTML]="highlight() | safeHtml"></span>
+                    <ng-container *ngIf="item.IsHomePage">&nbsp;&nbsp;<span class="fa fa-home"></span></ng-container>
                     <span *ngIf="countTest > 0" class="d3s-badge pull-right">{{countTest}}</span>
                 </a>
                 <div *ngIf="displayChild">
-                    <d3s-site-menu-mega-item  *ngFor="let sub of item.Items" [item]="sub" [level]="level + 1" [active]="active" (activeChange)="active=$event;activeChange.emit(active);"></d3s-site-menu-mega-item>                
+                    <d3s-site-menu-mega-item  *ngFor="let sub of item.Items" [item]="sub" [level]="level + 1" [searchText]="searchText" [active]="active" (activeChange)="active=$event;activeChange.emit(active);"></d3s-site-menu-mega-item>                
                 </div>
                 `,
     changeDetection: ChangeDetectionStrategy.OnPush    
@@ -32,6 +33,7 @@ export class SiteMenuMegaItemComponent extends BaseComponent {
     @Input() level: number;
     @Input() active: boolean;
     @Input() countTest: number;
+    @Input() searchText: string;
     @Output() activeChange = new EventEmitter();
     count: number;
     numberLoading: boolean;
@@ -52,6 +54,14 @@ export class SiteMenuMegaItemComponent extends BaseComponent {
         this.displayChild = !this.displayChild;
     }
 
+    public highlight() {
+        if (!this.searchText) {
+            return this.item.Name;
+        }
+        return this.item.Name.replace(new RegExp(this.searchText, "gi"), match => {
+            return '<span style="background: #fd7e0e;">' + match + '</span>';
+        });
+    }
 
     itemClick() {
         if (this.item.Url == null)

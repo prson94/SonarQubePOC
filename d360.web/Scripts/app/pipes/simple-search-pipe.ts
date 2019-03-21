@@ -1,33 +1,29 @@
 ﻿import { Pipe, PipeTransform } from '@angular/core';
+import { createWriteStream } from 'fs';
+import { isString, isObject, isArray } from 'util';
 
 @Pipe({
-  name: 'simpleSearch'
+    name: 'simpleSearch'
 })
 export class SimpleSearch implements PipeTransform {
-  transform(items: any, filter: any, defaultFilter: boolean): any {
-    if (!filter){
-      return items;
-    }
+    transform(items: any, filter: string, defaultFilter: boolean): any {
+        if (!filter) {
+            return items;
+        }
 
-    if (!Array.isArray(items)){
-      return items;
-    }
+        if (!Array.isArray(items)) {
+            return items;
+        }
 
-    if (filter && Array.isArray(items)) {
-      let filterKeys = Object.keys(filter);
+        const loop = (items) => {
+            if (isString(items.Name) && items.Name.toLowerCase().indexOf(filter.toLowerCase()) != -1)
+                return true
 
-      if (defaultFilter) {
-        return items.filter(item =>
-            filterKeys.reduce((x, keyName) =>
-                (x && new RegExp(filter[keyName], 'gi').test(item[keyName])) || filter[keyName] == "", true));
-      }
-      else {
-        return items.filter(item => {
-          return filterKeys.some((keyName) => {
-            return new RegExp(filter[keyName], 'gi').test(item[keyName]) || filter[keyName] == "";
-          });
-        });
-      }
+            if (isArray(items.Items)) {
+                let tempItems = [];
+                return (tempItems = items.Items.filter(loop)).length;
+            }
+        }
+        return items.filter(x => loop(x));
     }
-  }
 }
