@@ -139,17 +139,6 @@ namespace d360.web.Controllers
                 );
         }
         
-
-        internal string GetNoReadSqlStatement(string identifier = null)
-        {
-            return $"select AssetID from ResponsibilityDetail where ((PermissionsBitMask & {(int)Permission.ReadAsset}) = 0) and ResourceID = {(string.IsNullOrEmpty(identifier) ? Company.CurrentResourceID.ToString() : identifier)}";
-        }
-
-        internal string GetAssetTypeNoReadSqlStatement(string identifier = null)
-        {
-            return $"select AssetTypeID from ResponsibilityDetail where AssetID = 0 and ((PermissionsBitMask & {(int)Permission.ReadAsset}) = 0) and ResourceID = {(string.IsNullOrEmpty(identifier) ? Company.CurrentResourceID.ToString() : identifier)}";
-        }
-
         #region Error Handling Helper
 
         [System.Runtime.Serialization.DataContract(Name = "Error")]
@@ -232,7 +221,7 @@ namespace d360.web.Controllers
 
             foreach (var f in fields)
             {
-                var name = f.Name.Replace("'", "''").Replace("--", "");
+                var name = f.Name.Replace("'", "''").Replace("--", "") + f.ID.ToString();
                 if (!useFieldName)
                 {
                     var fieldName = $"Field{f.ID}";
@@ -352,11 +341,16 @@ namespace d360.web.Controllers
             return sql;
         }
 
-        internal string applySortSuffix(string sql, System.Net.Http.HttpRequestMessage Request, string sortDefaultField = "Name")
+        internal bool isValidFieldName(string field)
+        {
+            var nameRegex = new System.Text.RegularExpressions.Regex(@"^[a-zA-Z][a-zA-Z0-9._-]+$");
+            return nameRegex.IsMatch(field);
+        }
+
+        internal string applySortSuffix(string sql, System.Net.Http.HttpRequestMessage Request, string sortDefaultField = "Name", string sortOrder = "asc", string sortFieldType = "string")
         {
             string sortDataField = "";
-            string sortOrder = "asc";
-
+            
             var query = Request.GetQueryStrings();
 
             if (query.ContainsKey("sortDataField")) {
@@ -367,10 +361,26 @@ namespace d360.web.Controllers
                 sortOrder = query["sortOrder"];
             }
 
+            
+
             if (string.IsNullOrEmpty(sortDataField))
                 sortDataField = sortDefaultField;
 
-            sql += " ORDER BY [" + sortDataField + "] " + sortOrder;
+            // make sure its a valid field name
+            if (!isValidFieldName(sortDataField))
+            {
+                throw new Exception("Invalid sort field specified");
+            }
+
+            if ((sortFieldType ?? "").ToUpper() == "NUMBER")
+                sql += " ORDER BY TRY_CAST(+ [" + sortDataField + "] AS bigint)" + sortOrder;
+            else if ((sortFieldType ?? "").ToUpper() == "DATE")
+                sql += " ORDER BY TRY_CAST(+ [" + sortDataField + "] AS date)" + sortOrder;
+            else if ((sortFieldType ?? "").ToUpper() == "DATETIME")
+                sql += " ORDER BY TRY_CAST(+ [" + sortDataField + "] AS datetime)" + sortOrder;
+            else
+                sql += " ORDER BY [" + sortDataField + "] " + sortOrder;
+
 
             return sql;
         }

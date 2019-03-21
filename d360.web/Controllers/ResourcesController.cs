@@ -36,6 +36,7 @@ namespace d360.web.Models
     {
         public string Name { get; set; }
         public string Value { get; set; }
+        public List<string> Values { get; set; }
     }
 }
 
@@ -914,7 +915,48 @@ order by A.ID, FT.SortOrder", new { id, attribute });
 
                     show = true;
 
-                    var sql = @"select 
+                    if (objectType == "Issue")
+                    {
+                        //For Tooltip data for Issues, we want multivalue fields separated out in an array of each separate value
+                        //for use on the workflow monitor page 
+                        //We'll maintain the compound comma separated valuie in "Value" for compatability with other pages
+                        var sql = @"select 
+                               f.FormattedValue as [Value],
+                               ft.FriendlyName as Name,
+                               ft.AllowMultipleValues,
+                               f.Value as OriginalValue,
+                               ft.ID as FieldTypeID
+                            from
+                                fieldtype ft
+
+                                inner
+                            join field f on (ft.id = f.fieldtypeid and f.[objecttype] = @ty and f.objectid = @obj and ft.Name != 'Description')";
+
+                        List<dynamic> issueRes = Company.Query<dynamic>(sql, new { ty = objectType, obj = objectID }).ToList();
+                        issueRes.ForEach((item) => {
+                            FieldTooltipValueModel resItem = new FieldTooltipValueModel{ Name = item.Name, Value = item.Value };
+                            if(item.AllowMultipleValues)
+                            {
+                                var items = ((item.OriginalValue != null) ? item.OriginalValue.Split(',') : new string[] { });
+                                var itemIds = new List<long>();
+
+                                foreach (var iditem in items)
+                                {
+                                    if (long.TryParse(iditem, out long listId)) itemIds.Add(listId);
+                                }
+                                //If we only have one value, then we have no reason to perform an additional lookup. item.Value will suffice
+                                if (itemIds.Count > 1)
+                                {
+                                    resItem.Values = Company.Query<string>(@"select Text from fieldlookupvalue where fieldtypeid = @fId and value in @vals order by Text", new { fId = item.FieldTypeID, vals = itemIds }).ToList();
+
+                                }
+                            }
+                            res.Add(resItem);
+                        });
+                    }
+                    else
+                    {
+                        var sql = @"select 
                                 f.FormattedValue as [Value],
 	                            ft.FriendlyName as Name
                             from
@@ -923,7 +965,8 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                                 inner
                             join field f on (ft.id = f.fieldtypeid and f.[objecttype] = @ty and f.objectid = @obj and ft.Name != 'Description')";
 
-                    res = Company.Query<FieldTooltipValueModel>(sql, new { ty = objectType, obj = objectID }).ToList();
+                        res = Company.Query<FieldTooltipValueModel>(sql, new { ty = objectType, obj = objectID }).ToList();
+                    }
 
                     var descSql = @"select 
                                 f.FormattedValue as [Value]	                            

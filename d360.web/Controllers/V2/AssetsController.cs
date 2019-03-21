@@ -425,34 +425,6 @@ order by    P.[Path]
             if (queryParams.ToList().Any(k => k.Key.ToLower() == "_predicateuid"))
                 includeRelationships = true;
 
-            var countSql = $@"
-                select
-                    count(*)
-                from Asset A
-                {(assetType.Object == "ReferenceItemType" ? " inner join ReferenceItem RI on RI.ID = A.ObjectID" : "")} 
-                {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID" : "")} 
-                {"{0}"}
-                {"{1}"}";
-
-            var sql = $@"
-                select
-                    A.ID as AssetId,
-                    A.[UID] as [AssetUid],
-                    A.AssetTypeId,
-                    T.[UID] as AssetTypeUid,
-                    A.UpdatedOn,
-                    A.CreatedOn
-                    {(assetType.Object == "ReferenceItemType" ? " , RI.Code" : "")} 
-                    {(assetType.Object == "FusionAttributeType" ? " , FA.SourceID, FA.Name, FA.TextPath" : "")} 
-                    {"{0}"}
-                from Asset A
-                {(assetType.Object == "ReferenceItemType" ? " inner join ReferenceItem RI on RI.ID = A.ObjectID" : "")} 
-                {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID" : "")} 
-                {"{1}"}
-                {"{2}"}
-                {"{3}"}
-            ";
-
             List<string> fieldColumns = new List<string>();
             List<string> fieldJoins = new List<string>();
             List<string> whereStatements = new List<string>();
@@ -475,28 +447,9 @@ order by    P.[Path]
 
                 var predicateUID = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_predicateuid").Value;
                 var intersectJoin = "";
+                var reverseIntersectJoin = "";
                 var relatedAssetSql = "";
-                var innerSql = @"
-                            select 
-                                B.[UID] as AssetUid, 
-                                BD.DisplayValue,
-                                TB.[Name] as TypeName,
-                                P.[UID] as PredicateUid
-                            from Asset B
-                            inner join AssetType TB on TB.ID = B.AssetTypeID
-                            cross apply dbo.GetAssetDisplayValueById(B.ID) BD
-                            inner join [Intersect] I on {0}
-                            inner join IntersectType IT on IT.ID = I.IntersectTypeID
-                            inner join [Predicate] P on P.ID = IT.PredicateID and P.[UID] = @predicateUid
-                            {1}";
-
-                var joinSql = @"
-                    cross apply (
-                        select (
-                            {0}
-                            for json path
-                        ) as Relationships
-                    ) R";
+                bool includeBoth = false;
 
 
                 if (queryParams.ToList().Any(q => q.Key.ToLower() == "_objectuid"))
@@ -508,8 +461,6 @@ order by    P.[Path]
                         relatedAssetSql = $"where {subjectAlias}.[UID] = @relatedAssetUid";
                     }
                     intersectJoin = $"I.[Subject] = {objectAlias}.[Object] and I.SubjectID = {objectAlias}.ObjectID and I.[Object] = {subjectAlias}.[Object] and I.ObjectID = {subjectAlias}.ObjectID";
-                    innerSql = string.Format(innerSql, intersectJoin, relatedAssetSql);
-                    joinSql = string.Format(joinSql, innerSql);
 
                 }
                 else if (queryParams.ToList().Any(q => q.Key.ToLower() == "_subjectuid"))
@@ -521,23 +472,57 @@ order by    P.[Path]
                         relatedAssetSql = $"where {subjectAlias}.[UID] = @relatedAssetUid";
                     }
                     intersectJoin = $"I.[Subject] = {subjectAlias}.[Object] and I.SubjectID = {subjectAlias}.ObjectID and I.[Object] = {objectAlias}.[Object] and I.ObjectID = {objectAlias}.ObjectID";
-                    innerSql = string.Format(innerSql, intersectJoin, relatedAssetSql);
-                    joinSql = string.Format(joinSql, innerSql);
                 }
                 else
                 {
                     //subject and object not specified
+                    includeBoth = true;
                     intersectJoin = $"I.[Subject] = {objectAlias}.[Object] and I.SubjectID = {objectAlias}.ObjectID and I.[Object] = {subjectAlias}.[Object] and I.ObjectID = {subjectAlias}.ObjectID";
-                    var reverseIntersectJoin = $"I.[Subject] = {subjectAlias}.[Object] and I.SubjectID = {subjectAlias}.ObjectID and I.[Object] = {objectAlias}.[Object] and I.ObjectID = {objectAlias}.ObjectID";
-                    var reverseInnerSql = innerSql;
-                    var unionSql = @"select * from (
-                        {0}
-                        union all
-                        {1}) RI";
-
-                    unionSql = string.Format(unionSql, string.Format(innerSql, intersectJoin, ""), string.Format(reverseInnerSql, reverseIntersectJoin, ""));
-                    joinSql = string.Format(joinSql, unionSql);
+                    reverseIntersectJoin = $"I.[Subject] = {subjectAlias}.[Object] and I.SubjectID = {subjectAlias}.ObjectID and I.[Object] = {objectAlias}.[Object] and I.ObjectID = {objectAlias}.ObjectID";
                 }
+
+                var innerSql = $@"
+                            select 
+                                B.[UID] as AssetUid, 
+                                BD.DisplayValue,
+                                TB.[Name] as TypeName,
+                                P.[UID] as PredicateUid
+                            from Asset B
+                            inner join AssetType TB on TB.ID = B.AssetTypeID
+                            cross apply dbo.GetAssetDisplayValueById(B.ID) BD
+                            inner join [Intersect] I on {intersectJoin}
+                            inner join IntersectType IT on IT.ID = I.IntersectTypeID
+                            inner join [Predicate] P on P.ID = IT.PredicateID and P.[UID] = @predicateUid
+                            {relatedAssetSql}";
+
+                if (includeBoth)
+                {
+                    var reverseInnerSql = $@"
+                            select 
+                                B.[UID] as AssetUid, 
+                                BD.DisplayValue,
+                                TB.[Name] as TypeName,
+                                P.[UID] as PredicateUid
+                            from Asset B
+                            inner join AssetType TB on TB.ID = B.AssetTypeID
+                            cross apply dbo.GetAssetDisplayValueById(B.ID) BD
+                            inner join [Intersect] I on {reverseIntersectJoin}
+                            inner join IntersectType IT on IT.ID = I.IntersectTypeID
+                            inner join [Predicate] P on P.ID = IT.PredicateID and P.[UID] = @predicateUid";
+
+                    innerSql = $@"select * from (
+                        {innerSql}
+                        union all
+                        {reverseInnerSql}) RI";
+                }
+
+                var joinSql = $@"
+                    cross apply (
+                        select (
+                            {innerSql}
+                            for json path
+                        ) as Relationships
+                    ) R";
 
 
                 fieldColumns.Add("R.Relationships");
@@ -551,6 +536,12 @@ order by    P.[Path]
             if (includeRelationships)
                 whereStatements.Add("R.Relationships is not null");
 
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                whereStatements.Add($"A.ID not in ({Company.GetNoReadSqlStatement()})");
+                whereStatements.Add($"A.AssetTypeID not in ({Company.GetAssetTypeNoReadSqlStatement()})");
+            }
+
             getQueryParamsSql(model, assetType, fieldTypes, dbArgs, whereStatements, pagingSql, queryParams);
 
             var whereSql = "";
@@ -561,11 +552,34 @@ order by    P.[Path]
             if (fieldColumns.Any())
                 fieldsSql = $",\n {string.Join(",\n", fieldColumns)}";
 
-            if(string.IsNullOrWhiteSpace(whereSql))
-                countSql = string.Format(countSql, string.Join("\n", countJoins), whereSql);
-            else
-                countSql = string.Format(countSql, string.Join("\n", fieldJoins), whereSql);
-            sql = string.Format(sql, fieldsSql, string.Join("\n", fieldJoins), whereSql, string.Join("\n", pagingSql));
+
+            var countSql = $@"
+                select
+                    count(*)
+                from Asset A
+                {(assetType.Object == "ReferenceItemType" ? " inner join ReferenceItem RI on RI.ID = A.ObjectID" : "")} 
+                {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID" : "")} 
+                {string.Join("\n", string.IsNullOrWhiteSpace(whereSql) ? countJoins : fieldJoins)}
+                {whereSql}";
+
+            var sql = $@"
+                select
+                    A.ID as AssetId,
+                    A.[UID] as [AssetUid],
+                    A.AssetTypeId,
+                    T.[UID] as AssetTypeUid,
+                    A.UpdatedOn,
+                    A.CreatedOn
+                    {(assetType.Object == "ReferenceItemType" ? " , RI.Code" : "")} 
+                    {(assetType.Object == "FusionAttributeType" ? " , FA.SourceID, FA.Name, FA.TextPath" : "")} 
+                    {fieldsSql}
+                from Asset A
+                {(assetType.Object == "ReferenceItemType" ? " inner join ReferenceItem RI on RI.ID = A.ObjectID" : "")} 
+                {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID" : "")} 
+                {string.Join("\n", fieldJoins)}
+                {whereSql}
+                {string.Join("\n", pagingSql)}
+            ";
 
             var countResults = await Company.QueryAsync<int>(countSql, dbArgs);
             var count = countResults.First();
@@ -606,7 +620,6 @@ order by    P.[Path]
             SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by AssetId.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_predicateUid", "The Uid of a predicate type to return relationships for. If specified the results will include relationships of this predicate type. Assets without this type of relationship defined will be omitted.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_subjectUid", "The Uid of the subject side of a relationship to filter by in addition to filtering by predicate type. _predicateUid is required.", DataType = "string", ParameterType = "query", Required = false),
-
         ]
         public async Task<IHttpActionResult> GetAssetsAsync(Guid assetTypeUid)
         {
@@ -684,6 +697,14 @@ order by    P.[Path]
         /// <summary>
         /// Adds a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 250 items and need immediate results.
         /// </summary>
+        /// <remarks>
+        /// When using the ExecutionItemUid, keep in mind:
+        /// * ExecutionItemUid is optional.
+        /// * If you do not wish to provide an ExecutionItemUid, remove the entire line, including the preceding comma (, "ExecutionItemUid": "00000000-0000-0000-0000-000000000000").
+        /// * If you provide ExecutionItemUids, values must be a unique across the entire request body.
+        /// * You do not have to provide ExecutionItemUid values for all entries in a request.
+        /// * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+        /// </remarks>
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
         /// <param name="assets">The payload of your request.</param>
         /// <returns>An HTTP status code and message.</returns>
@@ -769,6 +790,14 @@ order by    P.[Path]
         /// <summary>
         /// Updates a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 250 items and need immediate results.
         /// </summary>
+        /// <remarks>
+        /// When using the ExecutionItemUid, keep in mind:
+        /// * ExecutionItemUid is optional.
+        /// * If you do not wish to provide an ExecutionItemUid, remove the entire line, including the preceding comma (, "ExecutionItemUid": "00000000-0000-0000-0000-000000000000").
+        /// * If you provide ExecutionItemUids, values must be a unique across the entire request body.
+        /// * You do not have to provide ExecutionItemUid values for all entries in a request.
+        /// * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+        /// </remarks>
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
         /// <param name="assets">The payload of your request.</param>
         /// <returns>An HTTP status code and message.</returns>
@@ -854,6 +883,14 @@ order by    P.[Path]
         /// <summary>
         /// Removes a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 250 items and need immediate results.
         /// </summary>
+        /// <remarks>
+        /// When using the ExecutionItemUid, keep in mind:
+        /// * ExecutionItemUid is optional.
+        /// * If you do not wish to provide an ExecutionItemUid, remove the entire line, including the preceding comma (, "ExecutionItemUid": "00000000-0000-0000-0000-000000000000").
+        /// * If you provide ExecutionItemUids, values must be a unique across the entire request body.
+        /// * You do not have to provide ExecutionItemUid values for all entries in a request.
+        /// * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+        /// </remarks>
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
         /// <param name="assets">The payload of your request.</param>
         /// <returns>An HTTP status code and message.</returns>
@@ -940,6 +977,14 @@ order by    P.[Path]
         /// <summary>
         /// Adds a given set of assets based on the specific asset type unique identifier. This endpoint is meant for a greater number of items as it stores the asset list for asynchronous or batch processing.
         /// </summary>
+        /// <remarks>
+        /// When using the ExecutionItemUid, keep in mind:
+        /// * ExecutionItemUid is optional.
+        /// * If you do not wish to provide an ExecutionItemUid, remove the entire line, including the preceding comma (, "ExecutionItemUid": "00000000-0000-0000-0000-000000000000").
+        /// * If you provide ExecutionItemUids, values must be a unique across the entire request body.
+        /// * You do not have to provide ExecutionItemUid values for all entries in a request.
+        /// * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+        /// </remarks>
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
         /// <param name="assets">The payload of your request.</param>
         /// <returns>An HTTP status code and message.</returns>
@@ -1031,6 +1076,14 @@ order by    P.[Path]
         /// <summary>
         /// Updates a given set of assets based on the specific asset type Uid. This endpoint is meant for a greater number of items as it stores the asset list for asynchronous or batch processing.
         /// </summary>
+        /// <remarks>
+        /// When using the ExecutionItemUid, keep in mind:
+        /// * ExecutionItemUid is optional.
+        /// * If you do not wish to provide an ExecutionItemUid, remove the entire line, including the preceding comma (, "ExecutionItemUid": "00000000-0000-0000-0000-000000000000").
+        /// * If you provide ExecutionItemUids, values must be a unique across the entire request body.
+        /// * You do not have to provide ExecutionItemUid values for all entries in a request.
+        /// * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+        /// </remarks>
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
         /// <param name="assets">The payload of your request.</param>
         /// <returns>An HTTP status code and message.</returns>
@@ -1123,6 +1176,14 @@ order by    P.[Path]
         /// <summary>
         /// Removes a given set of assets based on the specific asset type Uid. This endpoint is meant for a greater number of items as it stores the asset list for asynchronous or batch processing.
         /// </summary>
+        /// <remarks>
+        /// When using the ExecutionItemUid, keep in mind:
+        /// * ExecutionItemUid is optional.
+        /// * If you do not wish to provide an ExecutionItemUid, remove the entire line, including the preceding comma (, "ExecutionItemUid": "00000000-0000-0000-0000-000000000000").
+        /// * If you provide ExecutionItemUids, values must be a unique across the entire request body.
+        /// * You do not have to provide ExecutionItemUid values for all entries in a request.
+        /// * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+        /// </remarks>
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
         /// <param name="assets">The payload of your request.</param>
         /// <returns>An HTTP status code and message.</returns>

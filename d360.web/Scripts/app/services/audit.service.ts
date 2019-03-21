@@ -29,7 +29,7 @@ export class AuditService extends BaseObservableService {
         filters?: GridFilterExpression[]
     ): Observable<AuditResults> {
         let sortCol = sortField != undefined ? sortField : "";
-
+        console.log(sortOrder);
         let url = `api/v2/audit/${objectType}/${objectID}/auditcombined.json?pagenum=${pageNum}&pagesize=${pageSize}&sortdatafield=${sortField}&sortorder=${sortOrder == SortOrder.None ? "" : (sortOrder == SortOrder.Ascending ? "asc" : "desc")}`;
         let indx = 0;
 

@@ -29,6 +29,8 @@ namespace d360.web.Controllers.V2
 
     public class ProfilesController : BaseApiController
     {
+        private const int TechAssetFusionAttributeTypeId = 1820;
+
         #region DI
 
         public ProfilesController
@@ -117,19 +119,6 @@ namespace d360.web.Controllers.V2
 
                 foreach (var profile in model)
                 {
-
-                    if (string.IsNullOrEmpty(profile.DataType))
-                    {
-                        results.Add(new AssetDataProfileResult()
-                        {
-                            AssetUid = profile.AssetUid,
-                            Success = false,
-                            Message = "A profile for this asset and effective date already exists."
-                        });
-                        continue;
-                    }
-
-
                     var row = table.NewRow();
 
                     row["Id"] = 0;
@@ -249,10 +238,12 @@ namespace d360.web.Controllers.V2
                         await bulkCopy.WriteToServerAsync(table);
 
                         //get asset ids based on uid
-                        conn.Execute(@"update p
+                        conn.Execute($@"update p
                             set p.AssetID = a.ID 
                             from #postAssetDataProfile p
-                            inner join Asset a on a.Uid = p.AssetUid", transaction: trans);
+                            inner join Asset a on a.Uid = p.AssetUid
+                            inner join AssetType t on t.id = a.assetTypeId and t.Object = 'FusionAttributeType' and t.ObjectID = {TechAssetFusionAttributeTypeId}"
+                        , transaction: trans);
 
                         //get profile id based on assetid
                         conn.Execute(@"update p
@@ -270,7 +261,7 @@ namespace d360.web.Controllers.V2
                             new AssetDataProfileResult()
                             {
                                 AssetUid = a.AssetUid,
-                                Message = "Asset with this uid not found",
+                                Message = "A Technology Asset with this uid was not found",
                                 Success = false
                             }));
                         }
@@ -297,6 +288,7 @@ namespace d360.web.Controllers.V2
 	                            update set
 		                            T.[RowCount] = S.[RowCount],
 		                            T.Uniqueness = S.Uniqueness,
+                                    T.UniqueCount = S.UniqueCount,
 		                            T.Completeness = S.Completeness,
 		                            T.NullCount = S.NullCount,
 		                            T.BlankCount = S.BlankCount,
@@ -313,9 +305,9 @@ namespace d360.web.Controllers.V2
                                     T.CreatedBy = S.CreatedBy,
                                     T.CreatedOn = S.CreatedOn
                             when not matched then
-                            insert (AssetId, [RowCount], Uniqueness, Completeness, NullCount, BlankCount, DataType, MinimumValue, MaximumValue, [Precision], Scale, Average, Median,
+                            insert (AssetId, [RowCount], Uniqueness, UniqueCount, Completeness, NullCount, BlankCount, DataType, MinimumValue, MaximumValue, [Precision], Scale, Average, Median,
                             StandardDeviation, Top10Values, ProcessIdentifier, CreatedBy, CreatedOn) values
-                            (S.AssetId, S.[RowCount], S.Uniqueness, S.Completeness, S.NullCount, S.BlankCount, S.DataType, S.MinimumValue, S.MaximumValue, S.[Precision], S.Scale,
+                            (S.AssetId, S.[RowCount], S.Uniqueness, S.UniqueCount, S.Completeness, S.NullCount, S.BlankCount, S.DataType, S.MinimumValue, S.MaximumValue, S.[Precision], S.Scale,
                             S.Average, S.Median, S.StandardDeviation, S.Top10Values, S.ProcessIdentifier, S.CreatedBy, S.CreatedOn);", transaction: trans);
 
                         trans.Commit();

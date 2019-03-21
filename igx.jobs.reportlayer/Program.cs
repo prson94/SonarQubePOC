@@ -321,13 +321,13 @@ from	Asset A
                             viewNames.Add(objectName);
 
                             selectSql = @"
-select	A.AssetTypeUid,
+ select	A.AssetTypeUid,
 		A.[Uid],
 		A.Name,
 		A.ParentUid,
 		A.IsGroup,
 		V.Weight,
-		max(V.EffectiveDate) OVER(PARTITION BY V.[Uid]) as MetricMaxEffectiveDate,
+		V.EffectiveDate as MetricMaxEffectiveDate,
 		(
 			select	F.Name as FieldName,
 					C.Operator,
@@ -340,8 +340,15 @@ select	A.AssetTypeUid,
 		) as ConditionsJson
 from	metrics.AssetVersion V
 		inner join metrics.Asset A on A.[Uid] = V.[Uid] 
-									and V.EffectiveDate <= getutcdate()
-									and A.State = 1";
+		inner join (
+				select		IA.[Uid],
+							max(IV.EffectiveDate) as EffectiveDate
+				from		metrics.AssetVersion IV
+							inner join metrics.Asset IA on IA.[Uid] = IV.[Uid] 
+														and IV.EffectiveDate <= getutcdate()
+														and IA.State = 1
+				group by	IA.[Uid]
+		) MV on MV.[Uid] = V.[Uid] AND MV.EffectiveDate = V.EffectiveDate";
 
                             objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 

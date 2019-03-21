@@ -3,7 +3,7 @@
         <div class="tile tile-detail">
             <header>Audit History for {{objectName}}<d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="export()"></d3s-tile-actions></header>
 
-            <p-table #dt [loading]="isLoading" loadingIcon="fa fa-spinner" [scrollable]="true" scrollWidth="100%" [lazy]="true" (onLazyLoad)="loadAuditsLazy($event)" [totalRecords]="totalRecords" [value]="audits" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['ResourceName','Date','Action','Field','NewValue','PreviousValue','ActionObject','ActionObjectTypeName','ActionObjectName','ActionDescription','Version']" [pageLinks]="3" [paginator]="true" [rows]="rowsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected">
+            <p-table #dt [loading]="isLoading" loadingIcon="fa fa-spinner" [sortField]="Date" [sortOrder]="-1" [scrollable]="true" scrollWidth="100%" [lazy]="true" (onLazyLoad)="loadAuditsLazy($event)" [totalRecords]="totalRecords" [value]="audits" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['ResourceName','Date','Action','Field','NewValue','PreviousValue','ActionObject','ActionObjectTypeName','ActionObjectName','ActionDescription','Version']" [pageLinks]="3" [paginator]="true" [rows]="rowsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected">
                 <ng-template pTemplate="colgroup" let-columns>
                     <colgroup>
                         <col style="width:150px">

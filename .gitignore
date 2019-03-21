@@ -31,6 +31,7 @@
 \d360.web\Content\styles\Tooltip.css
 \d360.web\Content\styles\typeahead.css
 \d360.web\Content\styles\selectlistinfoitem.css
+\d360.web\Content\styles\selectlistinfoitem.min.css
 
 # Ignore retrieved packages except 2 required DLLs
 \.vs
