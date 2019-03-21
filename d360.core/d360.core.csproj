@@ -109,6 +109,7 @@
     <Compile Include="entities\Metric\MetricAsset.cs" />
     <Compile Include="entities\Metric\MetricAssetVersion.cs" />
     <Compile Include="entities\Metric\MetricAssetVersionCondition.cs" />
+    <Compile Include="entities\AssetDataProfile.cs" />
     <Compile Include="entities\Organization\ContractAcceptance.cs" />
     <Compile Include="entities\Organization\OrganizationType.cs" />
     <Compile Include="entities\Organization\OrganizationRegistration.cs" />
@@ -129,6 +130,7 @@
     <Compile Include="entities\Relation\MapTypeTemplateItem.cs" />
     <Compile Include="entities\ReportResponsibility.cs" />
     <Compile Include="entities\ResourcePasswordReset.cs" />
+    <Compile Include="entities\Security\AssetResponsibilitiesModel.cs" />
     <Compile Include="entities\Security\ResponsibilityTypeAllocationViewModel.cs" />
     <Compile Include="entities\Security\ResponsibilityTypeRelationOverrideItem.cs" />
     <Compile Include="entities\Security\ResponsibilityTypeRelationRule.cs" />
@@ -211,7 +213,6 @@
     <Compile Include="entities\Contracts\IGuidObject.cs" />
     <Compile Include="entities\Community\DatabaseServer.cs" />
     <Compile Include="entities\Community\CompanyFeature.cs" />
-    <Compile Include="entities\Fusion\FusionFilter.cs" />
     <Compile Include="entities\Fusion\FusionStatusLog.cs" />
     <Compile Include="entities\LoadColumn.cs" />
     <Compile Include="entities\LoadItemColumn.cs" />

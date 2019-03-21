@@ -20,18 +20,10 @@ using System.IO;
 using d360.web.Models.Attributes;
 using d360.web.Filters;
 using Dapper;
+using Resources;
 
 namespace d360.web.Models
 {
-    public class QuestionTypeModel
-    {
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public int ResponseTypeID { get; set; }
-        public int SurveyTypeID { get; set; }
-        public int QuestionTypeID { get; set; }
-    }
-
     public class TooltipFieldLevelPathModel
     {
         public string Path { get; set; }
@@ -238,9 +230,6 @@ from	FollowDetail F
         {
             if (string.IsNullOrEmpty(filterExp)) return "";
 
-
-
-
             if (fields == null)
             {
                 fields = Company.Filter<FieldType>(i => i.Object == type.ToString() && i.ObjectID == typeID && i.IsListable).OrderBy(i => i.ColumnOrder).ToList();
@@ -252,11 +241,8 @@ from	FollowDetail F
             {
                 if (sb.Length != 0) sb.Append(" or ");
 
-                //sb.Append($"({column} like @simpleFilter )");
                 sb.Append($"({column} like  '%'+ @simpleFilter + '%')");
             }
-
-
 
             foreach (var field in fields)
             {
@@ -323,10 +309,6 @@ from	FollowDetail F
                             ) A 
                             {joins}";
 
-
-
-
-
                 var countSql = string.Empty;
                 var sql = string.Empty;
 
@@ -349,8 +331,6 @@ from	FollowDetail F
                 }
 
                 int total = Company.Query<int>(countSql, dbArgs).First();
-
-
 
                 sql = applySortSuffix(sql, sortDataField, sortOrder, "FirstName", "asc", sortFieldType: "string");
                 sql = applyPagingSuffix(sql, pagenum, pagesize);
@@ -439,11 +419,7 @@ from	FollowDetail F
 
             var query = Company.Query<dynamic>(sql, dbArgs);
 
-
-
             var items = Company.Filter<FieldType>(i => i.Object == SystemObjects.ResourceType.ToString() && i.ObjectID == typeId && i.IsListable).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
-
-
 
             var fields = new List<GridColumn>();
             fields.Add(new GridColumn { text = d360.core.resources.Fields.FirstName_Name, datafield = "FirstName", columntype = "string" });
@@ -458,8 +434,6 @@ from	FollowDetail F
             fields.Add(new GridColumn { text = d360.core.resources.Fields.LastLoggedInOn_Name, datafield = "LastLoggedInOn", columntype = "date" });
             fields.Add(new GridColumn { text = "Administrator?", datafield = "IsAdministrator", columntype = "bool" });
             fields.Add(new GridColumn { text = d360.core.resources.Fields.Status_Name, datafield = "State", columntype = "string" });
-
-
 
             var document = new SLDocument();
             document.AddWorksheet("Users");
@@ -494,13 +468,9 @@ from	FollowDetail F
 
             #endregion
 
-
-
             var stream = new MemoryStream();
             document.SaveAs(stream);
             return File(stream.ToArray(), "application/vnd.ms-excel", $"Users {System.DateTime.Now.ToShortDateString()}.xlsx");
-
-
         }
 
         private string getGridFieldTypeForColumn(FieldType item)
@@ -1038,13 +1008,32 @@ order by A.ID, FT.SortOrder", new { id, attribute });
             {
                 var html = Company.RenderTooltip("LookupPreview", objectType, objectID);
 
-
                 return Json(new { html = html }, JsonRequestBehavior.AllowGet);
             }
             catch (Exception ex)
             {
                 return Json(new { title = "Error Occurred!", message = ex.Message, type = "error" }, JsonRequestBehavior.AllowGet);
             }
+        }
+
+        [Route("MyApiCredentials")]
+        public JsonNetResult MyApiCredentials()
+        {
+            if (!Company.CurrentResourceIsAdmin && !this.ShowAllUsersAPIKey())
+                return jsonNetException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+            var resource = Community.GetById<Resource>(Community.CurrentResourceID);
+
+            return new JsonNetResult
+            {
+                Data = new
+                {
+                    PublicKey = resource.APIPublicKey,
+                    PrivateKey = resource.APIPrivateKey
+                },
+                Formatting = Newtonsoft.Json.Formatting.None
+
+            };
         }
 
         #endregion

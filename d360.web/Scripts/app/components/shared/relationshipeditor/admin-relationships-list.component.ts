@@ -154,9 +154,11 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
                 .then(result => {
                     this.relationships = result;
                     this.isLoading = false;
-                    if (this.relationships.length > 0) {
-                        this.selected = this.relationships[0];
-                        this.selectedChange.emit(this.selected)
+                    if (this.relationships) {
+                        if (this.relationships.length > 0) {
+                            this.selected = this.relationships[0];
+                            this.selectedChange.emit(this.selected)
+                        }
                     }
                 });
         } else {
@@ -165,9 +167,11 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
                     this.relationships = result;
                     this.filterResults();
                     this.isLoading = false;
-                    if (this.relationships.length > 0) {
-                        this.selected = this.relationships[0];
-                        this.selectedChange.emit(this.selected)
+                    if (this.relationships) {
+                        if (this.relationships.length > 0) {
+                            this.selected = this.relationships[0];
+                            this.selectedChange.emit(this.selected)
+                        }
                     }
                 });
         }

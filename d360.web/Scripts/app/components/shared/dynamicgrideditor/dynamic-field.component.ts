@@ -125,7 +125,13 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                 this.ref.markForCheck();
             });
 
-        this.typeAheadSub = this.fieldsService.getTypeaheadItems(this.typeAheadSource$)
+        this.typeAheadSub = (this.field.DelayedLoadType == 'Predicate') ?
+            this.fieldsService.getTypeaheadFilteredByPredicateItems(this.typeAheadSource$, this.selectedObject, this.selectedObjectID)
+                .subscribe(res => {
+                    this.field.Items = <any[]>res;
+                    this.ref.markForCheck();
+                })
+            : this.fieldsService.getTypeaheadItems(this.typeAheadSource$)
             .subscribe(res => {
                 //console.log('sub', res);
                 this.field.Items = <EditorDropDownItem[]>res;
@@ -138,8 +144,12 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                     this.field.Items = res.items;
                     this.filterException = res.exceptionMessage;
                     this.ref.markForCheck();
+                    if (res.useTypeahead) {
+                        //Switch to typeahead. We do not switch back
+                        this.field.UseTypeahead = true;
+                    }
                 }
-            )
+            );
         }
 
         if (this.field && this.field.Validations) {
@@ -378,6 +388,13 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         return "Choose";
     }
 
+    selectDisabled(): boolean {
+        if (this.field.DelayedLoadType =='FieldFilter' && !this.hasCascadeLoaded && (this.field.Items == null || this.field.Items.length == 0)) {
+            return true;
+        }
+        return false;
+    }
+
     OnBlurTrim() {
         let value: string = this.form.controls[this.field.FieldName].value;
         this.form.controls[this.field.FieldName].setValue(value.trim());
@@ -428,6 +445,8 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             this.field.Value = e.Value;
         else
             this.field.Value = null;
+        //Typeahead is a technically a list field, so we should emit an itemchange
+        this.listItemChange.emit({ field: this.field, value: this.field.Value });
     }
 
     private clearTypeahead(e: any) {

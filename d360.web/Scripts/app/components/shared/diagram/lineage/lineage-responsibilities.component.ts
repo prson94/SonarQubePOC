@@ -1,33 +1,15 @@
-﻿import { Component, Input, OnInit, OnChanges } from '@angular/core';
-import { DiagramService } from '../../../../services/diagram.service';
-import { Responsibility } from '../../../../models/lineage.model';
-import { BaseComponent } from '../../base.component';
-import { ObjectDetailService } from '../../../../services/object-detail.service';
+﻿import {Component, Input, OnChanges, OnInit} from '@angular/core';
+
+import {Responsibility} from '../../../../models/lineage.model';
+
+import {DiagramService} from '../../../../services/diagram.service';
+import {ObjectDetailService} from '../../../../services/object-detail.service';
+
+import {BaseComponent} from '../../base.component';
 
 @Component({
     selector: 'd3s-lineage-responsibilities',
-    template: `
-        <d3s-loading [isLoading]="isLoading"></d3s-loading>
-        <div *ngIf="!isLoading">
-            <p-table #dt [value]="items" selectionMode="single" [metaKeySelection]="true" [rowsPerPageOptions]="defaultPagingOptions" [rows]="5">
-                <ng-template pTemplate="header">
-                    <tr>
-                        <th>Role</th>
-                        <th>Resource/Group</th>
-                    </tr>
-                </ng-template>
-                <ng-template pTemplate="body" let-item>
-                    <tr [pSelectableRow]="item">
-                        <td>{{item.ResponsibilityTypeName}}</td>
-                        <td>{{item.SecurityAssetName}}</td>
-                    </tr>
-                </ng-template>
-                <ng-template pTemplate="summary">
-                    <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
-                </ng-template>
-            </p-table>
-        </div>
-    `,
+    templateUrl: './lineage-responsibilities.component.html',
     providers: [DiagramService, ObjectDetailService]
 })
 
@@ -40,7 +22,10 @@ export class LineageResponsibilitiesComponent extends BaseComponent implements O
 
     items: Responsibility[] = [];
 
-    constructor(private diagramService: DiagramService, private objectDetailService: ObjectDetailService) {
+    constructor(
+        private diagramService: DiagramService,
+        private objectDetailService: ObjectDetailService
+    ) {
         super();
     }
 
@@ -48,7 +33,8 @@ export class LineageResponsibilitiesComponent extends BaseComponent implements O
         this.load();
     }
 
-    ngOnInit() { }
+    ngOnInit() {
+    }
 
     private load() {
         // if the object type and objectid is passed and the assetid is null lookup the assetid then load responsibilities
@@ -58,8 +44,7 @@ export class LineageResponsibilitiesComponent extends BaseComponent implements O
                     this.assetId = data.AssetID;
                     this.loadResponsibilities();
                 })
-        }
-        else {
+        } else {
             this.loadResponsibilities();
         }
     }
@@ -71,10 +56,12 @@ export class LineageResponsibilitiesComponent extends BaseComponent implements O
         }
 
         this.isLoading = true;
-        this.diagramService.getLineageResponsibilities(this.assetId)
-            .then(data => {
-                this.isLoading = false;
+        this.diagramService.getLineageResponsibilities(this.assetId).subscribe(
+            data => {
                 this.items = data;
-            });
+
+                this.isLoading = false;
+            }
+        );
     }
 }

@@ -60,6 +60,25 @@ order by RT.Name", new { id }).AsQueryable();
             }
         }
 
+        public string GetNoReadSqlStatement(string identifier = null)
+        {
+            return GetNoReadSqlStatement(Permission.ReadAsset, identifier);
+        }
+
+        public string GetAssetTypeNoReadSqlStatement(string identifier = null)
+        {
+            return GetAssetTypeNoReadSqlStatement(Permission.ReadAsset, identifier);
+        }
+
+        public string GetNoReadSqlStatement(Permission permission, string identifier = null)
+        {
+            return $"select AssetID from ResponsibilityDetail where ((PermissionsBitMask & {(int)permission}) = 0) and ResourceID = {(string.IsNullOrEmpty(identifier) ? CurrentResourceID.ToString() : identifier)}";
+        }
+
+        public string GetAssetTypeNoReadSqlStatement(Permission permission, string identifier = null)
+        {
+            return $"select AssetTypeID from ResponsibilityDetail where AssetID = 0 and ((PermissionsBitMask & {(int)permission}) = 0) and ResourceID = {(string.IsNullOrEmpty(identifier) ? CurrentResourceID.ToString() : identifier)}";
+        }
 
         public List<PermissionInfo> GetTypePermissions(string type, int typeID)
         {

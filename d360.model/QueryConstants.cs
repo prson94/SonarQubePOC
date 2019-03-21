@@ -269,15 +269,6 @@ from	AttributeDetail A
 group by A.FormattedValue
 order by A.FormattedValue";
 
-        public static string FusionBreadcrumbItem = @"
-select  f.parentID as 'parentID', 
-	    f.name as 'name', 
-	    f.id as 'id', 
-	    f.fusionattributetypeid as 'typeid',
-	    ft.name as 'typename'                                    
-from    fusionattribute f
-        inner join fusionattributetype ft on (f.fusionattributetypeid = ft.id)
-where   f.id = @item";
 
         public static string FusionConfigurationFromFusionAttributeItem = @"
 select  f.name as 'ItemName',
@@ -293,57 +284,7 @@ from    fusionattribute f
 	    left outer join fusionattribute fp on (f.parentID = fp.id)
 where   f.id = @id";
 
-        public static string FusionOwnershipChildAttributeNodeList = @"
-declare @tbl table (ID int, ParentID int);
-
-with at as	(
-			select	ID,
-					ParentID
-			from	FusionAttributeType
-			where	ID = @targetFusionAttributeTypeID
-			union all
-			select	P.ID,
-					P.ParentID
-			from	FusionAttributeType P
-					inner join at C on C.ParentID = P.ID and P.ID <> C.ID
-			)
-insert into @tbl 
-	select * from at
-
-if @currentFusionAttributeTypeID = 0 and @fusionAttributeID = 0
-	begin
-		select		A.ID,
-                    A.ParentID,
-					A.FusionAttributeTypeID,
-					A.Name
-		from		FusionAttribute A
-					inner join @tbl t on t.ParentID is null and A.FusionAttributeTypeiD = t.ID and A.FusionID = @fusionID
-        where       A.ID not in (
-                                select  RI.FusionAttributeID
-                                from    FusionAttributeOwnerRuleItem RI
-                                        inner join FusionAttributeOwnerRule R on R.ID = RI.FusionAttributeOwnerRuleID and R.ID = @ruleID and R.FusionID = @fusionID and RI.FusionAttributeID is not null
-                                )
-		order by	A.Name
-	end
-else
-	begin
-		select		A.ID,
-                    A.ParentID,
-					A.FusionAttributeTypeID,
-					A.Name
-		from		FusionAttribute A
-					inner join @tbl t on t.ParentID = @currentFusionAttributeTypeID 
-								and A.FusionAttributeTypeiD = t.ID 
-								and A.ParentID = @fusionAttributeID
-								and A.FusionID = @fusionID
-        where       A.ID not in (
-                                select  RI.FusionAttributeID
-                                from    FusionAttributeOwnerRuleItem RI
-                                        inner join FusionAttributeOwnerRule R on R.ID = RI.FusionAttributeOwnerRuleID and R.ID = @ruleID and R.FusionID = @fusionID and RI.FusionAttributeID is not null
-                                )
-        order by	Name
-	end";
-
+       
         public static string FusionPromotionChildAttributeNodeList = @"
 declare @tbl table (ID int, ParentID int);
 

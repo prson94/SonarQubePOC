@@ -1,0 +1,93 @@
+<div class="tile tile-detail">
+    <header *ngIf="!showEditor && !showDelete">Versions
+        <d3s-tile-actions (addClick)="selected=null;showEditor=true;"
+                          [(filterMode)]="showSimpleFilter"
+                          [hasAdd]="true"
+                          [hasFilterMode]="true"></d3s-tile-actions>
+    </header>
+    <d3s-loading [isLoading]="isLoading"></d3s-loading>
+    <span *ngIf="!isLoading && !showDelete && !showEditor">
+        <input (input)="dt.filterGlobal($event.target.value, 'contains')"
+               [hidden]="!showSimpleFilter"
+               class="grid-simple-filter"
+               pInputText
+               placeholder="Search..."
+               size="100"
+               type="text"/>
+        <p-table #dt [globalFilterFields]="['UriPrefix','MajorVersion','MinorVersion']"
+                 [pageLinks]="3"
+                 [paginator]="true"
+                 [rows]="10"
+                 [value]="versions"
+                 selectionMode="single">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th [pSortableColumn]="'UriPrefix'">
+                        Uri Segment
+                        <d3s-sortIcon [field]="'UriPrefix'"></d3s-sortIcon>
+                    </th>
+                    <th [pSortableColumn]="'MajorVersion'">
+                        Major Version
+                        <d3s-sortIcon [field]="'MajorVersion'"></d3s-sortIcon>
+                    </th>
+                    <th [pSortableColumn]="'MinorVersion'">
+                        Minor Version
+                        <d3s-sortIcon [field]="'MinorVersion'"></d3s-sortIcon>
+                    </th>
+                    <th style="width: 40px"></th>
+                    <th style="width: 40px"></th>
+                </tr>
+                <tr [hidden]="showSimpleFilter">
+                    <th><d3s-column-filter [datatype]="'text'"
+                                           [field]="'UriPrefix'"></d3s-column-filter></th>
+                    <th><d3s-column-filter [datatype]="'text'"
+                                           [field]="'MajorVersion'"></d3s-column-filter></th>
+                    <th><d3s-column-filter [datatype]="'text'"
+                                           [field]="'MinorVersion'"></d3s-column-filter></th>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </ng-template>
+            <ng-template let-item pTemplate="body">
+                <tr (dblclick)="selected=item;showEditor=true" [pSelectableRow]="item">
+                    <td>{{item.UriPrefix}}</td>
+                    <td>{{item.MajorVersion}}</td>
+                    <td>{{item.MinorVersion}}</td>
+                    <td>
+                        <div class="RowTools">
+                            <a (click)="selected=item;showEditor=true"
+                               style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="RowTools">
+                            <a (click)="selected=item;showDelete=true;"
+                               style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template *ngIf="dt.totalRecords"
+                         pTemplate="summary">
+                <d3s-grid-paging-info [first]="dt.first"
+                                      [rows]="dt.rows"
+                                      [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+            </ng-template>
+        </p-table>
+    </span>
+    <d3s-dynamic-editor (closeClick)="showEditor=false"
+                        (saveClick)="saveVersion($event)"
+                        *ngIf="showEditor"
+                        [objectID]="selected?.ID"
+                        [objectType]="'Version'"
+                        [parentID]="endpoint?.ID"
+                        [selection]="selected"
+                        [title]="'Version'"></d3s-dynamic-editor>
+    <d3s-delete-form (onCancel)="showDelete=false;"
+                     *ngIf="showDelete"
+                     [callback]="theDeleteCallback"
+                     [itemId]="selected?.ID"
+                     [method]="'callback'"
+                     [prompt]="'Are you sure you want to delete the version [' + [selected?.UriPrefix] + ']?'">
+    </d3s-delete-form>
+</div>
