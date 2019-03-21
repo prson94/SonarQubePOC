@@ -361,7 +361,8 @@ where   A.FusionID = @f
             string profileJoins = "";
             if(queryParameters["target"]=="DataProfile")
             {
-                profileColumns = @" ,ADP.[RowCount] as RowCounts,
+                profileColumns = @" ,ADP.ID as DataProfileID,
+                                    ADP.[RowCount] as RowCounts,
                                     ADP.Uniqueness,
                                     ADP.UniqueCount,
                                     ADP.Completeness,

@@ -114,7 +114,8 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
     ) {
         super();
     }
-        
+
+     
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (changes['fusionAttributeTypeId'] && this.fusionAttributeTypeId) {            
             this.fusionObject = 'FusionAttributeType';
@@ -193,7 +194,7 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
             }
         }
         this.isFiltering = true;
-        debugger;
+
         if (this.fusionObject == "FusionQueryAttributeType") {
             this.fusionAttributeService.getFusionQueryAttributes(this.fusionId, this.fusionObjectID, this.stateService.fusionFilters.currentPageNumber, this.stateService.fusionFilters.rowsPerPage, this.stateService.fusionFilters.sortField, this.stateService.fusionFilters.sortOrder, this.stateService.fusionFilters.filters)
                 .then(res => {
@@ -201,6 +202,7 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
                     this.isFiltering = false;
                     if (!this.fusionAttribute && this.results && this.results.results && this.results.results.length > 0) {
                         this.fusionAttribute = this.results.results[0];
+                        this.fusionAttributeChange.emit(this.fusionAttribute);
                     } else {
                         this.fusionAttribute = null;
                     }

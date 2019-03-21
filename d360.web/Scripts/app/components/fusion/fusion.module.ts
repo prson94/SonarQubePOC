@@ -47,7 +47,9 @@ import { FusionQueryListComponent } from './fusion-query-list.component';
 import { FusionQueryAttributeEditorComponent } from './fusion-query-attribute-editor.component';
 import { FusionHistoryComponent } from './fusion-history.component'
 import { FusionAttributeTabsComponent } from './fusion-attribute-tabs.component';
-import { FustionAttributeComponent } from './fusion-attribute.component';
+import { FusionAttributeComponent } from './fusion-attribute.component';
+import { FusionDataProfileDetailComponent } from './fusion-data-profile-detail.component';
+
 
 import {
     GrowlModule,
@@ -69,6 +71,8 @@ import { TableModule } from 'primeng/table';
 
 import { CodemirrorModule } from 'ng2-codemirror';
 import { HighchartsStatic } from 'angular2-highcharts/dist/HighchartsService';
+
+
 
 
 
@@ -128,7 +132,7 @@ export function highchartsFactory() {
         SharedFusionAttributeProfileDetailsModule,
         SharedGridPagingInfoModule,
         SharedRelationshipModule,
-        TilesModule,        
+        TilesModule,  
     ],
     declarations: [
         FusionAgentErrorsComponent,
@@ -154,7 +158,8 @@ export function highchartsFactory() {
         FusionQueryListComponent,
         FusionQueryAttributeEditorComponent,  
         FusionAttributeTabsComponent,
-        FustionAttributeComponent,
+        FusionAttributeComponent,
+        FusionDataProfileDetailComponent
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

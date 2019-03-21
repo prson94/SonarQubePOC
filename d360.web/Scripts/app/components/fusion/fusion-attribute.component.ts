@@ -5,7 +5,7 @@ import { BaseComponent } from "../shared/base.component";
     selector:"d3s-fusion-attribute",
     templateUrl: "fusion-attribute.component.html"
 })
-export class FustionAttributeComponent extends BaseComponent {
+export class FusionAttributeComponent extends BaseComponent {
     @Input() fusionId: number;
 
     @Input() selectedFusionAttributeTypeId: number;
