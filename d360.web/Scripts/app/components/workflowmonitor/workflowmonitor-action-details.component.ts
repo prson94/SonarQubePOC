@@ -19,17 +19,17 @@ import { ToolTipService } from '../../services/tooltip.service';
                     <span class="FieldName">
                         {{field.Name}}:&nbsp;
                     </span>
-                    <ngTemplate [ngIf]="field.Values && field.Values.length > 0" [ngIfElse]="singlevalue">
+                    <ng-template [ngIf]="field.Values && field.Values.length > 0" [ngIfElse]="singlevalue">
                         <span>
                             <span *ngFor="let singleitem of field.Values" style="margin-left:2em;text-indent:-1em;display:block;">
                                 <span [innerHtml]="singleitem"></span>
                             </span>
                         </span>
-                    </ngTemplate>
-                    <ngTemplate #singlevalue>
+                    </ng-template>
+                    <ng-template #singlevalue>
                         <span [innerHtml]="field.Value">
-                    </ngTemplate>
-                    </span>
+                        </span>
+                    </ng-template>
                 </div>
             </ng-container>                        
         </div>
