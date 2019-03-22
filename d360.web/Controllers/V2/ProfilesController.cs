@@ -144,7 +144,7 @@ namespace d360.web.Controllers.V2
 
 
                     if (profile.Top10Values == null)
-                        profile.Top10Values = new List<string>();
+                        profile.Top10Values = new List<AssetDataProfileValueCount>();
 
                     row["Top10Values"] = JsonConvert.SerializeObject(profile.Top10Values.Take(10).ToList());
 
