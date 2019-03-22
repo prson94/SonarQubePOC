@@ -81,9 +81,15 @@ namespace d360.core.entities
         [DataMember]
         public decimal? StandardDeviation { get; set; }
         [DataMember]
-        public List<string> Top10Values { get; set; }
+        public List<AssetDataProfileValueCount> Top10Values { get; set; }
         [DataMember]
         public string ProcessIdentifier { get; set; }
+    }
+
+    public class AssetDataProfileValueCount
+    {
+        public string Value { get; set; }
+        public int Count { get; set; }
     }
 }
 

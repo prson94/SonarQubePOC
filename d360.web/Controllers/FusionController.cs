@@ -202,7 +202,30 @@ select * from h where ID <> @t order by h.[Level] desc;
             });
 
             #endregion
-                       
+
+            var queryParameters = Request.Params;
+            string profileColumns = "";
+            string profileJoins = "";
+            if (queryParameters["target"] == "DataProfile")
+            {
+                profileColumns = @" ,ADP.ID as DataProfileID,
+                                    ADP.[RowCount] as RowCounts,
+                                    ADP.Uniqueness,
+                                    ADP.UniqueCount,
+                                    ADP.Completeness,
+                                    ADP.NullCount,
+                                    ADP.BlankCount,
+                                    ADP.DataType,
+                                    ADP.MinimumValue,
+                                    ADP.MaximumValue,
+                                    ADP.Precision,
+                                    ADP.Scale,
+                                    ADP.Average,
+                                    ADP.Median,
+                                    ADP.StandardDeviation";
+                profileJoins = @"inner join  AssetDataProfile ADP on B.ID = ADP.AssetID";
+            }
+
             var dbArgs = new Dapper.DynamicParameters();
             dbArgs.Add("f", fusionID);
             dbArgs.Add("t", fusionAttributeTypeID);
@@ -214,8 +237,10 @@ select * from h where ID <> @t order by h.[Level] desc;
             
             var sql = $@"
 select  {columns}
+ {profileColumns}
 from	FusionAttribute A
         inner join Asset B on B.[Object] = 'FusionAttribute' and B.ObjectID = A.ID 
+{profileJoins}
         {joins}       
        
 where   A.FusionID = @f 
@@ -229,6 +254,25 @@ where   A.FusionID = @f
             #endregion
 
             var query = Company.Query<dynamic>(sql, dbArgs).ToList();
+            if (queryParameters["target"] == "DataProfile")
+            {
+                var profileFieldModels = new List<SqlFieldModel>();
+                profileFieldModels.Add( new SqlFieldModel { FieldColumnName = "RowCounts", FieldName = "RowCounts", FieldFriendlyName = "Row Count" });
+                profileFieldModels.Add(new SqlFieldModel { FieldColumnName = "Uniqueness", FieldName = "ADP.Uniqueness", FieldFriendlyName = "Uniqueness" });
+                profileFieldModels.Add(new SqlFieldModel { FieldColumnName = "UniqueCount", FieldName = "ADP.UniqueCount", FieldFriendlyName = "Unique Count" });
+                profileFieldModels.Add(new SqlFieldModel { FieldColumnName = "Completeness", FieldName = "ADP.Completeness", FieldFriendlyName = "Completeness" });
+                profileFieldModels.Add(new SqlFieldModel { FieldColumnName = "NullCount", FieldName = "ADP.NullCount", FieldFriendlyName = "Null Count" });
+                profileFieldModels.Add(new SqlFieldModel { FieldColumnName = "BlankCount", FieldName = "ADP.BlankCount", FieldFriendlyName = "Blank Count" });
+                profileFieldModels.Add(new SqlFieldModel { FieldColumnName = "DataType", FieldName = "ADP.DataType", FieldFriendlyName = "Data Type" });
+                profileFieldModels.Add(new SqlFieldModel { FieldColumnName = "MinimumValue", FieldName = "ADP.MinimumValue", FieldFriendlyName = "Minimum Value" });
+                profileFieldModels.Add(new SqlFieldModel { FieldColumnName = "MaximumValue", FieldName = "ADP.MaximumValue", FieldFriendlyName = "Maximum Value" });
+                profileFieldModels.Add(new SqlFieldModel { FieldColumnName = "Precision", FieldName = "ADP.Precision", FieldFriendlyName = "Precision" });
+                profileFieldModels.Add(new SqlFieldModel { FieldColumnName = "Scale", FieldName = "ADP.Scale", FieldFriendlyName = "Scale" });
+                profileFieldModels.Add(new SqlFieldModel { FieldColumnName = "Average", FieldName = "ADP.Average", FieldFriendlyName = "Average" });
+                profileFieldModels.Add(new SqlFieldModel { FieldColumnName = "Median", FieldName = "ADP.Median", FieldFriendlyName = "Median" });
+                profileFieldModels.Add(new SqlFieldModel { FieldColumnName = "StandardDeviation", FieldName = "ADP.StandardDeviation", FieldFriendlyName = "Standard Deviation" });
+                sqlFieldModels.InsertRange(3, profileFieldModels);
+            }
 
             #region Create the list sheet
 
@@ -357,6 +401,30 @@ where   A.FusionID = @f
             dbArgs.Add("f", fusionID);
             dbArgs.Add("t", fusionAttributeTypeID);
 
+            string profileColumns = "";
+            string profileJoins = "";
+            if(queryParameters["target"]=="DataProfile")
+            {
+                profileColumns = @" ,ADP.ID as DataProfileID,
+                                    ADP.[RowCount] as RowCounts,
+                                    ADP.Uniqueness,
+                                    ADP.UniqueCount,
+                                    ADP.Completeness,
+                                    ADP.NullCount,
+                                    ADP.BlankCount,
+                                    ADP.DataType,
+                                    ADP.MinimumValue,
+                                    ADP.MaximumValue,
+                                    ADP.Precision,
+                                    ADP.Scale,
+                                    ADP.Average,
+                                    ADP.Median,
+                                    ADP.StandardDeviation,
+                                    ADP.Top10Values,
+                                    ADP.ProcessIdentifier";
+                profileJoins = @"inner join Asset AA on AA.ObjectID=A.ID and AA.Object='FusionAttribute'
+                                 inner join  AssetDataProfile ADP on AA.ID = ADP.AssetID";
+            }
             #region Count SQL
 
             var countSql = $@"
@@ -364,9 +432,12 @@ select  A.ID,
         A.Name, 
         A.FusionAttributeTypeID,
         'FusionAttribute' as [Type]
+        {profileColumns}
         {filtercolumns} 
         {parentFilterColumnText} 
-from	FusionAttribute A {parentQueryJoinText} {filterjoins}
+from	FusionAttribute A
+{profileJoins}
+{parentQueryJoinText} {filterjoins}
 where   A.FusionID = @f 
         and A.FusionAttributeTypeID = @t 
         and A.Deleted = 0";
@@ -386,9 +457,12 @@ select  A.ID
         , A.FusionAttributeTypeID
         , 'FusionAttribute' as [Type]
         , cast({editable} as bit) as IsEditable
+       {profileColumns}
         {columns} 
         {parentQueryColumnText} 
-from	FusionAttribute A {parentQueryJoinText} {joins} 
+from	FusionAttribute A 
+{profileJoins}
+{parentQueryJoinText} {joins} 
 where A.FusionID = @f and A.FusionAttributeTypeID = @t and A.Deleted = 0";
 
             sql = $@"select * from ({sql}) A";

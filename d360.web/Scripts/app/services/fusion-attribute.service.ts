@@ -10,13 +10,13 @@ import { JsonResult } from '../models/jsonresult.model';
 export class FusionAttributeService extends BaseService {
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
 
-    getFusionAttributes(fusionId: number, fusionAttributeTypeId: number, pageNumber?: number, pageSize?: number, sortField?: string, sortOrder?: SortOrder, filters?: FusionAttributeFilter[]): Promise<FusionAttributePagedResults> {
+    getFusionAttributes(fusionId: number, fusionAttributeTypeId: number,target?:string, pageNumber?: number, pageSize?: number, sortField?: string, sortOrder?: SortOrder, filters?: FusionAttributeFilter[]): Promise<FusionAttributePagedResults> {
         let sortOrderText = '';
 
         if (sortOrder == SortOrder.Ascending) sortOrderText = 'asc';
         if (sortOrder == SortOrder.Descending) sortOrderText = 'desc';
 
-        var url = `internal/fusion/ItemsByAttributeType?fusionID=${fusionId}&fusionAttributeTypeID=${fusionAttributeTypeId}&pagenum=${pageNumber ? pageNumber : 0}&pagesize=${pageSize ? pageSize : 20}&sortDataField=${sortField ? sortField : ''}&sortOrder=${sortOrderText}`;
+        var url = `internal/fusion/ItemsByAttributeType?fusionID=${fusionId}&fusionAttributeTypeID=${fusionAttributeTypeId}&target=${target}&pagenum=${pageNumber ? pageNumber : 0}&pagesize=${pageSize ? pageSize : 20}&sortDataField=${sortField ? sortField : ''}&sortOrder=${sortOrderText}`;
 
         if (filters && filters.length > 0) {
             url += `&filterscount=${filters.length}`;
@@ -58,7 +58,7 @@ export class FusionAttributeService extends BaseService {
             .catch(err => this.handleError(err));
     }
         
-    getFusionAttributeExcel(type: string, fusionId: number, fusionQueryAttributeTypeId: number, sortField?: string, sortOrder?: SortOrder, filters?: FusionAttributeFilter[]): Promise<any> {
+    getFusionAttributeExcel(type: string, fusionId: number, fusionQueryAttributeTypeId: number,isDataProfile:boolean, sortField?: string, sortOrder?: SortOrder, filters?: FusionAttributeFilter[]): Promise<any> {
         let route = 'ExportItemsByAttributeType';
         if (type == 'FusionQueryAttributeType') {
             route = 'ExportQueryItemsByAttributeType';
@@ -69,7 +69,10 @@ export class FusionAttributeService extends BaseService {
         if (sortOrder == SortOrder.Ascending) sortOrderText = 'asc';
         if (sortOrder == SortOrder.Descending) sortOrderText = 'desc';
 
-        let url = `internal/fusion/${route}?fusionID=${fusionId}&${type}ID=${fusionQueryAttributeTypeId}&sortDataField=${sortField ? sortField : ''}&sortOrder=${sortOrderText}`;
+        let dataProfile:string =""
+        if (isDataProfile) dataProfile = `&target=DataProfile`;
+
+        let url = `internal/fusion/${route}?fusionID=${fusionId}&${type}ID=${fusionQueryAttributeTypeId}&sortDataField=${sortField ? sortField : ''}&sortOrder=${sortOrderText}${dataProfile}`;
 
         if (filters && filters.length > 0) {
             url += `&filterscount=${filters.length}`;

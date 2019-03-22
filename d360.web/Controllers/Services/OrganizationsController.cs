@@ -5,13 +5,14 @@ using Microsoft.Web.Http;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
+using System.Web.Http.Description;
 
 namespace d360.web.Controllers.Services
 {
     /// <summary>
     /// Manage your organizations within Data3Sixty.
     /// </summary>
-    [ApiVersion("1.0"), RoutePrefix("services/organizations"), Authorize]
+    [ApiVersion("1.0"), RoutePrefix("services/organizations"), ApiExplorerSettings(IgnoreApi = true), Authorize]
     public class OrganizationsController : BaseApiController
     {
         #region DI
@@ -176,7 +177,7 @@ namespace d360.web.Controllers.Services
                             where r.State =@userStatus and o.OrganizationID=@orgId";
             return Company.Query<OrganizationResourceDetail>(sql, new { userStatus = CompanyResourceState.Active, orgId = id }).AsQueryable();
         }
-                        
+        
         /// <summary>
         /// Gets a history of contract acceptance for the resource
         /// </summary>
@@ -227,6 +228,5 @@ namespace d360.web.Controllers.Services
                 inner join [Contract] c on c.id = h.ContractID
                 where h.OrganizationID = @id", new { id }).AsQueryable().OrderByDescending(c => c.AcceptedOn);
         }
-
     }
 }

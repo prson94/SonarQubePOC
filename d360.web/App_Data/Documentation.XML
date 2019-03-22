@@ -3038,6 +3038,12 @@
             <param name="responsibilityTypeRuleUid">The unique identifier of the responsibility type ownership rule to get stats for.</param>
             <returns>Returns a stats for the specified responsibility type ownership rules.</returns>
         </member>
+        <member name="M:d360.web.Controllers.V2.ResponsibilitiesController.GetResponsibilities">
+            <summary>
+            Retrieves a list of responsibility ownership of assets based on the provided parameters.  Assets and ownership results reflect the users permissions to see the assets and the ownership details for them.  No filters applied will return all items which have at least one owner.
+            </summary>        
+            <returns>Returns a list of assets and there corresponding ownership information.</returns>
+        </member>
         <member name="M:d360.web.Controllers.D3SApiController.GetFieldFiltersByType(d360.core.SystemObjects,System.Int32)">
             <summary>
             Gets a list of available field-level filters for a grid in the UI. This includes standard/custom fields, relationships, attributes, owner.

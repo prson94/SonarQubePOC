@@ -46,7 +46,8 @@ namespace d360.core.entities
         [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Username_Name", Description = "Username_Description")]
         public string Username { get; set; }
 
-
+        [DataMember]
+        public Guid Uid { get; set; }
         #endregion
 
         public virtual ResourceType ResourceType { get; set; }
