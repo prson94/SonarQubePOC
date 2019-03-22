@@ -1,4 +1,4 @@
-﻿import { Input, Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter} from '@angular/core';
+﻿import { Input, Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter, AfterViewInit} from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { MessagesService } from '../../../services/messages.service';
 import { HeaderActionsService } from '../../../services/header-actions.service';
@@ -65,6 +65,11 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         this.subFavorites = this.headerActionsService.onFavoritesChanges$.subscribe(() => {
             this.loadFavorites();
         });
+
+        //wait for the menu to laod before getting the counts
+        window.setTimeout(() => {
+            this.headerActionsService.emitCountChange();
+        }, 550);
     }
 
     ngOnDestroy() {
@@ -72,11 +77,14 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         this.subFavorites.unsubscribe();
     }
 
+
+
     loadFavorites() {     
         if (CompanySettings.ShowFavorites == 'false') return;
         this.favoritesService.getFavorites().then(favorites => {            
             favorites = _.sortBy(favorites, 'SortOrder'); // sort the favorites
             this.favorites = new SiteMenu();
+            this.favorites.MenuID = '*Favourites';
             this.favorites.NavigationItems = [];
             for (let favorite of favorites) {
                 this.favorites.NavigationItems.push({
@@ -149,7 +157,6 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                 this.isAdmin = result.IsAdmin;
 
                 this.ref.markForCheck();
-
             });
     }
 
@@ -169,6 +176,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     
     private buildAdminMenu() {
         this.adminMenu = new SiteMenu();
+        this.adminMenu.MenuID = '-Admin';
         this.adminMenu.NavigationItems = [];
         let metaMenu = new SiteMenuItem();
         metaMenu.Name = "MetaModel";

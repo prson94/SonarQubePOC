@@ -832,58 +832,45 @@ order by	f.SortOrder";
 
         }
 
-        [HttpGet, Route("GetItemCount/{type}/{item}")]
-        public JsonNetResult GetItemCount(string type, string item)
+        [HttpGet, Route("GetItemCount/{url}")]
+        public JsonNetResult GetItemCount(string url)
         {
             int count = 0;
-            if (type.Contains("-"))
-                type = type.Split('-').First();
-
-            switch (type)
+            string type = ""; 
+            int id = 0;
+            var urlElements = url.Split('-');
+            type = urlElements[0];
+            if (type.Equals("Rule"))
             {
-                case "Rules":
-                case "rules":
-                    count = Company.Query<int>(@"
-                        select	K.kount
-                        from    AssetType AT
-			            left join (SELECT count(a.AssetTypeID) kount,a.AssetTypeID
-							            FROM [dbo].[Asset] a
-							            inner join AssetType b on a.AssetTypeID = b.ID
-							            group by AssetTypeID
-						            ) K on K.AssetTypeID = AT.ID 
-		                outer apply (
-					                select	IT.SubjectID
-					                from	IntersectType IT 
-							                inner join [Predicate] P on IT.Object = 'ArtifactType' and IT.ObjectID = AT.ObjectID and P.ID = IT.PredicateID and P.Type = 3
-					                ) IT
-			            where  AT.Object = 'RuleType'
-                        and  AT.Name = '"+ item +"' order by AT.Name").AsQueryable().FirstOrDefault();
-                    break;
-                case "Glossary":
-                    count = Company.Query<int>(@"
-                        select	COALESCE(K.kount,0)
-                        from    AssetType AT
-			            left join (SELECT count(a.AssetTypeID) kount,a.AssetTypeID
-							            FROM [dbo].[Asset] a
-							            inner join AssetType b on a.AssetTypeID = b.ID
-							            group by AssetTypeID
-						            ) K on K.AssetTypeID = AT.ID 
-		                outer apply (
-					                select	IT.SubjectID
-					                from	IntersectType IT 
-							                inner join [Predicate] P on IT.Object = 'ArtifactType' and IT.ObjectID = AT.ObjectID and P.ID = IT.PredicateID and P.Type = 3
-					                ) IT
-			            where  AT.Object = 'ArtifactType'
-                        and  AT.Name = '" + item + "' order by AT.Name").AsQueryable().FirstOrDefault();
-                    break;
+                id = int.TryParse(urlElements[2], out id) ? id : 0;
+                type = urlElements[1];
             }
+            else
+                id = int.TryParse(urlElements[1], out id) ? id : 0;
+            type = FormatType(type);
+
+            count = Company.Query<int>(@"
+                        select	count(*)
+                        from    [AssetDetail] AD
+			            where  AD.Type = @type 
+                        and  AD.TypeID = @id", new { type, id }).FirstOrDefault();
+
             return new JsonNetResult
             {
                 Data = count,
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
-
+        public static string FormatType(string s)
+        {
+            // Check for empty string.  
+            if (string.IsNullOrEmpty(s))
+            {
+                return string.Empty;
+            }
+            // Return char and concat substring.  
+            return string.Format("{0}{1}{2}",char.ToUpper(s[0]), s.Substring(1), "Type");
+        }
         #endregion
 
         List<NavigationItem> parseXmlNavigationDocument(XElement xml, List<CompanyFeature> features)

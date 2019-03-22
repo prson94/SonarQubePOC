@@ -9,6 +9,10 @@ import { SiteMenu, SiteMenuItem, SiteNav } from '../../../models/site-menu.model
 import { Favorite } from '../../../models/favorite.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { forEach } from '@angular/router/src/utils/collection';
+import { HeaderActionsService } from '../../../services/header-actions.service';
+import { isString, isArray } from 'util';
+import { stringify } from '@angular/core/src/util';
+import { createWriteStream } from 'fs';
 
 @Component({
     selector: 'd3s-site-menu-category',    
@@ -33,9 +37,9 @@ import { forEach } from '@angular/router/src/utils/collection';
                                         <i (click)="clearClick.emit(true)" class=" pull-right fa fa-eraser" [pTooltip]="'Clear ' + title + ' List'" tooltipZIndex="10001"></i>
                                     </span>
                                 <div class="row megamenu-items">
-                                    <div [class]="getColumnClass(menu)" *ngFor="let item of menu.NavigationItems | simpleSearch: searchText">
+                                    <div  style="padding:0px;" [class]="getColumnClass(menu)" *ngFor="let item of menu.NavigationItems | simpleSearch: searchText">
                                         <ul class="menu-group">                                        
-                                            <d3s-site-menu-mega-item [item]="item" [level]="0" [searchText]="searchText" [(active)]="menu.isActiveItem" [countTest]="item.count"></d3s-site-menu-mega-item>
+                                            <d3s-site-menu-mega-item [item]="item" [level]="0" [searchText]="searchText" [(active)]="menu.isActiveItem" [count]="item.count"></d3s-site-menu-mega-item>
                                         </ul>
                                     </div> 
                                 </div>
@@ -63,8 +67,10 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
     private viewReady: boolean;
     private maxMenuHeight: number; 
     private searchText: string;
+    private subReloadCounts: any;
 
-    constructor(private menuService: SiteMenuService) {
+    constructor(private menuService: SiteMenuService,
+        private headerActionsService: HeaderActionsService) {
         super();
     }    
 
@@ -94,31 +100,37 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
         }
     }
 
+    loadCounts() {
+        if (this.menu && this.menu.NavigationItems && this.menu.NavigationItems.length > 0 && !this.menu.MenuID.startsWith('-')) {
+            this.menu.NavigationItems.forEach((item) => this.getCount(item));
+        }
+    }
 
+    getCount(items) {
+        if (isString(items.Name) && isString(items.Url) && items.Url.indexOf('/') != -1) {
+            //get count for item
+            this.menuService.getItemCount(items.Url.replace(new RegExp('/', 'g'), '-')).then((res) => { items.count = res });
+        }
+
+        //check if sub items exist
+        if (isArray(items.Items)) {
+            //recursively check sub items
+            items.Items.forEach((item) => this.getCount(item));
+        }
+    }
 
     ngAfterViewInit(): void {
-        this.viewReady = true;
-        if (this.menuhasItems(this.menu)) {
-            for (let item of this.menu.NavigationItems) {
-                return;
-                if (!item.Name)
-                    return;
-                if (this.menu.Title && this.menu.MenuID.startsWith('#') && item.Name) {
-                    this.menuService.getItemCount(this.menu.Title, item.Name).then((res) => {
-                        item.count = res
-                    });
-                } else {
-                    if (item.Url) {
-                        this.menuService.getItemCount(item.Url.replace('/','-'), item.Name).then((res) => {
-                            item.count = res
-                        });
-                    }
-                }
-            }
-        }
+
+        this.subReloadCounts = this.headerActionsService.onSiteCountsChange.subscribe(() => {
+            this.loadCounts();
+        });
+
+        this.viewReady = true;        
+
         if (this.searchInput) {
             this.searchInput.nativeElement.focus();
         }
+
     }
 
     private menuhasItems(menu) {
