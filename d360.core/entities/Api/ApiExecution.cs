@@ -8,6 +8,7 @@ namespace d360.core.entities
     [DataContract(Namespace = NAMESPACE), Table("Execution", Schema = "api")]
     public class ApiExecution : BaseObject
     {
+
         [DataMember, Key]
         public Guid ExecutionID { get; set; }
 
@@ -34,6 +35,12 @@ namespace d360.core.entities
 
         [DataMember]
         public DateTime? CompletedOn { get; set; }
+
+        [DataMember]
+        public string Method { get; set; }
+
+        [DataMember]
+        public string Route { get; set; }
     }
 
     public class ApiExecutionFields_PostAssets

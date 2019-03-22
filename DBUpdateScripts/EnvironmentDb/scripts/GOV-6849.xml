@@ -1,0 +1,41 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="MDonato" id="GOV-6849">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[
+			IF NOT EXISTS (SELECT * FROM  sys.columns WHERE  object_id = OBJECT_ID(N'[api].[Execution]') AND name = 'Method')
+			BEGIN
+				alter table api.execution add Method varchar(7);
+			END
+
+			IF NOT EXISTS (SELECT * FROM  sys.columns WHERE  object_id = OBJECT_ID(N'[api].[Execution]') AND name = 'Route')
+			BEGIN
+				alter table api.execution add [Route] varchar(250);
+			END
+			
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+			IF EXISTS (SELECT * FROM  sys.columns WHERE  object_id = OBJECT_ID(N'[api].[Execution]') AND name = 'Method')
+			BEGIN
+				alter table api.execution drop column Method;
+			END
+
+			IF EXISTS (SELECT * FROM  sys.columns WHERE  object_id = OBJECT_ID(N'[api].[Execution]') AND name = 'Route')
+			BEGIN
+				alter table api.execution drop column [Route];
+			END
+		]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>

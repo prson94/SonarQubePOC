@@ -71,16 +71,8 @@ namespace d360.web.Controllers.V2
             }
 
             var results = new List<AssetDataProfileResult>();
-            var execution = new ApiExecution
-            {
-                ExecutionID = Guid.NewGuid(),
-                Error = 0,
-                Processed = 0,
-                Total = model.Count,
-                StartedOn = DateTime.UtcNow,
-                ResourceID = Company.CurrentResourceID,
-                Fields = ""
-            };
+            var execution = getApiExecution(model.Count);
+
             Company.Add(execution);
 
             #region Build DataTable
@@ -373,16 +365,7 @@ namespace d360.web.Controllers.V2
             }
 
             var results = new List<AssetDataProfileDeleteResult>();
-            var execution = new ApiExecution
-            {
-                ExecutionID = Guid.NewGuid(),
-                Error = 0,
-                Processed = 0,
-                Total = model.Count,
-                StartedOn = DateTime.UtcNow,
-                ResourceID = Company.CurrentResourceID,
-                Fields = ""
-            };
+            var execution = getApiExecution(model.Count);
             Company.Add(execution);
 
             var table = new DataTable();

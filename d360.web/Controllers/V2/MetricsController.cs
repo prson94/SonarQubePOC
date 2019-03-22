@@ -620,7 +620,8 @@ for		json path").ToList();
 
             try
             {
-                var results = Company.BulkMetricsImport(model);
+                var execution = getApiExecution(model.Count);
+                var results = Company.BulkMetricsImport(model, execution);
 
                 return ResponseMessage(Request.CreateResponse<List<BulkMetricTemporaryTableModel>>(HttpStatusCode.OK, results));
             }
