@@ -2056,24 +2056,6 @@
             <param name="id">The ID of the organization you want to retrieve users for.</param>
             <returns></returns>
         </member>
-        <member name="M:d360.web.Controllers.Services.OrganizationsController.GetDomainsForAllOrganizations">
-            <summary>
-            Gets a list of all domains across all organizations.
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.OrganizationsController.GetInvitationsForAllOrganizations">
-            <summary>
-            Gets a list of all invitations across all organizations.
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.OrganizationsController.GetResourcesForAllOrganizations">
-            <summary>
-            Gets a list of all users across all organizations.
-            </summary>
-            <returns></returns>
-        </member>
         <member name="M:d360.web.Controllers.Services.OrganizationsController.GetContractHistoryForResource(System.Int32)">
             <summary>
             Gets a history of contract acceptance for the resource
