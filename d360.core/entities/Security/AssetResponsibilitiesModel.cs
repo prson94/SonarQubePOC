@@ -46,6 +46,9 @@ namespace d360.core.entities
         [DataMember]
         public Guid AssigneeUid { get; set; }
 
+        [DataMember]
+        public string AssigneeName { get; set; }
+
         public int SecurityAssetID { get; set; }
 
         public string SecurityAsset { get; set; }

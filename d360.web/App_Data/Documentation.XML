@@ -3040,8 +3040,9 @@
         </member>
         <member name="M:d360.web.Controllers.V2.ResponsibilitiesController.GetResponsibilities">
             <summary>
-            Retrieves a list of responsibility ownership of assets based on the provided parameters.  Assets and ownership results reflect the users permissions to see the assets and the ownership details for them.  No filters applied will return all items which have at least one owner.
-            </summary>        
+            Retrieves a list of assets with ownership based on the provided parameters.  Assets and ownership results reflect the users permissions to see the assets and the ownership details for them.  If a user doesnt have access to see an asset then they will not be able to see the asset or its ownership.  If a user does have access to see an asset but doesn't have access to see the assets ownership, the asset will be returned without any ownership details.  No filters applied will return all items which have at least one owner.  Only assets with ownership are returned by this API.
+            </summary>   
+            <permission cref="!:">Admin or Ownership read required</permission>
             <returns>Returns a list of assets and there corresponding ownership information.</returns>
         </member>
         <member name="M:d360.web.Controllers.D3SApiController.GetFieldFiltersByType(d360.core.SystemObjects,System.Int32)">
