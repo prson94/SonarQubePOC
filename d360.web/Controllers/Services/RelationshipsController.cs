@@ -43,63 +43,6 @@ namespace d360.web.Controllers.Services
             return Company.Table<IntersectType>();
         }
 
-        [Route("{type}/{id:int}/{targetType}/{targetID}/{parentAttributeID:int}")]
-        public IQueryable<dynamic> GetDynamicRelationships(SystemObjects type, int id, SystemObjects targetType, int targetID, int parentAttributeID)
-        {            
-            return null;
-        }
-
-        [Route("technical/{type}/{id:int}/{targetType}/{targetID}")]
-        public IQueryable<dynamic> GetTechnicalRelationships(SystemObjects type, int id, SystemObjects targetType, int targetID)
-        {
-            return Company.Query<dynamic>("EXEC GetTechnicalRelationshipsByObject @ResponsibleObjectType, @ResponsibleObjectID, @ObjectType, @ObjectID"
-                , new
-                {
-                    ResponsibleObjectType = type.ToString(),
-                    ResponsibleObjectID = id,
-                    ObjectType = targetType.ToString(),
-                    ObjectID = targetID
-                }).AsQueryable();           
-        }
-
-
-        public class LineageModel
-        {
-            public int IntersectID { get; set; }
-            public int? IntersectGroupID { get; set; }
-            public int IntersectTypeID { get; set; }
-
-            public long SubjectAssetID { get; set; }
-            public string Subject { get; set; }
-            public int SubjectID { get; set; }
-            public string SubjectName { get; set; }
-            public string SubjectBackColor { get; set; }
-            public string SubjectForeColor { get; set; }
-            public string SubjectTypeName { get; set; }
-            public string SubjectType { get; set; }
-            public int SubjectTypeID { get; set; }
-            public int SubjectAssetTypeID { get; set; }
-
-            public long ObjectAssetID { get; set; }
-            public string Object { get; set; }
-            public int ObjectID { get; set; }
-            public string ObjectName { get; set; }
-            public string ObjectBackColor { get; set; }
-            public string ObjectForeColor { get; set; }
-            public string ObjectTypeName { get; set; }
-            public string ObjectType { get; set; }
-            public int ObjectTypeID { get; set; }
-            public int ObjectAssetTypeID { get; set; }
-
-            public State State { get; set; }
-
-            public string Predicate { get; set; }
-
-            public string SubjectPrefix { get; set; } = string.Empty;
-            public string ObjectPrefix { get; set; } = string.Empty;
-            public bool Processed { get; set; } = false;
-        }
-
         public class Node
         {
             public string key { get; set; }

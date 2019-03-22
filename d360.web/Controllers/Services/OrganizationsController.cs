@@ -107,7 +107,6 @@ namespace d360.web.Controllers.Services
             if (!Company.CurrentResourceIsAdmin)
                 return null;
 
-
             var contractTypes = ContractType.OrganizationTermsOfUse.GetEnumList();
 
             return Company.Query<ContractDetail>(@"select 
@@ -171,53 +170,14 @@ namespace d360.web.Controllers.Services
         {
             if (!Company.CurrentResourceIsAdmin)
                 return null;
-                        
+
             var sql = @"select o.* from OrganizationResourceDetail o
                             inner join reporting.Global_Resource r on
                             r.ResourceID = o.ResourceID
                             where r.State =@userStatus and o.OrganizationID=@orgId";
             return Company.Query<OrganizationResourceDetail>(sql, new { userStatus = CompanyResourceState.Active, orgId = id }).AsQueryable();
         }
-
-        /// <summary>
-        /// Gets a list of all domains across all organizations.
-        /// </summary>
-        /// <returns></returns>
-        [HttpGet, Route("domains")]
-        public IQueryable<OrganizationDomain> GetDomainsForAllOrganizations()
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                return null;
-
-            return Company.Table<OrganizationDomain>();
-        }
-
-        /// <summary>
-        /// Gets a list of all invitations across all organizations.
-        /// </summary>
-        /// <returns></returns>
-        [HttpGet, Route("invitations")]
-        public IQueryable<OrganizationInvitationDetail> GetInvitationsForAllOrganizations()
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                return null;
-
-            return Company.Table<OrganizationInvitationDetail>();
-        }
-
-        /// <summary>
-        /// Gets a list of all users across all organizations.
-        /// </summary>
-        /// <returns></returns>
-        [HttpGet, Route("users")]
-        public IQueryable<OrganizationResourceDetail> GetResourcesForAllOrganizations()
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                return null;
-
-            return Company.Table<OrganizationResourceDetail>();
-        }
-
+        
         /// <summary>
         /// Gets a history of contract acceptance for the resource
         /// </summary>

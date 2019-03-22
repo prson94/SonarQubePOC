@@ -1485,17 +1485,5 @@ where   A.Deleted = 0";
 
             return Company.Query<dynamic>(sql, new { typeID }).AsQueryable();
         }
-
-        [Route("rules/parent/{ruleID:int}")]
-        public IQueryable<FusionAttributeType> GetParentTypeByRule(int ruleID)
-        {
-            var sql = @"
-                    select t2.* from fusion.[rule] r
-                    join fusionattributetype t on t.id = r.objectid
-                    join fusionattributetype t2 on t2.id = t.parentid
-                    where r.id = @ruleID";
-
-            return Company.Query<FusionAttributeType>(sql, new { ruleID }).AsQueryable();
-        }
     }
 }
