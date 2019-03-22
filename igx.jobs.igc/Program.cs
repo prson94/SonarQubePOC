@@ -243,7 +243,7 @@ where	[AllowChangeDetection] = 0").ToList();
         {
             CoreFunction.AppInsightsInstrumentationKey(CoreFunction.GetConfigValueByKey("IGC_APPINSIGHTS_INSTRUMENTATIONKEY"));
 #if DEBUG
-            var queueModel = new IntegrationQueueModel { CompanyID = 126, ExecutionID = 63718, IntegrationSettingID = 1, SynchedAssetTypeID = 29, To = QueueAction.Integration, UrlPrefix = "statestreet" };
+            var queueModel = new IntegrationQueueModel { CompanyID = 120, ExecutionID = 75635, IntegrationSettingID = 1, SynchedAssetTypeID = 3, To = QueueAction.Integration, UrlPrefix = "statestreet.preview" };
 #else
             var queueModel = JsonConvert.DeserializeObject<IntegrationQueueModel>(myQueueItem);
 #endif
