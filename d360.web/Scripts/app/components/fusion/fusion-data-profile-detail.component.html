@@ -156,8 +156,14 @@
                     <p-table *ngIf="top10Values" [value]="top10Values">
                         <ng-template pTemplate="header">
                             <tr>
-                                <th>Value</th>
-                                <th>Count</th>
+                                <th [pSortableColumn]="'value'">
+                                    Value
+                                     <d3s-sortIcon [field]="'value'"></d3s-sortIcon>
+                                </th>
+                                <th [pSortableColumn]="'count'">
+                                    Count
+                                    <d3s-sortIcon [field]="'count'"></d3s-sortIcon>
+                                </th>
                             </tr>
                         </ng-template>
                         <ng-template pTemplate="body" let-item>
