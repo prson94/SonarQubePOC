@@ -348,7 +348,7 @@ namespace d360.web.Controllers.V2
         {
             var prefix = "Assets.GetAssetTypeClassesAsync => ";
             var errorMessage = "";
-
+            
             try
             {
                 var classes = AssetTypeClass.Glossary.GetAsList();
@@ -742,16 +742,8 @@ order by    P.[Path]
                 if (assets.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} assets in this request. Please call the BATCH API to submit more than {MAX_SYNCHRONOUS_API_ITEM_COUNT} items."));
 
-                var execution = new ApiExecution
-                {
-                    ExecutionID = Guid.NewGuid(),
-                    Error = 0,
-                    Processed = 0,
-                    Total = assets.Count,
-                    StartedOn = DateTime.UtcNow,
-                    ResourceID = Company.CurrentResourceID,
-                    Fields = JsonConvert.SerializeObject(new ApiExecutionFields_PostAssets { AssetTypeUid = assetTypeUid })
-                };
+                var execution = getApiExecution(assets.Count, new ApiExecutionFields_PostAssets { AssetTypeUid = assetTypeUid });
+
                 Company.Add(execution);
 
                 List<DatabaseBulkAssetResult> results = null;
@@ -835,16 +827,8 @@ order by    P.[Path]
                 if (assets.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} assets in this request. Please call the BATCH API to submit more than {MAX_SYNCHRONOUS_API_ITEM_COUNT} items."));
 
-                var execution = new ApiExecution
-                {
-                    ExecutionID = Guid.NewGuid(),
-                    Error = 0,
-                    Processed = 0,
-                    Total = assets.Count,
-                    StartedOn = DateTime.UtcNow,
-                    ResourceID = Company.CurrentResourceID,
-                    Fields = JsonConvert.SerializeObject(new ApiExecutionFields_PutAssets { AssetTypeUid = assetTypeUid })
-                };
+                var execution = getApiExecution(assets.Count, new ApiExecutionFields_PutAssets { AssetTypeUid = assetTypeUid });
+
                 Company.Add(execution);
 
                 List<DatabaseBulkAssetResult> results = null;
@@ -927,16 +911,8 @@ order by    P.[Path]
                 if (assets.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} assets in this request. Please call the BATCH API to submit more than {MAX_SYNCHRONOUS_API_ITEM_COUNT} items."));
 
-                var execution = new ApiExecution
-                {
-                    ExecutionID = Guid.NewGuid(),
-                    Error = 0,
-                    Processed = 0,
-                    Total = assets.Count,
-                    StartedOn = DateTime.UtcNow,
-                    ResourceID = Company.CurrentResourceID,
-                    Fields = JsonConvert.SerializeObject(new ApiExecutionFields_DeleteAssets { AssetTypeUid = assetTypeUid })
-                };
+                var execution = getApiExecution(assets.Count, new ApiExecutionFields_DeleteAssets { AssetTypeUid = assetTypeUid });
+
                 Company.Add(execution);
 
                 List<DatabaseBulkAssetResult> results = null;
@@ -1035,16 +1011,10 @@ order by    P.[Path]
                 await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo);
 
                 // Save to the database.
-                Company.Add(new ApiExecution
-                {
-                    ExecutionID = executionInfo.ExecutionID,
-                    Error = 0,
-                    Processed = 0,
-                    Total = assets.Count,
-                    StartedOn = DateTime.UtcNow,
-                    ResourceID = Company.CurrentResourceID,
-                    Fields = JsonConvert.SerializeObject(new ApiExecutionFields_PostAssets { AssetTypeUid = assetTypeUid })
-                });
+                var execution = getApiExecution(assets.Count, new ApiExecutionFields_PostAssets { AssetTypeUid = assetTypeUid });
+                execution.ExecutionID = executionInfo.ExecutionID;
+
+                Company.Add(execution);
 
                 return await Task.FromResult<IHttpActionResult>(
                     ResponseMessage(
@@ -1134,17 +1104,11 @@ order by    P.[Path]
                 // Save to queue.
                 await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo);
 
+
                 // Save to the database.
-                Company.Add(new ApiExecution
-                {
-                    ExecutionID = executionInfo.ExecutionID,
-                    Error = 0,
-                    Processed = 0,
-                    Total = assets.Count,
-                    StartedOn = DateTime.UtcNow,
-                    ResourceID = Company.CurrentResourceID,
-                    Fields = JsonConvert.SerializeObject(new ApiExecutionFields_PutAssets { AssetTypeUid = assetTypeUid })
-                });
+                var execution = getApiExecution(assets.Count, new ApiExecutionFields_PutAssets { AssetTypeUid = assetTypeUid });
+                execution.ExecutionID = executionInfo.ExecutionID;
+                Company.Add(execution);
 
                 return await Task.FromResult<IHttpActionResult>(
                     ResponseMessage(
@@ -1233,16 +1197,9 @@ order by    P.[Path]
                 await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo);
 
                 // Save to the database.
-                Company.Add(new ApiExecution
-                {
-                    ExecutionID = executionInfo.ExecutionID,
-                    Error = 0,
-                    Processed = 0,
-                    Total = assets.Count,
-                    StartedOn = DateTime.UtcNow,
-                    ResourceID = Company.CurrentResourceID,
-                    Fields = JsonConvert.SerializeObject(new ApiExecutionFields_DeleteAssets { AssetTypeUid = assetTypeUid })
-                });
+                var execution = getApiExecution(assets.Count, new ApiExecutionFields_DeleteAssets { AssetTypeUid = assetTypeUid });
+                execution.ExecutionID = executionInfo.ExecutionID;
+                Company.Add(execution);
 
                 return await Task.FromResult<IHttpActionResult>(
                     ResponseMessage(

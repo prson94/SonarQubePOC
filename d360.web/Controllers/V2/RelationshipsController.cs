@@ -268,16 +268,7 @@ namespace d360.web.Controllers.V2
                 if (relationships.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} relationships in this request. Please call the BATCH API to submit more than {MAX_SYNCHRONOUS_API_ITEM_COUNT} items."));
 
-                var execution = new ApiExecution
-                {
-                    ExecutionID = Guid.NewGuid(),
-                    Error = 0,
-                    Processed = 0,
-                    Total = relationships.Count,
-                    StartedOn = DateTime.UtcNow,
-                    ResourceID = Company.CurrentResourceID,
-                    Fields = JsonConvert.SerializeObject(new ApiExecutionFields_PostRelationships { IntersectTypeUid = intersectTypeUid })
-                };
+                var execution = getApiExecution(relationships.Count, new ApiExecutionFields_PostRelationships { IntersectTypeUid = intersectTypeUid });
                 Company.Add(execution);
 
                 List<DatabaseBulkRelationshipResult> results = null;
@@ -361,16 +352,9 @@ namespace d360.web.Controllers.V2
 
                 await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo);
 
-                Company.Add(new ApiExecution
-                {
-                    ExecutionID = executionInfo.ExecutionID,
-                    Error = 0,
-                    Processed = 0,
-                    Total = relationships.Count,
-                    StartedOn = DateTime.UtcNow,
-                    ResourceID = Company.CurrentResourceID,
-                    Fields = JsonConvert.SerializeObject(new ApiExecutionFields_PostRelationships { IntersectTypeUid = intersectTypeUid })
-                });
+                var execution = getApiExecution(relationships.Count, new ApiExecutionFields_PostRelationships { IntersectTypeUid = intersectTypeUid });
+                execution.ExecutionID = executionInfo.ExecutionID;
+
 
                 return await Task.FromResult<IHttpActionResult>(
                     ResponseMessage(

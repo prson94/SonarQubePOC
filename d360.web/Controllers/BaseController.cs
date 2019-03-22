@@ -405,6 +405,24 @@ namespace d360.web.Controllers
             return sql;
         }
 
+        internal ApiExecution getApiExecution(int total = 0, object fields = null, int error = 0, int processed = 0)
+        {
+
+            var execution = new ApiExecution
+            {
+                ExecutionID = Guid.NewGuid(),
+                StartedOn = DateTime.UtcNow,
+                Route = Request?.RequestUri?.LocalPath,
+                Method =  Request?.Method?.Method,
+                ResourceID = Company.CurrentCompanyID,
+                Total = total,
+                Fields = fields == null ? "" : JsonConvert.SerializeObject(fields),
+                Error = error,
+                Processed = processed
+            };
+
+            return execution;
+        }
         #endregion
     }
         

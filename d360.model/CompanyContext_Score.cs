@@ -30,7 +30,7 @@ namespace d360.model
 
         #region Engine Methods
 
-        public List<BulkMetricTemporaryTableModel> BulkMetricsImport(BulkMetricsImport model)
+        public List<BulkMetricTemporaryTableModel> BulkMetricsImport(BulkMetricsImport model, System.Net.Http.HttpRequestMessage request)
         {
             //Set effective date for any results that do not have a date set.
             model.ForEach(m => {
@@ -54,6 +54,7 @@ namespace d360.model
             }
             else
             {
+                
                 var execution = new ApiExecution
                 {
                     ExecutionID = Guid.NewGuid(),
@@ -62,7 +63,9 @@ namespace d360.model
                     Total = model.Count,
                     StartedOn = DateTime.UtcNow,
                     ResourceID = CurrentResourceID,
-                    Fields = ""
+                    Fields = "",
+                    Method = request?.Method?.Method,
+                    Route = request?.RequestUri?.LocalPath
                 };
                 Add(execution);
 
