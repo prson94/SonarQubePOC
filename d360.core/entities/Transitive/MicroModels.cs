@@ -106,6 +106,9 @@ namespace d360.core.entities
         [DataMember]
         public DateTime? CreatedOn { get; set; }
 
+        [DataMember]
+        public Guid Uid { get; set; }
+
         [DataMember, NotMapped]
         public string FullName { get { return FirstName + " " + LastName; } }
 
