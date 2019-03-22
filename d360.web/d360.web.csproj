@@ -590,7 +590,10 @@
     <Content Include="Scripts\app\components\artifact\artifact-column-filter.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-grid.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-item.component.html" />
+    <Content Include="Scripts\app\components\fusion\fusion-attribute.component.html" />
+    <Content Include="Scripts\app\components\fusion\fusion-data-profile-detail.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-manual-load.component.html" />
+    <Content Include="Scripts\app\components\fusion\fusion-attribute-tabs.component.html" />
     <Content Include="Scripts\app\components\mapping\mapping.component.html" />
     <Content Include="Scripts\app\components\reference\reference-item-type-list.component.html" />
     <Content Include="Scripts\app\components\rule\rule-column-filter.component.html" />
@@ -1118,6 +1121,9 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\organizations\admin-organization-contract-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-tabs.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-data-profile-detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-workflow-version.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-responsibility-selector.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\grid-selection-info.component.ts" />
