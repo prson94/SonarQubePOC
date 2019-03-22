@@ -128,4 +128,5 @@
   <include file="scripts/GOV-6602.xml"/>
   <include file="scripts/GOV-6723.xml"/>
   <include file="scripts/GOV-6865.xml"/>
+  <include file="scripts/GOV-6849.xml"/>
 </databaseChangeLog>
