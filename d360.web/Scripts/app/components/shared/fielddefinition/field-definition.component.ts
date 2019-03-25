@@ -64,6 +64,9 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
     load(): void {
         if (this.objectType == null || this.objectID == null)
             return;
+
+        if (this.objectType == "IntersectType")
+            this.showIsPartOfKey = false;
         this.isLoading = true;
         this.hasKeyFields = false
         this.fieldsService.getFields(this.objectID, this.objectType)
