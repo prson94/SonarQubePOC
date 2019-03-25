@@ -590,7 +590,7 @@ namespace d360.web.Controllers.V2
 							                    or 
 						                    exists (select 1 from ResponsibilityTypeRelationOverrideItem rd inner join ResponsibilityType rt on(rd.ResponsibilityTypeID = rt.id) {responsibilityOverrideQueryAdditionalJoins} where rd.AssetID = a.ID {responsibilityQueryFilterSql} )
 							                    or
-						                    exists (select 1 from ResponsibilityRuleResultAsset rd inner join ResponsibilityTypeRelationRule rr on (rr.id = rd.RuleID) inner join ResponsibilityType rt on (rr.responsibilitytypeid = rt.id) {responsibilityQueryAdditionalJoins} where rd.assetid = a.id and rr.applytotype = 0 {responsibilityQueryFilterSql} )		
+						                    exists (select 1 from ResponsibilityRuleResultAsset rd inner join ResponsibilityTypeRelationRule rr on (rr.id = rd.RuleID) inner join ResponsibilityType rt on (rr.responsibilitytypeid = rt.id) {responsibilityQueryAdditionalJoins} where rd.AssetTypeID = a.assettypeid and rr.applytotype = 1 {responsibilityQueryFilterSql} )		
 						                    )
                                              {assetQueryFilterSql}
                                              {permissionsFilter}            ";
@@ -621,7 +621,7 @@ namespace d360.web.Controllers.V2
 						    or 
                         exists (select 1 from ResponsibilityTypeRelationOverrideItem rd inner join ResponsibilityType rt on(rd.ResponsibilityTypeID = rt.id) {responsibilityOverrideQueryAdditionalJoins} where rd.AssetID = a.ID {responsibilityQueryFilterSql} )
 						    or
-						exists (select 1 from ResponsibilityRuleResultAsset rd inner join ResponsibilityTypeRelationRule rr on (rr.id = rd.RuleID) inner join ResponsibilityType rt on (rr.responsibilitytypeid = rt.id) {responsibilityQueryAdditionalJoins} where rd.assetid = a.id and rr.applytotype = 0 {responsibilityQueryFilterSql} )		
+						exists (select 1 from ResponsibilityRuleResultAsset rd inner join ResponsibilityTypeRelationRule rr on (rr.id = rd.RuleID) inner join ResponsibilityType rt on (rr.responsibilitytypeid = rt.id) {responsibilityQueryAdditionalJoins} where rd.AssetTypeID = a.assettypeid and rr.applytotype = 1 {responsibilityQueryFilterSql} )		
 						)
                         {assetQueryFilterSql}
                         {permissionsFilter}   	                    
