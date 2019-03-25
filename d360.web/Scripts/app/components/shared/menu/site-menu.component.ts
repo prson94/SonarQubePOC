@@ -10,6 +10,7 @@ import { SiteMenu, SiteMenuItem } from '../../../models/site-menu.model';
 import { Favorite } from '../../../models/favorite.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import * as _ from 'lodash';
+import { isString, isArray } from 'util';
 
 declare var CompanySettings;
 
@@ -22,6 +23,7 @@ declare var CompanySettings;
                     <ng-template ngFor let-menu [ngForOf]="siteMenu">
                         <d3s-site-menu-category *ngIf="menu.ShouldDisplay" [expanded]="menuOpen" [url]="menu.ngUrl" [title]="menu.Title" [rootIconName]="menu.Icon" [imageUrl]="menu.FullURL" [menu]="menu"></d3s-site-menu-category>
                     </ng-template>                  
+                    <d3s-site-menu-category *ngIf="isAdmin" [expanded]="menuOpen" [title]="'Configuration'" rootIconName="fa-wrench" [menu]="configMenu"></d3s-site-menu-category>  
                     <d3s-site-menu-category *ngIf="isAdmin" [expanded]="menuOpen" [title]="'Administration'" rootIconName="fa-cog" [menu]="adminMenu"></d3s-site-menu-category>  
                 </ul>
                 <div [ngClass]="{'menu-toggle':!menuOpen, 'menu-toggle-open':menuOpen}" title="Toggle full width navigation" (click)="toggleMenu();"><i class="fa fa-arrow-circle-left" [class.rotate-right]="!menuOpen" [class.rotate-left]="menuOpen"></i></div>
@@ -38,7 +40,8 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     public siteMenu: SiteMenu[] = [];
     public favorites: SiteMenu;
     
-    private adminMenu: SiteMenu;  
+    private adminMenu: SiteMenu;
+    private configMenu: SiteMenu;
     private subSiteNav: any;
     private subFavorites: any;  
 
@@ -60,16 +63,16 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
         this.subSiteNav = this.stateService.siteMenuRequiresReload$.subscribe(() => {
             this.loadMenu();
+            //wait for the menu to laod before getting the counts
+            window.setTimeout(() => {
+                this.headerActionsService.emitCountChange();
+            }, 500);
         });
+
 
         this.subFavorites = this.headerActionsService.onFavoritesChanges$.subscribe(() => {
             this.loadFavorites();
         });
-
-        //wait for the menu to laod before getting the counts
-        window.setTimeout(() => {
-            this.headerActionsService.emitCountChange();
-        }, 550);
     }
 
     ngOnDestroy() {
@@ -146,11 +149,17 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                             break;
                     }
                     if (!menu.Icon && !menu.FullURL) menu.Icon = 'fa-folder';
+
+                    this.loadCounts(menu);
+
                 }
                 
                 this.siteMenu = _.sortBy(result.MenuItems, 'SortOrder'); // sort the menu's by display order
 
-                if (result.IsAdmin) this.buildAdminMenu();
+                if (result.IsAdmin) {
+                    this.buildConfigMenu();
+                    this.buildAdminMenu();
+                }
 
                 // used to enable guard that allows access to administrative routes                                
                 this.authenticationService.isAdmin = result.IsAdmin;
@@ -158,6 +167,25 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
                 this.ref.markForCheck();
             });
+    }
+
+    loadCounts(menu: any) {
+        if (menu && menu.NavigationItems && menu.NavigationItems.length > 0 && !menu.MenuID.startsWith('-')) {
+            menu.NavigationItems.forEach((item) => this.getCount(item));
+        }
+    }
+
+    getCount(items) {
+        if (isString(items.Name) && isString(items.Url) && items.Url.indexOf('/') != -1) {
+            //get count for item
+            this.siteMenuService.getItemCount(items.Url.replace(new RegExp('/', 'g'), '-')).then((res) => { items.count = res; });
+        }
+
+        //check if sub items exist
+        if (isArray(items.Items)) {
+            //recursively check sub items
+            items.Items.forEach((item) => this.getCount(item));
+        }
     }
 
     private clearFavorites() {
@@ -173,24 +201,28 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         this.menuOpen = !this.menuOpen;
         this.menuChanged.emit(this.menuOpen);
     }
-    
+
+    buildConfigMenu() {
+
+        this.configMenu = new SiteMenu();
+        this.configMenu.MenuID = '-Config';
+        this.configMenu.NavigationItems = [];
+        
+        this.configMenu.NavigationItems.push({ Name: 'Artifacts', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ARTIFACTS}`, Items: null, IsLink: false, IsHomePage: false, count: null });
+        this.configMenu.NavigationItems.push({ Name: 'Attributes', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ATTRIBUTES}`, Items: null, IsLink: false, IsHomePage: false, count: null });
+        this.configMenu.NavigationItems.push({ Name: 'Lookups', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_LOOKUPS}`, Items: null, IsLink: false, IsHomePage: false, count: null });
+        this.configMenu.NavigationItems.push({ Name: 'Models', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_MODELS}`, Items: null, IsLink: false, IsHomePage: false, count: null });
+        this.configMenu.NavigationItems.push({ Name: 'Policies', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_POLICIES}`, Items: null, IsLink: false, IsHomePage: false, count: null });
+        this.configMenu.NavigationItems.push({ Name: 'Predicates', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_PREDICATES}`, Items: null, IsLink: false, IsHomePage: false, count: null });
+        this.configMenu.NavigationItems.push({ Name: 'Relationships', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RELATIONSHIPS}`, Items: null, IsLink: false, IsHomePage: false, count: null });
+        this.configMenu.NavigationItems.push({ Name: 'Rules', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RULES}`, Items: null, IsLink: false, IsHomePage: false, count: null });
+        this.configMenu.NavigationItems.push({ Name: 'Surveys', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SURVEYS}`, Items: null, IsLink: false, IsHomePage: false, count: null });
+    }
+
     private buildAdminMenu() {
         this.adminMenu = new SiteMenu();
         this.adminMenu.MenuID = '-Admin';
         this.adminMenu.NavigationItems = [];
-        let metaMenu = new SiteMenuItem();
-        metaMenu.Name = "MetaModel";
-        metaMenu.Items = [];
-        metaMenu.Items.push({ Name: 'Artifacts', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ARTIFACTS}`, Items: null, IsLink: false, IsHomePage: false, count:null });
-        metaMenu.Items.push({ Name: 'Attributes', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ATTRIBUTES}`, Items: null, IsLink: false, IsHomePage: false, count:null });
-        metaMenu.Items.push({ Name: 'Lookups', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_LOOKUPS}`, Items: null, IsLink: false, IsHomePage: false, count:null });
-        metaMenu.Items.push({ Name: 'Models', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_MODELS}`, Items: null, IsLink: false, IsHomePage: false, count:null });
-        metaMenu.Items.push({ Name: 'Policies', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_POLICIES}`, Items: null, IsLink: false, IsHomePage: false, count:null });
-        metaMenu.Items.push({ Name: 'Predicates', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_PREDICATES}`, Items: null, IsLink: false, IsHomePage: false, count:null });
-        metaMenu.Items.push({ Name: 'Relationships', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RELATIONSHIPS}`, Items: null, IsLink: false, IsHomePage: false, count:null });
-        metaMenu.Items.push({ Name: 'Rules', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RULES}`, Items: null, IsLink: false, IsHomePage: false, count:null });
-        metaMenu.Items.push({ Name: 'Surveys', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SURVEYS}`, Items: null, IsLink: false, IsHomePage: false, count:null });
-        this.adminMenu.NavigationItems.push(metaMenu);
         
         let integrationMenu = new SiteMenuItem();
         integrationMenu.Name = "Integration";

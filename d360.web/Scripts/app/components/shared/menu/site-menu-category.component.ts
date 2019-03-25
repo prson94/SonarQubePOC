@@ -22,7 +22,7 @@ import { createWriteStream } from 'fs';
                             <i *ngIf="rootIconName" [class]="'fa ' + rootIconName"></i>
                             <img *ngIf="imageUrl" [src]="imageUrl" style="max-width: 15px; max-height: 15px; margin: 0px 15px 0px 12px" />
                             <span [ngClass]="{'caption':true, 'min':!expanded}">
-                                <span [ngClass]="{'icon-active':expanded, 'icon':!expanded}"> {{title}} <i [ngClass]="{'pull-right menu-category fa fa-caret-right':(menu && menu.NavigationItems && menu.NavigationItems.length > 0), 'delay-show':  expanded}"></i></span>
+                                <span [ngClass]="{'icon-active':expanded, 'icon':!expanded}"> {{title}} <i [ngClass]="{'pull-right menu-category fa fa-caret-right':(menu && menu.NavigationItems && menu.NavigationItems.length > 0)}"></i></span>
                             </span>
                         </span>
                         <div *ngIf="menu && menu.NavigationItems && menu.NavigationItems.length > 0" class="menu-child megamenu-panel" (click)="stopNavigation($event)">
@@ -30,7 +30,7 @@ import { createWriteStream } from 'fs';
                                 <div class="row megamenu-title truncate">
                                     <span>
                                         <input #searchinput type="search" [(ngModel)]=searchText placeholder="Search menu..."/>
-                                        <i (click)="clearInput()" class="fa fa-times"></i>
+                                        <i *ngIf="searchText != ''" (click)="clearInput()" class="fa fa-times"></i>
                                     </span>
                                 </div>
                                     <span class="megamenu-tools" *ngIf="showClearButton">
@@ -66,7 +66,7 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
     public showing: boolean = false;
     private viewReady: boolean;
     private maxMenuHeight: number; 
-    private searchText: string;
+    private searchText: string = '';
     private subReloadCounts: any;
 
     constructor(private menuService: SiteMenuService,

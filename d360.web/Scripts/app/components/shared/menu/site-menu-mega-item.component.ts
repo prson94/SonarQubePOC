@@ -18,10 +18,10 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                     </span>
                    <span [innerHTML]="highlight() | safeHtml"></span>
                     <ng-container *ngIf="item.IsHomePage">&nbsp;&nbsp;<span class="fa fa-home"></span></ng-container>
-                    <span *ngIf="count > 0"  class="d3s-badge pull-right">{{count}}</span>
+                    <span *ngIf="count > 0" [ngStyle]="{'margin-right': getMargin()}" class="d3s-badge pull-right">{{count}}</span>
                 </a>
                 <div *ngIf="displayChild">
-                    <d3s-site-menu-mega-item  *ngFor="let sub of item.Items" [item]="sub" [level]="level + 1" [searchText]="searchText" [active]="active" [count]="item.count" (activeChange)="active=$event;activeChange.emit(active);"></d3s-site-menu-mega-item>                
+                    <d3s-site-menu-mega-item  *ngFor="let sub of item.Items" [item]="sub" [level]="level + 1" [searchText]="searchText" [active]="active" [count]="sub.count" (activeChange)="active=$event;activeChange.emit(active);"></d3s-site-menu-mega-item>                
                 </div>
                 `,
     changeDetection: ChangeDetectionStrategy.OnPush    
