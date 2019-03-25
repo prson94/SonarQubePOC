@@ -687,7 +687,11 @@ from    api.ExecutionAsset T
                             var fieldType = fieldTypes.FirstOrDefault(i => i.Name.ToLower() == qp.Key.ToLower());
                             if (fieldType != null)
                             {
-                                whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" F{fieldType.ID}.FormattedValue = @f{fieldType.ID}Value";
+                                whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $@" case 
+ when FT{fieldType.ID}.AllowAllValue = 1 and F{fieldType.ID}.Value = '0' then cast(FT{fieldType.ID}.AllowAllLabel as nvarchar(max))
+ when F{fieldType.ID}.FormattedValue is not null then F{fieldType.ID}.FormattedValue
+ when FT{fieldType.ID}.DefaultFormattedValue is not null then cast(FT{fieldType.ID}.DefaultFormattedValue as nvarchar(max))
+end = @f{fieldType.ID}Value";
                                 dbArgs.Add($"@f{fieldType.ID}Value", qp.Value);
                                 filteringByFields = true;
                             }
@@ -701,9 +705,14 @@ from    api.ExecutionAsset T
 
             if (fieldTypes != null)
             {
-                fieldColumns = string.Join(",", fieldTypes.Select(f => $"F{f.ID}.FormattedValue as {f.Name}"));
+                fieldColumns = string.Join(",", fieldTypes.Select(f => $@"case 
+ when FT{f.ID}.AllowAllValue = 1 and F{f.ID}.Value = '0' then cast(FT{f.ID}.AllowAllLabel as nvarchar(max)) 
+ when F{f.ID}.FormattedValue is not null then F{f.ID}.FormattedValue
+ when FT{f.ID}.DefaultFormattedValue is not null then cast(FT{f.ID}.DefaultFormattedValue as nvarchar(max))
+ else null
+end as {f.Name}"));
                 fieldColumns += string.IsNullOrEmpty(fieldColumns) ? "" : ",";
-                fieldJoins = " " + string.Join(" ", fieldTypes.Select(f => $"left join Field F{f.ID} on F{f.ID}.ObjectType = 'Intersect' and F{f.ID}.ObjectID = I.ID and F{f.ID}.FieldTypeID = {f.ID}"));
+                fieldJoins = " " + string.Join(" ", fieldTypes.Select(f => $"inner join FieldType FT{f.ID} on FT{f.ID}.ID = {f.ID} left join Field F{f.ID} on F{f.ID}.ObjectType = 'Intersect' and F{f.ID}.ObjectID = I.ID and F{f.ID}.FieldTypeID = FT{f.ID}.ID"));
             }
 
             if (pageNumber < 0)
