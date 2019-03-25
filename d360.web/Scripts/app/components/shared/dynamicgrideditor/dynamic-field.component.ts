@@ -101,7 +101,16 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                             if (((this.field.Items == null || this.field.Items.length == 0) && this.field.Value != null) || this.hasCascadeLoaded) {
                                 this.field.Value = null;
                             }
+                            
+                            if (this.field.DelayedLoadType == 'FieldFilter') {
+                                if (this.field.Items == null || this.field.Items.length == 0) {
+                                    this.form.controls[this.field.FieldName].disable();
+                                } else if (!this.field.ReadOnly) {
+                                    this.form.controls[this.field.FieldName].enable();
+                                }
+                            }
                             this.hasCascadeLoaded = true;
+
                             this.listItemChange.emit({ field: this.field, value: this.field.Value });
                             this.ref.markForCheck();
                         })
@@ -109,6 +118,9 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                     else {
                         this.field.Value = null;
                         this.field.Items = [];
+                        if (this.field.DelayedLoadType == 'FieldFilter') {
+                            this.form.controls[this.field.FieldName].disable();
+                        }
                         this.listItemChange.emit({ field: this.field, value: null });
                     }
                 }
@@ -143,7 +155,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                 res => {
                     this.field.Items = res.items;
                     this.filterException = res.exceptionMessage;
-                    this.ref.markForCheck();
+                    this.ref.markForCheck();      
                     if (res.useTypeahead) {
                         //Switch to typeahead. We do not switch back
                         this.field.UseTypeahead = true;
@@ -386,13 +398,6 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         if (this.field && this.field.ParentFieldTypeName && this.field.ParentFieldTypeName.length > 0 && (this.field.Items == null || this.field.Items.length == 0))
             return `Select a ${this.field.ParentFieldTypeName}`;
         return "Choose";
-    }
-
-    selectDisabled(): boolean {
-        if (this.field.DelayedLoadType =='FieldFilter' && !this.hasCascadeLoaded && (this.field.Items == null || this.field.Items.length == 0)) {
-            return true;
-        }
-        return false;
     }
 
     OnBlurTrim() {

@@ -241,10 +241,14 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                         field.Value = field.Value.split(',');
                     }
                 }
+                var setDisabled = field.ReadOnly;
+                if (field.FieldType == "Lookup" && !field.Value && field.DelayedLoadType == 'FieldFilter') {
+                    setDisabled = true;
+                }
 
                 group[field.FieldName] = new FormControl({
                     value: (field.Value === null ? '' : field.Value),
-                    disabled: field.ReadOnly
+                    disabled: setDisabled
                 }, this.getFieldValidators(field));
             }
         });
@@ -357,13 +361,13 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 if (this.form.value[p] instanceof Date) {
                     this.form.value[p] = this.getUTCDate(this.form.value[p]);
                 } else if (field != null && field.FieldType == 'Lookup' && field.UseTypeahead) {
-                    if (this.form.value[p] != null) {
+                     if (this.form.value[p] != null) {
                         this.form.value[p] = this.form.value[p].Value;
                     }
                 }
             }
         }
-
+        
         //takes the form and convert any array values to , separated string values
         for (var p in this.form.value) {
             if (this.form.value.hasOwnProperty(p)) {

@@ -100,7 +100,6 @@
                                    (ngModelChange)="listItemChange.emit({field:field,value:$event});field.Value=$event;"
                                    [options]="field.Items | selectItemTextToLabel"
                                    [style]="{width: '100%'}"
-                                   [disabled]="selectDisabled()"
                                    ngDefaultControl [defaultLabel]="multiselectLabel()">
                         <ng-template let-item pTemplate="item">
                             <div class="selectlistinfoitem-wrapper-multiselect">
@@ -114,7 +113,6 @@
                                         [style]="{'height':'auto',width: '100%'}"
                                         [ngModel]="field.Value"
                                         [options]="field.Items | selectItemTextToLabel"
-                                        [disabled]="selectDisabled()"
                                         [placeholder]="multiselectLabel()"
                                         (ngModelChange)="listItemChange.emit({field:field,value:$event});field.Value=$event;">
                                 <ng-template let-item pTemplate="item">
