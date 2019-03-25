@@ -156,7 +156,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                     this.field.Items = res.items;
                     this.filterException = res.exceptionMessage;
                     this.ref.markForCheck();      
-                    if (res.useTypeahead) {
+                    if (res.useTypeahead && !this.field.MultiSelect) {
                         //Switch to typeahead. We do not switch back
                         this.field.UseTypeahead = true;
                     }
