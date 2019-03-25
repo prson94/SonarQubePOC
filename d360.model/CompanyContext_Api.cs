@@ -687,7 +687,11 @@ from    api.ExecutionAsset T
                             var fieldType = fieldTypes.FirstOrDefault(i => i.Name.ToLower() == qp.Key.ToLower());
                             if (fieldType != null)
                             {
-                                whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" F{fieldType.ID}.FormattedValue = @f{fieldType.ID}Value";
+                                whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $@" case 
+ when FT{fieldType.ID}.AllowAllValue = 1 and F{fieldType.ID}.Value = '0' then cast(FT{fieldType.ID}.AllowAllLabel as nvarchar(max))
+ when F{fieldType.ID}.FormattedValue is not null then F{fieldType.ID}.FormattedValue
+ when FT{fieldType.ID}.DefaultFormattedValue is not null then cast(FT{fieldType.ID}.DefaultFormattedValue as nvarchar(max))
+end = @f{fieldType.ID}Value";
                                 dbArgs.Add($"@f{fieldType.ID}Value", qp.Value);
                                 filteringByFields = true;
                             }
