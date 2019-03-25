@@ -396,7 +396,7 @@ namespace d360.web.Controllers
 
                 siteNav.Name = folder.Name;
                 siteNav.Icon = folder.Icon;
-                siteNav.Title = folder.Title ?? folder.Name;
+                siteNav.Title = folder.Name;
                 siteNav.ImageIconUrl = folder.ImageIconUrl;
                 Company.SaveChanges();
                 SetSiteNavPermissions(folder);
