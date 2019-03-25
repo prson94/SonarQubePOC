@@ -17,37 +17,13 @@ import { AuthenticationService } from '../../services/authentication.service';
 
 @Component({
     selector: 'd3s-fusion-item',
-    template: ` <d3s-loading [isLoading]="isLoading"></d3s-loading>                                                                          
-                <div class="row" *ngIf="!isLoading">
-                    <div class="col l3 m12 s12">
-                        <div class="tile tile-detail">
-                            <header>Structure</header>
-                            <d3s-fusion-structure-tree #tree [fusion]="fusion" (loaded)="buildBreadcrumb()" [showFusionQueryConfig]="isQueryConfigVisible" (showFusionQueryConfigChange)="showQueryConfig($event)" [fusionAttributeTypeId]="selectedFusionAttributeTypeId" (fusionAttributeTypeIdChange)="changeFusionAttributeTypeId($event)" [fusionQueryAttributeTypeId]="selectedFusionQueryAttributeTypeId" (fusionQueryAttributeTypeIdChange)="changeFusionQueryAttributeTypeId($event)"></d3s-fusion-structure-tree>
-                        </div>
-                    </div>
-                    <div class="col l9 m12 s12" *ngIf="!isQueryConfigVisible">
-                        <d3s-fusion-attribute-summary [initialFusionAttributeId]="initialFusionAttributeId" [initialFusionQueryAttributeId]="initialFusionQueryAttributeId" [fusionId]="fusionId" [fusionAttributeTypeId]="selectedFusionAttributeTypeId" [fusionQueryAttributeTypeId]="selectedFusionQueryAttributeTypeId" [fusionQueryAttribute]="selectedFusionQueryAttribute" [fusionAttribute]="selectedFusionAttribute" (fusionAttributeChange)="selectedFusionAttribute=$event;" (fusionQueryAttributeChange)="selectedFusionQueryAttribute=$event;"></d3s-fusion-attribute-summary>                        
-                        <div class="tile tile-detail" *ngIf="selectedFusionAttribute">
-                            <d3s-object-definition-tile [objectPermissions]="[]" [objectID]="selectedFusionAttribute?.ID" [objectType]="selectedFusionQueryAttributeTypeId ? 'FusionQueryAttribute':'FusionAttribute'" [hasAttributes]="selectedFusionAttribute?.AllowAttributes" [nymTypes]="selectedFusionAttribute?.NymTypes"></d3s-object-definition-tile>
-                        </div> 
-                        <div *ngIf="selectedFusionAttribute">
-                            <d3s-fusion-attribute-profile-details [fusionAttributeId]="selectedFusionAttribute.ID" [name]="selectedFusionAttribute.Name" [objectType]="selectedFusionQueryAttributeTypeId ? 'FusionQueryAttribute':'FusionAttribute'"></d3s-fusion-attribute-profile-details>
-                        </div>
-                        <div class="tile tile-detail" *ngIf="selectedFusionAttribute">
-                            <d3s-object-relationships [objectPermissions]="permissions" [objectType]="selectedFusionQueryAttributeTypeId ? 'FusionQueryAttribute':'FusionAttribute'" [objectID]="selectedFusionAttribute?.ID" objectName=""></d3s-object-relationships>
-                        </div>                             
-                    </div>
-                    <div class="col l9 m12 s12" *ngIf="isQueryConfigVisible">
-                        <d3s-fusion-query-list [fusion]="fusion" (treeRequiresUpdate)="updateTree(tree)"></d3s-fusion-query-list>
-                    </div>
-                </div>
-                `,
+    templateUrl: './fusion-item.component.html',
     providers: [FusionService, PermissionsService],
 })
-//<d3s-fusion-attribute-item-details [fusionAttributeId]="selectedFusionAttribute.ID" [name]="selectedFusionAttribute.Name" [objectType]="selectedFusionQueryAttributeTypeId ? 'FusionQueryAttribute':'FusionAttribute'"></d3s-fusion-attribute-item-details>
 
 export class FusionItemComponent extends BaseComponent implements OnInit, OnDestroy { 
-    private sub: any;    
+    private routeParams: any;
+    private getFusionConfiguration: any;
     private fusionId: number;
     private fusion: FusionConfigurationDetails;
 
@@ -79,8 +55,7 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
     ngOnInit() {
         this.setBrowserTitle(this.titleService, 'Fusion');
                 
-        this.sub = this.route.params.subscribe(params => {
-
+        this.routeParams = this.route.params.subscribe(params => {
             this.fusionId = +params['fusionId'];
             this.selectedFusionAttributeTypeId = +params['fusionAttributeTypeId'];
             this.initialFusionAttributeId = +params['fusionAttributeId'];            
@@ -90,27 +65,29 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
             
             if (!this.fusion || this.fusion.ID != this.fusionId) {
                 this.loadPermissions(this.permissionsService, StringConstants.ObjectFusion , this.fusionId);
-                this.fusionService.getFusionConfiguration(this.fusionId)
-                    .then(result => {
-                        this.isLoading = false;
+
+                this.getFusionConfiguration = this.fusionService.getFusionConfiguration(this.fusionId).subscribe(
+                    result => {
                         this.fusion = result;
                         
                         this.buildBreadcrumb();
-
                         this.setBrowserTitle(this.titleService, `Fusion - ${this.fusion.Name}`);
                         this.setObjectInfo('Fusion', this.fusionId, undefined, this.fusion.AssetID);
                         this.setRightSideBar(this.fusion.HasDashboards, this.fusion.Manual);
-                    });
+
+                        this.isLoading = false;
+                    }
+                );
             }
             else {
                 this.buildBreadcrumb();
             }
-
         });
     }   
 
     ngOnDestroy() {
-        this.sub.unsubscribe();
+        this.routeParams.unsubscribe();
+        this.getFusionConfiguration.unsubscribe();
         this.clearSidebar();
     }
 

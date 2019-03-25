@@ -1,11 +1,17 @@
-﻿import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
-import { Router } from '@angular/router';
-import { FusionConfiguration, FusionType } from '../../../models/fusion.model';
-import { FusionService } from '../../../services/fusion.service';
-import { GridColumn } from '../../../models/grid-definition.model';
-import { BaseComponent } from '../../shared/base.component';
-import { SiteUrlHelpers } from '../../../static/site-url-helpers';
-import { MessagesService } from '../../../services/messages.service';
+﻿import {Component, Input, OnChanges, SimpleChange} from '@angular/core';
+import {Router} from '@angular/router';
+import {forkJoin, Subject} from "rxjs";
+import {takeUntil} from "rxjs/operators";
+
+import {FusionType} from '../../../models/fusion.model';
+import {GridColumn} from '../../../models/grid-definition.model';
+
+import {FusionService} from '../../../services/fusion.service';
+import {MessagesService} from '../../../services/messages.service';
+
+import {SiteUrlHelpers} from '../../../static/site-url-helpers';
+
+import {BaseComponent} from '../../shared/base.component';
 
 @Component({
     selector: 'd3s-fusion-configuration-tile',
@@ -16,7 +22,9 @@ import { MessagesService } from '../../../services/messages.service';
 export class FusionConfigurationTile extends BaseComponent implements OnChanges {
     @Input() fusionType: FusionType;
     @Input() title: string = 'Configurations';
-    
+
+    destroySubject$: Subject<void> = new Subject();
+
     formMode: FormModeConfig = FormModeConfig.Default;
     FormModeConfig = FormModeConfig;
 
@@ -31,53 +39,73 @@ export class FusionConfigurationTile extends BaseComponent implements OnChanges 
         return this.columns.map(c => c.datafield);
     }
 
-    constructor(private router: Router, private fusionService: FusionService, protected messagesService: MessagesService) {
-        super();        
+    constructor(
+        private router: Router,
+        private fusionService: FusionService,
+        protected messagesService: MessagesService
+    ) {
+        super();
+
         this.theDeleteTypeCallback = this.deleteFusionConfig.bind(this);
     }
 
-    ngOnChanges(changes: { [propName: string]: SimpleChange }) {        
+    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         for (let p in changes) {
             if (p == 'fusionType') {
                 this.load();
             }
-
         }
     }
 
     load(): void {
         this.isLoading = true;
+
         if (this.fusionType == null) {
             this.formMode = FormModeConfig.Default;
             this.fusionConfigurations = null;
             this.selectedRow = null;
             this.isLoading = false;
+
             return;
         }
-        this.fusionService.getFusionConfigurationGridDefinition(this.fusionType.ID)
-            .then(data => { this.columns = data; })
-            .then(() => this.fusionService.getFusionConfigurationsByType(this.fusionType.ID))
-            .then(data => {
-                this.fusionConfigurations = data;
+
+        forkJoin(
+            this.fusionService.getFusionConfigurationGridDefinition(this.fusionType.ID),
+            this.fusionService.getFusionConfigurationsByType(this.fusionType.ID)
+        ).subscribe(
+            (
+                [
+                    getFusionConfigurationGridDefinition,
+                    getFusionConfigurationsByType
+                ]
+            ) => {
+                this.columns = getFusionConfigurationGridDefinition;
+
+                this.fusionConfigurations = getFusionConfigurationsByType;
                 this.selectedRow = this.fusionConfigurations[0];
+
                 this.isLoading = false;
-            });
+            }
+        );
     }
 
     deleteFusionConfig(id: number) {
-        this.fusionService.deleteFusionConfiguration(id).
-            then(result => {
-                this.formMode = FormModeConfig.Default;                
-                this.showMessageForResult(this.messagesService, result);
-                this.load();
-            });
+        this.fusionService
+            .deleteFusionConfiguration(id)
+            .pipe(takeUntil(this.destroySubject$))
+            .subscribe(
+                result => {
+                    this.formMode = FormModeConfig.Default;
+                    this.showMessageForResult(this.messagesService, result);
+                    this.load();
+                }
+            );
     }
 
     private openFusion(fusion) {
         this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${fusion.ID}`);
     }
 }
-
 
 enum FormModeConfig {
     Default,
