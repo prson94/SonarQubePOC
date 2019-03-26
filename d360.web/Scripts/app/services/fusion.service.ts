@@ -831,12 +831,13 @@ export class FusionService extends BaseObservableService {
             .pipe(
                 map(response => response),
                 map(r => {
-                    r = r.sort((a, b) => {
+                    r = r["sort"]((a, b) => {
                         let n1 = (a.Name || '').toUpperCase();
                         let n2 = (b.Name || '').toUpperCase();
 
                         return (n1 < n2) ? -1 : (n1 > n2) ? 1 : 0;
                     });
+                    
                     return r;
                 }),
                 catchError(err => this.handleError(err))

@@ -227,7 +227,7 @@ export class FusionRuleFilterEditorComponent extends BaseComponent implements On
             .pipe(takeUntil(this.destroySubject$))
             .subscribe(
                 r => {
-                    this.queryValues = r;
+                    this.queryValues = <any>r;
 
                     this.QueryExecuting = false;
                 }
@@ -251,7 +251,7 @@ export class FusionRuleFilterEditorComponent extends BaseComponent implements On
                 .pipe(takeUntil(this.destroySubject$))
                 .subscribe(
                     r => {
-                        this.showMessageForResult(this.messagesService, r);
+                        this.showMessageForResult(this.messagesService, <any>r);
 
                         this.isLoading = false;
                         this.onSave.emit();
@@ -265,7 +265,7 @@ export class FusionRuleFilterEditorComponent extends BaseComponent implements On
                 .pipe(takeUntil(this.destroySubject$))
                 .subscribe(
                     r => {
-                        this.showMessageForResult(this.messagesService, r);
+                        this.showMessageForResult(this.messagesService, <any>r);
 
                         this.isLoading = false;
                         this.onSave.emit();

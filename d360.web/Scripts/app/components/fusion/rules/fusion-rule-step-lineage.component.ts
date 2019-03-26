@@ -55,8 +55,8 @@ export class FusionRuleStepLineageComponent extends FusioRuleStepBaseComponent i
                         .pipe(takeUntil(this.destroySubject$))
                         .subscribe(
                             r => {
-                                this.steps = r.slice(0);            //take a copy of the r array
-                                this.technicalsteps = r.slice(0);   //take a copy of the r array
+                                this.steps = r["slice"](0);            //take a copy of the r array
+                                this.technicalsteps = r["slice"](0);   //take a copy of the r array
                                 this.technicalsteps.unshift({ID: null, Description: ''});
                                 this.validate();
                             }

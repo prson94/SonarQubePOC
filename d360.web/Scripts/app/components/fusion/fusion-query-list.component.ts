@@ -1,10 +1,13 @@
 ﻿import {Component, EventEmitter, Input, OnChanges, Output, SimpleChange} from '@angular/core';
-import {BaseComponent} from '../shared/base.component';
-import {FusionService} from '../../services/fusion.service';
-import {MessagesService} from '../../services/messages.service';
-import {FusionConfigurationDetails, FusionQueryAttributeType} from '../../models/fusion.model';
 import {takeUntil} from "rxjs/operators";
 import {Subject} from "rxjs";
+
+import {FusionConfigurationDetails, FusionQueryAttributeType} from '../../models/fusion.model';
+
+import {FusionService} from '../../services/fusion.service';
+import {MessagesService} from '../../services/messages.service';
+
+import {BaseComponent} from '../shared/base.component';
 
 @Component({
     selector: 'd3s-fusion-query-list',
@@ -140,35 +143,53 @@ export class FusionQueryListComponent extends BaseComponent implements OnChanges
 
     private doSave(data) {
         data.query.FusionID = this.fusion.ID;
-        this.fusionService.saveQueryAttributeType(data.query)
-            .then(result => {
-                this.showMessageForResult(this.messagesService, result);
-                if (result.type != 'error') {
-                    if (data.query.ID == undefined) {
-                        data.query.ID = Number(result.id);
-                        this.queries[this.queries.length] = data.query;
-                        this.treeRequiresUpdate.emit();
-                    } else {
-                        let index = this.queries.findIndex(x => x.ID == data.query.ID);
-                        if (index >= 0 && index < this.queries.length)
-                            this.queries[index] = data.query;
+
+        this.fusionService
+            .saveQueryAttributeType(data.query)
+            .pipe(takeUntil(this.destroySubject$))
+            .subscribe(
+                result => {
+                    this.showMessageForResult(this.messagesService, result);
+
+                    if (result.type != 'error') {
+                        if (data.query.ID == undefined) {
+                            data.query.ID = Number(result.id);
+                            this.queries[this.queries.length] = data.query;
+                            this.treeRequiresUpdate.emit();
+                        } else {
+                            let index = this.queries.findIndex(x => x.ID == data.query.ID);
+
+                            if (index >= 0 && index < this.queries.length)
+                                this.queries[index] = data.query;
+                        }
+
+                        this.selected = data.query;
                     }
-                    this.selected = data.query;
+
+                    this.showEditor = false;
                 }
-                this.showEditor = false;
-            });
+            )
+        ;
     }
 
     private deleteQuery(id: number) {
-        this.fusionService.deleteFusionQuery(id).then(result => {
-            this.showMessageForResult(this.messagesService, result);
-            //remove the template with this id from the grid
-            if (result.type != 'error') {
-                this.queries = this.queries.filter(x => x.ID != id);
-                this.selected = this.queries.length > 0 ? this.queries[0] : null;
-            }
-            this.showDelete = false;
-            this.treeRequiresUpdate.emit();
-        });
+        this.fusionService
+            .deleteFusionQuery(id)
+            .pipe(takeUntil(this.destroySubject$))
+            .subscribe(
+                result => {
+                    this.showMessageForResult(this.messagesService, result);
+
+                    //remove the template with this id from the grid
+                    if (result.type != 'error') {
+                        this.queries = this.queries.filter(x => x.ID != id);
+                        this.selected = this.queries.length > 0 ? this.queries[0] : null;
+                    }
+
+                    this.showDelete = false;
+                    this.treeRequiresUpdate.emit();
+                }
+            )
+        ;
     }
 }

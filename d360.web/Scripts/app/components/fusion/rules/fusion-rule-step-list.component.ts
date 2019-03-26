@@ -145,11 +145,20 @@ export class FusionRuleStepListComponent extends BaseComponent implements OnChan
         this.onHistoryClick.emit(e);
     }
 
-    move(e: FusionRuleStep, up: boolean) {
+    move(e: FusionRuleStep,
+         up: boolean
+    ) {
         this.selectionChange.emit(e);
-        if (e == null)
+
+        if (e == null) {
             return;
-        this.fusionService.putMoveFusionRuleStep(e.RuleID, e.ID, up)
-            .then(() => this.load());
+        }
+        this.fusionService
+            .putMoveFusionRuleStep(e.RuleID, e.ID, up)
+            .pipe(takeUntil(this.destroySubject$))
+            .subscribe(
+                () => this.load()
+            )
+        ;
     }
 }

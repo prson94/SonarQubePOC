@@ -73,8 +73,8 @@ export class FusionRuleStepFindComponent extends FusioRuleStepBaseComponent impl
                 this.loadFusionOwners();
                 break;
             case "Glossary":
-                this.changeGlossaryType(false)
-                    .then(() => this.changeGlossaryTypeFields(false));
+                this.changeGlossaryType(false);
+                this.changeGlossaryTypeFields(false);
                 break;
             case "Promotion":
                 this.fusionService
@@ -113,6 +113,7 @@ export class FusionRuleStepFindComponent extends FusioRuleStepBaseComponent impl
                         .subscribe(
                             r => {
                                 this.sourceFields = <any>r;
+
                                 this.sourceFields.push({ID: 0, FriendlyName: 'Name'});
                                 this.sourceFields.push({ID: -2, FriendlyName: 'ParentID'});
                                 this.validate();
@@ -187,35 +188,53 @@ export class FusionRuleStepFindComponent extends FusioRuleStepBaseComponent impl
         }
     }
 
-    loadFusionOwners(): Promise<any> {
-        return this.fusionService.getPromotionFusionOwnerRules(this.fusionID)
-            .then(r => {
-                this.owners = r;
-                this.validate();
-            });
+    loadFusionOwners() {
+        this.fusionService
+            .getPromotionFusionOwnerRules(this.fusionID)
+            .pipe(takeUntil(this.destroySubject$))
+            .subscribe(
+                r => {
+                    this.owners = <any>r;
+                    this.validate();
+                }
+            )
+        ;
     }
 
-    changeGlossaryType(fromControl: boolean): Promise<any> {
+    changeGlossaryType(fromControl: boolean) {
         if (fromControl) {
             this.settings.TargetField = null;
             this.settings.ObjectID = null;
         }
+
         this.objects = [];
-        if (this.settings.Object == 'ArtifactType')
-            return this.fusionService.getFindArtifactTypes()
-                .then(r => {
-                    this.objects = r;
-                    this.validate();
-                });
-        if (this.settings.Object == 'TaxonomyType')
-            return this.fusionService.getFindModels()
-                .then(r => {
-                    this.objects = r;
-                    this.validate();
-                });
+
+        if (this.settings.Object == 'ArtifactType') {
+            this.fusionService
+                .getFindArtifactTypes()
+                .pipe(takeUntil(this.destroySubject$))
+                .subscribe(
+                    r => {
+                        this.objects = <any>r;
+                        this.validate();
+                    }
+                )
+            ;
+        }
+        if (this.settings.Object == 'TaxonomyType') {
+            this.fusionService
+                .getFindModels()
+                .pipe(takeUntil(this.destroySubject$))
+                .subscribe(
+                    r => {
+                        this.objects = <any>r;
+                        this.validate();
+                    }
+                )
+            ;
+        }
 
         this.validate();
-        return Promise.resolve();
     }
 
     changeGlossarySourceMatchField(): Promise<any> {
@@ -223,61 +242,67 @@ export class FusionRuleStepFindComponent extends FusioRuleStepBaseComponent impl
         this.settings.ObjectID = null;
         this.settings.TargetField = null;
         this.validate();
+
         return Promise.resolve();
     }
 
-    changeGlossaryTypeFields(fromControl: boolean): Promise<any> {
+    changeGlossaryTypeFields(fromControl: boolean) {
 
         if (StringHelpers.isNullOrEmpty(this.settings.ObjectID)) {
             this.validate();
-            return Promise.resolve();
         }
-        if (fromControl)
+
+        if (fromControl) {
             this.settings.TargetField = null;
+        }
+
         this.targetFields = [];
-        if (this.settings.Object == 'ArtifactType') {
-            return this.fusionService.getFindSourceFields('ArtifactType', this.settings.ObjectID)
-                .then(r => {
-                    let t = r.filter(x => x.Type != "ComplexRelationLookup" && x.Type != "OwnershipLookup")
-                    this.targetFields = t;
-                    this.showTargetField = true;
-                    this.validate();
-                });
-        } else if (this.settings.Object == 'TaxonomyType') {
-            return this.fusionService.getFindSourceFields('TaxonomyType', this.settings.ObjectID)
-                .then(r => {
-                    let t = r.filter(x => x.Type != "ComplexRelationLookup" && x.Type != "OwnershipLookup")
-                    this.targetFields = t;
-                    this.showTargetField = true;
-                    this.validate();
-                });
+
+        if (this.settings.Object == 'ArtifactType'
+            || this.settings.Object == 'TaxonomyType'
+        ) {
+            this.fusionService
+                .getFindSourceFields('ArtifactType', this.settings.ObjectID)
+                .pipe(takeUntil(this.destroySubject$))
+                .subscribe(
+                    r => {
+                        this.targetFields = r["filter"](x => x.Type != "ComplexRelationLookup" && x.Type != "OwnershipLookup");
+                        this.showTargetField = true;
+                        this.validate();
+                    }
+                )
+            ;
         } else {
             this.validate();
             this.showTargetField = false;
         }
-        return Promise.resolve();
-
     }
 
     validate() {
         this.isValid = true;
-        if (StringHelpers.isNullOrEmpty(this.settings.ObjectSearch))
+
+        if (StringHelpers.isNullOrEmpty(this.settings.ObjectSearch)) {
             this.isValid = false;
-        else if (this.settings.ObjectSearch == 'Fusion') {
-            if (StringHelpers.isNullOrEmpty(this.settings.FilterField) || StringHelpers.isNullOrEmpty(this.settings.ObjectID))
+        } else if (this.settings.ObjectSearch == 'Fusion') {
+            if (StringHelpers.isNullOrEmpty(this.settings.FilterField) || StringHelpers.isNullOrEmpty(this.settings.ObjectID)) {
                 this.isValid = false;
+            }
         } else if (this.settings.ObjectSearch == 'FusionOwner') {
-            if (StringHelpers.isNullOrEmpty(this.settings.ObjectID))
+            if (StringHelpers.isNullOrEmpty(this.settings.ObjectID)) {
                 this.isValid = false;
+            }
         } else if (this.settings.ObjectSearch == 'Glossary') {
-            if (StringHelpers.isNullOrEmpty(this.settings.FilterField) || StringHelpers.isNullOrEmpty(this.settings.Object) || StringHelpers.isNullOrEmpty(this.settings.ObjectID) || StringHelpers.isNullOrEmpty(this.settings.TargetField))
+            if (StringHelpers.isNullOrEmpty(this.settings.FilterField) || StringHelpers.isNullOrEmpty(this.settings.Object) || StringHelpers.isNullOrEmpty(this.settings.ObjectID) || StringHelpers.isNullOrEmpty(this.settings.TargetField)) {
                 this.isValid = false;
+            }
         } else if (this.settings.ObjectSearch == 'Promotion') {
-            if (StringHelpers.isNullOrEmpty(this.settings.FilterField) || StringHelpers.isNullOrEmpty(this.settings.ObjectID))
+            if (StringHelpers.isNullOrEmpty(this.settings.FilterField) || StringHelpers.isNullOrEmpty(this.settings.ObjectID)) {
                 this.isValid = false;
+            }
         } else if (this.settings.ObjectSearch == 'ResultFromStep') {
-            if (StringHelpers.isNullOrEmpty(this.settings.ObjectID))
+            if (StringHelpers.isNullOrEmpty(this.settings.ObjectID)) {
                 this.isValid = false;
+            }
         }
 
         this.isValidChange.emit(this.isValid);
@@ -286,6 +311,4 @@ export class FusionRuleStepFindComponent extends FusioRuleStepBaseComponent impl
     changeFindParent(e: boolean) {
         this.settings.FindParent = e ? 1 : 0;
     }
-
-};
-
+}
