@@ -330,6 +330,7 @@ namespace d360.model
                     if (r != null)
                     {
                         r.Password = HashPassword(newPassword);
+                        r.UpdatedOn = DateTime.UtcNow;
                         Update<Resource>(r);
                         success = true;
                     }
