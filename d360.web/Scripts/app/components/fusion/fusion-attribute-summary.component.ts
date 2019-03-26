@@ -122,7 +122,7 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
             this.fusionObjectID = this.fusionAttributeTypeId;
             this.fusionQueryAttributeTypeId = null;
 
-            this.stateService.resetFusionAttributeFilterIfRequired(this.fusionObject, this.fusionObjectID,this.isDataProfile);     
+            this.stateService.resetFusionAttributeFilterIfRequired(this.fusionObject, this.fusionObjectID,this.isDataProfile);
 
             if (this.initialFusionAttributeId > 0)
                 this.stateService.getFusionFilter(this.isDataProfile).filters = [{ dataField: 'ID', value: this.initialFusionAttributeId.toString(), condition: 'CONTAINS', columnType: '' }];
@@ -134,7 +134,7 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
             this.fusionObject = 'FusionQueryAttributeType';            
             this.fusionObjectID = this.fusionQueryAttributeTypeId;
             this.fusionAttributeTypeId = null;            
-            this.stateService.resetFusionAttributeFilterIfRequired(this.fusionObject, this.fusionObjectID,this.isDataProfile);      
+            this.stateService.resetFusionAttributeFilterIfRequired(this.fusionObject, this.fusionObjectID,this.isDataProfile);
 
             this.getFieldsDefinition();            
         } 
@@ -173,14 +173,14 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
 
     private doFilterResults(event) {        
         this.stateService.getFusionFilter(this.isDataProfile).filters = event;
-        this.stateService.getFusionFilter(this.isDataProfile).currentPageNumber = 0;     
+        this.stateService.getFusionFilter(this.isDataProfile).currentPageNumber = 0;
         this.fusionAttribute = null; //reseting the selected row
         this.getData();
     }
 
     private getData() {
         if ((this.fusionId === undefined) || !this.fusionObjectID) {
-            console.log("ERROR - NO FUSION ATTRIBUTE TYPE ID SPECIFIED OR FUSION ID");
+            console.error("ERROR: ", "NO FUSION ATTRIBUTE TYPE ID SPECIFIED OR FUSION ID");
             return;
         }
 
@@ -188,13 +188,12 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
         if (this.stateService.getFusionFilter(this.isDataProfile).filters && this.stateService.getFusionFilter(this.isDataProfile).filters.length > 0) {
             for (var i = this.stateService.getFusionFilter(this.isDataProfile).filters.length - 1; i >= 0; i--) {
                 if (!this.stateService.getFusionFilter(this.isDataProfile).filters[i].dataField || !this.stateService.getFusionFilter(this.isDataProfile).filters[i].value) {
-                    console.log("REMOVING FILTER", i);
                     this.stateService.getFusionFilter(this.isDataProfile).filters.splice(i, 1);
                 }
             }
         }
         this.isFiltering = true;
-   
+
         if (this.fusionObject == "FusionQueryAttributeType") {
             this.fusionAttributeService.getFusionQueryAttributes(this.fusionId, this.fusionObjectID, this.stateService.getFusionFilter(this.isDataProfile).currentPageNumber, this.stateService.getFusionFilter(this.isDataProfile).rowsPerPage, this.stateService.getFusionFilter(this.isDataProfile).sortField, this.stateService.getFusionFilter(this.isDataProfile).sortOrder, this.stateService.getFusionFilter(this.isDataProfile).filters)
                 .then(res => {
@@ -206,9 +205,9 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
                     } else {
                         this.fusionAttribute = null;
                     }
+
                     this.fusionAttributeChange.emit(this.fusionAttribute);
                     this.changeDetectorRef.markForCheck();
-
                 });
         }
         else {
