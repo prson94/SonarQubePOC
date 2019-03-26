@@ -1049,8 +1049,11 @@ namespace d360.model
                             else
                                 field.Value += ("," + val.Trim(','));
                         }
-                        //update
-                        field.Value = val;
+                        else
+                        {
+                            //update
+                            field.Value = val;
+                        }
 
                         SaveChanges();
                     }
