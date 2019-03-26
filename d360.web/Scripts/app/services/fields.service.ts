@@ -474,7 +474,7 @@ export class FieldsService extends BaseObservableService implements IFieldsServi
                 let uri = `form/FieldType_Lookup_FilteredByPredicate?fieldTypeId=${e.fieldTypeID}&objectType=${objectType}&ObjectID=${id}&query=${e.event.query}`
                 if (e.value != null)
                     uri += `&value=${e.value}`;
-                return this.http.get(uri).pipe(map(res => <any[]>res.json().items));
+                return this.http.get(uri).pipe(map(res => <any[]>res["items"]));
             }));
     }
 

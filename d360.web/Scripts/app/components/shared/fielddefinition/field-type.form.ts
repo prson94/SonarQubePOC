@@ -1094,9 +1094,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                         d.FilterValue = "";
                         d.SortOrder = null;
                         d.value = i.value;
-                        let e = item.DisplayFields.find(
-                            j => j.FieldTypeID == d.FieldTypeID && j.FieldTypeName == d.FieldTypeName
-                        );
 
                         if (e != null) {
                             e.Show = true;
