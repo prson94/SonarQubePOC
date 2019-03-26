@@ -224,6 +224,18 @@ select ObjectID from AttributeDetail{tableHints} where AttributeTypeID = @{param
 
                                     nonPivotInnerJoinPrefix = intersectSql + '\n' + joinSql;
                                 }
+                                else if (thisFilterFieldType.AllowMultipleValues)
+                                {
+                                    nonPivotInnerJoinPrefix = $@"inner join (
+                                                                                select F.AssetID, F.FieldTypeID, dd.value as Value, F.[Value] as Val from Field F with (NOLOCK) 
+                                                                                    cross apply string_split(F.Value,',') dd 
+                                                                                    where F.FieldTypeID = {thisFilterFieldType.ID}
+                                                                                union all
+                                                                                select SA{thisFilterFieldType.ID}.ID as AssetID, SFT{thisFilterFieldType.ID}.ID as FieldTypeID, DefaultFormattedValue as Value, '' as Val from FieldType SFT{thisFilterFieldType.ID}{tableHints}
+							                                                    inner join Asset SA{thisFilterFieldType.ID}{tableHints} on SA{thisFilterFieldType.ID}.AssetTypeID = @atID
+							                                                    where not exists (select 1 from Field where AssetID = SA{thisFilterFieldType.ID}.ID and FieldTYpeID = {thisFilterFieldType.ID})
+                                                                            ) F{thisFilterFieldType.ID} on F{thisFilterFieldType.ID}.AssetID = A.ID and F{thisFilterFieldType.ID}.FieldTypeID = {thisFilterFieldType.ID}";
+                                }
                                 else
                                 {
                                     nonPivotInnerJoinPrefix = $@"inner join (
