@@ -97,7 +97,7 @@ export class AdminReportTileEditorComponent extends BaseComponent implements OnI
     }
 
     reportUrl(): string {
-        return this.tile? `https://${this.urlPrefix}.data3sixty.com/services/reports/${this.tile.ReportID}/${this.tile.ReportTileType}/1/tiles/${this.tile.ID}/data` : '';        
+        return this.tile? `https://${this.urlPrefix}.data3sixty.com/services/deprecated/reports/${this.tile.ReportID}/${this.tile.ReportTileType}/1/tiles/${this.tile.ID}/data` : '';        
     }
 }
 
