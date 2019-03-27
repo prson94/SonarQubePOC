@@ -13232,6 +13232,7 @@ order by	case
                 model.LastName = parseNameField(form, "LastName");
                 model.Email = newEmail;
                 model.Username = newEmail;
+                model.UpdatedOn = DateTime.UtcNow;
 
                 Community.Update(model);    //Must be first before saving fields.
 
@@ -13285,6 +13286,7 @@ order by	case
                 // Static fields
                 model.FirstName = parseNameField(form, "FirstName");
                 model.LastName = parseNameField(form, "LastName");
+                model.UpdatedOn = DateTime.UtcNow;
 
                 // Dynamic fields
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Resource, model.ID, Company.GetFieldTypesByObject(SystemObjects.ResourceType, model.ResourceTypeID).ToList(), form, Server, false);

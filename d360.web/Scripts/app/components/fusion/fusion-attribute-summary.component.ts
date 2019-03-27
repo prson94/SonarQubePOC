@@ -25,18 +25,28 @@ import {StateService} from '../../services/state.service';
     template: `
         <div class="tile tile-detail" style="position:initial">
             <header *ngIf="!hideHeader">Values
-                <d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="doExport()"></d3s-tile-actions>
+                <d3s-tile-actions [hasAdd]="false"
+                                  [hasExport]="true"
+                                  (exportClick)="doExport()"></d3s-tile-actions>
             </header>
             <d3s-loading [isLoading]="isLoading"></d3s-loading>
             <span *ngIf="!isLoading && !showEditor">
                         <d3s-fusion-attribute-summary-filters [hasExport]="showExportOnFilter"
-                                                              (exportClick)="doExport()" [filterColumns]="filtercolumns"
+                                                              (exportClick)="doExport()"
+                                                              [filterColumns]="filtercolumns"
                                                               [filters]="stateService.getFusionFilter(isDataProfile).filters"
                                                               (filtersChange)="doFilterResults($event)"
                                                               [isFiltering]="isFiltering"></d3s-fusion-attribute-summary-filters>                 
-                        <p-table #dt [value]="results?.results" selectionMode="single" [resizableColumns]="true"
-                                 [lazy]="true" [totalRecords]="results?.total" [metaKeySelection]="true"
-                                 [globalFilterFields]="[]" [pageLinks]="3" [paginator]="true"
+                        <p-table #dt
+                                 [value]="results?.results"
+                                 selectionMode="single"
+                                 [resizableColumns]="true"
+                                 [lazy]="true"
+                                 [totalRecords]="results?.total"
+                                 [metaKeySelection]="true"
+                                 [globalFilterFields]="[]"
+                                 [pageLinks]="3"
+                                 [paginator]="true"
                                  [rows]="stateService.getFusionFilter(isDataProfile).rowsPerPage"
                                  [rowsPerPageOptions]="defaultPagingOptions"
                                  [selection]="fusionAttribute"
@@ -53,23 +63,28 @@ import {StateService} from '../../services/state.service';
                                         [style.cursor]="col.filtertype == 'bool' ? null : 'default'"
                                         [pSortableColumn]="col.sortable ? col.datafield : null">
                                         {{col.text}}
-                                        <d3s-sortIcon *ngIf="col.sortable" [field]="col.datafield"></d3s-sortIcon>
+                                        <d3s-sortIcon *ngIf="col.sortable"
+                                                      [field]="col.datafield"></d3s-sortIcon>
                                     </th>
                                 </tr>
                             </ng-template>
-                            <ng-template pTemplate="body" let-item>
+                            <ng-template pTemplate="body"
+                                         let-item>
                                 <tr [pSelectableRow]="item">
                                     <td>
                                         <div class="RowTools">
-                                            <d3s-preview-tooltip objectType="FusionAttribute" [objectId]="item.ID"
+                                            <d3s-preview-tooltip objectType="FusionAttribute"
+                                                                 [objectId]="item.ID"
                                                                  icon="info">
-                                                <a style="cursor:pointer;" (click)="selectItem(item)"
+                                                <a style="cursor:pointer;"
+                                                   (click)="selectItem(item)"
                                                    title="details"></a>
                                             </d3s-preview-tooltip>
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="RowTools" *ngIf="item.IsEditable">
+                                        <div class="RowTools"
+                                             *ngIf="item.IsEditable">
                                             <a style="cursor:pointer;"
                                                (click)="fusionAttribute=item;showEditor=true;fusionAttributeChange.emit(fusionAttribute);"><i
                                                     class="fa fa-pencil"></i></a>
@@ -77,14 +92,19 @@ import {StateService} from '../../services/state.service';
                                     </td>
                                     <td *ngFor="let col of columns">
                                         <ng-container *ngIf="col.filtertype == 'bool'; else elseContent">
-                                            <span><i *ngIf="item[col.datafield]=='true'" class="fa fa-check enabled"
+                                            <span><i *ngIf="item[col.datafield]=='true'"
+                                                     class="fa fa-check enabled"
                                                      title="True"></i></span>
-                                            <span><i *ngIf="item[col.datafield]=='false'" class="fa fa-times disabled"
+                                            <span><i *ngIf="item[col.datafield]=='false'"
+                                                     class="fa fa-times disabled"
                                                      title="False"></i></span>
                                         </ng-container>
                                         <ng-template #elseContent>
-                                              <a *ngIf="item[col.datafield]" (click)="selectItem(item)">
-                                                <d3s-dynamic-field-value [column]="col" [fields]="fields" [item]="item">
+                                              <a *ngIf="item[col.datafield]"
+                                                 (click)="selectItem(item)">
+                                                <d3s-dynamic-field-value [column]="col"
+                                                                         [fields]="fields"
+                                                                         [item]="item">
                                                 </d3s-dynamic-field-value> 
                                             </a> 
                                         </ng-template>
@@ -92,14 +112,20 @@ import {StateService} from '../../services/state.service';
                                 </tr>
                             </ng-template>
                             <ng-template pTemplate="summary">
-                                <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows"
+                                <d3s-grid-paging-info [first]="dt.first"
+                                                      [rows]="dt.rows"
                                                       [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
                             </ng-template>
                         </p-table>
                     </span>
-            <d3s-dynamic-editor *ngIf="showEditor" [newActionName]="newActionName" [objectID]="fusionAttributeTypeId"
-                                objectType="FusionAttribute" [title]="'Item'" [selection]="fusionAttribute"
-                                [rowID]="'ID'" (saveClick)="saveItem($event)"
+            <d3s-dynamic-editor *ngIf="showEditor"
+                                [newActionName]="newActionName"
+                                [objectID]="fusionAttributeTypeId"
+                                objectType="FusionAttribute"
+                                [title]="'Item'"
+                                [selection]="fusionAttribute"
+                                [rowID]="'ID'"
+                                (saveClick)="saveItem($event)"
                                 (closeClick)="closeEditor()"></d3s-dynamic-editor>
         </div>
     `,
@@ -135,12 +161,13 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
     private isFiltering: boolean = false;
     showEditor: boolean = false;
 
-    constructor(private gridDefinitionService: GridDefinitionService,
-                private fusionAttributeService: FusionAttributeService,
-                private messagesService: MessagesService,
-                private router: Router,
-                private stateService: StateService,
-                private changeDetectorRef: ChangeDetectorRef
+    constructor(
+        private gridDefinitionService: GridDefinitionService,
+        private fusionAttributeService: FusionAttributeService,
+        private messagesService: MessagesService,
+        private router: Router,
+        private stateService: StateService,
+        private changeDetectorRef: ChangeDetectorRef
     ) {
         super();
     }
@@ -204,6 +231,7 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
                     this.fields = result.Fields;
                     this.filtercolumns = result.FilterColumns;
                 }
+
                 this.isLoading = false;
                 this.changeDetectorRef.markForCheck();
             });
@@ -218,7 +246,7 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
 
     private getData() {
         if ((this.fusionId === undefined) || !this.fusionObjectID) {
-            console.log("ERROR - NO FUSION ATTRIBUTE TYPE ID SPECIFIED OR FUSION ID");
+            console.error("ERROR: ", "NO FUSION ATTRIBUTE TYPE ID SPECIFIED OR FUSION ID");
             return;
         }
 
@@ -226,7 +254,6 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
         if (this.stateService.getFusionFilter(this.isDataProfile).filters && this.stateService.getFusionFilter(this.isDataProfile).filters.length > 0) {
             for (var i = this.stateService.getFusionFilter(this.isDataProfile).filters.length - 1; i >= 0; i--) {
                 if (!this.stateService.getFusionFilter(this.isDataProfile).filters[i].dataField || !this.stateService.getFusionFilter(this.isDataProfile).filters[i].value) {
-                    console.log("REMOVING FILTER", i);
                     this.stateService.getFusionFilter(this.isDataProfile).filters.splice(i, 1);
                 }
             }
