@@ -588,8 +588,6 @@
     <Content Include="Scripts\app\components\admin\customapi\admin-customapi-service-detail.component.html" />
     <Content Include="Scripts\app\components\admin\customapi\admin-customapi-service-namespace.component.html" />
     <Content Include="Scripts\app\components\admin\customapi\admin-customapi.component.html" />
-    <Content Include="Scripts\app\components\admin\fusion\fusion-attribute-type-custom-query.component.html" />
-    <Content Include="Scripts\app\components\admin\fusion\fusion-schedule.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-column-filter.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-grid.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-item.component.html" />
