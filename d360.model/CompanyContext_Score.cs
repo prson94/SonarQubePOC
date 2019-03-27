@@ -114,17 +114,18 @@ namespace d360.model
                 #region Validation
             
                 // Resolve Asset
-                Connection.Execute(@"update T set T.IsValidAsset = IIF(S.ID is not null, 1, 0) from api.ExecutionMetric T left join Asset S on S.[uid] = T.AssetUid");
+                Connection.Execute(@"update T set T.IsValidAsset = IIF(S.ID is not null, 1, 0) from api.ExecutionMetric T left join Asset S on S.[uid] = T.AssetUid where T.ExecutionID = @ExecutionID", new { execution.ExecutionID });
 
                 // Resolve Metric
-                Connection.Execute(@"update T set T.IsValidMetric = IIF(S.[Uid] is not null, 1, 0) from api.ExecutionMetric T left join metrics.[Asset] S on S.[Uid] = T.MetricAssetUid and S.[State] = 1");
+                Connection.Execute(@"update T set T.IsValidMetric = IIF(S.[Uid] is not null, 1, 0) from api.ExecutionMetric T left join metrics.[Asset] S on S.[Uid] = T.MetricAssetUid and S.[State] = 1 where T.ExecutionID = @ExecutionID", new { execution.ExecutionID });
 
                 // Resolve Metric Group/Item Effective Date
                 Connection.Execute(@"update T set T.IsValidMetricDate = IIF(M_M.EffectiveDate is not null, 1, 0) from api.ExecutionMetric T 
 left join metrics.[Asset] A on A.[Uid] = T.MetricAssetUid and A.[State] = 1
 outer apply (
             select max(EffectiveDate) as EffectiveDate from metrics.AssetVersion where [Uid] = A.[Uid] and EffectiveDate <= T.[EffectiveDate]
-            ) M_M");
+            ) M_M
+where T.ExecutionID = @ExecutionID", new { execution.ExecutionID });
 
                 // Log errors
                 Connection.Execute(@"
@@ -134,21 +135,25 @@ outer apply (
                         when IsValidMetric = 0 then 0
                         when IsValidMetricDate = 0 then 0
                         else 1
-                      end;
+                      end 
+    where   ExecutionID = @ExecutionID;
 
     update  api.ExecutionMetric
     set     Message = coalesce(Message + '; ', '') + 'Invalid asset specified; '
-    where   IsValidAsset = 0;
+    where   ExecutionID = @ExecutionID 
+            and IsValidAsset = 0;
 
     update  api.ExecutionMetric
     set     Message = coalesce(Message + '; ', '') + 'Invalid metric specified; '
-    where   IsValidMetric = 0;
+    where   ExecutionID = @ExecutionID 
+            and IsValidMetric = 0;
 
     update  api.ExecutionMetric
     set     Message = coalesce(Message + '; ', '') + 'Invalid metric specified for the date provided; '
-    where   IsValidMetricDate = 0;
+    where   ExecutionID = @ExecutionID 
+            and IsValidMetricDate = 0;
 
-    update api.ExecutionMetric set Message = null where Success = 1;");
+    update api.ExecutionMetric set Message = null where ExecutionID = @ExecutionID and Success = 1;", new { execution.ExecutionID });
 
                 #endregion
 
