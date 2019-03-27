@@ -1,14 +1,13 @@
-﻿import {Component, Input, OnChanges, SimpleChange} from '@angular/core';
-import {TreeNode} from 'primeng/primeng';
-import {takeUntil} from "rxjs/operators";
-import {Subject} from "rxjs";
+﻿import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
+import { TreeNode } from 'primeng/primeng';
+import { FusionAttributeType, FusionType } from '../../../models/fusion.model';
+import { AssetTypeEditorModel, AssetType, AssetTypeClass } from "../../../models/asset.model";
+import { FusionService } from '../../../services/fusion.service';
+import { ObjectStyleService } from '../../../services/object-style.service';
+import { FormMode } from '../../../models/form.model';
 
-import {FusionType} from '../../../models/fusion.model';
-import {AssetTypeEditorModel} from "../../../models/asset.model";
-import {FusionService} from '../../../services/fusion.service';
-import {FormHelper, FormMode} from '../../../models/form.model';
+import * as _ from 'lodash';
 
-import {ObjectStyleService} from '../../../services/object-style.service';
 
 @Component({
     selector: 'd3s-fusion-attributes-tile',
@@ -21,7 +20,7 @@ export class FusionAttributesTile implements OnChanges {
     @Input() title: string = 'Structure';
 
     isLoading = false;
-    formMode: FormMode = FormMode.Default;
+    formMode: FormMode = FormMode.Default; 
     FormMode = FormMode;
 
     fusionAttributeTypes: TreeNode[];
@@ -29,11 +28,9 @@ export class FusionAttributesTile implements OnChanges {
 
     editorModel: AssetTypeEditorModel;
 
-    destroySubject$: Subject<void> = new Subject();
-
-    constructor(
+    constructor(        
         private fusionService: FusionService,
-        private objectStyleService: ObjectStyleService
+        private objectStyleService: ObjectStyleService        
     ) {
     }
 
@@ -47,40 +44,31 @@ export class FusionAttributesTile implements OnChanges {
 
     load(id: number): void {
         this.isLoading = true;
-
         if (this.fusionType == null) {
             this.formMode = FormMode.Default;
             this.fusionAttributeTypes = null;
             this.selectedRow = null;
-
             this.isLoading = false;
-
             return;
         }
-
-        this.fusionService
-            .getFusionAttributeTypes(this.fusionType.ID)
-            .pipe(takeUntil(this.destroySubject$))
-            .subscribe(
-                data => {
-                    this.fusionAttributeTypes = FormHelper.formTree(data);
-
-                    if (id) {
-                        this.selectedRow = this.fusionAttributeTypes.filter(i => i.data.ID == id)[0];
-                    } else {
-                        this.selectedRow = this.fusionAttributeTypes[0];
-                    }
-
-                    this.isLoading = false;
+        this.fusionService.getFusionAttributeTypeTree(this.fusionType.ID)
+            .then(data => {
+                this.fusionAttributeTypes = data;
+                if (id) {
+                    this.selectedRow = this.fusionAttributeTypes.filter(i => i.data.ID == id)[0];
                 }
-            );
+                else {
+                    this.selectedRow = this.fusionAttributeTypes[0];
+                }
+                this.isLoading = false;                
+            });
     }
 
     edit() {
         this.formMode = FormMode.Editing;
     }
 
-    add() {
+    add() {        
         this.formMode = FormMode.Adding;
     }
 
