@@ -95,6 +95,7 @@ nav.top, .left-side-nav {
     overflow-y: visible;
     border-right: 1px solid rgba(255, 255, 255, 0.15);
     transition: width 200ms ease;
+    padding-bottom: 80px;
 
     li {
         padding: 0;
@@ -112,7 +113,7 @@ nav.top, .left-side-nav {
         .caption {
             width: 150px;
             display: inline-block;
-            position: fixed;
+            position: absolute;
 
             &.min {
                 width: 0px;
@@ -131,6 +132,12 @@ nav.top, .left-side-nav {
         .icon-active {
             visibility: visible;
             opacity: 1;
+        }
+
+        &:hover {
+            .left-side-nav-open, .left-side-nav {
+                overflow: visible;
+            }
         }
     }
 
@@ -167,7 +174,11 @@ nav.top, .left-side-nav {
 
 }
 
+
+
+
 .menu-toggle-open, .menu-toggle {
+    background-color: @igx-left-side-nav;
     position: fixed;
     z-index: 20000;
     bottom: 0;
@@ -391,6 +402,10 @@ d3s-navbar-item {
 }
 /* end side menu*/
 /* main content*/
+
+.maincontent, .maincontent-open {
+    transition: all 200ms ease;
+}
 .maincontent {
     margin-left: 70px;
     margin-right: 40px;
