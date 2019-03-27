@@ -1,5 +1,6 @@
 ﻿using d360.core;
 using d360.core.queue;
+using d360.core.enums;
 using d360.extensions.search;
 using d360.utils.company;
 using Dapper;
@@ -388,13 +389,15 @@ from
         
         private static IEnumerable<AddToIndexModel> LoadRules(SqlConnection context, int companyID, ElasticSearchSource source)
         {
-            var sql = @"SELECT R.[ID]
-                                    ,R.DisplayValue as [Name]    
-                                    ,T.Name as [RuleType]
-								    ,[dbo].GenerateAssetUrl(A.ID) as [Url]
-                                FROM [dbo].[Rule] R 
-                                inner join RuleType T on T.ID = R.RuleTypeID
-                                inner join Asset A on A.Object = 'Rule' and A.ObjectID = R.ID";
+            var assettypeclass = AssetTypeClass.Rule.ToString();
+            var sql = $@"SELECT
+                    ObjectID as ID,
+                    DisplayValue as Name,
+                    TypeName as RuleType,
+                    [dbo].GenerateAssetUrl(ID) as [Url]
+                FROM [dbo].[AssetDetail]
+                WHERE AssetTypeClass = {assettypeclass}
+                AND State = 1";
 
             var sType = SystemObjects.Rule.ToString();
 
@@ -441,7 +444,14 @@ from
 
         private static IEnumerable<AddToIndexModel> LoadReferenceItemTypes(SqlConnection context, int companyID, ElasticSearchSource source)
         {
-            var sql = @"select ID, Name, [Description] from ReferenceItemType";
+            var assettypeclass = AssetTypeClass.Reference.ToString();
+            var sql = $@"SELECT
+                    ObjectID as ID,
+                    Name,
+                    Description
+                FROM [dbo].[AssetType]
+                WHERE Class = {assettypeclass}
+                AND State = 1";
             var sType = "Reference";
             return getData(context, sql, companyID, source, sType, false, (dynamic o) =>
             {
@@ -463,13 +473,16 @@ from
 
         private static IEnumerable<AddToIndexModel> LoadPolicies(SqlConnection context, int companyID, ElasticSearchSource source)
         {
-            var sql = @"select  p.ID,
-                                p.DisplayValue as Name,
-                                p.TextPath,
-                                pt.Name as [PolicyType],
-                                p.PolicyTypeID as [PolicyTypeID]
-                       from     [Policy] p 
-                                inner join PolicyType pt on p.PolicyTypeID = pt.ID";
+            var assettypeclass = AssetTypeClass.Policy.ToString();
+            var sql = $@"SELECT
+	                ObjectID as ID,
+	                DisplayValue as [Name],
+	                DisplayValue as TextPath,
+	                TypeName as PolicyType,
+	                [dbo].GenerateAssetUrl(ID) as [Url]
+                FROM [dbo].[AssetDetail]
+                WHERE AssetTypeClass = {assettypeclass}
+                AND State = 1";
 
             var sType = SystemObjects.Policy.ToString();
 
@@ -481,11 +494,10 @@ from
                     CompanyID = companyID,
                     ID = o.ID,
                     Type = o.PolicyType,
-                    RelativeUrl = $"/policy/{o.PolicyTypeID};hierarchyId={o.ID}",
+                    RelativeUrl = o.Url,
                     Fields = new Dictionary<string, string>() {
                         { "Name", o.Name },
                         { "Type", o.PolicyType },
-                        { "Description", o.Description ?? "" },
                         { "TextPath", o.TextPath ?? "" }
                     }
                 };
