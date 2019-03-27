@@ -232,7 +232,7 @@ namespace d360.model
 	                                inner join workflow.VersionStep WVS on WVS.ID = WIS.StepID                                    
 									inner join reporting.Global_Resource GRAA on WIA.ResourceObjectID = GRAA.ResourceID									
                                 where
-                                     WI.CompletedOn is null and WVS.StepType = 2 and WVS.ActivityType = 3");
+                                     WI.CompletedOn is null and WVS.StepType = 2 and WVS.ActivityType = 3 and GRAA.State = 1");
         }
 
         private async Task<IEnumerable<dynamic>> GetUsersOutstandingWorkflows(int resourceId)
@@ -1049,8 +1049,11 @@ namespace d360.model
                             else
                                 field.Value += ("," + val.Trim(','));
                         }
-                        //update
-                        field.Value = val;
+                        else
+                        {
+                            //update
+                            field.Value = val;
+                        }
 
                         SaveChanges();
                     }

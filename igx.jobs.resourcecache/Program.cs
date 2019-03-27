@@ -42,7 +42,7 @@ namespace igx.jobs.resourcecache
             try
             {                
 #if DEBUG
-                var companies = CoreFunction.GetCompaniesByCurrentSlot().Where(i => i.CompanyID == 5).ToList();
+                var companies = CoreFunction.GetCompaniesByCurrentSlot().Where(i => i.CompanyID == 4).ToList();
 #else
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 #endif
@@ -67,7 +67,9 @@ R.LastName,
 C.LastLoggedInOn, 
 R.Email, 
 C.[State], 
-C.IsAdministrator 
+C.IsAdministrator,
+R.[uid],
+R.UpdatedOn
 from [Resource] R inner join CompanyResource C on C.ResourceID = R.ID and C.CompanyID = @c", new { c = c.CompanyID }).ToList();
 
                             #endregion
@@ -87,7 +89,9 @@ from [Resource] R inner join CompanyResource C on C.ResourceID = R.ID and C.Comp
                                             LastLoggedInOn datetime null,
                                             Email nvarchar(500) not null,
                                             [State] int not null,
-                                            IsAdministrator bit not null
+                                            IsAdministrator bit not null,
+                                            [uid] uniqueidentifier not null,
+                                            UpdatedOn datetime null
 		                                );
                                 ", transaction: transaction);
 
@@ -127,6 +131,14 @@ from [Resource] R inner join CompanyResource C on C.ResourceID = R.ID and C.Comp
                                     table.Columns.Add(columnName, typeof(bool));
                                     bulkCopy.ColumnMappings.Add(columnName, columnName);
 
+                                    columnName = "uid";
+                                    table.Columns.Add(columnName, typeof(Guid));
+                                    bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                                    columnName = "UpdatedOn";
+                                    table.Columns.Add(columnName, typeof(DateTime));
+                                    bulkCopy.ColumnMappings.Add(columnName, columnName);
+
                                     foreach (var item in resources)
                                     {
                                         var row = table.NewRow();
@@ -142,6 +154,12 @@ from [Resource] R inner join CompanyResource C on C.ResourceID = R.ID and C.Comp
                                         row["Email"] = item.Email;
                                         row["State"] = (int)item.State;
                                         row["IsAdministrator"] = item.IsAdministrator;
+                                        row["uid"] = item.Uid;
+                                        if (item.UpdatedOn.HasValue)
+                                            row["UpdatedOn"] = item.UpdatedOn.Value;
+                                        else
+                                            row["UpdatedOn"] = DBNull.Value;
+
 
                                         table.Rows.Add(row);
                                     }
@@ -149,7 +167,9 @@ from [Resource] R inner join CompanyResource C on C.ResourceID = R.ID and C.Comp
                                     await bulkCopy.WriteToServerAsync(table);
                                 }
 
-                                await companyConnection.ExecuteAsync(@"
+                                int rowsAffected = await companyConnection.ExecuteAsync(@"
+declare @mergeResults table ([action] varchar(50));
+
 merge	reporting.Global_Resource as T
 using	(
 		select	ResourceID,
@@ -158,11 +178,13 @@ using	(
                 LastLoggedInOn,
                 Email,
                 [State],
-                IsAdministrator
+                IsAdministrator,
+                [uid],
+                UpdatedOn
         from	#users
 		) as S
 on		(T.ResourceID = S.ResourceID)
-when	matched then
+when	matched and (coalesce(T.UpdatedOn, '1/1/1900') < S.UpdatedOn) then
 		update	
 		set		T.FirstName = S.FirstName,
 				T.LastName = S.LastName,
@@ -170,15 +192,22 @@ when	matched then
                 T.Email = S.Email,
                 T.[State] = S.[State],
                 T.IsAdministrator = S.IsAdministrator,
-                T.CreatedOn = case when T.CreatedOn is null then getutcdate() else T.CreatedOn end
+                T.[uid] = S.[uid],
+                T.CreatedOn = case when T.CreatedOn is null then getutcdate() else T.CreatedOn end,
+                T.UpdatedOn = S.UpdatedOn
 when	not matched by target then
-		insert (ResourceID, FirstName, LastName, LastLoggedInOn, Email, [State], IsAdministrator, CreatedOn)
-		values (S.ResourceID, S.FirstName, S.LastName, S.LastLoggedInOn, S.Email, S.[State], S.IsAdministrator, getutcdate());",
+		insert (ResourceID, FirstName, LastName, LastLoggedInOn, Email, [State], IsAdministrator, [uid], CreatedOn, UpdatedOn)
+		values (S.ResourceID, S.FirstName, S.LastName, S.LastLoggedInOn, S.Email, S.[State], S.IsAdministrator, S.[uid], getutcdate(), getutcdate())
+output
+        $action into @mergeResults;
+
+select count(1) from @mergeResults;
+",
                                 transaction: transaction,
                                 commandTimeout: 300
                                 );
 
-                                log.WriteLine("Upserted {0} users for company {1}.", resources.Count, c.CompanyID);
+                                log.WriteLine($"Found {resources.Count} users for company {c.CompanyID}. Upsert affected {rowsAffected} rows.");
 
 
                                 transaction.Commit();

@@ -8,7 +8,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE)]
-    public class Resource : BaseIntObject, IIntObject, IFieldsObject, ICreatedObject, IUpdatedObject
+    public class Resource : BaseIntObject, IIntObject, IFieldsObject, ICreatedObject, IUpdatedObject   
     {
         #region Properties
 
@@ -46,6 +46,11 @@ namespace d360.core.entities
         [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Username_Name", Description = "Username_Description")]
         public string Username { get; set; }
 
+        [DataMember]
+        public Guid Uid { get; set; }
+
+        [DataMember]
+        public DateTime UpdatedOn { get; set; }
 
         #endregion
 

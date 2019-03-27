@@ -96,6 +96,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private displayFieldSelected: boolean = true;    
     public listParentFields: SelectItem[] = [];
 
+    private validationErrors: Map<string, string> = new Map<string, string>();
     private errorMessage: string = "";
     private isListableRelationship: boolean = false;
 
@@ -440,6 +441,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.defaultLinkAdress = link[1];
         }
         return Promise.all(promises).then(() => {
+            this.validate('*');
         });
     }
 
@@ -470,7 +472,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.model.FieldType.MaximumLength = null;
         this.model.FieldType.MinimumLength = null;
         this.model.FieldType.Increment = null;
-        this.validateNumber(this.model.FieldType.Type);
+        this.validate('*');
         
 
         return this.loadTokens(type, id);
@@ -588,8 +590,16 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.listFilterPredicates.push({ value: null, label: 'Choose...'});
             this.listFilterOptions.forEach(d => {
                 if (d.fieldtypeOptions.length > 0)
+                    //only include predicates with possible field options
                     this.listFilterPredicates.push({ value: d.value, label: d.label});
             });
+            if (this.listFilterPredicates.length == 1) {
+                //If we have no predicates to select, turn off filter configuration
+                this.listFilterable = false;
+                this.selectPredicate(null);
+                this.expandFilterConfiguration = false;
+                return;
+            } 
             if (this.model.FieldType.FilterPredicateID != null && this.model.FieldType.FilterPredicateDirection != null) {
                 this.selectPredicate( this.model.FieldType.FilterPredicateID + '|' + (this.model.FieldType.FilterPredicateDirection ? '1' : '0'));
                 this.expandFilterConfiguration = true;
@@ -597,7 +607,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.selectPredicate(null);
                 this.expandFilterConfiguration = false;
             }
-            this
         });
     }
 
@@ -1053,65 +1062,78 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         else {
             this.testPatternValidationText = '';
         }
-        if (this.model.FieldType.Type == 'Text') {
-            this.validateDefaultWithPattern();
-        }
-    }
-    private validateDefaultWithPattern() {
-        if (this.model.FieldType.Type == 'Text' && this.model.FieldType.Pattern > "") {
-            if (this.model.FieldType.DefaultValue > "") {
-                var patternRegex = new RegExp(this.model.FieldType.Pattern);
-                this.errorMessage = (patternRegex.test(this.model.FieldType.DefaultValue)) ? '' : 'Default Value does not match Validation Pattern';
-            }
-            else {
-                this.errorMessage = '';
-            }
-        }
+        this.validate('Pattern');
     }
 
-    private validateNumber(value: string) {
-        if (value == 'Number' || value == 'Decimal') {
-            if (this.model.FieldType.MinimumLength && this.model.FieldType.MinimumLength > 9999999999) {
-                this.errorMessage = 'Please enter a smaller Minimum Value';
-                return;
-            } else if (this.model.FieldType.MinimumLength && this.model.FieldType.MinimumLength < -9999999999) {
-                this.errorMessage = 'Please enter a larger Minimum Value';
-                return;
-            } else if (this.model.FieldType.MaximumLength && this.model.FieldType.MaximumLength > 9999999999) {
-                this.errorMessage = 'Please enter a smaller Maximum Value';
-                return;
-            } else if (this.model.FieldType.MaximumLength && this.model.FieldType.MaximumLength < -9999999999) {
-                this.errorMessage = 'Please enter a larger Maximum Value';
-                return;
-            } else {
-                this.errorMessage = '';
+    private setValidation(validation_identifier: string, message: string, test: boolean) {
+        if (test)
+            this.validationErrors.set(validation_identifier, message);
+        else
+            this.validationErrors.delete(validation_identifier);
+    }
+
+    private validate(fieldname) {
+        if (fieldname == undefined)
+            fieldname = '*';
+
+        if (fieldname == '*')
+            this.validationErrors.clear();
+
+        if (this.model.FieldType.Type == 'Number' || this.model.FieldType.Type == 'Decimal') {
+            if (fieldname == '*' || fieldname == 'MinimumLength') {
+                this.setValidation('MinimumLength_toobig', 'Please enter a smaller Minimum Value.', (() => {
+                    return (this.model.FieldType.MinimumLength && this.model.FieldType.MinimumLength > 9999999999);
+                })());
+                this.setValidation('MinimumLength_toosmall', 'Please enter a larger Minimum Value.', (() => {
+                    return (this.model.FieldType.MinimumLength && this.model.FieldType.MinimumLength < -9999999999);
+                })());
             }
-
-            if (value == 'Number') {
-                if (this.model.FieldType.Increment && this.model.FieldType.Increment % 1 != 0) {
-                    this.errorMessage = 'Please enter a valid integer.';
-                    return;
-                } else if (this.model.FieldType.MinimumLength && this.model.FieldType.MinimumLength % 1 != 0) {
-                    this.errorMessage = 'Please enter a valid integer.';
-                    return;
-                } else if (this.model.FieldType.MaximumLength && this.model.FieldType.MaximumLength % 1 != 0) {
-                    this.errorMessage = 'Please enter a valid integer.';
-                    return;
-                } else if (this.model.FieldType.DefaultValue && +this.model.FieldType.DefaultValue % 1 != 0) {
-                    this.errorMessage = 'Please enter a valid integer.';
-                    return;
-                } else {
-                    this.errorMessage = '';
-                }
+            if (fieldname == '*' || fieldname == 'MaximumLength') {
+                this.setValidation('MaximumLength_toobig', 'Please enter a smaller Maximum Value.', (() => {
+                    return (this.model.FieldType.MaximumLength && this.model.FieldType.MaximumLength > 9999999999);
+                })());
+                this.setValidation('MaximumLength_toosmall', 'Please enter a larger Maximum Value.', (() => {
+                    return (this.model.FieldType.MaximumLength && this.model.FieldType.MaximumLength < -9999999999);
+                })());
             }
-
-
-            if (value == 'Decimal') {
-                if (this.model.FieldType.Precision
-                    && this.model.FieldType.Precision < 0 || this.model.FieldType.Precision > 5) {
-                    this.errorMessage = 'please enter decimal places between 0 and 5.';
-                    return;
-                }
+            if (fieldname == '*' || fieldname == 'Increment') {
+                this.setValidation('Increment_negative', 'Please enter a positive number for the increment.', (() => {
+                    return (this.model.FieldType.Increment < 0);
+                })());
+                this.setValidation('Increment_toobig', 'Please enter a smaller number for the increment.', (() => {
+                    return (this.model.FieldType.Increment > Number.MAX_SAFE_INTEGER);
+                })());
+            }
+        }
+        if (this.model.FieldType.Type == 'Number') {
+            if (fieldname == '*' || fieldname == 'Increment') {
+                this.setValidation('Increment_integer', 'Please enter a valid integer for Increment.', (() => {
+                    return (this.model.FieldType.Increment && this.model.FieldType.Increment % 1 != 0);
+                })());
+            }
+            if (fieldname == '*' || fieldname == 'MinimumLength') {
+                this.setValidation('MinimumLength_integer', 'Please enter a valid integer for Minimum Value.', (() => {
+                    return (this.model.FieldType.MinimumLength && this.model.FieldType.MinimumLength % 1 != 0);
+                })());
+            }
+            if (fieldname == '*' || fieldname == 'MaximumLength') {
+                this.setValidation('MaximumLength_integer', 'Please enter a valid integer for Maximum Value.', (() => {
+                    return (this.model.FieldType.MaximumLength && this.model.FieldType.MaximumLength % 1 != 0);
+                })());
+            }
+            if (fieldname == '*' || fieldname == 'DefaultValue') {
+                this.setValidation('default_integer', 'Please enter a valid integer for Default Value.', (() => {
+                    return (this.model.FieldType.DefaultValue && +this.model.FieldType.DefaultValue % 1 != 0);
+                })());
+            }
+        }
+        if (this.model.FieldType.Type == 'Decimal') {
+            if (fieldname == '*' || fieldname == 'Precision') {
+                this.setValidation('precision_range', 'Please enter decimal places between 0 and 5.', (() => {
+                    return (this.model.FieldType.Precision && this.model.FieldType.Precision < 0 || this.model.FieldType.Precision > 5);
+                })());
+            }
+            if (fieldname == '*' || fieldname == 'Precision' || fieldname == 'DefaultValue') {
                 if (this.model.FieldType.Precision && FormHelpers.isNumber(this.model.FieldType.DefaultValue)) {
 
                     let asString = '' + this.model.FieldType.DefaultValue;
@@ -1123,44 +1145,64 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     let newVal = +val.toFixed(this.model.FieldType.Precision);
 
                     if (newVal != null && (newVal != 0 || newVal != +val) && !isNaN(newVal)) {
-                        this.model.FieldType.DefaultValue = ''+newVal;
+                        this.model.FieldType.DefaultValue = '' + newVal;
                     }
                 }
             }
-
-            if (this.model.FieldType.Increment < 0) {
-                this.errorMessage = 'Please enter a positive number for the increment.';
-                return;
-            } else if (this.model.FieldType.Increment > Number.MAX_SAFE_INTEGER) {
-                this.errorMessage = 'Please enter a smaller number for the increment.';
-                return;
-            } else {
-                this.errorMessage = '';
-            }
-
-
-            if (FormHelpers.isNumber(this.model.FieldType.DefaultValue)) {
-                if (FormHelpers.isNumber(this.model.FieldType.MinimumLength) && +this.model.FieldType.DefaultValue < this.model.FieldType.MinimumLength) {
-                    this.errorMessage = 'Please enter a minimum value of ' + this.model.FieldType.MinimumLength + '.';
-                    return;
-                }
-                else if (FormHelpers.isNumber(this.model.FieldType.MaximumLength) && +this.model.FieldType.DefaultValue > this.model.FieldType.MaximumLength) {
-                    this.errorMessage = 'Please enter a maximum value of ' + this.model.FieldType.MaximumLength + '.';
-                    return;
-                }
-                else { 
-                    this.errorMessage = '';
-                }
-            }
-
-            if (FormHelpers.isNumber(this.model.FieldType.MinimumLength) && FormHelpers.isNumber(this.model.FieldType.MaximumLength))
-                if (this.model.FieldType.MinimumLength > this.model.FieldType.MaximumLength)
-                    this.errorMessage = 'Please enter a minimum value which is lower than the maximum value.';
-                else
-                    this.errorMessage = '';
-        } else {
-            this.errorMessage = '';
         }
+        if (this.model.FieldType.Type == 'Number' || this.model.FieldType.Type == 'Decimal') {
+            if (fieldname == '*' || fieldname == 'MinimumLength' || fieldname == 'DefaultValue') {
+                this.setValidation('default_MinimumLength', 'Please enter a minimum value of ' + this.model.FieldType.MinimumLength + ' in Default Value.', (() => {
+                    if (FormHelpers.isNumber(this.model.FieldType.DefaultValue)) {
+                        if (FormHelpers.isNumber(this.model.FieldType.MinimumLength) && +this.model.FieldType.DefaultValue < this.model.FieldType.MinimumLength) {
+                            return true;
+                        }
+                    }
+                    return false;
+                })());
+            }
+            if (fieldname == '*' || fieldname == 'MaximumLength' || fieldname == 'DefaultValue') {
+                this.setValidation('default_MaximumLength', 'Please enter a maximum value of ' + this.model.FieldType.MaximumLength + ' in Default Value.', (() => {
+                    if (FormHelpers.isNumber(this.model.FieldType.DefaultValue)) {
+                        if (FormHelpers.isNumber(this.model.FieldType.MaximumLength) && +this.model.FieldType.DefaultValue > this.model.FieldType.MaximumLength) {
+                            return true;
+                        }
+                    }
+                    return false;
+                })());
+            }
+            if (fieldname == '*' || fieldname == 'MinimumLength' || fieldname == 'MaximumLength') {
+                this.setValidation('number_minmax', 'Please enter a minimum value which is lower than the maximum value.', (() => {
+                    if (FormHelpers.isNumber(this.model.FieldType.MinimumLength) && FormHelpers.isNumber(this.model.FieldType.MaximumLength))
+                        return (this.model.FieldType.MinimumLength > this.model.FieldType.MaximumLength);
+                    return false;
+                })());
+            }
+        }
+
+        if (this.model.FieldType.Type == 'Text') {
+            if (fieldname == '*' || fieldname == 'Pattern' || fieldname == 'DefaultValue') {
+                this.setValidation('default_validationpattern', 'Default Value does not match Validation Pattern.', (() => {
+                    if (this.model.FieldType.Pattern > "" && this.model.FieldType.DefaultValue > "") {
+                        var patternRegex = new RegExp(this.model.FieldType.Pattern);
+                        return !patternRegex.test(this.model.FieldType.DefaultValue);
+                    }
+                    return false;
+                })());
+            }
+            if (fieldname == '*' || fieldname == 'MinimumLength' || fieldname == 'DefaultValue') {
+                this.setValidation('default_MinimumLength_text', 'Default value is shorter than ' + this.model.FieldType.MinimumLength + '.', (() => {
+                    return (FormHelpers.isNumber(this.model.FieldType.MinimumLength) && this.model.FieldType.DefaultValue.length < this.model.FieldType.MinimumLength);
+                })());
+            }
+            if (fieldname == '*' || fieldname == 'MaximumLength' || fieldname == 'DefaultValue') {
+                this.setValidation('default_MaximumLength_text', 'Default value is longer than ' + this.model.FieldType.MaximumLength + '.', (() => {
+                    return (FormHelpers.isNumber(this.model.FieldType.MaximumLength) && this.model.FieldType.DefaultValue.length > this.model.FieldType.MaximumLength);
+                })());
+            }
+        }
+
+        this.errorMessage = Array.from(this.validationErrors.values()).join('\n');
     }
     
     private CheckMinRequired(fem: FieldTypeEditorModel) {

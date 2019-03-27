@@ -29,8 +29,8 @@ export class AuditService extends BaseObservableService {
         filters?: GridFilterExpression[]
     ): Observable<AuditResults> {
         let sortCol = sortField != undefined ? sortField : "";
-        let sortOrderType = (sortOrder == SortOrder.None) ? "" : (sortOrder == SortOrder.Ascending ? "asc" : "desc");
-        let url = `overlays/${objectType}/${objectID}/auditcombined.json?pagenum=${pageNum}&pagesize=${pageSize}&sortdatafield=${sortField}&sortorder=${sortOrderType}`;
+        console.log(sortOrder);
+        let url = `api/v2/audit/${objectType}/${objectID}/auditcombined.json?pagenum=${pageNum}&pagesize=${pageSize}&sortdatafield=${sortField}&sortorder=${sortOrder == SortOrder.None ? "" : (sortOrder == SortOrder.Ascending ? "asc" : "desc")}`;
         let indx = 0;
 
         if (filters != undefined) {
@@ -51,13 +51,9 @@ export class AuditService extends BaseObservableService {
             );
     }
 
-    exportToExcel(
-        objectID: number,
-        objectType: string,
-        name: string,
-        filters?: GridFilterExpression[]
-    ) {
-        let url = `overlays/${objectType}/${objectID}/download/excel/audit.xls`;
+    exportToExcel(objectID: number, objectType: string, name: string, filters?: GridFilterExpression[]) {        
+        let url = `api/v2/audit/${objectType}/${objectID}/download/excel/audit.xls`;
+
         let indx = 0;
 
         if (filters != undefined) {

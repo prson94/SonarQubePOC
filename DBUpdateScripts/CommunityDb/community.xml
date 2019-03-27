@@ -20,4 +20,6 @@
   <include file="scripts/GOV-6445.xml"/>    <!-- Create the priority for company items for index rebuild webjob-->
   <include file="scripts/GOV-4770-2.xml"/>
   <include file="scripts/GOV-6733.xml"/>
+  <include file="scripts/GOV-6723.xml"/>
+  <include file="scripts/GOV-6629.xml"/>
 </databaseChangeLog>

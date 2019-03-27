@@ -2056,24 +2056,6 @@
             <param name="id">The ID of the organization you want to retrieve users for.</param>
             <returns></returns>
         </member>
-        <member name="M:d360.web.Controllers.Services.OrganizationsController.GetDomainsForAllOrganizations">
-            <summary>
-            Gets a list of all domains across all organizations.
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.OrganizationsController.GetInvitationsForAllOrganizations">
-            <summary>
-            Gets a list of all invitations across all organizations.
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.OrganizationsController.GetResourcesForAllOrganizations">
-            <summary>
-            Gets a list of all users across all organizations.
-            </summary>
-            <returns></returns>
-        </member>
         <member name="M:d360.web.Controllers.Services.OrganizationsController.GetContractHistoryForResource(System.Int32)">
             <summary>
             Gets a history of contract acceptance for the resource
@@ -2487,6 +2469,11 @@
             <param name="phrase"></param>
             <returns></returns>
         </member>
+        <member name="T:d360.web.Controllers.V2.AuditController">
+            <summary>
+            
+            </summary>
+        </member>
         <member name="M:d360.web.Controllers.V2.CrossReferencesController.Get">
             <summary>
             Returns all asset cross references.
@@ -2799,10 +2786,41 @@
             <param name="model">The list of raw metrics to save for processing.</param>
             <returns>The list of staging results.</returns>
         </member>
+        <member name="M:d360.web.Controllers.V2.ProfilesController.InsertDataProfile(System.Collections.Generic.List{d360.core.entities.AssetDataProfileViewModel})">
+            <summary>
+            Adds a set of data profiles based on the given asset Uid, and returns a list of results. If a profile for this asset Uid already exists, it will be overwritten
+            </summary>
+            <param name="model">A list of metric data profiles</param>
+            <returns>An HTTP status code with an appropriate status message.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.ProfilesController.DeleteDataProfile(System.Collections.Generic.List{d360.core.entities.AssetDataProfileDelete})">
+            <summary>
+            Deletes a set of data profiles based on the given asset Uids, and returns a list of results.
+            </summary>
+            <param name="model">A list of metric data profiles</param>
+            <returns>An HTTP status code with an appropriate status message.</returns>
+        </member>
         <member name="T:d360.web.Controllers.V2.RelationshipsController">
             <summary>
             This service houses all endpoints handling glossary-related data such as artifacts and models.
             </summary>
+        </member>
+        <member name="M:d360.web.Controllers.V2.RelationshipsController.GetRelationshipsAsync(System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{d360.core.enums.State},System.Nullable{System.Int32},System.Nullable{System.Int32})">
+            <summary>
+            GET a list of relationships.
+            </summary>
+            <remarks>
+            In addition to the below query parameters a field name for the relationship type can be specified to filter by exact match. For example MyCustomField=someExactValue. 
+            This must be used in conjunction with the RelationshipTypeUid query parameter.
+            </remarks>
+            <param name="RelationshipTypeUid">Filter by an relationship type's unique identifier. Using this parameter will also provide any field values for the relationships, if applicable.</param>
+            <param name="PredicateUid">Filter by an predicate's unique identifier.</param>
+            <param name="SubjectUid">Filter by a subject asset's unique identifier.</param>
+            <param name="ObjectUid">Filter by an object asset's unique identifier.</param>
+            <param name="State">Filter on the state, or status, of a relationship.</param>
+            <param name="_pageNum">Allows for changing the current page of results you are requesting.</param>
+            <param name="_pageSize">Allows for changing the page size of results you are requesting. The maximum page size is 250.</param>
+            <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.V2.RelationshipsController.GetRelationshipTypesAsync(System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{d360.core.enums.State})">
             <summary>
@@ -2817,6 +2835,8 @@
             <summary>
             GET a list of relationship types using an ID and a Type.
             </summary>
+            <param name="id">The legacy type ID of the asset type.</param>
+            <param name="type">The legacy object type of the asset type (ArtifactType, FusioAttributeType, TaxonomyType, etc.).</param>
             <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.V2.RelationshipsController.PostRelationshipsAsync(System.Guid,d360.core.entities.RelationshipInserts)">
@@ -2880,6 +2900,14 @@
             <summary>
             Adds a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 250 items and need immediate results.
             </summary>
+            <remarks>
+            When using the ExecutionItemUid, keep in mind:
+            * ExecutionItemUid is optional.
+            * If you do not wish to provide an ExecutionItemUid, remove the entire line, including the preceding comma (, "ExecutionItemUid": "00000000-0000-0000-0000-000000000000").
+            * If you provide ExecutionItemUids, values must be a unique across the entire request body.
+            * You do not have to provide ExecutionItemUid values for all entries in a request.
+            * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+            </remarks>
             <param name="assetTypeUid">The unique identifier of the asset type.</param>
             <param name="assets">The payload of your request.</param>
             <returns>An HTTP status code and message.</returns>
@@ -2888,6 +2916,14 @@
             <summary>
             Updates a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 250 items and need immediate results.
             </summary>
+            <remarks>
+            When using the ExecutionItemUid, keep in mind:
+            * ExecutionItemUid is optional.
+            * If you do not wish to provide an ExecutionItemUid, remove the entire line, including the preceding comma (, "ExecutionItemUid": "00000000-0000-0000-0000-000000000000").
+            * If you provide ExecutionItemUids, values must be a unique across the entire request body.
+            * You do not have to provide ExecutionItemUid values for all entries in a request.
+            * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+            </remarks>
             <param name="assetTypeUid">The unique identifier of the asset type.</param>
             <param name="assets">The payload of your request.</param>
             <returns>An HTTP status code and message.</returns>
@@ -2896,6 +2932,14 @@
             <summary>
             Removes a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 250 items and need immediate results.
             </summary>
+            <remarks>
+            When using the ExecutionItemUid, keep in mind:
+            * ExecutionItemUid is optional.
+            * If you do not wish to provide an ExecutionItemUid, remove the entire line, including the preceding comma (, "ExecutionItemUid": "00000000-0000-0000-0000-000000000000").
+            * If you provide ExecutionItemUids, values must be a unique across the entire request body.
+            * You do not have to provide ExecutionItemUid values for all entries in a request.
+            * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+            </remarks>
             <param name="assetTypeUid">The unique identifier of the asset type.</param>
             <param name="assets">The payload of your request.</param>
             <returns>An HTTP status code and message.</returns>
@@ -2904,6 +2948,14 @@
             <summary>
             Adds a given set of assets based on the specific asset type unique identifier. This endpoint is meant for a greater number of items as it stores the asset list for asynchronous or batch processing.
             </summary>
+            <remarks>
+            When using the ExecutionItemUid, keep in mind:
+            * ExecutionItemUid is optional.
+            * If you do not wish to provide an ExecutionItemUid, remove the entire line, including the preceding comma (, "ExecutionItemUid": "00000000-0000-0000-0000-000000000000").
+            * If you provide ExecutionItemUids, values must be a unique across the entire request body.
+            * You do not have to provide ExecutionItemUid values for all entries in a request.
+            * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+            </remarks>
             <param name="assetTypeUid">The unique identifier of the asset type.</param>
             <param name="assets">The payload of your request.</param>
             <returns>An HTTP status code and message.</returns>
@@ -2912,6 +2964,14 @@
             <summary>
             Updates a given set of assets based on the specific asset type Uid. This endpoint is meant for a greater number of items as it stores the asset list for asynchronous or batch processing.
             </summary>
+            <remarks>
+            When using the ExecutionItemUid, keep in mind:
+            * ExecutionItemUid is optional.
+            * If you do not wish to provide an ExecutionItemUid, remove the entire line, including the preceding comma (, "ExecutionItemUid": "00000000-0000-0000-0000-000000000000").
+            * If you provide ExecutionItemUids, values must be a unique across the entire request body.
+            * You do not have to provide ExecutionItemUid values for all entries in a request.
+            * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+            </remarks>
             <param name="assetTypeUid">The unique identifier of the asset type.</param>
             <param name="assets">The payload of your request.</param>
             <returns>An HTTP status code and message.</returns>
@@ -2920,6 +2980,14 @@
             <summary>
             Removes a given set of assets based on the specific asset type Uid. This endpoint is meant for a greater number of items as it stores the asset list for asynchronous or batch processing.
             </summary>
+            <remarks>
+            When using the ExecutionItemUid, keep in mind:
+            * ExecutionItemUid is optional.
+            * If you do not wish to provide an ExecutionItemUid, remove the entire line, including the preceding comma (, "ExecutionItemUid": "00000000-0000-0000-0000-000000000000").
+            * If you provide ExecutionItemUids, values must be a unique across the entire request body.
+            * You do not have to provide ExecutionItemUid values for all entries in a request.
+            * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+            </remarks>
             <param name="assetTypeUid">The unique identifier of the asset type.</param>
             <param name="assets">The payload of your request.</param>
             <returns>An HTTP status code and message.</returns>
@@ -2969,6 +3037,25 @@
             </summary>
             <param name="responsibilityTypeRuleUid">The unique identifier of the responsibility type ownership rule to get stats for.</param>
             <returns>Returns a stats for the specified responsibility type ownership rules.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.ResponsibilitiesController.GetResponsibilities">
+            <summary>
+            Retrieves a list of assets with ownership based on the provided parameters.  Assets and ownership results reflect the users permissions to see the assets and the ownership details for them.  If a user doesnt have access to see an asset then they will not be able to see the asset or its ownership.  If a user does have access to see an asset but doesn't have access to see the assets ownership, the asset will be returned without any ownership details.  No filters applied will return all items which have at least one owner.  Only assets with ownership are returned by this API.
+            </summary>   
+            <permission cref="!:">Admin or Ownership read required</permission>
+            <returns>Returns a list of assets and there corresponding ownership information.</returns>
+        </member>
+        <member name="T:d360.web.Controllers.V2.SearchController">
+            <summary>
+            This service houses all endpoints handling search in Govern.
+            </summary>
+        </member>
+        <member name="M:d360.web.Controllers.V2.SearchController.GetSearchResults(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="phrase">Search term</param>
+            <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.D3SApiController.GetFieldFiltersByType(d360.core.SystemObjects,System.Int32)">
             <summary>

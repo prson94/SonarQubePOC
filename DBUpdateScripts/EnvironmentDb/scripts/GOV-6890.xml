@@ -1,0 +1,48 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="KMcNamee" id="GOV-6890">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+ALTER TRIGGER [dbo].[Asset_AfterUpdate]
+   ON  [dbo].[Asset] 
+   AFTER UPDATE
+AS 
+	SET NOCOUNT ON;
+	INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
+        select	'Update', 
+				I.Object, 
+				I.ObjectID,
+				[queue].WriteIndexXml('', I.[Object], I.ObjectID, coalesce(I.UpdatedBy, 0)),
+				I.ID
+		from	inserted I where I.Object not in('FusionAttribute','FusionQueryAttribute','Resource');
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+
+ALTER TRIGGER [dbo].[Asset_AfterUpdate]
+   ON  [dbo].[Asset] 
+   AFTER UPDATE
+AS 
+	SET NOCOUNT ON;
+	INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
+        select	'Update', 
+				I.Object, 
+				I.ObjectID,
+				[queue].WriteIndexXml('', I.[Object], I.ObjectID, coalesce(I.UpdatedBy, 0)),
+				I.ID
+		from	inserted I where I.Object not in('FusionAttribute','FusionQueryAttribute');
+
+]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>

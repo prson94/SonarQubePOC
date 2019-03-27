@@ -281,6 +281,18 @@ export class FieldsService extends BaseService implements IFieldsService {
             .then(response => response.json())
             .catch(err => this.handleError(err));
     }
+
+    getTypeaheadFilteredByPredicateItems(e: Observable<any>, objectType: string, id: number): Observable<EditorDropDownItem[]> {
+        return e.pipe(
+            distinctUntilChanged(),
+            switchMap(e => {
+                let uri = `form/FieldType_Lookup_FilteredByPredicate?fieldTypeId=${e.fieldTypeID}&objectType=${objectType}&ObjectID=${id}&query=${e.event.query}`
+                if (e.value != null)
+                    uri += `&value=${e.value}`;
+                return this.http.get(uri).pipe(map(res => <any[]>res.json().items));
+            }));
+    }
+
 }
 
 class FtItem {

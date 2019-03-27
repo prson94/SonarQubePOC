@@ -30,6 +30,8 @@
 \d360.web\Content\styles\ContentFormatting.css
 \d360.web\Content\styles\Tooltip.css
 \d360.web\Content\styles\typeahead.css
+\d360.web\Content\styles\selectlistinfoitem.css
+\d360.web\Content\styles\selectlistinfoitem.min.css
 
 # Ignore retrieved packages except 2 required DLLs
 \.vs
@@ -51,6 +53,8 @@
 /d360.web/Content/quill/v1.3.4/*.min.css
 /d360.web/Content/styles/typeahead.min.css
 /d360.web/Content/styles/typeahead.css
+/d360.web/Content/styles/selectlistinfoitem.css
+/d360.web/Content/styles/selectlistinfoitem.min.css
 /d360.web/Content/styles/Tooltip.min.css
 /d360.web/Content/styles/Tooltip.css
 /d360.web/Content/styles/Root.min.css
@@ -81,3 +85,5 @@
 /utilities/igx.TrainingDatabaseManager/obj
 /utilities/igx.UpdateDatabases/bin
 /utilities/igx.UpdateDatabases/obj
+/d360.web/Content/styles/selectlistinfoitem.min.css
+/d360.web/Content/styles/selectlistinfoitem.css

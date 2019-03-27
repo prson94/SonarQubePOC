@@ -135,7 +135,6 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
     
     private changeFusionAttributeTypeId(event) {
         if (event == this.selectedFusionAttributeTypeId) {
-            //console.log('current type is same as selected');
             return;
         }
         this.selectedFusionAttribute = null;
@@ -156,5 +155,4 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
     protected updateTree(tree) {
         tree.load();
     }
-
-};
+}

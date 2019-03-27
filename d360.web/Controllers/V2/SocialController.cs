@@ -73,7 +73,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "A list of ResponsibilityBreakdown.", typeof(List<dynamic>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
         ]
-        public async Task<HttpResponseMessage> ResponsibilityBreakdownByResource(int id, int? responsibilityTypeID)
+        public async Task<HttpResponseMessage> ResponsibilityBreakdownByResource(int id, int? responsibilityTypeID = null)
         {
 
             var sql = $@"select  

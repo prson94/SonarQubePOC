@@ -243,7 +243,7 @@ where	[AllowChangeDetection] = 0").ToList();
         {
             CoreFunction.AppInsightsInstrumentationKey(CoreFunction.GetConfigValueByKey("IGC_APPINSIGHTS_INSTRUMENTATIONKEY"));
 #if DEBUG
-            var queueModel = new IntegrationQueueModel { CompanyID = 126, ExecutionID = 63718, IntegrationSettingID = 1, SynchedAssetTypeID = 29, To = QueueAction.Integration, UrlPrefix = "statestreet" };
+            var queueModel = new IntegrationQueueModel { CompanyID = 120, ExecutionID = 75635, IntegrationSettingID = 1, SynchedAssetTypeID = 3, To = QueueAction.Integration, UrlPrefix = "statestreet.preview" };
 #else
             var queueModel = JsonConvert.DeserializeObject<IntegrationQueueModel>(myQueueItem);
 #endif
@@ -619,7 +619,7 @@ where	[AllowChangeDetection] = 0").ToList();
 
             var setting = Company.GetById<IntegrationSetting>(QueueModel.IntegrationSettingID);
             string baseUri = setting.SourceUri;
-            int defaultPageSize = setting.PageSize;
+            int defaultPageSize = SynchedAssetType.PageSize ?? setting.PageSize;
             int defaultRefreshInterval = setting.RefreshInterval;
             DefaultResourceID = setting.TargetResourceID;
             AuthenticationHeaderValue = $"Basic {Convert.ToBase64String(System.Text.Encoding.GetEncoding("ISO-8859-1").GetBytes(setting.SourceUser + ":" + setting.SourcePassword))}";
@@ -1341,7 +1341,7 @@ where	[AllowChangeDetection] = 0").ToList();
             {
                 try
                 {
-                    var models = PostJsonToApiAsync<IgcDynamicArrayModels>(url, JsonConvert.SerializeObject(postModel)).Result;
+                    var models = PostJsonToApiAsync<IgcDynamicArrayModels>(url, JsonConvert.SerializeObject(postModel), folderName, postModel.begin).Result;
                     if (models != null)
                     {
                         if (igcCount == 0)
@@ -1755,7 +1755,7 @@ delete integration.ExecutionAssetField where SynchedAssetTypeID = @SynchedAssetT
             }
         }
 
-        async Task<T> PostJsonToApiAsync<T>(string uri, string requestBody)
+        async Task<T> PostJsonToApiAsync<T>(string uri, string requestBody, string folderName, int? begin)
         {
             var jsonToReturn = "";
             List<string> cookies = null;
@@ -1786,20 +1786,34 @@ delete integration.ExecutionAssetField where SynchedAssetTypeID = @SynchedAssetT
                     Client.DefaultRequestHeaders.TryAddWithoutValidation("Cookie", cookies);
                 }
 
-                // First, check to see if we got an error back.
-                var errorModel = JsonConvert.DeserializeObject<IgcPageErrorModel>(jsonToReturn, new JsonSerializerSettings { MetadataPropertyHandling = MetadataPropertyHandling.Ignore });
-
                 var model = default(T);
 
-                if ((int)errorModel.code > 0)
+                try
                 {
-                    // If error, then post event stating there was one.
-                    OnPageErrorCaptured(new PageErrorCapturedEventArgs { ErrorMessage = errorModel.message, StatusCode = errorModel.code });
+                    // First, check to see if we got an error back.
+                    var errorModel = JsonConvert.DeserializeObject<IgcPageErrorModel>(jsonToReturn, new JsonSerializerSettings { MetadataPropertyHandling = MetadataPropertyHandling.Ignore });
+
+                    if ((int)errorModel.code > 0)
+                    {
+                        // If error, then post event stating there was one.
+                        OnPageErrorCaptured(new PageErrorCapturedEventArgs { ErrorMessage = errorModel.message, StatusCode = errorModel.code });
+                    }
+                    else
+                    {
+                        // If no error, then continue to deserialize.
+                        model = JsonConvert.DeserializeObject<T>(jsonToReturn, new JsonSerializerSettings { MetadataPropertyHandling = MetadataPropertyHandling.Ignore });
+                    }
+
+                    if (errorModel == null && model == null)
+                    {
+                        OnPageErrorCaptured(new PageErrorCapturedEventArgs { ErrorMessage = "IGC HTML Error recieved", StatusCode = System.Net.HttpStatusCode.InternalServerError });
+                        Storage.CreateFile($"igc", $@"{folderName}/{begin ?? 0}_error.html", jsonToReturn, "text/html");
+                    }
                 }
-                else
+                catch
                 {
-                    // If no error, then continue to deserialize.
-                    model = JsonConvert.DeserializeObject<T>(jsonToReturn, new JsonSerializerSettings { MetadataPropertyHandling = MetadataPropertyHandling.Ignore });
+                    OnPageErrorCaptured(new PageErrorCapturedEventArgs { ErrorMessage = "IGC HTML Error recieved", StatusCode = System.Net.HttpStatusCode.InternalServerError });
+                    Storage.CreateFile($"igc", $@"{folderName}/{begin ?? 0}_error.html", jsonToReturn, "text/html");
                 }
 
                 return model;

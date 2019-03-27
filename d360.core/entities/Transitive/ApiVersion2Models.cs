@@ -166,4 +166,23 @@ namespace d360.core.entities
 
         public int ObjectID { get { return IntersectID; } set { } }
     }
+
+    public class AssetDataProfileResult
+    {
+        public Guid AssetUid { get; set; }
+        public string Message { get; set; }
+        public bool Success { get; set; }
+    }
+
+    public class AssetDataProfileDeleteResult
+    {
+        public Guid AssetUid { get; set; }
+        public string Message { get; set; }
+        public bool Success { get; set; }
+    }
+
+    public class AssetDataProfileDelete
+    {
+        public Guid AssetUid { get; set; }
+    }
 }

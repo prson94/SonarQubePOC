@@ -119,7 +119,18 @@
   <include file="scripts/GOV-6643.xml"/>
   <include file="scripts/GOV-6739.xml"/>
   <include file="scripts/GOV-6770.xml"/>
+  <include file="scripts/GOV-6770-b.xml"/>
   <include file="scripts/GOV-6776.xml"/>
   <include file="scripts/GOV-6777.xml"/>
   <include file="scripts/GOV-6803.xml"/>
+  <include file="scripts/GOV-6051.xml"/>
+  <include file="scripts/GOV-6812.xml"/>
+  <include file="scripts/GOV-6602.xml"/>
+  <include file="scripts/GOV-6723.xml"/>
+  <include file="scripts/GOV-6865.xml"/>
+  <include file="scripts/GOV-6849.xml"/>
+  <include file="scripts/GOV-6878.xml"/>
+  <include file="scripts/GOV-6890.xml"/>
+  <include file="scripts/GOV-6629.xml"/>
+  <include file="scripts/GOV-6726.xml"/>
 </databaseChangeLog>

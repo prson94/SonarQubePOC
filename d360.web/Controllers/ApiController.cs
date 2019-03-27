@@ -905,7 +905,56 @@ where   h.ID <> @t order by h.[Level] desc;
                     columns.Add(new GridColumn { text = detail.Name, datafield = "Name", filteritems = new List<string>() });
                     fields.Add(new GridField { name = "AssetID", type = "number" });
                     fields.Add(new GridField { name = "ID", type = "number" });
+                    fields.Add(new GridField { name = "DataProfileID", type = "number" });
                     fields.Add(new GridField { name = "Name", type = "string" });
+                    if (Request.GetQueryString("target") == "DataProfile")
+                    {
+                        filterColumns.Add(new GridFilterColumn { text = "Row Count", datafield = "RowCounts", filtertype = GridColumn.FILTER_TYPE_NUMBER, columntype = GridColumn.COLUMN_TYPE_NUMBER });
+                        filterColumns.Add(new GridFilterColumn { text = "Uniqueness", datafield = "Uniqueness", filtertype = GridColumn.FILTER_TYPE_NUMBER, columntype = GridColumn.COLUMN_TYPE_NUMBER});
+                        filterColumns.Add(new GridFilterColumn { text = "Unique Count", datafield = "UniqueCount", filtertype = GridColumn.FILTER_TYPE_NUMBER, columntype = GridColumn.COLUMN_TYPE_NUMBER });
+                        filterColumns.Add(new GridFilterColumn { text = "Completeness", datafield = "Completeness", filtertype = GridColumn.FILTER_TYPE_NUMBER, columntype = GridColumn.COLUMN_TYPE_NUMBER });
+                        filterColumns.Add(new GridFilterColumn { text = "Null Count", datafield = "NullCount", filtertype = GridColumn.FILTER_TYPE_NUMBER, columntype = GridColumn.COLUMN_TYPE_NUMBER });
+                        filterColumns.Add(new GridFilterColumn { text = "Blank Count", datafield = "BlankCount", filtertype = GridColumn.FILTER_TYPE_NUMBER, columntype = GridColumn.COLUMN_TYPE_NUMBER });
+                        filterColumns.Add(new GridFilterColumn { text = "Data Type", datafield = "DataType", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
+                        filterColumns.Add(new GridFilterColumn { text = "Minimum Value", datafield = "MinimumValue", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
+                        filterColumns.Add(new GridFilterColumn { text = "Maximum Value", datafield = "MaximumValue", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
+                        filterColumns.Add(new GridFilterColumn { text = "Precision", datafield = "Precision", filtertype = GridColumn.FILTER_TYPE_NUMBER, columntype = GridColumn.COLUMN_TYPE_NUMBER });
+                        filterColumns.Add(new GridFilterColumn { text = "Scale", datafield = "Scale", filtertype = GridColumn.FILTER_TYPE_NUMBER, columntype = GridColumn.COLUMN_TYPE_NUMBER });
+                        filterColumns.Add(new GridFilterColumn { text = "Average", datafield = "Average", filtertype = GridColumn.FILTER_TYPE_NUMBER, columntype = GridColumn.COLUMN_TYPE_NUMBER });
+                        filterColumns.Add(new GridFilterColumn { text = "Median", datafield = "Median", filtertype = GridColumn.FILTER_TYPE_NUMBER, columntype = GridColumn.COLUMN_TYPE_NUMBER });
+                        filterColumns.Add(new GridFilterColumn { text = "Standard Deviation", datafield = "StandardDeviation", filtertype = GridColumn.FILTER_TYPE_NUMBER, columntype = GridColumn.COLUMN_TYPE_NUMBER });
+
+                        fields.Add(new GridField { name = "RowCount", type = "number", apiName = "RowCounts" });
+                        fields.Add(new GridField { name = "Uniqueness", type = "number", apiName = "Uniqueness" });
+                        fields.Add(new GridField { name = "UniqueCount", type = "number", apiName = "UniqueCount" });
+                        fields.Add(new GridField { name = "Completeness", type = "number", apiName = "Completeness" });
+                        fields.Add(new GridField { name = "NullCount", type = "number", apiName = "NullCount" });
+                        fields.Add(new GridField { name = "BlankCount", type = "number", apiName = "BlankCount" });
+                        fields.Add(new GridField { name = "DataType", type = "string", apiName = "DataType" });
+                        fields.Add(new GridField { name = "MinimumValue", type = "string", apiName = "MinimumValue" });
+                        fields.Add(new GridField { name = "MaximumValue", type = "string", apiName = "MaximumValue" });
+                        fields.Add(new GridField { name = "Precision", type = "number", apiName = "Precision" });
+                        fields.Add(new GridField { name = "Scale", type = "number", apiName = "Scale" });
+                        fields.Add(new GridField { name = "Average", type = "number", apiName = "Average" });
+                        fields.Add(new GridField { name = "Median", type = "number", apiName = "Median" });
+                        fields.Add(new GridField { name = "StandardDeviation", type = "number", apiName = "StandardDeviation" });
+
+
+                        columns.Add(new GridColumn { text = "Row Count", datafield = "RowCounts", filteritems = new List<string>() });
+                        columns.Add(new GridColumn { text = "Uniqueness", datafield = "Uniqueness", filteritems = new List<string>() });
+                        columns.Add(new GridColumn { text = "Unique Count", datafield = "UniqueCount", filteritems = new List<string>() });
+                        columns.Add(new GridColumn { text = "Completeness", datafield = "Completeness", filteritems = new List<string>() });
+                        columns.Add(new GridColumn { text = "Null Count", datafield = "NullCount", filteritems = new List<string>() });
+                        columns.Add(new GridColumn { text = "Blank Count", datafield = "BlankCount", filteritems = new List<string>() });
+                        columns.Add(new GridColumn { text = "Data Type", datafield = "DataType", filteritems = new List<string>() });
+                        columns.Add(new GridColumn { text = "Minimum Value", datafield = "MinimumValue", filteritems = new List<string>() });
+                        columns.Add(new GridColumn { text = "Maximum Value", datafield = "MaximumValue", filteritems = new List<string>() });
+                        columns.Add(new GridColumn { text = "Precision", datafield = "Precision", filteritems = new List<string>() });
+                        columns.Add(new GridColumn { text = "Scale", datafield = "Scale", filteritems = new List<string>() });
+                        columns.Add(new GridColumn { text = "Average", datafield = "Average", filteritems = new List<string>() });
+                        columns.Add(new GridColumn { text = "Median", datafield = "Median", filteritems = new List<string>() });
+                        columns.Add(new GridColumn { text = "Standard Deviation", datafield = "StandardDeviation", filteritems = new List<string>() });
+                    }
 
                     parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth);
 
@@ -1151,7 +1200,7 @@ where   h.ID <> @t order by h.[Level] desc;
             model.Add("Description", assetType.Description);
             model.Add("ParentID", Company.GetParentType(assetType.ObjectID, SystemObjects.ArtifactType)?.ObjectID ?? null);
             model.Add("CanOwnFusion", assetType.CanOwnFusion);
-            model.Add("HasCustomExportTemplates", Company.AssetTypeExportTemplates.Where(x => x.AssetTypeID == assetType.ObjectID).Any());
+            model.Add("HasCustomExportTemplates", Company.AssetTypeExportTemplates.Where(x => x.AssetTypeID == assetType.ID).Any());
             model.Add("AutoDisplayDescription", assetType.AutoDisplayDescription);
 
             bool hasDashboards = Company.Filter<Report>(x => x.ObjectType == "ArtifactType" && x.ObjectID == typeID && x.ReportType != "legacy").Any();
@@ -1191,6 +1240,33 @@ where   h.ID <> @t order by h.[Level] desc;
 
 
             return artifactTypes;
+        }
+
+        [Route("artifacttype/possibleowners/{artifactTypeId:int}")]
+        public HttpResponseMessage GetArtifactTypePossibleOwners(int artifactTypeId)
+        {
+            var sql = @"
+select  distinct 
+	    cast(ResponsibilityTypeID as varchar) + '|' + cast(SecurityAssetID as varchar) as 'ID', 
+	    '[' + ResponsibilityTypeName + '] - ' + SecurityAssetName  as 'Name', 
+	    case 
+            when SecurityAsset = 'R' or SecurityAsset = 'O' then 'Resource' 
+			when SecurityAsset = 'G' then 'Group' 
+            else [Type] 
+        end as [Type]
+from    ResponsibilityDetail
+where   TypeID = @id 
+        and [Type] = 'ArtifactType' 
+        and IsVisible = 1 
+order by 'Name'";
+
+            return Request.CreateResponse(
+                HttpStatusCode.OK,
+                Company.Query<dynamic>(
+                    sql,
+                    new { id = artifactTypeId }
+                )
+            );
         }
 
         #endregion
@@ -3266,7 +3342,7 @@ outer apply (
 
             var permissionJoin = $@"
                 inner join Asset O{i} on O{i}.Object = '{currentObj}' and O{i}.ObjectID = A{i}.ID ";
-            var permissionsWhere = $" O{i}.ID not in ({GetNoReadSqlStatement()}) ";
+            var permissionsWhere = $" O{i}.ID not in ({Company.GetNoReadSqlStatement()}) ";
             switch (currentObj.ToLower())
             {
                 case "artifact":
@@ -3495,7 +3571,8 @@ outer apply (
                         (
                             (
                                 (fieldTypes == null || fieldTypes.Count == 0) &&
-                                !def.Fields.Any(x => (x.FieldTypeName == "TextPath") || (x.FieldTypeName == "Name" && x.FieldTypeID == 0))
+                                !def.Fields.Any(x => (x.FieldTypeName == "TextPath") || (x.FieldTypeName == "Name" && x.FieldTypeID == 0)
+                                    || (x.FieldTypeName == "DisplayValue" && x.FieldTypeID == 0))
                             )
                         )
                     )
@@ -3712,7 +3789,7 @@ from    ReferenceItem R
         inner join Asset O on O.Object = 'ReferenceItem' and O.ObjectID = R.ID 
         {sqlJoins} 
 where   R.ReferenceItemTypeID = {id} 
-        and O.ID not in ({GetNoReadSqlStatement()})
+        and O.ID not in ({Company.GetNoReadSqlStatement()})
 {sqlOrderBy}";
 
                 results = Company.Query<dynamic>(sqlQuery).Distinct();
@@ -4415,8 +4492,8 @@ from	[Policy] A
                             inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = 'Policy' and I.ObjectID = A.ID
 							inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
 					) P
-where   OA.ID not in ({GetNoReadSqlStatement()})
-        and OA.AssetTypeID not in ({GetAssetTypeNoReadSqlStatement()})";
+where   OA.ID not in ({Company.GetNoReadSqlStatement()})
+        and OA.AssetTypeID not in ({Company.GetAssetTypeNoReadSqlStatement()})";
 
             var sql = string.Format(@"select * from ({0}) A", querySql);
 
@@ -4822,8 +4899,8 @@ from	[Rule] A
         {1} 
         left join RuleDimension D on D.ID = A.RuleDimensionID 
 where   A.RuleTypeID = @id 
-        and O.ID not in (" + GetNoReadSqlStatement("@r") + ")" +
-        "and O.AssetTypeID not in (" + GetAssetTypeNoReadSqlStatement("@r") + ")", columns, joins, permissionSql);
+        and O.ID not in (" + Company.GetNoReadSqlStatement("@r") + ")" +
+        "and O.AssetTypeID not in (" + Company.GetAssetTypeNoReadSqlStatement("@r") + ")", columns, joins, permissionSql);
 
                 var query = Company.Query<dynamic>(querySql, dbArgs);
 

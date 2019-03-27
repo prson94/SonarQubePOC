@@ -1,0 +1,37 @@
+<div class="row">
+    <div class="col s12">
+        <div class="tile tile-detail">
+            <header>Service: {{service?.Name}}</header>
+            <d3s-loading [isLoading]="isLoading"></d3s-loading>
+            <div *ngIf="!isLoading"
+                 class="row">
+                <div class="col l6 s12">
+                    <div class="row">
+                        <div class="col l6 s12">
+                            <div class="FieldName">URI Segment</div>
+                            <div>{{service?.UriPrefix}}</div>
+                        </div>
+                        <div class="col l6 s12">
+                            <div class="FieldName"># Endpoints</div>
+                            <div>{{numberOfEndpoints}}</div>
+                        </div>
+                        <div class="col s12">
+                            <div class="FieldName">Description</div>
+                            <div [innerHtml]="service.Description"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col l6 s12">
+                    &nbsp;<!-- service metrics chart goes here-->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row"
+     *ngIf="!isLoading">
+    <div class="col s12">
+        <d3s-admin-api-endpoints [service]="service"
+                                 [(numberOfEndpoints)]="numberOfEndpoints"></d3s-admin-api-endpoints>
+    </div>
+</div>

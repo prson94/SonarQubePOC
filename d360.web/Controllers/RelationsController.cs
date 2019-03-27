@@ -218,7 +218,7 @@ namespace d360.web.Controllers
         {
             var queryParams = new List<KeyValuePair<string, string>>();
             queryParams.Add(new KeyValuePair<string, string>("state", "1"));
-            var models = await Company.GetIntersectTypes(queryParams);
+            var models = await Company.GetRelationshipTypes(queryParams);
             var document = new SLDocument();
             document.AddWorksheet("Items");
 

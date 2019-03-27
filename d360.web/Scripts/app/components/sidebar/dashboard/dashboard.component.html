@@ -1,0 +1,44 @@
+<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div *ngIf="!isLoading"
+     class="row">
+    <div class="col s12">
+        <div class="tile tile-detail">
+            <header *ngIf="objectName">Dashboards for {{objectName}}</header>
+            <header *ngIf="!objectName">Dashboards</header>
+            <div class="row">
+                <div class="col s12">
+                    <span style="padding:0 10px;">Dashboard:</span>
+                    <select [(ngModel)]="dashboard"
+                            (change)="selected=null"
+                            style="width:300px;">
+                        <option></option>
+                        <option *ngFor="let dashboard of dashboards"
+                                [ngValue]="dashboard">{{dashboard.Name}}</option>
+                    </select>
+                    <span style="padding:0 10px;">
+                        <button (click)="selected=dashboard;"
+                                pButton
+                                type="button"
+                                label="Display"
+                                style="width: '150px';padding:4px;"></button>
+                    </span>
+                </div>
+                <div *ngIf="dashboard?.Description"
+                     [innerHtml]="dashboard?.Description"
+                     class="col s12"></div>
+            </div>
+        </div>
+        <div class="tile tile-detail" *ngIf="selected">
+            <d3s-powerbi-viewer *ngIf="selected.ReportType =='powerbi'"
+                                [dashboard]="selected"></d3s-powerbi-viewer>
+            <d3s-sagacity-viewer *ngIf="selected.ReportType =='sagacity'"
+                                 [dashboard]="selected"></d3s-sagacity-viewer>
+        </div>
+        <div *ngIf="!selected"
+             class="tile tile-detail">
+            <h4 class="center"
+                style="padding:30px;">Please choose a dashboard from the dropdown above and press
+                display to view the specified dashboards content.</h4>
+        </div>
+    </div>
+</div>

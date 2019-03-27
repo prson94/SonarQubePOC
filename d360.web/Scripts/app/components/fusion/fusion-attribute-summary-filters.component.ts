@@ -8,7 +8,7 @@ import * as _ from 'lodash';
 @Component({
     selector: 'd3s-fusion-attribute-summary-filters',
     template: ` <form (ngSubmit)="filterResults()" #filterForm="ngForm">
-                <div class="row advSearchRow" *ngFor="let filter of internalFilters;let last = last;let i = index">
+                <div class="row advSearchRow" *ngFor="let filter of internalFilters;let first=first; let last = last;let i = index">
                     <div class="col s1 center-align">Field:</div>
                     <div class="col s3">                        
                         <select [name]="'field'+i" required [ngModel]="filter.dataField" (ngModelChange)="setFieldType(filter,$event);filter.dataField = $event;" style="width:100%;" #field="ngModel">
@@ -30,11 +30,15 @@ import * as _ from 'lodash';
                     <div class="col s1" *ngIf="!last">
                         <button pButton type="button" (click)="removeFilter(i)" label="-" ></button>
                     </div>
-                    <div class="col s4" *ngIf="last">
+                    <div class="col s3" *ngIf="last">
                         <button *ngIf="!isFiltering" pButton type="button" (click)="removeAllFilters()" label="Clear All"></button>
                         <button *ngIf="!isFiltering" pButton type="submit" label="Filter"></button>                        
                         <i *ngIf="isFiltering" class="fa fa-spinner fa-spin fa-2x"></i>                        
-                    </div>                    
+                    </div>  
+                    <div *ngIf="first && hasExport"   [ngClass]="first==last ? 'col s1' : 'col s1 offset-s3'">
+                          <d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="exportClick.emit()"></d3s-tile-actions>
+                    </div>
+
                 </div>
                 </form>
                 `,
@@ -48,7 +52,8 @@ export class FusionAttributeSummaryFiltersComponent extends BaseComponent implem
 
     @Input() filterColumns: GridFilterColumn[];
     @Input() isFiltering: boolean = false;
-
+    @Input() hasExport: boolean = false;
+    @Output() exportClick = new EventEmitter();
     private internalFilters: FusionAttributeFilter[] = [];
 
 
