@@ -75,8 +75,8 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
         }
 
 
-        this.followerService.getFollowInfo(this.objectType, this.objectId)
-            .then(f => {                
+        this.followerService.getFollowInfo(this.objectType, this.objectId).subscribe(
+            f => {
                 this.isFollowing = f.isFollowing;
                 this.isFollowingParent = f.isFollowingParent;
 
@@ -87,8 +87,10 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
                     this.parentObjectType = '';
                     this.parentObjectId = 0;
                 }
+
                 this.updateTooltip();
-            });
+            }
+        );
     }
 
     toggleFollow() {
@@ -100,15 +102,18 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
         this.isLoading = true;
         let includeChildren = this.objectType.endsWith('Type');
 
-        this.followerService.updateFollowStatus(this.objectType, this.objectId, includeChildren)
-            .then(f => {                
+        this.followerService.updateFollowStatus(this.objectType, this.objectId, includeChildren).subscribe(
+            f => {
                 if (f.type == 'notification') {
                     this.active = !this.active;
                     this.checkActive();
                 }
-                this.isLoading = false;
+
                 this.ref.markForCheck();
-            });
+
+                this.isLoading = false;
+            }
+        );
     }
 
     ngOnDestroy() {

@@ -1200,7 +1200,7 @@ where   h.ID <> @t order by h.[Level] desc;
             model.Add("Description", assetType.Description);
             model.Add("ParentID", Company.GetParentType(assetType.ObjectID, SystemObjects.ArtifactType)?.ObjectID ?? null);
             model.Add("CanOwnFusion", assetType.CanOwnFusion);
-            model.Add("HasCustomExportTemplates", Company.AssetTypeExportTemplates.Where(x => x.AssetTypeID == assetType.ObjectID).Any());
+            model.Add("HasCustomExportTemplates", Company.AssetTypeExportTemplates.Where(x => x.AssetTypeID == assetType.ID).Any());
             model.Add("AutoDisplayDescription", assetType.AutoDisplayDescription);
 
             bool hasDashboards = Company.Filter<Report>(x => x.ObjectType == "ArtifactType" && x.ObjectID == typeID && x.ReportType != "legacy").Any();
@@ -1240,6 +1240,33 @@ where   h.ID <> @t order by h.[Level] desc;
 
 
             return artifactTypes;
+        }
+
+        [Route("artifacttype/possibleowners/{artifactTypeId:int}")]
+        public HttpResponseMessage GetArtifactTypePossibleOwners(int artifactTypeId)
+        {
+            var sql = @"
+select  distinct 
+	    cast(ResponsibilityTypeID as varchar) + '|' + cast(SecurityAssetID as varchar) as 'ID', 
+	    '[' + ResponsibilityTypeName + '] - ' + SecurityAssetName  as 'Name', 
+	    case 
+            when SecurityAsset = 'R' or SecurityAsset = 'O' then 'Resource' 
+			when SecurityAsset = 'G' then 'Group' 
+            else [Type] 
+        end as [Type]
+from    ResponsibilityDetail
+where   TypeID = @id 
+        and [Type] = 'ArtifactType' 
+        and IsVisible = 1 
+order by 'Name'";
+
+            return Request.CreateResponse(
+                HttpStatusCode.OK,
+                Company.Query<dynamic>(
+                    sql,
+                    new { id = artifactTypeId }
+                )
+            );
         }
 
         #endregion
@@ -4390,7 +4417,7 @@ from    ResponsibilityTypeRelationRule R
 	                    select	    AT.ObjectID as ID,
 	                    AT.Name,
 	                    AT.Description,
-	                    AT.HierarchyMaximumDepth,
+	                    AT.HierarchyMaximumDepth as MaximumDepth,
 	                    AT.DisplayFormat,
 	                    AT.CreatedBy,
 	                    AT.CreatedOn,

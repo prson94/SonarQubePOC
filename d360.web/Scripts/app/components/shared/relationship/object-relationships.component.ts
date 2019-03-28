@@ -91,27 +91,22 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
 
     hideforDelete() {
         this.hideDelete = false;
-        console.log("hideforDelete");
     }
 
     unhideforDelete() {
         this.hideDelete = true;
-        console.log("unhideforDelete");
     }
 
     enableExport() {
-        console.log("enableExport");
         if (!this.selected) return false;
         return this.selected.Count > 0;
     }
 
     isSelected(item: ObjectRelationshipCount): boolean {
-        console.log("isSelected");
         return (this.selected && this.selected == item);
     }
 
     relationshipsToShow() {
-        console.log("relationshipsToShow");
         if (this.showEmptyRelationshipTypes)
             return this.relationshipItems;
 
@@ -120,7 +115,6 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
 
     onFilterChange(qstring) {
         this.queryString = qstring;
-        console.log("onFilterChange");
     }
 
     public relationClick(rel: any) {
