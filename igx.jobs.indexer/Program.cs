@@ -279,7 +279,7 @@ namespace igx.jobs.indexer
                     inner join Predicate P on P.ID = T.PredicateID and P.Type = 6
 	                inner join AssetDetail SubjectArt on SubjectArt.[Object] = 'Artifact' and SubjectArt.ObjectID = I.SubjectID and I.Subject = 'Artifact'
 	                inner join AssetDetail ObjectArt on ObjectArt.[Object] = 'Artifact' and ObjectArt.ObjectID = I.ObjectID and I.Object = 'Artifact'
-	                inner join ArtifactType ArtType on ObjectArt.TypeID = ArtType.ID)
+	                inner join AssetType ArtType on ObjectArt.AssetTypeID = ArtType.ID)
                 Union
                 (select	
 	                SubjectArt.DisplayValue as 'Synonym',	
@@ -296,7 +296,7 @@ namespace igx.jobs.indexer
                     inner join Predicate P on P.ID = T.PredicateID and P.Type = 6
 	                inner join AssetDetail SubjectArt on SubjectArt.[Object] = 'Artifact' and SubjectArt.ObjectID = I.ObjectID and I.Subject = 'Artifact'
 	                inner join AssetDetail ObjectArt on ObjectArt.[Object] = 'Artifact' and ObjectArt.ObjectID = I.SubjectID and I.Object = 'Artifact'
-	                inner join ArtifactType ArtType on ObjectArt.TypeID = ArtType.ID)
+	                inner join AssetType ArtType on ObjectArt.AssetTypeID = ArtType.ID)
                 order by ObjectArt.DisplayValue";
 
             return getData(context, sql, companyID, source, "", false, (dynamic o) =>
