@@ -1307,7 +1307,7 @@ order by wi.StartedOn desc";
             if (changeType == ChangeType.Loaded)
                 types = types.Where(t => t.type == "Fusion").OrderBy(t => t.name).ToList();
             else if (changeType == ChangeType.Schedule)
-                types = types.Where(t => t.type == "ArtifactType" || t.type == "TaxonomyType").OrderBy(t => t.name).ToList();
+                types = types.Where(t => t.type == "ArtifactType" || t.type == "TaxonomyType" || t.type == "IssueType").OrderBy(t => t.name).ToList();
             else
                 types = types.Where(t => t.type != "Fusion").OrderBy(t => t.name).ToList();
 
