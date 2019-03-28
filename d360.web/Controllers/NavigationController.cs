@@ -369,7 +369,13 @@ namespace d360.web.Controllers
 
                 if (!string.IsNullOrEmpty(originalImage))
                 {
-                    Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, originalImage);
+                    try
+                    {
+                        Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, originalImage);
+                    }catch(Exception e)
+                    {
+
+                    }
                 }
 
                 if (!string.IsNullOrEmpty(folder.IconPayload))

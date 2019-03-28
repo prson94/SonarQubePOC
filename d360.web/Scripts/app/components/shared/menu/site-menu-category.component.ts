@@ -22,7 +22,7 @@ import { createWriteStream } from 'fs';
                             <i *ngIf="rootIconName" [class]="'fa ' + rootIconName"></i>
                             <img *ngIf="imageUrl" [src]="imageUrl" style="max-width: 15px; max-height: 15px; margin: 0px 15px 0px 12px" />
                             <span [ngClass]="{'caption':true, 'min':!expanded}">
-                                <span [ngClass]="{'icon-active':expanded, 'icon':!expanded}"> {{title}} <i [ngClass]="{'pull-right menu-category fa fa-caret-right':(menu && menu.NavigationItems && menu.NavigationItems.length > 0)}"></i></span>
+                                <div [ngClass]="{'no-overflow':expanded, 'icon-active':expanded, 'icon':!expanded}"> {{title}} <i [ngClass]="{'pull-right menu-category fa fa-caret-right':(menu && menu.NavigationItems && menu.NavigationItems.length > 0)}"></i></div>
                             </span>
                         </span>
                         <div *ngIf="menu && menu.NavigationItems && menu.NavigationItems.length > 0" class="menu-child megamenu-panel" (click)="stopNavigation($event)">
@@ -30,7 +30,7 @@ import { createWriteStream } from 'fs';
                                 <div class="row megamenu-title truncate">
                                     <span>
                                         <input #searchinput type="search" [(ngModel)]=searchText placeholder="Search menu..."/>
-                                        <i *ngIf="searchText != ''" (click)="clearInput()" class="fa fa-times"></i>
+                                        <i *ngIf="searchText != ''" (click)="clearInput()" class="fa fa-times" style="padding: 10px;"></i>
                                     </span>
                                 </div>
                                     <span class="megamenu-tools" *ngIf="showClearButton">
