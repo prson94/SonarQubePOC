@@ -496,7 +496,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                         });
                     }
 
-                    this.changeRefType(this.model.RelationItems.length - 1).subscribe(() => {});
+                    this.changeRefType(this.model.RelationItems.length - 1).subscribe(
+                        () => {
+                        }
+                    );
                 }
                 break;
             case 'filteredlookup':
@@ -524,7 +527,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 break;
         }
 
-        if (this.model.FieldType.Type == 'Date' && this.model.FieldType.DefaultValue != null) {            
+        if (this.model.FieldType.Type == 'Date' && this.model.FieldType.DefaultValue != null) {
             this.defaultDate = new Date(this.model.FieldType.DefaultValue);
         }
 
@@ -611,36 +614,36 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     }
                 });
 
-                        this.listFilterPredicates.push({value: null, label: 'Choose...'});
-                        this.listFilterOptions.forEach(d => {
-                            if (d.fieldtypeOptions.length > 0) {
-                                /* only include predicates with possible field options */
-                                this.listFilterPredicates.push({value: d.value, label: d.label});
-                            }
-                        });
+                this.listFilterPredicates.push({value: null, label: 'Choose...'});
+                this.listFilterOptions.forEach(d => {
+                    if (d.fieldtypeOptions.length > 0) {
+                        /* only include predicates with possible field options */
+                        this.listFilterPredicates.push({value: d.value, label: d.label});
+                    }
+                });
 
-                        if (this.listFilterPredicates.length == 1) {
-                            /* If we have no predicates to select, turn off filter configuration */
-                            this.listFilterable = false;
-                            this.selectPredicate(null);
-                            this.expandFilterConfiguration = false;
+                if (this.listFilterPredicates.length == 1) {
+                    /* If we have no predicates to select, turn off filter configuration */
+                    this.listFilterable = false;
+                    this.selectPredicate(null);
+                    this.expandFilterConfiguration = false;
 
-                            return;
-                        }
+                    return;
+                }
 
-                        if (this.model.FieldType.FilterPredicateID != null && this.model.FieldType.FilterPredicateDirection != null) {
-                            this.selectPredicate(this.model.FieldType.FilterPredicateID + '|' + (this.model.FieldType.FilterPredicateDirection ? '1' : '0'));
-                            this.expandFilterConfiguration = true;
-                        } else {
-                            this.selectPredicate(null);
-                            this.expandFilterConfiguration = false;
-                        }
+                if (this.model.FieldType.FilterPredicateID != null && this.model.FieldType.FilterPredicateDirection != null) {
+                    this.selectPredicate(this.model.FieldType.FilterPredicateID + '|' + (this.model.FieldType.FilterPredicateDirection ? '1' : '0'));
+                    this.expandFilterConfiguration = true;
+                } else {
+                    this.selectPredicate(null);
+                    this.expandFilterConfiguration = false;
+                }
 
-                        //clear the validated fields and error message
-                        this.model.FieldType.MaximumLength = null;
-                        this.model.FieldType.MinimumLength = null;
-                        this.model.FieldType.Increment = null;
-                        this.validate('*');
+                //clear the validated fields and error message
+                this.model.FieldType.MaximumLength = null;
+                this.model.FieldType.MinimumLength = null;
+                this.model.FieldType.Increment = null;
+                this.validate('*');
 
                 /* loadTokens */
                 this.model.LookupTokens = loadTokens;
@@ -994,6 +997,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         switch (item.ReferenceType.toString()) {
             case ComplexLookupRelationType.ChildItem.toString():
                 /* child item */
+                item.relationsLoading = false;
+
                 return this.fieldsService.getChildRelations(object, objectId);
             case ComplexLookupRelationType.ChildRelationship.toString():
                 /* child relationship */
@@ -1003,12 +1008,20 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     intersectIdToGetChildrenFor = last.IntersectType;
                 }
 
+                item.relationsLoading = false;
+
                 return this.fieldsService.getRelationLookupChildIntersectTypes(intersectIdToGetChildrenFor || 0);
             case ComplexLookupRelationType.ParentItem.toString():
+                item.relationsLoading = false;
+
                 return this.fieldsService.getParentRelations(object, objectId);
             case ComplexLookupRelationType.StandardRelationhip.toString():
+                item.relationsLoading = false;
+
                 return this.fieldsService.getStandardRelations(object, objectId);
             default:
+                item.relationsLoading = false;
+
                 return new Observable();
         }
     }
@@ -1184,6 +1197,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             }
         );
     }
+
     //#endregion
 
     private selectDisplayToken(value: string) {
