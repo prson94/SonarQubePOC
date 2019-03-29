@@ -4433,7 +4433,7 @@ from    ResponsibilityTypeRelationRule R
 	                    select	    AT.ObjectID as ID,
 	                    AT.Name,
 	                    AT.Description,
-	                    AT.HierarchyMaximumDepth,
+	                    AT.HierarchyMaximumDepth as MaximumDepth,
 	                    AT.DisplayFormat,
 	                    AT.CreatedBy,
 	                    AT.CreatedOn,

@@ -114,17 +114,18 @@ namespace d360.model
                 #region Validation
             
                 // Resolve Asset
-                Connection.Execute(@"update T set T.IsValidAsset = IIF(S.ID is not null, 1, 0) from api.ExecutionMetric T left join Asset S on S.[uid] = T.AssetUid");
+                Connection.Execute(@"update T set T.IsValidAsset = IIF(S.ID is not null, 1, 0) from api.ExecutionMetric T left join Asset S on S.[uid] = T.AssetUid where T.ExecutionID = @ExecutionID", new { execution.ExecutionID });
 
                 // Resolve Metric
-                Connection.Execute(@"update T set T.IsValidMetric = IIF(S.[Uid] is not null, 1, 0) from api.ExecutionMetric T left join metrics.[Asset] S on S.[Uid] = T.MetricAssetUid and S.[State] = 1");
+                Connection.Execute(@"update T set T.IsValidMetric = IIF(S.[Uid] is not null, 1, 0) from api.ExecutionMetric T left join metrics.[Asset] S on S.[Uid] = T.MetricAssetUid and S.[State] = 1 where T.ExecutionID = @ExecutionID", new { execution.ExecutionID });
 
                 // Resolve Metric Group/Item Effective Date
                 Connection.Execute(@"update T set T.IsValidMetricDate = IIF(M_M.EffectiveDate is not null, 1, 0) from api.ExecutionMetric T 
 left join metrics.[Asset] A on A.[Uid] = T.MetricAssetUid and A.[State] = 1
 outer apply (
             select max(EffectiveDate) as EffectiveDate from metrics.AssetVersion where [Uid] = A.[Uid] and EffectiveDate <= T.[EffectiveDate]
-            ) M_M");
+            ) M_M
+where T.ExecutionID = @ExecutionID", new { execution.ExecutionID });
 
                 // Log errors
                 Connection.Execute(@"
@@ -134,21 +135,25 @@ outer apply (
                         when IsValidMetric = 0 then 0
                         when IsValidMetricDate = 0 then 0
                         else 1
-                      end;
+                      end 
+    where   ExecutionID = @ExecutionID;
 
     update  api.ExecutionMetric
     set     Message = coalesce(Message + '; ', '') + 'Invalid asset specified; '
-    where   IsValidAsset = 0;
+    where   ExecutionID = @ExecutionID 
+            and IsValidAsset = 0;
 
     update  api.ExecutionMetric
     set     Message = coalesce(Message + '; ', '') + 'Invalid metric specified; '
-    where   IsValidMetric = 0;
+    where   ExecutionID = @ExecutionID 
+            and IsValidMetric = 0;
 
     update  api.ExecutionMetric
     set     Message = coalesce(Message + '; ', '') + 'Invalid metric specified for the date provided; '
-    where   IsValidMetricDate = 0;
+    where   ExecutionID = @ExecutionID 
+            and IsValidMetricDate = 0;
 
-    update api.ExecutionMetric set Message = null where Success = 1;");
+    update api.ExecutionMetric set Message = null where ExecutionID = @ExecutionID and Success = 1;", new { execution.ExecutionID });
 
                 #endregion
 
@@ -294,6 +299,35 @@ when not matched by target then
         #endregion
     }
 
+    internal class MetricHierarchyBuilder
+    {
+        public void BuildMetricHierarchy(List<MetricAssetTypeHierarchyModel> results, MetricAssetTypeHierarchyModels model, MetricAssetTypeHierarchyModel p, MetricAssetTypeHierarchyModel i)
+        {
+            if (!string.IsNullOrEmpty(i.ConditionsJson))
+            {
+                i.Conditions = JsonConvert.DeserializeObject<List<MetricConditionHierarchyModel>>(i.ConditionsJson);
+            }
+
+            // Recurse.
+            foreach (var c in results.Where(o => o.ParentUid == i.Uid))
+            {
+                BuildMetricHierarchy(results, model, i, c);
+            }
+
+            if (p != null)
+            {
+                if (p.Metrics == null)
+                    p.Metrics = new List<MetricAssetTypeHierarchyModel>();
+
+                p.Metrics.Add(i);
+            }
+            else
+            {
+                model.Add(i);
+            }
+        }
+    }
+
     public static partial class ConnectionExtensions
     {
         public static MetricAssetTypeHierarchyModels GetMetricDefinitionHierarchyByAssetType(this SqlConnection cnn, Guid assetTypeUid, DateTime? effectiveDate)
@@ -360,38 +394,12 @@ order by [Level] asc";
                 cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
 
             var results = cnn.Query<MetricAssetTypeHierarchyModel>(sql, new { assetTypeUid, effectiveDate = effectiveDate.Value }).ToList();
-
             var model = new MetricAssetTypeHierarchyModels();
+            var builder = new MetricHierarchyBuilder();
 
-            foreach (var i in results)
+            foreach (var i in results.Where(i => !i.ParentUid.HasValue))
             {
-                if (!string.IsNullOrEmpty(i.ConditionsJson))
-                {
-                    i.Conditions = JsonConvert.DeserializeObject<List<MetricConditionHierarchyModel>>(i.ConditionsJson);
-                    //i.Conditions.ForEach(c =>
-                    //{
-                    //    //if (!string.IsNullOrEmpty(c.ValueJson))
-                    //    //{
-                    //        //c.Values = JsonConvert.DeserializeObject<List<string>>(c.ValueJson);
-                    //    //}
-                    //});
-                }
-
-                if (i.ParentUid.HasValue)
-                {
-                    var p = model.SingleOrDefault(o => o.Uid == i.ParentUid.Value);
-                    if (p != null)
-                    {
-                        if (p.Metrics == null)
-                            p.Metrics = new List<MetricAssetTypeHierarchyModel>();
-
-                        p.Metrics.Add(i);
-                    }
-                }
-                else
-                {
-                    model.Add(i);
-                }
+                builder.BuildMetricHierarchy(results, model, null, i);
             }
 
             return model;
