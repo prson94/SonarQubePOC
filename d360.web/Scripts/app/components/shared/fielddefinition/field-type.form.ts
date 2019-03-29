@@ -1381,146 +1381,94 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
             this.errorMessage = Array.from(this.validationErrors.values()).join('\n');
         }
+    }
 
-    private
-        CheckMinRequired(fem
-    :
-        FieldTypeEditorModel
-    )
-        {
-            if (!fem) {
-                return;
-            }
-
-            if (fem.FieldType.Type == 'Number' || fem.FieldType.Type == 'Decimal') {
-                return false;
-            } else {
-                return !fem.FieldType.IsRequired;
-            }
+    private CheckMinRequired(fem: FieldTypeEditorModel) {
+        if (!fem) {
+            return;
         }
-
-    private
-        updateApiName(event)
-        {
-            this.model.FieldType.Name = event.target.value.replace(/[^a-zA-Z0-9_]/g, '');
-        }
-
-    private
-        addFusion()
-        {
-            let i = new FieldTypeFusionItemEditorModel();
-
-            i.ReferenceType = this.lookups.ReferenceTypes[0].value;
-
-            if (this.model.FusionItems == null) {
-                this.model.FusionItems = [];
-            }
-
-            this.model.FusionItems.push(i);
-        }
-
-    private
-        removeFusion(i
-    :
-        number
-    )
-        {
-            this.model.FusionItems.splice(i, 1);
-        }
-
-    private
-        addRelation(item
-    :
-        FieldTypeRelationItemEditorModel
-    )
-        {
-            let i = new FieldTypeRelationItemEditorModel();
-            let params = item.selectedRelationItemID.split('|');
-            let id = parseInt(params[2]);
-            let type = params[1];
-            let intersectType = parseInt(params[0]);
-
-            i.ObjectID = id;
-            i.Object = type;
-            i.IntersectTypeID = intersectType;
-            i.IntersectType = intersectType;
-            i.displayValue = item.relationItems.find(i => i.value == item.selectedRelationItemID).title;
-
-            this.model.RelationItems.push(i);
-            this.relationItemCount = this.model.RelationItems.length;
-        }
-
-    private
-        removeRelation(item
-    :
-        FieldTypeRelationItemEditorModel
-    )
-        {
-            //only last item can be deleted
-            this.model.RelationItems.pop();
-            this.relationItemCount = this.model.RelationItems.length;
-        }
-
-    private
-        anyDisplayFieldsSelected(e
-    :
-        any
-    )
-        {
-            if (this.model.FieldType.Type != 'ComplexRelationLookup') {
-                this.displayFieldSelected = true;
-
-                if (this.lookups.Field_FieldFromRelRelationships.length > 0) {
-                    this.cardinalFieldFromRelationshipSelected(parseInt(this.lookups.Field_FieldFromRelRelationships[0].value));
-                }
-
-                return;
-            }
-            if (e == true) {
-                this.displayFieldSelected = true;
-
-                return;
-            }
-
-            this.displayFieldSelected = false;
-            this.model.RelationItems.forEach(r => {
-                r.DisplayFields.forEach(d => {
-                    if (d.Show) {
-                        this.displayFieldSelected = true;
-
-                        return;
-                    }
-                });
-            });
-        }
-
-    public
-        onDateSelectMethod(e
-    :
-        Date
-    )
-        {
-            this.model.FieldType.DefaultValue = this.getGovernDate(e);
-        }
-
-    private
-        getGovernDate(e
-    :
-        Date
-    )
-        {
-            if (e === null || e === undefined) {
-                return "";
-            }
-
-            return (e.getMonth() + 1) + '/' + e.getDate() + '/' + e.getFullYear();
-        }
-
-    public
-        isRelationshipWithMultipleCardinality()
-    :
-        boolean
-        {
-            return true;
+        if (fem.FieldType.Type == 'Number' || fem.FieldType.Type == 'Decimal') {
+            return false;
+        } else {
+            return !fem.FieldType.IsRequired;
         }
     }
+
+    private updateApiName(event) {
+        this.model.FieldType.Name = event.target.value.replace(/[^a-zA-Z0-9_]/g, '');
+    }
+
+    private addFusion() {
+        let i = new FieldTypeFusionItemEditorModel();
+        i.ReferenceType = this.lookups.ReferenceTypes[0].value;
+        if (this.model.FusionItems == null) {
+            this.model.FusionItems = [];
+        }
+        this.model.FusionItems.push(i);
+    }
+
+    private removeFusion(i: number) {
+        this.model.FusionItems.splice(i, 1);
+    }
+
+    private addRelation(item: FieldTypeRelationItemEditorModel) {
+        let i = new FieldTypeRelationItemEditorModel();
+        let params = item.selectedRelationItemID.split('|');
+        let id = parseInt(params[2]);
+        let type = params[1];
+        let intersectType = parseInt(params[0]);
+
+        i.ObjectID = id;
+        i.Object = type;
+        i.IntersectTypeID = intersectType;
+        i.IntersectType = intersectType;
+        i.displayValue = item.relationItems.find(i => i.value == item.selectedRelationItemID).title;
+
+        this.model.RelationItems.push(i);
+        this.relationItemCount = this.model.RelationItems.length;
+    }
+
+    private removeRelation(item: FieldTypeRelationItemEditorModel) {
+        //only last item can be deleted
+        this.model.RelationItems.pop();
+        this.relationItemCount = this.model.RelationItems.length;
+    }
+
+    private anyDisplayFieldsSelected(e: any) {
+        if (this.model.FieldType.Type != 'ComplexRelationLookup') {
+            this.displayFieldSelected = true;
+            if (this.lookups.Field_FieldFromRelRelationships.length > 0)
+                this.cardinalFieldFromRelationshipSelected(parseInt(this.lookups.Field_FieldFromRelRelationships[0].value));
+            return;
+        }
+        if (e == true) {
+            this.displayFieldSelected = true;
+            return;
+        }
+        this.displayFieldSelected = false;
+        this.model.RelationItems.forEach(r => {
+            r.DisplayFields.forEach(d => {
+                if (d.Show) {
+                    this.displayFieldSelected = true;
+                    return;
+                }
+            });
+        });
+    }
+
+    public onDateSelectMethod(e: Date) {
+        this.model.FieldType.DefaultValue = this.getGovernDate(e);
+    }
+
+    private getGovernDate(e: Date) {
+        if (e === null || e === undefined) {
+            return "";
+        }
+        return (e.getMonth() + 1) + '/' + e.getDate() + '/' + e.getFullYear();
+    }
+
+    public isRelationshipWithMultipleCardinality(): boolean {
+
+        return true;
+    }
+}
