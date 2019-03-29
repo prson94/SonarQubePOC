@@ -299,6 +299,35 @@ when not matched by target then
         #endregion
     }
 
+    internal class MetricHierarchyBuilder
+    {
+        public void BuildMetricHierarchy(List<MetricAssetTypeHierarchyModel> results, MetricAssetTypeHierarchyModels model, MetricAssetTypeHierarchyModel p, MetricAssetTypeHierarchyModel i)
+        {
+            if (!string.IsNullOrEmpty(i.ConditionsJson))
+            {
+                i.Conditions = JsonConvert.DeserializeObject<List<MetricConditionHierarchyModel>>(i.ConditionsJson);
+            }
+
+            // Recurse.
+            foreach (var c in results.Where(o => o.ParentUid == i.Uid))
+            {
+                BuildMetricHierarchy(results, model, i, c);
+            }
+
+            if (p != null)
+            {
+                if (p.Metrics == null)
+                    p.Metrics = new List<MetricAssetTypeHierarchyModel>();
+
+                p.Metrics.Add(i);
+            }
+            else
+            {
+                model.Add(i);
+            }
+        }
+    }
+
     public static partial class ConnectionExtensions
     {
         public static MetricAssetTypeHierarchyModels GetMetricDefinitionHierarchyByAssetType(this SqlConnection cnn, Guid assetTypeUid, DateTime? effectiveDate)
@@ -365,38 +394,12 @@ order by [Level] asc";
                 cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
 
             var results = cnn.Query<MetricAssetTypeHierarchyModel>(sql, new { assetTypeUid, effectiveDate = effectiveDate.Value }).ToList();
-
             var model = new MetricAssetTypeHierarchyModels();
+            var builder = new MetricHierarchyBuilder();
 
-            foreach (var i in results)
+            foreach (var i in results.Where(i => !i.ParentUid.HasValue))
             {
-                if (!string.IsNullOrEmpty(i.ConditionsJson))
-                {
-                    i.Conditions = JsonConvert.DeserializeObject<List<MetricConditionHierarchyModel>>(i.ConditionsJson);
-                    //i.Conditions.ForEach(c =>
-                    //{
-                    //    //if (!string.IsNullOrEmpty(c.ValueJson))
-                    //    //{
-                    //        //c.Values = JsonConvert.DeserializeObject<List<string>>(c.ValueJson);
-                    //    //}
-                    //});
-                }
-
-                if (i.ParentUid.HasValue)
-                {
-                    var p = model.SingleOrDefault(o => o.Uid == i.ParentUid.Value);
-                    if (p != null)
-                    {
-                        if (p.Metrics == null)
-                            p.Metrics = new List<MetricAssetTypeHierarchyModel>();
-
-                        p.Metrics.Add(i);
-                    }
-                }
-                else
-                {
-                    model.Add(i);
-                }
+                builder.BuildMetricHierarchy(results, model, null, i);
             }
 
             return model;

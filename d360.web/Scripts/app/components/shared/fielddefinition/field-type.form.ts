@@ -1,4 +1,4 @@
-﻿import * as _ from 'lodash';
+import * as _ from 'lodash';
 import {forkJoin, Observable} from "rxjs";
 import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChange} from '@angular/core';
 import {SelectItem} from 'primeng/primeng';
@@ -1309,178 +1309,218 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 if (this.model.FieldType.Precision && FormHelpers.isNumber(this.model.FieldType.DefaultValue)) {
                     let asString = '' + this.model.FieldType.DefaultValue;
 
-                    if (asString.split('.').length > 1 && asString.split('.')[1].length < this.model.FieldType.Precision) {
+                    if (asString.split('.').length == 1 || asString.split('.')[1].length >= this.model.FieldType.Precision) {
+                        let val = +this.model.FieldType.DefaultValue;
+                        let newVal = +val.toFixed(this.model.FieldType.Precision);
+
+                        if (newVal != null && (newVal != 0 || newVal != +val) && !isNaN(newVal)) {
+                            this.model.FieldType.DefaultValue = '' + newVal;
+                        }
+                    }
+                }
+            }
+            if (this.model.FieldType.Type == 'Number' || this.model.FieldType.Type == 'Decimal') {
+                if (fieldname == '*' || fieldname == 'MinimumLength' || fieldname == 'DefaultValue') {
+                    this.setValidation('default_MinimumLength', 'Please enter a minimum value of ' + this.model.FieldType.MinimumLength + ' in Default Value.', (() => {
+                        if (FormHelpers.isNumber(this.model.FieldType.DefaultValue)) {
+                            if (FormHelpers.isNumber(this.model.FieldType.MinimumLength) && +this.model.FieldType.DefaultValue < this.model.FieldType.MinimumLength) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    })());
+                }
+                if (fieldname == '*' || fieldname == 'MaximumLength' || fieldname == 'DefaultValue') {
+                    this.setValidation('default_MaximumLength', 'Please enter a maximum value of ' + this.model.FieldType.MaximumLength + ' in Default Value.', (() => {
+                        if (FormHelpers.isNumber(this.model.FieldType.DefaultValue)) {
+                            if (FormHelpers.isNumber(this.model.FieldType.MaximumLength) && +this.model.FieldType.DefaultValue > this.model.FieldType.MaximumLength) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    })());
+                }
+                if (fieldname == '*' || fieldname == 'MinimumLength' || fieldname == 'MaximumLength') {
+                    this.setValidation('number_minmax', 'Please enter a minimum value which is lower than the maximum value.', (() => {
+                        if (FormHelpers.isNumber(this.model.FieldType.MinimumLength) && FormHelpers.isNumber(this.model.FieldType.MaximumLength))
+                            return (this.model.FieldType.MinimumLength > this.model.FieldType.MaximumLength);
+                        return false;
+                    })());
+                }
+            }
+
+            if (this.model.FieldType.Type == 'Text') {
+                if (fieldname == '*' || fieldname == 'Pattern' || fieldname == 'DefaultValue') {
+                    this.setValidation('default_validationpattern', 'Default Value does not match Validation Pattern.', (() => {
+                        if (this.model.FieldType.Pattern > "" && this.model.FieldType.DefaultValue > "") {
+                            var patternRegex = new RegExp(this.model.FieldType.Pattern);
+                            return !patternRegex.test(this.model.FieldType.DefaultValue);
+                        }
+                        return false;
+                    })());
+                }
+                if (fieldname == '*' || fieldname == 'MinimumLength' || fieldname == 'DefaultValue') {
+                    this.setValidation('default_MinimumLength_text', 'Default value is shorter than ' + this.model.FieldType.MinimumLength + '.', (() => {
+                        if (this.model.FieldType.DefaultValue) {
+                            return (FormHelpers.isNumber(this.model.FieldType.MinimumLength) && this.model.FieldType.DefaultValue.length > 0 && this.model.FieldType.DefaultValue.length < this.model.FieldType.MinimumLength);
+                        } else {
+                            return false;
+                        }
+                    })());
+                }
+                if (fieldname == '*' || fieldname == 'MaximumLength' || fieldname == 'DefaultValue') {
+                    this.setValidation('default_MaximumLength_text', 'Default value is longer than ' + this.model.FieldType.MaximumLength + '.', (() => {
+                        if (this.model.FieldType.DefaultValue) {
+                            return (FormHelpers.isNumber(this.model.FieldType.MaximumLength) && this.model.FieldType.DefaultValue.length > this.model.FieldType.MaximumLength);
+                        } else {
+                            return false;
+                        }
+                    })());
+                }
+            }
+
+            this.errorMessage = Array.from(this.validationErrors.values()).join('\n');
+        }
+
+    private
+        CheckMinRequired(fem
+    :
+        FieldTypeEditorModel
+    )
+        {
+            if (!fem) {
+                return;
+            }
+
+            if (fem.FieldType.Type == 'Number' || fem.FieldType.Type == 'Decimal') {
+                return false;
+            } else {
+                return !fem.FieldType.IsRequired;
+            }
+        }
+
+    private
+        updateApiName(event)
+        {
+            this.model.FieldType.Name = event.target.value.replace(/[^a-zA-Z0-9_]/g, '');
+        }
+
+    private
+        addFusion()
+        {
+            let i = new FieldTypeFusionItemEditorModel();
+
+            i.ReferenceType = this.lookups.ReferenceTypes[0].value;
+
+            if (this.model.FusionItems == null) {
+                this.model.FusionItems = [];
+            }
+
+            this.model.FusionItems.push(i);
+        }
+
+    private
+        removeFusion(i
+    :
+        number
+    )
+        {
+            this.model.FusionItems.splice(i, 1);
+        }
+
+    private
+        addRelation(item
+    :
+        FieldTypeRelationItemEditorModel
+    )
+        {
+            let i = new FieldTypeRelationItemEditorModel();
+            let params = item.selectedRelationItemID.split('|');
+            let id = parseInt(params[2]);
+            let type = params[1];
+            let intersectType = parseInt(params[0]);
+
+            i.ObjectID = id;
+            i.Object = type;
+            i.IntersectTypeID = intersectType;
+            i.IntersectType = intersectType;
+            i.displayValue = item.relationItems.find(i => i.value == item.selectedRelationItemID).title;
+
+            this.model.RelationItems.push(i);
+            this.relationItemCount = this.model.RelationItems.length;
+        }
+
+    private
+        removeRelation(item
+    :
+        FieldTypeRelationItemEditorModel
+    )
+        {
+            //only last item can be deleted
+            this.model.RelationItems.pop();
+            this.relationItemCount = this.model.RelationItems.length;
+        }
+
+    private
+        anyDisplayFieldsSelected(e
+    :
+        any
+    )
+        {
+            if (this.model.FieldType.Type != 'ComplexRelationLookup') {
+                this.displayFieldSelected = true;
+
+                if (this.lookups.Field_FieldFromRelRelationships.length > 0) {
+                    this.cardinalFieldFromRelationshipSelected(parseInt(this.lookups.Field_FieldFromRelRelationships[0].value));
+                }
+
+                return;
+            }
+            if (e == true) {
+                this.displayFieldSelected = true;
+
+                return;
+            }
+
+            this.displayFieldSelected = false;
+            this.model.RelationItems.forEach(r => {
+                r.DisplayFields.forEach(d => {
+                    if (d.Show) {
+                        this.displayFieldSelected = true;
+
                         return;
                     }
-
-                    let val = +this.model.FieldType.DefaultValue;
-                    let newVal = +val.toFixed(this.model.FieldType.Precision);
-
-                    if (newVal != null && (newVal != 0 || newVal != +val) && !isNaN(newVal)) {
-                        this.model.FieldType.DefaultValue = '' + newVal;
-                    }
-                }
-            }
-        }
-        if (this.model.FieldType.Type == 'Number' || this.model.FieldType.Type == 'Decimal') {
-            if (fieldname == '*' || fieldname == 'MinimumLength' || fieldname == 'DefaultValue') {
-                this.setValidation('default_MinimumLength', 'Please enter a minimum value of ' + this.model.FieldType.MinimumLength + ' in Default Value.', (() => {
-                    if (FormHelpers.isNumber(this.model.FieldType.DefaultValue)) {
-                        if (FormHelpers.isNumber(this.model.FieldType.MinimumLength) && +this.model.FieldType.DefaultValue < this.model.FieldType.MinimumLength) {
-                            return true;
-                        }
-                    }
-                    return false;
-                })());
-            }
-            if (fieldname == '*' || fieldname == 'MaximumLength' || fieldname == 'DefaultValue') {
-                this.setValidation('default_MaximumLength', 'Please enter a maximum value of ' + this.model.FieldType.MaximumLength + ' in Default Value.', (() => {
-                    if (FormHelpers.isNumber(this.model.FieldType.DefaultValue)) {
-                        if (FormHelpers.isNumber(this.model.FieldType.MaximumLength) && +this.model.FieldType.DefaultValue > this.model.FieldType.MaximumLength) {
-                            return true;
-                        }
-                    }
-                    return false;
-                })());
-            }
-            if (fieldname == '*' || fieldname == 'MinimumLength' || fieldname == 'MaximumLength') {
-                this.setValidation('number_minmax', 'Please enter a minimum value which is lower than the maximum value.', (() => {
-                    if (FormHelpers.isNumber(this.model.FieldType.MinimumLength) && FormHelpers.isNumber(this.model.FieldType.MaximumLength))
-                        return (this.model.FieldType.MinimumLength > this.model.FieldType.MaximumLength);
-                    return false;
-                })());
-            }
-        }
-
-        if (this.model.FieldType.Type == 'Text') {
-            if (fieldname == '*' || fieldname == 'Pattern' || fieldname == 'DefaultValue') {
-                this.setValidation('default_validationpattern', 'Default Value does not match Validation Pattern.', (() => {
-                    if (this.model.FieldType.Pattern > "" && this.model.FieldType.DefaultValue > "") {
-                        var patternRegex = new RegExp(this.model.FieldType.Pattern);
-                        return !patternRegex.test(this.model.FieldType.DefaultValue);
-                    }
-                    return false;
-                })());
-            }
-            if (fieldname == '*' || fieldname == 'MinimumLength' || fieldname == 'DefaultValue') {
-                this.setValidation('default_MinimumLength_text', 'Default value is shorter than ' + this.model.FieldType.MinimumLength + '.', (() => {
-                    if (this.model.FieldType.DefaultValue) {
-                        return (FormHelpers.isNumber(this.model.FieldType.MinimumLength) && this.model.FieldType.DefaultValue.length > 0 && this.model.FieldType.DefaultValue.length < this.model.FieldType.MinimumLength);
-                    } else {
-                        return false;
-                    }
-                })());
-            }
-            if (fieldname == '*' || fieldname == 'MaximumLength' || fieldname == 'DefaultValue') {
-                this.setValidation('default_MaximumLength_text', 'Default value is longer than ' + this.model.FieldType.MaximumLength + '.', (() => {
-                    if (this.model.FieldType.DefaultValue) {
-                        return (FormHelpers.isNumber(this.model.FieldType.MaximumLength) && this.model.FieldType.DefaultValue.length > this.model.FieldType.MaximumLength);
-                    } else {
-                        return false;
-                    }
-                })());
-            }
-        }
-
-        this.errorMessage = Array.from(this.validationErrors.values()).join('\n');
-    }
-
-    private CheckMinRequired(fem: FieldTypeEditorModel) {
-        if (!fem) {
-            return;
-        }
-
-        if (fem.FieldType.Type == 'Number' || fem.FieldType.Type == 'Decimal') {
-            return false;
-        } else {
-            return !fem.FieldType.IsRequired;
-        }
-    }
-
-    private updateApiName(event) {
-        this.model.FieldType.Name = event.target.value.replace(/[^a-zA-Z0-9_]/g, '');
-    }
-
-    private addFusion() {
-        let i = new FieldTypeFusionItemEditorModel();
-
-        i.ReferenceType = this.lookups.ReferenceTypes[0].value;
-
-        if (this.model.FusionItems == null) {
-            this.model.FusionItems = [];
-        }
-
-        this.model.FusionItems.push(i);
-    }
-
-    private removeFusion(i: number) {
-        this.model.FusionItems.splice(i, 1);
-    }
-
-    private addRelation(item: FieldTypeRelationItemEditorModel) {
-        let i = new FieldTypeRelationItemEditorModel();
-        let params = item.selectedRelationItemID.split('|');
-        let id = parseInt(params[2]);
-        let type = params[1];
-        let intersectType = parseInt(params[0]);
-
-        i.ObjectID = id;
-        i.Object = type;
-        i.IntersectTypeID = intersectType;
-        i.IntersectType = intersectType;
-        i.displayValue = item.relationItems.find(i => i.value == item.selectedRelationItemID).title;
-
-        this.model.RelationItems.push(i);
-        this.relationItemCount = this.model.RelationItems.length;
-    }
-
-    private removeRelation(item: FieldTypeRelationItemEditorModel) {
-        //only last item can be deleted
-        this.model.RelationItems.pop();
-        this.relationItemCount = this.model.RelationItems.length;
-    }
-
-    private anyDisplayFieldsSelected(e: any) {
-        if (this.model.FieldType.Type != 'ComplexRelationLookup') {
-            this.displayFieldSelected = true;
-
-            if (this.lookups.Field_FieldFromRelRelationships.length > 0) {
-                this.cardinalFieldFromRelationshipSelected(parseInt(this.lookups.Field_FieldFromRelRelationships[0].value));
-            }
-
-            return;
-        }
-        if (e == true) {
-            this.displayFieldSelected = true;
-
-            return;
-        }
-
-        this.displayFieldSelected = false;
-        this.model.RelationItems.forEach(r => {
-            r.DisplayFields.forEach(d => {
-                if (d.Show) {
-                    this.displayFieldSelected = true;
-
-                    return;
-                }
+                });
             });
-        });
-    }
-
-    public onDateSelectMethod(e: Date) {
-        this.model.FieldType.DefaultValue = this.getGovernDate(e);
-    }
-
-    private getGovernDate(e: Date) {
-        if (e === null || e === undefined) {
-            return "";
         }
 
-        return (e.getMonth() + 1) + '/' + e.getDate() + '/' + e.getFullYear();
-    }
+    public
+        onDateSelectMethod(e
+    :
+        Date
+    )
+        {
+            this.model.FieldType.DefaultValue = this.getGovernDate(e);
+        }
 
-    public isRelationshipWithMultipleCardinality(): boolean {
-        return true;
+    private
+        getGovernDate(e
+    :
+        Date
+    )
+        {
+            if (e === null || e === undefined) {
+                return "";
+            }
+
+            return (e.getMonth() + 1) + '/' + e.getDate() + '/' + e.getFullYear();
+        }
+
+    public
+        isRelationshipWithMultipleCardinality()
+    :
+        boolean
+        {
+            return true;
+        }
     }
-}

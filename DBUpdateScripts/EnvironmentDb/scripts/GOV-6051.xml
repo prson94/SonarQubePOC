@@ -6,13 +6,13 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="McNamee" id="GOV-6051-b">
+  <changeSet author="McNamee" id="GOV-6051-c">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="true">
       <![CDATA[
-	      CREATE or ALTER FUNCTION [dbo].[GetSecurityAssetUid]
+	      CREATE or ALTER   FUNCTION [dbo].[GetSecurityAssetUid]
         (		        
 	        @SecurityAsset varchar(1), @SecurityAssetID int
         )
@@ -21,9 +21,9 @@
         RETURN 
         (
 	        select A.[UID], gr.firstname + ' ' + gr.LastName as 'Name' from [dbo].[Asset] A inner join reporting.global_resource gr on A.objectid = gr.resourceid where A.[Object] = 'Resource' and A.[ObjectID] = @SecurityAssetID and @SecurityAsset = 'R'					
-	        union 
+	        union all
 	        select A.[UID], g.name as 'Name' from [dbo].[Asset] A inner join [dbo].[Group] g on A.ObjectID = g.id where A.[Object] = 'Group' and A.[ObjectID] = @SecurityAssetID and @SecurityAsset = 'G'
-	        union 
+	        union all
 	        select A.[UID], o.name as 'Name' from [dbo].[Asset] A inner join [dbo].[Organization] o on A.ObjectID = o.ID where A.[Object] = 'Organization' and A.[ObjectID] = @SecurityAssetID and @SecurityAsset = 'O'
         )
        ]]>
