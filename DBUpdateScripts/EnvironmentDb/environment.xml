@@ -131,4 +131,9 @@
   <include file="scripts/GOV-6849.xml"/>
   <include file="scripts/GOV-6878.xml"/>
   <include file="scripts/GOV-6890.xml"/>
+  <include file="scripts/GOV-6629.xml"/>
+  <include file="scripts/GOV-6726.xml"/>
+  <include file="scripts/GOV-6595.xml"/>
+  <include file="scripts/GOV-6921.xml"/>
+  <include file="scripts/GOV-6595-b.xml"/>
 </databaseChangeLog>

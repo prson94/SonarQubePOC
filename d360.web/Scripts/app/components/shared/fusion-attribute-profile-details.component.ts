@@ -80,11 +80,13 @@ export class FusionAttributeProfileDetailsComponent extends BaseComponent implem
 
     private load() {
         this.isLoading = true;
-        this.fusionAttributeService.getFusionAttributeProfile(this.objectType, this.fusionAttributeId)
-            .then(res => {
+        this.fusionAttributeService.getFusionAttributeProfile(this.objectType, this.fusionAttributeId).subscribe(
+            res => {
                 this.isLoading = false;
+
                 this.profile = res;
                 this.fields = [];
+
                 let excluded = ['assetid', 'effectivestartdate', 'effectiveenddate', 'createdby', 'createdon', 'updatedby', 'updatedon'];
                 let assetID = -1;
 
@@ -93,14 +95,18 @@ export class FusionAttributeProfileDetailsComponent extends BaseComponent implem
                         let name = this.profile[0][i].Key;
                         let value = this.profile[0][i].Value;
 
-                        if (value == null)
+                        if (value == null) {
                             value = 'N/A';
-                        if (value.toString().startsWith('/Date('))
+                        }
+                        if (value.toString().startsWith('/Date(')) {
                             value = new Date(parseInt(value.replace('/Date(', ''))).toLocaleDateString();
-                        if (name.toLowerCase() == 'assetid')
+                        }
+                        if (name.toLowerCase() == 'assetid') {
                             assetID = +value;
-                        if (excluded.findIndex(e => e == name.toLowerCase()) > -1)
+                        }
+                        if (excluded.findIndex(e => e == name.toLowerCase()) > -1) {
                             continue;
+                        }
 
                         this.fields.push({
                             name: name,
@@ -108,8 +114,10 @@ export class FusionAttributeProfileDetailsComponent extends BaseComponent implem
                             col: (i % 3) + 1
                         })
                     }
-                    if (assetID > -1)
-                    this.assetIdChange.emit(assetID);
+
+                    if (assetID > -1) {
+                        this.assetIdChange.emit(assetID);
+                    }
                 }
 
                 this.ref.markForCheck();

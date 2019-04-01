@@ -101,6 +101,9 @@ namespace d360.web.Controllers.V2
         {
             switch (field.Type)
             {
+                case "Date":
+                case "DateTime":
+                    return "datetime";
                 case "Number":
                     return "int";
                 case "Decimal":

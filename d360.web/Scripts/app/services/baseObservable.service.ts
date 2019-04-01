@@ -24,11 +24,16 @@ export class BaseObservableService {
                     if (error.status !== 0) {
                         let errorMessage = "";
                         const isError_body = Object.keys(error).indexOf("_body") > -1;
+                        const isErrorError = Object.keys(error).indexOf("error") > -1;
 
                         if (isError_body) {
                             errorMessage = JSON.parse(error["_body"]).message;
                         } else {
-                            errorMessage = error.toString();
+                            if(isErrorError) {
+                                errorMessage = error.error.message;
+                            } else {
+                                errorMessage = error.toString();
+                            }
                         }
 
                         this.messages.showError('Error', errorMessage);

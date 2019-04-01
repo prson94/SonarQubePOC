@@ -88,11 +88,13 @@ export class FollowersComponent extends BaseComponent implements OnInit, OnDestr
             else this.objectName = res.DisplayValue;
         });
 
-        this.followerService.getFollowers(this.objectType, this.objectID)
-            .then(r => {
+        this.followerService.getFollowers(this.objectType, this.objectID).subscribe(
+            r => {
                 this.items = r;
+
                 this.isLoading = false;
-            });
+            }
+        );
     }
 
     private doSelect(follower: FollowDetail) {

@@ -15,17 +15,17 @@ namespace d360.core.entities
         [DataMember]
         public DateTime EffectiveDate { get; set; }
         [DataMember]
-        public int RowCount { get; set; }
+        public int? RowCount { get; set; }
         [DataMember]
-        public decimal Uniqueness { get; set; }
+        public decimal? Uniqueness { get; set; }
         [DataMember]
-        public int UniqueCount { get; set; }
+        public int? UniqueCount { get; set; }
         [DataMember]
-        public decimal Completeness { get; set; }
+        public decimal? Completeness { get; set; }
         [DataMember]
-        public int NullCount { get; set; }
+        public int? NullCount { get; set; }
         [DataMember]
-        public int BlankCount { get; set; }
+        public int? BlankCount { get; set; }
         [DataMember]
         public string DataType { get; set; }
         [DataMember]
@@ -53,17 +53,17 @@ namespace d360.core.entities
         [DataMember]
         public Guid AssetUid { get; set; }
         [DataMember]
-        public int RowCount { get; set; }
+        public int? RowCount { get; set; }
         [DataMember]
-        public decimal Uniqueness { get; set; }
+        public decimal? Uniqueness { get; set; }
         [DataMember]
-        public int UniqueCount { get; set; }
+        public int? UniqueCount { get; set; }
         [DataMember]
-        public decimal Completeness { get; set; }
+        public decimal? Completeness { get; set; }
         [DataMember]
-        public int NullCount { get; set; }
+        public int? NullCount { get; set; }
         [DataMember]
-        public int BlankCount { get; set; }
+        public int? BlankCount { get; set; }
         [DataMember]
         public string DataType { get; set; }
         [DataMember]

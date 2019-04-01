@@ -1210,7 +1210,7 @@ where   h.ID <> @t order by h.[Level] desc;
             model.Add("Description", assetType.Description);
             model.Add("ParentID", Company.GetParentType(assetType.ObjectID, SystemObjects.ArtifactType)?.ObjectID ?? null);
             model.Add("CanOwnFusion", assetType.CanOwnFusion);
-            model.Add("HasCustomExportTemplates", Company.AssetTypeExportTemplates.Where(x => x.AssetTypeID == assetType.ObjectID).Any());
+            model.Add("HasCustomExportTemplates", Company.AssetTypeExportTemplates.Where(x => x.AssetTypeID == assetType.ID).Any());
             model.Add("AutoDisplayDescription", assetType.AutoDisplayDescription);
 
             bool hasDashboards = Company.Filter<Report>(x => x.ObjectType == "ArtifactType" && x.ObjectID == typeID && x.ReportType != "legacy").Any();
@@ -4427,7 +4427,7 @@ from    ResponsibilityTypeRelationRule R
 	                    select	    AT.ObjectID as ID,
 	                    AT.Name,
 	                    AT.Description,
-	                    AT.HierarchyMaximumDepth,
+	                    AT.HierarchyMaximumDepth as MaximumDepth,
 	                    AT.DisplayFormat,
 	                    AT.CreatedBy,
 	                    AT.CreatedOn,

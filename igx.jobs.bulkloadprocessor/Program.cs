@@ -925,6 +925,9 @@ using       (
 on          (
                 T.CompanyID = S.CompanyID and T.ResourceID = S.ResourceID
             )
+when matched then
+	update 
+		set T.[State] = S.[State]
 when not matched by target then
     insert  (CompanyID, ResourceID, IsAdministrator, [State])
     values  (S.CompanyID, S.ResourceID, 0, S.[State])

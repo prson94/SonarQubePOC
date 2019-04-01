@@ -64,14 +64,13 @@ export class FusionAttributeDetailsComponent extends BaseComponent implements On
             this.loadPermissions(this.permissionsService, StringConstants.ObjectFusionAttribute, this.id);
         });
 
-        this.fusionAttributeService.getFusionAttributeDetails(this.type, this.id)
-            .then(item => {
+        this.fusionAttributeService.getFusionAttributeDetails(this.type, this.id).subscribe(
+            item => {
                 this.fusionAttributeDetail = item;
                 this.setObjectInfo(this.type, this.id, undefined, this.fusionAttributeDetail.AssetID);
                 this.setCommonRightSideBar(true, true, false, true, true, true, false);
-           });
-
-
+            }
+        );
     }
 
     ngOnDestroy() {
