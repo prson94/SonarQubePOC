@@ -20,7 +20,7 @@ import { createWriteStream } from 'fs';
                     <li #item [ngClass]="{'menu-category':true,'menu-parent':menu && (menu.NavigationItems),'menu-active':menu?.isActiveItem}" title="{{title}}" (mouseenter)="show(item)" (mouseleave)="hide(item)" [routerLink]="url ? url : []" style="cursor: pointer;" >
                         <span>
                             <i *ngIf="rootIconName" [class]="'fa ' + rootIconName"></i>
-                            <img *ngIf="imageUrl" [src]="imageUrl" style="max-width: 15px; max-height: 15px; margin: 0px 15px 0px 12px" />
+                            <img *ngIf="imageUrl" [src]="imageUrl" style="max-width: 15px; max-height: 15px; margin: 0px 15px 0px 10px" />
                             <span [ngClass]="{'caption':true, 'min':!expanded}">
                                 <div [ngClass]="{'no-overflow':expanded, 'icon-active':expanded, 'icon':!expanded}"> {{title}} <i [ngClass]="{'pull-right menu-category fa fa-caret-right':(menu && menu.NavigationItems && menu.NavigationItems.length > 0)}"></i></div>
                             </span>
