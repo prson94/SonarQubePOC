@@ -1,0 +1,35 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Sebastian Abraham" id="GOV-4457">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[
+		ALTER TABLE [dbo].[FieldType] ADD 	[ShowIfEmpty] [bit] NOT NULL
+		CONSTRAINT [DF_FieldType_ShowIfEmpty]  DEFAULT (0)
+		]]>
+
+    </sql>
+	<rollback>
+	<![CDATA[
+	IF exists(SELECT 1
+	FROM sys.default_constraints where name='DF_FieldType_ShowIfEmpty')
+	Begin 
+		ALTER TABLE [dbo].[FieldType] drop constraint [DF_FieldType_ShowIfEmpty]
+	End
+	
+	IF exists(select 1 from information_schema.columns where table_name ='FieldType' and column_name='ShowIfEmpty')
+	Begin 
+		ALTER TABLE [dbo].[FieldType] drop column ShowIfEmpty
+	End
+]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>

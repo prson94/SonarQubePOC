@@ -51,9 +51,10 @@
                 <simple-accordion header="Settings" active="true">
                     <div>
                         <p-checkbox binary="true"
-                                    [(ngModel)]="model.FieldType.IsDisplayable"
+                                     [(ngModel)]="model.FieldType.IsDisplayable"
                                     label="Show In Detail Tile?"
                                     [ngModelOptions]="{standalone: true}"
+                                     (ngModelChange)="model.FieldType.IsDisplayable=$event;onShowDetailChange($event);"
                                     [disabled]="['FusionLookup','ComplexRelationLookup','FilteredLookup','OwnershipLookup'].indexOf(model.FieldType.Type) > -1">
                         </p-checkbox>
                     </div>
@@ -100,6 +101,13 @@
                                     label="Allow Multiple Items?"
                                     [ngModelOptions]="{standalone: true}"
                                     [disabled]="['Lookup'].indexOf(model.FieldType.Type) == -1"></p-checkbox>
+                    </div>
+                    <div>
+                        <p-checkbox binary="true"
+                                    [(ngModel)]="model.FieldType.ShowIfEmpty"
+                                    label="Show if Empty?"
+                                    [ngModelOptions]="{standalone: true}"
+                                    [disabled]="!model.FieldType.IsDisplayable"></p-checkbox>
                     </div>
                 </simple-accordion>
             </div>
