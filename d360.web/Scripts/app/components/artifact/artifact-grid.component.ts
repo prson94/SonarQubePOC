@@ -198,7 +198,12 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
                 if (this.items && this.items.length > 0) this.selected = this.items[0];
                 this.isLoading = false;
                 this.changeDetectorRef.markForCheck();
-            });
+            },
+            error => {
+                this.isLoading = false;
+                this.messagesService.showError("Error", error.message);
+            }
+            );
     }
 
     getCertificationStatusColor(status: string) {
