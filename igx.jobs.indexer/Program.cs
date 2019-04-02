@@ -507,14 +507,18 @@ from
         private static IEnumerable<AddToIndexModel> LoadArtifacts(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             var sql = @"
-select	cast(ID as varchar) as ItemUniqueID,
-        ObjectID as ID,
-		TypeID,
-		DisplayValue,
-		TypeName
-from	AssetDetail
-where	Type = 'ArtifactType'
-		and State = 1";
+select
+	cast(A.ID as varchar) as ItemUniqueID,
+	A.ObjectID as ID,
+	att.ObjectID as TypeID,
+	adv.DisplayValue,
+	att.Name as TypeName
+from
+	[dbo].Asset a
+	inner join [dbo].assettype att on a.assettypeid = att.id
+	inner join [dbo].assetdisplayvalue adv on adv.assetid = a.id
+where
+	att.[Object] = 'ArtifactType' and a.[state] = 1";
 
             var sType = SystemObjects.Artifact.ToString();
 
