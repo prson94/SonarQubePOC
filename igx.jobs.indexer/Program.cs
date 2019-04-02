@@ -389,14 +389,14 @@ from
         
         private static IEnumerable<AddToIndexModel> LoadRules(SqlConnection context, int companyID, ElasticSearchSource source)
         {
-            var assettypeclass = AssetTypeClass.Rule.ToString();
+            int assettypeclass = (int)AssetTypeClass.Rule;
             var sql = $@"SELECT
                     ObjectID as ID,
                     DisplayValue as Name,
                     TypeName as RuleType,
                     [dbo].GenerateAssetUrl(ID) as [Url]
                 FROM [dbo].[AssetDetail]
-                WHERE AssetTypeClass = {assettypeclass}
+                WHERE AssetTypeClass = {assettypeclass.ToString()}
                 AND State = 1";
 
             var sType = SystemObjects.Rule.ToString();
@@ -444,13 +444,13 @@ from
 
         private static IEnumerable<AddToIndexModel> LoadReferenceItemTypes(SqlConnection context, int companyID, ElasticSearchSource source)
         {
-            var assettypeclass = AssetTypeClass.Reference.ToString();
+            int assettypeclass = (int)AssetTypeClass.Reference;
             var sql = $@"SELECT
                     ObjectID as ID,
                     Name,
                     Description
                 FROM [dbo].[AssetType]
-                WHERE Class = {assettypeclass}
+                WHERE Class = {assettypeclass.ToString()}
                 AND State = 1";
             var sType = "Reference";
             return getData(context, sql, companyID, source, sType, false, (dynamic o) =>
@@ -473,7 +473,7 @@ from
 
         private static IEnumerable<AddToIndexModel> LoadPolicies(SqlConnection context, int companyID, ElasticSearchSource source)
         {
-            var assettypeclass = AssetTypeClass.Policy.ToString();
+            int assettypeclass = (int)AssetTypeClass.Policy;
             var sql = $@"SELECT
 	                ObjectID as ID,
 	                DisplayValue as [Name],
@@ -481,7 +481,7 @@ from
 	                TypeName as PolicyType,
 	                [dbo].GenerateAssetUrl(ID) as [Url]
                 FROM [dbo].[AssetDetail]
-                WHERE AssetTypeClass = {assettypeclass}
+                WHERE AssetTypeClass = {assettypeclass.ToString()}
                 AND State = 1";
 
             var sType = SystemObjects.Policy.ToString();
