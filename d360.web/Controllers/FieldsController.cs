@@ -79,7 +79,8 @@ namespace d360.web.Controllers
                            ft.ObjectID,
                            ft.Name,
                            Type = dt.Description,
-                           ft.ColumnWidth
+                           ft.ColumnWidth,
+                           ft.ShowIfEmpty
                        }).ToList().OrderBy(i => i.ColumnOrder);
 
             return new JsonNetResult { Data = list, Formatting = Newtonsoft.Json.Formatting.None };
