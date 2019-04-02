@@ -393,6 +393,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     }
 
     private loadDataType(value: string): void {
+        let index;
+        let modelRelationItems;
+
         if (value == null) {
             return;
         }
@@ -496,8 +499,13 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                         });
                     }
 
-                    this.changeRefType(this.model.RelationItems.length - 1).subscribe(
-                        () => {
+                    index = this.model.RelationItems.length - 1;
+                    modelRelationItems = this.model.RelationItems;
+
+                    this.changeRefType(index).subscribe(
+                        (res) => {
+                            modelRelationItems[index]["relationItems"] = res;
+                            modelRelationItems[index]["relationsLoading"] = false;
                         }
                     );
                 }
