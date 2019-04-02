@@ -417,16 +417,22 @@ from	dbo.Asset A
 		inner join AssetType T on T.ID = A.AssetTypeID and A.[Uid] = @assetUid;
 
 drop table if exists #tbl
-create table #tbl ([Uid] uniqueidentifier, Name nvarchar(250), Description nvarchar(max), ParentUid uniqueidentifier, IsGroup bit, Weight decimal(5,3), EffectiveDate date)
+create table #tbl (
+	[Uid] uniqueidentifier, ParentUid uniqueidentifier, 
+	[Name] nvarchar(250), [Description] nvarchar(max), IsGroup bit, 
+	[Weight] decimal(5,3), EffectiveDate date, 
+	[Applies] bit null, [Value] bit null, [Level] int null
+)
 
 insert into #tbl 
 	select	A.[Uid],
+			A.ParentUid,
 			A.Name,
 			A.Description,
-			A.ParentUid,
 			A.IsGroup,
 			V.Weight,
-			V.EffectiveDate
+			V.EffectiveDate,
+			NULL, NULL, NULL
 	from	metrics.AssetVersion V
 			inner join (
 					select		IA.[Uid],
@@ -442,25 +448,22 @@ insert into #tbl
 
 with h as (
 	select	*,
-			1 as [Level]
+			1 as Lvl
 	from	#tbl
 	where	ParentUid is null
 	union all
 	select	A.*,
-			h.[Level]+1 as [Level]
+			h.Lvl+1 as Lvl
 	from	#tbl A
 			inner join h on h.[Uid] = A.ParentUid
 )
 
-select	h.[Uid],
-		h.ParentUid,
-		h.[Level],
-		h.Name,
-		h.Description,
-	    h.IsGroup,
-		coalesce(M.AdjustedWeight, h.Weight) as Weight,
-		coalesce(M.[Value], 0) as Value
-from	h
+update	T
+set		T.[Level] = S.Lvl,
+		T.[Weight] = coalesce(M.AdjustedWeight, T.Weight),
+		T.Value = coalesce(M.[Value], 0)
+from	#tbl T
+		inner join h S on S.Uid = T.Uid
 		outer apply (
 			select	I.EffectiveDate,
 					I.[Value],
@@ -470,13 +473,34 @@ from	h
 						select	max(EffectiveDate) as EffectiveDate
 						from	metrics.ScoreItem I
 						where	AssetUid = @assetUid
-								and MetricAssetUid = h.[Uid]
+								and MetricAssetUid = T.[Uid]
 								and EffectiveDate <= @effectiveDate
 					) MI on MI.EffectiveDate = I.EffectiveDate
 			where	AssetUid = @assetUid
-					and MetricAssetUid = h.[Uid]
-		) M 
-where	metrics.AssetMeetsConditions(h.[Uid], h.EffectiveDate, @assetUid) = 1";
+					and MetricAssetUid = T.[Uid]
+		) M;
+
+with C as (
+	select	Uid,
+			ParentUid,
+			metrics.AssetMeetsConditions([Uid], EffectiveDate, @assetUid) as Applies
+	from	#tbl
+	where	IsGroup = 0
+	union all
+	select	P.Uid,
+			P.ParentUid,
+			C.Applies
+	from	#tbl P
+			inner join C on C.ParentUid = P.Uid
+)
+
+update	T
+set		T.Applies = C.Applies
+from	#tbl T
+		inner join C on C.Uid = T.Uid
+
+select	Uid, ParentUid, [Level], Name, Description, IsGroup, Weight, Value
+from	#tbl where Applies = 1";
 
             if (cnn.State != System.Data.ConnectionState.Open)
                 cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
@@ -487,7 +511,7 @@ where	metrics.AssetMeetsConditions(h.[Uid], h.EffectiveDate, @assetUid) = 1";
 
             foreach (var i in results)
             {
-                    model.Add(i);
+                model.Add(i);
             }
 
             return model;
