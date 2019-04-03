@@ -1,6 +1,6 @@
 ﻿import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { ICompanySettingsService, CompanySettings, } from '../../../models/settings.model';
+import { ICompanySettingsService, CompanySettings, CompanyImage, } from '../../../models/settings.model';
 import { SiteNav } from '../../../models/site-menu.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { SiteMenuService } from '../../../services/site-menu.service';
@@ -50,6 +50,8 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
     nextFolderID: number = 0;
     folderItems: SiteNav[] = [];
     availableItems: SiteNav[] = [];
+    iconType = 'icon';
+    private iconImage: CompanyImage = new CompanyImage();
 
     editedMenuItem: SiteNav = null;
     oldFolderItems: SiteNav[] = [];
@@ -77,7 +79,71 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
         if (changes['companySettings'].isFirstChange)
             this.isLoading = false;
     }
-   
+
+    changeIconType(e: any) {
+        if (this.formMode == FormMode.Editing) {
+            if (this.iconType == 'icon') {
+                this.iconType = 'image'
+                this.selection.Icon = null;
+            } else {
+                this.iconType = 'icon';
+                this.selection.ImageIconUrl = null;
+                this.selection.IconPayload = null;
+                this.iconImage = new CompanyImage();
+            }
+        } else if (this.formMode == FormMode.Adding) {
+            if (this.iconType == 'icon') {
+                this.iconType = 'image'
+                this.newFolder.Icon = null;
+            } else {
+                this.iconType = 'icon';
+                this.newFolder.ImageIconUrl = null;
+                this.newFolder.IconPayload = null;
+                this.iconImage = new CompanyImage();
+            }
+        }
+        
+    }
+
+    clearIcon() {
+        this.iconImage = new CompanyImage();
+        if (this.formMode == FormMode.Editing) {
+            this.selection.ImageIconUrl = null;
+        } else if (this.formMode == FormMode.Adding) {
+            this.newFolder.ImageIconUrl = null;
+            }
+        this.onFileChange(null);
+    }
+
+    onFileChange(event): void {
+        if (this.iconImage == null)
+            this.iconImage = new CompanyImage();
+
+        if (event == null) {
+            this.iconImage.file = null;
+            this.iconImage.setDataUrl();
+
+            if (this.formMode == FormMode.Editing) {
+                this.selection.IconPayload = null;
+            } else if (this.formMode == FormMode.Adding) {
+                this.newFolder.IconPayload = null;
+            }
+
+            return;
+        }
+
+        let target = event.target || event.srcElement;
+        let files = target.files;
+
+        this.iconImage.file = files[0];
+        this.iconImage.setDataUrl();
+        if (this.formMode == FormMode.Editing) {
+            this.selection.IconPayload = this.iconImage.dataUrl;
+        } else if (this.formMode == FormMode.Adding) {
+            this.newFolder.IconPayload = this.iconImage.dataUrl;
+        }
+    }
+
     add() {
         this.selection = null;
         this.newFolder = new SiteNav();
@@ -153,7 +219,12 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
         this.selection = item;
         this.editedMenuItem = item;
         this.formMode = FormMode.Editing;
+        this.iconImage = new CompanyImage();
         this.folderName = this.selection.Name;
+        if (this.selection.ImageIconUrl != null)
+            this.iconType = 'image';
+        else
+            this.iconType = 'icon';
         this.loadFolderItems()
             .then(() => {
                 this.oldFolderItems = _.cloneDeep(this.folderItems);
@@ -226,6 +297,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 
         switch (this.formMode) {
             case FormMode.Editing:
+                this.selection.IconPayload = this.iconImage.dataUrl;
                 this.siteMenuService.editFolder(this.selection)
                     .then(result => {
                         this.showMessageForResult(this.messagesService, result);
@@ -239,6 +311,8 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
                     });
                 break;
             case FormMode.Adding:
+
+                this.newFolder.IconPayload = this.iconImage.dataUrl;
                 var model = {
                     folder: this.newFolder,
                     items: this.newFolderItems
