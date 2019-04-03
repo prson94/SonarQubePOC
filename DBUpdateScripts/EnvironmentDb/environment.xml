@@ -141,4 +141,5 @@
   <include file="scripts/GOV-4946-b.xml"/>
   <include file="scripts/GOV-4457.xml"/>
   <include file="scripts/GOV-6726-Update.xml"/>
+  <include file="scripts/GOV-6896.xml"/>
 </databaseChangeLog>
