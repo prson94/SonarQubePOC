@@ -63,7 +63,7 @@
                                     [(ngModel)]="model.FieldType.IsEditable"
                                     label="Is Editable?"
                                     [ngModelOptions]="{standalone: true}"
-                                    [disabled]="['ComplexRelationLookup','FilteredLookup','OwnershipLookup','JSON'].indexOf(model.FieldType.Type) > -1 || ['IssueType'].indexOf(model.FieldType.Object) > -1"></p-checkbox>
+                                    [disabled]="['ComplexRelationLookup','FilteredLookup','OwnershipLookup','JSON'].indexOf(model.FieldType.Type) > -1"></p-checkbox>                                                                        
                     </div>
                     <div *ngIf="showIsListable">
                         <p-checkbox binary="true"
