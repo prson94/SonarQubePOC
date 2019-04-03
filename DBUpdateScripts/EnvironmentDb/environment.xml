@@ -137,6 +137,6 @@
   <include file="scripts/GOV-6921.xml"/>
   <include file="scripts/GOV-6595-b.xml"/>
   <include file="scripts/GOV-4946.xml"/>
-  <include file="scripts/GOV-4946-b.xml"/>
   <include file="scripts/GOV-4946-c.xml"/>
+  <include file="scripts/GOV-4946-b.xml"/>
 </databaseChangeLog>
