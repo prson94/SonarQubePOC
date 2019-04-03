@@ -513,6 +513,8 @@ namespace d360.web.Models
         
         [DataMember]
         public string DataType { get; set; }
+        [DataMember]
+        public bool ShowIfEmpty { get; set; }
     }
 
     [DataContract]

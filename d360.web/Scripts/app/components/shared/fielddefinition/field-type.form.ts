@@ -1284,6 +1284,11 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         });
     }
 
+    private onShowDetailChange($event) {
+        if (!$event)
+            this.model.FieldType.ShowIfEmpty = false;
+    }
+
     public onDateSelectMethod(e: Date)
     {
         this.model.FieldType.DefaultValue = this.getGovernDate(e);        

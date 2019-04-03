@@ -4193,6 +4193,7 @@ namespace d360.web.Controllers
                 ft.ValidationDescription = model.FieldType.ValidationDescription;
                 ft.ColumnWidth = model.FieldType.ColumnWidth;
                 ft.AllowMultipleValues = model.FieldType.AllowMultipleValues;
+                ft.ShowIfEmpty = model.FieldType.ShowIfEmpty;
                 ft.Increment = model.FieldType.Increment;
                 ft.Precision = model.FieldType.Precision;
                 if (model.FieldType.Type == DataType.Lookup.ToString())
