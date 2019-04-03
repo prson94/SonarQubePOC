@@ -726,6 +726,32 @@ where   A.FusionQueryAttributeTypeID = @t
             return Json(profiles, JsonRequestBehavior.AllowGet);
         }
 
+        [Route("dataprofile/{id:int}")]
+        public JsonResult GetAssetDataProfile( int id)
+        {
+            var profiles = Company.Query<AssetDataProfile>(@"	Select
+	                                                ID as DataProfileID,
+	                                                [RowCount] as [RowCount],
+	                                                Uniqueness,
+	                                                UniqueCount,
+	                                                Completeness,
+	                                                NullCount,
+	                                                BlankCount,
+	                                                DataType,
+	                                                MinimumValue,
+	                                                MaximumValue,
+	                                                Precision,
+	                                                Scale,
+	                                                Average,
+	                                                Median,
+	                                                StandardDeviation,
+	                                                Top10Values,
+	                                                ProcessIdentifier
+	                                                From AssetDataProfile where Id= @Id", new { id }).SingleOrDefault();
+
+            return Json(profiles, JsonRequestBehavior.AllowGet);
+        }
+
         /// <summary>
         /// Get all available fusion configurations for a specific type.  These configurations provide required connection and security credentials to connect to the underlying source.
         /// </summary>

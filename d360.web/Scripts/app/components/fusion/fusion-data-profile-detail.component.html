@@ -5,145 +5,130 @@
             <header>Data Profiling</header>
             <div class="row" style="margin-bottom: 10px">
                 <div class="col l2 m3 s6">
-                    <div class="FieldName FieldDisplayName">
+                    <div class="FieldName FieldDisplayName" pTooltip="The number of non-null entries in the field. This does not include empty values.">
                         Row Count
-                        <span style="margin-left: 2px" pTooltip="The number of non-null entries in the field. This does not include empty values." class="fa fa-info-circle  blue-grey-text"></span>
                     </div>
                 </div>
                 <div class="col l2 m3 s6">
-                    <div class="FieldDisplayContent">{{assetDataProfile.RowCounts}}</div>
+                    <div class="FieldDisplayContent">&nbsp;{{assetDataProfile.RowCount}}</div>
                 </div>
                 <div class="col l2 m3 s6">
-                    <div class="FieldName FieldDisplayName">
+                    <div class="FieldName FieldDisplayName" pTooltip="The data type of the field: Integer, Double, Date, String, etc.">
                         Data Type
-                        <span style="margin-left: 2px" pTooltip="The data type of the field: Integer, Double, Date, String, etc." class="fa fa-info-circle  blue-grey-text"></span>
                     </div>
                 </div>
                 <div class="col l2 m3 s6">
-                    <div  class="FieldDisplayContent">{{assetDataProfile.DataType}}</div>
+                    <div class="FieldDisplayContent">&nbsp;{{assetDataProfile.DataType}}</div>
                 </div>
                 <div class="col l2 m3 s6">
-                    <div class="FieldName FieldDisplayName">
+                    <div class="FieldName FieldDisplayName" pTooltip="This is the total number of digits in number for example 99999.99 has a precision of 7.">
                         Precision
-                        <span style="margin-left: 2px" pTooltip="This is the total number of digits in number for example 99999.99 has a precision of 7." class="fa fa-info-circle  blue-grey-text"></span>
                     </div>
                 </div>
                 <div class="col l2 m3 s6">
-                    <div  class="FieldDisplayContent">{{assetDataProfile.Precision}}</div>
+                    <div class="FieldDisplayContent">&nbsp;{{assetDataProfile.Precision}}</div>
                 </div>
             </div>
             <div class="row" style="margin-bottom: 10px">
                 <div class="col l2 m3 s6">
-                    <div class="FieldName FieldDisplayName">Uniqueness</div>
-                    <span style="margin-left: 2px" pTooltip="Percentage of unique values when compared to the total row count." class="fa fa-info-circle  blue-grey-text"></span>
+                    <div class="FieldName FieldDisplayName" pTooltip="Percentage of unique values when compared to the total row count.">Uniqueness</div>
                 </div>
                 <div class="col l2 m3 s6">
-                    <div  class="FieldDisplayContent">{{assetDataProfile.Uniqueness}}</div>
+                    <div class="FieldDisplayContent">&nbsp;{{assetDataProfile.Uniqueness}}</div>
                 </div>
                 <div class="col l2 m3 s6">
-                    <div class="FieldName FieldDisplayName">
+                    <div class="FieldName FieldDisplayName" pTooltip="The number of values in the field that are unique." >
                         UniqueCount
-                        <span style="margin-left: 2px" pTooltip="The number of values in the field that are unique." class="fa fa-info-circle  blue-grey-text"></span>
                     </div>
                 </div>
                 <div class="col l2 m3 s6">
-                    <div class="FieldDisplayContent">{{assetDataProfile.UniqueCount}}</div>
+                    <div class="FieldDisplayContent">&nbsp;{{assetDataProfile.UniqueCount}}</div>
                 </div>
                 <div class="col l2 m3 s6">
-                    <div class="FieldName FieldDisplayName">
+                    <div class="FieldName FieldDisplayName" pTooltip="This is the total number of digits to the right of a decimal point for example 99999.99 has a scale of 2.">
                         Scale
-                        <span style="margin-left: 2px" pTooltip="This is the total number of digits to the right of a decimal point for example 99999.99 has a scale of 2." class="fa fa-info-circle  blue-grey-text"></span>
                     </div>
                 </div>
                 <div class="col l2 m3 s6">
-                    <div class="FieldDisplayContent">{{assetDataProfile.Scale}}</div>
+                    <div class="FieldDisplayContent">&nbsp;{{assetDataProfile.Scale}}</div>
                 </div>
             </div>
             <div class="row" style="margin-bottom: 10px">
                 <div class="col l2 m3 s6">
-                    <div class="FieldName FieldDisplayName">
+                    <div class="FieldName FieldDisplayName" pTooltip="Numerically, the smallest value. In a string field, the first entry if sorted alphabetically.">
                         Minimum Value
-                        <span style="margin-left: 2px" pTooltip="Numerically, the smallest value. In a string field, the first entry if sorted alphabetically." class="fa fa-info-circle  blue-grey-text"></span>
                     </div>
                 </div>
                 <div class="col l2 m3 s6">
-                    <div  class="FieldDisplayContent">{{assetDataProfile.MinimumValue}}</div>
+                    <div class="FieldDisplayContent">&nbsp;{{assetDataProfile.MinimumValue}}</div>
                 </div>
                 <div class="col l2 m3 s6 offset-l4">
-                    <div class="FieldName FieldDisplayName">
+                    <div class="FieldName FieldDisplayName" pTooltip="Numerically, the largest value. In a string field, the last entry if sorted alphabetically.">
                         Maximum Value
-                        <span style="margin-left: 2px" pTooltip="Numerically, the largest value. In a string field, the last entry if sorted alphabetically." class="fa fa-info-circle  blue-grey-text"></span>
                     </div>
                 </div>
                 <div class="col l2 m3 s6">
-                    <div  class="FieldDisplayContent">{{assetDataProfile.MaximumValue}}</div>
+                    <div class="FieldDisplayContent">&nbsp;{{assetDataProfile.MaximumValue}}</div>
                 </div>
             </div>
             <div class="row" style="margin-bottom: 10px">
                 <div class="col l2 m3 s6">
-                    <div class="FieldName FieldDisplayName">
+                    <div class="FieldName FieldDisplayName" pTooltip="Percentage of values that are populated for a column, this excludes blanks and nulls.">
                         Completeness
-                        <span style="margin-left: 2px" pTooltip="Percentage of values that are populated for a column, this excludes blanks and nulls." class="fa fa-info-circle  blue-grey-text"></span>
                     </div>
                 </div>
                 <div class="col l2 m3 s6">
-                    <div class="FieldDisplayContent">{{assetDataProfile.Completeness}}</div>
+                    <div class="FieldDisplayContent">&nbsp;{{assetDataProfile.Completeness}}</div>
                 </div>
                 <div class="col l2 m3 s6  offset-l4">
-                    <div class="FieldName FieldDisplayName">
+                    <div class="FieldName FieldDisplayName"  pTooltip='A calculated "central" value of a set of numbers. To calculate it: add up all the numbers, then divide by how many numbers there are.'>
                         Average
-                        <span style="margin-left: 2px" pTooltip='A calculated "central" value of a set of numbers. To calculate it: add up all the numbers, then divide by how many numbers there are.' class="fa fa-info-circle  blue-grey-text"></span>
                     </div>
                 </div>
                 <div class="col l2 m3 s6">
-                    <div class="FieldDisplayContent">{{assetDataProfile.Average}}</div>
+                    <div class="FieldDisplayContent">&nbsp;{{assetDataProfile.Average}}</div>
                 </div>
             </div>
             <div class="row" style="margin-bottom: 10px">
                 <div class="col l2 m3 s6">
-                    <div class="FieldName FieldDisplayName">
+                    <div class="FieldName FieldDisplayName" pTooltip="The number of entries in this field that are Null. This does not include empty values.">
                         NullCount
-                        <span style="margin-left: 2px" pTooltip="The number of entries in this field that are Null. This does not include empty values." class="fa fa-info-circle  blue-grey-text"></span>
                     </div>
                 </div>
                 <div class="col l2 m3 s6">
-                    <div class="FieldDisplayContent">{{assetDataProfile.NullCount}}</div>
+                    <div class="FieldDisplayContent">&nbsp;{{assetDataProfile.NullCount}}</div>
                 </div>
                 <div class="col l2 m3 s6  offset-l4">
-                    <div class="FieldName FieldDisplayName">
+                    <div class="FieldName FieldDisplayName" pTooltip='Provides the "middle" value in the list of numbers'>
                         Median
-                        <span style="margin-left: 2px" pTooltip='Provides the "middle" value in the list of numbers' class="fa fa-info-circle  blue-grey-text"></span>
                     </div>
                 </div>
                 <div class="col l2 m3 s6">
-                    <div class="FieldDisplayContent">{{assetDataProfile.Median}}</div>
+                    <div class="FieldDisplayContent">&nbsp;{{assetDataProfile.Median}}</div>
                 </div>
             </div>
             <div class="row" style="margin-bottom: 10px">
                 <div class="col l2 m3 s6">
-                    <div class="FieldName FieldDisplayName">
+                    <div class="FieldName FieldDisplayName" pTooltip="The number of empty values.">
                         BlankCount
-                        <span style="margin-left: 2px" pTooltip="The number of empty values." class="fa fa-info-circle  blue-grey-text"></span>
                     </div>
                 </div>
                 <div class="col l2 m3 s6">
-                    <div class="FieldDisplayContent">{{assetDataProfile.BlankCount}}</div>
+                    <div class="FieldDisplayContent">&nbsp;{{assetDataProfile.BlankCount}}</div>
                 </div>
                 <div class="col l2 m3 s6  offset-l4">
-                    <div class="FieldName FieldDisplayName">
+                    <div class="FieldName FieldDisplayName" pTooltip="Measures the amount of variation or dispersion of a set of data values.">
                         StandardDeviation
-                        <span style="margin-left: 2px" pTooltip="Measures the amount of variation or dispersion of a set of data values." class="fa fa-info-circle  blue-grey-text"></span>
                     </div>
                 </div>
                 <div class="col l2 m3 s6">
-                    <div class="FieldDisplayContent">{{assetDataProfile.StandardDeviation}}</div>
+                    <div class="FieldDisplayContent">&nbsp;{{assetDataProfile.StandardDeviation}}</div>
                 </div>
             </div>
             <div class="row" style="margin-bottom: 10px">
                 <div class="col l2 m3 s6">
-                    <div class="FieldName FieldDisplayName">
+                    <div class="FieldName FieldDisplayName" pTooltip="The most frequent values for this data element along with the number of occurrences.">
                         Top 10 Values
-                        <span style="margin-left: 2px" pTooltip="The most frequent values for this data element along with the number of occurrences." class="fa fa-info-circle  blue-grey-text"></span>
                     </div>
                 </div>
                 <div class="col l2 m3 s6">
