@@ -48,7 +48,7 @@ namespace igx.jobs.indexer
         const string timerSettings = "0 0 17 * * 6";
 #endif
 
-        const string fieldsSql = @"select F.ObjectID, T.Name, F.FormattedValue from Field F inner join FieldType T on T.ID = F.FieldTypeID and F.ObjectType = @t and F.FormattedValue is not null and F.FormattedValue <> ''";
+        const string fieldsSql = @"select F.ObjectID, T.Name, F.FormattedValue from Field F inner join FieldType T on T.ID = F.FieldTypeID and F.ObjectType = @t and F.FormattedValue is not null and F.FormattedValue <> '' and T.[Type] <> 'DateTime'";
 
         public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
         {
@@ -505,7 +505,7 @@ from
         }
 
         private static IEnumerable<AddToIndexModel> LoadArtifacts(SqlConnection context, int companyID, ElasticSearchSource source)
-        {
+        {            
             var sql = @"
 select
 	cast(A.ID as varchar) as ItemUniqueID,
