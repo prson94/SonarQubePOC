@@ -389,14 +389,14 @@ from
         
         private static IEnumerable<AddToIndexModel> LoadRules(SqlConnection context, int companyID, ElasticSearchSource source)
         {
-            var assettypeclass = AssetTypeClass.Rule.ToString();
+            int assettypeclass = (int)AssetTypeClass.Rule;
             var sql = $@"SELECT
                     ObjectID as ID,
                     DisplayValue as Name,
                     TypeName as RuleType,
                     [dbo].GenerateAssetUrl(ID) as [Url]
                 FROM [dbo].[AssetDetail]
-                WHERE AssetTypeClass = {assettypeclass}
+                WHERE AssetTypeClass = {assettypeclass.ToString()}
                 AND State = 1";
 
             var sType = SystemObjects.Rule.ToString();
@@ -444,13 +444,13 @@ from
 
         private static IEnumerable<AddToIndexModel> LoadReferenceItemTypes(SqlConnection context, int companyID, ElasticSearchSource source)
         {
-            var assettypeclass = AssetTypeClass.Reference.ToString();
+            int assettypeclass = (int)AssetTypeClass.Reference;
             var sql = $@"SELECT
                     ObjectID as ID,
                     Name,
                     Description
                 FROM [dbo].[AssetType]
-                WHERE Class = {assettypeclass}
+                WHERE Class = {assettypeclass.ToString()}
                 AND State = 1";
             var sType = "Reference";
             return getData(context, sql, companyID, source, sType, false, (dynamic o) =>
@@ -473,7 +473,7 @@ from
 
         private static IEnumerable<AddToIndexModel> LoadPolicies(SqlConnection context, int companyID, ElasticSearchSource source)
         {
-            var assettypeclass = AssetTypeClass.Policy.ToString();
+            int assettypeclass = (int)AssetTypeClass.Policy;
             var sql = $@"SELECT
 	                ObjectID as ID,
 	                DisplayValue as [Name],
@@ -481,7 +481,7 @@ from
 	                TypeName as PolicyType,
 	                [dbo].GenerateAssetUrl(ID) as [Url]
                 FROM [dbo].[AssetDetail]
-                WHERE AssetTypeClass = {assettypeclass}
+                WHERE AssetTypeClass = {assettypeclass.ToString()}
                 AND State = 1";
 
             var sType = SystemObjects.Policy.ToString();
@@ -507,14 +507,18 @@ from
         private static IEnumerable<AddToIndexModel> LoadArtifacts(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             var sql = @"
-select	cast(ID as varchar) as ItemUniqueID,
-        ObjectID as ID,
-		TypeID,
-		DisplayValue,
-		TypeName
-from	AssetDetail
-where	Type = 'ArtifactType'
-		and State = 1";
+select
+	cast(A.ID as varchar) as ItemUniqueID,
+	A.ObjectID as ID,
+	att.ObjectID as TypeID,
+	adv.DisplayValue,
+	att.Name as TypeName
+from
+	[dbo].Asset a
+	inner join [dbo].assettype att on a.assettypeid = att.id
+	inner join [dbo].assetdisplayvalue adv on adv.assetid = a.id
+where
+	att.[Object] = 'ArtifactType' and a.[state] = 1";
 
             var sType = SystemObjects.Artifact.ToString();
 

@@ -1,0 +1,32 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="BHoward" id="GOV-4649-c">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[
+			IF COL_LENGTH('dbo.SiteNav','ImageIconUrl') IS NULL
+			BEGIN
+			  ALTER TABLE [dbo].[SiteNav] 
+			  ADD ImageIconUrl Varchar(100)
+			END
+		
+		]]>
+    </sql>
+    <rollback>
+		<![CDATA[			
+			IF COL_LENGTH('dbo.SiteNav','ImageIconUrl') IS NOT NULL
+			BEGIN
+			ALTER TABLE [dbo].[SiteNav] 
+			  DROP ImageIconUrl 
+			END
+		]]>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>

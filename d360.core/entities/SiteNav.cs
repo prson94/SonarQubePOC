@@ -39,6 +39,30 @@ namespace d360.core.entities
 
         [NotMapped, DataMember]
         public List<SiteNavPermission> Permissions { get; set; }
+
+        [DataMember]
+        [Column(TypeName = "varchar"), StringLength(100)]
+        public string ImageIconUrl { get; set; }
+
+        [NotMapped, DataMember]
+        public string IconPayload { get; set; }
+
+        [NotMapped, DataMember]
+        public string FullURL
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(this.ImageIconUrl))
+                {
+                    return null;
+                }
+                else
+                {
+                    return constants.COMPANY_RESOURCES_URL + this.ImageIconUrl;
+                }
+            }
+        }
+
     }
 
     public class SiteNavPermission : BaseObject

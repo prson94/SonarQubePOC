@@ -1,4 +1,4 @@
-import * as _ from 'lodash';
+﻿import * as _ from 'lodash';
 import {forkJoin, Observable} from "rxjs";
 import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChange} from '@angular/core';
 import {SelectItem} from 'primeng/primeng';
@@ -1464,8 +1464,14 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         });
     }
 
-    public onDateSelectMethod(e: Date) {
-        this.model.FieldType.DefaultValue = this.getGovernDate(e);
+    private onShowDetailChange($event) {
+        if (!$event)
+            this.model.FieldType.ShowIfEmpty = false;
+    }
+
+    public onDateSelectMethod(e: Date)
+    {
+        this.model.FieldType.DefaultValue = this.getGovernDate(e);        
     }
 
     private getGovernDate(e: Date) {

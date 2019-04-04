@@ -1,22 +1,33 @@
-﻿import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
+﻿import { Input, Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter, AfterViewInit} from '@angular/core';
+import { BaseComponent } from '../base.component';
+import { MessagesService } from '../../../services/messages.service';
+import { HeaderActionsService } from '../../../services/header-actions.service';
+import { StateService } from '../../../services/state.service';
+import { FavoritesService } from '../../../services/favorites.service';
+import { AuthenticationService } from '../../../services/authentication.service';
+import { SiteMenuService } from '../../../services/site-menu.service';
+import { SiteMenu, SiteMenuItem } from '../../../models/site-menu.model';
+import { Favorite } from '../../../models/favorite.model';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import * as _ from 'lodash';
-
-import {SiteMenu, SiteMenuItem} from '../../../models/site-menu.model';
-
-import {SiteUrlHelpers} from '../../../static/site-url-helpers';
-
-import {MessagesService} from '../../../services/messages.service';
-import {HeaderActionsService} from '../../../services/header-actions.service';
-import {StateService} from '../../../services/state.service';
-import {FavoritesService} from '../../../services/favorites.service';
-import {AuthenticationService} from '../../../services/authentication.service';
-import {SiteMenuService} from '../../../services/site-menu.service';
-
-import {BaseComponent} from '../base.component';
+import { isString, isArray } from 'util';
 
 declare var CompanySettings;
 
 @Component({
+    selector: 'd3s-site-menu',    
+    template: ` 
+                <ul [class.left-side-nav-open]="menuOpen" [class.left-side-nav]='!menuOpen'>
+                    <d3s-site-menu-category [expanded]="menuOpen" [title]="'Home'" [url]="'home'" [rootIconName]="'fa-home'"></d3s-site-menu-category>  
+                    <d3s-site-menu-category *ngIf="favorites" [expanded]="menuOpen" [title]="'Favorites'" showClearButton="true" (clearClick)="clearFavorites()" [menu]="favorites" rootIconName="fa-star"></d3s-site-menu-category>
+                    <ng-template ngFor let-menu [ngForOf]="siteMenu">
+                        <d3s-site-menu-category *ngIf="menu.ShouldDisplay" [expanded]="menuOpen" [url]="menu.ngUrl" [title]="menu.Title" [rootIconName]="menu.Icon" [imageUrl]="menu.FullURL" [menu]="menu"></d3s-site-menu-category>
+                    </ng-template>                  
+                    <d3s-site-menu-category *ngIf="isAdmin" [expanded]="menuOpen" [title]="'Configuration'" rootIconName="fa-wrench" [menu]="configMenu"></d3s-site-menu-category>  
+                    <d3s-site-menu-category *ngIf="isAdmin" [expanded]="menuOpen" [title]="'Administration'" rootIconName="fa-cog" [menu]="adminMenu"></d3s-site-menu-category>  
+                </ul>
+                <div [ngClass]="{'menu-toggle':!menuOpen, 'menu-toggle-open':menuOpen}" title="Toggle full width navigation" (click)="toggleMenu();"><i class="fa fa-arrow-circle-left" [class.rotate-right]="!menuOpen" [class.rotate-left]="menuOpen"></i></div>
+                `,    
     selector: 'd3s-site-menu',
     templateUrl: './site-menu.component.html',
     providers: [SiteMenuService, FavoritesService],
@@ -24,11 +35,15 @@ declare var CompanySettings;
 })
 
 export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestroy {
+    @Input() menuOpen: boolean;
+    @Output() menuChanged = new EventEmitter<boolean>();
+
     public isAdmin: boolean = false;
     public siteMenu: SiteMenu[] = [];
     public favorites: SiteMenu;
-
+    
     private adminMenu: SiteMenu;
+    private configMenu: SiteMenu;
     private subSiteNav: any;
     private subFavorites: any;
 
@@ -50,6 +65,10 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
         this.subSiteNav = this.stateService.siteMenuRequiresReload$.subscribe(() => {
             this.loadMenu();
+            //wait for the menu to laod before getting the counts
+            window.setTimeout(() => {
+                this.headerActionsService.emitCountChange();
+            }, 500);
         });
 
         this.subFavorites = this.headerActionsService.onFavoritesChanges$.subscribe(() => {
@@ -62,6 +81,8 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         this.subFavorites.unsubscribe();
     }
 
+
+
     loadFavorites() {
         if (CompanySettings.ShowFavorites == 'false') {
             return;
@@ -69,22 +90,25 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
         this.favoritesService.getFavorites().subscribe(
             favorites => {
-                favorites = _.sortBy(favorites, 'SortOrder'); // sort the favorites
-                this.favorites = new SiteMenu();
-                this.favorites.NavigationItems = [];
+            favorites = _.sortBy(favorites, 'SortOrder'); // sort the favorites
+            this.favorites = new SiteMenu();
+            this.favorites.MenuID = '*Favourites';
+            this.favorites.NavigationItems = [];
 
-                for (let favorite of favorites) {
-                    this.favorites.NavigationItems.push({
-                        Name: favorite.Name,
-                        Url: favorite.Route,
-                        IsLink: false,
-                        Items: null,
-                        IsHomePage: favorite.IsHomePage
-                    });
-                }
+            for (let favorite of favorites) {
+                this.favorites.NavigationItems.push({
+                    Name: favorite.Name,
+                    Url: favorite.Route,
+                    IsLink: false,
+                    Items: null,
+                    IsHomePage: favorite.IsHomePage,
+                    count: null
+                });
+            }
 
-                this.ref.markForCheck();
-            });
+            this.ref.markForCheck();
+        }
+        );
     }
 
     loadMenu() {
@@ -132,15 +156,18 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                             }
                             break;
                     }
-
-                    if (!menu.Icon) {
+                    if (!menu.Icon && !menu.FullURL) {
                         menu.Icon = 'fa-folder';
                     }
+
+                    this.loadCounts(menu);
+
                 }
 
                 this.siteMenu = _.sortBy(result.MenuItems, 'SortOrder'); // sort the menu's by display order
 
                 if (result.IsAdmin) {
+                    this.buildConfigMenu();
                     this.buildAdminMenu();
                 }
 
@@ -150,6 +177,25 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
                 this.ref.markForCheck();
             });
+    }
+
+    loadCounts(menu: any) {
+        if (menu && menu.NavigationItems && menu.NavigationItems.length > 0 && !menu.MenuID.startsWith('-')) {
+            menu.NavigationItems.forEach((item) => this.getCount(item));
+        }
+    }
+
+    getCount(items) {
+        if (isString(items.Name) && isString(items.Url) && items.Url.indexOf('/') != -1) {
+            //get count for item
+            this.siteMenuService.getItemCount(items.Url.replace(new RegExp('/', 'g'), '-')).then((res) => { items.count = res; });
+        }
+
+        //check if sub items exist
+        if (isArray(items.Items)) {
+            //recursively check sub items
+            items.Items.forEach((item) => this.getCount(item));
+        }
     }
 
     private clearFavorites() {
@@ -162,218 +208,79 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         );
     }
 
+    private toggleMenu() {
+        this.menuOpen = !this.menuOpen;
+        this.menuChanged.emit(this.menuOpen);
+    }
+
+    buildConfigMenu() {
+
+        this.configMenu = new SiteMenu();
+        this.configMenu.MenuID = '-Config';
+        this.configMenu.NavigationItems = [];
+
+        this.configMenu.NavigationItems.push({ Name: 'Artifacts', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ARTIFACTS}`, Items: null, IsLink: false, IsHomePage: false, count: null });
+        this.configMenu.NavigationItems.push({ Name: 'Attributes', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ATTRIBUTES}`, Items: null, IsLink: false, IsHomePage: false, count: null });
+        this.configMenu.NavigationItems.push({ Name: 'Lookups', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_LOOKUPS}`, Items: null, IsLink: false, IsHomePage: false, count: null });
+        this.configMenu.NavigationItems.push({ Name: 'Models', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_MODELS}`, Items: null, IsLink: false, IsHomePage: false, count: null });
+        this.configMenu.NavigationItems.push({ Name: 'Policies', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_POLICIES}`, Items: null, IsLink: false, IsHomePage: false, count: null });
+        this.configMenu.NavigationItems.push({ Name: 'Predicates', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_PREDICATES}`, Items: null, IsLink: false, IsHomePage: false, count: null });
+        this.configMenu.NavigationItems.push({ Name: 'Relationships', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RELATIONSHIPS}`, Items: null, IsLink: false, IsHomePage: false, count: null });
+        this.configMenu.NavigationItems.push({ Name: 'Rules', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RULES}`, Items: null, IsLink: false, IsHomePage: false, count: null });
+        this.configMenu.NavigationItems.push({ Name: 'Surveys', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SURVEYS}`, Items: null, IsLink: false, IsHomePage: false, count: null });
+    }
+
     private buildAdminMenu() {
         this.adminMenu = new SiteMenu();
+        this.adminMenu.MenuID = '-Admin';
         this.adminMenu.NavigationItems = [];
 
-        let metaMenu = new SiteMenuItem();
         let integrationMenu = new SiteMenuItem();
-        let securityMenu = new SiteMenuItem();
-        let metricsMenu = new SiteMenuItem();
-        let workflowMenu = new SiteMenuItem();
-
-        metaMenu.Name = "MetaModel";
-        metaMenu.Items = [
-            {
-                Name: 'Artifacts',
-                Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ARTIFACTS}`,
-                Items: null,
-                IsLink: false,
-                IsHomePage: false
-            },
-            {
-                Name: 'Attributes',
-                Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ATTRIBUTES}`,
-                Items: null,
-                IsLink: false,
-                IsHomePage: false
-            },
-            {
-                Name: 'Lookups',
-                Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_LOOKUPS}`,
-                Items: null,
-                IsLink: false,
-                IsHomePage: false
-            },
-            {
-                Name: 'Models',
-                Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_MODELS}`,
-                Items: null,
-                IsLink: false,
-                IsHomePage: false
-            },
-            {
-                Name: 'Policies',
-                Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_POLICIES}`,
-                Items: null,
-                IsLink: false,
-                IsHomePage: false
-            },
-            {
-                Name: 'Predicates',
-                Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_PREDICATES}`,
-                Items: null,
-                IsLink: false,
-                IsHomePage: false
-            },
-            {
-                Name: 'Relationships',
-                Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RELATIONSHIPS}`,
-                Items: null,
-                IsLink: false,
-                IsHomePage: false
-            },
-            {
-                Name: 'Rules',
-                Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RULES}`,
-                Items: null,
-                IsLink: false,
-                IsHomePage: false
-            },
-            {
-                Name: 'Surveys',
-                Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SURVEYS}`,
-                Items: null,
-                IsLink: false,
-                IsHomePage: false
-            }
-        ];
-
         integrationMenu.Name = "Integration";
-        integrationMenu.Items = [
-            {
-                Name: 'API',
-                Url: '/swagger/ui/index',
-                Items: null,
-                IsLink: true,
-                IsHomePage: false
-            },
-            {
-                Name: 'Bulk Loader',
-                Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_BULK_LOAD}`,
-                Items: null,
-                IsLink: false,
-                IsHomePage: false
-            }
-        ];
-        if (CompanySettings.ShowCustomAPIAdmin != 'false') {
-            integrationMenu.Items.push({
-                Name: 'Custom API',
-                Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_CUSTOM_API}`,
-                Items: null,
-                IsLink: false,
-                IsHomePage: false
-            });
-        }
-        integrationMenu.Items.push(
-            {
-                Name: 'Fusion',
-                Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_FUSION}`,
-                Items: null,
-                IsLink: false,
-                IsHomePage: false
-            }
-        );
+        integrationMenu.Items = [];
+        integrationMenu.Items.push({ Name: 'API', Url: '/swagger/ui/index', Items: null, IsLink: true, IsHomePage: false, count: null });
+        integrationMenu.Items.push({ Name: 'Bulk Loader', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_BULK_LOAD}`, Items: null, IsLink: false, IsHomePage: false, count:null  });
+        if (CompanySettings.ShowCustomAPIAdmin != 'false') integrationMenu.Items.push({ Name: 'Custom API', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_CUSTOM_API}`, Items: null, IsLink: false, IsHomePage: false, count:null });
+        integrationMenu.Items.push({ Name: 'Fusion', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_FUSION}`, Items: null, IsLink: false, IsHomePage: false, count: null });
 
+        this.adminMenu.NavigationItems.push(integrationMenu);
+
+        let securityMenu = new SiteMenuItem();
         securityMenu.Name = "Security";
-        securityMenu.Items = [
-            {
-                Name: 'Groups',
-                Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_GROUPS}`,
-                Items: null,
-                IsLink: false,
-                IsHomePage: false
-            }
-        ];
-        if (CompanySettings.EnableOrganizations) {
-            securityMenu.Items.push({
-                Name: 'Organizations',
-                Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ORGANIZATIONS}`,
-                Items: null,
-                IsLink: false,
-                IsHomePage: false
-            });
-        }
-        securityMenu.Items.push(
-            {
-                Name: 'Responsibilities',
-                Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RESPONSIBILITIES}`,
-                Items: null,
-                IsLink: false,
-                IsHomePage: false
-            },
-            {
-                Name: 'Users',
-                Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RESOURCES}`,
-                Items: null,
-                IsLink: false,
-                IsHomePage: false
-            }
-        );
+        securityMenu.Items = [];
 
+        securityMenu.Items.push({ Name: 'Groups', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_GROUPS}`, Items: null, IsLink: false, IsHomePage: false, count:null });
+
+        if (CompanySettings.EnableOrganizations)
+            securityMenu.Items.push({ Name: 'Organizations', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ORGANIZATIONS}`, Items: null, IsLink: false, IsHomePage: false, count:null });
+
+        securityMenu.Items.push({ Name: 'Responsibilities', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RESPONSIBILITIES}`, Items: null, IsLink: false, IsHomePage: false, count:null });
+        securityMenu.Items.push({ Name: 'Users', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RESOURCES}`, Items: null, IsLink: false, IsHomePage: false, count:null });
+
+        this.adminMenu.NavigationItems.push(securityMenu);
+
+        this.adminMenu.NavigationItems.push({ Name: 'Settings', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SETTINGS}`, IsLink: false, IsHomePage: false, count:null });
+
+        this.adminMenu.NavigationItems.push({ Name: 'Export Templates', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_EXPORT_TEMPLATES}`, IsLink: false, IsHomePage: false, count:null });
+
+        let metricsMenu = new SiteMenuItem();
         metricsMenu.Name = "Metrics";
-        metricsMenu.Items = [
-            {
-                Name: 'Analytics',
-                Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ANALYTICS}`,
-                Items: null,
-                IsLink: false,
-                IsHomePage: false
-            },
-            {
-                Name: 'Dashboard',
-                Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_DASHBOARDS}`,
-                Items: null,
-                IsLink: false,
-                IsHomePage: false
-            }
-        ];
+        metricsMenu.Items = [];
+        metricsMenu.Items.push({ Name: 'Analytics', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ANALYTICS}`, Items: null, IsLink: false, IsHomePage: false, count:null });
+        metricsMenu.Items.push({ Name: 'Dashboard', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_DASHBOARDS}`, Items: null, IsLink: false, IsHomePage: false, count: null });
+        this.adminMenu.NavigationItems.push(metricsMenu);
 
+
+        let workflowMenu = new SiteMenuItem();
         workflowMenu.Name = "Workflow";
-        workflowMenu.Items = [
-            {
-                Name: 'Workflow',
-                Items: null,
-                Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_WORKFLOW}`,
-                IsLink: false,
-                IsHomePage: false
-            },
-            {
-                Name: 'Action Types',
-                Items: null,
-                Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ISSUE_TYPES}`,
-                IsLink: false,
-                IsHomePage: false
-            }
-        ];
+        workflowMenu.Items = [];
 
-        this.adminMenu.NavigationItems.push(
-            metaMenu,
-            integrationMenu,
-            securityMenu,
-            {
-                Name: 'Settings',
-                Items: null,
-                Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SETTINGS}`,
-                IsLink: false,
-                IsHomePage: false
-            },
-            {
-                Name: 'Export Templates',
-                Items: null,
-                Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_EXPORT_TEMPLATES}`,
-                IsLink: false,
-                IsHomePage: false
-            },
-            metricsMenu,
-            workflowMenu,
-            {
-                Name: 'Style Customizations',
-                Items: null,
-                Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_CUSTOMIZATIONS}`,
-                IsLink: false,
-                IsHomePage: false
-            }
-        );
+        workflowMenu.Items.push({ Name: 'Workflow', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_WORKFLOW}`, IsLink: false, IsHomePage: false, count:null });
+        workflowMenu.Items.push({ Name: 'Action Types', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ISSUE_TYPES}`, IsLink: false, IsHomePage: false, count:null });
+
+        this.adminMenu.NavigationItems.push(workflowMenu);
+
+        this.adminMenu.NavigationItems.push({ Name: 'Style Customizations', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_CUSTOMIZATIONS}`, IsLink: false, IsHomePage: false, count:null });
+
     }
-}
+};

@@ -126,6 +126,7 @@ export class FieldType {
     FilterPredicateID: number;
     FilterPredicateDirection: number;
     FilterFieldTypeID: number;
+    ShowIfEmpty: boolean;
 }
 
 export class Field {

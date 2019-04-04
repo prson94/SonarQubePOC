@@ -66,6 +66,7 @@ export class DetailField {
     Type: DetailFieldType = DetailFieldType.Field;
     Data: any;
     DataType: string;
+    ShowIfEmpty: boolean;
 }
 
 export class Synonym {

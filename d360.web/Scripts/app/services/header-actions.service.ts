@@ -29,11 +29,18 @@ export class HeaderActionsService {
     private onSiteNavChangeSource = new Subject();
     public onSiteNavChanges$ = this.onSiteNavChangeSource.asObservable();
 
+    private onSiteCountsChangeSource = new Subject();
+    public onSiteCountsChange = this.onSiteCountsChangeSource.asObservable();
+
+
     emitFavoritesChange() {
         this.onFavoritesChangeSource.next();
     }
 
     emitSiteNavChange() {
         this.onSiteNavChangeSource.next();
+    }
+    emitCountChange() {
+        this.onSiteCountsChangeSource.next();
     }
 }
