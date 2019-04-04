@@ -3068,11 +3068,6 @@
             Used in the Filter By Relationship tile on artifact list pages.
             </summary>
         </member>
-        <member name="T:d360.web.Controllers.BaseController.RelationshipDirectionFieldInfo">
-            <summary>
-            Only used in the method below.
-            </summary>
-        </member>
         <member name="M:d360.web.Controllers.FormController.Artifact_AddFields(System.Int32,System.Int32)">
             <param name="at">ArtifactTypeID</param>
             <param name="p">ParentID</param>
