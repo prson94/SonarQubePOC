@@ -425,6 +425,13 @@ where   A.FusionID = @f
                 profileJoins = @"inner join Asset AA on AA.ObjectID=A.ID and AA.Object='FusionAttribute'
                                  inner join  AssetDataProfile ADP on AA.ID = ADP.AssetID";
             }
+            else
+            {
+                profileColumns = @" ,ADP.ID as DataProfileID ";
+                profileJoins = @" left join Asset AA on AA.ObjectID=A.ID and AA.Object='FusionAttribute'
+                                 left join  AssetDataProfile ADP on AA.ID = ADP.AssetID ";
+            }
+
             #region Count SQL
 
             var countSql = $@"
