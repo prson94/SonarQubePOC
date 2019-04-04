@@ -184,7 +184,7 @@ using	(
         from	#users
 		) as S
 on		(T.ResourceID = S.ResourceID)
-when	matched and (coalesce(T.UpdatedOn, '1/1/1900') < S.UpdatedOn) then
+when	matched and ((coalesce(T.UpdatedOn, '1/1/1900') < S.UpdatedOn) or (coalesce(T.LastLoggedInOn, '1/1/1900') < S.LastLoggedInOn)) then
 		update	
 		set		T.FirstName = S.FirstName,
 				T.LastName = S.LastName,
