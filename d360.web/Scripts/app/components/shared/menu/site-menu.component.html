@@ -1,20 +1,40 @@
-<ul class="left-side-nav">
-    <d3s-site-menu-category (clearClick)="clearFavorites()"
-                            *ngIf="favorites"
+<ul [class.left-side-nav-open]="menuOpen"
+    [class.left-side-nav]='!menuOpen'>
+    <d3s-site-menu-category [expanded]="menuOpen"
+                            [title]="'Home'"
+                            [url]="'home'"
+                            [rootIconName]="'fa-home'"></d3s-site-menu-category>
+    <d3s-site-menu-category *ngIf="favorites"
+                            [expanded]="menuOpen"
+                            [title]="'Favorites'"
+                            showClearButton="true"
+                            (clearClick)="clearFavorites()"
                             [menu]="favorites"
-                            [title]="'My Favorites'"
-                            rootIconName="fa-star"
-                            showClearButton="true"></d3s-site-menu-category>
-    <ng-template [ngForOf]="siteMenu"
-                 let-menu ngFor>
+                            rootIconName="fa-star"></d3s-site-menu-category>
+    <ng-template ngFor
+                 let-menu
+                 [ngForOf]="siteMenu">
         <d3s-site-menu-category *ngIf="menu.ShouldDisplay"
-                                [menu]="menu"
-                                [rootIconName]="menu.Icon"
+                                [expanded]="menuOpen"
+                                [url]="menu.ngUrl"
                                 [title]="menu.Title"
-                                [url]="menu.ngUrl"></d3s-site-menu-category>
+                                [rootIconName]="menu.Icon"
+                                [imageUrl]="menu.FullURL"
+                                [menu]="menu"></d3s-site-menu-category>
     </ng-template>
     <d3s-site-menu-category *ngIf="isAdmin"
-                            [menu]="adminMenu"
+                            [expanded]="menuOpen"
+                            [title]="'Configuration'"
+                            rootIconName="fa-wrench"
+                            [menu]="configMenu"></d3s-site-menu-category>
+    <d3s-site-menu-category *ngIf="isAdmin"
+                            [expanded]="menuOpen"
                             [title]="'Administration'"
-                            rootIconName="fa-cog"></d3s-site-menu-category>
+                            rootIconName="fa-cog"
+                            [menu]="adminMenu"></d3s-site-menu-category>
 </ul>
+<div [ngClass]="{'menu-toggle':!menuOpen, 'menu-toggle-open':menuOpen}"
+     title="Toggle full width navigation"
+     (click)="toggleMenu();"><i class="fa fa-arrow-circle-left"
+                                [class.rotate-right]="!menuOpen"
+                                [class.rotate-left]="menuOpen"></i></div>
