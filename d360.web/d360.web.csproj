@@ -16,7 +16,7 @@
     <AssemblyName>d360.web</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
-    <UseIISExpress>true</UseIISExpress>
+    <UseIISExpress>false</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -306,7 +306,7 @@
     <Compile Include="Controllers\WebAnalyticsController.cs" />
     <Compile Include="Controllers\Services\WorkflowController.cs" />
     <Compile Include="Controllers\Services\EventsController.cs" />
-    <Compile Include="Controllers\Services\GlossaryController.cs" />
+    <Compile Include="Controllers\Services\Obsolete\GlossaryController.cs" />
     <Compile Include="Controllers\Services\RelationshipsController.cs" />
     <Compile Include="Controllers\Services\FusionController.cs" />
     <Compile Include="Controllers\Services\SearchController.cs" />
@@ -1448,11 +1448,13 @@
     <TypeScriptCompile Include="Scripts\app\pipes\responsibilitytypeallocation-filter.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\permission-filter.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\selectitem-text-to-label.pipe.ts" />
+    <TypeScriptCompile Include="Scripts\app\pipes\simple-search-pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\utc-date.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\safe-html.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\services\asset-type.services.ts" />
     <TypeScriptCompile Include="Scripts\app\services\baseObservable.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\cascade.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\cookie.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\custom-api.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\diagram.service.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-item.component.ts" />

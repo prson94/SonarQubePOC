@@ -13,6 +13,7 @@ import { SafeHtmlPipe } from './safe-html.pipe';
 import { UtcDatePipe } from './utc-date.pipe';
 import { MetricConditionDisabledFilterPipe } from './metric-condition-disabled-filter.pipe';
 import { SelectItemTextToLabelPipe } from './selectitem-text-to-label.pipe';
+import { SimpleSearch } from './simple-search-pipe';
 
 @NgModule({
     imports: [CommonModule],
@@ -28,7 +29,8 @@ import { SelectItemTextToLabelPipe } from './selectitem-text-to-label.pipe';
         TechnicalNameToDisplayValuePipe,
         SafeHtmlPipe,
         UtcDatePipe,
-        SelectItemTextToLabelPipe
+        SelectItemTextToLabelPipe,
+        SimpleSearch
     ],
     exports: [
         ArrayToSelectItemPipe,
@@ -42,7 +44,8 @@ import { SelectItemTextToLabelPipe } from './selectitem-text-to-label.pipe';
         TechnicalNameToDisplayValuePipe,
         SafeHtmlPipe,
         UtcDatePipe,
-        SelectItemTextToLabelPipe
+        SelectItemTextToLabelPipe,
+        SimpleSearch
     ]
 })
 export class PipesModule { }

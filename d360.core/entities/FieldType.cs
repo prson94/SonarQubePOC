@@ -130,6 +130,9 @@ namespace d360.core.entities
         [DataMember]
         public int? FilterFieldTypeID { get; set; }
 
+        [DataMember]
+        public bool ShowIfEmpty { get; set; }
+
         [IgnoreDataMember, ForeignKey("FieldTypeID")]
         public virtual ICollection<Field> Fields { get; set; }
 

@@ -312,7 +312,7 @@ namespace d360.web.Controllers.V2
 
 
         /// <summary>
-        /// Retrieves a list of assets with ownership based on the provided parameters.  Assets and ownership results reflect the users permissions to see the assets and the ownership details for them.  If a user doesnt have access to see an asset then they will not be able to see the asset or its ownership.  If a user does have access to see an asset but doesn't have access to see the assets ownership, the asset will be returned without any ownership details.  No filters applied will return all items which have at least one owner.  Only assets with ownership are returned by this API.
+        /// Retrieves a list of assets with ownership based on the provided parameters.  Assets and ownership results reflect the users permissions to see the assets and the ownership details for them.  If a user doesnt have access to see an asset then they will not be able to see the asset or its ownership.  If a user does have access to see an asset but doesn't have access to see the assets ownership, the asset will be returned without any ownership details.  No filters applied will return all items which have at least one owner.  Only assets with ownership are returned by this API.  By default 5 assets are returned at a time the max page size is 250 assets.  Please keep in mind that assets with lots of owners will impact response time / size.
         /// </summary>   
         /// <permission cref="">Admin or Ownership read required</permission>
         /// <returns>Returns a list of assets and there corresponding ownership information.</returns>
@@ -322,7 +322,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Ownership rule statistics for the given responsibility type rule uid.", typeof(AssetResponsibilityItemModel)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-            SwaggerParameter("_pageSize", "The number of results to return per page. The default and max value is 250.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageSize", "The number of results to return per page. The default is 5 assets per page and max value is 250.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_assetUid", "The Uid of a asset to return ownership for. If specified the results will include ownership of this asset.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_assetTypeUid", "The Uid of a asset type to return ownership for. If specified the results will include ownership of this asset type only.", DataType = "string", ParameterType = "query", Required = false),
@@ -340,7 +340,7 @@ namespace d360.web.Controllers.V2
                 var assigneeUidFilter="";
                 var assetUidFilter = "";
                 var assetTypeUidFilter = "";
-                var pageSize = 250;
+                var pageSize = 5;
                 var pageNum = -1;
                 var timeout = 300;
 
@@ -513,19 +513,17 @@ namespace d360.web.Controllers.V2
 	                    rt.[uid] as 'ResponsibilityTypeUid',
 	                    rt.[name] as 'ResponsibilityTypeName',
 	                    0 as 'AssignedToType',
-                        a.[uid] as 'AssigneeUid',
-                        gr.FirstName + ' ' + gr.LastName as 'AssigneeName'
+                        s.[uid] as 'AssigneeUid',
+                        s.[Name] as 'AssigneeName'
                     from
 	                    [dbo].[ResponsibilityType] rt
-	                    inner join [dbo].[ResponsibilityTypeRelationOverrideItem] oride on oride.ResponsibilityTypeID = rt.id	
-                        inner join [dbo].[asset] a on oride.securityassetid = a.objectid and a.[object] = 'Resource'
-                        inner join [reporting].[global_resource] gr on gr.resourceid = a.objectid
+	                    inner join [dbo].[ResponsibilityTypeRelationOverrideItem] oride on oride.ResponsibilityTypeID = rt.id	    
+                        inner join [dbo].[asset] a on a.id = oride.assetid
+                        cross apply [dbo].[GetSecurityAssetUid](oride.SecurityAsset,oride.SecurityAssetID) s                        
                     where
 	                    oride.assetid in @assetIds {responsibilityFilterCriteria} {overrideAssigneeFilterCriteria} {permissionsCriteria}";
 
-
             return (await Company.Database.Connection.QueryAsync<ResponsibilityApiModel>(sql, dbArgs, null, timeout));
-
         }
 
         private async Task<AssetResponsibilitiesApiModel> getOwnershipAssets(IEnumerable<KeyValuePair<string, string>> queryParams, string assetUid, string assetTypeUid, string responsibilityUidFilter, string assigneeUidFilter,  int pageSize, int pageNum, int timeout = 300 )
@@ -585,11 +583,7 @@ namespace d360.web.Controllers.V2
                     dbArgs.Add("@securityAssetID", detail.Objectid);
                     responsibilityQueryFilters.Add($"rsa.securityasset = @securityAsset");
                     responsibilityQueryFilters.Add($"rsa.securityassetid = @securityAssetID");
-                }
-                // responsibilityOverrideQueryAdditionalJoins = " cross apply [dbo].[GetSecurityAssetUid](rd.SecurityAsset,rd.SecurityAssetId) s ";
-                //responsibilityQueryAdditionalJoins = " inner join ResponsibilityRuleResultSecurityAsset rsa on (rsa.ruleid = rr.id) cross apply [dbo].[GetSecurityAssetUid](rsa.SecurityAsset,rsa.SecurityAssetId) s ";
-                //responsibilityQueryFilters.Add($"s.uid = @assigneeUid");
-                //dbArgs.Add("@assigneeUid", assigneeUidFilter);
+                }                
             }
 
             if (pageSize < 1) pageSize = 1;

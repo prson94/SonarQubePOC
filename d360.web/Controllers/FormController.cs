@@ -4193,6 +4193,7 @@ namespace d360.web.Controllers
                 ft.ValidationDescription = model.FieldType.ValidationDescription;
                 ft.ColumnWidth = model.FieldType.ColumnWidth;
                 ft.AllowMultipleValues = model.FieldType.AllowMultipleValues;
+                ft.ShowIfEmpty = model.FieldType.ShowIfEmpty;
                 ft.Increment = model.FieldType.Increment;
                 ft.Precision = model.FieldType.Precision;
                 if (model.FieldType.Type == DataType.Lookup.ToString())
@@ -13083,7 +13084,8 @@ order by	case
                         Email = a.Email,
                         LastName = lastName,
                         FirstName = firstName,
-                        State = state
+                        State = state,
+                        UpdatedOn = DateTime.UtcNow
                     };
 
                     Company.Add(gr);
@@ -13097,6 +13099,7 @@ order by	case
                     gr.Email = a.Email;
                     gr.IsAdministrator = isAdmin;
                     gr.State = state;
+                    gr.UpdatedOn = DateTime.UtcNow;
 
                     Company.Update(gr);
                 }
@@ -13251,6 +13254,7 @@ order by	case
                 gr.Email = model.Email;
                 gr.IsAdministrator = cr.IsAdministrator;
                 gr.State = cr.State;
+                gr.UpdatedOn = DateTime.UtcNow;
 
                 Company.Update(gr);
 

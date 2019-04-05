@@ -1484,7 +1484,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
         public static string WorkflowVersionStepHistory = @"
   select 
 	IST.ID as ItemStepID, 
-	convert(varchar(max),IST.Fields) as Fields,
+	convert(nvarchar(max),IST.Fields) as Fields,
 	IST.StartedOn,
 	IST.CompletedOn,
 	RS.FirstName + ' ' + RS.LastName as StartedBy,
@@ -1497,25 +1497,25 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 	coalesce(D.DisplayValue, DIN.Name) as TextPath,
 	VS.[Name] as StepName, 
 	dbo.GetWorkflowResponsibleUsers(IST.ID, 0) as Assignments,
-	convert(varchar(max),VS.Settings) as Settings,
+	convert(nvarchar(max),VS.Settings) as Settings,
 	VS.StepType as StepType,
 	VS.ActivityType,
 	case when IST.CompletedOn is not null then
 		case when VS.ActivityType = 2 then
-			'Status was changed to '  + convert(xml,convert(varchar(max),VS.Settings)).value('/settings[1]/Status[1]/text()[1]','varchar(max)')
+			'Status was changed to '  + convert(xml,convert(nvarchar(max),VS.Settings)).value('/settings[1]/Status[1]/text()[1]','nvarchar(max)')
 		when VS.ActivityType = 3 then
 			'Form completed by ' + 
-				case when IST.CompletedBy is not null and convert(xml,convert(varchar(max),VS.Settings)).value('/settings[1]/FormResponseType[1]/text()[1]', 'varchar(max)') = 'FirstResponse'  then
+				case when IST.CompletedBy is not null and convert(xml,convert(nvarchar(max),VS.Settings)).value('/settings[1]/FormResponseType[1]/text()[1]', 'nvarchar(max)') = 'FirstResponse'  then
 					dbo.GetWorkflowResponsibleUsers(IST.ID, 1)
 				else
 					dbo.GetWorkflowResponsibleUsers(IST.ID, 0)
 				end
 		when VS.ActivityType = 1 then
-			case when convert(xml,convert(varchar(max),VS.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') = 'Initiator' then
+			case when convert(xml,convert(nvarchar(max),VS.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','nvarchar(max)') = 'Initiator' then
 				'Email sent to ' + RS.FirstName + ' ' + RS.LastName
-			when convert(xml,convert(varchar(max),VS.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') = 'SpecificUser' then
-				'Email sent to ' + coalesce(convert(xml,convert(varchar(max),VS.Settings)).value('/settings[1]/MessageToUser[1]/text()[1]','varchar(max)'), '[unknown]')
-			when convert(xml,convert(varchar(max),VS.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') = 'Responsibility' then
+			when convert(xml,convert(nvarchar(max),VS.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','nvarchar(max)') = 'SpecificUser' then
+				'Email sent to ' + coalesce(convert(xml,convert(nvarchar(max),VS.Settings)).value('/settings[1]/MessageToUser[1]/text()[1]','nvarchar(max)'), '[unknown]')
+			when convert(xml,convert(nvarchar(max),VS.Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','nvarchar(max)') = 'Responsibility' then
 				'Email sent to ' + [dbo].[GetEmailStepRecipients](IST.ID)
 			else
 				'Email sent'
@@ -1558,7 +1558,7 @@ from
 	inner join workflow.[Version] V on V.ID = VS.VersionID
 	inner join workflow.[Type] T on T.ID = V.TypeID
 	outer apply (
-		select case when vsw.Settings.value('/settings[1]/WaitForAllTransitions[1]','varchar(max)') = 'true' then
+		select case when vsw.Settings.value('/settings[1]/WaitForAllTransitions[1]','nvarchar(max)') = 'true' then
 			1
 		else
 			0
@@ -1728,9 +1728,9 @@ select
             inner join workflow.VersionStep S on S.ID = IST.StepID
 			cross apply (
 				select
-					coalesce(convert(xml,convert(varchar(max),Settings)).value('/settings[1]/WaitForAllTransitions[1]/text()[1]','varchar(max)'), 'false') as WaitForAllTransitions,
-					convert(xml,convert(varchar(max),Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','varchar(max)') as MessageRecipientType,
-					coalesce(convert(xml,convert(varchar(max),S.Settings)).value('/settings[1]/MessageToUser[1]/text()[1]','varchar(max)'), '[unknown]') as MessageToUser
+					coalesce(convert(xml,convert(nvarchar(max),Settings)).value('/settings[1]/WaitForAllTransitions[1]/text()[1]','nvarchar(max)'), 'false') as WaitForAllTransitions,
+					convert(xml,convert(nvarchar(max),Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','nvarchar(max)') as MessageRecipientType,
+					coalesce(convert(xml,convert(nvarchar(max),S.Settings)).value('/settings[1]/MessageToUser[1]/text()[1]','nvarchar(max)'), '[unknown]') as MessageToUser
 				from workflow.VersionStep where ID = S.ID
 			) VSSettings
 			inner join workflow.[Version] V on V.ID = S.VersionID

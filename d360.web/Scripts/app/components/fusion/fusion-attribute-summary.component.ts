@@ -365,6 +365,9 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
     }
 
     private selectItem(item) {
-        this.router.navigateByUrl(SiteUrlHelpers.SITE_URL_FUSION_ROOT + '/' + SiteUrlHelpers.SITE_URL_FUSION_ATTRIBUTE_DETAILS + '/' + item.Type + '/' + item.ID + '/' + (item.Name ? encodeURIComponent(item.Name) : 'Fusion Query Attribute'));
+        if (item.DataProfileID)
+            this.router.navigateByUrl(SiteUrlHelpers.SITE_URL_FUSION_ROOT + '/' + SiteUrlHelpers.SITE_URL_FUSION_ATTRIBUTE_DETAILS + '/' + item.Type + '/' + item.ID + '/' + (item.Name ? encodeURIComponent(item.Name) : 'Fusion Query Attribute') + '/' + item.DataProfileID);
+        else
+            this.router.navigateByUrl(SiteUrlHelpers.SITE_URL_FUSION_ROOT + '/' + SiteUrlHelpers.SITE_URL_FUSION_ATTRIBUTE_DETAILS + '/' + item.Type + '/' + item.ID + '/' + (item.Name ? encodeURIComponent(item.Name) : 'Fusion Query Attribute'));
     }
 };

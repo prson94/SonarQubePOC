@@ -136,4 +136,11 @@
   <include file="scripts/GOV-6595.xml"/>
   <include file="scripts/GOV-6921.xml"/>
   <include file="scripts/GOV-6595-b.xml"/>
+  <include file="scripts/GOV-4946.xml"/>
+  <include file="scripts/GOV-4946-c.xml"/>
+  <include file="scripts/GOV-4946-b.xml"/>
+  <include file="scripts/GOV-4457.xml"/>
+  <include file="scripts/GOV-6726-Update.xml"/>
+  <include file="scripts/GOV-6896.xml"/>
+  <include file="scripts/GOV-6980.xml"/>
 </databaseChangeLog>

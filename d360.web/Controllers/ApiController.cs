@@ -232,31 +232,28 @@ namespace d360.web.Controllers
                             });
                         }
                     }
-                    else
-                    {
-                        //Computed field.
-                        if (ft.Type == DataType.FilteredLookup.ToString())
+                    else if (ft.Type == DataType.FilteredLookup.ToString())
                         {
                             //look at fusionlookup field and figure out what to show
                             list.AddRange(RenderFilteredLookupField(type.ToString(), id, ft.ID));
                         }
-                        if (ft.Type == DataType.Attribute.ToString())
+                    else if (ft.Type == DataType.Attribute.ToString())
                         {
                             //look at attribute field and figure out what to show
                             list.AddRange(RenderAttributeField(type.ToString(), id, ft.ID));
                         }
-                        if (ft.Type == DataType.ComplexRelationLookup.ToString())
+                    else if (ft.Type == DataType.ComplexRelationLookup.ToString())
                         {
                             //look at fusionlookup field and figure out what to show
                             list.AddRange(RenderComplexLookupField(type.ToString(), id, ft.ID));
                         }
-                        if (ft.Type == DataType.OwnershipLookup.ToString())
+                    else if (ft.Type == DataType.OwnershipLookup.ToString())
                         {
                             //look at fusionlookup field and figure out what to show
                             list.AddRange(RenderOwnershipLookupField(type.ToString(), id, ft.ID));
                         }
 
-                        if (ft.Type == DataType.Relationship.ToString() && !string.IsNullOrEmpty(ft.LookupObjectType) && ft.LookupObjectID.HasValue)
+                    else if (ft.Type == DataType.Relationship.ToString() && !string.IsNullOrEmpty(ft.LookupObjectType) && ft.LookupObjectID.HasValue)
                         {
                             var intersectTypeID = ft.LookupObjectID.Value;
                             var sType = type.ToString();
@@ -325,7 +322,7 @@ namespace d360.web.Controllers
                             }
                         }
 
-                        if (ft.Type == DataType.FieldFromRelationship.ToString() && !string.IsNullOrEmpty(ft.LookupObjectType) && ft.LookupObjectID.HasValue && ft.LookupObjectFieldTypeID.HasValue)
+                    else if (ft.Type == DataType.FieldFromRelationship.ToString() && !string.IsNullOrEmpty(ft.LookupObjectType) && ft.LookupObjectID.HasValue && ft.LookupObjectFieldTypeID.HasValue)
                         {
                             var intersectTypeID = ft.LookupObjectID.Value;
                             var fieldTypeID = ft.LookupObjectFieldTypeID.Value;
@@ -360,12 +357,31 @@ namespace d360.web.Controllers
                             }
                         }
 
-                        if (ft.Type == DataType.RefListRelationship.ToString())
+                    else if (ft.Type == DataType.RefListRelationship.ToString())
                         {
                             //look at fusionlookup field and figure out what to show
                             list.AddRange(RenderReferenceListItemsField(type.ToString(), id, ft.ID));
                         }
+                    else if (ft.ShowIfEmpty)
+                    {
+                        var ro = new ReadOnlyField
+                        {
+                            Name = ft.FriendlyName,
+                            Value =null,
+                            FieldDescription = ft.DisplayDescription,
+                            FieldName = ft.Name,
+                            DataType = !string.IsNullOrEmpty(ft.Type) ? ft.Type : "",
+                            ShowIfEmpty = ft.ShowIfEmpty
+                        };
+
+                        list.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField> { ro },
+                            Category = ft.Category
+                        });
                     }
+
                 });
             }
 
