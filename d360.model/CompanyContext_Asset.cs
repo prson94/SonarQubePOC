@@ -218,9 +218,9 @@ select ObjectID from AttributeDetail{tableHints} where AttributeTypeID = @{param
                                         (FI{thisFilterFieldType.ID}.Object = A.Object and FI{thisFilterFieldType.ID}.ObjectID = A.ObjectID)
 										)";
 
-                                    var joinSql = $@"inner join Field F{thisFilterFieldType.ID}{tableHints} on F{thisFilterFieldType.ID}.ObjectType = case when FI{thisFilterFieldType.ID}.Subject = A.Object and FI{thisFilterFieldType.ID}.SubjectID = A.ObjectID then FI{thisFilterFieldType.ID}.Object else FI{thisFilterFieldType.ID}.Subject end
-												and F{thisFilterFieldType.ID}.ObjectID = case when FI{thisFilterFieldType.ID}.Subject = A.Object and FI{thisFilterFieldType.ID}.SubjectID = A.ObjectID then FI{thisFilterFieldType.ID}.ObjectID else FI{thisFilterFieldType.ID}.SubjectID end
-												and F{thisFilterFieldType.ID}.FieldTypeID = {thisFilterFieldType.LookupObjectFieldTypeID}";
+                                    var joinSql = $@"inner join Field F{thisFilterFieldType.ID}_{filterIndex}{tableHints} on F{thisFilterFieldType.ID}_{filterIndex}.ObjectType = case when FI{thisFilterFieldType.ID}.Subject = A.Object and FI{thisFilterFieldType.ID}.SubjectID = A.ObjectID then FI{thisFilterFieldType.ID}.Object else FI{thisFilterFieldType.ID}.Subject end
+												and F{thisFilterFieldType.ID}_{filterIndex}.ObjectID = case when FI{thisFilterFieldType.ID}.Subject = A.Object and FI{thisFilterFieldType.ID}.SubjectID = A.ObjectID then FI{thisFilterFieldType.ID}.ObjectID else FI{thisFilterFieldType.ID}.SubjectID end
+												and F{thisFilterFieldType.ID}_{filterIndex}.FieldTypeID = {thisFilterFieldType.LookupObjectFieldTypeID}";
 
                                     nonPivotInnerJoinPrefix = intersectSql + '\n' + joinSql;
                                 }
@@ -234,7 +234,7 @@ select ObjectID from AttributeDetail{tableHints} where AttributeTypeID = @{param
                                                                                 select SA{thisFilterFieldType.ID}.ID as AssetID, SFT{thisFilterFieldType.ID}.ID as FieldTypeID, DefaultFormattedValue as Value, '' as Val from FieldType SFT{thisFilterFieldType.ID}{tableHints}
 							                                                    inner join Asset SA{thisFilterFieldType.ID}{tableHints} on SA{thisFilterFieldType.ID}.AssetTypeID = @atID
 							                                                    where not exists (select 1 from Field where AssetID = SA{thisFilterFieldType.ID}.ID and FieldTYpeID = {thisFilterFieldType.ID})
-                                                                            ) F{thisFilterFieldType.ID} on F{thisFilterFieldType.ID}.AssetID = A.ID and F{thisFilterFieldType.ID}.FieldTypeID = {thisFilterFieldType.ID}";
+                                                                            ) F{thisFilterFieldType.ID}_{filterIndex} on F{thisFilterFieldType.ID}_{filterIndex}.AssetID = A.ID and F{thisFilterFieldType.ID}_{filterIndex}.FieldTypeID = {thisFilterFieldType.ID}";
                                 }
                                 else
                                 {
@@ -244,14 +244,14 @@ select ObjectID from AttributeDetail{tableHints} where AttributeTypeID = @{param
                                                                                 select SA{thisFilterFieldType.ID}.ID as AssetID, SFT{thisFilterFieldType.ID}.ID as FieldTypeID, DefaultFormattedValue as Value, '' as Val from FieldType SFT{thisFilterFieldType.ID}{tableHints}
 							                                                    inner join Asset SA{thisFilterFieldType.ID}{tableHints} on SA{thisFilterFieldType.ID}.AssetTypeID = @atID
 							                                                    where not exists (select 1 from Field where AssetID = SA{thisFilterFieldType.ID}.ID and FieldTYpeID = {thisFilterFieldType.ID})
-                                                                            ) F{thisFilterFieldType.ID} on F{thisFilterFieldType.ID}.AssetID = A.ID and F{thisFilterFieldType.ID}.FieldTypeID = {thisFilterFieldType.ID}";
+                                                                            ) F{thisFilterFieldType.ID}_{filterIndex} on F{thisFilterFieldType.ID}_{filterIndex}.AssetID = A.ID and F{thisFilterFieldType.ID}_{filterIndex}.FieldTypeID = {thisFilterFieldType.ID}";
                                 }
 
                                 var bind = $"fld{thisFilterFieldType.ID}";
-                                var nonPivotFieldName = $"F{thisFilterFieldType.ID}.Value";
+                                var nonPivotFieldName = $"F{thisFilterFieldType.ID}_{filterIndex}.Value";
                                 var valueColumnQuery = GetFilterCondition(f.Condition, nonPivotFieldName, bind, dbArgs, f.RawValue);
                                 if (thisFilterFieldType.AllowAllValue)
-                                    filterJoinList.Add($"{nonPivotInnerJoinPrefix} and ({valueColumnQuery} or F{thisFilterFieldType.ID}.Val = '0')");
+                                    filterJoinList.Add($"{nonPivotInnerJoinPrefix} and ({valueColumnQuery} or F{thisFilterFieldType.ID}_{filterIndex}.Val = '0')");
                                 else
                                     filterJoinList.Add($"{nonPivotInnerJoinPrefix} and {valueColumnQuery}");
 
