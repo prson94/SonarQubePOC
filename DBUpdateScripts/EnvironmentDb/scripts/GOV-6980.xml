@@ -1,0 +1,273 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="GOV-6980-CompareConditionValueToFieldValue">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[
+CREATE OR ALTER FUNCTION [metrics].[CompareConditionValueToFieldValue]
+(
+	@dataType varchar(25),
+	@operator varchar(5),
+	@conditionValue nvarchar(250),
+	@fieldValue nvarchar(max)
+)
+RETURNS bit
+AS
+BEGIN
+	declare @valid bit = 0,
+			@false bit = 0,
+			@true bit = 1,
+			@defaultCheckText bit = 1
+
+	IF @fieldValue is null
+	begin
+		set @fieldValue = ''
+	end
+
+	if @dataType = 'Boolean'
+	begin
+		declare @bCV bit = case lower(ltrim(rtrim(@conditionValue))) when 'true' then 1 when '1' then 1 when 'on' then 1 else 0 end,
+				@bFV bit = case lower(ltrim(rtrim(@fieldValue))) when 'true' then 1 when '1' then 1 when 'on' then 1 else 0 end
+
+		select @valid = case 
+							when @operator = 'eq' and @bFV = @bCV then @true
+							when @operator = 'neq' and @bFV <> @bCV then @true
+							when @operator = 'lt' and @bFV < @bCV then @true
+							when @operator = 'lte' and @bFV <= @bCV then @true
+							when @operator = 'gt' and @bFV > @bCV then @true
+							when @operator = 'gte' and @bFV >= @bCV then @true
+							else @false
+						end
+
+		set @defaultCheckText = 0
+	end
+	if @dataType = 'Date' or @dataType = 'DateTime' 
+	begin 
+		if isdate(@conditionValue) = 1 and isdate(@fieldValue) = 1
+		begin
+			declare @dtCV datetime = cast(@conditionValue as datetime),
+					@dtFV datetime = cast(@fieldValue as datetime)
+
+			select @valid = case 
+								when @operator = 'eq' and @dtFV = @dtCV then @true
+								when @operator = 'neq' and @dtFV <> @dtCV then @true
+								when @operator = 'lt' and @dtFV < @dtCV then @true
+								when @operator = 'lte' and @dtFV <= @dtCV then @true
+								when @operator = 'gt' and @dtFV > @dtCV then @true
+								when @operator = 'gte' and @dtFV >= @dtCV then @true
+								else @false
+							end
+
+			set @defaultCheckText = 0
+		end
+	end
+	if @dataType = 'Decimal' 
+	begin 
+		if REPLACE(ISNUMERIC(REPLACE(@conditionValue,'+','A') + 'e0'),1,CHARINDEX('.',@conditionValue)) = 1
+		   and REPLACE(ISNUMERIC(REPLACE(@fieldValue,'+','A') + 'e0'),1,CHARINDEX('.',@fieldValue)) = 1
+		begin
+			declare @dCV decimal = cast(@conditionValue as decimal),
+					@dFV decimal = cast(@fieldValue as decimal)
+
+			select @valid = case 
+								when @operator = 'eq' and @dFV = @dCV then @true
+								when @operator = 'neq' and @dFV <> @dCV then @true
+								when @operator = 'lt' and @dFV < @dCV then @true
+								when @operator = 'lte' and @dFV <= @dCV then @true
+								when @operator = 'gt' and @dFV > @dCV then @true
+								when @operator = 'gte' and @dFV >= @dCV then @true
+								else @false
+							end
+
+			set @defaultCheckText = 0
+		end
+	end
+	if @dataType = 'Number' 
+	begin 
+		if ISNUMERIC(Replace(Replace(@conditionValue,'+','A'),'-','A') + '.0e0') = 1
+		   and ISNUMERIC(Replace(Replace(@fieldValue,'+','A'),'-','A') + '.0e0') = 1
+		begin
+			declare @nCV int = cast(@conditionValue as int),
+					@nFV int = cast(@fieldValue as int)
+
+			select @valid = case 
+								when @operator = 'eq' and @nFV = @nCV then @true
+								when @operator = 'neq' and @nFV <> @nCV then @true
+								when @operator = 'lt' and @nFV < @nCV then @true
+								when @operator = 'lte' and @nFV <= @nCV then @true
+								when @operator = 'gt' and @nFV > @nCV then @true
+								when @operator = 'gte' and @nFV >= @nCV then @true
+								else @false
+							end
+		
+			set @defaultCheckText = 0
+		end
+	end
+
+	if @defaultCheckText = 1
+	begin
+		select @valid = case 
+							when @operator = 'eq' and lower(@fieldValue) = lower(@conditionValue) then @true
+							when @operator = 'neq' and lower(@fieldValue) <> lower(@conditionValue) then @true
+							when @operator = 'lt' and lower(@fieldValue) < lower(@conditionValue) then @true
+							when @operator = 'lte' and lower(@fieldValue) <= lower(@conditionValue) then @true
+							when @operator = 'gt' and lower(@fieldValue) > lower(@conditionValue) then @true
+							when @operator = 'gte' and lower(@fieldValue) >= lower(@conditionValue) then @true
+							else @false
+						end
+	end
+
+	return @valid
+END	
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+DROP FUNCTION [metrics].[CompareConditionValueToFieldValue]
+		]]>
+	</rollback>
+  </changeSet>
+
+    <changeSet author="Pappas" id="GOV-6980-AssetMeetsConditions">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[
+ALTER FUNCTION [metrics].[AssetMeetsConditions]
+(
+	@metricUid uniqueidentifier,
+	@effectiveDate date,
+	@assetUid uniqueidentifier
+)
+RETURNS bit
+AS
+BEGIN
+	declare @valid bit = 0
+
+	declare @conditions table (FieldTypeID int, Operator varchar(10), ValueJson nvarchar(max))
+	insert into @conditions
+		select	FieldTypeID,
+				Operator,
+				ValueJson
+		from	[metrics].[AssetVersionCondition]
+		where	[Uid] = @metricUid
+				and EffectiveDate = @effectiveDate
+
+	if exists (select 1 from @conditions)
+	begin
+		declare @stats table (Val bit)
+		insert into @stats
+			select	metrics.CompareConditionValueToFieldValue(FT.[Type], C.Operator, C.ValueJson, F.Value)
+			from	Field F
+					inner join FieldType FT on FT.ID = F.FieldTypeID
+					inner join @conditions C on C.FieldTypeID = F.FieldTypeID
+					inner join dbo.Asset A on A.ID = F.AssetID and A.[Uid] = @assetUid
+		if exists(select 1 from @stats where Val = 0)
+		begin
+			set @valid = 0 
+		end
+		else
+		begin
+			set @valid = 1 
+		end
+	end
+	else
+	begin
+		set @valid = 1
+	end
+
+	return @valid
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+ALTER FUNCTION [metrics].[AssetMeetsConditions]
+(
+	@metricUid uniqueidentifier,
+	@effectiveDate date,
+	@assetUid uniqueidentifier
+)
+RETURNS bit
+AS
+BEGIN
+	declare @valid bit = 0
+
+	declare @conditions table (FieldTypeID int, Operator varchar(10), ValueJson nvarchar(max))
+	insert into @conditions
+		select	FieldTypeID,
+				Operator,
+				ValueJson
+		from	[metrics].[AssetVersionCondition]
+		where	[Uid] = @metricUid
+				and EffectiveDate = @effectiveDate
+
+	if exists (select 1 from @conditions)
+	begin
+		declare @stats table (Val bit)
+		insert into @stats
+			select	case 
+						when C.Operator = 'eq' then
+							case 
+								when C.ValueJson = F.Value then cast(1 as bit)
+								else cast(0 as bit)
+							end
+						when C.Operator = 'neq' then
+							case 
+								when C.ValueJson <> F.Value then cast(1 as bit)
+								else cast(0 as bit)
+							end
+						when C.Operator = 'lt' then
+							case 
+								when C.ValueJson < F.Value then cast(1 as bit)
+								else cast(0 as bit)
+							end
+						when C.Operator = 'lte' then
+							case 
+								when C.ValueJson <= F.Value then cast(1 as bit)
+								else cast(0 as bit)
+							end
+						when C.Operator = 'gt' then
+							case 
+								when C.ValueJson > F.Value then cast(1 as bit)
+								else cast(0 as bit)
+							end
+						when C.Operator = 'gte' then
+							case 
+								when C.ValueJson >= F.Value then cast(1 as bit)
+								else cast(0 as bit)
+							end	
+						else cast(1 as bit)
+					end as Valid
+			from	Field F
+					inner join @conditions C on C.FieldTypeID = F.FieldTypeID
+					inner join dbo.Asset A on A.ID = F.AssetID and A.[Uid] = @assetUid
+		if exists(select 1 from @stats where Val = 0)
+		begin
+			set @valid = 0 
+		end
+		else
+		begin
+			set @valid = 1 
+		end
+	end
+	else
+	begin
+		set @valid = 1
+	end
+
+	return @valid
+END
+		]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>
