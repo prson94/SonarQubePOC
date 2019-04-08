@@ -4877,6 +4877,7 @@ order by    Name
 
                 var joins = "";
                 var columns = "";
+                
                 getDynamicFieldJoinStatements(id, "Rule", out joins, out columns, false, false);
 
                 var permissionSql = @"case when exists (
@@ -6977,7 +6978,7 @@ where v.id = {0}", id)).FirstOrDefault();
             var sourceJoins = "";
             var sourceColumns = "";
 
-            getDynamicFieldJoinStatements(targetID, targetType.ToString().Replace("Type", ""), out sourceJoins, out sourceColumns, false, false, false, true, "ObjectID", "A.Name");
+            getDynamicFieldJoinStatements(targetID, targetType.ToString().Replace("Type", ""), out sourceJoins, out sourceColumns, false, false, false, true, "A.ObjectID", "A.Name");
 
             joins = joins + sourceJoins;
             columns = columns + sourceColumns;

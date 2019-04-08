@@ -4117,7 +4117,11 @@ namespace d360.web.Controllers
             if (a == null) return null;
             var used = Company.Any<Field>(i => i.FieldTypeID == id);
 
-            if (!new[] { "Number", "Decimal" }.Contains(a.Type))
+            if (new[] { "Text" }.Contains(a.Type))
+            {
+                if (!string.IsNullOrEmpty(a.Pattern)) a.MinimumLength = 0;
+            }
+            else if (!new[] { "Number", "Decimal" }.Contains(a.Type))
             {
                 if (!a.IsRequired) a.MinimumLength = 0;
             }
@@ -4241,6 +4245,17 @@ namespace d360.web.Controllers
                 if (new[] { "Number", "Decimal" }.Contains(ft.Type))
                 {
                     ft.MinimumLength = model.FieldType.MinimumLength;
+                }
+                else if (new[] { "Text" }.Contains(ft.Type))
+                {
+                    if (string.IsNullOrEmpty(model.FieldType.Pattern))
+                    {
+                        ft.MinimumLength = model.FieldType.MinimumLength;
+                    }
+                    else
+                    {
+                        ft.MinimumLength = 0;
+                    }
                 }
                 else
                 {
