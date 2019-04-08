@@ -354,6 +354,7 @@ namespace d360.web.Controllers.V2
 
                 var execution = getApiExecution(relationships.Count, new ApiExecutionFields_PostRelationships { IntersectTypeUid = intersectTypeUid });
                 execution.ExecutionID = executionInfo.ExecutionID;
+                Company.Add(execution);
 
 
                 return await Task.FromResult<IHttpActionResult>(
