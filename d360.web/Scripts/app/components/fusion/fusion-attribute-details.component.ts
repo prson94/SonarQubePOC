@@ -16,20 +16,7 @@ import { FormMode } from '../../models/form.model';
 
 @Component({
     selector: 'd3s-fusion-attribute-details',
-    template: `  <d3s-loading [isLoading]="isLoading"></d3s-loading>                                                  
-                 <div class="row" *ngIf="!isLoading">    
-                    <div class="col s12">
-                        <div class="tile tile-detail">
-                            <d3s-object-definition-tile [objectPermissions]="permissions" [objectID]="id" [objectType]="type" [hasAttributes]="false" (formModeChange)="formModeChange($event)"></d3s-object-definition-tile>
-                            <button pButton type="button" (click)="close()" *ngIf="(formMode == FormMode.Default) && (dataProfileId==-1) " label="Close"></button>
-                        </div>   
-                        <div class="tile tile-detail" *ngIf="(formMode == FormMode.Default) && (dataProfileId !=-1)">
-                             <d3s-fusion-data-profile-detail [profileId]="dataProfileId"></d3s-fusion-data-profile-detail>
-                             <button pButton type="button"  (click)="close()" label="Close"></button>
-                        </div> 
-                    </div>
-                 </div>
-                 `,
+    templateUrl:'./fusion-attribute-details.component.html',
     providers: [PermissionsService, FusionAttributeService],
 })
 
