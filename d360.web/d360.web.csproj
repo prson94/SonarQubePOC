@@ -16,7 +16,7 @@
     <AssemblyName>d360.web</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
-    <UseIISExpress>false</UseIISExpress>
+    <UseIISExpress>true</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -591,6 +591,7 @@
     <Content Include="Scripts\app\components\artifact\artifact-column-filter.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-grid.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-item.component.html" />
+    <Content Include="Scripts\app\components\fusion\fusion-attribute-details.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-attribute.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-data-profile-detail.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-manual-load.component.html" />
