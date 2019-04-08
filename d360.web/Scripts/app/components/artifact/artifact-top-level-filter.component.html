@@ -24,8 +24,8 @@
                                 [disabled]="field.disabled"
                                 style="width: 100%">
                                 <option></option>
-                                <option *ngFor="let i of field.filteritems"
-                                    [value]="i">{{i}}</option>
+                                <option *ngFor="let i of field.filteritems | arraySelectItemPipe"
+                                    [value]="i.value">{{i.label}}</option>
                             </select>
                         </span>
                         <span *ngSwitchCase="'datetimeinput'">
