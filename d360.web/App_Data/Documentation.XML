@@ -2386,7 +2386,7 @@
         </member>
         <member name="M:d360.web.Controllers.V2.CrossReferencesController.Get">
             <summary>
-            Returns all asset cross references.
+            Returns all asset cross references.  Optional parameters are also supported, in the case where the optional parameters are specified only records matching that criteria are returned.
             </summary>
             <returns>An array of cross references</returns>
         </member>
@@ -2421,14 +2421,14 @@
         </member>
         <member name="M:d360.web.Controllers.V2.CrossReferencesController.Post(d360.core.entities.AssetCrossReference)">
             <summary>
-            Creates a new asset cross reference.  If an asset cross reference exists already an error is returned.
+            Creates a new asset cross reference.  If an asset cross reference exists already an error is returned.  ExternalID and DataSource fields have a limit of 250 ASCII characters each.  Type has a limit of 50 ASCII characters.
             </summary>
             <param name="model">The asset cross references model.</param>
             <returns>The model of the created asset cross reference. If item already exists http confict is returned.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.CrossReferencesController.PostBulk(System.Collections.Generic.List{d360.core.entities.AssetCrossReference})">
             <summary>
-            Creates new asset cross references.  If an asset cross reference exists already an error is returned.
+            Creates new asset cross references.  If an asset cross reference exists already an error is returned.  ExternalID and DataSource fields have a limit of 250 ASCII characters each.  Type has a limit of 50 ASCII characters.
             </summary>
             <param name="models">List of asset cross references.</param>
             <returns>List of created asset cross references. If any item already exists an HTTP Confict is returned.</returns>
@@ -2441,6 +2441,14 @@
             <param name="dataSource">Asset cross reference datasource</param>
             <param name="type">Asset cross reference type</param>
             <param name="externalId">Asset cross reference externalId</param>
+            <param name="model">Asset cross reference model</param>
+            <returns>Http Status code OK if asset cross reference was updated, Http Status code of Not Found if item could not be updated.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.CrossReferencesController.Put(System.Guid,d360.core.entities.AssetCrossReference)">
+            <summary>
+            Updates the specified asset cross reference.
+            </summary>
+            <param name="uid">The unique identifier of the asset cross reference.</param>        
             <param name="model">Asset cross reference model</param>
             <returns>Http Status code OK if asset cross reference was updated, Http Status code of Not Found if item could not be updated.</returns>
         </member>
