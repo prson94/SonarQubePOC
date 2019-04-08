@@ -1447,39 +1447,7 @@ where   A.Deleted = 0";
 
             return Ok();
         }
-        [HttpPost, Route("{id:int}/schedulemarkitlineage")]
-        public HttpResponseMessage ScheduleMarkitLineage(int id)
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You do not have permission to start Markit Lineage generation.");
 
-            var fusion = Company.GetById<Fusion>(id);
-
-            if (fusion == null)
-                return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Fusion configuration for this id was not found.");
-            
-            //if (fusion.FusionTypeID == markitFusionTypeId)
-            //{
-            //    if (Community.GetCompanySettings().TryGetValue(markitLineageSettingKey, out string val))
-            //    {
-            //        if (val.Trim().ToLower() == "true")
-            //        {
-
-            //            try
-            //            {
-                            Company.Execute("insert into [queue].Task ([Action], [Object], [ObjectID]) values ('FusionCache', 'Fusion', @fusionId)", new { fusionId = id });
-            //                return Request.CreateResponse(HttpStatusCode.OK, new { title = "success", type = "success", message = "success" });
-                            
-            //            }
-            //            catch (Exception ex)
-            //            {
-            //                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.GetFullExceptionData(), ex);
-            //            }
-            //        }
-            //    }
-            //}
-            return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "The request could not be completed because the configuration is incorrect.");
-        }
         public class PromotionHistoryApiModel
         {
             public int ID { get; set; }            
