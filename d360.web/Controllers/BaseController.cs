@@ -752,7 +752,7 @@ namespace d360.web.Controllers
                             fld.Required = (f.MinimumLength > 0 || f.Length > 0 || f.IsRequired);
                         else
                         {
-                            if (!new[] { "Number", "Decimal" }.Contains(f.Type))
+                            if (!new[] { "Number", "Decimal",  "Text" }.Contains(f.Type))
                             {
                                 fld.Required = (f.MinimumLength > 0 || f.Length > 0);
                             }

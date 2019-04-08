@@ -1062,6 +1062,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         else {
             this.testPatternValidationText = '';
         }
+        if (this.model.FieldType.Pattern > "") {
+            this.model.FieldType.MinimumLength = 0;
+        }
         this.validate('Pattern');
     }
 
@@ -1179,6 +1182,16 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
 
         if (this.model.FieldType.Type == 'Text') {
+            if (fieldname == '*' || fieldname == 'MinimumLength') {
+                this.setValidation('MinimumLength_tooshort', 'Please enter a larger Minimum Length.', (() => {
+                    return (this.model.FieldType.MinimumLength && this.model.FieldType.MinimumLength < 0);
+                })());
+            }
+            if (fieldname == '*' || fieldname == 'MaximumLength') {
+                this.setValidation('MaximumLength_tooshort', 'Please enter a larger Maximum Length.', (() => {
+                    return (this.model.FieldType.MaximumLength && this.model.FieldType.MaximumLength < 0);
+                })());
+            }
             if (fieldname == '*' || fieldname == 'Pattern' || fieldname == 'DefaultValue') {
                 this.setValidation('default_validationpattern', 'Default Value does not match Validation Pattern.', (() => {
                     if (this.model.FieldType.Pattern > "" && this.model.FieldType.DefaultValue > "") {
@@ -1217,8 +1230,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
         if (fem.FieldType.Type == 'Number' || fem.FieldType.Type == 'Decimal') {
             return false;
+        } else if (fem.FieldType.Type == 'Text') {
+            return (this.model.FieldType.Pattern > "");
         } else {
-            return !fem.FieldType.IsRequired;
+            return false;
         }
     }
 
