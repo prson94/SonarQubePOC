@@ -105,7 +105,7 @@ namespace d360.web.Controllers.V2
                 case "DateTime":
                     return "datetime";
                 case "Number":
-                    return "int";
+                    return "bigint";
                 case "Decimal":
                     return "float";
                 case "Boolean":
