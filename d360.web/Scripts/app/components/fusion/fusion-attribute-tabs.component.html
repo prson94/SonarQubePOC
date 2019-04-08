@@ -39,7 +39,7 @@
             <d3s-object-definition-tile [objectPermissions]="[]" [objectID]="selectedFusionAttribute?.ID" [objectType]="selectedFusionQueryAttributeTypeId ? 'FusionQueryAttribute':'FusionAttribute'" [hasAttributes]="selectedFusionAttribute?.AllowAttributes" [nymTypes]="selectedFusionAttribute?.NymTypes"></d3s-object-definition-tile>
         </div>
         <div class="tile tile-detail" *ngIf="selectedFusionAttribute && selectedFusionAttribute.DataProfileID">
-            <d3s-fusion-data-profile-detail [assetDataProfile]="selectedFusionAttribute"></d3s-fusion-data-profile-detail>
+            <d3s-fusion-data-profile-detail [profileId]="selectedFusionAttribute.DataProfileID"></d3s-fusion-data-profile-detail>
         </div>
        
     </div>

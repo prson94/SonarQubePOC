@@ -13,6 +13,7 @@ import { FusionAttributeService } from '../../services/fusion-attribute.service'
 import { FusionAttributeValueDetails } from '../../models/fusion-attribute.model';
 import { FormMode } from '../../models/form.model';
 
+
 @Component({
     selector: 'd3s-fusion-attribute-details',
     template: `  <d3s-loading [isLoading]="isLoading"></d3s-loading>                                                  
@@ -20,8 +21,12 @@ import { FormMode } from '../../models/form.model';
                     <div class="col s12">
                         <div class="tile tile-detail">
                             <d3s-object-definition-tile [objectPermissions]="permissions" [objectID]="id" [objectType]="type" [hasAttributes]="false" (formModeChange)="formModeChange($event)"></d3s-object-definition-tile>
-                            <button pButton type="button" (click)="close()" *ngIf="formMode == FormMode.Default" label="Close"></button>
-                        </div>           
+                            <button pButton type="button" (click)="close()" *ngIf="(formMode == FormMode.Default) && (dataProfileId==-1) " label="Close"></button>
+                        </div>   
+                        <div class="tile tile-detail" *ngIf="(formMode == FormMode.Default) && (dataProfileId !=-1)">
+                             <d3s-fusion-data-profile-detail [profileId]="dataProfileId"></d3s-fusion-data-profile-detail>
+                             <button pButton type="button"  (click)="close()" label="Close"></button>
+                        </div> 
                     </div>
                  </div>
                  `,
@@ -37,7 +42,8 @@ export class FusionAttributeDetailsComponent extends BaseComponent implements On
     private fusionAttributeDetail: FusionAttributeValueDetails;
     private formMode :FormMode = FormMode.Default;
     FormMode = FormMode;
-
+    private dataProfileId: number = -1;
+  
     constructor(        
         private route: ActivatedRoute,
         private router: Router,
@@ -57,7 +63,7 @@ export class FusionAttributeDetailsComponent extends BaseComponent implements On
             this.type = params['type'];
             this.id = +params['id'];
             this.name = params['name'] ? params['name'] : 'Details';
-            
+            this.dataProfileId = params['dataProfileId'] ? +params['dataProfileId'] : -1;
             this.setBrowserTitle(this.titleService, this.name);        
             this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.name));
             

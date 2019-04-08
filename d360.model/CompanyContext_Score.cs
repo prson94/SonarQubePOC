@@ -491,7 +491,7 @@ with C as (
 			P.ParentUid,
 			C.Applies
 	from	#tbl P
-			inner join C on C.ParentUid = P.Uid
+			inner join C on C.ParentUid = P.Uid and C.Applies = 1
 )
 
 update	T

@@ -13,6 +13,7 @@ import {JsonResult} from '../models/jsonresult.model';
 
 import {MessagesService} from './messages.service';
 import {BaseObservableService} from "./baseObservable.service";
+import { AssetDataProfile } from '../models/fusion.model';
 
 @Injectable()
 export class FusionAttributeService extends BaseObservableService {
@@ -178,6 +179,18 @@ export class FusionAttributeService extends BaseObservableService {
             .get(`internal/fusion/details/${fusionAttributeType}/${fusionAttributeId}`)
             .pipe(
                 map(response => <FusionAttributeValueDetails>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    getAssetDataProfile(
+        profileId: number
+    ): Observable<AssetDataProfile> {
+        return this
+            .http
+            .get(`internal/fusion/dataprofile/${profileId}`)
+            .pipe(
+                map(response => <AssetDataProfile>response),
                 catchError(err => this.handleError(err))
             );
     }
