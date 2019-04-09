@@ -108,7 +108,8 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
         if (this.auditSidebar) {
             this.auditSidebar.hasDynamicUrl = true;
             this.auditSidebar.dynamicUrlCallback = (() => {
-                return `/sidebar/audit/IssueType/${this.selected.ID}`
+                var issueId = this.issueTypes.length != 0 ? this.selected.ID : -1;
+                return `/sidebar/audit/IssueType/${issueId}`
             });
         }
     }
@@ -160,12 +161,12 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
                     }
                     else {
                         let index = this.issueTypes.findIndex(x => x.ID == event.item.ID);
-                        if (index >= 0 && index < this.issueTypes.length )
+                        if (index >= 0 && index < this.issueTypes.length)
                             this.issueTypes[index] = event.item;
                     }
                     this.selected = event.item;
                 }
-                this.showEditor = false;                
+                this.showEditor = false;
             });
     }
 

@@ -5052,6 +5052,44 @@ namespace d360.web.Controllers
             }
         }
 
+        [HttpPost, ValidateInput(false), Route("ScheduleMarkitLineage")]
+        public JsonResult ScheduleMarkitLineage(int id)
+        {
+            const int markitFusionTypeId = 13;
+            const string markitLineageSettingKey = "UseNewMarkitLineageGeneration";
+
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException("You do not have permission to start Markit Lineage generation.", HttpStatusCode.Unauthorized);
+
+            var fusion = Company.GetById<Fusion>(id);
+
+            if (fusion == null)
+                return jsonException("Fusion configuration for this id was not found.", HttpStatusCode.NotFound);
+
+            if (fusion.FusionTypeID == markitFusionTypeId)
+            {
+                if (Community.GetCompanySettings().TryGetValue(markitLineageSettingKey, out string val))
+                {
+                    if (val.Trim().ToLower() == "true")
+                    {
+
+                        try
+                        {
+                            
+                            Company.Query<int>("insert into [queue].[Task] ([Action], [Object], [ObjectID]) values ('FusionCache', 'Fusion', @fusionId)", new { fusionId = id });
+                            return jsonSuccess("Markit lineage process queued successfully.", fusion.FusionTypeID.ToString(), "add", HttpStatusCode.OK);
+
+                        }
+                        catch (Exception ex)
+                        {
+                            return jsonException(ex, HttpStatusCode.InternalServerError);
+                        }
+                    }
+                }
+            }
+            return jsonException("The request could not be completed because the configuration is incorrect.", HttpStatusCode.BadRequest);
+        }
+
         #endregion
 
         #endregion

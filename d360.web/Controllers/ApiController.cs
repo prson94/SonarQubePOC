@@ -484,7 +484,17 @@ namespace d360.web.Controllers
                                 .ToList();
 
                         }
-                        else
+                        else if (item.AllowMultipleValues)
+                        {
+                            filterItems = Company
+                                .Filter<FieldLookupValue>(o => o.FieldTypeID == item.ID &&
+                                                                o.LookupObjectType == item.LookupObjectType &&
+                                                                o.LookupObjectID == item.LookupObjectID)
+                                .OrderBy(o => o.Text)
+                                .Select(o => o.Text + "!~!" + o.Value)
+                                .ToList();
+                        }
+                        else 
                         {
                             filterItems = Company
                                 .Filter<FieldLookupValue>(o => o.FieldTypeID == item.ID &&
