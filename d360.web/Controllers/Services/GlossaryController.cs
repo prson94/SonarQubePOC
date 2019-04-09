@@ -26,7 +26,7 @@ namespace d360.web.Controllers.Services
     {
         #region DI
 
-        public GlossaryController(CommunityContext community, CompanyContext company)
+        public GlossaryController(ICommunityContext community, ICompanyContext company)
             : base(community, company)
         {
         }

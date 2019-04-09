@@ -25,7 +25,7 @@ namespace d360.web.Controllers.V2
     ]
     public class ResponsibilitiesController : BaseApiController
     {
-        public ResponsibilitiesController(CommunityContext community, CompanyContext company)
+        public ResponsibilitiesController(ICommunityContext community, ICompanyContext company)
             : base(community, company)
         {            
         }

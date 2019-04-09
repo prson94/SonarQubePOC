@@ -17,7 +17,7 @@ namespace d360.web.Controllers
     {
         #region DI
 
-        public DiagramsController(CommunityContext community, CompanyContext company) : base(community, company) { }
+        public DiagramsController(ICommunityContext community, ICompanyContext company) : base(community, company) { }
 
         #endregion
 

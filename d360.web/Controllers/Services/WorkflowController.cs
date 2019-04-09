@@ -40,7 +40,7 @@ namespace d360.web.Controllers.Services
 
         #region DI
 
-        public WorkflowController(CommunityContext community, CompanyContext company)
+        public WorkflowController(ICommunityContext community, ICompanyContext company)
             : base(community, company)
         {
         }

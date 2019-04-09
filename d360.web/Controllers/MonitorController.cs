@@ -17,7 +17,7 @@ namespace d360.web.Controllers
     {
         #region DI
 
-        public MonitorController(CommunityContext community, CompanyContext company)
+        public MonitorController(ICommunityContext community, ICompanyContext company)
             : base(community, company)
         {
         }

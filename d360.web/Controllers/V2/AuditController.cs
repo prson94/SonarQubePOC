@@ -30,7 +30,7 @@ namespace d360.web.Controllers.V2
     ]
     public class AuditController: BaseApiController
     {
-        public AuditController(CommunityContext community, CompanyContext company) : base(community, company)
+        public AuditController(ICommunityContext community, ICompanyContext company) : base(community, company)
         {
 
         }

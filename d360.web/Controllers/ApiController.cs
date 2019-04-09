@@ -36,7 +36,7 @@ namespace d360.web.Controllers
 
         ISecurityContextProvider SecProvider;
 
-        public D3SApiController(CommunityContext community, CompanyContext company, ISecurityContextProvider secProvider)
+        public D3SApiController(ICommunityContext community, ICompanyContext company, ISecurityContextProvider secProvider)
             : base(community, company)
         {
 #if DEBUG

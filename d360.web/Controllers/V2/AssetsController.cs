@@ -38,7 +38,7 @@ namespace d360.web.Controllers.V2
         IQueueSource QueueSource;
         IStorageProvider Storage;
 
-        public AssetsController(CommunityContext community, CompanyContext company, IStorageProvider storage, IQueueSource queueSource)
+        public AssetsController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IQueueSource queueSource)
             : base(community, company)
         {
             QueueSource = queueSource;

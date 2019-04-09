@@ -24,7 +24,7 @@ namespace d360.web.Controllers
     {
         #region DI
         IStorageProvider Storage;
-        public NavigationController(CommunityContext community, CompanyContext company, IStorageProvider storage)
+        public NavigationController(ICommunityContext community, ICompanyContext company, IStorageProvider storage)
             : base(community, company)
         {
             Storage = storage;
