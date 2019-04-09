@@ -28,7 +28,7 @@ namespace d360.web.Controllers.V2
     {
         #region DI
 
-        public ExportTemplatesController(CommunityContext community, CompanyContext company)
+        public ExportTemplatesController(ICommunityContext community, ICompanyContext company)
             : base(community, company)
         {
 

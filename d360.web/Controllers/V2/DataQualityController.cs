@@ -27,7 +27,7 @@ namespace d360.web.Controllers.V2
         #region DI
                 
         public DataQualityController
-(CommunityContext community, CompanyContext company)
+(ICommunityContext community, ICompanyContext company)
             : base(community, company)
         {
         

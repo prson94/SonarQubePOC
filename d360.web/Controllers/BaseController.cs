@@ -105,14 +105,14 @@ namespace d360.web.Controllers
 
     public class BaseApiController : System.Web.Http.ApiController
     {
-        internal CompanyContext Company;
-        internal CommunityContext Community;
+        internal ICompanyContext Company;
+        internal ICommunityContext Community;
 
         internal List<string> CalculatedFieldTypes = new List<string>() { DataType.Attribute.ToString(), DataType.ComplexRelationLookup.ToString(), DataType.DataTableSelect.ToString(), DataType.File.ToString(), DataType.FilteredLookup.ToString(), DataType.OwnershipLookup.ToString() };
 
         internal const int MAX_SYNCHRONOUS_API_ITEM_COUNT = 250;
 
-        public BaseApiController(CommunityContext community, CompanyContext company)
+        public BaseApiController(ICommunityContext community, ICompanyContext company)
         {
             Community = community;
             Company = company;
@@ -359,8 +359,8 @@ namespace d360.web.Controllers
         
     public class BaseController: Controller
     {
-        internal CompanyContext Company;
-        internal CommunityContext Community;
+        internal ICompanyContext Company;
+        internal ICommunityContext Community;
 
         internal List<string> limitedFieldTypes = new List<string> {
             DataType.Attribute.ToString(),
@@ -372,7 +372,7 @@ namespace d360.web.Controllers
             DataType.RefListRelationship.ToString()
         };
 
-        public BaseController(CommunityContext community, CompanyContext company)
+        public BaseController(ICommunityContext community, ICompanyContext company)
         {
             Community = community;
             Company = company;

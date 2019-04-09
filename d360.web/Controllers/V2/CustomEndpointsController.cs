@@ -26,7 +26,7 @@ namespace d360.web.Controllers.V2
 
         #region DI
 
-        public CustomEndpointsController(CommunityContext community, CompanyContext company):base(community, company)
+        public CustomEndpointsController(ICommunityContext community, ICompanyContext company):base(community, company)
         {
 
         }

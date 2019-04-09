@@ -18,7 +18,7 @@ namespace d360.web.Controllers.Services
     {
         #region DI
 
-        public CommunityController(CommunityContext community, CompanyContext company) : base(community, company) { }
+        public CommunityController(ICommunityContext community, ICompanyContext company) : base(community, company) { }
 
         #endregion
         [ValidateHttpAntiForgeryToken]

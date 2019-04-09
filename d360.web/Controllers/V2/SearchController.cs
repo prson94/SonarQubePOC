@@ -27,7 +27,7 @@ namespace d360.web.Controllers.V2
     {
         ISearchSource SearchSource;
 
-        public SearchController(CommunityContext community, CompanyContext company, ISearchSource searchSource) : base(community, company)
+        public SearchController(ICommunityContext community, ICompanyContext company, ISearchSource searchSource) : base(community, company)
         {
             SearchSource = searchSource;
         }

@@ -37,7 +37,7 @@ namespace d360.web.Controllers.V2
 
         IQueueSource QueueSource;
 
-        public MetricsController(CommunityContext community, CompanyContext company, IQueueSource queueSource)
+        public MetricsController(ICommunityContext community, ICompanyContext company, IQueueSource queueSource)
             : base(community, company)
         {
             QueueSource = queueSource;
