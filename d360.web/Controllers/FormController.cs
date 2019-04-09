@@ -5044,7 +5044,7 @@ namespace d360.web.Controllers
             const string markitLineageSettingKey = "UseNewMarkitLineageGeneration";
 
             if (!Company.CurrentResourceIsAdmin)
-                return jsonException("You do not have permission to start Markit Lineage generation.", HttpStatusCode.Unauthorized);
+                return jsonException("You do not have permission to start Markit Lineage generation.", HttpStatusCode.Forbidden);
 
             var fusion = Company.GetById<Fusion>(id);
 
@@ -5060,8 +5060,7 @@ namespace d360.web.Controllers
 
                         try
                         {
-
-                            Company.Query<int>("insert into [queue].[Task] ([Action], [Object], [ObjectID]) values ('FusionCache', 'Fusion', @fusionId)", new { fusionId = id }).ToList();                          
+                            Company.Database.Connection.Execute("insert into [queue].[Task] ([Action], [Object], [ObjectID]) values ('FusionCache', 'Fusion', @fusionId)", new { fusionId = id });                         
                             return jsonSuccess("Markit lineage process queued successfully.", fusion.FusionTypeID.ToString(), "add", HttpStatusCode.OK);
 
                         }
