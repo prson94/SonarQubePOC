@@ -143,7 +143,7 @@ namespace d360.web.Controllers.V2
             MapToApiVersion("2.0"),
             Route("edit"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
-            SwaggerResponse(HttpStatusCode.OK, "Editing a comment.", typeof(List<dynamic>)),
+            SwaggerResponse(HttpStatusCode.OK, "Editing a comment.", typeof(Object)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             NonNullableParameters
         ]
@@ -198,7 +198,7 @@ namespace d360.web.Controllers.V2
             MapToApiVersion("2.0"),
             Route("comment"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
-            SwaggerResponse(HttpStatusCode.OK, "Adding new comment.", typeof(List<dynamic>)),
+            SwaggerResponse(HttpStatusCode.OK, "Adding new comment.", typeof(Object)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             NonNullableParameters
         ]
@@ -264,7 +264,7 @@ namespace d360.web.Controllers.V2
             MapToApiVersion("2.0"),
             Route("counts"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
-            SwaggerResponse(HttpStatusCode.OK, "Gets comments count.", typeof(List<dynamic>)),
+            SwaggerResponse(HttpStatusCode.OK, "Gets comments count.", typeof(List<CommentCount>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             NonNullableParameters
         ]
@@ -290,7 +290,7 @@ namespace d360.web.Controllers.V2
             MapToApiVersion("2.0"),
             Route("vote"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
-            SwaggerResponse(HttpStatusCode.OK, "Stores the up/down vote of a comment.", typeof(List<dynamic>)),
+            SwaggerResponse(HttpStatusCode.OK, "Stores the up/down vote of a comment.", typeof(List<CommentVote>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             NonNullableParameters
         ]
@@ -315,7 +315,7 @@ namespace d360.web.Controllers.V2
             MapToApiVersion("2.0"),
             Route("comments"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
-            SwaggerResponse(HttpStatusCode.OK, "Gets comments.", typeof(List<dynamic>)),
+            SwaggerResponse(HttpStatusCode.OK, "Gets comments.", typeof(List<CommentDetail>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             NonNullableParameters
         ]
