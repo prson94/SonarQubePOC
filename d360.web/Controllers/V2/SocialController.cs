@@ -138,8 +138,15 @@ namespace d360.web.Controllers.V2
             return Request.CreateResponse(HttpStatusCode.OK, query);
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, Route("edit")]
+        [
+            HttpPost,
+            MapToApiVersion("2.0"),
+            Route("edit"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "Editing a comment.", typeof(List<dynamic>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            NonNullableParameters
+        ]
         public dynamic EditComment(CommentData comment)
         {
             var relations = new List<CommentRelation>();
@@ -186,8 +193,15 @@ namespace d360.web.Controllers.V2
             return dtl;
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, Route("comment")]
+        [
+            HttpPost,
+            MapToApiVersion("2.0"),
+            Route("comment"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "Adding new comment.", typeof(List<dynamic>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            NonNullableParameters
+        ]
         public dynamic AddComment(CommentData comment)
         {
             var relations = new List<CommentRelation>();
@@ -245,8 +259,15 @@ namespace d360.web.Controllers.V2
             return dtl;
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, Route("counts")]
+        [
+            HttpPost,
+            MapToApiVersion("2.0"),
+            Route("counts"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "Gets comments count.", typeof(List<dynamic>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            NonNullableParameters
+        ]
         public List<CommentCount> GetCommentCounts(CommentRequestData pageData)
         {
             List<CommentCount> counts = new List<CommentCount>();
@@ -264,8 +285,15 @@ namespace d360.web.Controllers.V2
             return counts;
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, Route("vote")]
+        [
+            HttpPost,
+            MapToApiVersion("2.0"),
+            Route("vote"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "Stores the up/down vote of a comment.", typeof(List<dynamic>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            NonNullableParameters
+        ]
         public List<CommentVote> VoteComment(CommentVote vote)
         {
 
@@ -282,8 +310,15 @@ namespace d360.web.Controllers.V2
 
         }
 
-        [ValidateHttpAntiForgeryToken]
-        [HttpPost, Route("comments")]
+        [
+            HttpPost,
+            MapToApiVersion("2.0"),
+            Route("comments"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "Gets comments.", typeof(List<dynamic>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            NonNullableParameters
+        ]
         public List<CommentDetail> GetComments(CommentRequestData pageData)
         {
             List<CommentDetail> comments = null;
