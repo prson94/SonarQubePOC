@@ -44,7 +44,7 @@ namespace d360.web.Controllers.Services
         }
 
         #endregion
-                
+
         [Route("")]
         public IQueryable<FusionType> GetTypes()
         {
@@ -178,10 +178,28 @@ order by C.ParentID, C.[Name]", new { id }).AsQueryable();
         [Route("{id:int}/configurations")]
         public HttpResponseMessage GetConfigurationsByType(int id, bool useFieldName = true)
         {
-            
+            const int markitFusionTypeId = 13;
+            const string markitLineageSettingKey = "UseNewMarkitLineageGeneration";
+
+            var showLineageButton = "cast(0 as bit) as ShowLineageButton,\n";
             var joins = "";
             var columns = "";
+
             getDynamicFieldJoinStatements(id, "Fusion", out joins, out columns, true, useFieldName);
+
+            if (id == markitFusionTypeId)
+            {
+                if (Community.GetCompanySettings().TryGetValue(markitLineageSettingKey, out string val))
+                {
+                    if (val.Trim().ToLower() == "true")
+                    {
+                        showLineageButton = "cast(1 as bit) as ShowLineageButton,\n";
+                    }
+                }
+            }
+
+            columns += showLineageButton;
+
 
             var querySql = string.Format(@"select	A.ID,
 		A.Name,

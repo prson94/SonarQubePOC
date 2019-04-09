@@ -9,6 +9,7 @@ import { AuthenticationConnectionBackend } from '../../../authentication-connect
 import { SiteMenuComponent } from './site-menu.component';
 import { SiteMenuMegaItemComponent } from './site-menu-mega-item.component';
 import { SiteMenuCategoryComponent } from './site-menu-category.component';
+import { PipesModule } from '../../../pipes/pipes.module';
 
 
 import {    
@@ -21,6 +22,7 @@ import {
         FormsModule,
         HttpModule,
         RouterModule,
+        PipesModule, 
 
         //prime
         TooltipModule,

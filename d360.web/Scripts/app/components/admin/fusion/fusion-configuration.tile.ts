@@ -21,6 +21,7 @@ export class FusionConfigurationTile extends BaseComponent implements OnChanges 
     FormModeConfig = FormModeConfig;
 
     theDeleteTypeCallback: Function;
+    theMarkitLineageCallback: Function;
 
     fusionConfigurations: any[];
     selectedRow: any;
@@ -34,6 +35,7 @@ export class FusionConfigurationTile extends BaseComponent implements OnChanges 
     constructor(private router: Router, private fusionService: FusionService, protected messagesService: MessagesService) {
         super();        
         this.theDeleteTypeCallback = this.deleteFusionConfig.bind(this);
+        this.theMarkitLineageCallback = this.runMarkitLineage.bind(this);
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {        
@@ -73,6 +75,15 @@ export class FusionConfigurationTile extends BaseComponent implements OnChanges 
             });
     }
 
+    runMarkitLineage(id: number) {
+        this.fusionService.postRunMarkitLineage(id)
+        .then(result => {
+            this.formMode = FormModeConfig.Default;
+            this.showMessageForResult(this.messagesService, result);
+            this.load();
+        });
+    }
+
     private openFusion(fusion) {
         this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${fusion.ID}`);
     }
@@ -87,5 +98,6 @@ enum FormModeConfig {
     Filters,
     AddingFilter,
     Scheduling,
-    QueryOverrides
+    QueryOverrides,
+    MarkitLineage
 }

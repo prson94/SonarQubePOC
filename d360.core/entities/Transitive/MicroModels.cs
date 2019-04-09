@@ -176,6 +176,21 @@ namespace d360.core.entities
         public List<NavigationItem> NavigationItems { get; set; }
         public int SortOrder { get; set; }
         public string Icon { get; set; }
+        public string ImageIconUrl { get; set; }
+        public string FullURL
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(this.ImageIconUrl))
+                {
+                    return null;
+                }
+                else
+                {
+                    return constants.COMPANY_RESOURCES_URL + this.ImageIconUrl;
+                }
+            }
+        }
         public string Title { get; set; }
 
     }
@@ -382,4 +397,14 @@ namespace d360.core.entities
         public string attributeIDs { get; set; }
         public string ObjectType { get; set; }
     }
+
+    public class RelationshipDirectionFieldInfo
+    {
+        public bool IsSubject { get; set; }
+        public int FieldTypeID { get; set; }
+        public int IntersectTypeID { get; set; }
+        public string Object { get; set; }
+        public int ObjectID { get; set; }
+    }
+
 }

@@ -4,6 +4,7 @@
     Items: SiteMenuItem[];
     IsLink: boolean;
     IsHomePage: boolean = false;
+    count: number;
 }
 
 export class SiteMenu {
@@ -14,7 +15,7 @@ export class SiteMenu {
     isActiveItem: boolean = false;
 
     ngUrl: string;
-    
+    FullURL: string;
     Icon: string;
     Title: string;
 }
@@ -37,6 +38,10 @@ export class SiteNav {
 
     Icon: string;
     Title: string;
+
+    ImageIconUrl: string;
+    FullURL: string;
+    IconPayload: string; 
 
     Permissions: SiteNavPermission[] = [];
     public static zindex: number = 1000;

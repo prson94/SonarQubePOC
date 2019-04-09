@@ -484,7 +484,17 @@ namespace d360.web.Controllers
                                 .ToList();
 
                         }
-                        else
+                        else if (item.AllowMultipleValues)
+                        {
+                            filterItems = Company
+                                .Filter<FieldLookupValue>(o => o.FieldTypeID == item.ID &&
+                                                                o.LookupObjectType == item.LookupObjectType &&
+                                                                o.LookupObjectID == item.LookupObjectID)
+                                .OrderBy(o => o.Text)
+                                .Select(o => o.Text + "!~!" + o.Value)
+                                .ToList();
+                        }
+                        else 
                         {
                             filterItems = Company
                                 .Filter<FieldLookupValue>(o => o.FieldTypeID == item.ID &&
@@ -4877,6 +4887,7 @@ order by    Name
 
                 var joins = "";
                 var columns = "";
+                
                 getDynamicFieldJoinStatements(id, "Rule", out joins, out columns, false, false);
 
                 var permissionSql = @"case when exists (
@@ -6977,7 +6988,7 @@ where v.id = {0}", id)).FirstOrDefault();
             var sourceJoins = "";
             var sourceColumns = "";
 
-            getDynamicFieldJoinStatements(targetID, targetType.ToString().Replace("Type", ""), out sourceJoins, out sourceColumns, false, false, false, true, "ObjectID", "A.Name");
+            getDynamicFieldJoinStatements(targetID, targetType.ToString().Replace("Type", ""), out sourceJoins, out sourceColumns, false, false, false, true, "A.ObjectID", "A.Name");
 
             joins = joins + sourceJoins;
             columns = columns + sourceColumns;
