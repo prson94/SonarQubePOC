@@ -21,7 +21,7 @@ namespace d360.web.Controllers.V2
     {
         #region DI
 
-        public ErrorsController(CommunityContext community, CompanyContext company)
+        public ErrorsController(ICommunityContext community, ICompanyContext company)
             : base(community, company)
         {
 

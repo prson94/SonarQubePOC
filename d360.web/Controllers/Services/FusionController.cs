@@ -36,7 +36,7 @@ namespace d360.web.Controllers.Services
         IStorageProvider Storage;
         IQueueSource Queue;
 
-        public FusionController(CommunityContext community, CompanyContext company, IStorageProvider storage, IQueueSource queue)
+        public FusionController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IQueueSource queue)
             : base(community, company)
         {
             Storage = storage;

@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Data.Entity;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web;
@@ -37,7 +38,7 @@ namespace d360.web.Controllers
 
         IStorageProvider Storage;
 
-        public FormController(CommunityContext community, CompanyContext company, ISecurityContextProvider secProvider, IStorageProvider storage)
+        public FormController(ICommunityContext community, ICompanyContext company, ISecurityContextProvider secProvider, IStorageProvider storage)
             : base(community, company)
         {            
             Storage = storage;
@@ -4774,7 +4775,7 @@ namespace d360.web.Controllers
                 }
 
                 if(columnModified)
-                    Company.Entry(ft).Property(x=>x.UpdatedBy).IsModified = true;
+                    Company.Entry(ft).Property(x => x.UpdatedBy).IsModified = true;
 
                 Company.SaveChanges();
 

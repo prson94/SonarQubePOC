@@ -26,7 +26,7 @@ namespace d360.web.Controllers.V2
     ]
     public class SocialController : BaseApiController
     {
-        public SocialController(CommunityContext community, CompanyContext company)
+        public SocialController(ICommunityContext community, ICompanyContext company)
             : base(community, company)
         {
         }

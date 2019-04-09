@@ -177,7 +177,7 @@ namespace d360.web.Controllers.Services
         
         #region DI
 
-        public CustomController(CommunityContext community, CompanyContext company)
+        public CustomController(ICommunityContext community, ICompanyContext company)
             : base(community, company)
         {
             

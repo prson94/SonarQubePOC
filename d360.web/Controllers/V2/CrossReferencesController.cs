@@ -24,7 +24,7 @@ namespace d360.web.Controllers.V2
     {
         #region DI
 
-        public CrossReferencesController(CommunityContext community, CompanyContext company)
+        public CrossReferencesController(ICommunityContext community, ICompanyContext company)
             : base(community, company)
         {
 

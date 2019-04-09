@@ -34,7 +34,7 @@ namespace d360.web.Controllers.V2
         IQueueSource QueueSource;
         IStorageProvider Storage;
 
-        public RelationshipsController(CommunityContext community, CompanyContext company, IQueueSource queueSource, IStorageProvider storage)
+        public RelationshipsController(ICommunityContext community, ICompanyContext company, IQueueSource queueSource, IStorageProvider storage)
             : base(community, company)
         {
             QueueSource = queueSource;

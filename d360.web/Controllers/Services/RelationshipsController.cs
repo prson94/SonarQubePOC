@@ -26,7 +26,7 @@ namespace d360.web.Controllers.Services
     {
         #region DI
 
-        public RelationshipsController(CommunityContext community, CompanyContext company)
+        public RelationshipsController(ICommunityContext community, ICompanyContext company)
             : base(community, company)
         {
         }

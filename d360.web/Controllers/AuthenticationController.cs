@@ -38,7 +38,7 @@ namespace d360.web.Controllers
 
         TelemetryClient Telemetry;
 
-        public AuthenticationController(CommunityContext community, CompanyContext company)
+        public AuthenticationController(ICommunityContext community, ICompanyContext company)
             : base(community, company)
         {
             Telemetry = new TelemetryClient();
