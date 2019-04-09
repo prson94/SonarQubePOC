@@ -5060,8 +5060,8 @@ namespace d360.web.Controllers
 
                         try
                         {
-                            
-                            Company.Query<int>("insert into [queue].[Task] ([Action], [Object], [ObjectID]) values ('FusionCache', 'Fusion', @fusionId)", new { fusionId = id });
+
+                            Company.Query<int>("insert into [queue].[Task] ([Action], [Object], [ObjectID]) values ('FusionCache', 'Fusion', @fusionId)", new { fusionId = id }).ToList();                          
                             return jsonSuccess("Markit lineage process queued successfully.", fusion.FusionTypeID.ToString(), "add", HttpStatusCode.OK);
 
                         }
