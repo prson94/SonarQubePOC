@@ -15,7 +15,11 @@
             <ng-template pTemplate="body" let-item>
                 <tr [pSelectableRow]="item">
                     <td>
-                        <i [class]="'fa '+ item.Icon"></i>&nbsp;&nbsp;{{item.Title}}
+                        <span *ngIf="item.Icon"><i [class]="'fa '+ item.Icon"></i></span>
+                        <span *ngIf="item.ImageIconUrl != null">
+                            <img [src]="item.FullURL" style="max-width: 15px; max-height: 15px;" />
+                        </span>
+                        &nbsp;&nbsp;{{item.Title}}
                     </td>
                     <td>
                         <div class="RowTools">
@@ -35,14 +39,42 @@
             Edit {{selection.Title}}
         </header>
         <div *ngIf="!formIsLoading">
+            <div class="col s12">
+                <div class="FieldName" style="display:block;">Folder Name</div>
+                <input maxlength="250" type="text" [(ngModel)]="selection.Name" style="width:100%" />
+            </div>
             <div class="row" style="margin-bottom:15px;">
-                <div class="col s12">
-                    <div class="FieldName" style="display:block;">Folder Name</div>
-                    <input type="text" maxlength="250" [(ngModel)]="selection.Title" style="width:100%" />
-                </div>
-                <div class="col s12">
-                    <div class="FieldName" style="display:block;">Folder Icon</div>
-                    <d3s-icon-picker [(ngModel)]="selection.Icon" ngDefaultControl></d3s-icon-picker>
+                <div class="row" style="padding-top:12px">
+                    <div class="col s12 m6">
+                        <div class="FieldName">Icon</div>
+                        <div>
+                            <div>
+                                <input type="radio" name="iconType" [checked]="iconType == 'icon'" (change)="changeIconType($event)" value="icon" /> Use a predefined icon
+                            </div>
+                            <div *ngIf="iconType == 'icon'" style="padding-bottom: 10px;">
+                                <d3s-icon-picker [(ngModel)]="selection.Icon" ngDefaultControl></d3s-icon-picker>
+                            </div>
+                            <div>
+                                <input type="radio" name="iconType" [checked]="iconType == 'image'" (change)="changeIconType($event)" value="image" /> Upload your own icon
+                            </div>
+                            <div *ngIf="iconType == 'image'">
+                                <input #imageUpload type="file" (change)="onFileChange($event)" (click)="clearIcon()" accept="image/gif,image/jpeg,image/png" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col s12 m6">
+                        <div class="FieldName">Preview</div>
+                        <div *ngIf="iconType == 'icon'" style="padding:10px">
+                            <span style="font-size: 15px"><i [class]="'fa ' + selection.Icon"></i></span>
+                        </div>
+                        <div *ngIf="iconType == 'image'" style="padding:10px">
+                            <img *ngIf="iconImage.dataUrl != null" [src]="iconImage.dataUrl" style="max-width: 16px; max-height: 16px;" />
+                            <img *ngIf="selection.IconPayload == null && selection.ImageIconUrl != null" [src]="selection.FullURL" style="max-width: 15px; max-height: 15px;" />
+                            <div *ngIf="selection.IconPayload != null || iconImage.dataUrl != null || selection.ImageIconUrl != null">
+                                <button pButton type="button" label="Clear" (click)="clearIcon()"></button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div *ngIf="selection.IsCustom" class="row">
@@ -100,7 +132,7 @@
                 </d3s-admin-site-menu-permissions>
             </div>
             <div class="row" style="margin-top:15px;">
-                <div class="col s12"  *ngIf="!IsMenuPermissionsAdding">
+                <div class="col s12" *ngIf="!IsMenuPermissionsAdding">
                     <button pButton type="button" label="Save" (click)="save()" [disabled]="selection == null || selection.Title == null || selection.Title == '' || permissionMode != FormMode.Default || (selection.IsCustom && (folderItems == null || folderItems.length < 1))"></button>
                     <button pButton type="button" label="Cancel" (click)="cancel()"></button>
                 </div>
@@ -126,14 +158,41 @@
             Add Navigation Folder
         </header>
         <div *ngIf="!formIsLoading">
+            <div class="col s12">
+                <div class="FieldName" style="display:block;">Folder Name</div>
+                <input maxlength="250" type="text" [(ngModel)]="newFolder.Name" style="width:100%" />
+            </div>
             <div class="row" style="margin-bottom:15px;">
-                <div class="col s12">
-                    <div class="FieldName" style="display:block;">Folder Name</div>
-                    <input maxlength="250" type="text" [(ngModel)]="newFolder.Name" style="width:100%" />
-                </div>
-                <div class="col s12">
-                    <div class="FieldName" style="display:block;">Folder Icon</div>
-                    <d3s-icon-picker [(ngModel)]="newFolder.Icon" ngDefaultControl></d3s-icon-picker>
+                <div class="row" style="padding-top:12px">
+                    <div class="col s12 m6">
+                        <div class="FieldName">Icon</div>
+                        <div>
+                            <div>
+                                <input type="radio" name="iconType" [checked]="iconType == 'icon'" (change)="changeIconType($event)" value="icon" /> Use a predefined icon
+                            </div>
+                            <div *ngIf="iconType == 'icon'" style="padding-bottom: 10px;">
+                                <d3s-icon-picker [(ngModel)]="newFolder.Icon" ngDefaultControl></d3s-icon-picker>
+                            </div>
+                            <div>
+                                <input type="radio" name="iconType" [checked]="iconType == 'image'" (change)="changeIconType($event)" value="image" /> Upload your own icon
+                            </div>
+                            <div *ngIf="iconType == 'image'">
+                                <input #imageUpload type="file" (change)="onFileChange($event)" accept="image/gif,image/jpeg,image/png" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col s12 m6">
+                        <div class="FieldName">Preview</div>
+                        <div *ngIf="iconType == 'icon'" style="padding:10px">
+                            <span style="font-size: 15px"><i [class]="'fa ' + newFolder.Icon"></i></span>
+                        </div>
+                        <div *ngIf="iconType == 'image'" style="padding:10px">
+                            <img *ngIf="iconImage != null && iconImage.dataUrl != null" [src]="iconImage.dataUrl" style="max-width: 15px; max-height: 15px;" />
+                            <div *ngIf="iconImage.dataUrl != null">
+                                <button pButton type="button" label="Clear" (click)="clearIcon()"></button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="row">
@@ -185,16 +244,16 @@
                     </p-table>
                 </div>
             </div>
-            <div class="row"  style="padding-bottom:15px;">
+            <div class="row" style="padding-bottom:15px;">
                 <d3s-admin-site-menu-permissions [(siteNav)]="newFolder" (onModeChange)="menuPermissionsOnModeChange($event)">
                 </d3s-admin-site-menu-permissions>
             </div>
             <div class="row">
-                 <div class="col s12" *ngIf="!IsMenuPermissionsAdding">
+                <div class="col s12" *ngIf="!IsMenuPermissionsAdding">
                     <button pButton type="button" label="Save" (click)="save()" [disabled]="newFolder == null || newFolder.Name == null || newFolder.Name == '' || newFolderItems == null || newFolderItems.length < 1 || permissionMode != FormMode.Default"></button>
                     <button pButton type="button" label="Cancel" (click)="formMode = FormMode.Default"></button>
                 </div>
-            </div> 
+            </div>
         </div>
     </div>
 </div>

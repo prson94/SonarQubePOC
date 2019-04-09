@@ -1,4 +1,4 @@
-﻿import { Input, Component, Output, EventEmitter, ChangeDetectionStrategy} from '@angular/core';
+﻿import { Input, Component, Output, EventEmitter, ChangeDetectionStrategy, OnInit} from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../base.component';
 import { StateService } from '../../../services/state.service';
@@ -13,25 +13,53 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
     selector: 'd3s-site-menu-mega-item',    
     template: ` 
                 <a (click)="itemClick()" class="menu-item truncate" [ngStyle]="{'margin-left': getMargin()}">
-                   <i [class]="'fa fa-circle menu-level-indicator-' + level" aria-hidden="true"></i>{{item.Name}}<ng-container *ngIf="item.IsHomePage">&nbsp;&nbsp;<span class="fa fa-home"></span></ng-container></a>
-                <d3s-site-menu-mega-item *ngFor="let sub of item.Items" [item]="sub" [level]="level + 1" [active]="active" (activeChange)="active=$event;activeChange.emit(active);"></d3s-site-menu-mega-item>                
+                    <span (click)="handleArrowClick($event)">
+                        <i *ngIf="item.Items" [class]="!displayChild ? 'subitem fa fa-caret-right' : 'subitem fa fa-caret-down'" aria-hidden="true"></i>
+                    </span>
+                   <span [innerHTML]="highlight() | safeHtml"></span>
+                    <ng-container *ngIf="item.IsHomePage">&nbsp;&nbsp;<span class="fa fa-home"></span></ng-container>
+                    <span *ngIf="count > 0" [ngStyle]="{'margin-right': getMargin()}" class="d3s-badge pull-right">{{count}}</span>
+                </a>
+                <div *ngIf="displayChild">
+                    <d3s-site-menu-mega-item  *ngFor="let sub of item.Items" [item]="sub" [level]="level + 1" [searchText]="searchText" [active]="active" [count]="sub.count" (activeChange)="active=$event;activeChange.emit(active);"></d3s-site-menu-mega-item>                
+                </div>
                 `,
     changeDetection: ChangeDetectionStrategy.OnPush    
 })
 
 export class SiteMenuMegaItemComponent extends BaseComponent {
+   
     @Input() item: SiteMenuItem;    
     @Input() level: number;
-
     @Input() active: boolean;
+    @Input() count: number;
+    @Input() searchText: string;
     @Output() activeChange = new EventEmitter();
-    
-    constructor(private router: Router) {
+    numberLoading: boolean;
+    displayChild: boolean = true;
+
+    constructor(private router: Router, private menuService: SiteMenuService) {
         super();
     }
 
+    
+
     getMargin() {        
         return (this.level * 10) + 'px';
+    }
+
+    private handleArrowClick(event) {
+        event.stopPropagation();
+        this.displayChild = !this.displayChild;
+    }
+
+    public highlight() {
+        if (!this.searchText) {
+            return this.item.Name;
+        }
+        return this.item.Name.replace(new RegExp(this.searchText, "gi"), match => {
+            return '<span style="background: #fd7e0e;">' + match + '</span>';
+        });
     }
 
     itemClick() {

@@ -1,0 +1,33 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="BHoward" id="GOV-4649">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[  
+    UPDATE [dbo].[SiteNav] SET Title = 'Glossary', SortOrder = 1 WHERE Name = '#Glossary'
+    UPDATE [dbo].[SiteNav] SET SortOrder = 2 WHERE Name = '#Models' 
+    UPDATE [dbo].[SiteNav] SET SortOrder = 3 WHERE Name = '#Policy' 
+    UPDATE [dbo].[SiteNav] SET Title = 'Rules', SortOrder = 6, Icon = 'fa-check-square' WHERE Name = '#Data Quality' 
+    UPDATE [dbo].[SiteNav] SET Title = 'Data Assets', SortOrder = 5 WHERE Name = '#Fusion' 
+    UPDATE [dbo].[SiteNav] SET SortOrder = 7 WHERE Name = '#Community' 
+		]]>
+    </sql>
+    <rollback>
+	<![CDATA[
+    UPDATE [dbo].[SiteNav] SET [SortOrder] = 1, [Icon] = N'fa-pie-chart', [Title] = N'Data Quality' WHERE [Name] = N'#Data Quality' 						   		 	  
+    UPDATE [dbo].[SiteNav] SET [SortOrder] = 3, [Icon] = N'fa-book', [Title] = N'Business Assets' WHERE [Name] = N'#Glossary'
+    UPDATE [dbo].[SiteNav] SET [SortOrder] = 4, [Icon] = N'fa-sitemap', [Title] = N'Models' WHERE [Name] = N'#Models'
+    UPDATE [dbo].[SiteNav] SET [SortOrder] = 5, [Icon] = N'fa-university', [Title] = N'Policies' WHERE [Name] = N'#Policy'						   		 	 
+    UPDATE [dbo].[SiteNav] SET [SortOrder] = 7, [Icon] = N'fa-database', [Title] = N'Fusion' WHERE [Name] = N'#Fusion'		   		 	  
+    UPDATE [dbo].[SiteNav] SET [SortOrder] = 8, [Icon] = N'fa-group', [Title] = N'Community' WHERE [Name] = N'#Community'	
+			]]>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>

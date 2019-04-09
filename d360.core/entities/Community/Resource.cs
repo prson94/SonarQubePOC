@@ -50,7 +50,7 @@ namespace d360.core.entities
         public Guid Uid { get; set; }
 
         [DataMember]
-        public DateTime UpdatedOn { get; set; }
+        public DateTime UpdatedOn { get; set; } = DateTime.UtcNow;
 
         #endregion
 

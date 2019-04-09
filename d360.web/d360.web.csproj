@@ -284,9 +284,7 @@
     <Compile Include="App_Start\IpRestrictionMiddleware.cs" />
     <Compile Include="App_Start\Startup.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
-    <Compile Include="Controllers\Services\Obsolete\AssetsController.cs" />
     <Compile Include="Controllers\Services\CustomController.cs" />
-    <Compile Include="Controllers\Services\Obsolete\ReferenceController.cs" />
     <Compile Include="Controllers\Services\Obsolete\ReportsController.cs" />
     <Compile Include="Controllers\Services\OrganizationsController.cs" />
     <Compile Include="Controllers\V2\AuditController.cs" />
@@ -305,7 +303,7 @@
     <Compile Include="Controllers\WebAnalyticsController.cs" />
     <Compile Include="Controllers\Services\WorkflowController.cs" />
     <Compile Include="Controllers\Services\EventsController.cs" />
-    <Compile Include="Controllers\Services\GlossaryController.cs" />
+    <Compile Include="Controllers\Services\Obsolete\GlossaryController.cs" />
     <Compile Include="Controllers\Services\RelationshipsController.cs" />
     <Compile Include="Controllers\Services\FusionController.cs" />
     <Compile Include="Controllers\Services\SearchController.cs" />
@@ -590,6 +588,7 @@
     <Content Include="Scripts\app\components\artifact\artifact-column-filter.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-grid.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-item.component.html" />
+    <Content Include="Scripts\app\components\fusion\fusion-attribute-details.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-attribute.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-data-profile-detail.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-manual-load.component.html" />
@@ -1447,11 +1446,13 @@
     <TypeScriptCompile Include="Scripts\app\pipes\responsibilitytypeallocation-filter.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\permission-filter.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\selectitem-text-to-label.pipe.ts" />
+    <TypeScriptCompile Include="Scripts\app\pipes\simple-search-pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\utc-date.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\safe-html.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\services\asset-type.services.ts" />
     <TypeScriptCompile Include="Scripts\app\services\baseObservable.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\cascade.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\cookie.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\custom-api.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\diagram.service.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-item.component.ts" />

@@ -513,19 +513,17 @@ namespace d360.web.Controllers.V2
 	                    rt.[uid] as 'ResponsibilityTypeUid',
 	                    rt.[name] as 'ResponsibilityTypeName',
 	                    0 as 'AssignedToType',
-                        a.[uid] as 'AssigneeUid',
-                        gr.FirstName + ' ' + gr.LastName as 'AssigneeName'
+                        s.[uid] as 'AssigneeUid',
+                        s.[Name] as 'AssigneeName'
                     from
 	                    [dbo].[ResponsibilityType] rt
-	                    inner join [dbo].[ResponsibilityTypeRelationOverrideItem] oride on oride.ResponsibilityTypeID = rt.id	
-                        inner join [dbo].[asset] a on oride.securityassetid = a.objectid and a.[object] = 'Resource'
-                        inner join [reporting].[global_resource] gr on gr.resourceid = a.objectid
+	                    inner join [dbo].[ResponsibilityTypeRelationOverrideItem] oride on oride.ResponsibilityTypeID = rt.id	    
+                        inner join [dbo].[asset] a on a.id = oride.assetid
+                        cross apply [dbo].[GetSecurityAssetUid](oride.SecurityAsset,oride.SecurityAssetID) s                        
                     where
 	                    oride.assetid in @assetIds {responsibilityFilterCriteria} {overrideAssigneeFilterCriteria} {permissionsCriteria}";
 
-
             return (await Company.Database.Connection.QueryAsync<ResponsibilityApiModel>(sql, dbArgs, null, timeout));
-
         }
 
         private async Task<AssetResponsibilitiesApiModel> getOwnershipAssets(IEnumerable<KeyValuePair<string, string>> queryParams, string assetUid, string assetTypeUid, string responsibilityUidFilter, string assigneeUidFilter,  int pageSize, int pageNum, int timeout = 300 )
@@ -585,11 +583,7 @@ namespace d360.web.Controllers.V2
                     dbArgs.Add("@securityAssetID", detail.Objectid);
                     responsibilityQueryFilters.Add($"rsa.securityasset = @securityAsset");
                     responsibilityQueryFilters.Add($"rsa.securityassetid = @securityAssetID");
-                }
-                // responsibilityOverrideQueryAdditionalJoins = " cross apply [dbo].[GetSecurityAssetUid](rd.SecurityAsset,rd.SecurityAssetId) s ";
-                //responsibilityQueryAdditionalJoins = " inner join ResponsibilityRuleResultSecurityAsset rsa on (rsa.ruleid = rr.id) cross apply [dbo].[GetSecurityAssetUid](rsa.SecurityAsset,rsa.SecurityAssetId) s ";
-                //responsibilityQueryFilters.Add($"s.uid = @assigneeUid");
-                //dbArgs.Add("@assigneeUid", assigneeUidFilter);
+                }                
             }
 
             if (pageSize < 1) pageSize = 1;
