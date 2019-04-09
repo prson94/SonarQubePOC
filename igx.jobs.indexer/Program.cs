@@ -48,7 +48,7 @@ namespace igx.jobs.indexer
         const string timerSettings = "0 0 17 * * 6";
 #endif
 
-        const string fieldsSql = @"select F.ObjectID, T.Name, F.FormattedValue from Field F inner join FieldType T on T.ID = F.FieldTypeID and F.ObjectType = @t and F.FormattedValue is not null and F.FormattedValue <> ''";
+        const string fieldsSql = @"select F.ObjectID, T.Name, F.FormattedValue from Field F inner join FieldType T on T.ID = F.FieldTypeID and F.ObjectType = @t and F.FormattedValue is not null and F.FormattedValue <> '' and T.[Type] not in('DateTime','Color','FusionLookup','FilteredLookup','ComplexRelationLookup','OwnershipLookup','Relationship','FieldFromRelationship','RefListRelationship','JSON')";
 
         public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
         {
@@ -505,7 +505,7 @@ from
         }
 
         private static IEnumerable<AddToIndexModel> LoadArtifacts(SqlConnection context, int companyID, ElasticSearchSource source)
-        {
+        {            
             var sql = @"
 select
 	cast(A.ID as varchar) as ItemUniqueID,
@@ -640,8 +640,7 @@ from    fusion f
                 return getDataWithFields(context, sql, companyID, source, type, convertToDictionary);
             }
             
-            return getDataWithoutFields(context, sql, companyID, source, type, convertToDictionary);
-            
+            return getDataWithoutFields(context, sql, companyID, source, type, convertToDictionary);            
         }
 
         private static IEnumerable<AddToIndexModel> getDataWithoutFields(SqlConnection context, string sql, int companyID, ElasticSearchSource source, string type, Func<dynamic, AddToIndexModel> convertToDictionary)
@@ -653,8 +652,7 @@ from    fusion f
         {
             var fields = context.Query<FieldSqlModel>(fieldsSql, new { t = type }, commandTimeout: _defaultQueryCommandTimeout).ToList();
             var list = getDataWithoutFields(context, sql, companyID, source, type, convertToDictionary);
-
-            
+                        
             foreach (var item in list)
             {
                 var subset = fields.Where(i => i.ObjectID == item.ID);

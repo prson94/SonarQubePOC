@@ -397,4 +397,14 @@ namespace d360.core.entities
         public string attributeIDs { get; set; }
         public string ObjectType { get; set; }
     }
+
+    public class RelationshipDirectionFieldInfo
+    {
+        public bool IsSubject { get; set; }
+        public int FieldTypeID { get; set; }
+        public int IntersectTypeID { get; set; }
+        public string Object { get; set; }
+        public int ObjectID { get; set; }
+    }
+
 }

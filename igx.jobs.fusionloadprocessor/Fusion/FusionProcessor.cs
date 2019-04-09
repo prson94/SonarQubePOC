@@ -663,7 +663,7 @@ MERGE
             _workArea.Relationships.IntersectTypeMapping = await companyConnection.QueryAsync<FusionIntersectMapping>(@"
 select  I.ID, I.SubjectID, I.ObjectID, P.[Type] as PredicateType
 from    [IntersectType] I
-        inner join [Predicate] P on P.ID = I.PredicateID and I.Subject = 'FusionAttributeType' AND I.Object = 'FusionAttributeType'", commandTimeout: ReadQueryTimeout);
+        left join [Predicate] P on P.ID = I.PredicateID and I.Subject = 'FusionAttributeType' AND I.Object = 'FusionAttributeType'", commandTimeout: ReadQueryTimeout);
 
             Log.WriteLine($"LOADED {_workArea.Relationships.IntersectTypeMapping.Count()} INTERSECT TYPE MAPPINGS FROM IntersectType table.");
         }

@@ -196,78 +196,9 @@ namespace d360.web.Controllers
 
         #region Private Methods
 
-        internal void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFieldName = true, bool checkForListable = true, bool checkForKeyColumn = false, string coreTableIdJoinColumn = "ID", string nameColumnOverride = "")
+        internal void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFieldName = true, bool checkForListable = true, bool checkForKeyColumn = false, string coreTableIdJoinColumn = "A.ID", string nameColumnOverride = "")
         {
-            columns = "";
-            joins = "";
-
-            var fieldTypeRelationTypeString = type;
-            switch (type)
-            {
-                case "Rule":
-                default:
-                    fieldTypeRelationTypeString += "Type";
-                    break;
-            }
-            var qry = Company.Filter<FieldType>(i => i.Object == fieldTypeRelationTypeString && i.ObjectID == typeID);
-
-            if (checkForListable)
-                qry = qry.Where(i => i.IsListable);
-
-            if (checkForKeyColumn)
-                qry = qry.Where(i => i.IsPartOfKey);
-
-            var fields = qry.ToList();
-
-            foreach (var f in fields)
-            {
-                var name = f.Name.Replace("'", "''").Replace("--", "") + f.ID.ToString();
-                if (!useFieldName)
-                {
-                    var fieldName = $"Field{f.ID}";
-                    if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
-
-                    // Allows for overriding the value for Name with that of another column, like TextPath.
-                    if (!string.IsNullOrEmpty(nameColumnOverride) && name == "Name")
-                    {
-                        columns += $@"{nameColumnOverride} as [{fieldName}], ";
-                    }
-                    else
-                    {
-                        columns += $@"case 
-    when {name}_TT.AllowAllValue = 1 and {name}_T.Value = '0' then {name}_TT.AllowAllLabel 
-    when {name}_T.Value is not null then {name}_T.FormattedValue 
-    when {name}_TT.DefaultValue is not null then {name}_TT.DefaultFormattedValue 
-    else '' 
-    end as [{fieldName}], ";
-
-                        joins += $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} 
-    left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.{coreTableIdJoinColumn} and {name}_T.FieldTypeID = {name}_TT.ID ";
-                    }
-                }
-                else
-                {
-                    if (includeIdColumn) columns += string.Format("{0}_T.Value as [{0}ID], ", name);
-
-                    // Allows for overriding the value for Name with that of another column, like TextPath.
-                    if (!string.IsNullOrEmpty(nameColumnOverride) && name == "Name")
-                    {
-                        columns += $@"{nameColumnOverride} as [{name}], ";
-                    }
-                    else
-                    {
-                            columns += $@"case 
-    when {name}_TT.AllowAllValue = 1 and {name}_T.Value = '0' then {name}_TT.AllowAllLabel 
-    when {name}_T.Value is not null then {name}_T.FormattedValue 
-    when {name}_TT.DefaultValue is not null then {name}_TT.DefaultFormattedValue 
-    else '' 
-    end as [{name}], ";
-                        joins += $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationTypeString}' and {name}_TT.ObjectID = {typeID} 
-    left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = A.{coreTableIdJoinColumn} and {name}_T.FieldTypeID = {name}_TT.ID ";
-                    }
-                }
-            }
-            fields = null;
+            Company.getDynamicFieldJoinStatements(typeID, type, out joins, out columns, includeIdColumn, useFieldName, checkForListable, null, coreTableIdJoinColumn,false);            
         }
 
         internal string applyFilteringSuffix(string sql, System.Net.Http.HttpRequestMessage Request)
@@ -821,7 +752,7 @@ namespace d360.web.Controllers
                             fld.Required = (f.MinimumLength > 0 || f.Length > 0 || f.IsRequired);
                         else
                         {
-                            if (!new[] { "Number", "Decimal" }.Contains(f.Type))
+                            if (!new[] { "Number", "Decimal",  "Text" }.Contains(f.Type))
                             {
                                 fld.Required = (f.MinimumLength > 0 || f.Length > 0);
                             }
@@ -1435,178 +1366,10 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
 
         #region Private Methods
 
-        /// <summary>
-        /// Only used in the method below.
-        /// </summary>
-        internal class RelationshipDirectionFieldInfo
-        {
-            public bool IsSubject { get; set; }
-            public int FieldTypeID { get; set; }
-            public int IntersectTypeID { get; set; }
-            public string Object { get; set; }
-            public int ObjectID { get; set; }
-        }
-
-        internal List<RelationshipDirectionFieldInfo> getRelationFieldData(string type, int typeID, List<FieldType> fields)
-        {
-            var relationFieldInfos = new List<RelationshipDirectionFieldInfo>();
-            var relationshipFields = fields.Where(i => i.Type == DataType.Relationship.ToString() || i.Type == DataType.FieldFromRelationship.ToString()).ToList();
-            if (relationshipFields != null)
-            {
-                if (relationshipFields.Count > 0)
-                {
-                    var intersectTypeIDs = relationshipFields.Select(i => i.LookupObjectID.Value).ToList();
-                    var intersectTypes = Company.Filter<IntersectType>(i => intersectTypeIDs.Contains(i.ID)).ToList();
-                    foreach (var rF in relationshipFields)
-                    {
-                        var relationFieldInfo = new RelationshipDirectionFieldInfo { FieldTypeID = rF.ID, IntersectTypeID = rF.LookupObjectID.Value };
-                        var intersectType = intersectTypes.SingleOrDefault(i => i.ID == relationFieldInfo.IntersectTypeID);
-                        if (intersectType != null)
-                        {
-                            relationFieldInfo.IsSubject = (intersectType.Subject == type && intersectType.SubjectID == typeID);
-                            relationFieldInfo.Object = relationFieldInfo.IsSubject ? intersectType.Object : intersectType.Subject;
-                            relationFieldInfo.ObjectID = relationFieldInfo.IsSubject ? intersectType.ObjectID : intersectType.SubjectID;
-
-                            relationFieldInfos.Add(relationFieldInfo);
-                        }
-                    }
-                }
-            }
-            return relationFieldInfos;
-        }
 
         internal void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFriendlyName = false, bool listableOnly = true, List<FieldType> fields = null, string idColumn = "A.ID")
         {
-            columns = "";
-            joins = "";
-
-            var fieldTypeRelationType = type;
-            switch (type)
-            { 
-                case "Rule":
-                    type = "Event";
-                    break;
-                default:
-                    fieldTypeRelationType += "Type";
-                    break;
-            }
-
-            if (fields == null)
-            {
-                if(listableOnly)
-                    fields = Company.Filter<FieldType>(i => i.Object == fieldTypeRelationType && i.ObjectID == typeID && i.IsListable).OrderBy(i => i.ColumnOrder).ToList();                
-                else
-                    fields = Company.Filter<FieldType>(i => i.Object == fieldTypeRelationType && i.ObjectID == typeID).OrderBy(i => i.ColumnOrder).ToList();
-            }
-
-            var relationFieldInfos = getRelationFieldData(fieldTypeRelationType, typeID, fields);
-
-            foreach (var f in fields)
-            {
-                var name = $"Field{f.ID}";
-                var friendlyName = f.FriendlyName.Replace("[", "").Replace("]", "");
-
-                if (f.Type == DataType.Relationship.ToString())
-                {
-                    var relationFieldInfo = relationFieldInfos.SingleOrDefault(i => i.FieldTypeID == f.ID);
-
-                    if (relationFieldInfo != null)
-                    {
-                        var isReferenceItemType = (relationFieldInfo.Object == SystemObjects.ReferenceItemType.ToString());
-                        var isFusionAttributeType = (relationFieldInfo.Object == SystemObjects.FusionAttributeType.ToString());
-                        var isTaxonomyType = (relationFieldInfo.Object == SystemObjects.TaxonomyType.ToString());
-
-                        var tableName = isReferenceItemType ? relationFieldInfo.Object : relationFieldInfo.Object.Replace("Type", "");
-                        var typeIDColumnName = relationFieldInfo.Object + "ID";
-
-                        if (includeIdColumn) columns += $"{name}_T.ID as [{name}ID], ";
-
-                        if (isReferenceItemType || isFusionAttributeType)
-                            columns += $"{name}_OT.Name";
-                        else if (isTaxonomyType)
-                            columns += $"{name}_OTT.TextPath";
-                        else
-                            columns += $"{name}_OTD.DisplayValue";
-
-                        columns += $" as [{(useFriendlyName ? friendlyName : name)}],";
-                        //columns += ((isReferenceItemType || isFusionAttributeType) ? $"{name}_OT.Name" : $"{name}_OTD.DisplayValue") + $" as [{(useFriendlyName ? friendlyName : name)}], ";
-
-                        joins += $" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and";
-                        joins += relationFieldInfo.IsSubject ? $" {name}_T.Subject = '{type.Replace("Type", "")}' and {name}_T.SubjectID = {idColumn}" : $" {name}_T.Object = '{type.Replace("Type", "")}' and {name}_T.ObjectID = {idColumn}";
-                        joins += (isReferenceItemType) 
-                            ? $" left join [{tableName}] {name}_OT on " 
-                            : $" left join [{tableName}] {name}_OT on {name}_OT.{typeIDColumnName} = {relationFieldInfo.ObjectID} AND ";
-                        joins += $"{name}_OT.ID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
-
-                        if (isTaxonomyType)
-                        {
-                            joins += $" left join asset {name}_AS on {name}_AS.Object = '{tableName}' and  {name}_AS.ObjectId = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
-                            joins += $" outer apply [dbo].GetAssetTextPathById({name}_AS.ID, '/') {name}_OTT";
-                        }
-                        else if (!isReferenceItemType && !isFusionAttributeType)
-                        {
-                            joins += $" left join asset {name}_AS on {name}_AS.Object = '{tableName}' and  {name}_AS.ObjectId = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
-                            joins += $" cross apply [dbo].GetAssetDisplayValueById({name}_AS.ID) {name}_OTD";
-                        }
-                    }
-                }
-                else if (f.Type == DataType.FieldFromRelationship.ToString())
-                {
-                    var relationFieldInfo = relationFieldInfos.SingleOrDefault(i => i.FieldTypeID == f.ID);
-
-                    if (relationFieldInfo != null)
-                    {                        
-                        if (includeIdColumn) columns += $"{name}_T.ID as [{name}ID], ";
-                        columns += $"{name}_OT.FormattedValue as [{(useFriendlyName ? friendlyName : name)}], ";
-
-                        joins += $" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and";
-                        joins += relationFieldInfo.IsSubject ? $" {name}_T.Subject = '{type.Replace("Type", "")}' and {name}_T.SubjectID = {idColumn}" : $" {name}_T.Object = '{type.Replace("Type", "")}' and {name}_T.ObjectID = {idColumn}";
-                        joins += $" left join [Field] {name}_OT on {name}_OT.FieldTypeID = {(f.LookupObjectFieldTypeID.HasValue ? f.LookupObjectFieldTypeID : 0)}";
-                        joins += $" and {name}_OT.ObjectType = {name}_T." + (relationFieldInfo.IsSubject ? "Object" : "Subject");
-                        joins += $" and {name}_OT.ObjectID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
-
-                    }
-                }
-                else if (f.Type == DataType.Decimal.ToString())
-                {
-                    if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
-                    columns += $@"case     
-    when {name}_T.Value is not null then cast({name}_T.FormattedValue as decimal(38,6))
-    when {name}_TT.DefaultValue is not null then cast({name}_TT.DefaultFormattedValue  as decimal(38,6))
-    else null 
-end as [{(useFriendlyName ? friendlyName : name)}], ";
-
-                    joins += $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationType}' and {name}_TT.ObjectID = {typeID} 
-left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ";
-                }
-                else if (f.Type == DataType.Number.ToString())
-                {
-                    if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
-                    columns += $@"case     
-    when {name}_T.Value is not null then try_cast({name}_T.FormattedValue as bigint)
-    when {name}_TT.DefaultValue is not null then cast({name}_TT.DefaultFormattedValue  as bigint)
-    else null 
-end as [{(useFriendlyName ? friendlyName : name)}], ";
-
-                    joins += $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationType}' and {name}_TT.ObjectID = {typeID} 
-left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ";
-                }
-                else
-                {
-                        if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
-                        columns += $@"case 
-    when {name}_TT.AllowAllValue = 1 and {name}_T.Value = '0' then {name}_TT.AllowAllLabel 
-    when {name}_T.Value is not null then {name}_T.FormattedValue 
-    when {name}_TT.DefaultValue is not null then {name}_TT.DefaultFormattedValue 
-    else '' 
-end as [{(useFriendlyName ? friendlyName : name)}], ";
-
-                    joins += $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationType}' and {name}_TT.ObjectID = {typeID} 
-left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ";
-                }
-            }
-
-            fields = null;
+            Company.getDynamicFieldJoinStatements(typeID, type, out joins, out columns, includeIdColumn, useFriendlyName, listableOnly, fields, idColumn);
         }
 
         internal string addDynamicFieldSimpleFilter(string[] fixedColumns, string type, int typeID, string filterExp, Dapper.DynamicParameters dbArgs, List<FieldType> fields = null)
@@ -1639,7 +1402,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 sb.Append($"({column} like @simpleFilter + '%')");
             }
 
-            var relationFieldInfos = getRelationFieldData(fieldTypeRelationType, typeID, fields);
+            var relationFieldInfos = Company.getRelationFieldData(fieldTypeRelationType, typeID, fields);
 
             foreach (var field in fields)
             {

@@ -15,13 +15,14 @@ using Newtonsoft.Json.Linq;
 using Microsoft.Web.Http;
 using Swashbuckle.Swagger.Annotations;
 using d360.web.Models;
+using System.Web.Http.Description;
 
 namespace d360.web.Controllers.Services
 {
     /// <summary>
     /// This service houses all endpoints handling glossary-related data such as artifacts and models.
     /// </summary>
-    [ApiVersion("1.0"), RoutePrefix("services/glossary"), Authorize]
+    [ApiVersion("1.0"), ApiExplorerSettings(IgnoreApi = true), RoutePrefix("services/deprecated/glossary"), Authorize]
     public class GlossaryController : BaseApiController
     {
         #region DI
