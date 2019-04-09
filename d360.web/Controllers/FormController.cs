@@ -8074,13 +8074,13 @@ namespace d360.web.Controllers
 
                 Company.Add(model);
 
-                Company.Add(new ResourceGroup { GroupID = model.ID, ResourceID = (int)model.PrimaryOwnerResourceID, IsOwner = true });
+                Company.Add(new ResourceGroup { GroupID = model.ID, ResourceID = (int)model.PrimaryOwnerResourceID });
                 try
                 {
                     if (model.SecondaryOwnerResourceID.HasValue)
                     {
                         if (!model.PrimaryOwnerResourceID.Equals(model.SecondaryOwnerResourceID))
-                            Company.Add(new ResourceGroup { GroupID = model.ID, ResourceID = model.SecondaryOwnerResourceID.Value, IsOwner = true });
+                            Company.Add(new ResourceGroup { GroupID = model.ID, ResourceID = model.SecondaryOwnerResourceID.Value});
                     }
                 }
                 catch
@@ -8122,13 +8122,13 @@ namespace d360.web.Controllers
 
                 if (!currentGroupUsers.Any(o => o == model.PrimaryOwnerResourceID))
                 {
-                    Company.Add(new ResourceGroup { GroupID = model.ID, ResourceID = model.PrimaryOwnerResourceID.Value, IsOwner = true });
+                    Company.Add(new ResourceGroup { GroupID = model.ID, ResourceID = model.PrimaryOwnerResourceID.Value });
                 }
                 if (model.SecondaryOwnerResourceID.HasValue)
                 {
                     if (!currentGroupUsers.Any(o => o == model.SecondaryOwnerResourceID))
                     {
-                        Company.Add(new ResourceGroup { GroupID = model.ID, ResourceID = model.SecondaryOwnerResourceID.Value, IsOwner = true });
+                        Company.Add(new ResourceGroup { GroupID = model.ID, ResourceID = model.SecondaryOwnerResourceID.Value });
                     }
                 }
 
