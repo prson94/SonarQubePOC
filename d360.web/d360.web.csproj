@@ -284,7 +284,6 @@
     <Compile Include="App_Start\IpRestrictionMiddleware.cs" />
     <Compile Include="App_Start\Startup.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
-    <Compile Include="Controllers\Services\CommunityController.cs" />
     <Compile Include="Controllers\Services\Obsolete\AssetsController.cs" />
     <Compile Include="Controllers\Services\CustomController.cs" />
     <Compile Include="Controllers\Services\Obsolete\ReferenceController.cs" />
