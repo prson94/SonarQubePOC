@@ -20,7 +20,7 @@ namespace d360.web.Controllers.V2
         ApiVersion("2.0"),
         RoutePrefix("api/v{version:apiVersion}/crossreferences"), Authorize
     ]
-    public class CrossReferencesController : BaseApiController
+    public class CrossReferencesController : BaseV2ApiController
     {
         #region DI
 

@@ -22,7 +22,7 @@ namespace d360.web.Controllers.V2
         Authorize,
         ApiExplorerSettings(IgnoreApi = true)
     ]
-    public class SocialController : BaseApiController
+    public class SocialController : BaseV2ApiController
     {
         public SocialController(ICommunityContext community, ICompanyContext company)
             : base(community, company)

@@ -27,7 +27,7 @@ namespace d360.web.Controllers.V2
     [
         ApiVersion("2.0"),
         RoutePrefix("api/v{version:apiVersion}/relationships"), Authorize]
-    public class RelationshipsController : BaseApiController
+    public class RelationshipsController : BaseV2ApiController
     {
         #region DI
 
@@ -39,29 +39,6 @@ namespace d360.web.Controllers.V2
         {
             QueueSource = queueSource;
             Storage = storage;
-        }
-
-        #endregion
-
-        #region utils
-
-        private async Task<T> readRequestJsonContent<T>(HttpRequestMessage request)
-        {
-            string json = "";
-
-            if (request.Content.IsMimeMultipartContent())
-            {
-                var streamProvider = new MultipartMemoryStreamProvider();
-                await request.Content.ReadAsMultipartAsync(streamProvider);
-
-                json = await streamProvider.Contents.Single().ReadAsStringAsync();
-            }
-            else
-            {
-                json = await request.Content.ReadAsStringAsync();
-            }
-
-            return JsonConvert.DeserializeObject<T>(json);
         }
 
         #endregion
@@ -260,7 +237,7 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Relationship Type with Uid {intersectTypeUid} could not be found.")));
 
                 if (relationships == null)
-                    relationships = readRequestJsonContent<RelationshipInserts>(Request).Result;
+                    relationships = readRequestJsonContent<RelationshipInserts>(Request,true).Result;
 
                 if (relationships == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
@@ -333,7 +310,7 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Relationship Type with Uid {intersectTypeUid} could not be found.")));
 
                 if (relationships == null)
-                    relationships = readRequestJsonContent<RelationshipInserts>(Request).Result;
+                    relationships = readRequestJsonContent<RelationshipInserts>(Request,true).Result;
 
                 if (relationships == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
