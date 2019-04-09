@@ -21,7 +21,7 @@ namespace d360.web.Controllers.V2
     RoutePrefix("api/v{version:apiVersion}/customendpoints"),
     Authorize
 ]
-    public class CustomEndpointsController : BaseApiController
+    public class CustomEndpointsController : BaseV2ApiController
     {
 
         #region DI

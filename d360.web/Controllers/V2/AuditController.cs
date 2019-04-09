@@ -28,7 +28,7 @@ namespace d360.web.Controllers.V2
         Authorize,
         ApiExplorerSettings(IgnoreApi = true)
     ]
-    public class AuditController: BaseApiController
+    public class AuditController: BaseV2ApiController
     {
         public AuditController(ICommunityContext community, ICompanyContext company) : base(community, company)
         {

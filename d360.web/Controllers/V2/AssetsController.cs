@@ -31,7 +31,7 @@ namespace d360.web.Controllers.V2
         RoutePrefix("api/v{version:apiVersion}/assets"),
         Authorize
     ]
-    public class AssetsController : BaseApiController
+    public class AssetsController : BaseV2ApiController
     {
         #region DI
 
@@ -48,55 +48,7 @@ namespace d360.web.Controllers.V2
         #endregion
 
         #region utils
-
-        private async Task<T> readRequestJsonContent<T>(HttpRequestMessage request)
-        {
-            string json = "";
-
-            if (request.Content.IsMimeMultipartContent())
-            {
-                var streamProvider = new MultipartMemoryStreamProvider();
-                await request.Content.ReadAsMultipartAsync(streamProvider);
-
-                json = await streamProvider.Contents.Single().ReadAsStringAsync();
-            }
-            else
-            {
-                json = await request.Content.ReadAsStringAsync();
-            }
-
-            if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
-                return default(T);
-            else
-            {
-                if ((json.StartsWith("{") && json.EndsWith("}")) || //For object
-                        (json.StartsWith("[") && json.EndsWith("]"))) //For array
-                {
-                    bool isValid = false;
-                    try
-                    {
-                        var obj = JToken.Parse(json);
-                        isValid = true;
-                        obj = null;
-                    }
-                    catch
-                    {
-                        isValid = false;
-                    }
-
-                    if (isValid)
-                        return JsonConvert.DeserializeObject<T>(json);
-                    else
-                        return default(T);
-                }
-                else
-                {
-                    return default(T);
-                }
-            }
                 
-        }
-
         private string getFieldDataType(FieldType field)
         {
             switch (field.Type)

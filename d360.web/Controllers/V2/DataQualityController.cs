@@ -22,7 +22,7 @@ namespace d360.web.Controllers.V2
         Authorize        
     ]
 
-    public class DataQualityController : BaseApiController
+    public class DataQualityController : BaseV2ApiController
     {
         #region DI
                 

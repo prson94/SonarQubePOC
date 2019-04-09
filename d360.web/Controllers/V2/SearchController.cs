@@ -23,7 +23,7 @@ namespace d360.web.Controllers.V2
         Authorize,
         ApiExplorerSettings(IgnoreApi = true)
     ]
-    public class SearchController : BaseApiController
+    public class SearchController : BaseV2ApiController
     {
         ISearchSource SearchSource;
 

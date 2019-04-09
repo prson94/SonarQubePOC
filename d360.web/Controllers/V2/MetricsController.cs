@@ -31,7 +31,7 @@ namespace d360.web.Controllers.V2
         RoutePrefix("api/v{version:apiVersion}/metrics"),
         Authorize
     ]
-    public class MetricsController : BaseApiController
+    public class MetricsController : BaseV2ApiController
     {
         #region DI
 

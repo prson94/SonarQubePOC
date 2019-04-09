@@ -24,7 +24,7 @@ namespace d360.web.Controllers.V2
         ApiVersion("2.0"),
         RoutePrefix("api/v{version:apiVersion}/exporttemplates"), Authorize
     ]
-    public class ExportTemplatesController : BaseApiController
+    public class ExportTemplatesController : BaseV2ApiController
     {
         #region DI
 
