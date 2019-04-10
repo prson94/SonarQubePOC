@@ -1,15 +1,15 @@
-﻿import { Input, Component, OnInit, OnChanges, SimpleChange, ChangeDetectionStrategy } from '@angular/core';
-import { Router } from '@angular/router';
+﻿import {Input, Component, OnInit, OnChanges, SimpleChange, ChangeDetectionStrategy} from '@angular/core';
+import {Router} from '@angular/router';
 
-import { BaseComponent} from '../../shared/base.component';
-import { ArtifactService } from '../../../services/artifacts.service';
-import { GridDefinitionService } from '../../../services/grid-definition.service';
-import { GridColumn, GridField } from '../../../models/grid-definition.model';
-import { SortOrder } from '../../../models/enums.model';
-import { Artifacts } from '../../../models/artifacts.model';
-import { LazyLoadEvent, DataTable } from 'primeng/primeng';
-import { SiteUrlHelpers } from '../../../static/site-url-helpers';
-import { StringConstants } from '../../../static/string-constants';
+import {BaseComponent} from '../../shared/base.component';
+import {ArtifactService} from '../../../services/artifacts.service';
+import {GridDefinitionService} from '../../../services/grid-definition.service';
+import {GridColumn, GridField} from '../../../models/grid-definition.model';
+import {SortOrder} from '../../../models/enums.model';
+import {Artifacts} from '../../../models/artifacts.model';
+import {LazyLoadEvent, DataTable} from 'primeng/primeng';
+import {SiteUrlHelpers} from '../../../static/site-url-helpers';
+import {StringConstants} from '../../../static/string-constants';
 
 @Component({
     selector: 'd3s-artifact-item-child-grid',
@@ -45,22 +45,22 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     ) {
         super();
     }
-    
+
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (changes['artifactTypeId'] && this.artifactTypeId > 0) {
             if (this.artifacts) this.artifacts = undefined;
-            this.getFieldsDefinition();            
+            this.getFieldsDefinition();
         }
     }
 
     private loadArtifactsLazy(event: LazyLoadEvent) {
-        /** 
+        /**
          * event.first = First row offset
          * event.rows = Number of rows per page
          * event.sortField = Field name to sort with
          * event.sortOrder = Sort order as number, 1 for asc and -1 for dec
          * filters: FilterMetadata object having field as key and filter value, filter matchMode as value
-        */
+         */
 
         this.sortOrder = event.sortOrder;
         this.sortField = event.sortField == undefined ? "" : event.sortField;
@@ -88,16 +88,19 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
             )
         ;
     }
-    
+
     getFieldsDefinition() {
         this.isLoading = true;
-        this.gridDefinitionService.getGridDefinition(this.artifactTypeId, "ArtifactType")
-            .then(result => {
-                this.columns = result.Columns.filter(x => x.datafield != 'Name'); //remove name we want it to be a cool link with tooltip we know its there!                
+        this.gridDefinitionService.getGridDefinition(this.artifactTypeId, "ArtifactType").subscribe(
+            result => {
+                this.columns = result.Columns.filter(x => x.datafield != 'Name');
+                /* remove name we want it to be a cool link with tooltip we know its there! */
                 this.fields = result.Fields;
+
                 this.isLoading = false;
-            });
-    }    
+            }
+        );
+    }
 
     private checkSimpleSearchEnter(event, dt: DataTable) {
         if (event.keyCode == 13) {
@@ -125,9 +128,9 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
         this
             .router
             .navigateByUrl(SiteUrlHelpers.getObjectUrl(
-                    'Artifact',
-                    artifact.ID,
-                    this.artifactTypeId
+                'Artifact',
+                artifact.ID,
+                this.artifactTypeId
                 )
             )
         ;

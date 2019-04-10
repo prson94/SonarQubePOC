@@ -1,24 +1,35 @@
-﻿import { Injectable } from '@angular/core';
-import { Headers, Http } from '@angular/http';
-import { MessagesService } from './messages.service';
-import { BaseService } from './base.service';
-import { GridDefinition } from '../models/grid-definition.model';
+﻿import {Injectable} from '@angular/core';
+import {MessagesService} from './messages.service';
+import {GridDefinition} from '../models/grid-definition.model';
+import {BaseObservableService} from "./baseObservable.service";
+import {HttpClient} from "@angular/common/http";
+import {Observable} from "rxjs";
+import {catchError, map} from "rxjs/operators";
 
 @Injectable()
-export class GridDefinitionService extends BaseService {
+export class GridDefinitionService extends BaseObservableService {
+    constructor(
+        private http: HttpClient,
+        messagesService: MessagesService
+    ) {
+        super(messagesService);
+    }
 
-    constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
-
-    getGridDefinition(objectID: number, objectType: string, parentID?: number, parentType?: string): Promise<GridDefinition> {
+    getGridDefinition(
+        objectID: number,
+        objectType: string,
+        parentID?: number,
+        parentType?: string
+    ): Observable<GridDefinition> {
         let url = `api/${objectType}/${objectID}/grid/definition`;
 
         if ((parentID >= 0) && parentType) {
             url += `?target=${parentType}&targetID=${parentID}`;
         }
-        
-        return this.http.get(url)
-            .toPromise()
-            .then(response => <GridDefinition>response.json())
-            .catch(err => this.handleError(err));
-    }    
+
+        return this.http.get(url).pipe(
+            map(response => <GridDefinition>response),
+            catchError(err => this.handleError(err))
+        );
+    }
 }
