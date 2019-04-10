@@ -377,6 +377,53 @@ namespace d360.web.Controllers.V2
             }
         }
 
+        /// <summary>
+        ///  GET a list asset type from an Asset type classes Id 
+        /// </summary>
+        /// <param name="Id">Asset type classes Id</param>
+        /// <returns>A list of asset types</returns>
+        [
+    HttpGet,
+    Route("types/{Id:int}"),
+    SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+    SwaggerResponse(HttpStatusCode.OK, "A list of asset types.", typeof(List<AssetTypeApiViewModel>)),
+    SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+]
+        public async Task<HttpResponseMessage> GetAssetTypesByIdAsync(int Id)
+        {
+            var prefix = "Assets.GetAssetTypesByIdAsync => ";
+            var errorMessage = "";
+
+            try
+            {
+                var dbArgs = new DynamicParameters();
+                dbArgs.Add("@Id", Id);
+                var assetTypes = await Company.QueryAsync<AssetTypeApiViewModel>(@"
+                    SELECT      A.[Name]
+                                ,A.[Description]
+                                ,A.[Class] as ClassID
+                                ,A.[Notes]
+                                ,A.[uid],
+                                P.[Path]
+                    FROM        AssetType A
+                                cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P
+                    where       A.[State] = 1 and A.[Class]=@Id
+                    order by    P.[Path]
+                    ", dbArgs);
+
+                return Request.CreateResponse(HttpStatusCode.OK, assetTypes);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+        }
+
         private async Task<AssetsApiViewModel> GetAssets(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             var assetTypeID = 0;
