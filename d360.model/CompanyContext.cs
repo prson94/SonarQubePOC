@@ -2544,7 +2544,7 @@ select @err";
                             if (Any<ReferenceItemType>(i => i.Name == o.Name))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
-                        case EntityState.Modified:
+                        case EntityState.Modified:                            
                             if (Any<ReferenceItemType>(i => i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
