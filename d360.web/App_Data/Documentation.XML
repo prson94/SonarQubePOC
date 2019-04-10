@@ -2384,14 +2384,19 @@
             This service houses all endpoints handling glossary-related data such as artifacts and models.
             </summary>
         </member>
-        <member name="M:d360.web.Controllers.V2.FieldsController.GetFieldTypesAsync">
+        <member name="M:d360.web.Controllers.V2.FieldsController.GetFieldTypesAsync(System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,System.String,System.Nullable{d360.core.DataType},System.Nullable{System.Int32},System.Nullable{System.Int32})">
             <summary>
             Retrieves field types contained within your environment.
             </summary>
-            <remarks>
-            In addition to the below query parameters a field name for the asset type can be specified to filter by exact match. For example MyCustomField=someExactValue.
-            </remarks>
-            <returns>An HTTP status code and message.</returns>
+            <param name="AssetTypeUid">The asset type Uid to retrieve field types for.</param>
+            <param name="RelationshipTypeUid">The relationship type Uid to retrieve field types for.</param>
+            <param name="ActionTypeUid">The action type Uid to retrieve field types for.</param>
+            <param name="Name">The API Name to search for.</param>
+            <param name="FriendlyName">The Friendly Name to search for.</param>
+            <param name="Type">The data type to search for.</param>
+            <param name="_pageSize">The number of results to return per page. The default value is 200.</param>
+            <param name="_pageNum">The page number to return results for.</param>
+            <returns>A list of field types corresponding to the given criteria, if any.</returns>
         </member>
         <member name="T:d360.web.Controllers.V2.AuditController">
             <summary>

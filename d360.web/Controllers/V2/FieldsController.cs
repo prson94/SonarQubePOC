@@ -336,15 +336,19 @@ namespace d360.web.Controllers.V2
 
         #endregion
 
-        private async Task<IHttpActionResult> GetFieldTypes(IEnumerable<KeyValuePair<string, string>> queryParams)
+        private async Task<FieldTypesApiViewModel> GetFieldTypes(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             Guid? actionTypeUid = null;
             Guid? assetTypeUid = null;
             Guid? relationshipTypeUid = null;
+            int pageNumber = 1;
+            int pageSize = 250;
 
-            var fieldTypes = Company.FieldTypes.Include("FieldTypeLookup").AsQueryable();
+            var whereClause = "";
 
             #region Parameter Checking
+
+            var dbArgs = new DynamicParameters();
 
             var parameters = queryParams.ToList();
 
@@ -366,7 +370,7 @@ namespace d360.web.Controllers.V2
                     }
                     else
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Type not found", $"Action Type not found based on Uid provided [{actionTypeUid.ToString()}]."));
+                        throw new RestApiException(HttpStatusCode.NotFound, "Type not found", $"Action Type not found based on Uid provided [{actionTypeUid.ToString()}].");
                     }
                 }
             }
@@ -374,7 +378,7 @@ namespace d360.web.Controllers.V2
             {
                 if (actionTypeUid.HasValue)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Parameter error", "You may not provide an AssetTypeUid since you have already provided an ActionTypeUid."));
+                    throw new RestApiException(HttpStatusCode.BadRequest, "Parameter error", "You may not provide an AssetTypeUid since you have already provided an ActionTypeUid.");
                 }
                 else
                 {
@@ -391,7 +395,7 @@ namespace d360.web.Controllers.V2
                         }
                         else
                         {
-                            return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Type not found", $"Asset Type not found based on Uid provided [{assetTypeUid.ToString()}]."));
+                            throw new RestApiException(HttpStatusCode.NotFound, "Type not found", $"Asset Type not found based on Uid provided [{assetTypeUid.ToString()}].");
                         }
                     }
                 }
@@ -400,11 +404,11 @@ namespace d360.web.Controllers.V2
             {
                 if (actionTypeUid.HasValue)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Parameter error", "You may not provide an RelationshipTypeUid since you have already provided an ActionTypeUid."));
+                    throw new RestApiException(HttpStatusCode.BadRequest, "Parameter error", "You may not provide an RelationshipTypeUid since you have already provided an ActionTypeUid.");
                 }
                 else if (assetTypeUid.HasValue)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Parameter error", "You may not provide an RelationshipTypeUid since you have already provided an AssetTypeUid."));
+                    throw new RestApiException(HttpStatusCode.BadRequest, "Parameter error", "You may not provide an RelationshipTypeUid since you have already provided an AssetTypeUid.");
                 }
                 else
                 {
@@ -421,7 +425,7 @@ namespace d360.web.Controllers.V2
                         }
                         else
                         {
-                            return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Type not found", $"Relationship Type not found based on Uid provided [{relationshipTypeUid.ToString()}]."));
+                            throw new RestApiException(HttpStatusCode.NotFound, "Type not found", $"Relationship Type not found based on Uid provided [{relationshipTypeUid.ToString()}].");
                         }
                     }
                 }
@@ -429,425 +433,366 @@ namespace d360.web.Controllers.V2
 
             if (!string.IsNullOrEmpty(obj) && objID.HasValue)
             {
-                fieldTypes = fieldTypes.Where(i => i.Object == obj && i.ObjectID == objID.Value);
+                dbArgs.Add("@obj", obj);
+                dbArgs.Add("@objID", objID.Value);
+                whereClause += (string.IsNullOrEmpty(whereClause) ? " where " : " ") + $"FT.[Object] = @obj and FT.[ObjectID] = @objID";
             }
 
             if (parameters.Any(q => q.Key.ToLower() == "name"))
             {
                 var fieldTypeName = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "name").Value.ToLower();
-                fieldTypes = fieldTypes.Where(i => i.Name.ToLower() == fieldTypeName);
+                dbArgs.Add("@name", fieldTypeName);
+                whereClause += (string.IsNullOrEmpty(whereClause) ? " where " : " ") + $"lower(FT.[Name]) = @name";
             }
 
             if (parameters.Any(q => q.Key.ToLower() == "friendlyname"))
             {
                 var fieldTypeFriendlyName = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "friendlyname").Value.ToLower();
-                fieldTypes = fieldTypes.Where(i => i.FriendlyName.ToLower() == fieldTypeFriendlyName);
+                dbArgs.Add("@fname", fieldTypeFriendlyName);
+                whereClause += (string.IsNullOrEmpty(whereClause) ? " where " : " ") + $"lower(FT.[FriendlyName]) = @fname";
             }
 
             if (parameters.Any(q => q.Key.ToLower() == "type"))
             {
                 var fieldTypeType = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "type").Value.ToLower();
-                fieldTypes = fieldTypes.Where(i => i.Type.ToLower() == fieldTypeType);
+                dbArgs.Add("@type", fieldTypeType);
+                whereClause += (string.IsNullOrEmpty(whereClause) ? " where " : " ") + $"lower(FT.[Type]) = @type";
             }
+
+            if (parameters.Any(q => q.Key.ToLower() == "_pagenum"))
+            {
+                var pageNumberString = parameters.FirstOrDefault(q => q.Key.ToLower() == "_pagenum").Value;
+                if (!int.TryParse(pageNumberString, out pageNumber))
+                {
+                    pageNumber = 1;
+                }
+            }
+            if (parameters.Any(q => q.Key.ToLower() == "_pagesize"))
+            {
+                var pageSizeString = parameters.FirstOrDefault(q => q.Key.ToLower() == "_pagesize").Value;
+                if (!int.TryParse(pageSizeString, out pageSize))
+                {
+                    pageSize = 250;
+                }
+            }
+
+            if (pageNumber < 0)
+            {
+                pageNumber = 1;
+            }
+            if (pageSize < 0 || pageSize > 250)
+            {
+                pageSize = 250;
+            }
+
+            dbArgs.Add("@pageNum", pageNumber);
+            dbArgs.Add("@pageSize", pageSize);
 
             #endregion
-
-            var countSql = $@"";
-
+           
             var sql = $@"
-select	FT.*,
-		FTL.HideHeader,
-		FTL.HideFooter,
-		FTL.HideFilter,
-		FTL.LookupType,
-		FTL.Definition
-from	FieldType FT
-		left join FieldTypeLookup FTL on FTL.FieldTypeID = FT.ID ";
+declare @total int
+select	@total = count(1) from FieldType FT {whereClause}
 
-            //var countResults = await Company.QueryAsync<int>(countSql, dbArgs);
-            var count = 1;//countResults.First();
+select	@pageSize as 'pageSize',
+		@pageNum as 'pageNum',
+		@total as 'total',
+		(
+        select	
+		        FT.Name,
+		        FT.FriendlyName,
+		        FT.Category,
 
-            var model = new FieldTypesApiViewModel { items = new List<FieldTypeApiViewModel>(), pageNum = 1, pageSize = 250, total = 1 };
+		        case when FT.Type = 'Boolean' then FT.ColumnOrder else null end as 'Type.Boolean.ColumnOrder',
+		        case when FT.Type = 'Boolean' then FT.ColumnWidth else null end as 'Type.Boolean.ColumnWidth',
+		        case when FT.Type = 'Boolean' then FT.SortOrder else null end as 'Type.Boolean.SortOrder',
+		        case when FT.Type = 'Boolean' then FT.DefaultValue else null end as 'Type.Boolean.DefaultValue',
+		        case when FT.Type = 'Boolean' then FT.DisplayDescription else null end as 'Type.Boolean.Description.Display',
+		        case when FT.Type = 'Boolean' then FT.FormDescription else null end as 'Type.Boolean.Description.Form',
+		        case when FT.Type = 'Boolean' then FT.IsDisplayable else null end as 'Type.Boolean.IsDisplayable',
+		        case when FT.Type = 'Boolean' then FT.IsEditable else null end as 'Type.Boolean.IsEditable',
+		        case when FT.Type = 'Boolean' then FT.IsListable else null end as 'Type.Boolean.IsListable',
+		        case when FT.Type = 'Boolean' then FT.IsPartOfKey else null end as 'Type.Boolean.IsPartOfKey',
+		        case when FT.Type = 'Boolean' then FT.IsPrimaryFilter else null end as 'Type.Boolean.IsPrimaryFilter',
 
-            foreach (var ft in fieldTypes)
-            {
-                var ftModel = new FieldTypeApiViewModel { Category = ft.Category, FriendlyName = ft.FriendlyName, Name = ft.Name };
+		        case when FT.Type = 'FusionLookup' then FT.ColumnOrder else null end as 'Type.ComputedFusionLookup.ColumnOrder',
 
-                switch (ft.Type)
-                {
-                    case "Boolean":
-                        ftModel.Type.Boolean = new FieldTypeDataTypeBooleanApiViewModel {
-                            ColumnOrder = ft.ColumnOrder,
-                            ColumnWidth = ft.ColumnWidth,
-                            Description = new FieldTypeDescriptionApiViewModel_DisplayForm { Display = ft.DisplayDescription, Form = ft.FormDescription },
-                            IsDisplayable = ft.IsDisplayable,
-                            IsEditable = ft.IsEditable,
-                            IsListable = ft.IsListable,
-                            IsPartOfKey = ft.IsPartOfKey,
-                            IsPrimaryFilter = ft.IsPrimaryFilter,
-                            ShowIfEmpty = ft.ShowIfEmpty,
-                            SortOrder = ft.SortOrder
-                        };
-                        bool bValue;
-                        if (bool.TryParse(ft.DefaultValue, out bValue))
-                        {
-                            ftModel.Type.Boolean.DefaultValue = bValue;
-                        }
-                        break;
-                    case "ComplexRelationLookup":
-                        ftModel.Type.ComputedRelationshipLookup = new FieldTypeDataTypeComputedRelationshipLookupApiViewModel
-                        {
-                            ColumnOrder = ft.ColumnOrder,
-                            Description = new FieldTypeDescriptionApiViewModel_Display { Display = ft.DisplayDescription },
-                            Definition = ft.FieldTypeLookup.ParseComplexLookupDefinition(),
-                            IsDisplayable = ft.IsDisplayable,
-                            ShowIfEmpty = ft.ShowIfEmpty
-                        };
-                        break;
-                    case "Date":
-                        ftModel.Type.Date = new FieldTypeDataTypeDateApiViewModel
-                        {
-                            ColumnOrder = ft.ColumnOrder,
-                            ColumnWidth = ft.ColumnWidth,
-                            Description = new FieldTypeDescriptionApiViewModel_DisplayForm { Display = ft.DisplayDescription, Form = ft.FormDescription },
-                            IsDisplayable = ft.IsDisplayable,
-                            IsEditable = ft.IsEditable,
-                            IsListable = ft.IsListable,
-                            IsPartOfKey = ft.IsPartOfKey,
-                            IsPrimaryFilter = ft.IsPrimaryFilter,
-                            ShowIfEmpty = ft.ShowIfEmpty,
-                            SortOrder = ft.SortOrder
-                        };
-                        DateTime dValue;
-                        if (DateTime.TryParse(ft.DefaultValue, out dValue))
-                        {
-                            ftModel.Type.Date.DefaultValue = dValue;
-                        }
-                        break;
-                    case "DateTime":
-                        ftModel.Type.DateTime = new FieldTypeDataTypeDateTimeApiViewModel
-                        {
-                            ColumnOrder = ft.ColumnOrder,
-                            ColumnWidth = ft.ColumnWidth,
-                            Description = new FieldTypeDescriptionApiViewModel_DisplayForm { Display = ft.DisplayDescription, Form = ft.FormDescription },
-                            IsDisplayable = ft.IsDisplayable,
-                            IsEditable = ft.IsEditable,
-                            IsListable = ft.IsListable,
-                            IsPartOfKey = ft.IsPartOfKey,
-                            IsPrimaryFilter = ft.IsPrimaryFilter,
-                            ShowIfEmpty = ft.ShowIfEmpty,
-                            SortOrder = ft.SortOrder
-                        };
-                        DateTime dtValue;
-                        if (DateTime.TryParse(ft.DefaultValue, out dtValue))
-                        {
-                            ftModel.Type.DateTime.DefaultValue = dtValue;
-                        }
-                        break;
-                    case "Decimal":
-                        ftModel.Type.Decimal = new FieldTypeDataTypeDecimalApiViewModel
-                        {
-                            ColumnOrder = ft.ColumnOrder,
-                            ColumnWidth = ft.ColumnWidth,
-                            Description = new FieldTypeDescriptionApiViewModel_DisplayForm { Display = ft.DisplayDescription, Form = ft.FormDescription },
-                            IsDisplayable = ft.IsDisplayable,
-                            IsEditable = ft.IsEditable,
-                            IsListable = ft.IsListable,
-                            IsPartOfKey = ft.IsPartOfKey,
-                            IsPrimaryFilter = ft.IsPrimaryFilter,
-                            ShowIfEmpty = ft.ShowIfEmpty,
-                            SortOrder = ft.SortOrder,
-                            Validation = new FieldTypeDescriptionApiViewModel_ValidationDecimal
-                            {
-                                IsRequired = ft.IsRequired,
-                                Length = ft.Length,
-                                MaximumLength = ft.MaximumLength,
-                                Message = ft.ValidationDescription,
-                                MinimumLength = ft.MinimumLength
-                            }
-                        };
-                        decimal dcValue;
-                        if (decimal.TryParse(ft.DefaultValue, out dcValue))
-                        {
-                            ftModel.Type.Decimal.DefaultValue = dcValue;
-                        }
-                        break;
-                    case "FieldFromRelationship":
-                        ftModel.Type.ComputedRelationshipField = new FieldTypeDataTypeComputedRelationshipFieldApiViewModel
-                        {
-                            ColumnOrder = ft.ColumnOrder,
-                            ColumnWidth = ft.ColumnWidth,
-                            Description = new FieldTypeDescriptionApiViewModel_Display { Display = ft.DisplayDescription },
-                            FieldTypeName = ft.LookupObjectFieldTypeID.ToString(),
-                            //IntersectTypeUid = ft.LookupObjectID,
-                            IsDisplayable = ft.IsDisplayable,
-                            IsListable = ft.IsListable,
-                            ShowIfEmpty = ft.ShowIfEmpty,
-                            SortOrder = ft.SortOrder
-                        };
+		        case when FT.Type = 'OwnershipLookup' then FT.ColumnOrder else null end as 'Type.ComputedOwnershipLookup.ColumnOrder',
+		        case when FT.Type = 'OwnershipLookup' then FT.DisplayDescription else null end as 'Type.ComputedOwnershipLookup.Description.Display',
+		        case when FT.Type = 'OwnershipLookup' then JSON_VALUE(FTL.Definition, '$.DisplayAssignmentSource') else null end as 'Type.ComputedOwnershipLookup.DisplayAssignmentSource',
+		        case when FT.Type = 'OwnershipLookup' then JSON_VALUE(FTL.Definition, '$.ExpandGroupMembership') else null end as 'Type.ComputedOwnershipLookup.ExpandGroupMembership',
+		        case when FT.Type = 'OwnershipLookup' then FT.IsDisplayable else null end as 'Type.ComputedOwnershipLookup.IsDisplayable',
+		        case when FT.Type = 'OwnershipLookup' then FT.ShowIfEmpty else null end as 'Type.ComputedOwnershipLookup.ShowIfEmpty',
 
-                        break;
-                    case "Html":
-                        ftModel.Type.Html = new FieldTypeDataTypeHtmlApiViewModel
-                        {
-                            ColumnOrder = ft.ColumnOrder,
-                            ColumnWidth = ft.ColumnWidth,
-                            Description = new FieldTypeDescriptionApiViewModel_DisplayForm { Display = ft.DisplayDescription, Form = ft.FormDescription },
-                            IsDisplayable = ft.IsDisplayable,
-                            IsEditable = ft.IsEditable,
-                            IsListable = ft.IsListable,
-                            IsPartOfKey = ft.IsPartOfKey,
-                            IsPrimaryFilter = ft.IsPrimaryFilter,
-                            ShowIfEmpty = ft.ShowIfEmpty,
-                            SortOrder = ft.SortOrder,
-                            DefaultValue = ft.DefaultValue,
-                            Validation = new FieldTypeDescriptionApiViewModel_ValidationText
-                            {
-                                IsRequired = ft.IsRequired,
-                                Length = ft.Length,
-                                MaximumLength = ft.MaximumLength,
-                                Message = ft.ValidationDescription,
-                                MinimumLength = ft.MinimumLength,
-                                Pattern = ft.Pattern
-                            }
-                        };
-                        break;
-                    case "JSON":
-                        ftModel.Type.Json = new FieldTypeDataTypeJsonApiViewModel
-                        {
-                            ColumnOrder = ft.ColumnOrder,
-                            Description = new FieldTypeDescriptionApiViewModel_Display { Display = ft.DisplayDescription },
-                            IsDisplayable = ft.IsDisplayable,
-                            ShowIfEmpty = ft.ShowIfEmpty
-                        };
-                        break;
-                    case "Link":
-                        ftModel.Type.Link = new FieldTypeDataTypeLinkApiViewModel
-                        {
-                            ColumnOrder = ft.ColumnOrder,
-                            ColumnWidth = ft.ColumnWidth,
-                            Description = new FieldTypeDescriptionApiViewModel_DisplayForm { Display = ft.DisplayDescription, Form = ft.FormDescription },
-                            IsDisplayable = ft.IsDisplayable,
-                            IsEditable = ft.IsEditable,
-                            IsListable = ft.IsListable,
-                            IsPartOfKey = ft.IsPartOfKey,
-                            IsPrimaryFilter = ft.IsPrimaryFilter,
-                            ShowIfEmpty = ft.ShowIfEmpty,
-                            SortOrder = ft.SortOrder,
-                            Validation = new FieldTypeDescriptionApiViewModel_ValidationDecimal
-                            {
-                                IsRequired = ft.IsRequired,
-                                Length = ft.Length,
-                                MaximumLength = ft.MaximumLength,
-                                Message = ft.ValidationDescription,
-                                MinimumLength = ft.MinimumLength
-                            },
-                            DefaultValue = new FieldTypeDataTypeLinkApiViewModel_DefaultValue {
-                                Text = string.IsNullOrEmpty(ft.DefaultValue) ? "" : ft.DefaultValue.Split('|')[0],
-                                Url = string.IsNullOrEmpty(ft.DefaultValue) ? "" : ft.DefaultValue.Split('|')[1]
-                            }
-                        };
-                        break;
-                    case "Lookup":
-                        ftModel.Type.Lookup = new FieldTypeDataTypeLookupApiViewModel
-                        {
-                            AllowAllLabel = ft.AllowAllLabel,
-                            AllowAllValue = ft.AllowAllValue,
-                            Filter = new FieldTypeDataTypeLookupApiViewModel_Filter {
-                                FieldTypeName = ft.FilterFieldTypeID.ToString(),
-                                //PredicateUid = ft.FilterPredicateID,
-                                UseDirection = ft.FilterPredicateDirection
-                            },
-                            ColumnOrder = ft.ColumnOrder,
-                            ColumnWidth = ft.ColumnWidth,
-                            Description = new FieldTypeDescriptionApiViewModel_DisplayForm { Display = ft.DisplayDescription, Form = ft.FormDescription },
-                            Format = new FieldTypeDataTypeLookupApiViewModel_Format {
-                                Display = ft.LookupDisplayFormat,
-                                Edit = ft.LookupEditFormat
-                            },
-                            IsDisplayable = ft.IsDisplayable,
-                            IsEditable = ft.IsEditable,
-                            IsListable = ft.IsListable,
-                            IsPartOfKey = ft.IsPartOfKey,
-                            IsPrimaryFilter = ft.IsPrimaryFilter,
-                            List = new FieldTypeDataTypeLookupApiViewModel_List {
-                                AllowMultipleValues = ft.AllowMultipleValues//,
-                                //Uid = ft.
-                            },
-                            ShowIfEmpty = ft.ShowIfEmpty,
-                            SortOrder = ft.SortOrder
-                        };
-                        int lValue;
-                        if (int.TryParse(ft.DefaultValue, out lValue))
-                        {
-                            ftModel.Type.Lookup.DefaultValue = ft.DefaultValue;
-                        }
-                        break;
-                    case "Number":
-                        ftModel.Type.Number = new FieldTypeDataTypeNumberApiViewModel
-                        {
-                            ColumnOrder = ft.ColumnOrder,
-                            ColumnWidth = ft.ColumnWidth,
-                            Description = new FieldTypeDescriptionApiViewModel_DisplayForm { Display = ft.DisplayDescription, Form = ft.FormDescription },
-                            Increment = ft.Increment,
-                            IsDisplayable = ft.IsDisplayable,
-                            IsEditable = ft.IsEditable,
-                            IsListable = ft.IsListable,
-                            IsPartOfKey = ft.IsPartOfKey,
-                            IsPrimaryFilter = ft.IsPrimaryFilter,
-                            ShowIfEmpty = ft.ShowIfEmpty,
-                            SortOrder = ft.SortOrder, 
-                            Validation = new FieldTypeDescriptionApiViewModel_ValidationDecimal
-                            {
-                                IsRequired = ft.IsRequired,
-                                Length = ft.Length,
-                                MaximumLength = ft.MaximumLength,
-                                Message = ft.ValidationDescription,
-                                MinimumLength = ft.MinimumLength
-                            }
-                        };
-                        int nValue;
-                        if (int.TryParse(ft.DefaultValue, out nValue))
-                        {
-                            ftModel.Type.Number.DefaultValue = nValue;
-                        }
-                        break;
-                    case "OwnershipLookup":
-                        ftModel.Type.ComputedOwnershipLookup = new FieldTypeDataTypeComputedOwnershipLookupApiViewModel
-                        {
-                            ColumnOrder = ft.ColumnOrder,
-                            Description = new FieldTypeDescriptionApiViewModel_Display { Display = ft.DisplayDescription },
-                            Definition = ft.FieldTypeLookup.ParseOwnershipLookupDefinition(),
-                            IsDisplayable = ft.IsDisplayable,
-                            ShowIfEmpty = ft.ShowIfEmpty
-                        };
-                        break;
-                    case "Percentage":
-                        //ftModel.Type.Decimal = new FieldTypeDataTypeDecimalApiViewModel
-                        //{
-                        //    ColumnOrder = ft.ColumnOrder,
-                        //    ColumnWidth = ft.ColumnWidth,
-                        //    Description = new FieldTypeDescriptionApiViewModel_DisplayForm { Display = ft.DisplayDescription, Form = ft.FormDescription },
-                        //    IsDisplayable = ft.IsDisplayable,
-                        //    IsEditable = ft.IsEditable,
-                        //    IsListable = ft.IsListable,
-                        //    IsPartOfKey = ft.IsPartOfKey,
-                        //    IsPrimaryFilter = ft.IsPrimaryFilter,
-                        //    ShowIfEmpty = ft.ShowIfEmpty,
-                        //    SortOrder = ft.SortOrder,
-                        //    Validation = new FieldTypeDescriptionApiViewModel_ValidationDecimal
-                        //    {
-                        //        IsRequired = ft.IsRequired,
-                        //        Length = ft.Length,
-                        //        MaximumLength = ft.MaximumLength,
-                        //        Message = ft.ValidationDescription,
-                        //        MinimumLength = ft.MinimumLength
-                        //    }
-                        //};
-                        //decimal pcValue;
-                        //if (decimal.TryParse(ft.DefaultValue, out pcValue))
-                        //{
-                        //    ftModel.Type.Decimal.DefaultValue = pcValue;
-                        //}
-                        break;
-                    case "RefListRelationship":
-                        ftModel.Type.ComputedRelationshipReferenceList = new FieldTypeDataTypeComputedRelationshipReferenceListApiViewModel 
-                        {
-                            ColumnOrder = ft.ColumnOrder,
-                            Description = new FieldTypeDescriptionApiViewModel_Display { Display = ft.DisplayDescription },
-                            IsDisplayable = ft.IsDisplayable,
-                            ShowIfEmpty = ft.ShowIfEmpty
-                            //IntersectTypeUid = ft.
-                        };
-                        break;
-                    case "Relationship":
-                        ftModel.Type.Relationship = new FieldTypeDataTypeRelationshipApiViewModel
-                        {
-                            ColumnOrder = ft.ColumnOrder,
-                            ColumnWidth = ft.ColumnWidth,
-                            Description = new FieldTypeDescriptionApiViewModel_DisplayForm { Display = ft.DisplayDescription, Form = ft.FormDescription },
-                            IsDisplayable = ft.IsDisplayable,
-                            IsEditable = ft.IsEditable,
-                            IsListable = ft.IsListable,
-                            IsPartOfKey = ft.IsPartOfKey,
-                            IsPrimaryFilter = ft.IsPrimaryFilter,
-                            ShowIfEmpty = ft.ShowIfEmpty,
-                            SortOrder = ft.SortOrder,
-                            //IntersectTypeUid = ft.
-                            Validation = new FieldTypeDescriptionApiViewModel_ValidationText
-                            {
-                                IsRequired = ft.IsRequired,
-                                Length = ft.Length,
-                                MaximumLength = ft.MaximumLength,
-                                Message = ft.ValidationDescription,
-                                MinimumLength = ft.MinimumLength,
-                                Pattern = ft.Pattern
-                            }
-                        };
-                        break;
-                    case "Text":
-                        ftModel.Type.Text = new FieldTypeDataTypeTextApiViewModel
-                        {
-                            ColumnOrder = ft.ColumnOrder,
-                            ColumnWidth = ft.ColumnWidth,
-                            Description = new FieldTypeDescriptionApiViewModel_DisplayForm { Display = ft.DisplayDescription, Form = ft.FormDescription },
-                            IsDisplayable = ft.IsDisplayable,
-                            IsEditable = ft.IsEditable,
-                            IsListable = ft.IsListable,
-                            IsPartOfKey = ft.IsPartOfKey,
-                            IsPrimaryFilter = ft.IsPrimaryFilter,
-                            ShowIfEmpty = ft.ShowIfEmpty,
-                            SortOrder = ft.SortOrder,
-                            DefaultValue = ft.DefaultValue,
-                            Validation = new FieldTypeDescriptionApiViewModel_ValidationText {
-                                IsRequired = ft.IsRequired,
-                                Length = ft.Length,
-                                MaximumLength = ft.MaximumLength,
-                                Message = ft.ValidationDescription,
-                                MinimumLength = ft.MinimumLength,
-                                Pattern = ft.Pattern
-                            }
-                        };
-                        break;
-                }
+		        case when FT.Type = 'FieldFromRelationship' then FT.ColumnOrder else null end as 'Type.ComputedRelationshipField.ColumnOrder',
+		        case when FT.Type = 'FieldFromRelationship' then FT.ColumnWidth else null end as 'Type.ComputedRelationshipField.ColumnWidth',
+		        case when FT.Type = 'FieldFromRelationship' then FT.SortOrder else null end as 'Type.ComputedRelationshipField.SortOrder',
+		        case when FT.Type = 'FieldFromRelationship' then FT.DisplayDescription else null end as 'Type.ComputedRelationshipField.Description.Display',
+		        case when FT.Type = 'FieldFromRelationship' then IT.Uid else null end as 'Type.ComputedRelationshipField.IntersectTypeUid',
+		        case when FT.Type = 'FieldFromRelationship' then LFT.Name else null end as 'Type.ComputedRelationshipField.FieldTypeName',
+		        case when FT.Type = 'FieldFromRelationship' then FT.IsDisplayable else null end as 'Type.ComputedRelationshipField.IsDisplayable',
+		        case when FT.Type = 'FieldFromRelationship' then FT.IsListable else null end as 'Type.ComputedRelationshipField.IsListable',
+		        case when FT.Type = 'FieldFromRelationship' then FT.ShowIfEmpty else null end as 'Type.ComputedRelationshipField.ShowIfEmpty',
 
-                model.items.Add(ftModel);
-            }
+		        case when FT.Type = 'ComplexRelationLookup' then FT.ColumnOrder else null end as 'Type.ComputedRelationshipLookup.ColumnOrder',
+		        case when FT.Type = 'ComplexRelationLookup' then FT.DisplayDescription else null end as 'Type.ComputedRelationshipLookup.Description.Display',
+		        case when FT.Type = 'ComplexRelationLookup' then FTL.HideHeader else null end as 'Type.ComputedRelationshipLookup.HideHeader',
+		        case when FT.Type = 'ComplexRelationLookup' then FTL.HideFooter else null end as 'Type.ComputedRelationshipLookup.HideFooter',
+		        case when FT.Type = 'ComplexRelationLookup' then FTL.HideFilter else null end as 'Type.ComputedRelationshipLookup.HideFilter',
+		        case when FT.Type = 'ComplexRelationLookup' then FTL.LookupType else null end as 'Type.ComputedRelationshipLookup.LookupType',
 
-            return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model)));
+		        case when FT.Type = 'ComplexRelationLookup' then (
+		        select	IST.Uid as IntersectTypeUid,
+				        AST.Uid as AssetTypeUid,
+				        DR.RelationType,
+				        DR.Direction
+		        from	OPENJSON(FTL.Definition) with (Relations nvarchar(max) as json) D
+				        outer apply OPENJSON(D.Relations) with (IntersectTypeID int, Object varchar(50), ObjectID int, RelationType int, Direction int) DR
+				        left join IntersectType IST on IST.ID = DR.IntersectTypeID
+				        left join AssetType AST on AST.Object = DR.Object and AST.ObjectID = DR.ObjectID
+		        for json path
+		        ) else null end as 'Type.ComputedRelationshipLookup.Relations',
+		        case when FT.Type = 'ComplexRelationLookup' then (
+		        select	AST.Uid as AssetTypeUid,
+				        coalesce(AFT.Name, DF.FieldTypeName) as FieldTypeName,
+				        DF.[Filter],
+				        DF.OverrideDisplayName,
+				        DF.DisplayOrder,
+				        DF.SortOrder,
+				        DF.Show,
+				        DF.Width
+		        from	OPENJSON(FTL.Definition) with (Fields nvarchar(max) as json) D
+				        outer apply OPENJSON(D.Fields) with (Object varchar(50), ObjectId int, FieldTypeID int, FieldTypeName nvarchar(250), [Filter] nvarchar(500), OverrideDisplayName nvarchar(250), DisplayOrder int, SortOrder int, Show bit, Width int) DF
+				        left join AssetType AST on AST.Object = DF.Object and AST.ObjectID = DF.ObjectID
+				        left join FieldType AFT on AFT.ID = DF.FieldTypeID
+		        order by DF.DisplayOrder
+		        for json path
+		        ) else null end as 'Type.ComputedRelationshipLookup.Fields',
+		        case when FT.Type = 'ComplexRelationLookup' then FT.IsDisplayable else null end as 'Type.ComputedRelationshipLookup.IsDisplayable',
+		        case when FT.Type = 'ComplexRelationLookup' then FT.ShowIfEmpty else null end as 'Type.ComputedRelationshipLookup.ShowIfEmpty',
+
+		        case when FT.Type = 'RefListRelationship' then FT.ColumnOrder else null end as 'Type.ComputedRelationshipReferenceList.ColumnOrder',
+		        case when FT.Type = 'RefListRelationship' then FT.DisplayDescription else null end as 'Type.ComputedRelationshipReferenceList.Description.Display',
+		        case when FT.Type = 'RefListRelationship' then IT.Uid else null end as 'Type.ComputedRelationshipReferenceList.IntersectTypeUid',
+		        case when FT.Type = 'RefListRelationship' then FT.IsDisplayable else null end as 'Type.ComputedRelationshipReferenceList.IsDisplayable',
+		        case when FT.Type = 'RefListRelationship' then FT.ShowIfEmpty else null end as 'Type.ComputedRelationshipReferenceList.ShowIfEmpty',
+
+		        case when FT.Type = 'Date' then FT.ColumnOrder else null end as 'Type.Date.ColumnOrder',
+		        case when FT.Type = 'Date' then FT.ColumnWidth else null end as 'Type.Date.ColumnWidth',
+		        case when FT.Type = 'Date' then FT.SortOrder else null end as 'Type.Date.SortOrder',
+		        case when FT.Type = 'Date' then FT.DefaultValue else null end as 'Type.Date.DefaultValue',
+		        case when FT.Type = 'Date' then FT.DisplayDescription else null end as 'Type.Date.Description.Display',
+		        case when FT.Type = 'Date' then FT.FormDescription else null end as 'Type.Date.Description.Form',
+		        case when FT.Type = 'Date' then FT.IsRequired else null end as 'Type.Date.Validation.IsRequired',
+		        case when FT.Type = 'Date' then FT.ValidationDescription else null end as 'Type.Date.Validation.Message',
+		        case when FT.Type = 'Date' then FT.IsDisplayable else null end as 'Type.Date.IsDisplayable',
+		        case when FT.Type = 'Date' then FT.IsEditable else null end as 'Type.Date.IsEditable',
+		        case when FT.Type = 'Date' then FT.IsListable else null end as 'Type.Date.IsListable',
+		        case when FT.Type = 'Date' then FT.IsPartOfKey else null end as 'Type.Date.IsPartOfKey',
+		        case when FT.Type = 'Date' then FT.IsPrimaryFilter else null end as 'Type.Date.IsPrimaryFilter',
+		        case when FT.Type = 'Date' then FT.ShowIfEmpty else null end as 'Type.Date.ShowIfEmpty',
+
+		        case when FT.Type = 'DateTime' then FT.ColumnOrder else null end as 'Type.DateTime.ColumnOrder',
+		        case when FT.Type = 'DateTime' then FT.ColumnWidth else null end as 'Type.DateTime.ColumnWidth',
+		        case when FT.Type = 'DateTime' then FT.SortOrder else null end as 'Type.DateTime.SortOrder',
+		        case when FT.Type = 'DateTime' then FT.DefaultValue else null end as 'Type.DateTime.DefaultValue',
+		        case when FT.Type = 'DateTime' then FT.DisplayDescription else null end as 'Type.DateTime.Description.Display',
+		        case when FT.Type = 'DateTime' then FT.FormDescription else null end as 'Type.DateTime.Description.Form',
+		        case when FT.Type = 'DateTime' then FT.IsRequired else null end as 'Type.DateTime.Validation.IsRequired',
+		        case when FT.Type = 'DateTime' then FT.ValidationDescription else null end as 'Type.DateTime.Validation.Message',
+		        case when FT.Type = 'DateTime' then FT.IsDisplayable else null end as 'Type.DateTime.IsDisplayable',
+		        case when FT.Type = 'DateTime' then FT.IsEditable else null end as 'Type.DateTime.IsEditable',
+		        case when FT.Type = 'DateTime' then FT.IsListable else null end as 'Type.DateTime.IsListable',
+		        case when FT.Type = 'DateTime' then FT.IsPartOfKey else null end as 'Type.DateTime.IsPartOfKey',
+		        case when FT.Type = 'DateTime' then FT.IsPrimaryFilter else null end as 'Type.DateTime.IsPrimaryFilter',
+		        case when FT.Type = 'DateTime' then FT.ShowIfEmpty else null end as 'Type.DateTime.ShowIfEmpty',
+
+		        case when FT.Type = 'Decimal' then FT.ColumnOrder else null end as 'Type.Decimal.ColumnOrder',
+		        case when FT.Type = 'Decimal' then FT.ColumnWidth else null end as 'Type.Decimal.ColumnWidth',
+		        case when FT.Type = 'Decimal' then FT.SortOrder else null end as 'Type.Decimal.SortOrder',
+		        case when FT.Type = 'Decimal' then FT.DefaultValue else null end as 'Type.Decimal.DefaultValue',
+		        case when FT.Type = 'Decimal' then FT.DisplayDescription else null end as 'Type.Decimal.Description.Display',
+		        case when FT.Type = 'Decimal' then FT.FormDescription else null end as 'Type.Decimal.Description.Form',
+		        case when FT.Type = 'Decimal' then FT.Increment else null end as 'Type.Decimal.Increment',
+		        case when FT.Type = 'Decimal' then FT.MinimumLength else null end as 'Type.Decimal.Validation.MinimumLength',
+		        case when FT.Type = 'Decimal' then FT.MaximumLength else null end as 'Type.Decimal.Validation.MaximumLength',
+		        case when FT.Type = 'Decimal' then FT.[Precision] else null end as 'Type.Decimal.Validation.Precision',
+		        case when FT.Type = 'Decimal' then FT.[Length] else null end as 'Type.Decimal.Validation.Length',
+		        case when FT.Type = 'Decimal' then FT.IsRequired else null end as 'Type.Decimal.Validation.IsRequired',
+		        case when FT.Type = 'Decimal' then FT.ValidationDescription else null end as 'Type.Decimal.Validation.Message',
+		        case when FT.Type = 'Decimal' then FT.IsDisplayable else null end as 'Type.Decimal.IsDisplayable',
+		        case when FT.Type = 'Decimal' then FT.IsEditable else null end as 'Type.Decimal.IsEditable',
+		        case when FT.Type = 'Decimal' then FT.IsListable else null end as 'Type.Decimal.IsListable',
+		        case when FT.Type = 'Decimal' then FT.IsPartOfKey else null end as 'Type.Decimal.IsPartOfKey',
+		        case when FT.Type = 'Decimal' then FT.ShowIfEmpty else null end as 'Type.Decimal.ShowIfEmpty',
+
+		        case when FT.Type = 'Html' then FT.ColumnOrder else null end as 'Type.Html.ColumnOrder',
+		        case when FT.Type = 'Html' then FT.ColumnWidth else null end as 'Type.Html.ColumnWidth',
+		        case when FT.Type = 'Html' then FT.SortOrder else null end as 'Type.Html.SortOrder',
+		        case when FT.Type = 'Html' then FT.DefaultValue else null end as 'Type.Html.DefaultValue',
+		        case when FT.Type = 'Html' then FT.DisplayDescription else null end as 'Type.Html.Description.Display',
+		        case when FT.Type = 'Html' then FT.FormDescription else null end as 'Type.Html.Description.Form',
+		        case when FT.Type = 'Html' then FT.MinimumLength else null end as 'Type.Html.Validation.MinimumLength',
+		        case when FT.Type = 'Html' then FT.MaximumLength else null end as 'Type.Html.Validation.MaximumLength',
+		        case when FT.Type = 'Html' then FT.[Length] else null end as 'Type.Html.Validation.Length',
+		        case when FT.Type = 'Html' then FT.IsRequired else null end as 'Type.Html.Validation.IsRequired',
+		        case when FT.Type = 'Html' then FT.ValidationDescription else null end as 'Type.Html.Validation.Message',
+		        case when FT.Type = 'Html' then FT.IsDisplayable else null end as 'Type.Html.IsDisplayable',
+		        case when FT.Type = 'Html' then FT.IsEditable else null end as 'Type.Html.IsEditable',
+		        case when FT.Type = 'Html' then FT.IsListable else null end as 'Type.Html.IsListable',
+		        case when FT.Type = 'Html' then FT.IsPartOfKey else null end as 'Type.Html.IsPartOfKey',
+		        case when FT.Type = 'Html' then FT.IsPrimaryFilter else null end as 'Type.Html.IsPrimaryFilter',
+		        case when FT.Type = 'Html' then FT.ShowIfEmpty else null end as 'Type.Html.ShowIfEmpty',
+
+		        case when FT.Type = 'Json' then FT.ColumnOrder else null end as 'Type.Json.ColumnOrder',
+		        case when FT.Type = 'Json' then FT.DisplayDescription else null end as 'Type.Json.Description.Display',
+		        case when FT.Type = 'Json' then FT.IsDisplayable else null end as 'Type.Json.IsDisplayable',
+		        case when FT.Type = 'Json' then FT.IsEditable else null end as 'Type.Json.IsEditable',
+		        case when FT.Type = 'Json' then FT.ShowIfEmpty else null end as 'Type.Json.ShowIfEmpty',
+
+		        case when FT.Type = 'Link' then FT.ColumnOrder else null end as 'Type.Link.ColumnOrder',
+		        case when FT.Type = 'Link' then FT.ColumnWidth else null end as 'Type.Link.ColumnWidth',
+		        case when FT.Type = 'Link' then FT.SortOrder else null end as 'Type.Link.SortOrder',
+		        case when FT.Type = 'Link' then case when CHARINDEX('|', FT.DefaultValue, 1) > 1 then SUBSTRING(FT.DefaultValue, 1, CHARINDEX('|', FT.DefaultValue, 1)-1) else FT.DEfaultValue end else null end as 'Type.Link.DefaultValue.Text',
+		        case when FT.Type = 'Link' then case when CHARINDEX('|', FT.DefaultValue, 1) > 1 then SUBSTRING(FT.DefaultValue, CHARINDEX('|', FT.DefaultValue, 1)+1, LEN(FT.DefaultValue)-CHARINDEX('|', FT.DefaultValue, 1)) else FT.DEfaultValue end else null end as 'Type.Link.DefaultValue.Url',
+		        case when FT.Type = 'Link' then FT.DisplayDescription else null end as 'Type.Link.Description.Display',
+		        case when FT.Type = 'Link' then FT.FormDescription else null end as 'Type.Link.Description.Form',
+		        case when FT.Type = 'Link' then FT.IsRequired else null end as 'Type.Link.Validation.IsRequired',
+		        case when FT.Type = 'Link' then FT.ValidationDescription else null end as 'Type.Link.Validation.Message',
+		        case when FT.Type = 'Link' then FT.IsDisplayable else null end as 'Type.Link.IsDisplayable',
+		        case when FT.Type = 'Link' then FT.IsEditable else null end as 'Type.Link.IsEditable',
+		        case when FT.Type = 'Link' then FT.IsListable else null end as 'Type.Link.IsListable',
+		        case when FT.Type = 'Link' then FT.ShowIfEmpty else null end as 'Type.Link.ShowIfEmpty',
+
+		        case when FT.Type = 'Lookup' then FT.ColumnOrder else null end as 'Type.Lookup.ColumnOrder',
+		        case when FT.Type = 'Lookup' then FT.ColumnWidth else null end as 'Type.Lookup.ColumnWidth',
+		        case when FT.Type = 'Lookup' then FT.SortOrder else null end as 'Type.Lookup.SortOrder',
+		        case when FT.Type = 'Lookup' then FT.DefaultValue else null end as 'Type.Lookup.DefaultValue',
+		        case when FT.Type = 'Lookup' then FT.DisplayDescription else null end as 'Type.Lookup.Description.Display',
+		        case when FT.Type = 'Lookup' then FT.FormDescription else null end as 'Type.Lookup.Description.Form',
+		        case when FT.Type = 'Lookup' then FT.AllowAllValue else null end as 'Type.Lookup.Validation.AllowAllValue',
+		        case when FT.Type = 'Lookup' then FT.AllowAllLabel else null end as 'Type.Lookup.Validation.AllAllLabel',
+		        case when FT.Type = 'Lookup' then FilterFT.[Name] else null end as 'Type.Lookup.Filter.FieldTypeName',
+		        case when FT.Type = 'Lookup' then FilterPT.[Uid] else null end as 'Type.Lookup.Filter.PredicateUid',
+		        case when FT.Type = 'Lookup' then FT.FilterPredicateDirection else null end as 'Type.Lookup.Filter.UseDirection',
+		        case when FT.Type = 'Lookup' then FT.LookupDisplayFormat else null end as 'Type.Lookup.Format.Display',
+		        case when FT.Type = 'Lookup' then FT.LookupEditFormat else null end as 'Type.Lookup.Format.Edit',
+		        case when FT.Type = 'Lookup' then LookupOT.Uid else null end as 'Type.Lookup.List.Uid',
+		        case when FT.Type = 'Lookup' then FT.AllowMultipleValues else null end as 'Type.Lookup.List.AllowMultipleValues',
+		        case when FT.Type = 'Lookup' then FT.IsDisplayable else null end as 'Type.Lookup.IsDisplayable',
+		        case when FT.Type = 'Lookup' then FT.IsEditable else null end as 'Type.Lookup.IsEditable',
+		        case when FT.Type = 'Lookup' then FT.IsListable else null end as 'Type.Lookup.IsListable',
+		        case when FT.Type = 'Lookup' then FT.IsPartOfKey else null end as 'Type.Lookup.IsPartOfKey',
+		        case when FT.Type = 'Lookup' then FT.IsPrimaryFilter else null end as 'Type.Lookup.IsPrimaryFilter',
+		        case when FT.Type = 'Lookup' then FT.ShowIfEmpty else null end as 'Type.Lookup.ShowIfEmpty',
+
+		        case when FT.Type = 'Number' then FT.ColumnOrder else null end as 'Type.Number.ColumnOrder',
+		        case when FT.Type = 'Number' then FT.ColumnWidth else null end as 'Type.Number.ColumnWidth',
+		        case when FT.Type = 'Number' then FT.SortOrder else null end as 'Type.Number.SortOrder',
+		        case when FT.Type = 'Number' then FT.DefaultValue else null end as 'Type.Number.DefaultValue',
+		        case when FT.Type = 'Number' then FT.DisplayDescription else null end as 'Type.Number.Description.Display',
+		        case when FT.Type = 'Number' then FT.FormDescription else null end as 'Type.Number.Description.Form',
+		        case when FT.Type = 'Number' then FT.Increment else null end as 'Type.Number.Increment',
+		        case when FT.Type = 'Number' then FT.MinimumLength else null end as 'Type.Number.Validation.MinimumLength',
+		        case when FT.Type = 'Number' then FT.MaximumLength else null end as 'Type.Number.Validation.MaximumLength',
+		        case when FT.Type = 'Number' then FT.[Length] else null end as 'Type.Number.Validation.Length',
+		        case when FT.Type = 'Number' then FT.IsRequired else null end as 'Type.Number.Validation.IsRequired',
+		        case when FT.Type = 'Number' then FT.ValidationDescription else null end as 'Type.Number.Validation.Message',
+		        case when FT.Type = 'Number' then FT.IsDisplayable else null end as 'Type.Number.IsDisplayable',
+		        case when FT.Type = 'Number' then FT.IsEditable else null end as 'Type.Number.IsEditable',
+		        case when FT.Type = 'Number' then FT.IsListable else null end as 'Type.Number.IsListable',
+		        case when FT.Type = 'Number' then FT.IsPartOfKey else null end as 'Type.Number.IsPartOfKey',
+		        case when FT.Type = 'Number' then FT.IsPrimaryFilter else null end as 'Type.Number.IsPrimaryFilter',
+		        case when FT.Type = 'Number' then FT.ShowIfEmpty else null end as 'Type.Number.ShowIfEmpty',
+
+		        case when FT.Type = 'Relationship' then FT.ColumnOrder else null end as 'Type.Relationship.ColumnOrder',
+		        case when FT.Type = 'Relationship' then FT.ColumnWidth else null end as 'Type.Relationship.ColumnWidth',
+		        case when FT.Type = 'Relationship' then FT.SortOrder else null end as 'Type.Relationship.SortOrder',
+		        case when FT.Type = 'Relationship' then FT.DisplayDescription else null end as 'Type.Relationship.Description.Display',
+		        case when FT.Type = 'Relationship' then FT.FormDescription else null end as 'Type.Relationship.Description.Form',
+		        case when FT.Type = 'Relationship' then IT.Uid else null end as 'Type.Relationship.IntersectTypeUid',
+		        case when FT.Type = 'Relationship' then FT.IsRequired else null end as 'Type.Relationship.Validation.IsRequired',
+		        case when FT.Type = 'Relationship' then FT.ValidationDescription else null end as 'Type.Relationship.Validation.Message',
+		        case when FT.Type = 'Relationship' then FT.IsDisplayable else null end as 'Type.Relationship.IsDisplayable',
+		        case when FT.Type = 'Relationship' then FT.IsEditable else null end as 'Type.Relationship.IsEditable',
+		        case when FT.Type = 'Relationship' then FT.IsListable else null end as 'Type.Relationship.IsListable',
+		        case when FT.Type = 'Relationship' then FT.IsPrimaryFilter else null end as 'Type.Relationship.IsPrimaryFilter',
+		        case when FT.Type = 'Relationship' then FT.ShowIfEmpty else null end as 'Type.Relationship.ShowIfEmpty',
+
+		        case when FT.Type = 'Text' then FT.ColumnOrder else null end as 'Type.Text.ColumnOrder',
+		        case when FT.Type = 'Text' then FT.ColumnWidth else null end as 'Type.Text.ColumnWidth',
+		        case when FT.Type = 'Text' then FT.SortOrder else null end as 'Type.Text.SortOrder',
+		        case when FT.Type = 'Text' then FT.DefaultValue else null end as 'Type.Text.DefaultValue',
+		        case when FT.Type = 'Text' then FT.DisplayDescription else null end as 'Type.Text.Description.Display',
+		        case when FT.Type = 'Text' then FT.FormDescription else null end as 'Type.Text.Description.Form',
+		        case when FT.Type = 'Text' then FT.MinimumLength else null end as 'Type.Text.Validation.MinimumLength',
+		        case when FT.Type = 'Text' then FT.MaximumLength else null end as 'Type.Text.Validation.MaximumLength',
+		        case when FT.Type = 'Text' then FT.[Length] else null end as 'Type.Text.Validation.Length',
+		        case when FT.Type = 'Text' then FT.Pattern else null end as 'Type.Text.Validation.Pattern',
+		        case when FT.Type = 'Text' then FT.IsRequired else null end as 'Type.Text.Validation.IsRequired',
+		        case when FT.Type = 'Text' then FT.ValidationDescription else null end as 'Type.Text.Validation.Message',
+		        case when FT.Type = 'Text' then FT.IsDisplayable else null end as 'Type.Text.IsDisplayable',
+		        case when FT.Type = 'Text' then FT.IsEditable else null end as 'Type.Text.IsEditable',
+		        case when FT.Type = 'Text' then FT.IsListable else null end as 'Type.Text.IsListable',
+		        case when FT.Type = 'Text' then FT.IsPartOfKey else null end as 'Type.Text.IsPartOfKey',
+		        case when FT.Type = 'Text' then FT.IsPrimaryFilter else null end as 'Type.Text.IsPrimaryFilter',
+		        case when FT.Type = 'Text' then FT.ShowIfEmpty else null end as 'Type.Text.ShowIfEmpty'
+        from	FieldType FT
+		        left join FieldTypeLookup FTL on FTL.FieldTypeID = FT.ID
+		        left join IntersectType IT on (FT.[Type] = 'FieldFromRelationship' or FT.[Type] = 'RefListRelationship' or FT.[Type] = 'Relationship') and FT.LookupObjectType = 'IntersectType' and IT.ID = FT.LookupObjectID
+		        left join FieldType LFT on FT.[Type] = 'FieldFromRelationship' and LFT.ID = FT.LookupObjectFieldTypeID
+
+		        left join FieldType FilterFT on FT.[Type] = 'Lookup' and FilterFT.ID = FT.FilterFieldTypeID
+		        left join [Predicate] FilterPT on FT.[Type] = 'Lookup' and FilterPT.ID = FT.FilterPredicateID
+		        left join [AssetType] LookupOT on FT.[Type] = 'Lookup' and LookupOT.[Object] = FT.LookupObjectType and LookupOT.ObjectID = FT.LookupObjectID
+        {whereClause}
+        order by FT.Object, FT.ObjectID, FT.Name
+        offset ((@pageNum-1) * @pageSize) rows fetch next @pageSize rows only
+        for json path
+        ) as 'items'
+for json path, WITHOUT_ARRAY_WRAPPER";
+
+            var model = await Company.GetDatabaseJsonAsObjectAsync<FieldTypesApiViewModel>(sql, dbArgs);
+
+            return model;
         }
 
 
         /// <summary>
         /// Retrieves field types contained within your environment.
         /// </summary>
-        /// <remarks>
-        /// In addition to the below query parameters a field name for the asset type can be specified to filter by exact match. For example MyCustomField=someExactValue.
-        /// </remarks>
-        /// <returns>An HTTP status code and message.</returns>
+        /// <param name="AssetTypeUid">The asset type Uid to retrieve field types for.</param>
+        /// <param name="RelationshipTypeUid">The relationship type Uid to retrieve field types for.</param>
+        /// <param name="ActionTypeUid">The action type Uid to retrieve field types for.</param>
+        /// <param name="Name">The API Name to search for.</param>
+        /// <param name="FriendlyName">The Friendly Name to search for.</param>
+        /// <param name="Type">The data type to search for.</param>
+        /// <param name="_pageSize">The number of results to return per page. The default value is 200.</param>
+        /// <param name="_pageNum">The page number to return results for.</param>
+        /// <returns>A list of field types corresponding to the given criteria, if any.</returns>
         [
             HttpGet,
             Route(""),
             SwaggerResponse(HttpStatusCode.OK, "", typeof(FieldTypesApiViewModel)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
-            SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
-            SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by AssetId.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_predicateUid", "The Uid of a predicate type to return relationships for. If specified the results will include relationships of this predicate type. Assets without this type of relationship defined will be omitted.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_subjectUid", "The Uid of the subject side of a relationship to filter by in addition to filtering by predicate type. _predicateUid is required.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> GetFieldTypesAsync()
+        public async Task<HttpResponseMessage> GetFieldTypesAsync(Guid? AssetTypeUid = null, Guid? RelationshipTypeUid = null, Guid? ActionTypeUid = null, string Name = "", string FriendlyName = "", DataType? Type = null, int? _pageSize = null, int? _pageNum = null)
         {
-            var prefix = "Assets.GetAssetsAsync => ";
+            var prefix = "Fields.GetFieldTypesAsync => ";
             var errorMessage = "";
 
             try
             {
                 var queryParams = Request.GetQueryNameValuePairs();
                 var results = await GetFieldTypes(queryParams);
-
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+                return Request.CreateResponse(HttpStatusCode.OK, results);
+            }
+            catch (RestApiException ex)
+            {
+                errorMessage = ex.GetFullExceptionData(false);
+                return ReturnApiError(ex.Status, errorMessage);
             }
             catch (Exception ex)
             {
@@ -856,7 +801,7 @@ from	FieldType FT
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
             }
 
         }
