@@ -27,6 +27,7 @@ namespace igx.jobs.bulkloadprocessor
         public int EnvironmentID { get; set; }
         public int? ClientID { get; set; }
         public int? ResourceID { get; set; }
+        public Guid Uid { get; set; }
         public bool? Success { get; set; }
         public string Message { get; set; }
     }
