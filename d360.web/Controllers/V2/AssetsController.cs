@@ -328,6 +328,7 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route("types"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerParameter("_classID", "The Class ID of an asset type.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerResponse(HttpStatusCode.OK, "A list of asset types.", typeof(List<AssetTypeApiViewModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
@@ -338,18 +339,30 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                var assetTypes = await Company.QueryAsync<AssetTypeApiViewModel>(@"
-SELECT      A.[Name]
-            ,A.[Description]
-            ,A.[Class] as ClassID
-            ,A.[Notes]
-            ,A.[uid],
-            P.[Path]
-FROM        AssetType A
-            cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P
-where       A.[State] = 1
-order by    P.[Path]
-");
+                var queryParams = Request.GetQueryNameValuePairs();
+                var dbArgs = new DynamicParameters();
+                string condition = "";
+                if (queryParams.ToList().Any(k => k.Key.ToLower() == "_classid"))
+                {
+                    var Id = Int32.Parse(queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_classid").Value);
+                    dbArgs.Add("@Id", Id);
+                    condition = "and A.[Class]=@Id";
+                }
+
+                var sql = $@"
+                        SELECT      A.[Name]
+                                    ,A.[Description]
+                                    ,A.[Class] as ClassID
+                                    ,A.[Notes]
+                                    ,A.[uid],
+                                    P.[Path]
+                        FROM        AssetType A
+                                    cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P
+                        where       A.[State] = 1
+                        {condition}
+                        order by    P.[Path]
+                        ";
+                var assetTypes = await Company.QueryAsync<AssetTypeApiViewModel>(sql, dbArgs);
 
                 return Request.CreateResponse(HttpStatusCode.OK, assetTypes);
             }
