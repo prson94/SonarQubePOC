@@ -1,22 +1,22 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
-import { Title } from '@angular/platform-browser';
+﻿import {Input, Component, EventEmitter, Output, OnInit, OnDestroy} from '@angular/core';
+import {Router, ActivatedRoute} from '@angular/router';
+import {Title} from '@angular/platform-browser';
 
-import { BaseComponent } from '../shared/base.component';
-import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
-import { PoliciesService } from '../../services/policies.service';
-import { RightSidebarService } from '../../services/right-sidebar.service';
-import { MessagesService } from '../../services/messages.service';
-import { HeaderActionsService } from '../../services/header-actions.service';
-import { PermissionsService } from '../../services/permissions.service';
-import { Breadcrumb } from '../../models/breadcrumb.model';
-import { Policy, PolicyType, PolicyStatus } from '../../models/policy.model';
-import { TreeNode } from 'primeng/primeng';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import { StringConstants } from '../../static/string-constants';
-import { LevelsService } from '../../services/levels.service';
-import { GridColumn, GridField } from '../../models/grid-definition.model';
-import { GridDefinitionService } from '../../services/grid-definition.service';
+import {BaseComponent} from '../shared/base.component';
+import {HeaderBreadcrumbService} from '../../services/header-breadcrumb.service';
+import {PoliciesService} from '../../services/policies.service';
+import {RightSidebarService} from '../../services/right-sidebar.service';
+import {MessagesService} from '../../services/messages.service';
+import {HeaderActionsService} from '../../services/header-actions.service';
+import {PermissionsService} from '../../services/permissions.service';
+import {Breadcrumb} from '../../models/breadcrumb.model';
+import {Policy, PolicyType, PolicyStatus} from '../../models/policy.model';
+import {TreeNode} from 'primeng/primeng';
+import {SiteUrlHelpers} from '../../static/site-url-helpers';
+import {StringConstants} from '../../static/string-constants';
+import {LevelsService} from '../../services/levels.service';
+import {GridColumn, GridField} from '../../models/grid-definition.model';
+import {GridDefinitionService} from '../../services/grid-definition.service';
 
 @Component({
     selector: 'd3s-policy-item-structure',
@@ -38,7 +38,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
     selectedLevel: number;
     columns: GridColumn[] = [];
     fields: GridField[] = [];
-    
+
     searchValue: string;
 
     showDelete: boolean = false;
@@ -78,12 +78,12 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
             this.setCommonRightSideBar(true);
             this.getFieldsDefinition();
 
-            this.loadPermissions(this.permissionsService, StringConstants.ObjectPolicyType, this.policyTypeId);            
+            this.loadPermissions(this.permissionsService, StringConstants.ObjectPolicyType, this.policyTypeId);
             this.isLoading = true;
             this.policiesService.getPolicyType(this.policyTypeId)
                 .then(result => {
                     this.isLoading = false;
-                    this.policyType = result;                    
+                    this.policyType = result;
                     this.headerBreadcrumbService.clearBreadcrumbs();
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Policies', `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_POLICY_CLASSIFICATION}`));
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.policyType.Name, `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${this.policyTypeId}/structure`));
@@ -94,8 +94,8 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
                 });
             this.levelsService.getObjectLevels(this.policyTypeId, StringConstants.ObjectPolicyType)
                 .then(result => {
-                    this.levels = result;                    
-                });               
+                    this.levels = result;
+                });
         });
     }
 
@@ -105,13 +105,13 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
     }
 
     private loadPolicyHierarchy(policyTypeId: number) {
-       this.policiesService.getPolicies(policyTypeId, true)
+        this.policiesService.getPolicies(policyTypeId, true)
             .then(result => {
                 for (let policy of result) {
                     policy.StatusName = PolicyStatus[policy.Status];
                 }
-                this.policies = result;                
-                this.treeNodeArray = this.buildTreeNodeArray(this.policies,1)
+                this.policies = result;
+                this.treeNodeArray = this.buildTreeNodeArray(this.policies, 1)
             });
     }
 
@@ -142,11 +142,12 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
     }
 
     private getFieldsDefinition() {
-        this.gridDefinitionService.getGridDefinition(this.policyTypeId, StringConstants.ObjectPolicyType)
-            .then(result => {
+        this.gridDefinitionService.getGridDefinition(this.policyTypeId, StringConstants.ObjectPolicyType).subscribe(
+            result => {
                 this.columns = result.Columns;
                 this.fields = result.Fields;
-            });
+            }
+        );
     }
 
     setTreeNodeStyles(node) {
@@ -171,11 +172,11 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
         });
         this.showDelete = false;
     }
-    
-    private add() {            
+
+    private add() {
         this.selectedParentID = this.selected ? this.selected.data.ID : null;
         this.selectedLevel = this.selected ? this.selected.data.Level : 0;
-        this.selected = null;        
+        this.selected = null;
         this.showEditor = true;
     }
 
