@@ -3592,10 +3592,13 @@ outer apply (
                 var fieldTypeIDs = fields.Where(i => i.FieldTypeID != 0).Select(x => x.FieldTypeID).ToList();
                 var fieldTypes = Company.Filter<FieldType>(i => fieldTypeIDs.Contains(i.ID)).ToList();
 
+                bool isResourceType = def.Fields.All(x=> x.Object == "ResourceType");
+
                 if (
                     (def.Fields.Count > 0) &&
                         (
                             (
+                                !isResourceType &&
                                 (fieldTypes == null || fieldTypes.Count == 0) &&
                                 !def.Fields.Any(x => (x.FieldTypeName == "TextPath") || (x.FieldTypeName == "Name" && x.FieldTypeID == 0)
                                     || (x.FieldTypeName == "DisplayValue" && x.FieldTypeID == 0))
