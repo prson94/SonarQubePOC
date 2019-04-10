@@ -2797,13 +2797,6 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.AssetsController.GetAssetTypesByIdAsync(System.Int32)">
-            <summary>
-             GET a list asset type from an Asset type classes Id 
-            </summary>
-            <param name="Id">Asset type classes Id</param>
-            <returns>A list of asset types</returns>
-        </member>
         <member name="M:d360.web.Controllers.V2.AssetsController.GetAssetsAsync(System.Guid)">
             <summary>
             Retrieves assets for the given asset type unique identifier.
