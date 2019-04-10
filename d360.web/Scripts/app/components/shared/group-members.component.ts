@@ -1,12 +1,12 @@
-﻿import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
-import { GroupResourceInfo, IGroupService, GroupSearchResultModel, ResourceGroup } from '../../models/group.model';
-import { GroupService } from '../../services/group.service';
-import { FormMode, FormHelper, SelectItem } from '../../models/form.model';
-import { BaseComponent } from '../shared/base.component';
-import { JsonResult } from '../../models/jsonresult.model';
-import { EditorField } from '../../models/editor-field.model';
+﻿import {Input, Output, Component, OnChanges, SimpleChange} from '@angular/core';
+import {GroupResourceInfo, IGroupService, GroupSearchResultModel, ResourceGroup} from '../../models/group.model';
+import {GroupService} from '../../services/group.service';
+import {FormMode, FormHelper, SelectItem} from '../../models/form.model';
+import {BaseComponent} from '../shared/base.component';
+import {JsonResult} from '../../models/jsonresult.model';
+import {EditorField} from '../../models/editor-field.model';
 import * as _ from 'lodash';
-import { ResourcesService } from '../../services/resources.service';
+import {ResourcesService} from '../../services/resources.service';
 
 @Component({
     selector: 'd3s-group-members',
@@ -20,7 +20,7 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
     @Input() title: string = 'Members';
     field: EditorField;
     private groupItems = new Array<GroupResourceInfo>();
-    private selectedRow = new GroupResourceInfo();    
+    private selectedRow = new GroupResourceInfo();
     private formMode: FormMode = FormMode.Default;
     private FormMode = FormMode;
     private resourceList: SelectItem[];
@@ -33,7 +33,7 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         for (let p in changes) {
-            if (p == 'groupId') {                
+            if (p == 'groupId') {
                 this.formMode = FormMode.Default;
                 this.load();
             }
@@ -41,22 +41,25 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
         }
     }
 
-    load(): void {        
+    load(): void {
         if (!this.groupId) {
             return;
         }
         this.field = new EditorField();
-        this.field.TypeaheadUri = `form/GetGroupUserList?id=${this.groupId}`; 
+        this.field.TypeaheadUri = `form/GetGroupUserList?id=${this.groupId}`;
         this.field.FieldName = "resources";
         this.field.MultiSelect = true;
         this.isLoading = true;
-        this.groupService.getGroupResourceList(this.groupId)
-            .then(d => {
-                this.groupItems = d;       
-                if (this.groupItems.length > 0) this.selectedRow = this.groupItems[0];         
-                this.isLoading = false;
-            });
+        this.groupService.getGroupResourceList(this.groupId).subscribe(
+            d => {
+                this.groupItems = d;
+                if (this.groupItems.length > 0) {
+                    this.selectedRow = this.groupItems[0];
+                }
 
+                this.isLoading = false;
+            }
+        );
     }
 
     cancel() {
@@ -83,20 +86,21 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
             this.isLoading = false;
         }
 
-        this.groupService.postResourceGroup(resources)
-            .then(r => {
+        this.groupService.postResourceGroup(resources).subscribe(
+            r => {
                 this.load();
                 this.formMode = FormMode.Default;
+
                 this.isLoading = false;
-            });
+            }
+        );
     }
 
-    
 
     add(): void {
         this.isLoading = true;
         this.field = new EditorField();
-        this.field.TypeaheadUri = `form/GetGroupUserList?id=${this.groupId}`; 
+        this.field.TypeaheadUri = `form/GetGroupUserList?id=${this.groupId}`;
         this.field.FieldName = "resources";
         this.field.MultiSelect = true;
         this.formMode = FormMode.Adding;
@@ -114,5 +118,3 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
         this.load();
     }
 }
-
-

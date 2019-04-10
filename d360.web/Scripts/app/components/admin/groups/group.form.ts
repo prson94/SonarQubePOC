@@ -1,13 +1,13 @@
-﻿import { Input, Output, Component, EventEmitter, OnInit, OnChanges, SimpleChange } from '@angular/core';
-import { SelectItem } from 'primeng/primeng';
-import { Group, GroupEditorModel, GroupSearchResultModel, ResourceGroup } from '../../../models/group.model';
-import { FormEvents, FormHelper } from '../../../models/form.model';
-import { JsonResult } from '../../../models/jsonresult.model';
-import { GroupService } from '../../../services/group.service';
-import { MessagesService } from '../../../services/messages.service';
+﻿import {Input, Output, Component, EventEmitter, OnInit, OnChanges, SimpleChange} from '@angular/core';
+import {SelectItem} from 'primeng/primeng';
+import {Group, GroupEditorModel, GroupSearchResultModel, ResourceGroup} from '../../../models/group.model';
+import {FormEvents, FormHelper} from '../../../models/form.model';
+import {JsonResult} from '../../../models/jsonresult.model';
+import {GroupService} from '../../../services/group.service';
+import {MessagesService} from '../../../services/messages.service';
 import * as _ from 'lodash';
-import { EditorField } from '../../../models/editor-field.model';
-import { ResourcesService } from '../../../services/resources.service';
+import {EditorField} from '../../../models/editor-field.model';
+import {ResourcesService} from '../../../services/resources.service';
 
 @Component({
     selector: 'd3s-group-form',
@@ -15,7 +15,7 @@ import { ResourcesService } from '../../../services/resources.service';
     providers: [GroupService, ResourcesService],
 })
 
-export class GroupForm implements OnInit, OnChanges, FormEvents { 
+export class GroupForm implements OnInit, OnChanges, FormEvents {
     @Input() id: number;
     @Input() title: string = "Edit Group";
     @Output() onComplete = new EventEmitter();
@@ -41,7 +41,7 @@ export class GroupForm implements OnInit, OnChanges, FormEvents {
     ngOnInit() {
         this.initialItem = _.cloneDeep(this.model);
 
-        
+
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -55,14 +55,18 @@ export class GroupForm implements OnInit, OnChanges, FormEvents {
 
     private load(): void {
         this.isLoading = true;
-        this.groupService.getGroup(this.id)
-            .then(d => {
+        this.groupService.getGroup(this.id).subscribe(
+            d => {
                 this.model = d;
+
                 //TODO: primeng does not currently support optgroups, I'm ignoring them here
                 FormHelper.mapSelectItems(this.model.resourceList);
                 this.onLoadComplete.emit(null);
-                this.isLoading = false;                
-            });
+
+                this.isLoading = false;
+            }
+        );
+
         this.onLoadComplete.emit(null);
     }
 
@@ -73,27 +77,31 @@ export class GroupForm implements OnInit, OnChanges, FormEvents {
     private save(): void {
         this.isLoading = true;
         if (this.id > 0) {
-            this.groupService.putGroup(this.model.group)
-                .then(r => {
+            this.groupService.putGroup(this.model.group).subscribe(
+                r => {
                     if (r.type == 'confirm') {
                         this.onSuccess.emit(r);
                     } else if (r.type == 'error') {
                         this.onError.emit(r);
                     }
+
                     this.isLoading = false;
                     this.onComplete.emit(null);
-                });
+                }
+            );
         } else {
-            this.groupService.postGroup(this.model.group)
-                .then(r => {
+            this.groupService.postGroup(this.model.group).subscribe(
+                r => {
                     if (r.type == 'confirm') {
                         this.onSuccess.emit(r);
                     } else if (r.type == 'error') {
                         this.onError.emit(r);
                     }
+
                     this.isLoading = false;
                     this.onComplete.emit(null);
-                });
+                }
+            );
         }
     }
 
@@ -107,7 +115,7 @@ export class GroupForm implements OnInit, OnChanges, FormEvents {
 
     private set primaryFieldValue(value) {
         this.primaryOwnerField.Value = value;
-       if (this.primaryOwnerField.Value != null && this.primaryOwnerField.Value.length > 0) {
+        if (this.primaryOwnerField.Value != null && this.primaryOwnerField.Value.length > 0) {
             let x = this.primaryOwnerField.Value[0];
             this.model.group.PrimaryOwnerResourceID = x.split('|')[1];
             this.model.group.PrimaryOwnerName = x.split('|')[2];
@@ -122,15 +130,14 @@ export class GroupForm implements OnInit, OnChanges, FormEvents {
         this.secondaryOwnerField.FieldName = "resources";
         this.secondaryOwnerGrid = true;
     }
-    
+
     private set secondaryFieldValue(value) {
         this.secondaryOwnerField.Value = value;
         if (this.secondaryOwnerField.Value != null && this.secondaryOwnerField.Value.length > 0) {
             let x = this.secondaryOwnerField.Value[0];
-            this.model.group.SecondaryOwnerResourceID= x.split('|')[1];
-            this.model.group.SecondaryOwnerName= x.split('|')[2];
+            this.model.group.SecondaryOwnerResourceID = x.split('|')[1];
+            this.model.group.SecondaryOwnerName = x.split('|')[2];
             this.secondaryOwnerGrid = false;
         }
     }
-
 }
