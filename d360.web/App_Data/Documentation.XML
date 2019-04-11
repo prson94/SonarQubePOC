@@ -2384,13 +2384,12 @@
             This service houses all endpoints handling glossary-related data such as artifacts and models.
             </summary>
         </member>
-        <member name="M:d360.web.Controllers.V2.FieldsController.GetFieldTypesAsync(System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,System.String,System.Nullable{d360.core.DataType},System.Nullable{System.Int32},System.Nullable{System.Int32})">
+        <member name="M:d360.web.Controllers.V2.FieldsController.GetFieldTypesAsync(System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,System.String,System.Nullable{d360.core.DataType},System.Nullable{System.Int32},System.Nullable{System.Int32})">
             <summary>
             Retrieves field types contained within your environment.
             </summary>
             <param name="AssetTypeUid">The asset type Uid to retrieve field types for.</param>
             <param name="RelationshipTypeUid">The relationship type Uid to retrieve field types for.</param>
-            <param name="ActionTypeUid">The action type Uid to retrieve field types for.</param>
             <param name="Name">The API Name to search for.</param>
             <param name="FriendlyName">The Friendly Name to search for.</param>
             <param name="Type">The data type to search for.</param>
