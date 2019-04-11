@@ -14,41 +14,21 @@ import {
     FilteredLookupItem,
     Lookups,
     OwnershipLookupSettings,
-} from '../../../models/fields.model';
+} from '../../../../models/fields.model';
 
-import {FormHelpers} from '../../../static/form-helpers';
+import {FormHelpers} from '../../../../static/form-helpers';
 
-import {FieldsService} from '../../../services/fields.service';
-import {MessagesService} from '../../../services/messages.service';
-import {ObjectDetailService} from '../../../services/object-detail.service';
+import {FieldsService} from '../../../../services/fields.service';
+import {MessagesService} from '../../../../services/messages.service';
+import {ObjectDetailService} from '../../../../services/object-detail.service';
 
-import {BaseComponent} from '../../shared/base.component';
-import {JsonResult} from "../../../models/jsonresult.model";
+import {BaseComponent} from '../../base.component';
+import {JsonResult} from "../../../../models/jsonresult.model";
 
 @Component({
     selector: 'd3s-field-type-form',
     templateUrl: './field-type.form.html',
-    styles: [
-            `
-            .display-table tr td {
-                padding: 3px;
-                border-radius: 0;
-            }
-
-            .relation-table tr td {
-                border-radius: 0;
-            }
-
-            .display-table-title {
-                text-align: center;
-                width: 100%;
-                font-family: "Roboto", Tahoma !important;
-                text-transform: uppercase;
-                color: #5c5e60 !important;
-                font-size: 1rem;
-                font-weight: bold;
-            }`
-    ],
+    styleUrls: ['./field-type.form.component.css'],
     providers: [FieldsService, ObjectDetailService],
 })
 
@@ -151,19 +131,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.actionName = 'Edit';
             this.isLoading = true;
 
-            forkJoin(
-                this.fieldsService.getFieldTypeEditor(this.id),
-                this.fieldsService.getLookups(this.model.FieldType.ObjectID, this.model.FieldType.Object),
-                this.fieldsService.getFormData(this.id)
-            ).subscribe(
-                (
-                    [
-                        getFieldTypeEditor,
-                        getLookups,
-                        getFormData
-                    ]
-                ) => {
-                    /* getFieldTypeEditor */
+            this.fieldsService.getFieldTypeEditor(this.id).subscribe(
+                (getFieldTypeEditor) => {
                     this.model = getFieldTypeEditor;
                     this.model.cardinalRelationship = null;
                     this.model.selectedLookup = null;
@@ -189,45 +158,53 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                                 this.model.cardinalRelationship = this.model.FieldType.LookupObjectID;
                             }
                             break;
+                        default:
+                            break;
                     }
-                    /**/
 
-                    /* getLookups */
-                    this.lookups = getLookups;
-                    this.lookups.IntersectTypes.forEach(i => {
-                        i.id = i.value.split('|')[0];
-                    });
-
-                    this.lookups.ReferenceTypes = this.fieldsService.getReferenceTypes();
-                    /**/
-
-                    /* getFormData */
-                    if (getFormData) {
-                        this.model.OwnershipLookupSettings = getFormData.OwnershipLookupSettings;
-                        this.model.RelationItems = getFormData.RelationItems;
-                        this.model.FusionItems = getFormData.FusionItems;
-                        if (this.model.FusionItems != null)
-                            this.model.FusionItems.forEach(i => {
-                                if (i.SourceFusionAttributeType.toString().indexOf('|') == -1)
-                                    i.SourceFusionAttributeType = 'FusionAttributeType|' + i.SourceFusionAttributeType.toString();
-
-                                for (let j = 0; j < i.DisplayFields.length; j++) {
-                                    let d = i.DisplayFields[j] as FieldTypeFusionLookupDisplayField;
-                                    i.DisplayFields[j] = d.value;
-                                }
-
+                    this.fieldsService.getLookups(this.model.FieldType.ObjectID, this.model.FieldType.Object).subscribe(
+                        (getLookups) => {
+                            /* getLookups */
+                            this.lookups = getLookups;
+                            this.lookups.IntersectTypes.forEach(i => {
+                                i.id = i.value.split('|')[0];
                             });
 
-                        this.model.FilteredLookupItems = getFormData.FilteredLookupItems;
+                            this.lookups.ReferenceTypes = this.fieldsService.getReferenceTypes();
 
-                        if (this.model.RelationItems && this.model.FieldType.Type == 'ComplexRelationLookup') {
-                            this.loadComplexRelationLookup();
+                            this.fieldsService.getFormData(this.id).subscribe(
+                                (getFormData) => {
+                                    if (getFormData) {
+                                        this.model.OwnershipLookupSettings = getFormData.OwnershipLookupSettings;
+                                        this.model.RelationItems = getFormData.RelationItems;
+                                        this.model.FusionItems = getFormData.FusionItems;
+
+                                        if (this.model.FusionItems != null) {
+                                            this.model.FusionItems.forEach(i => {
+                                                if (i.SourceFusionAttributeType.toString().indexOf('|') == -1) {
+                                                    i.SourceFusionAttributeType = 'FusionAttributeType|' + i.SourceFusionAttributeType.toString();
+                                                }
+
+                                                for (let j = 0; j < i.DisplayFields.length; j++) {
+                                                    let d = i.DisplayFields[j] as FieldTypeFusionLookupDisplayField;
+                                                    i.DisplayFields[j] = d.value;
+                                                }
+                                            });
+                                        }
+
+                                        this.model.FilteredLookupItems = getFormData.FilteredLookupItems;
+
+                                        if (this.model.RelationItems && this.model.FieldType.Type == 'ComplexRelationLookup') {
+                                            this.loadComplexRelationLookup();
+                                        }
+
+                                        this.isLoading = false;
+                                        this.loadDataType(this.model.FieldType.Type);
+                                    }
+                                }
+                            );
                         }
-                    }
-                    /**/
-
-                    this.isLoading = false;
-                    this.loadDataType(this.model.FieldType.Type);
+                    );
                 }
             );
         } else {
@@ -1484,9 +1461,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.model.FieldType.ShowIfEmpty = false;
     }
 
-    public onDateSelectMethod(e: Date)
-    {
-        this.model.FieldType.DefaultValue = this.getGovernDate(e);        
+    public onDateSelectMethod(e: Date) {
+        this.model.FieldType.DefaultValue = this.getGovernDate(e);
     }
 
     private getGovernDate(e: Date) {
