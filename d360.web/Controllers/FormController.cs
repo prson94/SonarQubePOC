@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Data.Entity;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web;
@@ -37,7 +38,7 @@ namespace d360.web.Controllers
 
         IStorageProvider Storage;
 
-        public FormController(CommunityContext community, CompanyContext company, ISecurityContextProvider secProvider, IStorageProvider storage)
+        public FormController(ICommunityContext community, ICompanyContext company, ISecurityContextProvider secProvider, IStorageProvider storage)
             : base(community, company)
         {            
             Storage = storage;
@@ -4774,7 +4775,7 @@ namespace d360.web.Controllers
                 }
 
                 if(columnModified)
-                    Company.Entry(ft).Property(x=>x.UpdatedBy).IsModified = true;
+                    Company.Entry(ft).Property(x => x.UpdatedBy).IsModified = true;
 
                 Company.SaveChanges();
 
@@ -5050,6 +5051,43 @@ namespace d360.web.Controllers
                 SendException(ex);
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
+        }
+
+        [HttpPost, ValidateInput(false), Route("ScheduleMarkitLineage")]
+        public JsonResult ScheduleMarkitLineage(int id)
+        {
+            const int markitFusionTypeId = 13;
+            const string markitLineageSettingKey = "UseNewMarkitLineageGeneration";
+
+            if (!Company.CurrentResourceIsAdmin)
+                return jsonException("You do not have permission to start Markit Lineage generation.", HttpStatusCode.Forbidden);
+
+            var fusion = Company.GetById<Fusion>(id);
+
+            if (fusion == null)
+                return jsonException("Fusion configuration for this id was not found.", HttpStatusCode.NotFound);
+
+            if (fusion.FusionTypeID == markitFusionTypeId)
+            {
+                if (Community.GetCompanySettings().TryGetValue(markitLineageSettingKey, out string val))
+                {
+                    if (val.Trim().ToLower() == "true")
+                    {
+
+                        try
+                        {
+                            Company.Database.Connection.Execute("insert into [queue].[Task] ([Action], [Object], [ObjectID]) values ('FusionCache', 'Fusion', @fusionId)", new { fusionId = id });                         
+                            return jsonSuccess("Markit lineage process queued successfully.", fusion.FusionTypeID.ToString(), "add", HttpStatusCode.OK);
+
+                        }
+                        catch (Exception ex)
+                        {
+                            return jsonException(ex, HttpStatusCode.InternalServerError);
+                        }
+                    }
+                }
+            }
+            return jsonException("The request could not be completed because the configuration is incorrect.", HttpStatusCode.BadRequest);
         }
 
         #endregion
@@ -8036,13 +8074,13 @@ namespace d360.web.Controllers
 
                 Company.Add(model);
 
-                Company.Add(new ResourceGroup { GroupID = model.ID, ResourceID = (int)model.PrimaryOwnerResourceID, IsOwner = true });
+                Company.Add(new ResourceGroup { GroupID = model.ID, ResourceID = (int)model.PrimaryOwnerResourceID });
                 try
                 {
                     if (model.SecondaryOwnerResourceID.HasValue)
                     {
                         if (!model.PrimaryOwnerResourceID.Equals(model.SecondaryOwnerResourceID))
-                            Company.Add(new ResourceGroup { GroupID = model.ID, ResourceID = model.SecondaryOwnerResourceID.Value, IsOwner = true });
+                            Company.Add(new ResourceGroup { GroupID = model.ID, ResourceID = model.SecondaryOwnerResourceID.Value});
                     }
                 }
                 catch
@@ -8084,13 +8122,13 @@ namespace d360.web.Controllers
 
                 if (!currentGroupUsers.Any(o => o == model.PrimaryOwnerResourceID))
                 {
-                    Company.Add(new ResourceGroup { GroupID = model.ID, ResourceID = model.PrimaryOwnerResourceID.Value, IsOwner = true });
+                    Company.Add(new ResourceGroup { GroupID = model.ID, ResourceID = model.PrimaryOwnerResourceID.Value });
                 }
                 if (model.SecondaryOwnerResourceID.HasValue)
                 {
                     if (!currentGroupUsers.Any(o => o == model.SecondaryOwnerResourceID))
                     {
-                        Company.Add(new ResourceGroup { GroupID = model.ID, ResourceID = model.SecondaryOwnerResourceID.Value, IsOwner = true });
+                        Company.Add(new ResourceGroup { GroupID = model.ID, ResourceID = model.SecondaryOwnerResourceID.Value });
                     }
                 }
 

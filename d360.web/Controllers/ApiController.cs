@@ -36,7 +36,7 @@ namespace d360.web.Controllers
 
         ISecurityContextProvider SecProvider;
 
-        public D3SApiController(CommunityContext community, CompanyContext company, ISecurityContextProvider secProvider)
+        public D3SApiController(ICommunityContext community, ICompanyContext company, ISecurityContextProvider secProvider)
             : base(community, company)
         {
 #if DEBUG
@@ -484,7 +484,17 @@ namespace d360.web.Controllers
                                 .ToList();
 
                         }
-                        else
+                        else if (item.AllowMultipleValues)
+                        {
+                            filterItems = Company
+                                .Filter<FieldLookupValue>(o => o.FieldTypeID == item.ID &&
+                                                                o.LookupObjectType == item.LookupObjectType &&
+                                                                o.LookupObjectID == item.LookupObjectID)
+                                .OrderBy(o => o.Text)
+                                .Select(o => o.Text + "!~!" + o.Value)
+                                .ToList();
+                        }
+                        else 
                         {
                             filterItems = Company
                                 .Filter<FieldLookupValue>(o => o.FieldTypeID == item.ID &&
@@ -3582,10 +3592,13 @@ outer apply (
                 var fieldTypeIDs = fields.Where(i => i.FieldTypeID != 0).Select(x => x.FieldTypeID).ToList();
                 var fieldTypes = Company.Filter<FieldType>(i => fieldTypeIDs.Contains(i.ID)).ToList();
 
+                bool isResourceType = def.Fields.All(x=> x.Object == "ResourceType");
+
                 if (
                     (def.Fields.Count > 0) &&
                         (
                             (
+                                !isResourceType &&
                                 (fieldTypes == null || fieldTypes.Count == 0) &&
                                 !def.Fields.Any(x => (x.FieldTypeName == "TextPath") || (x.FieldTypeName == "Name" && x.FieldTypeID == 0)
                                     || (x.FieldTypeName == "DisplayValue" && x.FieldTypeID == 0))

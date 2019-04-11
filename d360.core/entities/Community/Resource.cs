@@ -47,7 +47,7 @@ namespace d360.core.entities
         public string Username { get; set; }
 
         [DataMember]
-        public Guid Uid { get; set; }
+        public Guid Uid { get; set; } = Guid.NewGuid();
 
         [DataMember]
         public DateTime UpdatedOn { get; set; } = DateTime.UtcNow;

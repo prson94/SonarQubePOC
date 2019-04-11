@@ -224,8 +224,8 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
 
         this.isLoading = true;
 
-        this.gridDefinitionService.getGridDefinition(this.fusionObjectID, this.fusionObject, this.fusionId, target)
-            .then(result => {
+        this.gridDefinitionService.getGridDefinition(this.fusionObjectID, this.fusionObject, this.fusionId, target).subscribe(
+            result => {
                 if (result) {
                     this.columns = result.Columns;
                     this.fields = result.Fields;
@@ -234,7 +234,8 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
 
                 this.isLoading = false;
                 this.changeDetectorRef.markForCheck();
-            });
+            }
+        );
     }
 
     private doFilterResults(event) {

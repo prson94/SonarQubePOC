@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -19,11 +20,11 @@ namespace d360.web.Controllers.V2
         ApiVersion("2.0"),
         RoutePrefix("api/v{version:apiVersion}/crossreferences"), Authorize
     ]
-    public class CrossReferencesController : BaseApiController
+    public class CrossReferencesController : BaseV2ApiController
     {
         #region DI
 
-        public CrossReferencesController(CommunityContext community, CompanyContext company)
+        public CrossReferencesController(ICommunityContext community, ICompanyContext company)
             : base(community, company)
         {
 
@@ -32,7 +33,7 @@ namespace d360.web.Controllers.V2
         #endregion
 
         /// <summary>
-        /// Returns all asset cross references.
+        /// Returns all asset cross references.  Optional parameters are also supported, in the case where the optional parameters are specified only records matching that criteria are returned.
         /// </summary>
         /// <returns>An array of cross references</returns>
         [
@@ -40,13 +41,61 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A full list of asset cross references.", typeof(List<AssetCrossReference>)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(List<AssetCrossReference>)),
+            SwaggerParameter("_assetUid", "The asset UID of the cross reference record.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_externalId", "The external ID of the cross reference record(s) to request.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_dataSource", "The data source of the cross reference record(s) to request.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_type", "The type of the cross reference record(s) to request.", DataType = "string", ParameterType = "query", Required = false),
         ]
         public async Task<HttpResponseMessage> Get()
         {
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
 
-            return Request.CreateResponse(await Company.QueryAsync<AssetCrossReference>("select uid, DataSource,Type,ExternalID,FieldHash from AssetCrossReference"));
+            var dbArgs = new DynamicParameters();
+            var sql = "select uid, DataSource, Type, ExternalID, FieldHash from [dbo].[AssetCrossReference]";
+            List<string> queryFilters = new List<string>();
+
+            var queryParams = Request.GetQueryNameValuePairs();
+
+            if (queryParams.ToList().Any(q => q.Key.ToLower() == "_assetuid"))
+            {
+                Guid assetUid = new Guid();
+
+                var assetUidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_assetuid").Value;
+                if (Guid.TryParse(assetUidString, out assetUid))
+                {
+                    dbArgs.Add("@assetuid", assetUid);
+                    queryFilters.Add($"[UID] = @assetuid");
+                }
+            }
+
+            if (queryParams.ToList().Any(q => q.Key.ToLower() == "_externalid"))
+            {                
+                var externalId = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_externalid").Value;
+                dbArgs.Add("@externalid", externalId);
+                queryFilters.Add($"[ExternalID] = @externalid");
+            }
+
+            if (queryParams.ToList().Any(q => q.Key.ToLower() == "_datasource"))
+            {
+                var ds = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_datasource").Value;
+                dbArgs.Add("@datasource", ds);
+                queryFilters.Add($"[DataSource] = @datasource");
+            }
+
+            if (queryParams.ToList().Any(q => q.Key.ToLower() == "_type"))
+            {
+                var ty = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_type").Value;
+                dbArgs.Add("@type", ty);
+                queryFilters.Add($"[type] = @type");
+            }
+
+            if (queryFilters.Count > 0)
+            {
+                sql += " where " + string.Join(" and ", queryFilters);
+            }
+
+            return Request.CreateResponse(await Company.QueryAsync<AssetCrossReference>(sql,dbArgs));
         }
 
 
@@ -137,7 +186,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Creates a new asset cross reference.  If an asset cross reference exists already an error is returned.
+        /// Creates a new asset cross reference.  If an asset cross reference exists already an error is returned.  ExternalID and DataSource fields have a limit of 250 ASCII characters each.  Type has a limit of 50 ASCII characters.
         /// </summary>
         /// <param name="model">The asset cross references model.</param>
         /// <returns>The model of the created asset cross reference. If item already exists http confict is returned.</returns>
@@ -176,7 +225,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Creates new asset cross references.  If an asset cross reference exists already an error is returned.
+        /// Creates new asset cross references.  If an asset cross reference exists already an error is returned.  ExternalID and DataSource fields have a limit of 250 ASCII characters each.  Type has a limit of 50 ASCII characters.
         /// </summary>
         /// <param name="models">List of asset cross references.</param>
         /// <returns>List of created asset cross references. If any item already exists an HTTP Confict is returned.</returns>
@@ -296,6 +345,38 @@ namespace d360.web.Controllers.V2
 
             //create the new record
             var res = await Company.Database.Connection.ExecuteAsync("update assetcrossreference set FieldHash = @fh where uid = @uid and DataSource = @ds and [Type] = @t", new { fh = model.FieldHash, uid = uid, ds = dataSource, t = type });
+
+            if (res > 0) return Request.CreateResponse(HttpStatusCode.OK); // updated
+
+            return Request.CreateResponse(HttpStatusCode.NotFound); // nothing updated
+        }
+
+        /// <summary>
+        /// Updates the specified asset cross reference.
+        /// </summary>
+        /// <param name="uid">The unique identifier of the asset cross reference.</param>        
+        /// <param name="model">Asset cross reference model</param>
+        /// <returns>Http Status code OK if asset cross reference was updated, Http Status code of Not Found if item could not be updated.</returns>
+        [
+            HttpPut,
+            MapToApiVersion("2.0"),
+            Route("{uid:Guid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(AssetCrossReference)),
+            SwaggerResponse(HttpStatusCode.NotAcceptable, "Model does not contain required fields.", typeof(AssetCrossReference)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference))
+        ]
+        public async Task<HttpResponseMessage> Put(Guid uid, AssetCrossReference model)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+
+            //validate the model input
+            if (string.IsNullOrEmpty(model.DataSource) || string.IsNullOrEmpty(model.Type) || string.IsNullOrEmpty(model.ExternalID))
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "Asset cross reference model does not contain required fields."));
+
+            //create the new record
+            var res = await Company.Database.Connection.ExecuteAsync("update assetcrossreference set FieldHash = @fh where uid = @uid and DataSource = @ds and [Type] = @t", new { fh = model.FieldHash, uid = uid, ds = model.DataSource, t = model.Type });
 
             if (res > 0) return Request.CreateResponse(HttpStatusCode.OK); // updated
 

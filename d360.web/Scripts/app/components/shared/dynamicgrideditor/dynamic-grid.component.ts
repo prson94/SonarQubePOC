@@ -1,27 +1,36 @@
-﻿import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter } from '@angular/core';
-import { Column } from 'primeng/primeng';
-import { Lookup, LookupItem } from '../../../models/lookup.model';
-import { GridDefinition, GridColumn, GridField } from '../../../models/grid-definition.model';
-import { MessagesService } from '../../../services/messages.service';
-import { GridDefinitionService } from '../../../services/grid-definition.service';
-import { UriBasedService } from '../../../services/uri-based.service';
-import { BaseComponent } from '../../shared/base.component';
-
+﻿import {Component, Input, Output, OnChanges, SimpleChange, EventEmitter} from '@angular/core';
+import {Column} from 'primeng/primeng';
+import {Lookup, LookupItem} from '../../../models/lookup.model';
+import {GridDefinition, GridColumn, GridField} from '../../../models/grid-definition.model';
+import {MessagesService} from '../../../services/messages.service';
+import {GridDefinitionService} from '../../../services/grid-definition.service';
+import {UriBasedService} from '../../../services/uri-based.service';
+import {BaseComponent} from '../../shared/base.component';
+/* FIXME: Extract templates and styles to their own files
+*  https://angular.io/guide/styleguide#style-05-04 */
 @Component({
     selector: 'd3s-dynamic-grid',
     providers: [GridDefinitionService, UriBasedService],
-    template: ` 
-                <header *ngIf="!showEditor && !showDelete">{{title}}
-                    <d3s-tile-actions [hasAdd]="showAddButton" (addClick)="add()" hasFilterMode="true" [(filterMode)]="showSimpleFilter" [hasExport]="showExportButton" (exportClick)="exportClick.emit()"></d3s-tile-actions>
-                </header>           
-                <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <span *ngIf="!isLoading && !showDelete && !showEditor">
-                    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-                    <p-table #dt [value]="items" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="globalFilterFields" [sortField]="sortField" [pageLinks]="3" [paginator]="true" 
-                        [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected" (sortFunction)="customSort($event)">
+    template: `
+        <header *ngIf="!showEditor && !showDelete">{{title}}
+            <d3s-tile-actions [hasAdd]="showAddButton" (addClick)="add()" hasFilterMode="true"
+                              [(filterMode)]="showSimpleFilter" [hasExport]="showExportButton"
+                              (exportClick)="exportClick.emit()"></d3s-tile-actions>
+        </header>
+        <d3s-loading [isLoading]="isLoading"></d3s-loading>
+        <span *ngIf="!isLoading && !showDelete && !showEditor">
+                    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100"
+                           (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..."
+                           class="grid-simple-filter">
+                    <p-table #dt [value]="items" selectionMode="single" [metaKeySelection]="true"
+                             [globalFilterFields]="globalFilterFields" [sortField]="sortField" [pageLinks]="3"
+                             [paginator]="true"
+                             [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions"
+                             [(selection)]="selected" (sortFunction)="customSort($event)">
                         <ng-template pTemplate="header">
                             <tr>
-                                <th *ngFor="let column of columns" [pSortableColumn]="column.sortable ? column.datafield : null">
+                                <th *ngFor="let column of columns"
+                                    [pSortableColumn]="column.sortable ? column.datafield : null">
                                     {{column.text}}
                                     <d3s-sortIcon *ngIf="column.sortable" [field]="column.datafield"></d3s-sortIcon>
                                 </th>
@@ -31,7 +40,8 @@ import { BaseComponent } from '../../shared/base.component';
                             </tr>
                             <tr [hidden]="showSimpleFilter">
                                 <th *ngFor="let column of columns">
-                                    <d3s-column-filter [field]="column.datafield" [datatype]="'text'"></d3s-column-filter>
+                                    <d3s-column-filter [field]="column.datafield"
+                                                       [datatype]="'text'"></d3s-column-filter>
                                 </th>
                                 <th></th>
                                 <th></th>
@@ -41,39 +51,48 @@ import { BaseComponent } from '../../shared/base.component';
                         <ng-template pTemplate="body" let-item>
                             <tr (dblclick)="selected=item;editItemClick.emit(selected)" [pSelectableRow]="item">
                                 <td *ngFor="let column of columns">
-                                    <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value>
+                                    <d3s-dynamic-field-value [column]="column" [fields]="fields"
+                                                             [item]="item"></d3s-dynamic-field-value>
                                 </td>
                                 <td>
                                     <div class="RowTools" *ngIf="item.UID">
-                                        <a style="cursor:pointer;" (click)="selected=item;"><i [copy-clipboard]="item.UID" [pTooltip]="'UID: \n' + item.UID + '\n\n (click to copy)\n'" tooltipPosition="top" class="fa fa-info"></i></a>                                      
+                                        <a style="cursor:pointer;" (click)="selected=item;"><i
+                                                [copy-clipboard]="item.UID"
+                                                [pTooltip]="'UID: \n' + item.UID + '\n\n (click to copy)\n'"
+                                                tooltipPosition="top" class="fa fa-info"></i></a>                                      
                                     </div>
                                 </td>
                                 <td>
                                     <div class="RowTools" *ngIf="showEditButton || item.P_CanEdit">
-                                        <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>
+                                        <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i
+                                                class="fa fa-pencil"></i></a>
                                     </div>
                                 </td>
                                 <td>
                                     <div class="RowTools" *ngIf="showDeleteButton || item.P_CanDelete">
-                                        <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>
+                                        <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i
+                                                class="fa fa-trash-o"></i></a>
                                     </div>
                                 </td>
                             </tr>
                         </ng-template>
                         <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
-                            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows"
+                                                  [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
                         </ng-template>
                     </p-table>
                 </span>
-                <d3s-dynamic-editor *ngIf="showEditor" [objectID]="objectID" [objectType]="objectType" [title]="itemName + ' Item'" [selection]="selected" [rowID]="rowID" (saveClick)="saveItem($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>
-                <d3s-delete-form *ngIf="showDelete"
-                    [callback]="theDeleteCallback"
-                    [itemId]="selected?.ID"
-                    [method]="'callback'"
-                    [prompt]="'Are you sure you want to delete the selected item?'"                                         
-                    (onCancel)="showDelete=false;"
-                ></d3s-delete-form>                                    
-                `
+        <d3s-dynamic-editor *ngIf="showEditor" [objectID]="objectID" [objectType]="objectType"
+                            [title]="itemName + ' Item'" [selection]="selected" [rowID]="rowID"
+                            (saveClick)="saveItem($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>
+        <d3s-delete-form *ngIf="showDelete"
+                         [callback]="theDeleteCallback"
+                         [itemId]="selected?.ID"
+                         [method]="'callback'"
+                         [prompt]="'Are you sure you want to delete the selected item?'"
+                         (onCancel)="showDelete=false;"
+        ></d3s-delete-form>
+    `
 })
 
 export class DynamicGridComponent extends BaseComponent implements OnChanges {
@@ -131,21 +150,21 @@ export class DynamicGridComponent extends BaseComponent implements OnChanges {
     }
 
     deleteItem(id: number) {
-        this.uriBasedService.deleteItemWithResult(this.deleteUri, id).
-            then(res => {
-                this.showMessageForResult(this.messagesService, res);
-                this.showDelete = false;
-                if (res.type != 'error')
-                    this.items = this.items.filter(x => x.ID != id);
-            });
+        this.uriBasedService.deleteItemWithResult(this.deleteUri, id).then(res => {
+            this.showMessageForResult(this.messagesService, res);
+            this.showDelete = false;
+            if (res.type != 'error')
+                this.items = this.items.filter(x => x.ID != id);
+        });
     }
 
     getFieldsDefinition() {
-        this.gridDefinitionService.getGridDefinition(this.objectID, this.objectType)
-            .then(result => {
+        this.gridDefinitionService.getGridDefinition(this.objectID, this.objectType).subscribe(
+            result => {
                 this.columns = result.Columns;
                 this.fields = result.Fields;
-            });
+            }
+        );
     }
 
     getData() {

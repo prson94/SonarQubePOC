@@ -1,17 +1,17 @@
-﻿import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter, ViewChild} from '@angular/core';
-import { Router } from '@angular/router';
-import { Lookup, LookupItem } from '../../../models/lookup.model';
-import { GridDefinition, GridColumn, GridField } from '../../../models/grid-definition.model';
-import { MessagesService } from '../../../services/messages.service';
-import { GridDefinitionService } from '../../../services/grid-definition.service';
-import { RelationshipsService} from '../../../services/relationships.service';
-import { BaseComponent } from '../base.component';
-import { SiteUrlHelpers } from '../../../static/site-url-helpers';
+﻿import {Component, Input, Output, OnChanges, SimpleChange, EventEmitter, ViewChild} from '@angular/core';
+import {Router} from '@angular/router';
+import {Lookup, LookupItem} from '../../../models/lookup.model';
+import {GridDefinition, GridColumn, GridField} from '../../../models/grid-definition.model';
+import {MessagesService} from '../../../services/messages.service';
+import {GridDefinitionService} from '../../../services/grid-definition.service';
+import {RelationshipsService} from '../../../services/relationships.service';
+import {BaseComponent} from '../base.component';
+import {SiteUrlHelpers} from '../../../static/site-url-helpers';
 
 declare var CompanySettings;
 
 @Component({
-    selector: 'd3s-dynamic-relationship-grid',    
+    selector: 'd3s-dynamic-relationship-grid',
     providers: [GridDefinitionService, RelationshipsService],
     templateUrl: './dynamic-relationship-grid.component.html'
 })
@@ -36,7 +36,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     @Output() deleteOn = new EventEmitter();
     @Output() deleteOff = new EventEmitter();
     @Output() onFilterChange = new EventEmitter();
-   
+
     @Input() simpleFilter: boolean;
 
     private fields: GridField[] = [];
@@ -51,7 +51,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
 
     relations: any[] = [];
     columns: GridColumn[] = [];
-    
+
     selected: any = null;
     showEditor: boolean = false;
     showDelete: boolean = false;
@@ -60,16 +60,16 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     private showTechnical: boolean = false;
 
     @ViewChild('dt') datatable;
-    
+
     constructor(private router: Router, private gridDefinitionService: GridDefinitionService, protected relationshipsService: RelationshipsService, private messagesService: MessagesService) {
         super();
         this.theDeleteCallback = this.deleteItem.bind(this);
     }
 
-    ngOnChanges(changes: { [propName: string]: SimpleChange }) {        
+    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if ((changes['objectID'] || changes['objectType'] || changes['intersectTypeID'] || changes['targetTypeID']) && (this.objectID != null && this.objectType != null && this.targetType != null && this.targetTypeID != null && this.intersectTypeID != null)) {
             this.load();
-            this.showTechnical = false;            
+            this.showTechnical = false;
         }
     }
 
@@ -77,11 +77,11 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
         this.getFieldsDefinition();
         this.getData();
     }
-    
+
     getFieldsDefinition() {
 
-        this.gridDefinitionService.getGridDefinition(this.intersectTypeID, 'IntersectType', this.targetTypeID, this.targetType)
-            .then(result => {
+        this.gridDefinitionService.getGridDefinition(this.intersectTypeID, 'IntersectType', this.targetTypeID, this.targetType).subscribe(
+            result => {
                 this.columns = result.Columns;
                 this.fields = result.Fields;
                 this.readOnly = result.IsReadOnly;
@@ -96,10 +96,11 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
                         columnWidth: null
                     });
                 }
-            });
+            }
+        );
     }
 
-    getData() { 
+    getData() {
         this.isLoading = true;
         this.relationshipsService.getObjectRelationships(this.objectType, this.objectID, this.targetType, this.targetTypeID, this.intersectTypeID)
             .then(result => {
@@ -109,7 +110,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
                 if (this.shouldShowEditor()) this.closeEditor();
             });
     }
-    
+
     private shouldShowEditor(): boolean {
         return (this.addRelationship || this.showEditor) && !this.showTechnical;
     }
@@ -125,18 +126,18 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
             this.addRelationship = !this.addRelationship;
             this.addRelationshipChange.emit(this.addRelationship);
         }
-    }    
+    }
 
-    saveRelationship(event) {        
+    saveRelationship(event) {
         if (event.item.id != undefined && event.item.id == 0) {
             let count = 1;
-            if (event.values && event.values.Items) {                
+            if (event.values && event.values.Items) {
                 count = event.values.Items.split(',').length;
             }
-            this.relationshipAdded.emit({ count: count });
+            this.relationshipAdded.emit({count: count});
         }
 
-        this.getData();        
+        this.getData();
         this.closeEditor();
     }
 
@@ -158,22 +159,24 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
         this.deleteOff.emit();
         this.showDelete = false;
     }
+
     selectObject(item) {
         this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl(item.Object, item.ObjectID, item.TypeID));
     }
-    onFilter(event:any) {
+
+    onFilter(event: any) {
 
         let count = 0;
-        let qstring: string="";
-        
+        let qstring: string = "";
+
         for (var key in event.filters) {
             var matchcondition: string = event.filters[key].matchMode == "startsWith" ? "STARTS_WITH" : event.filters[key].matchMode;
             qstring += `&filterdatafield${count}=${key}&filtercondition${count}=${matchcondition}&filtervalue${count}=${event.filters[key].value}`;
             count++;
-        } 
+        }
         qstring += '&filterscount=' + count;
         this.onFilterChange.emit(qstring);
-    
+
     }
-  
+
 }

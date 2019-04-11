@@ -795,10 +795,11 @@ create table #Users (
 	EnvironmentID int not null, 
 	ClientID int null,
 	ResourceID int null,
+    [uid] uniqueidentifier null,
     Success bit null,
     Message nvarchar(2500) null
 );
-create table #UsersResult (LoadID int, RowIndex int, ResourceID int, [Action] varchar(25) not null);
+create table #UsersResult (LoadID int, RowIndex int, ResourceID int, [uid] uniqueidentifier, [Action] varchar(25) not null);
 create table #UserMembershipsResult (ResourceID int, [Action] varchar(25) not null);
 CREATE NONCLUSTERED INDEX IX_TempUsers ON #Users ( Email ASC );
 CREATE NONCLUSTERED INDEX IX_TempUsers_LoadID_Email ON #Users ( LoadID ASC, Email ASC );
@@ -899,12 +900,13 @@ when matched then
 when not matched by target then
     insert  (ResourceTypeID, Username, [Password], LastName, FirstName, Email, [Status])
     values  (1, S.Email, 'not set', S.LastName, S.FirstName, S.Email, S.UserStatus)
-output S.LoadID, S.RowIndex, inserted.ID, $action into #UsersResult;", transaction: trans);
+output S.LoadID, S.RowIndex, inserted.ID, inserted.[uid], $action into #UsersResult;", transaction: trans);
 
                     community.Execute(@"
 update	T
 set		T.Success = 1,
 		T.ResourceID = S.ResourceID,
+        T.[uid] = S.[uid],
 		Message = case S.[Action]
 					when 'INSERT' then 'User created. '
 					else 'User updated. '
@@ -968,6 +970,7 @@ where	T.Success = 1", transaction: trans);
             tbl.Columns.Add("FirstName", typeof(string));
             tbl.Columns.Add("LastName", typeof(string));
             tbl.Columns.Add("ResourceID", typeof(int));
+            tbl.Columns.Add("uid", typeof(Guid));
             tbl.Columns.Add("Success", typeof(bool));
             tbl.Columns.Add("Message", typeof(string));
 
@@ -985,6 +988,7 @@ where	T.Success = 1", transaction: trans);
                 if (userResult.ResourceID.HasValue)
                     row["ResourceID"] = userResult.ResourceID.Value;
 
+                row["uid"] = userResult.Uid;
                 row["Success"] = userResult.Success;
                 row["Message"] = userResult.Message;
 
@@ -1006,6 +1010,7 @@ create table #Users (
     FirstName nvarchar(250) null,
     LastName nvarchar(250) null,
 	ResourceID int null,
+    [uid] uniqueidentifier null,
     Success bit null,
     Message nvarchar(2500) null
 )
@@ -1027,6 +1032,7 @@ CREATE NONCLUSTERED INDEX IX_TempUsers_ResourceID ON #Users ( ResourceID ASC );
                     usersBulkCopy.ColumnMappings.Add("FirstName", "FirstName");
                     usersBulkCopy.ColumnMappings.Add("LastName", "LastName");
                     usersBulkCopy.ColumnMappings.Add("ResourceID", "ResourceID");
+                    usersBulkCopy.ColumnMappings.Add("uid", "uid");
                     usersBulkCopy.ColumnMappings.Add("Success", "Success");
                     usersBulkCopy.ColumnMappings.Add("Message", "Message");
 
@@ -1036,6 +1042,7 @@ CREATE NONCLUSTERED INDEX IX_TempUsers_ResourceID ON #Users ( ResourceID ASC );
 merge into  reporting.Global_Resource T
 using       (
             select  ResourceID, 
+                    [uid],
                     LastName, 
                     FirstName, 
                     Email, 
@@ -1052,8 +1059,8 @@ when matched then
 		T.LastName = S.LastName,
 		T.[State] = S.[State]
 when not matched by target then
-    insert  (ResourceID, LastName, FirstName, Email, [State], IsAdministrator)
-    values  (S.ResourceID, S.LastName, S.FirstName, S.Email, S.[State], 0);", transaction: trans);
+    insert  ([uid], ResourceID, LastName, FirstName, Email, [State], IsAdministrator)
+    values  (S.[uid], S.ResourceID, S.LastName, S.FirstName, S.Email, S.[State], 0);", transaction: trans);
 
                     company.Execute(@"exec [bulkload].[UpdateDynamicLookupFieldColumns] @loadId", new { loadId }, transaction: trans);
 

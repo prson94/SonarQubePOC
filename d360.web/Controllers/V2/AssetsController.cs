@@ -31,14 +31,14 @@ namespace d360.web.Controllers.V2
         RoutePrefix("api/v{version:apiVersion}/assets"),
         Authorize
     ]
-    public class AssetsController : BaseApiController
+    public class AssetsController : BaseV2ApiController
     {
         #region DI
 
         IQueueSource QueueSource;
         IStorageProvider Storage;
 
-        public AssetsController(CommunityContext community, CompanyContext company, IStorageProvider storage, IQueueSource queueSource)
+        public AssetsController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IQueueSource queueSource)
             : base(community, company)
         {
             QueueSource = queueSource;
@@ -48,55 +48,7 @@ namespace d360.web.Controllers.V2
         #endregion
 
         #region utils
-
-        private async Task<T> readRequestJsonContent<T>(HttpRequestMessage request)
-        {
-            string json = "";
-
-            if (request.Content.IsMimeMultipartContent())
-            {
-                var streamProvider = new MultipartMemoryStreamProvider();
-                await request.Content.ReadAsMultipartAsync(streamProvider);
-
-                json = await streamProvider.Contents.Single().ReadAsStringAsync();
-            }
-            else
-            {
-                json = await request.Content.ReadAsStringAsync();
-            }
-
-            if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
-                return default(T);
-            else
-            {
-                if ((json.StartsWith("{") && json.EndsWith("}")) || //For object
-                        (json.StartsWith("[") && json.EndsWith("]"))) //For array
-                {
-                    bool isValid = false;
-                    try
-                    {
-                        var obj = JToken.Parse(json);
-                        isValid = true;
-                        obj = null;
-                    }
-                    catch
-                    {
-                        isValid = false;
-                    }
-
-                    if (isValid)
-                        return JsonConvert.DeserializeObject<T>(json);
-                    else
-                        return default(T);
-                }
-                else
-                {
-                    return default(T);
-                }
-            }
                 
-        }
-
         private string getFieldDataType(FieldType field)
         {
             switch (field.Type)
@@ -105,7 +57,7 @@ namespace d360.web.Controllers.V2
                 case "DateTime":
                     return "datetime";
                 case "Number":
-                    return "int";
+                    return "bigint";
                 case "Decimal":
                     return "float";
                 case "Boolean":

@@ -1,19 +1,27 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
-import { Router, ActivatedRoute }       from '@angular/router';
-import { BaseComponent } from '../shared/base.component';
-import { Title } from '@angular/platform-browser';
-import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression, GridAttributeFilterExpression } from '../../models/grid-definition.model';
-import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
-import { RulesService } from '../../services/rules.service';
-import { GridDefinitionService } from '../../services/grid-definition.service';
-import { MessagesService } from '../../services/messages.service';
-import { HeaderActionsService } from '../../services/header-actions.service';
-import { PermissionsService } from '../../services/permissions.service';
-import { Breadcrumb } from '../../models/breadcrumb.model';
-import { RuleDimension, Rule, RuleType, RuleClassification, RuleStatus } from '../../models/rule.model';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import { StringConstants } from '../../static/string-constants';
-import { RightSidebarService } from '../../services/right-sidebar.service';
+﻿import {Input, Component, EventEmitter, Output, OnInit, OnDestroy} from '@angular/core';
+import {Router, ActivatedRoute} from '@angular/router';
+import {BaseComponent} from '../shared/base.component';
+import {Title} from '@angular/platform-browser';
+import {
+    GridDefinition,
+    GridColumn,
+    GridField,
+    GridFilterColumn,
+    GridFilterExpression,
+    GridRelationshipFilterExpression,
+    GridAttributeFilterExpression
+} from '../../models/grid-definition.model';
+import {HeaderBreadcrumbService} from '../../services/header-breadcrumb.service';
+import {RulesService} from '../../services/rules.service';
+import {GridDefinitionService} from '../../services/grid-definition.service';
+import {MessagesService} from '../../services/messages.service';
+import {HeaderActionsService} from '../../services/header-actions.service';
+import {PermissionsService} from '../../services/permissions.service';
+import {Breadcrumb} from '../../models/breadcrumb.model';
+import {RuleDimension, Rule, RuleType, RuleClassification, RuleStatus} from '../../models/rule.model';
+import {SiteUrlHelpers} from '../../static/site-url-helpers';
+import {StringConstants} from '../../static/string-constants';
+import {RightSidebarService} from '../../services/right-sidebar.service';
 import * as _ from 'lodash';
 
 @Component({
@@ -36,17 +44,17 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
     filtercolumns: GridFilterColumn[] = [];
 
     theDeleteCallback: Function;
-    
+
     constructor(private route: ActivatedRoute,
-        private router: Router,
-        protected rulesService: RulesService,
-        protected titleService: Title,
-        protected messagesService: MessagesService,
-        private gridDefinitionService: GridDefinitionService, 
-        private headerActionsService: HeaderActionsService,
-        protected headerBreadcrumbService: HeaderBreadcrumbService,
-        protected permissionsService: PermissionsService,
-        rightSidebarService: RightSidebarService
+                private router: Router,
+                protected rulesService: RulesService,
+                protected titleService: Title,
+                protected messagesService: MessagesService,
+                private gridDefinitionService: GridDefinitionService,
+                private headerActionsService: HeaderActionsService,
+                protected headerBreadcrumbService: HeaderBreadcrumbService,
+                protected permissionsService: PermissionsService,
+                rightSidebarService: RightSidebarService
     ) {
         super();
         this.rightSidebarService = rightSidebarService;
@@ -91,21 +99,23 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
                 });
         });
     }
+
     ngOnDestroy() {
         this.clearSidebar();
         this.sub.unsubscribe();
     }
 
     getFieldsDefinition() {
-        this.gridDefinitionService.getGridDefinition(this.ruleTypeId, StringConstants.ObjectRuleType)
-            .then(result => {
+        this.gridDefinitionService.getGridDefinition(this.ruleTypeId, StringConstants.ObjectRuleType).subscribe(
+            result => {
                 this.columns = result.Columns.filter(x => x.datafield != 'Name');
                 this.filtercolumns = result.FilterColumns;
                 this.fields = result.Fields;
-            });
+            }
+        );
     }
 
-    customSort($event: {data: any[], field: any, order: number}) {
+    customSort($event: { data: any[], field: any, order: number }) {
         $event.data.sort((data1, data2) => {
             const value1 = data1[$event.field];
             const value2 = data2[$event.field];
@@ -125,10 +135,9 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
                 } else {
                     result = value1.localeCompare(value2);
                 }
-            }
-            else
+            } else
                 result = (value1 < value2) ? -1 : (value1 > value2) ? 1 : 0;
-        
+
             return ($event.order * result);
         });
     }
@@ -142,8 +151,8 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
                     if (!rule.Dimension) rule.Dimension = ""; //prime grid has issues with null objects make sure we dont have any.
                     rule.StatusName = RuleStatus[rule.Status];
                 }
-                this.rules = result;     
-                                              
+                this.rules = result;
+
                 if (this.rules.length && this.rules.length > 0) this.selected = this.rules[0];
             });
     }
@@ -168,7 +177,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
     private showRule(rule) {
         this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('rule', rule.ID, this.ruleTypeId));
     }
-        
+
     private deleteRule(id: number) {
         this.rulesService.deleteRule(id).then(result => {
             this.showMessageForResult(this.messagesService, result);
@@ -178,11 +187,11 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
             this.headerActionsService.emitFavoritesChange();
         });
     }
-    
+
     private columnDimSort(event) {
         //event.field = Field to sort
         //event.order = Sort order, 1 ascending , -1 descending                        
         this.rules = _.sortBy(this.rules, 'Dimension');
         if (event.order == -1) this.rules.reverse();
-    }    
+    }
 };
