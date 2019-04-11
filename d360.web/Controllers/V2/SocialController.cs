@@ -15,6 +15,7 @@ using System.Web.Http;
 using System.Web.Http.Description;
 using d360.core.entities;
 using d360.core;
+using d360.core.enums;
 
 namespace d360.web.Controllers.V2
 {
@@ -355,6 +356,61 @@ namespace d360.web.Controllers.V2
 
             var list = getChildren(comments, null, pageData.IsNg);
             return list;
+        }
+
+        [
+            HttpGet,
+            MapToApiVersion("2.0"),
+            Route("count/{days}"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "Gets count for selected number of days.", typeof(List<CommentDetail>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            NonNullableParameters
+        ]
+        public IEnumerable<CountModel> GetHomeCounts(int days, int id = -1)
+        {
+            var resourceId = id > 0 ? id : Company.CurrentResourceID;
+            return LoadSocialActivityCount(days, resourceId);
+        }
+        [
+            HttpGet,
+            MapToApiVersion("2.0"),
+            Route("count/{id}/{days}"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "Gets counts for number of days and id.", typeof(List<CommentDetail>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            NonNullableParameters
+        ]
+        public IEnumerable<CountModel> GetTheCounts(int days, int id = -1)
+        {
+            var resourceId = id > 0 ? id : Company.CurrentResourceID;
+            return LoadSocialActivityCount(days, resourceId);
+        }
+        private IEnumerable<CountModel> LoadSocialActivityCount(int days, int resourceId)
+        {
+            days = days * -1;
+
+            var counts = Company.GetCommentCountByFollower(resourceId, days).ToList().OrderBy(i => i.CommentTypeName);
+
+            List<CountModel> items = new List<CountModel>();
+
+            //need to add a record for social, Issue, Task, DataEvent, Question
+
+            items.Add(new CountModel { Name = Resources.Core.CommentType_Social, Total = getCommentCategoryCount(counts, CommentType.Social) });
+
+            items.Add(new CountModel { Name = Resources.Core.CommentType_Action, Total = getCommentCategoryCount(counts, CommentType.Issue) });
+
+            items.Add(new CountModel { Name = Resources.Core.CommentType_Task, Total = getCommentCategoryCount(counts, CommentType.Task) });
+
+            items.Add(new CountModel { Name = Resources.Core.CommentType_DataEvent, Total = getCommentCategoryCount(counts, CommentType.DataEvent) });
+
+            return items.OrderBy(x => x.Name);
+        }
+
+        private int getCommentCategoryCount(IEnumerable<CommentCount> counts, CommentType commentType)
+        {
+            var commentsItem = (counts.FirstOrDefault(x => x.CommentType == commentType));
+            return commentsItem == null ? 0 : commentsItem.Count;
         }
 
         List<CommentDetail> getChildren(List<CommentDetail> fullList, int? currentParentID, bool isNg)
