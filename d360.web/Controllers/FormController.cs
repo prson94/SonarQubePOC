@@ -775,19 +775,19 @@ namespace d360.web.Controllers
             if (!Company.HasAssetPermission(SystemObjects.Artifact, id, Permission.ModifyAsset))
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-            var list = new List<EditableField>();
-            var a = Company.GetById<Artifact>(id);
-            
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+            var list = new List<EditableField>();                        
+            var a = Company.Assets.Where(x => x.ObjectID == id && x.Object == SystemObjects.Artifact.ToString()).Include(x => x.AssetType).FirstOrDefault();
 
-            var parentType = Company.GetParentType(a.ArtifactTypeID, SystemObjects.ArtifactType);
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ObjectID.ToString() });
+
+            var parentType = Company.GetParentType(a.AssetType.ObjectID, SystemObjects.ArtifactType);
             
 
             if (PluralCultureHelper.IsNeutralCultureEnglish())
             {
                 if (parentType != null)
                 {
-                    var parent = Company.GetParentObject(a.ID, SystemObjects.Artifact);
+                    var parent = Company.GetParentObject(a.ObjectID, SystemObjects.Artifact);
                    
 
                     var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
@@ -801,7 +801,7 @@ namespace d360.web.Controllers
                     SystemObjects.Artifact.ToString(),
                     id,
                     list,
-                    Company.GetFieldTypesByObject(SystemObjects.ArtifactType, a.ArtifactTypeID).ToList(), 
+                    Company.GetFieldTypesByObject(SystemObjects.ArtifactType, a.AssetType.ObjectID).ToList(), 
                     Company.GetFieldRelationsByObject(SystemObjects.Artifact, id).ToList(), 
                     2
                 )
@@ -911,7 +911,7 @@ namespace d360.web.Controllers
 
                 if (!Company.HasAssetPermission(SystemObjects.Artifact, id, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
+                                
                 var model = Company.GetById<Artifact>(id, i => i.ArtifactType);
 
                 if (model == null) throw new NotFoundException("artifact");
@@ -998,11 +998,11 @@ namespace d360.web.Controllers
                 if (!form.HasKeys()) throw new NoFormDataException("artifact");
 
                 int id = parseIntField(form, "ID");
-                var artifact = Company.GetById<Artifact>(id, i => i.ArtifactType);
-
-                if (artifact == null) throw new NotFoundException("artifact");
+                var asset = Company.Assets.Where(x => x.ObjectID == id && x.Object == SystemObjects.Artifact.ToString()).Include(x => x.AssetType).FirstOrDefault();
                 
-                Company.RequestObjectCertification(SystemObjects.Artifact, artifact.ID, SystemObjects.ArtifactType, artifact.ArtifactTypeID);
+                if (asset == null) throw new NotFoundException("artifact");
+                
+                Company.RequestObjectCertification(SystemObjects.Artifact, asset.ObjectID, SystemObjects.ArtifactType, asset.AssetType.ObjectID);
 
                 return jsonSuccess("Request successfully created.", "", "add", HttpStatusCode.Created);
             }
