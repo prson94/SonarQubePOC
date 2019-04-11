@@ -1,43 +1,65 @@
-﻿import { Injectable } from '@angular/core';
-import { Headers, Http, RequestOptions } from '@angular/http';
-import { MessagesService } from './messages.service';
-import { BaseService } from './base.service';
-import { JsonResult } from '../models/jsonresult.model';
+﻿import {Injectable} from '@angular/core';
+import {HttpClient, HttpHeaders} from "@angular/common/http";
+import {Observable} from "rxjs";
+import {catchError, map} from "rxjs/operators";
 
+import {JsonResult} from '../models/jsonresult.model';
+
+import {MessagesService} from './messages.service';
+import {BaseObservableService} from "./baseObservable.service";
 
 @Injectable()
-export class LevelsService extends BaseService {
+export class LevelsService extends BaseObservableService {
+    constructor(
+        private http: HttpClient,
+        messagesService: MessagesService
+    ) {
+        super(messagesService);
+    }
 
-    constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
-
-    getObjectLevels(objectID: number, objectType: string): Promise<any[]> {
+    getObjectLevels(
+        objectID: number,
+        objectType: string
+    ): Observable<any[]> {
         return this.http.get(`api/${objectType}/${objectID}/levels`)
-            .toPromise()
-            .then(response => <any[]>response.json())
-            .catch(err => this.handleError(err));
-    }    
+            .pipe(
+                map(response => <any[]>response),
+                catchError(err => this.handleError(err))
+            );
+    }
 
-    saveObjectLevel(level: any, objectType: string, objectId: number, action: string) {
+    saveObjectLevel(
+        level: any,
+        objectType: string,
+        objectId: number,
+        action: string
+    ) {
         level.ID = objectId;
+        let methodName = 'putDynamic';
+
         if (action == 'new') {
-            return this.postDynamic(this.http, `${objectType}level`, level);
-        }        
-        return this.putDynamic(this.http, `${objectType}level`, level);
-    }
-        
-    deleteObjectLevel(objectType: string, objectId: number, levelId: number): Promise<JsonResult> {        
-        let headers = new Headers();
-        headers.append('Content-Type', 'application/json');
+            methodName = 'postDynamic';
+        }
 
-        let options = new RequestOptions({ headers: headers });
-
-        let url = `form/${objectType}/${objectId}/levels/${levelId}`;
-
-        return this.http
-            .delete(url, options)
-            .toPromise()
-            .then(res => <JsonResult>res.json())
-            .catch(err => this.handleError(err));
+        return this['methodName'](this.http, `${objectType}level`, level);
     }
 
+    deleteObjectLevel(objectType: string, objectId: number, levelId: number): Observable<JsonResult> {
+        const httpHeaders = new HttpHeaders(
+            {
+                'Content-Type': 'application/json'
+            }
+        );
+        const url = `form/${objectType}/${objectId}/levels/${levelId}`;
+
+        return this.http.delete(
+            url,
+            {
+                headers: httpHeaders
+            }
+        ).pipe(
+            map(res => <JsonResult>res),
+            catchError(err => this.handleError(err))
+        );
+    }
 }
