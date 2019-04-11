@@ -4438,11 +4438,11 @@ from    ResponsibilityTypeRelationRule R
         #region Policies
 
         [Route("policytypes")]
-        public HttpResponseMessage GetPolicyTypes()
+        public async Task<HttpResponseMessage> GetPolicyTypes()
         {
             return Request.CreateResponse<dynamic>(
                 HttpStatusCode.OK,
-                Company.Query<PolicyType>(@"
+                (await Company.QueryAsync<dynamic>(@"
 	                    select	    AT.ObjectID as ID,
 	                    AT.Name,
 	                    AT.Description,
@@ -4453,7 +4453,7 @@ from    ResponsibilityTypeRelationRule R
 	                    AT.UpdatedBy,
 	                    AT.UpdatedOn,
 	                    AT.ID as AssetTypeID
-	                    from	    AssetType AT where AT.Object = 'PolicyType'")
+	                    from	    AssetType AT where AT.Object = 'PolicyType'"))
             .Select(i => new { i.Description, i.ID, i.MaximumDepth, i.Name, i.AssetTypeID })
             );
         }
