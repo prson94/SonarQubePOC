@@ -93,8 +93,9 @@ namespace d360.web.Controllers.V2
 
                 if (type == SystemObjects.ReferenceItemType)
                 {
-                    var referenceItemType = Company.GetById<ReferenceItemType>(id);
-                    var referenceItemTypeIDs = referenceItemType.ReferenceItems.Select(x => x.ID);
+                    var sqlRefItems = "select a.objectid from [dbo].[asset] a inner join [dbo].[assettype] att on ( a.assettypeid = att.id) where att.[object] = 'ReferenceItemType' and att.ObjectID = @id";
+                    var referenceItemTypeIDs = await Company.Database.Connection.QueryAsync<int>(sqlRefItems, new { id});
+                  
                     querySql += @" UNION
                                     select 	                            
                                    ga.*,
