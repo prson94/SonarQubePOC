@@ -86,6 +86,7 @@ When modifying content on assets, please be aware that you will need to use the 
                     c.OperationFilter<ExamplesOperationFilter>();
                     c.OperationFilter<SwaggerParameterAttributeFilter>();
                     c.PrettyPrint();
+                    c.DescribeAllEnumsAsStrings(false);
                     c.MultipleApiVersions(versionSupportResolver, versionInfoBuilder);
                     c.ApiKey("ApiKey")
                          .Description("API Key Authentication (i.e.   KEY;SECRET)")
@@ -113,6 +114,7 @@ When modifying content on assets, please be aware that you will need to use the 
             config.Formatters.JsonFormatter.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
             config.Formatters.JsonFormatter.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
             config.Formatters.JsonFormatter.SerializerSettings.DateTimeZoneHandling = Newtonsoft.Json.DateTimeZoneHandling.Utc;
+            config.Formatters.JsonFormatter.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
             // default is "yyyy'-'MM'-'dd'T'HH':'mm':'ss.FFFFFFFK" capital f's mean include none zero values so between 0 and 7 precision lower case f means always DQ+ cant handle big F's
             config.Formatters.JsonFormatter.SerializerSettings.DateFormatString = "yyyy'-'MM'-'dd'T'HH':'mm':'ss.fff'Z'";
             config.Formatters.JsonFormatter.MediaTypeMappings.Add(new RequestHeaderMapping("Accept", "text/html", StringComparison.InvariantCultureIgnoreCase, true, "application/json"));
