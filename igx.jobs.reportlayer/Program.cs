@@ -222,7 +222,7 @@ with h as (
 	select	A.ID as AssetID,
 			A.[Uid],
 			A.ObjectID as ID,
-			A.TypeID,
+			A.AssetTypeID,        
 			null as ParentID,
 			A.DisplayValue as TextPath,
 			1 as [Level]
@@ -234,7 +234,7 @@ with h as (
 	select	C.ID as AssetID,
 			C.[Uid],
 			C.ObjectID as ID,
-			C.TypeID,
+			C.AssetTypeID,
 			P.ID as ParentID,
 			P.TextPath + '/' + C.DisplayValue as TextPath,
 			P.[Level] + 1 as [Level]
@@ -263,7 +263,7 @@ from    h as A
 							and EffectiveDate <= getutcdate()
 					) MS
 		left join metrics.Score S on S.AssetUid = A.[Uid] and S.EffectiveDate = MS.EffectiveDate
-        left join {o.Object.Replace("Type", "")}TypeLevel L on L.{o.Object.Replace("Type", "")}TypeID = A.TypeID and L.[Level] = A.[Level]";
+        left join AssetTypeLevel L on L.AssetTypeID = A.AssetTypeID and L.[Level] = A.[Level]";
 
                                     #endregion Model/Policy
                                 }
@@ -593,7 +593,7 @@ from	AssetDetail A
 		cross apply dbo.GetAssetTextPathById(A.ID, '/') TP
 		cross apply dbo.GetAssetLevelById(A.ID) LV
 		left join PredicateIntersect I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.PredicateType = 4
-		left join TaxonomyTypeLevel TL on TL.[TaxonomyTypeID] = A.TypeID and TL.[Level] = LV.[Level]
+		left join AssetTypeLevel TL on TL.[AssetTypeID] = A.AssetTypeID and TL.[Level] = LV.[Level]
 where	A.AssetTypeClass = 2";
 
                             objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
@@ -622,8 +622,7 @@ select  O.ID as AssetID,
 	    F.FormattedValue as FieldValue 
 from	Asset O 
         inner join AssetType T on T.ID = O.AssetTypeID and T.Class = 2 and O.State = 1
-		cross apply dbo.GetAssetDisplayValueById(O.ID) as D
-		--cross apply dbo.GetAssetTextPathById(O.ID, '/') TP
+		cross apply dbo.GetAssetDisplayValueById(O.ID) as D		
         inner join Field F on F.ObjectType = O.Object and F.ObjectID = O.ObjectID
 	    inner join FieldType FT on FT.ID = F.FieldTypeID";
 

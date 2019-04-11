@@ -203,8 +203,6 @@ namespace d360.model
 
         public DbSet<PolicyType> PolicyTypes { get; set; }
 
-        public DbSet<PolicyTypeLevel> PolicyTypeLevels { get; set; }
-
         public DbSet<Predicate> Predicates { get; set; }
 
         public DbSet<Question> Questions { get; set; }
@@ -255,9 +253,7 @@ namespace d360.model
 
         public DbSet<SurveyType> SurveyTypes { get; set; }
 
-        public DbSet<Taxonomy> Taxonomies { get; set; }
-
-        public DbSet<TaxonomyTypeLevel> TaxonomyTypeLevels { get; set; }
+        public DbSet<Taxonomy> Taxonomies { get; set; }        
 
         public DbSet<AssetTypeLevel> AssetTypeLevels { get; set; }
 

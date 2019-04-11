@@ -10149,18 +10149,18 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         {
             if (!Company.HasAssetPermission(SystemObjects.Policy, id, Permission.ModifyAsset))
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-            var model = Company.GetById<Policy>(id);
+                        
+            var model = Company.Assets.Where(x => x.ObjectID == id && x.Object == SystemObjects.Policy.ToString()).Include(x => x.AssetType).FirstOrDefault();
             var list = new List<EditableField>();
 
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = model.ID.ToString() });
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = model.ObjectID.ToString() });
 
             list = (
                 loadDynamicFields(
                     SystemObjects.Policy.ToString(),
                     id,
                     list, 
-                    Company.GetFieldTypesByObject(SystemObjects.PolicyType, model.PolicyTypeID).ToList(), 
+                    Company.GetFieldTypesByObject(SystemObjects.PolicyType, model.AssetType.ObjectID).ToList(), 
                     Company.GetFieldRelationsByObject(SystemObjects.Policy, id).ToList(), 
                     1, 
                     true
