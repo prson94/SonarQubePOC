@@ -616,6 +616,9 @@
     <Content Include="Scripts\app\components\shared\editor-header.component.html" />
     <Content Include="Scripts\app\components\model\model-item-structure.component.html" />
     <Content Include="Scripts\app\components\policy\policy-item-structure.component.html" />
+    <Content Include="Scripts\app\components\shared\fielddefinition\field-type-form\field-type.form.component.css" />
+    <Content Include="Scripts\app\components\shared\fielddefinition\field-type-form\field-type.form.html" />
+    <Content Include="Scripts\app\components\shared\menu\site-menu.component.html" />
     <Content Include="Scripts\app\components\shared\object-definition.tile.html" />
     <Content Include="Scripts\app\components\shared\objectgovernance\artifact-status.component.html" />
     <Content Include="Scripts\app\components\shared\objectdetails\object-detail-field.component.html" />
@@ -938,7 +941,6 @@
     <Content Include="Scripts\app\components\admin\fusion\admin-fusion.component.html" />
     <Content Include="Scripts\app\components\admin\load\admin-load.component.html" />
     <Content Include="Scripts\app\components\admin\resources\admin-resources.component.html" />
-    <Content Include="Scripts\app\components\shared\fielddefinition\field-type.form.html" />
     <Content Include="Scripts\app\components\admin\groups\group.form.html" />
     <Content Include="Scripts\app\components\admin\load\load.form.html" />
     <Content Include="Scripts\app\components\admin\responsibilities\responsibility-type.form.html" />
@@ -1126,6 +1128,7 @@
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-data-profile-detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-workflow-version.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-responsibility-selector.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\fielddefinition\field-type-form\field-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\grid-selection-info.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\responsibility-relations.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\responsibility-relation.form.ts" />
@@ -1481,7 +1484,6 @@
     <TypeScriptCompile Include="Scripts\app\components\community\community.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\community\community.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\community\community.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\fielddefinition\field-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\groups\group.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\load\load.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\responsibilities\responsibility-type.form.ts" />
