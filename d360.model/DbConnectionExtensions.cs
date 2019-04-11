@@ -258,9 +258,18 @@ namespace d360.model
                     {
                         if (w.FieldTypeID > 0)
                         {
-
+                            var whenFieldType = cnn.Query<FieldType>("select * from FieldType where ID = @FieldTypeID", new { w.FieldTypeID }).SingleOrDefault();
                             whenSql += $"cross apply (select coalesce(FT.DefaultValue, F.Value) as [Value] from FieldType FT left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = A.Object and F.ObjectID = A.ObjectID ";
-                            whenSql += $"where FT.ID = {w.FieldTypeID} and coalesce(F.Value, FT.DefaultValue) = '{w.Value}' ) FV{fCount}";
+                            if (whenFieldType != null)
+                            {
+                                whenSql += (whenFieldType.AllowMultipleValues) ?
+                                    $"where FT.ID = {w.FieldTypeID} and '{w.Value}' in (select value from string_split(coalesce(F.Value, FT.DefaultValue),',')) ) FV{fCount}" :
+                                    $"where FT.ID = {w.FieldTypeID} and coalesce(F.Value, FT.DefaultValue) = '{w.Value}' ) FV{fCount}";
+                            }
+                            else
+                            {
+                                whenSql += $"where FT.ID = {w.FieldTypeID} and coalesce(F.Value, FT.DefaultValue) = '{w.Value}' ) FV{fCount}";
+                            }
                         }
                         else
                         {
