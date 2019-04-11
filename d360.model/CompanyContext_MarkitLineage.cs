@@ -46,7 +46,7 @@ namespace d360.model
     {
         private object processLock = new object();
         private object mappingLock = new object();
-        private const int numThreads = 8;
+        private const int numThreads = 1;
         private const int maxComplexity = 50;
 
         public async Task GenerateMarkitBusinessLineage()
@@ -54,10 +54,10 @@ namespace d360.model
             TelemetryClient client = new TelemetryClient();
 
             //check if anything has changed since last run
-            if (!(await MarkitRequiresRun()))
-            {
-                return;
-            }
+            //if (!(await MarkitRequiresRun()))
+            //{
+            //    return;
+            //}
 
             client.TrackEvent($"Markit data requires processing on company {CurrentCompanyID}");
 
@@ -70,6 +70,7 @@ namespace d360.model
 
             //find source records to start from
             var leftmostMaps = maps.Where(m => !maps.Any(r => r.TargetFusionAttributeID == m.SourceFusionAttributeID)).ToList();
+
 
             //var leftmostMaps = maps.Where(m => m.SourceFusionAttributeID == 138507).ToList();
             var mappings = new List<FusionMarkitSourceTargetMapping>();
@@ -109,18 +110,18 @@ namespace d360.model
             if (Database.Connection.State != ConnectionState.Open)
                 Database.Connection.Open();
 
-            await Database.ExecuteSqlCommandAsync("truncate table [fusion].[MarkitLineageMapping]");
+            //await Database.ExecuteSqlCommandAsync("truncate table [fusion].[MarkitLineageMapping]");
 
             //save mappings to a table
-            await SaveMarkitLineageResults(mappings);
+            //await SaveMarkitLineageResults(mappings);
 
-            client.TrackEvent($"Saved mapping {mappings.Count()} records to table for lineage processing");
+            //client.TrackEvent($"Saved mapping {mappings.Count()} records to table for lineage processing");
 
-            await Database.ExecuteSqlCommandAsync("[fusion].[GenerateMarkitMapLineage]");
+            //await Database.ExecuteSqlCommandAsync("[fusion].[GenerateMarkitMapLineage]");
 
-            client.TrackEvent($"Completed lineage generation for company id {CurrentCompanyID}");
+            //client.TrackEvent($"Completed lineage generation for company id {CurrentCompanyID}");
 
-            await SaveMarkitLineageRunDetails(maps.Count(), mappings.Count(), objectMaps.Count());
+            //await SaveMarkitLineageRunDetails(maps.Count(), mappings.Count(), objectMaps.Count());
 
         }
 
@@ -141,6 +142,21 @@ namespace d360.model
                 return;
 
             List<FusionMarkitLineageData> nextMaps = new List<FusionMarkitLineageData>();
+
+            if ( currentMap.TargetFusionAttributeID == 54044 && sourceAssets.Any())
+            {
+                /*
+Markit EDM: 37
+Markit EDMW: 367004
+PAM: 366739
+
+
+Carry Value Base: 368144
+*/
+
+
+                Console.WriteLine($"reached");
+            }
 
             lock (processLock)
             {
@@ -217,7 +233,17 @@ namespace d360.model
                                     previousAssetId = prevMapping.TargetAssetID;
                                     previousFusionId = prevMapping.TargetFusionAttributeID;
                                     mapId = prevMapping.MapID;
-                                    //sourceAssets.Clear();
+
+                                    if (sourceAssets.Any())
+                                    {
+                                        var previousSource = sourceAssets.Peek();
+                                        //if the previous mapping is pointing to the previous source asset on the stack we're on the same path
+                                        if (previousSource.AssetID == previousAssetId && previousSource.FusionAttributeID == previousFusionId)
+                                        {
+                                            //sourceAssets.Pop();
+                                            continue;
+                                        }
+                                    }
                                 }
 
 
