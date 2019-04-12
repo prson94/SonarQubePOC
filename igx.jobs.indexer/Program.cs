@@ -2,6 +2,7 @@
 using d360.core.queue;
 using d360.core.enums;
 using d360.extensions.search;
+using d360.extensions.queue;
 using d360.utils.company;
 using Dapper;
 using Microsoft.Azure.WebJobs;
@@ -12,6 +13,7 @@ using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace igx.jobs.indexer
 {
@@ -21,6 +23,8 @@ namespace igx.jobs.indexer
         {
             var config = CoreFunction.GetJobHostConfiguration();
             config.UseTimers();
+            //We should only process one reindex queue item at a time
+            config.Queues.BatchSize = 1;
 
 #if DEBUG
             config.UseDevelopmentSettings();
@@ -43,200 +47,26 @@ namespace igx.jobs.indexer
         private static int _defaultQueryCommandTimeout = 180;
         const string functionName = "Indexing_ReIndex";
 #if DEBUG
-        const string timerSettings = "*/1 * * * * *";
+        const string timerSettings = "0 */15 * * * *";
 #else
         const string timerSettings = "0 0 17 * * 6";
 #endif
 
         const string fieldsSql = @"select F.ObjectID, T.Name, F.FormattedValue from Field F inner join FieldType T on T.ID = F.FieldTypeID and F.ObjectType = @t and F.FormattedValue is not null and F.FormattedValue <> '' and T.[Type] not in('DateTime','Color','FusionLookup','FilteredLookup','ComplexRelationLookup','OwnershipLookup','Relationship','FieldFromRelationship','RefListRelationship','JSON')";
 
-        public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
+        public static void RunViaTimer([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
         {
             try
             {
                 CoreFunction.AITrackJobStart(functionName);
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
+                AzureQueueSource queue = new AzureQueueSource();
+
 
                 companies.ForEach(c =>
                 {
-                    try
-                    {
-                        var source = new ElasticSearchSource();
-                        using (var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
-                        {
-                            IEnumerable<AddToIndexModel> models = null;
+                    queue.CreateMessage(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel { CompanyID = c.CompanyID });
 
-                            company.OpenWithRetry(RetryPolicy.DefaultFixed);
-
-                            source.ClearIndex(c.CompanyID);
-
-                            LogReindexStart("Artifacts", c.CompanyID);
-                            
-                            try
-                            {
-                                models = LoadArtifacts(company, c.CompanyID, source);
-                                source.AddToIndex(models);
-                            }
-                            catch (Exception ex)
-                            {
-                                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                            }
-
-                            LogReindexStart("Attributes", c.CompanyID);
-
-                            try
-                            {
-                                models = LoadAttributes(company, c.CompanyID, source);
-                                source.AddToIndex(models);
-                            }
-                            catch (Exception ex)
-                            {
-                                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                            }
-
-                            LogReindexStart("Models", c.CompanyID);
-
-                            try
-                            {
-                                models = LoadModels(company, c.CompanyID, source);
-                                source.AddToIndex(models);
-                            }
-                            catch (Exception ex)
-                            {
-                                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                            }
-
-                            LogReindexStart("Policies", c.CompanyID);
-
-                            try
-                            {
-                                models = LoadPolicies(company, c.CompanyID, source);
-                                source.AddToIndex(models);
-                            }
-                            catch (Exception ex)
-                            {
-                                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                            }
-
-                            LogReindexStart("Fusion Types", c.CompanyID);
-
-                            try
-                            {
-                                models = LoadFusionTypes(company, c.CompanyID, source);
-                                source.AddToIndex(models);
-                            }
-                            catch (Exception ex)
-                            {
-                                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                            }
-
-                            LogReindexStart("Reference Item Types", c.CompanyID);
-
-                            try
-                            {
-                                models = LoadReferenceItemTypes(company, c.CompanyID, source);
-                                source.AddToIndex(models);
-                            }
-                            catch (Exception ex)
-                            {
-                                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                            }
-
-                            LogReindexStart("Groups", c.CompanyID);
-
-                            try
-                            {
-                                models = LoadGroups(company, c.CompanyID, source);
-                                source.AddToIndex(models);
-                            }
-                            catch (Exception ex)
-                            {
-                                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                            }
-
-                            LogReindexStart("Rules", c.CompanyID);
-
-                            try
-                            {
-                                models = LoadRules(company, c.CompanyID, source);
-                                source.AddToIndex(models);
-                            }
-                            catch (Exception ex)
-                            {
-                                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                            }
-
-                            LogReindexStart("FusionAttributes", c.CompanyID);
-
-                            try
-                            {
-                                models = LoadFusionAttributes(company, c.CompanyID, source);
-                                source.AddToIndex(models);
-                            }
-                            catch (Exception ex)
-                            {
-                                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                            }
-
-                            LogReindexStart("Artifact Synonyms", c.CompanyID);
-
-                            try
-                            {
-                                models = LoadArtifactSynonyms(company, c.CompanyID, source);
-                                source.AddToIndex(models);
-                            }
-                            catch (Exception ex)
-                            {
-                                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                            }
-
-                            LogReindexStart("Custom Synonyms", c.CompanyID);
-
-                            try
-                            {
-                                models = LoadCustomSynonyms(company, c.CompanyID, source);
-                                source.AddToIndex(models);
-                            }
-                            catch (Exception ex)
-                            {
-                                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                            }
-
-                            LogReindexStart("Users", c.CompanyID);
-
-                            var users = new List<AddToIndexModel>();
-
-#region Company Users
-
-                            var sql = @"select ResourceID, Email as Username, LastName, FirstName, Email from reporting.global_resource";
-
-                            users = company.Query(sql).ToList().Select(u => new AddToIndexModel
-                            {
-                                Group = "Users",
-                                CompanyID = c.CompanyID,
-                                Type = "User",
-                                ID = u.ResourceID,
-                                RelativeUrl = $"#/resources/{u.ResourceID}",
-                                Fields = new Dictionary<string, string>() {
-                                    { "Name", $"{u.FirstName} {u.LastName}" },
-                                    { "Type", "User" },
-                                    { "Email", u.Email },
-                                    { "Username", u.Username }
-                                }
-                            }).ToList();
-
-                            source.AddToIndex(users);
-
-#endregion
-
-                            LogCompanyReindexComplete(c.CompanyID);
-
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                    }
                 });
 
             }
@@ -246,6 +76,190 @@ namespace igx.jobs.indexer
             }
 
             CoreFunction.AIFlush();
+        }
+
+        public static void RunViaQueue([QueueTrigger("%SearchIndexQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, TextWriter log)
+        {
+            var c = JsonConvert.DeserializeObject<ReindexModel>(myQueueItem);
+
+            try
+            {
+                var source = new ElasticSearchSource();
+                using (var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID))
+                {
+                    IEnumerable<AddToIndexModel> models = null;
+
+                    company.OpenWithRetry(RetryPolicy.DefaultFixed);
+
+                    source.ClearIndex(c.CompanyID);
+
+                    LogReindexStart("Artifacts", c.CompanyID);
+
+                    try
+                    {
+                        models = LoadArtifacts(company, c.CompanyID, source);
+                        source.AddToIndex(models);
+                    }
+                    catch (Exception ex)
+                    {
+                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                    }
+
+                    LogReindexStart("Attributes", c.CompanyID);
+
+                    try
+                    {
+                        models = LoadAttributes(company, c.CompanyID, source);
+                        source.AddToIndex(models);
+                    }
+                    catch (Exception ex)
+                    {
+                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                    }
+
+                    LogReindexStart("Models", c.CompanyID);
+
+                    try
+                    {
+                        models = LoadModels(company, c.CompanyID, source);
+                        source.AddToIndex(models);
+                    }
+                    catch (Exception ex)
+                    {
+                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                    }
+
+                    LogReindexStart("Policies", c.CompanyID);
+
+                    try
+                    {
+                        models = LoadPolicies(company, c.CompanyID, source);
+                        source.AddToIndex(models);
+                    }
+                    catch (Exception ex)
+                    {
+                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                    }
+
+                    LogReindexStart("Fusion Types", c.CompanyID);
+
+                    try
+                    {
+                        models = LoadFusionTypes(company, c.CompanyID, source);
+                        source.AddToIndex(models);
+                    }
+                    catch (Exception ex)
+                    {
+                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                    }
+
+                    LogReindexStart("Reference Item Types", c.CompanyID);
+
+                    try
+                    {
+                        models = LoadReferenceItemTypes(company, c.CompanyID, source);
+                        source.AddToIndex(models);
+                    }
+                    catch (Exception ex)
+                    {
+                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                    }
+
+                    LogReindexStart("Groups", c.CompanyID);
+
+                    try
+                    {
+                        models = LoadGroups(company, c.CompanyID, source);
+                        source.AddToIndex(models);
+                    }
+                    catch (Exception ex)
+                    {
+                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                    }
+
+                    LogReindexStart("Rules", c.CompanyID);
+
+                    try
+                    {
+                        models = LoadRules(company, c.CompanyID, source);
+                        source.AddToIndex(models);
+                    }
+                    catch (Exception ex)
+                    {
+                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                    }
+
+                    LogReindexStart("FusionAttributes", c.CompanyID);
+
+                    try
+                    {
+                        models = LoadFusionAttributes(company, c.CompanyID, source);
+                        source.AddToIndex(models);
+                    }
+                    catch (Exception ex)
+                    {
+                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                    }
+
+                    LogReindexStart("Artifact Synonyms", c.CompanyID);
+
+                    try
+                    {
+                        models = LoadArtifactSynonyms(company, c.CompanyID, source);
+                        source.AddToIndex(models);
+                    }
+                    catch (Exception ex)
+                    {
+                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                    }
+
+                    LogReindexStart("Custom Synonyms", c.CompanyID);
+
+                    try
+                    {
+                        models = LoadCustomSynonyms(company, c.CompanyID, source);
+                        source.AddToIndex(models);
+                    }
+                    catch (Exception ex)
+                    {
+                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                    }
+
+                    LogReindexStart("Users", c.CompanyID);
+
+                    var users = new List<AddToIndexModel>();
+
+                    #region Company Users
+
+                    var sql = @"select ResourceID, Email as Username, LastName, FirstName, Email from reporting.global_resource";
+
+                    users = company.Query(sql).ToList().Select(u => new AddToIndexModel
+                    {
+                        Group = "Users",
+                        CompanyID = c.CompanyID,
+                        Type = "User",
+                        ID = u.ResourceID,
+                        RelativeUrl = $"#/resources/{u.ResourceID}",
+                        Fields = new Dictionary<string, string>() {
+                                    { "Name", $"{u.FirstName} {u.LastName}" },
+                                    { "Type", "User" },
+                                    { "Email", u.Email },
+                                    { "Username", u.Username }
+                                }
+                    }).ToList();
+
+                    source.AddToIndex(users);
+
+                    #endregion
+
+                    LogCompanyReindexComplete(c.CompanyID);
+
+                }
+            }
+            catch (Exception ex)
+            {
+                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+            }
         }
 
         private static void LogCompanyReindexComplete(int companyID)
