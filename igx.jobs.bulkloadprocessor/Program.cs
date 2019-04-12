@@ -89,6 +89,7 @@ namespace igx.jobs.bulkloadprocessor
 
                         var loadItems = new List<LoadItem>();
                         var loadItemColumns = new List<LoadItemColumn>();
+                        var loadColumns = company.GetLoadColumns(load.Action, load.Object, load.ObjectID, true);
 
                         while (rowIndex <= stats.EndRowIndex)
                         {
@@ -134,8 +135,19 @@ namespace igx.jobs.bulkloadprocessor
                                         }
                                     }
 
+                                    int? lookupFieldObjectId = null;
+                                    var lookupColumn = loadColumns.Where(x => x.IsLookup == true && x.Name == c.Name).FirstOrDefault();
 
-                                    loadItemColumns.Add(new LoadItemColumn { ColumnIndex = c.ColumnIndex, LoadID = load.ID, RowIndex = rowIndex, Value = loadValue });
+                                    if (lookupColumn != null && lookupColumn.FieldTypeId != null)
+                                    {
+                                        var fieldValue = company.FieldLookupValues
+                                            .AsNoTracking()
+                                            .Where(x => x.FieldTypeID == lookupColumn.FieldTypeId && x.Text == loadValue)
+                                            .FirstOrDefault();
+                                        if (fieldValue != null)
+                                            lookupFieldObjectId = fieldValue.Value;
+                                    }
+                                    loadItemColumns.Add(new LoadItemColumn { ColumnIndex = c.ColumnIndex, LoadID = load.ID, RowIndex = rowIndex, Value = loadValue, LookupObjectID = lookupFieldObjectId });
                                 }
                             }
                             rowIndex++;
@@ -206,6 +218,10 @@ namespace igx.jobs.bulkloadprocessor
                                 table.Columns.Add(columnName, typeof(string));
                                 bulkCopy.ColumnMappings.Add(columnName, columnName);
 
+                                columnName = "LookupObjectID";
+                                table.Columns.Add(columnName, typeof(int));
+                                bulkCopy.ColumnMappings.Add(columnName, columnName);
+
                                 foreach (var item in loadItemColumns)
                                 {
                                     var row = table.NewRow();
@@ -217,6 +233,11 @@ namespace igx.jobs.bulkloadprocessor
                                         row["Value"] = DBNull.Value;
                                     else
                                         row["Value"] = item.Value;
+
+                                    if (item.LookupObjectID == null)
+                                        row["LookupObjectID"] = DBNull.Value;
+                                    else
+                                        row["LookupObjectID"] = item.LookupObjectID;
 
                                     table.Rows.Add(row);
                                 }
