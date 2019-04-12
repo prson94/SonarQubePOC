@@ -3789,7 +3789,11 @@ namespace d360.web.Controllers
                         throw new ConflictException("Error Occurred!", "You may not have a minimum length that is greater than the maximum length.");
                     }
                 }
-                if (!new[] { "Number", "Decimal" }.Contains(model.FieldType.Type))
+                if (new[] { "Text" }.Contains(model.FieldType.Type))
+                {
+                    if (!string.IsNullOrEmpty(model.FieldType.Pattern)) model.FieldType.MinimumLength = 0;
+                }
+                else if (!new[] { "Number", "Decimal" }.Contains(model.FieldType.Type))
                 {
                     if (!model.FieldType.IsRequired) model.FieldType.MinimumLength = 0;
                 }
