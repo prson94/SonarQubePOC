@@ -2379,6 +2379,24 @@
             <param name="phrase"></param>
             <returns></returns>
         </member>
+        <member name="T:d360.web.Controllers.V2.FieldsController">
+            <summary>
+            This service houses all endpoints handling glossary-related data such as artifacts and models.
+            </summary>
+        </member>
+        <member name="M:d360.web.Controllers.V2.FieldsController.GetFieldTypesAsync(System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,System.String,System.Nullable{d360.core.DataType},System.Nullable{System.Int32},System.Nullable{System.Int32})">
+            <summary>
+            Retrieves field types contained within your environment.
+            </summary>
+            <param name="AssetTypeUid">The asset type Uid to retrieve field types for.</param>
+            <param name="RelationshipTypeUid">The relationship type Uid to retrieve field types for.</param>
+            <param name="Name">The API Name to search for.</param>
+            <param name="FriendlyName">The Friendly Name to search for.</param>
+            <param name="Type">The data type to search for.</param>
+            <param name="_pageSize">The number of results to return per page. The default value is 200.</param>
+            <param name="_pageNum">The page number to return results for.</param>
+            <returns>A list of field types corresponding to the given criteria, if any.</returns>
+        </member>
         <member name="T:d360.web.Controllers.V2.AuditController">
             <summary>
             
@@ -3237,26 +3255,6 @@
             cookie to inform jquery.fileDownload that a successful file download has occured
             </summary>
             <param name="filterContext"></param>
-        </member>
-        <member name="P:d360.web.Models.FieldTypeComplexLookupDefinitionRelation.ColumnStatement">
-            <summary>
-            Generated when it comes time to create a dynamic SQL query.
-            </summary>
-        </member>
-        <member name="P:d360.web.Models.FieldTypeComplexLookupDefinitionRelation.JoinStatement">
-            <summary>
-            Generated when it comes time to create a dynamic SQL query.
-            </summary>
-        </member>
-        <member name="P:d360.web.Models.FieldTypeComplexLookupDefinitionRelation.OrderByStatement">
-            <summary>
-            Generated when it comes time to create a dynamic SQL query.
-            </summary>
-        </member>
-        <member name="P:d360.web.Models.FieldTypeComplexLookupDefinitionRelation.WhereStatement">
-            <summary>
-            Generated when it comes time to create a dynamic SQL query.
-            </summary>
         </member>
         <member name="P:d360.web.Models.FieldValidationModel.message">
             <summary>
