@@ -1,13 +1,11 @@
-﻿import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
-import { TreeNode } from 'primeng/primeng';
-import { FusionAttributeType, FusionType } from '../../../models/fusion.model';
-import { AssetTypeEditorModel, AssetType, AssetTypeClass } from "../../../models/asset.model";
-import { FusionService } from '../../../services/fusion.service';
-import { ObjectStyleService } from '../../../services/object-style.service';
-import { FormMode } from '../../../models/form.model';
-
+﻿import {Input, Output, Component, OnChanges, SimpleChange} from '@angular/core';
+import {TreeNode} from 'primeng/primeng';
+import {FusionAttributeType, FusionType} from '../../../models/fusion.model';
+import {AssetTypeEditorModel, AssetType, AssetTypeClass} from "../../../models/asset.model";
+import {FusionService} from '../../../services/fusion.service';
+import {ObjectStyleService} from '../../../services/object-style.service';
+import {FormMode} from '../../../models/form.model';
 import * as _ from 'lodash';
-
 
 @Component({
     selector: 'd3s-fusion-attributes-tile',
@@ -20,17 +18,17 @@ export class FusionAttributesTile implements OnChanges {
     @Input() title: string = 'Structure';
 
     isLoading = false;
-    formMode: FormMode = FormMode.Default; 
+    formMode: FormMode = FormMode.Default;
     FormMode = FormMode;
 
-    fusionAttributeTypes: TreeNode[];
+    fusionAttributeTypes: any;
     selectedRow: TreeNode;
 
     editorModel: AssetTypeEditorModel;
 
-    constructor(        
+    constructor(
         private fusionService: FusionService,
-        private objectStyleService: ObjectStyleService        
+        private objectStyleService: ObjectStyleService
     ) {
     }
 
@@ -44,6 +42,7 @@ export class FusionAttributesTile implements OnChanges {
 
     load(id: number): void {
         this.isLoading = true;
+
         if (this.fusionType == null) {
             this.formMode = FormMode.Default;
             this.fusionAttributeTypes = null;
@@ -51,24 +50,27 @@ export class FusionAttributesTile implements OnChanges {
             this.isLoading = false;
             return;
         }
-        this.fusionService.getFusionAttributeTypeTree(this.fusionType.ID)
-            .then(data => {
+
+        this.fusionService.getFusionAttributeTypeList(this.fusionType.ID).subscribe(
+            data => {
                 this.fusionAttributeTypes = data;
+
                 if (id) {
                     this.selectedRow = this.fusionAttributeTypes.filter(i => i.data.ID == id)[0];
-                }
-                else {
+                } else {
                     this.selectedRow = this.fusionAttributeTypes[0];
                 }
-                this.isLoading = false;                
-            });
+
+                this.isLoading = false;
+            }
+        );
     }
 
     edit() {
         this.formMode = FormMode.Editing;
     }
 
-    add() {        
+    add() {
         this.formMode = FormMode.Adding;
     }
 

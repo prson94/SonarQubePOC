@@ -9,38 +9,59 @@ import {MessagesService} from '../../../services/messages.service';
 
 import {BaseComponent} from '../../shared/base.component';
 
+/* FIXME: Extract templates and styles to their own files
+*  https://angular.io/guide/styleguide#style-05-04 */
 @Component({
     selector: 'd3s-fusion-rule-editor',
     template: `
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
         <div *ngIf="!isLoading">
-            <form #ruleForm="ngForm" (ngSubmit)="save()">
+            <form #ruleForm="ngForm"
+                  (ngSubmit)="save()">
                 <header>{{mode}} Fusion Rule</header>
                 <div class="row">
                     <div class="col s12">
-                        <div class="FieldName" style="display:block;">Promote</div>
-                        <select [(ngModel)]="selectedAttributeType" required name="object">
-                            <option *ngFor="let i of attributeTypes" [value]="i.id">{{i.name}}</option>
+                        <div class="FieldName"
+                             style="display:block;">Promote
+                        </div>
+                        <select [(ngModel)]="selectedAttributeType"
+                                required
+                                name="object">
+                            <option *ngFor="let i of attributeTypes"
+                                    [value]="i.id">{{i.name}}</option>
                         </select>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col s12">
-                        <div class="FieldName" style="display:block;">Description</div>
-                        <input type="text" [(ngModel)]="model.Rule.Description" style="width:80%" name="description"/>
+                        <div class="FieldName"
+                             style="display:block;">Description
+                        </div>
+                        <input type="text"
+                               [(ngModel)]="model.Rule.Description"
+                               style="width:80%"
+                               name="description"/>
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col s12" style="padding-top:8px;">
-                        <input type="checkbox" [(ngModel)]="model.Rule.Enabled" name="enabled"/> Enabled?
+                    <div class="col s12"
+                         style="padding-top:8px;">
+                        <input type="checkbox"
+                               [(ngModel)]="model.Rule.Enabled"
+                               name="enabled"/> Enabled?
                     </div>
                 </div>
                 <div class="row">&nbsp;</div>
                 <div class="row">
                     <div class="col s12">
-                        <button pButton type="submit" label="Save"
+                        <button pButton
+                                type="submit"
+                                label="Save"
                                 [disabled]="!ruleForm.form.valid || isLoading"></button>
-                        <button pButton type="button" label="Cancel" (click)="onClose.emit()"></button>
+                        <button pButton
+                                type="button"
+                                label="Cancel"
+                                (click)="onClose.emit()"></button>
                     </div>
                 </div>
             </form>
@@ -143,7 +164,7 @@ export class FusionRuleEditorComponent extends BaseComponent implements OnInit {
                         this.onSave.emit();
                     }
                 )
-                .catch(() => this.onError.emit());
+            ;
         } else {
             this.fusionService
                 .postEditFusionRule(this.model.Rule)
@@ -154,8 +175,9 @@ export class FusionRuleEditorComponent extends BaseComponent implements OnInit {
 
                         this.isLoading = false;
                         this.onSave.emit();
-                    })
-                .catch(() => this.onError.emit());
+                    }
+                )
+            ;
         }
     }
 }

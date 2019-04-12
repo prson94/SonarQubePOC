@@ -8,28 +8,45 @@ import {Subject} from "rxjs";
 
 declare var CompanySettings;
 
+/* FIXME: Extract templates and styles to their own files
+*  https://angular.io/guide/styleguide#style-05-04 */
 @Component({
     selector: 'd3s-fusion-rule-step-mapping-editor',
     template: `
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
         <div *ngIf="!isLoading">
             <header>{{mode}} Fusion Rule Mapping</header>
-            <form #mappingForm="ngForm" (ngSubmit)="save()">
+            <form #mappingForm="ngForm"
+                  (ngSubmit)="save()">
                 <div class="row">
                     <div class="col s12">
-                        <input type="checkbox" [(ngModel)]="model.Item.IsConstantValue" name="isConstant"/> Store a
+                        <input type="checkbox"
+                               [(ngModel)]="model.Item.IsConstantValue"
+                               name="isConstant"/> Store a
                         fixed source value?
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col s6" *ngIf="model.Item.IsConstantValue">
-                        <div class="FieldName" style="display:block;">Source</div>
-                        <input type="text" [(ngModel)]="model.Item.ConstantValue" style="width:95%" name="constant"
+                    <div class="col s6"
+                         *ngIf="model.Item.IsConstantValue">
+                        <div class="FieldName"
+                             style="display:block;">Source
+                        </div>
+                        <input type="text"
+                               [(ngModel)]="model.Item.ConstantValue"
+                               style="width:95%"
+                               name="constant"
                                required/>
                     </div>
-                    <div class="col s6" *ngIf="!model.Item.IsConstantValue">
-                        <div class="FieldName" style="display:block;">Source</div>
-                        <select [(ngModel)]="model.sourceValue" style="width:95%" name="source" required>
+                    <div class="col s6"
+                         *ngIf="!model.Item.IsConstantValue">
+                        <div class="FieldName"
+                             style="display:block;">Source
+                        </div>
+                        <select [(ngModel)]="model.sourceValue"
+                                style="width:95%"
+                                name="source"
+                                required>
                             <ng-container *ngFor="let i of model.SourceFields">
                                 <option *ngIf="i.Text != 'ID' && i.Text != 'TextPath'"
                                         [value]="i.Value">{{i.Text}}</option>
@@ -37,17 +54,29 @@ declare var CompanySettings;
                         </select>
                     </div>
                     <div class="col s6">
-                        <div class="FieldName" style="display:block;">Target</div>
-                        <select [(ngModel)]="model.targetValue" style="width:95%" name="target" required>
-                            <option *ngFor="let i of model.TargetFields" [value]="i.Value">{{i.Text}}</option>
+                        <div class="FieldName"
+                             style="display:block;">Target
+                        </div>
+                        <select [(ngModel)]="model.targetValue"
+                                style="width:95%"
+                                name="target"
+                                required>
+                            <option *ngFor="let i of model.TargetFields"
+                                    [value]="i.Value">{{i.Text}}</option>
                         </select>
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col s12" style="padding-top:10px">
-                        <button pButton type="submit" label="Save"
+                    <div class="col s12"
+                         style="padding-top:10px">
+                        <button pButton
+                                type="submit"
+                                label="Save"
                                 [disabled]="isLoading || !mappingForm.form.valid"></button>
-                        <button pButton type="button" label="Cancel" (click)="onClose.emit()"></button>
+                        <button pButton
+                                type="button"
+                                label="Cancel"
+                                (click)="onClose.emit()"></button>
                     </div>
                 </div>
             </form>
@@ -171,8 +200,7 @@ export class FusionRuleStepMappingEditorComponent extends BaseComponent implemen
                         this.isLoading = false;
                         this.onSave.emit();
                     }
-                )
-                .catch(() => this.onError.emit());
+                );
         } else {
             this.fusionService
                 .putEditFusionRuleStepMapping(m)
@@ -195,30 +223,35 @@ export class FusionRuleStepMappingEditorComponent extends BaseComponent implemen
         if (mapping.Item.SourceFieldTypeID == 0) {
             mapping.sourceValue = `${mapping.Item.SourceFieldName}|${mapping.Item.SourceFieldTypeID}`;
         } else {
-            mapping.SourceFields.forEach(f => {
-                if (f.Value.indexOf('|') != -1) {
-                    if (mapping.Item.SourceFieldTypeID.toString() == f.Value.split('|')[1]) {
-                        mapping.sourceValue = f.Value;
+            mapping.SourceFields.forEach(
+                f => {
+                    if (f.Value.indexOf('|') != -1) {
+                        if (mapping.Item.SourceFieldTypeID.toString() == f.Value.split('|')[1]) {
+                            mapping.sourceValue = f.Value;
 
-                        return;
+                            return;
+                        }
                     }
                 }
-            });
+            );
         }
 
         if (mapping.Item.TargetFieldTypeID == 0) {
             mapping.targetValue = `${mapping.Item.TargetFieldName}|${mapping.Item.TargetFieldTypeID}`;
         } else {
-            mapping.TargetFields.forEach(f => {
-                if (f.Value.indexOf('|') != -1) {
-                    if (mapping.Item.TargetFieldTypeID.toString() == f.Value.split('|')[1]) {
-                        mapping.targetValue = f.Value;
+            mapping.TargetFields.forEach(
+                f => {
+                    if (f.Value.indexOf('|') != -1) {
+                        if (mapping.Item.TargetFieldTypeID.toString() == f.Value.split('|')[1]) {
+                            mapping.targetValue = f.Value;
 
-                        return;
+                            return;
+                        }
                     }
                 }
-            });
+            );
         }
     }
+
     //#endregion
 }

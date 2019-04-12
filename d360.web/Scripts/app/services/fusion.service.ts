@@ -837,7 +837,7 @@ export class FusionService extends BaseObservableService {
 
                         return (n1 < n2) ? -1 : (n1 > n2) ? 1 : 0;
                     });
-                    
+
                     return r;
                 }),
                 catchError(err => this.handleError(err))
@@ -1035,9 +1035,10 @@ export class FusionService extends BaseObservableService {
     }
 
     getPromotionQueryAttributes(ruleID: number): Observable<any> {
+        const url = `api/fusion/promotion/QueryAttributes?ruleID=${ruleID}`;
         return this
             .http
-            .get(`api/fusion/promotion/QueryAttributes?ruleID=${ruleID}`)
+            .get(url)
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))
@@ -1045,9 +1046,17 @@ export class FusionService extends BaseObservableService {
     }
 
     postRunMarkitLineage(id: number) {
-        return this.http.post(`form/ScheduleMarkitLineage`, { id: id })
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+        const url = `form/ScheduleMarkitLineage`;
+
+        return this
+            .http
+            .post(
+                url,
+                {id: id}
+            ).pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            )
+        ;
     }
 }

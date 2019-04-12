@@ -52,7 +52,8 @@ export class FusionHistoryComponent extends BaseComponent implements OnInit {
 
                                 this.isLoading = false;
                             }
-                        );
+                        )
+                    ;
                 }
             )
         ;
