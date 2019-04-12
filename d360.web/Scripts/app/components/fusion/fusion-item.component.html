@@ -1,6 +1,7 @@
 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-<div *ngIf="!isLoading"
-     class="row">
+
+<div class="row"
+     *ngIf="!isLoading">
     <div class="col l3 m12 s12">
         <div class="tile tile-detail">
             <header>Structure</header>
@@ -15,9 +16,10 @@
                                        (fusionQueryAttributeTypeIdChange)="changeFusionQueryAttributeTypeId($event)"></d3s-fusion-structure-tree>
         </div>
     </div>
-    <div *ngIf="!isQueryConfigVisible"
-         class="col l9 m12 s12">
+    <div class="col l9 m12 s12"
+         *ngIf="!isQueryConfigVisible">
         <d3s-fusion-attribute *ngIf="fusionId !=0"
+                              [objectPermissions]="permissions"
                               [initialFusionAttributeId]="initialFusionAttributeId"
                               [initialFusionQueryAttributeId]="initialFusionQueryAttributeId"
                               [fusionId]="fusionId"
@@ -26,6 +28,7 @@
                               [selectedFusionQueryAttribute]="selectedFusionQueryAttribute"
                               [selectedFusionAttribute]="selectedFusionAttribute"></d3s-fusion-attribute>
         <d3s-fusion-attribute-tabs *ngIf="fusionId ==0"
+                                   [objectPermissions]="permissions"
                                    [initialFusionAttributeId]="initialFusionAttributeId"
                                    [initialFusionQueryAttributeId]="initialFusionQueryAttributeId"
                                    [fusionId]="fusionId"
@@ -34,8 +37,8 @@
                                    [selectedFusionQueryAttribute]="selectedFusionQueryAttribute"
                                    [selectedFusionAttribute]="selectedFusionAttribute"></d3s-fusion-attribute-tabs>
     </div>
-    <div *ngIf="isQueryConfigVisible"
-         class="col l9 m12 s12">
+    <div class="col l9 m12 s12"
+         *ngIf="isQueryConfigVisible">
         <d3s-fusion-query-list [fusion]="fusion"
                                (treeRequiresUpdate)="updateTree(tree)"></d3s-fusion-query-list>
     </div>
