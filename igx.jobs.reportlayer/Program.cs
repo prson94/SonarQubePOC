@@ -643,17 +643,19 @@ from	Asset O
 
                             selectSql = @"
 select		A.ID as AssetID,
-            A.TypeName as ReferenceItemType,
-			A.TypeID as ReferenceItemTypeID,
+            ATT.Name as ReferenceItemType,
+			ATT.ObjectID as ReferenceItemTypeID,
 			A.ObjectID as ReferenceItemID,
-			R.Code,
-			A.DisplayValue,
+			A.Code,
+			AD.DisplayValue,
 			A.CreatedBy,
 			A.CreatedOn,
 			A.UpdatedBy,
 			A.UpdatedOn
-from		AssetDetail A
-			inner join ReferenceItem R on R.ID = A.ObjectID and A.AssetTypeClass = 9 and A.State = 1";
+from		Asset A
+			inner join AssetType ATT on (A.AssetTypeID = ATT.ID)
+            inner join AssetDisplayValue AD on (A.ID = AD.AssetID)
+where       ATT.Class = 9 and A.State = 1";
 
                             objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 
@@ -671,14 +673,16 @@ from		AssetDetail A
 
                             selectSql = @"
 select		F.AssetID,
-            I.ReferenceItemTypeID,
-			I.ID as ReferenceItemID,
+            ATT.ObjectID as ReferenceItemTypeID,
+			A.ObjectID as ReferenceItemID,
 			T.Name as FieldTypeName,
 			T.FriendlyName as FieldTypeFriendlyName,
 			F.FormattedValue
 from		Field F
 			inner join FieldType T on T.ID = F.FieldTypeID
-			inner join ReferenceItem I on F.ObjectType = 'ReferenceItem' and I.ID = F.ObjectID and I.Visible = 1";
+            inner join Asset A on (A.Object = F.ObjectType and A.ObjectID = F.ObjectID)
+			inner join AssetType ATT on (A.AssetTypeID = ATT.ID)
+where       A.[Object] = 'ReferenceItem' and A.State = 1";
 
                             objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 

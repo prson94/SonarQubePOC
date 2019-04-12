@@ -149,4 +149,5 @@
 
   <!-- Sprint 4 2019 Start -->
   <include file="scripts/GOV-6972.xml"/>
+  <include file="scripts/GOV-7030.xml"/>
 </databaseChangeLog>
