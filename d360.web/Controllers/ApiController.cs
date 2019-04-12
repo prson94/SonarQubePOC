@@ -7541,6 +7541,7 @@ from	    AssetType T where T.Object = 'TaxonomyType' ");
         [Route("Count/{area}/{days}")]
         public IEnumerable<CountModel> GetHomeCounts(string area, int days, int id = -1)
         {
+            //Social count has been moved to V2 Social controller and should be got from there
             var areaName = (area ?? string.Empty).ToUpper();
             var resourceId = id > 0 ? id : Company.CurrentResourceID;
 
@@ -7559,6 +7560,7 @@ from	    AssetType T where T.Object = 'TaxonomyType' ");
         [Route("Counts/{id}/{days}")]
         public IEnumerable<CountModel> GetTheCounts(int days, int id = -1)
         {
+            //Social count has been moved to V2 Social controller and should be got from there
             var resourceId = id > 0 ? id : Company.CurrentResourceID;
             return LoadSocialActivityCount(days, resourceId);
         }
