@@ -23,8 +23,6 @@ namespace d360.web
         {
             var builder = new ContainerBuilder();
 
-            builder.RegisterType<CommunityContext>().As<CommunityContext>().InstancePerRequest().AsSelf();
-            builder.RegisterType<CompanyContext>().As<CompanyContext>().InstancePerRequest().AsSelf();
 
             #region Extension DI
 
@@ -34,6 +32,9 @@ namespace d360.web
             builder.RegisterType<d360.extensions.queue.AzureQueueSource>().As<IQueueSource>().InstancePerRequest();
             builder.RegisterType<d360.extensions.storage.AzureStorageProvider>().As<IStorageProvider>().InstancePerRequest();
             #endregion
+
+            builder.RegisterType<CommunityContext>().As<ICommunityContext>().InstancePerRequest();
+            builder.RegisterType<CompanyContext>().As<ICompanyContext>().InstancePerRequest();
 
             builder.RegisterType<d360.extensions.info.UriSecurityContextProvider>().As<ISecurityContextProvider>()
                 .InstancePerRequest()

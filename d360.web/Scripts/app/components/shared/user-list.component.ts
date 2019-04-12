@@ -1,38 +1,49 @@
-
 import {debounceTime} from 'rxjs/operators';
 
-import { Title } from '@angular/platform-browser';
-import { ActivatedRoute, Router } from '@angular/router';
-import { Breadcrumb } from '../../models/breadcrumb.model';
-import { GridColumn, GridField, GridFilterExpression } from '../../models/grid-definition.model';
-import { GridDefinitionService } from '../../services/grid-definition.service';
-import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
-import { MessagesService } from '../../services/messages.service';
-import { PermissionsService } from '../../services/permissions.service';
-import { ResourcesService } from '../../services/resources.service';
-import { CompanySettingsService } from '../../services/settings.service';
-import { UriBasedService } from '../../services/uri-based.service';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import { BaseComponent } from '../shared/base.component';
-import { LazyLoadEvent } from 'primeng/primeng';
-import { SubscriptionLike as ISubscription } from 'rxjs';
-import { SortOrder } from '../../models/enums.model';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, ViewChild, OnInit } from '@angular/core';
+import {Title} from '@angular/platform-browser';
+import {ActivatedRoute, Router} from '@angular/router';
+import {Breadcrumb} from '../../models/breadcrumb.model';
+import {GridColumn, GridField, GridFilterExpression} from '../../models/grid-definition.model';
+import {GridDefinitionService} from '../../services/grid-definition.service';
+import {HeaderBreadcrumbService} from '../../services/header-breadcrumb.service';
+import {MessagesService} from '../../services/messages.service';
+import {PermissionsService} from '../../services/permissions.service';
+import {ResourcesService} from '../../services/resources.service';
+import {CompanySettingsService} from '../../services/settings.service';
+import {UriBasedService} from '../../services/uri-based.service';
+import {SiteUrlHelpers} from '../../static/site-url-helpers';
+import {BaseComponent} from '../shared/base.component';
+import {LazyLoadEvent} from 'primeng/primeng';
+import {SubscriptionLike as ISubscription} from 'rxjs';
+import {SortOrder} from '../../models/enums.model';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, ViewChild, OnInit} from '@angular/core';
+/* FIXME: Extract templates and styles to their own files
+*  https://angular.io/guide/styleguide#style-05-04 */
 @Component({
     selector: 'd3s-user-list',
     providers: [GridDefinitionService, UriBasedService, PermissionsService, ResourcesService, CompanySettingsService],
-    template: `                                         
-                <header *ngIf="!showEditor && !showDelete && !showResetPwd">Users
-                    <d3s-tile-actions [hasAdd]="hasModifyAssetPermissions()" (addClick)="add()" hasFilterMode="true"  [(filterMode)]="showSimpleFilter" hasExport="true" (exportClick)="export()"></d3s-tile-actions>                            
-                </header>                           
-                <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <span *ngIf="!showDelete && !showEditor && !showResetPwd">
-                    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="$event.target.value;dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-                    <p-table #dt  [loading]="isLoading" loadingIcon="fa fa-spinner" [scrollable]="true" scrollWidth="100%" [lazy]="true" (onLazyLoad)="lazyLoadUsers($event)" [totalRecords]="totalRecords" [value]="items" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="globalFilterFields" [pageLinks]="3" [paginator]="true" [rows]="rowsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected">
+    template: `
+        <header *ngIf="!showEditor && !showDelete && !showResetPwd">Users
+            <d3s-tile-actions [hasAdd]="hasModifyAssetPermissions()" (addClick)="add()" hasFilterMode="true"
+                              [(filterMode)]="showSimpleFilter" hasExport="true"
+                              (exportClick)="export()"></d3s-tile-actions>
+        </header>
+        <d3s-loading [isLoading]="isLoading"></d3s-loading>
+        <span *ngIf="!showDelete && !showEditor && !showResetPwd">
+                    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100"
+                           (input)="$event.target.value;dt.filterGlobal($event.target.value, 'contains')"
+                           placeholder="Search..." class="grid-simple-filter">
+                    <p-table #dt [loading]="isLoading" loadingIcon="fa fa-spinner" [scrollable]="true"
+                             scrollWidth="100%" [lazy]="true" (onLazyLoad)="lazyLoadUsers($event)"
+                             [totalRecords]="totalRecords" [value]="items" selectionMode="single"
+                             [metaKeySelection]="true" [globalFilterFields]="globalFilterFields" [pageLinks]="3"
+                             [paginator]="true" [rows]="rowsPerPage" [rowsPerPageOptions]="defaultPagingOptions"
+                             [(selection)]="selected">
                         <ng-template pTemplate="header">
                             <tr>
 
-                                <th *ngFor="let column of columns" [pSortableColumn]="column.sortable ? column.datafield : null">
+                                <th *ngFor="let column of columns"
+                                    [pSortableColumn]="column.sortable ? column.datafield : null">
                                     {{column.text}}
                                     <d3s-sortIcon *ngIf="column.sortable" [field]="column.datafield"></d3s-sortIcon>
                                 </th>
@@ -41,7 +52,8 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, ViewC
                                 <th style="width: 40px" *ngIf="hasModifyAssetPermissions() && allowPasswordReset "></th>
                             </tr>
                             <tr [hidden]="showSimpleFilter">
-                                <th *ngFor="let column of columns"><d3s-column-filter [field]="column.datafield"></d3s-column-filter></th>
+                                <th *ngFor="let column of columns"><d3s-column-filter
+                                        [field]="column.datafield"></d3s-column-filter></th>
                                 <th *ngIf="hasModifyAssetPermissions()"></th>
                                 <th *ngIf="hasDeleteAssetPermissions()"></th>
                                 <th *ngIf="hasModifyAssetPermissions() && allowPasswordReset "></th>
@@ -51,51 +63,63 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, ViewC
                             <tr [pSelectableRow]="item">
 
                                 <td *ngFor="let column of columns">
-                                    <a *ngIf="column.datafield=='FirstName'" (click)="openResource(item)">{{item.FirstName}}</a>
-                                    <d3s-dynamic-field-value *ngIf="column.datafield!='FirstName'"  [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value>                                                                 
+                                    <a *ngIf="column.datafield=='FirstName'"
+                                       (click)="openResource(item)">{{item.FirstName}}</a>
+                                    <d3s-dynamic-field-value *ngIf="column.datafield!='FirstName'" [column]="column"
+                                                             [fields]="fields" [item]="item"></d3s-dynamic-field-value>                                                                 
                                 </td>
                                 <td *ngIf="hasModifyAssetPermissions()" style="width: 40px">
                                     <div class="RowTools" *ngIf="item.ResourceID > 0">
-                                        <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i class="fa fa-pencil"></i></a>
+                                        <a style="cursor:pointer;" (click)="selected=item;showEditor=true;"><i
+                                                class="fa fa-pencil"></i></a>
                                     </div>
                                 </td>
                                 <td *ngIf="hasDeleteAssetPermissions()" style="width: 40px">
                                     <div class="RowTools" *ngIf="item.ResourceID > 0">
-                                        <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i class="fa fa-trash-o"></i></a>
+                                        <a style="cursor:pointer;" (click)="selected=item;showDelete=true;"><i
+                                                class="fa fa-trash-o"></i></a>
                                     </div>
                                 </td>
                                 <td *ngIf="hasModifyAssetPermissions() && allowPasswordReset " style="width: 40px">
                                     <div class="RowTools" *ngIf="item.ID>0">
-                                        <a title="Reset Password" style="cursor:pointer;" (click)="selected=item;showResetPwd=true;"><i class="fa fa-asterisk fa-fw"></i></a>
+                                        <a title="Reset Password" style="cursor:pointer;"
+                                           (click)="selected=item;showResetPwd=true;"><i
+                                                class="fa fa-asterisk fa-fw"></i></a>
                                     </div>
                                 </td>
                             </tr>
                         </ng-template>
                         <ng-template pTemplate="summary">
-                            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows"
+                                                  [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
                         </ng-template>
                     </p-table>
                 </span>
-                <span *ngIf="showResetPwd">
+        <span *ngIf="showResetPwd">
                     <header>Reset Users Password</header>
                     <div class="row">
-                        <div class="col s12">Are you sure you would like to reset the password for [{{selected.FirstName}} {{selected.LastName}}]</div>
+                        <div class="col s12">Are you sure you would like to reset the password for [{{selected.FirstName}} {{selected.LastName}}
+                            ]</div>
                         <div class="col s12">&nbsp;</div>
                         <div class="col s12">
-                            <button pButton type="button" (click)="resetPassword()" label="Reset Password" style="width: 150px;"></button>                            
-                            <button pButton type="button" (click)="showResetPwd=false" label="Cancel" style="width: 150px;"></button>
+                            <button pButton type="button" (click)="resetPassword()" label="Reset Password"
+                                    style="width: 150px;"></button>                            
+                            <button pButton type="button" (click)="showResetPwd=false" label="Cancel"
+                                    style="width: 150px;"></button>
                         </div>
                     </div>
                 </span>
-                <d3s-dynamic-editor *ngIf="showEditor" [objectID]="objectID" objectType="ResourceType" title="Resource" [selection]="selected" rowID="ResourceID" (saveClick)="saveItem($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>
-                <d3s-delete-form *ngIf="showDelete"
-                                [callback]="theDeleteCallback"
-                                [itemId]="selected?.ID"
-                                method="callback"
-                                [prompt]="'Are you sure you want to delete the user [' + selected.FirstName + ' ' + selected.LastName + ']?'"                                         
-                                (onCancel)="showDelete=false;"
-                ></d3s-delete-form>
-                `,
+        <d3s-dynamic-editor *ngIf="showEditor" [objectID]="objectID" objectType="ResourceType" title="Resource"
+                            [selection]="selected" rowID="ResourceID" (saveClick)="saveItem($event)"
+                            (closeClick)="closeEditor()"></d3s-dynamic-editor>
+        <d3s-delete-form *ngIf="showDelete"
+                         [callback]="theDeleteCallback"
+                         [itemId]="selected?.ID"
+                         method="callback"
+                         [prompt]="'Are you sure you want to delete the user [' + selected.FirstName + ' ' + selected.LastName + ']?'"
+                         (onCancel)="showDelete=false;"
+        ></d3s-delete-form>
+    `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
@@ -135,16 +159,16 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     @ViewChild('dt') datatable;
 
     constructor(private route: ActivatedRoute,
-        private router: Router,
-        protected uriBasedService: UriBasedService,
-        private gridDefinitionService: GridDefinitionService,
-        protected messagesService: MessagesService,
-        private permissionsService: PermissionsService,
-        private resourcesService: ResourcesService,
-        private companySettingsService: CompanySettingsService,
-        protected titleService: Title,
-        protected headerBreadcrumbService: HeaderBreadcrumbService,
-        private changeDetectorRef: ChangeDetectorRef) {
+                private router: Router,
+                protected uriBasedService: UriBasedService,
+                private gridDefinitionService: GridDefinitionService,
+                protected messagesService: MessagesService,
+                private permissionsService: PermissionsService,
+                private resourcesService: ResourcesService,
+                private companySettingsService: CompanySettingsService,
+                protected titleService: Title,
+                protected headerBreadcrumbService: HeaderBreadcrumbService,
+                private changeDetectorRef: ChangeDetectorRef) {
         super();
         this.setObjectInfo('ResourceType', 1);
     }
@@ -185,25 +209,25 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     deleteUser(id: number) {
-        this.uriBasedService.deleteItemWithResult('form/DeleteResourceByID?id=', id).
-            then(res => {
-                this.showMessageForResult(this.messagesService, res);
-                this.showDelete = false;
-                 if (res.type != 'error') {
-                    this.items = this.items.filter(x => x.ID != id);
-                    this.changeDetectorRef.markForCheck();
-                }
-            });
+        this.uriBasedService.deleteItemWithResult('form/DeleteResourceByID?id=', id).then(res => {
+            this.showMessageForResult(this.messagesService, res);
+            this.showDelete = false;
+            if (res.type != 'error') {
+                this.items = this.items.filter(x => x.ID != id);
+                this.changeDetectorRef.markForCheck();
+            }
+        });
     }
 
     getFieldsDefinition() {
-        this.gridDefinitionService.getGridDefinition(this.objectID, this.objectType)
-            .then(result => {
+        this.gridDefinitionService.getGridDefinition(this.objectID, this.objectType).subscribe(
+            result => {
                 this.columns = result.Columns;
                 this.fields = result.Fields;
-            }).then(() => {
+
                 this.getData();
-            });
+            }
+        );
     }
 
     getData() {

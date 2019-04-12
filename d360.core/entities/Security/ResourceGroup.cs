@@ -15,8 +15,6 @@ namespace d360.core.entities
         [Key, Column(Order = 2)]
         public int ResourceID { get; set; }
 
-        public bool IsOwner { get; set; }
-
         #endregion
 
         [ForeignKey("GroupID")]

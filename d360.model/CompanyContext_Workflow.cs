@@ -436,6 +436,18 @@ namespace d360.model
                                         assetdetail ad
                                     where
                                         ad.object = @obj and ad.Typeid = @id";
+
+                var issueSql = @"select 
+                                            i.ID,
+                                            t.Name + ' - ' + D.DisplayValue as DisplayValue
+                                        from 
+                                            Issue I
+                                            inner join IssueType T on T.ID = I.IssueTypeID
+                                            inner join AssetDetail D on D.Object = I.Object and D.ObjectID = I.ObjectID
+                                        where 
+                                            T.ID = @id";
+
+
                 //evaluate objects that are part of this workflow
                 switch ((registration.Object ?? "").ToUpper())
                 {
@@ -478,6 +490,28 @@ namespace d360.model
                             {
                                 matchingItems++;
                                 items.Add(taxonomy.DisplayValue);
+                            }
+                        }
+                        break;
+                    case "ISSUETYPE":
+                        var issues = Query<dynamic>(issueSql, new {  id = registration.ObjectID }).ToList();
+
+                        foreach (var issue in issues)
+                        {
+                            if (await CreateWorkflowItem(registration.TypeID,
+                                    new EventObjectInfo
+                                    {
+                                        Object = core.SystemObjects.Issue,
+                                        ObjectID = issue.ID,
+                                        ObjectType = core.SystemObjects.IssueType,
+                                        ObjectTypeID = registration.ObjectID,
+                                        
+                                    },
+                                    registration,
+                                    0))
+                            {
+                                matchingItems++;
+                                items.Add(issue.DisplayValue);
                             }
                         }
                         break;
@@ -1044,10 +1078,18 @@ namespace d360.model
                     {
                         if (item.AppendValue)
                         {
-                            if (field.Value.EndsWith(","))
-                                field.Value += val.Trim(',');
-                            else
-                                field.Value += ("," + val.Trim(','));
+                            var oldValues = field.Value?.Trim(',')?.Split(',') ?? new string[0];
+                            var newValues = val?.Trim(',')?.Split(',')?.Except(oldValues) ?? new string[0];
+
+                            val = string.Join(",", newValues);
+
+                            if (!string.IsNullOrEmpty(val))
+                            {
+                                if (field.Value.EndsWith(","))
+                                    field.Value += val;
+                                else
+                                    field.Value += ("," + val);
+                            }
                         }
                         else
                         {

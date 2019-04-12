@@ -90,7 +90,7 @@ import { BaseComponent } from '../../shared/base.component';
                 </div>
                 <d3s-delete-form *ngIf="showDelete"
                     [callback]="theDeleteCallback"
-                    [itemId]="selected?.ID"
+                    [itemId]="selected?.Id"
                     [method]="'callback'"
                     [prompt]="'Are you sure you want to delete the relationship [' + [selected?.Subject.Name] + ' / ' + [selected?.Object.Name]  + ']?'"
                     (onCancel)="showDelete=false;"
@@ -137,12 +137,12 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
         if (this.filterToName && this.filterToName.length > 0) {
             var search = this.filterToName.toLowerCase();
             this.relationships = this.relationships.filter(item =>
-                item.Predicate && item.Predicate.Name.toLowerCase().includes(search) ||
-                item.Predicate && item.Predicate.Inverse.toLowerCase().includes(search) ||
-                item.Object && item.Object.Class.toLowerCase().includes(search) ||
-                item.Object && item.Object.Name.toLowerCase().includes(search) ||
-                item.Subject && item.Subject.Class.toLowerCase().includes(search) ||
-                item.Subject && item.Subject.Name.toLowerCase().includes(search)
+                item.Predicate && item.Predicate.Name && item.Predicate.Name.toLowerCase().includes(search) ||
+                item.Predicate && item.Predicate.Inverse && item.Predicate.Inverse.toLowerCase().includes(search) ||
+                item.Object && item.Object.Class && item.Object.Class.toLowerCase().includes(search) ||
+                item.Object && item.Object.Name && item.Object.Name.toLowerCase().includes(search) ||
+                item.Subject && item.Subject.Class && item.Subject.Class.toLowerCase().includes(search) ||
+                item.Subject && item.Subject.Name && item.Subject.Name.toLowerCase().includes(search)
             );
         }
     }

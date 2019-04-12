@@ -1,5 +1,6 @@
 ﻿using d360.core;
 using d360.core.queue;
+using d360.core.enums;
 using d360.extensions.search;
 using d360.utils.company;
 using Dapper;
@@ -47,7 +48,7 @@ namespace igx.jobs.indexer
         const string timerSettings = "0 0 17 * * 6";
 #endif
 
-        const string fieldsSql = @"select F.ObjectID, T.Name, F.FormattedValue from Field F inner join FieldType T on T.ID = F.FieldTypeID and F.ObjectType = @t and F.FormattedValue is not null and F.FormattedValue <> ''";
+        const string fieldsSql = @"select F.ObjectID, T.Name, F.FormattedValue from Field F inner join FieldType T on T.ID = F.FieldTypeID and F.ObjectType = @t and F.FormattedValue is not null and F.FormattedValue <> '' and T.[Type] not in('DateTime','Color','FusionLookup','FilteredLookup','ComplexRelationLookup','OwnershipLookup','Relationship','FieldFromRelationship','RefListRelationship','JSON')";
 
         public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
         {
@@ -278,7 +279,7 @@ namespace igx.jobs.indexer
                     inner join Predicate P on P.ID = T.PredicateID and P.Type = 6
 	                inner join AssetDetail SubjectArt on SubjectArt.[Object] = 'Artifact' and SubjectArt.ObjectID = I.SubjectID and I.Subject = 'Artifact'
 	                inner join AssetDetail ObjectArt on ObjectArt.[Object] = 'Artifact' and ObjectArt.ObjectID = I.ObjectID and I.Object = 'Artifact'
-	                inner join ArtifactType ArtType on ObjectArt.TypeID = ArtType.ID)
+	                inner join AssetType ArtType on ObjectArt.AssetTypeID = ArtType.ID)
                 Union
                 (select	
 	                SubjectArt.DisplayValue as 'Synonym',	
@@ -295,7 +296,7 @@ namespace igx.jobs.indexer
                     inner join Predicate P on P.ID = T.PredicateID and P.Type = 6
 	                inner join AssetDetail SubjectArt on SubjectArt.[Object] = 'Artifact' and SubjectArt.ObjectID = I.ObjectID and I.Subject = 'Artifact'
 	                inner join AssetDetail ObjectArt on ObjectArt.[Object] = 'Artifact' and ObjectArt.ObjectID = I.SubjectID and I.Object = 'Artifact'
-	                inner join ArtifactType ArtType on ObjectArt.TypeID = ArtType.ID)
+	                inner join AssetType ArtType on ObjectArt.AssetTypeID = ArtType.ID)
                 order by ObjectArt.DisplayValue";
 
             return getData(context, sql, companyID, source, "", false, (dynamic o) =>
@@ -388,13 +389,15 @@ from
         
         private static IEnumerable<AddToIndexModel> LoadRules(SqlConnection context, int companyID, ElasticSearchSource source)
         {
-            var sql = @"SELECT R.[ID]
-                                    ,R.DisplayValue as [Name]    
-                                    ,T.Name as [RuleType]
-								    ,[dbo].GenerateAssetUrl(A.ID) as [Url]
-                                FROM [dbo].[Rule] R 
-                                inner join RuleType T on T.ID = R.RuleTypeID
-                                inner join Asset A on A.Object = 'Rule' and A.ObjectID = R.ID";
+            int assettypeclass = (int)AssetTypeClass.Rule;
+            var sql = $@"SELECT
+                    ObjectID as ID,
+                    DisplayValue as Name,
+                    TypeName as RuleType,
+                    [dbo].GenerateAssetUrl(ID) as [Url]
+                FROM [dbo].[AssetDetail]
+                WHERE AssetTypeClass = {assettypeclass.ToString()}
+                AND State = 1";
 
             var sType = SystemObjects.Rule.ToString();
 
@@ -441,7 +444,14 @@ from
 
         private static IEnumerable<AddToIndexModel> LoadReferenceItemTypes(SqlConnection context, int companyID, ElasticSearchSource source)
         {
-            var sql = @"select ID, Name, [Description] from ReferenceItemType";
+            int assettypeclass = (int)AssetTypeClass.Reference;
+            var sql = $@"SELECT
+                    ObjectID as ID,
+                    Name,
+                    Description
+                FROM [dbo].[AssetType]
+                WHERE Class = {assettypeclass.ToString()}
+                AND State = 1";
             var sType = "Reference";
             return getData(context, sql, companyID, source, sType, false, (dynamic o) =>
             {
@@ -463,13 +473,16 @@ from
 
         private static IEnumerable<AddToIndexModel> LoadPolicies(SqlConnection context, int companyID, ElasticSearchSource source)
         {
-            var sql = @"select  p.ID,
-                                p.DisplayValue as Name,
-                                p.TextPath,
-                                pt.Name as [PolicyType],
-                                p.PolicyTypeID as [PolicyTypeID]
-                       from     [Policy] p 
-                                inner join PolicyType pt on p.PolicyTypeID = pt.ID";
+            int assettypeclass = (int)AssetTypeClass.Policy;
+            var sql = $@"SELECT
+	                ObjectID as ID,
+	                DisplayValue as [Name],
+	                DisplayValue as TextPath,
+	                TypeName as PolicyType,
+	                [dbo].GenerateAssetUrl(ID) as [Url]
+                FROM [dbo].[AssetDetail]
+                WHERE AssetTypeClass = {assettypeclass.ToString()}
+                AND State = 1";
 
             var sType = SystemObjects.Policy.ToString();
 
@@ -481,11 +494,10 @@ from
                     CompanyID = companyID,
                     ID = o.ID,
                     Type = o.PolicyType,
-                    RelativeUrl = $"/policy/{o.PolicyTypeID};hierarchyId={o.ID}",
+                    RelativeUrl = o.Url,
                     Fields = new Dictionary<string, string>() {
                         { "Name", o.Name },
                         { "Type", o.PolicyType },
-                        { "Description", o.Description ?? "" },
                         { "TextPath", o.TextPath ?? "" }
                     }
                 };
@@ -493,16 +505,20 @@ from
         }
 
         private static IEnumerable<AddToIndexModel> LoadArtifacts(SqlConnection context, int companyID, ElasticSearchSource source)
-        {
+        {            
             var sql = @"
-select	cast(ID as varchar) as ItemUniqueID,
-        ObjectID as ID,
-		TypeID,
-		DisplayValue,
-		TypeName
-from	AssetDetail
-where	Type = 'ArtifactType'
-		and State = 1";
+select
+	cast(A.ID as varchar) as ItemUniqueID,
+	A.ObjectID as ID,
+	att.ObjectID as TypeID,
+	adv.DisplayValue,
+	att.Name as TypeName
+from
+	[dbo].Asset a
+	inner join [dbo].assettype att on a.assettypeid = att.id
+	inner join [dbo].assetdisplayvalue adv on adv.assetid = a.id
+where
+	att.[Object] = 'ArtifactType' and a.[state] = 1";
 
             var sType = SystemObjects.Artifact.ToString();
 
@@ -624,8 +640,7 @@ from    fusion f
                 return getDataWithFields(context, sql, companyID, source, type, convertToDictionary);
             }
             
-            return getDataWithoutFields(context, sql, companyID, source, type, convertToDictionary);
-            
+            return getDataWithoutFields(context, sql, companyID, source, type, convertToDictionary);            
         }
 
         private static IEnumerable<AddToIndexModel> getDataWithoutFields(SqlConnection context, string sql, int companyID, ElasticSearchSource source, string type, Func<dynamic, AddToIndexModel> convertToDictionary)
@@ -637,8 +652,7 @@ from    fusion f
         {
             var fields = context.Query<FieldSqlModel>(fieldsSql, new { t = type }, commandTimeout: _defaultQueryCommandTimeout).ToList();
             var list = getDataWithoutFields(context, sql, companyID, source, type, convertToDictionary);
-
-            
+                        
             foreach (var item in list)
             {
                 var subset = fields.Where(i => i.ObjectID == item.ID);

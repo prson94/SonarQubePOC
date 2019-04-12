@@ -53,8 +53,8 @@ namespace igx.jobs.databaseindexrebuilder
                         var start = DateTime.Now;
                         using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(item.CompanyID))
                         {
-                            companyConnection.OpenWithRetry(RetryPolicy.DefaultProgressive); 
-                            var res = companyConnection.Execute("EXEC [dbo].[AzureSQLMaintenance]", new { Operation = "reindex", From = 30, To = 100, MinNumberOfPages = 10 },null, commandTimeout);                        
+                            companyConnection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                            var res = companyConnection.Execute("EXEC [dbo].[AzureSQLMaintenance]", new { Operation = "reindex", From = 30, To = 100, MinNumberOfPages = 10 }, null, commandTimeout);
                         }
                         TimeSpan end = DateTime.Now - start;
                         properties.Add("Time Taken", end.TotalMilliseconds.ToString());
@@ -62,7 +62,7 @@ namespace igx.jobs.databaseindexrebuilder
                     }
                     catch (Exception e)
                     {
-                        CoreFunction.AITrackException(functionName, e);
+                        CoreFunction.AITrackException(functionName, e, item.CompanyID);
                         failedReindexes.Add(item.UrlPrefix);
                     }
                 }
@@ -80,7 +80,7 @@ namespace igx.jobs.databaseindexrebuilder
                     CoreFunction.AITrackJobCompletedNoErrors(functionName);
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 CoreFunction.AITrackException(functionName, ex);
             }

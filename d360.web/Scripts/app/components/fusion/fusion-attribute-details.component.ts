@@ -13,18 +13,10 @@ import { FusionAttributeService } from '../../services/fusion-attribute.service'
 import { FusionAttributeValueDetails } from '../../models/fusion-attribute.model';
 import { FormMode } from '../../models/form.model';
 
+
 @Component({
     selector: 'd3s-fusion-attribute-details',
-    template: `  <d3s-loading [isLoading]="isLoading"></d3s-loading>                                                  
-                 <div class="row" *ngIf="!isLoading">    
-                    <div class="col s12">
-                        <div class="tile tile-detail">
-                            <d3s-object-definition-tile [objectPermissions]="permissions" [objectID]="id" [objectType]="type" [hasAttributes]="false" (formModeChange)="formModeChange($event)"></d3s-object-definition-tile>
-                            <button pButton type="button" (click)="close()" *ngIf="formMode == FormMode.Default" label="Close"></button>
-                        </div>           
-                    </div>
-                 </div>
-                 `,
+    templateUrl:'./fusion-attribute-details.component.html',
     providers: [PermissionsService, FusionAttributeService],
 })
 
@@ -37,7 +29,8 @@ export class FusionAttributeDetailsComponent extends BaseComponent implements On
     private fusionAttributeDetail: FusionAttributeValueDetails;
     private formMode :FormMode = FormMode.Default;
     FormMode = FormMode;
-
+    private dataProfileId: number = -1;
+  
     constructor(        
         private route: ActivatedRoute,
         private router: Router,
@@ -57,21 +50,20 @@ export class FusionAttributeDetailsComponent extends BaseComponent implements On
             this.type = params['type'];
             this.id = +params['id'];
             this.name = params['name'] ? params['name'] : 'Details';
-            
+            this.dataProfileId = params['dataProfileId'] ? +params['dataProfileId'] : -1;
             this.setBrowserTitle(this.titleService, this.name);        
             this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.name));
             
             this.loadPermissions(this.permissionsService, StringConstants.ObjectFusionAttribute, this.id);
         });
 
-        this.fusionAttributeService.getFusionAttributeDetails(this.type, this.id)
-            .then(item => {
+        this.fusionAttributeService.getFusionAttributeDetails(this.type, this.id).subscribe(
+            item => {
                 this.fusionAttributeDetail = item;
                 this.setObjectInfo(this.type, this.id, undefined, this.fusionAttributeDetail.AssetID);
                 this.setCommonRightSideBar(true, true, false, true, true, true, false);
-           });
-
-
+            }
+        );
     }
 
     ngOnDestroy() {

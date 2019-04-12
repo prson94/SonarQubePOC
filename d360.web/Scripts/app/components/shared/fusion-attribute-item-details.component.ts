@@ -73,13 +73,15 @@ export class FusionAttributeItemDetailsComponent extends BaseComponent implement
 
     private load() {
         this.isLoading = true;
-        this.fusionAttributeService.getFusionAttributeDetails(this.objectType, this.fusionAttributeId)
-            .then(res => {
-                this.isLoading = false;
+        this.fusionAttributeService.getFusionAttributeDetails(this.objectType, this.fusionAttributeId).subscribe(
+            res => {
                 this.fusionAttributeValueDetails = res;
                 this.assetIdChange.emit(this.fusionAttributeValueDetails.AssetID);
                 this.ref.markForCheck();
-            });
+
+                this.isLoading = false;
+            }
+        );
     }
 
     public openItemInFusion() {

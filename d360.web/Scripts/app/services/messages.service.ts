@@ -3,6 +3,7 @@ import {Subject} from 'rxjs';
 import {SiteMessage} from '../models/site-message.model';
 import { Http } from '@angular/http';
 import { HttpErrorResponse } from '@angular/common/http';
+import { HeaderActionsService } from './header-actions.service';
 
 @Injectable()
 export class MessagesService {    
@@ -14,7 +15,7 @@ export class MessagesService {
     errorMessage$ = this.errorMessageSource.asObservable();
     infoMessage$ = this.infoMessageSource.asObservable();
 
-    constructor(private http: Http) {
+    constructor(private http: Http, private headerActionService: HeaderActionsService) {
 
     }
     // Service message commands
@@ -24,9 +25,10 @@ export class MessagesService {
 
     showInfoMessage(summary: string, detail: string) {
         this.infoMessageSource.next(new SiteMessage(summary, detail));
+        this.headerActionService.emitCountChange();
     }
 
-    saveLegacyClientError(error: Response) {
+    saveLegacyClientError(error: Response) { 
         let objError: Error
         let model: any;
 

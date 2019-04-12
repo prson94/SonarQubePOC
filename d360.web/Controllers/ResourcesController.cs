@@ -48,7 +48,7 @@ namespace d360.web.Controllers
     {
         #region DI
 
-        public ResourcesController(CommunityContext community, CompanyContext company)
+        public ResourcesController(ICommunityContext community, ICompanyContext company)
             : base(community, company)
         { }
 
@@ -920,7 +920,7 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                         //For Tooltip data for Issues, we want multivalue fields separated out in an array of each separate value
                         //for use on the workflow monitor page 
                         //We'll maintain the compound comma separated valuie in "Value" for compatability with other pages
-                        var sql = @"select 
+                        var sql = @"select ft.objectId as IssueId,
                                f.FormattedValue as [Value],
                                ft.FriendlyName as Name,
                                ft.AllowMultipleValues,
@@ -931,9 +931,11 @@ order by A.ID, FT.SortOrder", new { id, attribute });
 
                                 inner
                             join field f on (ft.id = f.fieldtypeid and f.[objecttype] = @ty and f.objectid = @obj and ft.Name != 'Description')";
+                        int issueId = 0;
 
                         List<dynamic> issueRes = Company.Query<dynamic>(sql, new { ty = objectType, obj = objectID }).ToList();
                         issueRes.ForEach((item) => {
+                            issueId = item.IssueId;
                             FieldTooltipValueModel resItem = new FieldTooltipValueModel{ Name = item.Name, Value = item.Value };
                             if(item.AllowMultipleValues)
                             {
@@ -953,6 +955,14 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                             }
                             res.Add(resItem);
                         });
+                        var fieldTypes = Company.Filter<FieldType>(i => i.Object == "IssueType" && i.ObjectID == issueId && i.IsDisplayable   && i.Name != "Description" && i.ShowIfEmpty).OrderBy(i => i.ColumnOrder).ToList();
+                        var f = fieldTypes.Where(x => !res.Any(y => y.Name == x.FriendlyName) ).ToList();
+                        f.ForEach(x =>
+                        {
+                            res.Add(new FieldTooltipValueModel { Name = x.FriendlyName, Value = " " });
+                        });
+
+                        
                     }
                     else
                     {

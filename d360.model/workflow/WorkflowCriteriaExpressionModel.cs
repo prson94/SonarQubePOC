@@ -33,7 +33,7 @@ namespace d360.model.workflow
             };
         }
 
-        public string ToPlainText(CompanyContext context)
+        public string ToPlainText(ICompanyContext context)
         {
             var fieldName = getFieldName(context);
             var operatorText = getOperatorText();
@@ -61,7 +61,7 @@ namespace d360.model.workflow
             return "?";
         }
 
-        protected string getFieldName(CompanyContext context)
+        protected string getFieldName(ICompanyContext context)
         {
             var field = context.FieldTypes.Where(x => x.ID == this.FieldTypeId).FirstOrDefault();
 

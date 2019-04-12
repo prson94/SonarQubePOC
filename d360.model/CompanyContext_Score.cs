@@ -114,17 +114,18 @@ namespace d360.model
                 #region Validation
             
                 // Resolve Asset
-                Connection.Execute(@"update T set T.IsValidAsset = IIF(S.ID is not null, 1, 0) from api.ExecutionMetric T left join Asset S on S.[uid] = T.AssetUid");
+                Connection.Execute(@"update T set T.IsValidAsset = IIF(S.ID is not null, 1, 0) from api.ExecutionMetric T left join Asset S on S.[uid] = T.AssetUid where T.ExecutionID = @ExecutionID", new { execution.ExecutionID });
 
                 // Resolve Metric
-                Connection.Execute(@"update T set T.IsValidMetric = IIF(S.[Uid] is not null, 1, 0) from api.ExecutionMetric T left join metrics.[Asset] S on S.[Uid] = T.MetricAssetUid and S.[State] = 1");
+                Connection.Execute(@"update T set T.IsValidMetric = IIF(S.[Uid] is not null, 1, 0) from api.ExecutionMetric T left join metrics.[Asset] S on S.[Uid] = T.MetricAssetUid and S.[State] = 1 where T.ExecutionID = @ExecutionID", new { execution.ExecutionID });
 
                 // Resolve Metric Group/Item Effective Date
                 Connection.Execute(@"update T set T.IsValidMetricDate = IIF(M_M.EffectiveDate is not null, 1, 0) from api.ExecutionMetric T 
 left join metrics.[Asset] A on A.[Uid] = T.MetricAssetUid and A.[State] = 1
 outer apply (
             select max(EffectiveDate) as EffectiveDate from metrics.AssetVersion where [Uid] = A.[Uid] and EffectiveDate <= T.[EffectiveDate]
-            ) M_M");
+            ) M_M
+where T.ExecutionID = @ExecutionID", new { execution.ExecutionID });
 
                 // Log errors
                 Connection.Execute(@"
@@ -134,21 +135,25 @@ outer apply (
                         when IsValidMetric = 0 then 0
                         when IsValidMetricDate = 0 then 0
                         else 1
-                      end;
+                      end 
+    where   ExecutionID = @ExecutionID;
 
     update  api.ExecutionMetric
     set     Message = coalesce(Message + '; ', '') + 'Invalid asset specified; '
-    where   IsValidAsset = 0;
+    where   ExecutionID = @ExecutionID 
+            and IsValidAsset = 0;
 
     update  api.ExecutionMetric
     set     Message = coalesce(Message + '; ', '') + 'Invalid metric specified; '
-    where   IsValidMetric = 0;
+    where   ExecutionID = @ExecutionID 
+            and IsValidMetric = 0;
 
     update  api.ExecutionMetric
     set     Message = coalesce(Message + '; ', '') + 'Invalid metric specified for the date provided; '
-    where   IsValidMetricDate = 0;
+    where   ExecutionID = @ExecutionID 
+            and IsValidMetricDate = 0;
 
-    update api.ExecutionMetric set Message = null where Success = 1;");
+    update api.ExecutionMetric set Message = null where ExecutionID = @ExecutionID and Success = 1;", new { execution.ExecutionID });
 
                 #endregion
 
@@ -294,6 +299,35 @@ when not matched by target then
         #endregion
     }
 
+    internal class MetricHierarchyBuilder
+    {
+        public void BuildMetricHierarchy(List<MetricAssetTypeHierarchyModel> results, MetricAssetTypeHierarchyModels model, MetricAssetTypeHierarchyModel p, MetricAssetTypeHierarchyModel i)
+        {
+            if (!string.IsNullOrEmpty(i.ConditionsJson))
+            {
+                i.Conditions = JsonConvert.DeserializeObject<List<MetricConditionHierarchyModel>>(i.ConditionsJson);
+            }
+
+            // Recurse.
+            foreach (var c in results.Where(o => o.ParentUid == i.Uid))
+            {
+                BuildMetricHierarchy(results, model, i, c);
+            }
+
+            if (p != null)
+            {
+                if (p.Metrics == null)
+                    p.Metrics = new List<MetricAssetTypeHierarchyModel>();
+
+                p.Metrics.Add(i);
+            }
+            else
+            {
+                model.Add(i);
+            }
+        }
+    }
+
     public static partial class ConnectionExtensions
     {
         public static MetricAssetTypeHierarchyModels GetMetricDefinitionHierarchyByAssetType(this SqlConnection cnn, Guid assetTypeUid, DateTime? effectiveDate)
@@ -360,38 +394,12 @@ order by [Level] asc";
                 cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
 
             var results = cnn.Query<MetricAssetTypeHierarchyModel>(sql, new { assetTypeUid, effectiveDate = effectiveDate.Value }).ToList();
-
             var model = new MetricAssetTypeHierarchyModels();
+            var builder = new MetricHierarchyBuilder();
 
-            foreach (var i in results)
+            foreach (var i in results.Where(i => !i.ParentUid.HasValue))
             {
-                if (!string.IsNullOrEmpty(i.ConditionsJson))
-                {
-                    i.Conditions = JsonConvert.DeserializeObject<List<MetricConditionHierarchyModel>>(i.ConditionsJson);
-                    //i.Conditions.ForEach(c =>
-                    //{
-                    //    //if (!string.IsNullOrEmpty(c.ValueJson))
-                    //    //{
-                    //        //c.Values = JsonConvert.DeserializeObject<List<string>>(c.ValueJson);
-                    //    //}
-                    //});
-                }
-
-                if (i.ParentUid.HasValue)
-                {
-                    var p = model.SingleOrDefault(o => o.Uid == i.ParentUid.Value);
-                    if (p != null)
-                    {
-                        if (p.Metrics == null)
-                            p.Metrics = new List<MetricAssetTypeHierarchyModel>();
-
-                        p.Metrics.Add(i);
-                    }
-                }
-                else
-                {
-                    model.Add(i);
-                }
+                builder.BuildMetricHierarchy(results, model, null, i);
             }
 
             return model;
@@ -409,16 +417,22 @@ from	dbo.Asset A
 		inner join AssetType T on T.ID = A.AssetTypeID and A.[Uid] = @assetUid;
 
 drop table if exists #tbl
-create table #tbl ([Uid] uniqueidentifier, Name nvarchar(250), Description nvarchar(max), ParentUid uniqueidentifier, IsGroup bit, Weight decimal(5,3), EffectiveDate date)
+create table #tbl (
+	[Uid] uniqueidentifier, ParentUid uniqueidentifier, 
+	[Name] nvarchar(250), [Description] nvarchar(max), IsGroup bit, 
+	[Weight] decimal(5,3), EffectiveDate date, 
+	[Applies] bit null, [Value] bit null, [Level] int null
+)
 
 insert into #tbl 
 	select	A.[Uid],
+			A.ParentUid,
 			A.Name,
 			A.Description,
-			A.ParentUid,
 			A.IsGroup,
 			V.Weight,
-			V.EffectiveDate
+			V.EffectiveDate,
+			NULL, NULL, NULL
 	from	metrics.AssetVersion V
 			inner join (
 					select		IA.[Uid],
@@ -434,25 +448,22 @@ insert into #tbl
 
 with h as (
 	select	*,
-			1 as [Level]
+			1 as Lvl
 	from	#tbl
 	where	ParentUid is null
 	union all
 	select	A.*,
-			h.[Level]+1 as [Level]
+			h.Lvl+1 as Lvl
 	from	#tbl A
 			inner join h on h.[Uid] = A.ParentUid
 )
 
-select	h.[Uid],
-		h.ParentUid,
-		h.[Level],
-		h.Name,
-		h.Description,
-	    h.IsGroup,
-		coalesce(M.AdjustedWeight, h.Weight) as Weight,
-		coalesce(M.[Value], 0) as Value
-from	h
+update	T
+set		T.[Level] = S.Lvl,
+		T.[Weight] = coalesce(M.AdjustedWeight, T.Weight),
+		T.Value = coalesce(M.[Value], 0)
+from	#tbl T
+		inner join h S on S.Uid = T.Uid
 		outer apply (
 			select	I.EffectiveDate,
 					I.[Value],
@@ -462,13 +473,34 @@ from	h
 						select	max(EffectiveDate) as EffectiveDate
 						from	metrics.ScoreItem I
 						where	AssetUid = @assetUid
-								and MetricAssetUid = h.[Uid]
+								and MetricAssetUid = T.[Uid]
 								and EffectiveDate <= @effectiveDate
 					) MI on MI.EffectiveDate = I.EffectiveDate
 			where	AssetUid = @assetUid
-					and MetricAssetUid = h.[Uid]
-		) M 
-where	metrics.AssetMeetsConditions(h.[Uid], h.EffectiveDate, @assetUid) = 1";
+					and MetricAssetUid = T.[Uid]
+		) M;
+
+with C as (
+	select	Uid,
+			ParentUid,
+			metrics.AssetMeetsConditions([Uid], EffectiveDate, @assetUid) as Applies
+	from	#tbl
+	where	IsGroup = 0
+	union all
+	select	P.Uid,
+			P.ParentUid,
+			C.Applies
+	from	#tbl P
+			inner join C on C.ParentUid = P.Uid and C.Applies = 1
+)
+
+update	T
+set		T.Applies = C.Applies
+from	#tbl T
+		inner join C on C.Uid = T.Uid
+
+select	Uid, ParentUid, [Level], Name, Description, IsGroup, Weight, Value
+from	#tbl where Applies = 1";
 
             if (cnn.State != System.Data.ConnectionState.Open)
                 cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
@@ -479,7 +511,7 @@ where	metrics.AssetMeetsConditions(h.[Uid], h.EffectiveDate, @assetUid) = 1";
 
             foreach (var i in results)
             {
-                    model.Add(i);
+                model.Add(i);
             }
 
             return model;

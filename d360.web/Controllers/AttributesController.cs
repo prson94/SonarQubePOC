@@ -16,7 +16,7 @@ namespace d360.web.Controllers
     {
         #region DI
 
-        public AttributesController(CommunityContext community, CompanyContext company)
+        public AttributesController(ICommunityContext community, ICompanyContext company)
             : base(community, company)
         { }
 

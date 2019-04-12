@@ -1,16 +1,17 @@
 ﻿import { SelectItem } from '../models/form.model';
 import { JsonResult } from './jsonresult.model';
+import {Observable} from "rxjs";
 
 export interface IGroupService {
-    getGroupList(): Promise<GroupSearchResultModel[]>; 
-    getGroupResourceList(id: number): Promise<GroupResourceInfo[]>; 
-    getGroup(id: number): Promise<GroupEditorModel>; 
-    putGroup(group: Group): Promise<JsonResult>; 
-    postGroup(group: Group): Promise<JsonResult>;
-    deleteGroup(id: number): Promise<JsonResult>;
-    postResourceGroup(resourceGroup: ResourceGroup[]): Promise<JsonResult>;
-    deleteResourceGroup(groupID: number, resourceID: number): Promise<JsonResult>;
-    getGroupUserList(id: number, pagenum: number, pagesize: number, sortDataField: string, sortOrder: string): Promise<JsonResult>;
+    getGroupList(): Observable<GroupSearchResultModel[]>;
+    getGroupResourceList(id: number): Observable<GroupResourceInfo[]>;
+    getGroup(id: number): Observable<GroupEditorModel>;
+    putGroup(group: Group): Observable<JsonResult>;
+    postGroup(group: Group): Observable<JsonResult>;
+    deleteGroup(id: number): Observable<JsonResult>;
+    postResourceGroup(resourceGroup: ResourceGroup[]): Observable<JsonResult>;
+    deleteResourceGroup(groupID: number, resourceID: number): Observable<JsonResult>;
+    getGroupUserList(id: number, pagenum: number, pagesize: number, sortDataField: string, sortOrder: string): Observable<JsonResult>;
 }
 
 

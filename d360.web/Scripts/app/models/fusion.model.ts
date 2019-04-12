@@ -396,7 +396,7 @@ export class RuleStepPromotionHistoryModel {
 export class AssetDataProfile {
     DataProfileID: number;
     AssetID: number;
-    RowCounts: number;	
+    RowCount: number;	
     Uniqueness: number;	
     UniqueCount: number;
     Completeness: number;

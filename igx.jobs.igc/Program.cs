@@ -243,7 +243,7 @@ where	[AllowChangeDetection] = 0").ToList();
         {
             CoreFunction.AppInsightsInstrumentationKey(CoreFunction.GetConfigValueByKey("IGC_APPINSIGHTS_INSTRUMENTATIONKEY"));
 #if DEBUG
-            var queueModel = new IntegrationQueueModel { CompanyID = 120, ExecutionID = 75635, IntegrationSettingID = 1, SynchedAssetTypeID = 3, To = QueueAction.Integration, UrlPrefix = "statestreet.preview" };
+            var queueModel = new IntegrationQueueModel { CompanyID = 122, ExecutionID = 77115, IntegrationSettingID = 1, SynchedAssetTypeID = 18, To = QueueAction.Integration, UrlPrefix = "statestreet.uat" };
 #else
             var queueModel = JsonConvert.DeserializeObject<IntegrationQueueModel>(myQueueItem);
 #endif
@@ -399,6 +399,10 @@ where	[AllowChangeDetection] = 0").ToList();
                     string error = $"Status={e.StatusCode}";
                     if (!string.IsNullOrEmpty(e.ErrorMessage))
                         error += $", Error={e.ErrorMessage}; ";
+                    if (ExecutionAssetType.ErrorMessage == null)
+                    {
+                        ExecutionAssetType.ErrorMessage = "";
+                    }
                     if (!ExecutionAssetType.ErrorMessage.Contains(error))
                     {
                         ExecutionAssetType.ErrorMessage += error;

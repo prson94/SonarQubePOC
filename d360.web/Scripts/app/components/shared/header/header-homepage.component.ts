@@ -84,12 +84,13 @@ export class HeaderHomePageComponent implements OnInit, OnDestroy, OnChanges {
         f.IsHomePage = !this.isHomePageItem;
         this.isHomePageItem = !this.isHomePageItem;    
         this.isFavoriteItem = !this.isFavoriteItem;
-        this.favoritesService.toggleFavorite(f)
-            .then(fav => {
+        this.favoritesService.toggleFavorite(f).subscribe(
+            fav => {
                 this.headerActionsService.emitFavoritesChange();
                 this.isLoading = false;
                 this.ref.markForCheck();
-            });
+            }
+        );
     }
 
     checkIsFavorite() {

@@ -59,12 +59,14 @@ export class CompanyImage {
         var fileReader = new FileReader();
         if (this.file) {
             fileReader.onloadend = (e: any) => {
+                var contents = e.target.result,
+                    error = e.target.error;
                 this.isLoading = false;
-                this.dataUrl = fileReader.result;
+                this.dataUrl = e.target.result;
             }
             fileReader.readAsDataURL(this.file);
         } else {
-            this.dataUrl = "";
+            this.dataUrl = null;
             this.isLoading = false;
         }
     }

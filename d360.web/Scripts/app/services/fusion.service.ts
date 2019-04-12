@@ -1043,4 +1043,11 @@ export class FusionService extends BaseObservableService {
                 catchError(err => this.handleError(err))
             );
     }
+
+    postRunMarkitLineage(id: number) {
+        return this.http.post(`form/ScheduleMarkitLineage`, { id: id })
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
 }

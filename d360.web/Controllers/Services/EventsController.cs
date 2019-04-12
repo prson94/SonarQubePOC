@@ -27,7 +27,7 @@ namespace d360.web.Controllers.Services
 
         #region DI
 
-        public EventsController(CommunityContext community, CompanyContext company)
+        public EventsController(ICommunityContext community, ICompanyContext company)
             : base(community, company)
         {
             Telemetry = new TelemetryClient();

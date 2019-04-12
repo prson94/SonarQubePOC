@@ -23,7 +23,7 @@ namespace d360.web.Controllers
         IQueueSource Queue;
         IStorageProvider Storage;
 
-        public FusionController(CommunityContext community, CompanyContext company, IStorageProvider storage, IQueueSource queue)
+        public FusionController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IQueueSource queue)
             : base(community, company)
         {
             Queue = queue;
@@ -425,6 +425,13 @@ where   A.FusionID = @f
                 profileJoins = @"inner join Asset AA on AA.ObjectID=A.ID and AA.Object='FusionAttribute'
                                  inner join  AssetDataProfile ADP on AA.ID = ADP.AssetID";
             }
+            else
+            {
+                profileColumns = @" ,ADP.ID as DataProfileID ";
+                profileJoins = @" left join Asset AA on AA.ObjectID=A.ID and AA.Object='FusionAttribute'
+                                 left join  AssetDataProfile ADP on AA.ID = ADP.AssetID ";
+            }
+
             #region Count SQL
 
             var countSql = $@"
@@ -722,6 +729,32 @@ where   A.FusionQueryAttributeTypeID = @t
             var profiles = Company.Query<dynamic>(@"select P.* from Asset A
                     inner join AssetProfile P on P.AssetID = A.ID
                     where A.[Object] = @type and A.ObjectID = @id", new { type = type.ToString(), id });
+
+            return Json(profiles, JsonRequestBehavior.AllowGet);
+        }
+
+        [Route("dataprofile/{id:int}")]
+        public JsonResult GetAssetDataProfile( int id)
+        {
+            var profiles = Company.Query<AssetDataProfile>(@"	Select
+	                                                ID as DataProfileID,
+	                                                [RowCount] as [RowCount],
+	                                                Uniqueness,
+	                                                UniqueCount,
+	                                                Completeness,
+	                                                NullCount,
+	                                                BlankCount,
+	                                                DataType,
+	                                                MinimumValue,
+	                                                MaximumValue,
+	                                                Precision,
+	                                                Scale,
+	                                                Average,
+	                                                Median,
+	                                                StandardDeviation,
+	                                                Top10Values,
+	                                                ProcessIdentifier
+	                                                From AssetDataProfile where Id= @Id", new { id }).SingleOrDefault();
 
             return Json(profiles, JsonRequestBehavior.AllowGet);
         }

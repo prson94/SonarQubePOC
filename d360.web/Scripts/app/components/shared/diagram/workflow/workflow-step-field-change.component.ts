@@ -51,6 +51,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
     FormMode = FormMode;
     private formMode = FormMode.Default;
     private valueType = 'manual';
+    private allowMultiple = false;
 
 
     constructor(private workflowService: WorkflowService, private workflowFieldsService: WorkflowFieldsService) {
@@ -113,6 +114,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
 
     select(e: any, clear: boolean = true) {
         this.field = null;
+        this.allowMultiple = false;
         this.selectedField['@FieldId'] = e;
         if (clear) {
             delete this.selectedField['@FormStepId'];
@@ -134,6 +136,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
                         this.lookups = this.lookups.filter(l => l.value != '');
                     });
             }
+            this.allowMultiple = this.field.AllowMultipleValues;
         }
 
         this.fieldUpdateChange.emit(this.fieldUpdate);
@@ -369,6 +372,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
                 delete this.selectedField['@ClearValue'];
                 delete this.selectedField['@Value'];
                 delete this.selectedField['@UseCurrentDate'];
+                delete this.selectedField['@AppendValue'];
                 this.selectedField['@UseFormValue'] = true;
                 break;
             case 'timestamp':

@@ -1830,31 +1830,6 @@
               Looks up a localized string similar to Please provide a value..
             </summary>
         </member>
-        <member name="T:d360.web.Controllers.Services.AssetsController">
-            <summary>
-            This service houses all endpoints handling glossary-related data such as artifacts and models.
-            </summary>
-        </member>
-        <member name="M:d360.web.Controllers.Services.AssetsController.PostBulkAssetsAsync(d360.core.SystemObjects,System.Int32)">
-            <summary>
-            Takes a given set of assets and bulk inserts/updates them.
-            </summary>
-            <param name="ot">The Object Type of the asset type.</param>
-            <param name="otid">The Object Type ID of the asset type.</param>
-            <returns>An HTTP status code and message.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.AssetsController.PostBulkAssetRelationshipsAsync">
-            <summary>
-            Takes a given set of relationships and bulk inserts/updates them.
-            </summary>
-            <returns>An HTTP status code and message.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.AssetsController.PostBulkAssetOwnersAsync">
-            <summary>
-            Takes a given set of relationships and bulk inserts/updates them.
-            </summary>
-            <returns>An HTTP status code and message.</returns>
-        </member>
         <member name="T:d360.web.Controllers.Services.RangeValueFilterModel">
             <summary>
             Should support the following filter functions:
@@ -1934,71 +1909,6 @@
             <param name="endpoint">The URI segment that defines the service endpoint you are connecting to.</param>
             <param name="version">The URI segment that defines the service endpoint version you are connecting to.</param>
             <returns></returns>
-        </member>
-        <member name="T:d360.web.Controllers.Services.ReferenceController">
-            <summary>
-            This services houses all endpoints handling reference lists and items.
-            </summary>
-        </member>
-        <member name="M:d360.web.Controllers.Services.ReferenceController.AddItemToList(System.Int32,System.Collections.Generic.Dictionary{System.String,System.String})">
-            <summary>
-            Adds an item to a specified reference list.
-            </summary>
-            <param name="typeID">The ID of the reference list.</param>
-            <param name="model">The item to add to the specified list, in the form of name/value pairs.</param>
-            <returns>Http Status Code: 400:Bad request, 401:Unauthorized, 201:Created</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.ReferenceController.AddReferenceList(d360.core.entities.ReferenceItemType)">
-            <summary>
-            Adds a reference list.
-            </summary>
-            <param name="list">The list to add, as name/value properties.</param>
-            <returns>Http Status Code: 400:Bad request, 401:Unauthorized, 201:Created</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.ReferenceController.DeleteItemFromList(System.Int32,System.Int32)">
-            <summary>
-            Removes an item from a specified reference list, based on its ID.
-            </summary>
-            <param name="typeID">The ID of the reference list.</param>
-            <param name="id">The ID of the item to remove.</param>
-            <returns>Http Status Code: 400:Bad request, 401:Unauthorized, 200:OK</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.ReferenceController.DeleteReferenceList(System.Int32)">
-            <summary>
-            Removes a reference list, based on its ID.
-            </summary>
-            <param name="id">The ID of the list to remove.</param>
-            <returns>Http Status Code: 400:Bad request, 401:Unauthorized, 200:OK</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.ReferenceController.PutItemInList(System.Int32,System.Int32,System.Collections.Generic.Dictionary{System.String,System.String})">
-            <summary>
-            Updates an item in the specified list, based on its ID.
-            </summary>
-            <param name="typeID">The ID of the reference list.</param>
-            <param name="id">The ID of the item to update.</param>
-            <param name="model">The item to update, in name/value pair format.</param>
-            <returns>Http Status Code: 400:Bad request, 401:Unauthorized, 200:OK</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.ReferenceController.PutReferenceList(System.Int32,d360.core.entities.ReferenceItemType)">
-            <summary>
-            Updates a list, based on its ID.
-            </summary>
-            <param name="id">The ID of the reference list.</param>
-            <param name="list">The list to update</param>
-            <returns></returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.ReferenceController.GetItemsByList(System.Int32)">
-            <summary>
-            Gets an OData-queryable list of items within a specified reference list.
-            </summary>
-            <param name="typeID">The ID of the reference list.</param>
-            <returns>A list of items.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.ReferenceController.GetReferenceLists">
-            <summary>
-            Gets an OData-queryable list of lists.
-            </summary>
-            <returns>A list of reference lists.</returns>
         </member>
         <member name="T:d360.web.Controllers.Services.ReportsController">
             <summary>
@@ -2476,7 +2386,7 @@
         </member>
         <member name="M:d360.web.Controllers.V2.CrossReferencesController.Get">
             <summary>
-            Returns all asset cross references.
+            Returns all asset cross references.  Optional parameters are also supported, in the case where the optional parameters are specified only records matching that criteria are returned.
             </summary>
             <returns>An array of cross references</returns>
         </member>
@@ -2511,14 +2421,14 @@
         </member>
         <member name="M:d360.web.Controllers.V2.CrossReferencesController.Post(d360.core.entities.AssetCrossReference)">
             <summary>
-            Creates a new asset cross reference.  If an asset cross reference exists already an error is returned.
+            Creates a new asset cross reference.  If an asset cross reference exists already an error is returned.  ExternalID and DataSource fields have a limit of 250 ASCII characters each.  Type has a limit of 50 ASCII characters.
             </summary>
             <param name="model">The asset cross references model.</param>
             <returns>The model of the created asset cross reference. If item already exists http confict is returned.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.CrossReferencesController.PostBulk(System.Collections.Generic.List{d360.core.entities.AssetCrossReference})">
             <summary>
-            Creates new asset cross references.  If an asset cross reference exists already an error is returned.
+            Creates new asset cross references.  If an asset cross reference exists already an error is returned.  ExternalID and DataSource fields have a limit of 250 ASCII characters each.  Type has a limit of 50 ASCII characters.
             </summary>
             <param name="models">List of asset cross references.</param>
             <returns>List of created asset cross references. If any item already exists an HTTP Confict is returned.</returns>
@@ -2531,6 +2441,14 @@
             <param name="dataSource">Asset cross reference datasource</param>
             <param name="type">Asset cross reference type</param>
             <param name="externalId">Asset cross reference externalId</param>
+            <param name="model">Asset cross reference model</param>
+            <returns>Http Status code OK if asset cross reference was updated, Http Status code of Not Found if item could not be updated.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.CrossReferencesController.Put(System.Guid,d360.core.entities.AssetCrossReference)">
+            <summary>
+            Updates the specified asset cross reference.
+            </summary>
+            <param name="uid">The unique identifier of the asset cross reference.</param>        
             <param name="model">Asset cross reference model</param>
             <returns>Http Status code OK if asset cross reference was updated, Http Status code of Not Found if item could not be updated.</returns>
         </member>
@@ -2805,6 +2723,20 @@
             This service houses all endpoints handling glossary-related data such as artifacts and models.
             </summary>
         </member>
+        <member name="M:d360.web.Controllers.V2.RelationshipsController.GetPredicatesAsync(System.Nullable{System.Guid},System.Nullable{d360.core.enums.PredicateType},System.String,System.String)">
+            <summary>
+            GET a list of predicates.
+            </summary>
+            <remarks>
+            In addition to the below query parameters a field name for the relationship type can be specified to filter by exact match. For example MyCustomField=someExactValue. 
+            This must be used in conjunction with the RelationshipTypeUid query parameter.
+            </remarks>
+            <param name="PredicateUid">Filter by an predicate's unique identifier.</param>
+            <param name="Type">Filter by a subject asset's unique identifier.</param>
+            <param name="Name">Filter by an object asset's unique identifier.</param>
+            <param name="Inverse">Filter on the state, or status, of a relationship.</param>
+            <returns></returns>
+        </member>
         <member name="M:d360.web.Controllers.V2.RelationshipsController.GetRelationshipsAsync(System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{d360.core.enums.State},System.Nullable{System.Int32},System.Nullable{System.Int32})">
             <summary>
             GET a list of relationships.
@@ -3040,7 +2972,7 @@
         </member>
         <member name="M:d360.web.Controllers.V2.ResponsibilitiesController.GetResponsibilities">
             <summary>
-            Retrieves a list of assets with ownership based on the provided parameters.  Assets and ownership results reflect the users permissions to see the assets and the ownership details for them.  If a user doesnt have access to see an asset then they will not be able to see the asset or its ownership.  If a user does have access to see an asset but doesn't have access to see the assets ownership, the asset will be returned without any ownership details.  No filters applied will return all items which have at least one owner.  Only assets with ownership are returned by this API.
+            Retrieves a list of assets with ownership based on the provided parameters.  Assets and ownership results reflect the users permissions to see the assets and the ownership details for them.  If a user doesnt have access to see an asset then they will not be able to see the asset or its ownership.  If a user does have access to see an asset but doesn't have access to see the assets ownership, the asset will be returned without any ownership details.  No filters applied will return all items which have at least one owner.  Only assets with ownership are returned by this API.  By default 5 assets are returned at a time the max page size is 250 assets.  Please keep in mind that assets with lots of owners will impact response time / size.
             </summary>   
             <permission cref="!:">Admin or Ownership read required</permission>
             <returns>Returns a list of assets and there corresponding ownership information.</returns>
@@ -3068,10 +3000,13 @@
             Used in the Filter By Relationship tile on artifact list pages.
             </summary>
         </member>
-        <member name="T:d360.web.Controllers.BaseController.RelationshipDirectionFieldInfo">
+        <member name="M:d360.web.Controllers.D3SApiController.GetFusionRulesArtifactParents(System.Int32)">
             <summary>
-            Only used in the method below.
-            </summary>
+            Used only in fusion rules to get the parents of an artifact that has a parent type.  
+            once fusion rules are retired this can go
+            </summary>        
+            <param name="id"></param>        
+            <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.FormController.Artifact_AddFields(System.Int32,System.Int32)">
             <param name="at">ArtifactTypeID</param>

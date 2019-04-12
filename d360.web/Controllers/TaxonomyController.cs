@@ -14,7 +14,7 @@ namespace d360.web.Controllers
     {
         #region DI
 
-        public TaxonomyController(CommunityContext community, CompanyContext company)
+        public TaxonomyController(ICommunityContext community, ICompanyContext company)
             : base(community, company)
         {
         }

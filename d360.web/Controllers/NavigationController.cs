@@ -15,6 +15,7 @@ using d360.extensions;
 using d360.web.Filters;
 using Resources;
 using System.Net;
+using System.IO;
 
 namespace d360.web.Controllers
 {
@@ -22,10 +23,11 @@ namespace d360.web.Controllers
     public class NavigationController : BaseController
     {
         #region DI
-
-        public NavigationController(CommunityContext community, CompanyContext company)
+        IStorageProvider Storage;
+        public NavigationController(ICommunityContext community, ICompanyContext company, IStorageProvider storage)
             : base(community, company)
         {
+            Storage = storage;
         }
 
         #endregion
@@ -185,7 +187,11 @@ namespace d360.web.Controllers
                 var folder = Company.GetById<SiteNav>(id);
                 if (folder == null)
                     throw new Exception($"Folder id ${id} not found");
-
+                string originalImage = folder.ImageIconUrl;
+                if (!string.IsNullOrEmpty(originalImage))
+                {
+                    Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, originalImage);
+                }
                 //clear out permissions
                 folder.Permissions = new List<SiteNavPermission>();
                 SetSiteNavPermissions(folder);
@@ -222,6 +228,27 @@ namespace d360.web.Controllers
             {
                 if (string.IsNullOrWhiteSpace(model.Folder.Name))
                     throw new Exception("Folder name cannot be empty.");
+
+                if (!string.IsNullOrEmpty(model.Folder.IconPayload))
+                {
+                    var imageMatch = MimeTypeExtensionsMap.RegEx.Match(model.Folder.IconPayload);
+
+                    var imageMime = imageMatch.Groups["mime"].Value;
+                    var imageData = imageMatch.Groups["data"].Value;
+                    var imageExtension = MimeTypeExtensionsMap.GetExtension(imageMime);
+                    var imageByteArray = Convert.FromBase64String(imageData);
+                    var imageGuid = Guid.NewGuid();
+
+                    using (var imageStream = new MemoryStream(imageByteArray))
+                    {
+                        var imageFileName = string.Format("{0}.menuicon.{1}{2}", Company.CurrentCompanyID, imageGuid, imageExtension);
+                        Storage.CreateFile(constants.COMPANY_RESOURCES_FOLDER, imageFileName, imageStream);
+
+                        model.Folder.ImageIconUrl = $"{imageFileName}";
+
+                    }
+                }
+
                 model.Folder.SortOrder = 9999;
                 var folder = Company.SiteNav.Add(model.Folder);
 
@@ -338,9 +365,45 @@ namespace d360.web.Controllers
                 var siteNav = Company.GetById<SiteNav>(folder.ID);
                 if (siteNav == null)
                     throw new Exception($"Folder Id ${folder.ID} not found.");
+                string originalImage = siteNav.ImageIconUrl;
+
+                if (!string.IsNullOrEmpty(originalImage))
+                {
+                    try
+                    {
+                        Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, originalImage);
+                    }catch(Exception e)
+                    {
+
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(folder.IconPayload))
+                {
+                    var imageMatch = MimeTypeExtensionsMap.RegEx.Match(folder.IconPayload);
+
+                    var imageMime = imageMatch.Groups["mime"].Value;
+                    var imageData = imageMatch.Groups["data"].Value;
+                    var imageExtension = MimeTypeExtensionsMap.GetExtension(imageMime);
+                    var imageByteArray = Convert.FromBase64String(imageData);
+                    var imageGuid = Guid.NewGuid();
+
+                    using (var imageStream = new MemoryStream(imageByteArray))
+                    {
+                        var imageFileName = string.Format("{0}.menuicon.{1}{2}", Company.CurrentCompanyID, imageGuid, imageExtension);
+                        Storage.CreateFile(constants.COMPANY_RESOURCES_FOLDER, imageFileName, imageStream);
+
+                        folder.ImageIconUrl = $"{imageFileName}";
+
+                    }
+                }
+
+
+
                 siteNav.Name = folder.Name;
                 siteNav.Icon = folder.Icon;
-                siteNav.Title = folder.Title ?? folder.Name;
+                siteNav.Title = folder.Name;
+                siteNav.ImageIconUrl = folder.ImageIconUrl;
                 Company.SaveChanges();
                 SetSiteNavPermissions(folder);
                 message = "Folder updated successfully.";
@@ -775,6 +838,45 @@ order by	f.SortOrder";
 
         }
 
+        [HttpGet, Route("GetItemCount/{url}")]
+        public JsonNetResult GetItemCount(string url)
+        {
+            int count = 0;
+            string type = ""; 
+            int id = 0;
+            var urlElements = url.Split('-');
+            type = urlElements[0];
+            if (type.Equals("Rule"))
+            {
+                id = int.TryParse(urlElements[2], out id) ? id : 0;
+                type = urlElements[1];
+            }
+            else
+                id = int.TryParse(urlElements[1], out id) ? id : 0;
+            type = FormatType(type);
+
+            count = Company.Query<int>(@"
+                        select	count(*)
+                        from    [AssetDetail] AD
+			            where  AD.Type = @type 
+                        and  AD.TypeID = @id", new { type, id }).FirstOrDefault();
+
+            return new JsonNetResult
+            {
+                Data = count,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+        public static string FormatType(string s)
+        {
+            // Check for empty string.  
+            if (string.IsNullOrEmpty(s))
+            {
+                return string.Empty;
+            }
+            // Return char and concat substring.  
+            return string.Format("{0}{1}{2}",char.ToUpper(s[0]), s.Substring(1), "Type");
+        }
         #endregion
 
         List<NavigationItem> parseXmlNavigationDocument(XElement xml, List<CompanyFeature> features)

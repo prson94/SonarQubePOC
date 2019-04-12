@@ -20,7 +20,7 @@ namespace d360.web.Controllers
     {
         #region DI
 
-        public RelationsController(CommunityContext community, CompanyContext company)
+        public RelationsController(ICommunityContext community, ICompanyContext company)
             : base(community, company)
         { }
 
