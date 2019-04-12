@@ -2723,6 +2723,20 @@
             This service houses all endpoints handling glossary-related data such as artifacts and models.
             </summary>
         </member>
+        <member name="M:d360.web.Controllers.V2.RelationshipsController.GetPredicatesAsync(System.Nullable{System.Guid},System.Nullable{d360.core.enums.PredicateType},System.String,System.String)">
+            <summary>
+            GET a list of predicates.
+            </summary>
+            <remarks>
+            In addition to the below query parameters a field name for the relationship type can be specified to filter by exact match. For example MyCustomField=someExactValue. 
+            This must be used in conjunction with the RelationshipTypeUid query parameter.
+            </remarks>
+            <param name="PredicateUid">Filter by an predicate's unique identifier.</param>
+            <param name="Type">Filter by a subject asset's unique identifier.</param>
+            <param name="Name">Filter by an object asset's unique identifier.</param>
+            <param name="Inverse">Filter on the state, or status, of a relationship.</param>
+            <returns></returns>
+        </member>
         <member name="M:d360.web.Controllers.V2.RelationshipsController.GetRelationshipsAsync(System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{d360.core.enums.State},System.Nullable{System.Int32},System.Nullable{System.Int32})">
             <summary>
             GET a list of relationships.
@@ -2985,6 +2999,14 @@
             Gets a list of available relationships types based on the source type specified in parameters. 
             Used in the Filter By Relationship tile on artifact list pages.
             </summary>
+        </member>
+        <member name="M:d360.web.Controllers.D3SApiController.GetFusionRulesArtifactParents(System.Int32)">
+            <summary>
+            Used only in fusion rules to get the parents of an artifact that has a parent type.  
+            once fusion rules are retired this can go
+            </summary>        
+            <param name="id"></param>        
+            <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.FormController.Artifact_AddFields(System.Int32,System.Int32)">
             <param name="at">ArtifactTypeID</param>

@@ -26,7 +26,7 @@ import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
 import { SharedFormMessageModule } from '../form-message.part'
 import { SimpleAccordionModule } from '../simple-accordion.part';
 
-import { FieldTypeForm } from './field-type.form';
+import { FieldTypeForm } from './field-type-form/field-type.form';
 import { FieldDefinitionComponent } from './field-definition.component';
 
 @NgModule({

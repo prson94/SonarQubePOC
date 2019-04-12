@@ -27,14 +27,14 @@ namespace d360.web.Controllers.V2
     [
         ApiVersion("2.0"),
         RoutePrefix("api/v{version:apiVersion}/relationships"), Authorize]
-    public class RelationshipsController : BaseApiController
+    public class RelationshipsController : BaseV2ApiController
     {
         #region DI
 
         IQueueSource QueueSource;
         IStorageProvider Storage;
 
-        public RelationshipsController(CommunityContext community, CompanyContext company, IQueueSource queueSource, IStorageProvider storage)
+        public RelationshipsController(ICommunityContext community, ICompanyContext company, IQueueSource queueSource, IStorageProvider storage)
             : base(community, company)
         {
             QueueSource = queueSource;
@@ -43,28 +43,68 @@ namespace d360.web.Controllers.V2
 
         #endregion
 
-        #region utils
-
-        private async Task<T> readRequestJsonContent<T>(HttpRequestMessage request)
+        /// <summary>
+        /// GET a list of predicates.
+        /// </summary>
+        /// <param name="PredicateUid">Filter by an predicate's unique identifier.</param>
+        /// <param name="Type">Filter by a predicate's functional type.</param>
+        /// <param name="Name">Filter by an predicate's Name.</param>
+        /// <param name="Inverse">Filter by an predicate's Inverse.</param>
+        /// <returns>A list of predicates contained within your Govern environment.</returns>
+        [
+            HttpGet,
+            MapToApiVersion("2.0"),
+            Route("predicates"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of predicates.", typeof(PredicatesApiViewModel)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+       ]
+        public async Task<HttpResponseMessage> GetPredicatesAsync(Guid? PredicateUid = null, core.enums.PredicateType? Type = null, string Name = null, string Inverse = null)
         {
-            string json = "";
+            var prefix = "Relationships.GetPredicatesAsync => ";
+            var errorMessage = "";
 
-            if (request.Content.IsMimeMultipartContent())
+            try
             {
-                var streamProvider = new MultipartMemoryStreamProvider();
-                await request.Content.ReadAsMultipartAsync(streamProvider);
+                var predicates = await Company.QueryAsync<PredicateApiViewModel>("select Uid, Name, Inverse, IsSystem, [Type] from [Predicate] order by [Type], Name");
 
-                json = await streamProvider.Contents.Single().ReadAsStringAsync();
+                #region Where clause action
+
+                if (PredicateUid.HasValue)
+                {
+                    predicates = predicates.Where(i => i.Uid == PredicateUid.Value);
+                }
+
+                if (Type.HasValue)
+                {
+                    predicates = predicates.Where(i => i.Type == Type.Value);
+                }
+
+                if (!string.IsNullOrEmpty(Name) && !string.IsNullOrWhiteSpace(Name))
+                {
+                    Name = Name.Trim().ToLower();
+                    predicates = predicates.Where(i => i.Name.ToLower() == Name);
+                }
+
+                if (!string.IsNullOrEmpty(Inverse) && !string.IsNullOrWhiteSpace(Inverse))
+                {
+                    Inverse = Inverse.Trim().ToLower();
+                    predicates = predicates.Where(i => i.Inverse.ToLower() == Inverse);
+                }
+
+                #endregion
+
+                return Request.CreateResponse(HttpStatusCode.OK,  predicates);
             }
-            else
+            catch (Exception ex)
             {
-                json = await request.Content.ReadAsStringAsync();
-            }
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
 
-            return JsonConvert.DeserializeObject<T>(json);
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
         }
 
-        #endregion
 
         /// <summary>
         /// GET a list of relationships.
@@ -260,7 +300,7 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Relationship Type with Uid {intersectTypeUid} could not be found.")));
 
                 if (relationships == null)
-                    relationships = readRequestJsonContent<RelationshipInserts>(Request).Result;
+                    relationships = readRequestJsonContent<RelationshipInserts>(Request,true).Result;
 
                 if (relationships == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
@@ -333,7 +373,7 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Relationship Type with Uid {intersectTypeUid} could not be found.")));
 
                 if (relationships == null)
-                    relationships = readRequestJsonContent<RelationshipInserts>(Request).Result;
+                    relationships = readRequestJsonContent<RelationshipInserts>(Request,true).Result;
 
                 if (relationships == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));

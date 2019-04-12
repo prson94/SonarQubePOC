@@ -1,10 +1,19 @@
-﻿import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges, SimpleChange, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { Router, NavigationEnd } from '@angular/router';
-import { FavoritesService } from '../../../services/favorites.service';
-import { Favorite } from '../../../models/favorite.model';
-import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { HeaderActionsService } from '../../../services/header-actions.service';
-import { SiteUrlHelpers } from '../../../static/site-url-helpers';
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    Input,
+    OnChanges,
+    OnDestroy,
+    OnInit,
+    SimpleChange
+} from '@angular/core';
+import {Router} from '@angular/router';
+import {FavoritesService} from '../../../services/favorites.service';
+import {Favorite} from '../../../models/favorite.model';
+import {HeaderBreadcrumbService} from '../../../services/header-breadcrumb.service';
+import {HeaderActionsService} from '../../../services/header-actions.service';
+import {SiteUrlHelpers} from '../../../static/site-url-helpers';
 
 
 @Component({
@@ -85,12 +94,13 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
         f.Name = this.name;
         f.Route = this.uri ? this.uri : 'home';//null route is home        
         this.isFavoriteItem = !this.isFavoriteItem;
-        this.favoritesService.toggleFavorite(f)
-            .then(fav => {
+        this.favoritesService.toggleFavorite(f).subscribe(
+            fav => {
                 this.headerActionsService.emitFavoritesChange();
                 this.isLoading = false;
                 this.ref.markForCheck();
-            });
+            }
+        );
     }
 
     checkIsFavorite() {

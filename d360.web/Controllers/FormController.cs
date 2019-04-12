@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Data.Entity;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web;
@@ -37,7 +38,7 @@ namespace d360.web.Controllers
 
         IStorageProvider Storage;
 
-        public FormController(CommunityContext community, CompanyContext company, ISecurityContextProvider secProvider, IStorageProvider storage)
+        public FormController(ICommunityContext community, ICompanyContext company, ISecurityContextProvider secProvider, IStorageProvider storage)
             : base(community, company)
         {            
             Storage = storage;
@@ -1144,20 +1145,18 @@ namespace d360.web.Controllers
                             model.AssetType.Name = f.Name;
                             model.ScanEnabled = f.ScanEnabled;
                             break;
-                        case AssetTypeClass.Glossary:
-                            var a = Company.GetById<ArtifactType>(model.AssetType.ObjectID);
-                            model.CanOwnFusion = a.CanOwnFusion;
+                        case AssetTypeClass.Glossary:                            
+                            model.CanOwnFusion = assetType.CanOwnFusion;
                             model.AutoDisplayDescription = assetType.AutoDisplayDescription;
-                            model.AssetType.Name = a.Name;
-                            model.AssetType.Description = a.Description;
-                            model.AssetType.DisplayFormat = a.DisplayFormat;
+                            model.AssetType.Name = assetType.Name;
+                            model.AssetType.Description = assetType.Description;
+                            model.AssetType.DisplayFormat = assetType.DisplayFormat;
                             break;
-                        case AssetTypeClass.Model:
-                            var t = Company.GetById<TaxonomyType>(model.AssetType.ObjectID);
-                            model.AssetType.HierarchyMaximumDepth = t.MaximumDepth ?? 1;
-                            model.AssetType.Name = t.Name;
-                            model.AssetType.Description = t.Description;
-                            model.AssetType.DisplayFormat = t.DisplayFormat;
+                        case AssetTypeClass.Model:                            
+                            model.AssetType.HierarchyMaximumDepth = assetType.HierarchyMaximumDepth;
+                            model.AssetType.Name = assetType.Name;
+                            model.AssetType.Description = assetType.Description;
+                            model.AssetType.DisplayFormat = assetType.DisplayFormat;
                             break;
                         case AssetTypeClass.Organization:
                             var o = Company.GetById<OrganizationType>(model.AssetType.ObjectID);
@@ -1167,16 +1166,14 @@ namespace d360.web.Controllers
                             model.AssetType.DisplayFormat = o.DisplayFormat;
                             break;
                         case AssetTypeClass.Policy:
-                            var p = Company.GetById<PolicyType>(model.AssetType.ObjectID);
-                            model.AssetType.HierarchyMaximumDepth = p.MaximumDepth ?? 1;
-                            model.AssetType.Name = p.Name;
-                            model.AssetType.Description = p.Description;
-                            model.AssetType.DisplayFormat = p.DisplayFormat;
+                            model.AssetType.HierarchyMaximumDepth = assetType.HierarchyMaximumDepth;
+                            model.AssetType.Name = assetType.Name;
+                            model.AssetType.Description = assetType.Description;
+                            model.AssetType.DisplayFormat = assetType.DisplayFormat;
                             break;
                         case AssetTypeClass.ReferenceItemType:
-                            var r = Company.GetById<ReferenceItemType>(model.AssetType.ObjectID);
-                            model.AssetType.Name = r!= null ? r.Name : "";
-                            model.AssetType.Notes = r.SourceNotes;
+                            model.AssetType.Name = assetType.Name;
+                            model.AssetType.Notes = assetType.Notes;
                             if (model.Tokens != null) model.Tokens.Add(new PrimeSelectItem { label = "Code", value = "{Code}" });
                             break;
                     }
@@ -3396,26 +3393,18 @@ namespace d360.web.Controllers
 
             switch (type)
             {
-                case SystemObjects.ArtifactType:
-                    var sql = "select ast.ObjectID as value,d.DisplayValue as title  from asset ast inner join assettype astt on (ast.assettypeid = astt.id and ast.[object] = 'Artifact') cross apply [dbo].GetAssetDisplayValueById(ast.id) d where astt.ObjectID = @id order by d.DisplayValue";
-
-                    list.AddRange(
-                        Company.Query<ListIntItem>(sql, new { id = id })
-                    );
-                    break;
                 case SystemObjects.ReferenceItem:
                 case SystemObjects.ReferenceItemType:
-                    list.AddRange(
-                        Company.Filter<ReferenceItem>(i => i.ReferenceItemTypeID == id)
-                        .OrderBy(i => i.DisplayValue)
-                        .Select(i => new ListIntItem { title = i.DisplayValue, value = i.ID })
-                    );
-                    break;
+                case SystemObjects.ArtifactType:
                 case SystemObjects.PolicyType:
+                case SystemObjects.TaxonomyType:
+                case SystemObjects.RuleType:
+                    var typeString = type.ToString().Replace("Type", "");
+                    
+                    var sql = $"select ast.ObjectID as value,d.DisplayValue as title  from asset ast inner join assettype astt on (ast.assettypeid = astt.id and ast.[object] = '{typeString}') cross apply [dbo].GetAssetDisplayValueById(ast.id) d where astt.ObjectID = @id order by d.DisplayValue";
+
                     list.AddRange(
-                        Company.Filter<Policy>(i => i.PolicyTypeID == id)
-                        .OrderBy(i => i.TextPath)
-                        .Select(i => new ListIntItem { title = i.TextPath, value = i.ID })
+                        Company.Query<ListIntItem>(sql, new { id })
                     );
                     break;
                 case SystemObjects.Resource:
@@ -3436,19 +3425,6 @@ namespace d360.web.Controllers
                             .Select(i => new ListIntItem { title = i.FullName, value = i.ResourceID }));
                     }
                     break;
-                case SystemObjects.RuleType:
-                    list.AddRange(
-                        Company.Filter<AssetDetail>(i => i.Type == type.ToString() && i.TypeID == id)
-                        .OrderBy(i => i.DisplayValue)
-                        .Select(i => new ListIntItem { title = i.DisplayValue, value = i.ObjectID })
-                    );
-                    break;
-                case SystemObjects.TaxonomyType:
-                    var sqlForTaxonomy = "select a.ObjectID as value, textpath as Title from asset a inner join assettype att on a.assettypeid = att.id cross apply[dbo].[GetAssetTextPathById](a.id, '/') atp where atp.id = a.id and a.object = 'Taxonomy' and att.ObjectID = @id";
-                    list.AddRange(
-                        Company.Query<ListIntItem>(sqlForTaxonomy, new { id = id })
-                    );
-                    break;                
             }
 
             return new JsonNetResult
@@ -3457,8 +3433,6 @@ namespace d360.web.Controllers
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
-
-
 
         [Route("FieldType_Lookups"), NonNullableParameters]
         public JsonNetResult FieldType_Lookups(SystemObjects type, int id, bool isNg = false)
@@ -4774,7 +4748,7 @@ namespace d360.web.Controllers
                 }
 
                 if(columnModified)
-                    Company.Entry(ft).Property(x=>x.UpdatedBy).IsModified = true;
+                    Company.Entry(ft).Property(x => x.UpdatedBy).IsModified = true;
 
                 Company.SaveChanges();
 
@@ -5059,7 +5033,7 @@ namespace d360.web.Controllers
             const string markitLineageSettingKey = "UseNewMarkitLineageGeneration";
 
             if (!Company.CurrentResourceIsAdmin)
-                return jsonException("You do not have permission to start Markit Lineage generation.", HttpStatusCode.Unauthorized);
+                return jsonException("You do not have permission to start Markit Lineage generation.", HttpStatusCode.Forbidden);
 
             var fusion = Company.GetById<Fusion>(id);
 
@@ -5075,8 +5049,7 @@ namespace d360.web.Controllers
 
                         try
                         {
-                            
-                            Company.Query<int>("insert into [queue].[Task] ([Action], [Object], [ObjectID]) values ('FusionCache', 'Fusion', @fusionId)", new { fusionId = id });
+                            Company.Database.Connection.Execute("insert into [queue].[Task] ([Action], [Object], [ObjectID]) values ('FusionCache', 'Fusion', @fusionId)", new { fusionId = id });                         
                             return jsonSuccess("Markit lineage process queued successfully.", fusion.FusionTypeID.ToString(), "add", HttpStatusCode.OK);
 
                         }
@@ -8074,13 +8047,13 @@ namespace d360.web.Controllers
 
                 Company.Add(model);
 
-                Company.Add(new ResourceGroup { GroupID = model.ID, ResourceID = (int)model.PrimaryOwnerResourceID, IsOwner = true });
+                Company.Add(new ResourceGroup { GroupID = model.ID, ResourceID = (int)model.PrimaryOwnerResourceID });
                 try
                 {
                     if (model.SecondaryOwnerResourceID.HasValue)
                     {
                         if (!model.PrimaryOwnerResourceID.Equals(model.SecondaryOwnerResourceID))
-                            Company.Add(new ResourceGroup { GroupID = model.ID, ResourceID = model.SecondaryOwnerResourceID.Value, IsOwner = true });
+                            Company.Add(new ResourceGroup { GroupID = model.ID, ResourceID = model.SecondaryOwnerResourceID.Value});
                     }
                 }
                 catch
@@ -8122,13 +8095,13 @@ namespace d360.web.Controllers
 
                 if (!currentGroupUsers.Any(o => o == model.PrimaryOwnerResourceID))
                 {
-                    Company.Add(new ResourceGroup { GroupID = model.ID, ResourceID = model.PrimaryOwnerResourceID.Value, IsOwner = true });
+                    Company.Add(new ResourceGroup { GroupID = model.ID, ResourceID = model.PrimaryOwnerResourceID.Value });
                 }
                 if (model.SecondaryOwnerResourceID.HasValue)
                 {
                     if (!currentGroupUsers.Any(o => o == model.SecondaryOwnerResourceID))
                     {
-                        Company.Add(new ResourceGroup { GroupID = model.ID, ResourceID = model.SecondaryOwnerResourceID.Value, IsOwner = true });
+                        Company.Add(new ResourceGroup { GroupID = model.ID, ResourceID = model.SecondaryOwnerResourceID.Value });
                     }
                 }
 
@@ -10685,20 +10658,20 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         [Route("ReferenceItem_EditFields"), NonNullableParameters]
         public JsonResult ReferenceItem_EditFields(int id)
         {
-            var list = new List<EditableField>();
-            var a = Company.GetById<ReferenceItem>(id);
+            var list = new List<EditableField>();            
+            var a = Company.Assets.FirstOrDefault(x => x.ObjectID == id && x.Object == "ReferenceItem");
 
-            if (!Company.HasAssetPermission(SystemObjects.ReferenceItem, a.ID, Permission.ModifyAsset))
+            if (!Company.HasAssetPermission(SystemObjects.ReferenceItem, a.ObjectID, Permission.ModifyAsset))
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             var row = 1;
 
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ObjectID.ToString() });
             list.Add(new EditableField { Row = row++, Column = 1, FieldName = "Code", Name = "Code", FieldType = DataType.Text.ToString(), Value = a.Code.ToString() });
 
             //if the reference type has a parent we need to add parent field with the values from the parent
-
-            var parentType = Company.GetParentType(a.ReferenceItemTypeID, SystemObjects.ReferenceItemType);
+            
+            var parentType = Company.GetParentType(a.AssetType.ObjectID, SystemObjects.ReferenceItemType);
 
             if (parentType != null)
             {
@@ -10707,7 +10680,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 list.Add(new EditableField { Row = row++, Column = 1, FieldName = "ParentID", Name = parentType.Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = false, Items = Company.Query<dynamic>(sql, new { id = parentType.ObjectID }).Select(i => new SelectListItem { Text = i.DisplayValue, Value = string.Format("{0}", i.ObjectID), Selected = i.ObjectID == (parent != null ? parent.ObjectID : 0)  }).ToList() });
             }
 
-            list = loadDynamicFields(SystemObjects.ReferenceItem.ToString(), id, list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, a.ReferenceItemTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.ReferenceItem, id).ToList(), row);
+            list = loadDynamicFields(SystemObjects.ReferenceItem.ToString(), id, list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, a.AssetType.ObjectID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.ReferenceItem, id).ToList(), row);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -10720,8 +10693,8 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 if (!form.HasKeys()) throw new NoFormDataException("lookup");
 
                 int typeID = parseIntField(form, "ReferenceItemTypeID");
-                var type = Company.GetById<ReferenceItemType>(typeID);
-
+                var type = Company.AssetTypes.FirstOrDefault(x => x.Object == "ReferenceItemType" && x.ObjectID == typeID);
+                
                 if (type == null) throw new NotFoundException("referenceitemtype");
 
                 if (!Company.HasAssetTypePermission(SystemObjects.ReferenceItemType, typeID, Permission.ModifyAsset))
@@ -10729,7 +10702,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
                 var code = form["Code"].ToString();
 
-                if (Company.Any<ReferenceItem>(r => r.ReferenceItemTypeID == typeID && r.Code == code))
+                if (Company.Any<Asset>(r => r.AssetTypeID == type.ID && r.Code == code))
                     return jsonException(new Exception($"A reference item with the code value {code} already exists."), HttpStatusCode.Forbidden);
 
                 var a = new ReferenceItem

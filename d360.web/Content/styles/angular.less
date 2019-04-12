@@ -93,7 +93,6 @@ nav.top, .left-side-nav {
     width: 200px;
     margin-top: 40px;
     overflow-y: visible;
-    border-right: 1px solid rgba(255, 255, 255, 0.15);
     transition: width 200ms ease;
     padding-bottom: 80px;
 
@@ -112,7 +111,7 @@ nav.top, .left-side-nav {
 
         .caption {
             width: 150px;
-            display: inline-block;
+            display: inline-flex;
             position: absolute;
 
             &.min {
@@ -153,8 +152,8 @@ nav.top, .left-side-nav {
     .menu-category {
         color: white;
         font-size: 1rem;
-        height: 35px;
-        line-height: 35px;
+        height: 40px;
+        line-height: 40px;
         position: relative;
 
         &:hover {
@@ -167,7 +166,7 @@ nav.top, .left-side-nav {
     }
 }
 .left-side-nav {
-    width: 50px;
+    width: 40px;
     li .caption {
         width: 0;
     } 
@@ -179,6 +178,7 @@ nav.top, .left-side-nav {
     overflow: hidden;
     height: 35px;
     white-space: nowrap;
+    min-width: 140px;
 }
 
 .menu-toggle-open, .menu-toggle {
@@ -206,12 +206,13 @@ nav.top, .left-side-nav {
     transition: transform 200ms ease;
 }
 .menu-toggle {
-    width: 50px;
+    width: 40px;
 }
 
 .menu-parent .menu-child {
     display: none;
-    width: 12.5em;
+    min-width:220px;
+    max-width: 800px;
     position: absolute;
     margin: 0;
     outline: 0;
@@ -223,7 +224,7 @@ nav.top, .left-side-nav {
 .menu-active > .megamenu-panel {
     display: block !important;
     width: auto;
-    background: @igx-gray-color;
+    background: @igx-left-side-nav;
 }        
 
 .menu-group{
@@ -241,16 +242,23 @@ nav.top, .left-side-nav {
         background-color: #878b97;
         color: white !important;
     }
-
+    &.dim{
+        opacity: 0.5;
+    }
     i.fa {
         font-size: 15px;
     }
 }
 
 .megamenu-panel {
-    background: @igx-gray-color;
-    box-shadow: 2px 2px 1px 0px rgba(0, 0, 0, 0.15);
+    background: @igx-left-side-nav;
+    box-shadow: rgba(0, 0, 0, 0.33) 0 1px 2px;
     color: white;
+
+    &:focus {
+        border: none;
+    }
+
 
     .megamenu-title {
         font-weight: bold;
@@ -258,8 +266,8 @@ nav.top, .left-side-nav {
         font-size: 100%;
         z-index: 1001;
         color: #ffffff;
-        background: #4e5466;
-
+        background: #878b97;
+        display:flex;
 
         .megamenu-tools {
             font-size: 1rem;
@@ -269,13 +277,15 @@ nav.top, .left-side-nav {
         }
 
         input {
+            text-indent: 20px;
             border: none;
             background-image: none;
             background-color: transparent;
             -webkit-box-shadow: none;
             -moz-box-shadow: none;
             box-shadow: none;
-            width: 90%;
+            width: 80%;
+            margin-right: -10px;
             color: #ffffff;
             z-index: 1002;
             line-height: 25px;
@@ -363,8 +373,8 @@ d3s-navbar-item {
         >div {
             >span {
                 &.nav-item {
-                    height: 35px;
-                    line-height: 35px;
+                    height: 40px;
+                    line-height: 40px;
                     color: white;
                     padding: 0 15px;
                     display: block;
@@ -412,12 +422,12 @@ d3s-navbar-item {
     transition: all 200ms ease;
 }
 .maincontent {
-    margin-left: 70px;
+    margin-left: 40px;
     margin-right: 40px;
 }
 
 .maincontent-open {
-    margin-left: 270px;
+    margin-left: 200px;
     margin-right: 40px;
 
 }

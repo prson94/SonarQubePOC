@@ -1,85 +1,105 @@
-﻿import { Injectable } from '@angular/core';
-import { Headers, Http } from '@angular/http';
-import { MessagesService } from './messages.service';
-import { BaseService } from './base.service';
-import { IGroupService, GroupSearchResultModel, GroupResourceInfo, Group, GroupEditorModel, ResourceGroup } from '../models/group.model';
-import { JsonResult } from '../models/jsonresult.model';
-import { CountObject } from '../models/resource.model';
+﻿import {Injectable} from '@angular/core';
+import {MessagesService} from './messages.service';
+import {
+    IGroupService,
+    GroupSearchResultModel,
+    GroupResourceInfo,
+    Group,
+    GroupEditorModel,
+    ResourceGroup
+} from '../models/group.model';
+import {JsonResult} from '../models/jsonresult.model';
+import {CountObject} from '../models/resource.model';
+import {BaseObservableService} from "./baseObservable.service";
+import {HttpClient} from "@angular/common/http";
+import {Observable} from "rxjs";
+import {catchError, map} from "rxjs/operators";
 
 @Injectable()
-export class GroupService extends BaseService implements IGroupService {
-
-    constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
-
-    getGroupList(): Promise<GroupSearchResultModel[]> {
-        return this.http.get('api/groups')
-            .toPromise()
-            .then(r => <GroupSearchResultModel[]>r.json())
-            .catch(err => this.handleError(err));
+export class GroupService extends BaseObservableService implements IGroupService {
+    constructor(
+        private http: HttpClient,
+        messagesService: MessagesService
+    ) {
+        super(messagesService);
     }
 
-    getGroupResourceList(id: number): Promise<GroupResourceInfo[]> {
-        return this.http.get(`api/groups/${id}/resources`)
-            .toPromise()
-            .then(response => <GroupResourceInfo[]>response.json())
-            .catch(err => this.handleError(err));
+    getGroupList(): Observable<GroupSearchResultModel[]> {
+        return this.http.get('api/groups').pipe(
+            map(r => <GroupSearchResultModel[]>r),
+            catchError(err => this.handleError(err))
+        );
     }
 
-    getGroup(id: number): Promise<GroupEditorModel> {
-        return this.http.get(`form/Group?id=${id}`)
-            .toPromise()
-            .then(response => <GroupEditorModel>response.json())
-            .catch(err => this.handleError(err)); 
+    getGroupResourceList(id: number): Observable<GroupResourceInfo[]> {
+        return this.http.get(`api/groups/${id}/resources`).pipe(
+            map(response => <GroupResourceInfo[]>response),
+            catchError(err => this.handleError(err))
+        );
     }
 
-    putGroup(group: Group): Promise<JsonResult> {
-        return this.http.put('form/Group', group)
-            .toPromise()
-            .then(response => <JsonResult>response.json())
-            .catch(err => this.handleError(err));
+    getGroup(id: number): Observable<GroupEditorModel> {
+        return this.http.get(`form/Group?id=${id}`).pipe(
+            map(response => <GroupEditorModel>response),
+            catchError(err => this.handleError(err))
+        );
     }
 
-    postGroup(group: Group): Promise<JsonResult> {
-        return this.http.post('form/Group', group)
-            .toPromise()
-            .then(response => <JsonResult>response.json())
-            .catch(err => this.handleError(err));
+    putGroup(group: Group): Observable<JsonResult> {
+        return this.http.put('form/Group', group).pipe(
+            map(response => <JsonResult>response),
+            catchError(err => this.handleError(err))
+        );
     }
 
-    deleteGroup(id: number): Promise<JsonResult> {
-        return this.http.delete(`form/DeleteGroupByID?id=${id}`)
-            .toPromise()
-            .then(response => <JsonResult>response.json())
-            .catch(err => this.handleError(err));
+    postGroup(group: Group): Observable<JsonResult> {
+        return this.http.post('form/Group', group).pipe(
+            map(response => <JsonResult>response),
+            catchError(err => this.handleError(err))
+        );
     }
 
-    postResourceGroup(resourceGroups: ResourceGroup[]): Promise<JsonResult> {
-        return this.http.post('form/ResourceGroup', resourceGroups)
-            .toPromise()
-            .then(response => <JsonResult>response.json())
-            .catch(err => this.handleError(err));
+    deleteGroup(id: number): Observable<JsonResult> {
+        return this.http.delete(`form/DeleteGroupByID?id=${id}`).pipe(
+            map(response => <JsonResult>response),
+            catchError(err => this.handleError(err))
+        );
     }
 
-    deleteResourceGroup(groupID: number, resourceID: number): Promise<JsonResult> {
-        return this.http.delete(`form/ResourceGroup?groupID=${groupID}&resourceID=${resourceID}`)
-            .toPromise()
-            .then(response => <JsonResult>response.json())
-            .catch(err => this.handleError(err));
+    postResourceGroup(resourceGroups: ResourceGroup[]): Observable<JsonResult> {
+        return this.http.post('form/ResourceGroup', resourceGroups).pipe(
+            map(response => <JsonResult>response),
+            catchError(err => this.handleError(err))
+        );
     }
 
-    getGroupUserList(id: number, pagenum: number, pagesize: number, sortDataField: string, sortOrder: string): Promise<any> {
-        return this.http.get(`form/GetGroupUserList?id=${id}&pagenum=${pagenum}&pagesize=${pagesize}&sortdatafield=${sortDataField}&sortorder=${sortOrder}`)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
-    }
-    
-    getResponsibilityBreakdownByGroup(id: number): Promise<CountObject[]> {
-        return this.http.get(`/api/v2/social//ResponsibilityBreakdownByGroup?id=${id}`)
-            .toPromise()
-            .then(response => <CountObject[]>response.json())
-            .catch(err => this.handleError(err));
+    deleteResourceGroup(
+        groupID: number,
+        resourceID: number
+    ): Observable<JsonResult> {
+        return this.http.delete(`form/ResourceGroup?groupID=${groupID}&resourceID=${resourceID}`).pipe(
+            map(response => <JsonResult>response),
+            catchError(err => this.handleError(err))
+        );
     }
 
+    getGroupUserList(
+        id: number,
+        pagenum: number,
+        pagesize: number,
+        sortDataField: string,
+        sortOrder: string
+    ): Observable<any> {
+        return this.http.get(`form/GetGroupUserList?id=${id}&pagenum=${pagenum}&pagesize=${pagesize}&sortdatafield=${sortDataField}&sortorder=${sortOrder}`).pipe(
+            map(response => response),
+            catchError(err => this.handleError(err))
+        );
+    }
+
+    getResponsibilityBreakdownByGroup(id: number): Observable<CountObject[]> {
+        return this.http.get(`/api/v2/social//ResponsibilityBreakdownByGroup?id=${id}`).pipe(
+            map(response => <CountObject[]>response),
+            catchError(err => this.handleError(err))
+        );
+    }
 }
-

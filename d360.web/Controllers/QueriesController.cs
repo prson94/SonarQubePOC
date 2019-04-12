@@ -14,7 +14,7 @@ namespace d360.web.Controllers
     {
         #region DI
 
-        public QueriesController(CommunityContext community, CompanyContext company)
+        public QueriesController(ICommunityContext community, ICompanyContext company)
             : base(community, company)
         { }
 

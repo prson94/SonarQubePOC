@@ -27,14 +27,14 @@ namespace d360.web.Controllers.V2
         Authorize
     ]
 
-    public class ProfilesController : BaseApiController
+    public class ProfilesController : BaseV2ApiController
     {
         private const int TechAssetFusionAttributeTypeId = 1820;
 
         #region DI
 
         public ProfilesController
-(CommunityContext community, CompanyContext company)
+(ICommunityContext community, ICompanyContext company)
             : base(community, company)
         {
 

@@ -144,6 +144,7 @@
   <include file="scripts/GOV-6896.xml"/>
   <include file="scripts/GOV-6980.xml"/>
   <include file="scripts/GOV-6865-Update.xml"/>
+  <include file="scripts/GOV-6990.xml"/>
   <include file="scripts/GOV-6988.xml"/>
   <include file="scripts/GOV-7014-ProcUpdate.xml" />
 </databaseChangeLog>
