@@ -59,7 +59,8 @@ export class SocialService extends BaseService {
     }
 
     getMyCounts(daysToLookBack: number): Promise<Count[]> {
-        return this.http.get(`api/v2/social/count/${daysToLookBack}`)
+        let resourceID = -1;
+        return this.http.get(`api/v2/social/count/${resourceID}/${daysToLookBack}`)
             .toPromise()
             .then(response => <Count[]>response.json())
             .catch(err => this.handleError(err));

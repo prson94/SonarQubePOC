@@ -361,23 +361,9 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             MapToApiVersion("2.0"),
-            Route("count/{days}"),
-            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
-            SwaggerResponse(HttpStatusCode.OK, "Gets count for selected number of days.", typeof(List<CommentDetail>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-            NonNullableParameters
-        ]
-        public IEnumerable<CountModel> GetHomeCounts(int days, int id = -1)
-        {
-            var resourceId = id > 0 ? id : Company.CurrentResourceID;
-            return LoadSocialActivityCount(days, resourceId);
-        }
-        [
-            HttpGet,
-            MapToApiVersion("2.0"),
             Route("count/{id}/{days}"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
-            SwaggerResponse(HttpStatusCode.OK, "Gets counts for number of days and id.", typeof(List<CommentDetail>)),
+            SwaggerResponse(HttpStatusCode.OK, "Gets counts for number of days and id.", typeof(List<CountModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             NonNullableParameters
         ]
