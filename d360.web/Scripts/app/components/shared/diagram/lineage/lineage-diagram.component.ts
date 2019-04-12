@@ -190,8 +190,6 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     private initializeDiagram() {
         if (this.diagram != null) {
             this.reOrderLayout();
-
-            return Promise.resolve();
         }
 
         this.diagram = this.createDiagram();
@@ -827,15 +825,13 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         this.loadMenuItems();
 
         if (this.readonly == false) {
-            this.loadIntersectTypes().then(
-                () => this.loadObjectTypes()
-            );
+            this.loadIntersectTypes();
         }
     }
 
     private loadObjectTypes() {
         if (this.objectTypes != null && this.objectTypes.length > 0) {
-            return Promise.resolve();
+            return;
         }
 
         this.lineageService.getLineageObjectTypes().subscribe(
@@ -847,7 +843,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
     private loadIntersectTypes() {
         if (this.intersectTypes != null && this.intersectTypes.length > 0) {
-            return Promise.resolve();
+            return;
         }
 
         this.lineageService.getLineageIntersectTypes().subscribe(
@@ -860,6 +856,8 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
                         i.intersectId = 0;
 
                         this.intersectTypes.push(i);
+
+                        this.loadObjectTypes();
                     }
                 );
             }
