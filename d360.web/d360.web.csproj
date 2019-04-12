@@ -1666,6 +1666,10 @@
     <TypeScriptCompile Include="Scripts\app\services\export-template.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\levels.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\lineage.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\load\columns.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\load\get-load.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\load\options.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\load\post-load.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\metrics.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\organizations.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\qualifier.service.ts" />
@@ -1697,7 +1701,6 @@
     <TypeScriptCompile Include="Scripts\app\services\follower.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\fusion-attribute.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\fusion.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\load.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\models.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\object-statistics.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\permissions.service.ts" />

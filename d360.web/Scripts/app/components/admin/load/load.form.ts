@@ -1,17 +1,32 @@
-﻿import { Input, Output, Component, EventEmitter, OnInit, OnChanges, SimpleChange } from '@angular/core';
-import { SelectItem } from 'primeng/primeng';
-import { LoadDetail, LoadFilePostModel, LoadColumn, LoadColumnValue } from '../../../models/load.model';
-import { LoadService } from '../../../services/load.service';
-import { FormEvents, FormHelper } from '../../../models/form.model';
-import * as _ from 'lodash';
+﻿import * as _ from 'lodash';
+import {
+    Input,
+    Output,
+    Component,
+    EventEmitter,
+    OnInit,
+    OnChanges,
+    SimpleChange
+} from '@angular/core';
+import {SelectItem} from 'primeng/primeng';
+
+import {
+    LoadFilePostModel,
+    LoadColumn
+} from '../../../models/load.model';
+import {FormHelper} from '../../../models/form.model';
+
+import {ColumnsService} from '../../../services/load/columns.service';
+import {PostLoadService} from '../../../services/load/post-load.service';
+import {OptionsService} from '../../../services/load/options.service';
 
 @Component({
     selector: 'd3s-load-form',
     templateUrl: './load.form.html',
-    providers: [LoadService],
+    providers: [ColumnsService, PostLoadService, OptionsService],
 })
 
-export class LoadForm implements OnInit, OnChanges {    
+export class LoadForm implements OnInit, OnChanges {
     @Input() title: string = "Upload a Spreadsheet Job";
     @Output() onComplete = new EventEmitter();
     @Output() onSuccess = new EventEmitter();
@@ -31,8 +46,12 @@ export class LoadForm implements OnInit, OnChanges {
     columns: LoadColumn[];
     file: File;
     errorMessage = "";
-    
-    constructor(private loadService: LoadService) {
+
+    constructor(
+        private columnsService: ColumnsService,
+        private postLoadService: PostLoadService,
+        private optionsService: OptionsService
+    ) {
     }
 
     ngOnInit() {
@@ -46,9 +65,9 @@ export class LoadForm implements OnInit, OnChanges {
             }
         }
     }
-    
+
     private load(): void {
-        this.actions = this.loadService.getActionOptions();
+        this.actions = this.optionsService.getActionOptions();
         this.selectedAction = this.actions[0].value;
         this.loadTypes();
         this.onLoadComplete.emit(null);
@@ -57,32 +76,41 @@ export class LoadForm implements OnInit, OnChanges {
     private loadTypes(): void {
         this.isLoadingTypes = true;
         this.selectedType = '';
-        this.loadService.getTypeOptions(this.selectedAction)
-            .then(data => {
-                this.types = data;
+        this.optionsService.getTypeOptions(this.selectedAction).subscribe(
+            responseTypeOptions => {
+                this.types = responseTypeOptions;
+
                 if (this.types && this.types.length > 0) {
                     this.selectedType = this.types[0].value;
                     this.loadColumns();
                 }
+
                 this.isLoadingTypes = false;
-            });;
+            }
+        );
     }
 
     private loadColumns(): void {
         let id, type;
+
         try {
             id = parseInt(this.selectedType.split('|')[1]);
             type = this.selectedType.split('|')[0];
         } catch (e) {
             return;
         }
+
         this.isLoadingColumns = true;
-        this.loadService.getExpectedColumns(this.selectedAction, type, id).then(data => {
-            this.columns = data;
-            this.isLoadingColumns = false;
-        });
+
+        this.columnsService.getExpectedColumns(this.selectedAction, type, id).subscribe(
+            responseExpectedColumns => {
+                this.columns = responseExpectedColumns;
+
+                this.isLoadingColumns = false;
+            }
+        );
     }
-    
+
     private isRequiredColumn(col: string) {
         let type = this.selectedType.split('|')[0];
 
@@ -92,8 +120,8 @@ export class LoadForm implements OnInit, OnChanges {
 
         if (this.selectedAction == 'P' && type == 'artifacttype') {
             if (_.includes(['name', 'subject area'], col) || col.startsWith('parent ')) return true;
-            return false; 
-        } 
+            return false;
+        }
         if (this.selectedAction == 'P' && type == 'domain') {
             if (_.includes(['name', 'code'], col)) return true;
             return false;
@@ -130,24 +158,33 @@ export class LoadForm implements OnInit, OnChanges {
 
     private save(): void {
         let model = new LoadFilePostModel();
+
         this.errorMessage = "";
         this.isSaving = true;
-        FormHelper.getDataUrl(this.file).then(s => {
-            model.File = s;
-            model.LoadAction = this.selectedAction;
-            model.Type = this.selectedType;
-            model.Notes = this.notes;
-        })
-            .then(() => this.loadService.postLoad(model))
-            .then(data => {
-                if (data.type == 'error') {
-                    this.onError.emit(null);
-                    this.errorMessage = data.message;
-                } else {
-                    this.onSuccess.emit(null);
+
+        FormHelper.getDataUrl(this.file)
+            .then(
+                s => {
+                    model.File = s;
+                    model.LoadAction = this.selectedAction;
+                    model.Type = this.selectedType;
+                    model.Notes = this.notes;
+                })
+            .then(() => {
+                    this.postLoadService.postLoad(model).subscribe(
+                        responsePostLoad => {
+                            if (responsePostLoad.type == 'error') {
+                                this.errorMessage = responsePostLoad.message;
+                                this.onError.emit(null);
+                            } else {
+                                this.onSuccess.emit(null);
+                            }
+
+                            this.isSaving = false;
+                            this.onComplete.emit(null);
+                        }
+                    )
                 }
-                this.isSaving = false;
-                this.onComplete.emit(null);
-            });
+            );
     }
 }
