@@ -1,5 +1,6 @@
 ﻿using d360.core;
 using d360.core.entities;
+using d360.core.enums;
 using d360.core.queue;
 using d360.extensions;
 using d360.model;
@@ -105,6 +106,40 @@ namespace d360.web.Controllers.V2
             }
         }
 
+        /// <summary>
+        /// GET a list of predicate functional types.
+        /// </summary>
+        /// <returns>A list of static predicate functional types contained within your Govern environment.</returns>
+        [
+            HttpGet,
+            MapToApiVersion("2.0"),
+            Route("predicates/types"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of predicate functional types.", typeof(List<PredicateTypeApiViewModel>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+       ]
+        public HttpResponseMessage GetPredicatesTypesAsync()
+        {
+            var prefix = "Relationships.GetPredicatesTypesAsync => ";
+            var errorMessage = "";
+
+            try
+            {
+                var types = PredicateType.DataLineage.GetAsList().Select(i => new PredicateTypeApiViewModel {
+                    Type = i.ID,
+                    Name = i.Name,
+                    Description = i.Description
+                }).OrderBy(i => i.Name).ToList();
+                return Request.CreateResponse(HttpStatusCode.OK, types);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+        }
 
         /// <summary>
         /// GET a list of relationships.
