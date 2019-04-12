@@ -290,6 +290,7 @@ namespace d360.model
         IEnumerable<T> Query<T>(string sql, object param = null, int timeout = 90);
         Task<IEnumerable<T>> QueryAsync<T>(string sql, object param = null, int timeout = 90);
         void RebuildDisplayValuesRequest();
+        void RebuildIndexRequest();
         List<DatabaseBulkAssetResult> RemoveAssets(ApiExecution execution, AssetType at, AssetDeletes import, int timeout = 3600);
         void RemoveResponsibilityTypeRelation(ResponsibilityTypeRelation relation);
         string RenderTooltip(string action, SystemObjects type, int id);

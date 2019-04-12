@@ -2103,6 +2103,11 @@ where	R.SourceObject = 'FusionAttribute'
             Enqueue(Config.GetValue<string>("DisplayValueQueue"), new DisplayUpdateInfo { CompanyID = CurrentCompanyID, RebuildAll = true });
         }
 
+        public void RebuildIndexRequest()
+        {
+            Enqueue(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel { CompanyID = CurrentCompanyID });
+        }
+
         private void addQE(List<EventInfo> events, ChangeType action, EventObjectInfo item)
         {
             events.Add(new EventInfo {
