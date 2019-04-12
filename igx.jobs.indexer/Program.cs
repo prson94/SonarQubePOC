@@ -279,37 +279,41 @@ namespace igx.jobs.indexer
         {
             var sql = @"                    	
                 (select	
-	                SubjectArt.DisplayValue as 'Synonym',	
+	                SubjectAdv.DisplayValue as 'Synonym',	
 	                I.Subject as 'SynonymObjectType',
 	                I.SubjectID as  'SynonymObjectID',
-	                ObjectArt.DisplayValue as 'SynonymFor',	
+	                ObjectAdv.DisplayValue as 'SynonymFor',	
 	                I.Object as 'SynonymForObject',
 	                I.ObjectID as 'SynonymForObjectID',		
-	                dbo.GenerateAssetUrl(ObjectArt.ID) as 'Url',	
+	                dbo.GenerateAssetUrl(ObjectAsset.ID) as 'Url',	
 	                ArtType.Name as 'SynonymForObjectType',
                     P.Name as 'PredicateName'
                 from [intersect] I
 	                inner join IntersectType T on T.ID = I.IntersectTypeID 
                     inner join Predicate P on P.ID = T.PredicateID and P.Type = 6
-	                inner join AssetDetail SubjectArt on SubjectArt.[Object] = 'Artifact' and SubjectArt.ObjectID = I.SubjectID and I.Subject = 'Artifact'
-	                inner join AssetDetail ObjectArt on ObjectArt.[Object] = 'Artifact' and ObjectArt.ObjectID = I.ObjectID and I.Object = 'Artifact'
+	                inner join Asset SubjectAsset on SubjectAsset.[Object] = 'Artifact' and SubjectAsset.ObjectID = I.SubjectID and I.Subject = 'Artifact'
+					inner join [dbo].AssetDisplayValue SubjectAdv on SubjectAdv.AssetID = SubjectAsset.ID
+	                inner join Asset ObjectAsset on ObjectAsset.[Object] = 'Artifact' and ObjectAsset.ObjectID = I.ObjectID and I.Object = 'Artifact'
+					inner join [dbo].AssetDisplayValue ObjectAdv on ObjectAdv.AssetID = ObjectAsset.ID
 	                inner join AssetType ArtType on ObjectArt.AssetTypeID = ArtType.ID)
                 Union
                 (select	
-	                SubjectArt.DisplayValue as 'Synonym',	
+	                SubjectAdv.DisplayValue as 'Synonym',	
 	                I.Object as 'SynonymObjectType',
 	                I.ObjectID as  'SynonymObjectID',
-	                ObjectArt.DisplayValue as 'SynonymFor',	
+	                ObjectAdv.DisplayValue as 'SynonymFor',	
 	                I.Subject as 'SynonymForObject',
 	                I.SubjectID as 'SynonymForObjectID',		
-	                dbo.GenerateAssetUrl(ObjectArt.ID) as 'Url',	
+	                dbo.GenerateAssetUrl(ObjectAsset.ID) as 'Url',	
 	                ArtType.Name as 'SynonymForObjectType',
                     P.Name as 'PredicateName'	
                 from [intersect] I
 	                inner join IntersectType T on T.ID = I.IntersectTypeID 
                     inner join Predicate P on P.ID = T.PredicateID and P.Type = 6
-	                inner join AssetDetail SubjectArt on SubjectArt.[Object] = 'Artifact' and SubjectArt.ObjectID = I.ObjectID and I.Subject = 'Artifact'
-	                inner join AssetDetail ObjectArt on ObjectArt.[Object] = 'Artifact' and ObjectArt.ObjectID = I.SubjectID and I.Object = 'Artifact'
+	                inner join Asset SubjectAsset on SubjectAsset.[Object] = 'Artifact' and SubjectAsset.ObjectID = I.ObjectID and I.Subject = 'Artifact'
+					inner join [dbo].AssetDisplayValue SubjectAdv on SubjectAdv.AssetID = SubjectAsset.ID
+	                inner join Asset ObjectAsset on ObjectAsset.[Object] = 'Artifact' and ObjectAsset.ObjectID = I.SubjectID and I.Object = 'Artifact'
+					inner join [dbo].AssetDisplayValue ObjectAdv on ObjectAdv.AssetID = ObjectAsset.ID
 	                inner join AssetType ArtType on ObjectArt.AssetTypeID = ArtType.ID)
                 order by ObjectArt.DisplayValue";
 
@@ -342,13 +346,15 @@ select
 	,d.DisplayValue as 'SynonymFor'
 	,s.[Object] as 'SynonymForObject'
 	,s.[ObjectID] as 'SynonymForObjectID'
-	,dbo.GenerateAssetUrl(d.ID) as 'Url'
-	,d.TypeName as 'SynonymForObjectType'	
+	,dbo.GenerateAssetUrl(a.ID) as 'Url'
+	,t.Name as 'SynonymForObjectType'	
     ,p.Name as 'PredicateName'    
     ,s.ID as 'ID'                
 from
 	[dbo].[nym] s
-    inner join AssetDetail d on d.object = s.object and d.objectid = s.objectid
+    inner join [dbo].Asset a on a.object = s.object and a.objectid = s.objectid
+	inner join [dbo].AssetType t on a.assettypeid = t.id
+	inner join [dbo].AssetDisplayValue d on d.assetid = a.id
     inner join [dbo].[predicate] p on (s.predicateid = p.id)";
 
             return getData(context, sql, companyID, source, "", false, (dynamic o) =>
@@ -405,13 +411,15 @@ from
         {
             int assettypeclass = (int)AssetTypeClass.Rule;
             var sql = $@"SELECT
-                    ObjectID as ID,
-                    DisplayValue as Name,
-                    TypeName as RuleType,
-                    [dbo].GenerateAssetUrl(ID) as [Url]
-                FROM [dbo].[AssetDetail]
-                WHERE AssetTypeClass = {assettypeclass.ToString()}
-                AND State = 1";
+                    A.ObjectID as ID,
+                    D.DisplayValue as Name,
+                    T.Name as RuleType,
+                    [dbo].GenerateAssetUrl(A.ID) as [Url]
+                FROM [dbo].[Asset] A
+				INNER JOIN [dbo].AssetType T on A.AssetTypeID = T.id
+				INNER JOIN [dbo].AssetDisplayValue D on D.AssetID = A.ID
+	                WHERE T.Class = {assettypeclass.ToString()}
+                AND A.State = 1";
 
             var sType = SystemObjects.Rule.ToString();
 
@@ -489,14 +497,16 @@ from
         {
             int assettypeclass = (int)AssetTypeClass.Policy;
             var sql = $@"SELECT
-	                ObjectID as ID,
-	                DisplayValue as [Name],
-	                DisplayValue as TextPath,
-	                TypeName as PolicyType,
-	                [dbo].GenerateAssetUrl(ID) as [Url]
-                FROM [dbo].[AssetDetail]
-                WHERE AssetTypeClass = {assettypeclass.ToString()}
-                AND State = 1";
+	                A.ObjectID as ID,
+	                D.DisplayValue as [Name],
+	                D.DisplayValue as TextPath,
+	                T.Name as PolicyType,
+	                [dbo].GenerateAssetUrl(A.ID) as [Url]
+                FROM [dbo].[Asset] A
+                INNER JOIN [dbo].AssetType T on A.AssetTypeID = T.id
+				INNER JOIN [dbo].AssetDisplayValue D on D.AssetID = A.ID
+                WHERE T.Class = {assettypeclass.ToString()}
+                AND A.State = 1";
 
             var sType = SystemObjects.Policy.ToString();
 
@@ -586,13 +596,15 @@ from	AttributeDetail AD
         private static IEnumerable<AddToIndexModel> LoadModels(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             var sql = @"
-select	ObjectID as ID,
-		TypeID,
-		DisplayValue,
-		TypeName
-from	AssetDetail
-where	Type = 'TaxonomyType'
-		and State = 1";
+SELECT	A.ObjectID as ID,
+		T.ID as TypeID,
+		D.DisplayValue,
+		T.Name as TypeName
+FROM	[dbo].Asset A
+		INNER JOIN [dbo].AssetType T on A.AssetTypeID = T.id
+		INNER JOIN [dbo].AssetDisplayValue D on D.AssetID = A.ID
+WHERE	T.Object = 'TaxonomyType'
+		and A.State = 1";
 
 
             var sType = SystemObjects.Taxonomy.ToString();
