@@ -18,9 +18,9 @@ import { createWriteStream } from 'fs';
     selector: 'd3s-site-menu-category',    
     template: ` 
                     <li #item [ngClass]="{'menu-category':true,'menu-parent':menu && (menu.NavigationItems),'menu-active':menu?.isActiveItem}" title="{{title}}" (mouseenter)="show(item)" (mouseleave)="hide(item)" [routerLink]="url ? url : []" style="cursor: pointer;" >
-                        <div>
-                            <i *ngIf="rootIconName" [class]="'fa ' + rootIconName"></i>
-                            <img *ngIf="imageUrl" [src]="imageUrl" style="max-width: 20px; max-height: 20px; margin: 0px 10px 0px 10px" />
+                       <div style="display:inline-flex;">
+                            <i *ngIf="rootIconName" [class]="'fa ' + rootIconName" style="padding: 10px;"></i>
+                            <img *ngIf="imageUrl" [src]="imageUrl" style="max-width: 20px; max-height: 20px; margin:10px 10px 10px 10px" />
                             <div [ngClass]="{'caption':true, 'min':!expanded}">
                                 <div [ngClass]="{'no-overflow':expanded, 'icon-active':expanded, 'icon':!expanded}"> {{title}} </div>
                                 <i [ngClass]="{'pull-right menu-category fa fa-caret-right':(menu && menu.NavigationItems && menu.NavigationItems.length > 0),'icon-active':expanded, 'icon':!expanded}"></i>
