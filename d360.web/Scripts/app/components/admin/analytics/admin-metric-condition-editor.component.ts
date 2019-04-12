@@ -3,6 +3,7 @@ import { MetricsService } from '../../../services/metrics.service';
 import {  Condition, ConditionForm, MetricAssetVersionConditionViewModel, MetricFieldTypeViewModel } from '../../../models/metrics.model';
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesService } from '../../../services/messages.service';
+import { isBoolean } from 'util';
 
 @Component({
     selector: 'd3s-admin-metric-condition-editor',
@@ -38,7 +39,7 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
                 if (this.condition) {
                     if (this.condition.FieldTypeID != i) {
                         ft.Disabled = true;
-                    }
+                    } 
                 }
                 else {
                     ft.Disabled = true;
@@ -87,11 +88,16 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
     save() {
 
         if (this.condition.FieldType) {
-            if (this.condition.FieldType.Type == "Lookup") {
-                this.condition.ValuesText = this.condition.FieldType.Values.find(v => v.Value == +this.condition.Values).Text;
-            }
-            else {
-                this.condition.ValuesText = this.condition.Values;
+            switch (this.condition.FieldType.Type) {
+                case "Boolean":
+                    this.condition.ValuesText = this.condition.Values.toString();
+                    break;
+                case "Lookup":
+                    this.condition.ValuesText = this.condition.FieldType.Values.find(v => v.Value == +this.condition.Values).Text;
+                    break;
+                default:
+                    this.condition.ValuesText = this.condition.Values;
+                    break;
             }
         }
         this.onSave.emit(this.condition);
@@ -115,11 +121,15 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
                 if (!this.condition.Values) {
                     this.condition.Values = "";
                 }
-                else {
-                    if (field.Type == "Date" || field.Type == "DateTime") {
+                switch (field.Type) {
+                    case "Boolean":
+                        this.condition.Values = (this.condition.Values == 'true') || (this.condition.Values == true);
+                        break;
+                    case "Date":
+                    case "DateTime":
                         this.condition.Values = new Date(<string>this.condition.Values);
                         this.condition.Values.setMinutes(this.condition.Values.getMinutes() + this.condition.Values.getTimezoneOffset());
-                    }
+                        break;
                 }
             }
         }
