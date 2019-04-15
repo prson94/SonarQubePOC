@@ -130,10 +130,15 @@
                 <div *ngIf="hasFormResponses" style="padding-bottom:10px;">
                     <input type="radio" name="valueType" [checked]="valueType == 'form'" (change)="changeValueType('form')" /> Choose a form result value <br />
                     <div *ngIf="valueType == 'form'">
-                        <select [ngModel]="selectedFormFieldId" (ngModelChange)="changeFormValue($event)" style="width: 95%">
-                            <option value="">Choose...</option>
-                            <option *ngFor="let f of availableFormFields" [value]="f['@FormFieldId']">{{f['@FormLabel']}}</option>
-                        </select>
+                        <div>
+                            <select [ngModel]="selectedFormFieldId" (ngModelChange)="changeFormValue($event)" style="width: 95%">
+                                <option value="">Choose...</option>
+                                <option *ngFor="let f of availableFormFields" [value]="f['@FormFieldId']">{{f['@FormLabel']}}</option>
+                            </select>
+                        </div>
+                        <div *ngIf="allowMultiple">
+                            <input  type="checkbox" [(ngModel)]="selectedField['@AppendValue']" /> Append selected values?
+                        </div>
                     </div>
                 </div>
                 <div style="padding-bottom:10px;">

@@ -196,10 +196,12 @@
                 <div class="FieldName">
                     List
                 </div>
-                <select [(ngModel)]="newField['@referenceFieldId']" style="width: 95%">
-                    <option></option>
-                    <option *ngFor="let l of lookups" [value]="l.value">{{l.label}}</option>
-                </select>
+                <div>
+                    <select [(ngModel)]="newField['@referenceFieldId']" style="width: 95%">
+                        <option></option>
+                        <option *ngFor="let l of lookups" [value]="l.value">{{l.label}}</option>
+                    </select>
+                </div>
             </div>
         </div>
         <div class="row" style="padding-top: 8px;">
@@ -263,10 +265,12 @@
                 <div class="FieldName">
                     List
                 </div>
-                <select [(ngModel)]="newField['@referenceFieldId']" style="width: 95%" [disabled]="usedIn?.length > 0">
-                    <option></option>
-                    <option *ngFor="let l of lookups" [value]="l.value">{{l.label}}</option>
-                </select>
+                <div>
+                    <select [(ngModel)]="newField['@referenceFieldId']" style="width: 95%" [disabled]="usedIn?.length > 0">
+                        <option></option>
+                        <option *ngFor="let l of lookups" [value]="l.value">{{l.label}}</option>
+                    </select>
+                </div>
             </div>
         </div>
         <div class="row" style="padding-top: 8px;">

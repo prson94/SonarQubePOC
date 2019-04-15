@@ -1,6 +1,7 @@
 ﻿import { Component, OnChanges, SimpleChanges, Input, Output, EventEmitter } from "@angular/core";
 import { BaseComponent } from "../shared/base.component";
 import { StateService } from "../../services/state.service";
+import { ResponsibilityTypeRelationPermission } from "../../models/responsibility-type.model";
 
 
 
@@ -8,7 +9,7 @@ import { StateService } from "../../services/state.service";
     selector: 'd3s-fusion-attribute-tabs',
     templateUrl: './fusion-attribute-tabs.component.html'
 })
-export class FusionAttributeTabsComponent extends BaseComponent {
+export class FusionAttributeTabsComponent extends BaseComponent  implements OnChanges{
 
     activeIndex: number = this.stateService.fusionState.activeTabIndex;
     @Input() fusionId: number;
@@ -20,9 +21,14 @@ export class FusionAttributeTabsComponent extends BaseComponent {
     @Input() selectedFusionQueryAttributeTypeId: number;
     @Input() selectedFusionQueryAttribute: any;
     @Input() initialFusionQueryAttributeId: number;
+    @Input() objectPermissions: ResponsibilityTypeRelationPermission[] = [];
     
     constructor(private stateService: StateService) {
         super();
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
+        this.permissions = this.objectPermissions;
     }
 
     tabs: any[] = [

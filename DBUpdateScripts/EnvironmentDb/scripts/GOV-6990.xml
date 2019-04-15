@@ -1,0 +1,27 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Tomislav Duric" id="GOV-6990">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[
+			ALTER TABLE [dbo].[ResourceGroup] DROP CONSTRAINT [DF_ResourceGroup_IsOwner]
+			ALTER TABLE [dbo].[ResourceGroup] DROP COLUMN [IsOwner]
+		]]>
+
+    </sql>
+	<rollback>
+	<![CDATA[
+	ALTER TABLE [dbo].[ResourceGroup] ADD [IsOwner] [bit] NOT NULL
+	ALTER TABLE [dbo].[ResourceGroup] ADD CONSTRAINT [DF_ResourceGroup_IsOwner]  DEFAULT ((0)) FOR [IsOwner]
+	]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>

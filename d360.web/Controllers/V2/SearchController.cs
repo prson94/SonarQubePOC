@@ -23,11 +23,11 @@ namespace d360.web.Controllers.V2
         Authorize,
         ApiExplorerSettings(IgnoreApi = true)
     ]
-    public class SearchController : BaseApiController
+    public class SearchController : BaseV2ApiController
     {
         ISearchSource SearchSource;
 
-        public SearchController(CommunityContext community, CompanyContext company, ISearchSource searchSource) : base(community, company)
+        public SearchController(ICommunityContext community, ICompanyContext company, ISearchSource searchSource) : base(community, company)
         {
             SearchSource = searchSource;
         }
@@ -56,6 +56,23 @@ namespace d360.web.Controllers.V2
                 return result.Results.AsQueryable();
             }
             return null;            
+        }
+
+        [HttpPost, AjaxValidateAntiForgeryToken, Route("rebuildIndex")]
+        public HttpResponseMessage RebuildIndex()
+        {
+            if (!Company.CurrentResourceIsAdmin) return ReturnApiError(HttpStatusCode.Unauthorized, "User not authorized to perfom this action");
+
+            Company.RebuildIndexRequest();
+
+            var responsejson = new JsonNetResult
+            {
+                Data = new { type = "confirm", title = "Success!", action = "add", message = "request submitted.", id = "" },
+                Formatting = Newtonsoft.Json.Formatting.None
+            }; 
+
+            return Request.CreateResponse(HttpStatusCode.Created, new { type = "confirm", title = "Success!", action = "add", message = "request submitted.", id = "" });
+
         }
     }
 }

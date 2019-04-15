@@ -40,6 +40,8 @@ export class AdminSettingsComponent extends AdminBaseComponent {
     groups: SelectItem[];
     sub: any;
     routeValidationMessage = "";
+    rebuildLabel: string = "Refresh Search Index";
+    disableRebuildIndex: boolean = false;
     
     constructor(
         headerBreadcrumbService: HeaderBreadcrumbService,
@@ -119,5 +121,17 @@ export class AdminSettingsComponent extends AdminBaseComponent {
 
     rebuildDisplayValues() {
         this.companySettingsService.postDisplayRebuildRequest();
+    }
+
+    rebuildIndex() {
+        this.disableRebuildIndex = true;
+        this.companySettingsService.postIndexRebuildRequest()
+            .then(x => {
+                if (x.type == "confirm") {
+                    this.rebuildLabel = "Refresh Queued";
+                } else {
+                    this.disableRebuildIndex = false;
+                }
+            });
     }
 }

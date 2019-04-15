@@ -1,22 +1,22 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
-import { Router, ActivatedRoute }       from '@angular/router';
-import { BaseComponent } from '../shared/base.component';
-import { Title } from '@angular/platform-browser';
-import { ModelsService } from '../../services/models.service';
-import { MessagesService } from '../../services/messages.service';
-import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
-import { PermissionsService } from '../../services/permissions.service';
-import { RightSidebarService } from '../../services/right-sidebar.service';
-import { HeaderActionsService } from '../../services/header-actions.service';
-import { Breadcrumb } from '../../models/breadcrumb.model';
-import { Model, ModelHierarchy } from '../../models/model.model';
-import { TreeNode } from 'primeng/primeng';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import { StringConstants } from '../../static/string-constants';
-import { LevelsService } from '../../services/levels.service';
-import { RightSidebarItem } from '../../models/rightsidebar.model';
-import { GridColumn, GridField } from '../../models/grid-definition.model';
-import { GridDefinitionService } from '../../services/grid-definition.service';
+﻿import {Input, Component, EventEmitter, Output, OnInit, OnDestroy} from '@angular/core';
+import {Router, ActivatedRoute} from '@angular/router';
+import {BaseComponent} from '../shared/base.component';
+import {Title} from '@angular/platform-browser';
+import {ModelsService} from '../../services/models.service';
+import {MessagesService} from '../../services/messages.service';
+import {HeaderBreadcrumbService} from '../../services/header-breadcrumb.service';
+import {PermissionsService} from '../../services/permissions.service';
+import {RightSidebarService} from '../../services/right-sidebar.service';
+import {HeaderActionsService} from '../../services/header-actions.service';
+import {Breadcrumb} from '../../models/breadcrumb.model';
+import {Model, ModelHierarchy} from '../../models/model.model';
+import {TreeNode} from 'primeng/primeng';
+import {SiteUrlHelpers} from '../../static/site-url-helpers';
+import {StringConstants} from '../../static/string-constants';
+import {LevelsService} from '../../services/levels.service';
+import {RightSidebarItem} from '../../models/rightsidebar.model';
+import {GridColumn, GridField} from '../../models/grid-definition.model';
+import {GridDefinitionService} from '../../services/grid-definition.service';
 
 @Component({
     selector: 'd3s-model-item-structure',
@@ -27,11 +27,11 @@ import { GridDefinitionService } from '../../services/grid-definition.service';
 export class ModelItemStructureComponent extends BaseComponent implements OnInit, OnDestroy {
     sub: any;
     rightSub: any;
-    
+
     model: Model;
     modelHierarchy: ModelHierarchy[] = [];
     levels: any[] = [];
-    
+
     modelId: number;
     selectedParentID: number;
     treeNodeArray: TreeNode[] = [];
@@ -42,7 +42,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
 
     searchValue: string;
     showEditor: boolean;
-    showDelete: boolean;    
+    showDelete: boolean;
     selectedLevel: number = 0;
 
     theDeleteCallback: Function;
@@ -62,7 +62,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     ) {
         super();
         this.rightSidebarService = rightSidebarService;
-        
+
         this.theDeleteCallback = this.deleteModelHierarchy.bind(this);
         router.events.subscribe((value) => {
             this.showEditor = false;
@@ -70,7 +70,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     }
 
     ngOnInit() {
-        
+
         this.sub = this.route.params.subscribe(params => {
 
             this.modelId = +params['modelId'];
@@ -79,25 +79,25 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
             this.setCommonRightSideBar(true);
 
             this.getFieldsDefinition();
-            
+
             this.rightSidebarService.showItem(new RightSidebarItem('Hierarchy Diagram', 'modeldiagram', ['fa-sitemap'], `/sidebar/visualization/diagram/${this.objectID}`))
             this.loadPermissions(this.permissionsService, StringConstants.ObjectTaxonomyType, this.modelId);
             this.setObjectInfo(StringConstants.ObjectTaxonomyType, this.modelId);
 
             this.headerBreadcrumbService.setCurrentObjectInfo('TaxonomyType', this.modelId);
-            
+
             this.modelsService.getModel(this.modelId)
-                    .then(result => {
-                        this.searchValue = "";
-                        this.model = result;
+                .then(result => {
+                    this.searchValue = "";
+                    this.model = result;
 
-                        this.headerBreadcrumbService.clearBreadcrumbs();
-                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Models', `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`));                        
-                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.Name, SiteUrlHelpers.getObjectUrl('TAXONOMYTYPE', this.model.ID)));
+                    this.headerBreadcrumbService.clearBreadcrumbs();
+                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Models', `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`));
+                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.Name, SiteUrlHelpers.getObjectUrl('TAXONOMYTYPE', this.model.ID)));
 
-                        this.loadModelHierarchy(this.modelId);
+                    this.loadModelHierarchy(this.modelId);
 
-                        this.setBrowserTitle(this.titleService, this.model.Name);
+                    this.setBrowserTitle(this.titleService, this.model.Name);
 
                 });
 
@@ -110,13 +110,13 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
 
     ngOnDestroy() {
         this.clearSidebar();
-        this.sub.unsubscribe();          
+        this.sub.unsubscribe();
     }
 
     private loadModelHierarchy(modelId: number) {
         this.isLoading = true;
         this.modelsService.getModelHierarchy(modelId, true, true)
-            .then(result => {                
+            .then(result => {
                 this.modelHierarchy = result;
 
                 this.treeNodeArray = this.buildTreeNodeArray(this.modelHierarchy, 1);
@@ -125,17 +125,18 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     }
 
     private getFieldsDefinition() {
-        this.gridDefinitionService.getGridDefinition(this.modelId, StringConstants.ObjectTaxonomyType)
-            .then(result => {
-                this.columns = result.Columns;   
+        this.gridDefinitionService.getGridDefinition(this.modelId, StringConstants.ObjectTaxonomyType).subscribe(
+            result => {
+                this.columns = result.Columns;
                 this.fields = result.Fields;
-            });
+            }
+        );
     }
 
     private modelTaxonomyTitle(): string {
         if (!this.selected) {
             let thisLevel = this.levels.filter(x => x.Level == this.selectedLevel + 1);
-                        
+
             if (thisLevel && thisLevel.length > 0)
                 return thisLevel[0].Name;
             else
@@ -145,12 +146,12 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
         let thisLevel = this.levels.filter(x => x.Level == this.selected.data.Level);
 
         if (thisLevel && thisLevel.length > 0) return thisLevel[0].Name;
-        return `(Level ${this.selected.data.Level + 1}) Item`;       
+        return `(Level ${this.selected.data.Level + 1}) Item`;
     }
-    
+
     private buildTreeNodeArray(models: ModelHierarchy[], levelNumber: number, Parent?: number): TreeNode[] {
         //find the root items then 
-        
+
         let rootNodes = models.filter(x => (Parent != undefined ? x.ParentID == Parent : !x.ParentID));
 
         if (rootNodes.length == 0) return null;
@@ -163,7 +164,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
                 label: root.DisplayValue,
                 expanded: false,
                 data: root,
-                children: (this.buildTreeNodeArray(models, levelNumber+1, root.ID)) //recursively find its children
+                children: (this.buildTreeNodeArray(models, levelNumber + 1, root.ID)) //recursively find its children
             });
         }
 
@@ -173,7 +174,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     private showHierarchy(id: number) {
         this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('TAXONOMY', id, this.modelId));
     }
-    
+
     setTreeNodeStyles(node) {
         if (!node.data) return null;
 
@@ -185,8 +186,8 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
 
     deleteModelHierarchy(id: number) {
         this.isLoading = true;
-        this.modelsService.deleteModelHierarchy(id).then(res => {            
-            if (!res.isError) {                
+        this.modelsService.deleteModelHierarchy(id).then(res => {
+            if (!res.isError) {
                 this.deleteSelectedTreeNode(id);
             }
 
@@ -223,7 +224,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
 
             //push children
             if (node.children) {
-                for (var i = 0; i < node.children.length; i++) {                    
+                for (var i = 0; i < node.children.length; i++) {
                     if (node.children[i].data.ID && node.children[i].data.ID == id) {
                         node.children.splice(i, 1);
                         return
@@ -253,13 +254,13 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     }
 
     private closeEditor() {
-        this.showEditor = false;        
+        this.showEditor = false;
     }
 
-    private showAdd(level:number) {       
-        this.showEditor = true;        
+    private showAdd(level: number) {
+        this.showEditor = true;
         this.selectedParentID = level == 0 ? undefined : this.selected ? this.selected.data.ID : undefined;
         this.selectedLevel = level;
         this.selected = null;
-    }    
+    }
 };

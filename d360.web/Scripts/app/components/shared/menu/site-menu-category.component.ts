@@ -18,23 +18,22 @@ import { createWriteStream } from 'fs';
     selector: 'd3s-site-menu-category',    
     template: ` 
                     <li #item [ngClass]="{'menu-category':true,'menu-parent':menu && (menu.NavigationItems),'menu-active':menu?.isActiveItem}" title="{{title}}" (mouseenter)="show(item)" (mouseleave)="hide(item)" [routerLink]="url ? url : []" style="cursor: pointer;" >
-                        <span>
-                            <i *ngIf="rootIconName" [class]="'fa ' + rootIconName"></i>
-                            <img *ngIf="imageUrl" [src]="imageUrl" style="max-width: 15px; max-height: 15px; margin: 0px 15px 0px 10px" />
-                            <span [ngClass]="{'caption':true, 'min':!expanded}">
-                                <div [ngClass]="{'no-overflow':expanded, 'icon-active':expanded, 'icon':!expanded}"> {{title}} <i [ngClass]="{'pull-right menu-category fa fa-caret-right':(menu && menu.NavigationItems && menu.NavigationItems.length > 0)}"></i></div>
-                            </span>
-                        </span>
+                       <div style="display:inline-flex;">
+                            <i *ngIf="rootIconName" [class]="'fa ' + rootIconName" style="padding: 10px;"></i>
+                            <img *ngIf="imageUrl" [src]="imageUrl" style="max-width: 20px; max-height: 20px; margin:10px 10px 10px 10px" />
+                            <div [ngClass]="{'caption':true, 'min':!expanded}">
+                                <div [ngClass]="{'no-overflow':expanded, 'icon-active':expanded, 'icon':!expanded}"> {{title}} </div>
+                                <i [ngClass]="{'pull-right menu-category fa fa-caret-right':(menu && menu.NavigationItems && menu.NavigationItems.length > 0),'icon-active':expanded, 'icon':!expanded}"></i>
+                            </div>
+                        </div>
                         <div *ngIf="menu && menu.NavigationItems && menu.NavigationItems.length > 0" class="menu-child megamenu-panel" (click)="stopNavigation($event)">
                             <div>
                                 <div class="row megamenu-title truncate">
-                                    <span>
-                                        <input #searchinput type="search" [(ngModel)]=searchText placeholder="Search menu..."/>
-                                        <i *ngIf="searchText != ''" (click)="clearInput()" class="fa fa-times" style="padding: 10px;"></i>
-                                    </span>
+                                    <input #searchinput type="search" [(ngModel)]=searchText placeholder="Search menu..."/>
+                                    <i (click)="clearInput()" [ngClass]="{'fa fa-times':searchText != '', 'fa fa-search':searchText == '' ||  !seachtext}" style="padding: 10px;margin-left:auto;"></i>
                                 </div>
                                     <span class="megamenu-tools" *ngIf="showClearButton">
-                                        <i (click)="clearClick.emit(true)" class=" pull-right fa fa-eraser" [pTooltip]="'Clear ' + title + ' List'" tooltipZIndex="10001"></i>
+                                        <i style="line-height: 35px;" (click)="clearClick.emit(true)" class=" pull-right fa fa-eraser" [pTooltip]="'Clear ' + title + ' List'" tooltipZIndex="10001"></i>
                                     </span>
                                 <div class="row megamenu-items">
                                     <div  style="padding:0px;" [class]="getColumnClass(menu)" *ngFor="let item of menu.NavigationItems | simpleSearch: searchText">
@@ -82,7 +81,7 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
 
             if (submenu) {
                 this.menu.isActiveItem = true;
-                
+                submenu.style.opacity = 0;
                 submenu.style.zIndex = ++SiteNav.zindex;
 
                 submenu.style.top = '0px'; 
@@ -165,7 +164,8 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
                 var topOffset = windowHeight - maxHeight;
                 element.style.top = topOffset + 'px';
             }            
-        }        
+        } 
+        element.style.opacity = 1;
     }
 
     hide(item) {

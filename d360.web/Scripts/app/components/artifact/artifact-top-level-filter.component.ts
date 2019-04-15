@@ -22,7 +22,7 @@ import {
 import {
     FieldsService
 } from '../../services/fields.service';
-import { setTimeout } from 'core-js';
+import {setTimeout} from 'core-js';
 
 @Component({
     selector: 'd3s-artifact-top-level-filter',
@@ -132,12 +132,13 @@ export class ArtifactTopLevelFilterComponent extends BaseComponent implements On
 
     public loadFieldItems(givenparentfield: GridFilterColumn, givenfield: GridFilterColumn): void {
         var fieldId = +givenfield.datafield.replace('Field', '');
-        
+
         if (givenparentfield.value.length > 0) {
-            this.fieldService.getCascadingListFieldValues(fieldId, undefined, givenparentfield.value).then(res => {
-                givenfield.disabled = false;
-                givenfield.filteritems = res.map(r => r.Text + '!~!' + r.Value);
-            });
+            this.fieldService.getCascadingListFieldValues(fieldId, undefined, givenparentfield.value).subscribe(
+                res => {
+                    givenfield.disabled = false;
+                    givenfield.filteritems = res.map(r => r.Text + '!~!' + r.Value);
+                });
         } else {
             givenfield.disabled = true;
             givenfield.filteritems = [];
@@ -148,5 +149,4 @@ export class ArtifactTopLevelFilterComponent extends BaseComponent implements On
             this.ref.markForCheck();
         }, 50);
     }
-
-};
+}

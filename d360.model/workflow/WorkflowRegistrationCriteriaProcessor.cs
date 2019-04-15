@@ -23,7 +23,7 @@ namespace d360.model.workflow
             return EvaluateObject(expression, context, @object, objectId, itemId, score, issueObject, issueObjectId, changedFields);            
         }
 
-        public static string ToPlainText(CompanyContext context, string criteria)
+        public static string ToPlainText(ICompanyContext context, string criteria)
         {
             if (string.IsNullOrEmpty(criteria)) return "";
 

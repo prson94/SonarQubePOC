@@ -23,9 +23,9 @@ namespace d360.web.Controllers.V2
         RoutePrefix("api/v{version:apiVersion}/responsibilities"),
         Authorize
     ]
-    public class ResponsibilitiesController : BaseApiController
+    public class ResponsibilitiesController : BaseV2ApiController
     {
-        public ResponsibilitiesController(CommunityContext community, CompanyContext company)
+        public ResponsibilitiesController(ICommunityContext community, ICompanyContext company)
             : base(community, company)
         {            
         }
