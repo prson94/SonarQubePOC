@@ -3736,8 +3736,7 @@ end
             splitStatements="true"
             stripComments="true">
       <![CDATA[
-			
-ALTER procedure [bulkload].[GetLoadColumns]
+			ALTER procedure [bulkload].[GetLoadColumns]
 
 	@action varchar(2),
 	@type varchar(50),
@@ -3780,7 +3779,6 @@ begin
 
 	if @action = 'O'
 	begin
-		
 			insert into @fields 
 				select	1, 'Responsibility', 1, 1, 0, 1
 
@@ -3959,7 +3957,7 @@ begin
 							else cast(0 as bit)
 						end as IsLookup
 				from	@levels L 
-						inner join FieldType FT on FT.IsPartOfKey = 1 and FT.Object = @type and FT.ObjectID = @id
+						inner join FieldType FT on FT.IsPartOfKey = 1 and FT.Object = @type and FT.ObjectID = @id						
 						left join AssetTypeLevel TTL on TTL.[Level] = L.Value and TTL.AssetTypeID = FT.AssetTypeID
 		end 
 	end 
@@ -3968,8 +3966,6 @@ begin
 		
 		print 'relate / unrelate'
 				
-		
-		
 		declare @subjectType varchar(50),
 				@subjectTypeName nvarchar(500),
 				@subjectTypeID int,
@@ -3984,10 +3980,6 @@ begin
 				@objectTypeID = ObjectID
 		from	IntersectTypeDetail
 		where	ID = @id
-		
-
-		
-
 		
 
 		if @objectType = 'FusionAttributeType' or @objectType = 'IntersectType'
@@ -4132,13 +4124,13 @@ begin
 			from		Fusion
 			order by	Name
 	end
-
 	
 	select	Name,
 			Required,
 			PartOfKey,
 			AllowMultipleValues,
 			IsLookup,
+			F.[FieldTypeId],
 			(
 			select	Value
 			from	@lookups
@@ -4153,7 +4145,11 @@ end
     </sql>
     <rollback>
       <![CDATA[
-	
+      /****** Object:  StoredProcedure [bulkload].[GetLoadColumns]    Script Date: 4/15/2019 8:22:33 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
 ALTER procedure [bulkload].[GetLoadColumns]
 
 	@action varchar(2),
@@ -4197,7 +4193,6 @@ begin
 
 	if @action = 'O'
 	begin
-		
 			insert into @fields 
 				select	1, 'Responsibility', 1, 1, 0, 1
 
@@ -4403,10 +4398,6 @@ begin
 		where	ID = @id
 		
 
-		
-
-		
-
 		if @objectType = 'FusionAttributeType' or @objectType = 'IntersectType'
 		begin
 			insert into @fields values (0, @objectTypeName, 1, 1, 0, 0)
@@ -4549,13 +4540,13 @@ begin
 			from		Fusion
 			order by	Name
 	end
-
 	
 	select	Name,
 			Required,
 			PartOfKey,
 			AllowMultipleValues,
 			IsLookup,
+			F.[FieldTypeId],
 			(
 			select	Value
 			from	@lookups
