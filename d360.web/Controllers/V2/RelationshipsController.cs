@@ -21,7 +21,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
-using Mvc = System.Web.Mvc;
 
 namespace d360.web.Controllers.V2
 {
@@ -144,11 +143,10 @@ namespace d360.web.Controllers.V2
             }
         }
 
-        #endregion
 
         #region Endpoints
         [Route("_intersectTypeItems/{id:int}/excel.xls"), FileDownload, HttpGet]
-        public async Task<IHttpActionResult> _IntersectTypeItemsExcel(int id)
+        public IHttpActionResult _IntersectTypeItemsExcel(int id)
         {
 
             var customColumns = Company.Query<string>(
