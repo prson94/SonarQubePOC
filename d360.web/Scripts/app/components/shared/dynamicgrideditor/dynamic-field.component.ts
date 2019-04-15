@@ -1,13 +1,28 @@
-import { Component, Input, OnInit, ChangeDetectionStrategy, Output, EventEmitter, ChangeDetectorRef, OnDestroy, ViewChild, AfterViewChecked, OnChanges } from '@angular/core';
-import { FormGroup } from '@angular/forms';
-import { EditorField, EditorDropDownItem } from '../../../models/editor-field.model';
-import { SelectItem, Editor } from 'primeng/primeng';
-import { SiteUrlHelpers } from '../../../static/site-url-helpers';
-import { BaseComponent } from '../base.component';
-import { FormHelpers } from '../../../static/form-helpers';
-import { CascadeService } from '../../../services/cascade.service';
-import { FieldsService } from '../../../services/fields.service';
-import { concat ,  Subject } from 'rxjs';
+import {
+    AfterViewChecked,
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    Input,
+    OnChanges,
+    OnDestroy,
+    OnInit,
+    Output,
+    ViewChild
+} from '@angular/core';
+import {FormGroup} from '@angular/forms';
+import {Editor} from 'primeng/primeng';
+import {Subject} from 'rxjs';
+
+import {EditorDropDownItem, EditorField} from '../../../models/editor-field.model';
+
+import {FormHelpers} from '../../../static/form-helpers';
+
+import {CascadeService} from '../../../services/cascade.service';
+import {FieldsService} from '../../../services/fields.service';
+
+import {BaseComponent} from '../base.component';
 
 declare var CompanySettings;
 
@@ -17,6 +32,7 @@ declare var CompanySettings;
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [FieldsService]
 })
+
 export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDestroy, OnChanges, AfterViewChecked {
     @Input() field: EditorField;
     @Input() form: FormGroup;
@@ -63,22 +79,21 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     setEditorContent(e: any) {
         //workaround for GOV-5287, bug with primeng see JIRA for issue details
 
-        //console.log('setEditorContent', e);
-
-        if (this.ed == null)
+        if (this.ed == null) {
             return;
+        }
 
         let quill = this.ed.getQuill();
-        //console.log('quill', quill);
 
         if (e == null && quill != null) {
             let contents = quill.getContents();
 
             if (contents != null && contents.ops != null) {
                 let content = contents.ops.find(i => i.insert != null && i.insert != '\n');
+
                 if (content != null) {
-                    //console.log('value', quill.container.querySelector('.ql-editor').innerHTML);
                     this.field.Value = quill.container.querySelector('.ql-editor').innerHTML;
+
                     return;
                 }
             }
@@ -95,45 +110,50 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                     if (casc.parentListItemId != null && casc.parentListItemId.length > 0) {
                         //load the values for the list that is a child                    
                         this.field.Items = [];
-                        return this.fieldsService.getCascadingListFieldValues(casc.fieldTypeId, casc.parentListItemId).then(res => {
 
-                            this.field.Items = res;
-                            if (((this.field.Items == null || this.field.Items.length == 0) && this.field.Value != null) || this.hasCascadeLoaded) {
-                                this.field.Value = null;
-                            }
-                            
-                            if (this.field.DelayedLoadType == 'FieldFilter') {
-                                if (this.field.Items == null || this.field.Items.length == 0) {
-                                    this.form.controls[this.field.FieldName].disable();
-                                } else if (!this.field.ReadOnly) {
-                                    this.form.controls[this.field.FieldName].enable();
+                        return this.fieldsService.getCascadingListFieldValues(casc.fieldTypeId, casc.parentListItemId).subscribe(
+                            res => {
+                                this.field.Items = res;
+
+                                if (((this.field.Items == null || this.field.Items.length == 0) && this.field.Value != null) || this.hasCascadeLoaded) {
+                                    this.field.Value = null;
                                 }
-                            }
-                            this.hasCascadeLoaded = true;
 
-                            this.listItemChange.emit({ field: this.field, value: this.field.Value });
-                            this.ref.markForCheck();
-                        })
-                    }
-                    else {
+                                if (this.field.DelayedLoadType == 'FieldFilter') {
+                                    if (this.field.Items == null || this.field.Items.length == 0) {
+                                        this.form.controls[this.field.FieldName].disable();
+                                    } else if (!this.field.ReadOnly) {
+                                        this.form.controls[this.field.FieldName].enable();
+                                    }
+                                }
+
+                                this.hasCascadeLoaded = true;
+
+                                this.listItemChange.emit({field: this.field, value: this.field.Value});
+                                this.ref.markForCheck();
+                            }
+                        )
+                    } else {
                         this.field.Value = null;
                         this.field.Items = [];
+
                         if (this.field.DelayedLoadType == 'FieldFilter') {
                             this.form.controls[this.field.FieldName].disable();
                         }
-                        this.listItemChange.emit({ field: this.field, value: null });
+
+                        this.listItemChange.emit({field: this.field, value: null});
                     }
                 }
-           });
+            });
 
         this.relationSub = this.fieldsService.getRelationshipFieldItems(this.relationSource$)
             .subscribe(res => {
                 this.relationItemsLoading = false;
-                this.field.Items = res.results.items;
+                this.field.Items = res.results["items"];
                 this.selectRelationItems(this.relationItems);
 
                 if ((res.event.globalFilter != null && res.event.globalFilter != "") || res.event.first == 0)
-                    this.field.RecordCount = res.results.count;
+                    this.field.RecordCount = res.results["count"];
                 this.ref.markForCheck();
             });
 
@@ -145,17 +165,17 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                 })
             : this.fieldsService.getTypeaheadItems(this.typeAheadSource$)
             .subscribe(res => {
-                //console.log('sub', res);
                 this.field.Items = <EditorDropDownItem[]>res;
                 this.ref.markForCheck();
             });
 
         if (this.field.DelayedLoadType == 'Predicate') {
-            this.fieldsService.getLookupFilteredByPredicate(this.field.FieldTypeID, this.selectedObject, this.selectedObjectID).then(
+            this.fieldsService.getLookupFilteredByPredicate(this.field.FieldTypeID, this.selectedObject, this.selectedObjectID).subscribe(
                 res => {
                     this.field.Items = res.items;
                     this.filterException = res.exceptionMessage;
-                    this.ref.markForCheck();      
+                    this.ref.markForCheck();
+
                     if (res.useTypeahead && !this.field.MultiSelect) {
                         //Switch to typeahead. We do not switch back
                         this.field.UseTypeahead = true;
@@ -168,18 +188,15 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             for (let validation of this.field.Validations) {
                 if (validation.regex) {
                     this.regexErrorMessage = validation.message ? String(validation.message).replace(/<[^>]+>/gm, '') : '';
-                }
-                else if (validation.rule && validation.rule.startsWith('increment')) {
+                } else if (validation.rule && validation.rule.startsWith('increment')) {
                     this.Increment = +validation.rule.split("increment=")[1];
-                }
-                else if (validation.rule && validation.rule.startsWith('min')) {
+                } else if (validation.rule && validation.rule.startsWith('min')) {
                     this.Min = +validation.rule.split("minLength=")[1];
-                }
-                else if (validation.rule && validation.rule.startsWith('max')) {
+                } else if (validation.rule && validation.rule.startsWith('max')) {
                     this.Max = +validation.rule.split("maxLength=")[1];
-                }
-                else if (validation.rule && validation.rule.startsWith('length')) {
+                } else if (validation.rule && validation.rule.startsWith('length')) {
                     let vals = validation.rule.split("length=")[1];
+
                     this.Min = +vals.split(",")[0];
                     this.Max = +vals.split(",")[1];
                 } else if (validation.rule && validation.rule.startsWith('precision')) {
@@ -206,13 +223,14 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
         if (this.field.FieldType == 'Lookup' && this.field.ParentFieldTypeID <= 0) {
             window.setTimeout(() => {
-                this.listItemChange.emit({ field: this.field, value: this.field.Value });
+                this.listItemChange.emit({field: this.field, value: this.field.Value});
             }, 250);
         }
 
         if (this.field.FieldType == 'Lookup' && this.field.UseTypeahead) {
             if (this.field.Items != null && this.field.Items.length > 0) {
                 let sel: EditorDropDownItem = this.field.Items.find(i => i.Selected == true);
+
                 this.typeAheadValue = sel;
                 this.onSelect(sel);
             }
@@ -221,73 +239,78 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     }
 
     ngOnChanges() {
-        if (this.ed != null && this.ed.quill != null)
+        if (this.ed != null && this.ed.quill != null) {
             this.quill = this.ed.quill;
-        else
+        } else {
             this.quill = null;
-
+        }
     }
 
     ngAfterViewChecked() {
-        if (this.ed != null && this.ed.quill != null)
+        if (this.ed != null && this.ed.quill != null) {
             this.quill = this.ed.quill;
+        }
     }
 
     ngOnDestroy() {
         this.cascadeSub.unsubscribe();
         this.relationSub.unsubscribe();
         this.quill = null;
-        this.ed = null; 
+        this.ed = null;
     }
 
     get isValid() {
         if (this.field.FieldType == "Link") {
-            if (this.form.controls[this.field.FieldName + '_Name'] == undefined) return true;
-            if (this.form.controls[this.field.FieldName + '_Name'].disabled) return true;
-
-            if (this.form.controls[this.field.FieldName + '_Url'] == undefined) return true;
-            if (this.form.controls[this.field.FieldName + '_Url'].disabled) return true;
+            if (this.form.controls[this.field.FieldName + '_Name'] == undefined
+                || this.form.controls[this.field.FieldName + '_Name'].disabled
+                || this.form.controls[this.field.FieldName + '_Url'] == undefined
+                || this.form.controls[this.field.FieldName + '_Url'].disabled
+                || this.form.controls[this.field.FieldName] == undefined
+                || this.form.controls[this.field.FieldName].disabled
+            ) {
+                return true;
+            }
 
             return this.form.controls[this.field.FieldName + '_Url'].valid
         }
 
-        if (this.form.controls[this.field.FieldName] == undefined) return true;
-        if (this.form.controls[this.field.FieldName].disabled) return true;
+        const numInputs = document.querySelectorAll('input[type=number]');
 
-        const numInputs = document.querySelectorAll('input[type=number]')
-        for (var i = 0; i < numInputs.length; i++) {
+        for (let i = 0; i < numInputs.length; i++) {
             let elem = numInputs[i] as HTMLInputElement;
-            
+
             if (elem.validity.badInput && elem.validationMessage == "Please enter a number.") {
                 if (this.field.FieldType == 'Number' && this.field.FieldName == elem.name) {
-                    this.form.controls[this.field.FieldName].setErrors({ integer: true });
+                    this.form.controls[this.field.FieldName].setErrors({integer: true});
                 }
                 if (this.field.FieldType == 'Decimal' && this.field.FieldName == elem.name) {
-                    this.form.controls[this.field.FieldName].setErrors({ number: true });
-                }                
+                    this.form.controls[this.field.FieldName].setErrors({number: true});
+                }
             }
+
             if (this.field.FieldType == 'Number') {
-                if (elem.value.split('.').length > 1 ||
-                    elem.value.split('+').length > 1 ||
-                    (elem.value.indexOf('-') != 0 && elem.value.split('-').length > 1) ||
-                    elem.value.split('e').length > 1 ||
-                    elem.value.split('E').length > 1) {
+                if (elem.value.split('.').length > 1
+                    || elem.value.split('+').length > 1
+                    || (elem.value.indexOf('-') != 0 && elem.value.split('-').length > 1)
+                    || elem.value.split('e').length > 1
+                    || elem.value.split('E').length > 1
+                ) {
                     if (this.field.FieldName == elem.name) {
-                        this.form.controls[this.field.FieldName].setErrors({ integer: true });
+                        this.form.controls[this.field.FieldName].setErrors({integer: true});
                     }
                 }
             } else if (this.field.FieldType == 'Decimal') {
-                if (elem.value.split('.').length > 2 ||
-                    elem.value.split('+').length > 1 ||
-                    (elem.value.indexOf('-') != 0 && elem.value.split('-').length > 1) ||
-                    elem.value.split('e').length > 1 ||
-                    elem.value.split('E').length > 1) {
+                if (elem.value.split('.').length > 2
+                    || elem.value.split('+').length > 1
+                    || (elem.value.indexOf('-') != 0 && elem.value.split('-').length > 1)
+                    || elem.value.split('e').length > 1
+                    || elem.value.split('E').length > 1
+                ) {
                     if (this.field.FieldName == elem.name) {
-                        this.form.controls[this.field.FieldName].setErrors({ number: true });
+                        this.form.controls[this.field.FieldName].setErrors({number: true});
                     }
                 }
             }
-            
         }
 
         return this.form.controls[this.field.FieldName].valid;
@@ -312,21 +335,29 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     }
 
     private fieldMessage(field: string) {
-        if (this.form.controls[field] == undefined) return '';
-        var errors = this.form.controls[field].errors;
+        let message = "";
+        let errors = this.form.controls[field].errors;
 
-        if (!errors) return '';
-        var message = ""
+        if (this.form.controls[field] == undefined) {
+            return '';
+        }
+
+        if (!errors) {
+            return '';
+        }
 
         if (errors["pattern"]) {
             message += this.regexErrorMessage;
         }
+
         if (errors["number"]) {
             message += "Please enter a valid number. ";
         }
+
         if (errors["integer"]) {
             message += "Please enter a valid integer. ";
         }
+
         if (errors["maxlength"]) {
             message += `${this.currentFieldName} maximum length of ${errors["maxlength"].requiredLength} characters exceeded.  Current length is [${errors["maxlength"].actualLength}] `;
         }
@@ -346,14 +377,14 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         if (errors["min"]) {
             message += ` Please enter a minimum value of ${errors["min"].min} `;
         }
-        
+
         return message;
     }
 
     private GetJSON(value: string) {
         try {
             return JSON.parse(value);
-        } catch{
+        } catch {
             return "Error";
         }
     }
@@ -364,16 +395,18 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     }
 
     private toDecimalPlaces(e: any, precision: number) {
-        if (e == null || e.target == null || precision == null)
-            return;
         let asString = '' + e.target.value;
+        let val = +e.target.value;
+        let newVal = +val.toFixed(precision);
+
+        if (e == null || e.target == null || precision == null) {
+            return;
+        }
+
         if (asString.split('.').length > 1 && asString.split('.')[1].length < precision) {
             return;
         }
 
-        let val = +e.target.value;
-        let newVal = +val.toFixed(precision);
-        
         if (newVal != null && (newVal != 0 || newVal != +val) && !isNaN(newVal)) {
             this.form.controls[this.field.FieldName].setValue(newVal);
             this.field.Value = newVal;
@@ -381,12 +414,12 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     }
 
     private clamp(e: any, min: number, max: number, precision: number) {
-        if (e == null || e.target == null || min == null || max == null)
-            return;
-
         let val = e.target.value;
-
         let newVal = FormHelpers.clamp(val, min, max, precision);
+
+        if (e == null || e.target == null || min == null || max == null) {
+            return;
+        }
 
         if (newVal != null && (newVal != 0 || newVal != +val) && !isNaN(newVal)) {
             this.form.controls[this.field.FieldName].setValue(newVal);
@@ -402,27 +435,35 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
     OnBlurTrim() {
         let value: string = this.form.controls[this.field.FieldName].value;
+
         this.form.controls[this.field.FieldName].setValue(value.trim());
     }
 
     private lazyLoad(e: any) {
-        //console.log('lazyLoad', this.relationItems, { fieldTypeID: this.field.FieldTypeID, object: this.object, objectID: this.objectID, event: e });
         this.relationItemsLoading = true;
-        this.relationSource$.next({ fieldTypeID: this.field.FieldTypeID, object: this.object, objectID: this.objectID, event: e });
+        this.relationSource$.next({
+            fieldTypeID: this.field.FieldTypeID,
+            object: this.object,
+            objectID: this.objectID,
+            event: e
+        });
     }
 
     selectRelationItems(e: any) {
-        if (e === '[]')
+        if (e === '[]') {
             this.relationItems = [];
-        else
+        } else {
             this.relationItems = e;
+        }
 
         if (this.relationItems != null) {
-            if (!Array.isArray(this.relationItems))
+            if (!Array.isArray(this.relationItems)) {
                 this.relationItems = [this.relationItems];
+            }
 
             for (let i = 0; i < this.relationItems.length; i++) { //associate the selection with the item in the table
                 let x = this.field.Items.findIndex(f => f.Value == this.relationItems[i].Value);
+
                 if (x > -1) {
                     this.relationItems[i] = this.field.Items[x];
                 }
@@ -436,29 +477,26 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
         this.form.controls[this.field.FieldName].setValue(this.field.Value);
         this.ref.markForCheck();
-
-        //console.log(e, this.relationItems, this.field);
     }
 
     private search(e: any) {
-        //console.log('search', e, this.object, this.objectID, this.field);
-        this.typeAheadSource$.next({ fieldTypeID: this.field.FieldTypeID, value: this.field.Value, event: e });
+        this.typeAheadSource$.next({fieldTypeID: this.field.FieldTypeID, value: this.field.Value, event: e});
     }
 
     private onSelect(e: EditorDropDownItem) {
-        if (e != null)
+        if (e != null) {
             this.field.Value = e.Value;
-        else
+        } else {
             this.field.Value = null;
+        }
+
         //Typeahead is a technically a list field, so we should emit an itemchange
-        this.listItemChange.emit({ field: this.field, value: this.field.Value });
+        this.listItemChange.emit({field: this.field, value: this.field.Value});
     }
 
     private clearTypeahead(e: any) {
         this.typeAheadValue = null;
         this.field.Value = null;
-        //this.field.Items.forEach(i => i.Selected = false);
-        //this.form.controls[this.field.FieldName].setValue(null);
         this.ref.markForCheck();
     }
 }

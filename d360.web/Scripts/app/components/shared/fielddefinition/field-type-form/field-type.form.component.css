@@ -1,0 +1,18 @@
+.display-table tr td {
+    padding: 3px;
+    border-radius: 0;
+}
+
+.relation-table tr td {
+    border-radius: 0;
+}
+
+.display-table-title {
+    text-align: center;
+    width: 100%;
+    font-family: "Roboto", Tahoma !important;
+    text-transform: uppercase;
+    color: #5c5e60 !important;
+    font-size: 1rem;
+    font-weight: bold;
+}

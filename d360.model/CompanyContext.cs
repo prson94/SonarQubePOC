@@ -2103,6 +2103,11 @@ where	R.SourceObject = 'FusionAttribute'
             Enqueue(Config.GetValue<string>("DisplayValueQueue"), new DisplayUpdateInfo { CompanyID = CurrentCompanyID, RebuildAll = true });
         }
 
+        public void RebuildIndexRequest()
+        {
+            Enqueue(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel { CompanyID = CurrentCompanyID });
+        }
+
         private void addQE(List<EventInfo> events, ChangeType action, EventObjectInfo item)
         {
             events.Add(new EventInfo {
@@ -2544,7 +2549,7 @@ select @err";
                             if (Any<ReferenceItemType>(i => i.Name == o.Name))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
-                        case EntityState.Modified:
+                        case EntityState.Modified:                            
                             if (Any<ReferenceItemType>(i => i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
