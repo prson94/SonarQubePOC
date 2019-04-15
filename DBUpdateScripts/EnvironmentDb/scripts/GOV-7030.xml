@@ -382,9 +382,7 @@ ALTER FUNCTION [dbo].[GetAssetKeyHash]()
 RETURNS TABLE 
 AS
 RETURN 
-(
-	
-
+(	
 select		A.AssetTypeID,
 				A.ID,
 				CONVERT(
@@ -444,6 +442,60 @@ select		A.AssetTypeID,
 	group by	A.AssetTypeID, A.ID
 
 )
+]]>
+    </rollback>
+  </changeSet>
+  <changeSet author="KMcNamee" id="GOV-7030-assethashview">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+  Drop view  if exists [dbo].[AssetKeyHash]
+]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+CREATE or ALTER view [dbo].[AssetKeyHash]
+as
+select		A.AssetTypeID,
+			A.Uid,
+			A.ID,
+			utility.GetHash(coalesce(convert(varchar(36),P.Uid)+'|','') + STRING_AGG(F.[Value], '|')) as KeyHash
+from		Asset A
+			cross apply (
+				select		top 100 percent
+							Code as [Value]
+				from		ReferenceItem
+				where		A.Object = 'ReferenceItem' and ID = A.ObjectID
+				union
+				select		top 100 percent
+							Name as [Value]
+				from		FusionAttribute
+				where		A.Object = 'FusionAttribute' and ID = A.ObjectID
+				union
+				select		top 100 percent
+							F.[Value]
+				from		FieldType FT
+							inner join Field F on	FT.AssetTypeID = A.AssetTypeID
+													and F.AssetID = A.ID
+													and F.FieldTypeID = FT.ID 
+													and FT.IsPartOfKey = 1
+				order by	FT.ColumnOrder asc
+			) F
+			outer apply (
+				select	top 1
+						P.[Uid]
+				from	[Intersect] I
+						inner join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID and I.Object = A.Object and I.ObjectID = A.ObjectID
+						inner join IntersectType IT on IT.ID = I.IntersectTypeID
+						inner join [Predicate] PR on PR.ID = IT.PredicateID and PR.Type in (3,4)
+			) P
+group by	A.AssetTypeID,
+			A.Uid,
+			A.ID,
+			P.Uid
+GO
 ]]>
     </rollback>
   </changeSet>
