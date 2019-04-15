@@ -2379,6 +2379,24 @@
             <param name="phrase"></param>
             <returns></returns>
         </member>
+        <member name="T:d360.web.Controllers.V2.FieldsController">
+            <summary>
+            This service houses all endpoints handling glossary-related data such as artifacts and models.
+            </summary>
+        </member>
+        <member name="M:d360.web.Controllers.V2.FieldsController.GetFieldTypesAsync(System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,System.String,System.Nullable{d360.core.DataType},System.Nullable{System.Int32},System.Nullable{System.Int32})">
+            <summary>
+            Retrieves field types contained within your environment.
+            </summary>
+            <param name="AssetTypeUid">The asset type Uid to retrieve field types for.</param>
+            <param name="RelationshipTypeUid">The relationship type Uid to retrieve field types for.</param>
+            <param name="Name">The API Name to search for.</param>
+            <param name="FriendlyName">The Friendly Name to search for.</param>
+            <param name="Type">The data type to search for.</param>
+            <param name="_pageSize">The number of results to return per page. The default value is 200.</param>
+            <param name="_pageNum">The page number to return results for.</param>
+            <returns>A list of field types corresponding to the given criteria, if any.</returns>
+        </member>
         <member name="T:d360.web.Controllers.V2.AuditController">
             <summary>
             
@@ -2723,6 +2741,22 @@
             This service houses all endpoints handling glossary-related data such as artifacts and models.
             </summary>
         </member>
+        <member name="M:d360.web.Controllers.V2.RelationshipsController.GetPredicatesAsync(System.Nullable{System.Guid},System.Nullable{d360.core.enums.PredicateType},System.String,System.String)">
+            <summary>
+            GET a list of predicates.
+            </summary>
+            <param name="PredicateUid">Filter by an predicate's unique identifier.</param>
+            <param name="Type">Filter by a predicate's functional type.</param>
+            <param name="Name">Filter by an predicate's Name.</param>
+            <param name="Inverse">Filter by an predicate's Inverse.</param>
+            <returns>A list of predicates contained within your Govern environment.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.RelationshipsController.GetPredicatesTypesAsync">
+            <summary>
+            GET a list of predicate functional types.
+            </summary>
+            <returns>A list of static predicate functional types contained within your Govern environment.</returns>
+        </member>
         <member name="M:d360.web.Controllers.V2.RelationshipsController.GetRelationshipsAsync(System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{d360.core.enums.State},System.Nullable{System.Int32},System.Nullable{System.Int32})">
             <summary>
             GET a list of relationships.
@@ -2986,6 +3020,14 @@
             Used in the Filter By Relationship tile on artifact list pages.
             </summary>
         </member>
+        <member name="M:d360.web.Controllers.D3SApiController.GetFusionRulesArtifactParents(System.Int32)">
+            <summary>
+            Used only in fusion rules to get the parents of an artifact that has a parent type.  
+            once fusion rules are retired this can go
+            </summary>        
+            <param name="id"></param>        
+            <returns></returns>
+        </member>
         <member name="M:d360.web.Controllers.FormController.Artifact_AddFields(System.Int32,System.Int32)">
             <param name="at">ArtifactTypeID</param>
             <param name="p">ParentID</param>
@@ -3213,26 +3255,6 @@
             cookie to inform jquery.fileDownload that a successful file download has occured
             </summary>
             <param name="filterContext"></param>
-        </member>
-        <member name="P:d360.web.Models.FieldTypeComplexLookupDefinitionRelation.ColumnStatement">
-            <summary>
-            Generated when it comes time to create a dynamic SQL query.
-            </summary>
-        </member>
-        <member name="P:d360.web.Models.FieldTypeComplexLookupDefinitionRelation.JoinStatement">
-            <summary>
-            Generated when it comes time to create a dynamic SQL query.
-            </summary>
-        </member>
-        <member name="P:d360.web.Models.FieldTypeComplexLookupDefinitionRelation.OrderByStatement">
-            <summary>
-            Generated when it comes time to create a dynamic SQL query.
-            </summary>
-        </member>
-        <member name="P:d360.web.Models.FieldTypeComplexLookupDefinitionRelation.WhereStatement">
-            <summary>
-            Generated when it comes time to create a dynamic SQL query.
-            </summary>
         </member>
         <member name="P:d360.web.Models.FieldValidationModel.message">
             <summary>

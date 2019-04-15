@@ -15,27 +15,16 @@ import { isString, isArray } from 'util';
 declare var CompanySettings;
 
 @Component({
-    selector: 'd3s-site-menu',    
-    template: ` 
-                <ul [class.left-side-nav-open]="menuOpen" [class.left-side-nav]='!menuOpen'>
-                    <d3s-site-menu-category [expanded]="menuOpen" [title]="'Home'" [url]="'home'" [rootIconName]="'fa-home'"></d3s-site-menu-category>  
-                    <d3s-site-menu-category *ngIf="favorites" [expanded]="menuOpen" [title]="'Favorites'" showClearButton="true" (clearClick)="clearFavorites()" [menu]="favorites" rootIconName="fa-star"></d3s-site-menu-category>
-                    <ng-template ngFor let-menu [ngForOf]="siteMenu">
-                        <d3s-site-menu-category *ngIf="menu.ShouldDisplay" [expanded]="menuOpen" [url]="menu.ngUrl" [title]="menu.Title" [rootIconName]="menu.Icon" [imageUrl]="menu.FullURL" [menu]="menu"></d3s-site-menu-category>
-                    </ng-template>                  
-                    <d3s-site-menu-category *ngIf="isAdmin" [expanded]="menuOpen" [title]="'Configuration'" rootIconName="fa-wrench" [menu]="configMenu"></d3s-site-menu-category>  
-                    <d3s-site-menu-category *ngIf="isAdmin" [expanded]="menuOpen" [title]="'Administration'" rootIconName="fa-cog" [menu]="adminMenu"></d3s-site-menu-category>  
-                </ul>
-                <div [ngClass]="{'menu-toggle':!menuOpen, 'menu-toggle-open':menuOpen}" title="Toggle full width navigation" (click)="toggleMenu();"><i class="fa fa-arrow-circle-left" [class.rotate-right]="!menuOpen" [class.rotate-left]="menuOpen"></i></div>
-                `,    
+    selector: 'd3s-site-menu',
+    templateUrl: './site-menu.component.html',
     providers: [SiteMenuService, FavoritesService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestroy {
-
     @Input() menuOpen: boolean;
     @Output() menuChanged = new EventEmitter<boolean>();
+
     public isAdmin: boolean = false;
     public siteMenu: SiteMenu[] = [];
     public favorites: SiteMenu;
@@ -43,7 +32,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     private adminMenu: SiteMenu;
     private configMenu: SiteMenu;
     private subSiteNav: any;
-    private subFavorites: any;  
+    private subFavorites: any;
 
     constructor(
         private ref: ChangeDetectorRef,
@@ -52,13 +41,13 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         private headerActionsService: HeaderActionsService,
         private authenticationService: AuthenticationService,
         private siteMenuService: SiteMenuService,
-        private favoritesService: FavoritesService) {
+        private favoritesService: FavoritesService
+    ) {
         super();
     }
 
     ngOnInit() {
         this.loadMenu();
-
         this.loadFavorites();
 
         this.subSiteNav = this.stateService.siteMenuRequiresReload$.subscribe(() => {
@@ -68,7 +57,6 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                 this.headerActionsService.emitCountChange();
             }, 500);
         });
-
 
         this.subFavorites = this.headerActionsService.onFavoritesChanges$.subscribe(() => {
             this.loadFavorites();
@@ -82,13 +70,18 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
 
 
-    loadFavorites() {     
-        if (CompanySettings.ShowFavorites == 'false') return;
-        this.favoritesService.getFavorites().then(favorites => {            
+    loadFavorites() {
+        if (CompanySettings.ShowFavorites == 'false') {
+            return;
+        }
+
+        this.favoritesService.getFavorites().subscribe(
+            favorites => {
             favorites = _.sortBy(favorites, 'SortOrder'); // sort the favorites
             this.favorites = new SiteMenu();
             this.favorites.MenuID = '*Favourites';
             this.favorites.NavigationItems = [];
+
             for (let favorite of favorites) {
                 this.favorites.NavigationItems.push({
                     Name: favorite.Name,
@@ -99,61 +92,65 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                     count: null
                 });
             }
+
             this.ref.markForCheck();
-        });        
+        }
+        );
     }
 
     loadMenu() {
-        this.siteMenuService.getMenu()
-            .then(result => {
-                result.MenuItems = result.MenuItems.filter(x => (x.MenuID != '#Admin' ) ); //remove admin menu it will get built later.
+        this.siteMenuService.getMenu().then(
+            result => {
+                result.MenuItems = result.MenuItems.filter(x => (x.MenuID != '#Admin')); //remove admin menu it will get built later.
 
                 // add properties we need to add to the burned in menus
                 for (let menu of result.MenuItems) {
                     menu.ShouldDisplay = true;
 
                     switch (menu.MenuID) {
-                        case '#Glossary':                            
+                        case '#Glossary':
                             menu.ngUrl = SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT;
                             break;
-                        case '#Models':                            
+                        case '#Models':
                             menu.ngUrl = `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`;
                             break;
-                        case '#Policy':                            
+                        case '#Policy':
                             menu.ngUrl = `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_POLICY_CLASSIFICATION}`;
                             break;
-                        case '#Data Quality':                            
+                        case '#Data Quality':
                             break;
-                        case '#Monitor':                            
+                        case '#Monitor':
                             menu.NavigationItems = [];
                             menu.ngUrl = SiteUrlHelpers.SITE_URL_MONITOR_ROOT;
                             menu.ShouldDisplay = (CompanySettings.DisableIssueManagement != 'true');
                             break;
-                        case '#Reference':                            
+                        case '#Reference':
                             menu.NavigationItems = [];
                             menu.ngUrl = SiteUrlHelpers.SITE_URL_REFERENCE_ROOT;
                             break;
-                        case '#Fusion':                            
+                        case '#Fusion':
                             menu.NavigationItems = [];
                             menu.ngUrl = SiteUrlHelpers.SITE_URL_FUSION_ROOT;
                             break;
-                        case '#Community':                            
+                        case '#Community':
                             menu.NavigationItems = [];
                             menu.ngUrl = SiteUrlHelpers.SITE_URL_COMMUNITY_ROOT;
                             break;
                         default:
                             //is it a custom menu?
-                            if (menu.MenuID.startsWith('~')) {                                
-                                if (!menu.Title) menu.Title = menu.MenuID.replace('~', '');                               
+                            if (menu.MenuID.startsWith('~')) {
+                                if (!menu.Title) menu.Title = menu.MenuID.replace('~', '');
                             }
                             break;
                     }
-                    if (!menu.Icon && !menu.FullURL) menu.Icon = 'fa-folder';
+                    if (!menu.Icon && !menu.FullURL) {
+                        menu.Icon = 'fa-folder';
+                    }
 
                     this.loadCounts(menu);
 
                 }
-                
+
                 this.siteMenu = _.sortBy(result.MenuItems, 'SortOrder'); // sort the menu's by display order
 
                 if (result.IsAdmin) {
@@ -189,12 +186,13 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     private clearFavorites() {
-        this.favoritesService.deleteCurrentUsersFavorites().
-            then(result => {
+        this.favoritesService.deleteCurrentUsersFavorites().subscribe(
+            result => {
                 this.showMessageForResult(this.messagesService, result);
                 this.loadFavorites(); // reload favorites because the user could still have global favorites.
-            })
-            .then(() => this.headerActionsService.emitFavoritesChange());
+                this.headerActionsService.emitFavoritesChange()
+            }
+        );
     }
 
     private toggleMenu() {
@@ -207,7 +205,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         this.configMenu = new SiteMenu();
         this.configMenu.MenuID = '-Config';
         this.configMenu.NavigationItems = [];
-        
+
         this.configMenu.NavigationItems.push({ Name: 'Artifacts', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ARTIFACTS}`, Items: null, IsLink: false, IsHomePage: false, count: null });
         this.configMenu.NavigationItems.push({ Name: 'Attributes', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ATTRIBUTES}`, Items: null, IsLink: false, IsHomePage: false, count: null });
         this.configMenu.NavigationItems.push({ Name: 'Lookups', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_LOOKUPS}`, Items: null, IsLink: false, IsHomePage: false, count: null });
@@ -223,7 +221,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         this.adminMenu = new SiteMenu();
         this.adminMenu.MenuID = '-Admin';
         this.adminMenu.NavigationItems = [];
-        
+
         let integrationMenu = new SiteMenuItem();
         integrationMenu.Name = "Integration";
         integrationMenu.Items = [];
@@ -251,14 +249,14 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         this.adminMenu.NavigationItems.push({ Name: 'Settings', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SETTINGS}`, IsLink: false, IsHomePage: false, count:null });
 
         this.adminMenu.NavigationItems.push({ Name: 'Export Templates', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_EXPORT_TEMPLATES}`, IsLink: false, IsHomePage: false, count:null });
-        
+
         let metricsMenu = new SiteMenuItem();
         metricsMenu.Name = "Metrics";
         metricsMenu.Items = [];
         metricsMenu.Items.push({ Name: 'Analytics', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ANALYTICS}`, Items: null, IsLink: false, IsHomePage: false, count:null });
         metricsMenu.Items.push({ Name: 'Dashboard', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_DASHBOARDS}`, Items: null, IsLink: false, IsHomePage: false, count: null });
         this.adminMenu.NavigationItems.push(metricsMenu);
-        
+
 
         let workflowMenu = new SiteMenuItem();
         workflowMenu.Name = "Workflow";
@@ -266,10 +264,10 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
         workflowMenu.Items.push({ Name: 'Workflow', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_WORKFLOW}`, IsLink: false, IsHomePage: false, count:null });
         workflowMenu.Items.push({ Name: 'Action Types', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ISSUE_TYPES}`, IsLink: false, IsHomePage: false, count:null });
-        
+
         this.adminMenu.NavigationItems.push(workflowMenu);
 
-        this.adminMenu.NavigationItems.push({ Name: 'Style Customizations', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_CUSTOMIZATIONS}`, IsLink: false, IsHomePage: false, count:null });        
-        
+        this.adminMenu.NavigationItems.push({ Name: 'Style Customizations', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_CUSTOMIZATIONS}`, IsLink: false, IsHomePage: false, count:null });
+
     }
 };

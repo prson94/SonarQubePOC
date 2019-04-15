@@ -27,9 +27,12 @@ namespace d360.core.entities
         [DataMember]
         public State State { get; set; }
 
-        [DataMember]
+        [DataMember, StringLength(500)]
         public string SourceID { get; set; }
-        
+
+        [DataMember, StringLength(250)]
+        public string Code { get; set; }
+
         [IgnoreDataMember, ReadOnly(true), Column(TypeName = "varchar"), StringLength(50)]
         public string KeyHash { get; set; }
 

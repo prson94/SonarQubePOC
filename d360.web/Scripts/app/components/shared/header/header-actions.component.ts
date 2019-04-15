@@ -70,32 +70,35 @@ export class HeaderActionsComponent {
                 else {
                     this.notTopArtifact = true;
                 }
-               
+
                 //dont show raise issue button on raise issue screen or any admin screens or user profile           
                 this.isAdminUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_ADMIN_ROOT.toUpperCase());
                 let isResourceUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_RESOURCE_ROOT.toUpperCase());
                 this.hasRaiseIssueButton = ((!e.urlAfterRedirects.toLowerCase().endsWith('workflow/raiseissue') && !this.isAdminUrl && !isResourceUrl && (CompanySettings.DisableIssueManagement==='false') ) == true);
-                
-                               
+
+
                 this.calculateControlWidth();
             }
         });
 
 
         this.subFavorites = this.headerActionsService.onFavoritesChanges$.subscribe(() => {
-            this.favoritesService.getFavorites().then(res => {
-                this.favItems = res;
-            });
+            this.favoritesService.getFavorites().subscribe(
+                res => {
+                    this.favItems = res;
+                }
+            );
         });
 
         this.subObjectChange = this.breadcrumbService.currentObjectInfo$.subscribe(c => {
             this.currentObject = c.type;
             this.currentObjectId = c.id;
             if (this.favItems == null) {
-                this.favoritesService.getFavorites()
-                    .then(fav => {
+                this.favoritesService.getFavorites().subscribe(
+                    fav => {
                         this.favItems = fav;
-                    });
+                    }
+                );
             }
         });
 

@@ -241,66 +241,7 @@ namespace d360.web.Controllers
                 return new JsonNetResult { Data = reports, Formatting = Newtonsoft.Json.Formatting.None };
             }
         }
-
-        [Route("tiles")]
-        public JsonNetResult GetReportTiles()
-        {
-            return new JsonNetResult
-            {
-                Data = Company.Filter<ReportTile>(i => 1 == 1, i => i.Report).OrderBy(i => i.Name).Select(i => new { i.ID, i.Name, i.ReportID, Report = i.Report.Name, i.Report.ObjectType, i.Report.ObjectID }),
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
-        [Route("instances/{type}/{id:int}")]
-        public JsonNetResult GetInstanceOptionsForType(string type, int id)
-        {
-            var artifactSql = "select a.*,d.DisplayValue  from artifact a inner join asset ast on (a.id = ast.objectid and ast.[object] = 'Artifact') cross apply [dbo].GetAssetDisplayValueById(ast.id) d where a.ArtifactTypeID = @id";
-            switch (type)
-            {
-                case "ArtifactType":
-                    return new JsonNetResult
-                    {                                            
-                        Data = Company.Query<dynamic>(artifactSql, new { id = id }),
-                        Formatting = Newtonsoft.Json.Formatting.None
-                    };
-                case "TaxonomyType":
-                    return new JsonNetResult
-                    {
-                        Data = Company.Filter<Taxonomy>(i => i.TaxonomyTypeID == id).OrderBy(i => i.TextPath).ToList().Select(i => new { Name = i.TextPath, i.ID }),
-                        Formatting = Newtonsoft.Json.Formatting.None
-                    };
-                case "ReferenceItemType":
-                    return new JsonNetResult
-                    {
-                        Data = Company.Table<ReferenceItemType>().OrderBy(i => i.Name).ToList().Select(i => new { i.Name, i.ID }),
-                        Formatting = Newtonsoft.Json.Formatting.None
-                    };
-                case "ResourceType":
-                    return new JsonNetResult
-                    {
-                        Data = Company.Table<GlobalReportingResource>().OrderBy(i => i.LastName).ThenBy(i => i.FirstName).ToList().Select(i => new { Name = i.LastName + ", " + i.FirstName, ID = i.ResourceID }),
-                        Formatting = Newtonsoft.Json.Formatting.None
-                    };
-            }
-
-            return new JsonNetResult
-            {
-                Data = null,
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
-        [Route("schema")]
-        public JsonNetResult GetReportingSchema()
-        {
-            return new JsonNetResult 
-            {
-                Data = Company.GetReportingSchema(), 
-                Formatting = Newtonsoft.Json.Formatting.None 
-            };
-        }
-
+        
         [Route("{reportID:int}/layout")]
         public JsonNetResult GetReportLayout(int reportID)
         {
@@ -349,55 +290,14 @@ namespace d360.web.Controllers
                 return new JsonNetResult { Data = null, Formatting = Newtonsoft.Json.Formatting.None };
             }
         }
-
-        [Route("layouts/{id:int}/layout")]
-        public JsonNetResult GetReportLayoutSample(int id)
-        {
-            var model = Company.GetById<ReportLayout>(id);
-
-            if (model != null)
-            {
-                return new JsonNetResult { Data = JArray.Parse(model.Template), Formatting = Newtonsoft.Json.Formatting.None };
-            }
-            else
-            {
-                return new JsonNetResult { Data = null, Formatting = Newtonsoft.Json.Formatting.None };
-            }
-        }
-
+        
         [Route("{reportID:int}/tiles")]
         public JsonNetResult GetReportTiles(int reportID)
         {
             var models = Company.Filter<ReportTile>(i => i.ReportID == reportID);
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
-
-        [Route("data"), HttpPost, NonNullableParameters]
-        public JsonNetResult GetReportTilePreviewData(string sql)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                {
-                    return new JsonNetResult { Data = new { error = "You must be an administrator." }, Formatting = Newtonsoft.Json.Formatting.None };
-                }
-
-                if (Company.IsValidReportingQuery(sql))
-                {
-                    var models = Company.Query<dynamic>(sql, null, 180);
-                    return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
-                }
-                else
-                {
-                    return new JsonNetResult { Data = new { error = "Your command is not a valid reporting query." }, Formatting = Newtonsoft.Json.Formatting.None };
-                }
-            }
-            catch (SqlException ex)
-            {
-                return new JsonNetResult { Data = new { error = ex.GetFullExceptionData() }, Formatting = Newtonsoft.Json.Formatting.None };                
-            }
-        }
-
+                
         [Route("home"), ValidateContracts(Ignore = true), HttpGet]
         public JsonNetResult GetHomePageReports()
         {

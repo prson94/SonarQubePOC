@@ -57,5 +57,22 @@ namespace d360.web.Controllers.V2
             }
             return null;            
         }
+
+        [HttpPost, AjaxValidateAntiForgeryToken, Route("rebuildIndex")]
+        public HttpResponseMessage RebuildIndex()
+        {
+            if (!Company.CurrentResourceIsAdmin) return ReturnApiError(HttpStatusCode.Unauthorized, "User not authorized to perfom this action");
+
+            Company.RebuildIndexRequest();
+
+            var responsejson = new JsonNetResult
+            {
+                Data = new { type = "confirm", title = "Success!", action = "add", message = "request submitted.", id = "" },
+                Formatting = Newtonsoft.Json.Formatting.None
+            }; 
+
+            return Request.CreateResponse(HttpStatusCode.Created, new { type = "confirm", title = "Success!", action = "add", message = "request submitted.", id = "" });
+
+        }
     }
 }
