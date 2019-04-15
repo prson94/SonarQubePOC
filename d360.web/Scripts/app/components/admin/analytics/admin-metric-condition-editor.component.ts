@@ -3,7 +3,6 @@ import { MetricsService } from '../../../services/metrics.service';
 import {  Condition, ConditionForm, MetricAssetVersionConditionViewModel, MetricFieldTypeViewModel } from '../../../models/metrics.model';
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesService } from '../../../services/messages.service';
-import { isBoolean } from 'util';
 
 @Component({
     selector: 'd3s-admin-metric-condition-editor',
@@ -72,14 +71,6 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
 
         if (this.condition == null) {
             valid = false;
-        } else {
-        //    if (this.condition.MapID == null || this.condition.FieldTypeID == null || this.condition.FieldTypeID < 1) {
-        //        valid = false;
-        //    }
-        //    if (this.condition.Value == null)
-        //        valid = false;
-        //    if (this.condition.Operator == null || this.condition.AndOr == null)
-        //        valid = false;
         }
 
         return valid;
