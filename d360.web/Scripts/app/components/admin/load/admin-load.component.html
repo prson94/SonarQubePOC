@@ -49,7 +49,7 @@
     <div class="col s12 m6 l8" [ngSwitch]="formMode">
         <div *ngSwitchCase="FormMode.Adding">
             <div class="tile tile-detail">
-                <d3s-load-form (onCancel)="formMode = FormMode.Default;" (onSuccess)="formMode = FormMode.Default; load();"></d3s-load-form>
+                <d3s-admin-load-form (onCancel)="formMode = FormMode.Default;" (onSuccess)="formMode = FormMode.Default; load();"></d3s-admin-load-form>
             </div>
         </div>
         <div *ngSwitchDefault>

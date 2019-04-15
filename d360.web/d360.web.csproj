@@ -586,6 +586,8 @@
     <Content Include="Scripts\app\components\admin\customapi\admin-customapi-service-detail.component.html" />
     <Content Include="Scripts\app\components\admin\customapi\admin-customapi-service-namespace.component.html" />
     <Content Include="Scripts\app\components\admin\customapi\admin-customapi.component.html" />
+    <Content Include="Scripts\app\components\admin\load\bulk\bulk-load-item.component.html" />
+    <Content Include="Scripts\app\components\admin\load\form\admin-load-form.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-column-filter.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-grid.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-item.component.html" />
@@ -940,7 +942,6 @@
     <Content Include="Scripts\app\components\admin\resources\admin-resources.component.html" />
     <Content Include="Scripts\app\components\shared\fielddefinition\field-type.form.html" />
     <Content Include="Scripts\app\components\admin\groups\group.form.html" />
-    <Content Include="Scripts\app\components\admin\load\load.form.html" />
     <Content Include="Scripts\app\components\admin\responsibilities\responsibility-type.form.html" />
     <Content Include="Scripts\app\components\resource\resource-item.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\impact.component.html" />
@@ -1118,6 +1119,11 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\exporttemplates\admin-export-templates.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\exporttemplates\admin-export-templates.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\issuetypes\admin-issue-type-allocation.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\load\admin-load.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\load\bulk\bulk-load-item.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\load\bulk\bulk-load-item.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\load\form\admin-load-form.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\load\form\admin-load-form.service.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\organizations\admin-organization-contract-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi.routes.ts" />
@@ -1483,7 +1489,6 @@
     <TypeScriptCompile Include="Scripts\app\components\community\community.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\fielddefinition\field-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\groups\group.form.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\load\load.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\responsibilities\responsibility-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-agent-errors.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-agent-history.component.ts" />
@@ -1593,7 +1598,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\attributes.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\fusion\fusion-attributes.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\fusion\fusion-configuration.tile.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\load\bulk-load-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-level-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\group-members.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-governance.component.ts" />
@@ -1666,10 +1670,6 @@
     <TypeScriptCompile Include="Scripts\app\services\export-template.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\levels.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\lineage.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\load\columns.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\load\get-load.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\load\options.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\load\post-load.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\metrics.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\organizations.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\qualifier.service.ts" />

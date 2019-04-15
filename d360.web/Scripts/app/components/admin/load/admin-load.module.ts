@@ -2,7 +2,6 @@
 import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
 import { HttpModule, XHRBackend  }     from '@angular/http';
-import { RouterModule } from '@angular/router';
 
 import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
 
@@ -13,8 +12,8 @@ import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.compon
 import { SharedDeleteFormModule } from '../../shared/delete.form';
 import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-object-details.module';
 
-import { BulkLoadItemComponent } from './bulk-load-item.component';
-import { LoadForm } from './load.form';
+import { BulkLoadItemComponent } from './bulk/bulk-load-item.component';
+import { AdminLoadFormComponent } from './form/admin-load-form.component';
 import { AdminLoadComponent } from './admin-load.component';
 
 import { AdminLoadRoutingModule } from './admin-load.routes';
@@ -53,11 +52,12 @@ import { TableModule } from 'primeng/table';
     ],
     declarations: [
         BulkLoadItemComponent,
-        LoadForm,
+        AdminLoadFormComponent,
         AdminLoadComponent,
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
     ]
 })
+
 export class AdminLoadModule { }

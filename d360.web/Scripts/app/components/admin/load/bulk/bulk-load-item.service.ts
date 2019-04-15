@@ -3,26 +3,18 @@ import {HttpClient} from "@angular/common/http";
 import {Observable} from "rxjs";
 import {catchError, map} from "rxjs/operators";
 
-import {LoadDetail} from '../../models/load.model';
-import {GridColumn} from '../../models/grid-definition.model';
+import {GridColumn} from '../../../../models/grid-definition.model';
 
-import {MessagesService} from './../messages.service';
-import {BaseObservableService} from "../baseObservable.service";
+import {MessagesService} from '../../../../services/messages.service';
+import {BaseObservableService} from "../../../../services/baseObservable.service";
 
 @Injectable()
-export class GetLoadService extends BaseObservableService {
+export class BulkLoadItemService extends BaseObservableService {
     constructor(
         private http: HttpClient,
         messagesService: MessagesService
     ) {
         super(messagesService);
-    }
-
-    getLoads(): Observable<LoadDetail[]> {
-        return this.http.get('api/loads').pipe(
-            map(response => <LoadDetail[]>response),
-            catchError(err => this.handleError(err))
-        );
     }
 
     getLoadColumns(id: number): Observable<GridColumn[]> {

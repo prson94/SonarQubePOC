@@ -2,15 +2,19 @@ import {Injectable} from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {Observable} from "rxjs";
 import {catchError, map} from "rxjs/operators";
-import {SelectItem} from 'primeng/components/common/api';
+import {SelectItem} from "primeng/api";
 
-import {MessagesService} from '../messages.service';
-import {BaseObservableService} from "../baseObservable.service";
+import {LoadColumn} from '../../../../models/load.model';
+import {LoadFilePostModel} from "../../../../models/load.model";
+import {JsonResult} from "../../../../models/jsonresult.model";
+
+import {MessagesService} from '../../../../services/messages.service';
+import {BaseObservableService} from "../../../../services/baseObservable.service";
 
 declare var CompanySettings: any;
 
 @Injectable()
-export class OptionsService extends BaseObservableService {
+export class AdminLoadFormService extends BaseObservableService {
     lineageFlag: string = '';
     aOptions: any[] = [];
 
@@ -19,6 +23,29 @@ export class OptionsService extends BaseObservableService {
         messagesService: MessagesService
     ) {
         super(messagesService);
+    }
+
+    getExpectedColumns(
+        action: string,
+        type: string,
+        id: number
+    ): Observable<LoadColumn[]> {
+        return this.http.get(`form/Load_ExpectedColumns?action=${action}&id=${id}&type=${type}`).pipe(
+            map(response => <LoadColumn[]>response),
+            catchError(err => this.handleError(err))
+        );
+    }
+
+    /* FIXME: never called */
+    getExpectedColumnsExcel(
+        action: string,
+        type: string,
+        id: number
+    ): Observable<LoadColumn[]> {
+        return this.http.get(`form/Load_ExpectedColumns_ToExcel?action=${action}&id=${id}&type=${type}`).pipe(
+            map(response => <LoadColumn[]>response),
+            catchError(err => this.handleError(err))
+        );
     }
 
     getActionOptions(): SelectItem[] {
@@ -59,6 +86,13 @@ export class OptionsService extends BaseObservableService {
 
                 return <SelectItem[]>i;
             }),
+            catchError(err => this.handleError(err))
+        );
+    }
+
+    postLoad(model: LoadFilePostModel): Observable<JsonResult> {
+        return this.http.post('form/AddLoad', model).pipe(
+            map(response => <JsonResult>response),
             catchError(err => this.handleError(err))
         );
     }
