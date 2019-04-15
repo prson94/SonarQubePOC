@@ -1,87 +1,96 @@
-﻿import { Injectable } from '@angular/core';
-import { Headers, Http } from '@angular/http';
-import { LoadDetail, LoadFilePostModel, LoadColumn, LoadColumnValue } from '../models/load.model';
-import { BaseService } from './base.service';
-import { MessagesService } from './messages.service';
-import { GridColumn } from '../models/grid-definition.model';
-import { SelectItem } from 'primeng/components/common/api';
-import { JsonResult } from '../models/jsonresult.model';
+﻿import {Injectable} from '@angular/core';
+import {LoadDetail, LoadFilePostModel, LoadColumn} from '../models/load.model';
+import {MessagesService} from './messages.service';
+import {GridColumn} from '../models/grid-definition.model';
+import {SelectItem} from 'primeng/components/common/api';
+import {JsonResult} from '../models/jsonresult.model';
+import {BaseObservableService} from "./baseObservable.service";
+import {HttpClient} from "@angular/common/http";
+import {Observable} from "rxjs";
+import {catchError, map} from "rxjs/operators";
 
 declare var CompanySettings: any;
 
 @Injectable()
-export class LoadService extends BaseService {
+export class LoadService extends BaseObservableService {
 
     lineageFlag: string = '';
     aOptions: any[] = [];
 
-    constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
-
-    getLoads(): Promise<LoadDetail[]> {
-        return this.http.get('api/loads')
-            .toPromise()
-            .then(response => <LoadDetail[]>response.json())
-            .catch(err => this.handleError(err));
+    constructor(
+        private http: HttpClient,
+        messagesService: MessagesService
+    ) {
+        super(messagesService);
     }
 
-    getLoadColumns(id: number): Promise<GridColumn[]> {
-        return this.http.get(`api/loads/${id}/columns`)
-            .toPromise()
-            .then(response => <GridColumn[]>response.json())
-            .catch(err => this.handleError(err));
+    getLoads(): Observable<LoadDetail[]> {
+        return this.http.get('api/loads').pipe(
+            map(response => <LoadDetail[]>response),
+            catchError(err => this.handleError(err))
+        );
     }
 
-    getLoadItems(id: number): Promise<any[]> {
-        return this.http.get(`api/loads/${id}/items`)
-            .toPromise()
-            .then(response => <any[]>response.json())
-            .catch(err => this.handleError(err));
+    getLoadColumns(id: number): Observable<GridColumn[]> {
+        return this.http.get(`api/loads/${id}/columns`).pipe(
+            map(response => <GridColumn[]>response),
+            catchError(err => this.handleError(err))
+        );
+    }
+
+    getLoadItems(id: number): Observable<any[]> {
+        return this.http.get(`api/loads/${id}/items`).pipe(
+            map(response => <any[]>response),
+            catchError(err => this.handleError(err))
+        );
     }
 
     getActionOptions(): SelectItem[] {
         this.aOptions = [
-            { label: 'Promotion', value: 'P' },
-            { label: 'Relation', value: 'R' },
-            { label: 'Responsibilities', value: 'O' },
-            { label: 'Unrelation', value: 'U' },
-            { label: 'Users/Groups', value: 'M' }
+            {label: 'Promotion', value: 'P'},
+            {label: 'Relation', value: 'R'},
+            {label: 'Responsibilities', value: 'O'},
+            {label: 'Unrelation', value: 'U'},
+            {label: 'Users/Groups', value: 'M'}
         ];
         if (CompanySettings != null && CompanySettings.UseLegacyLineage != null) {
             this.lineageFlag = CompanySettings.UseLegacyLineage;
         }
         if (this.lineageFlag == 'true') {
-            this.aOptions.push({ label: 'Lineage : Business', value: 'BL' });
-            this.aOptions.push({ label: 'Lineage : Technical', value: 'TL' });
+            this.aOptions.push({label: 'Lineage : Business', value: 'BL'});
+            this.aOptions.push({label: 'Lineage : Technical', value: 'TL'});
         }
         return this.aOptions;
     }
 
-    getTypeOptions(action: string): Promise<SelectItem[]> {
+    getTypeOptions(action: string): Observable<SelectItem[]> {
         return this.http.get(`/form/Load_TypeOptions?act=${action}`)
-            .toPromise()
-            .then(response => <any[]>response.json())
-            .then(response => {
-                let i = [];
-                response.forEach(r => {
-                    i.push({ label: r.title, value: r.value });
-                });
-                return <SelectItem[]>i;
-            })
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => {
+                    let i = [];
+
+                    response["forEach"](r => {
+                        i.push({label: r.title, value: r.value});
+                    });
+
+                    return <SelectItem[]>i;
+                }),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getExpectedColumns(action: string, type: string, id: number): Promise<LoadColumn[]>  {
-        return this.http.get(`form/Load_ExpectedColumns?action=${action}&id=${id}&type=${type}`)
-            .toPromise()
-            .then(response => <LoadColumn[]>response.json())
-            .catch(err => this.handleError(err));
+    getExpectedColumns(action: string, type: string, id: number): Observable<LoadColumn[]> {
+        return this.http.get(`form/Load_ExpectedColumns?action=${action}&id=${id}&type=${type}`).pipe(
+            map(response => <LoadColumn[]>response),
+            catchError(err => this.handleError(err))
+        );
     }
 
-    getExpectedColumnsExcel(action: string, type: string, id: number): Promise<LoadColumn[]> {
-        return this.http.get(`form/Load_ExpectedColumns_ToExcel?action=${action}&id=${id}&type=${type}`)
-            .toPromise()
-            .then(response => <LoadColumn[]>response.json())
-            .catch(err => this.handleError(err));
+    getExpectedColumnsExcel(action: string, type: string, id: number): Observable<LoadColumn[]> {
+        return this.http.get(`form/Load_ExpectedColumns_ToExcel?action=${action}&id=${id}&type=${type}`).pipe(
+            map(response => <LoadColumn[]>response),
+            catchError(err => this.handleError(err))
+        );
     }
 
     getLoadErrorsXls(id: number) {
@@ -92,10 +101,10 @@ export class LoadService extends BaseService {
         window.location.assign(`/form/loads/${id}/all.xlsx`);
     }
 
-    postLoad(model: LoadFilePostModel): Promise<JsonResult> {
-        return this.http.post('form/AddLoad', model)
-            .toPromise()
-            .then(response => <JsonResult>response.json())
-            .catch(err => this.handleError(err));
+    postLoad(model: LoadFilePostModel): Observable<JsonResult> {
+        return this.http.post('form/AddLoad', model).pipe(
+            map(response => <JsonResult>response),
+            catchError(err => this.handleError(err))
+        );
     }
 }
