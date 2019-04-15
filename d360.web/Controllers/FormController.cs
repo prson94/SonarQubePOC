@@ -10525,7 +10525,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 var a = new Predicate
                 {
                     Name = parseTextField(form, "Name"),
-                    Inverse = parseTextField(form, "Inverse", null, true),
+                    Inverse = parseTextField(form, "Inverse"),
                     Type = (PredicateType)Enum.Parse(typeof(PredicateType), form["Type"]),
                     IsSystem = false
                 };
