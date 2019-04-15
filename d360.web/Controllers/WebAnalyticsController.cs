@@ -18,7 +18,7 @@ namespace d360.web.Controllers
         #region DI
 
 
-        public D3SWebAnalyticsController(CommunityContext community, CompanyContext company)
+        public D3SWebAnalyticsController(ICommunityContext community, ICompanyContext company)
             : base(community, company)
         {
 #if DEBUG

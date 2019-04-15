@@ -15,7 +15,7 @@ using System.Text;
 namespace d360.model
 {
     [DbConfigurationType(typeof(AzureConfiguration))]
-    public class CommunityContext : BaseContext
+    public class CommunityContext : BaseContext, ICommunityContext
     {
         internal IQueueSource QueueSource;
         internal string SettingsCacheKey;
@@ -38,6 +38,7 @@ namespace d360.model
 
             SettingsCacheKey = $"c{CurrentCompanyID}_settings";
         }
+
 
         #region DbSets
 

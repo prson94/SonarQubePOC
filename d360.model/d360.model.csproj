@@ -112,6 +112,9 @@
     </Compile>
     <Compile Include="CompanyContext_MarkitLineage.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="IBaseContext.cs" />
+    <Compile Include="ICommunityContext.cs" />
+    <Compile Include="ICompanyContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueryConstants.cs" />
     <Compile Include="DbConnectionExtensions.cs" />

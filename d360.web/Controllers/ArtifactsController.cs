@@ -22,7 +22,7 @@ namespace d360.web.Controllers
     {
         #region DI
 
-        public ArtifactsController(CommunityContext community, CompanyContext company)
+        public ArtifactsController(ICommunityContext community, ICompanyContext company)
             : base(community, company)
         { }
 

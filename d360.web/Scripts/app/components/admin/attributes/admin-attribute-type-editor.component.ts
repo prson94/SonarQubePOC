@@ -57,13 +57,14 @@ export class AdminAttributeTypeEditor {
     }
 
     private loadAttributeFields() {
-        this.fieldsService.getFields(this.editedAttribute.ID, 'AttributeType')
-            .then(result => {
+        this.fieldsService.getFields(this.editedAttribute.ID, 'AttributeType').subscribe(
+            result => {
                 this.fieldTypes = [];
                 for (let field of result) {
                     this.fieldTypes.push({title: field.FriendlyName, value: '{' + field.Name + '}'});
                 }
-            });
+            }
+        );
     }
 
     private loadCategoryTypes(parentID?: number) {

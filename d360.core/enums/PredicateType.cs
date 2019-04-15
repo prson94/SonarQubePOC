@@ -164,6 +164,18 @@ namespace d360.core.enums
         public bool ReadOnly { get; set; }
     }
 
+    public class PredicateTypeApiViewModel : BaseObject
+    {
+        [DataMember]
+        public PredicateType Type { get; set; }
+
+        [DataMember]
+        public string Name { get; set; }
+
+        [DataMember]
+        public string Description { get; set; }
+    }
+
     public static class PredicateTypeExtensions
     {
         public static string GetDisplayName(this PredicateType type)

@@ -60,7 +60,7 @@ namespace d360.model
     }
 
     [DbConfigurationType(typeof(AzureConfiguration))]
-    public abstract class BaseContext : DbContext, IDisposable, IDbContext
+    public abstract class BaseContext : DbContext, IDisposable, IDbContext, IBaseContext
     {
         public int CurrentResourceID { get; set; }
         public int CurrentCompanyID { get; set; }

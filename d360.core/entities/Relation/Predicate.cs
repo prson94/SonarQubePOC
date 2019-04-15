@@ -26,4 +26,27 @@ namespace d360.core.entities
         [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid UID { get; set; }
     }
+
+    public class PredicatesApiViewModel : List<PredicateApiViewModel>
+    {
+    }
+
+    [DataContract(Namespace = NAMESPACE)]
+    public class PredicateApiViewModel : BaseObject
+    {
+        [DataMember]
+        public Guid Uid { get; set; }
+
+        [DataMember]
+        public string Name { get; set; }
+
+        [DataMember]
+        public string Inverse { get; set; }
+
+        [DataMember]
+        public PredicateType Type { get; set; }
+
+        [DataMember]
+        public bool IsSystem { get; set; }
+    }
 }

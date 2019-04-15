@@ -16,7 +16,7 @@ export class SocialService extends BaseService {
         });
         
         return this.http
-            .post(`services/community/comments`, `IsNg=true&ObjectType=${objectType}&ObjectID=${objectID > 0 ? objectID : ''}&Skip=${page ? page : 0}&Take=${count ? count : 10}&DateFilter=-${daysToLookBack}&TypeFilter=${typeFilter == undefined ? '' : typeFilter}`,  { headers: headers })
+            .post(`api/v2/social/comments`, `IsNg=true&ObjectType=${objectType}&ObjectID=${objectID > 0 ? objectID : ''}&Skip=${page ? page : 0}&Take=${count ? count : 10}&DateFilter=-${daysToLookBack}&TypeFilter=${typeFilter == undefined ? '' : typeFilter}`,  { headers: headers })
             .toPromise()
             .then(res => <SocialComment[]>res.json())
             .catch(err => this.handleError(err));
@@ -28,7 +28,7 @@ export class SocialService extends BaseService {
         });
         
         return this.http
-            .post('services/community/vote', `CommentID=${commentID}&Vote=${vote}`, { headers: headers })
+            .post('api/v2/social/vote', `CommentID=${commentID}&Vote=${vote}`, { headers: headers })
             .toPromise()
             .then(res => <SocialVote[]>res.json())
             .catch(err => this.handleError(err));
@@ -40,7 +40,7 @@ export class SocialService extends BaseService {
         headers.append('Content-Type', 'application/json');
         
         return this.http
-            .post('services/community/edit', commentEditData, { headers: headers })
+            .post('api/v2/social/edit', commentEditData, { headers: headers })
             .toPromise()
             .then(res => <SocialComment>res.json())
             .catch(err => this.handleError(err));
@@ -52,21 +52,22 @@ export class SocialService extends BaseService {
         headers.append('Content-Type', 'application/json');
         
         return this.http
-            .post('services/community/comment', commentAddData, { headers: headers })
+            .post('api/v2/social/comment', commentAddData, { headers: headers })
             .toPromise()
             .then(res => <SocialComment>res.json())
             .catch(err => this.handleError(err));
     }
 
     getMyCounts(daysToLookBack: number): Promise<Count[]> {
-        return this.http.get(`api/count/social/${daysToLookBack}`)
+        let resourceID = -1;
+        return this.http.get(`api/v2/social/count/${resourceID}/${daysToLookBack}`)
             .toPromise()
             .then(response => <Count[]>response.json())
             .catch(err => this.handleError(err));
     }
 
     getTheCounts(resourceID: number, daysToLookBack: number): Promise<Count[]> {
-        return this.http.get(`api/counts/${resourceID}/${daysToLookBack}`)
+        return this.http.get(`api/v2/social/count/${resourceID}/${daysToLookBack}`)
             .toPromise()
             .then(response => <Count[]>response.json())
             .catch(err => this.handleError(err));

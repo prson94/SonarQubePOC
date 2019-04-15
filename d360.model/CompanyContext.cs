@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Data.Entity.Core;
 using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Design.PluralizationServices;
+using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
@@ -30,7 +31,7 @@ using System.Threading.Tasks;
 namespace d360.model
 {
     [DbConfigurationType(typeof(AzureConfiguration))]
-    public partial class CompanyContext : BaseContext
+    public partial class CompanyContext : BaseContext, ICompanyContext
     {
         #region Caching Methods
 
@@ -59,12 +60,12 @@ namespace d360.model
 
         #region Ctors
 
-        public CompanyContext(CommunityContext community, ICachingProvider caching, IQueueSource queueSource, ISecurityContextProvider context, bool skipCacheCheck = false)
+        public CompanyContext(ICommunityContext community, ICachingProvider caching, IQueueSource queueSource, ISecurityContextProvider context, bool skipCacheCheck = false)
             : base(community.GetCompanyConnectionString(skipCacheCheck))
         {
             Database.SetInitializer<CompanyContext>(null); //dont create any tables if they dont exist.
 
-            Community = community;
+            Community = (CommunityContext)community;
             Caching = caching;
             QueueSource = queueSource;
 
@@ -2102,6 +2103,11 @@ where	R.SourceObject = 'FusionAttribute'
             Enqueue(Config.GetValue<string>("DisplayValueQueue"), new DisplayUpdateInfo { CompanyID = CurrentCompanyID, RebuildAll = true });
         }
 
+        public void RebuildIndexRequest()
+        {
+            Enqueue(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel { CompanyID = CurrentCompanyID });
+        }
+
         private void addQE(List<EventInfo> events, ChangeType action, EventObjectInfo item)
         {
             events.Add(new EventInfo {
@@ -2543,7 +2549,7 @@ select @err";
                             if (Any<ReferenceItemType>(i => i.Name == o.Name))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
-                        case EntityState.Modified:
+                        case EntityState.Modified:                            
                             if (Any<ReferenceItemType>(i => i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
@@ -2837,6 +2843,7 @@ select @err";
 
             return homePage?.Route ?? "";
         }
+
 
         #endregion
 

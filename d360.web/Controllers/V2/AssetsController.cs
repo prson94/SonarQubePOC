@@ -31,14 +31,14 @@ namespace d360.web.Controllers.V2
         RoutePrefix("api/v{version:apiVersion}/assets"),
         Authorize
     ]
-    public class AssetsController : BaseApiController
+    public class AssetsController : BaseV2ApiController
     {
         #region DI
 
         IQueueSource QueueSource;
         IStorageProvider Storage;
 
-        public AssetsController(CommunityContext community, CompanyContext company, IStorageProvider storage, IQueueSource queueSource)
+        public AssetsController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IQueueSource queueSource)
             : base(community, company)
         {
             QueueSource = queueSource;
@@ -48,55 +48,7 @@ namespace d360.web.Controllers.V2
         #endregion
 
         #region utils
-
-        private async Task<T> readRequestJsonContent<T>(HttpRequestMessage request)
-        {
-            string json = "";
-
-            if (request.Content.IsMimeMultipartContent())
-            {
-                var streamProvider = new MultipartMemoryStreamProvider();
-                await request.Content.ReadAsMultipartAsync(streamProvider);
-
-                json = await streamProvider.Contents.Single().ReadAsStringAsync();
-            }
-            else
-            {
-                json = await request.Content.ReadAsStringAsync();
-            }
-
-            if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
-                return default(T);
-            else
-            {
-                if ((json.StartsWith("{") && json.EndsWith("}")) || //For object
-                        (json.StartsWith("[") && json.EndsWith("]"))) //For array
-                {
-                    bool isValid = false;
-                    try
-                    {
-                        var obj = JToken.Parse(json);
-                        isValid = true;
-                        obj = null;
-                    }
-                    catch
-                    {
-                        isValid = false;
-                    }
-
-                    if (isValid)
-                        return JsonConvert.DeserializeObject<T>(json);
-                    else
-                        return default(T);
-                }
-                else
-                {
-                    return default(T);
-                }
-            }
                 
-        }
-
         private string getFieldDataType(FieldType field)
         {
             switch (field.Type)
@@ -376,6 +328,7 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route("types"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerParameter("_classID", "The Class ID of an asset type.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerResponse(HttpStatusCode.OK, "A list of asset types.", typeof(List<AssetTypeApiViewModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
@@ -386,18 +339,30 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                var assetTypes = await Company.QueryAsync<AssetTypeApiViewModel>(@"
-SELECT      A.[Name]
-            ,A.[Description]
-            ,A.[Class] as ClassID
-            ,A.[Notes]
-            ,A.[uid],
-            P.[Path]
-FROM        AssetType A
-            cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P
-where       A.[State] = 1
-order by    P.[Path]
-");
+                var queryParams = Request.GetQueryNameValuePairs();
+                var dbArgs = new DynamicParameters();
+                string condition = "";
+                if (queryParams.ToList().Any(k => k.Key.ToLower() == "_classid"))
+                {
+                    var Id = Int32.Parse(queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_classid").Value);
+                    dbArgs.Add("@Id", Id);
+                    condition = "and A.[Class]=@Id";
+                }
+
+                var sql = $@"
+                        SELECT      A.[Name]
+                                    ,A.[Description]
+                                    ,A.[Class] as ClassID
+                                    ,A.[Notes]
+                                    ,A.[uid],
+                                    P.[Path]
+                        FROM        AssetType A
+                                    cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P
+                        where       A.[State] = 1
+                        {condition}
+                        order by    P.[Path]
+                        ";
+                var assetTypes = await Company.QueryAsync<AssetTypeApiViewModel>(sql, dbArgs);
 
                 return Request.CreateResponse(HttpStatusCode.OK, assetTypes);
             }
@@ -411,6 +376,8 @@ order by    P.[Path]
                 return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
             }
         }
+
+
 
         private async Task<AssetsApiViewModel> GetAssets(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams)
         {
