@@ -1,18 +1,15 @@
 ﻿import {Component, OnInit} from '@angular/core';
-import {Title} from '@angular/platform-browser';
-
-import {LoadDetail} from '../../../models/load.model';
-import {FormMode} from '../../../models/form.model';
-
 import {HeaderBreadcrumbService} from '../../../services/header-breadcrumb.service';
-import {AdminLoadService} from './admin-load.service';
-
+import {LoadDetail} from '../../../models/load.model';
 import {AdminBaseComponent} from '../admin-base.component';
+import {FormMode} from '../../../models/form.model';
+import {LoadService} from '../../../services/load.service';
+import {Title} from '@angular/platform-browser';
 
 @Component({
     selector: 'd3s-admin-load',
+    providers: [LoadService],
     templateUrl: './admin-load.component.html',
-    providers: [AdminLoadService]
 })
 
 export class AdminLoadComponent extends AdminBaseComponent implements OnInit {
@@ -24,7 +21,7 @@ export class AdminLoadComponent extends AdminBaseComponent implements OnInit {
 
     constructor(
         headerBreadcrumbService: HeaderBreadcrumbService,
-        private adminLoadService: AdminLoadService,
+        private loadService: LoadService,
         titleService: Title
     ) {
         super(headerBreadcrumbService, titleService);
@@ -38,14 +35,13 @@ export class AdminLoadComponent extends AdminBaseComponent implements OnInit {
     }
 
     load() {
-        this.isLoading = true;
 
-        this.adminLoadService.getLoads().subscribe(
+        this.isLoading = true;
+        this.loadService.getLoads().subscribe(
             data => {
                 this.loads = data;
 
                 this.selectedRow = this.loads.length > 0 ? this.loads[0] : null;
-
                 this.isLoading = false;
             }
         );

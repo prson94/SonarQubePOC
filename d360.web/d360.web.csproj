@@ -586,8 +586,7 @@
     <Content Include="Scripts\app\components\admin\customapi\admin-customapi-service-detail.component.html" />
     <Content Include="Scripts\app\components\admin\customapi\admin-customapi-service-namespace.component.html" />
     <Content Include="Scripts\app\components\admin\customapi\admin-customapi.component.html" />
-    <Content Include="Scripts\app\components\admin\load\bulk\bulk-load-item.component.html" />
-    <Content Include="Scripts\app\components\admin\load\form\admin-load-form.component.html" />
+    <Content Include="Scripts\app\components\admin\load\load.form.html" />
     <Content Include="Scripts\app\components\artifact\artifact-column-filter.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-grid.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-item.component.html" />
@@ -1119,11 +1118,8 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\exporttemplates\admin-export-templates.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\exporttemplates\admin-export-templates.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\issuetypes\admin-issue-type-allocation.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\load\admin-load.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\load\bulk\bulk-load-item.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\load\bulk\bulk-load-item.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\load\form\admin-load-form.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\load\form\admin-load-form.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\load\bulk-load-item.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\load\load.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\organizations\admin-organization-contract-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi.routes.ts" />
@@ -1670,6 +1666,7 @@
     <TypeScriptCompile Include="Scripts\app\services\export-template.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\levels.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\lineage.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\load.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\metrics.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\organizations.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\qualifier.service.ts" />
