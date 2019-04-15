@@ -47,295 +47,6 @@ namespace d360.web.Controllers.V2
 
         #endregion
 
-        #region utils
-
-        private async Task<T> readRequestJsonContent<T>(HttpRequestMessage request)
-        {
-            string json = "";
-
-            if (request.Content.IsMimeMultipartContent())
-            {
-                var streamProvider = new MultipartMemoryStreamProvider();
-                await request.Content.ReadAsMultipartAsync(streamProvider);
-
-                json = await streamProvider.Contents.Single().ReadAsStringAsync();
-            }
-            else
-            {
-                json = await request.Content.ReadAsStringAsync();
-            }
-
-            if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
-                return default(T);
-            else
-            {
-                if ((json.StartsWith("{") && json.EndsWith("}")) || //For object
-                        (json.StartsWith("[") && json.EndsWith("]"))) //For array
-                {
-                    bool isValid = false;
-                    try
-                    {
-                        var obj = JToken.Parse(json);
-                        isValid = true;
-                        obj = null;
-                    }
-                    catch
-                    {
-                        isValid = false;
-                    }
-
-                    if (isValid)
-                        return JsonConvert.DeserializeObject<T>(json);
-                    else
-                        return default(T);
-                }
-                else
-                {
-                    return default(T);
-                }
-            }
-                
-        }
-
-        private string getFieldDataType(FieldType field)
-        {
-            switch (field.Type)
-            {
-                case "Date":
-                case "DateTime":
-                    return "datetime";
-                case "Number":
-                    return "bigint";
-                case "Decimal":
-                    return "float";
-                case "Boolean":
-                    return "bit";
-                default:
-                    return "";
-            }
-        }
-
-        private void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> fieldJoins, List<string> fieldColumns)
-        {
-            fieldTypes.ForEach(f =>
-            {
-                var defaultVal = f.DefaultFormattedValue;
-                var joinPrefix = "left";
-                var tableAlias = $"F{f.ID}";
-                var columnName = f.Name;
-                var valueColumn = "FormattedValue";
-                var fieldDataType = getFieldDataType(f);
-
-                if (f.Type == "Link")
-                    valueColumn = "Value";
-
-                if (f.Type == "FieldFromRelationship")
-                {
-                    if (!f.LookupObjectFieldTypeID.HasValue || !f.LookupObjectID.HasValue)
-                        return;
-
-                    var relatedField = Company.GetById<FieldType>((int)f.LookupObjectFieldTypeID);
-                    if (relatedField == null)
-                        return;
-
-                }
-
-                if (f.IsRequired && string.IsNullOrEmpty(f.DefaultValue))
-                {
-                    joinPrefix = "left";
-                    if (!string.IsNullOrEmpty(fieldDataType))
-                    {
-                        if (fieldDataType == "bit")
-                            fieldColumns.Add($"cast(case when {tableAlias}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}) as [{columnName}]");
-                        else
-                            fieldColumns.Add($"cast({tableAlias}.{valueColumn} as {fieldDataType}) as [{columnName}]");
-                    }
-                    else
-                        fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
-                }
-                else
-                {
-                    if (!string.IsNullOrEmpty(f.DefaultValue))
-                    {
-                        if (!string.IsNullOrEmpty(fieldDataType))
-                        {
-                            if (fieldDataType == "bit")
-                                fieldColumns.Add($"coalesce(cast(case when {tableAlias}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}), @defaultValue{tableAlias}) as [{columnName}]");
-                            else
-                                fieldColumns.Add($"coalesce(cast({tableAlias}.{valueColumn} as {fieldDataType}), @defaultValue{tableAlias}) as [{columnName}]");
-                        }
-                        else
-                            fieldColumns.Add($"coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) as [{columnName}]");
-
-                        dbArgs.Add($"@defaultValue{tableAlias}", defaultVal);
-                    }
-                    else
-                    {
-                        if (!string.IsNullOrEmpty(fieldDataType))
-                        {
-                            if (fieldDataType == "bit")
-                                fieldColumns.Add($"cast(case when {tableAlias}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}) as [{columnName}]");
-                            else
-                                fieldColumns.Add($"cast({tableAlias}.{valueColumn} as {fieldDataType}) as [{columnName}]");
-                        }
-                        else
-                            fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
-
-                    }
-
-                }
-
-                if (f.Type == "FieldFromRelationship")
-                {
-                    fieldJoins.Add($@"outer apply (
-                        select top 1 
-                            F.[Value], 
-                            F.FormattedValue 
-                        from [Intersect] I
-                        inner join Asset R on R.[Object] = I.[Object] and R.ObjectID = I.ObjectID
-                        inner join Field F on F.FieldTypeID = {f.LookupObjectFieldTypeID} and F.AssetID = R.ID
-                        where I.[Subject] = A.Object and I.SubjectID = A.ObjectID and I.IntersectTypeID = {f.LookupObjectID}
-                    ) {tableAlias}");
-
-                }
-                else
-                {
-                    fieldJoins.Add($"{joinPrefix} join Field {tableAlias} on {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = A.[Object] and {tableAlias}.[ObjectID] = A.[ObjectID]");
-                }
-            });
-        }
-
-        private void getQueryParamsSql(AssetsApiViewModel model, AssetType assetType, List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> whereStatements, List<string> pagingSql, IEnumerable<KeyValuePair<string, string>> queryParams)
-        {
-            if (queryParams != null)
-            {
-
-                var orderBySql = "";
-                var offsetSql = "";
-                var pageNum = -1;
-                var pageSize = -1;
-
-                //add base sort if none is specified
-                if (!queryParams.Any(p => p.Key == "_order"))
-                {
-                    orderBySql = "order by A.ID";
-                }
-
-                queryParams
-                    .ToList()
-                    .ForEach(q =>
-                    {
-                        var key = q.Key.ToLower();
-
-                        if (key.StartsWith("_"))
-                        {
-                            if (key == "_order")
-                            {
-                                if (assetType.Object == "FusionAttributeType" && q.Value.ToLower() == "name")
-                                {
-                                    orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + "FA.Name";
-                                }
-                                else if (assetType.Object == "FusionAttributeType" && q.Value.ToLower() == "sourceid")
-                                {
-                                    orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + "FA.SourceID";
-                                }
-                                else if (assetType.Object == "FusionAttributeType" && q.Value.ToLower() == "textpath")
-                                {
-                                    orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + "FA.TextPath";
-                                }
-                                else if (assetType.Object == "ReferenceItemType" && q.Value.ToLower() == "code")
-                                {
-                                    orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + "RI.Code";
-                                }
-                                else
-                                {
-                                    var field = fieldTypes.FirstOrDefault(f => f.Name.ToLower() == q.Value.ToLower());
-                                    var valueColumn = "FormattedValue";
-                                    var fieldDataType = getFieldDataType(field);
-                                    if (field.Type == "Link") valueColumn = "Value";
-
-                                    if (field == null)
-                                    {
-                                        orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + "A.ID";
-                                        return;
-                                    }
-
-                                    if (!string.IsNullOrEmpty(fieldDataType))
-                                        orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"cast(F{field.ID}.{valueColumn} as {fieldDataType})";
-                                    else
-                                        orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"F{field.ID}.{valueColumn}";
-                                }
-                            }
-                            else if (key == "_pagenum")
-                            {
-                                if (int.TryParse(q.Value, out pageNum))
-                                {
-                                    if (pageNum < 1) pageNum = 1;
-                                }
-                            }
-                            else if (key == "_pagesize")
-                            {
-                                if (int.TryParse(q.Value, out pageSize))
-                                {
-                                    if (pageSize < 1) pageSize = 1;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            if (assetType.Object == "FusionAttributeType" && key == "name")
-                            {
-                                whereStatements.Add($"FA.[Name] = @faName");
-                                dbArgs.Add($"@faName", q.Value);
-                            }
-                            else if (assetType.Object == "FusionAttributeType" && key == "sourceid")
-                            {
-                                whereStatements.Add($"FA.[SourceID] = @sourceID");
-                                dbArgs.Add($"@sourceID", q.Value);
-                            }
-                            else if (assetType.Object == "FusionAttributeType" && key == "textpath")
-                            {
-                                whereStatements.Add($"FA.[TextPath] = @textpath");
-                                dbArgs.Add($"@textpath", q.Value);
-                            }
-                            else if (assetType.Object == "ReferenceItemType" && key == "code")
-                            {
-                                whereStatements.Add($"RI.[Code] = @code");
-                                dbArgs.Add($"@code", q.Value);
-                            }
-                            else
-                            {
-                                var field = fieldTypes.Find(f => f.Name.ToLower() == key);
-
-                                if (field != null)
-                                {
-                                    var tableAlias = $"F{field.ID}";
-                                    whereStatements.Add($"{tableAlias}.FormattedValue = @field{field.ID}");
-                                    dbArgs.Add($"@field{field.ID}", q.Value);
-                                }
-                            }
-                        }
-                    });
-
-                pagingSql.Add(orderBySql);
-
-                if (pageSize > 0 || pageNum > 0)
-                {
-                    if (pageSize < 1) pageSize = 1;
-                    if (pageNum < 1) pageNum = 1;
-
-                    model.pageSize = pageSize;
-                    model.pageNum = pageNum;
-
-                    offsetSql = $"offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
-                    pagingSql.Add(offsetSql);
-                }
-
-            }
-        }
-
-        #endregion
-
         private async Task<FieldTypesApiViewModel> GetFieldTypes(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             Guid? actionTypeUid = null;
@@ -806,5 +517,179 @@ for json path, WITHOUT_ARRAY_WRAPPER";
             }
 
         }
+
+        /// <summary>
+        /// Retrieves field types contained within your environment.
+        /// </summary>
+        /// <returns>A list of field types corresponding to the given criteria, if any.</returns>
+        [
+            HttpPut,
+            Route(""),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(FieldTypesApiViewModel)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+        ]
+        public async Task<HttpResponseMessage> PutFieldTypesAsync(FieldTypesApiEditModel model)
+        {
+            var prefix = "Fields.PutFieldTypesAsync => ";
+            var errorMessage = "";
+
+            try
+            {
+                IEnumerable<TypeIdentifierInfoModel> typeIdentifierInfoModels = null;
+                TypeIdentifierInfoModel typeIdentifierInfoModel = null;
+
+                #region Validation
+
+                if (model == null)
+                {
+                    throw new RestApiException(HttpStatusCode.BadRequest, "No model found", "You did not provide a valid model. Please check your request and try again.");
+                }
+
+                if (!model.ActionTypeUid.HasValue && !model.AssetTypeUid.HasValue && !model.RelationshipTypeUid.HasValue)
+                {
+                    throw new RestApiException(HttpStatusCode.BadRequest, "No Uid found", "You must provide only one of the three Uid properties: ActionTypeUid, AssetTypeUid, or RelationshipTypeUid.");
+                }
+
+                if (model.ActionTypeUid.HasValue)
+                {
+                    typeIdentifierInfoModels = await Company.QueryAsync<TypeIdentifierInfoModel>("select ID, Uid, 'IssueType' as Object, ID as ObjectID from IssueType where Uid = @uid", new { uid = model.ActionTypeUid.Value });
+                    typeIdentifierInfoModel = typeIdentifierInfoModels.SingleOrDefault();
+                    if (typeIdentifierInfoModel == null)
+                    {
+                        throw new RestApiException(HttpStatusCode.NotFound, "Type not found", $"Action Type not found based on Uid provided [{model.ActionTypeUid}].");
+                    }
+                }
+
+                if (model.AssetTypeUid.HasValue)
+                {
+                    if (model.ActionTypeUid.HasValue)
+                    {
+                        throw new RestApiException(HttpStatusCode.BadRequest, "Parameter error", "You may not provide an AssetTypeUid since you have already provided an ActionTypeUid.");
+                    }
+                    else
+                    {
+                        typeIdentifierInfoModels = await Company.QueryAsync<TypeIdentifierInfoModel>("select ID, Uid, Object, ObjectID from AssetType where Uid = @uid", new { uid = model.AssetTypeUid.Value });
+                        typeIdentifierInfoModel = typeIdentifierInfoModels.SingleOrDefault();
+                        if (typeIdentifierInfoModel == null)
+                        {
+                            throw new RestApiException(HttpStatusCode.NotFound, "Type not found", $"Asset Type not found based on Uid provided [{model.ActionTypeUid}].");
+                        }
+                    }
+                }
+
+                if (model.RelationshipTypeUid.HasValue)
+                {
+                    if (model.ActionTypeUid.HasValue)
+                    {
+                        throw new RestApiException(HttpStatusCode.BadRequest, "Parameter error", "You may not provide an RelationshipTypeUid since you have already provided an ActionTypeUid.");
+                    }
+                    else if (model.AssetTypeUid.HasValue)
+                    {
+                        throw new RestApiException(HttpStatusCode.BadRequest, "Parameter error", "You may not provide an RelationshipTypeUid since you have already provided an AssetTypeUid.");
+                    }
+                    else
+                    {
+                        typeIdentifierInfoModels = await Company.QueryAsync<TypeIdentifierInfoModel>("select ID, Uid, 'IntersectType' as Object, ID as ObjectID from IntersectType where Uid = @uid", new { uid = model.RelationshipTypeUid.Value });
+                        typeIdentifierInfoModel = typeIdentifierInfoModels.SingleOrDefault();
+                        if (typeIdentifierInfoModel == null)
+                        {
+                            throw new RestApiException(HttpStatusCode.NotFound, "Type not found", $"Relationship Type not found based on Uid provided [{model.RelationshipTypeUid}].");
+                        }
+                    }
+                }
+
+                bool actionIsReplaceAndKeySelected = (model.Action == FieldTypesApiEditAction.Merge); //If set to merge we can set to true and skip this step.
+                bool fieldsHaveErrors = false;
+                var fieldsHaveErrorsList = new List<string>();
+                foreach (var field in model.Fields)
+                {
+                    if (!field.Type.IsOnlyOneTypeModelDefined())
+                    {
+                        fieldsHaveErrors = true;
+                        fieldsHaveErrorsList.Add(field.Name);
+                    }
+                    if (model.Action == FieldTypesApiEditAction.Replace)
+                    {
+                        if (field.Type.IsPartyOfKey())
+                        {
+                            actionIsReplaceAndKeySelected = true;
+                        }
+                    }
+                }
+                if (fieldsHaveErrors)
+                {
+                    throw new RestApiException(HttpStatusCode.BadRequest, "Fields contain errors", $"The following fields have more than one type defined: {string.Join(", ", fieldsHaveErrorsList)}.");
+                }
+                if (actionIsReplaceAndKeySelected)
+                {
+                    throw new RestApiException(HttpStatusCode.BadRequest, "No primary key defined", $"You have elected to replace all current fields, yet you have not deinfed a key. You must define at least one field as a key, or choose Merge as an Action.");
+                }
+                var duplicateFieldNames = model.Fields.Select(f => f.Name).GroupBy(f => f).Where(f => f.Count() > 1).Select(f => f.Key).ToList();
+                if (duplicateFieldNames.Count > 0)
+                {
+                    throw new RestApiException(HttpStatusCode.BadRequest, "Duplicate field names", $"The following field names are used more than once: {string.Join(", ", fieldsHaveErrorsList)}. Field names must be unique.");
+                }
+                if (model.Action == FieldTypesApiEditAction.Merge)
+                {
+                    var currentFieldTypes = Company.Filter<FieldType>(f => f.Object == typeIdentifierInfoModel.Object && f.ObjectID == typeIdentifierInfoModel.ObjectID).ToList();
+                    var currentFieldTypeNames = currentFieldTypes.Select(f => f.Name).ToList();
+                    var newFieldTypeNames = model.Fields.Select(f => f.Name).ToList();
+                    var collision = newFieldTypeNames.Intersect(currentFieldTypeNames).ToList();
+                    if (collision.Count > 0)
+                    {
+                        throw new RestApiException(HttpStatusCode.BadRequest, "Duplicate field names", $"The following field names already exist: {string.Join(", ", collision)}. Field names must be unique.");
+                    }
+                }
+                else
+                {
+                    // This is a full replace, so we need to validate that there are no current assets before we allow this.
+                    var anyExistingItems = false;
+                    switch (typeIdentifierInfoModel.Object)
+                    {
+                        case "IntersectType":
+                            anyExistingItems = Company.Any<Intersect>(i => i.IntersectTypeID == typeIdentifierInfoModel.ID);
+                            break;
+                        case "IssueType":
+                            anyExistingItems = Company.Any<Issue>(i => i.IssueTypeID == typeIdentifierInfoModel.ID);
+                            break;
+                        default:
+                            anyExistingItems = Company.Any<Asset>(i => i.AssetTypeID == typeIdentifierInfoModel.ID);
+                            break;
+                    }
+                    if (anyExistingItems)
+                    {
+                        throw new RestApiException(HttpStatusCode.BadRequest, "Existing items in system", $"There are existing items in your environment. You may not perform a Replace action until those items are removed.");
+                    }
+                }
+
+                #endregion
+
+                #region Validation done, time to do some work
+
+
+
+                #endregion
+
+                return Request.CreateResponse(HttpStatusCode.OK, typeIdentifierInfoModel);
+            }
+            catch (RestApiException ex)
+            {
+                errorMessage = ex.GetFullExceptionData(false);
+                return ReturnApiError(ex.Status, errorMessage);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+
+        }
+
     }
 }

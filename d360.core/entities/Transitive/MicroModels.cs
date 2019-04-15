@@ -69,7 +69,7 @@ namespace d360.core.entities
         public int Priority { get; set; }
     }
 
-    public class FieldsObjectModel 
+    public class FieldsObjectModel
     {
         public SystemObjects Type { get; set; }
         public int TypeID { get; set; }
@@ -135,7 +135,7 @@ namespace d360.core.entities
     }
 
     [DataContract(Namespace = NAMESPACE)]
-    public class LoadDetail: BaseObject
+    public class LoadDetail : BaseObject
     {
         [DataMember]
         public int ID { get; set; }
@@ -210,7 +210,7 @@ namespace d360.core.entities
     }
 
     [DataContract(Namespace = NAMESPACE)]
-    public class ObjectModel: BaseObject
+    public class ObjectModel : BaseObject
     {
         [DataMember]
         public string ObjectType { get; set; }
@@ -244,7 +244,7 @@ namespace d360.core.entities
         public int SecurityAssetID { get; set; }
     }
 
-    public class EndResult: EndTypeResult
+    public class EndResult : EndTypeResult
     {
         public long AssetID { get; set; }
     }
@@ -266,19 +266,19 @@ namespace d360.core.entities
     {
         [DataMember]
         public int FollowerCount { get; set; }
-        
+
         [DataMember]
         public int CommentCount { get; set; }
-        
+
         [DataMember]
         public DateTime? CommentLast { get; set; }
 
         [DataMember]
         public int? Score { get; set; }
-        
+
         [DataMember]
         public int IssueCount { get; set; }
-        
+
         [DataMember]
         public DateTime? IssueLast { get; set; }
 
@@ -307,7 +307,7 @@ namespace d360.core.entities
     {
         [DataMember]
         public string Name { get; set; }
-        
+
         [DataMember]
         public int? Value { get; set; }
 
@@ -325,7 +325,7 @@ namespace d360.core.entities
     }
 
     [DataContract(Namespace = NAMESPACE)]
-    public class ReportSchemaModel: BaseObject
+    public class ReportSchemaModel : BaseObject
     {
         [DataMember]
         public string ID { get; set; }
@@ -366,7 +366,7 @@ namespace d360.core.entities
     }
 
     public class BulkLoadMatchingFieldModel
-    {        
+    {
         public string Value { get; set; }
         public int ObjectID { get; set; }
     }
@@ -405,6 +405,16 @@ namespace d360.core.entities
         public int IntersectTypeID { get; set; }
         public string Object { get; set; }
         public int ObjectID { get; set; }
+    }
+
+    public class TypeIdentifierInfoModel
+    {
+        public int ID { get; set; }
+
+        public string Object { get; set; }
+        public int ObjectID { get; set; }
+
+        public Guid Uid { get; set; }
     }
 
 }
