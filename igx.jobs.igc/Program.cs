@@ -114,15 +114,6 @@ set @dt = getutcdate()
 
 update  T
 set     T.CompletedOn = getutcdate()
-from	integration.ExecutionAsset T
-		inner join integration.ExecutionAssetType EA on EA.ExecutionID = T.ExecutionID and EA.SynchedAssetTypeID = T.SynchedAssetTypeID
-		inner join integration.SynchedAssetType A on A.ID = T.SynchedAssetTypeID
-		inner join integration.Setting S on S.ID = A.IntegrationSettingID
-where	EA.CompletedOn is null
-		and EA.StartedOn < DATEADD(hh, -(coalesce(A.DeleteExecutionTimeoutHours, S.DeleteExecutionTimeoutHours)), @dt)
-
-update  T
-set     T.CompletedOn = getutcdate()
 from	integration.ExecutionAssetType T
 		inner join integration.SynchedAssetType A on A.ID = T.SynchedAssetTypeID
 		inner join integration.Setting S on S.ID = A.IntegrationSettingID

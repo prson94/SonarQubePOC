@@ -35,4 +35,9 @@ namespace d360.core.queue
             return $"{Group}|{ID}";
         }
     }
+
+    public class ReindexModel : QueueObject
+    {
+        //No additional properties
+    }
 }
