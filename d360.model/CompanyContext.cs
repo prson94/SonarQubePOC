@@ -128,9 +128,7 @@ namespace d360.model
         public DbSet<FieldWithRelation> FieldWithRelations { get; set; }                        /* VIEW */
 
         public DbSet<FieldType> FieldTypes { get; set; }
-
-        public DbSet<FieldTypeLookupValue> FieldTypeLookupValues { get; set; }                  /* VIEW */
-
+        
         public DbSet<FieldTypeLookup> FieldTypeLookups { get; set; }
 
         public DbSet<FieldTypeFilteredLookupDefinition> FieldTypeFilteredLookupDefinitions { get; set; }

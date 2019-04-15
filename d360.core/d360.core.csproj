@@ -287,7 +287,6 @@
     <Compile Include="entities\Views\RelationshipAggregate.cs" />
     <Compile Include="entities\Views\ResponsibilityDetail.cs" />
     <Compile Include="entities\Views\AttributeDetail.cs" />
-    <Compile Include="entities\Views\FieldTypeLookupValue.cs" />
     <Compile Include="entities\Views\FieldLookupValue.cs" />
     <Compile Include="entities\Views\FieldWithRelation.cs" />
     <Compile Include="entities\Views\FieldTypeWithRelation.cs" />
