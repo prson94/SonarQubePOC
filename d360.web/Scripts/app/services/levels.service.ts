@@ -41,7 +41,7 @@ export class LevelsService extends BaseObservableService {
             methodName = 'postDynamic';
         }
 
-        return this['methodName'](this.http, `${objectType}level`, level);
+        return this[methodName](this.http, `${objectType}level`, level);
     }
 
     deleteObjectLevel(objectType: string, objectId: number, levelId: number): Observable<JsonResult> {

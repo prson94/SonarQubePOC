@@ -174,7 +174,7 @@ export class AdminLevelListComponent extends BaseComponent implements OnChanges 
     }
 
     saveLevel(event) {
-        this.levelsService.saveObjectLevel(event.level, this.objectType, this.objectId, event.action).then(
+        this.levelsService.saveObjectLevel(event.level, this.objectType, this.objectId, event.action).subscribe(
             result => {
                 this.showMessageForResult(this.messagesService, result);
                 this.showEditor = false;
