@@ -515,6 +515,9 @@ namespace d360.web.Models
         public string DataType { get; set; }
         [DataMember]
         public bool ShowIfEmpty { get; set; }
+
+        [DataMember]
+        public bool ExpandGroupMembership { get; set; }
     }
 
     [DataContract]
