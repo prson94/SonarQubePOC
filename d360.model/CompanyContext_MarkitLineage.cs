@@ -71,6 +71,7 @@ namespace d360.model
             //find source records to start from
             var leftmostMaps = maps.Where(m => !maps.Any(r => r.TargetFusionAttributeID == m.SourceFusionAttributeID)).ToList();
 
+
             //var leftmostMaps = maps.Where(m => m.SourceFusionAttributeID == 138507).ToList();
             var mappings = new List<FusionMarkitSourceTargetMapping>();
 
@@ -217,7 +218,16 @@ namespace d360.model
                                     previousAssetId = prevMapping.TargetAssetID;
                                     previousFusionId = prevMapping.TargetFusionAttributeID;
                                     mapId = prevMapping.MapID;
-                                    //sourceAssets.Clear();
+
+                                    if (sourceAssets.Any())
+                                    {
+                                        var previousSource = sourceAssets.Peek();
+                                        //if the previous mapping is pointing to the previous source asset on the stack we're on the same path
+                                        if (previousSource.AssetID == previousAssetId && previousSource.FusionAttributeID == previousFusionId)
+                                        {
+                                            continue;
+                                        }
+                                    }
                                 }
 
 

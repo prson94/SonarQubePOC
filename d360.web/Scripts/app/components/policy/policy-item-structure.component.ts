@@ -92,10 +92,11 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
 
                     this.setBrowserTitle(this.titleService, this.policyType.Name);
                 });
-            this.levelsService.getObjectLevels(this.policyTypeId, StringConstants.ObjectPolicyType)
-                .then(result => {
+            this.levelsService.getObjectLevels(this.policyTypeId, StringConstants.ObjectPolicyType).subscribe(
+                result => {
                     this.levels = result;
-                });
+                }
+            );
         });
     }
 

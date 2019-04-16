@@ -545,106 +545,17 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.model.FieldType.LookupObjectID = id;
         this.model.FieldType.LookupObjectType = type;
 
-        forkJoin(
-            this.loadDefaultValueOptions(type, id),
-            this.loadHierarchyOptions(type, id),
-            this.loadListFilterOptions(type, id),
-            this.loadTokens(type, id)
-        ).subscribe(
-            (
-                [
-                    loadDefaultValueOptions,
-                    loadHierarchyOptions,
-                    loadListFilterOptions,
-                    loadTokens
-                ]
-            ) => {
-                /* loadDefaultValueOptions */
-                this.lookupDefaultValueOptions = loadDefaultValueOptions;
-                /**/
+        this.loadDefaultValueOptions(type, id);
+        this.loadHierarchyOptions(type, id);
+        this.loadListFilterOptions(type, id);
 
-                /* loadHierarchyOptions */
-                this.listParentFields = loadHierarchyOptions;
+        //clear the validated fields and error message
+        this.model.FieldType.MaximumLength = null;
+        this.model.FieldType.MinimumLength = null;
+        this.model.FieldType.Increment = null;
+        this.validate('*');
 
-                if (this.listParentFields == null || this.listParentFields.length == 0) {
-                    this.model.FieldType.ParentFieldTypeID = 0;
-                }
-                /**/
-
-                /* loadListFilterOptions */
-                loadListFilterOptions.forEach(d => {
-                    if (!this.listFilterOptions.has(d.PredicateValue)) {
-                        this.listFilterOptions.set(d.PredicateValue, {
-                                value: d.PredicateValue,
-                                label: d.PredicateName,
-                                fieldtypeOptions: (this.objectType == 'IssueType') ?
-                                    [{
-                                        value: null,
-                                        label: "Action Subject",
-                                        info: "Model/Artifact"
-                                    }] :
-                                    []
-                            }
-                        );
-                    }
-
-                    if (d.FieldTypeID != null && d.FieldTypeID != this.id) {
-                        this.listFilterOptions.get(d.PredicateValue).fieldtypeOptions.push(
-                            {
-                                value: d.FieldTypeID,
-                                label: d.FriendlyName,
-                                info: d.Info
-                            }
-                        );
-                    }
-                });
-
-                this.listFilterPredicates.push({value: null, label: 'Choose...'});
-                this.listFilterOptions.forEach(d => {
-                    if (d.fieldtypeOptions.length > 0) {
-                        /* only include predicates with possible field options */
-                        this.listFilterPredicates.push({value: d.value, label: d.label});
-                    }
-                });
-
-                if (this.listFilterPredicates.length == 1) {
-                    /* If we have no predicates to select, turn off filter configuration */
-                    this.listFilterable = false;
-                    this.selectPredicate(null);
-                    this.expandFilterConfiguration = false;
-
-                    return;
-                }
-
-                if (this.model.FieldType.FilterPredicateID != null && this.model.FieldType.FilterPredicateDirection != null) {
-                    this.selectPredicate(this.model.FieldType.FilterPredicateID + '|' + (this.model.FieldType.FilterPredicateDirection ? '1' : '0'));
-                    this.expandFilterConfiguration = true;
-                } else {
-                    this.selectPredicate(null);
-                    this.expandFilterConfiguration = false;
-                }
-
-                //clear the validated fields and error message
-                this.model.FieldType.MaximumLength = null;
-                this.model.FieldType.MinimumLength = null;
-                this.model.FieldType.Increment = null;
-                this.validate('*');
-
-                /* loadTokens */
-                this.model.LookupTokens = loadTokens;
-
-                if (this.model.LookupTokens
-                    && this.model.LookupTokens.length > 0
-                    && (
-                        this.model.FieldType.LookupDisplayFormat == null
-                        || this.model.FieldType.LookupDisplayFormat.length == 0
-                    )
-                ) {
-                    this.model.FieldType.LookupDisplayFormat = this.model.LookupTokens[0].value;
-                }
-                /**/
-            }
-        );
+        return this.loadTokens(type, id);
     }
 
     private cardinalRelationshipSelected(value: number) {
@@ -720,7 +631,15 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             return;
         }
 
-        return this.fieldsService.getReferenceTypeHierarchyFields(objectId, this.objectType, this.objectID);
+        this.fieldsService.getReferenceTypeHierarchyFields(objectId, this.objectType, this.objectID).subscribe(
+            (responseGetReferenceTypeHierarchyFields) => {
+                this.listParentFields = responseGetReferenceTypeHierarchyFields;
+
+                if (this.listParentFields == null || this.listParentFields.length == 0) {
+                    this.model.FieldType.ParentFieldTypeID = 0;
+                }
+            }
+        );
     }
 
     private loadListFilterOptions(objectType: string, objectId: number): Observable<any> {
@@ -741,7 +660,58 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
         this.listFilterable = true;
 
-        return this.fieldsService.getListFilterOptions(objectType + 'Type', objectId, this.objectType, this.objectID);
+        this.fieldsService.getListFilterOptions(objectType + 'Type', objectId, this.objectType, this.objectID).subscribe(
+            r => {
+                r.forEach(d => {
+                    if (!this.listFilterOptions.has(d.PredicateValue)) {
+                        this.listFilterOptions.set(d.PredicateValue, {
+                            value: d.PredicateValue,
+                            label: d.PredicateName,
+                            fieldtypeOptions: (this.objectType == 'IssueType') ? [{
+                                value: null,
+                                label: "Action Subject",
+                                info: "Model/Artifact"
+                            }] : []
+                        });
+                    }
+
+                    if (d.FieldTypeID != null && d.FieldTypeID != this.id) {
+                        this.listFilterOptions.get(d.PredicateValue).fieldtypeOptions.push({
+                            value: d.FieldTypeID,
+                            label: d.FriendlyName,
+                            info: d.Info
+                        });
+                    }
+                });
+
+                this.listFilterPredicates.push({value: null, label: 'Choose...'});
+
+                this.listFilterOptions.forEach(
+                    d => {
+                        if (d.fieldtypeOptions.length > 0) {
+                            //only include predicates with possible field options
+                            this.listFilterPredicates.push({value: d.value, label: d.label});
+                        }
+                    }
+                );
+
+                if (this.listFilterPredicates.length == 1) {
+                    //If we have no predicates to select, turn off filter configuration
+                    this.listFilterable = false;
+                    this.selectPredicate(null);
+                    this.expandFilterConfiguration = false;
+
+                    return;
+                }
+                if (this.model.FieldType.FilterPredicateID != null && this.model.FieldType.FilterPredicateDirection != null) {
+                    this.selectPredicate(this.model.FieldType.FilterPredicateID + '|' + (this.model.FieldType.FilterPredicateDirection ? '1' : '0'));
+                    this.expandFilterConfiguration = true;
+                } else {
+                    this.selectPredicate(null);
+                    this.expandFilterConfiguration = false;
+                }
+            }
+        );
     }
 
     private selectPredicate(value: string) {
@@ -783,7 +753,11 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             objectType += 'Type';
         }
 
-        return this.fieldsService.getLookupDefaultValueOptions(objectId, objectType);
+        this.fieldsService.getLookupDefaultValueOptions(objectId, objectType).subscribe(
+            (responseGetLookupDefaultValueOptions) => {
+                this.lookupDefaultValueOptions = responseGetLookupDefaultValueOptions;
+            }
+        );
     }
 
     private loadTokens(
@@ -800,7 +774,21 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             objectType += 'Type';
         }
 
-        return this.fieldsService.getLookupTokens(objectId, objectType);
+        this.fieldsService.getLookupTokens(objectId, objectType).subscribe(
+            responseGetLookupTokens => {
+                this.model.LookupTokens = responseGetLookupTokens;
+
+                if (this.model.LookupTokens
+                    && this.model.LookupTokens.length > 0
+                    && (
+                        this.model.FieldType.LookupDisplayFormat == null
+                        || this.model.FieldType.LookupDisplayFormat.length == 0
+                    )
+                ) {
+                    this.model.FieldType.LookupDisplayFormat = this.model.LookupTokens[0].value;
+                }
+            }
+        );
     }
 
     private loadTargetFusionAttributes(item: FieldTypeFusionItemEditorModel) {

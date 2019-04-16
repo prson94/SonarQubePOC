@@ -1434,6 +1434,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
         public static string WorkflowList = @"
                   select t.ID
                     ,t.Name
+                    ,t.Description
                     ,t.CreatedOn
 					,coalesce(rc.FirstName + ' ' + rc.LastName, '') as CreatedBy
                     ,t.UpdatedOn
