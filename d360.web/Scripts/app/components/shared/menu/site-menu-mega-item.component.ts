@@ -12,13 +12,15 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 @Component({
     selector: 'd3s-site-menu-mega-item',    
     template: ` 
-                <a (click)="itemClick()" class="menu-item truncate" [ngStyle]="{'margin-left': getMargin()}">
-                    <span (click)="handleArrowClick($event)">
-                        <i *ngIf="item.Items" [class]="!displayChild ? 'subitem fa fa-caret-right' : 'subitem fa fa-caret-down'" aria-hidden="true"></i>
-                    </span>
-                   <span [innerHTML]="highlight() | safeHtml"></span>
-                    <ng-container *ngIf="item.IsHomePage">&nbsp;&nbsp;<span class="fa fa-home"></span></ng-container>
-                    <span *ngIf="count > 0" [ngStyle]="{'margin-right': getMargin()}" class="d3s-badge pull-right">{{count}}</span>
+                <a (click)="itemClick()" [ngClass]="{'menu-item truncate':true , 'dim': item.Url == null}" [ngStyle]="{'margin-left': getMargin()}" >
+                    <div style="display: inline-flex;width: inherit;">
+                        <div (click)="handleArrowClick($event)">
+                            <i *ngIf="item.Items" [class]="!displayChild ? 'subitem fa fa-caret-right' : 'subitem fa fa-caret-down'" aria-hidden="true"></i>
+                        </div>
+                        <div style="padding-right: 40px;" [innerHTML]="highlight() | safeHtml"></div>
+                        <div *ngIf="count > 0" style="margin-left: auto;" [ngStyle]="{'margin-right': getMargin()}" class="d3s-badge pull-right">{{count}}</div>
+                        <ng-container *ngIf="item.IsHomePage">&nbsp;&nbsp;<span style="LINE-HEIGHT: 25PX;" class="fa fa-home"></span></ng-container>
+                    </div>
                 </a>
                 <div *ngIf="displayChild">
                     <d3s-site-menu-mega-item  *ngFor="let sub of item.Items" [item]="sub" [level]="level + 1" [searchText]="searchText" [active]="active" [count]="sub.count" (activeChange)="active=$event;activeChange.emit(active);"></d3s-site-menu-mega-item>                
