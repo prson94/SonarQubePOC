@@ -12,8 +12,15 @@
             splitStatements="true"
             stripComments="true">
 <![CDATA[
-DROP TABLE [dbo].[ArtifactTypeExportTemplateStyle]
-DROP TABLE [dbo].[ArtifactTypeExportTemplate]
+IF (EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND  TABLE_NAME = 'ArtifactTypeExportTemplateStyle'))
+BEGIN
+	DROP TABLE [dbo].[ArtifactTypeExportTemplateStyle]
+END
+
+IF (EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND  TABLE_NAME = 'ArtifactTypeExportTemplate'))
+BEGIN
+	DROP TABLE [dbo].[ArtifactTypeExportTemplate]
+END
 
 /****** Object:  StoredProcedure [dbo].[DeleteObject]    Script Date: 16/04/2019 09:59:42 ******/
 SET ANSI_NULLS ON
