@@ -242,6 +242,13 @@ namespace d360.core.entities
         public bool IsDisplayable { get; set; }
         [DataMember]
         public bool ShowIfEmpty { get; set; }
+
+        [DataMember]
+        public bool HideFilter { get; set; }
+        [DataMember]
+        public bool HideFooter { get; set; }
+        [DataMember]
+        public bool HideHeader { get; set; }
     }
 
     public class FieldTypeDataTypeComputedRelationshipFieldApiViewModel
@@ -308,6 +315,13 @@ namespace d360.core.entities
         public bool IsDisplayable { get; set; }
         [DataMember]
         public bool ShowIfEmpty { get; set; }
+
+        [DataMember]
+        public bool HideFilter { get; set; }
+        [DataMember]
+        public bool HideFooter { get; set; }
+        [DataMember]
+        public bool HideHeader { get; set; }
     }
 
     public class FieldTypeDataTypeComputedRelationshipReferenceListApiViewModel
@@ -340,6 +354,8 @@ namespace d360.core.entities
         public decimal? DefaultValue { get; set; }
         [DataMember]
         public FieldTypeDescriptionApiViewModel_DisplayForm Description { get; set; }
+        [DataMember]
+        public decimal? Increment { get; set; }
         [DataMember]
         public FieldTypeDescriptionApiViewModel_ValidationDecimal Validation { get; set; }
     }
@@ -459,8 +475,6 @@ namespace d360.core.entities
         public string DefaultValue { get; set; }
         [DataMember]
         public FieldTypeDescriptionApiViewModel_DisplayForm Description { get; set; }
-        [DataMember]
-        public Guid IntersectTypeUid { get; set; }
         [DataMember]
         public FieldTypeDescriptionApiViewModel_ValidationText Validation { get; set; }
     }
@@ -590,5 +604,26 @@ namespace d360.core.entities
 
         [DataMember]
         public List<FieldTypeApiViewModel> Fields { get; set; }
+    }
+
+    public class FieldTypeApiDeleteModel
+    {
+        [DataMember]
+        public string Name { get; set; }
+    }
+
+    public class FieldTypesApiDeleteModel
+    {
+        [DataMember]
+        public Guid? ActionTypeUid { get; set; } = null;
+
+        [DataMember]
+        public Guid? AssetTypeUid { get; set; } = null;
+
+        [DataMember]
+        public Guid? RelationshipTypeUid { get; set; } = null;
+
+        [DataMember]
+        public List<FieldTypeApiDeleteModel> Fields { get; set; }
     }
 }

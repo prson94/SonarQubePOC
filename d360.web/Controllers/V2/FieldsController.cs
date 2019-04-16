@@ -31,14 +31,14 @@ namespace d360.web.Controllers.V2
         RoutePrefix("api/v{version:apiVersion}/fields"),
         Authorize
     ]
-    public class FieldsController : BaseApiController
+    public class FieldsController : BaseV2ApiController
     {
         #region DI
 
         IQueueSource QueueSource;
         IStorageProvider Storage;
 
-        public FieldsController(CommunityContext community, CompanyContext company, IStorageProvider storage, IQueueSource queueSource)
+        public FieldsController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IQueueSource queueSource)
             : base(community, company)
         {
             QueueSource = queueSource;
@@ -525,12 +525,12 @@ for json path, WITHOUT_ARRAY_WRAPPER";
         [
             HttpPut,
             Route(""),
-            SwaggerResponse(HttpStatusCode.OK, "", typeof(FieldTypesApiViewModel)),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(ApiStatusResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
-        public async Task<HttpResponseMessage> PutFieldTypesAsync(FieldTypesApiEditModel model)
+        public async Task<IHttpActionResult> PutFieldTypesAsync(FieldTypesApiEditModel model)
         {
             var prefix = "Fields.PutFieldTypesAsync => ";
             var errorMessage = "";
@@ -600,6 +600,30 @@ for json path, WITHOUT_ARRAY_WRAPPER";
                     }
                 }
 
+                #region Security check
+
+                bool hasPermissions = false;
+
+                if (Company.CurrentResourceIsAdmin)
+                {
+                    hasPermissions = true;
+                }
+                else
+                {
+                    var typePermissions = Company.GetTypePermissions(typeIdentifierInfoModel.Object, typeIdentifierInfoModel.ObjectID);
+                    if (typePermissions != null)
+                    {
+                        hasPermissions = typePermissions.Any(i => i.ID == Permission.ModifyAsset);
+                    }
+                }
+
+                if (!hasPermissions)
+                {
+                    throw new RestApiException(HttpStatusCode.Unauthorized, "Not authorized", "You do not have permissions to remove fields on this type.");
+                }
+
+                #endregion
+
                 bool actionIsReplaceAndKeySelected = (model.Action == FieldTypesApiEditAction.Merge); //If set to merge we can set to true and skip this step.
                 bool fieldsHaveErrors = false;
                 var fieldsHaveErrorsList = new List<string>();
@@ -622,27 +646,17 @@ for json path, WITHOUT_ARRAY_WRAPPER";
                 {
                     throw new RestApiException(HttpStatusCode.BadRequest, "Fields contain errors", $"The following fields have more than one type defined: {string.Join(", ", fieldsHaveErrorsList)}.");
                 }
-                if (actionIsReplaceAndKeySelected)
+                if (!actionIsReplaceAndKeySelected)
                 {
-                    throw new RestApiException(HttpStatusCode.BadRequest, "No primary key defined", $"You have elected to replace all current fields, yet you have not deinfed a key. You must define at least one field as a key, or choose Merge as an Action.");
+                    throw new RestApiException(HttpStatusCode.BadRequest, "No primary key defined", $"You have elected to replace all current fields, yet you have not defined a key. You must define at least one field as a key, or choose Merge as an Action.");
                 }
                 var duplicateFieldNames = model.Fields.Select(f => f.Name).GroupBy(f => f).Where(f => f.Count() > 1).Select(f => f.Key).ToList();
                 if (duplicateFieldNames.Count > 0)
                 {
                     throw new RestApiException(HttpStatusCode.BadRequest, "Duplicate field names", $"The following field names are used more than once: {string.Join(", ", fieldsHaveErrorsList)}. Field names must be unique.");
                 }
-                if (model.Action == FieldTypesApiEditAction.Merge)
-                {
-                    var currentFieldTypes = Company.Filter<FieldType>(f => f.Object == typeIdentifierInfoModel.Object && f.ObjectID == typeIdentifierInfoModel.ObjectID).ToList();
-                    var currentFieldTypeNames = currentFieldTypes.Select(f => f.Name).ToList();
-                    var newFieldTypeNames = model.Fields.Select(f => f.Name).ToList();
-                    var collision = newFieldTypeNames.Intersect(currentFieldTypeNames).ToList();
-                    if (collision.Count > 0)
-                    {
-                        throw new RestApiException(HttpStatusCode.BadRequest, "Duplicate field names", $"The following field names already exist: {string.Join(", ", collision)}. Field names must be unique.");
-                    }
-                }
-                else
+
+                if (model.Action == FieldTypesApiEditAction.Replace)
                 {
                     // This is a full replace, so we need to validate that there are no current assets before we allow this.
                     var anyExistingItems = false;
@@ -668,16 +682,539 @@ for json path, WITHOUT_ARRAY_WRAPPER";
 
                 #region Validation done, time to do some work
 
+                var currentFieldTypes = Company.Filter<FieldType>(f => f.Object == typeIdentifierInfoModel.Object && f.ObjectID == typeIdentifierInfoModel.ObjectID, i => i.FieldTypeLookup).ToList();
 
+                var newFieldTypes = new List<FieldType>();
+
+                var fieldTypeNamesToDelete = new List<string>();
+                var allowedConversions = DataType.Boolean.GetAllowedConversionOptions();
+                model.Fields.ForEach(f =>
+                {
+                    var newFieldType = new FieldType
+                    {
+                        AssetTypeID = typeIdentifierInfoModel.ID,
+                        Object = typeIdentifierInfoModel.Object,
+                        ObjectID = typeIdentifierInfoModel.ObjectID,
+                        Category = f.Category,
+                        Name = f.Name,
+                        FriendlyName = f.FriendlyName
+                    };
+
+                    if (f.Type.Boolean != null)
+                    {
+                        newFieldType.Type = DataType.Boolean.ToString();
+                        newFieldType.ColumnOrder = f.Type.Boolean.ColumnOrder;
+                        newFieldType.ColumnWidth = f.Type.Boolean.ColumnWidth;
+                        if (f.Type.Boolean.DefaultValue.HasValue) newFieldType.DefaultValue = f.Type.Boolean.DefaultValue.Value.ToString().ToLower();
+                        if (f.Type.Boolean.Description != null)
+                        {
+                            newFieldType.DisplayDescription = f.Type.Boolean.Description.Display;
+                            newFieldType.FormDescription = f.Type.Boolean.Description.Form;
+                        }
+                        newFieldType.IsDisplayable = f.Type.Boolean.IsDisplayable;
+                        newFieldType.IsEditable = f.Type.Boolean.IsEditable;
+                        newFieldType.IsListable = f.Type.Boolean.IsListable;
+                        newFieldType.IsPartOfKey = f.Type.Boolean.IsPartOfKey;
+                        newFieldType.IsPrimaryFilter = f.Type.Boolean.IsPrimaryFilter;
+                        newFieldType.ShowIfEmpty = f.Type.Boolean.ShowIfEmpty;
+                        newFieldType.SortOrder = f.Type.Boolean.SortOrder;
+                    }
+                    else if (f.Type.ComputedFusionLookup != null)
+                    {
+                        newFieldType.Type = DataType.FusionLookup.ToString();
+                        newFieldType.ColumnOrder = f.Type.ComputedFusionLookup.ColumnOrder;
+                        if (f.Type.ComputedFusionLookup.Description != null) newFieldType.DisplayDescription = f.Type.ComputedFusionLookup.Description.Display;
+                        newFieldType.IsDisplayable = f.Type.ComputedFusionLookup.IsDisplayable;
+                        newFieldType.IsEditable = false;
+                        newFieldType.IsListable = false;
+                        newFieldType.IsPartOfKey = false;
+                        newFieldType.IsPrimaryFilter = false;
+                        newFieldType.ShowIfEmpty = false;
+                        newFieldType.SortOrder = 99;
+                    }
+                    else if (f.Type.ComputedOwnershipLookup != null)
+                    {
+                        newFieldType.Type = DataType.OwnershipLookup.ToString();
+                        newFieldType.ColumnOrder = f.Type.ComputedOwnershipLookup.ColumnOrder;
+                        if (f.Type.ComputedOwnershipLookup.Description != null)
+                        {
+                            newFieldType.DisplayDescription = f.Type.ComputedOwnershipLookup.Description.Display;
+                        }
+                        newFieldType.IsDisplayable = f.Type.ComputedOwnershipLookup.IsDisplayable;
+                        newFieldType.IsEditable = false;
+                        newFieldType.IsListable = false;
+                        newFieldType.IsPartOfKey = false;
+                        newFieldType.IsPrimaryFilter = false;
+                        newFieldType.ShowIfEmpty = f.Type.ComputedOwnershipLookup.ShowIfEmpty;
+                        newFieldType.SortOrder = 99;
+
+                        newFieldType.FieldTypeLookup = new FieldTypeLookup
+                        {
+                            HideFilter = f.Type.ComputedOwnershipLookup.HideFilter,
+                            HideFooter = f.Type.ComputedOwnershipLookup.HideFooter,
+                            HideHeader = f.Type.ComputedOwnershipLookup.HideHeader,
+                            LookupType = 0,
+                            Definition = JsonConvert.SerializeObject(f.Type.ComputedOwnershipLookup.Definition)
+                        };
+                    }
+                    else if (f.Type.ComputedRelationshipField != null)
+                    {
+                        newFieldType.Type = DataType.FieldFromRelationship.ToString();
+                        newFieldType.ColumnOrder = f.Type.ComputedRelationshipField.ColumnOrder;
+                        newFieldType.ColumnWidth = f.Type.ComputedRelationshipField.ColumnWidth;
+                        if (f.Type.ComputedRelationshipField.Description != null)
+                        {
+                            newFieldType.DisplayDescription = f.Type.ComputedRelationshipField.Description.Display;
+                        }
+                        var relationshipsFieldType = Company.Query<dynamic>(@"
+select	I.ID as IntersectTypeID,
+		F.ID as FieldTypeID
+from	IntersectType I
+		inner join FieldType F on 
+				F.Object = case 
+								when (@t = I.Subject and @tid = I.SubjectID) then I.Object 
+								else I.Subject end 
+				and F.ObjectID = case 
+								when (@t = I.Subject and @tid = I.SubjectID) then I.ObjectID 
+								else I.SubjectID 
+							end 
+				and I.Uid = @uid 
+				and F.Name = @n", new
+                        {
+                            uid = f.Type.ComputedRelationshipField.IntersectTypeUid,
+                            n = f.Type.ComputedRelationshipField.FieldTypeName,
+                            t = typeIdentifierInfoModel.Object,
+                            tid = typeIdentifierInfoModel.ObjectID
+                        }).FirstOrDefault();
+                        if (relationshipsFieldType == null)
+                        {
+                            throw new RestApiException(HttpStatusCode.NotFound, "Relationship Type/Field not found", $"Relationship Type or Field Type not found based on Uid provided [{f.Type.ComputedRelationshipField.IntersectTypeUid}].");
+                        }
+                        newFieldType.LookupObjectType = "IntersectType";
+                        newFieldType.LookupObjectID = relationshipsFieldType.IntersectTypeID;
+                        newFieldType.LookupObjectFieldTypeID = relationshipsFieldType.FieldTypeID;
+                        newFieldType.IsDisplayable = f.Type.ComputedRelationshipField.IsDisplayable;
+                        newFieldType.IsEditable = false;
+                        newFieldType.IsListable = f.Type.ComputedRelationshipField.IsListable;
+                        newFieldType.IsPartOfKey = false;
+                        newFieldType.IsPrimaryFilter = false;
+                        newFieldType.ShowIfEmpty = f.Type.ComputedRelationshipField.ShowIfEmpty;
+                        newFieldType.SortOrder = f.Type.ComputedRelationshipField.SortOrder;
+                    }
+                    else if (f.Type.ComputedRelationshipLookup != null)
+                    {
+                        newFieldType.Type = DataType.ComplexRelationLookup.ToString();
+                        newFieldType.ColumnOrder = f.Type.ComputedRelationshipLookup.ColumnOrder;
+                        if (f.Type.ComputedRelationshipLookup.Description != null)
+                        {
+                            newFieldType.DisplayDescription = f.Type.ComputedRelationshipLookup.Description.Display;
+                        }
+                        newFieldType.IsDisplayable = f.Type.ComputedRelationshipLookup.IsDisplayable;
+                        newFieldType.ShowIfEmpty = f.Type.ComputedRelationshipLookup.ShowIfEmpty;
+                        newFieldType.FieldTypeLookup = new FieldTypeLookup
+                        {
+                            HideFilter = f.Type.ComputedRelationshipLookup.HideFilter,
+                            HideFooter = f.Type.ComputedRelationshipLookup.HideFooter,
+                            HideHeader = f.Type.ComputedRelationshipLookup.HideHeader,
+                            LookupType = 0,
+                            Definition = JsonConvert.SerializeObject(f.Type.ComputedRelationshipLookup.Definition)
+                        };
+                    }
+                    else if (f.Type.ComputedRelationshipReferenceList != null)
+                    {
+                        newFieldType.Type = DataType.RefListRelationship.ToString();
+                        newFieldType.ColumnOrder = f.Type.ComputedRelationshipReferenceList.ColumnOrder;
+                        if (f.Type.ComputedRelationshipReferenceList.Description != null)
+                        {
+                            newFieldType.DisplayDescription = f.Type.ComputedRelationshipReferenceList.Description.Display;
+                        }
+                        newFieldType.IsDisplayable = f.Type.ComputedRelationshipReferenceList.IsDisplayable;
+                        newFieldType.ShowIfEmpty = f.Type.ComputedRelationshipReferenceList.ShowIfEmpty;
+                        var relationshipsFieldType = Company.Query<int>(@"select ID from IntersectType where Uid = @uid", new { uid = f.Type.ComputedRelationshipReferenceList.IntersectTypeUid }).FirstOrDefault();
+                        if (relationshipsFieldType <= 0)
+                        {
+                            throw new RestApiException(HttpStatusCode.NotFound, "Relationship Type not found", $"Relationship Type or Field Type not found based on Uid provided [{f.Type.ComputedRelationshipReferenceList.IntersectTypeUid}].");
+                        }
+                        newFieldType.LookupObjectType = "IntersectType";
+                        newFieldType.LookupObjectID = relationshipsFieldType;
+                    }
+                    else if (f.Type.Date != null)
+                    {
+                        newFieldType.Type = DataType.Date.ToString();
+                        newFieldType.ColumnOrder = f.Type.Date.ColumnOrder;
+                        newFieldType.ColumnWidth = f.Type.Date.ColumnWidth;
+                        if (f.Type.Date.DefaultValue.HasValue) newFieldType.DefaultValue = f.Type.Date.DefaultValue.Value.ToString();
+                        if (f.Type.Date.Description != null)
+                        {
+                            newFieldType.DisplayDescription = f.Type.Date.Description.Display;
+                            newFieldType.FormDescription = f.Type.Date.Description.Form;
+                        }
+                        newFieldType.IsDisplayable = f.Type.Date.IsDisplayable;
+                        newFieldType.IsEditable = f.Type.Date.IsEditable;
+                        newFieldType.IsListable = f.Type.Date.IsListable;
+                        newFieldType.IsPartOfKey = f.Type.Date.IsPartOfKey;
+                        newFieldType.IsPrimaryFilter = f.Type.Date.IsPrimaryFilter;
+                        newFieldType.ShowIfEmpty = f.Type.Date.ShowIfEmpty;
+                        newFieldType.SortOrder = f.Type.Date.SortOrder;
+                        if (f.Type.Date.Validation != null)
+                        {
+                            newFieldType.IsRequired = f.Type.Date.Validation.IsRequired;
+                            newFieldType.ValidationDescription = f.Type.Date.Validation.Message;
+                        }
+                    }
+                    else if (f.Type.DateTime != null)
+                    {
+                        newFieldType.Type = DataType.DateTime.ToString();
+                        newFieldType.ColumnOrder = f.Type.DateTime.ColumnOrder;
+                        newFieldType.ColumnWidth = f.Type.DateTime.ColumnWidth;
+                        if (f.Type.DateTime.DefaultValue.HasValue) newFieldType.DefaultValue = f.Type.DateTime.DefaultValue.Value.ToString();
+                        if (f.Type.DateTime.Description != null)
+                        {
+                            newFieldType.DisplayDescription = f.Type.DateTime.Description.Display;
+                            newFieldType.FormDescription = f.Type.DateTime.Description.Form;
+                        }
+                        newFieldType.IsDisplayable = f.Type.DateTime.IsDisplayable;
+                        newFieldType.IsEditable = f.Type.DateTime.IsEditable;
+                        newFieldType.IsListable = f.Type.DateTime.IsListable;
+                        newFieldType.IsPartOfKey = f.Type.DateTime.IsPartOfKey;
+                        newFieldType.IsPrimaryFilter = f.Type.DateTime.IsPrimaryFilter;
+                        newFieldType.ShowIfEmpty = f.Type.DateTime.ShowIfEmpty;
+                        newFieldType.SortOrder = f.Type.DateTime.SortOrder;
+                        if (f.Type.DateTime.Validation != null)
+                        {
+                            newFieldType.IsRequired = f.Type.DateTime.Validation.IsRequired;
+                            newFieldType.ValidationDescription = f.Type.DateTime.Validation.Message;
+                        }
+                    }
+                    else if (f.Type.Decimal != null)
+                    {
+                        newFieldType.Type = DataType.Decimal.ToString();
+                        newFieldType.ColumnOrder = f.Type.Decimal.ColumnOrder;
+                        newFieldType.ColumnWidth = f.Type.Decimal.ColumnWidth;
+                        if (f.Type.Decimal.DefaultValue.HasValue) newFieldType.DefaultValue = f.Type.Decimal.DefaultValue.Value.ToString();
+                        if (f.Type.Decimal.Description != null)
+                        {
+                            newFieldType.DisplayDescription = f.Type.Decimal.Description.Display;
+                            newFieldType.FormDescription = f.Type.Decimal.Description.Form;
+                        }
+                        newFieldType.IsDisplayable = f.Type.Decimal.IsDisplayable;
+                        newFieldType.IsEditable = f.Type.Decimal.IsEditable;
+                        newFieldType.IsListable = f.Type.Decimal.IsListable;
+                        newFieldType.IsPartOfKey = f.Type.Decimal.IsPartOfKey;
+                        newFieldType.IsPrimaryFilter = f.Type.Decimal.IsPrimaryFilter;
+                        newFieldType.ShowIfEmpty = f.Type.Decimal.ShowIfEmpty;
+                        newFieldType.SortOrder = f.Type.Decimal.SortOrder;
+                        newFieldType.Increment = f.Type.Decimal.Increment;
+                        if (f.Type.Decimal.Validation != null)
+                        {
+                            newFieldType.IsRequired = f.Type.Decimal.Validation.IsRequired;
+                            newFieldType.ValidationDescription = f.Type.Decimal.Validation.Message;
+                            newFieldType.Length = f.Type.Decimal.Validation.Length;
+                            newFieldType.MaximumLength = f.Type.Decimal.Validation.MaximumLength;
+                            newFieldType.MinimumLength = f.Type.Decimal.Validation.MinimumLength;
+                            newFieldType.Precision = f.Type.Decimal.Validation.Precision;
+                        }
+                    }
+                    else if (f.Type.Html != null)
+                    {
+                        newFieldType.Type = DataType.Html.ToString();
+                        newFieldType.ColumnOrder = f.Type.Html.ColumnOrder;
+                        newFieldType.ColumnWidth = f.Type.Html.ColumnWidth;
+                        newFieldType.DefaultValue = f.Type.Html.DefaultValue;
+                        if (f.Type.Html.Description != null)
+                        {
+                            newFieldType.DisplayDescription = f.Type.Html.Description.Display;
+                            newFieldType.FormDescription = f.Type.Html.Description.Form;
+                        }
+                        newFieldType.IsDisplayable = f.Type.Html.IsDisplayable;
+                        newFieldType.IsEditable = f.Type.Html.IsEditable;
+                        newFieldType.IsListable = f.Type.Html.IsListable;
+                        newFieldType.IsPartOfKey = f.Type.Html.IsPartOfKey;
+                        newFieldType.IsPrimaryFilter = f.Type.Html.IsPrimaryFilter;
+                        newFieldType.ShowIfEmpty = f.Type.Html.ShowIfEmpty;
+                        newFieldType.SortOrder = f.Type.Html.SortOrder;
+                        if (f.Type.Html.Validation != null)
+                        {
+                            newFieldType.IsRequired = f.Type.Html.Validation.IsRequired;
+                            newFieldType.ValidationDescription = f.Type.Html.Validation.Message;
+                            newFieldType.Length = f.Type.Html.Validation.Length;
+                            newFieldType.MaximumLength = f.Type.Html.Validation.MaximumLength;
+                            newFieldType.MinimumLength = f.Type.Html.Validation.MinimumLength;
+                        }
+                    }
+                    else if (f.Type.Json != null)
+                    {
+                        newFieldType.Type = DataType.JSON.ToString();
+                        newFieldType.ColumnOrder = f.Type.Json.ColumnOrder;
+                        if (f.Type.Json.Description != null)
+                        {
+                            newFieldType.DisplayDescription = f.Type.Json.Description.Display;
+                        }
+                        newFieldType.IsDisplayable = f.Type.Json.IsDisplayable;
+                        newFieldType.ShowIfEmpty = f.Type.Json.ShowIfEmpty;
+                    }
+                    else if (f.Type.Link != null)
+                    {
+                        newFieldType.Type = DataType.Link.ToString();
+                        newFieldType.ColumnOrder = f.Type.Link.ColumnOrder;
+                        newFieldType.ColumnWidth = f.Type.Link.ColumnWidth;
+                        if (f.Type.Link.DefaultValue != null) newFieldType.DefaultValue = $"{f.Type.Link.DefaultValue.Text}|{f.Type.Link.DefaultValue.Url}";
+                        if (f.Type.Link.Description != null)
+                        {
+                            newFieldType.DisplayDescription = f.Type.Link.Description.Display;
+                            newFieldType.FormDescription = f.Type.Link.Description.Form;
+                        }
+                        newFieldType.IsDisplayable = f.Type.Link.IsDisplayable;
+                        newFieldType.IsEditable = f.Type.Link.IsEditable;
+                        newFieldType.IsListable = f.Type.Link.IsListable;
+                        newFieldType.IsPartOfKey = f.Type.Link.IsPartOfKey;
+                        newFieldType.IsPrimaryFilter = f.Type.Link.IsPrimaryFilter;
+                        newFieldType.ShowIfEmpty = f.Type.Link.ShowIfEmpty;
+                        newFieldType.SortOrder = f.Type.Link.SortOrder;
+                        if (f.Type.Link.Validation != null)
+                        {
+                            newFieldType.IsRequired = f.Type.Link.Validation.IsRequired;
+                            newFieldType.ValidationDescription = f.Type.Link.Validation.Message;
+                        }
+                    }
+                    else if (f.Type.Lookup != null)
+                    {
+                        newFieldType.Type = DataType.Lookup.ToString();
+                        newFieldType.ColumnOrder = f.Type.Lookup.ColumnOrder;
+                        newFieldType.ColumnWidth = f.Type.Lookup.ColumnWidth;
+                        if (!string.IsNullOrEmpty(f.Type.Lookup.DefaultValue)) newFieldType.DefaultValue = f.Type.Lookup.DefaultValue.Trim();
+                        if (f.Type.Lookup.Description != null)
+                        {
+                            newFieldType.DisplayDescription = f.Type.Lookup.Description.Display;
+                            newFieldType.FormDescription = f.Type.Lookup.Description.Form;
+                        }
+                        newFieldType.AllowAllLabel = f.Type.Lookup.AllowAllLabel;
+                        newFieldType.AllowAllValue = f.Type.Lookup.AllowAllValue;
+                        if (f.Type.Lookup.Filter != null)
+                        {
+                            var filterFieldType = Company.Query<int>(@"select ID from FieldType where Object = @t and ObjectID = @tid and Name = @n", new { t = typeIdentifierInfoModel.Object, tid = typeIdentifierInfoModel.ObjectID, n = f.Type.Lookup.Filter.FieldTypeName }).FirstOrDefault();
+                            if (filterFieldType <= 0)
+                            {
+                                throw new RestApiException(HttpStatusCode.NotFound, "Field Type not found", $"Field Type not found based on Name provided [{f.Type.Lookup.Filter.FieldTypeName}].");
+                            }
+                            var filterPredicate = Company.Query<int>(@"select ID from [Predicate] where Uid = @uid", new { uid = f.Type.Lookup.Filter.PredicateUid }).FirstOrDefault();
+                            if (filterPredicate <= 0)
+                            {
+                                throw new RestApiException(HttpStatusCode.NotFound, "Field Type not found", $"Field Type not found based on Name provided [{f.Type.Lookup.Filter.FieldTypeName}].");
+                            }
+                            newFieldType.FilterFieldTypeID = filterFieldType;
+                            newFieldType.FilterPredicateID = filterPredicate;
+                            newFieldType.FilterPredicateDirection = f.Type.Lookup.Filter.UseDirection;
+                        }
+                        if (f.Type.Lookup.Format != null)
+                        {
+                            newFieldType.LookupDisplayFormat = f.Type.Lookup.Format.Display;
+                            newFieldType.LookupEditFormat = f.Type.Lookup.Format.Edit;
+                        }
+                        newFieldType.IsDisplayable = f.Type.Lookup.IsDisplayable;
+                        newFieldType.IsEditable = f.Type.Lookup.IsEditable;
+                        newFieldType.IsListable = f.Type.Lookup.IsListable;
+                        newFieldType.IsPartOfKey = f.Type.Lookup.IsPartOfKey;
+                        newFieldType.IsPrimaryFilter = f.Type.Lookup.IsPrimaryFilter;
+                        newFieldType.ShowIfEmpty = f.Type.Lookup.ShowIfEmpty;
+                        newFieldType.SortOrder = f.Type.Lookup.SortOrder;
+                    }
+                    else if (f.Type.Number != null)
+                    {
+                        newFieldType.Type = DataType.Number.ToString();
+                        newFieldType.ColumnOrder = f.Type.Number.ColumnOrder;
+                        newFieldType.ColumnWidth = f.Type.Number.ColumnWidth;
+                        if (f.Type.Number.DefaultValue.HasValue) newFieldType.DefaultValue = f.Type.Number.DefaultValue.Value.ToString();
+                        if (f.Type.Number.Description != null)
+                        {
+                            newFieldType.DisplayDescription = f.Type.Number.Description.Display;
+                            newFieldType.FormDescription = f.Type.Number.Description.Form;
+                        }
+                        newFieldType.IsDisplayable = f.Type.Number.IsDisplayable;
+                        newFieldType.IsEditable = f.Type.Number.IsEditable;
+                        newFieldType.IsListable = f.Type.Number.IsListable;
+                        newFieldType.IsPartOfKey = f.Type.Number.IsPartOfKey;
+                        newFieldType.IsPrimaryFilter = f.Type.Number.IsPrimaryFilter;
+                        newFieldType.ShowIfEmpty = f.Type.Number.ShowIfEmpty;
+                        newFieldType.SortOrder = f.Type.Number.SortOrder;
+                        newFieldType.Increment = f.Type.Number.Increment;
+                        if (f.Type.Number.Validation != null)
+                        {
+                            newFieldType.IsRequired = f.Type.Number.Validation.IsRequired;
+                            newFieldType.ValidationDescription = f.Type.Number.Validation.Message;
+                            newFieldType.Length = f.Type.Number.Validation.Length;
+                            newFieldType.MaximumLength = f.Type.Number.Validation.MaximumLength;
+                            newFieldType.MinimumLength = f.Type.Number.Validation.MinimumLength;
+                        }
+                    }
+                    else if (f.Type.Relationship != null)
+                    {
+                        newFieldType.Type = DataType.Relationship.ToString();
+                        newFieldType.ColumnOrder = f.Type.Relationship.ColumnOrder;
+                        newFieldType.ColumnWidth = f.Type.Relationship.ColumnWidth;
+                        if (f.Type.Relationship.Description != null)
+                        {
+                            newFieldType.DisplayDescription = f.Type.Relationship.Description.Display;
+                            newFieldType.FormDescription = f.Type.Relationship.Description.Form;
+                        }
+                        var relationshipType = Company.Query<int>(@"select ID from IntersectType where Uid = @uid", new { uid = f.Type.Relationship.IntersectTypeUid }).FirstOrDefault();
+                        if (relationshipType <= 0)
+                        {
+                            throw new RestApiException(HttpStatusCode.NotFound, "Relationship Type not found", $"Relationship Type not found based on Uid provided [{f.Type.ComputedRelationshipReferenceList.IntersectTypeUid}].");
+                        }
+                        newFieldType.LookupObjectType = "IntersectType";
+                        newFieldType.LookupObjectID = relationshipType;
+                        newFieldType.IsDisplayable = f.Type.Relationship.IsDisplayable;
+                        newFieldType.IsEditable = f.Type.Relationship.IsEditable;
+                        newFieldType.IsListable = f.Type.Relationship.IsListable;
+                        newFieldType.IsPartOfKey = f.Type.Relationship.IsPartOfKey;
+                        newFieldType.IsPrimaryFilter = f.Type.Relationship.IsPrimaryFilter;
+                        newFieldType.ShowIfEmpty = f.Type.Relationship.ShowIfEmpty;
+                        newFieldType.SortOrder = f.Type.Relationship.SortOrder;
+                        if (f.Type.Relationship.Validation != null)
+                        {
+                            newFieldType.IsRequired = f.Type.Relationship.Validation.IsRequired;
+                            newFieldType.ValidationDescription = f.Type.Relationship.Validation.Message;
+                        }
+                    }
+                    else if (f.Type.Text != null)
+                    {
+                        newFieldType.Type = DataType.Text.ToString();
+                        newFieldType.ColumnOrder = f.Type.Text.ColumnOrder;
+                        newFieldType.ColumnWidth = f.Type.Text.ColumnWidth;
+                        newFieldType.DefaultValue = f.Type.Text.DefaultValue;
+                        if (f.Type.Text.Description != null)
+                        {
+                            newFieldType.DisplayDescription = f.Type.Text.Description.Display;
+                            newFieldType.FormDescription = f.Type.Text.Description.Form;
+                        }
+                        newFieldType.IsDisplayable = f.Type.Text.IsDisplayable;
+                        newFieldType.IsEditable = f.Type.Text.IsEditable;
+                        newFieldType.IsListable = f.Type.Text.IsListable;
+                        newFieldType.IsPartOfKey = f.Type.Text.IsPartOfKey;
+                        newFieldType.IsPrimaryFilter = f.Type.Text.IsPrimaryFilter;
+                        newFieldType.ShowIfEmpty = f.Type.Text.ShowIfEmpty;
+                        newFieldType.SortOrder = f.Type.Text.SortOrder;
+                        if (f.Type.Text.Validation != null)
+                        {
+                            newFieldType.IsRequired = f.Type.Text.Validation.IsRequired;
+                            newFieldType.ValidationDescription = f.Type.Text.Validation.Message;
+                            newFieldType.Length = f.Type.Text.Validation.Length;
+                            newFieldType.MaximumLength = f.Type.Text.Validation.MaximumLength;
+                            newFieldType.MinimumLength = f.Type.Text.Validation.MinimumLength;
+                            newFieldType.Pattern = f.Type.Text.Validation.Pattern;
+                        }
+                    }
+                    else
+                    {
+                        throw new RestApiException(HttpStatusCode.BadRequest, "No valid type defined", $"You have not included a valid type for the field type [{f.Name}].");
+                    }
+
+                    var currentFieldType = currentFieldTypes.SingleOrDefault(c => c.Name == f.Name);
+                    if (currentFieldType == null)
+                    {
+                        newFieldTypes.Add(newFieldType);
+                    }
+                    else
+                    {
+                        if (!allowedConversions.Any(i => i.FromType == currentFieldType.Type && i.ToType == newFieldType.Type) && (currentFieldType.Type != newFieldType.Type))
+                        {
+                            throw new RestApiException(HttpStatusCode.BadRequest, "Field conversion error", $"You may not convert field {newFieldType.Name} from a {currentFieldType.Type} to a {newFieldType.Type}.");
+                        }
+
+                        currentFieldType.AllowAllLabel = newFieldType.AllowAllLabel;
+                        currentFieldType.AllowAllValue = newFieldType.AllowAllValue;
+                        currentFieldType.AllowMultipleValues = newFieldType.AllowMultipleValues;
+                        currentFieldType.Category = newFieldType.Category;
+                        currentFieldType.ColumnOrder = newFieldType.ColumnOrder;
+                        currentFieldType.ColumnWidth = newFieldType.ColumnWidth;
+                        currentFieldType.DefaultValue = newFieldType.DefaultValue;
+                        currentFieldType.DisplayDescription = newFieldType.DisplayDescription;
+                        if (currentFieldType.FieldTypeLookup != null)
+                        {
+                            if (newFieldType.FieldTypeLookup != null)
+                            {
+                                currentFieldType.FieldTypeLookup.Definition = newFieldType.FieldTypeLookup.Definition;
+                                currentFieldType.FieldTypeLookup.HideFilter = newFieldType.FieldTypeLookup.HideFilter;
+                                currentFieldType.FieldTypeLookup.HideFooter = newFieldType.FieldTypeLookup.HideFooter;
+                                currentFieldType.FieldTypeLookup.HideHeader = newFieldType.FieldTypeLookup.HideHeader;
+                                currentFieldType.FieldTypeLookup.LookupType = newFieldType.FieldTypeLookup.LookupType;
+                            }
+                            else
+                            {
+                                currentFieldType.FieldTypeLookup = null;
+                            }
+                        }
+                        else
+                        {
+                            if (newFieldType.FieldTypeLookup != null)
+                            {
+                                currentFieldType.FieldTypeLookup = new FieldTypeLookup
+                                {
+                                    Definition = newFieldType.FieldTypeLookup.Definition,
+                                    HideFilter = newFieldType.FieldTypeLookup.HideFilter,
+                                    HideFooter = newFieldType.FieldTypeLookup.HideFooter,
+                                    HideHeader = newFieldType.FieldTypeLookup.HideHeader,
+                                    LookupType = newFieldType.FieldTypeLookup.LookupType
+                                };
+                            }
+                        }
+                        currentFieldType.FilterFieldTypeID = newFieldType.FilterFieldTypeID;
+                        currentFieldType.FilterPredicateDirection = newFieldType.FilterPredicateDirection;
+                        currentFieldType.FilterPredicateID = newFieldType.FilterPredicateID;
+                        currentFieldType.FormDescription = newFieldType.FormDescription;
+                        currentFieldType.FriendlyName = newFieldType.FriendlyName;
+                        currentFieldType.Increment = newFieldType.Increment;
+                        currentFieldType.IsDisplayable = newFieldType.IsDisplayable;
+                        currentFieldType.IsEditable = newFieldType.IsEditable;
+                        currentFieldType.IsListable = newFieldType.IsListable;
+                        currentFieldType.IsPartOfKey = newFieldType.IsPartOfKey;
+                        currentFieldType.IsPrimaryFilter = newFieldType.IsPrimaryFilter;
+                        currentFieldType.IsRequired = newFieldType.IsRequired;
+                        currentFieldType.Length = newFieldType.Length;
+                        currentFieldType.LookupDisplayFormat = newFieldType.LookupDisplayFormat;
+                        currentFieldType.LookupEditFormat = newFieldType.LookupEditFormat;
+                        currentFieldType.LookupObjectFieldTypeID = newFieldType.LookupObjectFieldTypeID;
+                        currentFieldType.LookupObjectID = newFieldType.LookupObjectID;
+                        currentFieldType.LookupObjectType = newFieldType.LookupObjectType;
+                        currentFieldType.MaximumLength = newFieldType.MaximumLength;
+                        currentFieldType.MinimumLength = newFieldType.MinimumLength;
+                        currentFieldType.ParentFieldTypeID = newFieldType.ParentFieldTypeID;
+                        currentFieldType.Pattern = newFieldType.Pattern;
+                        currentFieldType.Precision = newFieldType.Precision;
+                        currentFieldType.ShowIfEmpty = newFieldType.ShowIfEmpty;
+                        currentFieldType.SortOrder = newFieldType.SortOrder;
+                        currentFieldType.Type = newFieldType.Type;
+                        currentFieldType.ValidationDescription = newFieldType.ValidationDescription;
+
+                        fieldTypeNamesToDelete.Add(f.Name);
+                    }
+
+                });
+
+                if (model.Action == FieldTypesApiEditAction.Merge)
+                {
+                    fieldTypeNamesToDelete.ForEach(d =>
+                    {
+                        newFieldTypes.RemoveAll(i => i.Name == d);
+                    });
+                    Company.FieldTypes.AddRange(newFieldTypes);
+                }
+                else  // Replace
+                {
+                    Company.Execute("delete FieldType where Object = @t and ObjectID = @tid", new { t = typeIdentifierInfoModel.Object, tid = typeIdentifierInfoModel.ObjectID });
+                    Company.FieldTypes.AddRange(newFieldTypes);
+                }
+                Company.SaveChanges();
 
                 #endregion
 
-                return Request.CreateResponse(HttpStatusCode.OK, typeIdentifierInfoModel);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ApiStatusResponse { Message = "Fields successfully updated.", Success = true, Uid = typeIdentifierInfoModel.Uid })));
             }
             catch (RestApiException ex)
             {
                 errorMessage = ex.GetFullExceptionData(false);
-                return ReturnApiError(ex.Status, errorMessage);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(ReturnApiError(ex.Status, errorMessage)));
             }
             catch (Exception ex)
             {
@@ -686,10 +1223,179 @@ for json path, WITHOUT_ARRAY_WRAPPER";
                     { "Endpoint Method", prefix }
                 });
 
-                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(ReturnApiError(HttpStatusCode.InternalServerError, errorMessage)));
             }
 
         }
 
+        /// <summary>
+        /// Removes field types contained within your environment.
+        /// </summary>
+        /// <returns>A list of field types corresponding to the given criteria, if any.</returns>
+        [
+            HttpDelete,
+            Route(""),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(ApiStatusResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> DeleteFieldTypesAsync(FieldTypesApiDeleteModel model)
+        {
+            var prefix = "Fields.DeleteFieldTypesAsync => ";
+            var errorMessage = "";
+
+            try
+            {
+                IEnumerable<TypeIdentifierInfoModel> typeIdentifierInfoModels = null;
+                TypeIdentifierInfoModel typeIdentifierInfoModel = null;
+
+                #region Validation
+
+                if (model == null)
+                {
+                    throw new RestApiException(HttpStatusCode.BadRequest, "No model found", "You did not provide a valid model. Please check your request and try again.");
+                }
+
+                if (!model.ActionTypeUid.HasValue && !model.AssetTypeUid.HasValue && !model.RelationshipTypeUid.HasValue)
+                {
+                    throw new RestApiException(HttpStatusCode.BadRequest, "No Uid found", "You must provide only one of the three Uid properties: ActionTypeUid, AssetTypeUid, or RelationshipTypeUid.");
+                }
+
+                if (model.ActionTypeUid.HasValue)
+                {
+                    typeIdentifierInfoModels = await Company.QueryAsync<TypeIdentifierInfoModel>("select ID, Uid, 'IssueType' as Object, ID as ObjectID from IssueType where Uid = @uid", new { uid = model.ActionTypeUid.Value });
+                    typeIdentifierInfoModel = typeIdentifierInfoModels.SingleOrDefault();
+                    if (typeIdentifierInfoModel == null)
+                    {
+                        throw new RestApiException(HttpStatusCode.NotFound, "Type not found", $"Action Type not found based on Uid provided [{model.ActionTypeUid}].");
+                    }
+                }
+
+                if (model.AssetTypeUid.HasValue)
+                {
+                    if (model.ActionTypeUid.HasValue)
+                    {
+                        throw new RestApiException(HttpStatusCode.BadRequest, "Parameter error", "You may not provide an AssetTypeUid since you have already provided an ActionTypeUid.");
+                    }
+                    else
+                    {
+                        typeIdentifierInfoModels = await Company.QueryAsync<TypeIdentifierInfoModel>("select ID, Uid, Object, ObjectID from AssetType where Uid = @uid", new { uid = model.AssetTypeUid.Value });
+                        typeIdentifierInfoModel = typeIdentifierInfoModels.SingleOrDefault();
+                        if (typeIdentifierInfoModel == null)
+                        {
+                            throw new RestApiException(HttpStatusCode.NotFound, "Type not found", $"Asset Type not found based on Uid provided [{model.ActionTypeUid}].");
+                        }
+                    }
+                }
+
+                if (model.RelationshipTypeUid.HasValue)
+                {
+                    if (model.ActionTypeUid.HasValue)
+                    {
+                        throw new RestApiException(HttpStatusCode.BadRequest, "Parameter error", "You may not provide an RelationshipTypeUid since you have already provided an ActionTypeUid.");
+                    }
+                    else if (model.AssetTypeUid.HasValue)
+                    {
+                        throw new RestApiException(HttpStatusCode.BadRequest, "Parameter error", "You may not provide an RelationshipTypeUid since you have already provided an AssetTypeUid.");
+                    }
+                    else
+                    {
+                        typeIdentifierInfoModels = await Company.QueryAsync<TypeIdentifierInfoModel>("select ID, Uid, 'IntersectType' as Object, ID as ObjectID from IntersectType where Uid = @uid", new { uid = model.RelationshipTypeUid.Value });
+                        typeIdentifierInfoModel = typeIdentifierInfoModels.SingleOrDefault();
+                        if (typeIdentifierInfoModel == null)
+                        {
+                            throw new RestApiException(HttpStatusCode.NotFound, "Type not found", $"Relationship Type not found based on Uid provided [{model.RelationshipTypeUid}].");
+                        }
+                    }
+                }
+
+                #region Security check
+
+                bool hasPermissions = false;
+
+                if (Company.CurrentResourceIsAdmin)
+                {
+                    hasPermissions = true;
+                }
+                else
+                {
+                    var typePermissions = Company.GetTypePermissions(typeIdentifierInfoModel.Object, typeIdentifierInfoModel.ObjectID);
+                    if (typePermissions != null)
+                    {
+                        hasPermissions = typePermissions.Any(i => i.ID == Permission.DeleteAsset);
+                    }
+                }
+
+                if (!hasPermissions)
+                {
+                    throw new RestApiException(HttpStatusCode.Unauthorized, "Not authorized", "You do not have permissions to remove fields on this type.");
+                }
+
+                #endregion
+
+                var anyExistingItems = false;
+                switch (typeIdentifierInfoModel.Object)
+                {
+                    case "IntersectType":
+                        anyExistingItems = Company.Any<Intersect>(i => i.IntersectTypeID == typeIdentifierInfoModel.ID);
+                        break;
+                    case "IssueType":
+                        anyExistingItems = Company.Any<Issue>(i => i.IssueTypeID == typeIdentifierInfoModel.ID);
+                        break;
+                    default:
+                        anyExistingItems = Company.Any<Asset>(i => i.AssetTypeID == typeIdentifierInfoModel.ID);
+                        break;
+                }
+
+                var currentFieldTypes = Company.Filter<FieldType>(f => f.Object == typeIdentifierInfoModel.Object && f.ObjectID == typeIdentifierInfoModel.ObjectID, i => i.FieldTypeLookup).ToList();
+                var fieldNamesToDelete = model.Fields.Select(i => i.Name).ToList();
+
+                var keyFieldsWillBeDeleted = currentFieldTypes.Any(d => d.IsPartOfKey == true && fieldNamesToDelete.Contains(d.Name));
+
+                if (anyExistingItems && keyFieldsWillBeDeleted)
+                {
+                    throw new RestApiException(HttpStatusCode.BadRequest, "Existing items in system", $"You may not remove key fields as there are existing items in your environment. You may not perform a Delete action until those items are removed, or you alter the key fields defined on this type.");
+                }
+
+                #endregion
+
+                #region Validation done, time to do some work
+
+                var fieldsRemoved = false;
+                currentFieldTypes.ForEach(c =>
+                {
+                    if (fieldNamesToDelete.Contains(c.Name))
+                    {
+                        Company.FieldTypes.Remove(c);
+                        fieldsRemoved = true;
+                    }
+                });
+
+                if (fieldsRemoved)
+                {
+                    Company.SaveChanges();
+                }
+
+                #endregion
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ApiStatusResponse { Message = "Fields successfully removed.", Success = true, Uid = typeIdentifierInfoModel.Uid })));
+            }
+            catch (RestApiException ex)
+            {
+                errorMessage = ex.GetFullExceptionData(false);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(ReturnApiError(ex.Status, errorMessage)));
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(ReturnApiError(HttpStatusCode.InternalServerError, errorMessage)));
+            }
+
+        }
     }
 }

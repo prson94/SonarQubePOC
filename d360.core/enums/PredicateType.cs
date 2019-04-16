@@ -79,7 +79,7 @@ namespace d360.core.enums
         Grammar = 6,
         [
             Name("Simple"), 
-            Description(""), 
+            Description("Allows you to create a simple association between two objects that do not fit into any other functional type, such as lineage."), 
             ReadOnly(false),
             AllowIntersectTypeAssignment(true),            
             AllowMultiplePredicates(true), 
