@@ -545,26 +545,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.model.FieldType.LookupObjectID = id;
         this.model.FieldType.LookupObjectType = type;
 
-        /*this.loadDefaultValueOptions(type, id).subscribe(
-            () => {
-                this.loadHierarchyOptions(type, id).subscribe(
-                    () => {
-                        this.loadListFilterOptions(type, id).subscribe(
-                            () => {
-                                //clear the validated fields and error message
-                                this.model.FieldType.MaximumLength = null;
-                                this.model.FieldType.MinimumLength = null;
-                                this.model.FieldType.Increment = null;
-                                this.validate('*');
-
-                                return this.loadTokens(type, id);
-                            }
-                        );
-                    }
-                );
-            }
-        );*/
-
         this.loadDefaultValueOptions(type, id);
         this.loadHierarchyOptions(type, id);
         this.loadListFilterOptions(type, id);
@@ -574,7 +554,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.model.FieldType.MinimumLength = null;
         this.model.FieldType.Increment = null;
         this.validate('*');
-
 
         return this.loadTokens(type, id);
     }
