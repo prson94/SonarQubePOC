@@ -80,6 +80,7 @@ namespace d360.extensions.search
     {
         public string _index { get; set; }
         public string _type { get; set; }
+        public string d3sGroup { get; set; }
         public string _id { get; set; }
         public float _score { get; set; }
         public JObject _source { get; set; }
@@ -92,8 +93,13 @@ namespace d360.extensions.search
         private const string DEFAULT_SEARCH_SERVER = "search1-d3s.cloudapp.net:9200";
         private const int BULK_BATCH_SIZE = 5000;
 
+        //Elastic Search introduced breaking changes to Mapping in version 5, so depending on the version of the server, we'll use a differnt default mapping
+        private const string MAPPING_VERSION_2 = "{\"settings\": { \"index\": { \"number_of_shards\": 2, \"number_of_replicas\": 1 }},\"mappings\": {\"_default_\" : {\"properties\" : {\"Type\" : {\"type\" : \"string\",\"fields\" : {\"raw\" : {\"type\" : \"string\", \"index\" :\"not_analyzed\"}}}}}}}";
+        private const string MAPPING_VERSION_5 = "{\"settings\": { \"index\": { \"number_of_shards\": 2, \"number_of_replicas\": 1 }},\"mappings\": {\"_doc\" : {\"properties\" : {\"d3sGroup\" : {\"type\" : \"keyword\" }, \"Type\" : {\"type\" : \"keyword\" }}}}}";
+
 
         protected string SearchServerUrl { get; set; }
+        protected Version SearchServerVersion { get; set; }
 
         #region Utility methods
 
@@ -132,9 +138,11 @@ namespace d360.extensions.search
             }
 
             if (string.IsNullOrEmpty(SearchServerUrl)) throw new Exception("DEV ERROR - NO SEARCH BASE URL SPECIFIED.");
+
+            SearchServerVersion = getElasticVersion(companyID);
         }
-        
-        
+
+
         HttpWebRequest createWebRequest(string method, string uri, int companyID)
         {
             if(string.IsNullOrEmpty(SearchServerUrl))
@@ -218,13 +226,39 @@ namespace d360.extensions.search
             if (response.Status == HttpStatusCode.NotFound)
             {
                 webReq = createWebRequest("PUT", indexName, companyID);
-                
-                loadMessageInRequestBody(webReq, JObject.Parse("{\"settings\": { \"index\": { \"number_of_shards\": 2, \"number_of_replicas\": 1 }},\"mappings\": {\"_default_\" : {\"properties\" : {\"Type\" : {\"type\" : \"string\",\"fields\" : {\"raw\" : {\"type\" : \"string\", \"index\" :\"not_analyzed\"}}}}}}}"));
 
-                    response = getJsonResponse(webReq);
+                if (SearchServerVersion.Major >= 5)
+                {
+                    loadMessageInRequestBody(webReq, JObject.Parse(MAPPING_VERSION_5));
+                }
+                else
+                {
+                    loadMessageInRequestBody(webReq, JObject.Parse(MAPPING_VERSION_2));
+                }
+               response = getJsonResponse(webReq);
                 if (response.Status != HttpStatusCode.OK)
                     throw new ApplicationException(response.StatusMessage);
             }
+        }
+
+        /// <summary>
+        /// Gets version number from Elastic server
+        /// </summary>
+        /// <param name="companyID"></param>
+        Version getElasticVersion(int companyID)
+        {
+            Version ver = null;
+            var webReq = createWebRequest("GET", "", companyID);
+            var response = getJsonResponse(webReq);
+            if (response.Status == HttpStatusCode.OK)
+            {
+                JObject result = response.Data;
+                if (!Version.TryParse((string)result.SelectToken("version.number"), out ver))
+                {
+                    throw new ApplicationException("Could not determine server version");
+                }
+            }
+            return ver;
         }
 
         /// <summary>
@@ -272,11 +306,18 @@ namespace d360.extensions.search
                     sb.Append("{\"index\":{\"_id\":\"");                                        
                     sb.Append(item.getObjectID());
                     sb.Append("\",\"_type\":\"");
-                    sb.Append(item.Group);
+                    sb.Append(SearchServerVersion.Major >= 5 ? "_doc" : item.Group);
                     sb.Append("\" } }\n");
                     sb.Append("{\"Url\" : \"");
                     sb.Append(item.RelativeUrl);
                     sb.Append("\"");
+                    if (SearchServerVersion.Major >= 5)
+                    {
+                        sb.Append(",\"d3sGroup\":\"");
+                        sb.Append(item.Group);
+                        sb.Append("\"");
+                    }
+
                     if (item.Fields.Any())
                         sb.Append(",");
 
@@ -423,8 +464,27 @@ namespace d360.extensions.search
         {
             IndexResults result = new IndexResults();
 
-            var searchType = type != null ? type + "/" : null;
-            
+            string searchType = type != null ? type + "/" : null;
+            List<string> searchFilters = new List<string>(); 
+            if(SearchServerVersion == null)
+                SearchServerVersion = getElasticVersion(companyID);
+            if (SearchServerVersion.Major >= 5)
+            {
+                searchType = "_doc/";
+                if(!string.IsNullOrEmpty(type))
+                {
+                    String[] types = type.Split(',');
+                    if (types.Length > 1)
+                    {
+                        searchFilters.Add(" { \"terms\":  { \"d3sGroup\": [\"" + String.Join("\",\"",types) + "\"] } }");
+                    }
+                    else
+                    {
+                        searchFilters.Add(" { \"term\":  { \"d3sGroup\": \"" + type + "\" } }");
+                    }
+                }
+            }
+
             var webReq = createWebRequest("POST", $"{getCompanyIndexName(companyID)}/{searchType}_search", companyID);
 
             StringBuilder sb = new StringBuilder();
@@ -437,7 +497,7 @@ namespace d360.extensions.search
                 if (phrase.StartsWith("'") && phrase.EndsWith("'"))
                 {
                     phrase = phrase.Trim('\'');
-                    sb.Append("{\"query\":{\"filtered\": {\"query\":  { \"match_phrase\": { \"Name\":\"" + phrase + "\"} }");
+                    sb.Append("{\"query\":{\"bool\": {\"must\":  { \"match_phrase\": { \"Name\":\"" + phrase + "\"} }");
                 }
                 else
                 {
@@ -446,7 +506,7 @@ namespace d360.extensions.search
                     {
                         phrase += "*";
                     }
-                    sb.Append("{\"query\":{\"filtered\": {\"query\":  { \"query_string\": { \"query\":\"" + phrase + "\"} }");
+                    sb.Append("{\"query\":{\"bool\": {\"must\":  { \"query_string\": { \"query\":\"" + phrase + "\"} }");
                 }
             }
             else if(!string.IsNullOrEmpty(advancedFilterJSON))
@@ -478,25 +538,37 @@ namespace d360.extensions.search
                         //Not exact, so append * to searchTerm if it does not already end with *
                         searchTerm += "*";
                     }
-
-                    compositeSearchTerm += $"{item.field}:{searchTerm}";
+                    var field = item.field;
+                    if (SearchServerVersion.Major >= 5 && field == "_type")
+                        field = "d3sGroup";
+                    compositeSearchTerm += $"{field}:{searchTerm}";
                 }
 
-                sb.Append("{\"query\":{\"filtered\": {\"query\":  { \"query_string\": { \"query\":\"" + compositeSearchTerm + "\"} }");
+                sb.Append("{\"query\":{\"bool\": {\"must\":  { \"query_string\": { \"query\":\"" + compositeSearchTerm + "\"} }");
             }                
 
             //if a group was specified filter by it
             if (!string.IsNullOrEmpty(group))
             {
-                sb.Append(",\"filter\": { \"term\":  { \"Type.raw\": \"" + group + "\" } }");                
+                searchFilters.Add("{ \"term\":  { \"Type"+(SearchServerVersion.Major >= 5 ? "" : ".raw")+"\": \"" + group + "\" } }");
             }
-                        
+
+            if(searchFilters.Count > 0)
+            {
+                sb.Append(",\"filter\":  { \"bool\": { \"must\": [ ");
+                sb.Append(String.Join(",",searchFilters));
+                sb.Append("]}}");
+            }
+
             sb.Append("}},\"from\":" + from + ",\"size\":" + size );
 
             // if no group filter then we need to get list of categories
             if (string.IsNullOrEmpty(group))
-            {                
-                sb.Append(",\"aggs\" : { \"all_types\": {\"terms\": {\"field\": \"_type\"},\"aggs\": {\"category\": {\"terms\": {\"field\": \"Type.raw\",\"size\": 0}}}}}");
+            {
+                //size=0 intepreted as integer.MAX_VALUE deprecated in ES 2.4.0.
+                //Using 2000 for EX6 for now. @TODO: Consider using Composite aggreation
+                int bucketSize = SearchServerVersion.Major >= 5 ? 2000 : 0;
+                sb.Append(",\"aggs\" : { \"all_types\": {\"terms\": {\"field\": \""+ (SearchServerVersion.Major >= 5 ? "d3sGroup" : "_type") + "\"},\"aggs\": {\"category\": {\"terms\": {\"field\": \"Type" + (SearchServerVersion.Major >= 5 ? "" : ".raw") + "\",\"size\": " + bucketSize+"}}}}}");
             }
 
             //turn on highlighting
@@ -516,7 +588,7 @@ namespace d360.extensions.search
 
             result.Results = searchResults.hits.hits.Select(h => new IndexResult {
                     Description = GetHighlightedPropertyValueIfExists(h, "Description"),
-                    Group = h._type,
+                    Group = (SearchServerVersion.Major >= 5) ? GetPropertyValue<string>(h._source, "d3sGroup") : h._type,
                     ID = h._id,
                     Name = GetHighlightedNameValueIfExists(h),
                     NormalizedScore = (searchResults.hits.max_score.GetValueOrDefault() == 0 ? 0 : (h._score/searchResults.hits.max_score.GetValueOrDefault()*100)),
@@ -577,6 +649,11 @@ namespace d360.extensions.search
         public IEnumerable<TypeaheadResult> GetTypeaheadResults(int companyID, int resourceID, string phrase, int size = 10, string type = "")
         {            
             var searchType = type != null ? type + "/" : null;
+            if (SearchServerVersion == null)
+                SearchServerVersion = getElasticVersion(companyID);
+            if (SearchServerVersion.Major >= 5)
+                searchType = "_doc/";
+
 
             var webReq = createWebRequest("POST", $"{getCompanyIndexName(companyID)}/{searchType}_search", companyID);
             
@@ -627,11 +704,22 @@ namespace d360.extensions.search
 
         private string GetTypeAheadDisplayType(SearchResultsHitModel h)
         {
-            if((h._type ?? string.Empty).ToUpper() == "ARTIFACT")
+            if (SearchServerVersion.Major >= 5)
             {
-                return $"{mapTypeToFriendlyName(h._type)} - {GetPropertyValue<string>(h._source, "Type")}";
+                if ((h.d3sGroup ?? string.Empty).ToUpper() == "ARTIFACT")
+                {
+                    return $"{mapTypeToFriendlyName(h.d3sGroup)} - {GetPropertyValue<string>(h._source, "Type")}";
+                }
+                return mapTypeToFriendlyName(h.d3sGroup);
             }
-            return mapTypeToFriendlyName(h._type);
+            else
+            {
+                if ((h._type ?? string.Empty).ToUpper() == "ARTIFACT")
+                {
+                    return $"{mapTypeToFriendlyName(h._type)} - {GetPropertyValue<string>(h._source, "Type")}";
+                }
+                return mapTypeToFriendlyName(h._type);
+            }
         }
 
         private string GetTypeAheadSynonymDisplayType(SearchResultsHitModel h)
@@ -664,12 +752,12 @@ namespace d360.extensions.search
             if (!string.IsNullOrEmpty(phrase))
                 phrase = phrase.Replace("\"", "\\\"");
 
-            sb.Append("{\"query\":{\"filtered\": {\"query\":  { \"query_string\": { \"query\":\"" + phrase + "\"} }");
+            sb.Append("{\"query\":{\"bool\": {\"must\":  { \"query_string\": { \"query\":\"" + phrase + "\"} }");
 
             //if a group was specified filter by it
             if (!string.IsNullOrEmpty(group))
             {
-                sb.Append(",\"filter\": { \"term\":  { \"Type.raw\": \"" + group + "\" } }");
+                sb.Append(",\"filter\": { \"term\":  { \"Type"+(SearchServerVersion.Major >= 5 ? "" : ".raw")+"\": \"" + group + "\" } }");
             }
 
             sb.Append("}},\"from\":" + from + ",\"size\":" + size + ",\"sort\":{ \"_score\":{ \"order\":\"desc\"} }");
@@ -688,7 +776,7 @@ namespace d360.extensions.search
             result.Results = searchResults.hits.hits.Select(h => new IndexResult
             {
                 Description = GetPropertyValue<string>(h._source, "Description"),
-                Group = h._type,
+                Group = (SearchServerVersion.Major >= 5) ? h.d3sGroup : h._type,
                 ID = h._id,
                 Name = GetPropertyValue<string>(h._source, "Name"),
                 NormalizedScore = (searchResults.hits.max_score.GetValueOrDefault() == 0 ? 0 : (h._score / searchResults.hits.max_score.GetValueOrDefault() * 100)),
@@ -713,7 +801,7 @@ namespace d360.extensions.search
 
             if (string.IsNullOrEmpty(synonymFor))
             {
-                if((h._type ?? "").ToUpper() != "ARTIFACT")
+                if((((SearchServerVersion.Major >= 5) ? h.d3sGroup : h._type) ?? "").ToUpper() != "ARTIFACT")
                     return name;
 
                 var taxonomy = GetPropertyValue<string>(h._source, "Taxonomy");
@@ -731,7 +819,7 @@ namespace d360.extensions.search
             var synonymFor = GetPropertyValue<string>(h._source, "SynonymFor");
             var taxonomy = "";
 
-            if ((h._type ?? "").ToUpper() == "ARTIFACT")
+            if ((((SearchServerVersion.Major >= 5) ? h.d3sGroup : h._type) ?? "").ToUpper() == "ARTIFACT")
             {
                 taxonomy = GetPropertyValue<string>(h._source, "Taxonomy");
 
@@ -812,7 +900,7 @@ namespace d360.extensions.search
 
             foreach (var item in items)
             {
-                sb.Append("{ \"delete\" : { \"_type\" : \"" + item.Group + "\", \"_id\" : \"" + createItemID(item) + "\"}}\n");
+                sb.Append("{ \"delete\" : { \"_type\" : \"" + (SearchServerVersion.Major >= 5 ? "_doc" : item.Group) + "\", \"_id\" : \"" + createItemID(item) + "\"}}\n");
             }
                         
             var webReq = createWebRequest("POST", $"{getCompanyIndexName(companyId)}/_bulk", companyId);
@@ -858,7 +946,8 @@ namespace d360.extensions.search
 
             foreach (var item in items)
             {
-                sb.Append("{ \"update\" : { \"_type\" : \"" + item.Group + "\", \"_id\" : \"" + createItemID(item) + "\"}}\n");
+
+                sb.Append("{ \"update\" : { \"_type\" : \"" + (SearchServerVersion.Major >= 5 ? "_doc" : item.Group) + "\", \"_id\" : \"" + createItemID(item) + "\"}}\n");
 
                 sb.Append("{ \"doc\" : {\"Url\" : \"" + item.RelativeUrl + "\"");
                 
