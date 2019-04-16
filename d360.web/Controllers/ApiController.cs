@@ -3856,7 +3856,6 @@ where   R.ReferenceItemTypeID = {id}
 
             var ft = Company.GetById<FieldType>(fieldTypeID, i => i.FieldTypeLookup);
             var lookup = ft.FieldTypeLookup;
-            var ownershipDefinition = lookup.ParseOwnershipLookupDefinition();
 
             if (ft != null && lookup != null)
             {
@@ -3878,8 +3877,7 @@ where   R.ReferenceItemTypeID = {id}
                                         LookupObjectType = type,
                                         LookupObjectID = id,
                                         LookupFieldTypeID = ft.ID,
-                                        LookupType = (int)DataType.OwnershipLookup,
-                                        ExpandGroupMembership = ownershipDefinition.ExpandGroupMembership
+                                        LookupType = (int)DataType.OwnershipLookup
                                     }
                                 },
                         Category = ft.Category

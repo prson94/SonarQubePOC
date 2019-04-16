@@ -5,32 +5,27 @@ import { Router } from '@angular/router';
 
 @Component({
     selector: 'object-detail-field',
-    templateUrl: './object-detail-field.component.html'
+    templateUrl:'./object-detail-field.component.html'
 })
 
 export class ObjectDetailFieldComponent {
     @Input() field: DetailField;
     DetailFieldType = DetailFieldType;
 
-    constructor(private router: Router) { }
+    constructor(private router: Router) {}
     ngOnInit() {
-        if ((this.field.DataType == 'date' || this.field.DataType == 'datetime') && isNaN(Date.parse(this.field.Value)))
-            this.field.Value = null;
 
-        if (this.field.Value == null && this.field.Type == DetailFieldType.Lookup)
-            this.field.Value = "LookupField";
-
-        console.log(this.field);
-
+          if ((this.field.DataType == 'date' || this.field.DataType == 'datetime') && isNaN(Date.parse(this.field.Value)))
+                this.field.Value = null;
     }
 
     private formatAsNumber(fieldValue): string {
         return fieldValue !== '' && fieldValue != null ? Number(fieldValue).toLocaleString() : "";
     }
 
-    navigate(url: string) {
+    navigate(url: string) {        
         this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(url));
-    }
+    }    
     private GetJSON(value: string) {
         try {
             return JSON.parse(value);
