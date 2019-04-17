@@ -15,7 +15,7 @@ using Dapper;
 namespace d360.web.Controllers.V2
 {
     /// <summary>
-    /// This service houses all endpoints handling glossary-related data such as artifacts and models.
+    /// This service houses all endpoints handling fusion specific activities.
     /// </summary>
     [
         ApiVersion("2.0"),
