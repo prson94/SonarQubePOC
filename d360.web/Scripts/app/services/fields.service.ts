@@ -8,15 +8,14 @@ import {FieldDefinition, FieldTypeEditorModel, IFieldsService, Lookups} from '..
 import {EditorDropDownItem} from '../models/editor-field.model'
 import {JsonResult} from '../models/jsonresult.model';
 
-import {MessagesService} from './messages.service';
+import {MessagesObservableService} from './messages-observable.service';
 import {BaseObservableService} from "./baseObservable.service";
-
 
 @Injectable()
 export class FieldsService extends BaseObservableService implements IFieldsService {
     constructor(
         private http: HttpClient,
-        messagesService: MessagesService
+        messagesService: MessagesObservableService
     ) {
         super(messagesService);
     }

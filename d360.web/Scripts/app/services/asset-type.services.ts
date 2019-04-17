@@ -3,17 +3,18 @@ import {HttpClient} from "@angular/common/http";
 import {Observable} from "rxjs";
 import {catchError, map} from "rxjs/operators";
 
-import {BaseObservableService} from "./baseObservable.service";
-import {MessagesService} from './messages.service';
 import {JsonResult} from '../models/jsonresult.model';
 import {AssetTypeEditorModel, AssetTypeClass} from "../models/asset.model";
+
+import {BaseObservableService} from "./baseObservable.service";
+import {MessagesObservableService} from './messages-observable.service';
 
 @Injectable()
 export class AssetTypeService extends BaseObservableService {
 
     constructor(
         private http: HttpClient,
-        messagesService: MessagesService
+        messagesService: MessagesObservableService
     ) {
         super(messagesService);
     }

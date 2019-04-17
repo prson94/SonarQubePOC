@@ -1,17 +1,20 @@
-
-import {catchError, map} from 'rxjs/operators';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { MessagesService } from './messages.service';
-import { BaseService } from './base.service';
+import { Observable } from 'rxjs';
+import {catchError, map} from 'rxjs/operators';
+
 import { ExportTemplate, ExportTemplateStyle } from '../models/export-template.model';
-import { Subject ,  Observable } from 'rxjs';
-import { JsonResult } from '../models/jsonresult.model';
+
+import { MessagesObservableService } from './messages-observable.service';
+import {BaseObservableService} from "./baseObservable.service";
 
 @Injectable()
-export class ExportTemplateService extends BaseService {
+export class ExportTemplateService extends BaseObservableService {
 
-    constructor(private http: HttpClient, messagesService: MessagesService) { super(messagesService); }
+    constructor(
+        private http: HttpClient,
+        messagesService: MessagesObservableService
+    ) { super(messagesService); }
 
     public getExportTemplates(): Observable<ExportTemplate[]> {
         return this.http.get('/api/v2/exporttemplates/').pipe(            
