@@ -46,6 +46,11 @@ import { Title } from '@angular/platform-browser';
                                             </td>
                                             <td>
                                                 <div class="RowTools" *ngIf="!item.IsSystem">
+                                                    <d3s-preview-tooltip objectType="IssueType"[objectId]="item.ID" icon="info"></d3s-preview-tooltip>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="RowTools" *ngIf="!item.IsSystem">
                                                     <a style="cursor:pointer;" (click)="selected=item;showEditor=true"><i class="fa fa-pencil"></i></a>
                                                 </div>
                                             </td>
