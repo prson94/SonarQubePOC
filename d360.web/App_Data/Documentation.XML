@@ -2397,6 +2397,18 @@
             <param name="_pageNum">The page number to return results for.</param>
             <returns>A list of field types corresponding to the given criteria, if any.</returns>
         </member>
+        <member name="M:d360.web.Controllers.V2.FieldsController.PutFieldTypesAsync(d360.core.entities.FieldTypesApiEditModel)">
+            <summary>
+            Retrieves field types contained within your environment.
+            </summary>
+            <returns>A list of field types corresponding to the given criteria, if any.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.FieldsController.DeleteFieldTypesAsync(d360.core.entities.FieldTypesApiDeleteModel)">
+            <summary>
+            Removes field types contained within your environment.
+            </summary>
+            <returns>A list of field types corresponding to the given criteria, if any.</returns>
+        </member>
         <member name="T:d360.web.Controllers.V2.AuditController">
             <summary>
             
