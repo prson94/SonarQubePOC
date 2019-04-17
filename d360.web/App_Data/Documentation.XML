@@ -2670,6 +2670,26 @@
             </summary>
             <returns>Http Status code OK and the item if updated, Http Status code of Not Found if item could not be updated</returns>
         </member>
+        <member name="T:d360.web.Controllers.V2.FusionController">
+            <summary>
+            This service houses all endpoints handling glossary-related data such as artifacts and models.
+            </summary>
+        </member>
+        <member name="M:d360.web.Controllers.V2.FusionController.Post(d360.core.entities.FusionStatusLog)">
+            <summary>
+            Creates a new fusion agent status log entry for the specified fusion.  Used by Analyze to simulate Fusion Agent activity.  Only Admininistrators can call this endpoint.
+            </summary>
+            <param name="model">The fusion status log model.</param>
+            <returns>The model of the created fusion status log entry.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.FusionController.Put(d360.core.entities.FusionStatusLog)">
+            <summary>
+            Updates an existing fusion agent status log entry.  Used by Analyze to simulate Fusion Agent activity.  Only Admininistrators can call this endpoint.  Please provide the status of your call here (success true, failure false) along with any messages you would like for the run.  The ID returned when you created this record should be provided back to this call.
+            Date completed will be updated to UTC now and the Date started will be ingored and the original value used.  Only records that have not already been marked as completed can be updated.
+            </summary>
+            <param name="model">The fusion status log model.</param>
+            <returns>The model of the updated fusion status log entry.</returns>
+        </member>
         <member name="T:d360.web.Controllers.V2.MetricsController">
             <summary>
             This service houses all endpoints handling metrics and scoring for assets throughout your environment.
