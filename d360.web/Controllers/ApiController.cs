@@ -249,8 +249,9 @@ namespace d360.web.Controllers
                         }
                     else if (ft.Type == DataType.OwnershipLookup.ToString())
                         {
-                            //look at fusionlookup field and figure out what to show
-                            list.AddRange(RenderOwnershipLookupField(type.ToString(), id, ft.ID));
+                            //look at ownershiplookup field and figure out what to show
+                            var ownershipDefinition = ft.FieldTypeLookup.ParseOwnershipLookupDefinition();
+                            list.AddRange(RenderOwnershipLookupField(type.ToString(), id, ft.ID, ownershipDefinition.ExpandGroupMembership));
                         }
 
                     else if (ft.Type == DataType.Relationship.ToString() && !string.IsNullOrEmpty(ft.LookupObjectType) && ft.LookupObjectID.HasValue)
@@ -3849,9 +3850,64 @@ where   R.ReferenceItemTypeID = {id}
         #endregion
 
         #region Ownership Lookup Fields
-
-        private List<DetailReadOnlyRowModel> RenderOwnershipLookupField(string type, int id, int fieldTypeID)
+        private List<DetailReadOnlyRowModel> RenderOwnershipLookupFieldGroupNames(string type, int id, int fieldTypeID)
         {
+            var list = new List<DetailReadOnlyRowModel>();
+            var lookup = Company.Filter<FieldTypeLookup>(i => i.FieldTypeID == fieldTypeID).SingleOrDefault();
+            if ( lookup == null ) throw new Exception("Invalid ownership lookup field is specified.");
+            var assetId = Company.Assets.FirstOrDefault(a => a.Object == type.ToString() && a.ObjectID == id)?.ID ?? 0;
+            var ft = Company.GetById<FieldType>(fieldTypeID, i => i.FieldTypeLookup);
+
+            var sql = @"
+                                    SELECT  R.ResponsibilityTypeName, 
+                                            case SecurityAsset when 'G' then 'Group' when 'O' then 'Organization' else 'Resource' end as SecurityAsset, 
+                                            R.ResourceID, 
+                                            'Resource' as ResourceObject,
+		                                    RG.GroupId,
+		                                    GRP.Name as GroupName
+                                    from    [dbo].[ResponsibilityDetail] R
+                                            inner join Asset A on A.ID = @assetId        
+                                            inner join reporting.Global_Resource U on U.ResourceID = R.ResourceID and U.State = 1 
+		                                    inner join ResourceGroup RG on RG.ResourceID = R.ResourceID
+		                                    inner join [Group] GRP on GRP.ID = RG.GroupId
+
+                                    where   R.IsVisible = 1 and ((R.AssetID = @assetId) or (R.ApplyToType = 1 and R.AssetTypeID = A.AssetTypeID))";
+
+            var results = Company.Query<dynamic>(sql, new { assetId }).Distinct();
+            List<string> resourceGroups = new List<string>();
+            foreach ( var obj in results )
+            {
+                if ( obj.GroupName != null && !resourceGroups.Contains(obj.GroupName) )
+                    resourceGroups.Add(obj.GroupName);
+            }
+
+            List<ReadOnlyFieldValue> values = new List<ReadOnlyFieldValue>();
+            var fieldLookup = ft.FieldTypeLookup;
+            values.Add(new ReadOnlyFieldValue { Value = string.Join(", ", resourceGroups), TooltipContext = "Preview" });
+
+            var ro = new ReadOnlyField
+            {
+                Name = ft.FriendlyName,
+                Value = values.Count > 0 ? "values" : "",
+                FieldDescription = ft.DisplayDescription,
+                FieldName = ft.Name,
+                Values = values
+            };
+
+            list.Add(new DetailReadOnlyRowModel
+            {
+                columns = 1,
+                FirstColumnFields = new List<ReadOnlyField> { ro },
+                Category = ft.Category
+            });
+
+            return list;
+        }
+        private List<DetailReadOnlyRowModel> RenderOwnershipLookupField(string type, int id, int fieldTypeID, bool isExpandMembershipGroup)
+        {
+            if (!isExpandMembershipGroup)
+                return RenderOwnershipLookupFieldGroupNames(type, id, fieldTypeID);
+
             var list = new List<DetailReadOnlyRowModel>();
 
             var ft = Company.GetById<FieldType>(fieldTypeID, i => i.FieldTypeLookup);
@@ -3877,7 +3933,8 @@ where   R.ReferenceItemTypeID = {id}
                                         LookupObjectType = type,
                                         LookupObjectID = id,
                                         LookupFieldTypeID = ft.ID,
-                                        LookupType = (int)DataType.OwnershipLookup
+                                        LookupType = (int)DataType.OwnershipLookup,
+                                        Value = "-1" //If value is set to null/empty table is not rendered in detail view
                                     }
                                 },
                         Category = ft.Category
