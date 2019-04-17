@@ -29,7 +29,10 @@ namespace d360.web.Controllers.V2
     /// </summary>
     [
         ApiVersion("2.0"),
-        RoutePrefix("api/v{version:apiVersion}/relationships"), Authorize]
+        RoutePrefix("api/v{version:apiVersion}/relationships"), 
+        Authorize,
+        StringEnumController
+    ]
     public class RelationshipsController : BaseV2ApiController
     {
         #region DI

@@ -347,6 +347,7 @@
     <Compile Include="Controllers\TaxonomyController.cs" />
     <Compile Include="Filters\AjaxValidationAntiForgeryTokenAttribute.cs" />
     <Compile Include="Filters\ExceptionHandlingAttribute.cs" />
+    <Compile Include="Filters\StringEnumControllerAttribute.cs" />
     <Compile Include="Filters\SwaggerContentTypesAttribute.cs" />
     <Compile Include="Filters\SwaggerParameterAttribute.cs" />
     <Compile Include="Handlers\ErrorMessageHandler.cs" />
