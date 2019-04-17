@@ -1,6 +1,6 @@
 
 import { debounceTime } from 'rxjs/operators';
-import { Input, Component, OnInit, OnDestroy } from '@angular/core';
+import { Input, Component, OnInit, OnDestroy, AfterViewInit, ViewChild, AfterViewChecked } from '@angular/core';
 import { Location } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { NgForm, FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
@@ -20,6 +20,7 @@ import { TagService } from '../../services/tag.service';
 import { ResourcesService } from '../../services/resources.service';
 import { Resource } from '../../models/resource.model';
 import { MessagesService } from '../../services/messages.service';
+import { FieldType } from '../../models/fields.model';
 
 @Component({
     selector: 'd3s-workflow-form',
@@ -27,7 +28,7 @@ import { MessagesService } from '../../services/messages.service';
     providers: [WorkflowService, ResourcesService, TagService]
 })
 
-export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDestroy {
+export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDestroy, AfterViewInit,AfterViewChecked {
     private sub: any;
     private workflowId: number;
     private workflowItemStepId: number;
@@ -59,6 +60,9 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     private selectedReassignResource: number;
     private searchSub: ISubscription;
     @Input() hasCloseButton: boolean = true;
+    private isSetValidatior: boolean = false;
+
+    @ViewChild('workflowForm') workflowFormGroup: FormGroup;
 
     constructor(private route: ActivatedRoute,
         private location: Location,
@@ -85,6 +89,32 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
         });
     }
 
+    ngAfterViewInit(): void {
+         window.setTimeout(() => {
+            this.setValidators();
+        }, 1000);
+
+    }
+
+    ngAfterViewChecked(): void {
+    }
+
+    private setValidators() {
+        if (this.isSetValidatior) return false;
+        if (!(this.workflowFormGroup && this.workflowFormGroup.controls)) return true;
+        let count: number = 0;
+        let assignValidation: boolean = false;
+        this.isSetValidatior = true;
+        this.fields.forEach(x => {
+            if (x.Required && x.FieldType != WorkflowFormFieldType.Boolean) {
+                assignValidation = true;
+                this.workflowFormGroup.controls[`input_${count}`].setValidators([Validators.required]);
+                this.workflowFormGroup.controls[`input_${count}`].updateValueAndValidity();
+            }
+            count++;
+        });
+        return assignValidation;
+    }
 
     ngOnDestroy() {
         this.sub.unsubscribe();
@@ -97,6 +127,10 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     }
 
     private onSubmit() {
+   
+        if (this.setValidators()) {
+           return false;
+        } 
         for (var i = 0; i < this.fields.length; i++) {
             if (Array.isArray(this.fields[i].Value)) {
                 this.fields[i].Value = this.fields[i].Value.join();

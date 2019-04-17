@@ -30,6 +30,8 @@ namespace d360.web.Models
 
         public bool AllowMultipleValues { get; set; }
         public int IntersectTypeID { get; set; }
+
+        public bool Required { get; set; }
     }
 
     public class BulkWorkflowFormModel
