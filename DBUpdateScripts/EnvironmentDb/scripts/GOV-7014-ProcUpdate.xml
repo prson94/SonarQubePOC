@@ -1,0 +1,868 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Tomislav Duric" id="GOV-7014">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER procedure [bulkload].[GetLoadColumns]
+
+	@action varchar(2),
+	@type varchar(50),
+	@id int,
+	@getLookups bit = 1
+as
+begin
+	declare @fields table (ID int identity, FieldTypeID int, Name nvarchar(250), Required bit, PartOfKey bit, AllowMultipleValues bit, IsLookup bit)
+	declare @lookups table (ID int identity, FieldID int, Value nvarchar(max))
+	declare @current int = 1,
+			@max int,
+			@isLookup bit = 0,
+			@fieldTypeID int
+
+	if @action = 'M'
+	begin
+		if @id = 0 
+		begin
+			insert into @fields values (1, 'Action', 1, 0, 0, 1)
+			insert into @fields values (0, 'Group Name', 1, 1, 0, 0)
+			insert into @fields values (0, 'User Email', 1, 1, 0, 0)
+
+			insert into @lookups values (1, 'Add')
+			insert into @lookups values (1, 'Remove')
+		end
+
+		if @id = 1 
+		begin
+			set @type = 'ResourceType'
+
+			insert into @fields values (1, 'Status', 1, 1, 0, 0)
+			insert into @fields values (0, 'User Email', 1, 1, 0, 0)
+			insert into @fields values (0, 'First Name', 1, 1, 0, 0)
+			insert into @fields values (0, 'Last Name', 1, 1, 0, 0)
+
+			insert into @lookups values (1, 'Active')
+			insert into @lookups values (1, 'Inactive')
+		end
+	end
+
+	if @action = 'O'
+	begin
+		
+			
+
+		
+
+		
+			
+
+			insert into @fields 
+				select	1, 'Responsibility', 1, 1, 0, 1
+
+			insert into @lookups
+				select	1,
+						Name from ResponsibilityType order by Name
+
+			insert into @fields 
+				select	2, 'Resource', 1, 1, 0, 1
+
+			insert into @lookups
+				select	2,
+						'User:' + email from reporting.Global_Resource order by email
+
+			insert into @lookups
+				select	2,
+						'Group:' + Name from [Group] order by Name
+
+			
+			begin
+				insert into @fields
+					select		0,
+								'Asset ID', 
+								1,
+								1,
+								0,
+								0	
+			end
+	end
+
+	if @action = 'P'
+	begin
+		if @type = 'AttributeType'
+		begin
+			insert into @fields 
+				select	-1, 'Owner Type', 1, 1, 0, 1
+
+			insert into @lookups
+				select	-1,
+						'Glossary: ' + Name from ArtifactType order by Name
+			insert into @lookups
+				select	-1,
+						'Model: ' + Name from TaxonomyType order by Name
+
+			insert into @fields 
+				select	0, 'Owner ID', 1, 1, 0, 0
+		end 
+
+		if @type = 'IntersectType'
+		begin
+			declare @s varchar(50),
+					@sid int,
+					@o varchar(50),
+					@oid int
+
+			select	@s = Subject,
+					@sid = SubjectID,
+					@o = Object,
+					@oid = ObjectID
+			from	IntersectType
+			where	ID = @id
+
+
+			if @s = 'TaxonomyType'
+			begin
+				insert into @fields
+					select	0, 
+							'Subject Path', 
+							1, 
+							1, 
+							0,
+							0
+			end
+			else
+			begin
+				insert into @fields
+					select	FT.ID, 
+							'Subject ' + FT.Name, 
+							FT.IsRequired, 
+							FT.IsPartOfKey, 
+							FT.AllowMultipleValues,
+							case FT.Type
+								when 'Lookup' then cast(1 as bit)
+								else cast(0 as bit)
+							end as IsLookup
+					from	FieldType FT 
+					where	FT.IsPartOfKey = 1 and FT.Object = @s and FT.ObjectID = @sid
+			end
+
+			if @s = 'TaxonomyType'
+			begin
+				insert into @fields
+					select	0, 
+							'Object Path', 
+							1, 
+							1, 
+							0,
+							0
+			end
+			else
+			begin
+				insert into @fields
+					select	FT.ID, 
+							'Object ' + FT.Name, 
+							FT.IsRequired, 
+							FT.IsPartOfKey, 
+							FT.AllowMultipleValues,
+							case FT.Type
+								when 'Lookup' then cast(1 as bit)
+								else cast(0 as bit)
+							end as IsLookup
+					from	FieldType FT 
+					where	FT.IsPartOfKey = 1 and FT.Object = @o and FT.ObjectID = @oid
+			end
+
+		end 
+
+		if @type = 'ArtifactType'
+		begin
+			declare @parentTypeID int = null,
+					@parentTypeName nvarchar(250) = null
+			
+			
+
+			select 
+				@parentTypeID = I.SubjectID,
+				@parentTypeName = I.SubjectName
+			from 
+				intersecttypedetail I                
+			where I.[PredicateType] = 3 and [Object] = @type and ObjectID = @id;
+
+			if @parentTypeID is not null
+			begin
+				insert into @fields 
+					values(	0, 
+							@parentTypeName, 
+							cast(1 as bit), 
+							cast(1 as bit), 
+							cast(0 as bit),
+							cast(1 as bit) );
+				
+				insert into @lookups
+					select	(select id from @fields where fieldtypeid = 0), DisplayValue from AssetDetail where typeid = @parentTypeID and [object] = 'Artifact' order by DisplayValue;
+
+			end
+		end 
+
+		if @type = 'ReferenceItemType'
+		begin
+			insert into @fields values (0, 'Code', 1, 1, 0, 0)
+		end 
+
+		if @type = 'TaxonomyType'
+		begin
+			declare @initialDepth int = 1,
+					@maxDepth int = 1
+			select @maxDepth = MaximumDepth from TaxonomyType where ID = @id
+			declare @levels table (Value int)
+			while  @initialDepth <= @maxDepth
+			begin
+				insert into @levels values (@initialDepth)
+				set @initialDepth = @initialDepth + 1
+			end
+
+			insert into @fields 
+				select	FT.ID, 
+						case
+							when TTL.Name is not null then TTL.Name + ' ' + FT.Name
+							else 'Level ' + cast(L.Value as nvarchar)  + ' ' + FT.Name
+						end, 
+						FT.IsRequired, 
+						FT.IsPartOfKey, 
+						FT.AllowMultipleValues,
+						case FT.Type
+							when 'Lookup' then cast(1 as bit)
+							else cast(0 as bit)
+						end as IsLookup
+				from	@levels L 
+						inner join FieldType FT on FT.IsPartOfKey = 1 and FT.Object = @type and FT.ObjectID = @id
+						left join TaxonomyTypeLevel TTL on TTL.[Level] = L.Value and TaxonomyTypeID = @id
+		end 
+	end 
+	else if (@action = 'R' or @action = 'U')
+	begin
+		
+		print 'relate / unrelate'
+				
+		
+		
+		declare @subjectType varchar(50),
+				@subjectTypeName nvarchar(500),
+				@subjectTypeID int,
+				@objectType varchar(50),
+				@objectTypeName nvarchar(500),
+				@objectTypeID int
+		select	@subjectType = Subject,
+				@subjectTypeName = SubjectName,
+				@subjectTypeID = SubjectID,
+				@objectTypeName = ObjectName,
+				@objectType = Object,
+				@objectTypeID = ObjectID
+		from	IntersectTypeDetail
+		where	ID = @id
+		
+
+		
+
+		
+
+		if @objectType = 'FusionAttributeType' or @objectType = 'IntersectType'
+		begin
+			insert into @fields values (0, @objectTypeName, 1, 1, 0, 0)
+		end		
+		else if @objectType = 'ReferenceItemType' and @objectTypeID = 0
+		begin
+			insert into @fields values (0, @objectTypeName + ' Asset Type ID', 1, 1, 0, 0)
+		end		
+		else
+		begin
+			
+			insert into @fields
+				select		0,
+							@objectTypeName + ' Asset ID', 
+							1,
+							1,
+							0,
+							0				
+		end
+
+		if @subjectType = 'FusionAttributeType' or @subjectType = 'IntersectType'
+		begin
+			insert into @fields values (0, @subjectTypeName, 1, 1, 0, 0)
+		end
+		else if @subjectType = 'ReferenceItemType' and @subjectTypeID = 0
+		begin
+			insert into @fields values (0, @subjectTypeName + ' Asset Type ID', 1, 1, 0, 0)
+		end		
+		else
+		begin
+			insert into @fields
+				select		0,
+							@subjectTypeName + ' Asset ID', 
+							1,
+							1,
+							0,
+							0				
+		end
+	end 
+
+	
+	if ((@action = 'M' and @id = 1 ) or @action = 'R' or @action = 'P')
+	begin
+		insert into @fields
+			select		ID,
+						Name, 
+						IsRequired,
+						IsPartOfKey,
+						AllowMultipleValues,
+						case Type
+							when 'Lookup' then cast(1 as bit)
+							else cast(0 as bit)
+						end as IsLookup
+			from		FieldType 
+			where		Object = @type 
+						and ObjectID = @id 
+						and Type not in ('Attribute', 'ComplexRelationLookup', 'FieldFromRelationship', 'FilteredLookup', 'FusionLookup', 'OwnershipLookup', 'RefListRelationship')
+						and ( (@type = 'IntersectType' and IsPartOfKey = 0) OR (@type = 'TaxonomyType' and IsPartOfKey = 0) OR (@type <> 'TaxonomyType') )
+						and IsEditable = 1
+			order by	ColumnOrder
+		
+		select @max = max(ID) from @fields
+
+		while @current <= @max
+		begin
+			select	@isLookup = IsLookup, 
+					@fieldTypeID = FieldTypeID
+			from	@fields 
+			where	ID = @current
+
+			if @isLookup = 1 and @getLookups = 1
+			begin
+				insert into @lookups
+					select		@current,
+								[Text]
+					from		FieldLookupValue
+					where		FieldTypeID = @fieldTypeID
+					order by	[Text]
+			end
+			
+			set @current = @current + 1
+		end
+	end
+
+	
+	if @action = 'BL'
+	begin
+
+			insert into @fields values (-4, 'Action', 1, 0, 0, 1)
+			insert into @fields values (-2, 'Source Relation', 1, 1, 0, 1)
+			insert into @fields values (0, 'Source Subject Asset ID', 1, 1, 0, 0)
+			insert into @fields values (0, 'Source Object Asset ID', 1, 1, 0, 0)
+			insert into @fields values (-3, 'Source Fusion Configuration', 1, 0, 0, 1)
+			insert into @fields values (0, 'Source Fusion Path', 1, 0, 0, 0)
+
+			insert into @fields values (-2, 'Target Relation', 1, 1, 0, 1)
+			insert into @fields values (0, 'Target Subject Asset ID', 1, 1, 0, 0)
+			insert into @fields values (0, 'Target Object Asset ID', 1, 1, 0, 0)
+			insert into @fields values (-3, 'Target Fusion Configuration', 1, 0, 0, 1)
+			insert into @fields values (0, 'Target Fusion Path', 1, 0, 0, 0)
+
+			insert into @fields values (0, 'Transformation', 1, 0, 0, 0)
+
+			insert into @lookups values (-4, 'Add')
+			insert into @lookups values (-4, 'Remove')
+
+			insert into @lookups
+				select		-1,
+							Name 
+				from		TaxonomyType 
+				order by	Name
+
+			insert into @lookups
+				select		-2,
+							Name 
+				from		IntersectType
+				where		IsSystem = 0
+				order by	Name
+
+			insert into @lookups
+				select		-3,
+							Name 
+				from		Fusion
+				order by	Name
+	end
+
+	if @action = 'TL'
+	begin
+		insert into @fields values (-1, 'Source Fusion Configuration', 0, 0, 0, 1)
+		insert into @fields values (0, 'Source Fusion Path', 0, 0, 0, 0)
+
+		insert into @fields values (-1, 'Target Fusion Configuration', 0, 0, 0, 1)
+		insert into @fields values (0, 'Target Fusion Path', 0, 0, 0, 0)
+
+		insert into @fields values (0, 'Group', 0, 0, 0, 0)
+
+		insert into @lookups
+			select		-1,
+						Name 
+			from		Fusion
+			order by	Name
+	end
+
+	
+	select	Name,
+			Required,
+			PartOfKey,
+			AllowMultipleValues,
+			IsLookup,
+			F.[FieldTypeId],
+			(
+			select	Value
+			from	@lookups
+			where	FieldID = F.ID
+			for json path
+			) as Lookups
+	from	@fields F
+	for json path
+end
+ ]]>
+    </sql>
+	<rollback>
+<![CDATA[
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER procedure [bulkload].[GetLoadColumns]
+
+	@action varchar(2),
+	@type varchar(50),
+	@id int,
+	@getLookups bit = 1
+as
+begin
+	declare @fields table (ID int identity, FieldTypeID int, Name nvarchar(250), Required bit, PartOfKey bit, AllowMultipleValues bit, IsLookup bit)
+	declare @lookups table (ID int identity, FieldID int, Value nvarchar(max))
+	declare @current int = 1,
+			@max int,
+			@isLookup bit = 0,
+			@fieldTypeID int
+
+	if @action = 'M'
+	begin
+		if @id = 0 
+		begin
+			insert into @fields values (1, 'Action', 1, 0, 0, 1)
+			insert into @fields values (0, 'Group Name', 1, 1, 0, 0)
+			insert into @fields values (0, 'User Email', 1, 1, 0, 0)
+
+			insert into @lookups values (1, 'Add')
+			insert into @lookups values (1, 'Remove')
+		end
+
+		if @id = 1 
+		begin
+			set @type = 'ResourceType'
+
+			insert into @fields values (1, 'Status', 1, 1, 0, 0)
+			insert into @fields values (0, 'User Email', 1, 1, 0, 0)
+			insert into @fields values (0, 'First Name', 1, 1, 0, 0)
+			insert into @fields values (0, 'Last Name', 1, 1, 0, 0)
+
+			insert into @lookups values (1, 'Active')
+			insert into @lookups values (1, 'Inactive')
+		end
+	end
+
+	if @action = 'O'
+	begin
+		
+			
+
+		
+
+		
+			
+
+			insert into @fields 
+				select	1, 'Responsibility', 1, 1, 0, 1
+
+			insert into @lookups
+				select	1,
+						Name from ResponsibilityType order by Name
+
+			insert into @fields 
+				select	2, 'Resource', 1, 1, 0, 1
+
+			insert into @lookups
+				select	2,
+						'User:' + email from reporting.Global_Resource order by email
+
+			insert into @lookups
+				select	2,
+						'Group:' + Name from [Group] order by Name
+
+			
+			begin
+				insert into @fields
+					select		0,
+								'Asset ID', 
+								1,
+								1,
+								0,
+								0	
+			end
+	end
+
+	if @action = 'P'
+	begin
+		if @type = 'AttributeType'
+		begin
+			insert into @fields 
+				select	-1, 'Owner Type', 1, 1, 0, 1
+
+			insert into @lookups
+				select	-1,
+						'Glossary: ' + Name from ArtifactType order by Name
+			insert into @lookups
+				select	-1,
+						'Model: ' + Name from TaxonomyType order by Name
+
+			insert into @fields 
+				select	0, 'Owner ID', 1, 1, 0, 0
+		end 
+
+		if @type = 'IntersectType'
+		begin
+			declare @s varchar(50),
+					@sid int,
+					@o varchar(50),
+					@oid int
+
+			select	@s = Subject,
+					@sid = SubjectID,
+					@o = Object,
+					@oid = ObjectID
+			from	IntersectType
+			where	ID = @id
+
+
+			if @s = 'TaxonomyType'
+			begin
+				insert into @fields
+					select	0, 
+							'Subject Path', 
+							1, 
+							1, 
+							0,
+							0
+			end
+			else
+			begin
+				insert into @fields
+					select	FT.ID, 
+							'Subject ' + FT.Name, 
+							FT.IsRequired, 
+							FT.IsPartOfKey, 
+							FT.AllowMultipleValues,
+							case FT.Type
+								when 'Lookup' then cast(1 as bit)
+								else cast(0 as bit)
+							end as IsLookup
+					from	FieldType FT 
+					where	FT.IsPartOfKey = 1 and FT.Object = @s and FT.ObjectID = @sid
+			end
+
+			if @s = 'TaxonomyType'
+			begin
+				insert into @fields
+					select	0, 
+							'Object Path', 
+							1, 
+							1, 
+							0,
+							0
+			end
+			else
+			begin
+				insert into @fields
+					select	FT.ID, 
+							'Object ' + FT.Name, 
+							FT.IsRequired, 
+							FT.IsPartOfKey, 
+							FT.AllowMultipleValues,
+							case FT.Type
+								when 'Lookup' then cast(1 as bit)
+								else cast(0 as bit)
+							end as IsLookup
+					from	FieldType FT 
+					where	FT.IsPartOfKey = 1 and FT.Object = @o and FT.ObjectID = @oid
+			end
+
+		end 
+
+		if @type = 'ArtifactType'
+		begin
+			declare @parentTypeID int = null,
+					@parentTypeName nvarchar(250) = null
+			
+			
+
+			select 
+				@parentTypeID = I.SubjectID,
+				@parentTypeName = I.SubjectName
+			from 
+				intersecttypedetail I                
+			where I.[PredicateType] = 3 and [Object] = @type and ObjectID = @id;
+
+			if @parentTypeID is not null
+			begin
+				insert into @fields 
+					values(	0, 
+							@parentTypeName, 
+							cast(1 as bit), 
+							cast(1 as bit), 
+							cast(0 as bit),
+							cast(1 as bit) );
+				
+				insert into @lookups
+					select	(select id from @fields where fieldtypeid = 0), DisplayValue from AssetDetail where typeid = @parentTypeID and [object] = 'Artifact' order by DisplayValue;
+
+			end
+		end 
+
+		if @type = 'ReferenceItemType'
+		begin
+			insert into @fields values (0, 'Code', 1, 1, 0, 0)
+		end 
+
+		if @type = 'TaxonomyType'
+		begin
+			declare @initialDepth int = 1,
+					@maxDepth int = 1
+			select @maxDepth = MaximumDepth from TaxonomyType where ID = @id
+			declare @levels table (Value int)
+			while  @initialDepth <= @maxDepth
+			begin
+				insert into @levels values (@initialDepth)
+				set @initialDepth = @initialDepth + 1
+			end
+
+			insert into @fields 
+				select	FT.ID, 
+						case
+							when TTL.Name is not null then TTL.Name + ' ' + FT.Name
+							else 'Level ' + cast(L.Value as nvarchar)  + ' ' + FT.Name
+						end, 
+						FT.IsRequired, 
+						FT.IsPartOfKey, 
+						FT.AllowMultipleValues,
+						case FT.Type
+							when 'Lookup' then cast(1 as bit)
+							else cast(0 as bit)
+						end as IsLookup
+				from	@levels L 
+						inner join FieldType FT on FT.IsPartOfKey = 1 and FT.Object = @type and FT.ObjectID = @id
+						left join TaxonomyTypeLevel TTL on TTL.[Level] = L.Value and TaxonomyTypeID = @id
+		end 
+	end 
+	else if (@action = 'R' or @action = 'U')
+	begin
+		
+		print 'relate / unrelate'
+				
+		
+		
+		declare @subjectType varchar(50),
+				@subjectTypeName nvarchar(500),
+				@subjectTypeID int,
+				@objectType varchar(50),
+				@objectTypeName nvarchar(500),
+				@objectTypeID int
+		select	@subjectType = Subject,
+				@subjectTypeName = SubjectName,
+				@subjectTypeID = SubjectID,
+				@objectTypeName = ObjectName,
+				@objectType = Object,
+				@objectTypeID = ObjectID
+		from	IntersectTypeDetail
+		where	ID = @id
+		
+
+		
+
+		
+
+		if @objectType = 'FusionAttributeType' or @objectType = 'IntersectType'
+		begin
+			insert into @fields values (0, @objectTypeName, 1, 1, 0, 0)
+		end		
+		else if @objectType = 'ReferenceItemType' and @objectTypeID = 0
+		begin
+			insert into @fields values (0, @objectTypeName + ' Asset Type ID', 1, 1, 0, 0)
+		end		
+		else
+		begin
+			
+			insert into @fields
+				select		0,
+							@objectTypeName + ' Asset ID', 
+							1,
+							1,
+							0,
+							0				
+		end
+
+		if @subjectType = 'FusionAttributeType' or @subjectType = 'IntersectType'
+		begin
+			insert into @fields values (0, @subjectTypeName, 1, 1, 0, 0)
+		end
+		else if @subjectType = 'ReferenceItemType' and @subjectTypeID = 0
+		begin
+			insert into @fields values (0, @subjectTypeName + ' Asset Type ID', 1, 1, 0, 0)
+		end		
+		else
+		begin
+			insert into @fields
+				select		0,
+							@subjectTypeName + ' Asset ID', 
+							1,
+							1,
+							0,
+							0				
+		end
+	end 
+
+	
+	if ((@action = 'M' and @id = 1 ) or @action = 'R' or @action = 'P')
+	begin
+		insert into @fields
+			select		ID,
+						Name, 
+						IsRequired,
+						IsPartOfKey,
+						AllowMultipleValues,
+						case Type
+							when 'Lookup' then cast(1 as bit)
+							else cast(0 as bit)
+						end as IsLookup
+			from		FieldType 
+			where		Object = @type 
+						and ObjectID = @id 
+						and Type not in ('Attribute', 'ComplexRelationLookup', 'FieldFromRelationship', 'FilteredLookup', 'FusionLookup', 'OwnershipLookup', 'RefListRelationship')
+						and ( (@type = 'IntersectType' and IsPartOfKey = 0) OR (@type = 'TaxonomyType' and IsPartOfKey = 0) OR (@type <> 'TaxonomyType') )
+						and IsEditable = 1
+			order by	ColumnOrder
+		
+		select @max = max(ID) from @fields
+
+		while @current <= @max
+		begin
+			select	@isLookup = IsLookup, 
+					@fieldTypeID = FieldTypeID
+			from	@fields 
+			where	ID = @current
+
+			if @isLookup = 1 and @getLookups = 1
+			begin
+				insert into @lookups
+					select		@current,
+								[Text]
+					from		FieldLookupValue
+					where		FieldTypeID = @fieldTypeID
+					order by	[Text]
+			end
+			
+			set @current = @current + 1
+		end
+	end
+
+	
+	if @action = 'BL'
+	begin
+
+			insert into @fields values (-4, 'Action', 1, 0, 0, 1)
+			insert into @fields values (-2, 'Source Relation', 1, 1, 0, 1)
+			insert into @fields values (0, 'Source Subject Asset ID', 1, 1, 0, 0)
+			insert into @fields values (0, 'Source Object Asset ID', 1, 1, 0, 0)
+			insert into @fields values (-3, 'Source Fusion Configuration', 1, 0, 0, 1)
+			insert into @fields values (0, 'Source Fusion Path', 1, 0, 0, 0)
+
+			insert into @fields values (-2, 'Target Relation', 1, 1, 0, 1)
+			insert into @fields values (0, 'Target Subject Asset ID', 1, 1, 0, 0)
+			insert into @fields values (0, 'Target Object Asset ID', 1, 1, 0, 0)
+			insert into @fields values (-3, 'Target Fusion Configuration', 1, 0, 0, 1)
+			insert into @fields values (0, 'Target Fusion Path', 1, 0, 0, 0)
+
+			insert into @fields values (0, 'Transformation', 1, 0, 0, 0)
+
+			insert into @lookups values (-4, 'Add')
+			insert into @lookups values (-4, 'Remove')
+
+			insert into @lookups
+				select		-1,
+							Name 
+				from		TaxonomyType 
+				order by	Name
+
+			insert into @lookups
+				select		-2,
+							Name 
+				from		IntersectType
+				where		IsSystem = 0
+				order by	Name
+
+			insert into @lookups
+				select		-3,
+							Name 
+				from		Fusion
+				order by	Name
+	end
+
+	if @action = 'TL'
+	begin
+		insert into @fields values (-1, 'Source Fusion Configuration', 0, 0, 0, 1)
+		insert into @fields values (0, 'Source Fusion Path', 0, 0, 0, 0)
+
+		insert into @fields values (-1, 'Target Fusion Configuration', 0, 0, 0, 1)
+		insert into @fields values (0, 'Target Fusion Path', 0, 0, 0, 0)
+
+		insert into @fields values (0, 'Group', 0, 0, 0, 0)
+
+		insert into @lookups
+			select		-1,
+						Name 
+			from		Fusion
+			order by	Name
+	end
+
+	
+	select	Name,
+			Required,
+			PartOfKey,
+			AllowMultipleValues,
+			IsLookup,
+			(
+			select	Value
+			from	@lookups
+			where	FieldID = F.ID
+			for json path
+			) as Lookups
+	from	@fields F
+	for json path
+end
+ ]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>

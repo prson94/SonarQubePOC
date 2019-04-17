@@ -128,7 +128,8 @@ namespace d360.web.Controllers
                                 Value = (ft.LookupDisplayFormat == formattedValue) ? "" : formattedValue,
                                 FieldDescription = ft.DisplayDescription,
                                 FieldName = ft.Name,
-                                DataType = !string.IsNullOrEmpty(ft.Type) ? ft.Type : ""
+                                DataType = !string.IsNullOrEmpty(ft.Type) ? ft.Type : "",
+                                ShowIfEmpty = ft.ShowIfEmpty
                             };
                             
                             if (ft.Type == DataType.Date.ToString()) ro.DataType = "date";
@@ -310,7 +311,8 @@ namespace d360.web.Controllers
                                     Value = values.Count > 0 ?"values" : "",
                                     FieldDescription = ft.DisplayDescription,
                                     FieldName = ft.Name,                                    
-                                    Values = values                                
+                                    Values = values    ,
+                                    ShowIfEmpty = ft.ShowIfEmpty
                                 };
                                 
                                 list.Add(new DetailReadOnlyRowModel
@@ -344,7 +346,8 @@ namespace d360.web.Controllers
                                         Value = rfld.FormattedValue,
                                         FieldDescription = ft.DisplayDescription,
                                         FieldName = ft.Name,
-                                        DataType = "Html"
+                                        DataType = "Html",
+                                        ShowIfEmpty = ft.ShowIfEmpty
                                     };
 
                                     list.Add(new DetailReadOnlyRowModel
@@ -4438,11 +4441,11 @@ from    ResponsibilityTypeRelationRule R
         #region Policies
 
         [Route("policytypes")]
-        public HttpResponseMessage GetPolicyTypes()
+        public async Task<HttpResponseMessage> GetPolicyTypes()
         {
             return Request.CreateResponse<dynamic>(
                 HttpStatusCode.OK,
-                Company.Query<PolicyType>(@"
+                (await Company.QueryAsync<dynamic>(@"
 	                    select	    AT.ObjectID as ID,
 	                    AT.Name,
 	                    AT.Description,
@@ -4453,7 +4456,7 @@ from    ResponsibilityTypeRelationRule R
 	                    AT.UpdatedBy,
 	                    AT.UpdatedOn,
 	                    AT.ID as AssetTypeID
-	                    from	    AssetType AT where AT.Object = 'PolicyType'")
+	                    from	    AssetType AT where AT.Object = 'PolicyType'"))
             .Select(i => new { i.Description, i.ID, i.MaximumDepth, i.Name, i.AssetTypeID })
             );
         }
@@ -5088,31 +5091,29 @@ where    A.RuleID = @id", new { id });
             {
                 case SystemObjects.Artifact:
                     #region Fields
-
-                    var artifact = Company.GetById<Artifact>(id, i => i.ArtifactType);
-                    var parent = Company.GetParentObject(id, SystemObjects.Artifact);                    
-                    if (artifact != null)
                     {
-                        model.rows.AddRange(loadDynamicDisplayFields(type, id));
-                        if (parent != null)
-                        {
-                            var parentAsset = Company.GetAssetDetail("Artifact", parent.ObjectID);
-                            var parentUrl = Company.Query<string>($"select dbo.GenerateAssetUrl({parentAsset.ID})").First();
+                        var asset = Company.Assets.FirstOrDefault(x => x.ObjectID == id && x.Object == SystemObjects.Artifact.ToString());
 
-                            model.rows.Insert(1,new DetailReadOnlyRowModel
+                        if (asset != null)
+                        {
+                            model.rows.AddRange(loadDynamicDisplayFields(type, id));
+
+                            var parent = Company.GetParentObject(id, SystemObjects.Artifact);
+
+                            if (parent != null)
                             {
-                                columns = 1,
-                                FirstColumnFields = new List<ReadOnlyField> {
+                                var parentAsset = Company.GetAssetDetail("Artifact", parent.ObjectID);
+                                var parentUrl = Company.Query<string>($"select dbo.GenerateAssetUrl({parentAsset.ID})").First();
+
+                                model.rows.Insert(1, new DetailReadOnlyRowModel
+                                {
+                                    columns = 1,
+                                    FirstColumnFields = new List<ReadOnlyField> {
                                     new ReadOnlyField { Name = Resources.FieldInfo.Parent_Name , FieldName = "ArtifactParentName", FieldDescription = Resources.FieldInfo.Parent_Description, Value = parentAsset.DisplayValue, TooltipUrl = parentUrl, TooltipType="Artifact", TooltipContext="Preview", TooltipID = parent.ObjectID}
                                 }
-                            });
-                        }
+                                });
+                            }
 
-                       
-
-                        var asset = Company.Assets.Where(x => x.Object == "Artifact" && x.ObjectID == id).FirstOrDefault();
-
-                        if (asset != null) {
                             model.rows.Add(new DetailReadOnlyRowModel
                             {
                                 columns = 2,
@@ -5126,34 +5127,33 @@ where    A.RuleID = @id", new { id });
                             },
                             });
 
-                        }
-
-                        if (artifact.UpdatedOn.HasValue)
-                        {
-                            model.rows.Add(new DetailReadOnlyRowModel
+                            if (asset.UpdatedOn.HasValue)
                             {
-                                columns = 2,
-                                FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = Resources.FieldInfo.CreatedOn_Name, FieldName = "ArtifactCreatedOn", FieldDescription = Resources.FieldInfo.CreatedOn_Description, Value = artifact.CreatedOn.HasValue ? artifact.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
+                                model.rows.Add(new DetailReadOnlyRowModel
+                                {
+                                    columns = 2,
+                                    FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = Resources.FieldInfo.CreatedOn_Name, FieldName = "ArtifactCreatedOn", FieldDescription = Resources.FieldInfo.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
                                 },
-                                SecondColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = Resources.FieldInfo.UpdatedOn_Name, FieldName = "ArtifactUpdatedOn", FieldDescription = Resources.FieldInfo.UpdatedOn_Description, Value = artifact.UpdatedOn.GetValueOrDefault().ToString("yyyy-MM-ddTHH:mm:ssZ"), DataType = "date" }
+                                    SecondColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = Resources.FieldInfo.UpdatedOn_Name, FieldName = "ArtifactUpdatedOn", FieldDescription = Resources.FieldInfo.UpdatedOn_Description, Value = asset.UpdatedOn.GetValueOrDefault().ToString("yyyy-MM-ddTHH:mm:ssZ"), DataType = "date" }
                                 }
-                            });
-                        }
-                        else
-                        {
-                            model.rows.Add(new DetailReadOnlyRowModel
+                                });
+                            }
+                            else
                             {
-                                columns = 1,
-                                FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = Resources.FieldInfo.CreatedOn_Name, FieldName = "ArtifactCreatedOn", FieldDescription = Resources.FieldInfo.CreatedOn_Description, Value = artifact.CreatedOn.HasValue ? artifact.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
+                                model.rows.Add(new DetailReadOnlyRowModel
+                                {
+                                    columns = 1,
+                                    FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = Resources.FieldInfo.CreatedOn_Name, FieldName = "ArtifactCreatedOn", FieldDescription = Resources.FieldInfo.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
                                 }
-                            });
+                                });
+                            }
                         }
                     }
-                    artifact = null;
                     break;
+
                 #endregion
                 case SystemObjects.ArtifactType:
                     #region Fields

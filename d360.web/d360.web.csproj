@@ -287,6 +287,7 @@
     <Compile Include="Controllers\Services\CustomController.cs" />
     <Compile Include="Controllers\Services\Obsolete\ReportsController.cs" />
     <Compile Include="Controllers\Services\OrganizationsController.cs" />
+    <Compile Include="Controllers\V2\FieldsController.cs" />
     <Compile Include="Controllers\V2\AuditController.cs" />
     <Compile Include="Controllers\V2\BaseV2ApiController.cs" />
     <Compile Include="Controllers\V2\CrossReferencesController.cs" />
@@ -346,6 +347,7 @@
     <Compile Include="Controllers\TaxonomyController.cs" />
     <Compile Include="Filters\AjaxValidationAntiForgeryTokenAttribute.cs" />
     <Compile Include="Filters\ExceptionHandlingAttribute.cs" />
+    <Compile Include="Filters\StringEnumControllerAttribute.cs" />
     <Compile Include="Filters\SwaggerContentTypesAttribute.cs" />
     <Compile Include="Filters\SwaggerParameterAttribute.cs" />
     <Compile Include="Handlers\ErrorMessageHandler.cs" />
@@ -367,6 +369,7 @@
     <Compile Include="Models\Attributes\AiHandleErrorAttribute.cs" />
     <Compile Include="Models\Editor Models.cs" />
     <Compile Include="Models\MimeTypeExtensionsMap.cs" />
+    <Compile Include="Models\RestApiException.cs" />
     <Compile Include="Models\SwaggerExampleModels.cs" />
     <Compile Include="Models\SwaggerExampleModelLogic.cs" />
     <Compile Include="Models\Viewer Models.cs" />
@@ -586,6 +589,7 @@
     <Content Include="Scripts\app\components\admin\customapi\admin-customapi-service-detail.component.html" />
     <Content Include="Scripts\app\components\admin\customapi\admin-customapi-service-namespace.component.html" />
     <Content Include="Scripts\app\components\admin\customapi\admin-customapi.component.html" />
+    <Content Include="Scripts\app\components\admin\load\load.form.html" />
     <Content Include="Scripts\app\components\artifact\artifact-column-filter.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-grid.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-item.component.html" />
@@ -942,7 +946,6 @@
     <Content Include="Scripts\app\components\admin\load\admin-load.component.html" />
     <Content Include="Scripts\app\components\admin\resources\admin-resources.component.html" />
     <Content Include="Scripts\app\components\admin\groups\group.form.html" />
-    <Content Include="Scripts\app\components\admin\load\load.form.html" />
     <Content Include="Scripts\app\components\admin\responsibilities\responsibility-type.form.html" />
     <Content Include="Scripts\app\components\resource\resource-item.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\impact.component.html" />
@@ -1120,6 +1123,8 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\exporttemplates\admin-export-templates.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\exporttemplates\admin-export-templates.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\issuetypes\admin-issue-type-allocation.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\load\bulk-load-item.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\load\load.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\organizations\admin-organization-contract-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi.routes.ts" />
@@ -1485,7 +1490,6 @@
     <TypeScriptCompile Include="Scripts\app\components\community\community.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\community\community.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\groups\group.form.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\load\load.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\responsibilities\responsibility-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-agent-errors.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-agent-history.component.ts" />
@@ -1595,7 +1599,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\attributes.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\fusion\fusion-attributes.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\fusion\fusion-configuration.tile.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\load\bulk-load-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-level-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\group-members.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-governance.component.ts" />
@@ -1668,6 +1671,7 @@
     <TypeScriptCompile Include="Scripts\app\services\export-template.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\levels.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\lineage.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\load.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\metrics.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\organizations.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\qualifier.service.ts" />
@@ -1699,7 +1703,6 @@
     <TypeScriptCompile Include="Scripts\app\services\follower.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\fusion-attribute.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\fusion.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\load.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\models.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\object-statistics.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\permissions.service.ts" />

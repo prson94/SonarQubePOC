@@ -136,12 +136,10 @@ namespace d360.web.Controllers.Services
             Policy item = null;
 
             try
-            {
-                var type = Company.GetById<PolicyType>(id);
-
+            {              
                 #region Check that PolicyType was found
 
-                if (type == null)
+                if (!Company.AssetTypes.Any(x => x.ObjectID == id && x.Object == SystemObjects.PolicyType.ToString()))
                 {
                     throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
                 }

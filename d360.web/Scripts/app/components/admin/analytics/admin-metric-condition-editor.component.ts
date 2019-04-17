@@ -38,7 +38,7 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
                 if (this.condition) {
                     if (this.condition.FieldTypeID != i) {
                         ft.Disabled = true;
-                    }
+                    } 
                 }
                 else {
                     ft.Disabled = true;
@@ -71,14 +71,6 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
 
         if (this.condition == null) {
             valid = false;
-        } else {
-        //    if (this.condition.MapID == null || this.condition.FieldTypeID == null || this.condition.FieldTypeID < 1) {
-        //        valid = false;
-        //    }
-        //    if (this.condition.Value == null)
-        //        valid = false;
-        //    if (this.condition.Operator == null || this.condition.AndOr == null)
-        //        valid = false;
         }
 
         return valid;
@@ -87,11 +79,16 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
     save() {
 
         if (this.condition.FieldType) {
-            if (this.condition.FieldType.Type == "Lookup") {
-                this.condition.ValuesText = this.condition.FieldType.Values.find(v => v.Value == +this.condition.Values).Text;
-            }
-            else {
-                this.condition.ValuesText = this.condition.Values;
+            switch (this.condition.FieldType.Type) {
+                case "Boolean":
+                    this.condition.ValuesText = this.condition.Values.toString();
+                    break;
+                case "Lookup":
+                    this.condition.ValuesText = this.condition.FieldType.Values.find(v => v.Value == +this.condition.Values).Text;
+                    break;
+                default:
+                    this.condition.ValuesText = this.condition.Values;
+                    break;
             }
         }
         this.onSave.emit(this.condition);
@@ -115,11 +112,15 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
                 if (!this.condition.Values) {
                     this.condition.Values = "";
                 }
-                else {
-                    if (field.Type == "Date" || field.Type == "DateTime") {
+                switch (field.Type) {
+                    case "Boolean":
+                        this.condition.Values = (this.condition.Values == 'true') || (this.condition.Values == true);
+                        break;
+                    case "Date":
+                    case "DateTime":
                         this.condition.Values = new Date(<string>this.condition.Values);
                         this.condition.Values.setMinutes(this.condition.Values.getMinutes() + this.condition.Values.getTimezoneOffset());
-                    }
+                        break;
                 }
             }
         }

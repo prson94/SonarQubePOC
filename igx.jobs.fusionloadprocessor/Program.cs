@@ -45,48 +45,28 @@ namespace igx.jobs.fusionloadprocessor
                 {
                     var sw = Stopwatch.StartNew();
                     await fp.Process(functionName, fusion, bulkTimeout, readTimeout, executionTimeout, mergeSize, log);
-                    //log.Info($"Fusion Processing Took\tTIME ELAPSED {sw.ElapsedMilliseconds} MS");
-
+                    
                     CoreFunction.AITrackJobCompletedNoErrors(functionName);
                 }
                 catch (AggregateException exception)
-                {
-                    //log.Error("FusionQueueManager encountered and error while running fusion job.");
+                {                    
                     foreach (Exception ex in exception.InnerExceptions)
                     {
                         CoreFunction.AITrackException(functionName, ex, fusion.CompanyID);
-
-                        //log.Error($"Exception details [{ex.Message}]");
                     }
                 }
                 catch (Exception ex)
                 {
-                    CoreFunction.AITrackException(functionName, ex, fusion.CompanyID);
-                    //log.Error($"FusionQueueManager encountered and error while running fusion job.  Exception details [{ex.Message}]");
+                    CoreFunction.AITrackException(functionName, ex, fusion.CompanyID);                    
                 }
 
             }
             catch (Exception ex)
             {
-                CoreFunction.AITrackException(functionName, ex, fusion.CompanyID);
-                //log.Error($"Company [{fusion.CompanyID}], Fusion ID [{fusion.FusionID}], LogFileName [{fusion.LogFileName}]: [{ex.GetFullExceptionData()}]");
+                CoreFunction.AITrackException(functionName, ex, fusion.CompanyID);                
             }
 
             CoreFunction.AIFlush();
-        }
-
-        static void executeWithTry(SqlConnection companyConnection, string lineageSql, int companyID, int timeout = 1200)
-        {
-            try
-            {
-                companyConnection.Execute(lineageSql, null, null, timeout);
-            }
-            catch (Exception ex)
-            {
-                //logger.Error(lineageSql);
-                CoreFunction.AITrackException(functionName, ex, companyID);
-                //logger.Error(ex.GetFullExceptionData());
-            }
         }
     }
 }

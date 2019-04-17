@@ -201,8 +201,6 @@ namespace d360.model
 
         public DbSet<PolicyType> PolicyTypes { get; set; }
 
-        public DbSet<PolicyTypeLevel> PolicyTypeLevels { get; set; }
-
         public DbSet<Predicate> Predicates { get; set; }
 
         public DbSet<Question> Questions { get; set; }
@@ -253,9 +251,7 @@ namespace d360.model
 
         public DbSet<SurveyType> SurveyTypes { get; set; }
 
-        public DbSet<Taxonomy> Taxonomies { get; set; }
-
-        public DbSet<TaxonomyTypeLevel> TaxonomyTypeLevels { get; set; }
+        public DbSet<Taxonomy> Taxonomies { get; set; }        
 
         public DbSet<AssetTypeLevel> AssetTypeLevels { get; set; }
 
@@ -2099,6 +2095,11 @@ where	R.SourceObject = 'FusionAttribute'
         public void RebuildDisplayValuesRequest()
         {
             Enqueue(Config.GetValue<string>("DisplayValueQueue"), new DisplayUpdateInfo { CompanyID = CurrentCompanyID, RebuildAll = true });
+        }
+
+        public void RebuildIndexRequest()
+        {
+            Enqueue(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel { CompanyID = CurrentCompanyID });
         }
 
         private void addQE(List<EventInfo> events, ChangeType action, EventObjectInfo item)

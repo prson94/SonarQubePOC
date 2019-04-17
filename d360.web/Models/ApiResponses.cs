@@ -19,6 +19,15 @@ namespace d360.web.Models
         public string Uri { get; set; }
     }
 
+    public class ApiStatusResponse
+    {
+        public Guid Uid { get; set; }
+
+        public bool Success { get; set; }
+
+        public string Message { get; set; }
+    }
+
     public class ApiExecutionStatusModel
     {
         public int Total { get; set; }

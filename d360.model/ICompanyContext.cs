@@ -132,8 +132,7 @@ namespace d360.model
         DbSet<OrganizationResource> OrganizationResources { get; set; }
         DbSet<Organization> Organizations { get; set; }
         DbSet<OrganizationType> OrganizationTypes { get; set; }
-        DbSet<Policy> Policies { get; set; }
-        DbSet<PolicyTypeLevel> PolicyTypeLevels { get; set; }
+        DbSet<Policy> Policies { get; set; }        
         DbSet<PolicyType> PolicyTypes { get; set; }
         DbSet<Predicate> Predicates { get; set; }
         DbSet<Question> Questions { get; set; }
@@ -167,8 +166,7 @@ namespace d360.model
         DbSet<SiteNavPermission> SiteNavPermissions { get; set; }
         DbSet<Survey> Surveys { get; set; }
         DbSet<SurveyType> SurveyTypes { get; set; }
-        DbSet<Taxonomy> Taxonomies { get; set; }
-        DbSet<TaxonomyTypeLevel> TaxonomyTypeLevels { get; set; }
+        DbSet<Taxonomy> Taxonomies { get; set; }        
         DbSet<TaxonomyType> TaxonomyTypes { get; set; }
         DbSet<WorkflowEventRegistration> WorkflowEventRegistrations { get; set; }
         DbSet<WorkflowItemAssignment> WorkflowItemAssignments { get; set; }
@@ -289,6 +287,7 @@ namespace d360.model
         IEnumerable<T> Query<T>(string sql, object param = null, int timeout = 90);
         Task<IEnumerable<T>> QueryAsync<T>(string sql, object param = null, int timeout = 90);
         void RebuildDisplayValuesRequest();
+        void RebuildIndexRequest();
         List<DatabaseBulkAssetResult> RemoveAssets(ApiExecution execution, AssetType at, AssetDeletes import, int timeout = 3600);
         void RemoveResponsibilityTypeRelation(ResponsibilityTypeRelation relation);
         string RenderTooltip(string action, SystemObjects type, int id);

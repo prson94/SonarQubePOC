@@ -17,6 +17,8 @@ namespace d360.core.entities
 
         public bool IsLookup { get; set; }
 
+        public int? FieldTypeId { get; set; }  
+
         public bool AllowMultipleValues { get; set; }
 
         public List<BulkLoadGetLoadColumnModelValue> Lookups { get; set; }

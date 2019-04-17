@@ -42,9 +42,7 @@ namespace d360.core.entities
 
         [IgnoreDataMember, ForeignKey("TaxonomyTypeID")]
         public virtual ICollection<Taxonomy> Taxonomies { get; set; }
-
-        [IgnoreDataMember, ForeignKey("TaxonomyTypeID")]
-        public virtual ICollection<TaxonomyTypeLevel> TaxonomyTypeLevels { get; set; }
+        
 
         #endregion
 
