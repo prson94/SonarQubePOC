@@ -71,6 +71,12 @@ namespace d360.core
         public bool ReadOnly { get; set; }
     }
 
+    public class AllowedConversionOption
+    {
+        public string FromType { get; set; }
+        public string ToType { get; set; }
+    }
+
     public static class DataTypeExtensions
     {
         public static List<DataTypeInfo> GetDataTypeInfoList(this DataType type)
@@ -119,5 +125,16 @@ namespace d360.core
             return list;
         }
 
+        public static List<AllowedConversionOption> GetAllowedConversionOptions(this DataType type)
+        {
+            return new List<AllowedConversionOption>() {
+                new AllowedConversionOption { FromType = "Boolean", ToType = "Text" },
+                new AllowedConversionOption { FromType = "Date", ToType = "DateWithTime" },
+                new AllowedConversionOption { FromType = "Decimal", ToType = "Percentage" },
+                new AllowedConversionOption { FromType = "Number", ToType = "Decimal" },
+                new AllowedConversionOption { FromType = "Number", ToType = "Percentage" },
+                new AllowedConversionOption { FromType = "Text", ToType = "Html" }
+            };
+        }
     }
 }
