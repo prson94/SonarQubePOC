@@ -22,7 +22,7 @@ import { SubscriptionLike as ISubscription } from 'rxjs';
                                 [minLength]="1"  
                                 (onSelect)="selectItem()">                       
                             <ng-template let-result>
-                                <div style="padding:5px 0;">                                
+                                <div style="padding:10px 0;">                                
                                    <div class="tt-suggestion tt-selectable"><span style="color:#999;">{{result.Type}}:</span> {{result.DisplayName}}</div>
                                 </div>                            
                             </ng-template>
@@ -61,7 +61,8 @@ export class HeaderTypeaheadSearchComponent implements OnDestroy {
             .subscribe(data => {
                 this.results = data;
                 this.ref.markForCheck();
-        });
+            });
+        
     }
 
     show(item) {
@@ -76,7 +77,7 @@ export class HeaderTypeaheadSearchComponent implements OnDestroy {
 
             panel.style.zIndex = 1000;
 
-            panel.style.top = (item.offsetHeight - 1) + 'px'; // -1 for the border so it blends
+            //panel.style.top = (item.offsetHeight - 1) + 'px'; // -1 for the border so it blends
             panel.style.right = '0px';
 
             //focus the input so user can just type

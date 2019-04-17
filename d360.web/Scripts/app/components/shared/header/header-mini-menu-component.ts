@@ -21,13 +21,13 @@ declare var CompanySettings;
                         <div class="row">          
                             <ul>
                                 <li class="header-item"><d3s-header-profile></d3s-header-profile></li>
+                                <li class="header-item" *ngIf="headerActionsService.showHelp"><d3s-header-help></d3s-header-help></li>
                                 <li *ngIf="hasRaiseIssueButton" (click)="raiseIssue()" class="header-item">Take Action</li>
                                 <li *ngIf="showShoppingCart" routerLink="/cart" class="header-item">Shopping Cart</li>
                                 <li class="header-item" *ngIf="headerActionsService.showFavorite && !isAdminUrl" ><d3s-header-favorites [uri]="uri" [favItems]="favItems" [currentObject]="currentObject" [currentObjectId]="currentObjectId"></d3s-header-favorites></li>
                                 <li class="header-item" *ngIf="headerActionsService.showFavorite && !isAdminUrl" ><d3s-header-homepage [uri]="uri" [favItems]="favItems" [currentObject]="currentObject" [currentObjectId]="currentObjectId"></d3s-header-homepage></li>
                                 <li class="header-item" *ngIf="headerActionsService.showFollow  && !isAdminUrl" ><d3s-header-follow></d3s-header-follow></li>                    
-                                <li class="header-item" *ngIf="headerActionsService.showHelp"><d3s-header-help></d3s-header-help></li>
-                                <li class="header-item" *ngIf="headerActionsService.showNotifications"><a href="#" title="Go to notification settings"><i class="fa fa-bell-o"></i></a></li>
+                                <li class="header-item" *ngIf="headerActionsService.showNotifications"><a href="#" title="Go to notification settings"><i class="fa fa-bell-o"></i>Notifications</a></li>
                             </ul>                                                    
                         </div>
                     </div>

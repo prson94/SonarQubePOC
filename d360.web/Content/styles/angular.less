@@ -49,6 +49,8 @@ nav.top {
     height: 40px;
     background: @igx-nav-color;
     border-bottom: 1px solid rgba(0, 0, 0, 0.15) !important;
+    display:flex;
+    flex-wrap:nowrap;
 
     a {
         color: @primary-nav;
@@ -837,6 +839,12 @@ a.breadcrumb {
     }
 }
 
+.searchTypeahead {
+    .ui-autocomplete-panel {
+        top: 40px !important;
+    }
+}
+
 
 .header-search-input {
     display: inline-flex;
@@ -858,7 +866,7 @@ a.breadcrumb {
         min-width: 80px;
         width: 80px;
         outline: none;
-        width: 200px;
+        width: 300px;
 
         &.placeholder {
             color: #bbbbbb;

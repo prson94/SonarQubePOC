@@ -25,7 +25,7 @@ declare var CompanySettings;
                                 <li [routerLink]="resourceUrl()" class="header-item">Edit Profile</li>
                                 <li *ngIf="showAllUsersAPIKey" [routerLink]="'/resource/my/apikey'" class="header-item">API Key</li>
                                 <li *ngIf="!singleSignOn"  [routerLink]="'/resource/'+resourceId+'/changepassword'" class="header-item">Change Password</li>
-                                <li class="header-item"><a href="/slo" title="Sign out"></a></li>
+                                <li class="header-item"><a href="/slo" title="Sign out"></a>Sign Out</li>
                             </ul>                                                    
                         </div>
                     </div>
@@ -86,7 +86,10 @@ export class HeaderProfileComponent implements OnInit , OnDestroy{
 
             menuPanel.style.top = (item.offsetHeight - 1) + 'px'; // -1 for the border so it blends
             menuPanel.style.right = (dims.width + 11) + 'px';
-            
+            if (dims.width > 0) {
+                menuPanel.style.top = '-10px';
+                menuPanel.style['border-right'] = 'none';
+            }
         }
     }
 
