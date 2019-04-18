@@ -145,20 +145,60 @@ namespace d360.web.Controllers.V2
 
 
         #region Endpoints
-        [Route("_intersectTypeItems/{id:int}/excel.xls"), FileDownload, HttpGet]
-        public IHttpActionResult _IntersectTypeItemsExcel(int id)
+        /// <summary>
+        /// GET a list of relationships.
+        /// </summary>
+        /// <param name="intersectTypeUid">Filter by an intersect's unique identifier.</param>
+        /// <returns>A excel file containing relationships.</returns>
+        [
+            HttpGet,
+            MapToApiVersion("2.0"),
+            Route("export/{intersectTypeUid}"),
+            FileDownload,
+            SwaggerConsumes("application/vnd.ms-excel"), SwaggerProduces("application/vnd.ms-excel"),
+            SwaggerResponse(HttpStatusCode.OK, "Exported realtionships to Excel.", typeof(List<PredicateTypeApiViewModel>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+        ]
+        public IHttpActionResult ExportToExcel(string intersectTypeUid)
         {
 
             var customColumns = Company.Query<string>(
                 @"select distinct  f.FriendlyName   as Name from fieldtype f  
-				inner join field f2 on f2.fieldtypeid = f.id 
-				 where f.[object] = 'IntersectType' and f.objectid = @id ", new { id = id });
+				inner join IntersectType IT on IT.uid = @uid
+				 where f.[object] = 'IntersectType' and f.objectid = IT.Id", new { uid = intersectTypeUid });
 
-            if (customColumns.Count() > 0) return IntersectTypeItemsExcelWithCustomColumns(id, customColumns);
+            string customColumnTableSQL = string.Empty;
+            string customColumnValuesSQL = string.Empty;
+
+            if ( customColumns.Count() > 0 )
+            {
+                customColumnTableSQL = @"DROP TABLE IF EXISTS tempdb.dbo.#TempFieldTable
+
+                            create table #TempFieldTable
+                            (
+                                ObjectId int, 
+                                FriendlyName Varchar(250), 
+                                FormattedValue varchar(250),
+	                            Id int
+                            )
+
+                            insert into #TempFieldTable
+                            select f2.ObjectID, f.FriendlyName,FormattedValue ,f2.id
+                            from fieldtype f  
+                            inner join field f2 on f2.fieldtypeid = f.id 
+                            where f.[object] = 'IntersectType'";
+                foreach ( var item in customColumns )
+                {
+                    customColumnValuesSQL += $",(Select FormattedValue from #TempFieldTable where ObjectId = I.Id and FriendlyName = '" + item.CleanForSql() + "') as '" + item.CleanForSql() + "'";
+                }
+
+            }
 
 
             var models = Company.Query<dynamic>(
-                @"select	I.ID as ID, 
+                customColumnTableSQL +
+                @"
+                select	I.ID as ID, 
 		                    S.Object as Subject,
 		                    S.ObjectId as SubjectID,
 		                    SDV.DisplayValue as SubjectName,
@@ -168,7 +208,8 @@ namespace d360.web.Controllers.V2
 		                    O.ObjectId as ObjectID,
 		                    ODV.DisplayValue as ObjectName,
 		                    OT.Name as ObjectTypeName
-		                    from	[Intersect] I
+                        " + customColumnValuesSQL + @" 
+                           from	[Intersect] I
 				                    inner join IntersectType T on T.ID = I.IntersectTypeID
 				                    left outer join [Predicate] P on P.ID = T.PredicateID
 				                    inner join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID
@@ -177,7 +218,7 @@ namespace d360.web.Controllers.V2
 				                    inner join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID
 				                    inner join AssetType OT on OT.ID = O.AssetTypeID
                                     inner join AssetDisplayValue ODV on ODV.AssetId = O.Id
-                            and I.IntersectTypeID in (@id) ", new { id = id });
+                            and T.uid in (@Uid) ", new { Uid = intersectTypeUid });
 
             var document = new SLDocument();
             document.AddWorksheet("Items");
@@ -201,7 +242,7 @@ namespace d360.web.Controllers.V2
             #endregion
 
             int rowNumber = 1;
-            foreach (var row in models)
+            foreach ( var row in models )
             {
                 index = 1;
                 rowNumber++;
@@ -215,89 +256,8 @@ namespace d360.web.Controllers.V2
                 document.SetCellValue(rowNumber, index++, (int)row.ObjectID);
                 document.SetCellValue(rowNumber, index++, (string)row.ObjectName);
                 document.SetCellValue(rowNumber, index++, (string)row.ObjectTypeName);
-            }
 
-            #endregion
-
-            var stream = new System.IO.MemoryStream();
-            document.SaveAs(stream);
-
-            var result = new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new ByteArrayContent(stream.GetBuffer())
-            };
-            result.Content.Headers.ContentLength = stream.Length;
-            result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
-            {
-                FileName = $"Relationship Type Items {DateTime.Now.ToShortDateString()}.xlsx"
-            };
-            result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-
-            return ResponseMessage(result);
-        }
-        #endregion
-
-        #region Private
-        private IHttpActionResult IntersectTypeItemsExcelWithCustomColumns(int id, IEnumerable<string> customColumns)
-        {
-
-            var customColumnName = "[" + customColumns.Aggregate((x, y) => x + "],[" + y) + "]";
-            var CteColumnName = "CTE.[" + customColumns.Aggregate((x, y) => x + "],CTE.[" + y) + "]";
-
-
-            var sql = @"WITH CTE (ObjectID, " + customColumnName +
-                ") AS ( SELECT ObjectId, " + customColumnName +
-                " FROM ( select f2.ObjectID, f.FriendlyName,FormattedValue from fieldtype f  " +
-                "inner join field f2 on f2.fieldtypeid = f.id where f.[object] = 'IntersectType'" +
-                " and f.objectid = @id  ) as PivotData " +
-                "PIVOT (max(FormattedValue) FOR FriendlyName IN (" + customColumnName + ") ) AS PivotResult) " +
-                "select i.ID, i.[Subject],i.SubjectID, i.SubjectName, i.SubjectTypeName, i.[Object], " +
-                "i.ObjectID, i.ObjectName, i.ObjectTypeName, i.PredicateName , " + CteColumnName +
-                " from  intersectdetail as i left join CTE  on CTE.ObjectID =i.id where intersecttypeid=@id ";
-            var models = Company.Query<dynamic>(sql, new { id = id });
-
-
-            var document = new SLDocument();
-            document.AddWorksheet("Items");
-
-            #region Create the list sheet
-
-            #region Header
-
-            int index = 1;
-            document.SetCellValue(1, index++, "Intersect ID");
-            document.SetCellValue(1, index++, "Subject Type");
-            document.SetCellValue(1, index++, "Subject ID");
-            document.SetCellValue(1, index++, "Subject Name");
-            document.SetCellValue(1, index++, "Subject Type Name");
-            document.SetCellValue(1, index++, "Predicate");
-            document.SetCellValue(1, index++, "Object Type");
-            document.SetCellValue(1, index++, "Object ID");
-            document.SetCellValue(1, index++, "Object Name");
-            document.SetCellValue(1, index++, "Object Type Name");
-            foreach (var col in customColumns)
-            {
-                document.SetCellValue(1, index++, col);
-            }
-
-            #endregion
-
-            int rowNumber = 1;
-            foreach (var row in models)
-            {
-                index = 1;
-                rowNumber++;
-                document.SetCellValue(rowNumber, index++, (int)row.ID);
-                document.SetCellValue(rowNumber, index++, (string)row.Subject);
-                document.SetCellValue(rowNumber, index++, (int)row.SubjectID);
-                document.SetCellValue(rowNumber, index++, (string)row.SubjectName);
-                document.SetCellValue(rowNumber, index++, (string)row.SubjectTypeName);
-                document.SetCellValue(rowNumber, index++, (string)row.PredicateName);
-                document.SetCellValue(rowNumber, index++, (string)row.Object);
-                document.SetCellValue(rowNumber, index++, (int)row.ObjectID);
-                document.SetCellValue(rowNumber, index++, (string)row.ObjectName);
-                document.SetCellValue(rowNumber, index++, (string)row.ObjectTypeName);
-                foreach (var col in customColumns)
+                foreach ( var col in customColumns )
                 {
                     var data = (IDictionary<string, object>)row;
                     document.SetCellValue(rowNumber, index++, (string)data[col]);
@@ -316,13 +276,15 @@ namespace d360.web.Controllers.V2
             result.Content.Headers.ContentLength = stream.Length;
             result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
             {
-                FileName = $"Relationship Type Items {System.DateTime.Now.ToShortDateString()}.xlsx"
+                FileName = $"Relationship Type Items {DateTime.Now.ToShortDateString()}.xlsx"
             };
-            result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
 
             return ResponseMessage(result);
         }
         #endregion
+
+
         /// <summary>
         /// GET a list of relationships.
         /// </summary>
