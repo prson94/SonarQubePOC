@@ -1,6 +1,6 @@
 
 import { debounceTime } from 'rxjs/operators';
-import { Input, Component, OnInit, OnDestroy, AfterViewInit, ViewChild, AfterViewChecked } from '@angular/core';
+import { Input, Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Location } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { NgForm, FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
@@ -28,7 +28,7 @@ import { FieldType } from '../../models/fields.model';
     providers: [WorkflowService, ResourcesService, TagService]
 })
 
-export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDestroy, AfterViewInit,AfterViewChecked {
+export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDestroy {
     private sub: any;
     private workflowId: number;
     private workflowItemStepId: number;
@@ -89,15 +89,9 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
         });
     }
 
-    ngAfterViewInit(): void {
-         window.setTimeout(() => {
-            this.setValidators();
-        }, 1000);
 
-    }
 
-    ngAfterViewChecked(): void {
-    }
+
 
     private setValidators() {
         if (this.isSetValidatior) return false;
@@ -169,7 +163,12 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
                     this.loadResources();
                 }
                 this.hasObjectReassign = (this.reassignAvailableTypes.length > 0);
-            }).catch(res => {
+            }).then(() => {
+                window.setTimeout(() => {
+                    this.setValidators();
+                }, 1500);
+            })
+            .catch(res => {
                 this.isLoading = false;
                 this.isCompleted = false;
                 this.isItemDeleted = true;
