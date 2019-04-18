@@ -2672,7 +2672,7 @@
         </member>
         <member name="T:d360.web.Controllers.V2.FusionController">
             <summary>
-            This service houses all endpoints handling glossary-related data such as artifacts and models.
+            This service houses all endpoints handling fusion specific activities.
             </summary>
         </member>
         <member name="M:d360.web.Controllers.V2.FusionController.Post(d360.core.entities.FusionStatusLog)">
