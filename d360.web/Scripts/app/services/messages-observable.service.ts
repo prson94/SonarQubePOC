@@ -46,12 +46,13 @@ export class MessagesObservableService {
 
         model = {Name: objError.name, Message: objError.message, Stack: objError.stack};
 
-        return this.http.post('api/v2/errors/log/clienterror', model)
-            .toPromise()
-            .then(() => Promise.resolve())
-            .catch(err => {
-                console.log('An error while logging error', err);
-            });
+        return this.http.post('api/v2/errors/log/clienterror', model).pipe(
+            map(() => {}),
+            catchError(error => {
+                console.log('An error while logging error', error);
+                return of(error);
+            })
+        );
     }
 
     saveClientError(error: HttpErrorResponse): Observable<any> {
