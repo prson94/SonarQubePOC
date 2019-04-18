@@ -146,28 +146,28 @@ namespace d360.web.Controllers.V2
             {
                 dbArgs.Add("@obj", obj);
                 dbArgs.Add("@objID", objID.Value);
-                whereClause += (string.IsNullOrEmpty(whereClause) ? " where " : " ") + $"FT.[Object] = @obj and FT.[ObjectID] = @objID";
+                whereClause += (string.IsNullOrEmpty(whereClause) ? " where " : " and ") + $"FT.[Object] = @obj and FT.[ObjectID] = @objID";
             }
 
             if (parameters.Any(q => q.Key.ToLower() == "name"))
             {
                 var fieldTypeName = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "name").Value.ToLower();
                 dbArgs.Add("@name", fieldTypeName);
-                whereClause += (string.IsNullOrEmpty(whereClause) ? " where " : " ") + $"lower(FT.[Name]) = @name";
+                whereClause += (string.IsNullOrEmpty(whereClause) ? " where " : " and ") + $"lower(FT.[Name]) = @name";
             }
 
             if (parameters.Any(q => q.Key.ToLower() == "friendlyname"))
             {
                 var fieldTypeFriendlyName = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "friendlyname").Value.ToLower();
                 dbArgs.Add("@fname", fieldTypeFriendlyName);
-                whereClause += (string.IsNullOrEmpty(whereClause) ? " where " : " ") + $"lower(FT.[FriendlyName]) = @fname";
+                whereClause += (string.IsNullOrEmpty(whereClause) ? " where " : " and ") + $"lower(FT.[FriendlyName]) = @fname";
             }
 
             if (parameters.Any(q => q.Key.ToLower() == "type"))
             {
                 var fieldTypeType = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "type").Value.ToLower();
                 dbArgs.Add("@type", fieldTypeType);
-                whereClause += (string.IsNullOrEmpty(whereClause) ? " where " : " ") + $"lower(FT.[Type]) = @type";
+                whereClause += (string.IsNullOrEmpty(whereClause) ? " where " : " and ") + $"lower(FT.[Type]) = @type";
             }
 
             if (parameters.Any(q => q.Key.ToLower() == "_pagenum"))
@@ -472,6 +472,9 @@ for json path, WITHOUT_ARRAY_WRAPPER";
         /// <summary>
         /// Retrieves field types contained within your environment.
         /// </summary>
+        /// <remarks>
+        /// If using Uid parameters, you may only provide one of the following: ActionTypeUid, AssetTypeUid, or RelationshipTypeUid.
+        /// </remarks>
         /// <param name="AssetTypeUid">The asset type Uid to retrieve field types for.</param>
         /// <param name="RelationshipTypeUid">The relationship type Uid to retrieve field types for.</param>
         /// <param name="Name">The API Name to search for.</param>
@@ -519,8 +522,11 @@ for json path, WITHOUT_ARRAY_WRAPPER";
         }
 
         /// <summary>
-        /// Retrieves field types contained within your environment.
+        /// Adds or updates field types contained within your environment based on a specified ActionTypeUid, AssetTypeUid, or RelationshipTypeUid.
         /// </summary>
+        /// <remarks>
+        /// You may only provide one of the following: ActionTypeUid, AssetTypeUid, or RelationshipTypeUid.
+        /// </remarks>
         /// <returns>A list of field types corresponding to the given criteria, if any.</returns>
         [
             HttpPut,
