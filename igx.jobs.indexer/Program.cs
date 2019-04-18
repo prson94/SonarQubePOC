@@ -295,7 +295,7 @@ namespace igx.jobs.indexer
 					inner join [dbo].AssetDisplayValue SubjectAdv on SubjectAdv.AssetID = SubjectAsset.ID
 	                inner join Asset ObjectAsset on ObjectAsset.[Object] = 'Artifact' and ObjectAsset.ObjectID = I.ObjectID and I.Object = 'Artifact'
 					inner join [dbo].AssetDisplayValue ObjectAdv on ObjectAdv.AssetID = ObjectAsset.ID
-	                inner join AssetType ArtType on ObjectArt.AssetTypeID = ArtType.ID)
+	                inner join AssetType ArtType on ObjectAsset.AssetTypeID = ArtType.ID)
                 Union
                 (select	
 	                SubjectAdv.DisplayValue as 'Synonym',	
@@ -314,8 +314,8 @@ namespace igx.jobs.indexer
 					inner join [dbo].AssetDisplayValue SubjectAdv on SubjectAdv.AssetID = SubjectAsset.ID
 	                inner join Asset ObjectAsset on ObjectAsset.[Object] = 'Artifact' and ObjectAsset.ObjectID = I.SubjectID and I.Object = 'Artifact'
 					inner join [dbo].AssetDisplayValue ObjectAdv on ObjectAdv.AssetID = ObjectAsset.ID
-	                inner join AssetType ArtType on ObjectArt.AssetTypeID = ArtType.ID)
-                order by ObjectArt.DisplayValue";
+	                inner join AssetType ArtType on ObjectAsset.AssetTypeID = ArtType.ID)
+                order by SynonymFor";
 
             return getData(context, sql, companyID, source, "", false, (dynamic o) =>
             {
@@ -536,7 +536,8 @@ select
 	A.ObjectID as ID,
 	att.ObjectID as TypeID,
 	adv.DisplayValue,
-	att.Name as TypeName
+	att.Name as TypeName,
+	a.uid as Uid
 from
 	[dbo].Asset a
 	inner join [dbo].assettype att on a.assettypeid = att.id
@@ -559,6 +560,7 @@ where
                     Fields = new Dictionary<string, string>() {
                         { "Name", o.DisplayValue },
                         { "Type", o.TypeName },
+                        { "Uid", o.Uid },
                         { "Description", "" },
                         { "Status", "Active" },
                         { "Taxonomy", "" }
@@ -597,9 +599,10 @@ from	AttributeDetail AD
         {
             var sql = @"
 SELECT	A.ObjectID as ID,
-		T.ID as TypeID,
+		T.ObjectID as TypeID,
 		D.DisplayValue,
-		T.Name as TypeName
+		T.Name as TypeName,
+		A.uid as Uid
 FROM	[dbo].Asset A
 		INNER JOIN [dbo].AssetType T on A.AssetTypeID = T.id
 		INNER JOIN [dbo].AssetDisplayValue D on D.AssetID = A.ID
@@ -621,6 +624,7 @@ WHERE	T.Object = 'TaxonomyType'
                     Fields = new Dictionary<string, string>() {
                         { "Name", o.DisplayValue },
                         { "Type", o.TypeName },
+                        { "Uid", o.Uid },
                         { "Description", "" },
                         { "TextPath", o.DisplayValue ?? "" }
                     }
