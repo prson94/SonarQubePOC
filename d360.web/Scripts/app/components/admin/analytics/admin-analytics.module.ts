@@ -36,6 +36,7 @@ import {
     TreeTableModule,
     TooltipModule,
 } from 'primeng/primeng';
+import { ToggleButtonModule } from 'primeng/togglebutton';
 import {InputTextareaModule} from 'primeng/inputtextarea';
 import {TableModule} from 'primeng/table';
 import {SimpleAccordionModule} from '../../shared/simple-accordion.part';
@@ -59,6 +60,7 @@ import {GovernPostRequestInterceptor} from "../../../http-interceptors/govern-po
         EditorModule,
         CheckboxModule,
         InputTextModule,
+        ToggleButtonModule,
         InputTextareaModule,
         MultiSelectModule,
         RadioButtonModule,

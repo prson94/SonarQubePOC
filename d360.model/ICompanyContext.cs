@@ -60,8 +60,7 @@ namespace d360.model
         DbSet<FieldTypeFilteredLookupDisplayField> FieldTypeFilteredLookupDisplayFields { get; set; }
         DbSet<FieldTypeFusionLookupDefinition> FieldTypeFusionLookupDefinitions { get; set; }
         DbSet<FieldTypeFusionLookupDisplayField> FieldTypeFusionLookupDisplayFields { get; set; }
-        DbSet<FieldTypeLookup> FieldTypeLookups { get; set; }
-        DbSet<FieldTypeLookupValue> FieldTypeLookupValues { get; set; }
+        DbSet<FieldTypeLookup> FieldTypeLookups { get; set; }        
         DbSet<FieldType> FieldTypes { get; set; }
         DbSet<FieldValue> FieldValues { get; set; }
         DbSet<FieldWithRelation> FieldWithRelations { get; set; }
@@ -133,8 +132,7 @@ namespace d360.model
         DbSet<OrganizationResource> OrganizationResources { get; set; }
         DbSet<Organization> Organizations { get; set; }
         DbSet<OrganizationType> OrganizationTypes { get; set; }
-        DbSet<Policy> Policies { get; set; }
-        DbSet<PolicyTypeLevel> PolicyTypeLevels { get; set; }
+        DbSet<Policy> Policies { get; set; }        
         DbSet<PolicyType> PolicyTypes { get; set; }
         DbSet<Predicate> Predicates { get; set; }
         DbSet<Question> Questions { get; set; }
@@ -168,8 +166,7 @@ namespace d360.model
         DbSet<SiteNavPermission> SiteNavPermissions { get; set; }
         DbSet<Survey> Surveys { get; set; }
         DbSet<SurveyType> SurveyTypes { get; set; }
-        DbSet<Taxonomy> Taxonomies { get; set; }
-        DbSet<TaxonomyTypeLevel> TaxonomyTypeLevels { get; set; }
+        DbSet<Taxonomy> Taxonomies { get; set; }        
         DbSet<TaxonomyType> TaxonomyTypes { get; set; }
         DbSet<WorkflowEventRegistration> WorkflowEventRegistrations { get; set; }
         DbSet<WorkflowItemAssignment> WorkflowItemAssignments { get; set; }
