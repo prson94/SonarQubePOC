@@ -2857,10 +2857,11 @@
             </summary>
             <returns>Returns a list of asset type classes.</returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.AssetsController.GetAssetTypesAsync">
+        <member name="M:d360.web.Controllers.V2.AssetsController.GetAssetTypesAsync(System.Nullable{d360.core.enums.AssetTypeClass})">
             <summary>
             GET a list of asset types.
             </summary>
+            <param name="_assetTypeClass">Allows for filtering the Asset type's by Class.</param>
             <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.V2.AssetsController.GetAssetsAsync(System.Guid)">
