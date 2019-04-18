@@ -160,7 +160,7 @@ GO
   </changeSet>
 
 
-  <changeSet author="KMcNamee" id="GOV-7030-IntersectTypeName">
+  <changeSet author="KMcNamee" id="GOV-7030-IntersectTypeName-a">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -716,7 +716,7 @@ GO
     </rollback>
   </changeSet>
 
-  <changeSet author="KMcNamee" id="GOV-7030-INTERSECTTYPENAME">
+  <changeSet author="KMcNamee" id="GOV-7030-DERIVEINTERSECTTYPENAME">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
