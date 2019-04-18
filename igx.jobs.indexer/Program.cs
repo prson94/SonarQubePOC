@@ -536,7 +536,8 @@ select
 	A.ObjectID as ID,
 	att.ObjectID as TypeID,
 	adv.DisplayValue,
-	att.Name as TypeName
+	att.Name as TypeName,
+	a.uid as Uid
 from
 	[dbo].Asset a
 	inner join [dbo].assettype att on a.assettypeid = att.id
@@ -559,6 +560,7 @@ where
                     Fields = new Dictionary<string, string>() {
                         { "Name", o.DisplayValue },
                         { "Type", o.TypeName },
+                        { "Uid", o.Uid },
                         { "Description", "" },
                         { "Status", "Active" },
                         { "Taxonomy", "" }
@@ -599,7 +601,8 @@ from	AttributeDetail AD
 SELECT	A.ObjectID as ID,
 		T.ID as TypeID,
 		D.DisplayValue,
-		T.Name as TypeName
+		T.Name as TypeName,
+		A.uid as Uid
 FROM	[dbo].Asset A
 		INNER JOIN [dbo].AssetType T on A.AssetTypeID = T.id
 		INNER JOIN [dbo].AssetDisplayValue D on D.AssetID = A.ID
@@ -621,6 +624,7 @@ WHERE	T.Object = 'TaxonomyType'
                     Fields = new Dictionary<string, string>() {
                         { "Name", o.DisplayValue },
                         { "Type", o.TypeName },
+                        { "Uid", o.Uid },
                         { "Description", "" },
                         { "TextPath", o.DisplayValue ?? "" }
                     }
