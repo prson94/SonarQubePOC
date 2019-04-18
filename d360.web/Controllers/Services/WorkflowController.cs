@@ -3116,6 +3116,42 @@ order by wi.StartedOn desc";
             return result;
         }
 
+        [Route("resources"), HttpGet]
+        public HttpResponseMessage GetResources()
+        {
+            var queryParams = Request.GetQueryStrings();
+            string gbFilter = "";
+            string excludedResourceId = "-1";
+            queryParams.TryGetValue("gbfilter", out gbFilter);
+            queryParams.TryGetValue("excludedResourceId", out excludedResourceId);
+
+            var innerSql = $@"select FirstName + ' ' + LastName as [Text],  'Resource|' + cast(ResourceID as varchar) + '|' + FirstName + ' ' + LastName as [Value] from reporting.Global_resource where [State] = 1 and ResourceID <> @excludedResourceId";
+            var filter = "";
+            var dbArgs = new Dapper.DynamicParameters();
+
+            if (!string.IsNullOrEmpty(gbFilter))
+            {
+                filter = " and [Text] like '%' + @gbfilter + '%'";
+                dbArgs.Add("gbfilter", gbFilter);
+            }
+            dbArgs.Add("excludedResourceId", excludedResourceId);
+
+            var pagingSuffix = applyPagingSuffix("", Request);
+
+            var sql = $@"select * from ({innerSql}) users where 1=1 {filter} order by [Text] asc {pagingSuffix}";
+            var countSql = $@"select count(1) from ({innerSql}) users where 1=1 {filter}";
+            
+
+            var total = Company.Query<int>(countSql, dbArgs).First();
+            var results = Company.Query<dynamic>(sql, dbArgs);
+
+            return Request.CreateResponse(HttpStatusCode.OK, new
+            {
+                total,
+                results
+            });
+        }
+
         #region Helper Methods
 
         private string GetConditionLabels(string conditions)

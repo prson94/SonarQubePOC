@@ -499,6 +499,7 @@ export class WorkflowItemStep {
 
 export class BulkWorkflowFormModel {
     ItemStepIDs: number[] = [];
+    AsigneeResourceID: number = 0;
     Fields: WorkflowFormField[] = [];
 }
 

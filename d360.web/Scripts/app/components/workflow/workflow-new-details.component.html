@@ -1,5 +1,5 @@
 ﻿<d3s-loading [isLoading]="isLoading"></d3s-loading>
-<div class="row" *ngIf="!isLoading && !showBulkFormEditor">
+<div class="row" *ngIf="!isLoading && !showBulkFormEditor && !showBulkReassignEditor">
     <div class="col s12">
         <div class="tile tile-detail">
             <header>{{workflow?.Name}}<d3s-tile-actions [hasAdd]="false" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
@@ -94,10 +94,14 @@
             <div style="padding:10px">
                 <button *ngIf="hasCloseButton" pButton type="button" (click)="close();" label="Close" style="width: 150px;"></button>
                 <button pButton type="button" (click)="bulkRespond();" label="Bulk Respond" style="width: 150px;" [disabled]="selection == null || selection.length < 1 || !isMe"></button>
+                <button pButton type="button" (click)="bulkReassign();" label="Bulk Reassign" style="width: 150px;" [disabled]="selection == null || selection.length < 1"></button>
             </div>
         </div>
     </div>
 </div>
 <div *ngIf="!isLoading && showBulkFormEditor">
     <d3s-workflow-bulk-form [model]="bulkEditorModel" (onClose)="showBulkFormEditor = false;" (onComplete)="isLoading = true; close();"></d3s-workflow-bulk-form>
+</div>
+<div *ngIf="!isLoading && showBulkReassignEditor">
+    <d3s-workflow-bulk-reassign [model]="bulkEditorModel" [title]="assignmentSummary?.StepName + ' Reassignment'" (onClose)="showBulkReassignEditor = false;" (onComplete)="isLoading = true; close();"></d3s-workflow-bulk-reassign>
 </div>

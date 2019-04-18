@@ -31,6 +31,7 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
     private workflow: any;
     private selection: WorkflowAssignmentDetail[] = [];
     private showBulkFormEditor = false;
+    private showBulkReassignEditor = false;
     private bulkEditorModel: BulkWorkflowFormModel;
     private fromMail: boolean = false;
 
@@ -56,6 +57,7 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
             this.stepId = +params['stepId'];
             this.fromMail = params['fromMail'] === '1' ? true : false;
 
+            console.log(this.resourceID);
             this.isMe = this.resourceID ? this.resourceID == CurrentResourceID: true;
 
             this.headerBreadcrumbService.clearBreadcrumbs();    
@@ -95,6 +97,15 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
             } else if (this.selection.length == 1) {
                 this.open(this.selection[0]);
             }
+        }
+    }
+
+    private bulkReassign() {
+        if (this.selection != null) {
+            this.bulkEditorModel = new BulkWorkflowFormModel();
+            this.bulkEditorModel.ItemStepIDs = this.selection.map(i => i.ItemStepID);
+            this.bulkEditorModel.AsigneeResourceID = this.resourceID;
+            this.showBulkReassignEditor = true;
         }
     }
 

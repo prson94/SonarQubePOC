@@ -11,6 +11,7 @@ import { TilesModule  } from '../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 import { SharedGridSelectionInfoModule } from '../shared/grid-selection-info.component';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
+import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
 
 import { WorkflowComponent } from './workflow.component';
@@ -71,6 +72,7 @@ import { TableModule } from 'primeng/table';
         CoreModule,
         PipesModule,
         TilesModule,
+        D3SSharedModule,
         SharedGridPagingInfoModule,
         SharedGridSelectionInfoModule,
         SharedDynamicGridEditorModule,
