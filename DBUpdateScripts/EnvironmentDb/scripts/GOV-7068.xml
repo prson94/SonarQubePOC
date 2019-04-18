@@ -42,7 +42,7 @@ FROM SiteNav n
 WHERE n.Name = '#Home' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
 UNION ALL
 
-SELECT	n.Name as MenuID,
+SELECT	n.name as MenuID,
 		n.SortOrder,
 		0 as Feature,
 		n.Icon as Icon, 
@@ -50,22 +50,21 @@ SELECT	n.Name as MenuID,
 		n.Title as Title,
 		(		
 			select
-				FAT.name,
+				T.name,
 				AUrl.[Url] as [url],
 				0 as feature,		
-				dbo.ArtifactNgSiteNavigation(fat.id) as items
-					from	    ArtifactType FAT					
-						inner join AssetType T on T.Object = 'ArtifactType' and T.ObjectID = FAT.ID					
+				dbo.ArtifactNgSiteNavigation(T.ObjectID) as items
+					from AssetType T 
 						cross apply [dbo].[GetAssetTypeUrlById](T.ID) AUrl
-						left join SiteNav v on v.ObjectID = FAT.ID and v.Object = 'ArtifactType'
-					where 
-						not exists  (
+						left join SiteNav v on v.ObjectID = T.ObjectID and v.Object = 'ArtifactType'
+					WHERE not exists  (
 							select	IT.SubjectID
 							from	IntersectType IT 
-									inner join [Predicate] P on IT.Object = T.Object and IT.ObjectID = FAT.ID and P.ID = IT.PredicateID and P.Type = 3
+									inner join [Predicate] P on IT.Object = T.Object and IT.ObjectID = T.ObjectID and P.ID = IT.PredicateID and P.Type = 3
 							) 	
 							and v.ObjectID is null
-							Order By FAT.name
+							and T.Object = 'ArtifactType'
+							Order By T.name
 					FOR XML PATH('nav'), TYPE
 		) AS Items
 FROM SiteNav n
@@ -86,14 +85,14 @@ SELECT	n.Name as MenuID,
 					null as items
 			FROM	(
 					SELECT		TOP 1000
-								a.id,
-								a.name,
+								T.ObjectID,
+								T.Name,
 								dbo.GenerateAssetTypeUrl(T.ID) As url
-					FROM		TaxonomyType a
-								inner join AssetType T on T.Object = 'TaxonomyType' and T.objectID = a.id
-								left join SiteNav v on v.ObjectID = a.ID and v.Object = 'TaxonomyType'
+					FROM		AssetType T 
+								left join SiteNav v on v.ObjectID = T.ObjectID and v.Object = 'TaxonomyType'
 					WHERE		v.ObjectID is null
-					ORDER BY	a.name
+					and			T.Object = 'TaxonomyType'
+					ORDER BY	T.Name
 					) BG
 					FOR XML PATH('nav'), TYPE
 		) AS Items
@@ -114,14 +113,14 @@ SELECT	n.Name as MenuID,
 					null as items
 			FROM	(
 					SELECT		TOP 1000
-								a.id,
-								a.name,
+								T.ObjectID,
+								T.name,
 								dbo.GenerateAssetTypeUrl(T.ID) As url
-					FROM		PolicyType a
-								inner join AssetType T on T.Object = 'PolicyType' and T.ObjectID = a.ID
-								left join SiteNav v on v.ObjectID = a.ID and v.Object = 'PolicyType'
+					FROM		AssetType T 
+								left join SiteNav v on v.ObjectID = T.ObjectID and v.Object = 'PolicyType'
 					WHERE		v.ObjectID is null
-					ORDER BY	a.name
+					and T.Object = 'PolicyType' 
+					ORDER BY	T.name
 					) BG
 					FOR XML PATH('nav'), TYPE
 		) AS Items
