@@ -295,7 +295,7 @@ namespace igx.jobs.indexer
 					inner join [dbo].AssetDisplayValue SubjectAdv on SubjectAdv.AssetID = SubjectAsset.ID
 	                inner join Asset ObjectAsset on ObjectAsset.[Object] = 'Artifact' and ObjectAsset.ObjectID = I.ObjectID and I.Object = 'Artifact'
 					inner join [dbo].AssetDisplayValue ObjectAdv on ObjectAdv.AssetID = ObjectAsset.ID
-	                inner join AssetType ArtType on ObjectArt.AssetTypeID = ArtType.ID)
+	                inner join AssetType ArtType on ObjectAsset.AssetTypeID = ArtType.ID)
                 Union
                 (select	
 	                SubjectAdv.DisplayValue as 'Synonym',	
@@ -314,8 +314,8 @@ namespace igx.jobs.indexer
 					inner join [dbo].AssetDisplayValue SubjectAdv on SubjectAdv.AssetID = SubjectAsset.ID
 	                inner join Asset ObjectAsset on ObjectAsset.[Object] = 'Artifact' and ObjectAsset.ObjectID = I.SubjectID and I.Object = 'Artifact'
 					inner join [dbo].AssetDisplayValue ObjectAdv on ObjectAdv.AssetID = ObjectAsset.ID
-	                inner join AssetType ArtType on ObjectArt.AssetTypeID = ArtType.ID)
-                order by ObjectArt.DisplayValue";
+	                inner join AssetType ArtType on ObjectAsset.AssetTypeID = ArtType.ID)
+                order by SynonymFor";
 
             return getData(context, sql, companyID, source, "", false, (dynamic o) =>
             {
