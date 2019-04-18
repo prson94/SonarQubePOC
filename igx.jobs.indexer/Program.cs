@@ -597,7 +597,7 @@ from	AttributeDetail AD
         {
             var sql = @"
 SELECT	A.ObjectID as ID,
-		T.ID as TypeID,
+		T.ObjectID as TypeID,
 		D.DisplayValue,
 		T.Name as TypeName
 FROM	[dbo].Asset A
