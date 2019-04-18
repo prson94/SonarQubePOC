@@ -264,6 +264,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         f['@id'] = this.newField['@id'];
         f['@label'] = this.newField['@label'];
         f['@type'] = this.newField['@type'];
+        f['@required'] = this.newField['@required'];
         if (this.newField['@type'] == 'list')
             f['@referenceFieldId'] = this.newField['@referenceFieldId'];
         else
