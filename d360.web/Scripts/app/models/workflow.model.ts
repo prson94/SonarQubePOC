@@ -499,9 +499,19 @@ export class WorkflowItemStep {
 
 export class BulkWorkflowFormModel {
     ItemStepIDs: number[] = [];
-    AsigneeResourceID: number = 0;
     Fields: WorkflowFormField[] = [];
 }
+
+export class BulkWorkflowReassignModel {
+    ItemStepIDs: number[] = [];
+    OriginalAssigneeResourceID: number = -1;
+    OriginalAssigneeResourceName: string = '[unknown user]';
+    NewAssigneeResourceID: number = -1;
+    NewAssigneeResourceName: string = '';
+    StepName: string = 'Form';
+    SendFormEmails: boolean = true;
+}
+
 
 export class EmailTaskRecipientTypeInfo {
     ID: number;

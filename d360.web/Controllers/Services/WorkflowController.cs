@@ -3152,6 +3152,96 @@ order by wi.StartedOn desc";
             });
         }
 
+        [Route("ReassignWorkflowResource/bulk")]
+        public HttpResponseMessage BulkReassignForm(BulkWorkflowReassignModel model)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return Request.CreateErrorResponse(HttpStatusCode.Forbidden, "You do not have permission to bulk reassign.");
+
+            if (model == null || model.ItemStepIDs == null || model.ItemStepIDs.Count < 1)
+                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "The model is not valid.");
+
+            var resource = Company.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == model.NewAssigneeResourceID);
+
+            if (model.NewAssigneeResourceID < 0 || resource == null)
+                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Invalid resource id");
+
+            var itemSteps = Company.WorkflowItemSteps.Where(x => model.ItemStepIDs.Contains(x.ID)).Include(x => x.Item).Include(x => x.Step).ToList();
+
+            try
+            {
+                foreach (var itemStep in itemSteps)
+                {
+                    //ReassignWorkflowResource((int)itemStep.ID, resource.ResourceID);
+
+                    var fieldElement = XElement.Parse(itemStep.Fields);
+                    var reassigned = new XElement("Reassigned");
+                    reassigned.Add(new XAttribute("reassignType", "Resource"));
+                    fieldElement.Add(reassigned);
+                    itemStep.Fields = fieldElement.ToString();
+                    //Company.SaveChanges();
+
+                    var currentAssignment = Company.WorkflowItemAssignments.FirstOrDefault(x => x.ItemStepID == itemStep.ID);
+
+                    if (currentAssignment != null)
+                    {
+                        Company.WorkflowItemAssignments.Remove(currentAssignment);
+                        //Company.SaveChanges();
+                    }
+
+                    var assignment = new WorkflowItemAssignment
+                    {
+                        ItemStepID = itemStep.ID,
+                        ItemID = itemStep.ItemID,
+                        CreatedBy = Company.CurrentResourceID,
+                        CreatedOn = DateTime.UtcNow,
+                        ResourceObject = "Resource",
+                        ResourceObjectID = model.NewAssigneeResourceID,
+                        UpdatedBy = Company.CurrentResourceID,
+                        UpdatedOn = DateTime.UtcNow
+                    };
+
+                    Company.WorkflowItemAssignments.Add(assignment);
+
+                    if (model.SendFormEmails)
+                    {
+                        var obj = itemStep.Item.Object;
+                        var objId = itemStep.Item.ObjectID;
+
+                        if (obj.ToLower() == "issue")
+                        {
+                            var issue = Company.GetById<Issue>(objId);
+                            if (issue != null)
+                            {
+                                obj = issue.Object;
+                                objId = issue.ObjectID;
+                            }
+                        }
+
+                        var objectDetail = Company.GetObjectDetail(obj, objId);
+
+                        var objEventInfo = new EventObjectInfo()
+                        {
+                            ObjectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), objectDetail.Type),
+                            ObjectTypeID = objectDetail.TypeID,
+                            Object = (SystemObjects)Enum.Parse(typeof(SystemObjects), obj),
+                            ObjectID = objId,
+                        };
+
+                        Company.ExecuteStep(itemStep.ID, itemStep.ItemID, objEventInfo);
+                    }
+                }
+
+                Company.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex);
+            }
+
+            return Request.CreateResponse(HttpStatusCode.OK, new { success = true});
+        }
+
         #region Helper Methods
 
         private string GetConditionLabels(string conditions)

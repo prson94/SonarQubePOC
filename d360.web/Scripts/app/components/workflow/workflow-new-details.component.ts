@@ -3,7 +3,13 @@ import { Location } from '@angular/common';
 import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
-import { WorkflowType, WorkflowAssignmentDetail, WorkflowAssignmentSummary, BulkWorkflowFormModel } from '../../models/workflow.model';
+import {
+    WorkflowType,
+    WorkflowAssignmentDetail,
+    WorkflowAssignmentSummary,
+    BulkWorkflowFormModel,
+    BulkWorkflowReassignModel
+} from '../../models/workflow.model';
 import { Title } from '@angular/platform-browser';
 import { WorkflowService } from '../../services/workflow.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
@@ -33,6 +39,7 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
     private showBulkFormEditor = false;
     private showBulkReassignEditor = false;
     private bulkEditorModel: BulkWorkflowFormModel;
+    private bulkReassignModel: BulkWorkflowReassignModel;
     private fromMail: boolean = false;
 
     constructor(private route: ActivatedRoute,
@@ -57,7 +64,6 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
             this.stepId = +params['stepId'];
             this.fromMail = params['fromMail'] === '1' ? true : false;
 
-            console.log(this.resourceID);
             this.isMe = this.resourceID ? this.resourceID == CurrentResourceID: true;
 
             this.headerBreadcrumbService.clearBreadcrumbs();    
@@ -102,9 +108,10 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
 
     private bulkReassign() {
         if (this.selection != null) {
-            this.bulkEditorModel = new BulkWorkflowFormModel();
-            this.bulkEditorModel.ItemStepIDs = this.selection.map(i => i.ItemStepID);
-            this.bulkEditorModel.AsigneeResourceID = this.resourceID;
+            this.bulkReassignModel = new BulkWorkflowReassignModel();
+            this.bulkReassignModel.ItemStepIDs = this.selection.map(i => i.ItemStepID);
+            this.bulkReassignModel.OriginalAssigneeResourceID = isNaN(this.resourceID) ? CurrentResourceID : this.resourceID;
+            this.bulkReassignModel.StepName = this.assignmentSummary.StepName;
             this.showBulkReassignEditor = true;
         }
     }

@@ -103,5 +103,5 @@
     <d3s-workflow-bulk-form [model]="bulkEditorModel" (onClose)="showBulkFormEditor = false;" (onComplete)="isLoading = true; close();"></d3s-workflow-bulk-form>
 </div>
 <div *ngIf="!isLoading && showBulkReassignEditor">
-    <d3s-workflow-bulk-reassign [model]="bulkEditorModel" [title]="assignmentSummary?.StepName + ' Reassignment'" (onClose)="showBulkReassignEditor = false;" (onComplete)="isLoading = true; close();"></d3s-workflow-bulk-reassign>
+    <d3s-workflow-bulk-reassign [model]="bulkReassignModel" (onClose)="showBulkReassignEditor = false;" (onComplete)="isLoading = true; close();"></d3s-workflow-bulk-reassign>
 </div>

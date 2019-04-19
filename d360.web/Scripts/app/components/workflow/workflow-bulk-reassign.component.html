@@ -1,7 +1,7 @@
 ﻿<div class="row" *ngIf="!isLoading && !showBulkFormEditor && !showBulkReassignEditor">
     <div class="col s12">
         <div class="tile tile-detail">
-            <header>{{title}}</header>
+            <header>{{model?.StepName}} Reassignment</header>
             <div class="row" style="margin-bottom: 5px">
                 <div class="col s6 m10 l12">
                     <div>
@@ -18,21 +18,22 @@
             </div>
             <div class="row" style="margin-bottom: 5px">
                 <div class="col s6 m10 l12">
-                    <div *ngIf="selectedResourceName != null && selectedResourceName.length > 0">
+                    <div *ngIf="model?.NewAssigneeResourceID > -1">
                         <div class="col s6 m10 l12">
-                            {{selectedResourceName}} will replace {{model?.AssigneeName}} responsible for responding to {{model?.ItemStepIDs?.length}} forms.
+                            {{model?.NewAssigneeResourceName}} will replace {{model?.OriginalAssigneeResourceName}} responsible for responding to {{model?.ItemStepIDs?.length}} forms.
                         </div>
                     </div>
                 </div>
             </div>
             <div class="row" style="margin-bottom: 5px">
                 <div class="col s6 m10 l12">
-                    <input type="checkbox" pCheckbox [(ngModel)]="sendFormEmails" /> Do not send form emails (leave unchecked to send out {{model?.ItemStepIDs?.length}} notification emails to this user)
+                    <p-checkbox [(ngModel)]="dontSendFormEmails" binary="true"></p-checkbox> 
+                    Do not send form emails (leave unchecked to send out {{model?.ItemStepIDs?.length}} notification emails to this user)
                 </div>
             </div>
             <div class="row">
                 <div class="col s6 m10 l12">
-                    <button pButton type="submit" label="Submit" style="width: 150px;" [disabled]="!valid()"></button>
+                    <button pButton type="submit" (click)="save()" label="Submit" style="width: 150px;" [disabled]="!valid()"></button>
                     <button pButton type="button" (click)="onClose.emit()" label="Close" style="width: 150px;"></button>
                 </div>
             </div>
