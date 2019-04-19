@@ -73,7 +73,7 @@ namespace d360.web.Controllers.V2
                 if (Guid.TryParse(actionTypeUidString, out ac))
                 {
                     actionTypeUid = ac;
-                    var actionType = Company.Filter<IssueType>(i => i.ID == 0).SingleOrDefault();
+                    var actionType = Company.Filter<IssueType>(i => i.uid == actionTypeUid).SingleOrDefault();
                     if (actionType != null)
                     {
                         obj = "IssueType";
@@ -146,28 +146,28 @@ namespace d360.web.Controllers.V2
             {
                 dbArgs.Add("@obj", obj);
                 dbArgs.Add("@objID", objID.Value);
-                whereClause += (string.IsNullOrEmpty(whereClause) ? " where " : " ") + $"FT.[Object] = @obj and FT.[ObjectID] = @objID";
+                whereClause += (string.IsNullOrEmpty(whereClause) ? " where " : " and ") + $"FT.[Object] = @obj and FT.[ObjectID] = @objID";
             }
 
             if (parameters.Any(q => q.Key.ToLower() == "name"))
             {
                 var fieldTypeName = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "name").Value.ToLower();
                 dbArgs.Add("@name", fieldTypeName);
-                whereClause += (string.IsNullOrEmpty(whereClause) ? " where " : " ") + $"lower(FT.[Name]) = @name";
+                whereClause += (string.IsNullOrEmpty(whereClause) ? " where " : " and ") + $"lower(FT.[Name]) = @name";
             }
 
             if (parameters.Any(q => q.Key.ToLower() == "friendlyname"))
             {
                 var fieldTypeFriendlyName = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "friendlyname").Value.ToLower();
                 dbArgs.Add("@fname", fieldTypeFriendlyName);
-                whereClause += (string.IsNullOrEmpty(whereClause) ? " where " : " ") + $"lower(FT.[FriendlyName]) = @fname";
+                whereClause += (string.IsNullOrEmpty(whereClause) ? " where " : " and ") + $"lower(FT.[FriendlyName]) = @fname";
             }
 
             if (parameters.Any(q => q.Key.ToLower() == "type"))
             {
                 var fieldTypeType = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "type").Value.ToLower();
                 dbArgs.Add("@type", fieldTypeType);
-                whereClause += (string.IsNullOrEmpty(whereClause) ? " where " : " ") + $"lower(FT.[Type]) = @type";
+                whereClause += (string.IsNullOrEmpty(whereClause) ? " where " : " and ") + $"lower(FT.[Type]) = @type";
             }
 
             if (parameters.Any(q => q.Key.ToLower() == "_pagenum"))
@@ -217,7 +217,7 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Boolean' then FT.ColumnOrder else null end as 'Type.Boolean.ColumnOrder',
 		        case when FT.Type = 'Boolean' then FT.ColumnWidth else null end as 'Type.Boolean.ColumnWidth',
 		        case when FT.Type = 'Boolean' then FT.SortOrder else null end as 'Type.Boolean.SortOrder',
-		        case when FT.Type = 'Boolean' then FT.DefaultValue else null end as 'Type.Boolean.DefaultValue',
+		        case when FT.Type = 'Boolean' then TRY_CAST(FT.DefaultValue as bit) else null end as 'Type.Boolean.DefaultValue',
 		        case when FT.Type = 'Boolean' then FT.DisplayDescription else null end as 'Type.Boolean.Description.Display',
 		        case when FT.Type = 'Boolean' then FT.FormDescription else null end as 'Type.Boolean.Description.Form',
 		        case when FT.Type = 'Boolean' then FT.IsDisplayable else null end as 'Type.Boolean.IsDisplayable',
@@ -291,7 +291,7 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Date' then FT.ColumnOrder else null end as 'Type.Date.ColumnOrder',
 		        case when FT.Type = 'Date' then FT.ColumnWidth else null end as 'Type.Date.ColumnWidth',
 		        case when FT.Type = 'Date' then FT.SortOrder else null end as 'Type.Date.SortOrder',
-		        case when FT.Type = 'Date' then FT.DefaultValue else null end as 'Type.Date.DefaultValue',
+		        case when FT.Type = 'Date' then TRY_CAST(FT.DefaultValue as date) else null end as 'Type.Date.DefaultValue',
 		        case when FT.Type = 'Date' then FT.DisplayDescription else null end as 'Type.Date.Description.Display',
 		        case when FT.Type = 'Date' then FT.FormDescription else null end as 'Type.Date.Description.Form',
 		        case when FT.Type = 'Date' then FT.IsRequired else null end as 'Type.Date.Validation.IsRequired',
@@ -306,7 +306,7 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'DateTime' then FT.ColumnOrder else null end as 'Type.DateTime.ColumnOrder',
 		        case when FT.Type = 'DateTime' then FT.ColumnWidth else null end as 'Type.DateTime.ColumnWidth',
 		        case when FT.Type = 'DateTime' then FT.SortOrder else null end as 'Type.DateTime.SortOrder',
-		        case when FT.Type = 'DateTime' then FT.DefaultValue else null end as 'Type.DateTime.DefaultValue',
+		        case when FT.Type = 'DateTime' then TRY_CAST(FT.DefaultValue as datetime) else null end as 'Type.DateTime.DefaultValue',
 		        case when FT.Type = 'DateTime' then FT.DisplayDescription else null end as 'Type.DateTime.Description.Display',
 		        case when FT.Type = 'DateTime' then FT.FormDescription else null end as 'Type.DateTime.Description.Form',
 		        case when FT.Type = 'DateTime' then FT.IsRequired else null end as 'Type.DateTime.Validation.IsRequired',
@@ -321,7 +321,7 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Decimal' then FT.ColumnOrder else null end as 'Type.Decimal.ColumnOrder',
 		        case when FT.Type = 'Decimal' then FT.ColumnWidth else null end as 'Type.Decimal.ColumnWidth',
 		        case when FT.Type = 'Decimal' then FT.SortOrder else null end as 'Type.Decimal.SortOrder',
-		        case when FT.Type = 'Decimal' then FT.DefaultValue else null end as 'Type.Decimal.DefaultValue',
+		        case when FT.Type = 'Decimal' then TRY_CAST(FT.DefaultValue as decimal) else null end as 'Type.Decimal.DefaultValue',
 		        case when FT.Type = 'Decimal' then FT.DisplayDescription else null end as 'Type.Decimal.Description.Display',
 		        case when FT.Type = 'Decimal' then FT.FormDescription else null end as 'Type.Decimal.Description.Form',
 		        case when FT.Type = 'Decimal' then FT.Increment else null end as 'Type.Decimal.Increment',
@@ -400,7 +400,7 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Number' then FT.ColumnOrder else null end as 'Type.Number.ColumnOrder',
 		        case when FT.Type = 'Number' then FT.ColumnWidth else null end as 'Type.Number.ColumnWidth',
 		        case when FT.Type = 'Number' then FT.SortOrder else null end as 'Type.Number.SortOrder',
-		        case when FT.Type = 'Number' then FT.DefaultValue else null end as 'Type.Number.DefaultValue',
+		        case when FT.Type = 'Number' then TRY_CAST(FT.DefaultValue as int) else null end as 'Type.Number.DefaultValue',
 		        case when FT.Type = 'Number' then FT.DisplayDescription else null end as 'Type.Number.Description.Display',
 		        case when FT.Type = 'Number' then FT.FormDescription else null end as 'Type.Number.Description.Form',
 		        case when FT.Type = 'Number' then FT.Increment else null end as 'Type.Number.Increment',
@@ -472,8 +472,12 @@ for json path, WITHOUT_ARRAY_WRAPPER";
         /// <summary>
         /// Retrieves field types contained within your environment.
         /// </summary>
+        /// <remarks>
+        /// If using Uid parameters, you may only provide one of the following: ActionTypeUid, AssetTypeUid, or RelationshipTypeUid.
+        /// </remarks>
         /// <param name="AssetTypeUid">The asset type Uid to retrieve field types for.</param>
         /// <param name="RelationshipTypeUid">The relationship type Uid to retrieve field types for.</param>
+        /// /// <param name="ActionTypeUid">The action type Uid to retrieve field types for.</param>
         /// <param name="Name">The API Name to search for.</param>
         /// <param name="FriendlyName">The Friendly Name to search for.</param>
         /// <param name="Type">The data type to search for.</param>
@@ -488,8 +492,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
-        public async Task<HttpResponseMessage> GetFieldTypesAsync(Guid? AssetTypeUid = null, Guid? RelationshipTypeUid = null, 
-            //Guid? ActionTypeUid = null, 
+        public async Task<HttpResponseMessage> GetFieldTypesAsync(Guid? AssetTypeUid = null, Guid? RelationshipTypeUid = null, Guid? ActionTypeUid = null, 
             string Name = "", string FriendlyName = "", DataType? Type = null, int? _pageSize = null, int? _pageNum = null)
         {
             var prefix = "Fields.GetFieldTypesAsync => ";
@@ -519,8 +522,11 @@ for json path, WITHOUT_ARRAY_WRAPPER";
         }
 
         /// <summary>
-        /// Retrieves field types contained within your environment.
+        /// Adds or updates field types contained within your environment based on a specified ActionTypeUid, AssetTypeUid, or RelationshipTypeUid.
         /// </summary>
+        /// <remarks>
+        /// You may only provide one of the following: ActionTypeUid, AssetTypeUid, or RelationshipTypeUid.
+        /// </remarks>
         /// <returns>A list of field types corresponding to the given criteria, if any.</returns>
         [
             HttpPut,

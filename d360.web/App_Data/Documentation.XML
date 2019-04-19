@@ -2384,12 +2384,16 @@
             This service houses all endpoints handling glossary-related data such as artifacts and models.
             </summary>
         </member>
-        <member name="M:d360.web.Controllers.V2.FieldsController.GetFieldTypesAsync(System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,System.String,System.Nullable{d360.core.DataType},System.Nullable{System.Int32},System.Nullable{System.Int32})">
+        <member name="M:d360.web.Controllers.V2.FieldsController.GetFieldTypesAsync(System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,System.String,System.Nullable{d360.core.DataType},System.Nullable{System.Int32},System.Nullable{System.Int32})">
             <summary>
             Retrieves field types contained within your environment.
             </summary>
+            <remarks>
+            If using Uid parameters, you may only provide one of the following: ActionTypeUid, AssetTypeUid, or RelationshipTypeUid.
+            </remarks>
             <param name="AssetTypeUid">The asset type Uid to retrieve field types for.</param>
             <param name="RelationshipTypeUid">The relationship type Uid to retrieve field types for.</param>
+            /// <param name="ActionTypeUid">The action type Uid to retrieve field types for.</param>
             <param name="Name">The API Name to search for.</param>
             <param name="FriendlyName">The Friendly Name to search for.</param>
             <param name="Type">The data type to search for.</param>
@@ -2399,8 +2403,11 @@
         </member>
         <member name="M:d360.web.Controllers.V2.FieldsController.PutFieldTypesAsync(d360.core.entities.FieldTypesApiEditModel)">
             <summary>
-            Retrieves field types contained within your environment.
+            Adds or updates field types contained within your environment based on a specified ActionTypeUid, AssetTypeUid, or RelationshipTypeUid.
             </summary>
+            <remarks>
+            You may only provide one of the following: ActionTypeUid, AssetTypeUid, or RelationshipTypeUid.
+            </remarks>
             <returns>A list of field types corresponding to the given criteria, if any.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.FieldsController.DeleteFieldTypesAsync(d360.core.entities.FieldTypesApiDeleteModel)">

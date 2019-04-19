@@ -425,7 +425,8 @@ export class FieldsService extends BaseObservableService implements IFieldsServi
                             res => {
                                 return {fieldTypeID: event.fieldTypeID, results: res, event: event.event}
                             }
-                        )
+                        ),
+                        catchError(err => this.handleError(err))
                     );
                 }
             )

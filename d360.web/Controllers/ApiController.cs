@@ -6228,7 +6228,7 @@ where    A.RuleID = @id", new { id });
                                 }
                         });
                         
-                        var parentRefType = Company.GetParentType(refType.ID, SystemObjects.ReferenceItemType);
+                        var parentRefType = Company.GetParentType(refType.ObjectID, SystemObjects.ReferenceItemType);
 
                         var heirarchyColumns = new DetailReadOnlyRowModel
                         {

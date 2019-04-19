@@ -463,7 +463,7 @@ export class WorkflowService extends BaseService {
     }
 
     getIntersectType(id: number) {
-        return this.http.get(`services/relationships?$filter=ID eq ${id}`)
+        return this.http.get(`api/v2/relationships/types/${id}`)
             .toPromise()
             .then(response => response.json())
             .catch(err => this.handleError(err));
