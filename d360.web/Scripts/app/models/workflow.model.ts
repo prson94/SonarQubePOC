@@ -459,6 +459,7 @@ export class WorkflowAssignmentSummary {
     StepName: string;
     ObjectName: string;
     TypeName: string;
+    SendFormEmail: boolean;
 }
 
 export class WorkflowAssignmentDetail {
@@ -505,6 +506,7 @@ export class BulkWorkflowFormModel {
 
 export class BulkWorkflowReassignModel {
     ItemStepIDs: number[] = [];
+    StepHasFormEmails: boolean;
     OriginalAssigneeResourceID: number = -1;
     OriginalAssigneeResourceName: string = '[unknown user]';
     NewAssigneeResourceID: number = -1;

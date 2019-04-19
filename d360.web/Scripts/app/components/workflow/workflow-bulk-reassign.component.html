@@ -26,7 +26,7 @@
                 </div>
             </div>
             <div class="row" style="margin-bottom: 5px">
-                <div class="col s6 m10 l12">
+                <div *ngIf="model?.StepHasFormEmails" class="col s6 m10 l12">
                     <p-checkbox [(ngModel)]="dontSendFormEmails" binary="true"></p-checkbox> 
                     Do not send form emails (leave unchecked to send out {{model?.ItemStepIDs?.length}} notification emails to this user)
                 </div>

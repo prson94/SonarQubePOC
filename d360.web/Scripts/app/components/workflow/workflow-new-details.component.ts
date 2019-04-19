@@ -116,6 +116,7 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
             this.bulkReassignModel.ItemStepIDs = this.selection.map(i => i.ItemStepID);
             this.bulkReassignModel.OriginalAssigneeResourceID = isNaN(this.resourceID) ? CurrentResourceID : this.resourceID;
             this.bulkReassignModel.StepName = this.assignmentSummary.StepName;
+            this.bulkReassignModel.StepHasFormEmails = this.assignmentSummary.SendFormEmail;
             this.showBulkReassignEditor = true;
         }
     }

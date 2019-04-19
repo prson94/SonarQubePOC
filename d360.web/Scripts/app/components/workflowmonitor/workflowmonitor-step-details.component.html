@@ -108,7 +108,7 @@
                         </div>
                         <div class="row" *ngIf="step?.ItemFields?.Reassigned['@reassignType']=='Resource' && step?.ItemFields?.Reassigned['@reassignToResourceId'] != null">
                             <div class="col s12">
-                                Reassigned from {{step?.ItemFields?.Reassigned['@reassignFromResourceName']}} to {{step?.ItemFields?.Reassigned['@reassignToResourceName']}} on {{(step?.ItemFields?.Reassigned['@reassignOn'] | date:'short')}}
+                                {{step?.ItemFields?.Reassigned['@reassignByResourceName']}} reassigned this action from {{step?.ItemFields?.Reassigned['@reassignFromResourceName']}} to {{step?.ItemFields?.Reassigned['@reassignToResourceName']}} on {{(step?.ItemFields?.Reassigned['@reassignOn'] | date:'short')}}
                             </div>
                         </div>
                         <div class="row" *ngIf="step?.ItemFields?.Reassigned['@reassignType']=='Object'">

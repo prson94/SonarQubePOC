@@ -2072,7 +2072,12 @@ order by wi.StartedOn desc";
                                     case when wi.[object] = 'Issue' then it.Name
                                     else assettype.name
                                     end as 'TypeName' ,
-                                    wv.[version] as 'Version'
+                                    wv.[version] as 'Version',
+									case when wvs.Settings.value('/settings[1]/SendFormEmail[1]/text()[1]','varchar(10)') = 'true' then
+										cast(1 as bit)
+									else
+										cast(0 as bit)
+									end as 'SendFormEmail'
                                 from
 	                                [workflow].[type] wt
 	                                inner join [workflow].[version] wv on (wt.id = wv.typeid)
@@ -2589,38 +2594,56 @@ order by wi.StartedOn desc";
             return fieldChanges;
         }
 
-        private void SetReassignObjectName(dynamic ItemFields)
+
+        private void SetReassignObjectName(WorkflowStepDetail detail)
         {
-            if (ItemFields !=null && ItemFields.Reassigned != null)
+            var ItemFields = detail.ItemFields;
+            if (ItemFields != null && ItemFields.Reassigned != null)
             {
-                if (ItemFields.Reassigned["@reassignType"] == "Object")
+                var reassigned = ItemFields.Reassigned;
+                if (reassigned != null)
                 {
-                    int objectId = (int)ItemFields.Reassigned["@objectId"];
-                    var objectType = ItemFields.Reassigned["@objectType"];
-                    var sql = @"Select D.DisplayValue as ObjectName
+                    if (reassigned["@reassignType"] == "Object")
+                    {
+                        int objectId = (int)reassigned["@objectId"];
+                        var objectType = reassigned["@objectType"];
+                        var sql = @"Select D.DisplayValue as ObjectName
                             From
                             Asset A
                             cross apply dbo.GetAssetDisplayValueById(A.ID) D
                             where   A.Object = @obj and A.ObjectID = @objId";
-                    var objectName = Company.Query<string>(sql, new { obj = objectType.Value, objId = objectId }).FirstOrDefault();
-                    ItemFields.Reassigned["@objectName"] = objectName;
+                        var objectName = Company.Query<string>(sql, new { obj = objectType.Value, objId = objectId }).FirstOrDefault();
+                        reassigned["@objectName"] = objectName;
+                    }
+                    else if (reassigned["@reassignType"] == "Resource" && reassigned["@reassignToResourceId"] != null)
+                    {
+                        if (reassigned["@reassignToResourceId"] != null)
+                        {
+                            int toResourceId = (int)reassigned["@reassignToResourceId"];
+                            var toResource = Company.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == toResourceId);
+                            reassigned["@reassignToResourceName"] = toResource == null ? "[unknown user]" : toResource.FullName;
+
+
+                        }
+                        if (reassigned["@reassignFromResourceId"] != null)
+                        {
+                            int fromResourceId = (int)reassigned["@reassignFromResourceId"];
+                            var fromResource = Company.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == fromResourceId);
+                            reassigned["@reassignFromResourceName"] = fromResource == null ? "[unknown user]" : fromResource.FullName;
+
+
+                        }
+                        if (reassigned["@reassignByResourceId"] != null)
+                        {
+                            int byResourceId = (int)reassigned["@reassignByResourceId"];
+                            var byResource = Company.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == byResourceId);
+                            reassigned["@reassignByResourceName"] = byResource == null ? "[unknown user]" : byResource.FullName;
+                        }
+                    }
                 }
-                else if (ItemFields.Reassigned["@reassignType"] == "Resource" && ItemFields.Reassigned["@reassignToResourceId"] != null)
-                {
-                    int toResourceId = (int)ItemFields.Reassigned["@reassignToResourceId"];
-                    int fromResourceId = (int)ItemFields.Reassigned["@reassignFromResourceId"];
-
-                    var toResource = Company.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == toResourceId);
-                    var fromResource = Company.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == fromResourceId);
-
-                    ItemFields.Reassigned["@reassignToResourceName"] = toResource == null ? "[unknown user]" : toResource.FullName;
-                    ItemFields.Reassigned["@reassignFromResourceName"] = fromResource == null ? "[unknown user]" : fromResource.FullName;
-
-                }
-
-
             }
         }
+
         [Route("step/detail/{itemStepId:int}"), HttpGet]
         public async Task<HttpResponseMessage> GetWorkflowVersionStepDetail(int itemStepId)
         {
@@ -2702,7 +2725,7 @@ order by wi.StartedOn desc";
             {
                 detail.FieldChanges = this.GetWorkFlowStepFieldChanges(detail);
                 detail.RelationshipChange= this.GetWorkFlowStepRelationshipChanges(detail.Settings, detail.ItemID,detail.ObjectName);
-                SetReassignObjectName(detail.ItemFields);
+                SetReassignObjectName(detail);
                 if (detail.Settings != null && detail.Settings.State != null && !string.IsNullOrEmpty(detail.Settings.State.Value))
                     detail.StateChange = (State)Convert.ToInt32(detail.Settings.State.Value);
 
@@ -3190,96 +3213,6 @@ order by wi.StartedOn desc";
             try
             {
                 await Company.BulkWorkflowFormReassign(itemSteps, resource, model.OriginalAssigneeResourceID, model.SendFormEmails);
-                //foreach (var itemStep in itemSteps)
-                //{
-                //    var placeholder = new WorkflowItemStep()
-                //    {
-                //        ItemID = itemStep.ItemID,
-                //        StepID = itemStep.StepID,
-                //        StartedBy = itemStep.StartedBy,
-                //        StartedOn = itemStep.StartedOn,
-                //        CompletedBy = itemStep.CompletedBy,
-                //        CompletedOn = itemStep.CompletedOn,
-                //        Fields = itemStep.Fields,
-                //        Settings = itemStep.Settings,
-                //    };
-
-                //    Company.Add(placeholder);
-                //    Company.SaveChanges();
-
-                //    var fieldElement = XElement.Parse(itemStep.Fields);
-                //    var reassigned = new XElement("Reassigned");
-                //    reassigned.Add(new XAttribute("reassignType", "Resource"));
-                //    reassigned.Add(new XAttribute("reassignedFrom", model.OriginalAssigneeResourceID.ToString()));
-
-                //    if (fieldElement.Elements("Reassigned").Any())
-                //    {
-                //        var el = fieldElement.Elements("Reassigned");
-                //        el.Remove();
-                //    }
-
-                //    fieldElement.Add(reassigned);
-                //    itemStep.Fields = fieldElement.ToString();
-                //    itemStep.StartedOn = DateTime.UtcNow;
-
-                //    var currentAssignment = Company.WorkflowItemAssignments.FirstOrDefault(x => x.ItemStepID == itemStep.ID);
-
-                //    if (currentAssignment != null)
-                //    {
-                //        Company.WorkflowItemAssignments.Remove(currentAssignment);
-                //    }
-
-                //    var assignment = new WorkflowItemAssignment
-                //    {
-                //        ItemStepID = itemStep.ID,
-                //        ItemID = itemStep.ItemID,
-                //        CreatedBy = Company.CurrentResourceID,
-                //        CreatedOn = DateTime.UtcNow,
-                //        ResourceObject = "Resource",
-                //        ResourceObjectID = model.NewAssigneeResourceID,
-                //        UpdatedBy = Company.CurrentResourceID,
-                //        UpdatedOn = DateTime.UtcNow
-                //    };
-
-                //    Company.WorkflowItemAssignments.Add(assignment);
-
-                //    if (model.SendFormEmails)
-                //    {
-                //        var obj = itemStep.Item.Object;
-                //        var objId = itemStep.Item.ObjectID;
-
-                //        //if (obj.ToLower() == "issue")
-                //        //{
-                //        //    var issue = Company.GetById<Issue>(objId);
-                //        //    if (issue != null)
-                //        //    {
-                //        //        obj = issue.Object;
-                //        //        objId = issue.ObjectID;
-                //        //    }
-                //        //}
-
-                //        var objectDetail = Company.GetObjectDetail(obj, objId);
-
-                //        var objEventInfo = new EventObjectInfo()
-                //        {
-                //            ObjectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), objectDetail.Type),
-                //            ObjectTypeID = objectDetail.TypeID,
-                //            Object = (SystemObjects)Enum.Parse(typeof(SystemObjects), obj),
-                //            ObjectID = objId,
-                //        };
-
-                //        var settings = WorkflowItemStepSettingModel.ParseXml(itemStep.Step.Settings);
-
-                //        settings.FormShouldSendEmail = true;
-                //        settings.SpecificUser = resource.Email;
-                //        settings.RecipientType = EmailTaskRecipientType.SpecificUser;
-                //        //Company.ExecuteStep(itemStep.ID, itemStep.ItemID, objEventInfo);
-                //        //send 1-off emails to reassigned user
-                //        Company.SendFormWorkflowEmail(itemStep, itemStep.ID, itemStep.ItemID, objEventInfo, settings);
-                //    }
-                //}
-
-                //Company.SaveChanges();
             }
             catch (Exception ex)
             {
@@ -3298,7 +3231,12 @@ order by wi.StartedOn desc";
 
         private dynamic XmlToDynamic(string xml, bool omitRootElement = true)
         {
-            return string.IsNullOrEmpty(xml) ? JsonConvert.DeserializeObject("{}") : JsonConvert.DeserializeObject(JsonConvert.SerializeXNode(XElement.Parse(xml), Formatting.None, omitRootElement));
+            return XmlToObject<dynamic>(xml, omitRootElement);
+        }
+
+        private T XmlToObject<T>(string xml, bool omitRootElement = true)
+        {
+            return string.IsNullOrEmpty(xml) ? JsonConvert.DeserializeObject<T>("{}") : JsonConvert.DeserializeObject<T>(JsonConvert.SerializeXNode(XElement.Parse(xml), Formatting.None, omitRootElement));
         }
 
         /// <summary>

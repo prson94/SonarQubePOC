@@ -1277,56 +1277,14 @@ namespace d360.model
         {
             foreach (var itemStep in itemSteps)
             {
-                //var placeholder = WorkflowItemSteps.FirstOrDefault(s => s.ItemID == itemStep.ItemID && s.StepID == itemStep.StepID && s.ID != itemStep.ID);
-
-
-
-                //if (placeholder != null)
-                //{
-                //    placeholder.StartedBy = itemStep.StartedBy;
-                //    placeholder.StartedOn = itemStep.StartedOn;
-                //    placeholder.CompletedBy = itemStep.CompletedBy;
-                //    placeholder.CompletedOn = itemStep.CompletedOn;
-                //    placeholder.Fields = itemStep.Fields;
-                //    placeholder.Settings = itemStep.Settings;
-                //}
-                //else
-                //{
-                //    placeholder = new WorkflowItemStep()
-                //    {
-                //        ItemID = itemStep.ItemID,
-                //        StepID = itemStep.StepID,
-                //        StartedBy = itemStep.StartedBy,
-                //        StartedOn = itemStep.StartedOn,
-                //        CompletedBy = itemStep.CompletedBy,
-                //        CompletedOn = itemStep.CompletedOn,
-                //        Fields = itemStep.Fields,
-                //        Settings = itemStep.Settings,
-                //    };
-
-                //    Add(placeholder);
-                //}
-
-                //var fieldElement = XElement.Parse(placeholder.Fields);
-                //if (fieldElement.Elements("Reassigned").Any())
-                //{
-                //    var el = fieldElement.Elements("Reassigned");
-                //    el.Remove();
-                //}
-
-                //var reassigned = new XElement("Reassigned");
-                //reassigned.Add(new XAttribute("reassignType", "Resource"));
-                //reassigned.Add(new XAttribute("reassignedTo", resource.ResourceID.ToString()));
-                //fieldElement.Add(reassigned);
-                //placeholder.Fields = fieldElement.ToString();
-
-                //await SaveChangesAsync();
+                var stepSettings = WorkflowItemStepSettingModel.ParseXml(itemStep.Step.Settings);
 
                 var fieldElement = XElement.Parse(itemStep.Fields);
                 var reassigned = new XElement("Reassigned");
                 reassigned.Add(new XAttribute("reassignType", "Resource"));
                 reassigned.Add(new XAttribute("reassignToResourceId", resource.ResourceID.ToString()));
                 reassigned.Add(new XAttribute("reassignFromResourceId", originalResourceId.ToString()));
+                reassigned.Add(new XAttribute("reassignByResourceId", CurrentResourceID.ToString()));
                 reassigned.Add(new XAttribute("reassignOn", DateTime.UtcNow));
 
                 if (fieldElement.Elements("Reassigned").Any())
@@ -1360,7 +1318,7 @@ namespace d360.model
 
                 WorkflowItemAssignments.Add(assignment);
 
-                if (sendFormEmails)
+                if (sendFormEmails && stepSettings.FormShouldSendEmail)
                 {
                     var obj = itemStep.Item.Object;
                     var objId = itemStep.Item.ObjectID;

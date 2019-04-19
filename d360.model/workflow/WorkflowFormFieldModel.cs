@@ -16,6 +16,7 @@
         public string StepName { get; set; }
         public string ObjectName { get; set; }
         public string TypeName { get; set; }
+        public bool SendFormEmail { get; set; }
 
 
     }
