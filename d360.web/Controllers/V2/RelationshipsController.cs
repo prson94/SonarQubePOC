@@ -197,8 +197,7 @@ namespace d360.web.Controllers.V2
 
             var models = Company.Query<dynamic>(
                 customColumnTableSQL +
-                @"
-                select	I.ID as ID, 
+                @"select  I.ID as ID, 
 		                    S.Object as Subject,
 		                    S.ObjectId as SubjectID,
 		                    SDV.DisplayValue as SubjectName,
@@ -206,19 +205,25 @@ namespace d360.web.Controllers.V2
 		                    P.Name as PredicateName,
 		                    O.Object as Object,
 		                    O.ObjectId as ObjectID,
-		                    ODV.DisplayValue as ObjectName,
+							case O.Object
+								when 'FusionAttribute'
+									then FA.TextPath
+								else ODV.DisplayValue
+		                    end as ObjectName,
 		                    OT.Name as ObjectTypeName
-                        " + customColumnValuesSQL + @" 
-                           from	[Intersect] I
-				                    inner join IntersectType T on T.ID = I.IntersectTypeID
-				                    left outer join [Predicate] P on P.ID = T.PredicateID
-				                    inner join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID
-				                    inner join AssetType ST on ST.ID = S.AssetTypeID
-				                    inner join AssetDisplayValue SDV on SDV.AssetId = S.Id
-				                    inner join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID
-				                    inner join AssetType OT on OT.ID = O.AssetTypeID
-                                    inner join AssetDisplayValue ODV on ODV.AssetId = O.Id
-                            and T.uid in (@Uid) ", new { Uid = intersectTypeUid });
+                            "+ customColumnValuesSQL + @"
+							from 
+	                        [Intersect] I
+	                        inner join IntersectType T on T.ID = I.IntersectTypeID
+	                        left outer join [Predicate] P on P.ID = T.PredicateID
+	                        inner join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID
+	                        inner join AssetType ST on ST.ID = S.AssetTypeID
+	                        inner join AssetDisplayValue SDV on SDV.AssetId = S.Id
+	                        inner join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID
+	                        inner join AssetType OT on OT.ID = O.AssetTypeID
+	                        left join AssetDisplayValue ODV on ODV.AssetId = O.Id
+	                        left join FusionAttribute FA on FA.Id = O.ObjectId
+	                        where T.uid in (@Uid)", new { Uid = intersectTypeUid });
 
             var document = new SLDocument();
             document.AddWorksheet("Items");
