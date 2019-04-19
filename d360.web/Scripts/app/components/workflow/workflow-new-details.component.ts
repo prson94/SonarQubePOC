@@ -13,6 +13,7 @@ import {
 import { Title } from '@angular/platform-browser';
 import { WorkflowService } from '../../services/workflow.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { AuthenticationService } from '../../services/authentication.service';
 
 declare var CurrentResourceID;
 
@@ -41,13 +42,15 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
     private bulkEditorModel: BulkWorkflowFormModel;
     private bulkReassignModel: BulkWorkflowReassignModel;
     private fromMail: boolean = false;
+    private isAdmin: boolean = false;
 
     constructor(private route: ActivatedRoute,
         private location: Location,
         private router: Router,
         protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
-        protected workflowService: WorkflowService
+        protected workflowService: WorkflowService,
+        protected authenticationService: AuthenticationService
     )
     {
         super();
@@ -64,7 +67,8 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
             this.stepId = +params['stepId'];
             this.fromMail = params['fromMail'] === '1' ? true : false;
 
-            this.isMe = this.resourceID ? this.resourceID == CurrentResourceID: true;
+            this.isMe = this.resourceID ? this.resourceID == CurrentResourceID : true;
+            this.isAdmin = this.authenticationService.isAdmin;
 
             this.headerBreadcrumbService.clearBreadcrumbs();    
 

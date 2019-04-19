@@ -94,7 +94,7 @@
             <div style="padding:10px">
                 <button *ngIf="hasCloseButton" pButton type="button" (click)="close();" label="Close" style="width: 150px;"></button>
                 <button pButton type="button" (click)="bulkRespond();" label="Bulk Respond" style="width: 150px;" [disabled]="selection == null || selection.length < 1 || !isMe"></button>
-                <button pButton type="button" (click)="bulkReassign();" label="Bulk Reassign" style="width: 150px;" [disabled]="selection == null || selection.length < 1"></button>
+                <button *ngIf="isAdmin" pButton type="button" (click)="bulkReassign();" label="Bulk Reassign" style="width: 150px;" [disabled]="selection == null || selection.length < 1"></button>
             </div>
         </div>
     </div>

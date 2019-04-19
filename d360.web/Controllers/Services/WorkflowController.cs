@@ -3155,7 +3155,7 @@ order by wi.StartedOn desc";
         }
 
         [Route("ReassignWorkflowResource/bulk")]
-        public HttpResponseMessage BulkReassignForm(BulkWorkflowReassignModel model)
+        public async Task<HttpResponseMessage> BulkReassignForm(BulkWorkflowReassignModel model)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return Request.CreateErrorResponse(HttpStatusCode.Forbidden, "You do not have permission to bulk reassign.");
@@ -3172,92 +3172,104 @@ order by wi.StartedOn desc";
 
             try
             {
-                foreach (var itemStep in itemSteps)
-                {
-                    //ReassignWorkflowResource((int)itemStep.ID, resource.ResourceID);
+                await Company.BulkWorkflowFormReassign(itemSteps, resource, model.OriginalAssigneeResourceID, model.SendFormEmails);
+                //foreach (var itemStep in itemSteps)
+                //{
+                //    var placeholder = new WorkflowItemStep()
+                //    {
+                //        ItemID = itemStep.ItemID,
+                //        StepID = itemStep.StepID,
+                //        StartedBy = itemStep.StartedBy,
+                //        StartedOn = itemStep.StartedOn,
+                //        CompletedBy = itemStep.CompletedBy,
+                //        CompletedOn = itemStep.CompletedOn,
+                //        Fields = itemStep.Fields,
+                //        Settings = itemStep.Settings,
+                //    };
 
-                    var placeholder = new WorkflowItemStep()
-                    {
-                        ItemID = itemStep.ItemID,
-                        StepID = itemStep.StepID,
-                        StartedBy = itemStep.StartedBy,
-                        StartedOn = itemStep.StartedOn,
-                        CompletedBy = itemStep.CompletedBy,
-                        CompletedOn = itemStep.CompletedOn,
-                        Fields = itemStep.Fields,
-                        Settings = itemStep.Settings,
-                    };
+                //    Company.Add(placeholder);
+                //    Company.SaveChanges();
 
-                    Company.Add(placeholder);
-                    Company.SaveChanges();
+                //    var fieldElement = XElement.Parse(itemStep.Fields);
+                //    var reassigned = new XElement("Reassigned");
+                //    reassigned.Add(new XAttribute("reassignType", "Resource"));
+                //    reassigned.Add(new XAttribute("reassignedFrom", model.OriginalAssigneeResourceID.ToString()));
 
-                    var fieldElement = XElement.Parse(itemStep.Fields);
-                    var reassigned = new XElement("Reassigned");
-                    reassigned.Add(new XAttribute("reassignType", "Resource"));
-                    fieldElement.Add(reassigned);
-                    itemStep.Fields = fieldElement.ToString();
-                    itemStep.StartedOn = DateTime.UtcNow;
-                    //Company.SaveChanges();
+                //    if (fieldElement.Elements("Reassigned").Any())
+                //    {
+                //        var el = fieldElement.Elements("Reassigned");
+                //        el.Remove();
+                //    }
 
-                    var currentAssignment = Company.WorkflowItemAssignments.FirstOrDefault(x => x.ItemStepID == itemStep.ID);
+                //    fieldElement.Add(reassigned);
+                //    itemStep.Fields = fieldElement.ToString();
+                //    itemStep.StartedOn = DateTime.UtcNow;
 
-                    if (currentAssignment != null)
-                    {
-                        Company.WorkflowItemAssignments.Remove(currentAssignment);
-                        //Company.SaveChanges();
-                    }
+                //    var currentAssignment = Company.WorkflowItemAssignments.FirstOrDefault(x => x.ItemStepID == itemStep.ID);
 
-                    var assignment = new WorkflowItemAssignment
-                    {
-                        ItemStepID = itemStep.ID,
-                        ItemID = itemStep.ItemID,
-                        CreatedBy = Company.CurrentResourceID,
-                        CreatedOn = DateTime.UtcNow,
-                        ResourceObject = "Resource",
-                        ResourceObjectID = model.NewAssigneeResourceID,
-                        UpdatedBy = Company.CurrentResourceID,
-                        UpdatedOn = DateTime.UtcNow
-                    };
+                //    if (currentAssignment != null)
+                //    {
+                //        Company.WorkflowItemAssignments.Remove(currentAssignment);
+                //    }
 
-                    Company.WorkflowItemAssignments.Add(assignment);
+                //    var assignment = new WorkflowItemAssignment
+                //    {
+                //        ItemStepID = itemStep.ID,
+                //        ItemID = itemStep.ItemID,
+                //        CreatedBy = Company.CurrentResourceID,
+                //        CreatedOn = DateTime.UtcNow,
+                //        ResourceObject = "Resource",
+                //        ResourceObjectID = model.NewAssigneeResourceID,
+                //        UpdatedBy = Company.CurrentResourceID,
+                //        UpdatedOn = DateTime.UtcNow
+                //    };
 
-                    if (model.SendFormEmails)
-                    {
-                        var obj = itemStep.Item.Object;
-                        var objId = itemStep.Item.ObjectID;
+                //    Company.WorkflowItemAssignments.Add(assignment);
 
-                        //if (obj.ToLower() == "issue")
-                        //{
-                        //    var issue = Company.GetById<Issue>(objId);
-                        //    if (issue != null)
-                        //    {
-                        //        obj = issue.Object;
-                        //        objId = issue.ObjectID;
-                        //    }
-                        //}
+                //    if (model.SendFormEmails)
+                //    {
+                //        var obj = itemStep.Item.Object;
+                //        var objId = itemStep.Item.ObjectID;
 
-                        var objectDetail = Company.GetObjectDetail(obj, objId);
+                //        //if (obj.ToLower() == "issue")
+                //        //{
+                //        //    var issue = Company.GetById<Issue>(objId);
+                //        //    if (issue != null)
+                //        //    {
+                //        //        obj = issue.Object;
+                //        //        objId = issue.ObjectID;
+                //        //    }
+                //        //}
 
-                        var objEventInfo = new EventObjectInfo()
-                        {
-                            ObjectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), objectDetail.Type),
-                            ObjectTypeID = objectDetail.TypeID,
-                            Object = (SystemObjects)Enum.Parse(typeof(SystemObjects), obj),
-                            ObjectID = objId,
-                        };
+                //        var objectDetail = Company.GetObjectDetail(obj, objId);
 
-                        Company.ExecuteStep(itemStep.ID, itemStep.ItemID, objEventInfo);
-                    }
-                }
+                //        var objEventInfo = new EventObjectInfo()
+                //        {
+                //            ObjectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), objectDetail.Type),
+                //            ObjectTypeID = objectDetail.TypeID,
+                //            Object = (SystemObjects)Enum.Parse(typeof(SystemObjects), obj),
+                //            ObjectID = objId,
+                //        };
 
-                Company.SaveChanges();
+                //        var settings = WorkflowItemStepSettingModel.ParseXml(itemStep.Step.Settings);
+
+                //        settings.FormShouldSendEmail = true;
+                //        settings.SpecificUser = resource.Email;
+                //        settings.RecipientType = EmailTaskRecipientType.SpecificUser;
+                //        //Company.ExecuteStep(itemStep.ID, itemStep.ItemID, objEventInfo);
+                //        //send 1-off emails to reassigned user
+                //        Company.SendFormWorkflowEmail(itemStep, itemStep.ID, itemStep.ItemID, objEventInfo, settings);
+                //    }
+                //}
+
+                //Company.SaveChanges();
             }
             catch (Exception ex)
             {
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex);
             }
 
-            return Request.CreateResponse(HttpStatusCode.OK, new { success = true});
+            return Request.CreateResponse(HttpStatusCode.OK, new { type = "success", message = "Workflow forms reassigned successfully", title = "Success" });
         }
 
         #region Helper Methods

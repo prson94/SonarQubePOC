@@ -45,6 +45,7 @@ namespace d360.web.Models
         public List<long> ItemStepIDs { get; set; } = new List<long>();
         public bool SendFormEmails { get; set; } = true;
         public int NewAssigneeResourceID { get; set; }
+        public int OriginalAssigneeResourceID { get; set; }
 
     }
 }
