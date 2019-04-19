@@ -1273,10 +1273,21 @@ namespace d360.model
             return transitions.Count;
         }
 
+        /// <summary>
+        /// Reassign one or more form steps to a new user
+        /// </summary>
+        /// <param name="itemSteps">Form steps to reassign</param>
+        /// <param name="resource">The resource to assign the forms to</param>
+        /// <param name="originalResourceId">The resource Id of the original assignee on the form</param>
+        /// <param name="sendFormEmails">Whether or not to resend form emails. If the step doesn't have form emails configured this setting is ignored</param>
+        /// <returns></returns>
         public async Task BulkWorkflowFormReassign(List<WorkflowItemStep> itemSteps, GlobalReportingResource resource, int originalResourceId, bool sendFormEmails = true)
         {
             foreach (var itemStep in itemSteps)
             {
+                if (itemStep.Step.ActivityType != WorkflowActivityType.Form)
+                    continue;
+
                 var stepSettings = WorkflowItemStepSettingModel.ParseXml(itemStep.Step.Settings);
 
                 var fieldElement = XElement.Parse(itemStep.Fields);
@@ -1343,13 +1354,10 @@ namespace d360.model
                     itemStep.Settings = settings.ToString();
                     await SaveChangesAsync();
 
-                    var stepSettings = WorkflowItemStepSettingModel.ParseXml(itemStep.Step.Settings);
-
-                    stepSettings.FormShouldSendEmail = true;
+                    //resend email to the reassigned user
                     stepSettings.SpecificUser = resource.Email;
                     stepSettings.RecipientType = EmailTaskRecipientType.SpecificUser;
                     
-                    //send 1-off emails to reassigned user
                     await SendFormWorkflowEmail(itemStep, itemStep.ID, itemStep.ItemID, objEventInfo, stepSettings);
                 }
             }
