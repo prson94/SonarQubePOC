@@ -200,29 +200,25 @@ namespace d360.web.Controllers.V2
                 @"select  I.ID as ID, 
 		                    S.Object as Subject,
 		                    S.ObjectId as SubjectID,
-		                    SDV.DisplayValue as SubjectName,
+		                    SVal.DisplayValue as SubjectName,
 		                    ST.Name as SubjectTypeName,
 		                    P.Name as PredicateName,
 		                    O.Object as Object,
 		                    O.ObjectId as ObjectID,
-							case O.Object
-								when 'FusionAttribute'
-									then FA.TextPath
-								else ODV.DisplayValue
-		                    end as ObjectName,
+							OVal.DisplayValue as ObjectName,
 		                    OT.Name as ObjectTypeName
-                            "+ customColumnValuesSQL + @"
+                            " + customColumnValuesSQL + @"
 							from 
 	                        [Intersect] I
 	                        inner join IntersectType T on T.ID = I.IntersectTypeID
 	                        left outer join [Predicate] P on P.ID = T.PredicateID
 	                        inner join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID
 	                        inner join AssetType ST on ST.ID = S.AssetTypeID
-	                        inner join AssetDisplayValue SDV on SDV.AssetId = S.Id
 	                        inner join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID
 	                        inner join AssetType OT on OT.ID = O.AssetTypeID
-	                        left join AssetDisplayValue ODV on ODV.AssetId = O.Id
-	                        left join FusionAttribute FA on FA.Id = O.ObjectId
+							cross apply dbo.GetAssetDisplayValueById(S.ID) as SVal
+							cross apply dbo.GetAssetDisplayValueById(O.ID) as OVal
+
 	                        where T.uid in (@Uid)", new { Uid = intersectTypeUid });
 
             var document = new SLDocument();
