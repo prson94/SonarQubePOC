@@ -623,6 +623,7 @@
     <Content Include="Scripts\app\components\shared\fielddefinition\field-type-form\field-type.form.html" />
     <Content Include="Scripts\app\components\shared\menu\site-menu.component.html" />
     <Content Include="Scripts\app\components\shared\object-definition.tile.html" />
+    <Content Include="Scripts\app\components\shared\objectdetails\dynamic-lookup-grid.component.html" />
     <Content Include="Scripts\app\components\shared\objectgovernance\artifact-status.component.html" />
     <Content Include="Scripts\app\components\shared\objectdetails\object-detail-field.component.html" />
     <Content Include="Scripts\app\components\shared\preview-tooltip.component.html" />
