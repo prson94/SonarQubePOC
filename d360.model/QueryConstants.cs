@@ -1688,7 +1688,7 @@ select
                                      WT.ID in ({0}) and WI.CompletedOn is null and WVS.StepType = 2 and WVS.ActivityType = 3";
 
         public static string WorkflowItemSteps = @"
-      select distinct
+      select 
 	            IST.ID,
 	            IST.ItemID,
 	            IST.StepID,
@@ -1714,7 +1714,7 @@ select
 				else
                     null
                 end as Assignee,
-                cast(IST.Fields as nvarchar(max)) as Fields,
+                IST.Fields,
 				case when E.Object = 'IssueType' then
 					cast(1 as bit)
 				else

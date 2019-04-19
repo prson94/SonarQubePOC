@@ -2591,17 +2591,34 @@ order by wi.StartedOn desc";
 
         private void SetReassignObjectName(dynamic ItemFields)
         {
-            if (ItemFields !=null && ItemFields.Reassigned != null && ItemFields.Reassigned["@reassignType"]== "Object")
+            if (ItemFields !=null && ItemFields.Reassigned != null)
             {
-                int objectId = (int)ItemFields.Reassigned["@objectId"];
-                var objectType = ItemFields.Reassigned["@objectType"];
-                var sql = @"Select D.DisplayValue as ObjectName
+                if (ItemFields.Reassigned["@reassignType"] == "Object")
+                {
+                    int objectId = (int)ItemFields.Reassigned["@objectId"];
+                    var objectType = ItemFields.Reassigned["@objectType"];
+                    var sql = @"Select D.DisplayValue as ObjectName
                             From
                             Asset A
                             cross apply dbo.GetAssetDisplayValueById(A.ID) D
                             where   A.Object = @obj and A.ObjectID = @objId";
-                var objectName = Company.Query<string>(sql, new { obj = objectType.Value, objId= objectId }).FirstOrDefault();
-                ItemFields.Reassigned["@objectName"] = objectName;
+                    var objectName = Company.Query<string>(sql, new { obj = objectType.Value, objId = objectId }).FirstOrDefault();
+                    ItemFields.Reassigned["@objectName"] = objectName;
+                }
+                else if (ItemFields.Reassigned["@reassignType"] == "Resource" && ItemFields.Reassigned["@reassignToResourceId"] != null)
+                {
+                    int toResourceId = (int)ItemFields.Reassigned["@reassignToResourceId"];
+                    int fromResourceId = (int)ItemFields.Reassigned["@reassignFromResourceId"];
+
+                    var toResource = Company.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == toResourceId);
+                    var fromResource = Company.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == fromResourceId);
+
+                    ItemFields.Reassigned["@reassignToResourceName"] = toResource == null ? "[unknown user]" : toResource.FullName;
+                    ItemFields.Reassigned["@reassignFromResourceName"] = fromResource == null ? "[unknown user]" : fromResource.FullName;
+
+                }
+
+
             }
         }
         [Route("step/detail/{itemStepId:int}"), HttpGet]
