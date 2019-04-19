@@ -105,7 +105,7 @@ namespace igx.jobs.fusionloadprocessor
 
             if (string.IsNullOrEmpty(LogFileName)) throw new Exception("Error invalid or no file specified to process fusion data from");
 
-            if (FusionID <= 0) throw new Exception("Invalid fusion id specified.");
+            if (FusionID < 0) throw new Exception("Invalid fusion id specified.");
 
             var baseEventProperties = new Dictionary<string, string>()
             {
@@ -191,8 +191,6 @@ namespace igx.jobs.fusionloadprocessor
 
                     //Process Relationships
                     sw.Restart();
-
-
 
                     await ProcessRelationships(companyConnection, data.Relationships);
                     CoreFunction.AITrackRequest(FUSION_PROCESSOR_AI_NAME_PROCESS_RELATIONSHIPS, sw.Elapsed);
@@ -420,9 +418,6 @@ namespace igx.jobs.fusionloadprocessor
 
             //build mapping of fusion attributes ids to intersect types
             GenerateRelationshipInsertData(relationships);
-
-            // insert unresolved relations to the stagingrelationunresolved table
-            //   await DoUnresolvedRelationsInsert(companyConnection);
 
             // determine which relations already exist and remove them
             await DoResolvedRelationsInsert(companyConnection);
@@ -847,8 +842,7 @@ from    [IntersectType] I
         when    not matched by target then 
                 insert (FusionQueryAttributeTypeID, SourceID, Deleted, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy) 
                 values (S.FusionQueryAttributeTypeID, S.SourceID, 0, getutcdate(), 0, getutcdate(), 0);", commandTimeout: ExecuteQueryTimeout, transaction: trans);
-                        //output  inserted.ID, S.FusionQueryAttributeTypeID, S.SourceID, S.[Action] into #MergeOutputFusionQueryAttribute;", commandTimeout: ExecuteQueryTimeout, transaction: trans);
-
+                        
                         await companyConnection.ExecuteAsync(@"
 update	T
 set		T.Deleted = 1,
@@ -859,14 +853,6 @@ from	FusionQueryAttribute T
 		left join #FusionQueryAttribute S on S.FusionQueryAttributeTypeID = T.FusionQueryAttributeTypeID and S.SourceID = T.SourceID
 where	S.SourceID is null;", new { f = FusionID }, commandTimeout: ExecuteQueryTimeout, transaction: trans);
 
-                        //merge temp table with fusion query attributes table
-                        //                await companyConnection.ExecuteAsync(@"
-                        //update  T 
-                        //set     T.ID = S.ID
-                        //from    #FusionQueryAttribute T
-                        //        inner join #MergeOutputFusionQueryAttribute S on 
-                        //            S.FusionQueryAttributeTypeID = T.FusionQueryAttributeTypeID 
-                        //            and S.SourceID = T.SourceID;", commandTimeout: ExecuteQueryTimeout, transaction: trans);
 
                         Log.WriteLine($"MERGE query attributes TOOK\tTIME ELAPSED {sw.ElapsedMilliseconds} MS");
 
@@ -1447,7 +1433,7 @@ using   (
                     };
 
                     if (!string.IsNullOrEmpty(item.Value))
-                        fieldVal.Value = item.Value; //(item.Value.Length > MAX_FIELD_VALUE_LENGTH ? item.Value.Substring(0, MAX_FIELD_VALUE_LENGTH) : item.Value);
+                        fieldVal.Value = item.Value;
 
                     _workArea.FieldTempValues.Add(fieldVal);
                 }

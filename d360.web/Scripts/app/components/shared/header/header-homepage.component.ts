@@ -11,7 +11,12 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
     selector: 'd3s-header-homepage',
     template:
     `
-        <span *ngIf="visible" (click)="handleClick()" class="favorite" [style.color]="isHomePageItem ? '#66f' : null" [title]="isHomePageItem ? 'Remove home page' : 'Make this my home page'" >
+        <div *ngIf="visible" class="show-on-medium-and-down hide-on-med-and-up" (click)="handleClick()">
+            <i *ngIf="isHomePageItem && !isLoading" class="fa fa-check"></i>
+            <i *ngIf="isLoading" style="color: #000;" class="fa fa-spinner fa-spin"></i>
+            Home Page
+        </div>
+        <span *ngIf="visible" (click)="handleClick()" class="favorite hide-on-med-and-down" [style.color]="isHomePageItem ? '#66f' : null" [title]="isHomePageItem ? 'Remove home page' : 'Make this my home page'" >
             <i *ngIf="!isLoading" class="fa fa-home"></i><i *ngIf="isLoading" style="color: #000;" class="fa fa-spinner fa-spin"></i>    
         </span>
     `,
@@ -84,12 +89,13 @@ export class HeaderHomePageComponent implements OnInit, OnDestroy, OnChanges {
         f.IsHomePage = !this.isHomePageItem;
         this.isHomePageItem = !this.isHomePageItem;    
         this.isFavoriteItem = !this.isFavoriteItem;
-        this.favoritesService.toggleFavorite(f)
-            .then(fav => {
+        this.favoritesService.toggleFavorite(f).subscribe(
+            fav => {
                 this.headerActionsService.emitFavoritesChange();
                 this.isLoading = false;
                 this.ref.markForCheck();
-            });
+            }
+        );
     }
 
     checkIsFavorite() {

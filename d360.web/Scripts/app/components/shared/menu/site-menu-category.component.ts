@@ -1,4 +1,4 @@
-﻿import { Input, Component, OnInit, ChangeDetectionStrategy, Output, EventEmitter, AfterViewInit, ViewChild} from '@angular/core';
+﻿import { Input, Component, OnInit, ChangeDetectionStrategy, Output, EventEmitter, AfterViewInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../base.component';
 import { StateService } from '../../../services/state.service';
@@ -15,18 +15,18 @@ import { stringify } from '@angular/core/src/util';
 import { createWriteStream } from 'fs';
 
 @Component({
-    selector: 'd3s-site-menu-category',    
+    selector: 'd3s-site-menu-category',
     template: ` 
                     <li #item [ngClass]="{'menu-category':true,'menu-parent':menu && (menu.NavigationItems),'menu-active':menu?.isActiveItem}" title="{{title}}" (mouseenter)="show(item)" (mouseleave)="hide(item)" [routerLink]="url ? url : []" style="cursor: pointer;" >
-                        <div>
-                            <i *ngIf="rootIconName" [class]="'fa ' + rootIconName"></i>
-                            <img *ngIf="imageUrl" [src]="imageUrl" style="max-width: 20px; max-height: 20px; margin: 0px 10px 0px 10px" />
+                       <div style="display:inline-flex;">
+                            <i *ngIf="rootIconName" [class]="'fa ' + rootIconName" style="padding: 10px;"></i>
+                            <img *ngIf="imageUrl" [src]="imageUrl" style="max-width: 20px; max-height: 20px; margin:10px 10px 10px 10px" />
                             <div [ngClass]="{'caption':true, 'min':!expanded}">
                                 <div [ngClass]="{'no-overflow':expanded, 'icon-active':expanded, 'icon':!expanded}"> {{title}} </div>
                                 <i [ngClass]="{'pull-right menu-category fa fa-caret-right':(menu && menu.NavigationItems && menu.NavigationItems.length > 0),'icon-active':expanded, 'icon':!expanded}"></i>
                             </div>
                         </div>
-                        <div *ngIf="menu && menu.NavigationItems && menu.NavigationItems.length > 0" class="menu-child megamenu-panel" (click)="stopNavigation($event)">
+                        <div #panel *ngIf="menu && menu.NavigationItems && menu.NavigationItems.length > 0" class="menu-child megamenu-panel" (click)="stopNavigation($event)" (keyup)="checkKey($event,panel)">
                             <div>
                                 <div class="row megamenu-title truncate">
                                     <input #searchinput type="search" [(ngModel)]=searchText placeholder="Search menu..."/>
@@ -45,15 +45,15 @@ import { createWriteStream } from 'fs';
                             </div>
                         </div>
                     </li>                    
-                `,   
-    changeDetection: ChangeDetectionStrategy.OnPush    
+                `,
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class SiteMenuCategoryComponent extends BaseComponent implements AfterViewInit {
-   
+
     @Input() url: string;
     @Input() title: string;
-    @Input() rootIconName: string; 
+    @Input() rootIconName: string;
     @Input() menu: SiteMenu;
     @Input() showClearButton: boolean = false;
     @Input() expanded: boolean;
@@ -64,27 +64,57 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
 
     public showing: boolean = false;
     private viewReady: boolean;
-    private maxMenuHeight: number; 
+    private maxMenuHeight: number;
     private searchText: string = '';
     private subReloadCounts: any;
+    private currentButtonIndex: number = -1;
 
     constructor(private menuService: SiteMenuService,
         private headerActionsService: HeaderActionsService) {
         super();
-    }    
+    }
 
     @ViewChild('searchinput') searchInput: any;
-    
-    show(item) {        
+
+    checkKey(event, elem) {
+        if (event.keyCode == 40 || event.keyCode == 13 || event.keyCode == 38) {
+
+            let allAItems = elem.getElementsByTagName("a");
+            if (!allAItems.length)
+                return;
+
+            if (event.keyCode == 13)
+                allAItems[this.currentButtonIndex].click();
+            if (event.keyCode == 40) {
+                this.currentButtonIndex++;
+            } else if (event.keyCode == 38) {
+                this.currentButtonIndex--;
+            }
+
+            if (allAItems.length - 1 < this.currentButtonIndex || this.currentButtonIndex < 0)
+                this.currentButtonIndex = 0;
+
+            this.ResetColor(allAItems);
+            allAItems[this.currentButtonIndex].style['background-color'] = "#878b97";
+        }
+    }
+    ResetColor(allAItems) {
+        if (allAItems.length) {
+            Array.prototype.forEach.call(allAItems, function (item) {
+                item.style['background-color'] = "#4e5466";
+            });
+        }
+    }
+    show(item) {
         if (this.menu && this.menu.NavigationItems) {
             let submenu = item.children[0].nextElementSibling;
-
+            this.currentButtonIndex = -1;
             if (submenu) {
                 this.menu.isActiveItem = true;
                 submenu.style.opacity = 0;
                 submenu.style.zIndex = ++SiteNav.zindex;
 
-                submenu.style.top = '0px'; 
+                submenu.style.top = '0px';
 
                 submenu.style.left = item.offsetWidth + 'px';
 
@@ -92,8 +122,8 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
                     this.searchInput.nativeElement.focus();
                 }, 350);
 
-                window.setTimeout(() => {                    
-                    this.repositionMenuToFit(window.innerHeight, submenu);                    
+                window.setTimeout(() => {
+                    this.repositionMenuToFit(window.innerHeight, submenu);
                 }, 150);
             }
         }
@@ -124,7 +154,7 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
             this.loadCounts();
         });
 
-        this.viewReady = true;        
+        this.viewReady = true;
 
         if (this.searchInput) {
             this.searchInput.nativeElement.focus();
@@ -140,16 +170,16 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
         event.stopPropagation();
     }
 
-    repositionMenuToFit(windowHeight, element) {        
+    repositionMenuToFit(windowHeight, element) {
         var dims = element.getBoundingClientRect();
 
         if (dims) {
             var maxHeight = dims.top + dims.height;
 
             //case where menu is bigger than height of page
-            if (dims.height > windowHeight) {                
+            if (dims.height > windowHeight) {
                 element.style.height = windowHeight + 'px';
-                element.style.top = '-'+ element.style.top + 'px';
+                element.style.top = '-' + element.style.top + 'px';
                 element.children[0].children[1].style.height = (windowHeight - 45) + 'px';
 
                 //get the dim values again and check is it outside the bottom after opening and moving top
@@ -158,17 +188,18 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
                 if (maxHeight > windowHeight) { //case where bottom is below page after resizing
                     var topOffset = windowHeight - maxHeight;
                     element.style.top = topOffset + 'px';
-                }            
-            }            
+                }
+            }
             else if (maxHeight > windowHeight) { //case where bottom is below page
                 var topOffset = windowHeight - maxHeight;
                 element.style.top = topOffset + 'px';
-            }            
-        } 
+            }
+        }
         element.style.opacity = 1;
     }
 
     hide(item) {
+        this.ResetColor(item.getElementsByTagName("a"));
         if (this.menu)
             this.menu.isActiveItem = false;
     }

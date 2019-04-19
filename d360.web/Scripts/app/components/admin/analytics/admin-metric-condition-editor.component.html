@@ -75,7 +75,7 @@
                 <input type="number" style="width: 95%" [(ngModel)]="condition.Values" [step]="0.25" />
             </div>
             <div *ngIf="condition.FieldType.Type == 'Boolean'">
-                <p-checkbox [(ngModel)]="condition.Values" binary="true"></p-checkbox>
+                <p-toggleButton [(ngModel)]="condition.Values" onLabel="True" offLabel="False"></p-toggleButton>
             </div>
             <!--/div-->
         </div>

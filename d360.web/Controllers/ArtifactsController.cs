@@ -105,9 +105,7 @@ where   A.Type = 'ArtifactType'
 
                 sql = $"{sql} and {addDynamicFieldSimpleFilter(fixedColumns.ToArray(), "Artifact", id, filter, dbArgs)}";
             }
-
-            var type = Company.GetById<ArtifactType>(id);
-
+            
             sql = $"select * from ({sql}) A ";
             
             var filterSql = applyFilteringSuffixBindRaw(Request, dbArgs, fields:fields, applyHiddenFilters:true);
@@ -145,7 +143,7 @@ where   A.Type = 'ArtifactType'
                 sql = applySortSuffix(sql, sortDataField, sortOrder, sortFieldType: sortColumnType(sortDataField, fields));
             }
 
-            if (Company.TypeHasParent(SystemObjects.ArtifactType, type.ID))
+            if (Company.TypeHasParent(SystemObjects.ArtifactType, assetType.ObjectID))
                 fields.Insert(0, new FieldType { Type = "string", Name = "Parent", FriendlyName = "Parent" });
 
             fields.Add(new FieldType { Type = "Number", Name = "AssetID", FriendlyName = "Asset ID" });
@@ -157,7 +155,7 @@ where   A.Type = 'ArtifactType'
             
             var stream = new MemoryStream();
             document.SaveAs(stream);
-            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Filtered {type.Name} List for {DateTime.Now.ToShortDateString()}.xlsx");
+            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Filtered {assetType.Name} List for {DateTime.Now.ToShortDateString()}.xlsx");
         }
 
         [Route("download/customexcel/{templateId:int}/{artifactTypeId:int}.xls"), FileDownload, HttpGet]
@@ -257,9 +255,7 @@ where   A.Type = 'ArtifactType'
 
                 sql = $"{sql} and {addDynamicFieldSimpleFilter(fixedColumns.ToArray(), "Artifact", artifactTypeId, filter, dbArgs)}";
             }
-
-            var type = Company.GetById<ArtifactType>(artifactTypeId);
-
+            
             sql = string.Format(@"select * from ({0}) A", sql);
 
             sql = applyFilteringSuffixBind(sql, Request, dbArgs, fields: oldFields);
@@ -290,7 +286,12 @@ where   A.Type = 'ArtifactType'
             var results = Company.Query<dynamic>(sql, dbArgs);
                                     
             SLDocument document = null;
-            if (template.IncludeParent && Company.TypeHasParent(SystemObjects.ArtifactType, type.ID)) fields.Insert(0, new FieldType { Type = "string", Name = "Parent", FriendlyName = "Parent" });
+            if (template.IncludeParent)
+            {
+                var assetType = Company.AssetTypes.FirstOrDefault(a => a.Object == "ArtifactType" && a.ObjectID == artifactTypeId);
+                if (Company.TypeHasParent(SystemObjects.ArtifactType, assetType.ObjectID)) fields.Insert(0, new FieldType { Type = "string", Name = "Parent", FriendlyName = "Parent" });
+            }
+
             if (template.IncludeUrl) fields.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "Url" });
                         
             switch (template.ExportViewType)

@@ -1,30 +1,45 @@
-﻿<div class="tile tile-detail" *ngIf="isLoading">
+﻿<div class="tile tile-detail"
+     *ngIf="isLoading">
     <div class="row">
         <div class="col s12">
             <d3s-loading isLoading="true"></d3s-loading>
         </div>
     </div>
 </div>
-<div class="tile tile-detail" style="padding: 0" [hidden]="isLoading">
+
+<div class="tile tile-detail"
+     style="padding: 0"
+     [hidden]="isLoading">
 
     <div class="row diagram-header">
-        <div class="col s4 pull-left" style="padding: 5px;color: #fff;font-size: 1.2em; padding-top: 10px;">
+        <div class="col s4 pull-left"
+             style="padding: 5px;color: #fff;font-size: 1.2em; padding-top: 10px;">
             LINEAGE: {{focal?.name}} ({{focal?.objectTypeName}})
         </div>
-        <div class="col s4" style="padding: 7px; text-align: center;">
-            <p-dropdown [options]="levelList" [ngModel]="level" (ngModelChange)="level = $event; filterView();" [style]="{'width' : '72px' }">
+        <div class="col s4"
+             style="padding: 7px; text-align: center;">
+            <p-dropdown [options]="levelList"
+                        [ngModel]="level"
+                        (ngModelChange)="level = $event; filterView();"
+                        [style]="{'width' : '72px' }">
             </p-dropdown>
         </div>
-        <div class="col s4" style="padding: 5px; text-align: right; color: #fff; font-size: 1.2em;">
-            <p-menubar [model]="menuItems" [styleClass]="'diagram-menubar'"></p-menubar>
+        <div class="col s4"
+             style="padding: 5px; text-align: right; color: #fff; font-size: 1.2em;">
+            <p-menubar [model]="menuItems"
+                       [styleClass]="'diagram-menubar'"></p-menubar>
         </div>
     </div>
-    <div class="row" style="position: relative">
-        <div *ngIf="showSidebar" class="sidebar-container">
+    <div class="row"
+         style="position: relative">
+        <div *ngIf="showSidebar"
+             class="sidebar-container">
             <div class="diagram-sidebar">
                 <div class="tab-bar">
                     <ul>
-                        <li *ngFor="let tab of currentSidebarView.tabs" [class.selected]="currentSidebarView.currentTab == tab" (click)="changeTab(tab)">
+                        <li *ngFor="let tab of currentSidebarView.tabs"
+                            [class.selected]="currentSidebarView.currentTab == tab"
+                            (click)="changeTab(tab)">
                             {{tab}}
                         </li>
                     </ul>
@@ -48,9 +63,11 @@
                                                         {{selectedData.fullText || '[unknown]'}}
                                                     </div>
                                                 </div>
-                                                <div *ngIf="selectedData.predicates != null && selectedData.predicates.length > 0" class="col s12">
+                                                <div *ngIf="selectedData.predicates != null && selectedData.predicates.length > 0"
+                                                     class="col s12">
                                                     <div>
-                                                        <object-detail [objectType]="'Intersect'" [objectID]="selectedData.predicates[0].intersectId"></object-detail>
+                                                        <object-detail [objectType]="'Intersect'"
+                                                                       [objectID]="selectedData.predicates[0].intersectId"></object-detail>
                                                     </div>
                                                 </div>
                                             </div>
@@ -75,9 +92,11 @@
                                                         {{selectedData.fullText || '[unknown]'}}
                                                     </div>
                                                 </div>
-                                                <div *ngIf="selectedData.predicates != null && selectedData.predicates.length > 0" class="col s12">
+                                                <div *ngIf="selectedData.predicates != null && selectedData.predicates.length > 0"
+                                                     class="col s12">
                                                     <div>
-                                                        <object-detail [objectType]="'Intersect'" [objectID]="selectedData.predicates[0].intersectId"></object-detail>
+                                                        <object-detail [objectType]="'Intersect'"
+                                                                       [objectID]="selectedData.predicates[0].intersectId"></object-detail>
                                                     </div>
                                                 </div>
                                             </div>
@@ -102,24 +121,38 @@
                                     <div class="row">
                                         <div class="col s6">
                                             <div *ngFor="let filter of assetTypeFilters; let i=index">
-                                                <div *ngIf="i % 2 == 0" style="padding: 2px;">
-                                                    <input type="checkbox" [(ngModel)]="filter.selected" /> {{filter.name}}
+                                                <div *ngIf="i % 2 == 0"
+                                                     style="padding: 2px;">
+                                                    <input type="checkbox"
+                                                           [(ngModel)]="filter.selected"/> {{filter.name}}
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="col s6">
                                             <div *ngFor="let filter of assetTypeFilters; let i=index">
-                                                <div *ngIf="i % 2 == 1" style="padding: 2px;">
-                                                    <input type="checkbox" [(ngModel)]="filter.selected" /> {{filter.name}}
+                                                <div *ngIf="i % 2 == 1"
+                                                     style="padding: 2px;">
+                                                    <input type="checkbox"
+                                                           [(ngModel)]="filter.selected"/> {{filter.name}}
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="row">
-                                        <div class="col s12 right" style="padding-top: 15px;">
-                                            <button pButton type="button" label="Select All" (click)="selectAllFilters()"></button>
-                                            <button pButton type="button" label="Deselect All" (click)="selectNoneFilters()"></button>
-                                            <button pButton type="button" label="Apply" (click)="filterView(true); showSidebar = false;"></button>
+                                        <div class="col s12 right"
+                                             style="padding-top: 15px;">
+                                            <button pButton
+                                                    type="button"
+                                                    label="Select All"
+                                                    (click)="selectAllFilters()"></button>
+                                            <button pButton
+                                                    type="button"
+                                                    label="Deselect All"
+                                                    (click)="selectNoneFilters()"></button>
+                                            <button pButton
+                                                    type="button"
+                                                    label="Apply"
+                                                    (click)="filterView(true); showSidebar = false;"></button>
                                         </div>
                                     </div>
                                 </div>
@@ -135,49 +168,86 @@
                                                     Object Type
                                                 </div>
                                                 <div>
-                                                    <select style="width: 100%" [ngModel]="selectedAssetTypeId" (ngModelChange)="selectObjectType($event);">
+                                                    <select style="width: 100%"
+                                                            [ngModel]="selectedAssetTypeId"
+                                                            (ngModelChange)="selectObjectType($event);">
                                                         <option></option>
-                                                        <option *ngFor="let o of objectTypes" [value]="o.value">{{o.label}}</option>
+                                                        <option *ngFor="let o of objectTypes"
+                                                                [value]="o.value">{{o.label}}</option>
                                                     </select>
                                                 </div>
                                             </div>
-                                            <div class="col s12" *ngIf="selectedAssetTypeId == null || selectedAssetTypeId == ''" style="padding:5px">&nbsp;</div>
-                                            <div class="col s12" *ngIf="selectedAssetTypeId != null && selectedAssetTypeId != ''">
+                                            <div class="col s12"
+                                                 *ngIf="selectedAssetTypeId == null || selectedAssetTypeId == ''"
+                                                 style="padding:5px">&nbsp;
+                                            </div>
+                                            <div class="col s12"
+                                                 *ngIf="selectedAssetTypeId != null && selectedAssetTypeId != ''">
                                                 <div class="FieldName">
                                                     Choose Objects
                                                 </div>
                                                 <div>
-                                                    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                                                    <input type="text"
+                                                           [hidden]="!showSimpleFilter"
+                                                           pInputText
+                                                           size="100"
+                                                           (input)="dt.filterGlobal($event.target.value, 'contains')"
+                                                           placeholder="Search..."
+                                                           class="grid-simple-filter">
                                                     <div [hidden]="!objectsLoading">
                                                         <d3s-loading isLoading="true"></d3s-loading>
                                                     </div>
                                                     <div [hidden]="objectsLoading">
-                                                        <p-table #dt [value]="objects" selectionMode="multiple" lazy="true" (onLazyLoad)="lazyLoad($event)" [totalRecords]="totalRecords"
-                                                                 [globalFilterFields]="['name']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selectedObjects">
+                                                        <p-table #dt
+                                                                 [value]="objects"
+                                                                 selectionMode="multiple"
+                                                                 lazy="true"
+                                                                 (onLazyLoad)="lazyLoad($event)"
+                                                                 [totalRecords]="totalRecords"
+                                                                 [globalFilterFields]="['name']"
+                                                                 [pageLinks]="3"
+                                                                 [paginator]="true"
+                                                                 [rows]="defaultInitialItemsPerPage"
+                                                                 [rowsPerPageOptions]="defaultPagingOptions"
+                                                                 [(selection)]="selectedObjects">
                                                             <ng-template pTemplate="header">
                                                                 <tr>
-                                                                    <th style="width: 30px"><p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
+                                                                    <th style="width: 30px">
+                                                                        <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                                                                    </th>
                                                                     <th>Name</th>
                                                                 </tr>
                                                             </ng-template>
-                                                            <ng-template pTemplate="body" let-item>
+                                                            <ng-template pTemplate="body"
+                                                                         let-item>
                                                                 <tr [pSelectableRow]="item">
-                                                                    <td><p-tableCheckbox [value]="item"></p-tableCheckbox></td>
+                                                                    <td>
+                                                                        <p-tableCheckbox [value]="item"></p-tableCheckbox>
+                                                                    </td>
                                                                     <td>{{item.name}}</td>
                                                                 </tr>
                                                             </ng-template>
-                                                            <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
-                                                                <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                                                            <ng-template *ngIf="dt.totalRecords"
+                                                                         pTemplate="summary">
+                                                                <d3s-grid-paging-info [first]="dt.first"
+                                                                                      [rows]="dt.rows"
+                                                                                      [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
                                                             </ng-template>
                                                         </p-table>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div *ngIf="addObjectsWarning != ''" style="padding: 10px">
+                                            <div *ngIf="addObjectsWarning != ''"
+                                                 style="padding: 10px">
                                                 {{addObjectsWarning}}
                                             </div>
-                                            <div class="col s12" *ngIf="selectedAssetTypeId != null">
-                                                <button pButton label="Add Selected Objects" type="button" (click)="add()" [disabled]="selectedAssetTypeId == null || selectedObjects == null || selectedObjects.length < 1 || !canAdd"></button>
+                                            <div class="col s12"
+                                                 *ngIf="selectedAssetTypeId != null">
+                                                <button pButton
+                                                        label="Add Selected Objects"
+                                                        type="button"
+                                                        (click)="add()"
+                                                        [disabled]="selectedAssetTypeId == null || selectedObjects == null || selectedObjects.length < 1 || !canAdd"></button>
                                             </div>
                                         </div>
                                     </ng-container>
@@ -216,9 +286,11 @@
                                                         {{selectedData.fullText || '[unknown]'}}
                                                     </div>
                                                 </div>
-                                                <div *ngIf="selectedData.predicates != null && selectedData.predicates.length > 0" class="col s12">
+                                                <div *ngIf="selectedData.predicates != null && selectedData.predicates.length > 0"
+                                                     class="col s12">
                                                     <div>
-                                                        <object-detail [objectType]="'Intersect'" [objectID]="selectedData.predicates[0].intersectId"></object-detail>
+                                                        <object-detail [objectType]="'Intersect'"
+                                                                       [objectID]="selectedData.predicates[0].intersectId"></object-detail>
                                                     </div>
                                                 </div>
                                             </div>
@@ -231,14 +303,18 @@
                 </div>
             </div>
         </div>
-        <div class="col s12" style="padding: 0">
+        <div class="col s12"
+             style="padding: 0">
             <table>
                 <tbody>
-                    <tr>
-                        <td style="vertical-align: top;">
-                            <div #diagram id="LineageDiagram" style="overflow: hidden;" class="diagram"></div>
-                        </td>
-                    </tr>
+                <tr>
+                    <td style="vertical-align: top;">
+                        <div #diagram
+                             id="LineageDiagram"
+                             style="overflow: hidden;"
+                             class="diagram"></div>
+                    </td>
+                </tr>
                 </tbody>
             </table>
         </div>

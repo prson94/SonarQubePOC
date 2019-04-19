@@ -104,6 +104,16 @@
                         {{routeValidationMessage}}
                     </div>
                 </div>
+                <div class="tile tile-detail">
+                    <header>Refresh Search Index</header>
+                    <div class="directions">To submit a request to refresh/rebuild the search index click the below button.</div>
+                    <div>
+                        <button pButton type="button" (click)="rebuildIndex()" [disabled]="disableRebuildIndex" [label]="rebuildLabel" style="padding: 10px 15px 10px 15px;"></button>
+                    </div>
+                </div>
+
+
+
             </div>
             <div class="col s12 m12 l2">
                 <button pButton type="button" (click)="save()" [disabled]="isLoading || routeValidationMessage != ''" label="Save Changes" style="padding: 10px 15px 10px 15px; position: fixed; top: 64px;"></button>

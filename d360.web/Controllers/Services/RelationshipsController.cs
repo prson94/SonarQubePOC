@@ -37,7 +37,7 @@ namespace d360.web.Controllers.Services
         /// Allows for OData filtering on relationships types.
         /// </summary>
         /// <returns>A list of relationships types present in the system.</returns>
-        [Route(""), HttpGet]
+        [Route(""), HttpGet, ApiExplorerSettings(IgnoreApi = true)]
         public IQueryable<IntersectType> GetIntersectTypes()
         {
             return Company.Table<IntersectType>();

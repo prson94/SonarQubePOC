@@ -86,6 +86,7 @@ When modifying content on assets, please be aware that you will need to use the 
                     c.OperationFilter<ExamplesOperationFilter>();
                     c.OperationFilter<SwaggerParameterAttributeFilter>();
                     c.PrettyPrint();
+                    c.DescribeAllEnumsAsStrings(false);
                     c.MultipleApiVersions(versionSupportResolver, versionInfoBuilder);
                     c.ApiKey("ApiKey")
                          .Description("API Key Authentication (i.e.   KEY;SECRET)")

@@ -165,6 +165,9 @@ namespace igx.jobs.databasetaskprocessor
 
                                         if (fields.ContainsKey("Type")) fields["Type"] = detail.TypeName;
                                         else fields.Add("Type", detail.TypeName);
+
+                                        if (fields.ContainsKey("UID")) fields["UID"] = detail.UID.ToString();
+                                        else fields.Add("UID", detail.UID.ToString());
                                     }
                                 }
                                 else if ((detail == null) && (string.Compare(o, "Synonym", true) == 0))

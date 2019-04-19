@@ -74,6 +74,9 @@ namespace d360.web.Handlers
                             {
                                 errorMessage = httpError.Message;
                                 responseContent = null;
+
+                                if (!string.IsNullOrEmpty(httpError.ExceptionMessage))
+                                    errorMessage += (" " + httpError.ExceptionMessage);
                             }
 
                             var responseMetadata = new ErrorResponse

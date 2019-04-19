@@ -27,78 +27,90 @@
                 <div class="row">
                     <div class="l6 s12">
                         <div *ngFor="let field of fields;let indx=index"
-                            class="row">
+                             class="row">
                             <div [ngSwitch]="field.FieldType"
-                                class="col s12">
+                                 class="col s12">
                                 <div class="FieldName"
-                                    [innerHtml]="field.Label"></div>
+                                     [innerHtml]="field.Label"></div>
                                 <input *ngSwitchCase="fieldType.Text"
-                                    [name]="'input_'+indx"
-                                    style="width: 100%;"
-                                    type="string"
-                                    [(ngModel)]="field.Value">
-                                <span *ngSwitchCase="fieldType.Boolean">&nbsp;&nbsp;
-                                    <label><input [name]="'input_'+indx"
-                                            type="radio"
-                                            [value]="true"
-                                            required
-                                            [(ngModel)]="field.Value"
-                                            #f="ngModel">&nbsp;Yes</label>&nbsp;
-                                    <label><input [name]="'input_'+indx"
-                                            type="radio"
-                                            [value]="false"
-                                            required
-                                            [(ngModel)]="field.Value"
-                                            #f="ngModel">&nbsp;No</label>
+                                       [name]="'input_'+indx"
+                                       style="width: 100%;"
+                                       type="string"
+                                       [(ngModel)]="field.Value">
+                                <span *ngSwitchCase="fieldType.Boolean">
+                                    &nbsp;&nbsp;
+                                    <label>
+                                        <input [name]="'input_'+indx"
+                                               type="radio"
+                                               [value]="true"
+                                               required
+                                               [(ngModel)]="field.Value"
+                                               #f="ngModel">&nbsp;Yes
+                                    </label>&nbsp;
+                                    <label>
+                                        <input [name]="'input_'+indx"
+                                               type="radio"
+                                               [value]="false"
+                                               required
+                                               [(ngModel)]="field.Value"
+                                               #f="ngModel">&nbsp;No
+                                    </label>
                                     <span *ngIf="f.errors">
                                         <span *ngIf="f.errors.required"
-                                            class="error">&nbsp;&nbsp;&nbsp;* This field is required </span>
+                                              class="error">&nbsp;&nbsp;&nbsp;* This field is required</span>
                                     </span>
                                 </span>
                                 <input *ngSwitchCase="fieldType.Integer"
-                                    [name]="'input_'+indx"
-                                    style="width: 100%;"
-                                    type="number"
-                                    [(ngModel)]="field.Value">
+                                       [name]="'input_'+indx"
+                                       style="width: 100%;"
+                                       type="number"
+                                       [(ngModel)]="field.Value">
                                 <textarea *ngSwitchCase="fieldType.TextArea"
-                                    [name]="'input_'+indx"
-                                    style="width: 100%;"
-                                    [(ngModel)]="field.Value"></textarea>
+                                          [name]="'input_'+indx"
+                                          style="width: 100%;"
+                                          [(ngModel)]="field.Value"></textarea>
                                 <p-calendar *ngSwitchCase="fieldType.Date"
-                                    [(ngModel)]="field.Value"
-                                    [name]="'input_'+indx"></p-calendar>
+                                            [(ngModel)]="field.Value"
+                                            [name]="'input_'+indx"></p-calendar>
                                 <div *ngSwitchCase="fieldType.List">
                                     <select *ngIf="!field.AllowMultipleValues"
-                                        [name]="'input_'+indx"
-                                        style="height:auto;width:100%;"
-                                        [(ngModel)]="field.Value">
+                                            [name]="'input_'+indx"
+                                            style="height:auto;width:100%;"
+                                            [(ngModel)]="field.Value">
                                         <option></option>
                                         <option *ngFor="let opt of field.Values"
-                                            [value]="opt.Value">{{opt.Text}}</option>
+                                                [value]="opt.Value">
+                                            {{opt.Text}}
+                                        </option>
                                     </select>
                                     <p-multiSelect *ngIf="field.AllowMultipleValues"
-                                        [name]="'input_'+indx"
-                                        [(ngModel)]="field.Value"
-                                        [options]="field.Values | dropdownItemToSelectItemPipe"
-                                        [style]="{width:'100%'}"
-                                        ngDefaultControl></p-multiSelect>
+                                                   [name]="'input_'+indx"
+                                                   [(ngModel)]="field.Value"
+                                                   [options]="field.Values | dropdownItemToSelectItemPipe"
+                                                   [style]="{width:'100%'}"
+                                                   ngDefaultControl></p-multiSelect>
                                 </div>
                                 <div *ngSwitchCase="fieldType.RelationshipType">
                                     <select *ngIf="!field.AllowMultipleValues"
-                                        [name]="'input_'+indx"
-                                        style="height:auto;width:100%;"
-                                        [(ngModel)]="field.Value">
+                                            [name]="'input_'+indx"
+                                            style="height:auto;width:100%;"
+                                            [(ngModel)]="field.Value">
                                         <option></option>
                                         <option *ngFor="let opt of field.Values"
-                                            [value]="opt.Value">{{opt.Text}}</option>
+                                                [value]="opt.Value">
+                                            {{opt.Text}}
+                                        </option>
                                     </select>
                                     <p-multiSelect *ngIf="field.AllowMultipleValues"
-                                        [name]="'input_'+indx"
-                                        [(ngModel)]="field.Value"
-                                        [options]="field.Values | dropdownItemToSelectItemPipe"
-                                        [style]="{width:'100%'}"
-                                        ngDefaultControl></p-multiSelect>
+                                                   [name]="'input_'+indx"
+                                                   [(ngModel)]="field.Value"
+                                                   [options]="field.Values | dropdownItemToSelectItemPipe"
+                                                   [style]="{width:'100%'}"
+                                                   ngDefaultControl></p-multiSelect>
                                 </div>
+                            </div>
+                            <div class="col s12" *ngIf="field.FieldType != fieldType.Boolean && workflowFormGroup && workflowFormGroup.controls['input_'+indx ]">
+                                <span *ngIf="!workflowFormGroup.controls['input_'+indx ].valid" class="error">&nbsp;&nbsp;&nbsp;* This field is required</span>
                             </div>
                             <div class="col s12">&nbsp;</div>
                         </div>
