@@ -191,7 +191,7 @@ on          (
                 S.MetricAssetUid = T.MetricAssetUid and 
                 S.EffectiveDate = T.EffectiveDate
             )
-when matched then
+when matched and T.Result <> S.Result then
     update set
             T.Result = S.Result,
             T.Archived = 0

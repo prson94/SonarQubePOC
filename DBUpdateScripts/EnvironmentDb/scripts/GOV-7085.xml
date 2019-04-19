@@ -1,0 +1,86 @@
+﻿<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="GOV-7085-DropOldTables">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">	
+<![CDATA[
+drop table if exists [metrics].[ScoreItemBackup];
+drop table if exists [metrics].[MapResult];
+drop table if exists [metrics].[ScoreBackup];
+ ]]>
+    </sql>
+	<rollback>
+<![CDATA[	
+
+]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="GOV-7085-TVF-MeetCondition">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">	
+<![CDATA[
+CREATE FUNCTION [metrics].[AssetsMeetConditions]
+(
+	@assetTypeUid uniqueidentifier,
+	@assetUid uniqueidentifier,
+	@effectiveDate date
+)
+RETURNS TABLE 
+AS
+RETURN 
+(
+	select		A.Uid,
+				MV.EffectiveDate
+	from		dbo.Asset A 
+				inner join dbo.AssetType T on T.Uid = @assetTypeUid and T.ID = A.AssetTypeID and A.Uid = @assetUid
+				inner join dbo.FieldType FT on FT.Object = T.Object and FT.ObjectID = T.ObjectID and FT.[Type] in ('Boolean', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'Percentage', 'Text')
+				left join dbo.Field F on F.FieldTypeID = FT.ID and F.ObjectType = A.Object and F.ObjectID = A.ObjectID
+				inner join metrics.Asset M on M.AssetTypeUid = T.[Uid] and M.IsGroup = 0 and M.State = 1
+				inner join metrics.AssetVersion MV on MV.[Uid] = M.[Uid] and MV.EffectiveDate = @effectiveDate
+				left join metrics.AssetVersionCondition C on C.[Uid] = M.[Uid] and C.EffectiveDate = MV.EffectiveDate and C.FieldTypeID = FT.ID
+				left join (
+					select		A.Uid,
+								MV.EffectiveDate
+					from		dbo.Asset A 
+								inner join dbo.AssetType T on T.Uid = @assetTypeUid and T.ID = A.AssetTypeID and A.Uid = @assetUid
+								inner join dbo.FieldType FT on FT.Object = T.Object and FT.ObjectID = T.ObjectID and FT.[Type] in ('Boolean', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'Percentage', 'Text')
+								left join dbo.Field F on F.FieldTypeID = FT.ID and F.ObjectType = A.Object and F.ObjectID = A.ObjectID
+								inner join metrics.Asset M on M.AssetTypeUid = T.[Uid] and M.IsGroup = 0 and M.State = 1
+								inner join metrics.AssetVersion MV on MV.[Uid] = M.[Uid] and MV.EffectiveDate = @effectiveDate
+								inner join metrics.AssetVersionCondition C on C.[Uid] = M.[Uid] and C.EffectiveDate = MV.EffectiveDate and C.FieldTypeID = FT.ID
+					where		metrics.CompareConditionValueToFieldValue(FT.[Type], C.Operator, C.ValueJson, coalesce(F.Value, FT.DefaultValue)) = 0
+					group by	A.Uid,
+								MV.EffectiveDate				
+				) B on B.uid = A.Uid and B.EffectiveDate = MV.EffectiveDate
+	where		(
+					(
+					C.Uid is not null and 
+					F.ID is not null and
+					metrics.CompareConditionValueToFieldValue(FT.[Type], C.Operator, C.ValueJson, coalesce(F.Value, FT.DefaultValue)) = 1
+					) or 
+					C.Uid is null
+				) and B.Uid is null
+	group by	A.Uid,
+				MV.EffectiveDate
+	)
+ ]]>
+    </sql>
+	<rollback>
+<![CDATA[	
+drop function if exists [metrics].[AssetsMeetConditions]
+]]>
+	</rollback>
+  </changeSet>  
+  
+  </databaseChangeLog>
