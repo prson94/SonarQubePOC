@@ -3,14 +3,14 @@
     <d3s-site-menu-category [expanded]="menuOpen"
                             [title]="'Home'"
                             [url]="'home'"
-                            (clearSearchesEvent)="clearSearches()"
+                            (clearSearchesEvent)="clearSearches($event)"
                             [rootIconName]="'fa-home'"></d3s-site-menu-category>
     <d3s-site-menu-category *ngIf="favorites"
                             [expanded]="menuOpen"
                             [title]="'Favorites'"
                             showClearButton="true"
                             (clearClick)="clearFavorites()"
-                            (clearSearchesEvent)="clearSearches()"
+                            (clearSearchesEvent)="clearSearches($event)"
                             [menu]="favorites"
                             rootIconName="fa-star"></d3s-site-menu-category>
     <ng-template ngFor
@@ -21,7 +21,7 @@
                                 [url]="menu.ngUrl"
                                 [title]="menu.Title"
                                 [rootIconName]="menu.Icon"
-                                (clearSearchesEvent)="clearSearches()"
+                                (clearSearchesEvent)="clearSearches($event)"
                                 [imageUrl]="menu.FullURL"
                                 [menu]="menu"></d3s-site-menu-category>
     </ng-template>
@@ -29,12 +29,12 @@
                             [expanded]="menuOpen"
                             [title]="'Configuration'"
                             rootIconName="fa-wrench"
-                            (clearSearchesEvent)="clearSearches()"
+                            (clearSearchesEvent)="clearSearches($event)"
                             [menu]="configMenu"></d3s-site-menu-category>
     <d3s-site-menu-category *ngIf="isAdmin"
                             [expanded]="menuOpen"
                             [title]="'Administration'"
-                            (clearSearchesEvent)="clearSearches()"
+                            (clearSearchesEvent)="clearSearches($event)"
                             rootIconName="fa-cog"
                             [menu]="adminMenu"></d3s-site-menu-category>
 </ul>

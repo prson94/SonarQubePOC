@@ -72,9 +72,16 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         this.subFavorites.unsubscribe();
     }
 
-    clearSearches() {
-        console.log(this.menuRefs);
-        this.menuRefs.forEach((item) => { item.clearInput(); });
+    clearSearches($event) {
+
+        this.menuRefs.forEach((item) =>
+        {
+            if ($event.item.title != item.title) {
+                if (item.menu)
+                    item.menu.isActiveItem = false;
+            }
+            item.clearInput();
+        });
     }
 
     loadFavorites() {

@@ -17,7 +17,7 @@ import { createWriteStream } from 'fs';
 @Component({
     selector: 'd3s-site-menu-category',
     template: ` 
-                    <li #item [ngClass]="{'menu-category':true,'menu-parent':menu && (menu.NavigationItems),'menu-active':menu?.isActiveItem}" title="{{title}}" (mouseenter)="show(item);clearInput(); clearSearches(item);" (mouseleave)="hide();" [routerLink]="url ? url : []" style="cursor: pointer;" >
+                    <li #item [ngClass]="{'menu-category':true,'menu-parent':menu && (menu.NavigationItems),'menu-active':menu?.isActiveItem}" title="{{title}}" (mouseenter)="show(item);clearInput(); clearSearches(event, item);" (mouseleave)="hide(item);" [routerLink]="url ? url : []" style="cursor: pointer;" >
                        <div style="display:inline-flex;">
                             <i *ngIf="rootIconName" [class]="'fa ' + rootIconName" style="padding: 10px;"></i>
                             <img *ngIf="imageUrl" [src]="imageUrl" style="max-width: 20px; max-height: 20px; margin:10px 10px 10px 10px" />
@@ -200,16 +200,15 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
         } 
     }
 
-    hide() {
-        if (this.menu && this.searchText == "")
-                this.ResetColor(item.getElementsByTagName("a"));
-                this.menu.isActiveItem = false;
-            }
+    hide(item) {
+        if (this.menu && this.searchText == "") {
+            this.ResetColor(item.getElementsByTagName("a"));
+            this.menu.isActiveItem = false;
         }
     }
 
-    clearSearches(item) {
-        this.clearSearchesEvent.emit(item);
+    clearSearches(event, item) {
+        this.clearSearchesEvent.emit({ event: event, item: item });
     }
     clearInput() {
         this.searchText = "";
@@ -218,4 +217,4 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
     private getColumnClass(menu: SiteMenu) {
         return "col s12";
     }
-};
+}
