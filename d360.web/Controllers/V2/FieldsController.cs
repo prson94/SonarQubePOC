@@ -73,7 +73,7 @@ namespace d360.web.Controllers.V2
                 if (Guid.TryParse(actionTypeUidString, out ac))
                 {
                     actionTypeUid = ac;
-                    var actionType = Company.Filter<IssueType>(i => i.ID == 0).SingleOrDefault();
+                    var actionType = Company.Filter<IssueType>(i => i.uid == actionTypeUid).SingleOrDefault();
                     if (actionType != null)
                     {
                         obj = "IssueType";
@@ -477,6 +477,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
         /// </remarks>
         /// <param name="AssetTypeUid">The asset type Uid to retrieve field types for.</param>
         /// <param name="RelationshipTypeUid">The relationship type Uid to retrieve field types for.</param>
+        /// /// <param name="ActionTypeUid">The action type Uid to retrieve field types for.</param>
         /// <param name="Name">The API Name to search for.</param>
         /// <param name="FriendlyName">The Friendly Name to search for.</param>
         /// <param name="Type">The data type to search for.</param>
@@ -491,8 +492,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
-        public async Task<HttpResponseMessage> GetFieldTypesAsync(Guid? AssetTypeUid = null, Guid? RelationshipTypeUid = null, 
-            //Guid? ActionTypeUid = null, 
+        public async Task<HttpResponseMessage> GetFieldTypesAsync(Guid? AssetTypeUid = null, Guid? RelationshipTypeUid = null, Guid? ActionTypeUid = null, 
             string Name = "", string FriendlyName = "", DataType? Type = null, int? _pageSize = null, int? _pageNum = null)
         {
             var prefix = "Fields.GetFieldTypesAsync => ";
