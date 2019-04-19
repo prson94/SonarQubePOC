@@ -1,4 +1,4 @@
-﻿import { Input, Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter, AfterViewInit} from '@angular/core';
+﻿import { Input, Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter, AfterViewInit, ViewChildren, ElementRef, ContentChildren, ViewChild, QueryList} from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { MessagesService } from '../../../services/messages.service';
 import { HeaderActionsService } from '../../../services/header-actions.service';
@@ -11,6 +11,8 @@ import { Favorite } from '../../../models/favorite.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import * as _ from 'lodash';
 import { isString, isArray } from 'util';
+import { Element } from '@angular/compiler';
+import { SiteMenuCategoryComponent } from './site-menu-category.component';
 
 declare var CompanySettings;
 
@@ -33,6 +35,8 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     private configMenu: SiteMenu;
     private subSiteNav: any;
     private subFavorites: any;
+
+    @ViewChildren(SiteMenuCategoryComponent) menuRefs: QueryList<SiteMenuCategoryComponent>;
 
     constructor(
         private ref: ChangeDetectorRef,
@@ -68,7 +72,10 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         this.subFavorites.unsubscribe();
     }
 
-
+    clearSearches() {
+        console.log(this.menuRefs);
+        this.menuRefs.forEach((item) => { item.clearInput(); });
+    }
 
     loadFavorites() {
         if (CompanySettings.ShowFavorites == 'false') {
