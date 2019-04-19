@@ -214,17 +214,7 @@ WHEN NOT MATCHED THEN
             var export = new AssetTypeExportTemplate { Name = "Data Guidance", TemplateFile = bytes, AssetTypeID = 10, ExportViewType = d360.core.enums.ExportView.Grouped, IncludeUrl = false, IncludeParent = false, UpdatedBy = 0, UpdatedOn = DateTime.UtcNow, IncludeFields = "0" };
             company.Add(export);
         }
-
-        [TestMethod]
-        public void ReleaseBlobFileLock_Success()
-        {
-            var folder = "d3s-searchindex-10";
-            var file = "write.lock";
-
-            var storage = new AzureStorageProvider();
-            Assert.IsTrue(storage.ReleaseLockOnBlobFile(folder, file));
-        }
-
+        
         [TestMethod]
         public void DeployFusionLookupEagleStarTagData()
         {
