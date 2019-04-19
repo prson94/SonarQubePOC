@@ -25,6 +25,7 @@ import {
     WorkflowChangeType,
     BulkWorkflowFormModel,
     WorkflowItemStep,
+    BulkWorkflowReassignModel,
 } from '../models/workflow.model';
 import { FieldType } from '../models/fields.model';
 import { SelectItem, FormHelper } from '../models/form.model';
@@ -527,6 +528,13 @@ export class WorkflowService extends BaseService {
 
     getWorkflowStepDetail(itemStepId: number) {
         return this.http.get(`services/workflow/step/detail/${itemStepId}`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
+
+    postWorkflowBulkReassign(model: BulkWorkflowReassignModel) {
+        return this.http.post('services/workflow/ReassignWorkflowResource/bulk', model)
             .toPromise()
             .then(response => response.json())
             .catch(err => this.handleError(err));

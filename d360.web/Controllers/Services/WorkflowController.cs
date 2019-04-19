@@ -3174,11 +3174,27 @@ order by wi.StartedOn desc";
                 {
                     //ReassignWorkflowResource((int)itemStep.ID, resource.ResourceID);
 
+                    var placeholder = new WorkflowItemStep()
+                    {
+                        ItemID = itemStep.ItemID,
+                        StepID = itemStep.StepID,
+                        StartedBy = itemStep.StartedBy,
+                        StartedOn = itemStep.StartedOn,
+                        CompletedBy = itemStep.CompletedBy,
+                        CompletedOn = itemStep.CompletedOn,
+                        Fields = itemStep.Fields,
+                        Settings = itemStep.Settings,
+                    };
+
+                    Company.Add(placeholder);
+                    Company.SaveChanges();
+
                     var fieldElement = XElement.Parse(itemStep.Fields);
                     var reassigned = new XElement("Reassigned");
                     reassigned.Add(new XAttribute("reassignType", "Resource"));
                     fieldElement.Add(reassigned);
                     itemStep.Fields = fieldElement.ToString();
+                    itemStep.StartedOn = DateTime.UtcNow;
                     //Company.SaveChanges();
 
                     var currentAssignment = Company.WorkflowItemAssignments.FirstOrDefault(x => x.ItemStepID == itemStep.ID);
@@ -3208,15 +3224,15 @@ order by wi.StartedOn desc";
                         var obj = itemStep.Item.Object;
                         var objId = itemStep.Item.ObjectID;
 
-                        if (obj.ToLower() == "issue")
-                        {
-                            var issue = Company.GetById<Issue>(objId);
-                            if (issue != null)
-                            {
-                                obj = issue.Object;
-                                objId = issue.ObjectID;
-                            }
-                        }
+                        //if (obj.ToLower() == "issue")
+                        //{
+                        //    var issue = Company.GetById<Issue>(objId);
+                        //    if (issue != null)
+                        //    {
+                        //        obj = issue.Object;
+                        //        objId = issue.ObjectID;
+                        //    }
+                        //}
 
                         var objectDetail = Company.GetObjectDetail(obj, objId);
 

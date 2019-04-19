@@ -23,6 +23,7 @@ export class WorkflowBulkReassignComponent extends BaseComponent implements OnIn
     field: EditorField;
     selectedResourceName: string = '';
     sendFormEmails: boolean = false;
+    
 
 
     constructor(
@@ -63,6 +64,12 @@ export class WorkflowBulkReassignComponent extends BaseComponent implements OnIn
     }
 
     save() {
+        this.isLoading = true;
+        this.workflowService.postWorkflowBulkReassign(this.model)
+            .then(response => {
+                this.isLoading = false;
+                console.log('submit complete', response);
+            });
 
     }
 
