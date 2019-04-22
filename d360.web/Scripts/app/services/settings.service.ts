@@ -49,4 +49,12 @@ export class CompanySettingsService extends BaseService implements ICompanySetti
             .then(res => <JsonResult>res.json())
             .catch(err => this.handleError(err));
     }
+
+    postIndexRebuildRequest(): Promise<JsonResult> {
+        return this.http
+            .post(`api/v2/search/rebuildIndex`, '')
+            .toPromise()
+            .then(res => <JsonResult>res.json())
+            .catch(err => this.handleError(err));
+    }
 }

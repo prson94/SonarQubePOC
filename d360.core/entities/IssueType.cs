@@ -12,6 +12,9 @@ namespace d360.core.entities
     [DataContract(Namespace = NAMESPACE)]
     public class IssueType : BaseIntObject, IIntObject
     {
+        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public Guid uid { get; set; }
+
         [DataMember, StringLength(250)]
         public string Name { get; set; }
 

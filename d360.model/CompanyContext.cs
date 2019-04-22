@@ -128,9 +128,7 @@ namespace d360.model
         public DbSet<FieldWithRelation> FieldWithRelations { get; set; }                        /* VIEW */
 
         public DbSet<FieldType> FieldTypes { get; set; }
-
-        public DbSet<FieldTypeLookupValue> FieldTypeLookupValues { get; set; }                  /* VIEW */
-
+        
         public DbSet<FieldTypeLookup> FieldTypeLookups { get; set; }
 
         public DbSet<FieldTypeFilteredLookupDefinition> FieldTypeFilteredLookupDefinitions { get; set; }
@@ -203,8 +201,6 @@ namespace d360.model
 
         public DbSet<PolicyType> PolicyTypes { get; set; }
 
-        public DbSet<PolicyTypeLevel> PolicyTypeLevels { get; set; }
-
         public DbSet<Predicate> Predicates { get; set; }
 
         public DbSet<Question> Questions { get; set; }
@@ -255,9 +251,7 @@ namespace d360.model
 
         public DbSet<SurveyType> SurveyTypes { get; set; }
 
-        public DbSet<Taxonomy> Taxonomies { get; set; }
-
-        public DbSet<TaxonomyTypeLevel> TaxonomyTypeLevels { get; set; }
+        public DbSet<Taxonomy> Taxonomies { get; set; }        
 
         public DbSet<AssetTypeLevel> AssetTypeLevels { get; set; }
 
@@ -713,7 +707,18 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
         public Dictionary<string,object> GetRelationshipFieldItems(int fieldTypeID, string @object = null, int? objectID = null, int offset = 0, int rows = 25, string query = null, bool includeSelection = true)
         {
             var ft = GetById<FieldType>(fieldTypeID);
+
+            if(!ft.LookupObjectID.HasValue)
+            {
+                throw new Exception("Invalid Relationship field encountered no relationship type to lookup found in definition.");
+            }
             var intersectType = GetById<IntersectType>(ft.LookupObjectID.Value);
+
+            if(intersectType == null)
+            {
+                throw new Exception("Invalid Relationship field encountered invalid or deleted relationship type encountered.");
+            }
+
             int count = 0, objID = 0;
             string sql, countSql, obj, selectedSql;
 
@@ -2101,6 +2106,11 @@ where	R.SourceObject = 'FusionAttribute'
         public void RebuildDisplayValuesRequest()
         {
             Enqueue(Config.GetValue<string>("DisplayValueQueue"), new DisplayUpdateInfo { CompanyID = CurrentCompanyID, RebuildAll = true });
+        }
+
+        public void RebuildIndexRequest()
+        {
+            Enqueue(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel { CompanyID = CurrentCompanyID });
         }
 
         private void addQE(List<EventInfo> events, ChangeType action, EventObjectInfo item)

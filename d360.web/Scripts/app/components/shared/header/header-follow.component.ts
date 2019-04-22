@@ -10,7 +10,12 @@ import { HeaderActionsService } from '../../../services/header-actions.service';
     selector: 'd3s-header-follow',    
     template:
     `
-        <span *ngIf="visible" (click)="toggleFollow()" [class.active]="active" class="follow" [title]="tooltipString">
+        <div *ngIf="visible" class="show-on-medium-and-down hide-on-med-and-up" (click)="toggleFollow()">
+            <i *ngIf="active && !isLoading" class="fa fa-check"></i>
+            <i *ngIf="isLoading" style="color: #000;" class="fa fa-spinner fa-spin"></i>
+            Follow
+        </div>
+        <span *ngIf="visible" (click)="toggleFollow()" [class.active]="active" class="follow hide-on-med-and-down" [title]="tooltipString">
             <i *ngIf="!isLoading" class="fa fa-bookmark"></i>
             <i *ngIf="isLoading" class="fa fa-spinner fa-spin" style="color:black;"></i>
         </span>
