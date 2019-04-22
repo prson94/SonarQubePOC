@@ -1670,6 +1670,7 @@
     <TypeScriptCompile Include="Scripts\app\models\web-analytics-activity.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\workflow.model.ts" />
     <TypeScriptCompile Include="Scripts\app\services\export-template.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\fieldsObservable.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\levels.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\lineage.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\load.service.ts" />
