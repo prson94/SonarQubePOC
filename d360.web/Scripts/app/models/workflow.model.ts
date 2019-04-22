@@ -275,6 +275,7 @@ export class WorkflowFormField {
     Value: any;
     ID: string;
     AllowMultipleValues: boolean;
+    Required: boolean;
 
 }
 
@@ -458,6 +459,7 @@ export class WorkflowAssignmentSummary {
     StepName: string;
     ObjectName: string;
     TypeName: string;
+    SendFormEmail: boolean;
 }
 
 export class WorkflowAssignmentDetail {
@@ -501,6 +503,18 @@ export class BulkWorkflowFormModel {
     ItemStepIDs: number[] = [];
     Fields: WorkflowFormField[] = [];
 }
+
+export class BulkWorkflowReassignModel {
+    ItemStepIDs: number[] = [];
+    StepHasFormEmails: boolean;
+    OriginalAssigneeResourceID: number = -1;
+    OriginalAssigneeResourceName: string = '[unknown user]';
+    NewAssigneeResourceID: number = -1;
+    NewAssigneeResourceName: string = '';
+    StepName: string = 'Form';
+    SendFormEmails: boolean = true;
+}
+
 
 export class EmailTaskRecipientTypeInfo {
     ID: number;

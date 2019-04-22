@@ -27,6 +27,7 @@ import { RaiseIssueButtonComponent } from './raise-issue-button.component';
 import { HeaderShoppingCartComponent } from './header-shopping-cart.component';
 import { HeaderHomePageComponent } from './header-homepage.component';
 import { HeaderProfileComponent } from './header-profile.component';
+import { HeaderMiniMenuComponent } from './header-mini-menu-component';
 
 @NgModule({
     imports: [CommonModule,
@@ -57,6 +58,7 @@ import { HeaderProfileComponent } from './header-profile.component';
         HeaderShoppingCartComponent,
         HeaderHomePageComponent,
         HeaderProfileComponent,
+        HeaderMiniMenuComponent,
     ],
     exports: [
         HeaderComponent

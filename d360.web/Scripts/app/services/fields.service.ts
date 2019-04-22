@@ -1,4 +1,4 @@
-import {distinctUntilChanged, switchMap, map} from 'rxjs/operators';
+import {distinctUntilChanged, switchMap, map, catchError} from 'rxjs/operators';
 import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { FieldDefinition, IFieldsService, FieldTypeEditorModel, Lookups, LookupItem } from '../models/fields.model';
@@ -252,15 +252,30 @@ export class FieldsService extends BaseService implements IFieldsService {
     getRelationshipFieldItems(event: Observable<any>) {
         return event.pipe(
             distinctUntilChanged(),
-            switchMap(event => {
-                let uri = `api/relationships/field/${event.fieldTypeID}?offset=${event.event.first}&rows=${event.event.rows}`;
-                if (event.event.globalFilter != null && event.event.globalFilter.length > 0)
-                    uri += `&query=${event.event.globalFilter}`
-                if (event.objectID != null)
-                    uri += `&object=${event.object}&objectID=${event.objectID}`
-                return this.http.get(uri).pipe(map(res => res.json()),
-                    map(res => { return { fieldTypeID: event.fieldTypeID, results: res, event: event.event } }),);
-            }),);
+            switchMap(
+                event => {
+                    let uri = `api/relationships/field/${event.fieldTypeID}?offset=${event.event.first}&rows=${event.event.rows}`;
+
+                    if (event.event.globalFilter != null && event.event.globalFilter.length > 0) {
+                        uri += `&query=${event.event.globalFilter}`
+                    }
+
+                    if (event.objectID != null) {
+                        uri += `&object=${event.object}&objectID=${event.objectID}`
+                    }
+
+                    return this.http.get(uri).pipe(
+                        map(res => res),
+                        map(
+                            res => {
+                                return {fieldTypeID: event.fieldTypeID, results: res, event: event.event}
+                            }
+                        ),
+                        catchError(err => this.handleError(err))
+                    );
+                }
+            )
+        );
     }
 
     getTypeaheadItems(e: Observable<any>): Observable<EditorDropDownItem[]> {

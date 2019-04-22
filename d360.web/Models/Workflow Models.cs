@@ -30,11 +30,22 @@ namespace d360.web.Models
 
         public bool AllowMultipleValues { get; set; }
         public int IntersectTypeID { get; set; }
+
+        public bool Required { get; set; }
     }
 
     public class BulkWorkflowFormModel
     {
         public List<long> ItemStepIDs { get; set; } = new List<long>();
         public List<WorkflowFormModelField> Fields { get; set; } = new List<WorkflowFormModelField>();
-    }    
+    }
+
+    public class BulkWorkflowReassignModel
+    {
+        public List<long> ItemStepIDs { get; set; } = new List<long>();
+        public bool SendFormEmails { get; set; } = true;
+        public int NewAssigneeResourceID { get; set; }
+        public int OriginalAssigneeResourceID { get; set; }
+
+    }
 }

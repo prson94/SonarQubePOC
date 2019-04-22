@@ -13,6 +13,7 @@ using d360.core.entities.Views;
 using d360.core.entities.Workflow;
 using d360.core.enums;
 using d360.core.queue;
+using d360.model.workflow;
 using Dapper;
 using Newtonsoft.Json.Linq;
 
@@ -192,6 +193,7 @@ namespace d360.model
         bool AssignActivityWorkflowToNewObject(WorkflowEventRegistration reg, int itemId, int workflowId, int objectId, string @object);
         void BulkLoadParseFile(int loadID);
         List<BulkMetricTemporaryTableModel> BulkMetricsImport(BulkMetricsImport model, ApiExecution execution);
+        Task BulkWorkflowFormReassign(List<WorkflowItemStep> itemSteps, GlobalReportingResource resource, int originalResourceId, bool sendFormEmails = true);
         void CompleteItemStepAssignments(long itemStepID);
         void CreateOrUpdateTypeDisplayValuesAsync(int objectTypeId, string objectType);
         Task<bool> CreateWorkflowItem(int workflowTypeID, EventObjectInfo objectInfo, WorkflowEventRegistration registration, int requestorId, bool isTest = false);
