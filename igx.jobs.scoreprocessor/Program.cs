@@ -49,7 +49,7 @@ namespace igx.jobs.scoreprocessor
                         using (var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
                         {
                             company.OpenWithRetry(RetryPolicy.DefaultFixed);
-                            company.Execute("metrics.LoadFromStaging", commandTimeout: 1400);
+                            company.Execute("metrics.LoadFromStaging", commandTimeout: 3600);
                             lock (log)
                             {
                                 log.WriteLine("Processed scores for company {0}...", c.CompanyID);
