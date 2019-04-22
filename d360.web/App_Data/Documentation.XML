@@ -2697,6 +2697,11 @@
             <param name="model">The fusion status log model.</param>
             <returns>The model of the updated fusion status log entry.</returns>
         </member>
+        <member name="T:d360.web.Controllers.V2.LineageController">
+            <summary>
+            This service houses all endpoints handling glossary-related data such as artifacts and models.
+            </summary>
+        </member>
         <member name="T:d360.web.Controllers.V2.MetricsController">
             <summary>
             This service houses all endpoints handling metrics and scoring for assets throughout your environment.
