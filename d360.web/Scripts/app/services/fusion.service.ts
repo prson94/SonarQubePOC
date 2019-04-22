@@ -44,6 +44,8 @@ import {SortOrder} from '../models/enums.model';
 
 import {MessagesService} from './messages.service';
 import {BaseObservableService} from "./baseObservable.service";
+import {FormHelper} from "../models/form.model";
+import { TreeNode } from 'primeng/components/common/api';
 
 @Injectable()
 export class FusionService extends BaseObservableService {
@@ -72,6 +74,15 @@ export class FusionService extends BaseObservableService {
                 map(response => <FusionAttributeType[]>response),
                 catchError(err => this.handleError(err))
             );
+    }
+
+    getFusionAttributeTypeTree(id: number, query: string = ''): Observable<TreeNode[]> {
+        return this.getFusionAttributeTypes(id, query).pipe(
+            map(r => {
+                return FormHelper.formTree(r);
+            }),
+            catchError(err => this.handleError(err))
+        );
     }
 
     getFusionConfiguration(fusionId: number): Observable<FusionConfigurationDetails> {

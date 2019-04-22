@@ -51,7 +51,7 @@ export class FusionAttributesTile implements OnChanges {
             return;
         }
 
-        this.fusionService.getFusionAttributeTypeList(this.fusionType.ID).subscribe(
+        this.fusionService.getFusionAttributeTypeTree(this.fusionType.ID).subscribe(
             data => {
                 this.fusionAttributeTypes = data;
 
