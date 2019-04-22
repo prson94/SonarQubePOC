@@ -846,10 +846,15 @@ order by	f.SortOrder";
             int id = 0;
             var urlElements = url.Split('-');
             type = urlElements[0];
-            if (type.Equals("Rule"))
+            if (type.Equals("quality", StringComparison.OrdinalIgnoreCase))
             {
                 id = int.TryParse(urlElements[2], out id) ? id : 0;
                 type = urlElements[1];
+            }
+            else if (type.Equals("model", StringComparison.OrdinalIgnoreCase))
+            {
+                type = "Taxonomy";
+                id = int.TryParse(urlElements[1], out id) ? id : 0;
             }
             else
                 id = int.TryParse(urlElements[1], out id) ? id : 0;

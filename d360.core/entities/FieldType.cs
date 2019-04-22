@@ -242,6 +242,13 @@ namespace d360.core.entities
         public bool IsDisplayable { get; set; }
         [DataMember]
         public bool ShowIfEmpty { get; set; }
+
+        [DataMember]
+        public bool HideFilter { get; set; }
+        [DataMember]
+        public bool HideFooter { get; set; }
+        [DataMember]
+        public bool HideHeader { get; set; }
     }
 
     public class FieldTypeDataTypeComputedRelationshipFieldApiViewModel
@@ -308,6 +315,13 @@ namespace d360.core.entities
         public bool IsDisplayable { get; set; }
         [DataMember]
         public bool ShowIfEmpty { get; set; }
+
+        [DataMember]
+        public bool HideFilter { get; set; }
+        [DataMember]
+        public bool HideFooter { get; set; }
+        [DataMember]
+        public bool HideHeader { get; set; }
     }
 
     public class FieldTypeDataTypeComputedRelationshipReferenceListApiViewModel
@@ -340,6 +354,8 @@ namespace d360.core.entities
         public decimal? DefaultValue { get; set; }
         [DataMember]
         public FieldTypeDescriptionApiViewModel_DisplayForm Description { get; set; }
+        [DataMember]
+        public decimal? Increment { get; set; }
         [DataMember]
         public FieldTypeDescriptionApiViewModel_ValidationDecimal Validation { get; set; }
     }
@@ -460,8 +476,6 @@ namespace d360.core.entities
         [DataMember]
         public FieldTypeDescriptionApiViewModel_DisplayForm Description { get; set; }
         [DataMember]
-        public Guid IntersectTypeUid { get; set; }
-        [DataMember]
         public FieldTypeDescriptionApiViewModel_ValidationText Validation { get; set; }
     }
 
@@ -499,6 +513,47 @@ namespace d360.core.entities
         public FieldTypeDataTypeRelationshipApiViewModel Relationship { get; set; }
         [DataMember]
         public FieldTypeDataTypeTextApiViewModel Text { get; set; }
+
+        public bool IsOnlyOneTypeModelDefined()
+        {
+            int childPopulatedCount = 0;
+
+            childPopulatedCount += (Boolean != null) ? 1 : 0;
+            childPopulatedCount += (ComputedFusionLookup != null) ? 1 : 0;
+            childPopulatedCount += (ComputedOwnershipLookup != null) ? 1 : 0;
+            childPopulatedCount += (ComputedRelationshipField != null) ? 1 : 0;
+            childPopulatedCount += (ComputedRelationshipLookup != null) ? 1 : 0;
+            childPopulatedCount += (ComputedRelationshipReferenceList != null) ? 1 : 0;
+            childPopulatedCount += (Date != null) ? 1 : 0;
+            childPopulatedCount += (DateTime != null) ? 1 : 0;
+            childPopulatedCount += (Decimal != null) ? 1 : 0;
+            childPopulatedCount += (Html != null) ? 1 : 0;
+            childPopulatedCount += (Json != null) ? 1 : 0;
+            childPopulatedCount += (Link != null) ? 1 : 0;
+            childPopulatedCount += (Lookup != null) ? 1 : 0;
+            childPopulatedCount += (Number != null) ? 1 : 0;
+            childPopulatedCount += (Relationship != null) ? 1 : 0;
+            childPopulatedCount += (Text != null) ? 1 : 0;
+
+            return (childPopulatedCount == 1);
+        }
+
+        public bool IsPartyOfKey()
+        {
+            bool partOfKey = false;
+
+            if (Boolean != null) partOfKey = Boolean.IsPartOfKey;
+            if (Date != null) partOfKey = Date.IsPartOfKey;
+            if (DateTime != null) partOfKey = DateTime.IsPartOfKey;
+            if (Decimal != null) partOfKey = Decimal.IsPartOfKey;
+            if (Html != null) partOfKey = Html.IsPartOfKey;
+            if (Link != null) partOfKey = Link.IsPartOfKey;
+            if (Lookup != null) partOfKey = Lookup.IsPartOfKey;
+            if (Number != null) partOfKey = Number.IsPartOfKey;
+            if (Text != null) partOfKey = Text.IsPartOfKey;
+
+            return partOfKey;
+        }
     }
 
     #endregion
@@ -525,5 +580,50 @@ namespace d360.core.entities
         public int total { get; set; } = 0;
         [DataMember]
         public List<FieldTypeApiViewModel> items { get; set; }
+    }
+
+    public enum FieldTypesApiEditAction
+    {
+        Merge = 1,
+        Replace = 2
+    }
+
+    public class FieldTypesApiEditModel
+    {
+        [DataMember]
+        public Guid? ActionTypeUid { get; set; } = null;
+
+        [DataMember]
+        public Guid? AssetTypeUid { get; set; } = null;
+
+        [DataMember]
+        public Guid? RelationshipTypeUid { get; set; } = null;
+
+        [DataMember]
+        public FieldTypesApiEditAction Action { get; set; }
+
+        [DataMember]
+        public List<FieldTypeApiViewModel> Fields { get; set; }
+    }
+
+    public class FieldTypeApiDeleteModel
+    {
+        [DataMember]
+        public string Name { get; set; }
+    }
+
+    public class FieldTypesApiDeleteModel
+    {
+        [DataMember]
+        public Guid? ActionTypeUid { get; set; } = null;
+
+        [DataMember]
+        public Guid? AssetTypeUid { get; set; } = null;
+
+        [DataMember]
+        public Guid? RelationshipTypeUid { get; set; } = null;
+
+        [DataMember]
+        public List<FieldTypeApiDeleteModel> Fields { get; set; }
     }
 }

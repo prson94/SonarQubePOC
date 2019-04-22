@@ -145,8 +145,7 @@ export class FieldsService extends BaseObservableService implements IFieldsServi
             .http
             .get<SelectItem[]>(`form/FieldType_Lookup_DefaultValueOptions?id=${id}&type=${type}`)
             .pipe(
-                map(response => <FtItem[]>response),
-                map(r => this.ftItemToSelectItem(r)),
+                map(r => this.ftItemToSelectItem(<FtItem[]>r)),
                 catchError(err => this.handleError(err))
             );
     }
@@ -160,8 +159,7 @@ export class FieldsService extends BaseObservableService implements IFieldsServi
             .http
             .get<SelectItem[]>(`form/FieldType_Lookup_Tokens?id=${id}&type=${type}`)
             .pipe(
-                map(response => <FtItem[]>response),
-                map(r => this.ftItemToSelectItem(r)),
+                map(r => this.ftItemToSelectItem(<FtItem[]>r)),
                 catchError(err => this.handleError(err))
             );
     }
@@ -426,7 +424,8 @@ export class FieldsService extends BaseObservableService implements IFieldsServi
                             res => {
                                 return {fieldTypeID: event.fieldTypeID, results: res, event: event.event}
                             }
-                        )
+                        ),
+                        catchError(err => this.handleError(err))
                     );
                 }
             )

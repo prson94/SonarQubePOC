@@ -128,9 +128,7 @@ namespace d360.model
         public DbSet<FieldWithRelation> FieldWithRelations { get; set; }                        /* VIEW */
 
         public DbSet<FieldType> FieldTypes { get; set; }
-
-        public DbSet<FieldTypeLookupValue> FieldTypeLookupValues { get; set; }                  /* VIEW */
-
+        
         public DbSet<FieldTypeLookup> FieldTypeLookups { get; set; }
 
         public DbSet<FieldTypeFilteredLookupDefinition> FieldTypeFilteredLookupDefinitions { get; set; }
@@ -709,7 +707,18 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
         public Dictionary<string,object> GetRelationshipFieldItems(int fieldTypeID, string @object = null, int? objectID = null, int offset = 0, int rows = 25, string query = null, bool includeSelection = true)
         {
             var ft = GetById<FieldType>(fieldTypeID);
+
+            if(!ft.LookupObjectID.HasValue)
+            {
+                throw new Exception("Invalid Relationship field encountered no relationship type to lookup found in definition.");
+            }
             var intersectType = GetById<IntersectType>(ft.LookupObjectID.Value);
+
+            if(intersectType == null)
+            {
+                throw new Exception("Invalid Relationship field encountered invalid or deleted relationship type encountered.");
+            }
+
             int count = 0, objID = 0;
             string sql, countSql, obj, selectedSql;
 

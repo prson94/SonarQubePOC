@@ -1,0 +1,1125 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="KMcNamee" id="GOV-7030-BusinessKey">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+ALTER FUNCTION [utility].[GetAssetBusinessKey]
+(
+
+	@ID int
+)
+RETURNS TABLE
+AS
+RETURN 
+(
+	select		@ID as ID,
+				STRING_AGG(Value, '-') as [Key]
+	from		(
+				select		top 100 percent
+							A.Code as Value
+				from		Asset A
+				where		A.Object = 'ReferenceItem' and A.ID = @ID				
+				union
+				select		*
+				from		(
+							select		top 100 percent
+										coalesce(F.FormattedValue, '') as Value
+							from		Asset A
+										inner join AssetType T on T.ID = A.AssetTypeID and A.ID = @ID
+										inner join Field F on F.ObjectType = A.Object and F.ObjectID = A.ObjectID
+										inner join FieldType FT on FT.ID = F.FieldTypeID 
+																and FT.Object = T.Object and FT.ObjectID = T.ObjectID
+																and FT.IsPartOfKey = 1
+							order by	FT.ID
+							) F
+				) A
+)
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+ALTER FUNCTION [utility].[GetAssetBusinessKey]
+(
+
+	@ID int
+)
+RETURNS TABLE
+AS
+RETURN 
+(
+	select		@ID as ID,
+				STRING_AGG(Value, '-') as [Key]
+	from		(
+				select		top 100 percent
+							Code as Value
+				from		Asset A
+							inner join ReferenceItem R on A.Object = 'ReferenceItem' and R.ID = A.ObjectID and A.ID = @ID
+				union
+				select		*
+				from		(
+							select		top 100 percent
+										coalesce(F.FormattedValue, '') as Value
+							from		Asset A
+										inner join AssetType T on T.ID = A.AssetTypeID and A.ID = @ID
+										inner join Field F on F.ObjectType = A.Object and F.ObjectID = A.ObjectID
+										inner join FieldType FT on FT.ID = F.FieldTypeID 
+																and FT.Object = T.Object and FT.ObjectID = T.ObjectID
+																and FT.IsPartOfKey = 1
+							order by	FT.ID
+							) F
+				) A
+)
+]]>
+	</rollback>
+    </changeSet>
+  <changeSet author="KMcNamee" id="GOV-7030-AssetDisplayValue">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+CREATE OR ALTER FUNCTION [dbo].[GetAssetDisplayValue]()
+RETURNS TABLE 
+AS
+RETURN 
+(
+	select		A.AssetTypeID,
+				A.ID,
+				A.Object,
+				A.ObjectID,
+				string_agg(coalesce(D.FormattedValue, D.value), '') as DisplayValue
+	from		Asset A
+				inner join AssetType T on T.ID = A.AssetTypeID 
+				outer apply (
+							select	TL.value,
+									coalesce(case when TF.Value = 'FirstName' then R.FirstName + ' ' else R.LastName end, F.FormattedValue, RI.Code, FA.TextPath, FA.Name, FU.Name) as FormattedValue
+							from	string_split(replace(T.DisplayFormat, '{', '|'), '|') TF
+									cross apply string_split(replace(TF.[value], '}', '|'), '|') TL
+									left join FieldType FT on FT.AssetTypeID = T.ID and FT.Name like TL.Value
+									left join Field F on F.FieldTypeID = FT.ID and F.AssetID = A.ID
+									left join Asset RI on TL.Value = 'Code' and A.Object = 'ReferenceItem' and RI.ID = A.ID
+									left join FusionAttribute FA on TL.Value = 'Name' and A.Object = 'FusionAttribute' and FA.ID = A.ObjectID
+									left join Fusion FU on TL.Value = 'Name' and A.Object = 'Fusion' and FU.ID = A.ObjectID
+									left join reporting.Global_resource R on TF.Value in ('FirstName', 'LastName') and A.Object = 'Resource' and R.ResourceID = A.ObjectID
+							where	RTRIM(TF.value) <> ''
+									and RTRIM(TL.value) <> ''
+							) D
+	group by	A.AssetTypeID,
+				A.ID,
+				A.Object,
+				A.ObjectID
+)
+GO
+]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+    CREATE OR ALTER FUNCTION [dbo].[GetAssetDisplayValue]()
+RETURNS TABLE 
+AS
+RETURN 
+(
+	select		A.AssetTypeID,
+				A.ID,
+				A.Object,
+				A.ObjectID,
+				string_agg(coalesce(D.FormattedValue, D.value), '') as DisplayValue
+	from		Asset A
+				inner join AssetType T on T.ID = A.AssetTypeID 
+				outer apply (
+							select	TL.value,
+									coalesce(case when TF.Value = 'FirstName' then R.FirstName + ' ' else R.LastName end, F.FormattedValue, RI.Code, FA.TextPath, FA.Name, FU.Name) as FormattedValue
+							from	string_split(replace(T.DisplayFormat, '{', '|'), '|') TF
+									cross apply string_split(replace(TF.[value], '}', '|'), '|') TL
+									left join FieldType FT on FT.AssetTypeID = T.ID and FT.Name like TL.Value
+									left join Field F on F.FieldTypeID = FT.ID and F.AssetID = A.ID
+									left join ReferenceItem RI on TL.Value = 'Code' and A.Object = 'ReferenceItem' and RI.ID = A.ObjectID
+									left join FusionAttribute FA on TL.Value = 'Name' and A.Object = 'FusionAttribute' and FA.ID = A.ObjectID
+									left join Fusion FU on TL.Value = 'Name' and A.Object = 'Fusion' and FU.ID = A.ObjectID
+									left join reporting.Global_resource R on TF.Value in ('FirstName', 'LastName') and A.Object = 'Resource' and R.ResourceID = A.ObjectID
+							where	RTRIM(TF.value) <> ''
+									and RTRIM(TL.value) <> ''
+							) D
+	group by	A.AssetTypeID,
+				A.ID,
+				A.Object,
+				A.ObjectID
+)
+GO
+]]>
+    </rollback>
+  </changeSet>
+
+
+  <changeSet author="KMcNamee" id="GOV-7030-IntersectTypeName-a">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+CREATE OR ALTER FUNCTION [dbo].[GetIntersectTypeNames]
+(	
+	@id int
+)
+RETURNS TABLE 
+AS
+RETURN 
+(
+	SELECT	COALESCE(SF.TextPath, SI.Name, SRef.Name, SATT.Name, '') + ' [' + coalesce(P.Name,'/') + '] ' + COALESCE([OF].TextPath, ORef.Name, OATT.Name, '') as Name
+					FROM	[IntersectType] I
+							left join AssetType SATT on SATT.[Object] = I.Subject and SATT.[ObjectID] = I.SubjectID and SATT.[Object] != 'FusionAttributeType'
+							left join AssetType OATT on OATT.[Object] = I.[Object] and OATT.[ObjectID] = I.ObjectID and OATT.[Object] != 'FusionAttributeType'
+							
+							left join [FusionAttributeType] SF on I.Subject = 'FusionAttributeType' and SF.ID = I.SubjectID
+							left join [FusionAttributeType] [OF] on I.Object = 'FusionAttributeType' and [OF].ID = I.ObjectID
+														
+							left join (
+								SELECT	I_sub.ID, COALESCE(SF_sub.TextPath, SATT_sub.Name, '') + 
+										' [' + coalesce(P_sub.Name,'/') + '] ' + 
+										COALESCE([OF_sub].TextPath, OATT_sub.Name, '') as Name
+								FROM	[IntersectType] I_sub
+										left join AssetType SATT_sub on SATT_sub.[Object] = I_sub.Subject and SATT_sub.[ObjectID] = I_sub.SubjectID and SATT_sub.[Object] != 'FusionAttributeType'
+										left join AssetType OATT_sub on OATT_sub.[Object] = I_sub.[Object] and OATT_sub.[ObjectID] = I_sub.ObjectID and OATT_sub.[Object] != 'FusionAttributeType'
+
+										left join [FusionAttributeType] SF_sub on I_sub.Subject = 'FusionAttributeType' and SF_sub.ID = I_sub.SubjectID
+										left join [FusionAttributeType] [OF_sub] on I_sub.Object = 'FusionAttributeType' and [OF_sub].ID = I_sub.ObjectID
+
+										left join [Predicate] P_sub on P_sub.ID = I_sub.PredicateID
+								
+							   ) SI on (I.Subject = 'IntersectType' and SI.ID = I.SubjectID)
+
+							left join (
+								select 0 as ID, 'Reference Item Type' as Name								
+							  ) SRef on I.Subject = 'ReferenceItemType' and I.SubjectID = 0
+
+							 left join (
+								select 0 as ID, 'Reference Item Type' as Name								
+							 ) ORef on I.Object = 'ReferenceItemType' and I.ObjectID = 0
+							 
+							left join [Predicate] P on P.ID = I.PredicateID
+					WHERE	I.ID = @id				
+)
+]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+CREATE OR ALTER FUNCTION [dbo].[GetIntersectTypeNames]
+(	
+	@id int
+)
+RETURNS TABLE 
+AS
+RETURN 
+(
+	SELECT	COALESCE(SA.Name, SD.Name, SF.TextPath, SM.Name, SP.Name, SR.Name, ST.Name, SI.Name, SQF.Name, SRef.Name, SRes.Name, '') + 
+							' [' + coalesce(P.Name,'/') + '] ' + 
+							COALESCE(OA.Name, OD.Name, [OF].TextPath, OM.Name, OP.Name, [OR].Name, OT.Name, OQF.Name, ORef.Name, ORes.Name, '') as Name
+					FROM	[IntersectType] I
+							left join ArtifactType SA on I.Subject = 'ArtifactType' and SA.ID = I.SubjectID
+							left join ArtifactType OA on I.Object = 'ArtifactType' and OA.ID = I.ObjectID
+
+							left join ReferenceItemType SD on I.Subject = 'ReferenceItemType' and SD.ID = I.SubjectID
+							left join ReferenceItemType OD on I.Object = 'ReferenceItemType' and OD.ID = I.ObjectID
+
+							left join [FusionAttributeType] SF on I.Subject = 'FusionAttributeType' and SF.ID = I.SubjectID
+							left join [FusionAttributeType] [OF] on I.Object = 'FusionAttributeType' and [OF].ID = I.ObjectID
+
+							left join [FusionQueryAttributeType] SQF on I.Subject = 'FusionQueryAttributeType' and SQF.ID = I.SubjectID
+							left join [FusionQueryAttributeType] [OQF] on I.Object = 'FusionQueryAttributeType' and [OQF].ID = I.ObjectID
+							
+							left join (
+								SELECT	I_sub.ID, COALESCE(SA_sub.Name, SD_sub.Name, SF_sub.TextPath, SM_sub.Name, SP_sub.Name, SR_sub.Name, ST_sub.Name, SQF_sub.Name, '') + 
+										' [' + coalesce(P_sub.Name,'/') + '] ' + 
+										COALESCE(OA_sub.Name, OD_sub.Name, [OF_sub].TextPath, OM_sub.Name, OP_sub.Name, [OR_sub].Name, OT_sub.Name, OQF_sub.Name, '') as Name
+								FROM	[IntersectType] I_sub
+										left join ArtifactType SA_sub on I_sub.Subject = 'ArtifactType' and SA_sub.ID = I_sub.SubjectID
+										left join ArtifactType OA_sub on I_sub.Object = 'ArtifactType' and OA_sub.ID = I_sub.ObjectID
+
+										left join ReferenceItemType SD_sub on I_sub.Subject = 'ReferenceItemType' and SD_sub.ID = I_sub.SubjectID
+										left join ReferenceItemType OD_sub on I_sub.Object = 'ReferenceItemType' and OD_sub.ID = I_sub.ObjectID
+
+										left join [FusionAttributeType] SF_sub on I_sub.Subject = 'FusionAttributeType' and SF_sub.ID = I_sub.SubjectID
+										left join [FusionAttributeType] [OF_sub] on I_sub.Object = 'FusionAttributeType' and [OF_sub].ID = I_sub.ObjectID
+
+										left join [FusionQueryAttributeType] SQF_sub on I_sub.Subject = 'FusionQueryAttributeType' and SQF_sub.ID = I_sub.SubjectID
+										left join [FusionQueryAttributeType] [OQF_sub] on I_sub.Object = 'FusionQueryAttributeType' and [OQF_sub].ID = I_sub.ObjectID
+
+										left join [MapType] SM_sub on I_sub.Subject = 'MapType' and SM_sub.ID = I_sub.SubjectID
+										left join [MapType] OM_sub on I_sub.Object = 'MapType' and OM_sub.ID = I_sub.ObjectID
+
+										left join [PolicyType] SP_sub on I_sub.Subject = 'PolicyType' and SP_sub.ID = I_sub.SubjectID
+										left join [PolicyType] OP_sub on I_sub.Object = 'PolicyType' and OP_sub.ID = I_sub.ObjectID
+
+										left join [RuleType] SR_sub on I_sub.Subject = 'RuleType' and SR_sub.ID = I_sub.SubjectID
+										left join [RuleType] [OR_sub] on I_sub.Object = 'RuleType' and [OR_sub].ID = I_sub.ObjectID
+
+										left join [TaxonomyType] ST_sub on I_sub.Subject = 'TaxonomyType' and ST_sub.ID = I_sub.SubjectID
+										left join [TaxonomyType] OT_sub on I_sub.Object = 'TaxonomyType' and OT_sub.ID = I_sub.ObjectID
+
+										left join [Predicate] P_sub on P_sub.ID = I_sub.PredicateID
+								
+							   ) SI on (I.Subject = 'IntersectType' and SI.ID = I.SubjectID)
+
+							left join [MapType] SM on I.Subject = 'MapType' and SM.ID = I.SubjectID
+							left join [MapType] OM on I.Object = 'MapType' and OM.ID = I.ObjectID
+
+							left join [PolicyType] SP on I.Subject = 'PolicyType' and SP.ID = I.SubjectID
+							left join [PolicyType] OP on I.Object = 'PolicyType' and OP.ID = I.ObjectID
+
+							left join [RuleType] SR on I.Subject = 'RuleType' and SR.ID = I.SubjectID
+							left join [RuleType] [OR] on I.Object = 'RuleType' and [OR].ID = I.ObjectID
+
+							left join [TaxonomyType] ST on I.Subject = 'TaxonomyType' and ST.ID = I.SubjectID
+							left join [TaxonomyType] OT on I.Object = 'TaxonomyType' and OT.ID = I.ObjectID
+
+							left join (
+								select 0 as ID, 'Reference Item Type' as Name								
+							  ) SRef on I.Subject = 'ReferenceItemType' and I.SubjectID = 0
+
+							 left join (
+								select 0 as ID, 'Reference Item Type' as Name								
+							 ) ORef on I.Object = 'ReferenceItemType' and I.ObjectID = 0
+
+							left join (
+								select 1 as ID, 'Resource' as Name								
+							  ) SRes on I.Subject = 'ResourceType'
+
+							left join (
+								select 1 as ID, 'Resource' as Name								
+							  ) ORes on I.Object = 'ResourceType'
+
+							left join [Predicate] P on P.ID = I.PredicateID
+					WHERE	I.ID = @id				
+)
+]]>
+    </rollback>
+  </changeSet>
+
+
+  <changeSet author="KMcNamee" id="GOV-7030-refdisplayvalue">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+CREATE OR ALTER FUNCTION [dbo].[GetReferenceItemDisplayValue]
+(
+	@referenceItemId int,
+	@fieldTypeId int
+)
+RETURNS TABLE 
+AS
+RETURN 
+(
+	select		top 1
+				string_agg(coalesce(D.FormattedValue, D.value), '') as DisplayValue
+	from		FieldType FT_1 
+				inner join assettype RIT on RIT.ObjectID = FT_1.LookupObjectID and RIT.[Object] = 'ReferenceItemType'
+				inner join asset RI on RI.AssetTypeID = RIT.ID and RI.ObjectID = @referenceItemId
+				outer apply (
+							select	TL.value,
+									coalesce(F.FormattedValue, RI.Code) as FormattedValue
+							from	string_split(replace(FT_1.LookupDisplayFormat, '{', '|'), '|') TF
+									cross apply string_split(replace(TF.[value], '}', '|'), '|') TL
+									left join FieldType FT on FT.Object = 'ReferenceItemType' and FT.ObjectID = RIT.ID and FT.Name like TL.Value
+									left join Field F on F.FieldTypeID = FT.ID and F.ObjectID = RI.ID and F.objecttype = 'ReferenceItem'
+									left join asset RI2 on TL.Value = 'Code' and RI2.ObjectID = RI.ID and RI2.[Object] = 'ReferenceItem'									
+							where	RTRIM(TF.value) <> ''
+									and RTRIM(TL.value) <> ''
+							) D
+	where FT_1.ID = @fieldTypeId
+)
+]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+CREATE OR ALTER FUNCTION [dbo].[GetReferenceItemDisplayValue]
+(
+	@referenceItemId int,
+	@fieldTypeId int
+)
+RETURNS TABLE 
+AS
+RETURN 
+(
+	select		top 1
+				string_agg(coalesce(D.FormattedValue, D.value), '') as DisplayValue
+	from		FieldType FT_1 
+				inner join referenceitemtype RIT on RIT.ID = FT_1.LookupObjectID
+				inner join referenceitem RI on RI.ReferenceItemTypeID = RIT.ID and RI.ID = @referenceItemId
+				outer apply (
+							select	TL.value,
+									coalesce(F.FormattedValue, RI.Code) as FormattedValue
+							from	string_split(replace(FT_1.LookupDisplayFormat, '{', '|'), '|') TF
+									cross apply string_split(replace(TF.[value], '}', '|'), '|') TL
+									left join FieldType FT on FT.Object = 'ReferenceItemType' and FT.ObjectID = RIT.ID and FT.Name like TL.Value
+									left join Field F on F.FieldTypeID = FT.ID and F.ObjectID = RI.ID and F.objecttype = 'ReferenceItem'
+									left join ReferenceItem RI2 on TL.Value = 'Code' and RI2.ID = RI.ID									
+							where	RTRIM(TF.value) <> ''
+									and RTRIM(TL.value) <> ''
+							) D
+	where FT_1.ID = @fieldTypeId
+)
+]]>
+    </rollback>
+  </changeSet>
+  <changeSet author="KMcNamee" id="GOV-7030-assetkeyhash">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+ALTER FUNCTION [dbo].[GetAssetKeyHash]()
+RETURNS TABLE 
+AS
+RETURN 
+(	
+select		A.AssetTypeID,
+				A.ID,
+				CONVERT(
+					varchar(32), 
+					SUBSTRING(HASHBYTES('SHA1', STRING_AGG(cast(FieldTypeID as nvarchar) + ':' + Value, char(59))), 3, 32), 
+					2) as KeyHash
+	from		Asset A
+				inner join Field F on F.ObjectType = A.Object and F.ObjectID = A.ObjectID and A.Object != 'ReferenceItem'
+				inner join FieldType FT on FT.ID = F.FieldTypeID 
+										and FT.AssetTypeID = A.AssetTypeID
+										and FT.IsPartOfKey = 1
+	group by	A.AssetTypeID, A.ID
+union
+select		A.AssetTypeID,
+				A.ID,
+				CONVERT(
+					varchar(32), 
+					SUBSTRING(HASHBYTES('SHA1', STRING_AGG(A.code, char(59))), 3, 32), 
+					2) as KeyHash
+	from		Asset A
+	where		A.[Object] = 'ReferenceItem'				
+	group by	A.AssetTypeID, A.ID
+
+)
+]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+ALTER FUNCTION [dbo].[GetAssetKeyHash]()
+RETURNS TABLE 
+AS
+RETURN 
+(
+	
+
+select		A.AssetTypeID,
+				A.ID,
+				CONVERT(
+					varchar(32), 
+					SUBSTRING(HASHBYTES('SHA1', STRING_AGG(cast(FieldTypeID as nvarchar) + ':' + Value, char(59))), 3, 32), 
+					2) as KeyHash
+	from		Asset A
+				inner join Field F on F.ObjectType = A.Object and F.ObjectID = A.ObjectID and A.Object != 'ReferenceItem'
+				inner join FieldType FT on FT.ID = F.FieldTypeID 
+										and FT.AssetTypeID = A.AssetTypeID
+										and FT.IsPartOfKey = 1
+	group by	A.AssetTypeID, A.ID
+union
+select		A.AssetTypeID,
+				A.ID,
+				CONVERT(
+					varchar(32), 
+					SUBSTRING(HASHBYTES('SHA1', STRING_AGG(r.code, char(59))), 3, 32), 
+					2) as KeyHash
+	from		Asset A
+				inner join referenceitem r on (a.object = 'ReferenceItem' and r.id = a.objectid)
+	group by	A.AssetTypeID, A.ID
+
+)
+]]>
+    </rollback>
+  </changeSet>
+  <changeSet author="KMcNamee" id="GOV-7030-assethashview">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+  Drop view  if exists [dbo].[AssetKeyHash]
+]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+CREATE or ALTER view [dbo].[AssetKeyHash]
+as
+select		A.AssetTypeID,
+			A.Uid,
+			A.ID,
+			utility.GetHash(coalesce(convert(varchar(36),P.Uid)+'|','') + STRING_AGG(F.[Value], '|')) as KeyHash
+from		Asset A
+			cross apply (
+				select		top 100 percent
+							Code as [Value]
+				from		ReferenceItem
+				where		A.Object = 'ReferenceItem' and ID = A.ObjectID
+				union
+				select		top 100 percent
+							Name as [Value]
+				from		FusionAttribute
+				where		A.Object = 'FusionAttribute' and ID = A.ObjectID
+				union
+				select		top 100 percent
+							F.[Value]
+				from		FieldType FT
+							inner join Field F on	FT.AssetTypeID = A.AssetTypeID
+													and F.AssetID = A.ID
+													and F.FieldTypeID = FT.ID 
+													and FT.IsPartOfKey = 1
+				order by	FT.ColumnOrder asc
+			) F
+			outer apply (
+				select	top 1
+						P.[Uid]
+				from	[Intersect] I
+						inner join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID and I.Object = A.Object and I.ObjectID = A.ObjectID
+						inner join IntersectType IT on IT.ID = I.IntersectTypeID
+						inner join [Predicate] PR on PR.ID = IT.PredicateID and PR.Type in (3,4)
+			) P
+group by	A.AssetTypeID,
+			A.Uid,
+			A.ID,
+			P.Uid
+GO
+]]>
+    </rollback>
+  </changeSet>
+  <changeSet author="KMcNamee" id="GOV-7030-rel-disp-val">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+  ALTER FUNCTION [dbo].[GetRelationshipDisplayValue]
+(
+	@o varchar(50),
+	@oid int
+)
+RETURNS TABLE 
+AS
+RETURN 
+(
+	select
+		DisplayValue
+	from
+		dbo.Asset A
+		cross apply [dbo].[GetAssetDisplayValueById](A.ID) DV
+	where 
+		@o != 'Taxonomy' and A.[Object] = @o and A.ObjectID = @oid
+	union all
+	select 
+		TextPath
+	from 
+		dbo.Asset A
+		cross apply [dbo].GetAssetTextPathById(A.ID,'/')
+	where 
+		@o = 'Taxonomy' and A.[Object] = @o and A.ObjectID = @oid		
+)
+]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+ALTER FUNCTION [dbo].[GetRelationshipDisplayValue]
+(
+	@o varchar(50),
+	@oid int
+)
+RETURNS TABLE 
+AS
+RETURN 
+(
+	select
+		DisplayValue
+	from
+		dbo.Asset A
+		cross apply [dbo].[GetObjectDisplayValueById](A.[Object],A.ObjectID) DV
+	where 
+		@o != 'Taxonomy' and A.[Object] = @o and A.ObjectID = @oid
+	union all
+	select 
+		TextPath
+	from 
+		dbo.Asset A
+		cross apply [dbo].GetAssetTextPathById(A.ID,'/')
+	where 
+		@o = 'Taxonomy' and A.[Object] = @o and A.ObjectID = @oid
+		
+)
+]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="KMcNamee" id="GOV-7030-random-displayval">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+        drop function if exists [dbo].[GetObjectDisplayValueById]
+]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+    CREATE OR ALTER FUNCTION [dbo].[GetObjectDisplayValueById]
+(
+	@o varchar(50),
+	@oid int
+)
+RETURNS TABLE 
+AS
+RETURN 
+(
+		select	top 1	
+					string_agg(coalesce(D.FormattedValue, D.value), '') as DisplayValue
+		from		dbo.Asset A
+					inner join dbo.AssetType T on T.ID = A.AssetTypeID and A.Object = @o and A.ObjectID = @oid
+					outer apply (
+								select	TF.value,
+										coalesce(case when TF.Value = 'FirstName' then R.FirstName + ' ' else R.LastName end, F.FormattedValue, RI.Code, FA.Name) as FormattedValue
+								from	string_split(replace(replace(T.DisplayFormat, '{', '|'),'}','|'), '|') TF									
+										left join dbo.FieldType FT on FT.AssetTypeID = T.ID and FT.Name = TF.Value
+										left join dbo.Field F on F.FieldTypeID = FT.ID and F.AssetID = A.ID
+										left join dbo.ReferenceItem RI on TF.Value = 'Code' and A.Object = 'ReferenceItem' and RI.ID = A.ObjectID
+										left join dbo.FusionAttribute FA on TF.Value = 'Name' and A.Object = 'FusionAttribute' and FA.ID = A.ObjectID
+										left join reporting.Global_resource R on TF.Value in ('FirstName', 'LastName') and A.Object = 'Resource' and R.ResourceID = A.ObjectID
+								where	RTRIM(TF.value) <> ''									
+								) D
+)
+GO
+]]>
+    </rollback>
+  </changeSet>
+  <changeSet author="KMcNamee" id="GOV-7030-FIELDLOOKUP">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+CREATE OR ALTER procedure [utility].[GetFieldTypeLookupList]
+	@type varchar(50), 
+	@id int 
+as
+begin
+	SELECT	'L' as type,
+			'Artifact|' + cast(ObjectID as varchar) as value,
+			'Artifact : ' + Name as title
+	FROM	AssetType where [Object] = 'ArtifactType'
+	UNION
+	SELECT	'L' as type,
+			'ReferenceItemType|0'  as value,
+			'Reference List' as title
+	UNION
+	SELECT	'L' as type,
+			'ReferenceItem|' + cast(ObjectID as varchar) as value,
+			'Reference List Item: ' + Name as title
+	FROM	AssetType where [Object] = 'ReferenceItemType'
+	UNION
+	SELECT	'L' as type,
+			'Resource|1' as value,
+			'Resource : User' as title
+	UNION
+	SELECT	'L' as type,
+			'Taxonomy|' + cast(ObjectID as varchar) as value,
+			'Model : ' + Name as title
+	FROM	AssetType where [Object] = 'TaxonomyType'
+	UNION
+	SELECT	'L' as type,
+			'TaxonomyType|0'  as value,
+			'Model Type' as title
+	UNION
+	SELECT	'L' as type,
+			'Lookup|' + cast(ID as varchar) as value,
+			'Lookup : ' + Name as title
+	FROM	LookupType
+end
+]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+CREATE OR ALTER procedure [utility].[GetFieldTypeLookupList]
+	@type varchar(50), 
+	@id int 
+as
+begin
+	SELECT	'L' as type,
+			'Artifact|' + cast(ID as varchar) as value,
+			'Artifact : ' + Name as title
+	FROM	ArtifactType
+	UNION
+	SELECT	'L' as type,
+			'ReferenceItemType|0'  as value,
+			'Reference List' as title
+	UNION
+	SELECT	'L' as type,
+			'ReferenceItem|' + cast(ID as varchar) as value,
+			'Reference List Item: ' + Name as title
+	FROM	ReferenceItemType
+	UNION
+	SELECT	'L' as type,
+			'Resource|1' as value,
+			'Resource : User' as title
+	UNION
+	SELECT	'L' as type,
+			'Taxonomy|' + cast(ID as varchar) as value,
+			'Model : ' + Name as title
+	FROM	TaxonomyType
+	UNION
+	SELECT	'L' as type,
+			'TaxonomyType|0'  as value,
+			'Model Type' as title
+	UNION
+	SELECT	'L' as type,
+			'Lookup|' + cast(ID as varchar) as value,
+			'Lookup : ' + Name as title
+	FROM	LookupType
+end
+]]>
+    </rollback>
+  </changeSet>
+  <changeSet author="KMcNamee" id="GOV-7030-WRAPPER-NOTUSED">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+DROP FUNCTION IF EXISTS [utility].[DeriveIntersectTypeNameWrapper]
+]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+CREATE FUNCTION [utility].[DeriveIntersectTypeNameWrapper]
+(
+	@id int
+)
+RETURNS nvarchar(500)
+AS
+BEGIN
+	RETURN utility.DeriveIntersectTypeName(@id)
+END
+GO
+]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="KMcNamee" id="GOV-7030-DERIVEINTERSECTTYPENAME">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+CREATE OR ALTER FUNCTION [utility].[DeriveIntersectTypeName] 
+(
+
+	@id int
+
+)
+RETURNS nvarchar(500)
+AS
+BEGIN
+	DECLARE @result nvarchar(500)
+
+	SET @result =	(
+					SELECT	COALESCE(SATT.Name, SF.TextPath,'') + ' [' + coalesce(P.Name,'/') + '] ' + COALESCE(OATT.Name, [OF].TextPath, '')
+					FROM	[IntersectType] I
+							left join AssetType SATT on I.Subject = SATT.[Object] and SATT.ID = I.SubjectID and I.Subject != 'FusionAttributeType'
+							left join AssetType OATT on I.Object = OATT.[Object] and OATT.ID = I.ObjectID and I.Object != 'FusionAttributeType'
+
+							left join [FusionAttributeType] SF on I.Subject = 'FusionAttributeType' and SF.ID = I.SubjectID
+							left join [FusionAttributeType] [OF] on I.Object = 'FusionAttributeType' and [OF].ID = I.ObjectID
+														
+							left join [Predicate] P on P.ID = I.PredicateID
+					WHERE	I.ID = @id					
+					)
+
+	RETURN @result
+END
+GO
+]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+CREATE FUNCTION [utility].[DeriveIntersectTypeName] 
+(
+	@id int
+)
+RETURNS nvarchar(500)
+AS
+BEGIN
+	DECLARE @result nvarchar(500)
+
+	SET @result =	(
+					SELECT	COALESCE(SA.Name, SD.Name, SF.TextPath, SM.Name, SP.Name, SR.Name, ST.Name, SI.Name, SQF.Name, '') + 
+							' [' + coalesce(P.Name,'/') + '] ' + 
+							COALESCE(OA.Name, OD.Name, [OF].TextPath, OM.Name, OP.Name, [OR].Name, OT.Name, OQF.Name, '')
+					FROM	[IntersectType] I
+							left join ArtifactType SA on I.Subject = 'ArtifactType' and SA.ID = I.SubjectID
+							left join ArtifactType OA on I.Object = 'ArtifactType' and OA.ID = I.ObjectID
+
+							left join ReferenceItemType SD on I.Subject = 'ReferenceItemType' and SD.ID = I.SubjectID
+							left join ReferenceItemType OD on I.Object = 'ReferenceItemType' and OD.ID = I.ObjectID
+
+							left join [FusionAttributeType] SF on I.Subject = 'FusionAttributeType' and SF.ID = I.SubjectID
+							left join [FusionAttributeType] [OF] on I.Object = 'FusionAttributeType' and [OF].ID = I.ObjectID
+
+							left join [FusionQueryAttributeType] SQF on I.Subject = 'FusionQueryAttributeType' and SQF.ID = I.SubjectID
+							left join [FusionQueryAttributeType] [OQF] on I.Object = 'FusionQueryAttributeType' and [OQF].ID = I.ObjectID
+
+							left join [IntersectType] SI on I.Subject = 'IntersectType' and SI.ID = I.SubjectID
+
+							left join [MapType] SM on I.Subject = 'MapType' and SM.ID = I.SubjectID
+							left join [MapType] OM on I.Object = 'MapType' and OM.ID = I.ObjectID
+
+							left join [PolicyType] SP on I.Subject = 'PolicyType' and SP.ID = I.SubjectID
+							left join [PolicyType] OP on I.Object = 'PolicyType' and OP.ID = I.ObjectID
+
+							left join [RuleType] SR on I.Subject = 'RuleType' and SR.ID = I.SubjectID
+							left join [RuleType] [OR] on I.Object = 'RuleType' and [OR].ID = I.ObjectID
+
+							left join [TaxonomyType] ST on I.Subject = 'TaxonomyType' and ST.ID = I.SubjectID
+							left join [TaxonomyType] OT on I.Object = 'TaxonomyType' and OT.ID = I.ObjectID
+
+							left join [Predicate] P on P.ID = I.PredicateID
+					WHERE	I.ID = @id					
+					)
+
+	RETURN @result
+END
+GO
+]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="KMcNamee" id="GOV-7030-UPDATETYPECOLUMN">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+drop procedure if exists [bulkload].[UpdateTypeColumn]
+]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+CREATE OR ALTER procedure [bulkload].[UpdateTypeColumn]
+	@id int,
+	@typeColumn int,
+	@typeNameColumn int
+as
+begin
+	set nocount on;
+	update	T2
+	set		T2.LookupObject = T1.Value + 'Type',
+			T2.LookupObjectID = coalesce(A.ID, D.ID, P.ID, T.ID, R.ID)
+	from	LoadItemColumn T2
+			inner join LoadItemColumn T1 on T1.LoadID = T2.LoadID and T1.RowIndex = T2.RowIndex and T1.ColumnIndex = @typeColumn and T2.LoadID = @id and T2.ColumnIndex = @typeNameColumn
+			left join ArtifactType A on lower(A.Name) = lower(T2.Value) and T1.Value = 'Artifact'
+			left join ReferenceItemType D on lower(D.Name) = lower(T2.Value) and T1.Value = 'ReferenceItemType'
+			left join IntersectType I on lower(I.Name) = lower(T2.Value) and T1.Value = 'Intersect'
+			left join PolicyType P on lower(P.Name) = lower(T2.Value) and T1.Value = 'Policy'
+			left join TaxonomyType T on lower(T.Name) = lower(T2.Value) and T1.Value = 'Taxonomy'
+			left join RuleType R on lower(R.Name) = lower(T2.Value) and T1.Value = 'Rule'
+end
+]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="KMcNamee" id="GOV-7030-UPDATECOLUMNBYITEMTYPE">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+CREATE OR ALTER procedure [bulkload].[UpdateItemColumnByType]
+	@id int,
+	@ObjectType varchar(50), 
+	@ObjectTypeID int,
+	@subjectAreaColumn int, 
+	@itemColumn int
+as
+begin
+	set nocount on;
+
+	if @ObjectType = 'FusionAttributeType'
+	begin
+		update	T
+		set		T.LookupObject = replace(@ObjectType, 'Type', ''),
+				T.LookupObjectID = S.ID
+		from	LoadItemColumn T
+				left join FusionAttribute S on lower(S.TextPath) = lower(T.Value) and S.FusionAttributeTypeID = @ObjectTypeID
+		where	T.LoadID = @id
+				and T.ColumnIndex = @itemColumn
+	end
+	if @ObjectType = 'IntersectType'
+	begin
+		update	T
+		set		T.LookupObject = replace(@ObjectType, 'Type', ''),
+				T.LookupObjectID = S.ID
+		from	LoadItemColumn T
+				left join [Intersect] S on lower(S.Name) = lower(T.Value) and S.IntersectTypeID = @ObjectTypeID
+		where	T.LoadID = @id
+				and T.ColumnIndex = @itemColumn
+	end
+	
+	if @ObjectType = 'ReferenceItemType' and @ObjectTypeID = 0
+	begin
+		update	T
+		set		T.LookupObject = @ObjectType,
+				T.LookupObjectID = S.ObjectID
+		from	LoadItemColumn T
+				left join AssetType S on lower(S.Name) = lower(T.Value) and S.[Object] = 'ReferenceItemType'
+		where	T.LoadID = @id
+				and T.ColumnIndex = @itemColumn
+	end
+end
+]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+CREATE OR ALTER procedure [bulkload].[UpdateItemColumnByType]
+	@id int,
+	@ObjectType varchar(50), 
+	@ObjectTypeID int,
+	@subjectAreaColumn int, 
+	@itemColumn int
+as
+begin
+	set nocount on;
+
+	if @ObjectType = 'FusionAttributeType'
+	begin
+		update	T
+		set		T.LookupObject = replace(@ObjectType, 'Type', ''),
+				T.LookupObjectID = S.ID
+		from	LoadItemColumn T
+				left join FusionAttribute S on lower(S.TextPath) = lower(T.Value) and S.FusionAttributeTypeID = @ObjectTypeID
+		where	T.LoadID = @id
+				and T.ColumnIndex = @itemColumn
+	end
+	if @ObjectType = 'IntersectType'
+	begin
+		update	T
+		set		T.LookupObject = replace(@ObjectType, 'Type', ''),
+				T.LookupObjectID = S.ID
+		from	LoadItemColumn T
+				left join [Intersect] S on lower(S.Name) = lower(T.Value) and S.IntersectTypeID = @ObjectTypeID
+		where	T.LoadID = @id
+				and T.ColumnIndex = @itemColumn
+	end
+	
+	if @ObjectType = 'ReferenceItemType' and @ObjectTypeID = 0
+	begin
+		update	T
+		set		T.LookupObject = @ObjectType,
+				T.LookupObjectID = S.ID
+		from	LoadItemColumn T
+				left join ReferenceItemType S on lower(S.Name) = lower(T.Value)
+		where	T.LoadID = @id
+				and T.ColumnIndex = @itemColumn
+	end
+end
+]]>
+    </rollback>
+  </changeSet>
+
+
+  <changeSet author="KMcNamee" id="GOV-7030-FIELDTYPELOOKUPVIEW">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+DROP VIEW IF EXISTS [dbo].FieldTypeLookupValue
+]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+CREATE OR ALTER VIEW [dbo].[FieldTypeLookupValue]
+AS
+	SELECT	'Artifact' as LookupObjectType,
+			ID as LookupObjectID,
+			Name
+	FROM	ArtifactType
+	UNION
+	SELECT	'ReferenceItemType' as LookupObjectType,
+			ID as LookupObjectID,
+			Name 
+	FROM	ReferenceItemType
+	UNION
+	SELECT	'Taxonomy' as LookupObjectType,
+			ID as LookupObjectID,
+			Name 
+	FROM	TaxonomyType
+	UNION
+	SELECT	'Lookup' as LookupObjectType,
+			ID as LookupObjectID,
+			Name 
+	FROM	LookupType
+GO
+]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="KMcNamee" id="GOV-7030-INTERSECTTYPEDETVIEW">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+CREATE OR ALTER view [dbo].[IntersectTypeDetail]
+as
+	select	IT.Uid,
+			IT.ID,
+			IT.Subject,
+			IT.SubjectID,
+			IT.SubjectCardinality,
+			case IT.Subject
+				when 'IntersectType' then utility.DeriveIntersectTypeName(SIT.ID)
+				when 'GroupType' then 'Group'
+				when 'ResourceType' then 'Resource'
+				else coalesce(SATT.Name, SDT.Name) 
+			end as SubjectName,
+			coalesce(SIcon.IconBackColor, '#000') as SubjectIconBackColor,
+			coalesce(SIcon.IconForeColor, '#fff') as SubjectIconForeColor,
+			coalesce(SIcon.IconText, substring(coalesce(SATT.Name, SDT.Name, ''), 1, 2)) as SubjectIconText,
+			
+			IT.Object,
+			IT.ObjectID,
+			IT.ObjectCardinality,
+			case IT.Object
+				when 'IntersectType' then utility.DeriveIntersectTypeName(OIT.ID)
+				when 'GroupType' then 'Group'
+				when 'ResourceType' then 'Resource'
+				else coalesce(OATT.Name, ODT.Name) 
+			end as ObjectName,
+			coalesce(OIcon.IconBackColor, '#000') as ObjectIconBackColor,
+			coalesce(OIcon.IconForeColor, '#fff') as ObjectIconForeColor,			
+			coalesce(OIcon.IconText, substring(coalesce(OATT.Name, ODT.Name, ''), 1, 2)) as ObjectIconText,
+
+			IT.PredicateID,
+			P.Name as [PredicateName],
+			P.Inverse as PredicateInverse,
+			P.Type as PredicateType,
+
+			coalesce(IT.IsSystem, cast(0 as bit)) as IsSystem
+	from	IntersectType IT with(nolock) 
+			left join [Predicate] P with(nolock) on P.ID = IT.PredicateID 
+
+			left join [dbo].[AssetType] SATT with(nolock ) on SATT.[Object] = IT.Subject and SATT.ObjectID = IT.SubjectID			
+			left join (
+				select 1 as ID, 'Reference List' as Name
+			) SDT											on IT.Subject = 'ReferenceItemType'		and IT.SubjectID = 0
+						
+			left join IntersectType SIT with(nolock)		on IT.Subject = 'IntersectType'			and SIT.ID = IT.SubjectID
+			
+			left join [dbo].[AssetType] OATT with(nolock ) on OATT.[Object] = IT.[Object] and OATT.ObjectID = IT.ObjectID			
+			left join dbo.IntersectType OIT with(nolock)		on IT.Object = 'IntersectType'			and OIT.ID = IT.ObjectID			
+			left join (
+				select 0 as ID, 'Reference List' as Name
+			) ODT 	on IT.Object = 'ReferenceItemType'		and IT.ObjectID = 0
+
+			left join ObjectStyle SIcon with(nolock) on SIcon.ObjectType = IT.Subject and SIcon.ObjectID =	IT.SubjectID
+			left join ObjectStyle OIcon with(nolock) on OIcon.ObjectType = IT.Object and OIcon.ObjectID = IT.ObjectID
+	where	coalesce(SATT.ID, SDT.ID, SIT.ID) is not null
+			and coalesce(OATT.ID,ODT.ID, OIT.ID) is not null
+GO
+]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+CREATE OR ALTER view [dbo].[IntersectTypeDetail]
+as
+	select	IT.Uid,
+			IT.ID,
+			IT.Subject,
+			IT.SubjectID,
+			IT.SubjectCardinality,
+			case IT.Subject
+				when 'IntersectType' then utility.DeriveIntersectTypeName(SIT.ID)
+				when 'GroupType' then 'Group'
+				when 'ResourceType' then 'Resource'
+				else coalesce(SAT.Name, SDT.Name, SFT.TextPath, SMT.Name, SPT.Name, SRT.Name, SRIT.Name, STT.Name, SFQT.Name) 
+			end as SubjectName,
+			coalesce(SIcon.IconBackColor, '#000') as SubjectIconBackColor,
+			coalesce(SIcon.IconForeColor, '#fff') as SubjectIconForeColor,
+			coalesce(SIcon.IconText, substring(coalesce(SAT.Name, SDT.Name, SFT.Name, SMT.Name, SPT.Name, SRT.Name, SRIT.Name, STT.Name, SFQT.Name, ''), 1, 2)) as SubjectIconText,
+			
+			IT.Object,
+			IT.ObjectID,
+			IT.ObjectCardinality,
+			case IT.Object
+				when 'IntersectType' then utility.DeriveIntersectTypeName(OIT.ID)
+				when 'GroupType' then 'Group'
+				when 'ResourceType' then 'Resource'
+				else coalesce(OAT.Name, ODT.Name, OFT.TextPath, OMT.Name, OPT.Name, ORT.Name, ORIT.Name, OTT.Name, OFQT.Name) 
+			end as ObjectName,
+			coalesce(OIcon.IconBackColor, '#000') as ObjectIconBackColor,
+			coalesce(OIcon.IconForeColor, '#fff') as ObjectIconForeColor,
+			
+			coalesce(OIcon.IconText, substring(coalesce(OAT.Name, ODT.Name, OFT.Name, OMT.Name, OPT.Name, ORT.Name, ORIT.Name, OTT.Name, OFQT.Name, ''), 1, 2)) as ObjectIconText,
+
+			IT.PredicateID,
+			P.Name as [PredicateName],
+			P.Inverse as PredicateInverse,
+			P.Type as PredicateType,
+
+			coalesce(IT.IsSystem, cast(0 as bit)) as IsSystem
+	from	IntersectType IT with(nolock) 
+			left join [Predicate] P with(nolock) on P.ID = IT.PredicateID 
+
+			left join dbo.ArtifactType SAT with(nolock)		on IT.Subject = 'ArtifactType'			and SAT.ID = IT.SubjectID
+			left join (
+				select 1 as ID, 'Reference List' as Name
+			) SDT											on IT.Subject = 'ReferenceItemType'		and IT.SubjectID = 0
+			left join FusionAttributeType SFT with(nolock)	on IT.Subject = 'FusionAttributeType'	and SFT.ID = IT.SubjectID
+			left join FusionQueryAttributeType SFQT with(nolock)	on IT.Object = 'FusionQueryAttributeType'	and SFQT.ID = IT.SubjectID
+			left join IntersectType SIT with(nolock)		on IT.Subject = 'IntersectType'			and SIT.ID = IT.SubjectID
+			left join MapType SMT with(nolock)				on IT.Subject = 'MapType'				and SMT.ID = IT.SubjectID
+			left join PolicyType SPT with(nolock)			on IT.Subject = 'PolicyType'			and SPT.ID = IT.SubjectID
+			left join ReferenceItemType SRIT with(nolock)	on IT.Subject = 'ReferenceItemType'		and SRIT.ID = IT.SubjectID
+			left join RuleType SRT with(nolock)				on IT.Subject = 'RuleType'				and SRT.ID = IT.SubjectID
+			left join dbo.TaxonomyType STT with(nolock)		on IT.Subject = 'TaxonomyType'			and STT.ID = IT.SubjectID
+			left join (
+				select 1 as ID, 'Resource' as Name				
+			) SRET												on IT.[Subject] = 'ResourceType'
+
+			left join dbo.ArtifactType OAT with(nolock)			on IT.Object = 'ArtifactType'			and OAT.ID = IT.ObjectID			
+			left join dbo.FusionAttributeType OFT with(nolock)	on IT.Object = 'FusionAttributeType'	and OFT.ID = IT.ObjectID
+			left join dbo.FusionQueryAttributeType OFQT with(nolock)	on IT.Object = 'FusionQueryAttributeType'	and OFQT.ID = IT.ObjectID
+			left join dbo.IntersectType OIT with(nolock)		on IT.Object = 'IntersectType'			and OIT.ID = IT.ObjectID
+			left join dbo.MapType OMT with(nolock)				on IT.Object = 'MapType'				and OMT.ID = IT.ObjectID
+			left join dbo.PolicyType OPT with(nolock)			on IT.Object = 'PolicyType'				and OPT.ID = IT.ObjectID
+			left join ReferenceItemType ORIT with(nolock)		on IT.Object = 'ReferenceItemType'		and ORIT.ID = IT.ObjectID
+			left join RuleType ORT with(nolock)					on IT.Object = 'RuleType'				and ORT.ID = IT.ObjectID
+			left join dbo.TaxonomyType OTT with(nolock)			on IT.Object = 'TaxonomyType'			and OTT.ID = IT.ObjectID
+			left join (
+				select 1 as ID, 'Resource' as Name				
+			) ORET												on IT.[Object] = 'ResourceType'
+			left join (
+				select 0 as ID, 'Reference List' as Name
+			) ODT 	on IT.Object = 'ReferenceItemType'		and IT.ObjectID = 0
+
+			left join ObjectStyle SIcon with(nolock) on SIcon.ObjectType = IT.Subject and SIcon.ObjectID =	IT.SubjectID
+			left join ObjectStyle OIcon with(nolock) on OIcon.ObjectType = IT.Object and OIcon.ObjectID = IT.ObjectID
+	where	coalesce(SAT.ID, SDT.ID, SIT.ID, SFT.ID, SMT.ID, SPT.ID, SRT.ID, STT.ID, SRET.ID, SRIT.ID, SFQT.ID) is not null
+			and coalesce(OAT.ID, ODT.ID, [OFT].ID, OMT.ID, OPT.ID, ORT.ID, OTT.ID, ORET.ID, ORIT.ID, OFQT.ID) is not null
+GO
+
+]]>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>

@@ -29,7 +29,10 @@ namespace d360.web.Controllers.V2
     /// </summary>
     [
         ApiVersion("2.0"),
-        RoutePrefix("api/v{version:apiVersion}/relationships"), Authorize]
+        RoutePrefix("api/v{version:apiVersion}/relationships"), 
+        Authorize,
+        StringEnumController
+    ]
     public class RelationshipsController : BaseV2ApiController
     {
         #region DI
@@ -483,6 +486,12 @@ namespace d360.web.Controllers.V2
             }
         }
 
+        [Route("types/{id:int}"), HttpGet, ApiExplorerSettings(IgnoreApi = true)]
+        public IQueryable<IntersectType> GetIntersectType(int id)
+        {
+            return Company.Filter<IntersectType>(i => i.ID == id);
+        }
+
         #region Bulk Relationships
 
         /// <summary>
@@ -708,8 +717,6 @@ namespace d360.web.Controllers.V2
         }
 
         #endregion
-
-
 
     }
 

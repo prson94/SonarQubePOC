@@ -128,7 +128,8 @@ namespace d360.web.Controllers
                                 Value = (ft.LookupDisplayFormat == formattedValue) ? "" : formattedValue,
                                 FieldDescription = ft.DisplayDescription,
                                 FieldName = ft.Name,
-                                DataType = !string.IsNullOrEmpty(ft.Type) ? ft.Type : ""
+                                DataType = !string.IsNullOrEmpty(ft.Type) ? ft.Type : "",
+                                ShowIfEmpty = ft.ShowIfEmpty
                             };
                             
                             if (ft.Type == DataType.Date.ToString()) ro.DataType = "date";
@@ -310,7 +311,8 @@ namespace d360.web.Controllers
                                     Value = values.Count > 0 ?"values" : "",
                                     FieldDescription = ft.DisplayDescription,
                                     FieldName = ft.Name,                                    
-                                    Values = values                                
+                                    Values = values    ,
+                                    ShowIfEmpty = ft.ShowIfEmpty
                                 };
                                 
                                 list.Add(new DetailReadOnlyRowModel
@@ -344,7 +346,8 @@ namespace d360.web.Controllers
                                         Value = rfld.FormattedValue,
                                         FieldDescription = ft.DisplayDescription,
                                         FieldName = ft.Name,
-                                        DataType = "Html"
+                                        DataType = "Html",
+                                        ShowIfEmpty = ft.ShowIfEmpty
                                     };
 
                                     list.Add(new DetailReadOnlyRowModel
@@ -6225,7 +6228,7 @@ where    A.RuleID = @id", new { id });
                                 }
                         });
                         
-                        var parentRefType = Company.GetParentType(refType.ID, SystemObjects.ReferenceItemType);
+                        var parentRefType = Company.GetParentType(refType.ObjectID, SystemObjects.ReferenceItemType);
 
                         var heirarchyColumns = new DetailReadOnlyRowModel
                         {

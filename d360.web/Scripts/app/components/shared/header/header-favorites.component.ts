@@ -20,7 +20,12 @@ import {SiteUrlHelpers} from '../../../static/site-url-helpers';
     selector: 'd3s-header-favorites',
     template:
     `
-        <span *ngIf="visible" (click)="handleClick()" class="favorite" [ngClass]="{'active' : isFavoriteItem }" [title]="isFavoriteItem ? 'Remove from favorites' : 'Add to favorites'" >
+        <div *ngIf="visible" class="show-on-medium-and-down hide-on-med-and-up" (click)="handleClick()">
+            <i *ngIf="isFavoriteItem && !isLoading" class="fa fa-check"></i>
+            <i *ngIf="isLoading" style="color: #000;" class="fa fa-spinner fa-spin"></i>
+            Favourite
+        </div>
+        <span *ngIf="visible" (click)="handleClick()" class="favorite hide-on-med-and-down" [ngClass]="{'active' : isFavoriteItem }" [title]="isFavoriteItem ? 'Remove from favorites' : 'Add to favorites'" >
             <i *ngIf="!isLoading" class="fa fa-star"></i><i *ngIf="isLoading" style="color: #000;" class="fa fa-spinner fa-spin"></i>    
         </span>
     `,

@@ -101,10 +101,11 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
 
                 });
 
-            this.levelsService.getObjectLevels(this.modelId, StringConstants.ObjectTaxonomyType)
-                .then(result => {
+            this.levelsService.getObjectLevels(this.modelId, StringConstants.ObjectTaxonomyType).subscribe(
+                result => {
                     this.levels = result;
-                });
+                }
+            );
         });
     }
 

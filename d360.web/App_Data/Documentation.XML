@@ -2384,17 +2384,36 @@
             This service houses all endpoints handling glossary-related data such as artifacts and models.
             </summary>
         </member>
-        <member name="M:d360.web.Controllers.V2.FieldsController.GetFieldTypesAsync(System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,System.String,System.Nullable{d360.core.DataType},System.Nullable{System.Int32},System.Nullable{System.Int32})">
+        <member name="M:d360.web.Controllers.V2.FieldsController.GetFieldTypesAsync(System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,System.String,System.Nullable{d360.core.DataType},System.Nullable{System.Int32},System.Nullable{System.Int32})">
             <summary>
             Retrieves field types contained within your environment.
             </summary>
+            <remarks>
+            If using Uid parameters, you may only provide one of the following: ActionTypeUid, AssetTypeUid, or RelationshipTypeUid.
+            </remarks>
             <param name="AssetTypeUid">The asset type Uid to retrieve field types for.</param>
             <param name="RelationshipTypeUid">The relationship type Uid to retrieve field types for.</param>
+            /// <param name="ActionTypeUid">The action type Uid to retrieve field types for.</param>
             <param name="Name">The API Name to search for.</param>
             <param name="FriendlyName">The Friendly Name to search for.</param>
             <param name="Type">The data type to search for.</param>
             <param name="_pageSize">The number of results to return per page. The default value is 200.</param>
             <param name="_pageNum">The page number to return results for.</param>
+            <returns>A list of field types corresponding to the given criteria, if any.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.FieldsController.PutFieldTypesAsync(d360.core.entities.FieldTypesApiEditModel)">
+            <summary>
+            Adds or updates field types contained within your environment based on a specified ActionTypeUid, AssetTypeUid, or RelationshipTypeUid.
+            </summary>
+            <remarks>
+            You may only provide one of the following: ActionTypeUid, AssetTypeUid, or RelationshipTypeUid.
+            </remarks>
+            <returns>A list of field types corresponding to the given criteria, if any.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.FieldsController.DeleteFieldTypesAsync(d360.core.entities.FieldTypesApiDeleteModel)">
+            <summary>
+            Removes field types contained within your environment.
+            </summary>
             <returns>A list of field types corresponding to the given criteria, if any.</returns>
         </member>
         <member name="T:d360.web.Controllers.V2.AuditController">
@@ -2658,6 +2677,31 @@
             </summary>
             <returns>Http Status code OK and the item if updated, Http Status code of Not Found if item could not be updated</returns>
         </member>
+        <member name="T:d360.web.Controllers.V2.FusionController">
+            <summary>
+            This service houses all endpoints handling fusion specific activities.
+            </summary>
+        </member>
+        <member name="M:d360.web.Controllers.V2.FusionController.Post(d360.core.entities.FusionStatusLog)">
+            <summary>
+            Creates a new fusion agent status log entry for the specified fusion.  Used by Analyze to simulate Fusion Agent activity.  Only Admininistrators can call this endpoint.
+            </summary>
+            <param name="model">The fusion status log model.</param>
+            <returns>The model of the created fusion status log entry.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.FusionController.Put(d360.core.entities.FusionStatusLog)">
+            <summary>
+            Updates an existing fusion agent status log entry.  Used by Analyze to simulate Fusion Agent activity.  Only Admininistrators can call this endpoint.  Please provide the status of your call here (success true, failure false) along with any messages you would like for the run.  The ID returned when you created this record should be provided back to this call.
+            Date completed will be updated to UTC now and the Date started will be ingored and the original value used.  Only records that have not already been marked as completed can be updated.
+            </summary>
+            <param name="model">The fusion status log model.</param>
+            <returns>The model of the updated fusion status log entry.</returns>
+        </member>
+        <member name="T:d360.web.Controllers.V2.LineageController">
+            <summary>
+            This service houses all endpoints handling glossary-related data such as artifacts and models.
+            </summary>
+        </member>
         <member name="T:d360.web.Controllers.V2.MetricsController">
             <summary>
             This service houses all endpoints handling metrics and scoring for assets throughout your environment.
@@ -2825,10 +2869,11 @@
             </summary>
             <returns>Returns a list of asset type classes.</returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.AssetsController.GetAssetTypesAsync">
+        <member name="M:d360.web.Controllers.V2.AssetsController.GetAssetTypesAsync(System.Nullable{d360.core.enums.AssetTypeClass})">
             <summary>
             GET a list of asset types.
             </summary>
+            <param name="_assetTypeClass">Allows for filtering the Asset type's by Class.</param>
             <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.V2.AssetsController.GetAssetsAsync(System.Guid)">
