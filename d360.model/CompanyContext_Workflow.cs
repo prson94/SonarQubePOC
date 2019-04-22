@@ -1315,20 +1315,6 @@ namespace d360.model
                     WorkflowItemAssignments.Remove(currentAssignment);
                 }
 
-                var assignment = new WorkflowItemAssignment
-                {
-                    ItemStepID = itemStep.ID,
-                    ItemID = itemStep.ItemID,
-                    CreatedBy = CurrentResourceID,
-                    CreatedOn = DateTime.UtcNow,
-                    ResourceObject = "Resource",
-                    ResourceObjectID = resource.ResourceID,
-                    UpdatedBy = CurrentResourceID,
-                    UpdatedOn = DateTime.UtcNow
-                };
-
-                WorkflowItemAssignments.Add(assignment);
-
                 if (sendFormEmails && stepSettings.FormShouldSendEmail)
                 {
                     var obj = itemStep.Item.Object;
@@ -1359,6 +1345,22 @@ namespace d360.model
                     stepSettings.RecipientType = EmailTaskRecipientType.SpecificUser;
                     
                     await SendFormWorkflowEmail(itemStep, itemStep.ID, itemStep.ItemID, objEventInfo, stepSettings);
+                }
+                else
+                {
+                    var assignment = new WorkflowItemAssignment
+                    {
+                        ItemStepID = itemStep.ID,
+                        ItemID = itemStep.ItemID,
+                        CreatedBy = CurrentResourceID,
+                        CreatedOn = DateTime.UtcNow,
+                        ResourceObject = "Resource",
+                        ResourceObjectID = resource.ResourceID,
+                        UpdatedBy = CurrentResourceID,
+                        UpdatedOn = DateTime.UtcNow
+                    };
+
+                    WorkflowItemAssignments.Add(assignment);
                 }
             }
 
