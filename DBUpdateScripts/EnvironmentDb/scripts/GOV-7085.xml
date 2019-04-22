@@ -24,63 +24,615 @@ drop table if exists [metrics].[ScoreBackup];
 	</rollback>
   </changeSet>
 
-  <changeSet author="Pappas" id="GOV-7085-TVF-MeetCondition">
+  <changeSet author="Pappas" id="GOV-7085-ScoreProcedure">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="true">	
 <![CDATA[
-CREATE FUNCTION [metrics].[AssetsMeetConditions]
-(
-	@assetTypeUid uniqueidentifier,
-	@assetUid uniqueidentifier,
-	@effectiveDate date
-)
-RETURNS TABLE 
-AS
-RETURN 
-(
-	select		A.Uid,
-				MV.EffectiveDate
-	from		dbo.Asset A 
-				inner join dbo.AssetType T on T.Uid = @assetTypeUid and T.ID = A.AssetTypeID and A.Uid = @assetUid
-				inner join dbo.FieldType FT on FT.Object = T.Object and FT.ObjectID = T.ObjectID and FT.[Type] in ('Boolean', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'Percentage', 'Text')
-				left join dbo.Field F on F.FieldTypeID = FT.ID and F.ObjectType = A.Object and F.ObjectID = A.ObjectID
-				inner join metrics.Asset M on M.AssetTypeUid = T.[Uid] and M.IsGroup = 0 and M.State = 1
-				inner join metrics.AssetVersion MV on MV.[Uid] = M.[Uid] and MV.EffectiveDate = @effectiveDate
-				left join metrics.AssetVersionCondition C on C.[Uid] = M.[Uid] and C.EffectiveDate = MV.EffectiveDate and C.FieldTypeID = FT.ID
-				left join (
-					select		A.Uid,
-								MV.EffectiveDate
-					from		dbo.Asset A 
-								inner join dbo.AssetType T on T.Uid = @assetTypeUid and T.ID = A.AssetTypeID and A.Uid = @assetUid
-								inner join dbo.FieldType FT on FT.Object = T.Object and FT.ObjectID = T.ObjectID and FT.[Type] in ('Boolean', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'Percentage', 'Text')
-								left join dbo.Field F on F.FieldTypeID = FT.ID and F.ObjectType = A.Object and F.ObjectID = A.ObjectID
-								inner join metrics.Asset M on M.AssetTypeUid = T.[Uid] and M.IsGroup = 0 and M.State = 1
-								inner join metrics.AssetVersion MV on MV.[Uid] = M.[Uid] and MV.EffectiveDate = @effectiveDate
-								inner join metrics.AssetVersionCondition C on C.[Uid] = M.[Uid] and C.EffectiveDate = MV.EffectiveDate and C.FieldTypeID = FT.ID
-					where		metrics.CompareConditionValueToFieldValue(FT.[Type], C.Operator, C.ValueJson, coalesce(F.Value, FT.DefaultValue)) = 0
-					group by	A.Uid,
-								MV.EffectiveDate				
-				) B on B.uid = A.Uid and B.EffectiveDate = MV.EffectiveDate
-	where		(
-					(
-					C.Uid is not null and 
-					F.ID is not null and
-					metrics.CompareConditionValueToFieldValue(FT.[Type], C.Operator, C.ValueJson, coalesce(F.Value, FT.DefaultValue)) = 1
-					) or 
-					C.Uid is null
-				) and B.Uid is null
-	group by	A.Uid,
-				MV.EffectiveDate
-	)
+ALTER procedure [metrics].[LoadFromStaging]
+as
+begin
+	set nocount on;
+	
+	begin try
+		
+		update	T
+		set		T.Archived = 0
+		from	metrics.StagingScoreItem T
+				inner join (
+					select		distinct
+								AssetUid,
+								MetricAssetUid,
+								EffectiveDate
+					from		metrics.StagingScoreItem
+					where		Archived = 0
+								--and Processing = 1
+				) S on S.AssetUid = T.AssetUid and S.MetricAssetUid = T.MetricAssetUid and S.EffectiveDate < T.EffectiveDate and T.Archived = 1;
+
+		declare @min_date date,
+				@max_date date,
+				@current_date date
+		select	@min_date = min(EffectiveDate),
+				@max_date = max(EffectiveDate)
+		from	metrics.StagingScoreItem
+		where	Archived = 0
+
+		set		@current_date = @min_date
+
+		drop table if exists #assets;
+		create table #assets (AssetTypeUid uniqueidentifier not null, [Type] varchar(50), TypeID int, AssetUid uniqueidentifier not null, [Object] varchar(50), ObjectID int);
+		CREATE CLUSTERED INDEX CIX_TempAssets ON #assets ([AssetTypeUid]);
+
+		drop table if exists #priorResults;
+		create table #priorResults ( AssetUid uniqueidentifier not null, MetricAssetUid uniqueidentifier not null, [Value] bit not null, EffectiveDate date );
+		CREATE NONCLUSTERED INDEX IX_TempPriorResults_Asset_Metric ON #priorResults (AssetUid, MetricAssetUid);
+
+		drop table if exists #maxEffectiveMetrics;
+		create table #maxEffectiveMetrics ( MetricAssetUid uniqueidentifier not null, EffectiveDate date );
+		CREATE CLUSTERED INDEX CIX_TempMaxEffectiveMetric ON #maxEffectiveMetrics (MetricAssetUid, EffectiveDate);
+
+		drop table if exists #step1;
+		create table #step1 ( AssetUid uniqueidentifier not null, MetricAssetUid uniqueidentifier not null, ParentUid uniqueidentifier null, IsGroup bit not null, [Weight] decimal(5,3) not null, [Value] bit not null );
+		CREATE NONCLUSTERED INDEX IX_TempStep1_Asset_Metric_EffectiveDate ON #step1 (AssetUid, MetricAssetUid);
+		CREATE NONCLUSTERED INDEX IX_TempStep1_Asset_ParentMetric_EffectiveDate ON #step1 (AssetUid, ParentUid);
+
+		drop table if exists #step2;
+		create table #step2 (
+			AssetUid uniqueidentifier not null, MetricAssetUid uniqueidentifier not null, ParentUid uniqueidentifier null, IsGroup bit not null,
+			IsRelevant bit, [Weight] decimal(5,3) not null, [Value] bit not null, [Level] int null, AdjustedWeight decimal(5,3) null, Score decimal(5,3) null 
+		);
+		CREATE NONCLUSTERED INDEX IX_TempStep2_Metric_IsGroup_Level ON #step2 (MetricAssetUid, IsGroup, [Level]);
+		CREATE NONCLUSTERED INDEX IX_TempStep2_Parent_Level_IsRelevant ON #step2 (ParentUid, [Level], IsRelevant);
+
+		create table #conditionChecks ( AssetUid uniqueidentifier, MetricAssetUid uniqueidentifier, EffectiveDate date );
+		CREATE CLUSTERED INDEX CIX_TempConditionChecks ON #conditionChecks (AssetUid, MetricAssetUid, EffectiveDate);
+
+		while @current_date <= @max_date
+		begin
+			truncate table #step2;
+			truncate table #step1;
+			truncate table #maxEffectiveMetrics;
+			truncate table #priorResults;
+			truncate table #assets;
+
+			update	metrics.StagingScoreItem
+			set		Processing = 1
+			where	Archived = 0 
+					and EffectiveDate = @current_date;
+
+			insert into #assets
+				select		T.[Uid],
+							T.Object,
+							T.ObjectID,
+							A.[Uid],
+							A.Object,
+							A.ObjectID
+				from		metrics.StagingScoreItem R
+							inner join dbo.Asset A on A.[uid] = R.AssetUid
+							inner join dbo.AssetType T on T.ID = A.AssetTypeID
+				where		R.Processing = 1
+							and R.EffectiveDate = @current_date
+				group by	T.[Uid],
+							T.Object,
+							T.ObjectID,
+							A.[Uid],
+							A.Object,
+							A.ObjectID;
+
+			insert into #maxEffectiveMetrics
+				select		[Uid],
+							max(EffectiveDate) as EffectiveDate
+				from		metrics.AssetVersion
+				where		EffectiveDate <= @current_date
+				group by	[Uid];
+
+			insert into #priorResults
+				select		SI.AssetUid,
+							SI.MetricAssetUid,
+							SI.Value,
+							max(SI.EffectiveDate) OVER(PARTITION BY SI.AssetUid, SI.MetricAssetUid, SI.EffectiveDate) as EffectiveDate
+				from		metrics.ScoreItem SI
+							inner join metrics.Asset A on A.[Uid] = SI.MetricAssetUid and A.State = 1
+							inner join #assets E on E.AssetTypeUid = A.AssetTypeUid and E.AssetUid = SI.AssetUid and SI.EffectiveDate <= @current_date;
+
+			insert into #conditionChecks
+				select		A.AssetUid,
+							M.Uid as MetricAssetUid,
+							MaxE.EffectiveDate
+				from		#assets A
+							inner join FieldType FT on FT.Object = A.[Type] and FT.ObjectID = A.TypeID and FT.[Type] in ('Boolean', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'Percentage', 'Text')
+							left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = A.Object and F.ObjectID = A.ObjectID
+							inner join metrics.Asset M on M.AssetTypeUid = A.AssetTypeUid and M.IsGroup = 0 and M.State = 1
+							inner join #maxEffectiveMetrics MaxE on MaxE.MetricAssetUid = M.Uid
+							inner join metrics.AssetVersion MV on MV.[Uid] = M.[Uid] and MV.EffectiveDate = MaxE.EffectiveDate
+							left join metrics.AssetVersionCondition C on C.[Uid] = M.[Uid] and C.EffectiveDate = MV.EffectiveDate and C.FieldTypeID = FT.ID
+							left join (
+								select		A.AssetUid,
+											M.Uid as MetricAssetUid,
+											MV.EffectiveDate
+								from		#assets A 
+											inner join dbo.FieldType FT on FT.Object = A.[Type] and FT.ObjectID = A.TypeID and FT.[Type] in ('Boolean', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'Percentage', 'Text')
+											left join dbo.Field F on F.FieldTypeID = FT.ID and F.ObjectType = A.Object and F.ObjectID = A.ObjectID
+											inner join metrics.Asset M on M.AssetTypeUid = A.AssetTypeUid and M.IsGroup = 0 and M.State = 1
+											inner join #maxEffectiveMetrics MaxE on MaxE.MetricAssetUid = M.Uid
+											inner join metrics.AssetVersion MV on MV.[Uid] = M.[Uid] and MV.EffectiveDate = MaxE.EffectiveDate
+											inner join metrics.AssetVersionCondition C on C.[Uid] = M.[Uid] and C.EffectiveDate = MV.EffectiveDate and C.FieldTypeID = FT.ID
+								where		metrics.CompareConditionValueToFieldValue(FT.[Type], C.Operator, C.ValueJson, coalesce(F.Value, FT.DefaultValue)) = 0
+								group by	A.AssetUid,
+											M.Uid,
+											MV.EffectiveDate				
+							) B on B.AssetUid = A.AssetUid and B.MetricAssetUid = MV.Uid and B.EffectiveDate = MV.EffectiveDate
+				where		(
+								(
+								C.Uid is not null and 
+								F.ID is not null and
+								metrics.CompareConditionValueToFieldValue(FT.[Type], C.Operator, C.ValueJson, coalesce(F.Value, FT.DefaultValue)) = 1
+								) or 
+								C.Uid is null
+							) and B.AssetUid is null
+				group by	A.AssetUid,
+							M.Uid,
+							MaxE.EffectiveDate;
+
+			insert into #step1
+				select	E.AssetUid,
+						A.[Uid],
+						A.ParentUid,
+						A.IsGroup,
+						V.Weight,
+						coalesce(S.Result, P.Value, 0) as Value
+				from	metrics.AssetVersion V
+						inner join metrics.Asset A on A.[Uid] = V.[Uid]
+						inner join #assets E on E.AssetTypeUid = A.AssetTypeUid and A.State = 1
+						inner join #maxEffectiveMetrics MV on MV.MetricAssetUid = A.[Uid]
+						left join #conditionChecks C on C.AssetUid = E.AssetUid and C.MetricAssetUid = MV.MetricAssetUid and C.EffectiveDate = MV.EffectiveDate
+						--cross apply metrics.AssetsMeetConditions(E.AssetTypeUid, E.AssetUid, MV.EffectiveDate) C
+						left join metrics.StagingScoreItem S on S.AssetUid = E.AssetUid and S.MetricAssetUid = V.Uid and S.EffectiveDate = @current_date
+						left join #priorResults P on P.AssetUid = E.AssetUid and P.MetricAssetUid = A.Uid
+				where	V.EffectiveDate = MV.EffectiveDate
+						and (
+								(C.AssetUid is null and A.IsGroup = 1) or
+								(C.AssetUid is not null and A.IsGroup = 0)
+							);
+
+			with MetricHierarchy as (
+				select	AssetUid,
+						MetricAssetUid,
+						ParentUid,
+						IsGroup,
+						Weight,
+						Value,
+						1 as [Level]
+				from	#step1
+				where	ParentUid is null
+				union all
+				select	c.AssetUid,
+						c.MetricAssetUid,
+						c.ParentUid,
+						c.IsGroup,
+						c.Weight,
+						c.Value,
+						h.[Level] + 1 as [Level]
+				from	#step1 c
+						inner join MetricHierarchy h on h.AssetUid = c.AssetUid and h.MetricAssetUid = c.[ParentUid]
+			)
+
+			insert into #step2 (AssetUid, MetricAssetUid, ParentUid, IsGroup, Weight, [Value], [Level])
+				select * from MetricHierarchy order by [Level];
+
+			update	#step2
+			set		IsRelevant = 1
+			where	IsGroup = 0;
+
+			declare @maxLevel int
+			select	@maxLevel = max(Level) from #step2
+			while @maxLevel >= 1
+			begin
+				update	T
+				set		T.IsRelevant = case when [RelevantItemCount] > 0 then 1 else 0 end
+				from	#step2 T
+						cross apply (
+							select	count(1) as [RelevantItemCount]
+							from	#step2
+							where	ParentUid = T.MetricAssetUid
+									and AssetUid = T.AssetUid
+									and [Level] = @maxLevel + 1
+									and IsRelevant = 1
+						) S		
+				where	T.IsGroup = 1
+						and T.[Level] = @maxLevel 
+
+				set @maxLevel = @maxLevel - 1
+			end;
+		
+			update	T
+			set		T.AdjustedWeight = IIF(T.Weight = 0, 1, T.Weight) / IIF(S.Weight = 0, 1, S.Weight) 
+			from	#step2 T
+					outer apply (
+						select	sum(Weight) Weight
+						from	#step2
+						where	AssetUid = T.AssetUid
+								and ( (ParentUid = T.ParentUid) or (ParentUid is null and T.ParentUid is null) )
+								and IsRelevant = 1
+					) S;
+
+			update	#step2
+			set		Score = case [Value]
+								when 1 then AdjustedWeight
+								else 0
+							end
+			where	IsGroup = 0;
+
+			update	#step2
+			set		Score = null
+			where	IsGroup = 1;
+
+			declare @stopLevel int = 1,
+					@currentLevel int
+			select	@currentLevel = max([Level])
+			from	#step2;
+
+			while @currentLevel >= @stopLevel
+			begin
+				update	T
+				set		T.Score = S.Score*AdjustedWeight
+				from	#step2 T
+						cross apply (
+							select	sum(coalesce(Score, AdjustedWeight)) as Score
+							from	#step2
+							where	ParentUid = T.MetricAssetUid
+									and AssetUid = T.AssetUid
+									and [Level] = @currentLevel+1			
+						) S
+				where	T.[Level] = @currentLevel
+						and T.IsGroup = 1
+
+				set @currentLevel = @currentLevel - 1
+			end;
+		
+			update	#step2
+			set		Score = case when Value = 1 then AdjustedWeight else 0 end
+			where	Score is null;
+
+			merge		metrics.Score as T
+			using		(
+						select		AssetUid,
+									round(sum(Score), 2) as Value
+						from		#step2
+						where		[Level] = 1
+									and Score is not null
+									and IsRelevant = 1
+						group by	AssetUid
+						) S
+			on			(T.AssetUid = S.AssetUid and T.EffectiveDate = @current_date)
+			when		matched then
+				update	set
+						T.Value = S.Value
+			when		not matched by target then
+				insert	(AssetUid, EffectiveDate, Value)
+				values	(S.AssetUid, @current_date, S.Value);
+		
+			merge		metrics.ScoreItem as T
+			using		(
+						select		distinct
+									AssetUid,
+									MetricAssetUid,
+									Value,
+									AdjustedWeight
+						from		#step2
+						where		IsGroup = 0
+						) S
+			on			(T.AssetUid = S.AssetUid and T.MetricAssetUid = S.MetricAssetUid and T.EffectiveDate = @current_date)
+			when		matched then
+				update	set
+						T.AdjustedWeight = S.AdjustedWeight,
+						T.Value = S.Value,
+						T.UpdatedOn = getutcdate()
+			when		not matched by target then
+				insert	(AssetUid, MetricAssetUid, EffectiveDate, UpdatedOn, Value, AdjustedWeight)
+				values	(S.AssetUid, S.MetricAssetUid, @current_date, getutcdate(), S.Value, S.AdjustedWeight);
+	
+			delete	T
+			from	metrics.StagingScoreItem T
+					inner join metrics.StagingScoreItem S on S.AssetUid = T.AssetUid and S.MetricAssetUid = T.MetricAssetUid and T.EffectiveDate = @current_date and S.EffectiveDate = T.EffectiveDate and T.Archived = 1 and S.Archived = 0 and S.Processing = 1
+
+			update	metrics.StagingScoreItem
+			set		Processing = 0,
+					Archived = 1
+			where	EffectiveDate = @current_date 
+					and Archived = 0
+					and Processing = 1;
+
+
+			set @current_date = dateadd(day, 1, @current_date);
+		end
+	end try
+	begin catch
+		throw
+	end catch
+end
  ]]>
     </sql>
 	<rollback>
 <![CDATA[	
-drop function if exists [metrics].[AssetsMeetConditions]
+ALTER procedure [metrics].[LoadFromStaging]
+as
+begin
+	set nocount on;
+
+	DECLARE @TranName VARCHAR(20);  
+	SELECT @TranName = 'UpdateScores';  
+	begin transaction @TranName;
+	
+	begin try
+		
+		update	metrics.StagingScoreItem
+		set		Processing = 1
+		where	Archived = 0;
+		
+		drop table if exists #assetEffectiveDates;
+		create table #assetEffectiveDates (AssetTypeUid uniqueidentifier not null, AssetUid uniqueidentifier not null, EffectiveDate date not null);
+		CREATE NONCLUSTERED INDEX IX_TempAssetEffectiveDates_AssetTypeUid ON #assetEffectiveDates ([AssetTypeUid]);
+
+		
+		update	T
+		set		T.Processing = 1,
+				T.Archived = 0
+		from	metrics.StagingScoreItem T
+				inner join (
+					select		distinct
+								AssetUid,
+								MetricAssetUid,
+								EffectiveDate
+					from		metrics.StagingScoreItem
+					where		Archived = 0
+								and Processing = 1
+				) S on S.AssetUid = T.AssetUid and S.MetricAssetUid = T.MetricAssetUid and S.EffectiveDate < T.EffectiveDate and T.Archived = 1;
+
+		insert into #assetEffectiveDates
+			select		distinct
+						T.[Uid] as AssetTypeUid,
+						A.[Uid] as AssetUid,
+						R.EffectiveDate
+			from		metrics.StagingScoreItem R
+						inner join dbo.Asset A on A.[uid] = R.AssetUid
+						inner join dbo.AssetType T on T.ID = A.AssetTypeID
+			where		R.Archived = 0
+						and R.Processing = 1;
+		
+		drop table if exists #step1;
+		create table #step1 (
+			AssetUid uniqueidentifier not null, EffectiveDate date not null,
+			MetricAssetUid uniqueidentifier not null, ParentUid uniqueidentifier null, IsGroup bit not null,
+			Weight decimal(5,3) not null,
+			[Value] bit not null
+		);
+		CREATE NONCLUSTERED INDEX IX_TempStep1_Asset_Metric_EffectiveDate ON #step1 (AssetUid, MetricAssetUid, EffectiveDate);
+		CREATE NONCLUSTERED INDEX IX_TempStep1_Asset_ParentMetric_EffectiveDate ON #step1 (AssetUid, ParentUid, EffectiveDate);
+
+		insert into #step1
+			select	E.AssetUid,
+					E.EffectiveDate,
+					A.[Uid],
+					A.ParentUid,
+					A.IsGroup,
+					V.Weight,
+					coalesce(S.Result, P.Value, 0) as Value
+			from	metrics.AssetVersion V
+					inner join metrics.Asset A on A.[Uid] = V.[Uid]
+					inner join #assetEffectiveDates E on E.AssetTypeUid = A.AssetTypeUid and A.State = 1
+					cross apply (
+						select	max(EffectiveDate) as EffectiveDate
+						from	metrics.AssetVersion
+						where	[Uid] = A.[Uid]
+								and EffectiveDate <= E.EffectiveDate
+					) MV
+					left join metrics.StagingScoreItem S on S.AssetUid = E.AssetUid and S.MetricAssetUid = V.Uid and S.EffectiveDate = E.EffectiveDate 
+					outer apply (
+						select		top 1
+									AssetUid,
+									MetricAssetUid,
+									Value,
+									max(EffectiveDate) OVER(PARTITION BY AssetUid, MetricAssetUid, EffectiveDate) as EffectiveDate
+						from		metrics.ScoreItem
+						where		AssetUid = E.AssetUid and MetricAssetUid = V.Uid and EffectiveDate <= S.EffectiveDate
+					) P
+			where	V.EffectiveDate = MV.EffectiveDate
+					and metrics.AssetMeetsConditions(V.[Uid], V.EffectiveDate, E.AssetUid) = 1;
+		
+		drop table if exists #step2;
+		create table #step2 (
+			AssetUid uniqueidentifier not null, EffectiveDate date not null,
+			MetricAssetUid uniqueidentifier not null, ParentUid uniqueidentifier null, IsGroup bit not null,
+			IsRelevant bit,
+			Weight decimal(5,3) not null,
+			[Value] bit not null,
+			[Level] int null,
+			AdjustedWeight decimal(5,3) null,
+			Score decimal(5,3) null
+		);
+		CREATE NONCLUSTERED INDEX IX_TempStep2_Metric_IsGroup_Level ON #step2 (MetricAssetUid, IsGroup, [Level]);
+		CREATE NONCLUSTERED INDEX IX_TempStep2_Parent_Level_IsRelevant ON #step2 (ParentUid, [Level], IsRelevant);
+
+		with h as (
+			select	AssetUid,
+					EffectiveDate,
+					MetricAssetUid,
+					ParentUid,
+					IsGroup,
+					Weight,
+					Value,
+					1 as [Level]
+			from	#step1
+			where	ParentUid is null
+			union all
+			select	c.AssetUid,
+					c.EffectiveDate,
+					c.MetricAssetUid,
+					c.ParentUid,
+					c.IsGroup,
+					c.Weight,
+					c.Value,
+					h.[Level] + 1 as [Level]
+			from	#step1 c
+					inner join h on h.AssetUid = c.AssetUid and h.MetricAssetUid = c.[ParentUid] and c.EffectiveDate = h.EffectiveDate
+		)
+
+		insert into #step2 (AssetUid, EffectiveDate, MetricAssetUid, ParentUid, IsGroup, Weight, [Value], [Level])
+			select	*
+			from	h
+			order by EffectiveDate, [Level];
+
+		update	#step2
+		set		IsRelevant = 1
+		where	IsGroup = 0;
+
+		declare @maxLevel int
+		select	@maxLevel = max(Level) from #step2
+		while @maxLevel >= 1
+		begin
+			update	T
+			set		T.IsRelevant = case when [RelevantItemCount] > 0 then 1 else 0 end
+			from	#step2 T
+					cross apply (
+						select	count(1) as [RelevantItemCount]
+						from	#step2
+						where	ParentUid = T.MetricAssetUid
+								and AssetUid = T.AssetUid
+								and EffectiveDate = T.EffectiveDate
+								and [Level] = @maxLevel + 1
+								and IsRelevant = 1
+					) S		
+			where	T.IsGroup = 1
+					and T.[Level] = @maxLevel 
+
+			set @maxLevel = @maxLevel - 1
+		end;
+		
+		update	T
+		set		T.AdjustedWeight = IIF(T.Weight = 0, 1, T.Weight) / IIF(S.Weight = 0, 1, S.Weight) 
+		from	#step2 T
+				outer apply (
+					select	sum(Weight) Weight
+					from	#step2
+					where	AssetUid = T.AssetUid
+							and EffectiveDate = T.EffectiveDate
+							and ( (ParentUid = T.ParentUid) or (ParentUid is null and T.ParentUid is null) )
+							and IsRelevant = 1
+				) S;
+
+		update	#step2
+		set		Score = case [Value]
+							when 1 then AdjustedWeight
+							else 0
+						end
+		where	IsGroup = 0;
+
+		update	#step2
+		set		Score = null
+		where	IsGroup = 1;
+
+		declare @stopLevel int = 1,
+				@currentLevel int
+		select	@currentLevel = max([Level])
+		from	#step2;
+
+		while @currentLevel >= @stopLevel
+		begin
+			update	T
+			set		T.Score = S.Score*AdjustedWeight
+			from	#step2 T
+					cross apply (
+						select	sum(coalesce(Score, AdjustedWeight)) as Score
+						from	#step2
+						where	ParentUid = T.MetricAssetUid
+								and EffectiveDate = T.EffectiveDate
+								and AssetUid = T.AssetUid
+								and [Level] = @currentLevel+1			
+					) S
+			where	T.[Level] = @currentLevel
+					and T.IsGroup = 1
+
+			set @currentLevel = @currentLevel - 1
+		end;
+		
+		update	#step2
+		set		Score = case when Value = 1 then AdjustedWeight else 0 end
+		where	Score is null;
+
+		delete	N
+		from	#step2 N
+				outer apply (
+							select	max(EffectiveDate) as EffectiveDate 
+							from	metrics.ScoreItem 
+							where	AssetUid = N.AssetUid 
+									and MetricAssetUid = N.MetricAssetUid 
+									and Value = N.Value 
+									and AdjustedWeight = N.AdjustedWeight 
+									and EffectiveDate < N.EffectiveDate
+							) P
+		where	P.EffectiveDate is not null;
+
+		merge		metrics.Score as T
+		using		(
+					select		AssetUid,
+								EffectiveDate,
+								round(sum(Score), 2) as Value
+					from		#step2
+					where		[Level] = 1
+								and Score is not null
+								and IsRelevant = 1
+					group by	AssetUid,
+								EffectiveDate
+					) S
+		on			(T.AssetUid = S.AssetUid and T.EffectiveDate = S.EffectiveDate)
+		when		matched then
+			update	set
+					T.Value = S.Value
+		when		not matched by target then
+			insert	(AssetUid, EffectiveDate, Value)
+			values	(S.AssetUid, S.EffectiveDate, S.Value);
+		
+		merge		metrics.ScoreItem as T
+		using		(
+					select		distinct
+								AssetUid,
+								MetricAssetUid,
+								EffectiveDate,
+								Value,
+								AdjustedWeight
+					from		#step2
+					where		IsGroup = 0
+					) S
+		on			(T.AssetUid = S.AssetUid and T.MetricAssetUid = S.MetricAssetUid and T.EffectiveDate = S.EffectiveDate)
+		when		matched then
+			update	set
+					T.AdjustedWeight = S.AdjustedWeight,
+					T.Value = S.Value,
+					T.UpdatedOn = getutcdate()
+		when		not matched by target then
+			insert	(AssetUid, MetricAssetUid, EffectiveDate, UpdatedOn, Value, AdjustedWeight)
+			values	(S.AssetUid, S.MetricAssetUid, S.EffectiveDate, getutcdate(), S.Value, S.AdjustedWeight);
+		
+		delete	T
+		from	metrics.StagingScoreItem T
+				inner join metrics.StagingScoreItem S on S.AssetUid = T.AssetUid and S.MetricAssetUid = T.MetricAssetUid and S.EffectiveDate = T.EffectiveDate and T.Archived = 1 and S.Archived = 0 and S.Processing = 1
+
+		update	metrics.StagingScoreItem
+		set		Processing = 0,
+				Archived = 1
+		where	Processing = 1;
+
+		commit transaction @TranName;
+	end try
+	begin catch
+		rollback transaction @TranName;
+		throw
+	end catch
+end
 ]]>
 	</rollback>
-  </changeSet>  
-  
+  </changeSet>
+
   </databaseChangeLog>

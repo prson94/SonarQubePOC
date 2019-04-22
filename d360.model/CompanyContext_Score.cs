@@ -499,6 +499,12 @@ set		T.Applies = C.Applies
 from	#tbl T
 		inner join C on C.Uid = T.Uid
 
+delete	T
+from	#tbl T
+		inner join metrics.Asset A on A.Uid = T.Uid and A.IsGroup = 0
+		left join metrics.ScoreItem S on S.MetricAssetUid = T.Uid and S.AssetUid = @assetUid and S.EffectiveDate <= @effectiveDate
+where	S.MetricAssetUid is null
+
 select	Uid, ParentUid, [Level], Name, Description, IsGroup, Weight, Value
 from	#tbl where Applies = 1";
 
