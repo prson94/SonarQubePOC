@@ -190,6 +190,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
         let i = this.step.fields.form.field.find(f => f['@id'] == item['@id']);
         this.newField = i;
+        this.newField['@required'] = this.newField['@required'] === "true";
         this.newField['@oldId'] = this.newField['@id'];
         this.newField['@oldType'] = this.newField['@type'];
 
