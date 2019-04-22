@@ -60,36 +60,6 @@ namespace d360.extensions.storage
             blockBlob.Delete();
         }
 
-        public bool FileExists(string folderName, string fileName)
-        {
-            var c = getContainer(folderName);
-            return c.GetBlockBlobReference(fileName).Exists();
-        }
-
-        public Stream GetFile(string folderName, string fileName)
-        {
-            using (var stream = new MemoryStream())
-            {
-                var c = getContainer(folderName);
-                CloudBlockBlob blockBlob = c.GetBlockBlobReference(fileName);
-                blockBlob.DownloadToStream(stream);
-                return stream;
-            }
-        }
-
-        public byte[] GetFileAsBytes(string folderName, string fileName)
-        {
-            byte[] bytes = null;
-            using (var stream = new MemoryStream())
-            {
-                var c = getContainer(folderName);
-                CloudBlockBlob blockBlob = c.GetBlockBlobReference(fileName);
-                blockBlob.DownloadToStream(stream);
-                bytes = new byte[(int)stream.Length];
-                stream.Write(bytes, 0, (int)stream.Length);
-            }
-            return bytes;
-        }
 
         public string GetFileContentsAsString(string folderName, string fileName)
         {
@@ -103,7 +73,10 @@ namespace d360.extensions.storage
             {
                 var c = getContainer(folderName);
                 CloudBlockBlob blockBlob = c.GetBlockBlobReference(fileName);
-                str = blockBlob.DownloadText(encoding);
+                if (blockBlob.Exists())
+                {
+                    str = blockBlob.DownloadText(encoding);
+                }
             }
             return str;
         }
@@ -117,23 +90,6 @@ namespace d360.extensions.storage
                 blockBlob.FetchAttributes();
                 return blockBlob.Properties.LastModified.HasValue? blockBlob.Properties.LastModified.Value.UtcDateTime : DateTime.MinValue;
             }            
-        }
-
-        public string GetFileSecureUrl(string folderName, string fileName)
-        {
-            var c = getContainer(folderName);
-            var blockBlob = c.GetBlockBlobReference(fileName);
-
-            var policy = new SharedAccessBlobPolicy
-            {
-                SharedAccessExpiryTime = DateTime.UtcNow.AddMinutes(1), 
-                Permissions = SharedAccessBlobPermissions.Read
-            };
-                        
-            var signature = blockBlob.GetSharedAccessSignature(policy);
-                        
-            var uri = blockBlob.Uri.AbsoluteUri + signature;
-            return uri;
         }
 
         public List<string> ListFilenamesByPrefix(string folderName, string prefix)
@@ -164,14 +120,6 @@ namespace d360.extensions.storage
                 ToList();
 
             return files;
-        }
-
-        public bool ReleaseLockOnBlobFile(string folderName, string fileName)
-        {
-            var c = getContainer(folderName);
-            CloudBlockBlob blockBlob = c.GetBlockBlobReference(fileName);
-            var timespan  = blockBlob.BreakLease();
-            return true;
         }
     }
 }
