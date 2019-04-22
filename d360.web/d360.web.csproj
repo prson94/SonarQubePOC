@@ -310,7 +310,6 @@
     <Compile Include="Controllers\Services\Obsolete\GlossaryController.cs" />
     <Compile Include="Controllers\Services\Obsolete\RelationshipsController.cs" />
     <Compile Include="Controllers\Services\FusionController.cs" />
-    <Compile Include="Controllers\Services\SearchController.cs" />
     <Compile Include="Controllers\ApiController.cs" />
     <Compile Include="Controllers\AuthenticationController.cs" />
     <Compile Include="Controllers\ArtifactsController.cs">
