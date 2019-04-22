@@ -312,7 +312,7 @@ CREATE NONCLUSTERED INDEX IX_TempMvLookupValues_FieldTypeID_RawValue ON #MvLooku
 insert into #MvLookupValues (ItemNumber, FieldTypeID, [RawValue])
 	select		T.ItemNumber,
 				T.FieldTypeID,
-				MV.Value
+				rtrim(ltrim(MV.Value))
 	from		#LookupValues T
 				inner join FieldType ST on ST.ID = T.FieldTypeID and ST.AllowMultipleValues = 1
 				cross apply string_split(T.FieldValue, ',') MV;
