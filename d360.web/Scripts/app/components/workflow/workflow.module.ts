@@ -11,6 +11,7 @@ import { TilesModule  } from '../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 import { SharedGridSelectionInfoModule } from '../shared/grid-selection-info.component';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
+import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
 
 import { WorkflowComponent } from './workflow.component';
@@ -21,6 +22,8 @@ import { WorkflowBulkFormComponent } from './workflow-bulk-form.component';
 import { WorkflowRaiseIssueComponent } from './workflow-raise-issue.component';
 import { WorkflowViewDetailsComponent } from './workflow-view-details.component';
 import { WorkflowNewDetailComponent } from './workflow-new-details.component';
+import { WorkflowBulkReassignComponent } from './workflow-bulk-reassign.component';
+
 
 import { WorkflowRoutingModule } from './workflow.routes';
 
@@ -69,6 +72,7 @@ import { TableModule } from 'primeng/table';
         CoreModule,
         PipesModule,
         TilesModule,
+        D3SSharedModule,
         SharedGridPagingInfoModule,
         SharedGridSelectionInfoModule,
         SharedDynamicGridEditorModule,
@@ -82,6 +86,7 @@ import { TableModule } from 'primeng/table';
         WorkflowViewDetailsComponent,        
         WorkflowNewDetailComponent,
         WorkflowBulkFormComponent,
+        WorkflowBulkReassignComponent,
     ],
     exports: [                        
         WorkflowRaiseIssueComponent,           

@@ -36,6 +36,10 @@ export class BaseObservableService {
                             }
                         }
 
+                        if (errorMessage == null || errorMessage == '') {
+                            errorMessage = 'An error has occurred.';
+                        }
+
                         this.messages.showError('Error', errorMessage);
                     }
                 }

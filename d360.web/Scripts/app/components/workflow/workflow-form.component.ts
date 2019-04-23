@@ -166,7 +166,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
             }).then(() => {
                 window.setTimeout(() => {
                     this.setValidators();
-                }, 1500);
+                }, 500);
             })
             .catch(res => {
                 this.isLoading = false;

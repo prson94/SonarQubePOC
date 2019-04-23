@@ -27,7 +27,7 @@ export class LineageService extends BaseObservableService {
         type: string,
         id: number
     ): Observable<any> {
-        const url = `services/relationships/${type}/${id}/lineage`;
+        const url = `api/v2/lineage/${type}/${id}`;
 
         return this.http.get(url).pipe(
             map(response => response),
@@ -36,7 +36,7 @@ export class LineageService extends BaseObservableService {
     }
 
     public postLineageDiagram(model: LineageEditorModelV2): Observable<any> {
-        const url = `services/relationships/save/lineage`;
+        const url = `api/v2/lineage`;
 
         return this.http.post(url, model).pipe(
             map(response => response),

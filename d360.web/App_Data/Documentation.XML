@@ -2697,6 +2697,11 @@
             <param name="model">The fusion status log model.</param>
             <returns>The model of the updated fusion status log entry.</returns>
         </member>
+        <member name="T:d360.web.Controllers.V2.LineageController">
+            <summary>
+            This service houses all endpoints handling glossary-related data such as artifacts and models.
+            </summary>
+        </member>
         <member name="T:d360.web.Controllers.V2.MetricsController">
             <summary>
             This service houses all endpoints handling metrics and scoring for assets throughout your environment.
@@ -2795,6 +2800,13 @@
             GET a list of predicate functional types.
             </summary>
             <returns>A list of static predicate functional types contained within your Govern environment.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.RelationshipsController.ExportToExcel(System.String)">
+            <summary>
+            GET a list of relationships.
+            </summary>
+            <param name="intersectTypeUid">Filter by an intersect's unique identifier.</param>
+            <returns>A excel file containing relationships.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.RelationshipsController.GetRelationshipsAsync(System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{d360.core.enums.State},System.Nullable{System.Int32},System.Nullable{System.Int32})">
             <summary>

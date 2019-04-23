@@ -560,7 +560,7 @@ where
                     Fields = new Dictionary<string, string>() {
                         { "Name", o.DisplayValue },
                         { "Type", o.TypeName },
-                        { "Uid", o.Uid },
+                        { "Uid", o.Uid.ToString() },
                         { "Description", "" },
                         { "Status", "Active" },
                         { "Taxonomy", "" }
@@ -624,7 +624,7 @@ WHERE	T.Object = 'TaxonomyType'
                     Fields = new Dictionary<string, string>() {
                         { "Name", o.DisplayValue },
                         { "Type", o.TypeName },
-                        { "Uid", o.Uid },
+                        { "Uid", o.Uid.ToString() },
                         { "Description", "" },
                         { "TextPath", o.DisplayValue ?? "" }
                     }

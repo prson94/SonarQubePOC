@@ -78,6 +78,16 @@
                     <ng-container *ngIf="step.Settings.SendFormEmail == 'true' && step.ItemSettings.hasEmails == true">
                         <d3s-workflow-monitor-step-email-details [step]="step"></d3s-workflow-monitor-step-email-details>
                     </ng-container>
+                    <div class="row" *ngIf="step?.ItemFields != null && step?.ItemFields?.Reassigned != null && step?.ItemFields?.Reassigned['@reassignType']=='Resource' && step?.ItemFields?.Reassigned['@reassignToResourceId'] != null">
+                        <div class="col s12">
+                            <div class="FieldName">
+                                Form was reassigned to another User
+                            </div>
+                            <div>
+                                {{step?.ItemFields?.Reassigned['@reassignByResourceName']}} reassigned this action from {{step?.ItemFields?.Reassigned['@reassignFromResourceName']}} to {{step?.ItemFields?.Reassigned['@reassignToResourceName']}} on {{(step?.ItemFields?.Reassigned['@reassignOn'] | date:'short')}}
+                            </div>
+                        </div>
+                    </div>
                     <div *ngIf="step.ItemSettings.hasEmails == false && step.Settings.MessageRecipientType == 'Responsibility'" class="row">
                         <div class="col s12">
                             <div class="FieldName">
