@@ -122,20 +122,36 @@ namespace d360.web.Controllers.V2
             NonNullableParameters]
         public async Task<HttpResponseMessage> ResponsibilityBreakdownByGroup(int id)
         {
-            var sql = $@"            
-        select		RD.Type,
-        			RD.TypeID,
-        			{QueryConstants.HighLevelTypeCaseStatement} + T.Name as TypeName,
-        			count(1) as [Count]
-        from		ResponsibilityDetail RD 
-        			inner join AssetType T on T.ID = RD.AssetTypeID and RD.SecurityAsset = 'G' and RD.SecurityAssetID = @id and RD.IsVisible = 1
-        group by    RD.Type, 
-                    RD.TypeID, 
-                    { QueryConstants.HighLevelTypeCaseStatement} + T.Name 
-        order by    { QueryConstants.HighLevelTypeCaseStatement} + T.Name";
-
+            var sql = $@"select  
+        		                    {QueryConstants.HighLevelTypeCaseStatement} + T.Name as TypeName,
+        			                			                 R.Type,
+        			                 R.TypeID,
+        			                 R.[Count] * R.AssetCount as [Count]
+        		                from AssetType T
+        		                inner join (
+        			                select 
+        						                C.[Type],
+        						                C.TypeID,
+        						                count(1) as [Count],
+        										A.Count as AssetCount
+        			                from ResponsibilityDetail C
+        							cross apply (
+        								select 
+        										case when C.ApplyToType = 1 and C.AssetID = 0 then 
+        											(select count(*) from Asset where AssetTypeID = C.AssetTypeID) 
+        										else 
+        											1
+        								end as [Count]
+        							) A
+        			                where		C.IsVisible = 1 and C.SecurityAsset = 'G' and C.SecurityAssetID = @id
+        			                group by C.[Type], 
+                                            C.TypeID, A.Count
+        		                ) R on R.[Type] = T.Object and R.TypeID = T.ObjectID
+                                order by    { QueryConstants.HighLevelTypeCaseStatement} + T.Name
+        						";
+        
             var query = await Company.QueryAsync<dynamic>(sql, new { id });
-
+            
             return Request.CreateResponse(HttpStatusCode.OK, query);
         }
 
