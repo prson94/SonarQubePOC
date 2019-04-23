@@ -1,5 +1,4 @@
-
-import {distinctUntilChanged, switchMap, map} from 'rxjs/operators';
+import {distinctUntilChanged, switchMap, map, catchError} from 'rxjs/operators';
 import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { FieldDefinition, IFieldsService, FieldTypeEditorModel, Lookups, LookupItem } from '../models/fields.model';
@@ -71,7 +70,7 @@ export class FieldsService extends BaseService implements IFieldsService {
     getReferenceTypeHierarchyFields(id: number, objectType: string, objectId: number): Promise<SelectItem[]> {
         return this.http.get(`form/Reference_Hierarchy?id=${id}&objectType=${objectType}&objectId=${objectId}`)
             .toPromise()
-            .then(response => <SelectItem[]>response.json())            
+            .then(response => <SelectItem[]>response.json())
             .catch(err => this.handleError(err));
     }
 
@@ -91,7 +90,7 @@ export class FieldsService extends BaseService implements IFieldsService {
     }
 
 
-    getLookupTokens(id: number, type: string): Promise<SelectItem[]> {        
+    getLookupTokens(id: number, type: string): Promise<SelectItem[]> {
         return this.http.get(`form/FieldType_Lookup_Tokens?id=${id}&type=${type}`)
             .toPromise()
             .then(response => <FtItem[]>response.json())
@@ -103,7 +102,7 @@ export class FieldsService extends BaseService implements IFieldsService {
         return this.http.get(`form/FieldType_Lookups?id=${id}&type=${type}&isNg=true`)
             .toPromise()
             .then(response => <any>response.json())
-            .then(r => {                
+            .then(r => {
                 let l = new Lookups();
                 l.DataTypes = this.ftItemToSelectItem(r.DataTypes);
                 l.FusionAttributeTypes = this.ftItemToSelectItem(r.FusionAttributeTypes);
@@ -118,13 +117,13 @@ export class FieldsService extends BaseService implements IFieldsService {
                 l.Field_CardinalReferenceRelationships = this.ftItemToSelectItem(r.Field_CardinalReferenceRelationships);
                 l.Field_FieldFromRelRelationships = this.ftItemToSelectItem(r.Field_FieldFromRelRelationships);
                 l.Lookups = this.ftItemToSelectItem(r.Lookups);
-                l.Patterns = this.ftItemToSelectItem(r.Patterns);      
+                l.Patterns = this.ftItemToSelectItem(r.Patterns);
                 l.ComplexLookupRelations = r.ComplexLookupRelations;
-                l.FilteredLookups = r.FilteredLookups;          
+                l.FilteredLookups = r.FilteredLookups;
                 return l;
             })
             .catch(err => this.handleError(err));
-    } 
+    }
 
     getFormData(id: number): Promise<FieldTypeEditorModel> {
         return this.http.get(`form/FieldType_FormData?id=${id}`)
@@ -182,8 +181,8 @@ export class FieldsService extends BaseService implements IFieldsService {
         let s = new Array<SelectItem>();
         //s.push({ label: '', value: '' }); //Empty value at beginning of list
         items.forEach(i => {
-            s.push({label: i.title, value: i.value }); 
-        });        
+            s.push({label: i.title, value: i.value });
+        });
         return s;
     }
 
@@ -191,7 +190,7 @@ export class FieldsService extends BaseService implements IFieldsService {
         return this.http.get(`form/FieldType_RelationLookup_ChildIntersectTypes?id=${id}`)
             .toPromise()
             .then(response => response.json())
-            .catch(err => this.handleError(err)); 
+            .catch(err => this.handleError(err));
     }
 
     getChildRelations(type: string, id: number): Promise<any> {
@@ -253,15 +252,30 @@ export class FieldsService extends BaseService implements IFieldsService {
     getRelationshipFieldItems(event: Observable<any>) {
         return event.pipe(
             distinctUntilChanged(),
-            switchMap(event => {
-                let uri = `api/relationships/field/${event.fieldTypeID}?offset=${event.event.first}&rows=${event.event.rows}`;
-                if (event.event.globalFilter != null && event.event.globalFilter.length > 0)
-                    uri += `&query=${event.event.globalFilter}`
-                if (event.objectID != null)
-                    uri += `&object=${event.object}&objectID=${event.objectID}`
-                return this.http.get(uri).pipe(map(res => res.json()),
-                    map(res => { return { fieldTypeID: event.fieldTypeID, results: res, event: event.event } }),);
-            }),);
+            switchMap(
+                event => {
+                    let uri = `api/relationships/field/${event.fieldTypeID}?offset=${event.event.first}&rows=${event.event.rows}`;
+
+                    if (event.event.globalFilter != null && event.event.globalFilter.length > 0) {
+                        uri += `&query=${event.event.globalFilter}`
+                    }
+
+                    if (event.objectID != null) {
+                        uri += `&object=${event.object}&objectID=${event.objectID}`
+                    }
+
+                    return this.http.get(uri).pipe(
+                        map(res => res),
+                        map(
+                            res => {
+                                return {fieldTypeID: event.fieldTypeID, results: res, event: event.event}
+                            }
+                        ),
+                        catchError(err => this.handleError(err))
+                    );
+                }
+            )
+        );
     }
 
     getTypeaheadItems(e: Observable<any>): Observable<EditorDropDownItem[]> {

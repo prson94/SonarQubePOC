@@ -79,7 +79,7 @@ namespace d360.core.enums
         Grammar = 6,
         [
             Name("Simple"), 
-            Description(""), 
+            Description("Allows you to create a simple association between two objects that do not fit into any other functional type, such as lineage."), 
             ReadOnly(false),
             AllowIntersectTypeAssignment(true),            
             AllowMultiplePredicates(true), 
@@ -162,6 +162,18 @@ namespace d360.core.enums
 
         [JsonIgnore]
         public bool ReadOnly { get; set; }
+    }
+
+    public class PredicateTypeApiViewModel : BaseObject
+    {
+        [DataMember]
+        public PredicateType Type { get; set; }
+
+        [DataMember]
+        public string Name { get; set; }
+
+        [DataMember]
+        public string Description { get; set; }
     }
 
     public static class PredicateTypeExtensions

@@ -1,16 +1,27 @@
-﻿import { SelectItem } from 'primeng/components/common/api';
+﻿import {SelectItem} from 'primeng/components/common/api';
+import {Observable} from "rxjs";
 
 export interface IFieldsService {
     getFields(objectID: number, objectType: string): Promise<FieldDefinition[]>;
+
     getFieldTypeEditor(id: number): Promise<FieldTypeEditorModel>;
+
     getFusionLookupDisplayFields(id: number): Promise<SelectItem[]>;
+
     getFusionLookupTargetAttributeTypes(sourceID: number, referenceTypeID: number): Promise<SelectItem[]>;
+
     getRelationLookupChildIntersectTypes(id: number): Promise<SelectItem[]>;
+
     getRelationLookupDisplayFields(id: number, type: string, intersectTypeID: number): Promise<SelectItem[]>;
+
     getLookupTokens(id: number, type: string): Promise<SelectItem[]>;
+
     getLookups(id: number, type: string): Promise<Lookups>;
+
     getFormData(id: number): Promise<FieldTypeEditorModel>;
+
     putFieldType(model: FieldTypeEditorModel): Promise<any>;
+
     postFieldType(model: FieldTypeEditorModel): Promise<any>;
 }
 
@@ -32,7 +43,6 @@ export class FieldDefinition {
     ExtOrder: number;
 }
 
-
 export class FieldTypeEditorModel {
     FieldIsUsed: boolean;
     FieldType: FieldType;
@@ -44,8 +54,8 @@ export class FieldTypeEditorModel {
     LookupTokens: SelectItem[] = new Array<SelectItem>();
     FilteredLookupItems: FilteredLookupItem[] = [];
     FilteredLookupItem: FilteredLookupItem;
-    OwnershipLookupSettings: OwnershipLookupSettings;    
-    IsPrimaryFilter: boolean;    
+    OwnershipLookupSettings: OwnershipLookupSettings;
+    IsPrimaryFilter: boolean;
 }
 
 export class OwnershipLookupSettings {
@@ -178,10 +188,9 @@ export class FieldTypeRelationItemEditorModel {
     IntersectTypeID: number;
     Object: string;
     ObjectID: number;
-    RelationType: number; 
-    Direction: number; 
+    RelationType: number;
+    Direction: number;
     selectedIntersectName: string;
-
 }
 
 export class FieldTypeFusionLookupDefinition {
@@ -210,7 +219,7 @@ export class FieldTypeRelationLookupDefinition {
 export class FieldTypeRelationLookupDisplayField {
     ID: number;
     FieldTypeRelationLookupDefinitionID: number;
-    FieldTypeID: number
+    FieldTypeID: number;
     FieldTypeName: string;
     Show: boolean;
     SortOrder: number;
@@ -229,7 +238,6 @@ export class FieldTypeFusionLookupDisplayField {
 }
 
 export class Lookups {
-    
     DataTypes: SelectItem[];
     Patterns: SelectItem[];
     IntersectTypes: LookupItem[];
@@ -252,8 +260,8 @@ export class LookupItem {
 }
 
 export enum ComplexLookupRelationType {
-        StandardRelationhip = 1,
-        ChildRelationship = 2,
-        ChildItem = 3,
-        ParentItem = 4
+    StandardRelationhip = 1,
+    ChildRelationship = 2,
+    ChildItem = 3,
+    ParentItem = 4
 }

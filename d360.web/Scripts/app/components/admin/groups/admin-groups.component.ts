@@ -1,20 +1,20 @@
-﻿import { Component, NgZone, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
-import { Breadcrumb } from '../../../models/breadcrumb.model';
-import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { AdminBaseComponent } from '../admin-base.component';
-import { GroupService } from '../../../services/group.service';
-import { GroupSearchResultModel, Group, ResourceGroup, GroupEditorModel } from '../../../models/group.model';
-import { FormMode } from '../../../models/form.model';
-import { Title } from '@angular/platform-browser';
-import { MessagesService } from '../../../services/messages.service';
-import { SiteUrlHelpers } from '../../../static/site-url-helpers';
-import { StringConstants } from '../../../static/string-constants';
+﻿import {Component, NgZone, OnInit} from '@angular/core';
+import {Router} from '@angular/router';
+import {Breadcrumb} from '../../../models/breadcrumb.model';
+import {HeaderBreadcrumbService} from '../../../services/header-breadcrumb.service';
+import {AdminBaseComponent} from '../admin-base.component';
+import {GroupService} from '../../../services/group.service';
+import {GroupSearchResultModel, Group, ResourceGroup, GroupEditorModel} from '../../../models/group.model';
+import {FormMode} from '../../../models/form.model';
+import {Title} from '@angular/platform-browser';
+import {MessagesService} from '../../../services/messages.service';
+import {SiteUrlHelpers} from '../../../static/site-url-helpers';
+import {StringConstants} from '../../../static/string-constants';
 
 @Component({
     selector: 'd3s-admin-groups',
-    providers: [ GroupService ],
-    templateUrl: './admin-groups.component.html'  
+    providers: [GroupService],
+    templateUrl: './admin-groups.component.html'
 })
 
 export class AdminGroupsComponent extends AdminBaseComponent {
@@ -24,13 +24,14 @@ export class AdminGroupsComponent extends AdminBaseComponent {
     private formMode: FormMode = FormMode.Default;
     private FormMode = FormMode;
 
-    constructor(private router: Router,
+    constructor(
+        private router: Router,
         private groupService: GroupService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         titleService: Title,
         protected messagesService: MessagesService
     ) {
-        super(headerBreadcrumbService, titleService);        
+        super(headerBreadcrumbService, titleService);
         this.areaName = "Groups";
         this.setCommonItems();
     }
@@ -41,12 +42,15 @@ export class AdminGroupsComponent extends AdminBaseComponent {
 
     load() {
         this.isLoading = true;
-        this.groupService.getGroupList()
-            .then(d => {
+
+        this.groupService.getGroupList().subscribe(
+            d => {
                 this.groupItems = d;
                 this.selectedRow = this.groupItems[0];
+
                 this.isLoading = false;
-            });
+            }
+        );
     }
 
     add() {
@@ -54,13 +58,14 @@ export class AdminGroupsComponent extends AdminBaseComponent {
     }
 
     edit(id: number) {
-        this.selectedRow = this.groupItems.find(i => i.ID == id);        
+        this.selectedRow = this.groupItems.find(i => i.ID == id);
         this.formMode = FormMode.Editing;
     }
 
     cancel() {
         this.formMode = FormMode.Default;
     }
+
     delete(id: number) {
         this.selectedRow = this.groupItems.find(i => i.ID == id);
         this.formMode = FormMode.Deleting;
@@ -79,11 +84,11 @@ export class AdminGroupsComponent extends AdminBaseComponent {
     }
 
     select(e) {
-        this.selectedRow = e.data;        
+        this.selectedRow = e.data;
     }
 
     private groupUrl(id: number) {
-        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl(StringConstants.ObjectGroup, id));        
+        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl(StringConstants.ObjectGroup, id));
     }
 
     success(e: any) {

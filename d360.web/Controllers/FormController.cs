@@ -1,7 +1,5 @@
 ﻿using d360.core;
-using d360.core.resources;
 using d360.core.entities;
-using d360.core.entities.Metric;
 using d360.core.entities.Views;
 using d360.core.enums;
 using d360.core.exceptions;
@@ -745,12 +743,10 @@ namespace d360.web.Controllers
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
-
-            var type = Company.GetById<ArtifactType>(at);
-
+                        
             var intersectType = Company.Filter<IntersectTypeDetail>(i =>
                 i.Object == "ArtifactType" &&
-                i.ObjectID == type.ID &&
+                i.ObjectID == at &&
                 i.PredicateType.Value == PredicateType.InterTypeHierarchy
             ).SingleOrDefault();
 
@@ -775,19 +771,19 @@ namespace d360.web.Controllers
             if (!Company.HasAssetPermission(SystemObjects.Artifact, id, Permission.ModifyAsset))
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-            var list = new List<EditableField>();
-            var a = Company.GetById<Artifact>(id);
-            
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+            var list = new List<EditableField>();                        
+            var a = Company.Assets.Where(x => x.ObjectID == id && x.Object == SystemObjects.Artifact.ToString()).Include(x => x.AssetType).FirstOrDefault();
 
-            var parentType = Company.GetParentType(a.ArtifactTypeID, SystemObjects.ArtifactType);
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ObjectID.ToString() });
+
+            var parentType = Company.GetParentType(a.AssetType.ObjectID, SystemObjects.ArtifactType);
             
 
             if (PluralCultureHelper.IsNeutralCultureEnglish())
             {
                 if (parentType != null)
                 {
-                    var parent = Company.GetParentObject(a.ID, SystemObjects.Artifact);
+                    var parent = Company.GetParentObject(a.ObjectID, SystemObjects.Artifact);
                    
 
                     var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
@@ -801,7 +797,7 @@ namespace d360.web.Controllers
                     SystemObjects.Artifact.ToString(),
                     id,
                     list,
-                    Company.GetFieldTypesByObject(SystemObjects.ArtifactType, a.ArtifactTypeID).ToList(), 
+                    Company.GetFieldTypesByObject(SystemObjects.ArtifactType, a.AssetType.ObjectID).ToList(), 
                     Company.GetFieldRelationsByObject(SystemObjects.Artifact, id).ToList(), 
                     2
                 )
@@ -833,13 +829,13 @@ namespace d360.web.Controllers
             {
                 if (!form.HasKeys()) throw new NoFormDataException("artifact");
 
-                int typeID = parseIntField(form, "ArtifactTypeID");
-                var type = Company.GetById<ArtifactType>(typeID);
+                int typeID = parseIntField(form, "ArtifactTypeID");                
+                var assettype = Company.AssetTypes.FirstOrDefault(x => x.ObjectID == typeID && x.Object == SystemObjects.ArtifactType.ToString());
 
                 if (!Company.HasAssetTypePermission(SystemObjects.ArtifactType, typeID, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
-                if (type == null) throw new NotFoundException("artifact type");
+                if (assettype == null) throw new NotFoundException("artifact type");
                                 
                 var model = new Artifact {
                     ArtifactTypeID = typeID
@@ -854,13 +850,13 @@ namespace d360.web.Controllers
 
                 if (parentId.HasValue)
                 {
-                    if(!Company.AddObjectParentRelationship(SystemObjects.ArtifactType, type.ID, SystemObjects.Artifact, parentId.Value, model.ID))
+                    if(!Company.AddObjectParentRelationship(SystemObjects.ArtifactType, assettype.ObjectID, SystemObjects.Artifact, parentId.Value, model.ID))
                     {
                         return jsonException($"Parent intersect with could not be found.", HttpStatusCode.NotFound);
                     }                    
                 }
 
-                return jsonSuccess(type.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created, new { ObjectType = SystemObjects.Artifact.ToString(), ObjectID = model.ID });
+                return jsonSuccess(assettype.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created, new { ObjectType = SystemObjects.Artifact.ToString(), ObjectID = model.ID });
             }
             catch (BaseException ex)
             {
@@ -911,7 +907,7 @@ namespace d360.web.Controllers
 
                 if (!Company.HasAssetPermission(SystemObjects.Artifact, id, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
+                                
                 var model = Company.GetById<Artifact>(id, i => i.ArtifactType);
 
                 if (model == null) throw new NotFoundException("artifact");
@@ -998,11 +994,11 @@ namespace d360.web.Controllers
                 if (!form.HasKeys()) throw new NoFormDataException("artifact");
 
                 int id = parseIntField(form, "ID");
-                var artifact = Company.GetById<Artifact>(id, i => i.ArtifactType);
-
-                if (artifact == null) throw new NotFoundException("artifact");
+                var asset = Company.Assets.Where(x => x.ObjectID == id && x.Object == SystemObjects.Artifact.ToString()).Include(x => x.AssetType).FirstOrDefault();
                 
-                Company.RequestObjectCertification(SystemObjects.Artifact, artifact.ID, SystemObjects.ArtifactType, artifact.ArtifactTypeID);
+                if (asset == null) throw new NotFoundException("artifact");
+                
+                Company.RequestObjectCertification(SystemObjects.Artifact, asset.ObjectID, SystemObjects.ArtifactType, asset.AssetType.ObjectID);
 
                 return jsonSuccess("Request successfully created.", "", "add", HttpStatusCode.Created);
             }
@@ -1145,20 +1141,18 @@ namespace d360.web.Controllers
                             model.AssetType.Name = f.Name;
                             model.ScanEnabled = f.ScanEnabled;
                             break;
-                        case AssetTypeClass.Glossary:
-                            var a = Company.GetById<ArtifactType>(model.AssetType.ObjectID);
-                            model.CanOwnFusion = a.CanOwnFusion;
+                        case AssetTypeClass.Glossary:                            
+                            model.CanOwnFusion = assetType.CanOwnFusion;
                             model.AutoDisplayDescription = assetType.AutoDisplayDescription;
-                            model.AssetType.Name = a.Name;
-                            model.AssetType.Description = a.Description;
-                            model.AssetType.DisplayFormat = a.DisplayFormat;
+                            model.AssetType.Name = assetType.Name;
+                            model.AssetType.Description = assetType.Description;
+                            model.AssetType.DisplayFormat = assetType.DisplayFormat;
                             break;
-                        case AssetTypeClass.Model:
-                            var t = Company.GetById<TaxonomyType>(model.AssetType.ObjectID);
-                            model.AssetType.HierarchyMaximumDepth = t.MaximumDepth ?? 1;
-                            model.AssetType.Name = t.Name;
-                            model.AssetType.Description = t.Description;
-                            model.AssetType.DisplayFormat = t.DisplayFormat;
+                        case AssetTypeClass.Model:                            
+                            model.AssetType.HierarchyMaximumDepth = assetType.HierarchyMaximumDepth;
+                            model.AssetType.Name = assetType.Name;
+                            model.AssetType.Description = assetType.Description;
+                            model.AssetType.DisplayFormat = assetType.DisplayFormat;
                             break;
                         case AssetTypeClass.Organization:
                             var o = Company.GetById<OrganizationType>(model.AssetType.ObjectID);
@@ -1168,16 +1162,14 @@ namespace d360.web.Controllers
                             model.AssetType.DisplayFormat = o.DisplayFormat;
                             break;
                         case AssetTypeClass.Policy:
-                            var p = Company.GetById<PolicyType>(model.AssetType.ObjectID);
-                            model.AssetType.HierarchyMaximumDepth = p.MaximumDepth ?? 1;
-                            model.AssetType.Name = p.Name;
-                            model.AssetType.Description = p.Description;
-                            model.AssetType.DisplayFormat = p.DisplayFormat;
+                            model.AssetType.HierarchyMaximumDepth = assetType.HierarchyMaximumDepth;
+                            model.AssetType.Name = assetType.Name;
+                            model.AssetType.Description = assetType.Description;
+                            model.AssetType.DisplayFormat = assetType.DisplayFormat;
                             break;
                         case AssetTypeClass.ReferenceItemType:
-                            var r = Company.GetById<ReferenceItemType>(model.AssetType.ObjectID);
-                            model.AssetType.Name = r!= null ? r.Name : "";
-                            model.AssetType.Notes = r.SourceNotes;
+                            model.AssetType.Name = assetType.Name;
+                            model.AssetType.Notes = assetType.Notes;
                             if (model.Tokens != null) model.Tokens.Add(new PrimeSelectItem { label = "Code", value = "{Code}" });
                             break;
                     }
@@ -3397,26 +3389,18 @@ namespace d360.web.Controllers
 
             switch (type)
             {
-                case SystemObjects.ArtifactType:
-                    var sql = "select ast.ObjectID as value,d.DisplayValue as title  from asset ast inner join assettype astt on (ast.assettypeid = astt.id and ast.[object] = 'Artifact') cross apply [dbo].GetAssetDisplayValueById(ast.id) d where astt.ObjectID = @id order by d.DisplayValue";
-
-                    list.AddRange(
-                        Company.Query<ListIntItem>(sql, new { id = id })
-                    );
-                    break;
                 case SystemObjects.ReferenceItem:
                 case SystemObjects.ReferenceItemType:
-                    list.AddRange(
-                        Company.Filter<ReferenceItem>(i => i.ReferenceItemTypeID == id)
-                        .OrderBy(i => i.DisplayValue)
-                        .Select(i => new ListIntItem { title = i.DisplayValue, value = i.ID })
-                    );
-                    break;
+                case SystemObjects.ArtifactType:
                 case SystemObjects.PolicyType:
+                case SystemObjects.TaxonomyType:
+                case SystemObjects.RuleType:
+                    var typeString = type.ToString().Replace("Type", "");
+                    
+                    var sql = $"select ast.ObjectID as value,d.DisplayValue as title  from asset ast inner join assettype astt on (ast.assettypeid = astt.id and ast.[object] = '{typeString}') cross apply [dbo].GetAssetDisplayValueById(ast.id) d where astt.ObjectID = @id order by d.DisplayValue";
+
                     list.AddRange(
-                        Company.Filter<Policy>(i => i.PolicyTypeID == id)
-                        .OrderBy(i => i.TextPath)
-                        .Select(i => new ListIntItem { title = i.TextPath, value = i.ID })
+                        Company.Query<ListIntItem>(sql, new { id })
                     );
                     break;
                 case SystemObjects.Resource:
@@ -3437,19 +3421,6 @@ namespace d360.web.Controllers
                             .Select(i => new ListIntItem { title = i.FullName, value = i.ResourceID }));
                     }
                     break;
-                case SystemObjects.RuleType:
-                    list.AddRange(
-                        Company.Filter<AssetDetail>(i => i.Type == type.ToString() && i.TypeID == id)
-                        .OrderBy(i => i.DisplayValue)
-                        .Select(i => new ListIntItem { title = i.DisplayValue, value = i.ObjectID })
-                    );
-                    break;
-                case SystemObjects.TaxonomyType:
-                    var sqlForTaxonomy = "select a.ObjectID as value, textpath as Title from asset a inner join assettype att on a.assettypeid = att.id cross apply[dbo].[GetAssetTextPathById](a.id, '/') atp where atp.id = a.id and a.object = 'Taxonomy' and att.ObjectID = @id";
-                    list.AddRange(
-                        Company.Query<ListIntItem>(sqlForTaxonomy, new { id = id })
-                    );
-                    break;                
             }
 
             return new JsonNetResult
@@ -3458,8 +3429,6 @@ namespace d360.web.Controllers
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
-
-
 
         [Route("FieldType_Lookups"), NonNullableParameters]
         public JsonNetResult FieldType_Lookups(SystemObjects type, int id, bool isNg = false)
@@ -3790,7 +3759,11 @@ namespace d360.web.Controllers
                         throw new ConflictException("Error Occurred!", "You may not have a minimum length that is greater than the maximum length.");
                     }
                 }
-                if (!new[] { "Number", "Decimal" }.Contains(model.FieldType.Type))
+                if (new[] { "Text" }.Contains(model.FieldType.Type))
+                {
+                    if (!string.IsNullOrEmpty(model.FieldType.Pattern)) model.FieldType.MinimumLength = 0;
+                }
+                else if (!new[] { "Number", "Decimal" }.Contains(model.FieldType.Type))
                 {
                     if (!model.FieldType.IsRequired) model.FieldType.MinimumLength = 0;
                 }
@@ -10149,18 +10122,18 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         {
             if (!Company.HasAssetPermission(SystemObjects.Policy, id, Permission.ModifyAsset))
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-            var model = Company.GetById<Policy>(id);
+                        
+            var model = Company.Assets.Where(x => x.ObjectID == id && x.Object == SystemObjects.Policy.ToString()).Include(x => x.AssetType).FirstOrDefault();
             var list = new List<EditableField>();
 
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = model.ID.ToString() });
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = model.ObjectID.ToString() });
 
             list = (
                 loadDynamicFields(
                     SystemObjects.Policy.ToString(),
                     id,
                     list, 
-                    Company.GetFieldTypesByObject(SystemObjects.PolicyType, model.PolicyTypeID).ToList(), 
+                    Company.GetFieldTypesByObject(SystemObjects.PolicyType, model.AssetType.ObjectID).ToList(), 
                     Company.GetFieldRelationsByObject(SystemObjects.Policy, id).ToList(), 
                     1, 
                     true
@@ -10182,10 +10155,10 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 if (!form.HasKeys()) throw new NoFormDataException("Policy");
                 
                 int typeID = parseIntField(form, "PolicyTypeID");
-                var type = Company.GetById<PolicyType>(typeID);
+                var assettype = Company.AssetTypes.FirstOrDefault(x => x.ObjectID == typeID && x.Object == SystemObjects.PolicyType.ToString());
                 int? parentId = parseNullableIntField(form, "ParentID");
 
-                if (type == null) throw new NotFoundException("policy type");
+                if (assettype == null) throw new NotFoundException("policy type");
 
                 if (!Company.HasAssetTypePermission(SystemObjects.PolicyType, typeID, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
@@ -10201,7 +10174,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 {
                     var intersectType = Company.Filter<IntersectTypeDetail>(i =>
                         i.Object == "PolicyType" &&
-                        i.ObjectID == type.ID &&
+                        i.ObjectID == assettype.ObjectID &&
                         i.PredicateType.Value == PredicateType.IntraTypeHierarchy
                     ).SingleOrDefault();
 
@@ -10548,7 +10521,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 var a = new Predicate
                 {
                     Name = parseTextField(form, "Name"),
-                    Inverse = parseTextField(form, "Inverse", null, true),
+                    Inverse = parseTextField(form, "Inverse"),
                     Type = (PredicateType)Enum.Parse(typeof(PredicateType), form["Type"]),
                     IsSystem = false
                 };
@@ -10685,20 +10658,20 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
         [Route("ReferenceItem_EditFields"), NonNullableParameters]
         public JsonResult ReferenceItem_EditFields(int id)
         {
-            var list = new List<EditableField>();
-            var a = Company.GetById<ReferenceItem>(id);
+            var list = new List<EditableField>();            
+            var a = Company.Assets.FirstOrDefault(x => x.ObjectID == id && x.Object == "ReferenceItem");
 
-            if (!Company.HasAssetPermission(SystemObjects.ReferenceItem, a.ID, Permission.ModifyAsset))
+            if (!Company.HasAssetPermission(SystemObjects.ReferenceItem, a.ObjectID, Permission.ModifyAsset))
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             var row = 1;
 
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ObjectID.ToString() });
             list.Add(new EditableField { Row = row++, Column = 1, FieldName = "Code", Name = "Code", FieldType = DataType.Text.ToString(), Value = a.Code.ToString() });
 
             //if the reference type has a parent we need to add parent field with the values from the parent
-
-            var parentType = Company.GetParentType(a.ReferenceItemTypeID, SystemObjects.ReferenceItemType);
+            
+            var parentType = Company.GetParentType(a.AssetType.ObjectID, SystemObjects.ReferenceItemType);
 
             if (parentType != null)
             {
@@ -10707,7 +10680,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 list.Add(new EditableField { Row = row++, Column = 1, FieldName = "ParentID", Name = parentType.Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = false, Items = Company.Query<dynamic>(sql, new { id = parentType.ObjectID }).Select(i => new SelectListItem { Text = i.DisplayValue, Value = string.Format("{0}", i.ObjectID), Selected = i.ObjectID == (parent != null ? parent.ObjectID : 0)  }).ToList() });
             }
 
-            list = loadDynamicFields(SystemObjects.ReferenceItem.ToString(), id, list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, a.ReferenceItemTypeID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.ReferenceItem, id).ToList(), row);
+            list = loadDynamicFields(SystemObjects.ReferenceItem.ToString(), id, list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, a.AssetType.ObjectID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.ReferenceItem, id).ToList(), row);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -10720,8 +10693,8 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 if (!form.HasKeys()) throw new NoFormDataException("lookup");
 
                 int typeID = parseIntField(form, "ReferenceItemTypeID");
-                var type = Company.GetById<ReferenceItemType>(typeID);
-
+                var type = Company.AssetTypes.FirstOrDefault(x => x.Object == "ReferenceItemType" && x.ObjectID == typeID);
+                
                 if (type == null) throw new NotFoundException("referenceitemtype");
 
                 if (!Company.HasAssetTypePermission(SystemObjects.ReferenceItemType, typeID, Permission.ModifyAsset))
@@ -10729,7 +10702,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
                 var code = form["Code"].ToString();
 
-                if (Company.Any<ReferenceItem>(r => r.ReferenceItemTypeID == typeID && r.Code == code))
+                if (Company.Any<Asset>(r => r.AssetTypeID == type.ID && r.Code == code))
                     return jsonException(new Exception($"A reference item with the code value {code} already exists."), HttpStatusCode.Forbidden);
 
                 var a = new ReferenceItem
@@ -14974,10 +14947,10 @@ order by	case
 
             var items = new List<SelectListItem>();
             //artifacts
-            items.AddRange(Company.Table<ArtifactType>().OrderBy(i => i.Name).Select(i => new { i.ID, i.Name }).ToList().Select(i => new SelectListItem { Text = string.Format("Artifact Type :: {0}", i.Name), Value = string.Format("{0}|{1}", SystemObjects.ArtifactType.ToString(), i.ID) }));
+            items.AddRange(Company.AssetTypes.Where(x=>x.Object == SystemObjects.ArtifactType.ToString()).OrderBy(i => i.Name).Select(i => new { i.ID, i.Name }).ToList().Select(i => new SelectListItem { Text = string.Format("Artifact Type :: {0}", i.Name), Value = string.Format("{0}|{1}", SystemObjects.ArtifactType.ToString(), i.ID) }));
 
             //models
-            items.AddRange(Company.Table<TaxonomyType>().OrderBy(i => i.Name).Select(i => new { i.ID, i.Name }).ToList().Select(i => new SelectListItem { Text = string.Format("Model Type :: {0}", i.Name), Value = string.Format("{0}|{1}", SystemObjects.TaxonomyType.ToString(), i.ID) }));
+            items.AddRange(Company.AssetTypes.Where(x => x.Object == SystemObjects.TaxonomyType.ToString()).OrderBy(i => i.Name).Select(i => new { i.ID, i.Name }).ToList().Select(i => new SelectListItem { Text = string.Format("Model Type :: {0}", i.Name), Value = string.Format("{0}|{1}", SystemObjects.TaxonomyType.ToString(), i.ID) }));
 
             //rules
             items.Add(new SelectListItem { Text = "Rule Type :: Informational", Value = "RuleType|1" });
@@ -14989,7 +14962,6 @@ order by	case
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Object", Name = "Assign Survey To", FieldType = DataType.Lookup.ToString(), Items = items });
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "ValidForDays", Name = "# of Days before user can retake", FieldType = DataType.Number.ToString()});
             
-
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 

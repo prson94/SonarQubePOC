@@ -8,7 +8,7 @@ import { BaseComponent } from '../../shared/base.component';
                 <nav class="top">  
                     <span class="logo" routerLink="/home" style="cursor:pointer;"></span>                                 
                     <d3s-header-breadcrumb [controlWidth]="controlWidth"></d3s-header-breadcrumb>                                          
-                    <d3s-header-actions (controlWidthChange)="controlWidth = $event"></d3s-header-actions>
+                    <d3s-header-actions style="margin-left:auto;" (controlWidthChange)="controlWidth = $event"></d3s-header-actions>
                 </nav>
                 </div>
               `,    

@@ -5,7 +5,8 @@ import { CurrentEnvironmentSettings } from '../../../static/environment-settings
 @Component({
     selector: 'd3s-header-help',
     template: ` <span #item style="display:table;" class="header-search" [ngClass]="{'header-search-active':active}" (mouseenter)="show(item)" (mouseleave)="hide(item)">
-                    <a><i class="fa fa-question-circle"></i></a>
+                    <a class="photo hide-on-med-and-down"><i class="fa fa-question-circle"></i></a>
+                    <div class="show-on-medium-and-down hide-on-med-and-up">Help <i class="fa fa-caret-right"></i></div>
                     <div class="search-child header-search-panel" style="background-color: white; padding: 0; width: 175px">
                        <ul>
                             <li style="width:100%;padding:10px;display:inline-block"><a target="_blank" [href]="userGuide">User Guide</a></li>
@@ -35,14 +36,22 @@ export class HeaderHelpComponent {
             window.clearTimeout(this.hideHandle);
             this.hideHandle = 0;
         }
-        let panel = item.children[0].nextElementSibling;
-        if (panel) {
+        let menuPanel = item.children[1].nextElementSibling;
+        let minimizedMenuItem = item.children[0].nextElementSibling;
+        let dims = minimizedMenuItem.getBoundingClientRect();
+        if (menuPanel) {
             this.active = true;
 
-            panel.style.zIndex = 1000;
+            menuPanel.style.zIndex = 1000;
 
-            panel.style.top = (item.offsetHeight - 1) + 'px'; // -1 for the border so it blends
-            panel.style.right = '0px';
+            menuPanel.style.top = (item.offsetHeight - 1) + 'px'; // -1 for the border so it blends
+            menuPanel.style.right = (dims.width + 11) + 'px';
+            if (dims.width > 0) {
+                menuPanel.style.top = '-10px';
+                menuPanel.style['border-right'] = 'none';
+                menuPanel.style.right = (dims.width + 10) + 'px';
+                menuPanel.style['border-top'] = '1px solid #54a4da ';
+            }
 
         }
     }

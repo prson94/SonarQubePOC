@@ -1,12 +1,15 @@
 ﻿using d360.core;
 using d360.core.entities;
+using d360.core.enums;
 using d360.core.queue;
 using d360.extensions;
 using d360.model;
 using d360.web.Filters;
 using d360.web.Models;
+using d360.web.Models.Attributes;
 using Microsoft.Web.Http;
 using Newtonsoft.Json;
+using SpreadsheetLight;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
@@ -26,7 +29,10 @@ namespace d360.web.Controllers.V2
     /// </summary>
     [
         ApiVersion("2.0"),
-        RoutePrefix("api/v{version:apiVersion}/relationships"), Authorize]
+        RoutePrefix("api/v{version:apiVersion}/relationships"), 
+        Authorize,
+        StringEnumController
+    ]
     public class RelationshipsController : BaseV2ApiController
     {
         #region DI
@@ -42,6 +48,246 @@ namespace d360.web.Controllers.V2
         }
 
         #endregion
+
+        /// <summary>
+        /// GET a list of predicates.
+        /// </summary>
+        /// <param name="PredicateUid">Filter by an predicate's unique identifier.</param>
+        /// <param name="Type">Filter by a predicate's functional type.</param>
+        /// <param name="Name">Filter by an predicate's Name.</param>
+        /// <param name="Inverse">Filter by an predicate's Inverse.</param>
+        /// <returns>A list of predicates contained within your Govern environment.</returns>
+        [
+            HttpGet,
+            MapToApiVersion("2.0"),
+            Route("predicates"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of predicates.", typeof(PredicatesApiViewModel)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+       ]
+        public async Task<HttpResponseMessage> GetPredicatesAsync(Guid? PredicateUid = null, core.enums.PredicateType? Type = null, string Name = null, string Inverse = null)
+        {
+            var prefix = "Relationships.GetPredicatesAsync => ";
+            var errorMessage = "";
+
+            try
+            {
+                var predicates = await Company.QueryAsync<PredicateApiViewModel>("select Uid, Name, Inverse, IsSystem, [Type] from [Predicate] order by [Type], Name");
+
+                #region Where clause action
+
+                if (PredicateUid.HasValue)
+                {
+                    predicates = predicates.Where(i => i.Uid == PredicateUid.Value);
+                }
+
+                if (Type.HasValue)
+                {
+                    predicates = predicates.Where(i => i.Type == Type.Value);
+                }
+
+                if (!string.IsNullOrEmpty(Name) && !string.IsNullOrWhiteSpace(Name))
+                {
+                    Name = Name.Trim().ToLower();
+                    predicates = predicates.Where(i => i.Name.ToLower() == Name);
+                }
+
+                if (!string.IsNullOrEmpty(Inverse) && !string.IsNullOrWhiteSpace(Inverse))
+                {
+                    Inverse = Inverse.Trim().ToLower();
+                    predicates = predicates.Where(i => i.Inverse.ToLower() == Inverse);
+                }
+
+                #endregion
+
+                return Request.CreateResponse(HttpStatusCode.OK,  predicates);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+        }
+
+        /// <summary>
+        /// GET a list of predicate functional types.
+        /// </summary>
+        /// <returns>A list of static predicate functional types contained within your Govern environment.</returns>
+        [
+            HttpGet,
+            MapToApiVersion("2.0"),
+            Route("predicates/types"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of predicate functional types.", typeof(List<PredicateTypeApiViewModel>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+       ]
+        public HttpResponseMessage GetPredicatesTypesAsync()
+        {
+            var prefix = "Relationships.GetPredicatesTypesAsync => ";
+            var errorMessage = "";
+
+            try
+            {
+                var types = PredicateType.DataLineage.GetAsList().Select(i => new PredicateTypeApiViewModel {
+                    Type = i.ID,
+                    Name = i.Name,
+                    Description = i.Description
+                }).OrderBy(i => i.Name).ToList();
+                return Request.CreateResponse(HttpStatusCode.OK, types);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+        }
+
+
+        #region Endpoints
+        /// <summary>
+        /// GET a list of relationships.
+        /// </summary>
+        /// <param name="intersectTypeUid">Filter by an intersect's unique identifier.</param>
+        /// <returns>A excel file containing relationships.</returns>
+        [
+            HttpGet,
+            MapToApiVersion("2.0"),
+            Route("export/{intersectTypeUid}"),
+            FileDownload,
+            SwaggerConsumes("application/vnd.ms-excel"), SwaggerProduces("application/vnd.ms-excel"),
+            SwaggerResponse(HttpStatusCode.OK, "Exported realtionships to Excel.", typeof(List<PredicateTypeApiViewModel>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+        ]
+        public IHttpActionResult ExportToExcel(string intersectTypeUid)
+        {
+
+            var customColumns = Company.Query<string>(
+                @"select distinct  f.FriendlyName   as Name from fieldtype f  
+				inner join IntersectType IT on IT.uid = @uid
+				 where f.[object] = 'IntersectType' and f.objectid = IT.Id", new { uid = intersectTypeUid });
+
+            string customColumnTableSQL = string.Empty;
+            string customColumnValuesSQL = string.Empty;
+
+            if ( customColumns.Count() > 0 )
+            {
+                customColumnTableSQL = @"DROP TABLE IF EXISTS tempdb.dbo.#TempFieldTable
+
+                            create table #TempFieldTable
+                            (
+                                ObjectId int, 
+                                FriendlyName Varchar(250), 
+                                FormattedValue varchar(250),
+	                            Id int
+                            )
+
+                            insert into #TempFieldTable
+                            select f2.ObjectID, f.FriendlyName,FormattedValue ,f2.id
+                            from fieldtype f  
+                            inner join field f2 on f2.fieldtypeid = f.id 
+                            where f.[object] = 'IntersectType'";
+                foreach ( var item in customColumns )
+                {
+                    customColumnValuesSQL += $",(Select FormattedValue from #TempFieldTable where ObjectId = I.Id and FriendlyName = '" + item.CleanForSql() + "') as '" + item.CleanForSql() + "'";
+                }
+
+            }
+
+
+            var models = Company.Query<dynamic>(
+                customColumnTableSQL +
+                @"select  I.ID as ID, 
+		                    S.Object as Subject,
+		                    S.ObjectId as SubjectID,
+		                    SVal.DisplayValue as SubjectName,
+		                    ST.Name as SubjectTypeName,
+		                    P.Name as PredicateName,
+		                    O.Object as Object,
+		                    O.ObjectId as ObjectID,
+							OVal.DisplayValue as ObjectName,
+		                    OT.Name as ObjectTypeName
+                            " + customColumnValuesSQL + @"
+							from 
+	                        [Intersect] I
+	                        inner join IntersectType T on T.ID = I.IntersectTypeID
+	                        left outer join [Predicate] P on P.ID = T.PredicateID
+	                        inner join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID
+	                        inner join AssetType ST on ST.ID = S.AssetTypeID
+	                        inner join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID
+	                        inner join AssetType OT on OT.ID = O.AssetTypeID
+							cross apply dbo.GetAssetDisplayValueById(S.ID) as SVal
+							cross apply dbo.GetAssetDisplayValueById(O.ID) as OVal
+
+	                        where T.uid in (@Uid)", new { Uid = intersectTypeUid });
+
+            var document = new SLDocument();
+            document.AddWorksheet("Items");
+
+            #region Create the list sheet
+
+            #region Header
+
+            int index = 1;
+            document.SetCellValue(1, index++, "Intersect ID");
+            document.SetCellValue(1, index++, "Subject Type");
+            document.SetCellValue(1, index++, "Subject ID");
+            document.SetCellValue(1, index++, "Subject Name");
+            document.SetCellValue(1, index++, "Subject Type Name");
+            document.SetCellValue(1, index++, "Predicate");
+            document.SetCellValue(1, index++, "Object Type");
+            document.SetCellValue(1, index++, "Object ID");
+            document.SetCellValue(1, index++, "Object Name");
+            document.SetCellValue(1, index++, "Object Type Name");
+
+            #endregion
+
+            int rowNumber = 1;
+            foreach ( var row in models )
+            {
+                index = 1;
+                rowNumber++;
+                document.SetCellValue(rowNumber, index++, (int)row.ID);
+                document.SetCellValue(rowNumber, index++, (string)row.Subject);
+                document.SetCellValue(rowNumber, index++, (int)row.SubjectID);
+                document.SetCellValue(rowNumber, index++, (string)row.SubjectName);
+                document.SetCellValue(rowNumber, index++, (string)row.SubjectTypeName);
+                document.SetCellValue(rowNumber, index++, (string)row.PredicateName);
+                document.SetCellValue(rowNumber, index++, (string)row.Object);
+                document.SetCellValue(rowNumber, index++, (int)row.ObjectID);
+                document.SetCellValue(rowNumber, index++, (string)row.ObjectName);
+                document.SetCellValue(rowNumber, index++, (string)row.ObjectTypeName);
+
+                foreach ( var col in customColumns )
+                {
+                    var data = (IDictionary<string, object>)row;
+                    document.SetCellValue(rowNumber, index++, (string)data[col]);
+                }
+            }
+
+            #endregion
+
+            var stream = new System.IO.MemoryStream();
+            document.SaveAs(stream);
+
+            var result = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new ByteArrayContent(stream.GetBuffer())
+            };
+            result.Content.Headers.ContentLength = stream.Length;
+            result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
+            {
+                FileName = $"Relationship Type Items {DateTime.Now.ToShortDateString()}.xlsx"
+            };
+            result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
+
+            return ResponseMessage(result);
+        }
+        #endregion
+
 
         /// <summary>
         /// GET a list of relationships.
@@ -160,7 +406,7 @@ namespace d360.web.Controllers.V2
                 return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
             }
         }
-        
+
         /// <summary>
         /// GET a list of relationship types using an ID and a Type.
         /// </summary>
@@ -201,6 +447,12 @@ namespace d360.web.Controllers.V2
 
                 return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
             }
+        }
+
+        [Route("types/{id:int}"), HttpGet, ApiExplorerSettings(IgnoreApi = true)]
+        public IQueryable<IntersectType> GetIntersectType(int id)
+        {
+            return Company.Filter<IntersectType>(i => i.ID == id);
         }
 
         #region Bulk Relationships
@@ -430,4 +682,5 @@ namespace d360.web.Controllers.V2
         #endregion
 
     }
+
 }

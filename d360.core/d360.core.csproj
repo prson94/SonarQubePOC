@@ -186,7 +186,6 @@
     <Compile Include="entities\ReportLayout.cs" />
     <Compile Include="entities\Quality\PolicyType.cs" />
     <Compile Include="entities\SiteNav.cs" />
-    <Compile Include="entities\Quality\PolicyTypeLevel.cs" />
     <Compile Include="entities\Nym.cs" />
     <Compile Include="entities\NymRelation.cs" />
     <Compile Include="entities\Transitive\ApiVersion2Models.cs" />
@@ -258,7 +257,6 @@
     <Compile Include="entities\Fusion\Fusion.cs" />
     <Compile Include="entities\Field.cs" />
     <Compile Include="entities\FieldType.cs" />
-    <Compile Include="entities\Glossary\TaxonomyTypeLevel.cs" />
     <Compile Include="entities\Glossary\Taxonomy.cs" />
     <Compile Include="entities\Glossary\TaxonomyType.cs" />
     <Compile Include="entities\Security\ResourceGroup.cs" />
@@ -287,7 +285,6 @@
     <Compile Include="entities\Views\RelationshipAggregate.cs" />
     <Compile Include="entities\Views\ResponsibilityDetail.cs" />
     <Compile Include="entities\Views\AttributeDetail.cs" />
-    <Compile Include="entities\Views\FieldTypeLookupValue.cs" />
     <Compile Include="entities\Views\FieldLookupValue.cs" />
     <Compile Include="entities\Views\FieldWithRelation.cs" />
     <Compile Include="entities\Views\FieldTypeWithRelation.cs" />

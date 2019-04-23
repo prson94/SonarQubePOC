@@ -1,17 +1,31 @@
-﻿import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges, SimpleChange, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { Router, NavigationEnd } from '@angular/router';
-import { FavoritesService } from '../../../services/favorites.service';
-import { Favorite } from '../../../models/favorite.model';
-import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { HeaderActionsService } from '../../../services/header-actions.service';
-import { SiteUrlHelpers } from '../../../static/site-url-helpers';
+﻿import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    Input,
+    OnChanges,
+    OnDestroy,
+    OnInit,
+    SimpleChange
+} from '@angular/core';
+import {Router} from '@angular/router';
+import {FavoritesService} from '../../../services/favorites.service';
+import {Favorite} from '../../../models/favorite.model';
+import {HeaderBreadcrumbService} from '../../../services/header-breadcrumb.service';
+import {HeaderActionsService} from '../../../services/header-actions.service';
+import {SiteUrlHelpers} from '../../../static/site-url-helpers';
 
 
 @Component({
     selector: 'd3s-header-favorites',
     template:
     `
-        <span *ngIf="visible" (click)="handleClick()" class="favorite" [ngClass]="{'active' : isFavoriteItem }" [title]="isFavoriteItem ? 'Remove from favorites' : 'Add to favorites'" >
+        <div *ngIf="visible" class="show-on-medium-and-down hide-on-med-and-up" (click)="handleClick()">
+            <i *ngIf="isFavoriteItem && !isLoading" class="fa fa-check"></i>
+            <i *ngIf="isLoading" style="color: #000;" class="fa fa-spinner fa-spin"></i>
+            Favourite
+        </div>
+        <span *ngIf="visible" (click)="handleClick()" class="favorite hide-on-med-and-down" [ngClass]="{'active' : isFavoriteItem }" [title]="isFavoriteItem ? 'Remove from favorites' : 'Add to favorites'" >
             <i *ngIf="!isLoading" class="fa fa-star"></i><i *ngIf="isLoading" style="color: #000;" class="fa fa-spinner fa-spin"></i>    
         </span>
     `,
@@ -85,12 +99,13 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
         f.Name = this.name;
         f.Route = this.uri ? this.uri : 'home';//null route is home        
         this.isFavoriteItem = !this.isFavoriteItem;
-        this.favoritesService.toggleFavorite(f)
-            .then(fav => {
+        this.favoritesService.toggleFavorite(f).subscribe(
+            fav => {
                 this.headerActionsService.emitFavoritesChange();
                 this.isLoading = false;
                 this.ref.markForCheck();
-            });
+            }
+        );
     }
 
     checkIsFavorite() {

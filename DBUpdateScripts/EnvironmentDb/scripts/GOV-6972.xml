@@ -1,0 +1,117 @@
+<databaseChangeLog    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="KMcNamee" id="GOV-6972-AddCode">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+IF NOT EXISTS (SELECT * FROM  sys.columns WHERE  object_id = OBJECT_ID(N'[dbo].[Asset]') AND name = 'Code')
+		BEGIN
+			Alter table [dbo].[Asset] Add Code nvarchar(250) null;
+		END  
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+IF  EXISTS (SELECT * FROM  sys.columns WHERE  object_id = OBJECT_ID(N'[dbo].[Asset]') AND name = 'Code')
+		BEGIN			
+			Alter table [dbo].[Asset] Drop Code;
+		END
+]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="KMcNamee" id="GOV-6972-ConvertExistingCodes">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+  UPDATE t1
+  SET t1.Code = t2.Code
+  FROM dbo.Asset AS t1
+  INNER JOIN dbo.ReferenceItem AS t2
+  ON t1.[Object] = 'ReferenceItem' and t1.ObjectID = t2.ID
+]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+      update [dbo].[asset] set [Code] = null where [Code] is not null;
+]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="KMcNamee" id="GOV-6972-TriggerHappy-Insert">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+  ALTER TRIGGER [dbo].[ReferenceItem_AfterInsert]
+   ON  [dbo].[ReferenceItem] 
+   AFTER INSERT
+AS 
+	SET NOCOUNT ON
+	INSERT INTO [dbo].[Asset] ([AssetTypeID],[State],SourceID,[Object],[ObjectID],[CreatedOn],[CreatedBy],[UpdatedOn],[UpdatedBy],[Code])
+		SELECT	T.ID, 1, O.SourceID,'ReferenceItem', O.ID, O.[CreatedOn], O.[CreatedBy], O.[UpdatedOn], O.[UpdatedBy], O.[Code]
+		FROM	inserted O inner join  AssetType T on T.Object = 'ReferenceItemType' and T.ObjectID = O.ReferenceItemTypeID
+]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+      ALTER TRIGGER [dbo].[ReferenceItem_AfterInsert]
+   ON  [dbo].[ReferenceItem] 
+   AFTER INSERT
+AS 
+	SET NOCOUNT ON
+	INSERT INTO [dbo].[Asset] ([AssetTypeID],[State],SourceID,[Object],[ObjectID],[CreatedOn],[CreatedBy],[UpdatedOn],[UpdatedBy])
+		SELECT	T.ID, 1, O.SourceID,'ReferenceItem', O.ID, O.[CreatedOn], O.[CreatedBy], O.[UpdatedOn], O.[UpdatedBy]
+		FROM	inserted O inner join  AssetType T on T.Object = 'ReferenceItemType' and T.ObjectID = O.ReferenceItemTypeID
+]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="KMcNamee" id="GOV-6972-TriggerHappy-Update">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+  ALTER TRIGGER [dbo].[ReferenceItem_AfterUpdate]
+   ON  [dbo].[ReferenceItem] 
+   AFTER UPDATE
+AS 
+	SET NOCOUNT ON
+	update	T
+	set		T.UpdatedBy = S.UpdatedBy,
+			T.UpdatedOn = S.UpdatedOn,
+			T.SourceID = S.SourceID,
+			T.Code = S.Code
+	from	Asset T
+			inner join inserted S on T.Object = 'ReferenceItem' and T.ObjectID = S.ID
+]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+    ALTER TRIGGER [dbo].[ReferenceItem_AfterUpdate]
+   ON  [dbo].[ReferenceItem] 
+   AFTER UPDATE
+AS 
+	SET NOCOUNT ON
+	update	T
+	set		T.UpdatedBy = S.UpdatedBy,
+			T.UpdatedOn = S.UpdatedOn,
+			T.SourceID = S.SourceID			
+	from	Asset T
+			inner join inserted S on T.Object = 'ReferenceItem' and T.ObjectID = S.ID
+]]>
+    </rollback>
+  </changeSet>
+
+  </databaseChangeLog>

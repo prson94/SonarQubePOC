@@ -732,7 +732,9 @@ order by wi.StartedOn desc";
                 
             List<WorkflowFormModelField> properties = (
                                  from s in XElement.Parse(xml).Element("form").Elements()
-                                 select new WorkflowFormModelField{ Value = (string)s.Attribute("value"), ID = (string)s.Attribute("id"), Label = (string)s.Attribute("label"), ReferenceFieldID = (string)s.Attribute("referenceFieldId"), IntersectTypeID = int.Parse((string)s.Attribute("intersectTypeId") ?? "0"), FieldType = (WorkflowFormModelFieldType)Enum.Parse( typeof(WorkflowFormModelFieldType), (string)s.Attribute("type")) }
+                                 select new WorkflowFormModelField{ Value = (string)s.Attribute("value"), ID = (string)s.Attribute("id"), Label = (string)s.Attribute("label"), ReferenceFieldID = (string)s.Attribute("referenceFieldId"),
+                                     Required = s.Attribute("required") == null ? false : (bool)s.Attribute("required"),
+                                     IntersectTypeID = int.Parse((string)s.Attribute("intersectTypeId") ?? "0"), FieldType = (WorkflowFormModelFieldType)Enum.Parse( typeof(WorkflowFormModelFieldType), (string)s.Attribute("type")) }
                                  ).ToList();
 
 
@@ -2070,7 +2072,12 @@ order by wi.StartedOn desc";
                                     case when wi.[object] = 'Issue' then it.Name
                                     else assettype.name
                                     end as 'TypeName' ,
-                                    wv.[version] as 'Version'
+                                    wv.[version] as 'Version',
+									case when wvs.Settings.value('/settings[1]/SendFormEmail[1]/text()[1]','varchar(10)') = 'true' then
+										cast(1 as bit)
+									else
+										cast(0 as bit)
+									end as 'SendFormEmail'
                                 from
 	                                [workflow].[type] wt
 	                                inner join [workflow].[version] wv on (wt.id = wv.typeid)
@@ -2587,21 +2594,56 @@ order by wi.StartedOn desc";
             return fieldChanges;
         }
 
-        private void SetReassignObjectName(dynamic ItemFields)
+
+        private void SetReassignObjectName(WorkflowStepDetail detail)
         {
-            if (ItemFields !=null && ItemFields.Reassigned != null && ItemFields.Reassigned["@reassignType"]== "Object")
+            var ItemFields = detail.ItemFields;
+            if (ItemFields != null && ItemFields.Reassigned != null)
             {
-                int objectId = (int)ItemFields.Reassigned["@objectId"];
-                var objectType = ItemFields.Reassigned["@objectType"];
-                var sql = @"Select D.DisplayValue as ObjectName
+                var reassigned = ItemFields.Reassigned;
+                if (reassigned != null)
+                {
+                    if (reassigned["@reassignType"] == "Object")
+                    {
+                        int objectId = (int)reassigned["@objectId"];
+                        var objectType = reassigned["@objectType"];
+                        var sql = @"Select D.DisplayValue as ObjectName
                             From
                             Asset A
                             cross apply dbo.GetAssetDisplayValueById(A.ID) D
                             where   A.Object = @obj and A.ObjectID = @objId";
-                var objectName = Company.Query<string>(sql, new { obj = objectType.Value, objId= objectId }).FirstOrDefault();
-                ItemFields.Reassigned["@objectName"] = objectName;
+                        var objectName = Company.Query<string>(sql, new { obj = objectType.Value, objId = objectId }).FirstOrDefault();
+                        reassigned["@objectName"] = objectName;
+                    }
+                    else if (reassigned["@reassignType"] == "Resource" && reassigned["@reassignToResourceId"] != null)
+                    {
+                        if (reassigned["@reassignToResourceId"] != null)
+                        {
+                            int toResourceId = (int)reassigned["@reassignToResourceId"];
+                            var toResource = Company.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == toResourceId);
+                            reassigned["@reassignToResourceName"] = toResource == null ? "[unknown user]" : toResource.FullName;
+
+
+                        }
+                        if (reassigned["@reassignFromResourceId"] != null)
+                        {
+                            int fromResourceId = (int)reassigned["@reassignFromResourceId"];
+                            var fromResource = Company.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == fromResourceId);
+                            reassigned["@reassignFromResourceName"] = fromResource == null ? "[unknown user]" : fromResource.FullName;
+
+
+                        }
+                        if (reassigned["@reassignByResourceId"] != null)
+                        {
+                            int byResourceId = (int)reassigned["@reassignByResourceId"];
+                            var byResource = Company.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == byResourceId);
+                            reassigned["@reassignByResourceName"] = byResource == null ? "[unknown user]" : byResource.FullName;
+                        }
+                    }
+                }
             }
         }
+
         [Route("step/detail/{itemStepId:int}"), HttpGet]
         public async Task<HttpResponseMessage> GetWorkflowVersionStepDetail(int itemStepId)
         {
@@ -2683,7 +2725,7 @@ order by wi.StartedOn desc";
             {
                 detail.FieldChanges = this.GetWorkFlowStepFieldChanges(detail);
                 detail.RelationshipChange= this.GetWorkFlowStepRelationshipChanges(detail.Settings, detail.ItemID,detail.ObjectName);
-                SetReassignObjectName(detail.ItemFields);
+                SetReassignObjectName(detail);
                 if (detail.Settings != null && detail.Settings.State != null && !string.IsNullOrEmpty(detail.Settings.State.Value))
                     detail.StateChange = (State)Convert.ToInt32(detail.Settings.State.Value);
 
@@ -3116,6 +3158,70 @@ order by wi.StartedOn desc";
             return result;
         }
 
+        [Route("resources"), HttpGet]
+        public HttpResponseMessage GetResources()
+        {
+            var queryParams = Request.GetQueryStrings();
+            string gbFilter = "";
+            string excludedResourceId = "-1";
+            queryParams.TryGetValue("gbfilter", out gbFilter);
+            queryParams.TryGetValue("excludedResourceId", out excludedResourceId);
+
+            var innerSql = $@"select FirstName + ' ' + LastName as [Text],  'Resource|' + cast(ResourceID as varchar) + '|' + FirstName + ' ' + LastName as [Value] from reporting.Global_resource where [State] = 1 and ResourceID <> @excludedResourceId";
+            var filter = "";
+            var dbArgs = new Dapper.DynamicParameters();
+
+            if (!string.IsNullOrEmpty(gbFilter))
+            {
+                filter = " and [Text] like '%' + @gbfilter + '%'";
+                dbArgs.Add("gbfilter", gbFilter);
+            }
+            dbArgs.Add("excludedResourceId", excludedResourceId);
+
+            var pagingSuffix = applyPagingSuffix("", Request);
+
+            var sql = $@"select * from ({innerSql}) users where 1=1 {filter} order by [Text] asc {pagingSuffix}";
+            var countSql = $@"select count(1) from ({innerSql}) users where 1=1 {filter}";
+            
+
+            var total = Company.Query<int>(countSql, dbArgs).First();
+            var results = Company.Query<dynamic>(sql, dbArgs);
+
+            return Request.CreateResponse(HttpStatusCode.OK, new
+            {
+                total,
+                results
+            });
+        }
+
+        [Route("ReassignWorkflowResource/bulk")]
+        public async Task<HttpResponseMessage> BulkReassignForm(BulkWorkflowReassignModel model)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return Request.CreateErrorResponse(HttpStatusCode.Forbidden, "You do not have permission to bulk reassign.");
+
+            if (model == null || model.ItemStepIDs == null || model.ItemStepIDs.Count < 1)
+                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "The model is not valid.");
+
+            var resource = Company.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == model.NewAssigneeResourceID);
+
+            if (model.NewAssigneeResourceID < 0 || resource == null)
+                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Invalid resource id");
+
+            var itemSteps = Company.WorkflowItemSteps.Where(x => model.ItemStepIDs.Contains(x.ID)).Include(x => x.Item).Include(x => x.Step).ToList();
+
+            try
+            {
+                await Company.BulkWorkflowFormReassign(itemSteps, resource, model.OriginalAssigneeResourceID, model.SendFormEmails);
+            }
+            catch (Exception ex)
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex);
+            }
+
+            return Request.CreateResponse(HttpStatusCode.OK, new { type = "success", message = "Workflow forms reassigned successfully", title = "Success" });
+        }
+
         #region Helper Methods
 
         private string GetConditionLabels(string conditions)
@@ -3125,7 +3231,12 @@ order by wi.StartedOn desc";
 
         private dynamic XmlToDynamic(string xml, bool omitRootElement = true)
         {
-            return string.IsNullOrEmpty(xml) ? JsonConvert.DeserializeObject("{}") : JsonConvert.DeserializeObject(JsonConvert.SerializeXNode(XElement.Parse(xml), Formatting.None, omitRootElement));
+            return XmlToObject<dynamic>(xml, omitRootElement);
+        }
+
+        private T XmlToObject<T>(string xml, bool omitRootElement = true)
+        {
+            return string.IsNullOrEmpty(xml) ? JsonConvert.DeserializeObject<T>("{}") : JsonConvert.DeserializeObject<T>(JsonConvert.SerializeXNode(XElement.Parse(xml), Formatting.None, omitRootElement));
         }
 
         /// <summary>

@@ -66,7 +66,7 @@ export class WorkflowMonitorStepDetailsComponent extends BaseComponent implement
             return this.workflowService.getWorkflowStepDetail(this.itemStepId)
                 .then(r => {
                     this.isLoading = false;
-                    this.step = r;//this.convertToDiagramModel(r);
+                    this.step = r;
                     this.ref.markForCheck();
                     console.log('load', this.step);
                 });

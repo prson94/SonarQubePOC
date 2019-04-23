@@ -4,9 +4,6 @@
     EventEmitter,
     Output,
     OnInit,
-    OnDestroy,
-    OnChanges,
-    SimpleChange,
     ChangeDetectionStrategy,
     ChangeDetectorRef
 } from '@angular/core';
@@ -19,16 +16,14 @@ import {
     GridFilterColumn,
     GridFilterFieldType
 } from '../../models/grid-definition.model';
-import {
-    FieldsService
-} from '../../services/fields.service';
-import { setTimeout } from 'core-js';
+import {FieldsObservableService} from '../../services/fieldsObservable.service';
+import {setTimeout} from 'core-js';
 
 @Component({
     selector: 'd3s-artifact-top-level-filter',
     templateUrl: 'artifact-top-level-filter.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [FieldsService]
+    providers: [FieldsObservableService]
 })
 
 export class ArtifactTopLevelFilterComponent extends BaseComponent implements OnInit {
@@ -38,7 +33,10 @@ export class ArtifactTopLevelFilterComponent extends BaseComponent implements On
     @Output() filterChanged = new EventEmitter();
     @Output() filtersChange = new EventEmitter();
 
-    constructor(protected ref: ChangeDetectorRef, protected fieldService: FieldsService) {
+    constructor(
+        protected ref: ChangeDetectorRef,
+        protected fieldService: FieldsObservableService
+    ) {
         super();
     }
 
@@ -54,6 +52,7 @@ export class ArtifactTopLevelFilterComponent extends BaseComponent implements On
                     }
                 }
             }
+
             if (field.parentFieldTypeID > 0) {
                 field.disabled = true;
             } else {
@@ -65,6 +64,7 @@ export class ArtifactTopLevelFilterComponent extends BaseComponent implements On
 
     private resetFilters(): void {
         this.filters = [];
+
         for (let field of this.fields) {
             if (!field.value || field.value === '') {
                 continue;
@@ -72,6 +72,7 @@ export class ArtifactTopLevelFilterComponent extends BaseComponent implements On
 
             field.value = null;
         }
+
         this.filtersChange.emit(this.filters);
         this.filterChanged.emit();
     }
@@ -132,12 +133,13 @@ export class ArtifactTopLevelFilterComponent extends BaseComponent implements On
 
     public loadFieldItems(givenparentfield: GridFilterColumn, givenfield: GridFilterColumn): void {
         var fieldId = +givenfield.datafield.replace('Field', '');
-        
+
         if (givenparentfield.value.length > 0) {
-            this.fieldService.getCascadingListFieldValues(fieldId, undefined, givenparentfield.value).then(res => {
-                givenfield.disabled = false;
-                givenfield.filteritems = res.map(r => r.Text + '!~!' + r.Value);
-            });
+            this.fieldService.getCascadingListFieldValues(fieldId, undefined, givenparentfield.value).subscribe(
+                res => {
+                    givenfield.disabled = false;
+                    givenfield.filteritems = res.map(r => r.Text + '!~!' + r.Value);
+                });
         } else {
             givenfield.disabled = true;
             givenfield.filteritems = [];
@@ -148,5 +150,4 @@ export class ArtifactTopLevelFilterComponent extends BaseComponent implements On
             this.ref.markForCheck();
         }, 50);
     }
-
-};
+}

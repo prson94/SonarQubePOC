@@ -28,12 +28,14 @@ import { Title } from '@angular/platform-browser';
                                                 <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
                                             </th>
                                             <th>Description</th>
-                                            <th style="width: 40px"></th>
-                                            <th style="width: 40px"></th>
+                                            <th style="width: 30px"></th>
+                                            <th style="width: 30px"></th>
+                                            <th style="width: 30px"></th>
                                         </tr>
                                         <tr [hidden]="showSimpleFilter">
                                             <th><d3s-column-filter [field]="'Name'" [datatype]="'text'"></d3s-column-filter></th>
                                             <th><d3s-column-filter [field]="'Description'" [datatype]="'text'"></d3s-column-filter></th>
+                                            <th></th>
                                             <th></th>
                                             <th></th>
                                         </tr>
@@ -43,6 +45,11 @@ import { Title } from '@angular/platform-browser';
                                             <td>{{item.Name}}</td>
                                             <td>
                                                 <span [innerHtml]="item.Description"></span>
+                                            </td>
+                                            <td>
+                                                <div class="RowTools" *ngIf="!item.IsSystem">
+                                                    <d3s-preview-tooltip objectType="IssueType"[objectId]="item.ID" icon="info"></d3s-preview-tooltip>
+                                                </div>
                                             </td>
                                             <td>
                                                 <div class="RowTools" *ngIf="!item.IsSystem">

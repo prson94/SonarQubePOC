@@ -1273,7 +1273,101 @@ namespace d360.model
             return transitions.Count;
         }
 
-        private async Task SendFormWorkflowEmail(WorkflowItemStep item, long itemStepID, long itemId, EventObjectInfo objectInfo, WorkflowItemStepSettingModel settings)
+        /// <summary>
+        /// Reassign one or more form steps to a new user
+        /// </summary>
+        /// <param name="itemSteps">Form steps to reassign</param>
+        /// <param name="resource">The resource to assign the forms to</param>
+        /// <param name="originalResourceId">The resource Id of the original assignee on the form</param>
+        /// <param name="sendFormEmails">Whether or not to resend form emails. If the step doesn't have form emails configured this setting is ignored</param>
+        /// <returns></returns>
+        public async Task BulkWorkflowFormReassign(List<WorkflowItemStep> itemSteps, GlobalReportingResource resource, int originalResourceId, bool sendFormEmails = true)
+        {
+            foreach (var itemStep in itemSteps)
+            {
+                if (itemStep.Step.ActivityType != WorkflowActivityType.Form)
+                    continue;
+
+                var stepSettings = WorkflowItemStepSettingModel.ParseXml(itemStep.Step.Settings);
+
+                var fieldElement = XElement.Parse(itemStep.Fields);
+                var reassigned = new XElement("Reassigned");
+                reassigned.Add(new XAttribute("reassignType", "Resource"));
+                reassigned.Add(new XAttribute("reassignToResourceId", resource.ResourceID.ToString()));
+                reassigned.Add(new XAttribute("reassignFromResourceId", originalResourceId.ToString()));
+                reassigned.Add(new XAttribute("reassignByResourceId", CurrentResourceID.ToString()));
+                reassigned.Add(new XAttribute("reassignOn", DateTime.UtcNow));
+
+                if (fieldElement.Elements("Reassigned").Any())
+                {
+                    var el = fieldElement.Elements("Reassigned");
+                    el.Remove();
+                }
+
+                fieldElement.Add(reassigned);
+                itemStep.Fields = fieldElement.ToString();
+                itemStep.StartedOn = DateTime.UtcNow;
+
+                var currentAssignment = WorkflowItemAssignments.FirstOrDefault(x => x.ItemStepID == itemStep.ID);
+
+                if (currentAssignment != null)
+                {
+                    WorkflowItemAssignments.Remove(currentAssignment);
+                }
+
+                if (sendFormEmails && stepSettings.FormShouldSendEmail)
+                {
+                    var obj = itemStep.Item.Object;
+                    var objId = itemStep.Item.ObjectID;
+
+                    var objectDetail = GetObjectDetail(obj, objId);
+
+                    var objEventInfo = new EventObjectInfo()
+                    {
+                        ObjectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), objectDetail.Type),
+                        ObjectTypeID = objectDetail.TypeID,
+                        Object = (SystemObjects)Enum.Parse(typeof(SystemObjects), obj),
+                        ObjectID = objId,
+                    };
+
+                    var settings = itemStep.SettingsDocument;
+                    var emails = settings.Element("emails");
+                    if (emails != null)
+                    {
+                        emails.Remove();
+                    }
+
+                    itemStep.Settings = settings.ToString();
+                    await SaveChangesAsync();
+
+                    //resend email to the reassigned user
+                    stepSettings.SpecificUser = resource.Email;
+                    stepSettings.RecipientType = EmailTaskRecipientType.SpecificUser;
+                    
+                    await SendFormWorkflowEmail(itemStep, itemStep.ID, itemStep.ItemID, objEventInfo, stepSettings);
+                }
+                else
+                {
+                    var assignment = new WorkflowItemAssignment
+                    {
+                        ItemStepID = itemStep.ID,
+                        ItemID = itemStep.ItemID,
+                        CreatedBy = CurrentResourceID,
+                        CreatedOn = DateTime.UtcNow,
+                        ResourceObject = "Resource",
+                        ResourceObjectID = resource.ResourceID,
+                        UpdatedBy = CurrentResourceID,
+                        UpdatedOn = DateTime.UtcNow
+                    };
+
+                    WorkflowItemAssignments.Add(assignment);
+                }
+            }
+
+            await SaveChangesAsync();
+        }
+
+        public async Task SendFormWorkflowEmail(WorkflowItemStep item, long itemStepID, long itemId, EventObjectInfo objectInfo, WorkflowItemStepSettingModel settings)
         {
             List<string> emailedUsers = new List<string>();
             List<core.entities.GlobalReportingResource> users = new List<core.entities.GlobalReportingResource>();
@@ -1364,7 +1458,8 @@ namespace d360.model
 
             //update the xml for the number of users sent the form
             var xml = XElement.Parse(item.Fields);
-            xml.Add(new XAttribute("TotalResources", users.Count()));
+            if (!xml.Attributes("TotalResources").Any())
+                xml.Add(new XAttribute("TotalResources", users.Count()));
             item.Fields = xml.ToString();
             SaveChanges();
 
