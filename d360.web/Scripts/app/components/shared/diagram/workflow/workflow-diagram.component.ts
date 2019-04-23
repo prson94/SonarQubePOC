@@ -1,4 +1,4 @@
-﻿import { MenuItem } from 'primeng/primeng';
+﻿import {MenuItem} from 'primeng/primeng';
 import * as go from 'gojs';
 import * as _ from 'lodash';
 import {
@@ -15,12 +15,12 @@ import {
     SimpleChanges
 } from '@angular/core';
 
-import { PermissionsService } from '../../../../services/permissions.service';
-import { DiagramBaseComponent } from '../diagram-base.component';
-import { WorkflowService } from '../../../../services/workflow.service';
-import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
-import { ObjectDetailService } from '../../../../services/object-detail.service';
-import { UriBasedService } from '../../../../services/uri-based.service';
+import {PermissionsService} from '../../../../services/permissions.service';
+import {DiagramBaseComponent} from '../diagram-base.component';
+import {WorkflowService} from '../../../../services/workflow.service';
+import {WorkflowFieldsService} from '../../../../services/workflow-fields.service';
+import {ObjectDetailService} from '../../../../services/object-detail.service';
+import {UriBasedService} from '../../../../services/uri-based.service';
 import {
     WorkflowDiagramModel,
     WorkflowDiagramNode,
@@ -37,7 +37,7 @@ import {
     FormResponseType,
     WorkflowActivityType,
 } from '../../../../models/workflow.model';
-import { FieldType } from '../../../../models/fields.model';
+import {FieldType} from '../../../../models/fields.model';
 
 declare var window: any;
 
@@ -158,7 +158,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             if (this.diagram != null && this.diagram.div != null) {
                 this.diagram.div = null;
             }
-            if(this.palette != null && this.palette.div != null) {
+            if (this.palette != null && this.palette.div != null) {
                 this.palette.div = null;
             }
 
@@ -217,7 +217,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         this.diagram.toolManager.draggingTool.isGridSnapEnabled = true;
         this.diagram.toolManager.resizingTool.isGridSnapEnabled = false;
 
-        this.diagram.toolManager.linkingTool.linkValidation = (a,b,c,d) => this.canLink(a,b,c,d);
+        this.diagram.toolManager.linkingTool.linkValidation = (a, b, c, d) => this.canLink(a, b, c, d);
 
         this.diagram.toolManager.linkingTool.temporaryLink.routing = go.Link.Orthogonal;
         this.diagram.toolManager.relinkingTool.temporaryLink.routing = go.Link.Orthogonal;
@@ -345,7 +345,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             .then(() => this.workflowService.getWorkflowFieldTypes(this.model.Event.ObjectID, this.model.Event.Object, true))
             .then(r => this.fieldTypes = r)
             .then(() => this.parseData(this.model))
-            .then(() => { this.isLoading = false; this.hasType = true; });
+            .then(() => {
+                this.isLoading = false;
+                this.hasType = true;
+            });
     }
 
     private parseData(data: WorkflowDiagramModel) {
@@ -517,16 +520,16 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                         this.objectTypeName = '';
                 })
         } else {
-            this.objectDetailService.getObject(this.model.Event.ObjectID, obj)
-                .then(r => {
-                    if (r != null)
+            this.objectDetailService.getObject(this.model.Event.ObjectID, obj).subscribe(
+                r => {
+                    if (r != null) {
                         this.objectTypeName = r.TypeName + ' :: ' + r.Name;
-                    else
+                    } else {
                         this.objectTypeName = '';
-                });
+                    }
+                }
+            );
         }
-
-
     }
 
     private getAvailableFormInputs(link: LinkModel): string[] {
@@ -535,7 +538,9 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         let visited = [];
 
         let nodes = this.diagram.model.nodeDataArray.filter(n => (<any>n).key == link.from);
-        visited = visited.concat(nodes.map(n => { return (<any>n).key; }));
+        visited = visited.concat(nodes.map(n => {
+            return (<any>n).key;
+        }));
 
         while (nodes.length > 0) {
             links = [];
@@ -550,7 +555,9 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             links.forEach(l => {
                 let newNodes = this.diagram.model.nodeDataArray.filter(n => (<any>n).key == (<any>l).from && visited.findIndex(v => v == (<any>n).key) == -1);
                 nodes = nodes.concat(newNodes);
-                visited = visited.concat(newNodes.map(n => { return (<any>n).key; }));
+                visited = visited.concat(newNodes.map(n => {
+                    return (<any>n).key;
+                }));
             });
         }
         return forms;
@@ -608,26 +615,24 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                         c['@FieldName'] = this.fieldTypes[i].FriendlyName;
                 });
 
-            }
-            else
-                if (m.ConditionObject != null) {
-                    n.condition = [];
+            } else if (m.ConditionObject != null) {
+                n.condition = [];
 
-                    if (m.ConditionObject.Condition != null && m.ConditionObject.Condition.length != null) {
-                        n.condition = m.ConditionObject.Condition;
-                    } else if (m.ConditionObject.Condition != null) {
-                        n.condition.push(m.ConditionObject.Condition);
-                    }
-
-                    n.condition.forEach(c => {
-                        let i = this.fieldTypes.findIndex(f => f.ID == c['@FieldTypeID']);
-                        if (i >= 0)
-                            c['@FieldName'] = this.fieldTypes[i].FriendlyName;
-                    });
-
-                } else {
-                    n.condition = [];
+                if (m.ConditionObject.Condition != null && m.ConditionObject.Condition.length != null) {
+                    n.condition = m.ConditionObject.Condition;
+                } else if (m.ConditionObject.Condition != null) {
+                    n.condition.push(m.ConditionObject.Condition);
                 }
+
+                n.condition.forEach(c => {
+                    let i = this.fieldTypes.findIndex(f => f.ID == c['@FieldTypeID']);
+                    if (i >= 0)
+                        c['@FieldName'] = this.fieldTypes[i].FriendlyName;
+                });
+
+            } else {
+                n.condition = [];
+            }
 
             n.settings = (m.SettingsObject == null) ? ((m.Settings != null && m.Settings.toString() === m.Settings && m.Settings.startsWith('{')) ? JSON.parse(m.Settings).settings : {}) : m.SettingsObject;
             n.diagramObjectType = DiagramObjectType.Link;
@@ -765,8 +770,8 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 delete c['@ValueLabel'];
             });
 
-            n.Condition = JSON.stringify({ Conditions: { Condition: cond } });
-            n.Settings = JSON.stringify({ settings: m.settings });
+            n.Condition = JSON.stringify({Conditions: {Condition: cond}});
+            n.Settings = JSON.stringify({settings: m.settings});
 
             n.FromPortID = m.frompid;
             n.ToPortID = m.topid;
@@ -820,8 +825,8 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             n.ActivityType = m.activityType;
             n.Name = m.name;
             n.SettingsObject = settings;
-            n.Settings = JSON.stringify({ settings: settings });
-            n.Fields = (m.fields != null && m.fields.form != null) ? JSON.stringify({ fields: m.fields }) : '';
+            n.Settings = JSON.stringify({settings: settings});
+            n.Fields = (m.fields != null && m.fields.form != null) ? JSON.stringify({fields: m.fields}) : '';
 
             n.StepType = m.stepType;
             n.XPosition = m.pos.split(' ')[0];
@@ -1023,7 +1028,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 missingOutputCount++;
             if (to == null && from == null)
                 disconnectedNodeCount++;
-
 
 
         });
@@ -1259,7 +1263,8 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                         // this.selectedData = this.myDiagram.model.nodeDataArray[i];
                     }*/
                 } else if (this.selectedData.diagramObjectType == DiagramObjectType.Link) {
-                    this.showNodeTabs = false; this.showLinkTabs = true;
+                    this.showNodeTabs = false;
+                    this.showLinkTabs = true;
                     let i = (<go.GraphLinksModel>this.diagram.model).linkDataArray.findIndex(n => (<any>n).key == this.selectedData.key);
                     /*if (i > -1) {
                         //this.selectedData = (<go.GraphLinksModel>this.myDiagram.model).linkDataArray[i];
@@ -1500,44 +1505,50 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             new go.Binding("location", "pos", s => go.Point.parse(s)).makeTwoWay(go.Point.stringify),
             {
                 locationSpot: go.Spot.Center,
-                mouseEnter: (e, obj) => { this.showPorts(obj.part, true); },
-                mouseLeave: (e, obj) => { this.showPorts(obj.part, false); }
+                mouseEnter: (e, obj) => {
+                    this.showPorts(obj.part, true);
+                },
+                mouseLeave: (e, obj) => {
+                    this.showPorts(obj.part, false);
+                }
             },
             this.g(go.Panel, "Auto", {
-                width: nodeWidth,
-                height: nodeHeight
-            },
-                this.g(go.Shape, "RoundedRectangle", {
-                    stroke: nodeBorderColor,
-                    strokeWidth: 3,
-                    spot1: go.Spot.TopLeft,
-                    spot2: go.Spot.BottomRight,
-                    name: "NodeShape",
+                    width: nodeWidth,
+                    height: nodeHeight
                 },
+                this.g(go.Shape, "RoundedRectangle", {
+                        stroke: nodeBorderColor,
+                        strokeWidth: 3,
+                        spot1: go.Spot.TopLeft,
+                        spot2: go.Spot.BottomRight,
+                        name: "NodeShape",
+                    },
                     new go.Binding("fill", "back").makeTwoWay(),
-                    new go.Binding("stroke", "valid", v => { return (v || this.isReadOnly) ? nodeBorderColor : '#f00' })
+                    new go.Binding("stroke", "valid", v => {
+                        return (v || this.isReadOnly) ? nodeBorderColor : '#f00'
+                    })
                 ),
                 this.g(go.Panel, go.Panel.Horizontal, {
-                    alignment: go.Spot.BottomLeft,
-                    margin: 5
-                },
+                        alignment: go.Spot.BottomLeft,
+                        margin: 5
+                    },
                     this.makeIconPanel(nodeFontSize)
                 ),
                 this.g(go.Panel, go.Panel.Horizontal, {
-                    alignment: go.Spot.BottomRight,
-                    margin: 5
-                },
+                        alignment: go.Spot.BottomRight,
+                        margin: 5
+                    },
                     this.makeCountPanel(nodeFontSize)
                 ),
                 this.g(go.Panel, "Table",
                     this.g(go.TextBlock, {
-                        row: 0,
-                        margin: 3,
-                        alignment: go.Spot.Top,
-                        editable: false,
-                        maxSize: new go.Size(nodeWidth - 20, nodeHeight - 10),
-                        font: "bold " + nodeFontSize + "pt sans-serif",
-                    },
+                            row: 0,
+                            margin: 3,
+                            alignment: go.Spot.Top,
+                            editable: false,
+                            maxSize: new go.Size(nodeWidth - 20, nodeHeight - 10),
+                            font: "bold " + nodeFontSize + "pt sans-serif",
+                        },
                         new go.Binding("text", "", d => this.getNodeDisplayName(d)),
                         new go.Binding("stroke", "fore").makeTwoWay()
                     )
@@ -1551,7 +1562,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     }
 
 
-
     private createTerminalNode(isStart: boolean): go.Node {
         let nodeWidth = 80;
         let nodeHeight = 80;
@@ -1563,37 +1573,41 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             new go.Binding("location", "pos", s => go.Point.parse(s)).makeTwoWay(v => go.Point.stringify(v)),
             {
                 locationSpot: go.Spot.Center,
-                mouseEnter: (e, obj) => { this.showPorts(obj.part, true); },
-                mouseLeave: (e, obj) => { this.showPorts(obj.part, false); }
+                mouseEnter: (e, obj) => {
+                    this.showPorts(obj.part, true);
+                },
+                mouseLeave: (e, obj) => {
+                    this.showPorts(obj.part, false);
+                }
             },
             this.g(go.Panel, "Auto", {
-                width: nodeWidth,
-                height: nodeHeight,
-                margin: 0,
-                alignment: go.Spot.Center
-            },
+                    width: nodeWidth,
+                    height: nodeHeight,
+                    margin: 0,
+                    alignment: go.Spot.Center
+                },
                 this.g(go.Shape, "Circle", {
-                    stroke: nodeBorderColor,
-                    strokeWidth: 2,
-                    width: 78,
-                    height: 78,
-                    name: "NodeShape",
-                    fill: backColor
-                }
+                        stroke: nodeBorderColor,
+                        strokeWidth: 2,
+                        width: 78,
+                        height: 78,
+                        name: "NodeShape",
+                        fill: backColor
+                    }
                 ),
                 this.g(go.Panel, go.Panel.Horizontal, {
-                    alignment: go.Spot.BottomRight,
-                    margin: 0
-                },
+                        alignment: go.Spot.BottomRight,
+                        margin: 0
+                    },
                     this.makeTerminalCountPanel(nodeFontSize, isStart)
                 ),
                 this.g(go.TextBlock, {
-                    margin: 0,
-                    alignment: go.Spot.Center,
-                    editable: false,
-                    font: "bold " + nodeFontSize + "pt sans-serif",
-                    stroke: "#fff",
-                },
+                        margin: 0,
+                        alignment: go.Spot.Center,
+                        editable: false,
+                        font: "bold " + nodeFontSize + "pt sans-serif",
+                        stroke: "#fff",
+                    },
                     new go.Binding("text", "name").makeTwoWay()
                 )
             ),
@@ -1612,30 +1626,42 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             }, // the whole link panel
             new go.Binding("curve", "curve", go.Binding.parseEnum(go.Link, go.Link.JumpOver)),
             this.g(go.Shape, {
-                stroke: "gray", strokeWidth: 2
-            },
-                new go.Binding("stroke", "valid", v => { return (v || this.isReadOnly) ? "gray" : "red" })),
-            this.g(go.Shape, { toArrow: "standard", fill: "gray", stroke: "gray" },
-                new go.Binding("fill", "valid", v => { return (v || this.isReadOnly) ? "gray" : "red" }),
-                new go.Binding("stroke", "valid", v => { return (v || this.isReadOnly) ? "gray" : "red" })
+                    stroke: "gray", strokeWidth: 2
+                },
+                new go.Binding("stroke", "valid", v => {
+                    return (v || this.isReadOnly) ? "gray" : "red"
+                })),
+            this.g(go.Shape, {toArrow: "standard", fill: "gray", stroke: "gray"},
+                new go.Binding("fill", "valid", v => {
+                    return (v || this.isReadOnly) ? "gray" : "red"
+                }),
+                new go.Binding("stroke", "valid", v => {
+                    return (v || this.isReadOnly) ? "gray" : "red"
+                })
             ), // the arrowhead
             this.g(go.Panel, "Auto",
                 this.g(go.Shape, "Circle", {
-                    visible: false,
-                    fill: 'gray',//this.g(go.Brush, "Radial", { 0: "rgb(255, 255, 255)", 0.3: "rgb(255, 255, 255)", 1: "rgba(255, 255, 255, 0)" }),
-                    stroke: 'gray'
-                    //,width: 25,
-                    //height: 25
-                    //strokeDashArray: [2, 2]
-                },
+                        visible: false,
+                        fill: 'gray',//this.g(go.Brush, "Radial", { 0: "rgb(255, 255, 255)", 0.3: "rgb(255, 255, 255)", 1: "rgba(255, 255, 255, 0)" }),
+                        stroke: 'gray'
+                        //,width: 25,
+                        //height: 25
+                        //strokeDashArray: [2, 2]
+                    },
                     //only visible if there's a label
-                    new go.Binding("stroke", "valid", v => { return (v || this.isReadOnly) ? "gray" : "red" }),
-                    new go.Binding("fill", "valid", v => { return (v || this.isReadOnly) ? "gray" : "red" }),
-                    new go.Binding("visible", "icon", function (a) { return (a ? true : false) })
+                    new go.Binding("stroke", "valid", v => {
+                        return (v || this.isReadOnly) ? "gray" : "red"
+                    }),
+                    new go.Binding("fill", "valid", v => {
+                        return (v || this.isReadOnly) ? "gray" : "red"
+                    }),
+                    new go.Binding("visible", "icon", function (a) {
+                        return (a ? true : false)
+                    })
                 ), // the link shape
                 this.g(go.TextBlock, {
-                    textAlign: "center", font: "9pt FontAwesome", stroke: "#fff", margin: 0.75
-                },
+                        textAlign: "center", font: "9pt FontAwesome", stroke: "#fff", margin: 0.75
+                    },
                     // the label
                     new go.Binding("text", "icon").makeTwoWay()
                 )
@@ -1654,35 +1680,41 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 reshapable: true,
                 resegmentable: true,
                 // mouse-overs subtly highlight links:
-                mouseEnter: function (e, link) { link.findObject("HIGHLIGHT").stroke = "rgba(30,144,255,0.2)"; },
-                mouseLeave: function (e, link) { link.findObject("HIGHLIGHT").stroke = "transparent"; }
+                mouseEnter: function (e, link) {
+                    link.findObject("HIGHLIGHT").stroke = "rgba(30,144,255,0.2)";
+                },
+                mouseLeave: function (e, link) {
+                    link.findObject("HIGHLIGHT").stroke = "transparent";
+                }
             },
             new go.Binding("points").makeTwoWay(),
             this.g(go.Shape,  // the link path shape
-                { isPanelMain: true, stroke: "gray", strokeWidth: 2 }),
+                {isPanelMain: true, stroke: "gray", strokeWidth: 2}),
             this.g(go.Shape,  // the arrowhead
-                { toArrow: "standard", stroke: null, fill: "gray" }),
+                {toArrow: "standard", stroke: null, fill: "gray"}),
             this.g(go.Panel, "Auto",
                 this.g(go.Shape, "Circle", {
-                    visible: false,
-                    fill: 'gray',//this.g(go.Brush, "Radial", { 0: "rgb(255, 255, 255)", 0.3: "rgb(255, 255, 255)", 1: "rgba(255, 255, 255, 0)" }),
-                    stroke: 'gray'
-                    //,width: 25,
-                    //height: 25
-                    //strokeDashArray: [2, 2]
-                },
+                        visible: false,
+                        fill: 'gray',//this.g(go.Brush, "Radial", { 0: "rgb(255, 255, 255)", 0.3: "rgb(255, 255, 255)", 1: "rgba(255, 255, 255, 0)" }),
+                        stroke: 'gray'
+                        //,width: 25,
+                        //height: 25
+                        //strokeDashArray: [2, 2]
+                    },
                     //only visible if there's a label
-                    new go.Binding("visible", "icon", function (a) { return (a ? true : false) })
+                    new go.Binding("visible", "icon", function (a) {
+                        return (a ? true : false)
+                    })
                 ), // the link shape
                 this.g(go.TextBlock, {
-                    textAlign: "center", font: "9pt FontAwesome", stroke: "#fff", margin: 0.75
-                },
+                        textAlign: "center", font: "9pt FontAwesome", stroke: "#fff", margin: 0.75
+                    },
                     // the label
                     new go.Binding("text", "icon").makeTwoWay()
                 )
             ),
             this.g(go.Shape,
-                { isPanelMain: true, strokeWidth: 8, stroke: "transparent", name: "HIGHLIGHT" })
+                {isPanelMain: true, strokeWidth: 8, stroke: "transparent", name: "HIGHLIGHT"})
         );
     }
 
@@ -1721,7 +1753,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             this.g(go.Shape, "RoundedRectangle",
                 {
                     stroke: null,
-                    toolTip: this.g(go.Adornment, "Auto", this.g(go.Shape, { fill: "lightyellow" }), this.g(go.Panel, "Vertical", this.g(go.TextBlock, { margin: 3, text: 'Item count' })))
+                    toolTip: this.g(go.Adornment, "Auto", this.g(go.Shape, {fill: "lightyellow"}), this.g(go.Panel, "Vertical", this.g(go.TextBlock, {
+                        margin: 3,
+                        text: 'Item count'
+                    })))
                 },
                 new go.Binding("fill", "fore")
             ),
@@ -1736,7 +1771,9 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 new go.Binding("text", "runCount").makeTwoWay(),
                 new go.Binding("stroke", "back").makeTwoWay()
             )
-            , new go.Binding("visible", "runCount", (k) => { return this.isReadOnly && k > 0; })
+            , new go.Binding("visible", "runCount", (k) => {
+                return this.isReadOnly && k > 0;
+            })
         );
 
         return countPanel;
@@ -1756,7 +1793,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 {
                     stroke: null,
                     fill: foreColor,
-                    toolTip: this.g(go.Adornment, "Auto", this.g(go.Shape, { fill: "lightyellow" }), this.g(go.Panel, "Vertical", this.g(go.TextBlock, { margin: 3, text: 'Item count' })))
+                    toolTip: this.g(go.Adornment, "Auto", this.g(go.Shape, {fill: "lightyellow"}), this.g(go.Panel, "Vertical", this.g(go.TextBlock, {
+                        margin: 3,
+                        text: 'Item count'
+                    })))
                 }
             ),
             this.g(go.TextBlock,
@@ -1770,7 +1810,9 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 },
                 new go.Binding("text", "runCount").makeTwoWay(),
             )
-            , new go.Binding("visible", "runCount", (k) => { return this.isReadOnly && k > 0; })
+            , new go.Binding("visible", "runCount", (k) => {
+                return this.isReadOnly && k > 0;
+            })
         );
 
         return countPanel;
