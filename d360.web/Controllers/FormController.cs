@@ -8175,43 +8175,7 @@ namespace d360.web.Controllers
         #endregion
 
         #region LEGACY Lineage (TO BE REMOVED WHEN NEW LINEAGE IS COMPLETE)
-
-        #region Supporting Json Feeds
-
-
-        /// <summary>
-        /// Gets a list of fusion attributes based on a search string provided 
-        /// that should match part of the TextPath of the fusoin attribute.
-        /// </summary>
-        /// <param name="intersectID">The intersectID we are searching under.</param>
-        /// <param name="phrase">Part of the text path to search for.</param>
-        /// <returns>A list of name/value pairs.</returns>
-        [Route(""), NonNullableParameters]
-        public JsonNetResult MapRule_FindFusion(int intersectID, string phrase)
-        {
-            var intersect = Company.Filter<IntersectDetail>(i => i.ID == intersectID).FirstOrDefault();
-            if (intersect == null)
-                return new JsonNetResult { Data = new { message = "Intersect not found." } };
-
-            phrase = $"%{phrase}%";
-
-            var list = Company.Query<dynamic>(@"
-select  A.ID,
-        A.TextPath,
-        T.TextPath as FusionAttributeType,
-        F.Name as Fusion
-from    FusionAttribute A
-        inner join GetFusionAttributesByOwningArtifact(@SubjectID) O on O.ID = A.FusionID 
-        and A.TextPath like @phrase
-        inner join FusionAttributeType T on T.ID = A.FusionAttributeTypeID
-        inner join Fusion F on F.ID = A.FusionID
-order by A.TextPath", new { phrase, intersect.SubjectID });
-
-            return new JsonNetResult { Data = list, Formatting = Newtonsoft.Json.Formatting.None };
-        }
-
-        #endregion
-
+        
         [HttpPost, AjaxValidateAntiForgeryToken, Route("UpdateLineage")]
         public JsonNetResult UpdateLineage(LineageEditorModel model)
         {

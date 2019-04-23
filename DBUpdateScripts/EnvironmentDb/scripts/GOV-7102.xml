@@ -439,7 +439,7 @@ end
   </changeSet>
 
 
-  <changeSet author="KMcNamee" id="GOV-7102-GetFormattedFieldMulti">
+  <changeSet author="KMcNamee" id="GOV-7102-GetFormattedFieldMulti-B">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -630,7 +630,7 @@ BEGIN
 											NULL as LookupObjectID,
 											NULL as LookupDisplayFormat
 									FROM	(
-											SELECT	ID,
+											SELECT	ObjectID as ID,
 													CAST(Code as nvarchar(max)) as Code
 											FROM	Asset A
 											WHERE	A.ObjectID = @Value and A.[Object] = 'ReferenceItem'
@@ -1020,4 +1020,59 @@ END
 		]]>
     </rollback>
   </changeSet>
+
+  <changeSet author="KMcNamee" id="GOV-7102-DropGetFusionAttributesByOwningArtifact">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+  DROP FUNCTION IF EXISTS [dbo].[GetFusionAttributesByOwningArtifact]
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+CREATE OR ALTER FUNCTION [dbo].[GetFusionAttributesByOwningArtifact]
+(
+	@ArtifactID int
+)
+RETURNS 
+@tbl TABLE 
+(
+	ID int
+)
+AS
+BEGIN
+		declare @h table (ID int);
+
+		with h as	(
+					select	ID,
+							ParentID
+					from	Artifact
+					where	ID = @ArtifactID
+					union all
+					select	P.ID,
+							P.ParentID
+					from	Artifact P
+							inner join h as C on C.ParentID = P.ID
+					)
+		insert into @h
+			select ID from h;
+	
+		with f as	(
+					select	R.FusionID
+					from	FusionOwner R
+							inner join @h H on H.ID = R.ArtifactID
+					)
+
+		INSERT INTO @tbl
+			SELECT	distinct
+					FusionID
+			FROM	f
+	RETURN 
+END
+		]]>
+    </rollback>
+  </changeSet>
+
 </databaseChangeLog>
