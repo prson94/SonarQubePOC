@@ -1298,21 +1298,16 @@ namespace d360.model
                 reassigned.Add(new XAttribute("reassignByResourceId", CurrentResourceID.ToString()));
                 reassigned.Add(new XAttribute("reassignOn", DateTime.UtcNow));
 
-                if (fieldElement.Elements("Reassigned").Any())
-                {
-                    var el = fieldElement.Elements("Reassigned");
-                    el.Remove();
-                }
 
                 fieldElement.Add(reassigned);
                 itemStep.Fields = fieldElement.ToString();
                 itemStep.StartedOn = DateTime.UtcNow;
 
-                var currentAssignment = WorkflowItemAssignments.FirstOrDefault(x => x.ItemStepID == itemStep.ID);
+                var currentAssignments = WorkflowItemAssignments.Where(x => x.ItemStepID == itemStep.ID && x.ResourceObject == "Resource" && x.ResourceObjectID == originalResourceId).ToList();
 
-                if (currentAssignment != null)
+                if (currentAssignments.Any())
                 {
-                    WorkflowItemAssignments.Remove(currentAssignment);
+                    WorkflowItemAssignments.RemoveRange(currentAssignments);
                 }
 
                 if (sendFormEmails && stepSettings.FormShouldSendEmail)

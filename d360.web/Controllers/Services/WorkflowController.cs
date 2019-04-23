@@ -31,6 +31,7 @@ using d360.core.queue;
 using Dapper;
 using d360.core.enums;
 using System.Web.Http.Description;
+using System.Xml.Serialization;
 
 namespace d360.web.Controllers.Services
 {
@@ -2331,43 +2332,61 @@ order by wi.StartedOn desc";
         [Route("item/{itemId:int}"), HttpGet]
         public HttpResponseMessage GetWorkflowItemSteps(int itemId)
         {
-            var item = Company.WorkflowItems.FirstOrDefault(i => i.ID == itemId);
+            var item2 = Company.WorkflowItems.FirstOrDefault(i => i.ID == itemId);
 
-            if (item == null)
+            if (item2 == null)
                 return Request.CreateErrorResponse(HttpStatusCode.NotFound, new Exception("Item not found"));
 
-            var results = Company.Query<dynamic>(QueryConstants.WorkflowItemSteps, new { itemId }).ToList();
+            var results = Company.Query<WorkflowItemStepDetail>(QueryConstants.WorkflowItemSteps, new { itemId }).ToList();
 
-            foreach(var r in results)
+            foreach(var result in results)
             {
-                if (r.ActivityType == (int)WorkflowActivityType.Form && r.Complete == false)
+                result.FieldsObject = (WorkflowItemStepDetail.FieldsModel)new XmlSerializer(typeof(WorkflowItemStepDetail.FieldsModel)).Deserialize(new StringReader(result.Fields));
+                var fields = result.FieldsObject;
+
+                if (result.ActivityType == WorkflowActivityType.Form && result.Complete == false)
                 {
-                    if ((r.MessageRecipientType == "Responsibility" || r.MessageRecipientType == "None"))
+                    if ((result.MessageRecipientType == EmailTaskRecipientType.Responsibility.ToString() || result.MessageRecipientType == EmailTaskRecipientType.None.ToString()))
                     {
-                        var users = Company.GetWorkflowUsersBasedOnResponsibility((int)r.TypeID, (int)r.StepID, (int)r.ItemID).ToList();
-                        var fields = XmlToDynamic(r.Fields);
-
-                        if (fields != null && fields.form != null)
+                        //get responsible users
+                        var users = Company.GetWorkflowUsersBasedOnResponsibility(result.TypeID, result.StepID, result.ItemID).ToList();
+                        
+                        if (fields?.Reassignments?.Any() ?? false)
                         {
-                            if (fields.form.GetType().Name != "JArray")
-                                fields.form = new JArray(fields.form);
-
-                            for (int i = 0; i < fields.form.Count; i++)
+                            foreach(var reassign in fields.Reassignments)
                             {
-                                var ix = users.FindIndex(u => u.ResourceID.ToString() == fields.form[i]["@ResourceID"].Value);
-                                if (ix > -1)
-                                    users.RemoveAt(ix);
+                                //continue if it's not a bulk resource reassignment
+                                if (reassign.ReassignType != "Resource" || reassign.ReassignToResourceID == 0)
+                                    continue;
+
+                                //remove old assignee
+                                var ix = users.FindIndex(u => u.ResourceID == reassign.ReassignFromResourceID);
+                                if (ix > -1) users.RemoveAt(ix);
+
+                                //add new assignee
+                                var assignee = Company.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == reassign.ReassignToResourceID);
+                                if (assignee != null)
+                                    users.Add(assignee);
                             }
                         }
 
-                        r.Assignee = string.Join(", ", users.Select(u => u.FullName));
-                        r.IsAssignedLoginUser = users.Where(x => x.ResourceID == Company.CurrentResourceID).Count() == 0 ? Boolean.FalseString : Boolean.TrueString;
+                        //forms
+                        if (fields?.Forms?.Any() ?? false)
+                        {
+                            foreach(var form in fields.Forms)
+                            {
+                                var ix = users.FindIndex(u => u.ResourceID == form.ResourceID);
+                                if (ix > -1) users.RemoveAt(ix);
+                            }
+                        }
+
+                        result.Assignee = string.Join(", ", users.Select(u => u.FullName));
+                        result.IsAssignedLoginUser = users.Where(x => x.ResourceID == Company.CurrentResourceID).Count() == 0 ? Boolean.FalseString : Boolean.TrueString;
                     }
-                    else if (r.MessageRecipientType == "SpecificUser" || r.MessageRecipientType == "Initiator")
+                    else if (result.MessageRecipientType == EmailTaskRecipientType.SpecificUser.ToString() || result.MessageRecipientType == EmailTaskRecipientType.Initiator.ToString())
                     {
-                        var userList = ((string)r.Assignee ?? "").Split(';');
+                        var userList = (result.Assignee ?? "").Split(';');
                         var formattedUserList = new List<string>();
-                        r.IsAssignedLoginUser = Boolean.FalseString; //default
                         foreach (var u in userList)
                         {
                             var user = Company.GlobalReportingResources.FirstOrDefault(c => c.Email == u);
@@ -2377,9 +2396,9 @@ order by wi.StartedOn desc";
                                 formattedUserList.Add(u);
 
                             if (user != null && user.ResourceID == Company.CurrentResourceID)
-                                r.IsAssignedLoginUser =  Boolean.TrueString;
+                                result.IsAssignedLoginUser =  Boolean.TrueString;
                         }
-                        r.Assignee = string.Join(", ", formattedUserList);
+                        result.Assignee = string.Join(", ", formattedUserList);
                     }
 
                 }
@@ -2423,16 +2442,16 @@ order by wi.StartedOn desc";
             }
            
         }
-        private WorkflowStepReleationshipChange GetWorkFlowStepRelationshipChanges(dynamic settings, int itemId,string objectName)
+        private WorkflowStepRelationshipChange GetWorkFlowStepRelationshipChanges(dynamic settings, int itemId,string objectName)
         {
-            WorkflowStepReleationshipChange relChange =null;
+            WorkflowStepRelationshipChange relChange =null;
             if (settings != null && settings.RelationshipUpdate != null && settings.RelationshipUpdate.Relationship != null)
             {
 
                 dynamic relations = new JArray(settings.RelationshipUpdate.Relationship);
                 if(relations[0] != null)
                 {
-                     relChange = new WorkflowStepReleationshipChange();
+                     relChange = new WorkflowStepRelationshipChange();
                     var relation = relations[0];
                     relChange.AppendValue = relation["@AppendValue"] != null ? relation["@AppendValue"] :false;
                     relChange.ClearValue = relation["@ClearValue"] != null ? relation["@ClearValue"] : false;
