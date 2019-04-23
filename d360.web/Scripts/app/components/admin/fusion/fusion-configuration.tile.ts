@@ -1,11 +1,12 @@
-﻿import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
-import { Router } from '@angular/router';
-import { FusionConfiguration, FusionType } from '../../../models/fusion.model';
-import { FusionService } from '../../../services/fusion.service';
-import { GridColumn } from '../../../models/grid-definition.model';
-import { BaseComponent } from '../../shared/base.component';
-import { SiteUrlHelpers } from '../../../static/site-url-helpers';
-import { MessagesService } from '../../../services/messages.service';
+﻿import {Input, Output, Component, OnChanges, SimpleChange} from '@angular/core';
+import {Router} from '@angular/router';
+import {FusionConfiguration, FusionType} from '../../../models/fusion.model';
+import {FusionService} from '../../../services/fusion.service';
+import {GridColumn} from '../../../models/grid-definition.model';
+import {BaseComponent} from '../../shared/base.component';
+import {SiteUrlHelpers} from '../../../static/site-url-helpers';
+import {MessagesService} from '../../../services/messages.service';
+import {JsonResult} from "../../../models/jsonresult.model";
 
 @Component({
     selector: 'd3s-fusion-configuration-tile',
@@ -16,7 +17,7 @@ import { MessagesService } from '../../../services/messages.service';
 export class FusionConfigurationTile extends BaseComponent implements OnChanges {
     @Input() fusionType: FusionType;
     @Input() title: string = 'Configurations';
-    
+
     formMode: FormModeConfig = FormModeConfig.Default;
     FormModeConfig = FormModeConfig;
 
@@ -33,12 +34,12 @@ export class FusionConfigurationTile extends BaseComponent implements OnChanges 
     }
 
     constructor(private router: Router, private fusionService: FusionService, protected messagesService: MessagesService) {
-        super();        
+        super();
         this.theDeleteTypeCallback = this.deleteFusionConfig.bind(this);
         this.theMarkitLineageCallback = this.runMarkitLineage.bind(this);
     }
 
-    ngOnChanges(changes: { [propName: string]: SimpleChange }) {        
+    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         for (let p in changes) {
             if (p == 'fusionType') {
                 this.load();
@@ -56,39 +57,46 @@ export class FusionConfigurationTile extends BaseComponent implements OnChanges 
             this.isLoading = false;
             return;
         }
-        this.fusionService.getFusionConfigurationGridDefinition(this.fusionType.ID)
-            .then(data => { this.columns = data; })
-            .then(() => this.fusionService.getFusionConfigurationsByType(this.fusionType.ID))
-            .then(data => {
-                this.fusionConfigurations = data;
-                this.selectedRow = this.fusionConfigurations[0];
-                this.isLoading = false;
-            });
+        this.fusionService.getFusionConfigurationGridDefinition(this.fusionType.ID).subscribe(
+            data => {
+                this.columns = data;
+
+                this.fusionService.getFusionConfigurationsByType(this.fusionType.ID).subscribe(
+                    data => {
+                        this.fusionConfigurations = data;
+                        this.selectedRow = this.fusionConfigurations[0];
+                        this.isLoading = false;
+                    }
+                );
+            }
+        );
     }
 
     deleteFusionConfig(id: number) {
-        this.fusionService.deleteFusionConfiguration(id).
-            then(result => {
-                this.formMode = FormModeConfig.Default;                
+        this.fusionService.deleteFusionConfiguration(id).subscribe(
+            result => {
+                this.formMode = FormModeConfig.Default;
                 this.showMessageForResult(this.messagesService, result);
                 this.load();
-            });
+            }
+        );
     }
 
     runMarkitLineage(id: number) {
-        this.fusionService.postRunMarkitLineage(id)
-        .then(result => {
-            this.formMode = FormModeConfig.Default;
-            this.showMessageForResult(this.messagesService, result);
-            this.load();
-        });
+        this.fusionService.postRunMarkitLineage(id).subscribe(
+            result => {
+                this.formMode = FormModeConfig.Default;
+                this.showMessageForResult(this.messagesService, <JsonResult>result);
+
+                this.load();
+            }
+        );
     }
 
     private openFusion(fusion) {
         this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${fusion.ID}`);
     }
 }
-
 
 enum FormModeConfig {
     Default,

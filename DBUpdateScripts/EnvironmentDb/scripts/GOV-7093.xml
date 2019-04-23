@@ -1095,7 +1095,7 @@ end
 ]]>
 	</rollback>
   </changeSet>
-  <changeSet author="KMcNamee" id="GOV-7093-FORMATTEDFIELD-LOOKUP">
+  <changeSet author="KMcNamee" id="GOV-7093-FORMATTEDFIELD-LOOKUP-C">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -1189,7 +1189,7 @@ BEGIN
 						V.LookupObjectID,
 						V.LookupDisplayFormat
 				from	(
-						SELECT	ID,
+						SELECT	ObjectID as ID,
 								Name,
 								'Artifact' as ObjectType
 						FROM	AssetType
@@ -1201,7 +1201,7 @@ BEGIN
 						FROM	[LookupType]
 						WHERE	@LookupObjectType = 'Lookup' and ID = @LookupObjectID
 						UNION
-						SELECT	ID,
+						SELECT	ObjectID as ID,
 								Name,
 								'ReferenceItem' as ObjectType
 						FROM	AssetType
@@ -1212,7 +1212,7 @@ BEGIN
 								'Resource' as ObjectType
 						WHERE	@LookupObjectType = 'Resource'
 						UNION
-						SELECT	ID,
+						SELECT	ObjectID as ID,
 								Name,
 								'Taxonomy' as ObjectType
 						FROM	AssetType
@@ -1280,7 +1280,7 @@ BEGIN
 											NULL as LookupObjectID,
 											NULL as LookupDisplayFormat
 									FROM	(
-											SELECT	ID,
+											SELECT	ObjectID as ID,
 													CAST(Code as nvarchar(max)) as Code
 											FROM	Asset A
 											WHERE	A.ObjectID = @Value and A.[Object] = 'ReferenceItem'
@@ -1298,7 +1298,7 @@ BEGIN
 											NULL as LookupObjectID,
 											NULL as LookupDisplayFormat
 									FROM	(
-											SELECT	ID,
+											SELECT	ObjectID as ID,
 													CAST(Name as nvarchar(max)) as Name,
 													CAST(Description as nvarchar(max)) as Description
 											FROM	AssetType A
