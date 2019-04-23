@@ -25,7 +25,7 @@ declare var CompanySettings;
                                 <li [routerLink]="resourceUrl()" class="header-item">Edit Profile</li>
                                 <li *ngIf="showAllUsersAPIKey" [routerLink]="'/resource/my/apikey'" class="header-item">API Key</li>
                                 <li *ngIf="!singleSignOn"  [routerLink]="'/resource/'+resourceId+'/changepassword'" class="header-item">Change Password</li>
-                                <li class="header-item"><a href="/slo" title="Sign out"></a>Sign Out</li>
+                                <li class="header-item"><a style="padding:0px;" href="/slo" title="Sign out">Sign Out</a></li>
                             </ul>                                                    
                         </div>
                     </div>
