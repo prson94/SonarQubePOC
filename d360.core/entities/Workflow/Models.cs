@@ -93,6 +93,8 @@ namespace d360.core.entities.Workflow
         [Serializable, XmlRoot("fields")]
         public class FieldsModel
         {
+            [XmlAttribute("NumberOfResponses")]
+            public int NumberOfResponses { get; set; }
             [XmlAttribute("TotalResources")]
             public int TotalResources { get; set; }
 
@@ -118,18 +120,18 @@ namespace d360.core.entities.Workflow
                 public string ObjectType { get; set; }
                 [XmlAttribute("objectName")]
                 public string ObjectName { get; set; }
-                [XmlAttribute("reassignByResourceId")]
-                public int ReassignByResourceID { get; set; }
-                [XmlAttribute("reassignToResourceId")]
-                public int ReassignToResourceID { get; set; }
-                [XmlAttribute("reassignFromResourceId")]
-                public int ReassignFromResourceID { get; set; }
-                [XmlAttribute("reassignByResourceName")]
-                public string ReassignByResourceName { get; set; }
-                [XmlAttribute("reassignFromResourceName")]
-                public string ReassignFromResourceName { get; set; }
-                [XmlAttribute("reassignToResourceName")]
-                public string ReassignToResourceName { get; set; }
+                [XmlAttribute("byResourceId")]
+                public int ByResourceID { get; set; }
+                [XmlAttribute("toResourceId")]
+                public int ToResourceID { get; set; }
+                [XmlAttribute("fromResourceId")]
+                public int FromResourceID { get; set; }
+                [XmlAttribute("byResourceName")]
+                public string ByResourceName { get; set; }
+                [XmlAttribute("fromResourceName")]
+                public string FromResourceName { get; set; }
+                [XmlAttribute("toResourceName")]
+                public string ToResourceName { get; set; }
                 [XmlAttribute("reassignOn")]
                 public string ReassignOn { get; set; }
             }

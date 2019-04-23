@@ -1293,9 +1293,9 @@ namespace d360.model
                 var fieldElement = XElement.Parse(itemStep.Fields);
                 var reassigned = new XElement("Reassigned");
                 reassigned.Add(new XAttribute("reassignType", "Resource"));
-                reassigned.Add(new XAttribute("reassignToResourceId", resource.ResourceID.ToString()));
-                reassigned.Add(new XAttribute("reassignFromResourceId", originalResourceId.ToString()));
-                reassigned.Add(new XAttribute("reassignByResourceId", CurrentResourceID.ToString()));
+                reassigned.Add(new XAttribute("toResourceId", resource.ResourceID.ToString()));
+                reassigned.Add(new XAttribute("fromResourceId", originalResourceId.ToString()));
+                reassigned.Add(new XAttribute("byResourceId", CurrentResourceID.ToString()));
                 reassigned.Add(new XAttribute("reassignOn", DateTime.UtcNow));
 
 

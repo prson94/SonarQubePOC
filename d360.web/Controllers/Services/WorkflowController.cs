@@ -2332,9 +2332,9 @@ order by wi.StartedOn desc";
         [Route("item/{itemId:int}"), HttpGet]
         public HttpResponseMessage GetWorkflowItemSteps(int itemId)
         {
-            var item2 = Company.WorkflowItems.FirstOrDefault(i => i.ID == itemId);
+            var item = Company.WorkflowItems.FirstOrDefault(i => i.ID == itemId);
 
-            if (item2 == null)
+            if (item == null)
                 return Request.CreateErrorResponse(HttpStatusCode.NotFound, new Exception("Item not found"));
 
             var results = Company.Query<WorkflowItemStepDetail>(QueryConstants.WorkflowItemSteps, new { itemId }).ToList();
@@ -2356,15 +2356,15 @@ order by wi.StartedOn desc";
                             foreach(var reassign in fields.Reassignments)
                             {
                                 //continue if it's not a bulk resource reassignment
-                                if (reassign.ReassignType != "Resource" || reassign.ReassignToResourceID == 0)
+                                if (reassign.ReassignType != "Resource" || reassign.ToResourceID == 0)
                                     continue;
 
                                 //remove old assignee
-                                var ix = users.FindIndex(u => u.ResourceID == reassign.ReassignFromResourceID);
+                                var ix = users.FindIndex(u => u.ResourceID == reassign.FromResourceID);
                                 if (ix > -1) users.RemoveAt(ix);
 
                                 //add new assignee
-                                var assignee = Company.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == reassign.ReassignToResourceID);
+                                var assignee = Company.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == reassign.ToResourceID);
                                 if (assignee != null)
                                     users.Add(assignee);
                             }
@@ -2727,12 +2727,15 @@ order by wi.StartedOn desc";
             if (detail == null)
                 return Request.CreateErrorResponse(HttpStatusCode.NotFound, new Exception("step not found"));
 
+            //TODO: refactor to convert to directly to a model instead of xml to json to dynamic
             detail.Settings = XmlToDynamic(detail.SettingsXml);
             detail.Fields = XmlToDynamic(detail.FieldsXml);
             detail.ItemSettings = XmlToDynamic(detail.ItemSettingsXml);
-            detail.ItemFields = XmlToDynamic(detail.ItemFieldsXml);
             detail.Condition = XmlToDynamic(detail.ConditionXml);
             detail.EventSettings = XmlToDynamic(detail.EventSettingsXml);
+
+            detail.ItemFields = XmlToDynamic(detail.ItemFieldsXml);
+            var itemFields = (WorkflowItemStepDetail.FieldsModel)new XmlSerializer(typeof(WorkflowItemStepDetail.FieldsModel)).Deserialize(new StringReader(detail.ItemFieldsXml));
 
             if (detail.ItemSettings == null)
                 detail.ItemSettings = new JObject();
@@ -2936,7 +2939,7 @@ order by wi.StartedOn desc";
                     {
                         if (detail.ItemFields.form.GetType().Name != "JArray")
                         {
-                            detail.ItemFields.form = detail.ItemFields.form = new JArray(detail.ItemFields.form);
+                            detail.ItemFields.form = new JArray(detail.ItemFields.form);
                         }
                     }
                     else
@@ -2944,14 +2947,25 @@ order by wi.StartedOn desc";
                         detail.ItemFields.form = new JArray();
                     }
 
-                    detail.ItemSettings.hasForms = (detail.ItemFields.form.Count > 0);
+                    if (detail.ItemFields.Reassigned != null)
+                    {
+                        if (detail.ItemFields.Reassigned.GetType().Name != "JArray")
+                        {
+                            detail.ItemFields.Reassigned = new JArray(detail.ItemFields.Reassigned);
+                        }
+                    }
+                    else
+                    {
+                        detail.ItemFields.Reassigned = new JArray();
+                    }
+
+                    detail.ItemSettings.hasForms = itemFields.Forms.Any();
                     detail.ItemSettings.hasPendingForms = false;
 
-                    if (int.TryParse(detail.ItemFields["@TotalResources"]?.Value, out int total))
+                    if (itemFields.TotalResources > 0)
                     {
-                        int numResponses = 0;
-                        if (!int.TryParse(detail.ItemFields["@NumberOfResponses"]?.Value, out numResponses))
-                            detail.ItemFields["@NumberOfResponses"] = 0;
+                        int total = itemFields.TotalResources;
+                        int numResponses = itemFields.NumberOfResponses;
 
                         if (detail.ItemSettings.hasForms == false)
                         {
@@ -3063,28 +3077,12 @@ order by wi.StartedOn desc";
                         }
                     }
 
-                    for (int i = 0; i < detail.ItemFields.form.Count; i++)
+                    foreach(var form in itemFields.Forms)
                     {
-                        var form = detail.ItemFields.form[i];
-
-                        if (form.field != null)
-                        {
-                            if (form.field.GetType().Name != "JArray")
-                            {
-                                form.field = new JArray(form.field);
-                            }
-                        }
-                        else
-                        {
-                            form.field = new JArray();
-                        }
-
-                        if (form["@ResourceID"] != null & form["@ResourceID"].Value != null & int.TryParse(form["@ResourceID"].Value, out int resId))
-                        {
-                            if (!resourceIds.Any(r => r == resId))
-                                resourceIds.Add(resId);
-                        }
+                        if (form.ResourceID != 0 && !resourceIds.Any(r => r == form.ResourceID))
+                            resourceIds.Add(form.ResourceID);
                     }
+
 
                     //get all relevant resource info
                     var formResources = Company.GlobalReportingResources.Where(r => resourceIds.Contains(r.ResourceID)).ToList();

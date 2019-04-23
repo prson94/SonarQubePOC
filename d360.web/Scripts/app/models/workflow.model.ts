@@ -557,33 +557,40 @@ export class WorkflowStepDetail {
     ItemStepID: number;
     FieldChanges: WorkflowStepFieldChangeDetail[];
     RelationshipChange: WorkflowStepRelationshipChangeDetail;
-    Reassignments: WorkflowStepReassignmentDetail[];
     StateChange: State;
 }
 
 
-export class WorkflowStepReassignmentDetail {
+export class WorkflowStepReassignment {
 
-    constructor(reassignmentDetail: any = null) {
-        if (reassignmentDetail != null) {
-            this.ReassignType = reassignmentDetail['@reassignType'];
-            this.ObjectType = reassignmentDetail['@objectType'];
-            this.ObjectTypeID = reassignmentDetail['@objectTypeId'];
-            this.ReassignByResourceID = reassignmentDetail['@reassignByResourceId'];
-            this.ReassignFromResourceID = reassignmentDetail['@reassignFromResourceId'];
-            this.ReassignToResourceID = reassignmentDetail['@reassignToResourceId'];
-            this.ReassignOn = reassignmentDetail['@reassignOn'];
-            this.IsBulkReassignment = (this.ReassignType == 'Resource' && this.ReassignByResourceID != null);
+    constructor(reassignObject: any = null) {
+        if (reassignObject != null) {
+            this.ReassignType = reassignObject['@reassignType'];
+            this.ObjectType = reassignObject['@objectType'];
+            this.ObjectID = reassignObject['@objectId'];
+            this.ObjectName = reassignObject['@objectName'];
+            this.ByResourceID = reassignObject['@reassignByResourceId'];
+            this.FromResourceID = reassignObject['@reassignFromResourceId'];
+            this.ToResourceID = reassignObject['@reassignToResourceId'];
+            this.ByResourceName = reassignObject['@reassignByResourceName'];
+            this.ToResourceName = reassignObject['@reassignToResourceName'];
+            this.FromResourceName = reassignObject['@reassignFromResourceName'];
+            this.ReassignOn = reassignObject['@reassignOn'];
+            this.IsBulkReassignment = (this.ReassignType == 'Resource' && this.ByResourceID != null);
         }
     }
 
     IsBulkReassignment: boolean = false;
     ReassignType: string;
     ObjectType: string;
-    ObjectTypeID: number;
-    ReassignByResourceID: number;
-    ReassignFromResourceID: number;
-    ReassignToResourceID: number;
+    ObjectID: number;
+    ObjectName: string;
+    ByResourceID: number;
+    ByResourceName: string;
+    FromResourceID: number;
+    FromResourceName: string;
+    ToResourceID: number;
+    ToResourceName: string;
     ReassignOn: string;
 }
 
