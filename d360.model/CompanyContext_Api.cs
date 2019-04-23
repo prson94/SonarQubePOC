@@ -283,22 +283,76 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
         private void ResolveFieldLookupValues(Guid executionID, int timeout = 3600)
         {
             Connection.Execute(@"
-create table #LookupValues (FieldTypeID int not null, FieldValue nvarchar(max) not null, [Value] int null)
+drop table if exists #LookupValues
+create table #LookupValues (ItemNumber int, FieldTypeID int not null, FieldValue nvarchar(max) not null, [Value] nvarchar(max) null)
 CREATE CLUSTERED INDEX CIX_TempLookupValues ON #LookupValues ( FieldTypeID ASC );
 		
 insert into #LookupValues
-	select		T.FieldTypeID,
+	select		T.ItemNumber,
+				T.FieldTypeID,
 				T.FieldValue,
                 null
 	from		api.ExecutionField T
 				inner join FieldType F on F.ID = T.FieldTypeID and F.[Type] = 'Lookup' and T.ExecutionID = @executionID
-	group by	T.FieldTypeID,
+	group by	T.ItemNumber,
+				T.FieldTypeID,
 				T.FieldValue;
 
 update	T
 set		T.[Value] = S.[Value]
 from	#LookupValues T
+		inner join FieldType ST on ST.ID = T.FieldTypeID and ST.AllowMultipleValues = 0
 		inner join FieldLookupValue S on S.FieldTypeID = T.FieldTypeID and S.[Text] = T.FieldValue;
+
+drop table if exists #MvLookupValues
+create table #MvLookupValues (ItemNumber int, FieldTypeID int not null, [RawValue] nvarchar(250) null, [Value] nvarchar(max) null)
+CREATE CLUSTERED INDEX CIX_TempMvLookupValues ON #MvLookupValues ( ItemNumber ASC, FieldTypeID ASC );
+CREATE NONCLUSTERED INDEX IX_TempMvLookupValues_FieldTypeID_RawValue ON #MvLookupValues ( FieldTypeID ASC, RawValue ASC );
+
+insert into #MvLookupValues (ItemNumber, FieldTypeID, [RawValue])
+	select		T.ItemNumber,
+				T.FieldTypeID,
+				rtrim(ltrim(MV.Value))
+	from		#LookupValues T
+				inner join FieldType ST on ST.ID = T.FieldTypeID and ST.AllowMultipleValues = 1
+				cross apply string_split(T.FieldValue, ',') MV;
+
+update	T
+set		T.Value = S.Value
+from	#MvLookupValues T
+		inner join (
+					select		top 100 percent
+								T.ItemNumber,
+								T.FieldTypeID,
+								S.Value,
+								S.[Text]
+					from		#LookupValues T
+								inner join FieldType ST on ST.ID = T.FieldTypeID and ST.AllowMultipleValues = 1
+								cross apply string_split(T.FieldValue, ',') MV 
+								inner join FieldLookupValue S on S.FieldTypeID = T.FieldTypeID and S.[Text] = MV.value
+					group by	T.ItemNumber, T.FieldTypeID, S.Value, S.[Text]
+					order by	T.ItemNumber, T.FieldTypeID, S.[Text]	
+		) S on S.ItemNumber = T.ItemNumber and S.FieldTypeID = T.FieldTypeID and S.[Text] = T.[RawValue];
+
+delete	T
+from	#MvLookupValues T
+		inner join	(
+					select	* 
+					from	#MvLookupValues
+					where	Value is null
+					) S on S.ItemNumber = T.ItemNumber and S.FieldTypeID = T.FieldTypeID
+
+update	T
+set		T.[Value] = S.[Value]
+from	#LookupValues T
+		inner join (
+					select		ItemNumber,
+								FieldTypeID,
+								STRING_AGG(T.Value, ',') as Value
+					from		#MvLookupValues T
+					group by	ItemNumber,
+								FieldTypeID
+					) S on S.ItemNumber = T.ItemNumber and S.FieldTypeID = T.FieldTypeID;
 
 update	T
 set		T.LookupValue = S.[Value]
