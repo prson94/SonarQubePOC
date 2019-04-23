@@ -10,7 +10,7 @@ namespace d360.model.workflow
 {
     public static class WorkflowRegistrationCriteriaProcessor
     {
-        public static bool Evaluate(CompanyContext context, string @object, int objectId, string criteria, long itemId = -1, int score = -1, List<int> changedFields = null, string issueObject = "", int issueObjectId = -1)
+        public static bool Evaluate(CompanyContext context, string @object, int objectId, string criteria, long itemId = -1, int score = -1, List<int> changedFields = null, string issueObject = "", int issueObjectId = -1, bool satisfyAll = true)
         {
             if (string.IsNullOrEmpty(criteria)) return true; // null criteria means all objects are applicable
 
@@ -20,7 +20,7 @@ namespace d360.model.workflow
             List<WorkflowCriteriaExpressionModel> expression = PopulateExpressionFromXml(criteria);
 
             //load the values for each of the fields for the given object
-            return EvaluateObject(expression, context, @object, objectId, itemId, score, issueObject, issueObjectId, changedFields);
+            return EvaluateObject(expression, context, @object, objectId, itemId, score, issueObject, issueObjectId, changedFields, satisfyAll);
         }
 
         public static string ToPlainText(ICompanyContext context, string criteria)
@@ -43,32 +43,23 @@ namespace d360.model.workflow
         }
 
         /// <summary>
-        /// Given an object determin if it matches this criteria
+        /// Given an object determine if it matches this criteria
         /// </summary>
         /// <param name="context"></param>
         /// <param name="object"></param>
         /// <param name="objectId"></param>
-        private static bool EvaluateObject(List<WorkflowCriteriaExpressionModel> expression, CompanyContext context, string @object, int objectId, long itemId, int score = -1, string issueObjectType = "", int issueObjectTypeId = -1, List<int> changedFields = null)
+        private static bool EvaluateObject(List<WorkflowCriteriaExpressionModel> expression, CompanyContext context, string @object, int objectId, long itemId, int score = -1, string issueObjectType = "", int issueObjectTypeId = -1, List<int> changedFields = null, bool satisfyAll = true)
         {
-            bool isAll = false;
-
-
-            //since field and object events come in separately, we need to skip eval in some cases to prevent duplicate runs
-            //1. There is a change condition on the workflow, and no change fields are present: Ignore the initial object event and wait for the field event to come in
-            //2. There is not a change condition on the workflow and change fields are present: Ignore the fields event, the object event was already processed
-            //bool hasChangeCondition = expression.Any(e => e.Operator == core.enums.Workflow.CriteriaOperator.Changed);
-            //if (hasChangeCondition && !changedFields.Any()) return false;
-            //if (!hasChangeCondition && changedFields.Any()) return false;
-
             var fields = context.Fields.Where(x => x.ObjectID == objectId && x.ObjectType == @object);
 
             foreach (var item in expression)
             {
                 item.IsCriteriaChecked = EvaluateField(context, item, fields, @object, objectId, itemId, score, issueObjectType, issueObjectTypeId, changedFields);
-                if (isAll && item.IsCriteriaChecked == false) return false;
+                if (satisfyAll && item.IsCriteriaChecked == false) return false;
+                if (!satisfyAll && item.IsCriteriaChecked == true) return true;
             }
 
-            return isAll ? expression.All(x => x.IsCriteriaChecked) : expression.Any(x => x.IsCriteriaChecked);
+            return satisfyAll ? expression.All(x => x.IsCriteriaChecked) : expression.Any(x => x.IsCriteriaChecked);
         }
 
         private static bool EvaluateField(ICompanyContext context, WorkflowCriteriaExpressionModel item, IQueryable<Field> fields, string @object, int objectId, long itemId, int score = -1, string issueObjectType = "", int issueObjectTypeId = -1, List<int> changedFields = null)

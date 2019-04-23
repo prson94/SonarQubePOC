@@ -73,8 +73,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
 
         this.load()
             .then(() => this.model.Event.SettingsObject.Settings.MessageRecipientType = 'SpecificUser')
-            .then(() => this.isLoading = false);
-
+            .then(() => this.isLoading = false)
     }
 
     ngAfterViewChecked() {
