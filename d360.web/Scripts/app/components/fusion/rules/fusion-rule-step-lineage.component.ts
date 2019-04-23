@@ -1,9 +1,14 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
-import { FusioRuleStepBaseComponent } from './fusion-rule-step-base.component';
-import { FusionService } from '../../../services/fusion.service';
-import { FusionRuleStep, FusionRuleStepEditorModel, PromotionObject, FusionRule } from '../../../models/fusion.model';
-import { TreeNode, Column } from 'primeng/primeng';
-import { StringHelpers } from '../../../static/string-helpers';
+﻿import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {takeUntil} from "rxjs/operators";
+import {Subject} from "rxjs";
+
+import {FusionRule} from '../../../models/fusion.model';
+
+import {FusionService} from '../../../services/fusion.service';
+
+import {StringHelpers} from '../../../static/string-helpers';
+
+import {FusioRuleStepBaseComponent} from './fusion-rule-step-base.component';
 
 @Component({
     selector: 'd3s-fusion-rule-step-lineage',
@@ -28,6 +33,8 @@ export class FusionRuleStepLineageComponent extends FusioRuleStepBaseComponent i
     steps: any[] = [];
     roles: any[] = [];
 
+    destroySubject$: Subject<void> = new Subject();
+
     constructor(private fusionService: FusionService) {
         super();
     }
@@ -36,28 +43,40 @@ export class FusionRuleStepLineageComponent extends FusioRuleStepBaseComponent i
         //Clear out irrelevant properties for this type of step.
         this.removeIrrelevantSettings(this.settings, "Lineage");
 
-        this.fusionService.getLineageRoles()
-            .then(r => {
-                this.roles = r;
-            })
-            .then(() => {
-                this.fusionService.getPromotionRuleSteps(this.ruleID, this.ruleStepID)
-                    .then(r => {
-                        this.steps = r.slice(0);            //take a copy of the r array
-                        this.technicalsteps = r.slice(0);   //take a copy of the r array
-                        this.technicalsteps.unshift({ ID: null, Description: '' });
-                        this.validate();
-                    });
-            });
+        this.fusionService
+            .getLineageRoles()
+            .pipe(takeUntil(this.destroySubject$))
+            .subscribe(
+                r => {
+                    this.roles = <any>r;
+
+                    this.fusionService
+                        .getPromotionRuleSteps(this.ruleID, this.ruleStepID)
+                        .pipe(takeUntil(this.destroySubject$))
+                        .subscribe(
+                            r => {
+                                this.steps = r["slice"](0);            //take a copy of the r array
+                                this.technicalsteps = r["slice"](0);   //take a copy of the r array
+                                this.technicalsteps.unshift({ID: null, Description: ''});
+                                this.validate();
+                            }
+                        )
+                    ;
+                }
+            )
+        ;
     }
 
     validate() {
         this.isValid = true;
+
         if (StringHelpers.isNullOrEmpty(this.settings.Role)
             || StringHelpers.isNullOrEmpty(this.settings.SubjectID)
-            || StringHelpers.isNullOrEmpty(this.settings.ObjectID))
+            || StringHelpers.isNullOrEmpty(this.settings.ObjectID)
+        ) {
             this.isValid = false;
+        }
 
         this.isValidChange.emit(this.isValid);
     }
-};
+}

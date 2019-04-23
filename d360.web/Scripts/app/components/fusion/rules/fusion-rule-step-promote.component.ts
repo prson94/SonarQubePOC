@@ -1,9 +1,14 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
-import { FusioRuleStepBaseComponent } from './fusion-rule-step-base.component';
-import { FusionService } from '../../../services/fusion.service';
-import { FusionRuleStep, FusionRuleStepEditorModel, PromotionObject, FusionRule } from '../../../models/fusion.model';
-import { TreeNode, Column } from 'primeng/primeng';
-import { StringHelpers } from '../../../static/string-helpers';
+﻿import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {takeUntil} from "rxjs/operators";
+import {Subject} from "rxjs";
+
+import {FusionRule} from '../../../models/fusion.model';
+
+import {FusionService} from '../../../services/fusion.service';
+
+import {StringHelpers} from '../../../static/string-helpers';
+
+import {FusioRuleStepBaseComponent} from './fusion-rule-step-base.component';
 
 @Component({
     selector: 'd3s-fusion-rule-step-promote',
@@ -23,15 +28,15 @@ export class FusionRuleStepPromoteComponent extends FusioRuleStepBaseComponent i
     @Output() settingsChange = new EventEmitter();
 
     promotionObjectTypes: any[] = [
-        { value: "ArtifactType", text: "Artifact" },
-        { value: "TaxonomyType", text: "Model" },
-        { value: "ReferenceItemType", text: "Reference" }
+        {value: "ArtifactType", text: "Artifact"},
+        {value: "TaxonomyType", text: "Model"},
+        {value: "ReferenceItemType", text: "Reference"}
     ];
 
     parentSearchTypes: any[] = [
-        { value: "Direct", text: "Direct" },
-        { value: "FusionOwner", text: "Fusion Owner" },
-        { value: "ResultFromStep", text: "Result From Step" }
+        {value: "Direct", text: "Direct"},
+        {value: "FusionOwner", text: "Fusion Owner"},
+        {value: "ResultFromStep", text: "Result From Step"}
     ];
 
     rule: FusionRule;
@@ -42,6 +47,7 @@ export class FusionRuleStepPromoteComponent extends FusioRuleStepBaseComponent i
     promotionObjects: any[] = [];
     parents: any[] = [];
 
+    destroySubject$: Subject<void> = new Subject();
 
     private get disableTypeChange(): boolean {
         return this.ruleStepID > 0;
@@ -52,64 +58,78 @@ export class FusionRuleStepPromoteComponent extends FusioRuleStepBaseComponent i
     }
 
     ngOnInit() {
-
         //Clear out irrelevant properties for this type of step.
         this.removeIrrelevantSettings(this.settings, "Promote");
-        this.loadTypes()
-            .then(() => {
-                this.switchParentDisplay(this.settings.ObjectID).then(() => {
-                    this.switchParentSearch();
-                });
-            });
-
+        this.loadTypes();
+        this.switchParentDisplay(this.settings.ObjectID);
+        this.switchParentSearch();
     }
 
-    loadTypes(): Promise<any> {
+    loadTypes() {
         this.promotionObjects = [];
-        if (this.settings.Object == 'ArtifactType')
-            return this.fusionService.getFindArtifactTypes()
-                .then(r => {
-                    this.promotionObjects = r;
-                    this.validate();
-                });
-        if (this.settings.Object == 'TaxonomyType')
-            return this.fusionService.getFindModels()
-                .then(r => {
-                    this.promotionObjects = r;
-                    this.validate();
-                });
-        if (this.settings.Object == 'ReferenceItemType')
-            return this.fusionService.getFindReferenceItemTypes()
-                .then(r => {
-                    this.promotionObjects = r;
-                    this.validate();
-                });
-        return Promise.resolve();
+
+        if (this.settings.Object == 'ArtifactType') {
+            this.fusionService
+                .getFindArtifactTypes()
+                .pipe(takeUntil(this.destroySubject$))
+                .subscribe(
+                    r => {
+                        this.promotionObjects = <any>r;
+                        this.validate();
+                    }
+                )
+            ;
+        }
+        if (this.settings.Object == 'TaxonomyType') {
+            this.fusionService
+                .getFindModels()
+                .pipe(takeUntil(this.destroySubject$))
+                .subscribe(
+                    r => {
+                        this.promotionObjects = <any>r;
+                        this.validate();
+                    }
+                )
+            ;
+        }
+        if (this.settings.Object == 'ReferenceItemType') {
+            this.fusionService
+                .getFindReferenceItemTypes()
+                .pipe(takeUntil(this.destroySubject$))
+                .subscribe(
+                    r => {
+                        this.promotionObjects = <any>r;
+                        this.validate();
+                    }
+                )
+            ;
+        }
     }
 
-    changePromotionObjectType(): Promise<any> {
+    changePromotionObjectType() {
         this.showPromotionParent = false;
         this.settings.ObjectID = null;
-        return this.loadTypes();
+
+        this.loadTypes();
     }
 
-    switchParentDisplay(id): Promise<any> {
+    switchParentDisplay(id) {
         if (id != undefined) {
             let item = this.promotionObjects.find(i => i.ID == id);
+
             if (item) {
                 if (this.settings.Object == "ArtifactType") {
                     if (item.ParentID) {
-                        if (item.ParentID != 0)
+                        if (item.ParentID != 0) {
                             this.showPromotionParent = true;
-                  }
-                    else {
+                        }
+                    } else {
                         this.showPromotionParent = false;
                         this.settings.ParentObjectSearch = null;
                         this.settings.ParentObject = null;
                         this.settings.ParentObjectID = null;
                     }
-                }
-                else {
+                } else {
                     this.showPromotionParent = false;
                     this.settings.ParentObjectSearch = null;
                     this.settings.ParentObject = null;
@@ -118,64 +138,89 @@ export class FusionRuleStepPromoteComponent extends FusioRuleStepBaseComponent i
 
             }
         }
+
         this.validate();
-        return Promise.resolve();
     }
 
-    changePromotionObject(id): Promise<any> {
-        return this.switchParentDisplay(id);
+    changePromotionObject(id) {
+        this.switchParentDisplay(id);
     }
 
-    switchParentSearch(): Promise<any> {
+    switchParentSearch() {
         this.parents = [];
+
         switch (this.settings.ParentObjectSearch) {
             case "Direct":
                 let item = this.promotionObjects.find(i => i.ID == this.settings.ObjectID);
                 let obj = this.settings.Object;
-                if (obj == "ArtifactType")
-                    obj = "Artifact";
                 let objid = item.ParentID;
+
+                if (obj == "ArtifactType") {
+                    obj = "Artifact";
+                }
 
                 this.settings.ParentObject = obj; //need to set this when selecting Direct.
 
-                return this.fusionService.getPromotionParents(objid, obj)
-                    .then(r => {
-                        this.parents = r;
-                        this.validate();
-                    });
+                this.fusionService
+                    .getPromotionParents(objid, obj)
+                    .pipe(takeUntil(this.destroySubject$))
+                    .subscribe(
+                        r => {
+                            this.parents = <any>r;
+                            this.validate();
+                        }
+                    );
+                break;
             case "ResultFromStep":
                 this.settings.ParentObject = "Step"; //need to set this when selecting ResultFromStep.
-                return this.fusionService.getPromotionRuleSteps(this.ruleID, this.ruleStepID)
-                    .then(r => {
-                        this.parents = r;
-                        this.validate();
-                    });
+
+                this.fusionService
+                    .getPromotionRuleSteps(this.ruleID, this.ruleStepID)
+                    .pipe(takeUntil(this.destroySubject$))
+                    .subscribe(
+                        r => {
+                            this.parents = <any>r;
+                            this.validate();
+                        }
+                    );
+                break;
             case "FusionOwner":
                 this.settings.ParentObject = "Artifact"; //need to set this when selecting FusionOwner.
-                return this.fusionService.getPromotionFusionOwnerRules(this.fusionID)
-                    .then(r => {
-                        this.parents = r;
-                        this.validate();
-                    });
+
+                this.fusionService
+                    .getPromotionFusionOwnerRules(this.fusionID)
+                    .pipe(takeUntil(this.destroySubject$))
+                    .subscribe(
+                        r => {
+                            this.parents = <any>r;
+                            this.validate();
+                        }
+                    )
+                ;
+                break;
+            default:
+                break;
         }
-        return Promise.resolve();
     }
 
-    changeParentSearch(): Promise<any> {
+    changeParentSearch() {
         this.settings.ParentObjectID = null;
-        return this.switchParentSearch();
+
+        this.switchParentSearch();
     }
 
     validate() {
         this.isValid = true;
-        if (StringHelpers.isNullOrEmpty(this.settings.Object) || StringHelpers.isNullOrEmpty(this.settings.ObjectID))
+
+        if (StringHelpers.isNullOrEmpty(this.settings.Object) || StringHelpers.isNullOrEmpty(this.settings.ObjectID)) {
             this.isValid = false;
-        if (this.showPromotionParent) {
-            if (StringHelpers.isNullOrEmpty(this.settings.ParentObjectSearch )|| StringHelpers.isNullOrEmpty(this.settings.ParentObjectID))
-                this.isValid = false;
         }
+        if (this.showPromotionParent) {
+            if (StringHelpers.isNullOrEmpty(this.settings.ParentObjectSearch) || StringHelpers.isNullOrEmpty(this.settings.ParentObjectID)) {
+                this.isValid = false;
+            }
+        }
+
         this.isValidChange.emit(this.isValid);
     }
-
-};
-
+}
