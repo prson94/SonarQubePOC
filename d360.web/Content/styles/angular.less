@@ -268,7 +268,8 @@ nav.top, .left-side-nav {
         z-index: 1001;
         color: #ffffff;
         background: #878b97;
-        display:flex;
+        display: flex;
+        height: 40px;
 
         .megamenu-tools {
             font-size: 14px;
@@ -290,22 +291,30 @@ nav.top, .left-side-nav {
             color: #ffffff;
             z-index: 1002;
             line-height: 30px;
+
+            ::-ms-clear {
+                display: none;
+            }
         }
 
         ::-webkit-input-placeholder { /* Chrome/Opera/Safari */
             color: white;
+            font-weight: normal;
         }
 
         ::-moz-placeholder { /* Firefox 19+ */
             color: white;
+            font-weight: normal;
         }
 
         :-ms-input-placeholder { /* IE 10+ */
             color: white;
+            font-weight: normal;
         }
 
         :-moz-placeholder { /* Firefox 18- */
             color: white;
+            font-weight: normal;
         }
 
         i {
