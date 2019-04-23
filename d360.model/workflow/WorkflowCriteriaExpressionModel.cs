@@ -14,6 +14,7 @@ namespace d360.model.workflow
         public string FormInputId { get; set; }
         public int VersionStepId { get; set; }
         public string ContextualFieldID { get; set; }
+        public bool IsCriteriaChecked { get; set; }
 
 
         public static WorkflowCriteriaExpressionModel Parse(XElement element)

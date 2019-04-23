@@ -259,6 +259,10 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
         }
     }
 
+    onSatisfyConditionChange($event) {
+        this.model.Type.SatisfyAll = $event;
+    }
+
     remove(item: any) {
         let i = this.conditions.findIndex(c => c == item);
         this.conditions.splice(i, 1);

@@ -16,7 +16,7 @@ namespace d360.core.entities.Workflow
         public string Description { get; set; }
 
         public int? CreatedBy { get; set; }
-        
+
         public DateTime? CreatedOn { get; set; }
 
         public int? UpdatedBy { get; set; }
@@ -28,6 +28,9 @@ namespace d360.core.entities.Workflow
 
         [DataMember]
         public State State { get; set; } = State.Unknown;
+
+        [DataMember]
+        public bool SatisfyAll { get; set; }
 
     }
 }

@@ -77,16 +77,37 @@
                 </div>
                 <div>
                     <d3s-workflow-condition-list (removeClick)="remove($event)"
-                        (addClick)="showCondition()"
-                        [conditions]="conditions"></d3s-workflow-condition-list>
+                                                 (addClick)="showCondition()"
+                                                 [conditions]="conditions"></d3s-workflow-condition-list>
 
                     <div *ngIf="showAddCondition">
                         <d3s-workflow-condition-editor [objectId]="objectID"
-                            [objectType]="objectType"
-                            [changeType]="model.Event.ChangeType"
-                            (onSave)="addCondition($event)"
-                            (onClose)="showAddCondition = false;">
+                                                       [objectType]="objectType"
+                                                       [changeType]="model.Event.ChangeType"
+                                                       (onSave)="addCondition($event)"
+                                                       (onClose)="showAddCondition = false;">
                         </d3s-workflow-condition-editor>
+                    </div>
+
+                    <div class="FieldName">
+                        Satisfy all
+                    </div>
+                    <div>
+                        <input type="radio" name="isAll"
+                               [ngModel]="model.Type.SatisfyAll"
+                               (ngModelChange)="onSatisfyConditionChange($event)"
+                               value="true"
+                               style="width: 10%" />
+                    </div>
+                    <div class="FieldName">
+                        Satisfy any
+                    </div>
+                    <div>
+                        <input type="radio" name="isAll"
+                               [ngModel]="model.Type.SatisfyAll"
+                               (ngModelChange)="onSatisfyConditionChange($event)"
+                               value="false"
+                               style="width: 10%" />
                     </div>
                 </div>
             </div>

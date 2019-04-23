@@ -1,0 +1,36 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Tomislav Duric" id="GOV-4218">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+IF NOT EXISTS(SELECT 1 FROM sys.columns 
+          WHERE Name = N'SatisfyAll'
+          AND Object_ID = Object_ID(N'workflow.Type'))
+BEGIN
+    ALTER TABLE [workflow].[Type] ADD [SatisfyAll] [bit] NOT NULL CONSTRAINT [DF_WorkflowType_SatisfyAll]  DEFAULT ((0))
+END
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+IF EXISTS(SELECT 1 FROM sys.columns 
+          WHERE Name = N'SatisfyAll'
+          AND Object_ID = Object_ID(N'workflow.Type'))
+BEGIN
+    ALTER TABLE [workflow].[Type] DROP CONSTRAINT [DF_WorkflowType_SatisfyAll]
+    ALTER TABLE [workflow].[Type] DROP COLUMN [SatisfyAll]
+
+END
+]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>

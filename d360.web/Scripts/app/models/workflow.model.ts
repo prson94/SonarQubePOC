@@ -157,6 +157,7 @@ export class WorkflowTypeNew
     PublishedVersionID: number;
     Deleted: boolean = false; 
     State: State = State.Active;
+    SatisfyAll: boolean = true;
 }
 
 
