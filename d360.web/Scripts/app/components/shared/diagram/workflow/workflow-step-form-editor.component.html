@@ -121,6 +121,7 @@
                     <tr>
                         <th>Label</th>
                         <th>Type</th>
+                        <th>Required?</th>
                         <th style="width: 40px"></th>
                         <th style="width: 40px"></th>
                     </tr>
@@ -130,6 +131,11 @@
                         <td>{{item['@label']}}</td>
                         <td>
                             {{getTypeLabel(item)}}
+                        </td>
+                        <td>
+                            <i *ngIf="(item['@required']=='true'|| item['@required']==true || (item['@type']=='boolean')); else elseBlock" class="fa fa-check enabled" title="True"></i>
+                            <ng-template #elseBlock><i  class="fa fa-times disabled" title="False"></i></ng-template>
+
                         </td>
                         <td>
                             <div class="RowTools">
@@ -205,11 +211,10 @@
             </div>
         </div>
         <div class="row">
-            <div class="col s12" *ngIf="newField['@type'] !='boolean'">
+            <div class="col s12">
                 <div class="FieldName">
-                    Required <input type="checkbox" [(ngModel)]="newField['@required']" />
+                     <input type="checkbox" [disabled]="newField['@type'] =='boolean'"  [(ngModel)]="newField['@required']" />&nbsp;Is Required?
                 </div>
-
             </div>
         </div>
         <div class="row" style="padding-top: 8px;">
@@ -282,11 +287,10 @@
             </div>
         </div>
         <div class="row">
-            <div class="col s12" *ngIf="newField['@type'] !='boolean'">
+            <div class="col s12">
                 <div class="FieldName">
-                    Required <input type="checkbox" [(ngModel)]="newField['@required']" />
+                    <input type="checkbox" [disabled]="newField['@type'] =='boolean'" [(ngModel)]="newField['@required']" />&nbsp;Is Required?
                 </div>
-
             </div>
         </div>
         <div class="row" style="padding-top: 8px;">
