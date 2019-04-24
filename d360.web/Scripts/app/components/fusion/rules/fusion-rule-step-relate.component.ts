@@ -1,9 +1,9 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
-import { FusioRuleStepBaseComponent } from './fusion-rule-step-base.component';
-import { FusionService } from '../../../services/fusion.service';
-import { FusionRuleStep, FusionRuleStepEditorModel, PromotionObject, FusionRule } from '../../../models/fusion.model';
-import { TreeNode, Column } from 'primeng/primeng';
-import { StringHelpers } from '../../../static/string-helpers';
+﻿import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {FusioRuleStepBaseComponent} from './fusion-rule-step-base.component';
+import {FusionService} from '../../../services/fusion.service';
+import {FusionRule} from '../../../models/fusion.model';
+import {StringHelpers} from '../../../static/string-helpers';
+import {forkJoin, Subject} from "rxjs";
 
 @Component({
     selector: 'd3s-fusion-rule-step-relate',
@@ -23,9 +23,9 @@ export class FusionRuleStepRelateComponent extends FusioRuleStepBaseComponent im
     @Output() settingsChange = new EventEmitter();
 
     searchTypes: any[] = [
-        { value: "FusionOwner", text: "Fusion Owner" },
-        { value: "ResultFromStep", text: "Result From Step" },
-        { value: "Self", text: "Self" }
+        {value: "FusionOwner", text: "Fusion Owner"},
+        {value: "ResultFromStep", text: "Result From Step"},
+        {value: "Self", text: "Self"}
     ];
 
     rule: FusionRule;
@@ -33,6 +33,8 @@ export class FusionRuleStepRelateComponent extends FusioRuleStepBaseComponent im
     owners: any[] = [];
     steps: any[] = [];
     relations: any[] = [];
+
+    destroySubject$: Subject<void> = new Subject();
 
     constructor(private fusionService: FusionService) {
         super();
@@ -42,26 +44,28 @@ export class FusionRuleStepRelateComponent extends FusioRuleStepBaseComponent im
         //Clear out irrelevant properties for this type of step.
         this.removeIrrelevantSettings(this.settings, "Relate");
 
-        this.fusionService.getFusionRelationIntersectTypes()
-            .then(r => {
-                this.relations = r;
-            })
-            .then(() => {
-                this.fusionService.getPromotionRuleSteps(this.ruleID, this.ruleStepID)
-                    .then(r => {
-                        this.steps = r;
-                    })
-            })
-            .then(() => {
-                this.fusionService.getPromotionFusionOwnerRules(this.fusionID)
-                    .then(r => {
-                        this.owners = r;
-                        this.owners.forEach(i => {
-                            i.text = i.FusionAttributeName + ' Owned By:' + i.OwnerObject;
-                        });
-                        this.validate();
-                    });
-            });
+        forkJoin(
+            this.fusionService.getFusionRelationIntersectTypes(),
+            this.fusionService.getPromotionRuleSteps(this.ruleID, this.ruleStepID),
+            this.fusionService.getPromotionFusionOwnerRules(this.fusionID)
+        ).subscribe(
+            (
+                [
+                    getFusionRelationIntersectTypes,
+                    getPromotionRuleSteps,
+                    getPromotionFusionOwnerRules
+                ]
+            ) => {
+                this.relations = <any>getFusionRelationIntersectTypes;
+                this.steps = <any>getPromotionRuleSteps;
+                this.owners = <any>getPromotionFusionOwnerRules;
+
+                this.owners.forEach(i => {
+                    i.text = i.FusionAttributeName + ' Owned By:' + i.OwnerObject;
+                });
+                this.validate();
+            }
+        );
     }
 
     changeObjectSearch() {
@@ -75,8 +79,10 @@ export class FusionRuleStepRelateComponent extends FusioRuleStepBaseComponent im
     }
 
     changeSearch(prefix: string) {
-        if (prefix != null && this.settings[prefix] == null)
+        if (prefix != null && this.settings[prefix] == null) {
             this.settings[prefix] = {};
+        }
+
         switch (this.settings[`${prefix}Search`]) {
             case 'Self':
                 this.settings[prefix] = 'Self';
@@ -87,25 +93,30 @@ export class FusionRuleStepRelateComponent extends FusioRuleStepBaseComponent im
             case 'ResultFromStep':
                 this.settings[prefix] = 'Step';
                 break;
+            default:
+                break;
         }
+
         this.validate();
         this.settingsChange.emit(this.settings);
-
     }
 
     validate() {
         this.isValid = true;
 
-        if (StringHelpers.isNullOrEmpty(this.settings.IntersectType))
+        if (StringHelpers.isNullOrEmpty(this.settings.IntersectType)) {
             this.isValid = false;
-        if (StringHelpers.isNullOrEmpty(this.settings.SubjectSearch) || StringHelpers.isNullOrEmpty(this.settings.ObjectSearch))
+        }
+        if (StringHelpers.isNullOrEmpty(this.settings.SubjectSearch) || StringHelpers.isNullOrEmpty(this.settings.ObjectSearch)) {
             this.isValid = false;
-        if (this.settings.SubjectSearch != null && this.settings.SubjectSearch != 'Self' && StringHelpers.isNullOrEmpty(this.settings.SubjectID))
+        }
+        if (this.settings.SubjectSearch != null && this.settings.SubjectSearch != 'Self' && StringHelpers.isNullOrEmpty(this.settings.SubjectID)) {
             this.isValid = false;
-        if (this.settings.ObjectSearch != null && this.settings.ObjectSearch != 'Self' && StringHelpers.isNullOrEmpty(this.settings.ObjectID))
+        }
+        if (this.settings.ObjectSearch != null && this.settings.ObjectSearch != 'Self' && StringHelpers.isNullOrEmpty(this.settings.ObjectID)) {
             this.isValid = false;
+        }
 
         this.isValidChange.emit(this.isValid);
     }
-};
-
+}

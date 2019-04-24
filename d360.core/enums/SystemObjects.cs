@@ -17,8 +17,7 @@ namespace d360.core
         [Description("Synonym Type"), AllowSurvey(false), EnableAudit(false), IsType(true),
          ExcludeDataType(DataType.JSON)]
         SynonymType,
-        [Description("Artifact Type"), AllowSurvey(true), EnableAudit(true), IsType(true),
-         ExcludeDataType(DataType.JSON)]
+        [Description("Artifact Type"), AllowSurvey(true), EnableAudit(true), IsType(true)]
         ArtifactType,
         [Description("Attribute"), AllowOwnership(false), EnableAudit(true), IsType(false),ExcludeDataType(DataType.JSON)]
         Attribute,
@@ -64,7 +63,7 @@ namespace d360.core
         [Description("Taxonomy"), EnableAudit(true), IsType(false),ExcludeDataType(DataType.JSON)]
         Taxonomy,
         [Description("Taxonomy Type"), AllowSurvey(true), EnableAudit(true), IsType(true), 
-            ExcludeDataType(DataType.FilteredLookup | DataType.FusionLookup | DataType.JSON)]
+            ExcludeDataType(DataType.FilteredLookup | DataType.FusionLookup)]
         TaxonomyType,
         [Description("Tooltip  Template"), AllowOwnership(false), EnableAudit(false), IsType(false),ExcludeDataType(DataType.JSON)]
         TooltipTemplate,
@@ -95,7 +94,7 @@ namespace d360.core
         [Description("Policy"), AllowSurvey(false), EnableAudit(true), IsType(false),ExcludeDataType(DataType.JSON)]
         Policy,
         [Description("Policy Type"), AllowSurvey(false), EnableAudit(true), IsType(true),
-              ExcludeDataType(DataType.FilteredLookup | DataType.FusionLookup | DataType.JSON)]
+              ExcludeDataType(DataType.FilteredLookup | DataType.FusionLookup)]
         PolicyType,
         [Description("Rule"), AllowSurvey(false), EnableAudit(true), IsType(false),ExcludeDataType(DataType.JSON)]
         Rule,

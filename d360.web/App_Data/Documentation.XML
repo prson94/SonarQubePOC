@@ -2367,18 +2367,6 @@
             </summary>
             <returns>An HTTP status code and message.</returns>
         </member>
-        <member name="T:d360.web.Controllers.Services.SearchController">
-            <summary>
-            Search everything in Data3Sixty.
-            </summary>
-        </member>
-        <member name="M:d360.web.Controllers.Services.SearchController.GetSearchResults(System.String)">
-            <summary>
-            
-            </summary>
-            <param name="phrase"></param>
-            <returns></returns>
-        </member>
         <member name="T:d360.web.Controllers.V2.FieldsController">
             <summary>
             This service houses all endpoints handling glossary-related data such as artifacts and models.
@@ -2801,6 +2789,13 @@
             </summary>
             <returns>A list of static predicate functional types contained within your Govern environment.</returns>
         </member>
+        <member name="M:d360.web.Controllers.V2.RelationshipsController.ExportToExcel(System.String)">
+            <summary>
+            GET a list of relationships.
+            </summary>
+            <param name="intersectTypeUid">Filter by an intersect's unique identifier.</param>
+            <returns>A excel file containing relationships.</returns>
+        </member>
         <member name="M:d360.web.Controllers.V2.RelationshipsController.GetRelationshipsAsync(System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{d360.core.enums.State},System.Nullable{System.Int32},System.Nullable{System.Int32})">
             <summary>
             GET a list of relationships.
@@ -3183,15 +3178,6 @@
         </member>
         <member name="M:d360.web.Controllers.FormController.FusionAttribute_EditFields(System.Int32)">
             <param name="id">FusionAttributeID</param>
-        </member>
-        <member name="M:d360.web.Controllers.FormController.MapRule_FindFusion(System.Int32,System.String)">
-            <summary>
-            Gets a list of fusion attributes based on a search string provided 
-            that should match part of the TextPath of the fusoin attribute.
-            </summary>
-            <param name="intersectID">The intersectID we are searching under.</param>
-            <param name="phrase">Part of the text path to search for.</param>
-            <returns>A list of name/value pairs.</returns>
         </member>
         <member name="M:d360.web.Controllers.FormController.Lookup_AddFields(System.Int32)">
             <param name="id">LookupTypeID</param>

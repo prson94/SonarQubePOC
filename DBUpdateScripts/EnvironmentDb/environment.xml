@@ -158,4 +158,9 @@
   <include file="scripts/GOV-7030.xml"/>
   <include file="scripts/GOV-7068.xml"/>
   <include file="scripts/GOV-7093.xml"/>
+  <include file="scripts/GOV-7057-1.xml"/>
+  <include file="scripts/GOV-7054.xml"/>
+  <include file="scripts/GOV-7045.xml"/>
+  <include file="scripts/GOV-7085.xml"/>
+  <include file="scripts/GOV-7102.xml"/>
 </databaseChangeLog>

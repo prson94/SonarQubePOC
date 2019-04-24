@@ -2,27 +2,27 @@
 import {Observable} from "rxjs";
 
 export interface IFieldsService {
-    getFields(objectID: number, objectType: string): Observable<FieldDefinition[]>;
+    getFields(objectID: number, objectType: string): Promise<FieldDefinition[]>;
 
-    getFieldTypeEditor(id: number): Observable<FieldTypeEditorModel>;
+    getFieldTypeEditor(id: number): Promise<FieldTypeEditorModel>;
 
-    getFusionLookupDisplayFields(id: number): Observable<SelectItem[]>;
+    getFusionLookupDisplayFields(id: number): Promise<SelectItem[]>;
 
-    getFusionLookupTargetAttributeTypes(sourceID: number, referenceTypeID: number): Observable<SelectItem[]>;
+    getFusionLookupTargetAttributeTypes(sourceID: number, referenceTypeID: number): Promise<SelectItem[]>;
 
-    getRelationLookupChildIntersectTypes(id: number): Observable<SelectItem[]>;
+    getRelationLookupChildIntersectTypes(id: number): Promise<SelectItem[]>;
 
-    getRelationLookupDisplayFields(id: number, type: string, intersectTypeID: number): Observable<SelectItem[]>;
+    getRelationLookupDisplayFields(id: number, type: string, intersectTypeID: number): Promise<SelectItem[]>;
 
-    getLookupTokens(id: number, type: string): Observable<SelectItem[]>;
+    getLookupTokens(id: number, type: string): Promise<SelectItem[]>;
 
-    getLookups(id: number, type: string): Observable<Lookups>;
+    getLookups(id: number, type: string): Promise<Lookups>;
 
-    getFormData(id: number): Observable<FieldTypeEditorModel>;
+    getFormData(id: number): Promise<FieldTypeEditorModel>;
 
-    putFieldType(model: FieldTypeEditorModel): Observable<any>;
+    putFieldType(model: FieldTypeEditorModel): Promise<any>;
 
-    postFieldType(model: FieldTypeEditorModel): Observable<any>;
+    postFieldType(model: FieldTypeEditorModel): Promise<any>;
 }
 
 export class FieldDefinition {
