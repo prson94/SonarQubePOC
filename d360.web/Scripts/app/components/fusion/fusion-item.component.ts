@@ -15,6 +15,8 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
 import { AuthenticationService } from '../../services/authentication.service';
 
+declare var CompanySettings;
+
 @Component({
     selector: 'd3s-fusion-item',
     templateUrl: './fusion-item.component.html',
@@ -96,7 +98,7 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
         this.setCommonRightSideBar(false, true, hasDashboard);
 
         this.rightSidebarService.showItem(new RightSidebarItem('History', 'fusionhistory', ['fa-archive'], `/fusion/history/${this.fusionId}`));
-        if (this.authenticationService.isAdmin) this.rightSidebarService.showItem(new RightSidebarItem('Fusion Rules', 'fusionrules', ['fa-code-fork'], `/fusion/rules/${this.fusionId}/${this.fusion.FusionTypeID}`));
+        if (this.authenticationService.isAdmin && CompanySettings.ShowFusionRules != 'false') this.rightSidebarService.showItem(new RightSidebarItem('Fusion Rules', 'fusionrules', ['fa-code-fork'], `/fusion/rules/${this.fusionId}/${this.fusion.FusionTypeID}`));
 
         if (isManual) this.rightSidebarService.showItem(new RightSidebarItem('Load', 'fusionload', ['fa-file-excel-o'], `/fusion/manual/load/${this.fusionId}`));           
     }
