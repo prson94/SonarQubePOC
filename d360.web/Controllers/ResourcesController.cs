@@ -966,16 +966,18 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                     }
                     else
                     {
+
                         var sql = @"select 
-                                f.FormattedValue as [Value],
-	                            ft.FriendlyName as Name
-                            from
-                                fieldtype ft
+                                          ISNULL(f.FormattedValue,' ') as Value,
+	                                      ft.FriendlyName as Name
+                                     from FieldType  as ft
+                                     left join field f on (ft.id = f.fieldtypeid and f.[objecttype] = @ty and f.objectid = @obj and ft.Name != 'Description')
+                                     where ft.ObjectID = @typeId and (f.FormattedValue is not null or (f.FormattedValue is null and ft.ShowIfEmpty = 1))";
 
-                                inner
-                            join field f on (ft.id = f.fieldtypeid and f.[objecttype] = @ty and f.objectid = @obj and ft.Name != 'Description')";
+        
+                        res = Company.Query<FieldTooltipValueModel>(sql, new { ty = objectType, obj = objectID, typeId = det.TypeID }).ToList();
+                        
 
-                        res = Company.Query<FieldTooltipValueModel>(sql, new { ty = objectType, obj = objectID }).ToList();
                     }
 
                     var descSql = @"select 
