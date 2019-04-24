@@ -1,21 +1,21 @@
-import { Input } from '@angular/core';
-import { Title } from '@angular/platform-browser';
-import { RightSidebarItem } from '../../models/rightsidebar.model';
-import { PermissionsService } from '../../services/permissions.service';
-import { MessagesService } from '../../services/messages.service';
-import { RightSidebarService } from '../../services/right-sidebar.service';
-import { WebAnalyticsService } from '../../services/web-analytics.service';
+import {Input} from '@angular/core';
+import {Title} from '@angular/platform-browser';
+import {RightSidebarItem} from '../../models/rightsidebar.model';
+import {PermissionsService} from '../../services/permissions.service';
+import {MessagesService} from '../../services/messages.service';
+import {RightSidebarService} from '../../services/right-sidebar.service';
+import {WebAnalyticsService} from '../../services/web-analytics.service';
 
-import { Subscription }   from 'rxjs';
-import { StringConstants } from '../../static/string-constants';
-import { FormHelpers } from '../../static/form-helpers';
-import { JsonResult } from '../../models/jsonresult.model';
-import { ResponsibilityTypeRelationPermission, Permission } from '../../models/responsibility-type.model';
-import { HttpErrorResponse } from '@angular/common/http';
+import {Subscription} from 'rxjs';
+import {StringConstants} from '../../static/string-constants';
+import {FormHelpers} from '../../static/form-helpers';
+import {JsonResult} from '../../models/jsonresult.model';
+import {ResponsibilityTypeRelationPermission, Permission} from '../../models/responsibility-type.model';
+import {HttpErrorResponse} from '@angular/common/http';
 
 declare var CompanySettings;
 
-export class BaseComponent {    
+export class BaseComponent {
     public isLoading = false;
 
     //current object info
@@ -39,7 +39,7 @@ export class BaseComponent {
     //tabs
 
     lineageShowUsageOnly: boolean = false;
-    
+
     //filter mode
     showSimpleFilter: boolean = true;
 
@@ -61,8 +61,8 @@ export class BaseComponent {
         tileService.setTitle(`${CompanySettings.BrowserTitlePrefix} - ${area}`);
     }
 
-    logAction(actionName: string, objectName: string, objectId: number) {        
-        if (this.webAnalyticsService) {            
+    logAction(actionName: string, objectName: string, objectId: number) {
+        if (this.webAnalyticsService) {
             this.webAnalyticsService.logActivity({
                 Activity: actionName,
                 ObjectId: objectId,
@@ -73,34 +73,65 @@ export class BaseComponent {
 
     /*permissions functionality */
 
-    loadPermissions(permissionsService: PermissionsService, objectType: string, objectID: number) {
-        return permissionsService.getPermissions(objectID, objectType)
-            .then(result => {
+    loadPermissions(
+        permissionsService: PermissionsService,
+        objectType: string,
+        objectID: number
+    ) {
+        permissionsService.getPermissions(objectID, objectType).subscribe(
+            result => {
                 this.permissions = result;
-            });
+            }
+        );
     }
 
-    loadPermissionsById(permissionsService: PermissionsService, assetID: number) {
-        permissionsService.getPermissionsById(assetID)
-            .then(result => {
+    loadPermissionsById(
+        permissionsService: PermissionsService,
+        assetID: number
+    ) {
+        permissionsService.getPermissionsById(assetID).subscribe(
+            result => {
                 this.permissions = result;
-            });
+            }
+        );
     }
 
-    hasPermission(permission: number) { return ResponsibilityTypeRelationPermission.hasPermission(this.permissions, permission);}
+    hasPermission(permission: number) {
+        return ResponsibilityTypeRelationPermission.hasPermission(this.permissions, permission);
+    }
 
-    hasModifyResponsibilitiesPermissions(object: string) {return this.hasPermission(Permission.ModifyResponsibilities);}
-    hasDeleteResponsibilitiesPermissions(object: string) { return this.hasPermission(Permission.DeleteResponsibilities);}
+    hasModifyResponsibilitiesPermissions(object: string) {
+        return this.hasPermission(Permission.ModifyResponsibilities);
+    }
 
-    hasModifyAssetPermissions() { return this.hasPermission(Permission.ModifyAsset);}
-    hasDeleteAssetPermissions() { return this.hasPermission(Permission.DeleteAsset);}
-   
-    hasModifyRelationshipsPermissions() { return this.hasPermission(Permission.ModifyRelationships);}
-    hasDeleteRelationshipsPermissions() { return this.hasPermission(Permission.DeleteRelationships);}  
+    hasDeleteResponsibilitiesPermissions(object: string) {
+        return this.hasPermission(Permission.DeleteResponsibilities);
+    }
 
-    hasModifyAttributesPermissions() { return this.hasPermission(Permission.ModifyAttributes); }
-    hasDeleteAttributesPermissions() { return this.hasPermission(Permission.DeleteAttributes); }
-  
+    hasModifyAssetPermissions() {
+        return this.hasPermission(Permission.ModifyAsset);
+    }
+
+    hasDeleteAssetPermissions() {
+        return this.hasPermission(Permission.DeleteAsset);
+    }
+
+    hasModifyRelationshipsPermissions() {
+        return this.hasPermission(Permission.ModifyRelationships);
+    }
+
+    hasDeleteRelationshipsPermissions() {
+        return this.hasPermission(Permission.DeleteRelationships);
+    }
+
+    hasModifyAttributesPermissions() {
+        return this.hasPermission(Permission.ModifyAttributes);
+    }
+
+    hasDeleteAttributesPermissions() {
+        return this.hasPermission(Permission.DeleteAttributes);
+    }
+
 
     /*end permissions functionality*/
 
@@ -137,7 +168,7 @@ export class BaseComponent {
 
             this.sidebarSubscription = this.rightSidebarService.rightSidebarClicked$.subscribe(
                 item => {
-                    this.isVisitingSidebar = true;              
+                    this.isVisitingSidebar = true;
                     this.showHideBreadcrumbItem(item);
                 });
         }
@@ -169,15 +200,15 @@ export class BaseComponent {
         if (!this.objectType || !this.objectID) return url;
         return `/${this.objectType}/${this.objectID}`;
     }
-        
+
     //This is generally overloaded to show hide in your own class.
-    protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {        
+    protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {
     }
 
     clearSidebar(unsubscribe?: boolean) {
         if (this.rightSidebarService) {
             if (!this.isVisitingSidebar) this.rightSidebarService.clearItems();
-            if (this.sidebarSubscription && (unsubscribe || unsubscribe == undefined)) {                
+            if (this.sidebarSubscription && (unsubscribe || unsubscribe == undefined)) {
                 this.sidebarSubscription.unsubscribe();
             }
         }
@@ -187,11 +218,11 @@ export class BaseComponent {
         if (defaultMessage == undefined) defaultMessage = 'Success';
         if (result.type == 'error') messagesService.showError(result.title, result.message);
         else messagesService.showInfoMessage(result.title, result.message != null ? result.message : defaultMessage);
-    }    
+    }
 
     showHttpErrorMessage(messagesService: MessagesService, err: HttpErrorResponse) {
         messagesService.showError("An error occurred", err.error);
-    }  
+    }
 
     public getLocaleDateString(): string {
         return FormHelpers.getLocaleDateString();

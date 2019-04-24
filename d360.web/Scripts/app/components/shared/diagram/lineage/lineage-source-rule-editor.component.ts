@@ -1,6 +1,6 @@
 ﻿import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 
-import {MapSequenceModel, SourceRuleItem, SourceRuleSequence,} from '../../../../models/lineage.model';
+import {MapSequenceModel, SourceRuleItem, SourceRuleSequence} from '../../../../models/lineage.model';
 
 import {DiagramService} from '../../../../services/diagram.service';
 import {MessagesService} from '../../../../services/messages.service';
@@ -36,10 +36,12 @@ export class LineageSourceRuleEditorComponent extends BaseComponent implements O
 
     ngOnInit() {
         this.load();
-        this.permissionsService.getPermissions(this.objectId, this.object)
-            .then(data => {
+
+        this.permissionsService.getPermissions(this.objectId, this.object).subscribe(
+            data => {
                 this.permissions = data;
-            });
+            }
+        );
     }
 
     load() {
@@ -49,7 +51,7 @@ export class LineageSourceRuleEditorComponent extends BaseComponent implements O
                 this.model = data;
 
                 this.model.Available.forEach(i => {
-                    let top = this.items.find(t => t.TargetIntersectID == i.TargetIntersectID);
+                    const top = this.items.find(t => t.TargetIntersectID == i.TargetIntersectID);
                     let topItem: any;
 
                     if (!top) {
@@ -73,7 +75,7 @@ export class LineageSourceRuleEditorComponent extends BaseComponent implements O
 
                         this.model.Referenced.forEach(r => {
                             if (r.TargetIntersectID == topItem.TargetIntersectID) {
-                                let sourceName = "";
+                                let sourceName = '';
 
                                 topItem.Available.forEach(a => {
                                     if (r.MapItemID == a.MapItemID) {
@@ -81,7 +83,7 @@ export class LineageSourceRuleEditorComponent extends BaseComponent implements O
                                     }
                                 });
 
-                                let selectedItem = {
+                                const selectedItem = {
                                     ID: r.ID,
                                     MapItemID: r.MapItemID,
                                     Sequence: r.Sequence,
@@ -90,7 +92,7 @@ export class LineageSourceRuleEditorComponent extends BaseComponent implements O
                                     SourceName: sourceName
                                 };
 
-                                //Add to the Selected collection.
+                                // Add to the Selected collection.
                                 topItem.Selected.push(selectedItem);
                             }
                         });
@@ -103,7 +105,7 @@ export class LineageSourceRuleEditorComponent extends BaseComponent implements O
     }
 
     private add(parent: any, item: any) {
-        let newItem = {
+        const newItem = {
             ID: 0,
             MapItemID: item.MapItemID,
             Sequence: parent.Selected.length + 1,
@@ -127,8 +129,8 @@ export class LineageSourceRuleEditorComponent extends BaseComponent implements O
     }
 
     save() {
-        let permCreate = this.hasModifyRelationshipsPermissions();
-        let permEdit = this.hasModifyRelationshipsPermissions();
+        const permCreate = this.hasModifyRelationshipsPermissions();
+        const permEdit = this.hasModifyRelationshipsPermissions();
 
         if (!permEdit || !permCreate) {
             return;
@@ -137,7 +139,7 @@ export class LineageSourceRuleEditorComponent extends BaseComponent implements O
         this.isLoading = true;
 
         this.setSequenceNumbers();
-        let model = {Items: []};
+        const model = {Items: []};
 
         if (this.items == null) {
             this.items = [];
@@ -181,13 +183,13 @@ export class LineageSourceRuleEditorComponent extends BaseComponent implements O
 
     moveUp(item: SourceRuleItem, seq: SourceRuleSequence) {
         this.setSequenceNumbers();
-        let previousIndex = item.Selected.findIndex(i => i == seq) - 1;
+        const previousIndex = item.Selected.findIndex(i => i == seq) - 1;
 
         if (previousIndex < 0) {
             return;
         }
 
-        let previous = item.Selected[previousIndex];
+        const previous = item.Selected[previousIndex];
         seq.Sequence--;
         previous.Sequence++;
 
@@ -197,13 +199,13 @@ export class LineageSourceRuleEditorComponent extends BaseComponent implements O
 
     moveDown(item: SourceRuleItem, seq: SourceRuleSequence) {
         this.setSequenceNumbers();
-        let nextIndex = item.Selected.findIndex(i => i == seq) + 1;
+        const nextIndex = item.Selected.findIndex(i => i == seq) + 1;
 
         if (nextIndex >= item.Selected.length) {
             return;
         }
 
-        let next = item.Selected[nextIndex];
+        const next = item.Selected[nextIndex];
         seq.Sequence++;
         next.Sequence--;
 

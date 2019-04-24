@@ -72,10 +72,13 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
 
     ngOnInit() {
         this.load();
-        this.permissionsService.getPermissions(this.objectId, this.object)
-            .then(data => {
+
+        this.permissionsService.getPermissions(this.objectId, this.object).subscribe(
+            data => {
                 this.permissions = data;
-            });
+            }
+        );
+
         this.model = new LineageEditorModel();
         this.model.Focal = this.object;
         this.model.FocalID = this.objectId;
