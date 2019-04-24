@@ -11,15 +11,18 @@ namespace d360.model.workflow
         public int FieldTypeId { get; set; }
         public CriteriaOperator Operator { get; set; }
         public CriteriaValueDataType ValueDataType { get; set; }
+        public CriteriaConnector CriteriaConnector { get; set; }
         public string FormInputId { get; set; }
         public int VersionStepId { get; set; }
         public string ContextualFieldID { get; set; }
+        public bool IsCriteriaChecked { get; set; }
 
 
         public static WorkflowCriteriaExpressionModel Parse(XElement element)
         {
             var dataType = dataTypeFromString((string)element.Attribute("ValueType"));
             var @operator = operatorFromString((string)element.Attribute("Operator"));
+            var @connector = criteriaConnectorFromString((string)element.Attribute("Connector"));
 
             return new WorkflowCriteriaExpressionModel
             {
@@ -29,7 +32,8 @@ namespace d360.model.workflow
                 ValueDataType = dataType,
                 Value = @operator == CriteriaOperator.Changed ? "" : valueFromString(dataType, (string)element.Attribute("Value")),
                 VersionStepId = int.Parse(((string)element.Attribute("VersionStepID") ?? "0")),
-                FormInputId = ((string)element.Attribute("FormInputID"))
+                FormInputId = ((string)element.Attribute("FormInputID")),
+                CriteriaConnector = connector
             };
         }
 
@@ -44,7 +48,7 @@ namespace d360.model.workflow
         private string getOperatorText()
         {
             switch (this.Operator)
-            {                
+            {
                 case CriteriaOperator.GreaterThan:
                     return ">";
                 case CriteriaOperator.GreaterThanOrEqual:
@@ -70,6 +74,21 @@ namespace d360.model.workflow
             return field.FriendlyName;
         }
 
+        private static CriteriaConnector criteriaConnectorFromString(string val)
+        {
+            if (!string.IsNullOrEmpty(val))
+            {
+                switch (val.ToUpper())
+                {
+                    case "AND":
+                        return CriteriaConnector.AND;
+                    case "OR":
+                        return CriteriaConnector.OR;
+                }
+            }
+            return CriteriaConnector.AND;
+        }
+
         private static CriteriaValueDataType dataTypeFromString(string val)
         {
             switch ((val ?? "").ToUpper())
@@ -91,7 +110,7 @@ namespace d360.model.workflow
 
         private static CriteriaOperator operatorFromString(string val)
         {
-            switch ((val??"").ToUpper())
+            switch ((val ?? "").ToUpper())
             {
                 case "=":
                     return CriteriaOperator.Equal;
@@ -119,16 +138,16 @@ namespace d360.model.workflow
                 case CriteriaValueDataType.Invalid:
                     return val;
                 case CriteriaValueDataType.Boolean:
-                    return (val ?? "").ToUpper() == bool.TrueString.ToUpper() ? true : false;                    
+                    return (val ?? "").ToUpper() == bool.TrueString.ToUpper() ? true : false;
                 case CriteriaValueDataType.String:
-                    return (val??"").Trim().ToUpper();                    
-                case CriteriaValueDataType.Integer:                    
+                    return (val ?? "").Trim().ToUpper();
+                case CriteriaValueDataType.Integer:
                 case CriteriaValueDataType.Double:
                     double dVal = 0;
                     double.TryParse(val, out dVal);
-                    return dVal;              
+                    return dVal;
                 case CriteriaValueDataType.Date:
-                    return int.Parse(val);                    
+                    return int.Parse(val);
                 case CriteriaValueDataType.Lookup:
                     {
                         if (int.TryParse(val, out int res))
@@ -136,7 +155,7 @@ namespace d360.model.workflow
                         else
                             return -1;
                     }
-                    
+
             }
 
             throw new Exception("ERROR - INVALID DATA TYPE SPECIFIED TO PARSE VALUE");
@@ -144,9 +163,9 @@ namespace d360.model.workflow
 
 
         public bool IsValueMatch(string givenValue)
-        {            
+        {
             // dates are number of days from the date field value
-            if(this.ValueDataType == CriteriaValueDataType.Date)
+            if (this.ValueDataType == CriteriaValueDataType.Date)
             {
                 DateTime dt = DateTime.MinValue;
 
@@ -155,12 +174,12 @@ namespace d360.model.workflow
                 DateTime currentDate = DateTime.UtcNow;
 
                 var numDays = (dt.Date - currentDate.Date).TotalDays;
-                    
+
                 if (Operator == CriteriaOperator.Equal)
                     return (numDays == (int)Value);
                 else if (Operator == CriteriaOperator.NotEqual)
                     return (numDays != (int)Value);
-                else if(Operator == CriteriaOperator.GreaterThan)
+                else if (Operator == CriteriaOperator.GreaterThan)
                     return (numDays > (int)Value);
                 else if (Operator == CriteriaOperator.GreaterThanOrEqual)
                     return (numDays >= (int)Value);
@@ -170,17 +189,17 @@ namespace d360.model.workflow
                     return (numDays <= (int)Value);
                 throw new Exception("INVALID DATE OPERATION");
             }
-            
+
             var val = valueFromString(this.ValueDataType, givenValue);
 
             switch (Operator)
-            {                
+            {
                 case CriteriaOperator.GreaterThan:
                     return isGreaterThan(val);
                 case CriteriaOperator.GreaterThanOrEqual:
                     return isGreaterThanOrEqual(val);
                 case CriteriaOperator.LessThan:
-                    return isLessThan(val);                    
+                    return isLessThan(val);
                 case CriteriaOperator.LessThanOrEqual:
                     return isLessThanOrEqual(val);
                 case CriteriaOperator.Equal:
@@ -188,16 +207,16 @@ namespace d360.model.workflow
                 case CriteriaOperator.NotEqual:
                     return isNotEqual(val);
             }
-            
+
             throw new Exception("INVALID COMPARISON OPERATION");
         }
 
         private bool isLessThan(object val)
         {
             switch (ValueDataType)
-            {                
+            {
                 case CriteriaValueDataType.Integer:
-                    return (int)val < (int)Value;                    
+                    return (int)val < (int)Value;
                 case CriteriaValueDataType.Double:
                     return (double)val < (double)Value;
             }
@@ -251,13 +270,13 @@ namespace d360.model.workflow
                 case CriteriaValueDataType.Boolean:
                     return (bool)val == (bool)Value;
                 case CriteriaValueDataType.String:
-                    return String.Compare((string)val,(string)Value, true) == 0;
+                    return String.Compare((string)val, (string)Value, true) == 0;
                 case CriteriaValueDataType.Integer:
                     return (int)val == (int)Value;
                 case CriteriaValueDataType.Double:
                     return (double)val == (double)Value;
                 case CriteriaValueDataType.Lookup:
-                    return (int)val == (int)Value;                    
+                    return (int)val == (int)Value;
             }
 
             throw new Exception("ERROR - INVALID OPERATION FOR SPECIFIED DATA TYPE.");

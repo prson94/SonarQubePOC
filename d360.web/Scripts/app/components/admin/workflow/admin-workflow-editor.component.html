@@ -7,29 +7,31 @@
     </header>
     <d3s-loading [isLoading]="isLoading"></d3s-loading>
     <div class="row"
-        *ngIf="!isLoading">
+         *ngIf="!isLoading">
         <div class="col s12 m4">
             <div class="FieldName">
                 Name
             </div>
             <div>
                 <input type="text"
-                    [ngModel]="model.Type.Name"
-                    (ngModelChange)="isClone=false;onWorkflowNameChange.emit(isClone);model.Type.Name = $event; validate();"
-                    style="width: 95%"
-                    [d3s-text-highlight]="isClone" />
+                       [ngModel]="model.Type.Name"
+                       (ngModelChange)="isClone=false;onWorkflowNameChange.emit(isClone);model.Type.Name = $event; validate();"
+                       style="width: 95%"
+                       [d3s-text-highlight]="isClone" />
             </div>
             <div class="FieldName">
                 Change Type
             </div>
             <div>
                 <select style="width:95%;"
-                    placeholder="Choose a value"
-                    [ngModel]="model.Event.ChangeType"
-                    (ngModelChange)="model.Event.ChangeType = $event; validate(); loadObjects();">
+                        placeholder="Choose a value"
+                        [ngModel]="model.Event.ChangeType"
+                        (ngModelChange)="model.Event.ChangeType = $event; validate(); loadObjects();">
                     <option></option>
                     <option *ngFor="let i of changesTypes"
-                        [value]="i.ID">{{i.Description}}</option>
+                            [value]="i.ID">
+                        {{i.Description}}
+                    </option>
                 </select>
             </div>
             <div class="FieldName">
@@ -37,12 +39,12 @@
             </div>
             <div>
                 <p-dropdown [options]="workflowObjectTypes"
-                    [ngModel]="selectedObjectType"
-                    (ngModelChange)="selectObjectType($event)"
-                    [disabled]="model.Event.ChangeType == null || +model.Event.ChangeType == 0"
-                    [style]="{'width': '95%'}"
-                    filterPlaceholder="Choose a value"
-                    [filter]="true">
+                            [ngModel]="selectedObjectType"
+                            (ngModelChange)="selectObjectType($event)"
+                            [disabled]="model.Event.ChangeType == null || +model.Event.ChangeType == 0"
+                            [style]="{'width': '95%'}"
+                            filterPlaceholder="Choose a value"
+                            [filter]="true">
                 </p-dropdown>
             </div>
             <div *ngIf="objectType == 'IssueType'">
@@ -51,10 +53,10 @@
                 </div>
                 <div>
                     <p-dropdown [options]="issueObjectTypes"
-                        [(ngModel)]="selectedIssueObjectType"
-                        [style]="{'width': '95%'}"
-                        filterPlaceholder="Choose a value"
-                        [filter]="true">
+                                [(ngModel)]="selectedIssueObjectType"
+                                [style]="{'width': '95%'}"
+                                filterPlaceholder="Choose a value"
+                                [filter]="true">
                     </p-dropdown>
                 </div>
             </div>
@@ -64,9 +66,9 @@
                 </div>
                 <div>
                     <input type="number"
-                        [ngModel]="model.Event.SettingsObject.Settings.ScheduleInterval"
-                        (ngModelChange)="model.Event.SettingsObject.Settings.ScheduleInterval = $event;  validate();"
-                        style="width: 95%" />
+                           [ngModel]="model.Event.SettingsObject.Settings.ScheduleInterval"
+                           (ngModelChange)="model.Event.SettingsObject.Settings.ScheduleInterval = $event;  validate();"
+                           style="width: 95%" />
                 </div>
             </div>
         </div>
@@ -77,71 +79,75 @@
                 </div>
                 <div>
                     <d3s-workflow-condition-list (removeClick)="remove($event)"
-                        (addClick)="showCondition()"
-                        [conditions]="conditions"></d3s-workflow-condition-list>
+                                                 (addClick)="showCondition()"
+                                                 (connectorChange)="applyConnectorToConditions($event)"
+                                                 [conditions]="conditions"
+                                                 [satisfyAll]="satisfyAllConditions"
+                                                 ></d3s-workflow-condition-list>
 
                     <div *ngIf="showAddCondition">
                         <d3s-workflow-condition-editor [objectId]="objectID"
-                            [objectType]="objectType"
-                            [changeType]="model.Event.ChangeType"
-                            (onSave)="addCondition($event)"
-                            (onClose)="showAddCondition = false;">
+                                                       [objectType]="objectType"
+                                                       [changeType]="model.Event.ChangeType"
+                                                       (onSave)="addCondition($event)"
+                                                       (onClose)="showAddCondition = false;">
                         </d3s-workflow-condition-editor>
                     </div>
+
                 </div>
             </div>
         </div>
     </div>
     <div class="row"
-        *ngIf="!isLoading">
+         *ngIf="!isLoading">
         <div class="col s12 m4">
             <div class="FieldName">
                 Description
             </div>
             <div style="width: 95%">
                 <p-editor [(ngModel)]="model.Type.Description"
-                    [style]="{'height':'150px'}">
+                          [style]="{'height':'150px'}">
                     <d3s-editor-header></d3s-editor-header>
                 </p-editor>
             </div>
         </div>
     </div>
     <div class="row"
-        *ngIf="!isLoading">
+         *ngIf="!isLoading">
         <div class="col s12">
 
             <input type="checkbox"
-                [disabled]="!(model.Type.State==1 || model.Type.State==4)"
-                [ngModel]="model.Type.State==1? true : false"
-                (ngModelChange)="onStateChange($event)" />
+                   [disabled]="!(model.Type.State==1 || model.Type.State==4)"
+                   [ngModel]="model.Type.State==1? true : false"
+                   (ngModelChange)="onStateChange($event)" />
             <div class="FieldName">
                 &nbsp;Active
             </div>
         </div>
     </div>
     <div class="row"
-        *ngIf="!isLoading && model.Event.ChangeType == WorkflowChangeType.Schedule"
-        style="padding-top: 8px;">
+         *ngIf="!isLoading && model.Event.ChangeType == WorkflowChangeType.Schedule"
+         style="padding-top: 8px;">
         <div class="col s12">
             <div>
                 <input type="checkbox"
-                    [ngModel]="model.Event.SettingsObject.Settings.SendAggregateEmail"
-                    (ngModelChange)="model.Event.SettingsObject.Settings.SendAggregateEmail = $event; validate();" />
+                       [ngModel]="model.Event.SettingsObject.Settings.SendAggregateEmail"
+                       (ngModelChange)="model.Event.SettingsObject.Settings.SendAggregateEmail = $event; validate();" />
                 Send aggregated email?
             </div>
         </div>
     </div>
     <div class="row"
-        *ngIf="!isLoading && model.Event.ChangeType == WorkflowChangeType.Schedule && model.Event.SettingsObject.Settings.SendAggregateEmail == true">
+         *ngIf="!isLoading && model.Event.ChangeType == WorkflowChangeType.Schedule && model.Event.SettingsObject.Settings.SendAggregateEmail == true">
         <div class="col s12 m4 offset-m2">
             <div class="FieldName">
                 Subject
             </div>
             <div>
                 <input type="text"
-                    style="width:100%"
-                    [ngModel]="model.Event.SettingsObject.Settings.MessageSubjectTemplate"
-                    (ngModelChange)="model.Event.SettingsObject.Settings.MessageSubjectTemplate = $event; validate();" />
+                       style="width:100%"
+                       [ngModel]="model.Event.SettingsObject.Settings.MessageSubjectTemplate"
+                       (ngModelChange)="model.Event.SettingsObject.Settings.MessageSubjectTemplate = $event; validate();" />
             </div>
         </div>
         <div class="col s12 m4">
@@ -150,7 +156,7 @@
             </div>
             <div>
                 <select style="width: 100%"
-                    disabled>
+                        disabled>
                     <option value="SpecificUser">Specific User</option>
                 </select>
             </div>
@@ -160,24 +166,24 @@
                 </div>
                 <div>
                     <input type="text"
-                        [ngModel]="model.Event.SettingsObject.Settings.MessageToUser"
-                        (ngModelChange)="model.Event.SettingsObject.Settings.MessageToUser = $event; validate();"
-                        style="width: 100%" />
+                           [ngModel]="model.Event.SettingsObject.Settings.MessageToUser"
+                           (ngModelChange)="model.Event.SettingsObject.Settings.MessageToUser = $event; validate();"
+                           style="width: 100%" />
                 </div>
             </div>
         </div>
     </div>
     <div class="row"
-        *ngIf="!isLoading && model.Event.ChangeType == WorkflowChangeType.Schedule && model.Event.SettingsObject.Settings.SendAggregateEmail == true">
+         *ngIf="!isLoading && model.Event.ChangeType == WorkflowChangeType.Schedule && model.Event.SettingsObject.Settings.SendAggregateEmail == true">
         <div class="col s12 m8 offset-m2">
             <div class="FieldName">
                 Body
             </div>
             <div style="width: 100%">
                 <p-editor [ngModel]="model.Event.SettingsObject.Settings.MessageBodyTemplate"
-                    (ngModelChange)="model.Event.SettingsObject.Settings.MessageBodyTemplate = $event; validate();"
-                    [style]="{'height':'150px'}"
-                    #ed2>
+                          (ngModelChange)="model.Event.SettingsObject.Settings.MessageBodyTemplate = $event; validate();"
+                          [style]="{'height':'150px'}"
+                          #ed2>
                 </p-editor>
             </div>
         </div>
@@ -196,19 +202,19 @@
         </div>
     </div>
     <div *ngIf="!isLoading"
-        class="row"
-        style="padding-top: 8px;">
+         class="row"
+         style="padding-top: 8px;">
         <div class="col s12">
             <div>
                 <button type="button"
-                    pButton
-                    label="Cancel"
-                    (click)="onClose.emit()"></button>
+                        pButton
+                        label="Cancel"
+                        (click)="onClose.emit()"></button>
                 <button type="button"
-                    pButton
-                    label="Next"
-                    (click)="save()"
-                    [disabled]="!isValid || isLoading"></button>
+                        pButton
+                        label="Next"
+                        (click)="save()"
+                        [disabled]="!isValid || isLoading"></button>
             </div>
         </div>
     </div>
