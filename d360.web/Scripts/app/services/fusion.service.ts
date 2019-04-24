@@ -1,392 +1,566 @@
-﻿import { Injectable } from '@angular/core';
-import { Headers, Http, Response, ResponseContentType  } from '@angular/http';
-import { BaseService } from './base.service';
-import { MessagesService } from './messages.service';
-import { FormHelper } from '../models/form.model';
-import { JsonResult } from '../models/jsonresult.model';
-import { ObjectStyle } from '../models/object-style.model';
+﻿import {Injectable} from '@angular/core';
+import {HttpClient} from "@angular/common/http";
+import {Observable} from "rxjs";
+import {catchError, map} from "rxjs/operators";
+
+import {JsonResult} from '../models/jsonresult.model';
+import {ObjectStyle} from '../models/object-style.model';
 import {
     AttributeNode,
-    FusionType,
+    Fusion,
+    FusionAgentError,
+    FusionAgentExecutionStats,
+    FusionAttributeItem,
     FusionAttributeType,
     FusionAttributeTypeCustomQuery,
-    FusionAttributeItem,
-    FusionQueryAttributeType,
-    FusionConfiguration,    
-    Fusion,
-    FusionSchedule,
     FusionConfigurationDetails,
-    FusionAgentExecutionStats,
-    FusionWorkerExecution,
-    FusionPromotionExecutionStats,
-    FusionSummaryStats,
-    MapRuleItemDetail,
-    FusionRule,
-    FusionRuleStep,
-    FusionRuleFilter,
-    FusionRuleItem,
-    FusionRuleMapping,
-    FusionAgentError,
     FusionExecutionError,
-    FusionExecutionResult,
+    FusionExecutionResultPaged,
     FusionProcessError,
+    FusionPromotionExecutionStats,
+    FusionQueryAttributeType,
+    FusionRule,
     FusionRuleEditorModel,
-    FusionRuleStepEditorModel,
+    FusionRuleFilter,
     FusionRuleFilterEditorModel,
+    FusionRuleItem,
     FusionRuleItemEditorModel,
+    FusionRuleMapping,
     FusionRuleMappingEditorModel,
+    FusionRuleMappingModel,
+    FusionRuleStep,
+    FusionRuleStepEditorModel,
+    FusionSchedule,
+    FusionSummaryStats,
+    FusionType,
+    FusionWorkerExecution,
+    MapRuleItemDetail,
     PromotionObject,
     RelationIntersectType,
-    RuleStepPromotionHistoryModel,
-    FusionExecutionResultPaged,
-    FusionRuleMappingModel
+    RuleStepPromotionHistoryModel
 } from '../models/fusion.model';
-import { TreeNode, SelectItem } from 'primeng/components/common/api';
-import { GridColumn } from '../models/grid-definition.model';
-import { SortOrder } from '../models/enums.model';
+import {GridColumn} from '../models/grid-definition.model';
+import {SortOrder} from '../models/enums.model';
+
+import {MessagesService} from './messages.service';
+import {BaseObservableService} from "./baseObservable.service";
+import {FormHelper} from "../models/form.model";
+import { TreeNode } from 'primeng/components/common/api';
 
 @Injectable()
-export class FusionService extends BaseService {
-
-    constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
-
-    getFusionTypes(query: string = ''): Promise<FusionType[]> {
-        return this.http.get(`services/fusion?${query}`)
-            .toPromise()
-            .then(response => <FusionType[]>response.json())
-            .catch(err => this.handleError(err));
+export class FusionService extends BaseObservableService {
+    constructor(
+        private http: HttpClient,
+        messagesService: MessagesService
+    ) {
+        super(messagesService);
     }
 
-    getFusionAttributeTypes(id: number, query: string = ''): Promise<FusionAttributeType[]> {
-        return this.http.get(`services/fusion/${id}/attributetypes?${query}`)
-            .toPromise()
-            .then(response => <FusionAttributeType[]>response.json())
-            .catch(err => this.handleError(err));
+    getFusionTypes(query: string = ''): Observable<FusionType[]> {
+        return this
+            .http
+            .get(`services/fusion?${query}`)
+            .pipe(
+                map(response => <FusionType[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getFusionAttributeTypeTree(id: number, query: string = ''): Promise<TreeNode[]> {
-        return this.getFusionAttributeTypes(id, query)
-            .then(r => {
+    getFusionAttributeTypes(id: number, query: string = ''): Observable<FusionAttributeType[]> {
+        return this
+            .http
+            .get(`services/fusion/${id}/attributetypes?${query}`)
+            .pipe(
+                map(response => <FusionAttributeType[]>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    getFusionAttributeTypeTree(id: number, query: string = ''): Observable<TreeNode[]> {
+        return this.getFusionAttributeTypes(id, query).pipe(
+            map(r => {
                 return FormHelper.formTree(r);
-            })
-            .catch(err => this.handleError(err));
+            }),
+            catchError(err => this.handleError(err))
+        );
     }
 
-    getFusionConfiguration(fusionId: number): Promise<FusionConfigurationDetails> {
-        return this.http.get(`services/fusion/configurationById/${fusionId}`)
-            .toPromise()
-            .then(response => <FusionConfigurationDetails>response.json())
-            .catch(err => this.handleError(err));
+    getFusionConfiguration(fusionId: number): Observable<FusionConfigurationDetails> {
+        return this
+            .http
+            .get(`services/fusion/configurationById/${fusionId}`)
+            .pipe(
+                map(response => <FusionConfigurationDetails>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getFusionConfigurationFromObjectId(fusionAttributeId: number): Promise<FusionConfigurationDetails> {
-        return this.http.get(`services/fusion/configurationByObjectId/${fusionAttributeId}`)
-            .toPromise()
-            .then(response => <FusionConfigurationDetails>response.json())
-            .catch(err => this.handleError(err));
+    /* FIXME: looks like never called */
+    getFusionConfigurationFromObjectId(fusionAttributeId: number): Observable<FusionConfigurationDetails> {
+        return this
+            .http
+            .get(`services/fusion/configurationByObjectId/${fusionAttributeId}`)
+            .pipe(
+                map(response => <FusionConfigurationDetails>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getFusionConfigurations(): Promise<Fusion[]> {
-        return this.http.get(`services/fusion/configurations?$orderby=FusionType,Name`)
-            .toPromise()
-            .then(response => <Fusion[]>response.json())
-            .catch(err => this.handleError(err));
+    getFusionConfigurations(): Observable<Fusion[]> {
+        return this
+            .http
+            .get(`services/fusion/configurations?$orderby=FusionType,Name`)
+            .pipe(
+                map(response => <Fusion[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getFusionAgentHistory(maxRows?: number, fusionId?: number): Promise<FusionAgentExecutionStats[]> {
+    getFusionAgentHistory(
+        maxRows?: number,
+        fusionId?: number
+    ): Observable<FusionAgentExecutionStats[]> {
         var url = `services/fusion/agenthistory?$top=${maxRows ? maxRows : '100'}&$orderby=DateStarted%20desc`;
 
         if (fusionId) {
             url += `&$filter=FusionID%20eq%20${fusionId}`;
         }
 
-        return this.http.get(url)
-            .toPromise()
-            .then(response => <FusionAgentExecutionStats[]>response.json())
-            .catch(err => this.handleError(err));
+        return this
+            .http
+            .get(url)
+            .pipe(
+                map(response => <FusionAgentExecutionStats[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getFusionAgentHistoryExport(maxRows?: number, fusionId?: number) {
+    getFusionAgentHistoryExport(
+        maxRows?: number,
+        fusionId?: number
+    ) {
         var url = `services/fusion/agenthistoryexport?top=${maxRows ? maxRows : '100'}`;
 
         if (fusionId) {
             url += `&fusionId=${fusionId}`;
         }
 
-        this.http.get(url, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data, 'fusion agent history.xlsx'));                      
+        this
+            .http
+            .get(url, {responseType: 'blob'}).subscribe(data => this.downloadFile(data, 'fusion agent history.xlsx'));
     }
-    
-    getFusionAgentErrorHistory(maxRows?: number, days?: number): Promise<FusionAgentError[]> {
+
+    getFusionAgentErrorHistory(
+        maxRows?: number,
+        days?: number
+    ): Observable<FusionAgentError[]> {
         let url = `services/fusion/agenterrors?$top=${maxRows ? maxRows : '100'}&$orderby=Date%20desc`;
+
         if (days) {
             var d = new Date();
+
             d.setDate(d.getDate() - days);
             url += `&$filter=Date ge DateTime'${d.toISOString()}'`;
         }
-        return this.http.get(url)
-            .toPromise()
-            .then(response => <FusionAgentError[]>response.json())
-            .catch(err => this.handleError(err));
+
+        return this
+            .http
+            .get(url)
+            .pipe(
+                map(response => <FusionAgentError[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getFusionAttributeTypeCustomQueries(fusionTypeId: number, fusionId: number): Promise<FusionAttributeTypeCustomQuery[]> {
-        return this.http.get(`services/fusion/${fusionTypeId}/configurations/${fusionId}/queryoverrides`)
-            .toPromise()
-            .then(response => <FusionAttributeTypeCustomQuery[]>response.json())
-            .catch(err => this.handleError(err));
+    getFusionAttributeTypeCustomQueries(
+        fusionTypeId: number,
+        fusionId: number
+    ): Observable<FusionAttributeTypeCustomQuery[]> {
+        return this
+            .http
+            .get(`services/fusion/${fusionTypeId}/configurations/${fusionId}/queryoverrides`)
+            .pipe(
+                map(response => <FusionAttributeTypeCustomQuery[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    deleteFusionAttributeTypeCustomQuery(id: number): Promise<JsonResult> {
+    deleteFusionAttributeTypeCustomQuery(id: number): Observable<JsonResult> {
         return this.deleteDynamicWithResult(this.http, 'fusionattributetypecustomquery', id);
     }
 
-    saveFusionAttributeTypeCustomQuery(override: any): Promise<JsonResult> {
+    saveFusionAttributeTypeCustomQuery(override: any): Observable<JsonResult> {
+        let methodName = "putDynamic";
+
         if (override.ID == undefined || !override.ID) {
-            return this.postDynamic(this.http, 'fusionattributetypecustomquery', override);
+            methodName = "postDynamic";
         }
-        return this.putDynamic(this.http, 'fusionattributetypecustomquery', override);
+
+        return this[methodName](this.http, 'fusionattributetypecustomquery', override);
     }
 
-    getFusionConfigurationSchedules(fusionTypeId: number, fusionId: number): Promise<FusionSchedule[]> {     
-        return this.http.get(`services/fusion/${fusionTypeId}/configurations/${fusionId}/schedules?$orderby=Day,Time`)
-            .toPromise()
-            .then(response => <FusionSchedule[]>response.json())
-            .catch(err => this.handleError(err));
+    getFusionConfigurationSchedules(
+        fusionTypeId: number,
+        fusionId: number
+    ): Observable<FusionSchedule[]> {
+        return this
+            .http
+            .get(`services/fusion/${fusionTypeId}/configurations/${fusionId}/schedules?$orderby=Day,Time`)
+            .pipe(
+                map(response => <FusionSchedule[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    deleteFusionConfiguration(id: number): Promise<JsonResult> {
+    deleteFusionConfiguration(id: number): Observable<JsonResult> {
         return this.deleteDynamicWithResult(this.http, 'fusionconfiguration', id);
     }
 
-    deleteFusionConfigurationSchedule(id: number): Promise<JsonResult> {
+    deleteFusionConfigurationSchedule(id: number): Observable<JsonResult> {
         return this.deleteDynamicWithResult(this.http, 'fusionschedule', id);
     }
 
-    saveFusionConfigurationSchedule(schedule: any): Promise<JsonResult> {
+    saveFusionConfigurationSchedule(schedule: any): Observable<JsonResult> {
+        let methodName = "putDynamic";
+
         if (schedule.ID == undefined || !schedule.ID) {
-            return this.postDynamic(this.http, 'fusionschedule', schedule);
+            methodName = "postDynamic";
         }
-        return this.putDynamic(this.http, 'fusionschedule', schedule);
+
+        return this[methodName](this.http, 'fusionschedule', schedule);
     }
 
-    getFusionProcessErrorHistory(maxRows?: number, days?: number): Promise<FusionProcessError[]> {
+    getFusionProcessErrorHistory(
+        maxRows?: number,
+        days?: number
+    ): Observable<FusionProcessError[]> {
         let url = `services/fusion/executionerrors?$top=${maxRows ? maxRows : '100'}&$orderby=Date%20desc`;
-        
+
         if (days) {
             var d = new Date();
+
             d.setDate(d.getDate() - days);
             url += `&$filter=Date ge DateTime'${d.toISOString()}'`;
         }
-        return this.http.get(url)
-            .toPromise()
-            .then(response => <FusionProcessError[]>response.json())
-            .catch(err => this.handleError(err));
+
+        return this
+            .http
+            .get(url)
+            .pipe(
+                map(response => <FusionProcessError[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getFusionWorkerExecutionHistory(maxRows?: number, fusionId?: number): Promise<FusionWorkerExecution[]> {
+    getFusionWorkerExecutionHistory(
+        maxRows?: number,
+        fusionId?: number
+    ): Observable<FusionWorkerExecution[]> {
         let url = `services/fusion/executionhistory?$top=${maxRows ? maxRows : '100'}&$orderby=DateStarted%20desc`;
 
         if (fusionId) {
             url += `&$filter=FusionID%20eq%20${fusionId}`;
         }
 
-        return this.http.get(url)
-            .toPromise()
-            .then(response => <FusionWorkerExecution[]>response.json())
-            .catch(err => this.handleError(err));
+        return this
+            .http
+            .get(url)
+            .pipe(
+                map(response => <FusionWorkerExecution[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getFusionWorkerExecutionHistoryExport(maxRows?: number, fusionId?: number) {
+    getFusionWorkerExecutionHistoryExport(
+        maxRows?: number,
+        fusionId?: number
+    ) {
         let url = `services/fusion/executionhistoryexport?top=${maxRows ? maxRows : '100'}`;
 
         if (fusionId) {
             url += `&fusionId=${fusionId}`;
         }
 
-        this.http.get(url, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data, 'fusion execution history.xlsx'));                      
+        this
+            .http
+            .get(url, {responseType: 'blob'}).subscribe(data => this.downloadFile(data, 'fusion execution history.xlsx'));
     }
 
-    getFusionPromotionHistory(maxRows?: number): Promise<FusionPromotionExecutionStats[]> {
-        return this.http.get(`services/fusion/promotionhistory?$top=${maxRows ? maxRows : '100'}&$orderby=DateStarted%20desc`)
-            .toPromise()
-            .then(response => <FusionPromotionExecutionStats[]>response.json())
-            .catch(err => this.handleError(err));
+    getFusionPromotionHistory(maxRows?: number): Observable<FusionPromotionExecutionStats[]> {
+        return this
+            .http
+            .get(`services/fusion/promotionhistory?$top=${maxRows ? maxRows : '100'}&$orderby=DateStarted%20desc`)
+            .pipe(
+                map(response => <FusionPromotionExecutionStats[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getFusionStatsSummary(daysToLookBack: number): Promise<FusionSummaryStats> {
-        return this.http.get(`api/fusion/statistics?daysToLookBack=${daysToLookBack}`)
-            .toPromise()
-            .then(response => <FusionSummaryStats>response.json())
-            .catch(err => this.handleError(err));
+    getFusionStatsSummary(daysToLookBack: number): Observable<FusionSummaryStats> {
+        return this
+            .http
+            .get(`api/fusion/statistics?daysToLookBack=${daysToLookBack}`)
+            .pipe(
+                map(response => <FusionSummaryStats>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
     exportFusionConfigurations() {
-        window.location.assign(`services/fusion/configurations/excel.xls`);        
+        window.location.assign(`services/fusion/configurations/excel.xls`);
     }
 
-    getFusionConfigurationsByType(id: number): Promise<any[]> {
-        return this.http.get(`services/fusion/${id}/configurations?useFieldName=false`)
-            .toPromise()
-            .then(response => <any[]>response.json())
-            .catch(err => this.handleError(err));
+    getFusionConfigurationsByType(id: number): Observable<any[]> {
+        return this
+            .http
+            .get(`services/fusion/${id}/configurations?useFieldName=false`)
+            .pipe(
+                map(response => <any[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getFusionConfigurationGridDefinition(id: number): Promise<GridColumn[]> {
-        return this.http.get(`api/fusiontype/${id}/grid/definition`)
-            .toPromise()
-            .then(response => <GridColumn[]>response.json().Columns)
-            .catch(err => this.handleError(err));
-    }
-    
-    getFusionAttributeTypeList(fusionID: number): Promise<FusionAttributeType[]> {
-        return this.http.get(`form/getfusionattributetypes?fusionID=${fusionID}`)
-            .toPromise()
-            .then(response => <FusionAttributeType[]>response.json())
-            .catch(err => this.handleError(err));
-    }
-    
-    getFusionQueryAttributeTypes(typeid: number, id: number, query: string = ''): Promise<FusionQueryAttributeType[]> {
-        return this.http.get(`services/fusion/${typeid}/configurations/${id}/queryattributetypes?${query}`)
-            .toPromise()
-            .then(response => <FusionQueryAttributeType[]>response.json())
-            .catch(err => this.handleError(err));
-    }
-    
-    postFusionType(fusionType: FusionType, objectStyle: ObjectStyle = null): Promise<any> {
-        return this.http.post('form/FusionType', { fusion: fusionType, style: objectStyle })
-            .toPromise().
-            then(response => response.json())
-            .catch(err => this.handleError(err));
+    getFusionConfigurationGridDefinition(id: number): Observable<GridColumn[]> {
+        return this
+            .http
+            .get(`api/fusiontype/${id}/grid/definition`)
+            .pipe(
+                map(response => <GridColumn[]>response["Columns"]),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    putFusionType(fusionType: FusionType, objectStyle: ObjectStyle = null): Promise<any> {
-        return this.http.put('form/FusionType', { fusion: fusionType, style: objectStyle })
-            .toPromise().
-            then(response => response.json())
-            .catch(err => this.handleError(err));
+    getFusionAttributeTypeList(fusionID: number): Observable<FusionAttributeType[]> {
+        return this
+            .http
+            .get(`form/getfusionattributetypes?fusionID=${fusionID}`)
+            .pipe(
+                map(response => <FusionAttributeType[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    postFusionAttributeType(fusionAttributeType: FusionAttributeType, objectStyle: ObjectStyle = null): Promise<any>{
-        return this.http.post('form/FusionAttributeType', { fusion: fusionAttributeType, style: objectStyle })
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+    getFusionQueryAttributeTypes(
+        typeid: number,
+        id: number,
+        query: string = ''
+    ): Observable<FusionQueryAttributeType[]> {
+        return this
+            .http
+            .get(`services/fusion/${typeid}/configurations/${id}/queryattributetypes?${query}`)
+            .pipe(
+                map(response => <FusionQueryAttributeType[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    putFusionAttributeType(fusionAttributeType: FusionAttributeType, objectStyle: ObjectStyle = null): Promise<any> {
-        return this.http.put('form/FusionAttributeType', { fusion: fusionAttributeType, style: objectStyle })
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+    postFusionType(
+        fusionType: FusionType,
+        objectStyle: ObjectStyle = null
+    ): Observable<any> {
+        return this
+            .http
+            .post('form/FusionType', {fusion: fusionType, style: objectStyle})
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getFusionTechnicalMappings(): Promise<MapRuleItemDetail[]> {
-        return this.http.get('api/fusion/technicalmapping')
-            .toPromise()
-            .then(response => <MapRuleItemDetail[]>response.json())
-            .catch(err => this.handleError(err));
+    putFusionType(
+        fusionType: FusionType,
+        objectStyle: ObjectStyle = null
+    ): Observable<any> {
+        return this
+            .http
+            .put('form/FusionType', {fusion: fusionType, style: objectStyle})
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    postFusionAttributeType(
+        fusionAttributeType: FusionAttributeType,
+        objectStyle: ObjectStyle = null
+    ): Observable<any> {
+        return this
+            .http
+            .post('form/FusionAttributeType', {fusion: fusionAttributeType, style: objectStyle})
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    putFusionAttributeType(
+        fusionAttributeType: FusionAttributeType,
+        objectStyle: ObjectStyle = null
+    ): Observable<any> {
+        return this
+            .http
+            .put('form/FusionAttributeType', {fusion: fusionAttributeType, style: objectStyle})
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    getFusionTechnicalMappings(): Observable<MapRuleItemDetail[]> {
+        return this
+            .http
+            .get('api/fusion/technicalmapping')
+            .pipe(
+                map(response => <MapRuleItemDetail[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
 
-    getFusionFusionAttributeTypes(fusionId: number): Promise<FusionAttributeType[]>{
-        return this.http.get(`services/fusion/${fusionId}/attributetypes?$filter=ScanEnabled eq true&$orderby=Name`)
-            .toPromise()
-            .then(response => <FusionAttributeType[]>response.json())
-            .catch(err => this.handleError(err));
+    getFusionFusionAttributeTypes(fusionId: number): Observable<FusionAttributeType[]> {
+        return this
+            .http
+            .get(`services/fusion/${fusionId}/attributetypes?$filter=ScanEnabled eq true&$orderby=Name`)
+            .pipe(
+                map(response => <FusionAttributeType[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getFusionRules(fusionID: number): Promise<FusionRule[]> {
-        return this.http.get(`api/fusion/${fusionID}/rules`)
-            .toPromise()
-            .then(response => <FusionRule[]>response.json())
-            .catch(err => this.handleError(err));
+    getFusionRules(fusionID: number): Observable<FusionRule[]> {
+        return this
+            .http
+            .get(`api/fusion/${fusionID}/rules`)
+            .pipe(
+                map(response => <FusionRule[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getFusionRuleSteps(ruleID: number): Promise<FusionRuleStep[]> {
-        return this.http.get(`api/fusion/rules/${ruleID}/steps`)
-            .toPromise()
-            .then(response => <FusionRuleStep[]>response.json())
-            .catch(err => this.handleError(err));
+    getFusionRuleSteps(ruleID: number): Observable<FusionRuleStep[]> {
+        return this
+            .http
+            .get(`api/fusion/rules/${ruleID}/steps`)
+            .pipe(
+                map(response => <FusionRuleStep[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getRuleSteps(ruleID: number, ruleStepID: number) {
-        return this.http.get(`api/fusion/rule/${ruleID}/steps/${ruleStepID}`)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+    getRuleSteps(
+        ruleID: number,
+        ruleStepID: number
+    ) {
+        return this
+            .http
+            .get(`api/fusion/rule/${ruleID}/steps/${ruleStepID}`)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getFusionRuleFilters(id: number): Promise<FusionRuleFilter[]> {
-        return this.http.get(`api/fusion/${id}/FusionRuleFilters`)
-            .toPromise()
-            .then(response => <FusionRuleFilter[]>response.json())
-            .catch(err => this.handleError(err));
+    getFusionRuleFilters(id: number): Observable<FusionRuleFilter[]> {
+        return this
+            .http
+            .get(`api/fusion/${id}/FusionRuleFilters`)
+            .pipe(
+                map(response => <FusionRuleFilter[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getFusionRuleItems(id: number): Promise<FusionRuleItem[]> {
-        return this.http.get(`api/fusion/${id}/FusionRuleItems`)
-            .toPromise()
-            .then(response => <FusionRuleItem[]>response.json())
-            .catch(err => this.handleError(err));
+    getFusionRuleItems(id: number): Observable<FusionRuleItem[]> {
+        return this
+            .http
+            .get(`api/fusion/${id}/FusionRuleItems`)
+            .pipe(
+                map(response => <FusionRuleItem[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getFusionRuleStepMappings(id: number): Promise<FusionRuleMappingModel> {
-                return this.http.get(`api/fusion/${id}/FusionRuleStepMappings`)
-            .toPromise()
-            .then(response => <FusionRuleMappingModel>response.json())
-            .catch(err => this.handleError(err));
+    getFusionRuleStepMappings(id: number): Observable<FusionRuleMappingModel> {
+        return this
+            .http
+            .get(`api/fusion/${id}/FusionRuleStepMappings`)
+            .pipe(
+                map(response => <FusionRuleMappingModel>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getFusionExecutionErrors(executionId: number): Promise<FusionExecutionError[]> {
-        return this.http.get(`services/fusion/executionerrors?$filter=ExecutionID%20eq%20${executionId}&$orderby=Date%20desc`)
-            .toPromise()
-            .then(response => <FusionExecutionError[]>response.json())
-            .catch(err => this.handleError(err));
+    getFusionExecutionErrors(executionId: number): Observable<FusionExecutionError[]> {
+        return this
+            .http
+            .get(`services/fusion/executionerrors?$filter=ExecutionID%20eq%20${executionId}&$orderby=Date%20desc`)
+            .pipe(
+                map(response => <FusionExecutionError[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getFusionExecutionErrorsExport(executionId: number) {              
-        this.http.get(`services/fusion/executionerrorsexport/${executionId}`, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data, 'fusion execution errors.xlsx'));
+    getFusionExecutionErrorsExport(executionId: number) {
+        this.http.get(`services/fusion/executionerrorsexport/${executionId}`, {responseType: 'blob'}).subscribe(data => this.downloadFile(data, 'fusion execution errors.xlsx'));
     }
 
-    getFusionExecutionResults(executionId: number, sortField: string, sortOrder: SortOrder, pageSize: number, pageNum: number, simpleFilter: string): Promise<FusionExecutionResultPaged> {
+    getFusionExecutionResults(
+        executionId: number,
+        sortField: string,
+        sortOrder: SortOrder,
+        pageSize: number,
+        pageNum: number,
+        simpleFilter: string
+    ): Observable<FusionExecutionResultPaged> {
         let sortOrderText = sortOrder == SortOrder.None ? "" : (sortOrder == SortOrder.Descending ? "desc" : "asc");
         let url = `services/fusion/executions/${executionId}/results?pagesize=${pageSize}&pagenum=${pageNum}&sortDataField=${sortField}&sortOrder=${sortOrderText}`;
 
-        if (simpleFilter)
+        if (simpleFilter) {
             url += `&filter=${encodeURIComponent(simpleFilter)}`;
+        }
 
-        return this.http.get(url)
-            .toPromise()
-            .then(response => <FusionExecutionResultPaged>response.json())
-            .catch(err => this.handleError(err));
+        return this
+            .http
+            .get(url)
+            .pipe(
+                map(response => <FusionExecutionResultPaged>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getFusionExecutionResultsExport(executionId: number, simpleFilter: string) { 
+    getFusionExecutionResultsExport(executionId: number, simpleFilter: string) {
         let url = `services/fusion/executions/${executionId}/exportresults`;
-        if (simpleFilter)
-            url += `?filter=${encodeURIComponent(simpleFilter)}`;  
-             
-        this.http.get(url, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data, 'fusion execution results.xlsx'));                      
+
+        if (simpleFilter) {
+            url += `?filter=${encodeURIComponent(simpleFilter)}`;
+        }
+
+        this.http.get(url, {responseType: 'blob'}).subscribe(data => this.downloadFile(data, 'fusion execution results.xlsx'));
     }
 
-    downloadRawFusionData(executionId: number, name:string) {
+    downloadRawFusionData(executionId: number, name: string) {
         let uri = `internal/fusion/_FusionExecutionRawLog?id=${executionId}`;
-        this.http.get(uri, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data, name));
+
+        this.http.get(uri, {responseType: 'blob'}).subscribe(data => this.downloadFile(data, name));
     }
 
     downloadFusionManualLoadTemplate(fusionId: number, fusionTypeId: number, fusionAttributeTypeId: number) {
         let uri = `internal/fusion/${fusionTypeId}/configurations/${fusionId}/template/${fusionAttributeTypeId}`;
         let filename = `Load Template For ${fusionAttributeTypeId}.xlsx`;
-        this.http.get(uri, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data, filename));
+
+        this.http.get(uri, {responseType: 'blob'}).subscribe(data => this.downloadFile(data, filename));
     }
 
-    downloadFile(data: Response, filename: string) {        
+    downloadFile(
+        data: Blob,
+        filename: string
+    ) {
         if (window.navigator.msSaveOrOpenBlob) {
-            window.navigator.msSaveOrOpenBlob(data.blob(), filename);
-        }
-        else {
-            var url = window.URL.createObjectURL(data.blob());
+            window.navigator.msSaveOrOpenBlob(data, filename);
+        } else {
+            var url = window.URL.createObjectURL(data);
             var anchor = document.createElement("a");
+
             anchor.setAttribute("style", "display:none;");
             document.body.appendChild(anchor);
             anchor.setAttribute("download", filename);
@@ -394,345 +568,506 @@ export class FusionService extends BaseService {
             anchor.click();
         }
     }
-    
-    getEditFusionRule(id: number): Promise<FusionRuleEditorModel> {
-        return this.http.get(`form/GetEditFusionRule?id=${id}`)
-            .toPromise()
-            .then(response => response.json())
-            .then(r => {
-                let m = new FusionRuleEditorModel();
-                m = r.model;
-                m.AttributeTypes = r.attributeTypes;
-                return m;
-            })
-            .catch(err => this.handleError(err));
+
+    getEditFusionRule(id: number): Observable<FusionRuleEditorModel> {
+        return this
+            .http
+            .get(`form/GetEditFusionRule?id=${id}`)
+            .pipe(
+                map(response => response),
+                map(r => {
+                    let m = new FusionRuleEditorModel();
+
+                    m = r["model"];
+                    m.AttributeTypes = r["attributeTypes"];
+
+                    return m;
+                }),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    postEditFusionRule(rule: FusionRule): Promise<any> {
-        return this.http.post('form/PostEditFusionRule', rule)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+    postEditFusionRule(rule: FusionRule): Observable<any> {
+        return this
+            .http
+            .post('form/PostEditFusionRule', rule)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    deleteFusionRuleById(id: number): Promise<any> {
-        return this.http.delete(`form/DeleteFusionRuleById?id=${id}`)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+    deleteFusionRuleById(id: number): Observable<any> {
+        return this
+            .http
+            .delete(`form/DeleteFusionRuleById?id=${id}`)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getAddFusionRule(typeID: number, fusionID: number): Promise<FusionAttributeItem[]> {
-        return this.http.get(`form/GetAddFusionRule?typeID=${typeID}&fusionID=${fusionID}`)
-            .toPromise()
-            .then(response => <FusionAttributeItem[]>response.json())
-            .catch(err => this.handleError(err));
+    getAddFusionRule(
+        typeID: number,
+        fusionID: number
+    ): Observable<FusionAttributeItem[]> {
+        return this
+            .http
+            .get(`form/GetAddFusionRule?typeID=${typeID}&fusionID=${fusionID}`)
+            .pipe(
+                map(response => <FusionAttributeItem[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    postAddFusionRule(rule: FusionRule): Promise<any> {
-        return this.http.post('form/PostAddFusionRule', rule)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+    postAddFusionRule(rule: FusionRule): Observable<any> {
+        return this
+            .http
+            .post('form/PostAddFusionRule', rule)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
 
     }
 
-    getAddFusionRuleStep(ruleID: number): Promise<FusionRuleStepEditorModel> {
-        return this.http.get(`form/GetAddFusionRuleStep?ruleID=${ruleID}`)
-            .toPromise()
-            .then(response => <FusionRuleStepEditorModel>response.json())
-            .catch(err => this.handleError(err));
+    getAddFusionRuleStep(ruleID: number): Observable<FusionRuleStepEditorModel> {
+        return this
+            .http
+            .get(`form/GetAddFusionRuleStep?ruleID=${ruleID}`)
+            .pipe(
+                map(response => <FusionRuleStepEditorModel>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
     postAddFusionRuleStep(step: FusionRuleStep) {
-        return this.http.post('form/PostAddFusionRuleStep', step)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+        return this
+            .http
+            .post('form/PostAddFusionRuleStep', step)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getEditFusionRuleStep(ruleID: number, ruleStepID: number): Promise<FusionRuleStepEditorModel> {
-        return this.http.get(`form/GetEditFusionRuleStep?ruleID=${ruleID}&ruleStepID=${ruleStepID}`)
-            .toPromise()
-            .then(response => <FusionRuleStepEditorModel>response.json())
-            .catch(err => this.handleError(err));
+    getEditFusionRuleStep(
+        ruleID: number,
+        ruleStepID: number
+    ): Observable<FusionRuleStepEditorModel> {
+        return this
+            .http
+            .get(`form/GetEditFusionRuleStep?ruleID=${ruleID}&ruleStepID=${ruleStepID}`)
+            .pipe(
+                map(response => <FusionRuleStepEditorModel>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
     putEditFusionRuleStep(step: FusionRuleStep) {
-        return this.http.put('form/PutEditFusionRuleStep', step)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+        return this
+            .http
+            .put('form/PutEditFusionRuleStep', step)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    deleteFusionRuleStep(ruleID: number, ruleStepID: number) {
-        return this.http.delete(`form/DeleteFusionRuleStepByID?ruleID=${ruleID}&ruleStepID=${ruleStepID}`)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+    deleteFusionRuleStep(
+        ruleID: number,
+        ruleStepID: number
+    ) {
+        return this
+            .http
+            .delete(`form/DeleteFusionRuleStepByID?ruleID=${ruleID}&ruleStepID=${ruleStepID}`)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getAddFusionRuleStepMapping(id: number): Promise<FusionRuleMappingEditorModel> {
-        return this.http.get(`form/GetAddFusionRuleStepMapping?id=${id}`)
-            .toPromise()
-            .then(response => <FusionRuleMappingEditorModel>response.json())
-            .catch(err => this.handleError(err));
+    getAddFusionRuleStepMapping(id: number): Observable<FusionRuleMappingEditorModel> {
+        return this
+            .http
+            .get(`form/GetAddFusionRuleStepMapping?id=${id}`)
+            .pipe(
+                map(response => <FusionRuleMappingEditorModel>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    postAddFusionRuleStepMapping(map: FusionRuleMapping) {
-        return this.http.post('form/PostAddFusionRuleStepMapping', map)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+    postAddFusionRuleStepMapping(mapp: FusionRuleMapping) {
+        return this
+            .http
+            .post('form/PostAddFusionRuleStepMapping', mapp)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
     deleteFusionRuleStepMapping(id: number) {
-        return this.http.delete(`form/DeleteFusionRuleStepMappingByID?id=${id}`)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+        return this
+            .http
+            .delete(`form/DeleteFusionRuleStepMappingByID?id=${id}`)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getEditFusionRuleStepMapping(id: number): Promise<FusionRuleMappingEditorModel> {
-        return this.http.get(`form/GetEditFusionRuleStepMapping?id=${id}`)
-            .toPromise()
-            .then(response => <FusionRuleMappingEditorModel>response.json())
-            .catch(err => this.handleError(err));
+    getEditFusionRuleStepMapping(id: number): Observable<FusionRuleMappingEditorModel> {
+        return this
+            .http
+            .get(`form/GetEditFusionRuleStepMapping?id=${id}`)
+            .pipe(
+                map(response => <FusionRuleMappingEditorModel>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    putEditFusionRuleStepMapping(map: FusionRuleMapping) {
-        return this.http.put('form/PutEditFusionRuleStepMapping', map)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+    putEditFusionRuleStepMapping(mapp: FusionRuleMapping) {
+        return this.http.put('form/PutEditFusionRuleStepMapping', mapp)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getAddFusionRuleFilter(id: number): Promise<FusionRuleFilterEditorModel> {
-        return this.http.get(`form/GetAddFusionRuleFilter?id=${id}`)
-            .toPromise()
-            .then(response => <FusionRuleFilterEditorModel>response.json())
-            .catch(err => this.handleError(err));
+    getAddFusionRuleFilter(id: number): Observable<FusionRuleFilterEditorModel> {
+        return this
+            .http
+            .get(`form/GetAddFusionRuleFilter?id=${id}`)
+            .pipe(
+                map(response => <FusionRuleFilterEditorModel>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getEditFusionRuleFilter(id: number): Promise<FusionRuleFilterEditorModel> {
-        return this.http.get(`form/GetEditFusionRuleFilter?id=${id}`)
-            .toPromise()
-            .then(response => <FusionRuleFilterEditorModel>response.json())
-            .catch(err => this.handleError(err));
+    getEditFusionRuleFilter(id: number): Observable<FusionRuleFilterEditorModel> {
+        return this
+            .http
+            .get(`form/GetEditFusionRuleFilter?id=${id}`)
+            .pipe(
+                map(response => <FusionRuleFilterEditorModel>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
     postAddFusionRuleFilter(form: FusionRuleFilterEditorModel) {
-        return this.http.post('form/AddFusionRuleFilter', form)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+        return this
+            .http
+            .post('form/AddFusionRuleFilter', form)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
     putEditFusionRuleFilter(form: FusionRuleFilterEditorModel) {
         console.log(form);
-        return this.http.put('form/EditFusionRuleFilter', form)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+        return this
+            .http
+            .put('form/EditFusionRuleFilter', form)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
     deleteFusionRuleFilter(id: number) {
-        return this.http.delete(`form/DeleteFusionRuleFilterByID?id=${id}`)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+        return this
+            .http
+            .delete(`form/DeleteFusionRuleFilterByID?id=${id}`)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
     getFusionRuleFilterTestResults(form: FusionRuleFilterEditorModel) {
-        return this.http.post('form/TestFusionRuleFilter', form)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+        return this
+            .http
+            .post('form/TestFusionRuleFilter', form)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getAddFusionRuleItem(id: number): Promise<FusionRuleItemEditorModel> {
-        return this.http.get(`form/GetAddFusionRuleItem?id=${id}`)
-            .toPromise()
-            .then(response => <FusionRuleItemEditorModel>response.json())
-            .catch(err => this.handleError(err));
+    getAddFusionRuleItem(id: number): Observable<FusionRuleItemEditorModel> {
+        return this
+            .http
+            .get(`form/GetAddFusionRuleItem?id=${id}`)
+            .pipe(
+                map(response => <FusionRuleItemEditorModel>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
     postAddFusionRuleItem(form: any) {
         return this.http.post('form/PostAddFusionRuleItem', form)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
     deleteFusionRuleItem(id: number) {
         return this.http.delete(`form/DeleteFusionRuleItemByID?id=${id}`)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getFusionPromotionItems(fusionID: number, fusionTypeID: number): Promise<PromotionObject[]> {
-        return this.http.get(`api/fusion/${fusionTypeID}/configurations/${fusionID}/promotion/options`)
-            .toPromise()
-            .then(response => <PromotionObject[]>response.json())
-            .catch(err => this.handleError(err));
+    getFusionPromotionItems(
+        fusionID: number,
+        fusionTypeID: number
+    ): Observable<PromotionObject[]> {
+        return this
+            .http
+            .get(`api/fusion/${fusionTypeID}/configurations/${fusionID}/promotion/options`)
+            .pipe(
+                map(response => <PromotionObject[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getPromotionParents(parentTypeID: number, objectType: string ) {
-        return this.http.get(`api/${objectType}/${parentTypeID}/fieldlookup`)
-            .toPromise()
-            .then(response => response.json())
-            .then(r => {
-                r = r.sort((a, b) => {
-                    let n1 = (a.Name || '').toUpperCase();
-                    let n2 = (b.Name || '').toUpperCase();
+    getPromotionParents(parentTypeID: number, objectType: string) {
+        return this
+            .http
+            .get(`api/${objectType}/${parentTypeID}/fieldlookup`)
+            .pipe(
+                map(response => response),
+                map(r => {
+                    r = r["sort"]((a, b) => {
+                        let n1 = (a.Name || '').toUpperCase();
+                        let n2 = (b.Name || '').toUpperCase();
 
-                    return (n1 < n2) ? -1 : (n1 > n2) ? 1 : 0;
-                });
-                return r;
-            })
-            .catch(err => this.handleError(err));
+                        return (n1 < n2) ? -1 : (n1 > n2) ? 1 : 0;
+                    });
+
+                    return r;
+                }),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getPromotionRuleSteps(ruleID: number, ruleStepID: number) {
-        return this.http.get(`api/fusion/rule/${ruleID}/steps/${ruleStepID}`)
-            .toPromise() 
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+    getPromotionRuleSteps(
+        ruleID: number,
+        ruleStepID: number
+    ) {
+        return this
+            .http
+            .get(`api/fusion/rule/${ruleID}/steps/${ruleStepID}`)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
     getPromotionFusionOwnerRules(fusionID: number) {
-        return this.http.get(`api/fusion/rule/fusionOwners/${fusionID}`)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+        return this
+            .http
+            .get(`api/fusion/rule/fusionOwners/${fusionID}`)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getFindSourceFields(ruleObjectType: string, ruleObjectID: number) {
-        return this.http.get(`fields/${ruleObjectType}/${ruleObjectID}.json`)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+    getFindSourceFields(
+        ruleObjectType: string,
+        ruleObjectID: number
+    ) {
+        return this
+            .http
+            .get(`fields/${ruleObjectType}/${ruleObjectID}.json`)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
     getFindModels() {
-        return this.http.get('api/catalogs')
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+        return this
+            .http
+            .get('api/catalogs')
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
     getFindArtifactTypes() {
-        return this.http.get('api/artifacttypes?$orderby=Name')
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+        return this
+            .http
+            .get('api/artifacttypes?$orderby=Name')
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
     getFindFusionAttributeTypes() {
-        return this.http.get('api/fusion/rule/fusionattributetypes')
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+        return this
+            .http
+            .get('api/fusion/rule/fusionattributetypes')
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
     getFindAttributeTypes() {
-        return this.http.get('services/fusion/attributetypes')
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+        return this
+            .http
+            .get('services/fusion/attributetypes')
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
     getFindPromotions(fusionAttributeID: number) {
-        return this.http.get(`services/fusion/promotions/${fusionAttributeID}`)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+        return this
+            .http
+            .get(`services/fusion/promotions/${fusionAttributeID}`)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
     getFindReferenceItemTypes() {
-        return this.http.get('api/referenceitemtypes?$orderby=Name')
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+        return this
+            .http
+            .get('api/referenceitemtypes?$orderby=Name')
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
     getLineageRoles() {
-        return this.http.get('/api/fusion/rule/lineage/roles')
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+        return this
+            .http
+            .get('/api/fusion/rule/lineage/roles')
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
     getRelateIntersectTypes() {
-        return this.http.get('/api/fusion/rule/relate/intersectTypes')
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+        return this
+            .http
+            .get('/api/fusion/rule/relate/intersectTypes')
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getFusionConfigurationFromAttributeId(fusionAtttributeId: number): Promise<FusionConfigurationDetails> {
-        return this.http.get(`api/fusion/${fusionAtttributeId}/configurations/fromFusionAttribute`)
-            .toPromise()
-            .then(response => <FusionConfigurationDetails>response.json()[0])
-            .catch(err => this.handleError(err));
+    getFusionConfigurationFromAttributeId(fusionAtttributeId: number): Observable<FusionConfigurationDetails> {
+        return this
+            .http
+            .get(`api/fusion/${fusionAtttributeId}/configurations/fromFusionAttribute`)
+            .pipe(
+                map(response => <FusionConfigurationDetails>response[0]),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getFusionRelationIntersectTypes(): Promise<RelationIntersectType[]> {
-        return this.http.get('/api/fusion/rule/relate/intersectTypes')
-            .toPromise()
-            .then(response => <RelationIntersectType[]>response.json())
-            .catch(err => this.handleError(err));
+    getFusionRelationIntersectTypes(): Observable<RelationIntersectType[]> {
+        return this
+            .http
+            .get('/api/fusion/rule/relate/intersectTypes')
+            .pipe(
+                map(response => <RelationIntersectType[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getPromotionChildAttributeNodes(fusionID: number,
+    getPromotionChildAttributeNodes(
+        fusionID: number,
         targetFusionAttributeTypeID: number,
         ruleID: number,
         currentFusionAttributeTypeID: number = 0,
-        fusionAttributeID: number = 0): Promise<AttributeNode[]> {
-        return this.http.get(`api/fusion/promotion/ChildAttributeNodes?fusionID=${fusionID}&targetFusionAttributeTypeID=${targetFusionAttributeTypeID}&ruleID=${ruleID}&currentFusionAttributeTypeID=${currentFusionAttributeTypeID}&fusionAttributeID=${fusionAttributeID}`)
-            .toPromise()
-            .then(response => <AttributeNode[]>response.json())
-            .catch(err => this.handleError(err));
-    }    
-
-    putMoveFusionRuleStep(ruleID: number, ruleStepID: number, moveUp: boolean) {
-
-        return this.http.put(`form/MoveFusionRuleStep?ruleID=${ruleID}&ruleStepID=${ruleStepID}&moveUp=${moveUp}`, null)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+        fusionAttributeID: number = 0
+    ): Observable<AttributeNode[]> {
+        return this
+            .http
+            .get(`api/fusion/promotion/ChildAttributeNodes?fusionID=${fusionID}&targetFusionAttributeTypeID=${targetFusionAttributeTypeID}&ruleID=${ruleID}&currentFusionAttributeTypeID=${currentFusionAttributeTypeID}&fusionAttributeID=${fusionAttributeID}`)
+            .pipe(
+                map(response => <AttributeNode[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getFusionRuleStepPromotionHistory(ruleStepID: number): Promise<RuleStepPromotionHistoryModel[]> {
-        return this.http.get(`services/fusion/rules/steps/${ruleStepID}/promotionhistory`)
-            .toPromise()
-            .then(response => <RuleStepPromotionHistoryModel[]>response.json())
-            .catch(err => this.handleError(err));
+    putMoveFusionRuleStep(
+        ruleID: number,
+        ruleStepID: number,
+        moveUp: boolean
+    ) {
+        return this
+            .http
+            .put(`form/MoveFusionRuleStep?ruleID=${ruleID}&ruleStepID=${ruleStepID}&moveUp=${moveUp}`, null)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    deleteFusionQuery(id: number): Promise<JsonResult> {
+    getFusionRuleStepPromotionHistory(ruleStepID: number): Observable<RuleStepPromotionHistoryModel[]> {
+        return this
+            .http
+            .get(`services/fusion/rules/steps/${ruleStepID}/promotionhistory`)
+            .pipe(
+                map(response => <RuleStepPromotionHistoryModel[]>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    deleteFusionQuery(id: number): Observable<JsonResult> {
         return this.deleteDynamicWithResult(this.http, 'FusionQueryAttribute', id);
     }
 
     saveQueryAttributeType(query: FusionQueryAttributeType) {
+        let methodName = "putDynamic";
+
         if (query.ID == undefined || !query.ID) {
-            return this.postDynamic(this.http, 'fusionqueryattribute', query);
+            methodName = "postDynamic";
         }
-        return this.putDynamic(this.http, 'fusionqueryattribute', query);
+
+        return this[methodName](this.http, 'fusionqueryattribute', query);
     }
 
-    getPromotionQueryAttributes(ruleID: number): Promise<any[]> {
-        return this.http.get(`api/fusion/promotion/QueryAttributes?ruleID=${ruleID}`)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+    getPromotionQueryAttributes(ruleID: number): Observable<any> {
+        const url = `api/fusion/promotion/QueryAttributes?ruleID=${ruleID}`;
+        return this
+            .http
+            .get(url)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
     postRunMarkitLineage(id: number) {
-        return this.http.post(`form/ScheduleMarkitLineage`, { id: id })
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+        const url = `form/ScheduleMarkitLineage`;
+
+        return this
+            .http
+            .post(
+                url,
+                {id: id}
+            ).pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            )
+        ;
     }
 }

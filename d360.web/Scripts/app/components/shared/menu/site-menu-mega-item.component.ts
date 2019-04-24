@@ -12,14 +12,14 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 @Component({
     selector: 'd3s-site-menu-mega-item',    
     template: ` 
-                <a (click)="itemClick()" [ngClass]="{'menu-item truncate':true , 'dim': item.Url == null}" [ngStyle]="{'margin-left': getMargin()}" >
-                    <div style="display: inline-flex;width: inherit;">
-                        <div (click)="handleArrowClick($event)">
+                <a (click)="itemClick()" [ngClass]="{'menu-item truncate':true , 'dim': item.Url == null}">
+                    <div style="display: inline-flex;width: inherit;" [ngStyle]="{'text-indent': getMainIndent()}">
+                        <div style="margin-left: -5px;padding-right: 5px;" (click)="handleArrowClick($event)">
                             <i *ngIf="item.Items" [class]="!displayChild ? 'subitem fa fa-caret-right' : 'subitem fa fa-caret-down'" aria-hidden="true"></i>
                         </div>
-                        <div style="padding-right: 40px;" [innerHTML]="highlight() | safeHtml"></div>
-                        <div *ngIf="count > 0" style="margin-left: auto;" [ngStyle]="{'margin-right': getMargin()}" class="d3s-badge pull-right">{{count}}</div>
-                        <ng-container *ngIf="item.IsHomePage">&nbsp;&nbsp;<span style="LINE-HEIGHT: 25PX;" class="fa fa-home"></span></ng-container>
+                        <div style="padding-right: 40px; line-height: 33px;height: 22px;" [ngStyle]="{'text-indent': getSubIndent()}" [innerHTML]="highlight() | safeHtml"></div>
+                        <div *ngIf="count > 0" style="margin-left: auto;" class="d3s-badge pull-right">{{count}}</div>
+                        <ng-container *ngIf="item.IsHomePage">&nbsp;&nbsp;<span style="line-height: 25px;" class="fa fa-home"></span></ng-container>
                     </div>
                 </a>
                 <div *ngIf="displayChild">
@@ -44,10 +44,25 @@ export class SiteMenuMegaItemComponent extends BaseComponent {
         super();
     }
 
-    
+    getSubIndent() {
+        if (this.level > 0 && this.item.Items == null)
+            return ((this.level + 1) * 20) + 'px';
+        if (this.level > 0 && this.item.Items != null)
+            return '0px';
+        else
+            return null;
+    }
 
-    getMargin() {        
-        return (this.level * 10) + 'px';
+    getMainIndent() {
+        if (this.item.Items && this.level == 0) 
+            return '0px';
+        else if (this.level > 0 && this.item.Items == null)
+            return ((this.level + 1) * 20) + 'px';
+        else if (this.level > 0 && this.item.Items != null)
+            return ((this.level) * 20) + 'px';
+        else 
+            return '20px';
+        
     }
 
     private handleArrowClick(event) {

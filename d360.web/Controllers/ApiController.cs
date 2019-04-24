@@ -250,7 +250,7 @@ namespace d360.web.Controllers
                         }
                     else if (ft.Type == DataType.OwnershipLookup.ToString())
                         {
-                            //look at fusionlookup field and figure out what to show
+                            //look at ownershiplookup field and figure out what to show
                             list.AddRange(RenderOwnershipLookupField(type.ToString(), id, ft.ID));
                         }
 
@@ -3852,7 +3852,6 @@ where   R.ReferenceItemTypeID = {id}
         #endregion
 
         #region Ownership Lookup Fields
-
         private List<DetailReadOnlyRowModel> RenderOwnershipLookupField(string type, int id, int fieldTypeID)
         {
             var list = new List<DetailReadOnlyRowModel>();
@@ -3880,7 +3879,8 @@ where   R.ReferenceItemTypeID = {id}
                                         LookupObjectType = type,
                                         LookupObjectID = id,
                                         LookupFieldTypeID = ft.ID,
-                                        LookupType = (int)DataType.OwnershipLookup
+                                        LookupType = (int)DataType.OwnershipLookup,
+                                        Value = "-1" //If value is set to null/empty table is not rendered in detail view
                                     }
                                 },
                         Category = ft.Category
@@ -3930,11 +3930,35 @@ SELECT  R.ResponsibilityTypeName,
         SecurityAssetID, 
         case SecurityAsset when 'R' then '' else SecurityAssetName end as SecurityAssetName, 
         'Preview' as SecurityAssetContext, 
-        U.FirstName + ' ' + U.LastName as ResourceName, 
-        R.ResourceID, 
-        'Resource' as ResourceObject, 
+        case @isExpand
+		 when 1
+			then U.FirstName + ' ' + U.LastName 
+		 when 0 
+			then SecurityAssetName
+		end as ResourceName,        R.ResourceID, 
+        case @isExpand
+			when 1 
+			  then 'Resource'
+			when 0
+			  then 
+				case SecurityAssetName
+				when ResourceName
+					then 'Resource'
+				else 'Group'
+			end 
+		end as ResourceObject,
         'Preview' as ResourceItemContext, 
-        '/resource/' + cast(R.ResourceID as varchar) as ResourceItemUrl,
+         case @isExpand
+			when 1 
+			  then '/resource/' + cast(R.ResourceID as varchar)
+			when 0
+			  then 
+				case SecurityAssetName
+				when ResourceName
+					then '/resource/' + cast(R.ResourceID as varchar)
+				else '/group/' + cast(SecurityAssetID as varchar)
+				end
+		end as ResourceItemUrl,
         R.Context
 from    [dbo].[ResponsibilityDetail] R
         inner join Asset A on A.ID = @assetId        
@@ -3995,7 +4019,22 @@ where   R.IsVisible = 1 and ((R.AssetID = @assetId) or (R.ApplyToType = 1 and R.
                     filtertype = "textbox"
                 });
 
-                results = Company.Query<dynamic>(sql, new { assetId }).Distinct();
+                results = Company.Query<dynamic>(sql, new { assetId, isExpand = def.ExpandGroupMembership }).Distinct();
+                if (!def.ExpandGroupMembership) {
+                    var temp = new List<dynamic>();
+                    List<string> insertedKeys = new List<string>();
+                    foreach(var item in results)
+                    {
+                        if (!insertedKeys.Contains(item.ResourceName))
+                        {
+                            temp.Add(item);
+                            insertedKeys.Add(item.ResourceName);
+                        }
+                    }
+                    results = temp;
+                }
+
+
             }
             catch (Exception ex)
             {
@@ -4011,6 +4050,11 @@ where   R.IsVisible = 1 and ((R.AssetID = @assetId) or (R.ApplyToType = 1 and R.
                 Columns = columns,
                 Fields = gridFields
             });
+        }
+
+        private object GetPropertyValue(object obj, string propertyName)
+        {
+            return obj.GetType().GetProperty(propertyName).GetValue(obj, null);
         }
 
         #endregion
@@ -4265,29 +4309,60 @@ order by C.DisplayValue";
 
         [Route("groups/{groupID:int}/ownership/{type}/{id:int}")]
         public IEnumerable<dynamic> GetResponsibilitiesByGroupByType(int groupID, SystemObjects type, int id)
-        {
-            return Company.Query<dynamic>(@"
-select	RD.SecurityAsset,
-		RD.SecurityAssetID,
-		RD.SecurityAssetName,
-		RD.ResourceID,
-		RD.ResponsibilityTypeID,
-		RD.Type,
-		RD.TypeID,
-		T.Name as TypeName,
-		RD.Object,
-		RD.ObjectID,
-		utility.GetAssetDisplayValueWrapper(RD.AssetID) as ObjectName,
-		RD.ResponsibilityTypeName,
-		case RD.SecurityAsset
-			when 'G' then 'Via Group'
-			when 'O' then 'Via Organization'
-			else ''
-		end as Via,
-        RD.Context
-from	ResponsibilityDetail RD
-		inner join AssetType T on T.Object = RD.Type and T.ObjectID = RD.TypeID and RD.SecurityAsset = 'G' and RD.SecurityAssetID = @groupID 
-            and T.Object = @o and T.ObjectID = @id and RD.IsVisible = 1", new { groupID, o = type.ToString(), id });
+        {            
+            var sql = $@"
+		select 
+			RD.SecurityAsset,
+		    RD.SecurityAssetID,
+		    RD.SecurityAssetName,
+		    RD.ResourceID,
+		    RD.ResponsibilityTypeID,
+		    T.Object as Type,
+		    T.ObjectID as TypeID,
+		    T.Name as TypeName,
+		    A.Object,
+		    A.ObjectID,
+		    utility.GetAssetDisplayValueWrapper(A.ID) as ObjectName,
+		    RD.ResponsibilityTypeName,
+		    case RD.SecurityAsset
+			    when 'G' then 'Via Group'
+			    when 'O' then 'Via Organization'
+			    else ''
+		    end as Via,
+            RD.Context 
+		from 
+		ResponsibilityDetail RD 
+		inner join AssetType T on T.ObjectID = RD.TypeID and T.Object = RD.Type and T.Object = @type and T.ObjectID = @id
+		inner join Asset A on A.AssetTypeID = T.ID
+		where RD.SecurityAsset = 'G' and RD.SecurityAssetID = @groupID and AssetID = 0 and ApplyToType = 1 and RD.IsVisible = 1
+		
+		union all
+
+		select	RD.SecurityAsset,
+		        RD.SecurityAssetID,
+		        RD.SecurityAssetName,
+		        RD.ResourceID,
+		        RD.ResponsibilityTypeID,
+		        RD.Type,
+		        RD.TypeID,
+		        T.Name as TypeName,
+		        RD.Object,
+		        RD.ObjectID,
+		        utility.GetAssetDisplayValueWrapper(RD.AssetID) as ObjectName,
+		        RD.ResponsibilityTypeName,
+		        case RD.SecurityAsset
+			        when 'G' then 'Via Group'
+			        when 'O' then 'Via Organization'
+			        else ''
+		        end as Via,
+                RD.Context
+        from	ResponsibilityDetail RD
+		        inner join AssetType T on T.Object = RD.Type and T.ObjectID = RD.TypeID and T.Object = @type and T.ObjectID = @id
+        where  RD.AssetID != 0 
+            and RD.ApplyToType = 0 and RD.IsVisible = 1
+            and RD.SecurityAsset = 'G' and RD.SecurityAssetID = @groupID
+";
+            return Company.Query<dynamic>(sql, new { groupID, type = type.ToString(), id });
         }
 
         [Route("ownership/types")]

@@ -1,8 +1,12 @@
-﻿import {Component, Input, OnInit, OnDestroy} from '@angular/core';
-import {Router, ActivatedRoute} from '@angular/router';
-import {BaseComponent} from '../../shared/base.component';
+﻿import {Component, OnInit} from '@angular/core';
+import {ActivatedRoute, Router} from '@angular/router';
+import {Subject} from "rxjs";
+import {takeUntil} from "rxjs/operators";
+
 import {ObjectDetailService} from '../../../services/object-detail.service';
 import {FusionService} from '../../../services/fusion.service';
+
+import {BaseComponent} from '../../shared/base.component';
 
 @Component({
     selector: 'd3s-ownership',
@@ -22,9 +26,8 @@ import {FusionService} from '../../../services/fusion.service';
     ]
 })
 
-export class OwnershipComponent extends BaseComponent implements OnInit, OnDestroy {
-
-    private sub: any;
+export class OwnershipComponent extends BaseComponent implements OnInit {
+    destroySubject$: Subject<void> = new Subject();
 
     constructor(
         private route: ActivatedRoute,
@@ -36,16 +39,20 @@ export class OwnershipComponent extends BaseComponent implements OnInit, OnDestr
     }
 
     ngOnInit() {
-        this.sub = this.route.params.subscribe(
+        this.route.params.subscribe(
             params => {
                 this.assetID = +params['assetID'];
 
                 this.objectDetailService.getAsset(this.assetID).subscribe(
                     res => {
                         if (res.Type == "FusionType") {
-                            this.fusionservice.getFusionConfigurationsByType(res.TypeID).then(fus => {
-                                this.objectName = fus[0].Name;
-                            })
+                            this.fusionservice
+                                .getFusionConfigurationsByType(res.TypeID)
+                                .pipe(takeUntil(this.destroySubject$))
+                                .subscribe(
+                                    fus => {
+                                        this.objectName = fus[0].Name;
+                                    })
                         } else {
                             this.objectName = res.DisplayValue;
                         }
@@ -53,9 +60,5 @@ export class OwnershipComponent extends BaseComponent implements OnInit, OnDestr
                 );
             }
         );
-    }
-
-    ngOnDestroy() {
-        this.sub.unsubscribe();
     }
 }
