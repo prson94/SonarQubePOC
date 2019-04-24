@@ -29,7 +29,8 @@ namespace d360.web.Controllers.V2
     [
         ApiVersion("2.0"),
         RoutePrefix("api/v{version:apiVersion}/fields"),
-        Authorize
+        Authorize,
+        StringEnumController
     ]
     public class FieldsController : BaseV2ApiController
     {
@@ -213,8 +214,11 @@ select	@pageSize as 'pageSize',
 		        FT.Name,
 		        FT.FriendlyName,
 		        FT.Category,
+				IIF(FT.Object = 'IssueType', O_I.Uid , null) as ActionTypeUid,
+				IIF(FT.Object <> 'IssueType' AND FT.Object <> 'IntersectType', O_A.Uid , null) as AssetTypeUid,
+				IIF(FT.Object = 'IntersectType', O_R.Uid , null) as RelationshipTypeUid,
 
-		        case when FT.Type = 'Boolean' then FT.ColumnOrder else null end as 'Type.Boolean.ColumnOrder',
+                case when FT.Type = 'Boolean' then FT.ColumnOrder else null end as 'Type.Boolean.ColumnOrder',
 		        case when FT.Type = 'Boolean' then FT.ColumnWidth else null end as 'Type.Boolean.ColumnWidth',
 		        case when FT.Type = 'Boolean' then FT.SortOrder else null end as 'Type.Boolean.SortOrder',
 		        case when FT.Type = 'Boolean' then TRY_CAST(FT.DefaultValue as bit) else null end as 'Type.Boolean.DefaultValue',
@@ -224,14 +228,18 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Boolean' then FT.IsEditable else null end as 'Type.Boolean.IsEditable',
 		        case when FT.Type = 'Boolean' then FT.IsListable else null end as 'Type.Boolean.IsListable',
 		        case when FT.Type = 'Boolean' then FT.IsPartOfKey else null end as 'Type.Boolean.IsPartOfKey',
-		        case when FT.Type = 'Boolean' then FT.IsPrimaryFilter else null end as 'Type.Boolean.IsPrimaryFilter',
+		        case when FT.Type = 'Boolean' then FT.IsPrimaryFilter else null end as 'Type.Boolean.IsPrimaryFilter', 
+                case when FT.Type = 'Boolean' then FT.ShowIfEmpty else null end as 'Type.Boolean.ShowIfEmpty', 
 
 		        case when FT.Type = 'FusionLookup' then FT.ColumnOrder else null end as 'Type.ComputedFusionLookup.ColumnOrder',
 
 		        case when FT.Type = 'OwnershipLookup' then FT.ColumnOrder else null end as 'Type.ComputedOwnershipLookup.ColumnOrder',
 		        case when FT.Type = 'OwnershipLookup' then FT.DisplayDescription else null end as 'Type.ComputedOwnershipLookup.Description.Display',
-		        case when FT.Type = 'OwnershipLookup' then JSON_VALUE(FTL.Definition, '$.DisplayAssignmentSource') else null end as 'Type.ComputedOwnershipLookup.DisplayAssignmentSource',
-		        case when FT.Type = 'OwnershipLookup' then JSON_VALUE(FTL.Definition, '$.ExpandGroupMembership') else null end as 'Type.ComputedOwnershipLookup.ExpandGroupMembership',
+		        case when FT.Type = 'OwnershipLookup' then FTL.HideHeader else null end as 'Type.ComputedOwnershipLookup.HideHeader', 
+		        case when FT.Type = 'OwnershipLookup' then FTL.HideFooter else null end as 'Type.ComputedOwnershipLookup.HideFooter', 
+		        case when FT.Type = 'OwnershipLookup' then FTL.HideFilter else null end as 'Type.ComputedOwnershipLookup.HideFilter', 
+                case when FT.Type = 'OwnershipLookup' then try_cast(JSON_VALUE(FTL.Definition, '$.DisplayAssignmentSource') as bit) else null end as 'Type.ComputedOwnershipLookup.DisplayAssignmentSource',
+		        case when FT.Type = 'OwnershipLookup' then try_cast(JSON_VALUE(FTL.Definition, '$.ExpandGroupMembership') as bit) else null end as 'Type.ComputedOwnershipLookup.ExpandGroupMembership',
 		        case when FT.Type = 'OwnershipLookup' then FT.IsDisplayable else null end as 'Type.ComputedOwnershipLookup.IsDisplayable',
 		        case when FT.Type = 'OwnershipLookup' then FT.ShowIfEmpty else null end as 'Type.ComputedOwnershipLookup.ShowIfEmpty',
 
@@ -378,17 +386,24 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Lookup' then FT.ColumnOrder else null end as 'Type.Lookup.ColumnOrder',
 		        case when FT.Type = 'Lookup' then FT.ColumnWidth else null end as 'Type.Lookup.ColumnWidth',
 		        case when FT.Type = 'Lookup' then FT.SortOrder else null end as 'Type.Lookup.SortOrder',
-		        case when FT.Type = 'Lookup' then FT.DefaultValue else null end as 'Type.Lookup.DefaultValue',
+		        case when FT.Type = 'Lookup' then DFA.[Uid] else null end as 'Type.Lookup.DefaultValue',
 		        case when FT.Type = 'Lookup' then FT.DisplayDescription else null end as 'Type.Lookup.Description.Display',
 		        case when FT.Type = 'Lookup' then FT.FormDescription else null end as 'Type.Lookup.Description.Form',
-		        case when FT.Type = 'Lookup' then FT.AllowAllValue else null end as 'Type.Lookup.Validation.AllowAllValue',
-		        case when FT.Type = 'Lookup' then FT.AllowAllLabel else null end as 'Type.Lookup.Validation.AllAllLabel',
+		        case when FT.Type = 'Lookup' then coalesce(try_cast(FT.AllowAllValue as bit), cast(0 as bit)) else null end as 'Type.Lookup.Validation.AllowAllValue',
+		        case when FT.Type = 'Lookup' then case when try_cast(FT.AllowAllValue as bit) = 1 then FT.AllowAllLabel else null end else null end as 'Type.Lookup.Validation.AllAllLabel',
 		        case when FT.Type = 'Lookup' then FilterFT.[Name] else null end as 'Type.Lookup.Filter.FieldTypeName',
 		        case when FT.Type = 'Lookup' then FilterPT.[Uid] else null end as 'Type.Lookup.Filter.PredicateUid',
 		        case when FT.Type = 'Lookup' then FT.FilterPredicateDirection else null end as 'Type.Lookup.Filter.UseDirection',
 		        case when FT.Type = 'Lookup' then FT.LookupDisplayFormat else null end as 'Type.Lookup.Format.Display',
 		        case when FT.Type = 'Lookup' then FT.LookupEditFormat else null end as 'Type.Lookup.Format.Edit',
-		        case when FT.Type = 'Lookup' then LookupOT.Uid else null end as 'Type.Lookup.List.Uid',
+		        case when FT.Type = 'Lookup' and FT.LookupObjectType not in ('ReferenceItemType', 'TaxonomyType') then LookupOT.Uid else null end as 'Type.Lookup.List.Uid',
+				case 
+					when FT.Type = 'Lookup' and LookupOT.Uid is not null and FT.LookupObjectType not in ('ReferenceItemType', 'TaxonomyType') then LookupOT.Class 
+					when FT.Type = 'Lookup' and FT.LookupObjectType = 'TaxonomyType' and FT.LookupObjectID = 0 then 2
+					when FT.Type = 'Lookup' and FT.LookupObjectType = 'ReferenceItemType' and FT.LookupObjectID = 0 then 9
+					when FT.Type = 'Lookup' and LookupOT.Uid is null and FT.LookupObjectID <> 0 then 0 
+                    else null 
+				end as 'Type.Lookup.List.Class',
 		        case when FT.Type = 'Lookup' then FT.AllowMultipleValues else null end as 'Type.Lookup.List.AllowMultipleValues',
 		        case when FT.Type = 'Lookup' then FT.IsDisplayable else null end as 'Type.Lookup.IsDisplayable',
 		        case when FT.Type = 'Lookup' then FT.IsEditable else null end as 'Type.Lookup.IsEditable',
@@ -449,13 +464,30 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Text' then FT.IsPrimaryFilter else null end as 'Type.Text.IsPrimaryFilter',
 		        case when FT.Type = 'Text' then FT.ShowIfEmpty else null end as 'Type.Text.ShowIfEmpty'
         from	FieldType FT
-		        left join FieldTypeLookup FTL on FTL.FieldTypeID = FT.ID
+				left join AssetType O_A on O_A.ID = FT.AssetTypeID 
+				left join IssueType O_I on FT.Object = 'IssueType' and O_I.ID = FT.ObjectID 
+				left join IntersectType O_R on FT.Object = 'IntersectType' and O_R.ID = FT.ObjectID 
+                
+                left join FieldTypeLookup FTL on FTL.FieldTypeID = FT.ID
 		        left join IntersectType IT on (FT.[Type] = 'FieldFromRelationship' or FT.[Type] = 'RefListRelationship' or FT.[Type] = 'Relationship') and FT.LookupObjectType = 'IntersectType' and IT.ID = FT.LookupObjectID
 		        left join FieldType LFT on FT.[Type] = 'FieldFromRelationship' and LFT.ID = FT.LookupObjectFieldTypeID
 
 		        left join FieldType FilterFT on FT.[Type] = 'Lookup' and FilterFT.ID = FT.FilterFieldTypeID
 		        left join [Predicate] FilterPT on FT.[Type] = 'Lookup' and FilterPT.ID = FT.FilterPredicateID
-		        left join [AssetType] LookupOT on FT.[Type] = 'Lookup' and LookupOT.[Object] = FT.LookupObjectType and LookupOT.ObjectID = FT.LookupObjectID
+		        left join [AssetType] LookupOT on FT.[Type] = 'Lookup' 
+													and LookupOT.[Object] = case FT.LookupObjectType 
+																				when 'ReferenceItemType' then FT.LookupObjectType 
+																				else FT.LookupObjectType+'Type' 
+																			end 
+													and LookupOT.ObjectID = FT.LookupObjectID 
+				outer apply (
+							select	top 1 
+									Uid 
+							from	Asset 
+							where	FT.[Type] = 'Lookup' 
+									and Object = FT.LookupObjectType 
+									and ObjectID = try_cast(FT.DefaultValue as int)
+							) DFA 
         {whereClause}
         order by FT.Object, FT.ObjectID, FT.Name
         offset ((@pageNum-1) * @pageSize) rows fetch next @pageSize rows only
@@ -996,6 +1028,61 @@ from	IntersectType I
                         }
                         newFieldType.AllowAllLabel = f.Type.Lookup.AllowAllLabel;
                         newFieldType.AllowAllValue = f.Type.Lookup.AllowAllValue;
+                        if (f.Type.Lookup.List != null)
+                        {
+                            newFieldType.AllowMultipleValues = f.Type.Lookup.List.AllowMultipleValues;
+                            if (f.Type.Lookup.List.Class.HasValue && f.Type.Lookup.List.Uid.HasValue)
+                            {
+                                var listAssetType = Company.Filter<AssetType>(i => i.uid == f.Type.Lookup.List.Uid.Value).SingleOrDefault();
+                                if (listAssetType != null)
+                                {
+                                    newFieldType.LookupObjectType = listAssetType.Object.Replace("Type", "");
+                                    newFieldType.LookupObjectID = listAssetType.ObjectID;
+                                }
+                                else
+                                {
+                                    throw new RestApiException(HttpStatusCode.NotFound, "List Asset Type not found", $"Asset Type not found for field [{f.Name}].");
+                                }
+                            }
+                            else if (f.Type.Lookup.List.Class.HasValue && !f.Type.Lookup.List.Uid.HasValue)
+                            {
+                                if (f.Type.Lookup.List.Class.Value == AssetTypeClass.Model)
+                                {
+                                    newFieldType.LookupObjectType = "TaxonomyType";
+                                    newFieldType.LookupObjectID = 0;
+                                }
+                                else if (f.Type.Lookup.List.Class.Value == AssetTypeClass.Model)
+                                {
+                                    newFieldType.LookupObjectType = "ReferenceItemType";
+                                    newFieldType.LookupObjectID = 0;
+                                }
+                                else
+                                {
+                                    throw new RestApiException(HttpStatusCode.BadRequest, "Field Type - list not specified", $"Lookup Field Type is incomplete as it does not have a valid class specified.");
+                                }
+                            }
+                            else if (!f.Type.Lookup.List.Class.HasValue && f.Type.Lookup.List.Uid.HasValue)
+                            {
+                                var listAssetType = Company.Filter<AssetType>(i => i.uid == f.Type.Lookup.List.Uid.Value).SingleOrDefault();
+                                if (listAssetType != null)
+                                {
+                                    newFieldType.LookupObjectType = listAssetType.Object.Replace("Type", "");
+                                    newFieldType.LookupObjectID = listAssetType.ObjectID;
+                                }
+                                else
+                                {
+                                    throw new RestApiException(HttpStatusCode.NotFound, "List Asset Type not found", $"Asset Type not found for field [{f.Name}].");
+                                }
+                            }
+                            else
+                            {
+                                throw new RestApiException(HttpStatusCode.BadRequest, "Field Type - list not specified", $"Lookup Field Type is incomplete as it does not have a List specified.");
+                            }
+                        }
+                        else
+                        {
+                            throw new RestApiException(HttpStatusCode.BadRequest, "Field Type - list not specified", $"Lookup Field Type is incomplete as it does not have a List specified.");
+                        }
                         if (f.Type.Lookup.Filter != null)
                         {
                             var filterFieldType = Company.Query<int>(@"select ID from FieldType where Object = @t and ObjectID = @tid and Name = @n", new { t = typeIdentifierInfoModel.Object, tid = typeIdentifierInfoModel.ObjectID, n = f.Type.Lookup.Filter.FieldTypeName }).FirstOrDefault();
