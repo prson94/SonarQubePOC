@@ -16,7 +16,7 @@ namespace d360.core.entities.Workflow
         public string Description { get; set; }
 
         public int? CreatedBy { get; set; }
-        
+
         public DateTime? CreatedOn { get; set; }
 
         public int? UpdatedBy { get; set; }

@@ -323,7 +323,7 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// GET a list of asset types.
         /// </summary>
-        /// <param name="_assetTypeClass">Allows for filtering the Asset type's by Class.</param>
+        /// <param name="Class">Allows for filtering the Asset type's by Class.</param>
         /// <returns></returns>
         [
             HttpGet,
@@ -332,7 +332,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "A list of asset types.", typeof(List<AssetTypeApiViewModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
-        public async Task<HttpResponseMessage> GetAssetTypesAsync(core.enums.AssetTypeClass? _assetTypeClass = null)
+        public async Task<HttpResponseMessage> GetAssetTypesAsync(core.enums.AssetTypeClass? Class = null)
         {
             var prefix = "Assets.GetAssetTypesAsync => ";
             var errorMessage = "";
@@ -341,9 +341,9 @@ namespace d360.web.Controllers.V2
             {
                 var dbArgs = new DynamicParameters();
                 string condition = "";
-                if (_assetTypeClass.HasValue)
+                if (Class.HasValue)
                 {
-                    var Id = (int)_assetTypeClass;
+                    var Id = (int)Class;
                     dbArgs.Add("@Id", Id.ToString());
                     condition = "and A.[Class]=@Id";
                 }

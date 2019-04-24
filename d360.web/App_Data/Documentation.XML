@@ -2868,7 +2868,7 @@
             <summary>
             GET a list of asset types.
             </summary>
-            <param name="_assetTypeClass">Allows for filtering the Asset type's by Class.</param>
+            <param name="Class">Allows for filtering the Asset type's by Class.</param>
             <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.V2.AssetsController.GetAssetsAsync(System.Guid)">

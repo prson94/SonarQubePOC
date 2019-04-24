@@ -68,10 +68,11 @@ export class ChildrenComponent extends BaseComponent implements OnInit, OnDestro
     private load() {
         this.isLoading = true;
 
-        this.objectStatisticsService.getObjectStatistics(this.objectID, this.objectType)
-            .then(res => {
+        this.objectStatisticsService.getObjectStatistics(this.objectID, this.objectType).subscribe(
+            res => {
                 this.children = res.Items;
                 this.selected = this.children.length > 0 ? this.children[0] : null;
+
                 this.isLoading = false;
             });
 
@@ -80,5 +81,6 @@ export class ChildrenComponent extends BaseComponent implements OnInit, OnDestro
                 this.objectName = res.DisplayValue;
             }
         );
+
     }
 }
