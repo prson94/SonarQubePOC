@@ -1,18 +1,27 @@
 ﻿import { Injectable } from '@angular/core';
-import { Headers, Http } from '@angular/http';
 import { MessagesService } from './messages.service';
-import { BaseService } from './base.service';
 import { ObjectStyle } from '../models/object-style.model';
+import {BaseObservableService} from "./baseObservable.service";
+import {HttpClient} from "@angular/common/http";
+import {Observable} from "rxjs";
+import {catchError, map} from "rxjs/operators";
 
 @Injectable()
-export class ObjectStyleService extends BaseService {
+export class ObjectStyleService extends BaseObservableService {
+    constructor(
+        private http: HttpClient,
+        messagesService: MessagesService
+    ) {
+        super(messagesService);
+    }
 
-    constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
-
-    getObjectStyle(objectID: number, objectType: string): Promise<ObjectStyle> {
-        return this.http.get(`api/${objectType}/${objectID}/style`)
-            .toPromise()
-            .then(response => <ObjectStyle>response.json())
-            .catch(err => this.handleError(err));
+    getObjectStyle(
+        objectID: number,
+        objectType: string
+    ): Observable<ObjectStyle> {
+        return this.http.get(`api/${objectType}/${objectID}/style`).pipe(
+            map(response => <ObjectStyle>response),
+            catchError(err => this.handleError(err))
+        );
     }
 }
