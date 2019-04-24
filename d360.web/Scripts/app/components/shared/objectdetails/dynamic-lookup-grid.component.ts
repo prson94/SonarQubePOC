@@ -93,7 +93,6 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnInit 
     }
 
     export() {
-        //console.log('export', this.field);
         this.objectDetailService.getLookupGridExport(this.field.LookupObjectType, this.field.LookupObjectID, this.field.LookupFieldTypeID, this.field.LookupType);
     }
 
@@ -102,7 +101,6 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnInit 
         let direction = e.order;
         let col = this.visibleColumns.find(c => c.datafield == field);
         let type = col == null ? '' : col.type;
-
 
         this.data.Values = this.data.Values.slice().sort((a, b) => {
             let fa = a[field];
