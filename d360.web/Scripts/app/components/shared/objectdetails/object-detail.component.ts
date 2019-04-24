@@ -68,7 +68,7 @@ export class ObjectDetailComponent implements OnChanges {
                                         f.Data = i;
                                     })
                                     .then(() => {
-                                        if (!f.Data || !f.Data.Values || f.Data.Values.length == 0) {
+                                        if ((!f.Data || !f.Data.Values || f.Data.Values.length == 0) && (!f.ShowIfEmpty)) {
                                             f.Type = DetailFieldType.None;
                                             r.FirstColumnFields.splice(r.FirstColumnFields.indexOf(f), 1);
                                         }
@@ -92,7 +92,7 @@ export class ObjectDetailComponent implements OnChanges {
                                         s.Data = i;
                                     })
                                     .then(() => {
-                                        if (!s.Data || !s.Data.Values || s.Data.Values.length == 0) {
+                                        if ((!s.Data || !s.Data.Values || s.Data.Values.length == 0)&& (!s.ShowIfEmpty) ){
                                             s.Type = DetailFieldType.None;
                                             r.SecondColumnFields.splice(r.SecondColumnFields.indexOf(s), 1);
                                         }
