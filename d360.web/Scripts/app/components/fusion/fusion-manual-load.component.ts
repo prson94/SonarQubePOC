@@ -1,11 +1,18 @@
-﻿import { Input, Component, OnInit, OnDestroy } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
-import { BaseComponent } from '../shared/base.component';
-import { FusionService } from '../../services/fusion.service';
-import { FusionConfigurationDetails } from '../../models/fusion.model';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import { MessagesService } from '../../services/messages.service';
-import { JsonResult } from '../../models/jsonresult.model';
+﻿import {Component, OnInit} from '@angular/core';
+import {ActivatedRoute, Router} from '@angular/router';
+import {takeUntil} from "rxjs/operators";
+import {Subject} from "rxjs";
+
+import {JsonResult} from '../../models/jsonresult.model';
+import {FusionConfigurationDetails} from '../../models/fusion.model';
+
+import {FusionService} from '../../services/fusion.service';
+import {MessagesService} from '../../services/messages.service';
+
+import {SiteUrlHelpers} from '../../static/site-url-helpers';
+
+import {BaseComponent} from '../shared/base.component';
+
 
 @Component({
     selector: 'd3s-fusion-manual-load',
@@ -13,13 +20,16 @@ import { JsonResult } from '../../models/jsonresult.model';
     providers: [FusionService],
 })
 
-export class FusionManualLoadComponent extends BaseComponent implements OnInit, OnDestroy {
+export class FusionManualLoadComponent extends BaseComponent implements OnInit {
     fusionID: number = 0;
     fusionTypeID: number = 0;
     fusionName: string;
     uploadedFiles: any[] = [];
     fusion: FusionConfigurationDetails;
-    sub: any;
+    routeParams: any;
+    getFusionConfiguration: any;
+
+    destroySubject$: Subject<void> = new Subject();
 
     private selectedFusionAttributeTypeId: number;
 
@@ -33,36 +43,43 @@ export class FusionManualLoadComponent extends BaseComponent implements OnInit, 
     }
 
     ngOnInit() {
-        this.sub = this.route.params.subscribe(params => {
-            this.fusionID = +params['fusionId']; // (+) converts string 'id' to a number
+        this.route.params
+            .pipe(takeUntil(this.destroySubject$))
+            .subscribe(
+                params => {
+                    this.fusionID = +params['fusionId']; // (+) converts string 'id' to a number
 
-            this.fusionService.getFusionConfiguration(this.fusionID).then(res => {
-                this.fusion = res;
-                this.fusionName = res.Name;
-                this.fusionTypeID = res.FusionTypeID;
-            });
-        });
+                    this.fusionService
+                        .getFusionConfiguration(this.fusionID)
+                        .pipe(takeUntil(this.destroySubject$))
+                        .subscribe(
+                            res => {
+                                this.fusion = res;
+                                this.fusionName = res.Name;
+                                this.fusionTypeID = res.FusionTypeID;
+                            }
+                        )
+                    ;
+                }
+            );
     }
 
     onErrorFileUpload(event: any) {
-        
-        if (event.xhr &&  event.xhr.status > 300) {
+        if (event.xhr && event.xhr.status > 300) {
             try {
                 let result: JsonResult;
+
                 result = JSON.parse(event.xhr.responseText);
                 this.messagesService.showError(result.title, result.message);
             } catch (e) {
                 let msg: string = "";
                 let errMsg = JSON.parse(event.xhr.responseText);
+
                 msg = errMsg.message != null ? errMsg.message : event.xhr.responseText;
                 this.messagesService.showError('Error', msg);
             }
         }
-      
-    }
 
-    ngOnDestroy() {
-        this.sub.unsubscribe();
     }
 
     private fileUploadUrl() {
@@ -71,15 +88,16 @@ export class FusionManualLoadComponent extends BaseComponent implements OnInit, 
 
     private onUpload(event) {
         let msg: string = "";
-        
+
         for (let file of event.files) {
             this.uploadedFiles.push(file);
             msg += file.name + "; ";
         }
 
-        if (event.xhr &&  event.xhr.status == 200) {
+        if (event.xhr && event.xhr.status == 200) {
             try {
                 let result: JsonResult;
+
                 result = JSON.parse(event.xhr.responseText);
                 this.messagesService.showInfoMessage(result.title, result.message);
             } catch (e) {
@@ -91,15 +109,16 @@ export class FusionManualLoadComponent extends BaseComponent implements OnInit, 
     }
 
     private downloadTemplate() {
-        if (this.fusionID == undefined|| this.fusionID == null || !this.fusionTypeID || !this.selectedFusionAttributeTypeId) {
+        if (this.fusionID == undefined || this.fusionID == null || !this.fusionTypeID || !this.selectedFusionAttributeTypeId) {
             console.log("ERROR - NO FUSION / FUSIONATTRIBUTE TYPE ID POPULATED");
 
             return;
         }
+
         this.fusionService.downloadFusionManualLoadTemplate(this.fusionID, this.fusionTypeID, this.selectedFusionAttributeTypeId);
     }
 
     private goToFusion() {
         this.router.navigateByUrl(SiteUrlHelpers.SITE_URL_FUSION_ROOT);
     }
-};
+}

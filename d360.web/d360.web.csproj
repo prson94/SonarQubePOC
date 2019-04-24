@@ -597,6 +597,11 @@
     <Content Include="Scripts\app\components\fusion\fusion-attribute-details.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-attribute.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-data-profile-detail.component.html" />
+    <Content Include="Scripts\app\components\fusion\fusion-agent-errors.component.html" />
+    <Content Include="Scripts\app\components\fusion\fusion-agent-history.component.html" />
+    <Content Include="Scripts\app\components\fusion\fusion-configurations.component.html" />
+    <Content Include="Scripts\app\components\fusion\fusion-history.component.html" />
+    <Content Include="Scripts\app\components\fusion\fusion-item.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-manual-load.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-attribute-tabs.component.html" />
     <Content Include="Scripts\app\components\mapping\mapping.component.html" />
@@ -625,6 +630,7 @@
     <Content Include="Scripts\app\components\shared\fielddefinition\field-type-form\field-type.form.html" />
     <Content Include="Scripts\app\components\shared\menu\site-menu.component.html" />
     <Content Include="Scripts\app\components\shared\object-definition.tile.html" />
+    <Content Include="Scripts\app\components\shared\objectdetails\dynamic-lookup-grid.component.html" />
     <Content Include="Scripts\app\components\shared\objectgovernance\artifact-status.component.html" />
     <Content Include="Scripts\app\components\shared\objectdetails\object-detail-field.component.html" />
     <Content Include="Scripts\app\components\shared\preview-tooltip.component.html" />
@@ -1030,6 +1036,7 @@
     <None Include="Properties\PublishProfiles\LocalFolder.pubxml" />
     <Content Include="Views\Authentication\NoAccess.cshtml" />
     <Content Include="Scripts\app\components\shared\relationship\dynamic-relationship-grid.component.html" />
+    <Content Include="tslint.json" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -1138,7 +1145,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-responsibility-selector.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\fielddefinition\field-type-form\field-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\grid-selection-info.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\header\header-mini-menu-component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\responsibility-relations.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\responsibility-relation.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\fusion-attribute-profile-details.component.ts" />
