@@ -2367,18 +2367,6 @@
             </summary>
             <returns>An HTTP status code and message.</returns>
         </member>
-        <member name="T:d360.web.Controllers.Services.SearchController">
-            <summary>
-            Search everything in Data3Sixty.
-            </summary>
-        </member>
-        <member name="M:d360.web.Controllers.Services.SearchController.GetSearchResults(System.String)">
-            <summary>
-            
-            </summary>
-            <param name="phrase"></param>
-            <returns></returns>
-        </member>
         <member name="T:d360.web.Controllers.V2.FieldsController">
             <summary>
             This service houses all endpoints handling glossary-related data such as artifacts and models.
@@ -2880,7 +2868,7 @@
             <summary>
             GET a list of asset types.
             </summary>
-            <param name="_assetTypeClass">Allows for filtering the Asset type's by Class.</param>
+            <param name="Class">Allows for filtering the Asset type's by Class.</param>
             <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.V2.AssetsController.GetAssetsAsync(System.Guid)">
