@@ -31,7 +31,7 @@ import { SubscriptionLike as ISubscription } from 'rxjs';
                             [autoHighlight]="true"
                             (onSelect)="selectItem()">                       
                     </p-autoComplete>                    
-                <div *ngIf="!lastItem && showSeperator" class="sep breadcrumb"><i class="fa fa-angle-right"></i></div>                
+                <div *ngIf="!lastItem && showSeperator" class="sep breadcrumb">::</div>                
                 <p-overlayPanel #treePanel>  
                         <input type="text" pInputText [(ngModel)]="searchValue" placeholder="Search" style="width: 100%;">                      
                         <p-tree [value]="treeItems | treeSearch: searchValue" selectionMode="single" [(selection)]="breadcrumb.selectedTreeNode" styleClass="breadcrumbTree" [style]="{'max-height':maxOverlayHeight,'overflow':'auto','line-height':'25px'}" 
