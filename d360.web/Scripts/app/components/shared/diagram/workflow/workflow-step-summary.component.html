@@ -229,6 +229,7 @@
                                 <tr>
                                     <th>Label</th>
                                     <th>Type</th>
+                                    <th>Required?</th>
                                 </tr>
                             </ng-template>
                             <ng-template pTemplate="body"
@@ -237,6 +238,11 @@
                                     <td>{{item['@label']}}</td>
                                     <td>
                                         {{getTypeLabel(item)}}
+                                    </td>
+                                    <td>
+                                        <i *ngIf="(item['@required']=='true'|| item['@required']==true || (item['@type']=='boolean')); else elseBlock" class="fa fa-check enabled" title="True"></i>
+                                        <ng-template #elseBlock><i class="fa fa-times disabled" title="False"></i></ng-template>
+
                                     </td>
                                 </tr>
                             </ng-template>
