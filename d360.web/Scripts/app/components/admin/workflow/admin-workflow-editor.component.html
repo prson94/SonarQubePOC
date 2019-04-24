@@ -80,7 +80,10 @@
                 <div>
                     <d3s-workflow-condition-list (removeClick)="remove($event)"
                                                  (addClick)="showCondition()"
-                                                 [conditions]="conditions"></d3s-workflow-condition-list>
+                                                 (connectorChange)="applyConnectorToConditions($event)"
+                                                 [conditions]="conditions"
+                                                 [satisfyAll]="satisfyAllConditions"
+                                                 ></d3s-workflow-condition-list>
 
                     <div *ngIf="showAddCondition">
                         <d3s-workflow-condition-editor [objectId]="objectID"
@@ -91,27 +94,6 @@
                         </d3s-workflow-condition-editor>
                     </div>
 
-                    <div class="row" *ngIf="!isLoading">
-                            <div class="FieldName">
-                                Satisfy all&nbsp;&nbsp;
-                            </div>
-                            <input type="radio" name="isAll"
-                                    [(ngModel)]="model.Type.SatisfyAll"
-                                   (ngModelChange)="onSatisfyConditionChange($event)"
-                                   [value]="true"
-                                   style="width: 15px;" />
-                    </div>
-
-                    <div class="row" *ngIf="!isLoading">
-                            <div class="FieldName">
-                                Satisfy any
-                            </div>
-                            <input type="radio" name="isAll"
-                                    [(ngModel)]="model.Type.SatisfyAll"
-                                   (ngModelChange)="onSatisfyConditionChange($event)"
-                                   [value]="false"
-                                   style="width: 15px;" />
-                    </div>
                 </div>
             </div>
         </div>

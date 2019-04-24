@@ -1536,7 +1536,6 @@ order by wi.StartedOn desc";
                         type.Name = model.Type.Name;
                         type.Description = model.Type.Description;
                         type.State = model.Type.State;
-                        type.SatisfyAll = model.Type.SatisfyAll;
 
                         Company.Add(type);
                         Company.SaveChanges();
@@ -1567,7 +1566,6 @@ order by wi.StartedOn desc";
                         type.Name = model.Type.Name;
                         type.Description = model.Type.Description;
                         type.State = model.Type.State;
-                        type.SatisfyAll = model.Type.SatisfyAll;
                         type.UpdatedOn = DateTime.UtcNow;
                         type.UpdatedBy = Company.CurrentResourceID;
                         

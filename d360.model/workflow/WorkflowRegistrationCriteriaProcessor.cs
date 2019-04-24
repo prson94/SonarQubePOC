@@ -10,7 +10,7 @@ namespace d360.model.workflow
 {
     public static class WorkflowRegistrationCriteriaProcessor
     {
-        public static bool Evaluate(CompanyContext context, string @object, int objectId, string criteria, long itemId = -1, int score = -1, List<int> changedFields = null, string issueObject = "", int issueObjectId = -1, bool satisfyAll = true)
+        public static bool Evaluate(CompanyContext context, string @object, int objectId, string criteria, long itemId = -1, int score = -1, List<int> changedFields = null, string issueObject = "", int issueObjectId = -1)
         {
             if (string.IsNullOrEmpty(criteria)) return true; // null criteria means all objects are applicable
 
@@ -18,6 +18,7 @@ namespace d360.model.workflow
 
             //take the string criteria and generate the class
             List<WorkflowCriteriaExpressionModel> expression = PopulateExpressionFromXml(criteria);
+            bool satisfyAll = expression.All(x => x.CriteriaConnector == core.enums.Workflow.CriteriaConnector.AND); 
 
             //load the values for each of the fields for the given object
             return EvaluateObject(expression, context, @object, objectId, itemId, score, issueObject, issueObjectId, changedFields, satisfyAll);

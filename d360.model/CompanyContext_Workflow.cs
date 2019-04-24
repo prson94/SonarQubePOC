@@ -82,7 +82,7 @@ namespace d360.model
                 issueObjectId = issueDetail.ObjectTypeID;
             }
 
-            if (!WorkflowRegistrationCriteriaProcessor.Evaluate(this, objectInfo.Object.ToString(), objectInfo.ObjectID, registration.Condition, -1, (objectInfo.Score.HasValue ? objectInfo.Score.Value : -1), objectInfo.ChangedFieldIds, issueObjectType, issueObjectId, registration.Type.SatisfyAll))
+            if (!WorkflowRegistrationCriteriaProcessor.Evaluate(this, objectInfo.Object.ToString(), objectInfo.ObjectID, registration.Condition, -1, (objectInfo.Score.HasValue ? objectInfo.Score.Value : -1), objectInfo.ChangedFieldIds, issueObjectType, issueObjectId))
             {
                 Console.WriteLine("DEBUG - CURRENT ITEM DOESNT MATCH CRITERIA FOR THE WORKFLOW");
 

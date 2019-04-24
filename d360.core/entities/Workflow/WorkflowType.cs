@@ -29,8 +29,5 @@ namespace d360.core.entities.Workflow
         [DataMember]
         public State State { get; set; } = State.Unknown;
 
-        [DataMember]
-        public bool SatisfyAll { get; set; }
-
     }
 }

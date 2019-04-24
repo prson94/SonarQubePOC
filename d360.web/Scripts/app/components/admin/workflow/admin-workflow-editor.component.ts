@@ -58,6 +58,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     private responsibilities = [];
 
     private quill: any;
+    private satisfyAllConditions: boolean = true;
 
     constructor(
         private workflowService: WorkflowService,
@@ -128,7 +129,6 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                         }
                         else if (this.model.Event.ConditionObject != null && this.model.Event.ConditionObject.Condition != null) {
                             this.conditions = [];
-
                             if (this.model.Event.ConditionObject.Condition.length == null)
                                 this.conditions.push(this.model.Event.ConditionObject.Condition);
                             else
@@ -177,6 +177,8 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
             })
             .then(() => this.loadResponsibilities())
             .then(() => { this.validate(); });
+
+
     }
 
     loadObjects() {
@@ -258,8 +260,11 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
         }
     }
 
-    onSatisfyConditionChange($event) {
-        this.model.Type.SatisfyAll = $event;
+    applyConnectorToConditions($event) {
+        this.conditions.forEach(function (condition) {
+            condition['@Connector'] = $event ? 'AND' : 'OR';
+        }.bind(this));
+        this.validate();
     }
 
     remove(item: any) {
