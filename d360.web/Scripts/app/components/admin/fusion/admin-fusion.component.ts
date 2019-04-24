@@ -36,14 +36,14 @@ export class AdminFusionComponent extends AdminBaseComponent implements OnDestro
         private objectStyleService: ObjectStyleService
     ) {
         super(headerBreadcrumbService, titleService, rightSidebarService);
-        this.areaName = "Fusion Types";
+        this.areaName = 'Fusion Types';
         this.setCommonItems();
         this.setCommonRightSideBar();
 
         if (this.auditSidebar) {
             this.auditSidebar.hasDynamicUrl = true;
             this.auditSidebar.dynamicUrlCallback = (() => {
-                return `/sidebar/audit/FusionType/${this.selectedRow.ID}`
+                return `/sidebar/audit/FusionType/${this.selectedRow.ID}`;
             });
         }
 
@@ -75,9 +75,8 @@ export class AdminFusionComponent extends AdminBaseComponent implements OnDestro
 
     edit() {
         this.isLoading = true;
-        this.objectStyleService.getObjectStyle(this.selectedRow.ID, 'FusionType')
-            .then(data => {
-
+        this.objectStyleService.getObjectStyle(this.selectedRow.ID, 'FusionType').subscribe(
+            data => {
                 this.newFusionStyle = data;
 
                 if (!this.newFusionStyle) {
@@ -91,7 +90,8 @@ export class AdminFusionComponent extends AdminBaseComponent implements OnDestro
                 this.newFusionType = _.cloneDeep(this.selectedRow);
                 this.isLoading = false;
                 this.formMode = FormMode.Editing;
-            });
+            }
+        );
     }
 
     delete() {
