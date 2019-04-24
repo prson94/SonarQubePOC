@@ -3179,15 +3179,6 @@
         <member name="M:d360.web.Controllers.FormController.FusionAttribute_EditFields(System.Int32)">
             <param name="id">FusionAttributeID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.MapRule_FindFusion(System.Int32,System.String)">
-            <summary>
-            Gets a list of fusion attributes based on a search string provided 
-            that should match part of the TextPath of the fusoin attribute.
-            </summary>
-            <param name="intersectID">The intersectID we are searching under.</param>
-            <param name="phrase">Part of the text path to search for.</param>
-            <returns>A list of name/value pairs.</returns>
-        </member>
         <member name="M:d360.web.Controllers.FormController.Lookup_AddFields(System.Int32)">
             <param name="id">LookupTypeID</param>
         </member>
