@@ -2390,6 +2390,14 @@ order by wi.StartedOn desc";
                         foreach (var u in userList)
                         {
                             var user = Company.GlobalReportingResources.FirstOrDefault(c => c.Email == u);
+
+                            if (user != null && (fields?.Reassignments?.Any(r => r.FromResourceID == user.ResourceID) ?? false))
+                            {
+                                var assignee = Company.GlobalReportingResources.FirstOrDefault(c => c.ResourceID == fields.Reassignments.First().ToResourceID);
+                                if (assignee != null)
+                                    user = assignee;
+                            }
+
                             if (user != null)
                                 formattedUserList.Add(user.FullName);
                             else
@@ -2634,29 +2642,29 @@ order by wi.StartedOn desc";
                         var objectName = Company.Query<string>(sql, new { obj = objectType.Value, objId = objectId }).FirstOrDefault();
                         reassigned["@objectName"] = objectName;
                     }
-                    else if (reassigned["@reassignType"] == "Resource" && reassigned["@reassignToResourceId"] != null)
+                    else if (reassigned["@reassignType"] == "Resource" && reassigned["@toResourceId"] != null)
                     {
-                        if (reassigned["@reassignToResourceId"] != null)
+                        if (reassigned["@toResourceId"] != null)
                         {
-                            int toResourceId = (int)reassigned["@reassignToResourceId"];
+                            int toResourceId = (int)reassigned["@toResourceId"];
                             var toResource = Company.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == toResourceId);
-                            reassigned["@reassignToResourceName"] = toResource == null ? "[unknown user]" : toResource.FullName;
+                            reassigned["@toResourceName"] = toResource == null ? "[unknown user]" : toResource.FullName;
 
 
                         }
-                        if (reassigned["@reassignFromResourceId"] != null)
+                        if (reassigned["@fromResourceId"] != null)
                         {
-                            int fromResourceId = (int)reassigned["@reassignFromResourceId"];
+                            int fromResourceId = (int)reassigned["@fromResourceId"];
                             var fromResource = Company.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == fromResourceId);
-                            reassigned["@reassignFromResourceName"] = fromResource == null ? "[unknown user]" : fromResource.FullName;
+                            reassigned["@fromResourceName"] = fromResource == null ? "[unknown user]" : fromResource.FullName;
 
 
                         }
-                        if (reassigned["@reassignByResourceId"] != null)
+                        if (reassigned["@byResourceId"] != null)
                         {
-                            int byResourceId = (int)reassigned["@reassignByResourceId"];
+                            int byResourceId = (int)reassigned["@byResourceId"];
                             var byResource = Company.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == byResourceId);
-                            reassigned["@reassignByResourceName"] = byResource == null ? "[unknown user]" : byResource.FullName;
+                            reassigned["@byResourceName"] = byResource == null ? "[unknown user]" : byResource.FullName;
                         }
                     }
                 }
@@ -3057,6 +3065,7 @@ order by wi.StartedOn desc";
                             else if (detail.Settings.MessageRecipientType == "None" || detail.Settings.MessageRecipientType == "Responsibility")
                             {
                                 users = Company.GetWorkflowUsersBasedOnResponsibility(detail.TypeID, detail.StepID, detail.ItemID).ToList();
+
                             }
                             else if (detail.Settings.MessageRecipientType == "SpecificUser")
                             {
@@ -3067,6 +3076,16 @@ order by wi.StartedOn desc";
                                     if (user != null)
                                         users.Add(user);
                                 }
+                            }
+
+                            foreach (var res in itemFields.Reassignments)
+                            {
+                                var ix = users.FindIndex(u => u.ResourceID == res.FromResourceID);
+                                if (ix > -1) users.RemoveAt(ix);
+
+                                var assignee = Company.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == res.ToResourceID);
+                                if (assignee != null)
+                                    users.Add(assignee);
                             }
 
                             var userHasOpenAssignment = Company.WorkflowItemAssignments.Any(i => i.ItemID == detail.ItemID && (i.ItemStepID == detail.ItemStepID || i.ItemStepID == null) && i.ResourceObject == "Resource"
