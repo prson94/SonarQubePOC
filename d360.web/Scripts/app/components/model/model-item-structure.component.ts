@@ -61,12 +61,15 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
         protected gridDefinitionService: GridDefinitionService
     ) {
         super();
+
         this.rightSidebarService = rightSidebarService;
 
         this.theDeleteCallback = this.deleteModelHierarchy.bind(this);
-        router.events.subscribe((value) => {
-            this.showEditor = false;
-        });
+        router.events.subscribe(
+            (value) => {
+                this.showEditor = false;
+            }
+        );
     }
 
     ngOnInit() {
@@ -86,8 +89,8 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
 
             this.headerBreadcrumbService.setCurrentObjectInfo('TaxonomyType', this.modelId);
 
-            this.modelsService.getModel(this.modelId)
-                .then(result => {
+            this.modelsService.getModel(this.modelId).subscribe(
+                result => {
                     this.searchValue = "";
                     this.model = result;
 
@@ -99,7 +102,8 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
 
                     this.setBrowserTitle(this.titleService, this.model.Name);
 
-                });
+                }
+            );
 
             this.levelsService.getObjectLevels(this.modelId, StringConstants.ObjectTaxonomyType).subscribe(
                 result => {
@@ -116,13 +120,15 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
 
     private loadModelHierarchy(modelId: number) {
         this.isLoading = true;
-        this.modelsService.getModelHierarchy(modelId, true, true)
-            .then(result => {
+
+        this.modelsService.getModelHierarchy(modelId, true, true).subscribe(
+            result => {
                 this.modelHierarchy = result;
 
                 this.treeNodeArray = this.buildTreeNodeArray(this.modelHierarchy, 1);
                 this.isLoading = false;
-            });
+            }
+        );
     }
 
     private getFieldsDefinition() {
@@ -187,16 +193,19 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
 
     deleteModelHierarchy(id: number) {
         this.isLoading = true;
-        this.modelsService.deleteModelHierarchy(id).then(res => {
-            if (!res.isError) {
-                this.deleteSelectedTreeNode(id);
-            }
+        this.modelsService.deleteModelHierarchy(id).subscribe(
+            res => {
+                if (!res.isError) {
+                    this.deleteSelectedTreeNode(id);
+                }
 
-            this.showMessageForResult(this.messagesService, res);
-            this.headerActionsService.emitFavoritesChange();
-            this.selected = null;
-            this.isLoading = false;
-        });
+                this.showMessageForResult(this.messagesService, res);
+                this.headerActionsService.emitFavoritesChange();
+                this.selected = null;
+                this.isLoading = false;
+            }
+        );
+
         this.showDelete = false;
     }
 
@@ -214,7 +223,9 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
         }
 
         //do a breadth first search for the given treenode
-        if (nodes.length == 0) return;
+        if (nodes.length == 0) {
+            return;
+        }
 
         let node = nodes[0];
 
@@ -237,21 +248,25 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
             //remove this node
             nodes.splice(0, 1);
 
-            if (nodes.length == 0) return null;
+            if (nodes.length == 0) {
+                return null;
+            }
+
             node = nodes[0];
         }
     }
 
     private saveTaxonomy(event) {
         this.isLoading = true;
-        this.modelsService.saveModelHierarchy(event.item)
-            .then(result => {
+        this.modelsService.saveModelHierarchy(event.item).subscribe(
+            result => {
                 this.showMessageForResult(this.messagesService, result);
                 this.loadModelHierarchy(this.modelId);
                 this.headerActionsService.emitFavoritesChange();
                 this.isLoading = false;
                 this.showEditor = false;
-            });
+            }
+        );
     }
 
     private closeEditor() {
@@ -264,4 +279,4 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
         this.selectedLevel = level;
         this.selected = null;
     }
-};
+}

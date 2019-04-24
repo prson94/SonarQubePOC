@@ -20,7 +20,7 @@ import {EditorDropDownItem, EditorField} from '../../../models/editor-field.mode
 import {FormHelpers} from '../../../static/form-helpers';
 
 import {CascadeService} from '../../../services/cascade.service';
-import {FieldsService} from '../../../services/fields.service';
+import {FieldsObservableService} from '../../../services/fieldsObservable.service';
 
 import {BaseComponent} from '../base.component';
 
@@ -30,7 +30,7 @@ declare var CompanySettings;
     selector: 'd3s-dynamic-field',
     templateUrl: './dynamic-field.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [FieldsService]
+    providers: [FieldsObservableService]
 })
 
 export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDestroy, OnChanges, AfterViewChecked {
@@ -70,7 +70,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
     constructor(
         private cascadeService: CascadeService,
-        private fieldsService: FieldsService,
+        private fieldsService: FieldsObservableService,
         private ref: ChangeDetectorRef
     ) {
         super();

@@ -1,0 +1,44 @@
+﻿<div class="row" *ngIf="!showBulkFormEditor && !showBulkReassignEditor">
+    <div class="col s12">
+        <div class="tile tile-detail">
+            <header>{{model?.StepName}} Reassignment</header>
+            <div class="row" style="margin-bottom: 5px">
+                <div class="col s6 m10 l12">
+                    <div>
+                        Please choose a user:
+                    </div>
+                    <d3s-resource-multiselect-grid [multiple]="false"
+                                                   [field]="field"
+                                                   [(ngModel)]="fieldValue"
+                                                   [showResourceType]="false"
+                                                   [showSelectedSummary]="false"
+                                                   showToolTip="true">
+                    </d3s-resource-multiselect-grid>
+                </div>
+            </div>
+            <div class="row" style="margin-bottom: 5px">
+                <div class="col s6 m10 l12">
+                    <div *ngIf="model?.NewAssigneeResourceID > -1">
+                        <div class="col s6 m10 l12">
+                            {{model?.NewAssigneeResourceName}} will replace {{model?.OriginalAssigneeResourceName}} responsible for responding to the {{model?.ItemStepIDs?.length}} selected forms.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row" style="margin-bottom: 5px">
+                <div *ngIf="model?.StepHasFormEmails" class="col s6 m10 l12">
+                    <p-checkbox [(ngModel)]="dontSendFormEmails" binary="true"></p-checkbox> 
+                    Do not send form emails (leave unchecked to send out {{model?.ItemStepIDs?.length}} notification emails to this user)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s6 m10 l12">
+                    <button *ngIf="isLoading" pButton type="button" icon="fa fa-spin fa-spinner" style="width: 150px;" [disabled]="true"></button>
+                    <button *ngIf="!isLoading" pButton type="submit" (click)="save()" label="Submit" style="width: 150px;" [disabled]="!valid()"></button>
+                    <button pButton type="button" (click)="onClose.emit()" label="Close" style="width: 150px;"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

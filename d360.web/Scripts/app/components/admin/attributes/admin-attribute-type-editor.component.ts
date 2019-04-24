@@ -1,5 +1,5 @@
 ﻿import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {FieldsService} from '../../../services/fields.service';
+import {FieldsObservableService} from '../../../services/fieldsObservable.service';
 import {AttributeTypeService} from '../../../services/attribute-type.service';
 import {AttributeType} from '../../../models/attribute-type.model';
 import {DropdownOption} from '../../../models/dropdown.model';
@@ -9,7 +9,7 @@ import * as _ from 'lodash';
 @Component({
     selector: 'd3s-admin-attribute-type-editor',
     templateUrl: './admin-attribute-type-editor.component.html',
-    providers: [AttributeTypeService, FieldsService],
+    providers: [AttributeTypeService, FieldsObservableService],
 })
 
 export class AdminAttributeTypeEditor {
@@ -28,7 +28,7 @@ export class AdminAttributeTypeEditor {
 
     constructor(
         private attributeTypeService: AttributeTypeService,
-        private fieldsService: FieldsService
+        private fieldsService: FieldsObservableService
     ) {}
 
     ngOnInit() {

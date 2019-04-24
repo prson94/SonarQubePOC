@@ -1,34 +1,52 @@
 import * as _ from 'lodash';
-import {forkJoin, Observable} from "rxjs";
-import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChange} from '@angular/core';
+import {Input, Output, Component, EventEmitter, OnInit, OnChanges, SimpleChange} from '@angular/core';
 import {SelectItem} from 'primeng/primeng';
 
 import {
-    ComplexLookupRelationType,
     FieldType,
     FieldTypeEditorModel,
-    FieldTypeFusionItemEditorModel,
-    FieldTypeFusionLookupDisplayField,
-    FieldTypeItemDisplayFieldEditorModel,
-    FieldTypeRelationItemEditorModel,
     FilteredLookupItem,
     Lookups,
+    FieldTypeFusionItemEditorModel,
     OwnershipLookupSettings,
+    FieldTypeFusionLookupDisplayField,
+    FieldTypeRelationItemEditorModel,
+    ComplexLookupRelationType,
+    FieldTypeItemDisplayFieldEditorModel,
 } from '../../../../models/fields.model';
-
-import {FormHelpers} from '../../../../static/form-helpers';
 
 import {FieldsService} from '../../../../services/fields.service';
 import {MessagesService} from '../../../../services/messages.service';
 import {ObjectDetailService} from '../../../../services/object-detail.service';
 
-import {BaseComponent} from '../../base.component';
-import {JsonResult} from "../../../../models/jsonresult.model";
+import {BaseComponent} from '../../../shared/base.component';
+
+import {FormHelpers} from '../../../../static/form-helpers';
 
 @Component({
     selector: 'd3s-field-type-form',
     templateUrl: './field-type.form.html',
-    styleUrls: ['./field-type.form.component.css'],
+    styles: [
+            `
+            .display-table tr td {
+                padding: 3px;
+                border-radius: 0;
+            }
+
+            .relation-table tr td {
+                border-radius: 0;
+            }
+
+            .display-table-title {
+                text-align: center;
+                width: 100%;
+                font-family: "Roboto", Tahoma !important;
+                text-transform: uppercase;
+                color: #5c5e60 !important;
+                font-size: 1rem;
+                font-weight: bold;
+            }`
+    ],
     providers: [FieldsService, ObjectDetailService],
 })
 
@@ -88,13 +106,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     public defaultLinkName: any;
     public defaultLinkAdress: any;
 
-    constructor(
-        private fieldsService: FieldsService,
-        private messagesService: MessagesService,
-        private objectDetailService: ObjectDetailService
-    ) {
+    constructor(private fieldsService: FieldsService, private messagesService: MessagesService, private objectDetailService: ObjectDetailService) {
         super();
-
         this.model = new FieldTypeEditorModel();
         this.model.FieldType = new FieldType();
         this.model.FieldType.Object = this.objectType;
@@ -126,87 +139,95 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
     //#region load functions
 
+    private getFieldTypeEditorHandler = (responseGetFieldTypeEditor) => {
+        this.model = responseGetFieldTypeEditor;
+        this.model.cardinalRelationship = null;
+        this.model.selectedLookup = null;
+        switch (this.model.FieldType.Type) {
+            case "Lookup":
+                if (this.model.FieldType.LookupObjectType != null && this.model.FieldType.LookupObjectID != null)
+                    this.model.selectedLookup = this.model.FieldType.LookupObjectType + '|' + this.model.FieldType.LookupObjectID;
+                break;
+            case "Relationship":
+                if (this.model.FieldType.LookupObjectType != null && this.model.FieldType.LookupObjectID != null)
+                    this.model.cardinalRelationship = this.model.FieldType.LookupObjectID;
+                break;
+            case "FieldFromRelationship":
+                if (this.model.FieldType.LookupObjectType != null && this.model.FieldType.LookupObjectID != null)
+                    this.model.cardinalRelationship = this.model.FieldType.LookupObjectID;
+                break;
+            case "RefListRelationship":
+                if (this.model.FieldType.LookupObjectType != null && this.model.FieldType.LookupObjectID != null)
+                    this.model.cardinalRelationship = this.model.FieldType.LookupObjectID;
+                break;
+        }
+    };
+
+    private getLookupsFieldTypeHandler = (responseGetLookups) => {
+        this.lookups = responseGetLookups;
+        this.lookups.IntersectTypes.forEach(
+            i => {
+                i.id = i.value.split('|')[0];
+            }
+        );
+
+        this.lookups.ReferenceTypes = this.fieldsService.getReferenceTypes();
+    };
+
+    private getFormDataHandler = (responseGetFormData) => {
+        if (responseGetFormData) {
+            this.model.OwnershipLookupSettings = responseGetFormData.OwnershipLookupSettings;
+            this.model.RelationItems = responseGetFormData.RelationItems;
+            this.model.FusionItems = responseGetFormData.FusionItems;
+            this.model.FilteredLookupItems = responseGetFormData.FilteredLookupItems;
+
+            if (this.model.FusionItems != null) {
+                this.model.FusionItems.forEach(
+                    i => {
+                        if (i.SourceFusionAttributeType.toString().indexOf('|') == -1)
+                            i.SourceFusionAttributeType = 'FusionAttributeType|' + i.SourceFusionAttributeType.toString();
+
+                        for (let j = 0; j < i.DisplayFields.length; j++) {
+                            let d = i.DisplayFields[j] as FieldTypeFusionLookupDisplayField;
+                            i.DisplayFields[j] = d.value;
+                        }
+                    }
+                );
+            }
+
+            if (this.model.RelationItems && this.model.FieldType.Type == 'ComplexRelationLookup') {
+                this.loadComplexRelationLookup();
+            }
+        }
+    };
+
+    private getLookupsHandler = (responseGetLookups) => {
+        this.lookups = responseGetLookups;
+        this.lookups.ReferenceTypes = this.fieldsService.getReferenceTypes();
+        this.lookups.DataTypes.unshift({label: 'Choose...', value: null});
+        this.model.FieldType.Type = null;
+    };
+
     private load(): void {
         if (this.id > 0) {
             this.actionName = 'Edit';
             this.isLoading = true;
-
-            this.fieldsService.getFieldTypeEditor(this.id).subscribe(
-                (getFieldTypeEditor) => {
-                    this.model = getFieldTypeEditor;
-                    this.model.cardinalRelationship = null;
-                    this.model.selectedLookup = null;
-
-                    switch (this.model.FieldType.Type) {
-                        case "Lookup":
-                            if (this.model.FieldType.LookupObjectType != null && this.model.FieldType.LookupObjectID != null) {
-                                this.model.selectedLookup = this.model.FieldType.LookupObjectType + '|' + this.model.FieldType.LookupObjectID;
-                            }
-                            break;
-                        case "Relationship":
-                            if (this.model.FieldType.LookupObjectType != null && this.model.FieldType.LookupObjectID != null) {
-                                this.model.cardinalRelationship = this.model.FieldType.LookupObjectID;
-                            }
-                            break;
-                        case "FieldFromRelationship":
-                            if (this.model.FieldType.LookupObjectType != null && this.model.FieldType.LookupObjectID != null) {
-                                this.model.cardinalRelationship = this.model.FieldType.LookupObjectID;
-                            }
-                            break;
-                        case "RefListRelationship":
-                            if (this.model.FieldType.LookupObjectType != null && this.model.FieldType.LookupObjectID != null) {
-                                this.model.cardinalRelationship = this.model.FieldType.LookupObjectID;
-                            }
-                            break;
-                        default:
-                            break;
+            this.fieldsService.getFieldTypeEditor(this.id)
+                .then(this.getFieldTypeEditorHandler)
+                .then(() => this.fieldsService.getLookups(this.model.FieldType.ObjectID, this.model.FieldType.Object))
+                .then(this.getLookupsFieldTypeHandler)
+                .then(() => {
+                    if (this.id > 0) {
+                        return this.fieldsService.getFormData(this.id);
                     }
-
-                    this.fieldsService.getLookups(this.model.FieldType.ObjectID, this.model.FieldType.Object).subscribe(
-                        (getLookups) => {
-                            /* getLookups */
-                            this.lookups = getLookups;
-                            this.lookups.IntersectTypes.forEach(i => {
-                                i.id = i.value.split('|')[0];
-                            });
-
-                            this.lookups.ReferenceTypes = this.fieldsService.getReferenceTypes();
-
-                            this.fieldsService.getFormData(this.id).subscribe(
-                                (getFormData) => {
-                                    if (getFormData) {
-                                        this.model.OwnershipLookupSettings = getFormData.OwnershipLookupSettings;
-                                        this.model.RelationItems = getFormData.RelationItems;
-                                        this.model.FusionItems = getFormData.FusionItems;
-
-                                        if (this.model.FusionItems != null) {
-                                            this.model.FusionItems.forEach(i => {
-                                                if (i.SourceFusionAttributeType.toString().indexOf('|') == -1) {
-                                                    i.SourceFusionAttributeType = 'FusionAttributeType|' + i.SourceFusionAttributeType.toString();
-                                                }
-
-                                                for (let j = 0; j < i.DisplayFields.length; j++) {
-                                                    let d = i.DisplayFields[j] as FieldTypeFusionLookupDisplayField;
-                                                    i.DisplayFields[j] = d.value;
-                                                }
-                                            });
-                                        }
-
-                                        this.model.FilteredLookupItems = getFormData.FilteredLookupItems;
-
-                                        if (this.model.RelationItems && this.model.FieldType.Type == 'ComplexRelationLookup') {
-                                            this.loadComplexRelationLookup();
-                                        }
-
-                                        this.isLoading = false;
-                                        this.loadDataType(this.model.FieldType.Type);
-                                    }
-                                }
-                            );
-                        }
-                    );
-                }
-            );
+                })
+                .then(this.getFormDataHandler)
+                .then(() => {
+                    return this.loadDataType(this.model.FieldType.Type);
+                })
+                .then(() => {
+                    this.isLoading = false;
+                });
         } else {
             this.actionName = 'Add';
             this.isLoading = true;
@@ -221,21 +242,16 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.model.OwnershipLookupSettings.DisplayAssignmentSource = false;
             this.model.OwnershipLookupSettings.ExpandGroupMembership = true;
 
-            this.fieldsService.getLookups(this.objectID, this.objectType).subscribe(
-                d => {
-                    this.lookups = d;
-                    this.lookups.ReferenceTypes = this.fieldsService.getReferenceTypes();
-                    this.lookups.DataTypes.unshift({label: 'Choose...', value: null});
-                    this.model.FieldType.Type = null;
-
+            this.fieldsService.getLookups(this.objectID, this.objectType)
+                .then(this.getLookupsHandler)
+                .then(() => {
                     this.isLoading = false;
-                }
-            );
+                });
         }
     }
 
     private loadComplexRelationLookup() {
-        /* load existing values */
+        //load existing values
         this.model.RelationItems.forEach(r => {
 
             let intersectType = this.lookups.IntersectTypes.find(i => i.id == r.IntersectType.toString());
@@ -248,78 +264,46 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 r.ObjectID = parseInt(intersectType.value.split('|')[2]);
             }
 
-            r.DisplayFields.forEach(d => {
-                if (d.FieldTypeID == null && d.value) {
-                    d.FieldTypeID = parseInt(d.value.split('|')[0]);
-                }
+            r.DisplayFields.forEach(
+                d => {
+                    if (d.FieldTypeID == null && d.value) {
+                        d.FieldTypeID = parseInt(d.value.split('|')[0]);
+                    }
 
-                if (d.FieldTypeName == null && d.value) {
-                    d.FieldTypeName = d.value.split('|')[1];
-                }
+                    if (d.FieldTypeName == null && d.value) {
+                        d.FieldTypeName = d.value.split('|')[1];
+                    }
 
-                if (!d.value) {
-                    d.value = d.FieldTypeID + '|' + d.FieldTypeName;
+                    if (!d.value) {
+                        d.value = d.FieldTypeID + '|' + d.FieldTypeName;
+                    }
                 }
-            });
+            );
 
         });
 
-        let clone = _.cloneDeep(this.model.RelationItems);
 
+        let clone = _.cloneDeep(this.model.RelationItems);
         if (this.model.RelationItems != null && this.model.RelationItems.length) {
             for (let i = 0; i < this.model.RelationItems.length; i++) {
                 let item = this.model.RelationItems[i];
-                let last = (i == 0) ? null : this.model.RelationItems[i - 1]; /* FIXME: unused local variable -last- */
+                let last = (i == 0) ? null : this.model.RelationItems[i - 1];
 
                 if (i == 0) {
-                    this.objectDetailService.getObject(this.objectID, this.objectType)
-                        .then(o => {
+                    this.objectDetailService.getObject(this.objectID, this.objectType).then(
+                        o => {
                             this.objectName = o.Name;
-                        });
+                        }
+                    );
                 }
 
                 //load cascading dropdowns
-                this.changeRefType(i).subscribe(
-                    (res) => {
-                        item.relationItems = res;
-                        item.relationsLoading = false;
-
+                this.changeRefType(i)
+                    .then(() => {
                         item.selectedRelationItemID = item.IntersectType + '|' + item.Object + '|' + item.ObjectID + '|' + item.Direction;
-
-                        this.changeRel(i).subscribe(
-                            r => {
-                                let s = [];
-
-                                r.forEach(i => {
-                                    let params = i.value.split('|');
-                                    let d = new FieldTypeItemDisplayFieldEditorModel();
-                                    let e = item.DisplayFields.find(
-                                        j => j.FieldTypeID == d.FieldTypeID && j.FieldTypeName == d.FieldTypeName
-                                    );
-
-                                    d.FieldTypeID = parseInt(params[0]);
-                                    d.FieldTypeName = params[1];
-                                    d.Show = false;
-                                    d.FilterValue = "";
-                                    d.SortOrder = null;
-                                    d.value = i.value;
-
-                                    if (e != null) {
-                                        e.Show = true;
-                                        e.value = i.value;
-                                    } else {
-                                        item.DisplayFields.push(d);
-                                    }
-                                });
-
-                                for (let i = 1; i <= item.DisplayFields.length; i++) {
-                                    item.DisplayFields[i - 1].DisplayOrder = i;
-                                    s.push({id: i, text: i});
-                                }
-
-                                item.SortOrderList = s;
-                            });
-
+                    })
+                    .then(() => this.changeRel(i))
+                    .then(() => {
                         let parent = item;
                         item.DisplayFields.forEach(
                             d => {
@@ -337,11 +321,11 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                                         this.changeDisplayOrder(item, parent);
                                     }
                                 }
+
                             }
                         );
 
                         let r = item.relationItems.find(f => f.value == item.selectedRelationItemID);
-
                         if (i > 0) {
                             r = this.model.RelationItems[i - 1].relationItems.find(f => f.value == this.model.RelationItems[i - 1].selectedRelationItemID);
                         }
@@ -352,57 +336,43 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     });
 
                 //load display order/sort order drop down lists
-                this.model.RelationItems.forEach(r => {
-                    let s = [];
+                this.model.RelationItems.forEach(
+                    r => {
+                        let s = [];
 
-                    for (let i = 1; i <= r.DisplayFields.length; i++) {
-                        r.DisplayFields[i - 1].DisplayOrder = i;
-                        s.push({id: i, text: i});
+                        for (let i = 1; i <= r.DisplayFields.length; i++) {
+                            r.DisplayFields[i - 1].DisplayOrder = i;
+                            s.push({id: i, text: i});
+                        }
+
+                        r.SortOrderList = s;
+
                     }
-
-                    r.SortOrderList = s;
-
-                });
+                );
 
                 this.relationItemCount = this.model.RelationItems.length;
             }
         }
     }
 
-    private loadDataType(value: string): void {
-        let index;
-        let modelRelationItems;
+    private loadDataType(value: string): Promise<void> {
+        let promises = [];
 
         if (value == null) {
-            return;
-        }
-
-        if (this.model.FieldType.Type == 'Date' && this.model.FieldType.DefaultValue != null) {
-            this.defaultDate = new Date(this.model.FieldType.DefaultValue);
-        }
-
-        if (this.model.FieldType.Type == 'Link' && this.model.FieldType.DefaultValue != null) {
-            let link = this.model.FieldType.DefaultValue.split('|');
-
-            this.defaultLinkName = link[0];
-            this.defaultLinkAdress = link[1];
+            return Promise.resolve();
         }
 
         switch (value.toLowerCase()) {
             case 'lookup':
-                this.lookupTypeSelected(this.model.selectedLookup || this.lookups.Lookups[0].value);
+                promises.push(this.lookupTypeSelected(this.model.selectedLookup || this.lookups.Lookups[0].value));
                 break;
             case 'relationship':
                 try {
-                    let relationShip;
-
                     if (this.model.cardinalRelationship) {
-                        relationShip = this.model.cardinalRelationship;
+                        promises.push(this.cardinalRelationshipSelected(this.model.cardinalRelationship));
                     } else if (this.lookups.Field_Relationships.length > 0) {
-                        relationShip = this.lookups.Field_Relationships[0].value;
+                        promises.push(this.cardinalRelationshipSelected(this.lookups.Field_Relationships[0].value));
                     }
-
-                    this.cardinalRelationshipSelected(relationShip);
                 } catch (e) {
                     console.log(e);
                 }
@@ -410,9 +380,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             case 'fieldfromrelationship':
                 try {
                     if (this.model.cardinalRelationship) {
-                        this.cardinalFieldFromRelationshipSelected(this.model.cardinalRelationship, this.model.FieldType.LookupObjectFieldTypeID);
+                        promises.push(this.cardinalFieldFromRelationshipSelected(this.model.cardinalRelationship, this.model.FieldType.LookupObjectFieldTypeID));
                     } else if (this.lookups.Field_CardinalRelationships.length > 0) {
-                        this.cardinalFieldFromRelationshipSelected(this.lookups.Field_FieldFromRelRelationships[0].value, this.model.FieldType.LookupObjectFieldTypeID);
+                        promises.push(this.cardinalFieldFromRelationshipSelected(this.lookups.Field_FieldFromRelRelationships[0].value, this.model.FieldType.LookupObjectFieldTypeID));
+
                     }
                 } catch (e) {
                     console.log(e);
@@ -421,15 +392,11 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             case 'reflistrelationship':
                 try {
                     this.model.FieldType.IsListable = false;
-
-                    if (
-                        this.model.cardinalRelationship &&
-                        (this.lookups.Field_CardinalReferenceRelationships.length > 0) &&
-                        (this.lookups.Field_CardinalReferenceRelationships.find(x => x.value == this.model.cardinalRelationship))
-                    ) {
-                        this.cardinalFieldFromRelationshipSelected(this.model.cardinalRelationship);
+                    if (this.model.cardinalRelationship && (this.lookups.Field_CardinalReferenceRelationships.length > 0)
+                        && (this.lookups.Field_CardinalReferenceRelationships.find(x => x.value == this.model.cardinalRelationship))) {
+                        promises.push(this.cardinalFieldFromRelationshipSelected(this.model.cardinalRelationship));
                     } else if (this.lookups.Field_CardinalReferenceRelationships.length > 0) {
-                        this.cardinalFieldFromRelationshipSelected(this.lookups.Field_CardinalReferenceRelationships[0].value);
+                        promises.push(this.cardinalFieldFromRelationshipSelected(this.lookups.Field_CardinalReferenceRelationships[0].value));
                     } else {
                         this.model.FieldType.LookupObjectID = null;
                         this.model.FieldType.LookupObjectType = null;
@@ -444,12 +411,16 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.model.FieldType.IsRequired = false;
                 this.model.FieldType.LookupDisplayFormat = null;
                 this.lookups.ReferenceTypes = this.fieldsService.getFusionReferenceTypes();
-
-                if (this.model.FusionItems && this.model.FusionItems.length) {
-                    this.model.FusionItems.forEach(i => {
-                        this.loadTargetFusionAttributes(i);
-                    });
-                }
+                if (this.model.FusionItems && this.model.FusionItems.length)
+                    this.model.FusionItems.forEach(
+                        i => {
+                            promises.push(
+                                this.loadTargetFusionAttributes(i).then(
+                                    () => this.loadFusionDisplayFields(i)
+                                )
+                            );
+                        }
+                    );
                 break;
             case 'complexrelationlookup':
                 this.model.FieldType.IsEditable = false;
@@ -457,7 +428,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.model.FieldType.IsPartOfKey = false;
                 this.model.FieldType.IsRequired = false;
                 this.model.FieldType.LookupDisplayFormat = null;
-
                 if (this.model.RelationItems == null || this.model.RelationItems.length == 0) {
                     let r = new FieldTypeRelationItemEditorModel();
 
@@ -471,20 +441,14 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     this.relationItemCount = 1;
 
                     if (this.objectName == null || this.objectName == '') {
-                        this.objectDetailService.getObject(this.objectID, this.objectType).then(o => {
-                            this.objectName = o.Name;
-                        });
+                        this.objectDetailService.getObject(this.objectID, this.objectType).then(
+                            o => {
+                                this.objectName = o.Name;
+                            }
+                        );
                     }
 
-                    index = this.model.RelationItems.length - 1;
-                    modelRelationItems = this.model.RelationItems;
-
-                    this.changeRefType(index).subscribe(
-                        (res) => {
-                            modelRelationItems[index]["relationItems"] = res;
-                            modelRelationItems[index]["relationsLoading"] = false;
-                        }
-                    );
+                    this.changeRefType(this.model.RelationItems.length - 1);
                 }
                 break;
             case 'filteredlookup':
@@ -496,9 +460,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.loadFilteredLookup();
                 break;
             case 'ownershiplookup':
-                if (!this.model.OwnershipLookupSettings) {
-                    this.model.OwnershipLookupSettings = new OwnershipLookupSettings();
-                }
+                if (!this.model.OwnershipLookupSettings) this.model.OwnershipLookupSettings = new OwnershipLookupSettings();
                 this.model.FieldType.IsEditable = false;
                 this.model.FieldType.IsListable = false;
                 this.model.FieldType.IsPartOfKey = false;
@@ -511,29 +473,28 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.model.FieldType.LookupObjectType = null;
                 break;
         }
-
         if (this.model.FieldType.Type == 'Date' && this.model.FieldType.DefaultValue != null) {
             this.defaultDate = new Date(this.model.FieldType.DefaultValue);
         }
 
         if (this.model.FieldType.Type == 'Link' && this.model.FieldType.DefaultValue != null) {
             var link = this.model.FieldType.DefaultValue.split('|');
-
             this.defaultLinkName = link[0];
             this.defaultLinkAdress = link[1];
         }
-
-        this.validate('*');
+        return Promise.all(promises).then(() => {
+            this.validate('*');
+        });
     }
 
-    private lookupTypeSelected(value: string) {
-        /* called when the lookup type field is changed */
-
+    // called when the lookup type field is changed
+    private lookupTypeSelected(value: string): Promise<any> {
         if (value == undefined) {
             console.log("[ERROR] - LOOKUP TYPE IS UNDEFINED", value);
+            return Promise.resolve();
         }
 
-        /* update the model to have correct lookuptype object and id */
+        //update the model to have correct lookuptype object and id
         let id = parseInt(value.split('|')[1]);
         let type = value.split('|')[0];
 
@@ -558,57 +519,55 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         return this.loadTokens(type, id);
     }
 
-    private cardinalRelationshipSelected(value: number) {
-        /* called when the lookup type field is changed */
+    // called when the lookup type field is changed
+    private cardinalRelationshipSelected(value: number): Promise<any> {
         if (value == undefined) {
             console.log("[ERROR] - Intersect TYPE IS UNDEFINED", value);
+            return Promise.resolve();
         }
-
         this.isListableRelationship = false;
 
-        this.fieldsService.getRelationshipFieldIsListable(this.objectType, this.objectID, value).subscribe(
-            res => {
-                this.isListableRelationship = res;
-
-                if (!this.isListableRelationship) {
-                    this.model.FieldType.IsListable = false;
-                }
-            }
-        );
+        this.fieldsService.getRelationshipFieldIsListable(this.objectType, this.objectID, value).then(res => {
+            this.isListableRelationship = res;
+            if (!this.isListableRelationship)
+                this.model.FieldType.IsListable = false;
+        });
 
         //update the model to have correct lookuptype object and id
         this.model.FieldType.LookupObjectID = value;
         this.model.FieldType.LookupObjectType = "IntersectType";
     }
 
-    private cardinalFieldFromRelationshipSelected(value: number, fieldTypeId: number = null) {
+    private cardinalFieldFromRelationshipSelected(value: number, fieldTypeId: number = null): Promise<any> {
         if (value == undefined) {
             console.log("[ERROR] - Intersect TYPE IS UNDEFINED", value);
-            return;
+            return Promise.resolve();
         }
 
         //update the model to have correct lookuptype object and id
         this.model.FieldType.LookupObjectID = value;
         this.model.FieldType.LookupObjectType = "IntersectType";
 
-        this.fieldsService.getRelationObjectFields(this.objectType, this.objectID, value).subscribe(
-            d => {
-                this.fieldsFromRelation = d;
+        this.fieldsService.getRelationObjectFields(this.objectType, this.objectID, value)
+            .then(
+                d => {
+                    this.fieldsFromRelation = d;
 
-                if (fieldTypeId != null) {
-                    this.model.FieldType.LookupObjectFieldTypeID = fieldTypeId;
-                } else if (this.fieldsFromRelation.length > 0) {
-                    this.model.FieldType.LookupObjectFieldTypeID = this.fieldsFromRelation[0].value;
-                } else {
-                    this.model.FieldType.LookupObjectFieldTypeID = null;
+                    if (fieldTypeId != null) {
+                        this.model.FieldType.LookupObjectFieldTypeID = fieldTypeId;
+                    } else if (this.fieldsFromRelation.length > 0) {
+                        this.model.FieldType.LookupObjectFieldTypeID = this.fieldsFromRelation[0].value;
+                    } else {
+                        this.model.FieldType.LookupObjectFieldTypeID = null;
+                    }
                 }
-            }
-        );
+            );
     }
 
-    private cardinalReferenceItemListFromRelationshipSelected(value: number) {
+    private cardinalReferenceItemListFromRelationshipSelected(value: number): Promise<any> {
         if (value == undefined) {
             console.log("[ERROR] - Intersect TYPE IS UNDEFINED", value);
+            return Promise.resolve();
         }
 
         //update the model to have correct lookuptype object and id
@@ -616,11 +575,12 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.model.FieldType.LookupObjectType = "IntersectType";
     }
 
-    private cardinalFieldFromRelationship_FieldSelected(value: number) {
+    private cardinalFieldFromRelationship_FieldSelected(value: number): Promise<any> {
         this.model.FieldType.LookupObjectFieldTypeID = value;
+        return Promise.resolve();
     }
 
-    private loadHierarchyOptions(objectType: string, objectId: number): Observable<any> {
+    private loadHierarchyOptions(objectType: string, objectId: number): void {
         this.listParentFields = [];
 
         if (objectType != 'ReferenceItem') {
@@ -631,9 +591,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             return;
         }
 
-        this.fieldsService.getReferenceTypeHierarchyFields(objectId, this.objectType, this.objectID).subscribe(
-            (responseGetReferenceTypeHierarchyFields) => {
-                this.listParentFields = responseGetReferenceTypeHierarchyFields;
+        this.fieldsService.getReferenceTypeHierarchyFields(objectId, this.objectType, this.objectID).then(
+            r => {
+                this.listParentFields = r;
 
                 if (this.listParentFields == null || this.listParentFields.length == 0) {
                     this.model.FieldType.ParentFieldTypeID = 0;
@@ -642,56 +602,56 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         );
     }
 
-    private loadListFilterOptions(objectType: string, objectId: number): Observable<any> {
+    private loadListFilterOptions(objectType: string, objectId: number): void {
         this.listFilterable = false;
         this.listFilterPredicates = [];
         this.listFilterRelatedFields = [];
         this.listFilterOptions.clear();
 
+        //List filter options only available for field defintions for thes asset types
         if (['IssueType', 'ArtifactType', 'TaxonomyType', 'PolicyType', 'RuleType'].indexOf(this.objectType) == -1) {
-            /* List filter options only available for field defintions for thes asset types */
             return;
         }
 
+        //List filter options are only available for lists of Artifacts for Taxonomies
         if (objectType != 'Artifact' && objectType != 'Taxonomy') {
-            /* List filter options are only available for lists of Artifacts for Taxonomies */
             return;
         }
 
         this.listFilterable = true;
 
-        this.fieldsService.getListFilterOptions(objectType + 'Type', objectId, this.objectType, this.objectID).subscribe(
+        this.fieldsService.getListFilterOptions(objectType + 'Type', objectId, this.objectType, this.objectID).then(
             r => {
-                r.forEach(d => {
-                    if (!this.listFilterOptions.has(d.PredicateValue)) {
-                        this.listFilterOptions.set(d.PredicateValue, {
-                            value: d.PredicateValue,
-                            label: d.PredicateName,
-                            fieldtypeOptions: (this.objectType == 'IssueType') ? [{
-                                value: null,
-                                label: "Action Subject",
-                                info: "Model/Artifact"
-                            }] : []
-                        });
-                    }
+                r.forEach(
+                    d => {
+                        if (!this.listFilterOptions.has(d.PredicateValue)) {
+                            this.listFilterOptions.set(d.PredicateValue, {
+                                value: d.PredicateValue,
+                                label: d.PredicateName,
+                                fieldtypeOptions: (this.objectType == 'IssueType') ? [{
+                                    value: null,
+                                    label: "Action Subject",
+                                    info: "Model/Artifact"
+                                }] : []
+                            });
+                        }
 
-                    if (d.FieldTypeID != null && d.FieldTypeID != this.id) {
-                        this.listFilterOptions.get(d.PredicateValue).fieldtypeOptions.push({
-                            value: d.FieldTypeID,
-                            label: d.FriendlyName,
-                            info: d.Info
-                        });
+                        if (d.FieldTypeID != null && d.FieldTypeID != this.id) {
+                            this.listFilterOptions.get(d.PredicateValue).fieldtypeOptions.push({
+                                value: d.FieldTypeID,
+                                label: d.FriendlyName,
+                                info: d.Info
+                            });
+                        }
                     }
-                });
+                );
 
                 this.listFilterPredicates.push({value: null, label: 'Choose...'});
-
                 this.listFilterOptions.forEach(
                     d => {
-                        if (d.fieldtypeOptions.length > 0) {
-                            //only include predicates with possible field options
+                        if (d.fieldtypeOptions.length > 0)
+                        //only include predicates with possible field options
                             this.listFilterPredicates.push({value: d.value, label: d.label});
-                        }
                     }
                 );
 
@@ -700,9 +660,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     this.listFilterable = false;
                     this.selectPredicate(null);
                     this.expandFilterConfiguration = false;
-
                     return;
                 }
+
                 if (this.model.FieldType.FilterPredicateID != null && this.model.FieldType.FilterPredicateDirection != null) {
                     this.selectPredicate(this.model.FieldType.FilterPredicateID + '|' + (this.model.FieldType.FilterPredicateDirection ? '1' : '0'));
                     this.expandFilterConfiguration = true;
@@ -718,8 +678,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         if (this.listFilterOptions.has(value)) {
             this.listFilterRelatedFields = this.listFilterOptions.get(value).fieldtypeOptions;
 
-            if (!(this.model.FieldType.FilterFieldTypeID == null && this.listFilterRelatedFields.length > 0)) {
-            } else {
+            if (this.model.FieldType.FilterFieldTypeID == null && this.listFilterRelatedFields.length > 0) {
                 this.model.FieldType.FilterFieldTypeID = this.listFilterRelatedFields[0].value;
             }
         } else {
@@ -737,15 +696,12 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
 
         this.listFilterPredicate = value;
+        return;
     }
 
-    private loadDefaultValueOptions(
-        objectType: string,
-        objectId: number
-    ): Observable<any> {
+    private loadDefaultValueOptions(objectType: string, objectId: number): Promise<void> {
         if (this.model.FieldType.LookupObjectType == undefined || this.model.FieldType.LookupObjectID == undefined) {
             console.log("[ERROR] - NO TYPE OR ID SPECIFIED TO LOAD DEFAULT VALUES FOR", this.model.FieldType.LookupObjectID, this.model.FieldType.LookupObjectType);
-
             return;
         }
 
@@ -753,20 +709,16 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             objectType += 'Type';
         }
 
-        this.fieldsService.getLookupDefaultValueOptions(objectId, objectType).subscribe(
-            (responseGetLookupDefaultValueOptions) => {
-                this.lookupDefaultValueOptions = responseGetLookupDefaultValueOptions;
+        return this.fieldsService.getLookupDefaultValueOptions(objectId, objectType).then(
+            r => {
+                this.lookupDefaultValueOptions = r;
             }
         );
     }
 
-    private loadTokens(
-        objectType: string,
-        objectId: number
-    ): Observable<any> {
+    private loadTokens(objectType: string, objectId: number): Promise<void> {
         if (this.model.FieldType.LookupObjectType == undefined || this.model.FieldType.LookupObjectID == undefined) {
             console.log("[ERROR] - NO TYPE OR ID SPECIFIED TO LOAD TOKENS FOR", this.model.FieldType.LookupObjectID, this.model.FieldType.LookupObjectType);
-
             return;
         }
 
@@ -774,16 +726,13 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             objectType += 'Type';
         }
 
-        this.fieldsService.getLookupTokens(objectId, objectType).subscribe(
-            responseGetLookupTokens => {
-                this.model.LookupTokens = responseGetLookupTokens;
-
+        return this.fieldsService.getLookupTokens(objectId, objectType).then(
+            r => {
+                this.model.LookupTokens = r;
                 if (this.model.LookupTokens
                     && this.model.LookupTokens.length > 0
-                    && (
-                        this.model.FieldType.LookupDisplayFormat == null
-                        || this.model.FieldType.LookupDisplayFormat.length == 0
-                    )
+                    && (this.model.FieldType.LookupDisplayFormat == null
+                        || this.model.FieldType.LookupDisplayFormat.length == 0)
                 ) {
                     this.model.FieldType.LookupDisplayFormat = this.model.LookupTokens[0].value;
                 }
@@ -791,7 +740,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         );
     }
 
-    private loadTargetFusionAttributes(item: FieldTypeFusionItemEditorModel) {
+    private loadTargetFusionAttributes(item: FieldTypeFusionItemEditorModel): Promise<void> {
         let id;
 
         if (item.SourceFusionAttributeType == null) {
@@ -804,17 +753,15 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             id = item.SourceFusionAttributeType;
         }
 
-        this.fieldsService.getFusionLookupTargetAttributeTypes(+id, item.ReferenceType).subscribe(
+        return this.fieldsService.getFusionLookupTargetAttributeTypes(+id, item.ReferenceType).then(
             d => {
                 item.TargetFusionAttributeTypes = d;
-
-                this.loadFusionDisplayFields(item);
             }
         );
     }
 
-    private loadFusionDisplayFields(item: FieldTypeFusionItemEditorModel) {
-        return this.fieldsService.getFusionDisplayFields(+item.TargetFusionAttributeType || +item.SourceFusionAttributeType).subscribe(
+    private loadFusionDisplayFields(item: FieldTypeFusionItemEditorModel): Promise<void> {
+        return this.fieldsService.getFusionDisplayFields(+item.TargetFusionAttributeType || +item.SourceFusionAttributeType).then(
             d => {
                 item.FusionDisplayFields = d;
             }
@@ -832,7 +779,18 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.filteredLookupHideHeader = item.HideHeader;
         this.filteredLookupHideFooter = item.HideFooter;
 
-        this.changeFilteredLookup();
+        this.changeFilteredLookup().then(() => {
+            this.filteredLookupDisplayFields.forEach(
+                d => {
+                    let i = item.DisplayFields.find(j => j.value == d.value);
+                    if (i) {
+                        d.Show = i.Show;
+                        d.Filter = i.Filter;
+                        d.SortOrder = i.SortOrder;
+                    }
+                }
+            );
+        });
     }
 
     //#endregion
@@ -846,30 +804,32 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private onSubmit(): any {
         //convert DisplayFields to objects
         if (this.model.FusionItems) {
-            this.model.FusionItems.forEach(i => {
+            this.model.FusionItems.forEach(
+                i => {
 
-                if (i.SourceFusionAttributeType.toString().indexOf('|') != -1) {
-                    i.SourceFusionAttributeType = i.SourceFusionAttributeType.toString().split('|')[1];
+                    if (i.SourceFusionAttributeType.toString().indexOf('|') != -1)
+                        i.SourceFusionAttributeType = i.SourceFusionAttributeType.toString().split('|')[1];
+
+                    let d: FieldTypeFusionLookupDisplayField[] = [];
+
+                    (<string[]>i.DisplayFields).forEach(j => {
+                        let k = new FieldTypeFusionLookupDisplayField();
+
+                        try {
+                            k.FieldTypeID = parseInt(j.split('|')[0]);
+                            k.FieldTypeName = j.split('|')[1];
+                            k.Show = true;
+                        } catch (e) {
+                            return;
+                        }
+
+                        d.push(k);
+                    });
+
+                    i.DisplayFields = d;
+
                 }
-
-                let d: FieldTypeFusionLookupDisplayField[] = [];
-
-                (<string[]>i.DisplayFields).forEach(j => {
-                    let k = new FieldTypeFusionLookupDisplayField();
-
-                    try {
-                        k.FieldTypeID = parseInt(j.split('|')[0]);
-                        k.FieldTypeName = j.split('|')[1];
-                        k.Show = true;
-                    } catch (e) {
-                        return;
-                    }
-
-                    d.push(k);
-                });
-
-                i.DisplayFields = d;
-            });
+            );
         }
 
         if (this.model.FieldType.Type == 'FilteredLookup') {
@@ -884,8 +844,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
             item.HideFooter = this.filteredLookupHideFooter;
             item.HideHeader = this.filteredLookupHideHeader;
-            item.DisplayFields = [];
 
+            item.DisplayFields = [];
             this.filteredLookupDisplayFields.forEach(i => {
                 item.DisplayFields.push({
                     value: i.value,
@@ -896,29 +856,32 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     FieldTypeName: i.value.split('|')[1]
                 });
             });
-
             this.model.FilteredLookupItem = item;
         }
 
         if (this.model.FieldType.Type == 'Link') {
-            this.model.FieldType.DefaultValue = this.defaultLinkName != null ? this.defaultLinkName : '';
-            this.model.FieldType.DefaultValue += '|';
-            this.model.FieldType.DefaultValue += this.defaultLinkAdress != null ? this.defaultLinkAdress : '';
+            {
+                this.model.FieldType.DefaultValue = this.defaultLinkName != null ? this.defaultLinkName : '';// + '|' + this.defaultLinkAdress != null ? this.defaultLinkAdress : '';
+                this.model.FieldType.DefaultValue += '|';
+                this.model.FieldType.DefaultValue += this.defaultLinkAdress != null ? this.defaultLinkAdress : '';
+            }
         }
 
         this.isLoading = true;
 
         if (this.model.FieldType.ID > 0) {
-            this.fieldsService.putFieldType(this.model).subscribe(r => {
-                this.isLoading = false;
-                this.showMessageForResult(this.messagesService, r);
+            this.fieldsService.putFieldType(this.model).then(
+                r => {
+                    this.isLoading = false;
+                    this.showMessageForResult(this.messagesService, r);
 
-                if (r.type != 'error') {
-                    this.onComplete.emit({action: 'edit', field: this.model});
+                    if (r.type != 'error') {
+                        this.onComplete.emit({action: 'edit', field: this.model});
+                    }
                 }
-            });
+            );
         } else {
-            this.fieldsService.postFieldType(this.model).subscribe(
+            this.fieldsService.postFieldType(this.model).then(
                 r => {
                     this.showMessageForResult(this.messagesService, r);
                     this.isLoading = false;
@@ -949,18 +912,16 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
     //#region dropdown functions
 
-    private changeRefType(
-        index: number,
-        selected: string = null
-    ): Observable<any> {
+    private changeRefType(index: number, selected: string = null): Promise<any> {
         let item = this.model.RelationItems[index];
         let last = (index == 0) ? null : this.model.RelationItems[index - 1];
-        let object = this.objectType;
-        let objectId = this.objectID;
 
         item.relationsLoading = true;
         item.DisplayFields = [];
         item.selectedRelationItemID = selected;
+
+        let object = this.objectType;
+        let objectId = this.objectID;
 
         if (index != 0) {
             object = last.Object;
@@ -968,46 +929,54 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
 
         switch (item.ReferenceType.toString()) {
-            case ComplexLookupRelationType.ChildItem.toString():
-                /* child item */
-                item.relationsLoading = false;
-
-                return this.fieldsService.getChildRelations(object, objectId);
-            case ComplexLookupRelationType.ChildRelationship.toString():
-                /* child relationship */
+            case ComplexLookupRelationType.ChildItem.toString(): //child item
+                return this.fieldsService.getChildRelations(object, objectId)
+                    .then(
+                        ci => {
+                            item.relationItems = ci;
+                        })
+                    .then(() => item.relationsLoading = false);
+            case ComplexLookupRelationType.ChildRelationship.toString(): //child relationship
                 let intersectIdToGetChildrenFor = item.IntersectType;
 
                 if (last) {
                     intersectIdToGetChildrenFor = last.IntersectType;
                 }
 
-                item.relationsLoading = false;
-
-                return this.fieldsService.getRelationLookupChildIntersectTypes(intersectIdToGetChildrenFor || 0);
+                return this.fieldsService.getRelationLookupChildIntersectTypes(intersectIdToGetChildrenFor || 0)
+                    .then(
+                        ci => {
+                            item.relationItems = ci;
+                        })
+                    .then(() => item.relationsLoading = false);
             case ComplexLookupRelationType.ParentItem.toString():
-                item.relationsLoading = false;
-
-                return this.fieldsService.getParentRelations(object, objectId);
+                return this.fieldsService.getParentRelations(object, objectId)
+                    .then(
+                        pi => {
+                            item.relationItems = pi;
+                        })
+                    .then(() => item.relationsLoading = false);
             case ComplexLookupRelationType.StandardRelationhip.toString():
-                item.relationsLoading = false;
-
-                return this.fieldsService.getStandardRelations(object, objectId);
-            default:
-                item.relationsLoading = false;
-
-                return new Observable();
+                return this.fieldsService.getStandardRelations(object, objectId)
+                    .then(
+                        sr => {
+                            item.relationItems = sr;
+                        })
+                    .then(() => item.relationsLoading = false);
         }
     }
 
-    private changeRel(index: number): Observable<any> {
+    private changeRel(index: number): Promise<any> {
         let item = this.model.RelationItems[index];
         let last = (index == 0) ? null : this.model.RelationItems[index - 1];
-        let params = [];
 
+        let params = [];
         if (item.selectedRelationItemID) {
             params = item.selectedRelationItemID.split('|');
         } else {
-            params.push(item.IntersectType, item.Object, item.ObjectID);
+            params.push(item.IntersectType);
+            params.push(item.Object);
+            params.push(item.ObjectID);
             item.selectedRelationItemID = item.IntersectType + '|' + item.Object + '|' + item.ObjectID;
         }
 
@@ -1025,11 +994,44 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             item.Direction = direction;
             item.Object = type;
             item.ObjectID = id;
+
             item.DisplayFields = [];
+            return this.fieldsService.getRelationLookupDisplayFields(id, type, intersectType)
+                .then(
+                    r => {
+                        r.forEach(
+                            i => {
+                                let params = i.value.split('|');
+                                let d = new FieldTypeItemDisplayFieldEditorModel();
 
-            return this.fieldsService.getRelationLookupDisplayFields(id, type, intersectType);
-        } finally {
+                                d.FieldTypeID = parseInt(params[0]);
+                                d.FieldTypeName = params[1];
+                                d.Show = false;
+                                d.FilterValue = "";
+                                d.SortOrder = null;
+                                d.value = i.value;
 
+                                let e = item.DisplayFields.find(j => j.FieldTypeID == d.FieldTypeID && j.FieldTypeName == d.FieldTypeName);
+
+                                if (e != null) {
+                                    e.Show = true;
+                                    e.value = i.value;
+                                } else {
+                                    item.DisplayFields.push(d);
+                                }
+                            });
+
+                        let s = [];
+                        for (let i = 1; i <= item.DisplayFields.length; i++) {
+                            item.DisplayFields[i - 1].DisplayOrder = i;
+                            s.push({id: i, text: i});
+                        }
+
+                        item.SortOrderList = s;
+                    }
+                );
+        } catch (e) {
+            return Promise.resolve();
         }
     }
 
@@ -1038,17 +1040,17 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
         if (other) {
             let sum = (parent.DisplayFields.length * (parent.DisplayFields.length + 1)) / 2;
-            let total = _.sumBy(parent.DisplayFields, i => {
-                return (i == other) ? 0 : (+i.DisplayOrder || 0);
-            });
+            let total = _.sumBy(parent.DisplayFields,
+                i => {
+                    return (i == other) ? 0 : (+i.DisplayOrder || 0);
+                }
+            );
 
             other.DisplayOrder = sum - total;
         }
     }
 
-    private changeLegacyRef() {
-        /* FIXME: method isn't using.
-         * Never called. */
+    private changeLegacyRef(): Promise<any> {
         this.childIntersectDisabled = (this.model.RelationItem.ReferenceType.toString() || '1') == '1';
         this.model.RelationItem.DisplayFields = [];
 
@@ -1064,60 +1066,26 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         if (this.model.RelationItem.IntersectType != null && !this.childIntersectDisabled) {
             this.childIntersectsLoading = true;
 
-            this.fieldsService.getRelationLookupChildIntersectTypes(this.model.RelationItem.IntersectType).subscribe(
-                r => {
-                    this.childIntersectTypes = r;
-                    this.childIntersectsLoading = false;
-                }
-            );
-        } else if (this.childIntersectDisabled) {
-            this.changeLegacyChild().subscribe(
-                r => {
-                    let s = [];
-                    let item = this.model.RelationItem;
-
-                    item.DisplayFields = [];
-
-                    r.forEach(i => {
-                        let params = i.value.split('|');
-                        let d = new FieldTypeItemDisplayFieldEditorModel();
-                        let e = item.DisplayFields.find(
-                            j => j.FieldTypeID == d.FieldTypeID && j.FieldTypeName == d.FieldTypeName
-                        );
-
-                        d.FieldTypeID = parseInt(params[0]);
-                        d.FieldTypeName = params[1];
-                        d.Show = false;
-                        d.FilterValue = "";
-                        d.SortOrder = null;
-                        d.value = i.value;
-
-                        if (e != null) {
-                            e.Show = true;
-                            e.value = i.value;
-                        } else {
-                            item.DisplayFields.push(d);
-                        }
-                    });
-
-                    for (let i = 1; i <= item.DisplayFields.length; i++) {
-                        item.DisplayFields[i - 1].DisplayOrder = i;
-                        s.push({id: i, text: i});
+            return this.fieldsService.getRelationLookupChildIntersectTypes(this.model.RelationItem.IntersectType)
+                .then(
+                    r => {
+                        this.childIntersectTypes = r;
+                        this.childIntersectsLoading = false;
                     }
-
-                    item.SortOrderList = s;
-                }
-            );
+                );
+        } else if (this.childIntersectDisabled) {
+            return this.changeLegacyChild();
+        } else {
+            return Promise.resolve();
         }
     }
 
-    private changeLegacyChild(): Observable<any> {
+    private changeLegacyChild(): Promise<any> {
         let intersectType = this.model.RelationItem.IntersectType;
         let type = this.model.RelationItem.Object;
         let id = this.model.RelationItem.ObjectID;
 
-        if (this.model.RelationItem.ReferenceType.toString() != '1') {
-            /* not self ref */
+        if (this.model.RelationItem.ReferenceType.toString() != '1') { //not self ref
             let params = this.model.RelationItem.selectedChildIntersectType.split('|');
 
             intersectType = parseInt(params[0]);
@@ -1126,49 +1094,74 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
 
         if (intersectType && id && type) {
-            return this.fieldsService.getRelationLookupDisplayFields(id, type, intersectType);
+            let item = this.model.RelationItem;
+
+            item.DisplayFields = [];
+
+            return this.fieldsService.getRelationLookupDisplayFields(id, type, intersectType)
+                .then(
+                    r => {
+                        r.forEach(
+                            i => {
+                                let params = i.value.split('|');
+                                let d = new FieldTypeItemDisplayFieldEditorModel();
+
+                                d.FieldTypeID = parseInt(params[0]);
+                                d.FieldTypeName = params[1];
+                                d.Show = false;
+                                d.FilterValue = "";
+                                d.SortOrder = null;
+                                d.value = i.value;
+
+                                let e = item.DisplayFields.find(j => j.FieldTypeID == d.FieldTypeID && j.FieldTypeName == d.FieldTypeName);
+
+                                if (e != null) {
+                                    e.Show = true;
+                                    e.value = i.value;
+                                } else {
+                                    item.DisplayFields.push(d);
+                                }
+                            }
+                        );
+
+                        let s = [];
+                        for (let i = 1; i <= item.DisplayFields.length; i++) {
+                            item.DisplayFields[i - 1].DisplayOrder = i;
+                            s.push({id: i, text: i});
+                        }
+                        item.SortOrderList = s;
+                    }
+                );
+        } else {
+            return Promise.resolve();
         }
     }
 
-    private changeFilteredLookup() {
+    private changeFilteredLookup(): Promise<any> {
         if (this.filteredLookup == null || this.filteredLookup == '') {
             this.filteredLookupDisplayFields = [];
+            return Promise.resolve();
         }
 
         let params = this.filteredLookup.split('|');
         let id = parseInt(params[1]);
         let type = params[0];
 
-        this.fieldsService.getFilteredLookupDisplayFields(
-            this.objectType,
-            this.objectID,
-            type,
-            id
-        ).subscribe(
-            d => {
-                this.filteredLookupDisplayFields = d;
+        return this.fieldsService.getFilteredLookupDisplayFields(this.objectType, this.objectID, type, id)
+            .then(
+                d => {
+                    this.filteredLookupDisplayFields = d;
 
-                this.filteredSortOrderList = [];
+                    this.filteredSortOrderList = [];
 
-                for (let i = 0; i < this.filteredLookupDisplayFields.length; i++) {
-                    this.filteredSortOrderList.push({
-                        id: i + 1,
-                        text: i + 1
-                    });
-                }
-
-                this.filteredLookupDisplayFields.forEach(d => {
-                    let item = this.model.FilteredLookupItems[0];
-                    let i = item.DisplayFields.find(j => j.value == d.value);
-
-                    if (i) {
-                        d.Show = i.Show;
-                        d.Filter = i.Filter;
-                        d.SortOrder = i.SortOrder;
+                    for (let i = 0; i < this.filteredLookupDisplayFields.length; i++) {
+                        this.filteredSortOrderList.push({
+                            id: i + 1,
+                            text: i + 1
+                        });
                     }
-                });
-            }
-        );
+                }
+            );
     }
 
     //#endregion
@@ -1201,31 +1194,31 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
     private validatePattern() {
         if (this.model.FieldType.Pattern > "" && this.testPattern > "") {
-            let patternRegex = new RegExp(this.model.FieldType.Pattern);
-
+            var patternRegex = new RegExp(this.model.FieldType.Pattern);
             this.testPatternValidationText = (patternRegex.test(this.testPattern)) ? 'Success' : 'Fail';
         } else {
             this.testPatternValidationText = '';
         }
-        if (this.model.FieldType.Pattern > "") {
-            this.model.FieldType.MinimumLength = 0;
-        }
+
         this.validate('Pattern');
     }
 
     private setValidation(validation_identifier: string, message: string, test: boolean) {
-        if (test)
+        if (test) {
             this.validationErrors.set(validation_identifier, message);
-        else
+        } else {
             this.validationErrors.delete(validation_identifier);
+        }
     }
 
     private validate(fieldname) {
-        if (fieldname == undefined)
+        if (fieldname == undefined) {
             fieldname = '*';
+        }
 
-        if (fieldname == '*')
+        if (fieldname == '*') {
             this.validationErrors.clear();
+        }
 
         if (this.model.FieldType.Type == 'Number' || this.model.FieldType.Type == 'Decimal') {
             if (fieldname == '*' || fieldname == 'MinimumLength') {
@@ -1236,6 +1229,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     return (this.model.FieldType.MinimumLength && this.model.FieldType.MinimumLength < -9999999999);
                 })());
             }
+
             if (fieldname == '*' || fieldname == 'MaximumLength') {
                 this.setValidation('MaximumLength_toobig', 'Please enter a smaller Maximum Value.', (() => {
                     return (this.model.FieldType.MaximumLength && this.model.FieldType.MaximumLength > 9999999999);
@@ -1244,51 +1238,59 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     return (this.model.FieldType.MaximumLength && this.model.FieldType.MaximumLength < -9999999999);
                 })());
             }
+
             if (fieldname == '*' || fieldname == 'Increment') {
                 this.setValidation('Increment_negative', 'Please enter a positive number for the increment.', (() => {
                     return (this.model.FieldType.Increment < 0);
                 })());
+
                 this.setValidation('Increment_toobig', 'Please enter a smaller number for the increment.', (() => {
                     return (this.model.FieldType.Increment > Number.MAX_SAFE_INTEGER);
                 })());
             }
         }
+
         if (this.model.FieldType.Type == 'Number') {
             if (fieldname == '*' || fieldname == 'Increment') {
                 this.setValidation('Increment_integer', 'Please enter a valid integer for Increment.', (() => {
                     return (this.model.FieldType.Increment && this.model.FieldType.Increment % 1 != 0);
                 })());
             }
+
             if (fieldname == '*' || fieldname == 'MinimumLength') {
                 this.setValidation('MinimumLength_integer', 'Please enter a valid integer for Minimum Value.', (() => {
                     return (this.model.FieldType.MinimumLength && this.model.FieldType.MinimumLength % 1 != 0);
                 })());
             }
+
             if (fieldname == '*' || fieldname == 'MaximumLength') {
                 this.setValidation('MaximumLength_integer', 'Please enter a valid integer for Maximum Value.', (() => {
                     return (this.model.FieldType.MaximumLength && this.model.FieldType.MaximumLength % 1 != 0);
                 })());
             }
+
             if (fieldname == '*' || fieldname == 'DefaultValue') {
                 this.setValidation('default_integer', 'Please enter a valid integer for Default Value.', (() => {
                     return (this.model.FieldType.DefaultValue && +this.model.FieldType.DefaultValue % 1 != 0);
                 })());
             }
         }
+
         if (this.model.FieldType.Type == 'Decimal') {
             if (fieldname == '*' || fieldname == 'Precision') {
                 this.setValidation('precision_range', 'Please enter decimal places between 0 and 5.', (() => {
                     return (this.model.FieldType.Precision && this.model.FieldType.Precision < 0 || this.model.FieldType.Precision > 5);
                 })());
             }
+
             if (fieldname == '*' || fieldname == 'Precision' || fieldname == 'DefaultValue') {
                 if (this.model.FieldType.Precision && FormHelpers.isNumber(this.model.FieldType.DefaultValue)) {
-
                     let asString = '' + this.model.FieldType.DefaultValue;
-                    if (asString.split('.').length == 1 || asString.split('.')[1].length >= this.model.FieldType.Precision) {
 
+                    if (asString.split('.').length == 1 || asString.split('.')[1].length >= this.model.FieldType.Precision) {
                         let val = +this.model.FieldType.DefaultValue;
                         let newVal = +val.toFixed(this.model.FieldType.Precision);
+
                         if (newVal != null && (newVal != 0 || newVal != +val) && !isNaN(newVal)) {
                             this.model.FieldType.DefaultValue = '' + newVal;
                         }
@@ -1296,6 +1298,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 }
             }
         }
+
         if (this.model.FieldType.Type == 'Number' || this.model.FieldType.Type == 'Decimal') {
             if (fieldname == '*' || fieldname == 'MinimumLength' || fieldname == 'DefaultValue') {
                 this.setValidation('default_MinimumLength', 'Please enter a minimum value of ' + this.model.FieldType.MinimumLength + ' in Default Value.', (() => {
@@ -1304,9 +1307,11 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                             return true;
                         }
                     }
+
                     return false;
                 })());
             }
+
             if (fieldname == '*' || fieldname == 'MaximumLength' || fieldname == 'DefaultValue') {
                 this.setValidation('default_MaximumLength', 'Please enter a maximum value of ' + this.model.FieldType.MaximumLength + ' in Default Value.', (() => {
                     if (FormHelpers.isNumber(this.model.FieldType.DefaultValue)) {
@@ -1317,6 +1322,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     return false;
                 })());
             }
+
             if (fieldname == '*' || fieldname == 'MinimumLength' || fieldname == 'MaximumLength') {
                 this.setValidation('number_minmax', 'Please enter a minimum value which is lower than the maximum value.', (() => {
                     if (FormHelpers.isNumber(this.model.FieldType.MinimumLength) && FormHelpers.isNumber(this.model.FieldType.MaximumLength))
@@ -1327,16 +1333,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
 
         if (this.model.FieldType.Type == 'Text') {
-            if (fieldname == '*' || fieldname == 'MinimumLength') {
-                this.setValidation('MinimumLength_tooshort', 'Please enter a larger Minimum Length.', (() => {
-                    return (this.model.FieldType.MinimumLength && this.model.FieldType.MinimumLength < 0);
-                })());
-            }
-            if (fieldname == '*' || fieldname == 'MaximumLength') {
-                this.setValidation('MaximumLength_tooshort', 'Please enter a larger Maximum Length.', (() => {
-                    return (this.model.FieldType.MaximumLength && this.model.FieldType.MaximumLength < 0);
-                })());
-            }
             if (fieldname == '*' || fieldname == 'Pattern' || fieldname == 'DefaultValue') {
                 this.setValidation('default_validationpattern', 'Default Value does not match Validation Pattern.', (() => {
                     if (this.model.FieldType.Pattern > "" && this.model.FieldType.DefaultValue > "") {
@@ -1346,6 +1342,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     return false;
                 })());
             }
+
             if (fieldname == '*' || fieldname == 'MinimumLength' || fieldname == 'DefaultValue') {
                 this.setValidation('default_MinimumLength_text', 'Default value is shorter than ' + this.model.FieldType.MinimumLength + '.', (() => {
                     if (this.model.FieldType.DefaultValue) {
@@ -1355,6 +1352,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     }
                 })());
             }
+
             if (fieldname == '*' || fieldname == 'MaximumLength' || fieldname == 'DefaultValue') {
                 this.setValidation('default_MaximumLength_text', 'Default value is longer than ' + this.model.FieldType.MaximumLength + '.', (() => {
                     if (this.model.FieldType.DefaultValue) {
@@ -1375,10 +1373,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
         if (fem.FieldType.Type == 'Number' || fem.FieldType.Type == 'Decimal') {
             return false;
-        } else if (fem.FieldType.Type == 'Text') {
-            return (this.model.FieldType.Pattern > "");
         } else {
-            return false;
+            return !fem.FieldType.IsRequired;
         }
     }
 
@@ -1388,10 +1384,13 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
     private addFusion() {
         let i = new FieldTypeFusionItemEditorModel();
+
         i.ReferenceType = this.lookups.ReferenceTypes[0].value;
+
         if (this.model.FusionItems == null) {
             this.model.FusionItems = [];
         }
+
         this.model.FusionItems.push(i);
     }
 
@@ -1425,14 +1424,19 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private anyDisplayFieldsSelected(e: any) {
         if (this.model.FieldType.Type != 'ComplexRelationLookup') {
             this.displayFieldSelected = true;
-            if (this.lookups.Field_FieldFromRelRelationships.length > 0)
+
+            if (this.lookups.Field_FieldFromRelRelationships.length > 0) {
                 this.cardinalFieldFromRelationshipSelected(parseInt(this.lookups.Field_FieldFromRelRelationships[0].value));
+            }
+
             return;
         }
         if (e == true) {
             this.displayFieldSelected = true;
+
             return;
         }
+
         this.displayFieldSelected = false;
         this.model.RelationItems.forEach(r => {
             r.DisplayFields.forEach(d => {
@@ -1444,11 +1448,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         });
     }
 
-    private onShowDetailChange($event) {
-        if (!$event)
-            this.model.FieldType.ShowIfEmpty = false;
-    }
-
     public onDateSelectMethod(e: Date) {
         this.model.FieldType.DefaultValue = this.getGovernDate(e);
     }
@@ -1457,11 +1456,11 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         if (e === null || e === undefined) {
             return "";
         }
+
         return (e.getMonth() + 1) + '/' + e.getDate() + '/' + e.getFullYear();
     }
 
     public isRelationshipWithMultipleCardinality(): boolean {
-
         return true;
     }
 }

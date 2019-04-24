@@ -4265,29 +4265,60 @@ order by C.DisplayValue";
 
         [Route("groups/{groupID:int}/ownership/{type}/{id:int}")]
         public IEnumerable<dynamic> GetResponsibilitiesByGroupByType(int groupID, SystemObjects type, int id)
-        {
-            return Company.Query<dynamic>(@"
-select	RD.SecurityAsset,
-		RD.SecurityAssetID,
-		RD.SecurityAssetName,
-		RD.ResourceID,
-		RD.ResponsibilityTypeID,
-		RD.Type,
-		RD.TypeID,
-		T.Name as TypeName,
-		RD.Object,
-		RD.ObjectID,
-		utility.GetAssetDisplayValueWrapper(RD.AssetID) as ObjectName,
-		RD.ResponsibilityTypeName,
-		case RD.SecurityAsset
-			when 'G' then 'Via Group'
-			when 'O' then 'Via Organization'
-			else ''
-		end as Via,
-        RD.Context
-from	ResponsibilityDetail RD
-		inner join AssetType T on T.Object = RD.Type and T.ObjectID = RD.TypeID and RD.SecurityAsset = 'G' and RD.SecurityAssetID = @groupID 
-            and T.Object = @o and T.ObjectID = @id and RD.IsVisible = 1", new { groupID, o = type.ToString(), id });
+        {            
+            var sql = $@"
+		select 
+			RD.SecurityAsset,
+		    RD.SecurityAssetID,
+		    RD.SecurityAssetName,
+		    RD.ResourceID,
+		    RD.ResponsibilityTypeID,
+		    T.Object as Type,
+		    T.ObjectID as TypeID,
+		    T.Name as TypeName,
+		    A.Object,
+		    A.ObjectID,
+		    utility.GetAssetDisplayValueWrapper(A.ID) as ObjectName,
+		    RD.ResponsibilityTypeName,
+		    case RD.SecurityAsset
+			    when 'G' then 'Via Group'
+			    when 'O' then 'Via Organization'
+			    else ''
+		    end as Via,
+            RD.Context 
+		from 
+		ResponsibilityDetail RD 
+		inner join AssetType T on T.ObjectID = RD.TypeID and T.Object = RD.Type and T.Object = @type and T.ObjectID = @id
+		inner join Asset A on A.AssetTypeID = T.ID
+		where RD.SecurityAsset = 'G' and RD.SecurityAssetID = @groupID and AssetID = 0 and ApplyToType = 1 and RD.IsVisible = 1
+		
+		union all
+
+		select	RD.SecurityAsset,
+		        RD.SecurityAssetID,
+		        RD.SecurityAssetName,
+		        RD.ResourceID,
+		        RD.ResponsibilityTypeID,
+		        RD.Type,
+		        RD.TypeID,
+		        T.Name as TypeName,
+		        RD.Object,
+		        RD.ObjectID,
+		        utility.GetAssetDisplayValueWrapper(RD.AssetID) as ObjectName,
+		        RD.ResponsibilityTypeName,
+		        case RD.SecurityAsset
+			        when 'G' then 'Via Group'
+			        when 'O' then 'Via Organization'
+			        else ''
+		        end as Via,
+                RD.Context
+        from	ResponsibilityDetail RD
+		        inner join AssetType T on T.Object = RD.Type and T.ObjectID = RD.TypeID and T.Object = @type and T.ObjectID = @id
+        where  RD.AssetID != 0 
+            and RD.ApplyToType = 0 and RD.IsVisible = 1
+            and RD.SecurityAsset = 'G' and RD.SecurityAssetID = @groupID
+";
+            return Company.Query<dynamic>(sql, new { groupID, type = type.ToString(), id });
         }
 
         [Route("ownership/types")]
