@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 
 namespace d360.core.entities.Workflow
 {
@@ -65,6 +66,80 @@ namespace d360.core.entities.Workflow
         public string Email { get; set; }
         public string Responsibility { get; set; }
     }
+
+    public class WorkflowItemStepDetail
+    {
+        public int ID { get; set; }
+        public int ItemID { get; set; }
+        public int StepID { get; set; }
+        public string Name { get; set; }
+        public StepType StepType { get; set; }
+        public WorkflowActivityType ActivityType { get; set; }
+        public bool Complete { get; set; }
+        public DateTime? StartedOn { get; set; }
+        public DateTime? CompletedOn { get; set; }
+        public string StartedBy { get; set; }
+        public string CompletedBy { get; set; }
+        public string MessageRecipientType { get; set; }
+        public string Assignee { get; set; }
+        public string Fields { get; set; }
+        public bool IsIssueType { get; set; }
+        public string Object { get; set; }
+        public int ObjectID { get; set; }
+        public int TypeID { get; set; }
+        public string IsAssignedLoginUser { get; set; } = bool.FalseString;
+        public FieldsModel FieldsObject { get; set; }
+
+        [Serializable, XmlRoot("fields")]
+        public class FieldsModel
+        {
+            [XmlAttribute("NumberOfResponses")]
+            public int NumberOfResponses { get; set; }
+            [XmlAttribute("TotalResources")]
+            public int TotalResources { get; set; }
+
+            [XmlElement("Reassigned")]
+            public List<ReassignmentDetail> Reassignments { get; set; }
+
+            [XmlElement("form")]
+            public List<FormDetail> Forms { get; set; }
+
+            public class FormDetail
+            {
+                [JsonProperty(PropertyName = "@ResourceID")]
+                public int ResourceID { get; set; }
+            }
+
+            public class ReassignmentDetail
+            {
+                [XmlAttribute("reassignType")]
+                public string ReassignType { get; set; }
+                [XmlAttribute("objectId")]
+                public int ObjectID { get; set; }
+                [XmlAttribute("objectType")]
+                public string ObjectType { get; set; }
+                [XmlAttribute("objectName")]
+                public string ObjectName { get; set; }
+                [XmlAttribute("byResourceId")]
+                public int ByResourceID { get; set; }
+                [XmlAttribute("toResourceId")]
+                public int ToResourceID { get; set; }
+                [XmlAttribute("fromResourceId")]
+                public int FromResourceID { get; set; }
+                [XmlAttribute("byResourceName")]
+                public string ByResourceName { get; set; }
+                [XmlAttribute("fromResourceName")]
+                public string FromResourceName { get; set; }
+                [XmlAttribute("toResourceName")]
+                public string ToResourceName { get; set; }
+                [XmlAttribute("reassignOn")]
+                public string ReassignOn { get; set; }
+            }
+        }
+    }
+
+   
+
     public class WorkflowStepDetail
     {
         [DataMember]
@@ -181,7 +256,7 @@ namespace d360.core.entities.Workflow
         [DataMember]
         public List<WorkflowStepFieldChange> FieldChanges { get; set; }
 
-        public WorkflowStepReleationshipChange RelationshipChange { get; set; }
+        public WorkflowStepRelationshipChange RelationshipChange { get; set; }
 
         public State StateChange { get; set; }
 
@@ -215,7 +290,7 @@ namespace d360.core.entities.Workflow
         public string ClearValue { get; set; }
     }
 
-    public class WorkflowStepReleationshipChange
+    public class WorkflowStepRelationshipChange
     {
         [DataMember]
         public string TypeName { get; set; }
@@ -229,6 +304,7 @@ namespace d360.core.entities.Workflow
         [DataMember]
         public bool ClearValue { get; set; }
     }
+
     public class WorkflowStepIssueDetail
     {
         public int ID { get; set; }

@@ -1293,26 +1293,21 @@ namespace d360.model
                 var fieldElement = XElement.Parse(itemStep.Fields);
                 var reassigned = new XElement("Reassigned");
                 reassigned.Add(new XAttribute("reassignType", "Resource"));
-                reassigned.Add(new XAttribute("reassignToResourceId", resource.ResourceID.ToString()));
-                reassigned.Add(new XAttribute("reassignFromResourceId", originalResourceId.ToString()));
-                reassigned.Add(new XAttribute("reassignByResourceId", CurrentResourceID.ToString()));
+                reassigned.Add(new XAttribute("toResourceId", resource.ResourceID.ToString()));
+                reassigned.Add(new XAttribute("fromResourceId", originalResourceId.ToString()));
+                reassigned.Add(new XAttribute("byResourceId", CurrentResourceID.ToString()));
                 reassigned.Add(new XAttribute("reassignOn", DateTime.UtcNow));
 
-                if (fieldElement.Elements("Reassigned").Any())
-                {
-                    var el = fieldElement.Elements("Reassigned");
-                    el.Remove();
-                }
 
                 fieldElement.Add(reassigned);
                 itemStep.Fields = fieldElement.ToString();
                 itemStep.StartedOn = DateTime.UtcNow;
 
-                var currentAssignment = WorkflowItemAssignments.FirstOrDefault(x => x.ItemStepID == itemStep.ID);
+                var currentAssignments = WorkflowItemAssignments.Where(x => x.ItemStepID == itemStep.ID && x.ResourceObject == "Resource" && x.ResourceObjectID == originalResourceId).ToList();
 
-                if (currentAssignment != null)
+                if (currentAssignments.Any())
                 {
-                    WorkflowItemAssignments.Remove(currentAssignment);
+                    WorkflowItemAssignments.RemoveRange(currentAssignments);
                 }
 
                 if (sendFormEmails && stepSettings.FormShouldSendEmail)
