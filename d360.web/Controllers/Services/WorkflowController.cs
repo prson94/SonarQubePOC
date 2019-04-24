@@ -1902,7 +1902,7 @@ order by wi.StartedOn desc";
                                 bool fromNew = (from < 0);
                                 bool toNew = (to < 0);
 
-                                var link = Company.WorkflowVersionStepTransitions.SingleOrDefault(v => v.FromVersionStepID == from && v.ToVersionStepID == to);
+                                var link = Company.WorkflowVersionStepTransitions.SingleOrDefault(v => v.FromVersionStepID == from && v.ToVersionStepID == to && v.State== core.enums.State.Active);
 
                                 if (fromNew || toNew || link == null)
                                 {
