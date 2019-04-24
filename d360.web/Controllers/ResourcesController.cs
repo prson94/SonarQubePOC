@@ -968,25 +968,22 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                     {
 
                         var sql = @"select 
-                                          ISNULL(f.FormattedValue,' ') as Value,
-	                                      ft.FriendlyName as Name
-                                     from FieldType  as ft
-                                     left join field f on (ft.id = f.fieldtypeid and f.[objecttype] = @ty and f.objectid = @obj and ft.Name != 'Description')
-                                     where ft.ObjectID = @typeId and (f.FormattedValue is not null or (f.FormattedValue is null and ft.ShowIfEmpty = 1))";
+	                                    ISNULL(FormattedValue,' ') as Value,
+	                                    FriendlyName as Name
+	                                    from dbo.FieldDetail 
+		                                    where objectid = @obj  and [Name] != 'Description'";
 
         
-                        res = Company.Query<FieldTooltipValueModel>(sql, new { ty = objectType, obj = objectID, typeId = det.TypeID }).ToList();
+                        res = Company.Query<FieldTooltipValueModel>(sql, new {obj = objectID}).ToList();
                         
 
                     }
 
                     var descSql = @"select 
-                                f.FormattedValue as [Value]	                            
-                            from
-                                fieldtype ft
-
-                                inner
-                            join field f on (ft.id = f.fieldtypeid and f.[objecttype] = @ty and f.objectid = @obj and ft.Name = 'Description')";
+	                                    ISNULL(FormattedValue,' ') as Value,
+	                                    FriendlyName as Name
+	                                    from dbo.FieldDetail 
+		                                    where objectid = @obj  and [Name] = 'Description'";
 
                     desc = Company.Query<string>(descSql, new { ty = objectType, obj = objectID }).FirstOrDefault();
 
