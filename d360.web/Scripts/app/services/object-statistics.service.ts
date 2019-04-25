@@ -5,14 +5,14 @@ import {catchError, map} from 'rxjs/operators';
 
 import {ObjectStatistics} from '../models/object-statistics.model';
 
-import {MessagesService} from './messages.service';
-import {BaseObservableService} from './baseObservable.service';
+import { MessagesObservableService } from './messages-observable.service';
+import { BaseObservableService } from './baseObservable.service';
 
 @Injectable()
 export class ObjectStatisticsService extends BaseObservableService {
     constructor(
         private http: HttpClient,
-        messagesService: MessagesService
+        messagesService: MessagesObservableService
     ) {
         super(messagesService);
     }
