@@ -52,7 +52,7 @@ namespace igx.jobs.markitlineageprocessor
                     try
                     {
 #if DEBUG
-                        if (c.CompanyID != 1038)
+                        if (c.CompanyID != 1183)
                             continue;
 #endif
                         #region Create EF connection
