@@ -358,7 +358,27 @@ namespace d360.web.Controllers
                                     });
                                 }
                             }
-                        }
+                            else if (ft.ShowIfEmpty)
+                            {
+                                var ro = new ReadOnlyField
+                                {
+                                    Name = ft.FriendlyName,
+                                    Value = "",
+                                    FieldDescription = ft.DisplayDescription,
+                                    FieldName = ft.Name,
+                                    Values = null,
+                                    DataType = !string.IsNullOrEmpty(ft.Type) ? ft.Type : "",
+                                    ShowIfEmpty = ft.ShowIfEmpty
+                                };
+
+                                list.Add(new DetailReadOnlyRowModel
+                                {
+                                    columns = 1,
+                                    FirstColumnFields = new List<ReadOnlyField> { ro },
+                                    Category = ft.Category
+                                });
+                            }
+                    }
 
                     else if (ft.Type == DataType.RefListRelationship.ToString())
                         {
@@ -1755,6 +1775,7 @@ order by 'Name'";
                         Name = ft.FriendlyName,
                         FieldDescription = ft.DisplayDescription,
                         FieldName = ft.Name,
+                        ShowIfEmpty = ft.ShowIfEmpty
 
                     }
                 },
@@ -1795,9 +1816,30 @@ order by 'Name'";
                                 LookupFieldTypeID = def.ID,
                                 LookupObjectID = id,
                                 LookupObjectType = type,
-                                LookupType = (int)DataType.FilteredLookup
+                                LookupType = (int)DataType.FilteredLookup,
+                                ShowIfEmpty = ft.ShowIfEmpty,
                             }
                         },
+                        Category = ft.Category
+                    });
+                }
+                else if (ft.ShowIfEmpty)
+                {
+                    var ro = new ReadOnlyField
+                    {
+                        Name = ft.FriendlyName,
+                        Value = "",
+                        FieldDescription = ft.DisplayDescription,
+                        FieldName = ft.Name,
+                        Values = null,
+                        DataType = !string.IsNullOrEmpty(ft.Type) ? ft.Type : "",
+                        ShowIfEmpty = ft.ShowIfEmpty
+                    };
+
+                    list.Add(new DetailReadOnlyRowModel
+                    {
+                        columns = 1,
+                        FirstColumnFields = new List<ReadOnlyField> { ro },
                         Category = ft.Category
                     });
                 }
@@ -2698,9 +2740,30 @@ order by    rnk, [Name]";
                                         LookupObjectID = id,
                                         LookupObjectType = type,
                                         LookupFieldTypeID = ft.ID,
-                                        LookupType = (int)DataType.ComplexRelationLookup
+                                        LookupType = (int)DataType.ComplexRelationLookup,
+                                        ShowIfEmpty = ft.ShowIfEmpty,
                                     }
                                 },
+                        Category = ft.Category
+                    });
+                }
+                else if(ft.ShowIfEmpty)
+                {
+                    var ro = new ReadOnlyField
+                    {
+                        Name = ft.FriendlyName,
+                        Value = "",
+                        FieldDescription = ft.DisplayDescription,
+                        FieldName = ft.Name,
+                        Values = null,
+                        DataType = !string.IsNullOrEmpty(ft.Type) ? ft.Type : "",
+                        ShowIfEmpty = ft.ShowIfEmpty
+                    };
+
+                    list.Add(new DetailReadOnlyRowModel
+                    {
+                        columns = 1,
+                        FirstColumnFields = new List<ReadOnlyField> { ro },
                         Category = ft.Category
                     });
                 }
@@ -3730,7 +3793,8 @@ outer apply (
                                         Name = $"{ft.FriendlyName} Name",
                                         FieldDescription = ft.DisplayDescription,
                                         FieldName = ft.Name,
-                                        Value = referenceItemType?.Name
+                                        Value = referenceItemType?.Name,
+                                        ShowIfEmpty = ft.ShowIfEmpty
                                     }
                                 },
                                 SecondColumnFields = new List<ReadOnlyField> {
@@ -3739,7 +3803,8 @@ outer apply (
                                         Name = $"{ft.FriendlyName} Description",
                                         FieldDescription = ft.DisplayDescription,
                                         FieldName = ft.Name,
-                                        Value = referenceItemType?.Description
+                                        Value = referenceItemType?.Description,
+                                        ShowIfEmpty = ft.ShowIfEmpty
                                     }
                                 },
                                 Category = ft.Category
@@ -3761,12 +3826,33 @@ outer apply (
                                         LookupObjectType = "ReferenceListItem",
                                         LookupObjectID = referenceItemTypeID,
                                         LookupFieldTypeID = 0,
-                                        LookupType = (int)DataType.RefListRelationship
+                                        LookupType = (int)DataType.RefListRelationship,
+                                        ShowIfEmpty = ft.ShowIfEmpty
                                     }
                                 },
                                 Category = ft.Category
                             });
                         }
+                    }
+                    else if (ft.ShowIfEmpty)
+                    {
+                        var ro = new ReadOnlyField
+                        {
+                            Name = ft.FriendlyName,
+                            Value = "",
+                            FieldDescription = ft.DisplayDescription,
+                            FieldName = ft.Name,
+                            Values = null,
+                            DataType = !string.IsNullOrEmpty(ft.Type) ? ft.Type : "",
+                            ShowIfEmpty = ft.ShowIfEmpty
+                        };
+
+                        list.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField> { ro },
+                            Category = ft.Category
+                        });
                     }
                 }
             }
@@ -3880,9 +3966,30 @@ where   R.ReferenceItemTypeID = {id}
                                         LookupObjectID = id,
                                         LookupFieldTypeID = ft.ID,
                                         LookupType = (int)DataType.OwnershipLookup,
+                                        ShowIfEmpty = ft.ShowIfEmpty,
                                         Value = "-1" //If value is set to null/empty table is not rendered in detail view
                                     }
                                 },
+                        Category = ft.Category
+                    });
+                }
+                else if (ft.ShowIfEmpty)
+                {
+                    var ro = new ReadOnlyField
+                    {
+                        Name = ft.FriendlyName,
+                        Value = "",
+                        FieldDescription = ft.DisplayDescription,
+                        FieldName = ft.Name,
+                        Values = null,
+                        DataType = !string.IsNullOrEmpty(ft.Type) ? ft.Type : "",
+                        ShowIfEmpty = ft.ShowIfEmpty
+                    };
+
+                    list.Add(new DetailReadOnlyRowModel
+                    {
+                        columns = 1,
+                        FirstColumnFields = new List<ReadOnlyField> { ro },
                         Category = ft.Category
                     });
                 }
