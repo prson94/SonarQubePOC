@@ -1,0 +1,53 @@
+<databaseChangeLog    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+  <changeSet author="Tomislav Duric" id="GOV-7094-AlterView">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+CREATE OR ALTER VIEW [dbo].[FieldDetail] AS
+SELECT        T.ID AS FieldTypeID, 
+				T.Name, 
+				T.FriendlyName, 
+				A.AssetTypeID, 
+				A.ID AS AssetID, 
+				A.Object, 
+				A.ObjectID, 
+				T.Type, 
+				COALESCE (F.Value, T.DefaultValue) AS Value, 
+				CASE WHEN T.AllowAllValue = 1 AND F.FormattedValue = '0'
+				 THEN CAST(T .AllowAllLabel AS nvarchar(MAX)) 
+				    WHEN F.FormattedValue IS NOT NULL 
+					    THEN F.FormattedValue 
+						WHEN T .DefaultFormattedValue IS NOT NULL 
+                           THEN CAST(T .DefaultFormattedValue AS nvarchar(MAX)) 
+						ELSE NULL 
+				END AS FormattedValue,
+				T.ShowIfEmpty
+FROM            dbo.Asset AS A 
+INNER JOIN dbo.FieldType AS T ON T.AssetTypeID = A.AssetTypeID 
+LEFT OUTER JOIN dbo.Field AS F ON F.FieldTypeID = T.ID AND F.ObjectType = A.Object AND F.ObjectID = A.ObjectID
+WHERE F.Value IS NOT NULL OR T.DefaultValue IS NOT NULL OR T.ShowIfEmpty = 1
+]]>
+    </sql>
+
+	<rollback>
+<![CDATA[
+CREATE OR ALTER VIEW [dbo].[FieldDetail] AS
+SELECT        T.ID AS FieldTypeID, T.Name, T.FriendlyName, A.AssetTypeID, A.ID AS AssetID, A.Object, A.ObjectID, T.Type, COALESCE (F.Value, T.DefaultValue) AS Value, CASE WHEN T .AllowAllValue = 1 AND 
+                         F.FormattedValue = '0' THEN CAST(T .AllowAllLabel AS nvarchar(MAX)) WHEN F.FormattedValue IS NOT NULL THEN F.FormattedValue WHEN T .DefaultFormattedValue IS NOT NULL 
+                         THEN CAST(T .DefaultFormattedValue AS nvarchar(MAX)) ELSE NULL END AS FormattedValue
+FROM            dbo.Asset AS A INNER JOIN
+                         dbo.FieldType AS T ON T.AssetTypeID = A.AssetTypeID LEFT OUTER JOIN
+                         dbo.Field AS F ON F.FieldTypeID = T.ID AND F.ObjectType = A.Object AND F.ObjectID = A.ObjectID
+WHERE        (F.Value IS NOT NULL) OR
+                         (T.DefaultValue IS NOT NULL)
+]]>
+	</rollback>
+  </changeSet>
+</databaseChangeLog>
