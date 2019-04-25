@@ -1,42 +1,50 @@
-﻿import { Input, Component, EventEmitter, Output, OnChanges, SimpleChanges } from '@angular/core';
-import { BaseComponent } from '../../shared/base.component';
-import { FusionService } from '../../../services/fusion.service';
-import { MessagesService } from '../../../services/messages.service';
-import { FusionRule, FusionRuleFilter } from '../../../models/fusion.model';
+﻿import {Component, EventEmitter, Input, OnChanges, Output, SimpleChanges} from '@angular/core';
+import {BaseComponent} from '../../shared/base.component';
+import {FusionService} from '../../../services/fusion.service';
+import {MessagesService} from '../../../services/messages.service';
+import {FusionRule, FusionRuleFilter} from '../../../models/fusion.model';
+import {takeUntil} from "rxjs/operators";
+import {Subject} from "rxjs";
 
 @Component({
     selector: 'd3s-fusion-rule-filter-list',
     template: `
-    <d3s-loading [isLoading]="isLoading"></d3s-loading>
-    <div *ngIf="!isLoading">
-        <header>Filters for selected rule<d3s-tile-actions [hasAdd]="true" (addClick)="add();"></d3s-tile-actions></header>
+        <d3s-loading [isLoading]="isLoading"></d3s-loading>
+        <div *ngIf="!isLoading">
+            <header>Filters for selected rule
+                <d3s-tile-actions [hasAdd]="true" (addClick)="add();"></d3s-tile-actions>
+            </header>
 
-     <p-table #dt [value]="values" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name']" [pageLinks]="3" [selection]="selection" (selectionChange)="selectionChange.emit($event)" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
-        <ng-template pTemplate="header">
-            <tr>
-                <th>Filter Name</th>
-                <th></th>
-            </tr>
-        </ng-template>
-        <ng-template pTemplate="body" let-item>
-            <tr [pSelectableRow]="item">
-                <td>{{item.Name}}</td>
-                <td>
-                    <div class="RowTools">
-                        <a (click)="edit(item);"><i class="fa fa-pencil"></i></a>
-                        <a (click)="delete(item);"><i class="fa fa-trash-o"></i></a>
-                    </div>
-                </td>
-            </tr>
-        </ng-template>
-        <ng-template pTemplate="summary">
-            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
-        </ng-template>
-    </p-table>
-    
-    </div>
+            <p-table #dt [value]="values" selectionMode="single" [metaKeySelection]="true"
+                     [globalFilterFields]="['Name']" [pageLinks]="3" [selection]="selection"
+                     (selectionChange)="selectionChange.emit($event)" [paginator]="true"
+                     [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>Filter Name</th>
+                        <th></th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-item>
+                    <tr [pSelectableRow]="item">
+                        <td>{{item.Name}}</td>
+                        <td>
+                            <div class="RowTools">
+                                <a (click)="edit(item);"><i class="fa fa-pencil"></i></a>
+                                <a (click)="delete(item);"><i class="fa fa-trash-o"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="summary">
+                    <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows"
+                                          [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                </ng-template>
+            </p-table>
 
-`,
+        </div>
+
+    `,
     providers: [FusionService]
 })
 
@@ -50,29 +58,46 @@ export class FusionRuleFilterListComponent extends BaseComponent implements OnCh
 
     values: FusionRuleFilter[];
 
-    constructor(private fusionService: FusionService, private messagesService: MessagesService) {
+    destroySubject$: Subject<void> = new Subject();
+
+    constructor(
+        private fusionService: FusionService,
+        private messagesService: MessagesService
+    ) {
         super();
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes['fusionRule'] && changes['fusionRule'].currentValue != changes['fusionRule'].previousValue)
+        if (changes['fusionRule'] && changes['fusionRule'].currentValue != changes['fusionRule'].previousValue) {
             this.load();
+        }
     }
 
     load() {
-        if (this.fusionRule == null)
+        if (this.fusionRule == null) {
             return;
+        }
+
         this.isLoading = true;
-        this.fusionService.getFusionRuleFilters(this.fusionRule.ID)
-            .then(r => {
-                this.values = r;
-                if (this.values.length > 0) {
-                    if (this.selection == null || this.values.findIndex(v => v.ID == this.selection.ID) < 0)
-                        this.selectionChange.emit(this.values[0]);
-                } else
-                    this.selectionChange.emit(null);
-                this.isLoading = false;
-            });
+
+        this.fusionService
+            .getFusionRuleFilters(this.fusionRule.ID)
+            .pipe(takeUntil(this.destroySubject$))
+            .subscribe(
+                r => {
+                    this.values = r;
+                    if (this.values.length > 0) {
+                        if (this.selection == null || this.values.findIndex(v => v.ID == this.selection.ID) < 0) {
+                            this.selectionChange.emit(this.values[0]);
+                        }
+                    } else {
+                        this.selectionChange.emit(null);
+                    }
+
+                    this.isLoading = false;
+                }
+            )
+        ;
     }
 
     delete(e: FusionRuleFilter) {

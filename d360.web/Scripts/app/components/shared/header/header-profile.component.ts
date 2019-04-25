@@ -13,21 +13,23 @@ declare var CompanySettings;
 @Component({
     selector: 'd3s-header-profile',
     template: ` <span #item style="display:table;" class="header-search" [ngClass]="{'header-search-active':active}" (mouseenter)="show(item)" (mouseleave)="hide(item)" >
-                    <a class="photo hide-on-med-and-down"><img [src]="'/resources/image/' + resourceId + '?size=25'" height="25" width="25" /></a>
-                    <div class="show-on-medium-and-down hide-on-med-and-up">My Account <i class="fa fa-caret-right"></i></div>
+                    <a [routerLink]="resourceUrl()" class="photo" title="Go to your profile"><img [src]="'/resources/image/' + resourceId + '?size=25'" height="25" width="25" /></a>
                     <div class="search-child header-profile-panel">                        
-                        <div class="row">          
-                            <div class="row"  style="opacity:0.5; padding:5px;">
-                                <div class="col s12"><h4>{{userName}}</h4></div>
-                                <div class="col s12"><h5>{{userEmail}}</h5></div>
-                            </div>
-                            <ul>
-                                <li [routerLink]="resourceUrl()" class="header-item">Edit Profile</li>
-                                <li *ngIf="showAllUsersAPIKey" [routerLink]="'/resource/my/apikey'" class="header-item">API Key</li>
-                                <li *ngIf="!singleSignOn"  [routerLink]="'/resource/'+resourceId+'/changepassword'" class="header-item">Change Password</li>
-                                <li class="header-item"><a style="padding:0px;" href="/slo" title="Sign out">Sign Out</a></li>
-                            </ul>                                                    
+                        <div class="row">           
+                            <div class="col s2"><a [routerLink]="resourceUrl()" class="photo" title="Go to your profile"><img [src]="'/resources/image/' + resourceId + '?size=25'" height="25" width="25" /></a></div>
+                            <div class="col s10">
+                                <div class="row">
+                                    <div class="col s12"><h4>{{userName}}</h4></div>
+                                    <div class="col s12"><h5>{{userEmail}}</h5></div>
+                                </div>
+                            </div>                                                        
                         </div>
+                        <div class="row">
+                                <div class="col s12" *ngIf="!singleSignOn">&nbsp;</div>
+                                <div class="col s12" *ngIf="!singleSignOn"><a [routerLink]="'/resource/'+resourceId+'/changepassword'"><i class="fa fa-pencil" aria-hidden="true"></i>&nbsp;Change Password</a></div>
+                                <div class="col s12">&nbsp;</div>
+                                <div class="col s12"  *ngIf="showAllUsersAPIKey"><a [routerLink]="'/resource/my/apikey'"><i class="fa fa-key" aria-hidden="true"></i>&nbsp;API Key</a></div>
+                         </div>
                     </div>
                 <span>`,    
     changeDetection: ChangeDetectionStrategy.OnPush
@@ -76,20 +78,15 @@ export class HeaderProfileComponent implements OnInit , OnDestroy{
             window.clearTimeout(this.hideHandle);
             this.hideHandle = 0;
         }
-        let menuPanel = item.children[1].nextElementSibling;
-        let minimizedMenuItem = item.children[0].nextElementSibling;
-        let dims = minimizedMenuItem.getBoundingClientRect();
-        if (menuPanel) {
+        let panel = item.children[0].nextElementSibling;
+        if (panel) {
             this.active = true;
 
-            menuPanel.style.zIndex = 1000;
+            panel.style.zIndex = 1000;
 
-            menuPanel.style.top = (item.offsetHeight - 1) + 'px'; // -1 for the border so it blends
-            menuPanel.style.right = (dims.width + 11) + 'px';
-            if (dims.width > 0) {
-                menuPanel.style.top = '-10px';
-                menuPanel.style['border-right'] = 'none';
-            }
+            panel.style.top = (item.offsetHeight - 1) + 'px'; // -1 for the border so it blends
+            panel.style.right = '0px';
+            
         }
     }
 

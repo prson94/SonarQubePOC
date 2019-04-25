@@ -1,9 +1,13 @@
 ﻿import * as _ from 'lodash';
-import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+import {takeUntil} from "rxjs/operators";
+import {Subject} from "rxjs";
+import {Component, Input, OnInit} from '@angular/core';
 
-import { BaseComponent } from '../shared/base.component';
-import { FusionService } from '../../services/fusion.service';
-import { FusionPromotionExecutionStats } from '../../models/fusion.model';
+import {FusionPromotionExecutionStats} from '../../models/fusion.model';
+
+import {FusionService} from '../../services/fusion.service';
+
+import {BaseComponent} from '../shared/base.component';
 
 @Component({
     selector: 'd3s-fusion-promotion-history',
@@ -17,6 +21,8 @@ export class FusionPromotionHistoryComponent extends BaseComponent implements On
     private executions: FusionPromotionExecutionStats[] = [];
     private selected: FusionPromotionExecutionStats;
 
+    destroySubject$: Subject<void> = new Subject();
+
     constructor(private fusionService: FusionService) {
         super();
     }
@@ -27,19 +33,25 @@ export class FusionPromotionHistoryComponent extends BaseComponent implements On
 
     private load() {
         this.isLoading = true;
-        this.fusionService.getFusionPromotionHistory(this.maxRows)
-            .then(res => {
-                this.executions = res;
-                this.selected = res.length > 0 ? res[0] : null;
-                this.isLoading = false;
-            })
-        ;
+
+        this.fusionService
+            .getFusionPromotionHistory(this.maxRows)
+            .pipe(takeUntil(this.destroySubject$))
+            .subscribe(
+                res => {
+                    this.executions = res;
+                    this.selected = res.length > 0 ? res[0] : null;
+
+                    this.isLoading = false;
+                }
+            );
     }
 
     private nullDateSort(event) {
         this.executions = _.sortBy(this.executions, event.field);
+
         if (event.order == -1) {
             this.executions.reverse();
         }
     }
-};
+}

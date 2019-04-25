@@ -1,9 +1,12 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
-import { FusioRuleStepBaseComponent } from './fusion-rule-step-base.component';
-import { FusionService } from '../../../services/fusion.service';
-import { FusionRuleStep, FusionRuleStepEditorModel, PromotionObject, FusionRule } from '../../../models/fusion.model';
-import { TreeNode, Column } from 'primeng/primeng';
-import { StringHelpers } from '../../../static/string-helpers';
+﻿import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {takeUntil} from "rxjs/operators";
+import {Subject} from "rxjs";
+
+import {FusionService} from '../../../services/fusion.service';
+
+import {StringHelpers} from '../../../static/string-helpers';
+
+import {FusioRuleStepBaseComponent} from './fusion-rule-step-base.component';
 
 @Component({
     selector: 'd3s-fusion-rule-step-update',
@@ -25,6 +28,9 @@ export class FusionRuleStepUpdateComponent extends FusioRuleStepBaseComponent im
     steps: any[] = [];
 
     showTargetField = false;
+
+    destroySubject$: Subject<void> = new Subject();
+
     constructor(private fusionService: FusionService) {
         super();
     }
@@ -32,23 +38,26 @@ export class FusionRuleStepUpdateComponent extends FusioRuleStepBaseComponent im
     ngOnInit() {
         this.removeIrrelevantSettings(this.settings, "Update");
 
-        this.fusionService.getPromotionRuleSteps(this.ruleID, this.ruleStepID)
-            .then(r => {
-                this.steps = r;
-            })
-            .then(() => this.validate());
+        this.fusionService
+            .getPromotionRuleSteps(this.ruleID, this.ruleStepID)
+            .pipe(takeUntil(this.destroySubject$))
+            .subscribe(
+                r => {
+                    this.steps = <any>r;
+                    this.validate();
+                }
+            )
+        ;
     }
-
 
 
     validate() {
         this.isValid = true;
-        if (StringHelpers.isNullOrEmpty(this.settings.SubjectID))
+
+        if (StringHelpers.isNullOrEmpty(this.settings.SubjectID)) {
             this.isValid = false;
+        }
 
         this.isValidChange.emit(this.isValid);
     }
-
-};
-
-
+}
