@@ -6,7 +6,6 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity.Design.PluralizationServices;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
@@ -84,6 +83,9 @@ namespace igx.jobs.fusiondeploymentprocessor
 #else
         const string timerSettings = "0 */15 * * * *";
 #endif
+
+        const int ALTER_TRIGGER_TIMEOUT = 90;
+
         public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
         {
             try
@@ -108,7 +110,7 @@ from	plugin.FusionAttributeType A
                 community.Dispose();
 
 #if DEBUG
-                var companies = CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings().Where(i => i.CompanyID == 215).ToList();
+                var companies = CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings().Where(i => i.CompanyID == 3).ToList();
 #else
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 #endif
@@ -300,18 +302,19 @@ from	plugin.FusionAttributeType A
 
                         #endregion
 
-                        var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password);
-                        company.OpenWithRetry(RetryPolicy.DefaultProgressive);
-
-                        company.Execute("DISABLE TRIGGER FieldType_AfterUpsert ON dbo.FieldType");
-
-                        using (var trans = company.BeginTransaction())
+                        using (var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
                         {
-                            try
-                            {
-                                #region Create temp tables
+                            company.OpenWithRetry(RetryPolicy.DefaultProgressive);
 
-                                company.Execute(@"
+                            using (var trans = company.BeginTransaction())
+                            {
+                                try
+                                {
+                                    company.Execute("DISABLE TRIGGER FieldType_AfterUpsert ON dbo.FieldType", transaction: trans, commandTimeout: ALTER_TRIGGER_TIMEOUT);
+
+                                    #region Create temp tables
+
+                                    company.Execute(@"
     create table #tbl_FusionTypes (
         ID int not null,
         Name nvarchar(250) not null,
@@ -353,25 +356,25 @@ from	plugin.FusionAttributeType A
 	    [IsRequired] [bit] NOT NULL
     );
     ", transaction: trans);
-                                #endregion
+                                    #endregion
 
-                                SqlBulkCopy bulkCopy = null;
+                                    SqlBulkCopy bulkCopy = null;
 
-                                #region Merge fusion types
+                                    #region Merge fusion types
 
-                                bulkCopy = new SqlBulkCopy(company, SqlBulkCopyOptions.Default, trans);
+                                    bulkCopy = new SqlBulkCopy(company, SqlBulkCopyOptions.Default, trans);
 
-                                bulkCopy.BatchSize = tbl_FusionTypes.Rows.Count;
-                                bulkCopy.DestinationTableName = "#tbl_FusionTypes";
-                                bulkCopy.BulkCopyTimeout = 3600;
+                                    bulkCopy.BatchSize = tbl_FusionTypes.Rows.Count;
+                                    bulkCopy.DestinationTableName = "#tbl_FusionTypes";
+                                    bulkCopy.BulkCopyTimeout = 3600;
 
-                                bulkCopy.ColumnMappings.Add("ID", "ID");
-                                bulkCopy.ColumnMappings.Add("Name", "Name");
-                                bulkCopy.ColumnMappings.Add("Description", "Description");
+                                    bulkCopy.ColumnMappings.Add("ID", "ID");
+                                    bulkCopy.ColumnMappings.Add("Name", "Name");
+                                    bulkCopy.ColumnMappings.Add("Description", "Description");
 
-                                bulkCopy.WriteToServer(tbl_FusionTypes);
+                                    bulkCopy.WriteToServer(tbl_FusionTypes);
 
-                                company.Execute(@"
+                                    company.Execute(@"
         SET IDENTITY_INSERT FusionType ON;
         MERGE
 	        INTO    [FusionType] T
@@ -384,27 +387,27 @@ from	plugin.FusionAttributeType A
 	        VALUES  (S.ID, S.Name, S.Description, getutcdate(), 0);
         SET IDENTITY_INSERT FusionType OFF;", transaction: trans);
 
-                                #endregion
+                                    #endregion
 
-                                #region Merge fusion type fields
+                                    #region Merge fusion type fields
 
-                                bulkCopy = new SqlBulkCopy(company, SqlBulkCopyOptions.Default, trans);
+                                    bulkCopy = new SqlBulkCopy(company, SqlBulkCopyOptions.Default, trans);
 
-                                bulkCopy.BatchSize = tbl_FusionTypeFields.Rows.Count;
-                                bulkCopy.DestinationTableName = "#tbl_FusionTypeFields";
-                                bulkCopy.BulkCopyTimeout = 3600;
+                                    bulkCopy.BatchSize = tbl_FusionTypeFields.Rows.Count;
+                                    bulkCopy.DestinationTableName = "#tbl_FusionTypeFields";
+                                    bulkCopy.BulkCopyTimeout = 3600;
 
-                                bulkCopy.ColumnMappings.Add("FusionTypeID", "FusionTypeID");
-                                bulkCopy.ColumnMappings.Add("Name", "Name");
-                                bulkCopy.ColumnMappings.Add("FriendlyName", "FriendlyName");
-                                bulkCopy.ColumnMappings.Add("Type", "Type");
-                                bulkCopy.ColumnMappings.Add("SortOrder", "SortOrder");
-                                bulkCopy.ColumnMappings.Add("IsListable", "IsListable");
-                                bulkCopy.ColumnMappings.Add("Category", "Category");
+                                    bulkCopy.ColumnMappings.Add("FusionTypeID", "FusionTypeID");
+                                    bulkCopy.ColumnMappings.Add("Name", "Name");
+                                    bulkCopy.ColumnMappings.Add("FriendlyName", "FriendlyName");
+                                    bulkCopy.ColumnMappings.Add("Type", "Type");
+                                    bulkCopy.ColumnMappings.Add("SortOrder", "SortOrder");
+                                    bulkCopy.ColumnMappings.Add("IsListable", "IsListable");
+                                    bulkCopy.ColumnMappings.Add("Category", "Category");
 
-                                bulkCopy.WriteToServer(tbl_FusionTypeFields);
+                                    bulkCopy.WriteToServer(tbl_FusionTypeFields);
 
-                                company.Execute(@"
+                                    company.Execute(@"
     MERGE
 	    INTO    [FieldType] T
 	    USING   (
@@ -415,25 +418,25 @@ from	plugin.FusionAttributeType A
 	    INSERT  (Name, FriendlyName, [Type], [Object], ObjectID, SortOrder, IsRequired, IsListable, IsDisplayable, IsEditable, Category)
 	    VALUES  (S.Name, S.FriendlyName, S.[Type], 'FusionType', S.FusionTypeID, S.SortOrder, 1, S.IsListable, 1, 1, S.Category);", transaction: trans);
 
-                                #endregion
+                                    #endregion
 
-                                #region Merge fusion type intersects
+                                    #region Merge fusion type intersects
 
-                                bulkCopy = new SqlBulkCopy(company, SqlBulkCopyOptions.Default, trans);
+                                    bulkCopy = new SqlBulkCopy(company, SqlBulkCopyOptions.Default, trans);
 
-                                bulkCopy.BatchSize = tbl_FusionTypeIntersects.Rows.Count;
-                                bulkCopy.DestinationTableName = "#tbl_FusionTypeIntersects";
-                                bulkCopy.BulkCopyTimeout = 3600;
+                                    bulkCopy.BatchSize = tbl_FusionTypeIntersects.Rows.Count;
+                                    bulkCopy.DestinationTableName = "#tbl_FusionTypeIntersects";
+                                    bulkCopy.BulkCopyTimeout = 3600;
 
-                                bulkCopy.ColumnMappings.Add("StartFusionAttributeTypeID", "StartFusionAttributeTypeID");
-                                bulkCopy.ColumnMappings.Add("EndFusionAttributeTypeID", "EndFusionAttributeTypeID");
-                                bulkCopy.ColumnMappings.Add("ReadOnly", "ReadOnly");
-                                bulkCopy.ColumnMappings.Add("FusionTypeID", "FusionTypeID");
-                                bulkCopy.ColumnMappings.Add("PredicateType", "PredicateType");
+                                    bulkCopy.ColumnMappings.Add("StartFusionAttributeTypeID", "StartFusionAttributeTypeID");
+                                    bulkCopy.ColumnMappings.Add("EndFusionAttributeTypeID", "EndFusionAttributeTypeID");
+                                    bulkCopy.ColumnMappings.Add("ReadOnly", "ReadOnly");
+                                    bulkCopy.ColumnMappings.Add("FusionTypeID", "FusionTypeID");
+                                    bulkCopy.ColumnMappings.Add("PredicateType", "PredicateType");
 
-                                bulkCopy.WriteToServer(tbl_FusionTypeIntersects);
+                                    bulkCopy.WriteToServer(tbl_FusionTypeIntersects);
 
-                                company.Execute(@"
+                                    company.Execute(@"
 		    INSERT INTO IntersectType (Subject, SubjectID, Object, ObjectID, UpdatedOn, UpdatedBy, IsSystem, CreatedBy, CreatedOn, PredicateID, SubjectCardinality, ObjectCardinality) 
                 select  @type as Subject, I.StartFusionAttributeTypeID,
                         @type as Object, I.EndFusionAttributeTypeID,
@@ -449,24 +452,24 @@ from	plugin.FusionAttributeType A
                         left join IntersectType E on E.Subject = @type and E.Object = @type and E.SubjectID = I.StartFusionAttributeTypeID and E.ObjectID = I.EndFusionAttributeTypeID
                 where   E.ID is null", new { type = "FusionAttributeType" }, transaction: trans);
 
-                                #endregion
+                                    #endregion
 
-                                #region Merge fusion attribute types
+                                    #region Merge fusion attribute types
 
-                                bulkCopy = new SqlBulkCopy(company, SqlBulkCopyOptions.Default, trans);
+                                    bulkCopy = new SqlBulkCopy(company, SqlBulkCopyOptions.Default, trans);
 
-                                bulkCopy.BatchSize = tbl_FusionAttributeTypes.Rows.Count;
-                                bulkCopy.DestinationTableName = "#tbl_FusionAttributeTypes";
-                                bulkCopy.BulkCopyTimeout = 3600;
+                                    bulkCopy.BatchSize = tbl_FusionAttributeTypes.Rows.Count;
+                                    bulkCopy.DestinationTableName = "#tbl_FusionAttributeTypes";
+                                    bulkCopy.BulkCopyTimeout = 3600;
 
-                                bulkCopy.ColumnMappings.Add("ID", "ID");
-                                bulkCopy.ColumnMappings.Add("ParentID", "ParentID");
-                                bulkCopy.ColumnMappings.Add("FusionTypeID", "FusionTypeID");
-                                bulkCopy.ColumnMappings.Add("Name", "Name");
+                                    bulkCopy.ColumnMappings.Add("ID", "ID");
+                                    bulkCopy.ColumnMappings.Add("ParentID", "ParentID");
+                                    bulkCopy.ColumnMappings.Add("FusionTypeID", "FusionTypeID");
+                                    bulkCopy.ColumnMappings.Add("Name", "Name");
 
-                                bulkCopy.WriteToServer(tbl_FusionAttributeTypes);
+                                    bulkCopy.WriteToServer(tbl_FusionAttributeTypes);
 
-                                company.Execute(@"
+                                    company.Execute(@"
     SET IDENTITY_INSERT FusionAttributeType ON;
     MERGE
 	    INTO    [FusionAttributeType] T
@@ -485,27 +488,27 @@ from	plugin.FusionAttributeType A
 	    VALUES  (S.ID, S.ParentID, S.FusionTypeID, S.Name, 1, getutcdate(), 0, 1);
     SET IDENTITY_INSERT FusionAttributeType OFF;", transaction: trans);
 
-                                #endregion
+                                    #endregion
 
-                                #region Merge fusion attribute type fields
+                                    #region Merge fusion attribute type fields
 
-                                bulkCopy = new SqlBulkCopy(company, SqlBulkCopyOptions.Default, trans);
+                                    bulkCopy = new SqlBulkCopy(company, SqlBulkCopyOptions.Default, trans);
 
-                                bulkCopy.BatchSize = tbl_FusionAttributeTypeFields.Rows.Count;
-                                bulkCopy.DestinationTableName = "#tbl_FusionAttributeTypeFields";
-                                bulkCopy.BulkCopyTimeout = 3600;
+                                    bulkCopy.BatchSize = tbl_FusionAttributeTypeFields.Rows.Count;
+                                    bulkCopy.DestinationTableName = "#tbl_FusionAttributeTypeFields";
+                                    bulkCopy.BulkCopyTimeout = 3600;
 
-                                bulkCopy.ColumnMappings.Add("FusionAttributeTypeID", "FusionAttributeTypeID");
-                                bulkCopy.ColumnMappings.Add("Name", "Name");
-                                bulkCopy.ColumnMappings.Add("FriendlyName", "FriendlyName");
-                                bulkCopy.ColumnMappings.Add("Type", "Type");
-                                bulkCopy.ColumnMappings.Add("SortOrder", "SortOrder");
-                                bulkCopy.ColumnMappings.Add("IsListable", "IsListable");
-                                bulkCopy.ColumnMappings.Add("IsRequired", "IsRequired");
+                                    bulkCopy.ColumnMappings.Add("FusionAttributeTypeID", "FusionAttributeTypeID");
+                                    bulkCopy.ColumnMappings.Add("Name", "Name");
+                                    bulkCopy.ColumnMappings.Add("FriendlyName", "FriendlyName");
+                                    bulkCopy.ColumnMappings.Add("Type", "Type");
+                                    bulkCopy.ColumnMappings.Add("SortOrder", "SortOrder");
+                                    bulkCopy.ColumnMappings.Add("IsListable", "IsListable");
+                                    bulkCopy.ColumnMappings.Add("IsRequired", "IsRequired");
 
-                                bulkCopy.WriteToServer(tbl_FusionAttributeTypeFields);
+                                    bulkCopy.WriteToServer(tbl_FusionAttributeTypeFields);
 
-                                company.Execute(@"
+                                    company.Execute(@"
     MERGE
 	    INTO    [FieldType] T
 	    USING   (
@@ -516,21 +519,19 @@ from	plugin.FusionAttributeType A
 	    INSERT  (Name, FriendlyName, [Type], [Object], ObjectID, SortOrder, IsRequired, IsListable, IsDisplayable, IsEditable)
 	    VALUES  (S.Name, S.FriendlyName, S.[Type], 'FusionAttributeType', S.FusionAttributeTypeID, S.SortOrder, S.IsRequired, S.IsListable, 1, 0);", transaction: trans);
 
-                                #endregion
+                                    #endregion
 
-                                trans.Commit();
-                            }
-                            catch (Exception ex)
-                            {
-                                trans.Rollback();
-                                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                                    company.Execute("ENABLE TRIGGER FieldType_AfterUpsert ON dbo.FieldType", transaction: trans,commandTimeout: ALTER_TRIGGER_TIMEOUT);
+
+                                    trans.Commit();
+                                }
+                                catch (Exception ex)
+                                {
+                                    trans.Rollback();
+                                    CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                                }
                             }
                         }
-
-                        company.Execute("ENABLE TRIGGER FieldType_AfterUpsert ON dbo.FieldType");
-
-                        company.Close();
-                        company.Dispose();
                     }
                     catch (Exception ex)
                     {
@@ -541,11 +542,7 @@ from	plugin.FusionAttributeType A
             catch (Exception ex)
             {
                 CoreFunction.AITrackException(functionName, ex);
-            }
-            finally
-            {
-                //CoreFunction.AITrackJobCompletedNoErrors(functionName);
-            }
+            }            
         }
     }
 }
