@@ -6,14 +6,14 @@ import {Observable} from "rxjs";
 import {Lookup} from '../models/lookup.model';
 import {JsonResult} from '../models/jsonresult.model';
 
-import {MessagesService} from './messages.service';
+import {MessagesObservableService} from './messages-observable.service';
 import {BaseObservableService} from "./baseObservable.service";
 
 @Injectable()
 export class LookupService extends BaseObservableService {
     constructor(
         private http: HttpClient,
-        messagesService: MessagesService
+        messagesService: MessagesObservableService
     ) {
         super(messagesService);
     }

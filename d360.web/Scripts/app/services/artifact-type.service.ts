@@ -1,20 +1,23 @@
-﻿import { Injectable } from '@angular/core';
-import { Headers, Http } from '@angular/http';
-import { TreeNode } from 'primeng/components/common/api';
-import { ArtifactTypeEditorModel, ArtifactType, ArtifactTypeSummary, ArtifactTypeStatusCount, ArtifactTypeUsedVsUnusedResponsibility } from '../models/artifact-type.model';
-import { BaseObservableService } from './baseObservable.service';
-import { MessagesService } from './messages.service';
-import { JsonResult } from '../models/jsonresult.model';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+﻿import {Injectable} from '@angular/core';
+import {TreeNode} from 'primeng/components/common/api';
+import {
+    ArtifactTypeEditorModel,
+    ArtifactType,
+    ArtifactTypeStatusCount
+} from '../models/artifact-type.model';
+import {BaseObservableService} from './baseObservable.service';
+import {MessagesObservableService} from './messages-observable.service';
+import {JsonResult} from '../models/jsonresult.model';
+import {HttpClient} from '@angular/common/http';
+import {Observable} from 'rxjs';
+import {catchError, map} from 'rxjs/operators';
 
 @Injectable()
 export class ArtifactTypeService extends BaseObservableService {
 
     constructor(
         private http: HttpClient,
-        messagesService: MessagesService
+        messagesService: MessagesObservableService
     ) {
         super(messagesService);
     }
@@ -28,9 +31,9 @@ export class ArtifactTypeService extends BaseObservableService {
             .get(`form/ArtifactType?parentID=${parentID}&id=${id}`)
             .pipe(
                 map(response => <ArtifactTypeEditorModel>response),
-                catchError(err=>this.handleError(err))
+                catchError(err => this.handleError(err))
             )
-        ;
+            ;
     }
 
     getArtifactTypeDetails(id: number): Observable<ArtifactType> {
@@ -41,7 +44,7 @@ export class ArtifactTypeService extends BaseObservableService {
                 map(response => <ArtifactType>response),
                 catchError(err => this.handleError(err))
             )
-        ;
+            ;
     }
 
     putArtifactType(model: ArtifactTypeEditorModel): Observable<any> {
@@ -50,20 +53,20 @@ export class ArtifactTypeService extends BaseObservableService {
             .put('form/ArtifactType', model)
             .pipe(
                 map(response => response),
-                catchError(err=>this.handleError(err))
+                catchError(err => this.handleError(err))
             )
-        ;
+            ;
     }
-    
+
     getArtifactTypeTree(): Observable<TreeNode[]> {
         return this
             .http.get('internal/artifacts/types')
             .pipe(
                 map(response => <TreeNode[]>response),
                 map(r => this.formTree(r)),
-                catchError(err=>this.handleError(err))
+                catchError(err => this.handleError(err))
             )
-        ;
+            ;
     }
 
     findArtifactType(
@@ -86,12 +89,12 @@ export class ArtifactTypeService extends BaseObservableService {
         var tree = new Array<TreeNode>();
 
         data.filter(d => d.ParentID == null).forEach(d => {
-            tree.push({ data: d, children: [], expanded:false });
+            tree.push({data: d, children: [], expanded: false});
         });
 
         tree.forEach(t => {
             this.formTreeR(t, data);
-        });    
+        });
 
         return tree;
     }
@@ -101,12 +104,12 @@ export class ArtifactTypeService extends BaseObservableService {
         data
     ) {
         data.filter(d => d.ParentID == node.data.ID).forEach(d => {
-            let child: TreeNode = { data: d, children: [] };
+            let child: TreeNode = {data: d, children: []};
             node.children.push(child);
             this.formTreeR(child, data);
         });
     }
-    
+
     public getArtifactTypeStatus(artifactTypeId: number): Observable<ArtifactTypeStatusCount[]> {
         return this
             .http
@@ -115,9 +118,9 @@ export class ArtifactTypeService extends BaseObservableService {
                 map(response => <ArtifactTypeStatusCount[]>response),
                 catchError(err => this.handleError(err))
             )
-        ;
+            ;
     }
-    
+
     public getPossibleArtifactOwners(artifactTypeId: number): Observable<any[]> {
         return this
             .http
@@ -126,7 +129,7 @@ export class ArtifactTypeService extends BaseObservableService {
                 map(response => <any[]>response),
                 catchError(err => this.handleError(err))
             )
-        ;
+            ;
     }
 
     public deleteArtifactType(id: number): Observable<JsonResult> {
@@ -145,7 +148,7 @@ export class ArtifactTypeService extends BaseObservableService {
                 map(response => response),
                 catchError(err => this.handleError(err))
             )
-        ;
+            ;
     }
 
     public getObjectTypeParentsListItems(
@@ -159,6 +162,6 @@ export class ArtifactTypeService extends BaseObservableService {
                 map(response => response),
                 catchError(err => this.handleError(err))
             )
-        ;
+            ;
     }
 }
