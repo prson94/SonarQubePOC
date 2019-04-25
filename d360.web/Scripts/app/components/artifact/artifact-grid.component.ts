@@ -136,9 +136,10 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     }
 
     load() {
-        this.loadPermissions(this.permissionsService, StringConstants.ObjectArtifactType, this.artifactType.ID).then(
-            () => this.changeDetectorRef.markForCheck()
-        );
+        this
+            .loadPermissions(this.permissionsService, StringConstants.ObjectArtifactType, this.artifactType.ID)
+            .then(() => this.changeDetectorRef.markForCheck())
+        ;
 
         this.getFieldsDefinition();
 
