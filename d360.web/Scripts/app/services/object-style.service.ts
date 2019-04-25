@@ -1,7 +1,8 @@
 ﻿import { Injectable } from '@angular/core';
 import { MessagesService } from './messages.service';
 import { ObjectStyle } from '../models/object-style.model';
-import {BaseObservableService} from "./baseObservable.service";
+import { BaseObservableService } from "./baseObservable.service";
+import { MessagesObservableService } from './messages-observable.service';
 import {HttpClient} from "@angular/common/http";
 import {Observable} from "rxjs";
 import {catchError, map} from "rxjs/operators";
@@ -10,7 +11,7 @@ import {catchError, map} from "rxjs/operators";
 export class ObjectStyleService extends BaseObservableService {
     constructor(
         private http: HttpClient,
-        messagesService: MessagesService
+        messagesService: MessagesObservableService
     ) {
         super(messagesService);
     }
