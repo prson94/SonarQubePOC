@@ -663,6 +663,527 @@ namespace d360.web.Controllers.V2
             }
         }
 
+
+        /// <summary>
+        /// Add an asset type based on Asset Type Class
+        /// </summary>
+        /// <param name="model">Asset Type</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpPost,
+            Route(""),
+            SwaggerRequestExample(typeof(AssetTypeInsert), typeof(AssetTypeInsertExample)),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Newly asset type Uid and success / failure message.", typeof(AssetTypeSuccess)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Asset Type not found based on Uid provided.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to create an asset type", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> PostAssetTypeAsync(AssetTypeInsert model)
+        {
+            
+
+            var prefix = "Assets.PostAssetTypeAsync => ";
+            var errorMessage = "";
+            try
+            {
+
+
+                var parentType = SystemObjects.ArtifactType;
+                var isNamePartOfKey = true;
+                var nameFriendlyName = "Name";
+                AssetType assetType = null;
+                AssetType parentAssetType = null;
+                AssetType predicateAssetType = null;
+
+                #region Validation
+
+                if (!Company.CurrentResourceIsAdmin)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to add asset type."));
+
+                if (!Enum.TryParse<AssetTypeClass>(model.Class, out AssetTypeClass typeClass))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Missing Class", "No valid Class provided.Please check your request and try again."));
+                model.AssetTypeClass = typeClass;
+
+                if (string.IsNullOrEmpty(model.Name.Trim()))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Missing Name", "No valid Name provided.Please check your request and try again."));
+
+                if (model.ParentUid != Guid.Empty)
+                {
+                    parentAssetType = Company.Filter<AssetType>(x => x.uid == model.ParentUid).SingleOrDefault();
+                    if (parentAssetType == null)
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Wrong ParentUid", "Not valid ParentUid provided.Please check your request and try again."));
+                }
+
+
+                if (model.Hierarchy != null && model.Hierarchy.PredicateUid != Guid.Empty)
+                {
+                    predicateAssetType = Company.Filter<AssetType>(x => x.uid == model.Hierarchy.PredicateUid).SingleOrDefault();
+                    if (predicateAssetType == null)
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Wrong PredicateUid", "Not valid PredicateUid provided.Please check your request and try again."));
+                }
+
+                #endregion
+
+                switch (model.AssetTypeClass)
+                {
+                    case AssetTypeClass.Glossary:
+                        #region
+                        var a = new ArtifactType
+                        {
+                            Name = model.Name,
+                            DisplayFormat = model.DisplayFormat,
+                            Description = model.Description,
+                            CanOwnFusion = false
+                        };
+                        Company.Add(a);
+                        parentType = SystemObjects.ArtifactType;
+                        model.ObjectID = a.ID;
+                        model.Object = SystemObjects.ArtifactType.ToString();
+
+                        #endregion
+                        break;
+                    //case AssetTypeClass.FusionAttribute:
+                    //    #region
+                    //    if (!model.TopLevelTypeID.HasValue)
+                    //    {
+                    //        throw new GenericException(HttpStatusCode.BadRequest, "Missing Fusion Type", "No valid fusion type provided. Please check your request and try again.");
+                    //    }
+                    //    var f = new FusionAttributeType
+                    //    {
+                    //        Name = model.Name,
+                    //        ScanEnabled = model.ScanEnabled ?? true,
+                    //        ParentID = model.ParentID,
+                    //        FusionTypeID = model.TopLevelTypeID.Value
+                    //    };
+                    //    Company.Add(f);
+                    //    parentType = SystemObjects.FusionAttributeType;
+                    //    model.AssetType.ObjectID = f.ID;
+                    //    #endregion
+                    //    break;
+                    case AssetTypeClass.Organization:
+                        #region
+                        var org = new OrganizationType
+                        {
+                            Name = model.Name,
+                            Description = model.Description,
+                            DisplayFormat = model.DisplayFormat
+                        };
+                        var existing = Company.Filter<OrganizationType>(o => o.Name == org.Name && o.State == State.Active).FirstOrDefault();
+                        if (existing != null)
+                            return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Wrong Name", "There is already an organization type with that name."));
+                        Company.Add(org);
+                        parentType = SystemObjects.OrganizationType;
+                        model.ObjectID = org.ID;
+                        model.Object = SystemObjects.OrganizationType.ToString();
+                        #endregion
+                        break;
+                    case AssetTypeClass.Policy:
+                        #region
+                        var p = new PolicyType
+                        {
+                            Name = model.Name,
+                            DisplayFormat = model.DisplayFormat,
+                            Description = model.Description,
+                            MaximumDepth = model.Hierarchy.MaximumDepth,
+                        };
+                        Company.Add(p);
+                        parentType = SystemObjects.PolicyType;
+                        model.ObjectID = p.ID;
+                        model.Object = SystemObjects.PolicyType.ToString();
+                        #endregion
+                        break;
+                    case AssetTypeClass.Model:
+                        #region
+                        var t = new TaxonomyType
+                        {
+                            Name = model.Name,
+                            DisplayFormat = model.DisplayFormat,
+                            Description = model.Description,
+                            MaximumDepth = model.Hierarchy.MaximumDepth,
+                        };
+
+                        if (t.MaximumDepth <= 0 || t.MaximumDepth > 10)
+                            return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Maximum Level", "Invalid Maximum Model level specified must be a value between 1 and 10."));
+
+
+                        Company.Add(t);
+                        assetType = Company.Filter<AssetType>(x => x.ObjectID == t.ID && x.Object == "TaxonomyType").SingleOrDefault();
+                        if (assetType == null) return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Type", "Asset Not Found."));
+                        for (int i = 1; i <= t.MaximumDepth; i++)
+                        {
+                            Company.Set<AssetTypeLevel>().Add(new AssetTypeLevel { Description = string.Format("Level {0}", i), Level = i, Name = string.Format("Level {0}", i), AssetTypeID = assetType.ID });
+                        }
+                        Company.SaveChanges();
+
+                        parentType = SystemObjects.TaxonomyType;
+                        model.ObjectID = t.ID;
+                        model.Object = SystemObjects.TaxonomyType.ToString();
+                        #endregion
+                        break;
+                    case AssetTypeClass.ReferenceItemType:
+                        #region
+                        var rt = new ReferenceItemType
+                        {
+                            Name = model.Name,
+                            DisplayFormat = model.DisplayFormat,
+                            Description = model.Description,
+                            SourceNotes = model.Notes
+                        };
+                        isNamePartOfKey = false;
+                        nameFriendlyName = "Long Description";
+                        Company.Add(rt);
+                        parentType = SystemObjects.ReferenceItemType;
+                        model.ObjectID = rt.ID;
+                        model.Object = SystemObjects.ReferenceItemType.ToString();
+                        #endregion
+                        break;
+                    case AssetTypeClass.Rule:
+                        #region
+                        var r = new RuleType
+                        {
+                            Name = model.Name,
+                            DisplayFormat = model.DisplayFormat,
+                            Description = model.Description
+                        };
+                        Company.Add(r);
+                        parentType = SystemObjects.Rule;
+                        model.ObjectID = r.ID;
+                        model.Object = SystemObjects.RuleType.ToString();
+                        #endregion
+                        break;
+                }
+
+
+                if (predicateAssetType != null)
+                {
+                    var intersectType = new IntersectType
+                    {
+                        Subject = parentType.ToString(),
+                        SubjectID = (parentAssetType != null) ? parentAssetType.ObjectID : model.ObjectID,
+                        SubjectCardinality = Cardinality.One,
+                        Object = model.Object,
+                        ObjectID = model.ObjectID,
+                        ObjectCardinality = Cardinality.Many,
+                        PredicateID = predicateAssetType.ObjectID
+                    };
+                    Company.Add(intersectType);
+                }
+
+                //upsertObjectStyle(model.AssetType.Object, model.AssetType.ObjectID, model.IconForeColor, model.IconBackColor, model.AssetType.Name);
+
+
+                if (model.ObjectID > 0)
+                {
+                    if (model.AssetTypeClass != AssetTypeClass.FusionAttribute && model.AssetTypeClass != AssetTypeClass.Organization)
+                    {
+                        Company.Add(new FieldType
+                        {
+                            ObjectID = model.ObjectID,
+                            Object = model.Object,
+                            IsListable = true,
+                            IsRequired = true,
+                            IsEditable = true,
+                            FriendlyName = nameFriendlyName,
+                            Name = "Name",
+                            MaximumLength = 500,
+                            MinimumLength = 1,
+                            SortOrder = 1,
+                            Type = DataType.Text.ToString(),
+                            IsDisplayable = true,
+                            IsPartOfKey = isNamePartOfKey
+                        });
+                    }
+                }
+
+                assetType = Company.Filter<AssetType>(x => x.ObjectID == model.ObjectID && x.Object == model.Object).SingleOrDefault();
+                if (assetType == null) return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Type", "Asset Not Found."));
+
+                var result = new AssetTypeSuccess { Uid = assetType.uid, Message = "Asset Type is created", Success = true };
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
+
+        /// <summary>
+        /// Updates an asset type based on the specific asset type unique identifier.
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [
+        HttpPut,
+    Route(""),
+    SwaggerRequestExample(typeof(AssetTypeInsert), typeof(AssetTypeInsertExample)),
+    SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+    SwaggerResponse(HttpStatusCode.OK, "Update asset type and success / failure message.", typeof(AssetTypeSuccess)),
+    SwaggerResponse(HttpStatusCode.NotFound, "Asset Type not found based on Uid provided.", typeof(ErrorResponse)),
+    SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+    SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to create an asset type", typeof(ErrorResponse))
+]
+        public async Task<IHttpActionResult> PutAssetTypeAsync(AssetTypeInsert model)
+        {
+            var prefix = "Assets.PutAssetTypeAsync => ";
+            var errorMessage = "";
+            try
+            {
+               
+                var parentType = SystemObjects.ArtifactType;
+                bool shouldRemoveOldRelationshipType = false;
+                bool shouldRemoveExistingParentChildRelationshipType = false;
+
+                AssetType assetType = null;
+                AssetType parentAssetType = null;
+                AssetType predicateAssetType = null;
+
+                #region Validation
+
+                if (!Company.CurrentResourceIsAdmin)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to add asset type."));
+
+                if (!Enum.TryParse<AssetTypeClass>(model.Class, out AssetTypeClass typeClass))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Missing Class", "No valid Class provided.Please check your request and try again."));
+                model.AssetTypeClass = typeClass;
+
+                if (string.IsNullOrEmpty(model.Name.Trim()))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Missing Name", "No valid Name provided.Please check your request and try again."));
+
+                assetType = Company.Filter<AssetType>(x => x.uid == model.Uid).SingleOrDefault();
+                if (assetType == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Wrong Uid", "Not valid Uid provided.Please check your request and try again."));
+                else
+                {
+                    model.Object = assetType.Object;
+                    model.ObjectID = assetType.ObjectID;
+                }
+
+                if (model.ParentUid != Guid.Empty)
+                {
+                    parentAssetType = Company.Filter<AssetType>(x => x.uid == model.ParentUid).SingleOrDefault();
+                    if (parentAssetType == null)
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Wrong ParentUid", "Not valid ParentUid provided.Please check your request and try again."));
+                }
+
+
+                if (model.Hierarchy != null && model.Hierarchy.PredicateUid != Guid.Empty)
+                {
+                    predicateAssetType = Company.Filter<AssetType>(x => x.uid == model.Hierarchy.PredicateUid).SingleOrDefault();
+                    if (predicateAssetType == null)
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Wrong PredicateUid", "Not valid PredicateUid provided.Please check your request and try again."));
+                }
+
+                #endregion
+
+                switch (model.AssetTypeClass)
+                {
+                    case AssetTypeClass.Glossary:
+                        var a = Company.GetById<ArtifactType>(model.ObjectID);
+                        if (a == null) return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Glossary.ToString()}", $"Not valid {AssetTypeClass.Glossary.ToString()} provided.Please check your request and try again."));
+
+                        a.Name = model.Name;
+                        a.DisplayFormat = model.DisplayFormat;
+                        a.Description = model.Description;
+                        //a.CanOwnFusion = model.CanOwnFusion ?? false;
+                        a.AutoDisplayDescription = model.AutoDisplayDescription;
+
+                        Company.Update(a);
+
+                        parentType = SystemObjects.ArtifactType;
+                        break;
+                    case AssetTypeClass.FusionAttribute:
+                        var f = Company.GetById<FusionAttributeType>(model.ObjectID);
+                        if (f == null) return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.FusionAttribute.ToString()}", $"Not valid {AssetTypeClass.FusionAttribute.ToString()} provided.Please check your request and try again."));
+
+                        f.Name = model.Name;
+                        //f.ScanEnabled = !(model.ScanEnabled == null);
+
+                        Company.Update(f);
+
+                        parentType = SystemObjects.FusionAttributeType;
+                        break;
+                    case AssetTypeClass.Organization:
+                        var org = Company.GetById<OrganizationType>(model.ObjectID);
+                        if (org == null) return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Organization.ToString()}", $"Not valid {AssetTypeClass.Organization.ToString()} provided.Please check your request and try again."));
+                        org.Name = model.Name;
+                        org.Description = model.Description;
+                        org.DisplayFormat = model.DisplayFormat;
+                        Company.Update(org);
+
+                        parentType = SystemObjects.OrganizationType;
+                        break;
+                    case AssetTypeClass.Policy:
+                        var p = Company.GetById<PolicyType>(model.ObjectID);
+                        if (p == null) return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Policy.ToString()}", $"Not valid {AssetTypeClass.Policy.ToString()} provided.Please check your request and try again."));
+
+                        p.Name = model.Name;
+                        p.DisplayFormat = model.DisplayFormat;
+                        p.Description = model.Description;
+                        p.MaximumDepth = model.Hierarchy.MaximumDepth;
+
+                        Company.Update(p);
+
+                        parentType = SystemObjects.PolicyType;
+                        break;
+                    case AssetTypeClass.ReferenceItemType:
+                        var rt = Company.GetById<ReferenceItemType>(model.ObjectID);
+                        if (rt == null) return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.ReferenceItemType.ToString()}", $"Not valid {AssetTypeClass.ReferenceItemType.ToString()} provided.Please check your request and try again."));
+
+                        rt.Name = model.Name;
+                        rt.DisplayFormat = model.DisplayFormat;
+                        rt.Description = model.Description;
+                        rt.SourceNotes = model.Notes;
+
+                        Company.Update(rt);
+
+                        shouldRemoveOldRelationshipType = true;
+                        shouldRemoveExistingParentChildRelationshipType = true;
+                        parentType = SystemObjects.ReferenceItemType;
+                        break;
+                    case AssetTypeClass.Model:
+                        var t = Company.GetById<TaxonomyType>(model.ObjectID);
+                        //assetType = Company.GetById<AssetType>(model.AssetType.ID, x => x.AssetTypeLevels);
+                        if (t == null) return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Model.ToString()}", $"Not valid {AssetTypeClass.Model.ToString()} provided.Please check your request and try again."));
+                        //if (assetType == null) throw new NotFoundException("asset type");
+                        t.Name = model.Name;
+                        t.DisplayFormat = model.DisplayFormat;
+                        t.Description = model.Description;
+                        t.MaximumDepth = model.Hierarchy.MaximumDepth;
+
+                        if (t.MaximumDepth <= 0 || t.MaximumDepth > 10)
+                            return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Maximum Level", "Invalid Maximum Model level specified must be a value between 1 and 10."));
+
+
+                        Company.Update(t);
+
+                        for (int i = 1; i <= t.MaximumDepth; i++)
+                        {
+                            var level = assetType.AssetTypeLevels.SingleOrDefault(l => l.Level == i);
+                            if (level == null)
+                            {
+                                Company.Set<AssetTypeLevel>().Add(new AssetTypeLevel { Description = string.Format("Level {0}", i), Level = i, Name = string.Format("Level {0}", i), AssetTypeID = assetType.ID });
+                            }
+                        }
+                        Company.Delete<AssetTypeLevel>(l => l.Level > t.MaximumDepth);
+                        Company.SaveChanges();
+
+                        parentType = SystemObjects.TaxonomyType;
+                        break;
+                    case AssetTypeClass.Rule:
+                        #region
+                        var r = Company.GetById<RuleType>(model.ObjectID);
+                        if (r == null) return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Rule.ToString()}", $"Not valid {AssetTypeClass.Rule.ToString()} provided.Please check your request and try again."));
+                        r.Name = model.Name;
+                        r.DisplayFormat = model.DisplayFormat;
+                        r.Description = model.Description;
+                        Company.Update(r);
+                        #endregion
+                        break;
+                }
+
+                //  upsertObjectStyle(model.AssetType.Object, model.AssetType.ObjectID, model.IconForeColor, model.IconBackColor, model.AssetType.Name);
+
+                if (parentAssetType !=null || predicateAssetType !=null)
+                {
+                    var parentPredicateType = PredicateType.InterTypeHierarchy;
+
+                    if (model.AssetTypeClass == AssetTypeClass.Model || model.AssetTypeClass == AssetTypeClass.Policy)
+                    {
+                        parentPredicateType = PredicateType.IntraTypeHierarchy;
+                    }
+
+                    IntersectType intersectType = null;
+
+                    if (shouldRemoveExistingParentChildRelationshipType)
+                    {
+                        intersectType = Company.Filter<IntersectType>(i =>
+                            i.Subject == parentType.ToString() &&
+                            i.Object == model.Object &&
+                            i.ObjectID == model.ObjectID &&
+                            i.Predicate.Type == parentPredicateType
+                        ).SingleOrDefault();
+                    }
+                    else
+                    {
+                        intersectType = Company.Filter<IntersectType>(i =>
+                            i.Subject == parentType.ToString() &&
+                            i.SubjectID == (parentAssetType != null ? parentAssetType.ObjectID : model.ObjectID) &&
+                            i.Object == model.Object &&
+                            i.ObjectID == model.ObjectID &&
+                            i.Predicate.Type == parentPredicateType
+                        ).SingleOrDefault();
+                    }
+
+                    if (predicateAssetType !=null)
+                    {
+                        if (intersectType != null)
+                        {
+                            if (intersectType.PredicateID != predicateAssetType.ObjectID)
+                            {
+                                intersectType.PredicateID = predicateAssetType.ObjectID;
+                                Company.Update(intersectType);
+                            }
+
+                            var parentID = (parentAssetType !=null ? parentAssetType.ObjectID : model.ObjectID);
+
+                            if (intersectType.SubjectID != parentID)
+                            {
+                                intersectType.SubjectID = parentID;
+                                Company.Update(intersectType);
+                            }
+                        }
+                        else
+                        {
+                            intersectType = new IntersectType
+                            {
+                                IsSystem = true,
+                                Subject = parentType.ToString(),
+                                SubjectID = parentAssetType != null ? parentAssetType.ObjectID : model.ObjectID,
+                                Object = model.Object,
+                                ObjectID = model.ObjectID,
+                                PredicateID = predicateAssetType.ObjectID
+                            };
+                            Company.Add(intersectType);
+                        }
+                    }
+                }
+                else if (shouldRemoveOldRelationshipType)
+                {
+                    var parentPredicateType = PredicateType.InterTypeHierarchy;
+
+                    var intersectType = Company.Filter<IntersectType>(i =>
+                        i.Object == model.Object &&
+                        i.ObjectID == model.ObjectID &&
+                        i.Predicate.Type == parentPredicateType
+                    ).FirstOrDefault();
+
+                    if (intersectType != null)
+                    {
+                        Company.Delete(SystemObjects.IntersectType, intersectType.ID);
+                    }
+                }
+
+                //update affected display values
+                Company.CreateOrUpdateTypeDisplayValuesAsync(model.ObjectID, model.Object.ToString());
+
+                var result = new AssetTypeSuccess { Uid = assetType.uid, Message = $"{assetType.Name} successfully updated.", Success = true };
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
+               
+            }
+             catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
         /// <summary>
         /// Adds a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 250 items and need immediate results.
         /// </summary>
