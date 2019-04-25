@@ -1,83 +1,97 @@
-﻿import { Input, Output, Component, OnInit } from '@angular/core';
-import { FormMode, FormHelper } from '../../models/form.model';
-import { AttributeHeirarchyItem, ToolbarItem } from '../../models/object-detail.model';
-import { ObjectDetailService } from '../../services/object-detail.service';
-import { TreeNode, MenuItem } from 'primeng/primeng';
+﻿import {Input, Output, Component, OnInit} from '@angular/core';
+import {FormMode, FormHelper} from '../../models/form.model';
+import {AttributeHeirarchyItem, ToolbarItem} from '../../models/object-detail.model';
+import {ObjectDetailService} from '../../services/object-detail.service';
+import {TreeNode, MenuItem} from 'primeng/primeng';
 import * as _ from 'lodash';
 
 
 @Component({
     selector: 'd3s-attributes-tile',
     template: `
-<div *ngIf="isLoading">
-    <div style="width:100%;text-align:center;"><i class="fa fa-spinner fa-spin"></i></div>
-</div>
-<div *ngIf="!isLoading">
-    <div class="row">
-        <div [class]="readonly ? 'col s12' : 'col s6'">
-            <p-treeTable [value]="items" selectionMode="single" [(selection)]="selectedRow" (onNodeSelect)="loadMenu();">
-                <ng-template pTemplate="header">
-	                <tr>
-		                <th></th>
-	                </tr>
-                </ng-template>
-                <ng-template pTemplate="body" let-rowNode let-item="rowData">
-	                <tr [ttSelectableRow]="rowNode">
-		                <td>
-			                <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
-			                <div *ngIf="item.IsCategory" class='Attribute-Category' style="display: inline-block">{{item.Name}}</div>
-                            <div *ngIf="!item.IsCategory" style="display: inline-block">
-                                <b *ngIf="item.ShowNameInTree">{{item.ObjectTypeName}}: </b> <span [innerHtml]="item.Name"></span>
-                            </div>
-		                </td>
-	                </tr>
-                </ng-template>
-            </p-treeTable>
+        <div *ngIf="isLoading">
+            <div style="width:100%;text-align:center;"><i class="fa fa-spinner fa-spin"></i></div>
         </div>
-        <div *ngIf="!readonly" class="col s6">
-            <div style="font-size: 1rem;">
-                <d3s-tile-actions hasMenu="true" [menuItems]="menuItems" (menuClick)="menuClick($event)"></d3s-tile-actions>
-            </div>   
-            
-            <div [ngSwitch]="formMode">
-                <div *ngSwitchDefault>
-                    <object-detail *ngIf="detailType == 'Attribute'" [objectType]="detailType" [objectID]="detailID"></object-detail>
+        <div *ngIf="!isLoading">
+            <div class="row">
+                <div [class]="readonly ? 'col s12' : 'col s6'">
+                    <p-treeTable [value]="items"
+                                 selectionMode="single"
+                                 [(selection)]="selectedRow"
+                                 (onNodeSelect)="loadMenu();">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th></th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body"
+                                     let-rowNode
+                                     let-item="rowData">
+                            <tr [ttSelectableRow]="rowNode">
+                                <td>
+                                    <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
+                                    <div *ngIf="item.IsCategory"
+                                         class='Attribute-Category'
+                                         style="display: inline-block">{{item.Name}}</div>
+                                    <div *ngIf="!item.IsCategory"
+                                         style="display: inline-block">
+                                        <b *ngIf="item.ShowNameInTree">{{item.ObjectTypeName}}: </b>
+                                        <span [innerHtml]="item.Name"></span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </p-treeTable>
                 </div>
-                <div *ngSwitchCase="FormMode.Adding">
-                <d3s-dynamic-editor [selection]="null"
-                                    [objectID]="0"
-                                    [objectType]="'Attribute'"
-                                    [title]="'Attribute'"
-                                    [createUri]="'form/dynamicedit/create/attribute'"
-                                    [createParams]="createParams"
-                                    [editUri]="null"
-                                    (closeClick)="formMode = FormMode.Default;"
-                                    (saveClick)="formMode = FormMode.Default; load();"></d3s-dynamic-editor>
-                </div>
-                <div *ngSwitchCase="FormMode.Editing">
-                <d3s-dynamic-editor [selection]="selectedRowCopy"
-                                    [objectID]="attributeID"
-                                    [objectType]="'Attribute'"
-                                    [title]="'Attribute'"
-                                    [createUri]="null"
-                                    [editUri]="'form/dynamicedit/edit/attribute'"
-                                    (closeClick)="formMode = FormMode.Default;"
-                                    (saveClick)="formMode = FormMode.Default; load();"></d3s-dynamic-editor>
-                </div> 
-                <div *ngSwitchCase="FormMode.Deleting">
-                    <d3s-delete-form
-                        [uri]="'form/DeleteAttributeByID?id=' + attributeID"
-                        [method]="'delete'"
-                        [prompt]="'Are you sure you want to remove this attribute?'"
-                        (onCancel)="formMode = FormMode.Default"
-                        (onDeleteSuccess)="formMode = FormMode.Default; load();">
-                    </d3s-delete-form>
+                <div *ngIf="!readonly"
+                     class="col s6">
+                    <div style="font-size: 1rem;">
+                        <d3s-tile-actions hasMenu="true"
+                                          [menuItems]="menuItems"
+                                          (menuClick)="menuClick($event)"></d3s-tile-actions>
+                    </div>
+
+                    <div [ngSwitch]="formMode">
+                        <div *ngSwitchDefault>
+                            <object-detail *ngIf="detailType == 'Attribute'"
+                                           [objectType]="detailType"
+                                           [objectID]="detailID"></object-detail>
+                        </div>
+                        <div *ngSwitchCase="FormMode.Adding">
+                            <d3s-dynamic-editor [selection]="null"
+                                                [objectID]="0"
+                                                [objectType]="'Attribute'"
+                                                [title]="'Attribute'"
+                                                [createUri]="'form/dynamicedit/create/attribute'"
+                                                [createParams]="createParams"
+                                                [editUri]="null"
+                                                (closeClick)="formMode = FormMode.Default;"
+                                                (saveClick)="formMode = FormMode.Default; load();"></d3s-dynamic-editor>
+                        </div>
+                        <div *ngSwitchCase="FormMode.Editing">
+                            <d3s-dynamic-editor [selection]="selectedRowCopy"
+                                                [objectID]="attributeID"
+                                                [objectType]="'Attribute'"
+                                                [title]="'Attribute'"
+                                                [createUri]="null"
+                                                [editUri]="'form/dynamicedit/edit/attribute'"
+                                                (closeClick)="formMode = FormMode.Default;"
+                                                (saveClick)="formMode = FormMode.Default; load();"></d3s-dynamic-editor>
+                        </div>
+                        <div *ngSwitchCase="FormMode.Deleting">
+                            <d3s-delete-form
+                                    [uri]="'form/DeleteAttributeByID?id=' + attributeID"
+                                    [method]="'delete'"
+                                    [prompt]="'Are you sure you want to remove this attribute?'"
+                                    (onCancel)="formMode = FormMode.Default"
+                                    (onDeleteSuccess)="formMode = FormMode.Default; load();">
+                            </d3s-delete-form>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
-`,
+    `,
     providers: [ObjectDetailService],
 })
 
@@ -123,17 +137,20 @@ export class AttributesTile implements OnInit {
 
         this.isLoading = true;
 
-        this.objectDetailService.getAttributeHierarchyTree(this.objectID, this.objectType)
-            .then(d => {
+        this.objectDetailService.getAttributeHierarchyTree(this.objectID, this.objectType).subscribe(
+            d => {
                 this.items = d;
                 this.itemCount = 0;
                 this.items.forEach(i => this.itemCount += i.children.length);
+
                 if (this.items.length > 0) {
                     this.selectedRow = this.items[0];
                     this.loadMenu();
-                }                
-                this.isLoading = false; 
-            });
+                }
+
+                this.isLoading = false;
+            }
+        );
     }
 
     add() {
@@ -173,10 +190,11 @@ export class AttributesTile implements OnInit {
             this.detailID = id;
         }
 
-        this.objectDetailService.getAttributeActions(id, type, rootID, rootType, attributeID)
-            .then(d => {
+        this.objectDetailService.getAttributeActions(id, type, rootID, rootType, attributeID).subscribe(
+            d => {
                 this.setMenuItems(d);
-            });
+            }
+        );
     }
 
     setMenuItems(items: any[]) {
@@ -214,7 +232,7 @@ export class AttributesTile implements OnInit {
                 }
                 i.menuItem.items[counter] = k.menuItem;
                 counter++;
-                this.menuItemParams.push(k);                
+                this.menuItemParams.push(k);
             });
         }
         if ((item.Action != 'edit' && item.Action != 'delete' && item.Action != 'add') || (item.Action == 'edit' && this.hasEdit) || (item.Action == 'delete' && this.hasDelete) || (item.Action == 'add' && this.hasAdd)) {

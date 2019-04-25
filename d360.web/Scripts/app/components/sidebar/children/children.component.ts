@@ -74,12 +74,13 @@ export class ChildrenComponent extends BaseComponent implements OnInit, OnDestro
                 this.selected = this.children.length > 0 ? this.children[0] : null;
 
                 this.isLoading = false;
+            });
+
+        this.objectDetailService.getObject(this.objectID, this.objectType).subscribe(
+            res => {
+                this.objectName = res.DisplayValue;
             }
         );
 
-        this.objectDetailService.getObject(this.objectID, this.objectType)
-            .then(res => {
-                this.objectName = res.DisplayValue;
-            });
     }
 }
