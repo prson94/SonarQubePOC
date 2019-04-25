@@ -17,7 +17,7 @@ import { createWriteStream } from 'fs';
 @Component({
     selector: 'd3s-site-menu-category',
     template: ` 
-                    <li #item [ngClass]="{'menu-category':true,'menu-parent':menu && (menu.NavigationItems),'menu-active':menu?.isActiveItem}" title="{{title}}" (mouseenter)="show(item);clearInput(); clearSearches(event, item);" (mouseleave)="hide(item);" [routerLink]="url ? url : []" style="cursor: pointer;" >
+                    <li #item [ngClass]="{'menu-category':true,'menu-parent':menu && (menu.NavigationItems),'menu-active':menu?.isActiveItem}" title="{{title}}" (mouseenter)="show(item); clearSearches(event, item);" (mouseleave)="hide(item);" [routerLink]="url ? url : []" style="cursor: pointer;" >
                        <div style="display:inline-flex;">
                             <i *ngIf="rootIconName" [class]="'fa ' + rootIconName" style="padding: 10px;"></i>
                             <img *ngIf="imageUrl" [src]="imageUrl" style="max-width: 20px; max-height: 20px; margin:10px 10px 10px 10px" />
@@ -112,7 +112,9 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
             });
         }
     }
-    show(item) {        
+    show(item) {
+        if (this.menu.isActiveItem)
+            return;
         this.positionMenu(item);
     }
 
