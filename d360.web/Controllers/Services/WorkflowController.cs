@@ -2742,9 +2742,7 @@ order by wi.StartedOn desc";
             detail.ItemSettings = XmlToDynamic(detail.ItemSettingsXml);
             detail.Condition = XmlToDynamic(detail.ConditionXml);
             detail.EventSettings = XmlToDynamic(detail.EventSettingsXml);
-
             detail.ItemFields = XmlToDynamic(detail.ItemFieldsXml);
-            var itemFields = (WorkflowItemStepDetail.FieldsModel)new XmlSerializer(typeof(WorkflowItemStepDetail.FieldsModel)).Deserialize(new StringReader(detail.ItemFieldsXml));
 
             if (detail.ItemSettings == null)
                 detail.ItemSettings = new JObject();
