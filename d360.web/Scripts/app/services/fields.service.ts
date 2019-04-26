@@ -1,17 +1,16 @@
 import {distinctUntilChanged, switchMap, map, catchError} from 'rxjs/operators';
 import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
-import { FieldDefinition, IFieldsService, FieldTypeEditorModel, Lookups, LookupItem } from '../models/fields.model';
+import { FieldDefinition, IFieldsService, FieldTypeEditorModel, Lookups } from '../models/fields.model';
 import { EditorDropDownItem } from '../models/editor-field.model'
 import { SelectItem } from 'primeng/components/common/api';
-import { MessagesService } from './messages.service';
-import { BaseService } from './base.service';
+import {MessagesService} from './messages.service';
 import { JsonResult } from '../models/jsonresult.model';
 import { Observable } from 'rxjs';
+import {BaseService} from "./base.service";
 
 @Injectable()
 export class FieldsService extends BaseService implements IFieldsService {
-
     constructor(private http: Http, messagesService: MessagesService) { super(messagesService);  }
 
     getFields(objectID: number, objectType: string): Promise<FieldDefinition[]> {

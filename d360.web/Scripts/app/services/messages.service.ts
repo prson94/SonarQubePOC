@@ -1,16 +1,16 @@
-import { Injectable } from '@angular/core';
+import {Injectable} from '@angular/core';
 import {Subject} from 'rxjs';
 import {SiteMessage} from '../models/site-message.model';
-import { Http } from '@angular/http';
-import { HttpErrorResponse } from '@angular/common/http';
-import { HeaderActionsService } from './header-actions.service';
+import {Http} from '@angular/http';
+import {HttpErrorResponse} from '@angular/common/http';
+import {HeaderActionsService} from './header-actions.service';
 
 @Injectable()
-export class MessagesService {    
+export class MessagesService {
     // Observable sources
     private errorMessageSource = new Subject<SiteMessage>();
     private infoMessageSource = new Subject<SiteMessage>();
-    
+
     // Observable streams
     errorMessage$ = this.errorMessageSource.asObservable();
     infoMessage$ = this.infoMessageSource.asObservable();
@@ -18,9 +18,10 @@ export class MessagesService {
     constructor(private http: Http, private headerActionService: HeaderActionsService) {
 
     }
+
     // Service message commands
-    showError(summary: string, detail: string) {        
-        this.errorMessageSource.next(new SiteMessage(summary,detail));
+    showError(summary: string, detail: string) {
+        this.errorMessageSource.next(new SiteMessage(summary, detail));
     }
 
     showInfoMessage(summary: string, detail: string) {
@@ -28,7 +29,7 @@ export class MessagesService {
         this.headerActionService.emitCountChange();
     }
 
-    saveLegacyClientError(error: Response) { 
+    saveLegacyClientError(error: Response) {
         let objError: Error
         let model: any;
 
@@ -40,7 +41,7 @@ export class MessagesService {
             objError = new Error(error.toString());
         }
 
-        model = { Name: objError.name, Message: objError.message, Stack: objError.stack };
+        model = {Name: objError.name, Message: objError.message, Stack: objError.stack};
 
         return this.http.post('api/v2/errors/log/clienterror', model)
             .toPromise()
@@ -62,7 +63,7 @@ export class MessagesService {
             objError = new Error(error.toString());
         }
 
-        model = { Name: objError.name, Message: objError.message, Stack: objError.stack };
+        model = {Name: objError.name, Message: objError.message, Stack: objError.stack};
 
         return this.http.post('api/v2/errors/log/clienterror', model)
             .toPromise()

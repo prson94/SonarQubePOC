@@ -5,7 +5,7 @@ import {Injectable} from '@angular/core';
 
 import {FollowDetail, FollowInfo} from '../models/follower.model';
 
-import {MessagesService} from './messages.service';
+import {MessagesObservableService} from './messages-observable.service';
 import {BaseObservableService} from "./baseObservable.service";
 
 @Injectable()
@@ -13,7 +13,7 @@ export class FollowerService extends BaseObservableService {
 
     constructor(
         private http: HttpClient,
-        messagesService: MessagesService
+        messagesService: MessagesObservableService
     ) {
         super(messagesService);
     }

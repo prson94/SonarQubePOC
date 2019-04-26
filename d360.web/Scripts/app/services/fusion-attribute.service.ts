@@ -11,7 +11,7 @@ import {
 import {SortOrder} from '../models/enums.model';
 import {JsonResult} from '../models/jsonresult.model';
 
-import {MessagesService} from './messages.service';
+import {MessagesObservableService} from './messages-observable.service';
 import {BaseObservableService} from "./baseObservable.service";
 import { AssetDataProfile } from '../models/fusion.model';
 
@@ -19,7 +19,7 @@ import { AssetDataProfile } from '../models/fusion.model';
 export class FusionAttributeService extends BaseObservableService {
     constructor(
         private http: HttpClient,
-        messagesService: MessagesService
+        messagesService: MessagesObservableService
     ) {
         super(messagesService);
     }

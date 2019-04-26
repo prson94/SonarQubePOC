@@ -42,7 +42,7 @@ import {
 import {GridColumn} from '../models/grid-definition.model';
 import {SortOrder} from '../models/enums.model';
 
-import {MessagesService} from './messages.service';
+import {MessagesObservableService} from './messages-observable.service';
 import {BaseObservableService} from "./baseObservable.service";
 import {FormHelper} from "../models/form.model";
 import { TreeNode } from 'primeng/components/common/api';
@@ -51,7 +51,7 @@ import { TreeNode } from 'primeng/components/common/api';
 export class FusionService extends BaseObservableService {
     constructor(
         private http: HttpClient,
-        messagesService: MessagesService
+        messagesService: MessagesObservableService
     ) {
         super(messagesService);
     }
