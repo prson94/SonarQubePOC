@@ -13,34 +13,10 @@ using Newtonsoft.Json;
 
 namespace d360.model
 {
-    public class MarkitMapRow
+    public class MarkitSettings
     {
-        public int SourceFusionAttributeID { get; set; }
-        public int TargetFusionAttributeID { get; set; }
-        public Tuple<string, int> SourceObject { get; set; }
-        public Tuple<string, int> TargetObject { get; set; }
+        public bool IgnoreOverlappingPaths { get; set; } = false;
     }
-
-    public class MarkitObject
-    {
-        public int ObjectID { get; set; }
-        public string Object { get; set; }
-    }
-
-    public class MarkitObjectComparer : IEqualityComparer<MarkitObject>
-    {
-        public bool Equals(MarkitObject x, MarkitObject y)
-        {
-            return x.ObjectID == y.ObjectID && (string.Compare(x.Object, y.Object, true) == 0);
-        }
-
-        public int GetHashCode(MarkitObject obj)
-        {
-            return obj.ObjectID.GetHashCode() + obj.Object.GetHashCode();
-        }
-    }
-
-
 
     partial class CompanyContext : BaseContext
     {
@@ -63,6 +39,7 @@ namespace d360.model
 
             var maps = await LoadMarkitMapRawData();
             var objectMaps = await LoadMarkitMapItemMapData();
+            var settings = await LoadMarkitSettings();
 
             var mapCount = maps.Count();
 
@@ -95,6 +72,7 @@ namespace d360.model
             Parallel.ForEach(leftmostMaps, new ParallelOptions { MaxDegreeOfParallelism = numThreads }, currentMap =>
             {
                 UpdateSourceTargetObjectMap(
+                   settings,
                    sourceMap,
                    maps,
                    currentMap,
@@ -127,6 +105,7 @@ namespace d360.model
 
 
         private void UpdateSourceTargetObjectMap(
+            MarkitSettings settings,
             Dictionary<int, List<FusionMarkitLineageData>> sourceMap,
             IEnumerable<FusionMarkitLineageData> maps,
             FusionMarkitLineageData currentMap,
@@ -202,8 +181,10 @@ namespace d360.model
                             continue;
                         }
                         
-                        foreach (var businessMap in businessMaps)
+                        for(int i = 0; i < businessMaps.Count; i++)
                         {
+                            var businessMap = businessMaps.ElementAt(i);
+
                             lock (mappingLock)
                             {
                                 var previousAssetId = previous.AssetID;
@@ -212,19 +193,26 @@ namespace d360.model
 
                                 //if there's already a previous mapping on this path & business object, 
                                 //take that mapping's target asset id instead so the lineage is connected
-                                var prevMapping = mappings.LastOrDefault(m => processedList.Contains(m.MapID) && m.MapID != currentMap.ID && m.TargetAssetID != previous.AssetID && m.ObjectAssetID == businessMap.ObjectAssetID);
+                                var prevMapping = mappings.LastOrDefault(m => 
+                                    processedList.Contains(m.MapID) 
+                                    && m.MapID != currentMap.ID 
+                                    && m.TargetAssetID != previous.AssetID 
+                                    && m.ObjectAssetID == businessMap.ObjectAssetID);
+
                                 if (prevMapping != null)
                                 {
                                     previousAssetId = prevMapping.TargetAssetID;
                                     previousFusionId = prevMapping.TargetFusionAttributeID;
                                     mapId = prevMapping.MapID;
 
-                                    if (sourceAssets.Any())
+                                    if (settings.IgnoreOverlappingPaths && sourceAssets.Any())
                                     {
                                         var previousSource = sourceAssets.Peek();
+
                                         //if the previous mapping is pointing to the previous source asset on the stack we're on the same path
                                         if (previousSource.AssetID == previousAssetId && previousSource.FusionAttributeID == previousFusionId)
                                         {
+                                            businessMaps.RemoveAt(i--);
                                             continue;
                                         }
                                     }
@@ -232,13 +220,13 @@ namespace d360.model
 
 
                                 //if the mapping doesn't exist create it
-                                //if (!mappings.Any(m => m.MapID == current.MapID && m.SourceFusionAttributeID == previous.FusionAttributeID
-                                //&& m.TargetFusionAttributeID == current.FusionAttributeID && m.SourceAssetID == previousAssetID && m.TargetAssetID == current.AssetID
-                                //&& m.ObjectAssetID == businessMap.ObjectAssetID) && previousAssetID != current.AssetID
-                                //&& !mappings.Any(m => ((m.SourceFusionAttributeID == previous.FusionAttributeID && m.SourceAssetID == previousAssetID) || (m.TargetFusionAttributeID == current.FusionAttributeID && m.TargetAssetID == current.AssetID)) && m.ObjectAssetID == businessMap.ObjectAssetID))
-                                if (!mappings.Any(m => (m.MapID == current.MapID || m.MapID == mapId) && (m.SourceFusionAttributeID == previousFusionId || m.SourceFusionAttributeID == previous.FusionAttributeID)
-&& m.TargetFusionAttributeID == current.FusionAttributeID && (m.SourceAssetID == previousAssetId || m.SourceAssetID == previous.AssetID) && m.TargetAssetID == current.AssetID
-&& m.ObjectAssetID == businessMap.ObjectAssetID))
+                                if (!mappings.Any(m => 
+                                    (m.MapID == current.MapID || m.MapID == mapId) 
+                                    && (m.SourceFusionAttributeID == previousFusionId || m.SourceFusionAttributeID == previous.FusionAttributeID)
+                                    && m.TargetFusionAttributeID == current.FusionAttributeID 
+                                    && (m.SourceAssetID == previousAssetId || m.SourceAssetID == previous.AssetID) 
+                                    && m.TargetAssetID == current.AssetID
+                                    && m.ObjectAssetID == businessMap.ObjectAssetID))
                                 {
                                     mappings.Add(new FusionMarkitSourceTargetMapping
                                     {
@@ -251,7 +239,7 @@ namespace d360.model
                                     });
                                 }
                             }
-                        }                       
+                        }                     
                         current = previous;
                     }
                 }
@@ -259,10 +247,10 @@ namespace d360.model
 
             //process the next nodes in the lineage
             if (nextMaps.Count() == 1)
-                UpdateSourceTargetObjectMap(sourceMap, maps, nextMaps.First(), mappings, processedList, sourceAssetsCopy, root, objectMaps, businessMaps, ++complexity);
+                UpdateSourceTargetObjectMap(settings, sourceMap, maps, nextMaps.First(), mappings, processedList, sourceAssetsCopy, root, objectMaps, businessMaps, ++complexity);
             else
                 foreach (var next in nextMaps)
-                    UpdateSourceTargetObjectMap(sourceMap, maps, next, mappings, new HashSet<int>(processedList), new Stack<FusionMarkitParentMapping>(sourceAssetsCopy), root, objectMaps, new List<FusionMarkitObjectMapping>(businessMaps), complexity + nextMaps.Count());
+                    UpdateSourceTargetObjectMap(settings, sourceMap, maps, next, mappings, new HashSet<int>(processedList), new Stack<FusionMarkitParentMapping>(sourceAssetsCopy), root, objectMaps, new List<FusionMarkitObjectMapping>(businessMaps), complexity + nextMaps.Count());
         }
 
         private async Task SaveMarkitLineageRunDetails(int rows, int techRows, int businessRows)
@@ -394,6 +382,23 @@ namespace d360.model
 ";
 
             return await QueryAsync<core.entities.FusionMarkitLineageData>(sql);
+        }
+
+        private async Task<MarkitSettings> LoadMarkitSettings()
+        {
+            MarkitSettings settings;
+            var settingsJson = (await QueryAsync<string>("select top 1 Settings from fusion.MarkitLineageSetting")).FirstOrDefault();
+
+            if (!string.IsNullOrEmpty(settingsJson))
+            {
+                settings = JsonConvert.DeserializeObject<MarkitSettings>(settingsJson);
+            }
+            else
+            {
+                settings = new MarkitSettings();
+            }
+
+            return settings;
         }
     }
 }
