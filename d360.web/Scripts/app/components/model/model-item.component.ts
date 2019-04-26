@@ -60,7 +60,7 @@ declare var CompanySettings;
                                                         [objectPermissions]="permissions"
                                                         [objectType]="'Taxonomy'"
                                                         [objectID]="selected?.ID"
-                                                        [hasAttributes]="model.AllowAttributes"
+                                                        [hasAttributes]="model?.AllowAttributes"
                                                         (onEditComplete)="editComplete($event)"></d3s-object-definition-tile>
                         </div>
                     </div>
