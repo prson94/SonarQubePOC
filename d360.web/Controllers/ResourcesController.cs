@@ -971,11 +971,11 @@ order by A.ID, FT.SortOrder", new { id, attribute });
 	                                    ISNULL(FormattedValue,' ') as Value,
 	                                    FriendlyName as Name
 	                                    from dbo.FieldDetail 
-		                                    where objectid = @obj  and [Name] != 'Description'";
+		                                    where objectid = @obj and [object]= @ty and [Name] != 'Description'";
 
-        
-                        res = Company.Query<FieldTooltipValueModel>(sql, new {obj = objectID}).ToList();
-                        
+
+                        res = Company.Query<FieldTooltipValueModel>(sql, new { obj = objectID, ty = objectType }).ToList();
+
 
                     }
 
@@ -983,9 +983,9 @@ order by A.ID, FT.SortOrder", new { id, attribute });
 	                                    ISNULL(FormattedValue,' ') as Value,
 	                                    FriendlyName as Name
 	                                    from dbo.FieldDetail 
-		                                    where objectid = @obj  and [Name] = 'Description'";
+		                                    where objectid = @obj and [object]= @ty and [Name] = 'Description'";
 
-                    desc = Company.Query<string>(descSql, new { ty = objectType, obj = objectID }).FirstOrDefault();
+                    desc = Company.Query<string>(descSql, new { obj = objectID, ty = objectType, }).FirstOrDefault();
 
                     dispName = det != null ? det.Name : "";
                     typeName = det != null ? det.TypeName : "";
