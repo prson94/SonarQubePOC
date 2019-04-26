@@ -2393,7 +2393,8 @@ order by wi.StartedOn desc";
 
                             if (user != null && (fields?.Reassignments?.Any(r => r.FromResourceID == user.ResourceID) ?? false))
                             {
-                                var assignee = Company.GlobalReportingResources.FirstOrDefault(c => c.ResourceID == fields.Reassignments.First().ToResourceID);
+                                var resId = fields.Reassignments.First().ToResourceID;
+                                var assignee = Company.GlobalReportingResources.FirstOrDefault(c => c.ResourceID == resId);
                                 if (assignee != null)
                                     user = assignee;
                             }
@@ -2754,8 +2755,10 @@ order by wi.StartedOn desc";
             try
             {
                 detail.FieldChanges = this.GetWorkFlowStepFieldChanges(detail);
-                detail.RelationshipChange= this.GetWorkFlowStepRelationshipChanges(detail.Settings, detail.ItemID,detail.ObjectName);
-                SetReassignObjectName(detail);
+                detail.RelationshipChange= this.GetWorkFlowStepRelationshipChanges(detail.Settings, detail.ItemID, detail.ObjectName);
+
+                var itemFields = (WorkflowItemStepDetail.FieldsModel)new XmlSerializer(typeof(WorkflowItemStepDetail.FieldsModel)).Deserialize(new StringReader(detail.ItemFieldsXml));
+
                 if (detail.Settings != null && detail.Settings.State != null && !string.IsNullOrEmpty(detail.Settings.State.Value))
                     detail.StateChange = (State)Convert.ToInt32(detail.Settings.State.Value);
 
@@ -2993,6 +2996,7 @@ order by wi.StartedOn desc";
                         }
                     }
 
+                    SetReassignObjectName(detail);
 
                     switch (detail.ActivityType)
                     {
@@ -3100,6 +3104,29 @@ order by wi.StartedOn desc";
                     {
                         if (form.ResourceID != 0 && !resourceIds.Any(r => r == form.ResourceID))
                             resourceIds.Add(form.ResourceID);
+                    }
+
+                    for (int i = 0; i < detail.ItemFields.form.Count; i++)
+                    {
+                        var form = detail.ItemFields.form[i];
+
+                        if (form.field != null)
+                        {
+                            if (form.field.GetType().Name != "JArray")
+                            {
+                                form.field = new JArray(form.field);
+                            }
+                        }
+                        else
+                        {
+                            form.field = new JArray();
+                        }
+
+                        if (form["@ResourceID"] != null & form["@ResourceID"].Value != null & int.TryParse(form["@ResourceID"].Value, out int resId))
+                        {
+                            if (!resourceIds.Any(r => r == resId))
+                                resourceIds.Add(resId);
+                        }
                     }
 
 
