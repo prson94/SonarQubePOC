@@ -2625,46 +2625,74 @@ order by wi.StartedOn desc";
         private void SetReassignObjectName(WorkflowStepDetail detail)
         {
             var ItemFields = detail.ItemFields;
+            var userList = new List<int>();
+            bool hasBulkReassignments = false;
+
             if (ItemFields != null && ItemFields.Reassigned != null)
             {
-                var reassigned = ItemFields.Reassigned;
-                if (reassigned != null)
+                for (int i = 0; i < detail.ItemFields.Reassigned.Count; i++)
                 {
-                    if (reassigned["@reassignType"] == "Object")
+                    var reassigned = detail.ItemFields.Reassigned[i];
+
+                    if (reassigned != null)
                     {
-                        int objectId = (int)reassigned["@objectId"];
-                        var objectType = reassigned["@objectType"];
-                        var sql = @"Select D.DisplayValue as ObjectName
-                            From
-                            Asset A
-                            cross apply dbo.GetAssetDisplayValueById(A.ID) D
-                            where   A.Object = @obj and A.ObjectID = @objId";
-                        var objectName = Company.Query<string>(sql, new { obj = objectType.Value, objId = objectId }).FirstOrDefault();
-                        reassigned["@objectName"] = objectName;
+                        if (reassigned["@reassignType"] == "Object")
+                        {
+                            int objectId = (int)reassigned["@objectId"];
+                            var objectType = reassigned["@objectType"];
+                            var sql = @"Select D.DisplayValue as ObjectName
+                        From
+                        Asset A
+                        cross apply dbo.GetAssetDisplayValueById(A.ID) D
+                        where   A.Object = @obj and A.ObjectID = @objId";
+                            var objectName = Company.Query<string>(sql, new { obj = objectType.Value, objId = objectId }).FirstOrDefault();
+                            reassigned["@objectName"] = objectName;
+                        }
+                        else if (reassigned["@reassignType"] == "Resource" && reassigned["@toResourceId"] != null)
+                        {
+                            hasBulkReassignments = true;
+                            userList.Add((int)reassigned["@toResourceId"]);
+
+                            if (reassigned["@fromResourceId"] != null)
+                            {
+                                userList.Add((int)reassigned["@fromResourceId"]);
+                            }
+                            if (reassigned["@byResourceId"] != null)
+                            {
+                                userList.Add((int)reassigned["@byResourceId"]);
+                            }
+                        }
                     }
-                    else if (reassigned["@reassignType"] == "Resource" && reassigned["@toResourceId"] != null)
+                }
+
+                if (hasBulkReassignments)
+                {
+                    //get all the users at once
+                    var users = Company.GlobalReportingResources.Where(r => userList.Contains(r.ResourceID)).ToList();
+                    //apply names
+                    for (int i = 0; i < detail.ItemFields.Reassigned.Count; i++)
                     {
-                        if (reassigned["@toResourceId"] != null)
+                        var reassigned = detail.ItemFields.Reassigned[i];
+
+                        if (reassigned["@reassignType"] == "Resource")
                         {
-                            int toResourceId = (int)reassigned["@toResourceId"];
-                            var toResource = Company.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == toResourceId);
-                            reassigned["@toResourceName"] = toResource == null ? "[unknown user]" : toResource.FullName;
+                            if (reassigned["@byResourceId"] != null)
+                            {
+                                var res = users.FirstOrDefault(r => r.ResourceID == (int)reassigned["@byResourceId"]);
+                                reassigned["@byResourceName"] = res == null ? "[unknown user]" : res.FullName;
+                            }
 
+                            if (reassigned["@toResourceId"] != null)
+                            {
+                                var res = users.FirstOrDefault(r => r.ResourceID == (int)reassigned["@toResourceId"]);
+                                reassigned["@toResourceName"] = res == null ? "[unknown user]" : res.FullName;
+                            }
 
-                        }
-                        if (reassigned["@fromResourceId"] != null)
-                        {
-                            int fromResourceId = (int)reassigned["@fromResourceId"];
-                            var fromResource = Company.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == fromResourceId);
-                            reassigned["@fromResourceName"] = fromResource == null ? "[unknown user]" : fromResource.FullName;
-
-
-                        }
-                        if (reassigned["@byResourceId"] != null)
-                        {
-                            int byResourceId = (int)reassigned["@byResourceId"];
-                            var byResource = Company.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == byResourceId);
-                            reassigned["@byResourceName"] = byResource == null ? "[unknown user]" : byResource.FullName;
+                            if (reassigned["@fromResourceId"] != null)
+                            {
+                                var res = users.FirstOrDefault(r => r.ResourceID == (int)reassigned["@fromResourceId"]);
+                                reassigned["@fromResourceName"] = res == null ? "[unknown user]" : res.FullName;
+                            }
                         }
                     }
                 }
@@ -2743,7 +2771,6 @@ order by wi.StartedOn desc";
             detail.EventSettings = XmlToDynamic(detail.EventSettingsXml);
 
             detail.ItemFields = XmlToDynamic(detail.ItemFieldsXml);
-            var itemFields = (WorkflowItemStepDetail.FieldsModel)new XmlSerializer(typeof(WorkflowItemStepDetail.FieldsModel)).Deserialize(new StringReader(detail.ItemFieldsXml));
 
             if (detail.ItemSettings == null)
                 detail.ItemSettings = new JObject();
@@ -2754,8 +2781,12 @@ order by wi.StartedOn desc";
             try
             {
                 detail.FieldChanges = this.GetWorkFlowStepFieldChanges(detail);
-                detail.RelationshipChange= this.GetWorkFlowStepRelationshipChanges(detail.Settings, detail.ItemID,detail.ObjectName);
+                detail.RelationshipChange= this.GetWorkFlowStepRelationshipChanges(detail.Settings, detail.ItemID, detail.ObjectName);
+
                 SetReassignObjectName(detail);
+
+                var itemFields = (WorkflowItemStepDetail.FieldsModel)new XmlSerializer(typeof(WorkflowItemStepDetail.FieldsModel)).Deserialize(new StringReader(detail.ItemFieldsXml));
+
                 if (detail.Settings != null && detail.Settings.State != null && !string.IsNullOrEmpty(detail.Settings.State.Value))
                     detail.StateChange = (State)Convert.ToInt32(detail.Settings.State.Value);
 
