@@ -33,7 +33,7 @@ namespace d360.web.Models
                     Class = core.enums.AssetTypeClass.Glossary.ToString(),
                     Description = String.Empty,
                     AutoDisplayDescription = true,
-                    DisplayFormat = String.Empty,
+                    DisplayFormat = "{Name}",
                     Hierarchy = new HierarchyInsert
                     {
                         MaximumDepth =3,
