@@ -738,6 +738,9 @@ namespace d360.web.Controllers.V2
                     predicate = Company.Filter<Predicate>(x => x.UID == model.Hierarchy.PredicateUid).SingleOrDefault();
                     if (predicate == null)
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a proper predicate based on its asset type class"));
+                    else if (predicate != null && !predicateClass.Contains(model.AssetTypeClass))
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a proper predicate based on its asset type class"));
+
                 }
 
 
@@ -748,7 +751,7 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Asset Type not found based on Uid provided"));
                 else if (parentAssetType != null && predicate != null && (model.AssetTypeClass == AssetTypeClass.Glossary || model.AssetTypeClass == AssetTypeClass.Reference) && predicate.ID != 4 && predicate.ID != 9)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a proper predicate based on its asset type class"));
-                else if (parentAssetType != null && predicate != null && (model.AssetTypeClass == AssetTypeClass.Model || model.AssetTypeClass == AssetTypeClass.Policy) && (predicate.ID != 8))
+                else if (predicate != null && (model.AssetTypeClass == AssetTypeClass.Model || model.AssetTypeClass == AssetTypeClass.Policy) && (predicate.ID != 8))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a proper predicate based on its asset type class"));
                 
 
@@ -891,7 +894,7 @@ namespace d360.web.Controllers.V2
 
                 if (model.ObjectID > 0)
                 {
-                    if (model.AssetTypeClass != AssetTypeClass.FusionAttribute && model.AssetTypeClass != AssetTypeClass.Organization)
+                    if (model.AssetTypeClass != AssetTypeClass.FusionAttribute)
                     {
                         Company.Add(new FieldType
                         {
@@ -934,7 +937,7 @@ namespace d360.web.Controllers.V2
             if (assetTypeId == 0)
                 fieldNames = new List<string> { "name" };
             else
-                fieldNames = Company.Filter<FieldType>(x => x.AssetTypeID == assetTypeId).Select(x => x.FriendlyName.ToLower()).ToList();
+                fieldNames = Company.Filter<FieldType>(x => x.AssetTypeID == assetTypeId).Select(x => x.Name.ToLower()).ToList();
 
             displayFormat = displayFormat.Replace("}{", "} {");
             var displayFieldNames = displayFormat.Split().Where(x => x.StartsWith("{") && x.EndsWith("}"))
@@ -1048,20 +1051,21 @@ namespace d360.web.Controllers.V2
                     predicate = Company.Filter<Predicate>(x => x.UID == model.Hierarchy.PredicateUid).SingleOrDefault();
                     if (predicate == null)
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a proper predicate based on its asset type class."));
+                    else if (predicate != null && !predicateClass.Contains(model.AssetTypeClass))
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a proper predicate based on its asset type class"));
+
                 }
 
-                
+
                 if (parentAssetType != null && predicate == null && predicateClass.Contains(model.AssetTypeClass))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a proper predicate based on its asset type class"));
                 else if (parentAssetType == null && predicate != null && parentAssetTypeClass.Contains(model.AssetTypeClass))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Asset Type not found based on Uid provided"));
                 else if (parentAssetType != null && predicate != null && (model.AssetTypeClass == AssetTypeClass.Glossary || model.AssetTypeClass == AssetTypeClass.Reference) && predicate.ID != 4 && predicate.ID != 9)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a proper predicate based on its asset type class"));
-                else if (parentAssetType != null && predicate != null && (model.AssetTypeClass == AssetTypeClass.Model || model.AssetTypeClass == AssetTypeClass.Policy) && (predicate.ID != 8))
+                else if (predicate != null && (model.AssetTypeClass == AssetTypeClass.Model || model.AssetTypeClass == AssetTypeClass.Policy) && (predicate.ID != 8))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a proper predicate based on its asset type class"));
-
-
-
+               
                 int assetCount = Company.Filter<Asset>(x => x.AssetTypeID == assetType.ID).Count();
                 AssetType currentParentType = Company.GetParentType(assetType.ID, this.GetSystemObjects(model.AssetTypeClass));
                 if (assetCount !=0 && currentParentType !=null  && currentParentType.uid != model.ParentUid)
@@ -1253,9 +1257,8 @@ namespace d360.web.Controllers.V2
 
                 //update affected display values
                 Company.CreateOrUpdateTypeDisplayValuesAsync(model.ObjectID, model.Object.ToString());
-                assetType = Company.Filter<AssetType>(x => x.uid == model.Uid).SingleOrDefault();
-                if (assetType == null) return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Type", "Asset Not Found."));
-                var result = new AssetTypeSuccess { Uid = assetType.uid, Message = $"{assetType.Name} successfully updated.", Success = true };
+
+                var result = new AssetTypeSuccess { Uid = model.Uid, Message = $"{model.Name} successfully updated.", Success = true };
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
                
