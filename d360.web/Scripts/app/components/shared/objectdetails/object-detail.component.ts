@@ -1,8 +1,8 @@
-﻿import {Input, Output, Component, OnChanges, SimpleChange} from '@angular/core';
-import {DetailRow, DetailField, DetailModel, DetailFieldType} from '../../../models/object-detail.model';
-import {ObjectDetailService} from '../../../services/object-detail.service';
-import {LookupGrid} from '../../../models/grid-definition.model';
-import {MessagesService} from '../../../services/messages.service';
+import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
+import { DetailRow, DetailField, DetailModel, DetailFieldType } from '../../../models/object-detail.model';
+import { ObjectDetailService } from '../../../services/object-detail.service';
+import { LookupGrid } from '../../../models/grid-definition.model';
+import { MessagesService } from '../../../services/messages.service';
 
 declare var CompanySettings;
 
@@ -53,8 +53,48 @@ export class ObjectDetailComponent implements OnChanges {
                     this.categories = [];
 
                     this.rows.forEach(r => {
-                            if (r.Category && this.categories.find(c => c.name == r.Category) == null) {
-                                this.categories.push(new Category(r.Category));
+                        if (r.Category && this.categories.find(c => c.name == r.Category) == null)
+                            this.categories.push(new Category(r.Category));
+
+                        r.FirstColumnFields.forEach(f => {
+                            this.setDetailFieldType(f);
+                            if (f.FieldName == this.TaxonomyTypeName) {
+                                f.Name = CompanySettings.ArtifactType_TaxonomyTypeID;
+                            }
+                            if (f.FieldName == this.TaxonomyTypeNodeName) {
+                                f.Name = CompanySettings.ArtifactType_TaxonomyTypeIDNodes;
+                            }
+                            if (f.Type == DetailFieldType.Lookup) {
+                                this.objectDetailService.getLookupGrid(f.LookupGridUrl)
+                                    .subscribe(i => {
+                                        f.Data = i;
+                                        if ((!f.Data || !f.Data.Values || f.Data.Values.length == 0) && (!f.ShowIfEmpty)) {
+                                            f.Type = DetailFieldType.None;
+                                            r.FirstColumnFields.splice(r.FirstColumnFields.indexOf(f), 1);
+                                        }
+                                    });
+                            }
+
+                        });
+                        r.FirstColumnFields = r.FirstColumnFields.filter(f => f.Type != DetailFieldType.None);
+
+                        r.SecondColumnFields.forEach(s => {
+                            this.setDetailFieldType(s);
+                            if (s.FieldName == this.TaxonomyTypeName) {
+                                s.Name = CompanySettings.ArtifactType_TaxonomyTypeID;
+                            }
+                            if (s.FieldName == this.TaxonomyTypeNodeName) {
+                                s.Name = CompanySettings.ArtifactType_TaxonomyTypeIDNodes;
+                            }
+                            if (s.Type == DetailFieldType.Lookup) {
+                                this.objectDetailService.getLookupGrid(s.LookupGridUrl)
+                                    .subscribe(i => {
+                                        s.Data = i;
+                                        if ((!s.Data || !s.Data.Values || s.Data.Values.length == 0) && (!s.ShowIfEmpty)) {
+                                            s.Type = DetailFieldType.None;
+                                            r.SecondColumnFields.splice(r.SecondColumnFields.indexOf(s), 1);
+                                        }
+                                    });
                             }
 
                             r.FirstColumnFields.forEach(
@@ -115,22 +155,24 @@ export class ObjectDetailComponent implements OnChanges {
 
                             r.SecondColumnFields = r.SecondColumnFields.filter(f => f.Type != DetailFieldType.None);
                         }
-                    );
+                        );
 
-                    let displayRows = this.rows.filter(r => r.Category == null && ((r.FirstColumnFields && r.FirstColumnFields.length > 0) || (r.SecondColumnFields && r.SecondColumnFields.length > 0)));
+                        let displayRows = this.rows.filter(r => r.Category == null && ((r.FirstColumnFields && r.FirstColumnFields.length > 0) || (r.SecondColumnFields && r.SecondColumnFields.length > 0)));
 
-                    for (let i = 0; i < this.categories.length; i++) {
-                        let items = this.rows.filter(r => r.Category == this.categories[i].name);
-                        this.categories[i].rows = [];
-                        for (let j of items) {
-                            if ((j.FirstColumnFields && j.FirstColumnFields.length > 0) || (j.SecondColumnFields && j.SecondColumnFields.length)) {
-                                this.categories[i].rows.push(j);
+                        for (let i = 0; i < this.categories.length; i++) {
+                            let items = this.rows.filter(r => r.Category == this.categories[i].name);
+                            this.categories[i].rows = [];
+                            for (let j of items) {
+                                if ((j.FirstColumnFields && j.FirstColumnFields.length > 0) || (j.SecondColumnFields && j.SecondColumnFields.length)) {
+                                    this.categories[i].rows.push(j);
+                                }
                             }
                         }
+                        this.rows = displayRows;
+                        this.loadCategory();
+                        this.isLoading = false;
                     }
-                    this.rows = displayRows;
-                    this.loadCategory();
-                    this.isLoading = false;
+                    );
                 }
             );
         }

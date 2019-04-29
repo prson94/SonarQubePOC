@@ -1,14 +1,11 @@
-import { Observable } from "rxjs";
-import { HttpClient, HttpHandler, HttpHeaders } from '@angular/common/http';
+import {Observable} from "rxjs";
+import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {catchError, map} from 'rxjs/operators';
-import { Injectable } from '@angular/core';
-import { Headers, Http, Response, ResponseContentType } from '@angular/http';
+import {Injectable} from '@angular/core';
 
-import { MessagesService } from './messages.service';
-import { BaseObservableService } from './baseObservable.service';
-import { Artifacts, Artifact } from '../models/artifacts.model';
-import { ArtifactType, AssetTypeExportTemplate } from '../models/artifact-type.model';
-import { SortOrder } from '../models/enums.model';
+import {Artifacts, Artifact} from '../models/artifacts.model';
+import {ArtifactType} from '../models/artifact-type.model';
+import {SortOrder} from '../models/enums.model';
 import {
     GridFilterExpression,
     GridRelationshipFilterExpression,
@@ -16,16 +13,19 @@ import {
     GridAttributeFilterExpression,
     GridOwnerFilter
 } from '../models/grid-definition.model';
-import { Count } from '../models/counts.model';
-import { JsonResult } from '../models/jsonresult.model';
-import { AssetDetail } from '../models/asset.model';
+import {Count} from '../models/counts.model';
+import {JsonResult} from '../models/jsonresult.model';
+import {AssetDetail} from '../models/asset.model';
+
+import {MessagesObservableService} from './messages-observable.service';
+import {BaseObservableService} from './baseObservable.service';
 
 @Injectable()
 export class ArtifactService extends BaseObservableService {
 
     constructor(
         private http: HttpClient,
-        messagesService: MessagesService
+        messagesService: MessagesObservableService
     ) {
         super(messagesService);
     }
@@ -114,17 +114,19 @@ export class ArtifactService extends BaseObservableService {
         if (owner != undefined) {
             uri += `&ownerUsers=${owner.ownerUsers.join(',')}&ownerGroups=${owner.ownerGroups.join(',')}`;
         }
-        
+
         return this
             .http
             .get(uri)
             .pipe(
                 map(response => response),
-                map(item => { return <Artifacts>item }),
+                map(item => {
+                    return <Artifacts>item
+                }),
                 catchError(err => this.handleError(err))
             )
-        ;
-    }   
+            ;
+    }
 
     getArtifactByParentAndArtifactType(
         parentId: number,
@@ -145,7 +147,7 @@ export class ArtifactService extends BaseObservableService {
                 map(response => <Artifacts>response),
                 catchError(err => this.handleError(err))
             )
-        ;
+            ;
     }
 
     getArtifactsXls(
@@ -161,7 +163,7 @@ export class ArtifactService extends BaseObservableService {
     ) {
         const sortOrderText = sortorder == SortOrder.None ? "" : (sortorder == SortOrder.Descending ? "desc" : "asc");
         let uri = `internal/artifacts/download/excel/${artifactType.ID}.xls?&sortDataField=${sortfield}&sortOrder=${sortOrderText}&listableOnly=${listableOnly}`;
-        
+
         if (filters != undefined) {
             //regular fields
             let normalFilters = filters.filter(f => f.fieldtype == GridFilterFieldType.Normal);
@@ -202,7 +204,7 @@ export class ArtifactService extends BaseObservableService {
             for (let att of attributes) {
                 uri += `&att_typeid_${count}=${att.attributeType}&att_value_${count}=${att.attributeSearchValue}`;
                 count++;
-            }            
+            }
         }
 
         if (relationships != undefined) {
@@ -211,8 +213,8 @@ export class ArtifactService extends BaseObservableService {
             for (let rel of relationships) {
                 uri += `&rel_typeid_${count}=${rel.relationshipType.IntersectTypeID}&rel_includetype_${count}=${rel.includeType}&rel_object_${count}=${rel.relationshipType.TargetType.replace("Type", "")}&rel_objectids_${count}=${rel.objectIds.join(",")}`;
                 count++;
-            }            
-        } 
+            }
+        }
 
         if (simpleFilter != undefined) {
             uri += `&filter=${encodeURIComponent(simpleFilter)}`;
@@ -237,11 +239,11 @@ export class ArtifactService extends BaseObservableService {
     downloadFile(
         data: Blob,
         artifactTypeName: string
-    ) {        
+    ) {
         var filename = `Filtered ${artifactTypeName} List ${new Date().toDateString()}.xlsx`;
 
         if (window.navigator.msSaveOrOpenBlob) {
-            window.navigator.msSaveOrOpenBlob(data, filename );
+            window.navigator.msSaveOrOpenBlob(data, filename);
         } else {
             var url = window.URL.createObjectURL(data);
             var anchor = document.createElement("a");
@@ -261,7 +263,7 @@ export class ArtifactService extends BaseObservableService {
                 map(response => <Artifact>response),
                 catchError(err => this.handleError(err))
             )
-        ;
+            ;
     }
 
     deleteArtifact(id: number): Observable<JsonResult> {
@@ -288,7 +290,7 @@ export class ArtifactService extends BaseObservableService {
                 map(response => <Count[]>response),
                 catchError(err => this.handleError(err))
             )
-        ;
+            ;
     }
 
     getActivityDetails(
@@ -302,7 +304,7 @@ export class ArtifactService extends BaseObservableService {
                 map(response => <AssetDetail[]>response),
                 catchError(err => this.handleError(err))
             )
-        ;
+            ;
     }
 
     getSimilarArtifactNames(
@@ -316,14 +318,14 @@ export class ArtifactService extends BaseObservableService {
                 map(response => <any[]>response),
                 catchError(err => this.handleError(err))
             )
-        ;
+            ;
     }
 
     requestCertification(objectId: number): Observable<JsonResult> {
         const headers = new HttpHeaders({
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', //pass as text since its a dynamic object and mvc has issue with dynamic models                        
         });
-                
+
         return this.http
             .post(
                 'form/RequestCertification',
@@ -336,7 +338,7 @@ export class ArtifactService extends BaseObservableService {
                 map(res => <JsonResult>res),
                 catchError(err => this.handleError(err))
             )
-        ;
+            ;
     }
 
     getArtifactsCustomXls(
@@ -353,7 +355,7 @@ export class ArtifactService extends BaseObservableService {
     ) {
         let sortOrderText = sortorder == SortOrder.None ? "" : (sortorder == SortOrder.Descending ? "desc" : "asc");
         let uri = `internal/artifacts/download/customexcel/${templateId}/${artifactType.ID}.xls?&sortDataField=${sortfield}&sortOrder=${sortOrderText}&listableOnly=${listableOnly}`;
-        
+
         if (filters != undefined) {
             //regular fields
             let normalFilters = filters.filter(f => f.fieldtype == GridFilterFieldType.Normal);

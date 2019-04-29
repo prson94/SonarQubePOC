@@ -1,20 +1,21 @@
-import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import { HttpErrorResponse, HttpClient, HttpHeaders } from '@angular/common/http';
-import { catchError, map } from 'rxjs/operators';
+import {Injectable} from '@angular/core';
+import {HttpErrorResponse, HttpClient, HttpHeaders} from '@angular/common/http';
+import {Observable} from 'rxjs';
+import {catchError, map, tap} from 'rxjs/operators';
 
-import { MessagesService } from './messages.service';
-import { JsonResult } from '../models/jsonresult.model';
+import {JsonResult} from '../models/jsonresult.model';
+
+import {MessagesObservableService} from './messages-observable.service';
 
 @Injectable()
 export class BaseObservableService {
 
-    constructor(protected messages: MessagesService) { }
+    constructor(protected messages: MessagesObservableService) {
+    }
 
     handleError(error: HttpErrorResponse) {
-
-        this.messages.saveClientError(error)
-            .then(res => {
+        return this.messages.saveClientError(error).pipe(
+            tap(res => {
                 if (error instanceof Error) {
                     // A client-side or network error occurred. Handle it accordingly.
                     console.error('An error occurred[client side]:', error.statusText);
@@ -29,7 +30,7 @@ export class BaseObservableService {
                         if (isError_body) {
                             errorMessage = JSON.parse(error["_body"]).message;
                         } else {
-                            if(isErrorError) {
+                            if (isErrorError) {
                                 errorMessage = error.error.message;
                             } else {
                                 errorMessage = error.toString();
@@ -43,9 +44,8 @@ export class BaseObservableService {
                         this.messages.showError('Error', errorMessage);
                     }
                 }
-            });
-
-        return Promise.reject(error.error || error);
+            })
+        )
     }
 
     protected deleteDynamicWithResult(
@@ -71,7 +71,7 @@ export class BaseObservableService {
                 map(res => <JsonResult>res),
                 catchError(err => this.handleError(err))
             )
-        ;
+            ;
     }
 
     protected postDynamic(
@@ -99,7 +99,7 @@ export class BaseObservableService {
                     map(res => <JsonResult>res),
                     catchError(err => this.handleError(err))
                 )
-            ;
+                ;
         }
 
         return http
@@ -114,7 +114,7 @@ export class BaseObservableService {
                 map(res => <JsonResult>res),
                 catchError(err => this.handleError(err))
             )
-        ;
+            ;
     }
 
     protected putDynamic(
@@ -142,7 +142,7 @@ export class BaseObservableService {
                     map(res => <JsonResult>res),
                     catchError(err => this.handleError(err))
                 )
-            ;
+                ;
         }
 
         return http

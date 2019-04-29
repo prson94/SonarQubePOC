@@ -1,5 +1,5 @@
 ﻿import {Injectable} from '@angular/core';
-import {MessagesService} from './messages.service';
+import {MessagesObservableService} from './messages-observable.service';
 import {GridDefinition} from '../models/grid-definition.model';
 import {BaseObservableService} from "./baseObservable.service";
 import {HttpClient} from "@angular/common/http";
@@ -10,7 +10,7 @@ import {catchError, map} from "rxjs/operators";
 export class GridDefinitionService extends BaseObservableService {
     constructor(
         private http: HttpClient,
-        messagesService: MessagesService
+        messagesService: MessagesObservableService
     ) {
         super(messagesService);
     }

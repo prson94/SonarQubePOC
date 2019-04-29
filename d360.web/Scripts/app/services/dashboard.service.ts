@@ -5,7 +5,7 @@ import {catchError, map} from "rxjs/operators";
 
 import {Dashboard, DashboardTokens} from '../models/dashboard.model'
 
-import {MessagesService} from './messages.service';
+import {MessagesObservableService} from './messages-observable.service';
 import {BaseObservableService} from "./baseObservable.service";
 
 @Injectable()
@@ -13,7 +13,7 @@ export class DashboardService extends BaseObservableService {
 
     constructor(
         private http: HttpClient,
-        messagesService: MessagesService
+        messagesService: MessagesObservableService
     ) {
         super(messagesService);
     }

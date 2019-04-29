@@ -19,14 +19,14 @@ import {
 } from '../models/object-detail.model';
 import {LookupGrid} from '../models/grid-definition.model';
 
-import {BaseObservableService} from "./baseObservable.service";
-import {MessagesService} from './messages.service';
+import { BaseObservableService } from "./baseObservable.service";
+import { MessagesObservableService } from './messages-observable.service';
 
 @Injectable()
 export class ObjectDetailService extends BaseObservableService {
     constructor(
         private http: HttpClient,
-        messagesService: MessagesService
+        messagesService: MessagesObservableService
     ) {
         super(messagesService);
     }

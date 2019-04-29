@@ -1,28 +1,48 @@
-﻿import { Component, Input, OnInit, SimpleChange, Output, EventEmitter } from '@angular/core';
-import { OrganizationType } from '../../../models/organization.model';
-import { OrganizationsService } from '../../../services/organizations.service';
-import { MessagesService } from '../../../services/messages.service';
-import { BaseComponent } from '../../shared/base.component';
-import { SiteUrlHelpers } from '../../../static/site-url-helpers';
+﻿import {Component, Input, OnInit, SimpleChange, Output, EventEmitter} from '@angular/core';
+import {OrganizationType} from '../../../models/organization.model';
+import {OrganizationsService} from '../../../services/organizations.service';
+import {MessagesService} from '../../../services/messages.service';
+import {BaseComponent} from '../../shared/base.component';
+import {SiteUrlHelpers} from '../../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-admin-organization-types',
     providers: [OrganizationsService],
     template: `
-               <header *ngIf="!showEditor && !showDelete">Organization Types
-                <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
-               </header>
-                <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <span *ngIf="!isLoading && !showDelete && !showEditor">
-                    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-                    <p-table #dt [value]="organizationTypes" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name','OrganizationCount']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" (selectionChange)="type=$event;typeChange.emit(type)" [selection]="type">
+        <header *ngIf="!showEditor && !showDelete">Organization Types
+            <d3s-tile-actions [hasAdd]="true"
+                              (addClick)="add()"
+                              [hasFilterMode]="true"
+                              [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
+        </header>
+        <d3s-loading [isLoading]="isLoading"></d3s-loading>
+        <span *ngIf="!isLoading && !showDelete && !showEditor">
+                    <input type="text"
+                           [hidden]="!showSimpleFilter"
+                           pInputText
+                           size="100"
+                           (input)="dt.filterGlobal($event.target.value, 'contains')"
+                           placeholder="Search..."
+                           class="grid-simple-filter">
+                    <p-table #dt
+                             [value]="organizationTypes"
+                             selectionMode="single"
+                             [metaKeySelection]="true"
+                             [globalFilterFields]="['Name','OrganizationCount']"
+                             [pageLinks]="3"
+                             [paginator]="true"
+                             [rows]="defaultInitialItemsPerPage"
+                             [rowsPerPageOptions]="defaultPagingOptions"
+                             (selectionChange)="type=$event;typeChange.emit(type)"
+                             [selection]="type">
                         <ng-template pTemplate="header">
                             <tr>
                                 <th [pSortableColumn]="'Name'">
                                     Name
                                     <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
                                 </th>
-                                <th [pSortableColumn]="'OrganizationCount'" style="width: max-150px">
+                                <th [pSortableColumn]="'OrganizationCount'"
+                                    style="width: max-150px">
                                     Organization Count
                                     <d3s-sortIcon [field]="'OrganizationCount'"></d3s-sortIcon>
                                 </th>
@@ -30,50 +50,66 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                                 <th style="width: 40px"></th>
                             </tr>
                             <tr [hidden]="showSimpleFilter">
-                                <th><d3s-column-filter [field]="'Name'" [datatype]="'text'"></d3s-column-filter></th>
-                                <th><d3s-column-filter [field]="'OrganizationCount'" [datatype]="'text'"></d3s-column-filter></th>
+                                <th><d3s-column-filter [field]="'Name'"
+                                                       [datatype]="'text'"></d3s-column-filter></th>
+                                <th><d3s-column-filter [field]="'OrganizationCount'"
+                                                       [datatype]="'text'"></d3s-column-filter></th>
                                 <th></th>
                                 <th></th>
                             </tr>
                         </ng-template>
-                        <ng-template pTemplate="body" let-item>
-                            <tr (dblclick)="type=item;showEditor=true;typeChange.emit(type);" [pSelectableRow]="item">
-                                <td>{{item.Name}}</td>
-                                <td>{{item.OrganizationCount}}</td>
+                        <ng-template pTemplate="body"
+                                     let-item>
+                            <tr (dblclick)="type=item;showEditor=true;typeChange.emit(type);"
+                                [pSelectableRow]="item">
+                                <td>{{ item.Name }}</td>
+                                <td>{{ item.OrganizationCount }}</td>
                                 <td>
                                     <div class="RowTools">
-                                        <a style="cursor:pointer;" (click)="type=item;showEditor=true"><i class="fa fa-pencil"></i></a>
+                                        <a style="cursor:pointer;"
+                                           (click)="type=item;showEditor=true"><i class="fa fa-pencil"></i></a>
                                     </div>
                                 </td>
                                 <td>
-                                    <div class="RowTools" *ngIf="item.OrganizationCount == 0">
-                                        <a style="cursor:pointer;" (click)="type=item;showDelete=true"><i class="fa fa-trash-o"></i></a>
+                                    <div class="RowTools"
+                                         *ngIf="item.OrganizationCount == 0">
+                                        <a style="cursor:pointer;"
+                                           (click)="type=item;showDelete=true"><i class="fa fa-trash-o"></i></a>
                                     </div>
                                 </td>
                             </tr>
                         </ng-template>
-                        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
-                            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                        <ng-template *ngIf="dt.totalRecords"
+                                     pTemplate="summary">
+                            <d3s-grid-paging-info [first]="dt.first"
+                                                  [rows]="dt.rows"
+                                                  [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
                         </ng-template>
                     </p-table>
-                </span>                
-                <d3s-asset-type-editor *ngIf="showEditor" [showParentPredicates]="false" [assetTypeClass]="'O'" [id]="type?.AssetTypeID" [title]="(type?'Edit':'Add') + ' Organization Type'" (onCancel)="cancel()" (onComplete)="actionComplete($event)"></d3s-asset-type-editor>                
-                <d3s-delete-form *ngIf="showDelete"
-                    [callback]="theDeleteCallback"
-                    [itemId]="type?.ID"
-                    [method]="'callback'"
-                    [prompt]="'Are you sure you want to delete the organization type [' + [type?.Name] + ']?'" 
-                    (onCancel)="showDelete=false;"
-                ></d3s-delete-form>
-                `
+                </span>
+        <d3s-asset-type-editor *ngIf="showEditor"
+                               [showParentPredicates]="false"
+                               [assetTypeClass]="'O'"
+                               [id]="type?.AssetTypeID"
+                               [title]="(type?'Edit':'Add') + ' Organization Type'"
+                               (onCancel)="cancel()"
+                               (onComplete)="actionComplete($event)"></d3s-asset-type-editor>
+        <d3s-delete-form *ngIf="showDelete"
+                         [callback]="theDeleteCallback"
+                         [itemId]="type?.ID"
+                         [method]="'callback'"
+                         [prompt]="'Are you sure you want to delete the organization type [' + [type?.Name] + ']?'"
+                         (onCancel)="showDelete=false;"
+        ></d3s-delete-form>
+    `
 })
 
 export class AdminOrganizationTypesComponent extends BaseComponent implements OnInit {
     error: any;
-    
-    showEditor: boolean = false;
-    showDelete: boolean = false;
-    isLoading: boolean = false;
+
+    showEditor = false;
+    showDelete = false;
+    isLoading = false;
 
     @Input() type: OrganizationType = null;
     @Output() typeChange = new EventEmitter();
@@ -84,8 +120,10 @@ export class AdminOrganizationTypesComponent extends BaseComponent implements On
 
     constructor(
         private organizationsService: OrganizationsService,
-        private messagesService: MessagesService) {
+        private messagesService: MessagesService
+    ) {
         super();
+
         this.theDeleteCallback = this.delete.bind(this);
     }
 
@@ -95,23 +133,32 @@ export class AdminOrganizationTypesComponent extends BaseComponent implements On
 
     getOrganizationTypes() {
         this.isLoading = true;
+
         this.organizationsService
             .getOrganizationTypes()
-            .then(result => {
-                this.organizationTypes = result;
-                this.type = (this.organizationTypes.length > 0 ? this.organizationTypes[0] : null);   
-                this.typeChange.emit(this.type);
-                this.isLoading = false;
-            })
-            .catch(error => this.error = error);
+            .subscribe(
+                result => {
+                    this.organizationTypes = result;
+                    this.type = (this.organizationTypes.length > 0 ? this.organizationTypes[0] : null);
+                    this.typeChange.emit(this.type);
+
+                    this.isLoading = false;
+                }
+            );
     }
 
     delete(id: number) {
-        this.organizationsService.deleteOrganizationType(id).then(result => {
-            this.showMessageForResult(this.messagesService, result);
-            if (result.type != 'error') this.organizationTypes = this.organizationTypes.filter(x => x.ID != id);
-            this.showDelete = false;
-        });
+        this.organizationsService.deleteOrganizationType(id).subscribe(
+            result => {
+                this.showMessageForResult(this.messagesService, result);
+
+                if (result.type != 'error') {
+                    this.organizationTypes = this.organizationTypes.filter(x => x.ID != id);
+                }
+
+                this.showDelete = false;
+            }
+        );
     }
 
     add() {
@@ -121,13 +168,16 @@ export class AdminOrganizationTypesComponent extends BaseComponent implements On
 
     cancel() {
         this.showEditor = false;
-        if (this.type == null && this.organizationTypes.length > 0)
+
+        if (this.type == null && this.organizationTypes.length > 0) {
             this.type = this.organizationTypes[0];
+        }
     }
-      
-    actionComplete(event) {           
+
+    actionComplete(event) {
         this.showEditor = false;
-        this.isLoading = false;
         this.getOrganizationTypes();
-    }    
+
+        this.isLoading = false;
+    }
 }

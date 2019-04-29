@@ -147,10 +147,9 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
 
         if (this.headerBreadcrumbService.currentObject && this.headerBreadcrumbService.currentObject.type)
             this.objectType = this.headerBreadcrumbService.currentObject.type;
-
+                
         this.loadDetails(this.objectID, this.objectType);
-        this.loadIssueTypes();
-
+        
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.clearCurrentObjectInfo();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Take Action'));
@@ -183,6 +182,8 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
                 this.selectedObjectType = this.objectType;
 
                 this.isLoading = false;
+
+                this.loadIssueTypes()   
             }
         );
     }

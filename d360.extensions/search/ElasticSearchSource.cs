@@ -502,11 +502,25 @@ namespace d360.extensions.search
                 else
                 {
                     //Not exact match, so append *
-                    if (!phrase.EndsWith("*"))
-                    {
-                        phrase += "*";
+                    if (SearchServerVersion.Major == 2) {
+                        if (!phrase.EndsWith("*"))
+                        {
+                            //ES2 tokenizer not working great with stuff like UID, so we'll do a 
+                            // bool:(must(bool:(should:prase, should:phrase*))) ~= an OR of phrase and phrase*
+                            sb.Append("{\"query\":{\"bool\": {\"must\": { \"bool\": { \"should\": { \"query_string\": { \"query\":\"" + phrase + "\"} }, \"should\": { \"query_string\": { \"query\":\"" + phrase + "*\"} } } }");
+                        } else
+                        {
+                            sb.Append("{\"query\":{\"bool\": {\"must\":  { \"query_string\": { \"query\":\"" + phrase + "\"} }");
+
+                        }
                     }
-                    sb.Append("{\"query\":{\"bool\": {\"must\":  { \"query_string\": { \"query\":\"" + phrase + "\"} }");
+                    else {
+                        if (!phrase.EndsWith("*"))
+                        {
+                            phrase += "*";
+                        }
+                        sb.Append("{\"query\":{\"bool\": {\"must\":  { \"query_string\": { \"query\":\"" + phrase + "\"} }");
+                    }
                 }
             }
             else if(!string.IsNullOrEmpty(advancedFilterJSON))

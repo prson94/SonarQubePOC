@@ -140,7 +140,7 @@ END
     </rollback>
   </changeSet>
 
-  <changeSet author="KMcNamee" id="GOV-7102-CustomSiteNav">
+  <changeSet author="KMcNamee" id="GOV-7102-CustomSiteNav-B">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -167,7 +167,7 @@ BEGIN
 					[dbo].CustomSiteNavigation(v.id)
 				end as items
         FROM    dbo.SiteNav v		
-		left join assettype a on a.objectid = v.objectid and v.Object = 'ArtifactType'
+		    left join assettype a on a.objectid = v.objectid and v.Object = 'ArtifactType' and a.[object] = v.[Object]
         WHERE   v.ParentID = @id order by sortorder
         FOR XML PATH('nav'),TYPE
     )

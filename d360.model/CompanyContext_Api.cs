@@ -816,7 +816,7 @@ select	@pageSize as 'pageSize',
 				OT.Uid as 'Object.AssetTypeUid'
 		from	[Intersect] I
 				inner join IntersectType T on T.ID = I.IntersectTypeID
-				inner join [Predicate] P on P.ID = T.PredicateID
+				left join [Predicate] P on P.ID = T.PredicateID
 				inner join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID
 				inner join AssetType ST on ST.ID = S.AssetTypeID
 				inner join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID
