@@ -6,6 +6,7 @@
     <div class="col s12">
         <d3s-asset-type-editor *ngIf="formMode == FormMode.Adding" 
             [assetTypeClass]="'FA'" 
+            [showDisplayFormat]="false"
             [topTypeID]="fusionType.ID" 
             [showParentPredicates]="selectedRow!=null"
             [parentID]="selectedRow?.data.ID" 
@@ -15,6 +16,7 @@
         </d3s-asset-type-editor>
         <d3s-asset-type-editor *ngIf="formMode == FormMode.Editing" 
             [assetTypeClass]="'FA'" 
+            [showDisplayFormat]="false"
             [topTypeID]="fusionType.ID" 
             [id]="selectedRow?.data.AssetTypeID" 
             [title]="'Edit Type'" 

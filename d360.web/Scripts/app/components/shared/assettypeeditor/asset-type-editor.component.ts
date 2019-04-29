@@ -18,6 +18,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
     @Input() topTypeID: number; //For things like fusion type ID
     @Input() assetTypeClass: string;
     @Input() showParentPredicates: boolean = true;
+    @Input() showDisplayFormat: boolean = true;
     @Output() onComplete = new EventEmitter();
     @Output() onSuccess = new EventEmitter();
     @Output() onFail = new EventEmitter();
