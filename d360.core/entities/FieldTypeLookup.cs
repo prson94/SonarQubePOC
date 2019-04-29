@@ -3,6 +3,7 @@ using d360.core.entities.Contracts;
 using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System;
 
 namespace d360.core.entities
 {
@@ -80,6 +81,31 @@ namespace d360.core.entities
     {
         public List<FieldTypeComplexLookupDefinitionField> Fields { get; set; }
         public List<FieldTypeComplexLookupDefinitionRelation> Relations { get; set; }
+    }
+
+    public class FieldTypeComplexLookupDefinitionApiViewModel
+    {
+        public List<FieldTypeComplexLookupDefinitionFieldApiViewModel> Fields { get; set; }
+        public List<FieldTypeComplexLookupDefinitionRelationApiViewModel> Relations { get; set; }
+    }
+
+    public class FieldTypeComplexLookupDefinitionFieldApiViewModel
+    {
+        public Guid AssetTypeUid { get; set; }
+        public string FieldTypeName { get; set; }
+        public string Filter { get; set; }
+        public string OverrideDisplayName { get; set; }
+        public int DisplayOrder { get; set; }
+        public int SortOrder { get; set; }
+        public bool Show { get; set; } = true;
+        public int? Width { get; set; } = null;
+    }
+    public class FieldTypeComplexLookupDefinitionRelationApiViewModel
+    {
+        public Guid IntersectTypeUid { get; set; }
+        public Guid AssetTypeUid { get; set; }
+        public core.ComplexLookupRelationType? RelationType { get; set; }
+        public FieldTypeComplexLookupRelationDirection? Direction { get; set; }
     }
 
     public class FieldTypeOwnershipLookupDefinition
