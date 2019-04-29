@@ -176,8 +176,6 @@ namespace d360.core.entities
         public decimal? MinimumLength { get; set; }
         [DataMember]
         public decimal? MaximumLength { get; set; }
-        [DataMember]
-        public int? Length { get; set; }
     }
     public class FieldTypeDescriptionApiViewModel_ValidationDecimal: FieldTypeDescriptionApiViewModel_ValidationLength
     {
@@ -311,7 +309,7 @@ namespace d360.core.entities
         [DataMember]
         public FieldTypeDescriptionApiViewModel_Display Description { get; set; }
         [DataMember]
-        public FieldTypeComplexLookupDefinition Definition { get; set; }
+        public FieldTypeComplexLookupDefinitionApiViewModel Definition { get; set; }
         [DataMember]
         public bool IsDisplayable { get; set; }
         [DataMember]
@@ -439,7 +437,7 @@ namespace d360.core.entities
         [DataMember]
         public FieldTypeDescriptionApiViewModel_DisplayForm Description { get; set; }
         [DataMember]
-        public bool AllowAllValue { get; set; }
+        public bool? AllowAllValue { get; set; }
         [DataMember]
         public string AllowAllLabel { get; set; }
         [DataMember]

@@ -238,8 +238,8 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'OwnershipLookup' then FTL.HideHeader else null end as 'Type.ComputedOwnershipLookup.HideHeader', 
 		        case when FT.Type = 'OwnershipLookup' then FTL.HideFooter else null end as 'Type.ComputedOwnershipLookup.HideFooter', 
 		        case when FT.Type = 'OwnershipLookup' then FTL.HideFilter else null end as 'Type.ComputedOwnershipLookup.HideFilter', 
-                case when FT.Type = 'OwnershipLookup' then try_cast(JSON_VALUE(FTL.Definition, '$.DisplayAssignmentSource') as bit) else null end as 'Type.ComputedOwnershipLookup.DisplayAssignmentSource',
-		        case when FT.Type = 'OwnershipLookup' then try_cast(JSON_VALUE(FTL.Definition, '$.ExpandGroupMembership') as bit) else null end as 'Type.ComputedOwnershipLookup.ExpandGroupMembership',
+                case when FT.Type = 'OwnershipLookup' then try_cast(JSON_VALUE(FTL.Definition, '$.DisplayAssignmentSource') as bit) else null end as 'Type.ComputedOwnershipLookup.Definition.DisplayAssignmentSource',
+		        case when FT.Type = 'OwnershipLookup' then try_cast(JSON_VALUE(FTL.Definition, '$.ExpandGroupMembership') as bit) else null end as 'Type.ComputedOwnershipLookup.Definition.ExpandGroupMembership',
 		        case when FT.Type = 'OwnershipLookup' then FT.IsDisplayable else null end as 'Type.ComputedOwnershipLookup.IsDisplayable',
 		        case when FT.Type = 'OwnershipLookup' then FT.ShowIfEmpty else null end as 'Type.ComputedOwnershipLookup.ShowIfEmpty',
 
@@ -260,7 +260,7 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'ComplexRelationLookup' then FTL.HideFilter else null end as 'Type.ComputedRelationshipLookup.HideFilter',
 		        case when FT.Type = 'ComplexRelationLookup' then FTL.LookupType else null end as 'Type.ComputedRelationshipLookup.LookupType',
 
-		        case when FT.Type = 'ComplexRelationLookup' then (
+		        JSON_QUERY(case when FT.Type = 'ComplexRelationLookup' then (
 		        select	IST.Uid as IntersectTypeUid,
 				        AST.Uid as AssetTypeUid,
 				        DR.RelationType,
@@ -270,8 +270,8 @@ select	@pageSize as 'pageSize',
 				        left join IntersectType IST on IST.ID = DR.IntersectTypeID
 				        left join AssetType AST on AST.Object = DR.Object and AST.ObjectID = DR.ObjectID
 		        for json path
-		        ) else null end as 'Type.ComputedRelationshipLookup.Relations',
-		        case when FT.Type = 'ComplexRelationLookup' then (
+		        ) else null end) as 'Type.ComputedRelationshipLookup.Definition.Relations',
+		        JSON_QUERY(case when FT.Type = 'ComplexRelationLookup' then (
 		        select	AST.Uid as AssetTypeUid,
 				        coalesce(AFT.Name, DF.FieldTypeName) as FieldTypeName,
 				        DF.[Filter],
@@ -281,12 +281,12 @@ select	@pageSize as 'pageSize',
 				        DF.Show,
 				        DF.Width
 		        from	OPENJSON(FTL.Definition) with (Fields nvarchar(max) as json) D
-				        outer apply OPENJSON(D.Fields) with (Object varchar(50), ObjectId int, FieldTypeID int, FieldTypeName nvarchar(250), [Filter] nvarchar(500), OverrideDisplayName nvarchar(250), DisplayOrder int, SortOrder int, Show bit, Width int) DF
+				        outer apply OPENJSON(D.Fields) with (Object varchar(50), ObjectID int, FieldTypeID int, FieldTypeName nvarchar(250), [Filter] nvarchar(500), OverrideDisplayName nvarchar(250), DisplayOrder int, SortOrder int, Show bit, Width int) DF
 				        left join AssetType AST on AST.Object = DF.Object and AST.ObjectID = DF.ObjectID
 				        left join FieldType AFT on AFT.ID = DF.FieldTypeID
 		        order by DF.DisplayOrder
 		        for json path
-		        ) else null end as 'Type.ComputedRelationshipLookup.Fields',
+		        ) else null end) as 'Type.ComputedRelationshipLookup.Definition.Fields',
 		        case when FT.Type = 'ComplexRelationLookup' then FT.IsDisplayable else null end as 'Type.ComputedRelationshipLookup.IsDisplayable',
 		        case when FT.Type = 'ComplexRelationLookup' then FT.ShowIfEmpty else null end as 'Type.ComputedRelationshipLookup.ShowIfEmpty',
 
@@ -336,7 +336,6 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Decimal' then FT.MinimumLength else null end as 'Type.Decimal.Validation.MinimumLength',
 		        case when FT.Type = 'Decimal' then FT.MaximumLength else null end as 'Type.Decimal.Validation.MaximumLength',
 		        case when FT.Type = 'Decimal' then FT.[Precision] else null end as 'Type.Decimal.Validation.Precision',
-		        case when FT.Type = 'Decimal' then FT.[Length] else null end as 'Type.Decimal.Validation.Length',
 		        case when FT.Type = 'Decimal' then FT.IsRequired else null end as 'Type.Decimal.Validation.IsRequired',
 		        case when FT.Type = 'Decimal' then FT.ValidationDescription else null end as 'Type.Decimal.Validation.Message',
 		        case when FT.Type = 'Decimal' then FT.IsDisplayable else null end as 'Type.Decimal.IsDisplayable',
@@ -353,7 +352,6 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Html' then FT.FormDescription else null end as 'Type.Html.Description.Form',
 		        case when FT.Type = 'Html' then FT.MinimumLength else null end as 'Type.Html.Validation.MinimumLength',
 		        case when FT.Type = 'Html' then FT.MaximumLength else null end as 'Type.Html.Validation.MaximumLength',
-		        case when FT.Type = 'Html' then FT.[Length] else null end as 'Type.Html.Validation.Length',
 		        case when FT.Type = 'Html' then FT.IsRequired else null end as 'Type.Html.Validation.IsRequired',
 		        case when FT.Type = 'Html' then FT.ValidationDescription else null end as 'Type.Html.Validation.Message',
 		        case when FT.Type = 'Html' then FT.IsDisplayable else null end as 'Type.Html.IsDisplayable',
@@ -389,8 +387,8 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Lookup' then DFA.[Uid] else null end as 'Type.Lookup.DefaultValue',
 		        case when FT.Type = 'Lookup' then FT.DisplayDescription else null end as 'Type.Lookup.Description.Display',
 		        case when FT.Type = 'Lookup' then FT.FormDescription else null end as 'Type.Lookup.Description.Form',
-		        case when FT.Type = 'Lookup' then coalesce(try_cast(FT.AllowAllValue as bit), cast(0 as bit)) else null end as 'Type.Lookup.Validation.AllowAllValue',
-		        case when FT.Type = 'Lookup' then case when try_cast(FT.AllowAllValue as bit) = 1 then FT.AllowAllLabel else null end else null end as 'Type.Lookup.Validation.AllAllLabel',
+		        case when FT.Type = 'Lookup' then coalesce(try_cast(FT.AllowAllValue as bit), cast(0 as bit)) else null end as 'Type.Lookup.AllowAllValue',
+		        case when FT.Type = 'Lookup' then case when try_cast(FT.AllowAllValue as bit) = 1 then FT.AllowAllLabel else null end else null end as 'Type.Lookup.AllowAllLabel',
 		        case when FT.Type = 'Lookup' then FilterFT.[Name] else null end as 'Type.Lookup.Filter.FieldTypeName',
 		        case when FT.Type = 'Lookup' then FilterPT.[Uid] else null end as 'Type.Lookup.Filter.PredicateUid',
 		        case when FT.Type = 'Lookup' then FT.FilterPredicateDirection else null end as 'Type.Lookup.Filter.UseDirection',
@@ -421,7 +419,6 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Number' then FT.Increment else null end as 'Type.Number.Increment',
 		        case when FT.Type = 'Number' then FT.MinimumLength else null end as 'Type.Number.Validation.MinimumLength',
 		        case when FT.Type = 'Number' then FT.MaximumLength else null end as 'Type.Number.Validation.MaximumLength',
-		        case when FT.Type = 'Number' then FT.[Length] else null end as 'Type.Number.Validation.Length',
 		        case when FT.Type = 'Number' then FT.IsRequired else null end as 'Type.Number.Validation.IsRequired',
 		        case when FT.Type = 'Number' then FT.ValidationDescription else null end as 'Type.Number.Validation.Message',
 		        case when FT.Type = 'Number' then FT.IsDisplayable else null end as 'Type.Number.IsDisplayable',
@@ -453,7 +450,6 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Text' then FT.FormDescription else null end as 'Type.Text.Description.Form',
 		        case when FT.Type = 'Text' then FT.MinimumLength else null end as 'Type.Text.Validation.MinimumLength',
 		        case when FT.Type = 'Text' then FT.MaximumLength else null end as 'Type.Text.Validation.MaximumLength',
-		        case when FT.Type = 'Text' then FT.[Length] else null end as 'Type.Text.Validation.Length',
 		        case when FT.Type = 'Text' then FT.Pattern else null end as 'Type.Text.Validation.Pattern',
 		        case when FT.Type = 'Text' then FT.IsRequired else null end as 'Type.Text.Validation.IsRequired',
 		        case when FT.Type = 'Text' then FT.ValidationDescription else null end as 'Type.Text.Validation.Message',
@@ -947,7 +943,6 @@ from	IntersectType I
                         {
                             newFieldType.IsRequired = f.Type.Decimal.Validation.IsRequired;
                             newFieldType.ValidationDescription = f.Type.Decimal.Validation.Message;
-                            newFieldType.Length = f.Type.Decimal.Validation.Length;
                             newFieldType.MaximumLength = f.Type.Decimal.Validation.MaximumLength;
                             newFieldType.MinimumLength = f.Type.Decimal.Validation.MinimumLength;
                             newFieldType.Precision = f.Type.Decimal.Validation.Precision;
@@ -975,7 +970,6 @@ from	IntersectType I
                         {
                             newFieldType.IsRequired = f.Type.Html.Validation.IsRequired;
                             newFieldType.ValidationDescription = f.Type.Html.Validation.Message;
-                            newFieldType.Length = f.Type.Html.Validation.Length;
                             newFieldType.MaximumLength = f.Type.Html.Validation.MaximumLength;
                             newFieldType.MinimumLength = f.Type.Html.Validation.MinimumLength;
                         }
@@ -1027,7 +1021,7 @@ from	IntersectType I
                             newFieldType.FormDescription = f.Type.Lookup.Description.Form;
                         }
                         newFieldType.AllowAllLabel = f.Type.Lookup.AllowAllLabel;
-                        newFieldType.AllowAllValue = f.Type.Lookup.AllowAllValue;
+                        newFieldType.AllowAllValue = f.Type.Lookup.AllowAllValue ?? false;
                         if (f.Type.Lookup.List != null)
                         {
                             newFieldType.AllowMultipleValues = f.Type.Lookup.List.AllowMultipleValues;
@@ -1135,7 +1129,6 @@ from	IntersectType I
                         {
                             newFieldType.IsRequired = f.Type.Number.Validation.IsRequired;
                             newFieldType.ValidationDescription = f.Type.Number.Validation.Message;
-                            newFieldType.Length = f.Type.Number.Validation.Length;
                             newFieldType.MaximumLength = f.Type.Number.Validation.MaximumLength;
                             newFieldType.MinimumLength = f.Type.Number.Validation.MinimumLength;
                         }
@@ -1192,7 +1185,6 @@ from	IntersectType I
                         {
                             newFieldType.IsRequired = f.Type.Text.Validation.IsRequired;
                             newFieldType.ValidationDescription = f.Type.Text.Validation.Message;
-                            newFieldType.Length = f.Type.Text.Validation.Length;
                             newFieldType.MaximumLength = f.Type.Text.Validation.MaximumLength;
                             newFieldType.MinimumLength = f.Type.Text.Validation.MinimumLength;
                             newFieldType.Pattern = f.Type.Text.Validation.Pattern;
