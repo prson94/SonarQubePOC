@@ -166,4 +166,5 @@
   <include file="scripts/GOV-7094-AlterView.xml"/>
   <include file="scripts/GOV-7102.xml"/>
   <include file="scripts/GOV-6994.xml"/>
+  <include file="scripts/GOV-7151.xml"/>
 </databaseChangeLog>
