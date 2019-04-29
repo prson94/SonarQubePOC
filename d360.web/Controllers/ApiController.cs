@@ -2663,6 +2663,7 @@ order by    rnk, [Name]";
 
             var document = new SLDocument();
             document.AddWorksheet("Items");
+            document.DeleteWorksheet("Sheet1");
 
             int colIndex = 1;
             for(int i = 0; i < result.Columns.Count; i++)
