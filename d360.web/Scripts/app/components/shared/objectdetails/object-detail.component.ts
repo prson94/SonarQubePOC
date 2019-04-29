@@ -201,6 +201,7 @@ export class ObjectDetailComponent implements OnChanges {
             c.rows.forEach(r => {
                 let fcount = r.FirstColumnFields.length;
                 r.FirstColumnFields.forEach(f => {
+                    console.log(f.Type);
                     if (f.Type == DetailFieldType.Lookup) {
                         if (!f.Data || !f.Data.Values || f.Data.Values.length == 0) {
                             c.hasData = true;
@@ -224,7 +225,7 @@ export class ObjectDetailComponent implements OnChanges {
                 });
             });
         });
-
+        console.log(this.categories);
     }
 }
 

@@ -2629,18 +2629,29 @@ order by    rnk, [Name]";
                     break;
             }
         }
-
+        
         [HttpGet, Route("dynamiclookup/export/{type}/{id:int}/{fieldTypeID:int}/{lookupType:int}/excel.xls")]
         public async Task<HttpResponseMessage> ExportDynamicLookup(string type, int id, int fieldTypeID, int lookupType)
         {
-            string resultString = "";
-
+            string resultString = "";            
             var ft = Company.GetById<FieldType>(fieldTypeID);
+            string fileName = "Items";
 
-            switch((DataType)lookupType)
+            if (ft != null)
+            {
+                fileName = ft.FriendlyName.GetSafeFilename();
+            }
+
+            switch ((DataType)lookupType)
             {
                 case DataType.RefListRelationship:
                     resultString = await GetReferenceListItemsField(id).Content.ReadAsStringAsync();
+                    //filename needs to be the name of hte asset type
+                    var assetType = Company.AssetTypes.FirstOrDefault(f => f.ObjectID == id && f.Object == "ReferenceItemType");
+                    if(assetType != null)
+                    {
+                        fileName = assetType.Name.GetSafeFilename();
+                    }
                     break;
                 case DataType.ComplexRelationLookup:
                     resultString = await GetComplexLookupGridField(type, id, fieldTypeID).Content.ReadAsStringAsync();
@@ -2708,7 +2719,7 @@ order by    rnk, [Name]";
             response.Content.Headers.ContentLength = stream.Length;
             response.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
             {
-                FileName = $"Items {DateTime.Now.ToShortDateString()}.xlsx"
+                FileName = $"{fileName} {DateTime.Now.ToString("MMM dd, yyyy")}.xlsx"
             };
             return response;
         }
