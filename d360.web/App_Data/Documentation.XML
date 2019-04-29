@@ -2984,6 +2984,21 @@
             <param name="assets">The payload of your request.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
+        <member name="M:d360.web.Controllers.V2.AssetsController.DeleteBulkAssetTypesAsync(d360.core.entities.AssetTypeDeletes)">
+            <summary>
+            Removes a given set of asset types. This endpoint is meant for a greater number of items as it stores the asset list for asynchronous or batch processing.
+            </summary>
+            <remarks>
+            When using the ExecutionItemUid, keep in mind:
+            * ExecutionItemUid is optional.
+            * If you do not wish to provide an ExecutionItemUid, remove the entire line, including the preceding comma (, "ExecutionItemUid": "00000000-0000-0000-0000-000000000000").
+            * If you provide ExecutionItemUids, values must be a unique across the entire request body.
+            * You do not have to provide ExecutionItemUid values for all entries in a request.
+            * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+            </remarks>
+            <param name="assetTypes">The payload of your request.</param>
+            <returns>An HTTP status code and message.</returns>
+        </member>
         <member name="M:d360.web.Controllers.V2.AssetsController.GetExecutionStatus(System.Guid)">
             <summary>
             GETs the status of an execution record, including the results for the execution.

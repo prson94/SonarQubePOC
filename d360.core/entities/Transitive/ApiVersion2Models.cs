@@ -80,6 +80,26 @@ namespace d360.core.entities
         public Guid? ExecutionItemUid { get; set; }
     }
 
+    [JsonArray]
+    [DataContract(Name = "assets")]
+    public class AssetTypeDeletes : List<AssetTypeDelete>
+    {
+
+    }
+
+    [DataContract(Name = "asset")]
+    public class AssetTypeDelete : IExecutionItem
+    {
+        [DataMember]
+        public Guid Uid { get; set; }
+
+        [DataMember]
+        public bool Cascade { get; set; }
+
+        [DataMember]
+        public Guid? ExecutionItemUid { get; set; }
+    }
+
     public class AssetImportResult
     {
         public int ItemNumber { get; set; }
@@ -111,6 +131,22 @@ namespace d360.core.entities
         public int ObjectID { get; set; }
 
         public ChangeType ChangeType { get { return (IsNew ? ChangeType.Add : ChangeType.Update); } }
+    }
+
+    [DataContract]
+    public class DatabaseBulkAssetTypeResult
+    {
+        [DataMember]
+        public int ItemNumber { get; set; }
+        [DataMember]
+        public Guid uid { get; set; }
+        [DataMember]
+        public Guid? ExecutionItemUid { get; set; }
+
+        [DataMember]
+        public string Message { get; set; }
+        [DataMember]
+        public bool Success { get; set; }
     }
 
     [JsonArray]

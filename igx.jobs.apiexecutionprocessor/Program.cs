@@ -54,11 +54,11 @@ namespace igx.jobs.apiexecutionprocessor
             ApiExecutionInfo info = null;
 #if DEBUG
             info = new ApiExecutionInfo {
-                Action = ApiExecutionAction.PostRelationships,
+                Action = ApiExecutionAction.DeleteAssetTypes,
                 CompanyDomainPrefix = "mpappas.eng",
                 CompanyID = 2,
-                ResourceID = 2,
-                ExecutionID = new Guid("4687CCAF-E694-42D3-8866-8AAB521ADF18") };
+                ResourceID = 3,
+                ExecutionID = new Guid("d95aa760-e9e2-4a75-ae73-c38f3250e88a") };
 #else
             info = JsonConvert.DeserializeObject<ApiExecutionInfo>(myQueueItem);
 #endif
@@ -187,6 +187,24 @@ namespace igx.jobs.apiexecutionprocessor
                             log.WriteLine($"POST Relationships (Response Storage Start): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
                             storage.CreateFile(Info.StorageFolder, Info.ResponseFileName, JsonConvert.SerializeObject(postRelationshipsResults));
                             log.WriteLine($"POST Relationships (Response Storage Complete): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
+                            break;
+                        #endregion
+                        case ApiExecutionAction.DeleteAssetTypes:
+                            #region
+                            var deleteAssetTypesFields = JsonConvert.DeserializeObject<ApiExecutionFields_DeleteAssetTypes>(dbExecutionItem.Fields);
+
+                            string deleteAssetTypesJson = storage.GetFileContentsAsString(Info.StorageFolder, Info.RequestFileName, Encoding.UTF8);
+                            var deleteAssetTypes = JsonConvert.DeserializeObject<AssetTypeDeletes>(deleteAssetTypesJson);
+
+                            log.WriteLine($"DELETE Asset Types (DB Start): Total raw assets: {deleteAssetTypes.Count}.");
+                            var deleteAssetTypesResults = company.RemoveAssetTypes(dbExecutionItem, deleteAssetTypes, 28800); //dbExecutionTimeout = 8 hours
+                            dbExecutionItem.Processed = deleteAssetTypesResults.Count(i => i.Success);
+                            dbExecutionItem.Error = deleteAssetTypesResults.Count(i => !i.Success);
+                            log.WriteLine($"DELETE Asset Types (DB Complete): Total results: {deleteAssetTypesResults.Count}.");
+
+                            log.WriteLine($"DELETE Asset Types (Response Storage Start): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
+                            storage.CreateFile(Info.StorageFolder, Info.ResponseFileName, JsonConvert.SerializeObject(deleteAssetTypesResults));
+                            log.WriteLine($"DELETE Asset Types (Response Storage Complete): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
                             break;
                             #endregion
                     }
