@@ -11,6 +11,9 @@ namespace d360.core.queue
         DeleteRelationships,
         PostRelationships,
         PutRelationships,
+        DeleteAssetTypes,
+        PostAssetTypes,
+        PutAssetTypes
     }
     public class ApiExecutionInfo
     {

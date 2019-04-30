@@ -376,8 +376,6 @@ namespace d360.web.Controllers.V2
             }
         }
 
-
-
         private async Task<AssetsApiViewModel> GetAssets(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             var assetTypeID = 0;
@@ -568,7 +566,6 @@ namespace d360.web.Controllers.V2
 
             return model;
         }
-
 
         /// <summary>
         /// Retrieves assets for the given asset type unique identifier.
@@ -1191,6 +1188,89 @@ namespace d360.web.Controllers.V2
                     { "Endpoint Method", prefix },
                     { "AssetTypeUid", assetTypeUid.ToString() },
                     { "AssetCount", $"{((assets != null) ? assets.Count : 0)}" }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
+
+        /// <summary>
+        /// Removes a given set of asset types. This endpoint is meant for a greater number of items as it stores the asset list for asynchronous or batch processing.
+        /// </summary>
+        /// <remarks>
+        /// When using the ExecutionItemUid, keep in mind:
+        /// * ExecutionItemUid is optional.
+        /// * If you do not wish to provide an ExecutionItemUid, remove the entire line, including the preceding comma (, "ExecutionItemUid": "00000000-0000-0000-0000-000000000000").
+        /// * If you provide ExecutionItemUids, values must be a unique across the entire request body.
+        /// * You do not have to provide ExecutionItemUid values for all entries in a request.
+        /// * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+        /// </remarks>
+        /// <param name="assetTypes">The payload of your request.</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpDelete,
+            Route(""),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution's unique identifier to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to remove asset types.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> DeleteBulkAssetTypesAsync(AssetTypeDeletes assetTypes)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to remove asset types."));
+
+            var prefix = "Assets.DeleteBulkAssetTypesAsync => ";
+            var errorMessage = "";
+
+            try
+            {
+                if (assetTypes == null)
+                    assetTypes = readRequestJsonContent<AssetTypeDeletes>(Request).Result;
+
+                if (assetTypes == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
+
+                var executionInfo = new ApiExecutionInfo
+                {
+                    CompanyID = Company.CurrentCompanyID,
+                    CompanyDomainPrefix = Company.CurrentCompanyDomain,
+                    ExecutionID = Guid.NewGuid(),
+                    ResourceID = Company.CurrentResourceID,
+                    Action = ApiExecutionAction.DeleteAssetTypes
+                };
+
+                // Save to storage container.
+                Storage.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(assetTypes));
+
+                // Save to queue.
+                await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo);
+
+                // Save to the database.
+                var execution = getApiExecution(assetTypes.Count, new ApiExecutionFields_DeleteAssetTypes { });
+                execution.ExecutionID = executionInfo.ExecutionID;
+                Company.Add(execution);
+
+                return await Task.FromResult<IHttpActionResult>(
+                    ResponseMessage(
+                        Request.CreateResponse(
+                            HttpStatusCode.OK,
+                            new ApiExecutionRecievedResponse
+                            {
+                                ExecutionID = executionInfo.ExecutionID,
+                                Message = "Now processing request. Please check back with this ExecutionID for status.",
+                                Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/assets/executions/{executionInfo.ExecutionID}/status"
+                            }
+                        )
+                    )
+                );
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix },
+                    { "AssetTypeCount", $"{((assetTypes != null) ? assetTypes.Count : 0)}" }
                 });
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
