@@ -26,7 +26,7 @@ import { createWriteStream } from 'fs';
                                 <i [ngClass]="{'pull-right menu-category fa fa-caret-right':(menu && menu.NavigationItems && menu.NavigationItems.length > 0),'icon-active':expanded, 'icon':!expanded}"></i>
                             </div>
                         </div>
-                        <div #panel *ngIf="menu && menu.NavigationItems && menu.NavigationItems.length > 0" class="menu-child megamenu-panel="" [ngStyle]="{'display:flex; flex-direction:column': menu.isActiveItem}" (click)="stopNavigation($event)" (keyup)="checkKey($event,panel)">
+                        <div #panel *ngIf="menu && menu.NavigationItems && menu.NavigationItems.length > 0" class="menu-child megamenu-panel" title="" [ngStyle]="{'display:flex; flex-direction:column': menu.isActiveItem}" (click)="stopNavigation($event)" (keyup)="checkKey($event,panel)">
                             <div>
                                 <div class="row megamenu-title truncate">
                                     <input (keyup)="positionMenu(item)" #searchinput type="search" [(ngModel)]=searchText placeholder="Search menu..."/>
