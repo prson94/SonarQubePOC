@@ -15,7 +15,7 @@ declare var CompanySettings;
     selector: 'd3s-search',
     template: `               
                 <d3s-search-input (search)="doSearch()" [isAdvancedMode]="showAdvanced" (isAdvancedModeChange)="showAdvanced=$event;searchResults=null;" [(advancedFilters)]="advancedFilters" [(isExactMatch)]="isExactMatch" [(searchTypes)]="searchTypes" [hasAdvanced]="true" [(searchText)]="searchText"></d3s-search-input>                              
-                <d3s-search-results [loading]="isLoading" [itemsPerPage]="resultsPerPage" [results]="searchResults" [categories]="categories" (paginateClick)="paginate($event);" (selectedCategoryChange)="filterByCategory($event);"></d3s-search-results>
+                <d3s-search-results [from]="pageNumber" [loading]="isLoading" [itemsPerPage]="resultsPerPage" [results]="searchResults" [categories]="categories" (paginateClick)="paginate($event);" (selectedCategoryChange)="filterByCategory($event);"></d3s-search-results>
                 `,
     providers: [SearchService, TypeaheadSearchService],
 })
@@ -69,6 +69,7 @@ export class SearchComponent extends BaseComponent implements OnInit {
 
     public filterByCategory(category) {
         this.selectedCategory = category;
+        this.pageNumber = 0;
         this.doSearch(this.selectedCategory);
     }
 
