@@ -1287,7 +1287,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 if (this.model.FieldType.Precision && FormHelpers.isNumber(this.model.FieldType.DefaultValue)) {
                     let asString = '' + this.model.FieldType.DefaultValue;
 
-                    if (asString.split('.').length == 1 || asString.split('.')[1].length >= this.model.FieldType.Precision) {
+                    if (asString.split('.').length == 2 && asString.split('.')[1].length >= this.model.FieldType.Precision) {
                         let val = +this.model.FieldType.DefaultValue;
                         let newVal = +val.toFixed(this.model.FieldType.Precision);
 

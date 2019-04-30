@@ -6,14 +6,14 @@ import {catchError, map} from "rxjs/operators";
 import {ApiEndpoint, ApiField, ApiNamespace, ApiService, ApiUri, ApiVersion} from '../models/custom-api.model';
 import {JsonResult} from '../models/jsonresult.model';
 
-import {MessagesService} from './messages.service';
+import {MessagesObservableService} from './messages-observable.service';
 import {BaseObservableService} from "./baseObservable.service";
 
 @Injectable()
 export class CustomAPIService extends BaseObservableService {
     constructor(
         private http: HttpClient,
-        messagesService: MessagesService
+        messagesService: MessagesObservableService
     ) {
         super(messagesService);
     }

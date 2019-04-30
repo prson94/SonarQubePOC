@@ -1,6 +1,6 @@
 ﻿import {Injectable} from '@angular/core';
 import {LoadDetail, LoadFilePostModel, LoadColumn} from '../models/load.model';
-import {MessagesService} from './messages.service';
+import {MessagesObservableService} from './messages-observable.service';
 import {GridColumn} from '../models/grid-definition.model';
 import {SelectItem} from 'primeng/components/common/api';
 import {JsonResult} from '../models/jsonresult.model';
@@ -19,7 +19,7 @@ export class LoadService extends BaseObservableService {
 
     constructor(
         private http: HttpClient,
-        messagesService: MessagesService
+        messagesService: MessagesObservableService
     ) {
         super(messagesService);
     }

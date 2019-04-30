@@ -1,20 +1,20 @@
 ﻿import {Injectable} from '@angular/core';
-import {Response, ResponseContentType} from '@angular/http';
 import {HttpClient} from "@angular/common/http";
 import {Observable} from "rxjs";
 import {catchError, map} from "rxjs/operators";
 
-import {BaseObservableService} from './baseObservable.service';
-import {MessagesService} from './messages.service';
 import {AuditResults} from '../models/audit.model';
 import {SortOrder} from '../models/enums.model';
 import {GridFilterExpression} from '../models/grid-definition.model';
+
+import {BaseObservableService} from './baseObservable.service';
+import {MessagesObservableService} from './messages-observable.service';
 
 @Injectable()
 export class AuditService extends BaseObservableService {
     constructor(
         private http: HttpClient,
-        messagesService: MessagesService
+        messagesService: MessagesObservableService
     ) {
         super(messagesService);
     }

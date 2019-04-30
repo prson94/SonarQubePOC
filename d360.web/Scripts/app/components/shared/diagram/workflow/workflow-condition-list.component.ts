@@ -25,8 +25,8 @@ import { Column, Header, MenuItem } from 'primeng/primeng';
                         </div>
                     </div>
         <d3s-tile-actions hideTooltip="true" [hasAdd]="!readonly" (addClick)="addClick.emit()"></d3s-tile-actions>
-&nbsp;
-    </header>
+<div *ngIf="conditions.length <= 1">&nbsp;</div>
+</header>
     <p-table #dt [value]="filteredConditions" selectionMode="single" [metaKeySelection]="true" [pageLinks]="3" [paginator]="true" [rows]="5" [rowsPerPageOptions]="defaultPagingOptions">
         <ng-template pTemplate="header">
             <tr>

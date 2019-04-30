@@ -10,7 +10,7 @@ import {Observable} from 'rxjs';
 
 import {LineageEditorModelV2} from '../models/lineage.model';
 
-import {MessagesService} from './messages.service';
+import {MessagesObservableService} from './messages-observable.service';
 
 import {BaseObservableService} from "./baseObservable.service";
 
@@ -18,7 +18,7 @@ import {BaseObservableService} from "./baseObservable.service";
 export class LineageService extends BaseObservableService {
     constructor(
         private http: HttpClient,
-        messagesService: MessagesService
+        messagesService: MessagesObservableService
     ) {
         super(messagesService);
     }

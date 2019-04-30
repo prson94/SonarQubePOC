@@ -51,6 +51,14 @@ namespace d360.model.workflow
         /// <param name="objectId"></param>
         private static bool EvaluateObject(List<WorkflowCriteriaExpressionModel> expression, CompanyContext context, string @object, int objectId, long itemId, int score = -1, string issueObjectType = "", int issueObjectTypeId = -1, List<int> changedFields = null, bool satisfyAll = true)
         {
+
+            //since field and object events come in separately, we need to skip eval in some cases to prevent duplicate runs
+            //1. There is a change condition on the workflow, and no change fields are present: Ignore the initial object event and wait for the field event to come in
+            //2. There is not a change condition on the workflow and change fields are present: Ignore the fields event, the object event was already processed
+            bool hasChangeCondition = expression.Any(e => e.Operator == core.enums.Workflow.CriteriaOperator.Changed);
+            if (satisfyAll && hasChangeCondition && !changedFields.Any()) return false;
+            if (satisfyAll && !hasChangeCondition && changedFields.Any()) return false;
+
             var fields = context.Fields.Where(x => x.ObjectID == objectId && x.ObjectType == @object);
 
             foreach (var item in expression)
