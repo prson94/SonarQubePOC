@@ -68,13 +68,13 @@
                         Key?
                         <d3s-sortIcon [field]="'IsPartOfKey'"></d3s-sortIcon>
                     </th>
+                    <th [pSortableColumn]="'ShowIfEmpty'" style="width: 12%">
+                        Show if Empty?
+                        <d3s-sortIcon [field]="'ShowIfEmpty'"></d3s-sortIcon>
+                    </th>
                     <th [pSortableColumn]="'SortOrder'" style="width: 12%">
                         Sort
                         <d3s-sortIcon [field]="'SortOrder'"></d3s-sortIcon>
-                    </th>
-                    <th [pSortableColumn]="'ColumnWidth'" style="width: 12%">
-                        Width
-                        <d3s-sortIcon [field]="'ColumnWidth'"></d3s-sortIcon>
                     </th>
                     <th style="width: 30px"></th>
                     <th style="width: 30px"></th>
@@ -88,8 +88,8 @@
                     <th *ngIf="showIsListable"></th>
                     <th></th>
                     <th *ngIf="showIsPartOfKey"></th>
+                    <th></th>
                     <th><d3s-column-filter [field]="'SortOrder'" [datatype]="'text'"></d3s-column-filter></th>
-                    <th><d3s-column-filter [field]="'ColumnWidth'" [datatype]="'text'"></d3s-column-filter></th>
                     <th></th>
                     <th></th>
                     <th *ngIf="showEditButton"></th>
@@ -113,8 +113,11 @@
                         <span><i *ngIf="item.IsPartOfKey" class="fa fa-check enabled" title="True"></i></span>
                         <span><i *ngIf="!item.IsPartOfKey" class="fa fa-times disabled" title="False"></i></span>
                     </td>
+                    <td>
+                        <span><i *ngIf="item.ShowIfEmpty" class="fa fa-check enabled" title="True"></i></span>
+                        <span><i *ngIf="!item.ShowIfEmpty" class="fa fa-times disabled" title="False"></i></span>
+                    </td>
                     <td>{{item.SortOrder}}</td>
-                    <td>{{item.ColumnWidth}}</td>
                     <td>
                         <div class="RowTools">
                             <a (click)="moveUp(item)" style="cursor:pointer;margin:0px;"><i class="fa fa-caret-up"></i></a>
