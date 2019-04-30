@@ -30,7 +30,7 @@ namespace d360.web.Models
                  {
                     Uid = Guid.Empty,
                     Name = String.Empty,
-                    Class = core.enums.AssetTypeClass.Glossary.ToString(),
+                    Class = core.enums.AssetTypeClass.Glossary,
                     Description = String.Empty,
                     AutoDisplayDescription = true,
                     DisplayFormat = "{Name}",
@@ -38,6 +38,11 @@ namespace d360.web.Models
                     {
                         MaximumDepth =3,
                         PredicateUid = Guid.Empty
+                    },
+                    IconStyle = new IconStyleInsert
+                    {
+                        BackColor= "#000",
+                        ForeColor= "#FFF"
                     },
                     ParentUid = Guid.Empty,
                     Notes = String.Empty

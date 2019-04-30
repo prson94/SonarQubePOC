@@ -18,6 +18,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.Http;
 
@@ -29,7 +30,8 @@ namespace d360.web.Controllers.V2
     [
         ApiVersion("2.0"),
         RoutePrefix("api/v{version:apiVersion}/assets"),
-        Authorize
+        Authorize,
+        StringEnumController
     ]
     public class AssetsController : BaseV2ApiController
     {
@@ -708,61 +710,62 @@ namespace d360.web.Controllers.V2
                 if (!Company.CurrentResourceIsAdmin)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not authorized to perform this action."));
 
-              
-                if (!Enum.TryParse<AssetTypeClass>(model.Class, out AssetTypeClass typeClass))
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "No valid Class provided.Please check your request and try again."));
-                model.AssetTypeClass = typeClass;
 
                 List<AssetTypeClass> supportedClass = new List<AssetTypeClass>() { AssetTypeClass.Glossary, AssetTypeClass.Model, AssetTypeClass.Organization, AssetTypeClass.Policy, AssetTypeClass.Reference, AssetTypeClass.Rule };
-                if (!supportedClass.Contains(model.AssetTypeClass))
+                if (!supportedClass.Contains(model.Class))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Not supported class type"));
 
 
                 if (string.IsNullOrEmpty(model.Name.Trim()))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "No valid Name provided.Please check your request and try again."));
 
-                if (model.ParentUid != Guid.Empty)
+                if (model.ParentUid.HasValue && model.ParentUid != Guid.Empty)
                 {
                     parentAssetType = Company.Filter<AssetType>(x => x.uid == model.ParentUid).SingleOrDefault();
                     if (parentAssetType == null)
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Not valid ParentUid provided.Please check your request and try again."));
-                    else if (parentAssetType.Object != this.GetSystemObjects(model.AssetTypeClass).ToString())
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Not valid ParentUid provided.Please check your request and try again."));
-                    else if (!parentAssetTypeClass.Contains(model.AssetTypeClass))
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Not valid ParentUid for the Class.Please check your request and try again."));
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Invalid request", "Not valid ParentUid provided.Please check your request and try again."));
+                    else if (parentAssetType.Object != this.GetSystemObjects(model.Class).ToString())
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Invalid request", "Not valid ParentUid provided.Please check your request and try again."));
+                    else if (!parentAssetTypeClass.Contains(model.Class))
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Invalid request", "Not valid ParentUid for the Class.Please check your request and try again."));
                 }
 
 
-                if (model.Hierarchy != null && model.Hierarchy.PredicateUid != Guid.Empty)
+                if (model.Hierarchy != null && model.Hierarchy.PredicateUid.HasValue && model.Hierarchy.PredicateUid != Guid.Empty)
                 {
                     predicate = Company.Filter<Predicate>(x => x.UID == model.Hierarchy.PredicateUid).SingleOrDefault();
                     if (predicate == null)
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a proper predicate based on its asset type class"));
-                    else if (predicate != null && !predicateClass.Contains(model.AssetTypeClass))
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a proper predicate based on its asset type class"));
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class"));
+                    else if (predicate != null && !predicateClass.Contains(model.Class))
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class"));
 
                 }
 
 
 
-                if (parentAssetType != null && predicate == null && predicateClass.Contains(model.AssetTypeClass))
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a proper predicate based on its asset type class"));
-                else if (parentAssetType == null && predicate != null && parentAssetTypeClass.Contains(model.AssetTypeClass))
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Asset Type not found based on Uid provided"));
-                else if (parentAssetType != null && predicate != null && (model.AssetTypeClass == AssetTypeClass.Glossary || model.AssetTypeClass == AssetTypeClass.Reference) && predicate.ID != 4 && predicate.ID != 9)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a proper predicate based on its asset type class"));
-                else if (predicate != null && (model.AssetTypeClass == AssetTypeClass.Model || model.AssetTypeClass == AssetTypeClass.Policy) && (predicate.ID != 8))
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a proper predicate based on its asset type class"));
-                
+                if (parentAssetType != null && predicate == null && predicateClass.Contains(model.Class))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class"));
+                else if (predicate == null && (model.Class == AssetTypeClass.Model || model.Class == AssetTypeClass.Policy))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class"));
+                else if (parentAssetType == null && predicate != null && parentAssetTypeClass.Contains(model.Class))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Invalid request", "Asset Type not found based on Uid provided"));
+                else if (parentAssetType != null && predicate != null && (model.Class == AssetTypeClass.Glossary || model.Class == AssetTypeClass.Reference) && predicate.Type != PredicateType.InterTypeHierarchy)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class"));
+                else if (predicate != null && (model.Class == AssetTypeClass.Model || model.Class == AssetTypeClass.Policy) && (predicate.Type != PredicateType.IntraTypeHierarchy))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class"));
+
 
 
                 if (!this.IsValidDisplayFormat(0, model.DisplayFormat))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Display Format contains invalid field references."));
 
+                var regex = "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$";
+                if (model.IconStyle == null || !Regex.Match(model.IconStyle.BackColor, regex, RegexOptions.IgnoreCase).Success || !Regex.Match(model.IconStyle.ForeColor, regex, RegexOptions.IgnoreCase).Success)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Not valid Icon Style provided.Please check your request and try again."));
 
                 #endregion
 
-                switch (model.AssetTypeClass)
+                switch (model.Class)
                 {
                     case AssetTypeClass.Glossary:
                         #region
@@ -889,12 +892,12 @@ namespace d360.web.Controllers.V2
                     Company.Add(intersectType);
                 }
 
-                //upsertObjectStyle(model.AssetType.Object, model.AssetType.ObjectID, model.IconForeColor, model.IconBackColor, model.AssetType.Name);
+                this.upsertObjectStyle(model.Object, model.ObjectID, model.IconStyle.ForeColor, model.IconStyle.BackColor, model.Name);
 
 
                 if (model.ObjectID > 0)
                 {
-                    if (model.AssetTypeClass != AssetTypeClass.FusionAttribute)
+                    if (model.Class != AssetTypeClass.FusionAttribute)
                     {
                         Company.Add(new FieldType
                         {
@@ -965,6 +968,44 @@ namespace d360.web.Controllers.V2
             }
             return SystemObjects.ArtifactType;//default
         }
+
+        private void upsertObjectStyle(string type, int id, string foreColor, string backColor, string objectName = "Tx")
+        {
+            var style = Company.GetObjectStyle(type, id);
+            bool add = (style == null);
+
+            string iconText = "Tx";
+
+            var words = objectName.Split(' ');
+            if (words.Length > 1 && words[1].Length > 0)
+            {
+                iconText = words[0][0].ToString().ToUpper() + words[1][0].ToString().ToLower();
+            }
+            else
+            {
+                iconText = objectName[0].ToString().ToUpper() + objectName[1].ToString().ToLower();
+            }
+
+            if (add)
+            {
+                style = new ObjectStyle
+                {
+                    ObjectType = type,
+                    ObjectID = id,
+                    IconBackColor = backColor,
+                    IconForeColor = foreColor,
+                    IconText = iconText
+                };
+                Company.Add<ObjectStyle>(style);
+            }
+            else
+            {
+                style.IconBackColor = backColor;
+                style.IconForeColor = foreColor;
+                style.IconText = iconText;
+                Company.Update<ObjectStyle>(style);
+            }
+        }
         /// <summary>
         /// Updates an asset type based on the specific asset type unique identifier.
         /// </summary>
@@ -994,7 +1035,7 @@ namespace d360.web.Controllers.V2
             try
             {
                
-               // var parentType = SystemObjects.ArtifactType;
+ 
                 bool shouldRemoveOldRelationshipType = false;
                 bool shouldRemoveExistingParentChildRelationshipType = false;
 
@@ -1009,12 +1050,10 @@ namespace d360.web.Controllers.V2
                 if (!Company.CurrentResourceIsAdmin)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not authorized to perform this action."));
 
-                if (!Enum.TryParse<AssetTypeClass>(model.Class, out AssetTypeClass typeClass))
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "No valid Class provided.Please check your request and try again."));
-                model.AssetTypeClass = typeClass;
+
 
                 List<AssetTypeClass> supportedClass = new List<AssetTypeClass>() { AssetTypeClass.Glossary, AssetTypeClass.Model, AssetTypeClass.Organization, AssetTypeClass.Policy, AssetTypeClass.Reference, AssetTypeClass.Rule };
-                if (!supportedClass.Contains(model.AssetTypeClass))
+                if (!supportedClass.Contains(model.Class))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Not supported class type"));
 
 
@@ -1024,7 +1063,7 @@ namespace d360.web.Controllers.V2
                 assetType = Company.Filter<AssetType>(x => x.uid == model.Uid).SingleOrDefault();
                 if (assetType == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Invalid request", "Asset Type not found based on Uid provided."));
-                else if(assetType.Object != this.GetSystemObjects(model.AssetTypeClass).ToString())
+                else if(assetType.Object != this.GetSystemObjects(model.Class).ToString())
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Invalid request", "Asset Type not found based on Class provided."));
                 else
                 {
@@ -1036,11 +1075,11 @@ namespace d360.web.Controllers.V2
                 {
                     parentAssetType = Company.Filter<AssetType>(x => x.uid == model.ParentUid).SingleOrDefault();
                     if (parentAssetType == null)
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Not valid ParentUid provided.Please check your request and try again."));
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Invalid request", "Not valid ParentUid provided.Please check your request and try again."));
                     else if (parentAssetType.Object != model.Object)
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Not valid ParentUid provided.Please check your request and try again."));
-                    else if (!parentAssetTypeClass.Contains(model.AssetTypeClass))
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Not valid ParentUid for the Class.Please check your request and try again."));
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Invalid request", "Not valid ParentUid provided.Please check your request and try again."));
+                    else if (!parentAssetTypeClass.Contains(model.Class))
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Invalid request", "Not valid ParentUid for the Class.Please check your request and try again."));
                 }
 
                 if(model.ParentUid == model.Uid)
@@ -1050,34 +1089,38 @@ namespace d360.web.Controllers.V2
                 {
                     predicate = Company.Filter<Predicate>(x => x.UID == model.Hierarchy.PredicateUid).SingleOrDefault();
                     if (predicate == null)
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a proper predicate based on its asset type class."));
-                    else if (predicate != null && !predicateClass.Contains(model.AssetTypeClass))
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a proper predicate based on its asset type class"));
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class."));
+                    else if (predicate != null && !predicateClass.Contains(model.Class))
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class"));
 
                 }
 
 
-                if (parentAssetType != null && predicate == null && predicateClass.Contains(model.AssetTypeClass))
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a proper predicate based on its asset type class"));
-                else if (parentAssetType == null && predicate != null && parentAssetTypeClass.Contains(model.AssetTypeClass))
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Asset Type not found based on Uid provided"));
-                else if (parentAssetType != null && predicate != null && (model.AssetTypeClass == AssetTypeClass.Glossary || model.AssetTypeClass == AssetTypeClass.Reference) && predicate.ID != 4 && predicate.ID != 9)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a proper predicate based on its asset type class"));
-                else if (predicate != null && (model.AssetTypeClass == AssetTypeClass.Model || model.AssetTypeClass == AssetTypeClass.Policy) && (predicate.ID != 8))
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a proper predicate based on its asset type class"));
-               
+                if (parentAssetType != null && predicate == null && predicateClass.Contains(model.Class))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class"));
+                else if (predicate == null && (model.Class == AssetTypeClass.Model || model.Class == AssetTypeClass.Policy))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class"));
+                else if (parentAssetType == null && predicate != null && parentAssetTypeClass.Contains(model.Class))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Invalid request", "Asset Type not found based on Uid provided"));
+                else if (parentAssetType != null && predicate != null && (model.Class == AssetTypeClass.Glossary || model.Class == AssetTypeClass.Reference) && predicate.Type != PredicateType.InterTypeHierarchy)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class"));
+                else if (predicate != null && (model.Class == AssetTypeClass.Model || model.Class == AssetTypeClass.Policy) && (predicate.Type != PredicateType.IntraTypeHierarchy))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class"));
+
                 int assetCount = Company.Filter<Asset>(x => x.AssetTypeID == assetType.ID).Count();
-                AssetType currentParentType = Company.GetParentType(assetType.ID, this.GetSystemObjects(model.AssetTypeClass));
+                AssetType currentParentType = Company.GetParentType(assetType.ID, this.GetSystemObjects(model.Class));
                 if (assetCount !=0 && currentParentType !=null  && currentParentType.uid != model.ParentUid)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Assets already exist with assigned parents. You may not change the parent of this asset type."));
                 
                 if(!this.IsValidDisplayFormat(assetType.ID,model.DisplayFormat))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Display Format contains invalid field references."));
-                
-                
+
+                var regex = "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$";
+                if (model.IconStyle ==null || !Regex.Match(model.IconStyle.BackColor, regex, RegexOptions.IgnoreCase).Success || !Regex.Match(model.IconStyle.ForeColor, regex, RegexOptions.IgnoreCase).Success)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Not valid Icon Style provided.Please check your request and try again."));
                 #endregion
 
-                switch (model.AssetTypeClass)
+                switch (model.Class)
                 {
                     case AssetTypeClass.Glossary:
                         var a = Company.GetById<ArtifactType>(model.ObjectID);
@@ -1091,7 +1134,7 @@ namespace d360.web.Controllers.V2
 
                         Company.Update(a);
 
-                       // parentType = SystemObjects.ArtifactType;
+                 
                         break;
                     case AssetTypeClass.Organization:
                         var org = Company.GetById<OrganizationType>(model.ObjectID);
@@ -1101,7 +1144,7 @@ namespace d360.web.Controllers.V2
                         org.DisplayFormat = model.DisplayFormat;
                         Company.Update(org);
 
-                       // parentType = SystemObjects.OrganizationType;
+                
                         break;
                     case AssetTypeClass.Policy:
                         var p = Company.GetById<PolicyType>(model.ObjectID);
@@ -1114,7 +1157,6 @@ namespace d360.web.Controllers.V2
 
                         Company.Update(p);
 
-                       // parentType = SystemObjects.PolicyType;
                         break;
                     case AssetTypeClass.Reference:
                         var rt = Company.GetById<ReferenceItemType>(model.ObjectID);
@@ -1129,7 +1171,7 @@ namespace d360.web.Controllers.V2
 
                         shouldRemoveOldRelationshipType = true;
                         shouldRemoveExistingParentChildRelationshipType = true;
-                       // parentType = SystemObjects.ReferenceItemType;
+ 
                         break;
                     case AssetTypeClass.Model:
                         var t = Company.GetById<TaxonomyType>(model.ObjectID);
@@ -1158,7 +1200,7 @@ namespace d360.web.Controllers.V2
                         Company.Delete<AssetTypeLevel>(l => l.Level > t.MaximumDepth);
                         Company.SaveChanges();
 
-                        //parentType = SystemObjects.TaxonomyType;
+            
                         break;
                     case AssetTypeClass.Rule:
                         #region
@@ -1172,13 +1214,14 @@ namespace d360.web.Controllers.V2
                         break;
                 }
 
-                //  upsertObjectStyle(model.AssetType.Object, model.AssetType.ObjectID, model.IconForeColor, model.IconBackColor, model.AssetType.Name);
-                var parentType = this.GetSystemObjects(model.AssetTypeClass).ToString();
-                if (predicateClass.Contains(model.AssetTypeClass) && ( parentAssetType !=null || predicate != null))
+                  this.upsertObjectStyle(model.Object, model.ObjectID, model.IconStyle.ForeColor, model.IconStyle.BackColor, model.Name);
+
+                var parentType = this.GetSystemObjects(model.Class).ToString();
+                if (predicateClass.Contains(model.Class) && ( parentAssetType !=null || predicate != null))
                 {
                     var parentPredicateType = PredicateType.InterTypeHierarchy;
 
-                    if (model.AssetTypeClass == AssetTypeClass.Model || model.AssetTypeClass == AssetTypeClass.Policy)
+                    if (model.Class == AssetTypeClass.Model || model.Class == AssetTypeClass.Policy)
                     {
                         parentPredicateType = PredicateType.IntraTypeHierarchy;
                     }

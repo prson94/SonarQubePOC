@@ -41,7 +41,7 @@ namespace d360.core.entities
         public string Name { get; set; }
         
         [DataMember]
-        public string Class { get; set; }
+        public AssetTypeClass Class { get; set; }
         [DataMember]
         public string Description { get; set; }
         [DataMember]
@@ -49,6 +49,9 @@ namespace d360.core.entities
         [DataMember]
         public string DisplayFormat { get; set; }
         public HierarchyInsert Hierarchy { get; set; }
+        
+        public IconStyleInsert IconStyle { get; set; }
+
         [DataMember]
         public Guid? ParentUid { get; set; }
         [DataMember]
@@ -57,8 +60,7 @@ namespace d360.core.entities
         public int ObjectID { get; set; }
         [JsonIgnore]
         public string Object { get; set; }
-        [JsonIgnore]
-        public AssetTypeClass AssetTypeClass { get; set; }
+
     }
 
     public class AssetTypeSuccess
@@ -71,12 +73,25 @@ namespace d360.core.entities
         public bool Success { get; set; }
     }
 
-    [DataContract(Name = "hierarchy")]
+    [DataContract(Name = "Hierarchy")]
     public class HierarchyInsert
     {
        [DataMember] public int MaximumDepth { get; set; }
         [DataMember] public Guid? PredicateUid { get; set; }
     }
+
+
+    [DataContract(Name = "IconStyle")]
+    public class IconStyleInsert
+    {
+        [DataMember]
+        public string ForeColor { get; set; }
+
+        [DataMember]
+        public string BackColor { get; set; }
+    }
+
+
     [DataContract(Name = "asset")]
     public class AssetInsert : IAssetUpsert, IExecutionItem
     {
