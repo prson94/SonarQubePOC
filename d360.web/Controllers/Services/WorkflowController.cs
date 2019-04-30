@@ -3110,6 +3110,9 @@ order by wi.StartedOn desc";
 
                             foreach (var res in itemFields.Reassignments)
                             {
+                                if (res.ByResourceID == 0)
+                                    continue;
+
                                 var ix = users.FindIndex(u => u.ResourceID == res.FromResourceID);
                                 if (ix > -1) users.RemoveAt(ix);
 
