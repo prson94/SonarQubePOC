@@ -1,6 +1,7 @@
 ﻿using d360.core.enums;
 using d360.core.enums.Workflow;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -41,6 +42,7 @@ namespace d360.core.entities
         public string Name { get; set; }
         
         [DataMember]
+        [JsonConverter(typeof(StringEnumConverter))]
         public AssetTypeClass Class { get; set; }
         [DataMember]
         public string Description { get; set; }
