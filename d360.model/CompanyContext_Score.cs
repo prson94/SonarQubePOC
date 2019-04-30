@@ -416,15 +416,50 @@ select	@assetTypeUid = T.[Uid]
 from	dbo.Asset A
 		inner join AssetType T on T.ID = A.AssetTypeID and A.[Uid] = @assetUid;
 
+drop table if exists #groups;
+create table #groups (
+	[Uid] uniqueidentifier, EffectiveDate date
+);
+
+insert into #groups
+	select		IA.[Uid],
+				max(IV.EffectiveDate) as EffectiveDate
+	from		metrics.AssetVersion IV
+				inner join metrics.Asset IA on IA.[Uid] = IV.[Uid] 
+											and IA.IsGroup = 1
+											and IA.AssetTypeUid = @assetTypeUid 
+											and IV.EffectiveDate <= @effectiveDate 
+											and IA.State = 1
+	group by	IA.[Uid];
+
 drop table if exists #tbl
 create table #tbl (
 	[Uid] uniqueidentifier, ParentUid uniqueidentifier, 
 	[Name] nvarchar(250), [Description] nvarchar(max), IsGroup bit, 
 	[Weight] decimal(5,3), EffectiveDate date, 
-	[Applies] bit null, [Value] bit null, [Level] int null
-)
+	[Value] bit null, [Applies] bit null, [Level] int null
+);
 
-insert into #tbl 
+with rh as (
+	select	I.MetricAssetUid,
+			A.ParentUid,
+			A.Name,	
+			A.Description,
+			A.IsGroup,
+			I.AdjustedWeight as [Weight],
+			I.EffectiveDate,
+			I.[Value]
+	from	metrics.ScoreItem I
+			inner join metrics.Asset A on A.Uid = I.MetricAssetUid
+			inner join (
+				select	max(EffectiveDate) as EffectiveDate
+				from	metrics.ScoreItem I
+				where	AssetUid = @assetUid
+						and MetricAssetUid = I.MetricAssetUid
+						and EffectiveDate <= @effectiveDate
+			) MI on MI.EffectiveDate = I.EffectiveDate
+	where	AssetUid = @assetUid
+	union all
 	select	A.[Uid],
 			A.ParentUid,
 			A.Name,
@@ -432,19 +467,15 @@ insert into #tbl
 			A.IsGroup,
 			V.Weight,
 			V.EffectiveDate,
-			NULL, NULL, NULL
+			NULL as Value
 	from	metrics.AssetVersion V
-			inner join (
-					select		IA.[Uid],
-								max(IV.EffectiveDate) as EffectiveDate
-					from		metrics.AssetVersion IV
-								inner join metrics.Asset IA on IA.[Uid] = IV.[Uid] 
-															and IA.AssetTypeUid = @assetTypeUid 
-															and IV.EffectiveDate <= @effectiveDate 
-															and IA.State = 1
-					group by	IA.[Uid]
-			) MV on MV.[Uid] = V.[Uid] AND MV.EffectiveDate = V.EffectiveDate
-			inner join metrics.Asset A on A.[Uid] = V.[Uid];
+			inner join #groups MV on MV.[Uid] = V.[Uid] AND MV.EffectiveDate = V.EffectiveDate
+			inner join metrics.Asset A on A.[Uid] = V.[Uid]
+			inner join rh C on C.ParentUid = A.Uid
+	)
+
+insert into #tbl 
+	select *, NULL, NULL from rh;
 
 with h as (
 	select	*,
@@ -459,54 +490,14 @@ with h as (
 )
 
 update	T
-set		T.[Level] = S.Lvl,
-		T.[Weight] = coalesce(M.AdjustedWeight, T.Weight),
-		T.Value = coalesce(M.[Value], 0)
+set		T.[Level] = S.Lvl
 from	#tbl T
-		inner join h S on S.Uid = T.Uid
-		outer apply (
-			select	I.EffectiveDate,
-					I.[Value],
-                    I.AdjustedWeight
-			from	metrics.ScoreItem I
-					inner join (
-						select	max(EffectiveDate) as EffectiveDate
-						from	metrics.ScoreItem I
-						where	AssetUid = @assetUid
-								and MetricAssetUid = T.[Uid]
-								and EffectiveDate <= @effectiveDate
-					) MI on MI.EffectiveDate = I.EffectiveDate
-			where	AssetUid = @assetUid
-					and MetricAssetUid = T.[Uid]
-		) M;
+		inner join h S on S.Uid = T.Uid;
 
-with C as (
-	select	Uid,
-			ParentUid,
-			metrics.AssetMeetsConditions([Uid], EffectiveDate, @assetUid) as Applies
-	from	#tbl
-	where	IsGroup = 0
-	union all
-	select	P.Uid,
-			P.ParentUid,
-			C.Applies
-	from	#tbl P
-			inner join C on C.ParentUid = P.Uid and C.Applies = 1
-)
-
-update	T
-set		T.Applies = C.Applies
-from	#tbl T
-		inner join C on C.Uid = T.Uid
-
-delete	T
-from	#tbl T
-		inner join metrics.Asset A on A.Uid = T.Uid and A.IsGroup = 0
-		left join metrics.ScoreItem S on S.MetricAssetUid = T.Uid and S.AssetUid = @assetUid and S.EffectiveDate <= @effectiveDate
-where	S.MetricAssetUid is null
-
-select	Uid, ParentUid, [Level], Name, Description, IsGroup, Weight, Value
-from	#tbl where Applies = 1";
+select	distinct
+		Uid, ParentUid, [Level], Name, Description, IsGroup, Weight, Value
+from	#tbl 
+order by [Level], Name";
 
             if (cnn.State != System.Data.ConnectionState.Open)
                 cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);

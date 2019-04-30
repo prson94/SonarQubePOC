@@ -39,11 +39,12 @@ export class LineageResponsibilitiesComponent extends BaseComponent implements O
     private load() {
         // if the object type and objectid is passed and the assetid is null lookup the assetid then load responsibilities
         if (this.objectType && this.objectId != undefined && this.assetId == null) {
-            this.objectDetailService.getObject(this.objectId, this.objectType)
-                .then(data => {
+            this.objectDetailService.getObject(this.objectId, this.objectType).subscribe(
+                data => {
                     this.assetId = data.AssetID;
                     this.loadResponsibilities();
-                })
+                }
+            );
         } else {
             this.loadResponsibilities();
         }

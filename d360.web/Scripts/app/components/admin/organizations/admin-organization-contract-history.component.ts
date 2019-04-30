@@ -1,94 +1,134 @@
-﻿import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
-import { Organization, OrganizationResource, ContractAcceptanceDetail } from '../../../models/organization.model';
-import { OrganizationsService } from '../../../services/organizations.service';
-import { MessagesService } from '../../../services/messages.service';
-import { BaseComponent } from '../../shared/base.component';
-import { SiteUrlHelpers } from '../../../static/site-url-helpers';
+﻿import {Component, Input, OnInit, Output, EventEmitter} from '@angular/core';
+import {Router, ActivatedRoute} from '@angular/router';
+
+import {ContractAcceptanceDetail} from '../../../models/organization.model';
+
+import {OrganizationsService} from '../../../services/organizations.service';
+import {MessagesService} from '../../../services/messages.service';
+
+import {BaseComponent} from '../../shared/base.component';
 
 @Component({
     selector: 'd3s-admin-organization-contract-history',
     providers: [OrganizationsService],
     template: `
-               <header>Contract History for {{objectName}}
-                <d3s-tile-actions [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" [hasClose]="true" (closeClick)="onClose.emit()"></d3s-tile-actions>                            
-               </header>
-                <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <div *ngIf="!isLoading">
-                    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-                    <p-table #dt [value]="contracts" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['ResourceName','ContractName','Accepted','AcceptedOn']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected">
-                        <ng-template pTemplate="header">
-                            <tr>
-                                <th [pSortableColumn]="'ResourceName'">
-                                    Resource Name
-                                    <d3s-sortIcon [field]="'ResourceName'"></d3s-sortIcon>
-                                </th>
-                                <th [pSortableColumn]="'ContractName'">
-                                    Contract Name
-                                    <d3s-sortIcon [field]="'ContractName'"></d3s-sortIcon>
-                                </th>
-                                <th [pSortableColumn]="'Accepted'">
-                                    Accepted
-                                    <d3s-sortIcon [field]="'Accepted'"></d3s-sortIcon>
-                                </th>
-                                <th [pSortableColumn]="'AcceptedOn'">
-                                    Accepted On
-                                    <d3s-sortIcon [field]="'AcceptedOn'"></d3s-sortIcon>
-                                </th>
-                            </tr>
-                            <tr [hidden]="showSimpleFilter">
-                                <th><d3s-column-filter [field]="'ResourceName'" [datatype]="'text'"></d3s-column-filter></th>
-                                <th><d3s-column-filter [field]="'ContractName'" [datatype]="'text'"></d3s-column-filter></th>
-                                <th><d3s-column-filter [field]="'Accepted'" [datatype]="'text'"></d3s-column-filter></th>
-                                <th></th>
-                            </tr>
-                        </ng-template>
-                        <ng-template pTemplate="body" let-item>
-                            <tr (dblclick)="selected=item;showEditor=true" [pSelectableRow]="item">
-                                <td>{{item.ResourceName}}</td>
-                                <td>{{item.ContractName}}</td>
-                                <td>
-                                    <i *ngIf="item.Accepted == true" class="fa fa-check enabled" title="True"></i>
-                                    <i *ngIf="item.Accepted == false" class="fa fa-times disabled" title="False"></i>
-                                </td>
-                                <td>
-                                    <span>{{item.AcceptedOn | date : 'short'}}</span>
-                                </td>
-                            </tr>
-                        </ng-template>
-                        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
-                            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
-                        </ng-template>
-                    </p-table>
-                </div>
+        <header>Contract History for {{ objectName }}
+            <d3s-tile-actions [hasFilterMode]="true"
+                              [(filterMode)]="showSimpleFilter"
+                              [hasClose]="true"
+                              (closeClick)="onClose.emit()"></d3s-tile-actions>
+        </header>
+        <d3s-loading [isLoading]="isLoading"></d3s-loading>
+        <div *ngIf="!isLoading">
+            <input type="text"
+                   [hidden]="!showSimpleFilter"
+                   pInputText
+                   size="100"
+                   (input)="dt.filterGlobal($event.target.value, 'contains')"
+                   placeholder="Search..."
+                   class="grid-simple-filter">
+            <p-table #dt
+                     [value]="contracts"
+                     selectionMode="single"
+                     [metaKeySelection]="true"
+                     [globalFilterFields]="['ResourceName','ContractName','Accepted','AcceptedOn']"
+                     [pageLinks]="3"
+                     [paginator]="true"
+                     [rows]="defaultInitialItemsPerPage"
+                     [rowsPerPageOptions]="defaultPagingOptions"
+                     [(selection)]="selected">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th [pSortableColumn]="'ResourceName'">
+                            Resource Name
+                            <d3s-sortIcon [field]="'ResourceName'"></d3s-sortIcon>
+                        </th>
+                        <th [pSortableColumn]="'ContractName'">
+                            Contract Name
+                            <d3s-sortIcon [field]="'ContractName'"></d3s-sortIcon>
+                        </th>
+                        <th [pSortableColumn]="'Accepted'">
+                            Accepted
+                            <d3s-sortIcon [field]="'Accepted'"></d3s-sortIcon>
+                        </th>
+                        <th [pSortableColumn]="'AcceptedOn'">
+                            Accepted On
+                            <d3s-sortIcon [field]="'AcceptedOn'"></d3s-sortIcon>
+                        </th>
+                    </tr>
+                    <tr [hidden]="showSimpleFilter">
+                        <th>
+                            <d3s-column-filter [field]="'ResourceName'"
+                                               [datatype]="'text'"></d3s-column-filter>
+                        </th>
+                        <th>
+                            <d3s-column-filter [field]="'ContractName'"
+                                               [datatype]="'text'"></d3s-column-filter>
+                        </th>
+                        <th>
+                            <d3s-column-filter [field]="'Accepted'"
+                                               [datatype]="'text'"></d3s-column-filter>
+                        </th>
+                        <th></th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body"
+                             let-item>
+                    <tr (dblclick)="selected=item;showEditor=true"
+                        [pSelectableRow]="item">
+                        <td>{{ item.ResourceName }}</td>
+                        <td>{{ item.ContractName }}</td>
+                        <td>
+                            <i *ngIf="item.Accepted == true"
+                               class="fa fa-check enabled"
+                               title="True"></i>
+                            <i *ngIf="item.Accepted == false"
+                               class="fa fa-times disabled"
+                               title="False"></i>
+                        </td>
+                        <td>
+                            <span>{{ item.AcceptedOn | date : 'short' }}</span>
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template *ngIf="dt.totalRecords"
+                             pTemplate="summary">
+                    <d3s-grid-paging-info [first]="dt.first"
+                                          [rows]="dt.rows"
+                                          [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                </ng-template>
+            </p-table>
+        </div>
 
-                `
+    `
 })
 
 export class AdminOrganizationContractHistoryComponent extends BaseComponent implements OnInit {
     @Input() id: number = null;
     @Input() type: string = null;
-    @Input() objectName: string = '';
+    @Input() objectName = '';
     @Output() onClose = new EventEmitter();
 
     error: any;
-    isLoading: boolean = false;
+    isLoading = false;
     contracts: ContractAcceptanceDetail[] = [];
 
     constructor(
         private route: ActivatedRoute,
         private router: Router,
         private organizationsService: OrganizationsService,
-        private messagesService: MessagesService) {
+        private messagesService: MessagesService
+    ) {
         super();
     }
 
     ngOnInit() {
-        if (this.type != 'contract' && this.type != 'resource' && this.type != 'organization')
+        if (this.type != 'contract' && this.type != 'resource' && this.type != 'organization') {
             console.warn(`Invalid type ${this.type}`);
+        }
+
         this.load();
     }
-
 
     load() {
         this.isLoading = true;
@@ -96,28 +136,34 @@ export class AdminOrganizationContractHistoryComponent extends BaseComponent imp
         switch (this.type.toLowerCase()) {
             case 'contract':
                 this.organizationsService.getContractHistoryForContract(this.id)
-                    .then(r => {
-                        this.contracts = r;
-                        this.isLoading = false;
-                    })
+                    .subscribe(
+                        r => {
+                            this.contracts = r;
+
+                            this.isLoading = false;
+                        }
+                    );
                 break;
             case 'resource':
                 this.organizationsService.getContractHistoryForResource(this.id)
-                    .then(r => {
-                        this.contracts = r;
-                        this.isLoading = false;
-                    })
+                    .subscribe(
+                        r => {
+                            this.contracts = r;
+
+                            this.isLoading = false;
+                        }
+                    );
                 break;
             case 'organization':
                 this.organizationsService.getContractHistoryForOrganization(this.id)
-                    .then(r => {
-                        this.contracts = r;
-                        this.isLoading = false;
-                    })
+                    .subscribe(
+                        r => {
+                            this.contracts = r;
+
+                            this.isLoading = false;
+                        }
+                    );
                 break;
         }
-
     }
 }
-
-

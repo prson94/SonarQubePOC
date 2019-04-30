@@ -290,7 +290,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 let last = (i == 0) ? null : this.model.RelationItems[i - 1];
 
                 if (i == 0) {
-                    this.objectDetailService.getObject(this.objectID, this.objectType).then(
+                    this.objectDetailService.getObject(this.objectID, this.objectType).subscribe(
                         o => {
                             this.objectName = o.Name;
                         }
@@ -441,7 +441,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     this.relationItemCount = 1;
 
                     if (this.objectName == null || this.objectName == '') {
-                        this.objectDetailService.getObject(this.objectID, this.objectType).then(
+                        this.objectDetailService.getObject(this.objectID, this.objectType).subscribe(
                             o => {
                                 this.objectName = o.Name;
                             }
@@ -1287,7 +1287,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 if (this.model.FieldType.Precision && FormHelpers.isNumber(this.model.FieldType.DefaultValue)) {
                     let asString = '' + this.model.FieldType.DefaultValue;
 
-                    if (asString.split('.').length == 1 || asString.split('.')[1].length >= this.model.FieldType.Precision) {
+                    if (asString.split('.').length == 2 && asString.split('.')[1].length >= this.model.FieldType.Precision) {
                         let val = +this.model.FieldType.DefaultValue;
                         let newVal = +val.toFixed(this.model.FieldType.Precision);
 

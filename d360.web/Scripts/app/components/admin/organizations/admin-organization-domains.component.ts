@@ -1,20 +1,41 @@
-﻿import { Component, Input, OnChanges, SimpleChange } from '@angular/core';
-import { Organization, OrganizationDomain } from '../../../models/organization.model';
-import { OrganizationsService } from '../../../services/organizations.service';
-import { MessagesService } from '../../../services/messages.service';
-import { BaseComponent } from '../../shared/base.component';
+﻿import {Component, Input, OnChanges, SimpleChange} from '@angular/core';
+
+import {Organization, OrganizationDomain} from '../../../models/organization.model';
+
+import {OrganizationsService} from '../../../services/organizations.service';
+import {MessagesService} from '../../../services/messages.service';
+
+import {BaseComponent} from '../../shared/base.component';
 
 @Component({
     selector: 'd3s-admin-organization-domains',
     providers: [OrganizationsService],
     template: `
-               <header *ngIf="!showEditor && !showDelete">Domains for this organization
-                <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
-               </header>
-                <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <span *ngIf="!isLoading && !showDelete && !showEditor">
-                    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-                    <p-table #dt [value]="domains" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Domain']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected">
+        <header *ngIf="!showEditor && !showDelete">Domains for this organization
+            <d3s-tile-actions [hasAdd]="true"
+                              (addClick)="add()"
+                              [hasFilterMode]="true"
+                              [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
+        </header>
+        <d3s-loading [isLoading]="isLoading"></d3s-loading>
+        <span *ngIf="!isLoading && !showDelete && !showEditor">
+                    <input type="text"
+                           [hidden]="!showSimpleFilter"
+                           pInputText
+                           size="100"
+                           (input)="dt.filterGlobal($event.target.value, 'contains')"
+                           placeholder="Search..."
+                           class="grid-simple-filter">
+                    <p-table #dt
+                             [value]="domains"
+                             selectionMode="single"
+                             [metaKeySelection]="true"
+                             [globalFilterFields]="['Domain']"
+                             [pageLinks]="3"
+                             [paginator]="true"
+                             [rows]="defaultInitialItemsPerPage"
+                             [rowsPerPageOptions]="defaultPagingOptions"
+                             [(selection)]="selected">
                         <ng-template pTemplate="header">
                             <tr>
                                 <th [pSortableColumn]="'Domain'">
@@ -25,52 +46,67 @@ import { BaseComponent } from '../../shared/base.component';
                                 <th style="width: 40px"></th>
                             </tr>
                             <tr [hidden]="showSimpleFilter">
-                                <th><d3s-column-filter [field]="'Domain'" [datatype]="'text'"></d3s-column-filter></th>
+                                <th><d3s-column-filter [field]="'Domain'"
+                                                       [datatype]="'text'"></d3s-column-filter></th>
                                 <th></th>
                                 <th></th>
                             </tr>
                         </ng-template>
-                        <ng-template pTemplate="body" let-item>
-                            <tr (dblclick)="selected=item;showEditor=true" [pSelectableRow]="item">
-                                <td>{{item.Domain}}</td>
+                        <ng-template pTemplate="body"
+                                     let-item>
+                            <tr (dblclick)="selected=item;showEditor=true"
+                                [pSelectableRow]="item">
+                                <td>{{ item.Domain }}</td>
                                 <td>
                                     <div class="RowTools">
-                                        <a style="cursor:pointer;" (click)="selected=item;showEditor=true"><i class="fa fa-pencil"></i></a>
+                                        <a style="cursor:pointer;"
+                                           (click)="selected=item;showEditor=true"><i class="fa fa-pencil"></i></a>
                                     </div>
                                 </td>
                                 <td>
                                     <div class="RowTools">
-                                        <a style="cursor:pointer;" (click)="selected=item;showDelete=true"><i class="fa fa-trash-o"></i></a>
+                                        <a style="cursor:pointer;"
+                                           (click)="selected=item;showDelete=true"><i class="fa fa-trash-o"></i></a>
                                     </div>
                                 </td>
                             </tr>
                         </ng-template>
-                        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
-                            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                        <ng-template *ngIf="dt.totalRecords"
+                                     pTemplate="summary">
+                            <d3s-grid-paging-info [first]="dt.first"
+                                                  [rows]="dt.rows"
+                                                  [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
                         </ng-template>
                     </p-table>
                 </span>
-                <d3s-dynamic-editor *ngIf="showEditor" [objectID]="organization?.ID" [objectType]="'OrganizationDomain'" [title]="'Organization Domain'" [rowID]="'ID'" [selection]="selected" (saveClick)="save($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor> 
-                <div style="padding: 10px">                
-                    <d3s-delete-form *ngIf="showDelete"
-                        [callback]="theDeleteCallback"
-                        [itemId]="selected?.ID"
-                        [method]="'callback'"
-                        [prompt]="'Are you sure you want to delete the domain [' + selected?.Domain + ']?'"                                         
-                        (onCancel)="showDelete=false;"
-                    ></d3s-delete-form>  
-                </div> 
-                `
+        <d3s-dynamic-editor *ngIf="showEditor"
+                            [objectID]="organization?.ID"
+                            [objectType]="'OrganizationDomain'"
+                            [title]="'Organization Domain'"
+                            [rowID]="'ID'"
+                            [selection]="selected"
+                            (saveClick)="save($event)"
+                            (closeClick)="closeEditor()"></d3s-dynamic-editor>
+        <div style="padding: 10px">
+            <d3s-delete-form *ngIf="showDelete"
+                             [callback]="theDeleteCallback"
+                             [itemId]="selected?.ID"
+                             [method]="'callback'"
+                             [prompt]="'Are you sure you want to delete the domain [' + selected?.Domain + ']?'"
+                             (onCancel)="showDelete=false;"
+            ></d3s-delete-form>
+        </div>
+    `
 })
 
 export class AdminOrganizationDomainsComponent extends BaseComponent implements OnChanges {
     @Input() organization: Organization = null;
 
     error: any;
-    
-    showEditor: boolean = false;
-    showDelete: boolean = false;
-    isLoading: boolean = false;
+
+    showEditor = false;
+    showDelete = false;
+    isLoading = false;
 
     domains: OrganizationDomain[] = [];
     selected: OrganizationDomain;
@@ -79,33 +115,46 @@ export class AdminOrganizationDomainsComponent extends BaseComponent implements 
 
     constructor(
         private organizationsService: OrganizationsService,
-        private messagesService: MessagesService) {
+        private messagesService: MessagesService
+    ) {
         super();
+
         this.theDeleteCallback = this.delete.bind(this);
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if (this.organization != null) this.getDomains();
+        if (this.organization != null) {
+            this.getDomains();
+        }
     }
 
     getDomains() {
         this.isLoading = true;
         this.organizationsService
             .getDomainsByOrganization(this.organization.ID)
-            .then(result => {
-                this.domains = result;
-                this.selected = (this.domains.length > 0 ? this.domains[0] : null);                
-                this.isLoading = false;
-            })
-            .catch(error => this.error = error);
+            .subscribe(
+                result => {
+                    this.domains = result;
+
+                    this.selected = (this.domains.length > 0 ? this.domains[0] : null);
+
+                    this.isLoading = false;
+                }
+            );
     }
 
     delete(id: number) {
-        this.organizationsService.deleteDomain(id).then(result => {
-            this.showMessageForResult(this.messagesService, result);
-            if (result.type != 'error') this.domains = this.domains.filter(x => x.ID != id);
-            this.showDelete = false;
-        });
+        this.organizationsService.deleteDomain(id).subscribe(
+            result => {
+                this.showMessageForResult(this.messagesService, result);
+
+                if (result.type != 'error') {
+                    this.domains = this.domains.filter(x => x.ID != id);
+                }
+
+                this.showDelete = false;
+            }
+        );
     }
 
     add() {
@@ -115,21 +164,24 @@ export class AdminOrganizationDomainsComponent extends BaseComponent implements 
 
     closeEditor() {
         this.showEditor = false;
-        if (this.selected == null && this.domains.length > 0)
+        if (this.selected == null && this.domains.length > 0) {
             this.selected = this.domains[0];
+        }
     }
-    
+
     save(event) {
         this.showEditor = false;
         this.isLoading = true;
-        this.organizationsService.saveDomain(event.item)
-            .then(result => {
-                this.isLoading = false;
-                this.showMessageForResult(this.messagesService, result);
-                this.getDomains();                
-            });        
+
+        this.organizationsService
+            .saveDomain(event.item)
+            .subscribe(
+                result => {
+                    this.isLoading = false;
+                    this.showMessageForResult(this.messagesService, result);
+                    this.getDomains();
+                }
+            )
+        ;
     }
-    
 }
-
-

@@ -966,27 +966,26 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                     }
                     else
                     {
+
                         var sql = @"select 
-                                f.FormattedValue as [Value],
-	                            ft.FriendlyName as Name
-                            from
-                                fieldtype ft
+	                                    ISNULL(FormattedValue,' ') as Value,
+	                                    FriendlyName as Name
+	                                    from dbo.FieldDetail 
+		                                    where objectid = @obj and [object]= @ty and [Name] != 'Description'";
 
-                                inner
-                            join field f on (ft.id = f.fieldtypeid and f.[objecttype] = @ty and f.objectid = @obj and ft.Name != 'Description')";
 
-                        res = Company.Query<FieldTooltipValueModel>(sql, new { ty = objectType, obj = objectID }).ToList();
+                        res = Company.Query<FieldTooltipValueModel>(sql, new { obj = objectID, ty = objectType }).ToList();
+
+
                     }
 
                     var descSql = @"select 
-                                f.FormattedValue as [Value]	                            
-                            from
-                                fieldtype ft
+	                                    ISNULL(FormattedValue,' ') as Value,
+	                                    FriendlyName as Name
+	                                    from dbo.FieldDetail 
+		                                    where objectid = @obj and [object]= @ty and [Name] = 'Description'";
 
-                                inner
-                            join field f on (ft.id = f.fieldtypeid and f.[objecttype] = @ty and f.objectid = @obj and ft.Name = 'Description')";
-
-                    desc = Company.Query<string>(descSql, new { ty = objectType, obj = objectID }).FirstOrDefault();
+                    desc = Company.Query<string>(descSql, new { obj = objectID, ty = objectType, }).FirstOrDefault();
 
                     dispName = det != null ? det.Name : "";
                     typeName = det != null ? det.TypeName : "";

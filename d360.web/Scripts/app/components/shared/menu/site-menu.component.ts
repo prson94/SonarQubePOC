@@ -79,8 +79,8 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
             if ($event.item.title != item.title) {
                 if (item.menu)
                     item.menu.isActiveItem = false;
+                item.clearInput();
             }
-            item.clearInput();
         });
     }
 

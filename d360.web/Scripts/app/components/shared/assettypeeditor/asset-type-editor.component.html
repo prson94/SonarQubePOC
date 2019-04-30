@@ -30,7 +30,7 @@
                     </div>
                 </div>
 
-                <div class="row">
+                <div class="row" [hidden]="!showDisplayFormat">
                     <div class="col l6 m6 s12">
                         <div class="FieldNameRequired">Display Format</div>
                         <input maxlength="250" pInputText name="displayFormat" #displayformat="ngModel" style="height:25px;width:100%;display:block;" type="text" [(ngModel)]="model.AssetType.DisplayFormat" required  />

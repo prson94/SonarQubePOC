@@ -356,7 +356,8 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         this
             .objectDetailService
             .getObject(this.selected.ObjectID, 'Artifact')
-            .then(r => {
+            .subscribe(
+                r => {
                     this.selected.DisplayValue = r.DisplayValue;
                     this.showDelete = true;
                     this.changeDetectorRef.markForCheck();

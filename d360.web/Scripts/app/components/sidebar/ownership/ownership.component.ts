@@ -1,7 +1,7 @@
-﻿import {takeUntil} from "rxjs/operators";
-import {Subject} from "rxjs";
-import {Component, OnInit} from '@angular/core';
+﻿import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
+import {Subject} from "rxjs";
+import {takeUntil} from "rxjs/operators";
 
 import {ObjectDetailService} from '../../../services/object-detail.service';
 import {FusionService} from '../../../services/fusion.service';
@@ -43,19 +43,21 @@ export class OwnershipComponent extends BaseComponent implements OnInit {
             params => {
                 this.assetID = +params['assetID'];
 
-                this.objectDetailService.getAsset(this.assetID).then(res => {
-                    if (res.Type == "FusionType") {
-                        this.fusionservice
-                            .getFusionConfigurationsByType(res.TypeID)
-                            .pipe(takeUntil(this.destroySubject$))
-                            .subscribe(
-                                fus => {
-                                    this.objectName = fus[0].Name;
-                                })
-                    } else {
-                        this.objectName = res.DisplayValue;
+                this.objectDetailService.getAsset(this.assetID).subscribe(
+                    res => {
+                        if (res.Type == "FusionType") {
+                            this.fusionservice
+                                .getFusionConfigurationsByType(res.TypeID)
+                                .pipe(takeUntil(this.destroySubject$))
+                                .subscribe(
+                                    fus => {
+                                        this.objectName = fus[0].Name;
+                                    })
+                        } else {
+                            this.objectName = res.DisplayValue;
+                        }
                     }
-                });
+                );
             }
         );
     }

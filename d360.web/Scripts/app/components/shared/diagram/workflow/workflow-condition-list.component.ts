@@ -6,7 +6,7 @@ import { Column, Header, MenuItem } from 'primeng/primeng';
     selector: 'd3s-workflow-condition-list',
     template: `
     <header>
-                <div class="row" *ngIf="!isLoading && conditions.length > 1">
+                <div class="row" *ngIf="!isLoading && isAllAnyVisible()">
                         <input type="radio" name="isAll"
                                [(ngModel)]="satisfyAll"
                                (ngModelChange)="connectorChange.emit($event)"
@@ -25,8 +25,8 @@ import { Column, Header, MenuItem } from 'primeng/primeng';
                         </div>
                     </div>
         <d3s-tile-actions hideTooltip="true" [hasAdd]="!readonly" (addClick)="addClick.emit()"></d3s-tile-actions>
-&nbsp;
-    </header>
+<div *ngIf="!isAllAnyVisible()">&nbsp;</div>
+</header>
     <p-table #dt [value]="filteredConditions" selectionMode="single" [metaKeySelection]="true" [pageLinks]="3" [paginator]="true" [rows]="5" [rowsPerPageOptions]="defaultPagingOptions">
         <ng-template pTemplate="header">
             <tr>
@@ -72,13 +72,16 @@ export class WorkflowConditionListComponent extends BaseComponent implements OnC
 
     private filteredConditions: any[] = [];
     
-
     ngOnInit() {
         this.satisfyAll = this.conditions.every(c => c["@Connector"] == "AND");
     }
 
     ngOnChanges(changes: SimpleChanges) {
         this.filteredConditions = this.conditions.filter(c => c['@ContextualFieldID'] == null || (c['@ContextualFieldID'] != 'IssueObject' && c['@ContextualFieldID'] != 'IssueObjectID'));
+    }
+
+    isAllAnyVisible() {
+        return this.conditions.filter(x => x["@FieldTypeID"]).length > 1;
     }
 
     constructor() {
