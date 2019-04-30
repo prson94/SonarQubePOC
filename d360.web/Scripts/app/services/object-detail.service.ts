@@ -182,14 +182,15 @@ export class ObjectDetailService extends BaseObservableService {
     ) {
         let uri = `api/dynamiclookup/export/${type}/${id}/${fieldTypeID}/${lookupType}/excel.xls`;
 
-        this.http.get(uri, {responseType: 'blob'}).subscribe(
-            d => this.downloadFile(d)
+        this.http.get(uri, { observe: 'response', responseType: 'blob' }).subscribe(
+            d => { this.downloadFile(d.body, d.headers.get('content-disposition')); }
         );
     }
 
-    downloadFile(data: Blob) {
-        var filename = `Item List ${new Date().toDateString()}.xlsx`;
-
+    downloadFile(data: Blob, contentDisposition: string) {
+        var filename = contentDisposition.split(';')[1].split('filename')[1].split('=')[1].trim();
+        filename = filename.split('\"').join('');
+                
         if (window.navigator.msSaveOrOpenBlob) {
             window.navigator.msSaveOrOpenBlob(data, filename);
         } else {
