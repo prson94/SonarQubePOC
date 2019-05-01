@@ -2640,6 +2640,7 @@ order by    rnk, [Name]";
             if (ft != null)
             {
                 fileName = ft.FriendlyName.GetSafeFilename();
+                fileName += " List";
             }
 
             switch ((DataType)lookupType)
