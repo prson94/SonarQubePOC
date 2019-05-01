@@ -13,10 +13,6 @@ namespace d360.core.entities
         public string Code { get; set; }
 
         [DataMember]
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-        public string DisplayValue { get; set; }
-
-        [DataMember]
         public int ReferenceItemTypeID { get; set; }
 
         public DateTime? CreatedOn { get; set; }

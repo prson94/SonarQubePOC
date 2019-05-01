@@ -1,0 +1,71 @@
+<databaseChangeLog    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+  <changeSet author="KMcNamee" id="GOV-7184-drop-striphtml">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+      DROP FUNCTION IF EXISTS [dbo].[StripHTML]
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+CREATE OR ALTER FUNCTION [dbo].[StripHTML] (@HTMLText NVARCHAR(MAX))
+RETURNS NVARCHAR(MAX) AS
+BEGIN
+    DECLARE @Start INT
+    DECLARE @End INT
+    DECLARE @Length INT
+    SET @Start = CHARINDEX('<',@HTMLText)
+    SET @End = CHARINDEX('>',@HTMLText,CHARINDEX('<',@HTMLText))
+    SET @Length = (@End - @Start) + 1
+    WHILE @Start > 0 AND @End > 0 AND @Length > 0
+    BEGIN
+        SET @HTMLText = STUFF(@HTMLText,@Start,@Length,'')
+        SET @Start = CHARINDEX('<',@HTMLText)
+        SET @End = CHARINDEX('>',@HTMLText,CHARINDEX('<',@HTMLText))
+        SET @Length = (@End - @Start) + 1
+    END
+    RETURN LTRIM(RTRIM(@HTMLText))
+END
+GO
+		]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="KMcNamee" id="GOV-7184-drop-isinteger">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+      DROP FUNCTION IF EXISTS [dbo].[IsInteger]
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+CREATE OR ALTER Function [dbo].[IsInteger](@Value VarChar(18))
+Returns Bit
+As 
+Begin
+  
+  Return IsNull(
+     (Select Case When CharIndex('.', @Value) > 0 
+                  Then Case When Convert(int, ParseName(@Value, 1)) <> 0
+                            Then 0
+                            Else 1
+                            End
+                  Else 1
+                  End
+      Where IsNumeric(@Value + 'e0') = 1), 0)
+End
+GO
+		]]>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>
