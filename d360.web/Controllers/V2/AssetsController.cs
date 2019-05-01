@@ -1014,7 +1014,7 @@ namespace d360.web.Controllers.V2
         [
         HttpPut,
     Route(""),
-    SwaggerRequestExample(typeof(AssetTypeInsert), typeof(AssetTypeInsertExample)),
+    SwaggerRequestExample(typeof(AssetTypeInsert), typeof(Models.AssetTypeInsertExample)),
     SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
     SwaggerResponse(HttpStatusCode.OK, "Update asset type and success / failure message.", typeof(AssetTypeSuccess)),
     SwaggerResponse(HttpStatusCode.NotFound, "Asset Type not found based on Uid provided.", typeof(ErrorResponse)),

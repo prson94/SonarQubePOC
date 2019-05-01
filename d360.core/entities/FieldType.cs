@@ -167,8 +167,6 @@ namespace d360.core.entities
     {
         [DataMember]
         public bool IsRequired { get; set; }
-        [DataMember]
-        public string Message { get; set; }
     }
     public class FieldTypeDescriptionApiViewModel_ValidationLength : FieldTypeDescriptionApiViewModel_Validation
     {
@@ -184,6 +182,9 @@ namespace d360.core.entities
     }
     public class FieldTypeDescriptionApiViewModel_ValidationText : FieldTypeDescriptionApiViewModel_ValidationLength
     {
+        [DataMember]
+        public string Message { get; set; }
+
         [DataMember]
         public string Pattern { get; set; }
     }
@@ -446,6 +447,8 @@ namespace d360.core.entities
         public FieldTypeDataTypeLookupApiViewModel_Format Format { get; set; }
         [DataMember]
         public FieldTypeDataTypeLookupApiViewModel_List List { get; set; }
+        [DataMember]
+        public FieldTypeDescriptionApiViewModel_Validation Validation { get; set; }
     }
 
     public class FieldTypeDataTypeNumberApiViewModel : FieldTypeEditableApiViewModel
