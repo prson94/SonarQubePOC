@@ -2565,7 +2565,7 @@ order by wi.StartedOn desc";
             List<WorkflowStepFieldChange> fieldChanges = new List<WorkflowStepFieldChange>();
             if (detail.Settings != null && detail.Settings.FieldUpdate != null && detail.Settings.FieldUpdate.Field != null)
             {
-                
+
                 dynamic fields = new JArray(detail.Settings.FieldUpdate.Field);
                 for (int i = 0; i < fields.Count; i++)
                 {
@@ -2580,16 +2580,73 @@ order by wi.StartedOn desc";
                     FieldType fieldType = Company.GetById<FieldType>(fieldTypeId);
                     fieldChange.FieldName = fieldType?.FriendlyName;
                     fieldChange.Type = fieldType?.Type;
-                    var sql = @"select formattedValue from field where [objecttype]=@objecttype and objectId=@objectId and FieldTypeID=@fieldtypeid";
-                    fieldChange.Value = Company.Query<string>(sql, new { objecttype = detail.Object, objectId = detail.ObjectID, fieldtypeid = fieldType.ID }).SingleOrDefault();
+                    string formFieldId = field["@FormFieldId"] != null ? field["@FormFieldId"] : null;
+                    int stepId = field["@FormStepId"] != null ? field["@FormStepId"] : 0;
+                    if (fieldChange.FormValue && formFieldId != null && stepId != 0)
+                    {
+
+                        var stepSql = @"select fields from workflow.itemstep where  stepid=@stepid and itemid=@itemid";
+                        dynamic stepFields = Company.Query<string>(stepSql, new { stepid = stepId, itemid = detail.ItemID }).FirstOrDefault();
+                        stepFields = XmlToDynamic(stepFields, false);
 
 
+                        if (stepFields.fields != null && stepFields.fields.form != null && stepFields.fields.form.Count > 1)
+                        {
+                            List<string> vlist = new List<string>();
+                            string fieldValue = string.Empty;
+                            for (int k = 0; k < stepFields.fields.form.Count; k++)
+                            {
+                                JArray sfields = new JArray(stepFields.fields.form[k].field);
+                                JObject jo = sfields.Children<JObject>()
+                                    .FirstOrDefault(o => o["@id"] != null && o["@id"].ToString() == formFieldId);
+                                var displayvalue = jo != null && jo["@displayvalue"] != null ? jo["@displayvalue"].ToString() : "";
+                                var fieldtype = jo != null && jo["@fieldtype"] != null ? jo["@fieldtype"].ToString() : "";
+                                switch (fieldtype)
+                                {
+                                    case "date":
+                                        fieldValue = displayvalue != "" ? Convert.ToDateTime(displayvalue).ToShortDateString() : "";
+                                        break;
+                                    default:
+                                        if (fieldChange.AppendValue == "true")
+                                            vlist.AddRange(displayvalue.Split(','));
+                                        else
+                                            fieldValue = displayvalue;
+                                        break;
+                                }
+                            }
 
-              
+                            if (fieldChange.AppendValue == "true")
+                                fieldChange.Value = string.Join(",", vlist.Distinct().ToArray());
+                            else
+                                fieldChange.Value = fieldValue;
+
+                        }
+                        else
+                        {
+                            JArray sfields = new JArray(stepFields.fields.form.field);
+                            JObject jo = sfields.Children<JObject>()
+                                .FirstOrDefault(o => o["@id"] != null && o["@id"].ToString() == formFieldId);
+                            var displayvalue = jo != null && jo["@displayvalue"] != null ? jo["@displayvalue"].ToString() : "";
+                            var fieldtype = jo != null && jo["@fieldtype"] != null ? jo["@fieldtype"].ToString() : "";
+                            switch (fieldtype)
+                            {
+                                case "date":
+                                    fieldChange.Value = displayvalue != "" ? Convert.ToDateTime(displayvalue).ToShortDateString() : "";
+                                    break;
+                                default:
+                                    fieldChange.Value = displayvalue;
+                                    break;
+                            }
+                        }
+                    }
+                    else if (fieldChange.UseCurrentDate)
+                        fieldChange.Value = detail.CompletedOn.HasValue ? detail.CompletedOn.Value.ToShortDateString() : "";
+                    else
+                        fieldChange.Value = field["@ValueLabel"] != null ? field["@ValueLabel"] : field["@Value"] != null ? field["@Value"] : "";
 
                     fieldChanges.Add(fieldChange);
                 }
-  
+
             }
 
             return fieldChanges;
