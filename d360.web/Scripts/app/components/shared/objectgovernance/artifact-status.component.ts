@@ -4,6 +4,8 @@ import { BaseComponent } from '../base.component';
 import { ArtifactService } from '../../../services/artifacts.service';
 import { MessagesService } from '../../../services/messages.service';
 
+declare var CompanySettings;
+
 @Component({
     selector: 'd3s-artifact-status',
     templateUrl: './artifact-status.component.html',
@@ -37,7 +39,13 @@ export class ArtifactStatusComponent extends BaseComponent  {
     }
 
     private isDraft(): boolean {
-        return this.status && this.status.toUpperCase() == "DRAFT";
+        var draftValues = CompanySettings.RequestCertificationDraft;
+
+        if (!draftValues) {
+            draftValues = "DRAFT";
+        }
+
+        return this.status && (draftValues.toUpperCase().split(',').indexOf(this.status.toUpperCase()) > -1);
     }
     
     private requestCertification() {
