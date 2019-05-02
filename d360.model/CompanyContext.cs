@@ -176,8 +176,7 @@ namespace d360.model
         public DbSet<IntersectDetail> IntersectDetails { get; set; }                /* VIEW */
 
         public DbSet<IntersectTypeDetail> IntersectTypeDetails { get; set; }        /* VIEW */
-
-        public DbSet<IntersectGroup> IntersectGroups { get; set; }
+        
 
         public DbSet<IntersectType> IntersectTypes { get; set; }
 
