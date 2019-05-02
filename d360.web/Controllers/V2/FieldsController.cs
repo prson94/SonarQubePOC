@@ -490,7 +490,6 @@ for json path, WITHOUT_ARRAY_WRAPPER";
             return model;
         }
 
-        // <param name="ActionTypeUid">The action type Uid to retrieve field types for.</param>
         /// <summary>
         /// Retrieves field types contained within your environment.
         /// </summary>
@@ -749,6 +748,11 @@ for json path, WITHOUT_ARRAY_WRAPPER";
                     }
                     else if (f.Type.ComputedFusionLookup != null)
                     {
+                        if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
+                        {
+                            throw new RestApiException(HttpStatusCode.BadRequest, "Field type error", $"You may not use a Fusion Lookup type on an action type or relationship type for field {f.Name}.");
+                        }
+
                         newFieldType.Type = DataType.FusionLookup.ToString();
                         newFieldType.ColumnOrder = f.Type.ComputedFusionLookup.ColumnOrder;
                         if (f.Type.ComputedFusionLookup.Description != null) newFieldType.DisplayDescription = f.Type.ComputedFusionLookup.Description.Display;
@@ -762,6 +766,11 @@ for json path, WITHOUT_ARRAY_WRAPPER";
                     }
                     else if (f.Type.ComputedOwnershipLookup != null)
                     {
+                        if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
+                        {
+                            throw new RestApiException(HttpStatusCode.BadRequest, "Field type error", $"You may not use a Ownership Lookup type on an action type or relationship type for field {f.Name}.");
+                        }
+
                         newFieldType.Type = DataType.OwnershipLookup.ToString();
                         newFieldType.ColumnOrder = f.Type.ComputedOwnershipLookup.ColumnOrder;
                         if (f.Type.ComputedOwnershipLookup.Description != null)
@@ -831,6 +840,11 @@ from	IntersectType I
                     }
                     else if (f.Type.ComputedRelationshipLookup != null)
                     {
+                        if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
+                        {
+                            throw new RestApiException(HttpStatusCode.BadRequest, "Field type error", $"You may not use a Relationship Lookup type on an action type or relationship type for field {f.Name}.");
+                        }
+
                         newFieldType.Type = DataType.ComplexRelationLookup.ToString();
                         newFieldType.ColumnOrder = f.Type.ComputedRelationshipLookup.ColumnOrder;
                         if (f.Type.ComputedRelationshipLookup.Description != null)
@@ -850,6 +864,11 @@ from	IntersectType I
                     }
                     else if (f.Type.ComputedRelationshipReferenceList != null)
                     {
+                        if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
+                        {
+                            throw new RestApiException(HttpStatusCode.BadRequest, "Field type error", $"You may not use a Reference Item List from Relationship type on an action type or relationship type for field {f.Name}.");
+                        }
+
                         newFieldType.Type = DataType.RefListRelationship.ToString();
                         newFieldType.ColumnOrder = f.Type.ComputedRelationshipReferenceList.ColumnOrder;
                         if (f.Type.ComputedRelationshipReferenceList.Description != null)
@@ -966,6 +985,10 @@ from	IntersectType I
                     }
                     else if (f.Type.Json != null)
                     {
+                        if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
+                        {
+                            throw new RestApiException(HttpStatusCode.BadRequest, "Field type error", $"You may not use a JSON type on an action type or relationship type for field {f.Name}.");
+                        }
                         newFieldType.Type = DataType.JSON.ToString();
                         newFieldType.ColumnOrder = f.Type.Json.ColumnOrder;
                         if (f.Type.Json.Description != null)
@@ -1307,6 +1330,9 @@ from	IntersectType I
         /// <summary>
         /// Removes field types contained within your environment.
         /// </summary>
+        /// <remarks>
+        /// You may only provide one of the following: ActionTypeUid, AssetTypeUid, or RelationshipTypeUid.
+        /// </remarks>
         /// <returns>A list of field types corresponding to the given criteria, if any.</returns>
         [
             HttpDelete,
@@ -1432,6 +1458,12 @@ from	IntersectType I
                 if (anyExistingItems && keyFieldsWillBeDeleted)
                 {
                     throw new RestApiException(HttpStatusCode.BadRequest, "Existing items in system", $"You may not remove key fields as there are existing items in your environment. You may not perform a Delete action until those items are removed, or you alter the key fields defined on this type.");
+                }
+
+                var anyInvalidFields = fieldNamesToDelete.Any(f => !currentFieldTypes.Any(c => c.Name == f));
+                if (anyInvalidFields)
+                {
+                    throw new RestApiException(HttpStatusCode.BadRequest, "Invalid fields", $"You are attempting to remove one or more fields that do not exist on this type.");
                 }
 
                 #endregion
