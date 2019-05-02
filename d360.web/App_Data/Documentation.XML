@@ -2402,6 +2402,9 @@
             <summary>
             Removes field types contained within your environment.
             </summary>
+            <remarks>
+            You may only provide one of the following: ActionTypeUid, AssetTypeUid, or RelationshipTypeUid.
+            </remarks>
             <returns>A list of field types corresponding to the given criteria, if any.</returns>
         </member>
         <member name="T:d360.web.Controllers.V2.AuditController">

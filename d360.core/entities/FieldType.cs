@@ -598,6 +598,18 @@ namespace d360.core.entities
         Replace = 2
     }
 
+    public class FieldTypeApiEditModel
+    {
+        [DataMember]
+        public string Name { get; set; }
+        [DataMember]
+        public string FriendlyName { get; set; }
+        [DataMember]
+        public string Category { get; set; }
+        [DataMember]
+        public FieldTypeDataTypeApiViewModel Type { get; set; }
+    }
+
     public class FieldTypesApiEditModel
     {
         [DataMember]
@@ -613,7 +625,7 @@ namespace d360.core.entities
         public FieldTypesApiEditAction Action { get; set; }
 
         [DataMember]
-        public List<FieldTypeApiViewModel> Fields { get; set; }
+        public List<FieldTypeApiEditModel> Fields { get; set; }
     }
 
     public class FieldTypeApiDeleteModel
