@@ -12,10 +12,10 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
+using static d360.core.entities.Resource;
 
 namespace d360.web.Controllers.V2
 {
-
     [
         ApiVersion("2.0"),
         RoutePrefix("api/v{version:apiVersion}/membership"),
@@ -27,13 +27,12 @@ namespace d360.web.Controllers.V2
             : base(community, company)
         {
         }
-
         [
             HttpGet,
             MapToApiVersion("2.0"),
             Route("users"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
-            SwaggerResponse(HttpStatusCode.OK, "A list of FollowingBreakdown.", typeof(List<dynamic>)),
+            SwaggerResponse(HttpStatusCode.OK, "A list of FollowingBreakdown.", typeof(ResourceApiViewModel)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             SwaggerParameter("_uid", "The number of re", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_firstName", "The page number to return results for.", DataType = "string", ParameterType = "query", Required = false),
@@ -45,8 +44,6 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<HttpResponseMessage> GetUsers()
         {
-
-
             string sql = "select uid, ResourceID, FirstName, LastName, Email, IsAdministrator, LastLoggedInOn, State from [reporting].[Global_Resource] ";
             var uid = "";
             var firstName = "";
@@ -55,14 +52,13 @@ namespace d360.web.Controllers.V2
             var isAdministrator = -1;
             var pageSize = 5;
             var pageNum = 1;
+
             List<string> queries = new List<string>();
-
+            ResourceApiViewModel model = new ResourceApiViewModel();
             var queryParams = Request.GetQueryNameValuePairs();
-
             queryParams.ToList().ForEach(q =>
             {
                 var key = q.Key.ToLower();
-
                 if (key.StartsWith("_"))
                 {
                     switch (key)
@@ -98,14 +94,10 @@ namespace d360.web.Controllers.V2
                     }
                 }
             });
-
             if (uid != "" || firstName != "" || lastName != "" || state != -1 || isAdministrator != -1)
             {
                 sql += "where ";
             }
-
-
-
             if (uid != "")
             {
                 queries.Add(" uid = '" + uid + "'");
@@ -126,7 +118,6 @@ namespace d360.web.Controllers.V2
             {
                 queries.Add(" isAdministrator = " + isAdministrator);
             }
-
             for (int i = 0; i < queries.Count(); i++)
             {
                 sql += queries[i].ToString();
@@ -135,20 +126,18 @@ namespace d360.web.Controllers.V2
                     sql += " and ";
                 }
             }
-
             if (pageSize > 0 || pageNum > 0)
             {
                 if (pageSize < 1) pageSize = 1;
                 if (pageNum < 1) pageNum = 1;
-
+                model.pageNum = pageNum;
+                model.pageSize = pageSize;
                 string offsetSql = $" Order by ResourceID offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
                 sql += offsetSql;
             }
 
             var results = await Company.QueryAsync<dynamic>(sql);
-
             #region GetDynamicFields
-
             //as individual items in the response
             foreach (IDictionary<string, object> item in results)
             {
@@ -160,8 +149,9 @@ namespace d360.web.Controllers.V2
                 }
             }
             #endregion
-
-            return Request.CreateResponse(HttpStatusCode.OK, results);
+            model.items = results;
+            model.total = results.Count();
+            return Request.CreateResponse(HttpStatusCode.OK, model);
         }
     }
 }

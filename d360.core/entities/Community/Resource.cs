@@ -67,5 +67,17 @@ namespace d360.core.entities
         {
             return new FieldsObjectModel { Type = SystemObjects.ResourceType, Object = SystemObjects.Resource, TypeID = ResourceTypeID };
         }
+
+        public class ResourceApiViewModel
+        {
+            [DataMember]
+            public int pageSize { get; set; } = 25000;
+            [DataMember]
+            public int pageNum { get; set; } = 1;
+            [DataMember]
+            public int total { get; set; } = 0;
+            [DataMember]
+            public IEnumerable<dynamic> items { get; set; }
+        }
     }
 }
