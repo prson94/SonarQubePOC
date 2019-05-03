@@ -350,6 +350,7 @@ namespace d360.model
                 catch
                 {
                 }
+
                 SaveChanges();
 
                 items.ForEach(item =>
@@ -2077,8 +2078,19 @@ where	R.SourceObject = 'FusionAttribute'
                 throw new ApplicationException($"{attr.Object} already exists.");
             }
 
-            var returnValue = (isUpdate) ? Update<T>(entity) : Add<T>(entity);
             
+            bool returnValue = true;
+
+            if (isUpdate)
+                ObjectContext.ObjectStateManager.ChangeObjectState(entity, EntityState.Modified);
+            else
+            {
+                returnValue = Add<T>(entity);
+
+                //Disable eventing after adding so update event doesnt trigger and cause duplicates without changed field
+                this.IsEventingEnabled = false;
+            }
+
             if (fields != null)
             {
                 fields.ForEach(i => {
@@ -2087,7 +2099,8 @@ where	R.SourceObject = 'FusionAttribute'
                 AddOrUpdateFields(fields);
             }
 
-            CreateOrUpdateDisplayValue(0,attr.Type.ToString(), entity.ID);
+            this.IsEventingEnabled = true;
+            CreateOrUpdateDisplayValue(0, attr.Type.ToString(), entity.ID);
 
             return returnValue;
         }

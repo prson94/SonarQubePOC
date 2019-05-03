@@ -100,6 +100,7 @@ namespace d360.extensions.search
 
         protected string SearchServerUrl { get; set; }
         protected Version SearchServerVersion { get; set; }
+        public int? IndexFieldLimit { get; set; }
 
         #region Utility methods
 
@@ -229,7 +230,12 @@ namespace d360.extensions.search
 
                 if (SearchServerVersion.Major >= 5)
                 {
-                    loadMessageInRequestBody(webReq, JObject.Parse(MAPPING_VERSION_5));
+                    string esSettings = MAPPING_VERSION_5;
+                    if (IndexFieldLimit.HasValue)
+                    {
+                        esSettings = esSettings.Replace("\"number_of_replicas\": 1", "\"number_of_replicas\": 1, \"mapping.total_fields.limit\" : "+IndexFieldLimit);
+                    }
+                    loadMessageInRequestBody(webReq, JObject.Parse(esSettings));
                 }
                 else
                 {

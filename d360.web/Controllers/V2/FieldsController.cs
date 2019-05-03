@@ -303,7 +303,6 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Date' then FT.DisplayDescription else null end as 'Type.Date.Description.Display',
 		        case when FT.Type = 'Date' then FT.FormDescription else null end as 'Type.Date.Description.Form',
 		        case when FT.Type = 'Date' then FT.IsRequired else null end as 'Type.Date.Validation.IsRequired',
-		        case when FT.Type = 'Date' then FT.ValidationDescription else null end as 'Type.Date.Validation.Message',
 		        case when FT.Type = 'Date' then FT.IsDisplayable else null end as 'Type.Date.IsDisplayable',
 		        case when FT.Type = 'Date' then FT.IsEditable else null end as 'Type.Date.IsEditable',
 		        case when FT.Type = 'Date' then FT.IsListable else null end as 'Type.Date.IsListable',
@@ -318,7 +317,6 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'DateTime' then FT.DisplayDescription else null end as 'Type.DateTime.Description.Display',
 		        case when FT.Type = 'DateTime' then FT.FormDescription else null end as 'Type.DateTime.Description.Form',
 		        case when FT.Type = 'DateTime' then FT.IsRequired else null end as 'Type.DateTime.Validation.IsRequired',
-		        case when FT.Type = 'DateTime' then FT.ValidationDescription else null end as 'Type.DateTime.Validation.Message',
 		        case when FT.Type = 'DateTime' then FT.IsDisplayable else null end as 'Type.DateTime.IsDisplayable',
 		        case when FT.Type = 'DateTime' then FT.IsEditable else null end as 'Type.DateTime.IsEditable',
 		        case when FT.Type = 'DateTime' then FT.IsListable else null end as 'Type.DateTime.IsListable',
@@ -337,7 +335,6 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Decimal' then FT.MaximumLength else null end as 'Type.Decimal.Validation.MaximumLength',
 		        case when FT.Type = 'Decimal' then FT.[Precision] else null end as 'Type.Decimal.Validation.Precision',
 		        case when FT.Type = 'Decimal' then FT.IsRequired else null end as 'Type.Decimal.Validation.IsRequired',
-		        case when FT.Type = 'Decimal' then FT.ValidationDescription else null end as 'Type.Decimal.Validation.Message',
 		        case when FT.Type = 'Decimal' then FT.IsDisplayable else null end as 'Type.Decimal.IsDisplayable',
 		        case when FT.Type = 'Decimal' then FT.IsEditable else null end as 'Type.Decimal.IsEditable',
 		        case when FT.Type = 'Decimal' then FT.IsListable else null end as 'Type.Decimal.IsListable',
@@ -353,7 +350,6 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Html' then FT.MinimumLength else null end as 'Type.Html.Validation.MinimumLength',
 		        case when FT.Type = 'Html' then FT.MaximumLength else null end as 'Type.Html.Validation.MaximumLength',
 		        case when FT.Type = 'Html' then FT.IsRequired else null end as 'Type.Html.Validation.IsRequired',
-		        case when FT.Type = 'Html' then FT.ValidationDescription else null end as 'Type.Html.Validation.Message',
 		        case when FT.Type = 'Html' then FT.IsDisplayable else null end as 'Type.Html.IsDisplayable',
 		        case when FT.Type = 'Html' then FT.IsEditable else null end as 'Type.Html.IsEditable',
 		        case when FT.Type = 'Html' then FT.IsListable else null end as 'Type.Html.IsListable',
@@ -375,7 +371,6 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Link' then FT.DisplayDescription else null end as 'Type.Link.Description.Display',
 		        case when FT.Type = 'Link' then FT.FormDescription else null end as 'Type.Link.Description.Form',
 		        case when FT.Type = 'Link' then FT.IsRequired else null end as 'Type.Link.Validation.IsRequired',
-		        case when FT.Type = 'Link' then FT.ValidationDescription else null end as 'Type.Link.Validation.Message',
 		        case when FT.Type = 'Link' then FT.IsDisplayable else null end as 'Type.Link.IsDisplayable',
 		        case when FT.Type = 'Link' then FT.IsEditable else null end as 'Type.Link.IsEditable',
 		        case when FT.Type = 'Link' then FT.IsListable else null end as 'Type.Link.IsListable',
@@ -387,6 +382,7 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Lookup' then DFA.[Uid] else null end as 'Type.Lookup.DefaultValue',
 		        case when FT.Type = 'Lookup' then FT.DisplayDescription else null end as 'Type.Lookup.Description.Display',
 		        case when FT.Type = 'Lookup' then FT.FormDescription else null end as 'Type.Lookup.Description.Form',
+                case when FT.Type = 'Lookup' then FT.IsRequired else null end as 'Type.Lookup.Validation.IsRequired',
 		        case when FT.Type = 'Lookup' then coalesce(try_cast(FT.AllowAllValue as bit), cast(0 as bit)) else null end as 'Type.Lookup.AllowAllValue',
 		        case when FT.Type = 'Lookup' then case when try_cast(FT.AllowAllValue as bit) = 1 then FT.AllowAllLabel else null end else null end as 'Type.Lookup.AllowAllLabel',
 		        case when FT.Type = 'Lookup' then FilterFT.[Name] else null end as 'Type.Lookup.Filter.FieldTypeName',
@@ -420,7 +416,6 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Number' then FT.MinimumLength else null end as 'Type.Number.Validation.MinimumLength',
 		        case when FT.Type = 'Number' then FT.MaximumLength else null end as 'Type.Number.Validation.MaximumLength',
 		        case when FT.Type = 'Number' then FT.IsRequired else null end as 'Type.Number.Validation.IsRequired',
-		        case when FT.Type = 'Number' then FT.ValidationDescription else null end as 'Type.Number.Validation.Message',
 		        case when FT.Type = 'Number' then FT.IsDisplayable else null end as 'Type.Number.IsDisplayable',
 		        case when FT.Type = 'Number' then FT.IsEditable else null end as 'Type.Number.IsEditable',
 		        case when FT.Type = 'Number' then FT.IsListable else null end as 'Type.Number.IsListable',
@@ -435,7 +430,6 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Relationship' then FT.FormDescription else null end as 'Type.Relationship.Description.Form',
 		        case when FT.Type = 'Relationship' then IT.Uid else null end as 'Type.Relationship.IntersectTypeUid',
 		        case when FT.Type = 'Relationship' then FT.IsRequired else null end as 'Type.Relationship.Validation.IsRequired',
-		        case when FT.Type = 'Relationship' then FT.ValidationDescription else null end as 'Type.Relationship.Validation.Message',
 		        case when FT.Type = 'Relationship' then FT.IsDisplayable else null end as 'Type.Relationship.IsDisplayable',
 		        case when FT.Type = 'Relationship' then FT.IsEditable else null end as 'Type.Relationship.IsEditable',
 		        case when FT.Type = 'Relationship' then FT.IsListable else null end as 'Type.Relationship.IsListable',
@@ -496,7 +490,6 @@ for json path, WITHOUT_ARRAY_WRAPPER";
             return model;
         }
 
-        // <param name="ActionTypeUid">The action type Uid to retrieve field types for.</param>
         /// <summary>
         /// Retrieves field types contained within your environment.
         /// </summary>
@@ -755,6 +748,11 @@ for json path, WITHOUT_ARRAY_WRAPPER";
                     }
                     else if (f.Type.ComputedFusionLookup != null)
                     {
+                        if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
+                        {
+                            throw new RestApiException(HttpStatusCode.BadRequest, "Field type error", $"You may not use a Fusion Lookup type on an action type or relationship type for field {f.Name}.");
+                        }
+
                         newFieldType.Type = DataType.FusionLookup.ToString();
                         newFieldType.ColumnOrder = f.Type.ComputedFusionLookup.ColumnOrder;
                         if (f.Type.ComputedFusionLookup.Description != null) newFieldType.DisplayDescription = f.Type.ComputedFusionLookup.Description.Display;
@@ -768,6 +766,11 @@ for json path, WITHOUT_ARRAY_WRAPPER";
                     }
                     else if (f.Type.ComputedOwnershipLookup != null)
                     {
+                        if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
+                        {
+                            throw new RestApiException(HttpStatusCode.BadRequest, "Field type error", $"You may not use a Ownership Lookup type on an action type or relationship type for field {f.Name}.");
+                        }
+
                         newFieldType.Type = DataType.OwnershipLookup.ToString();
                         newFieldType.ColumnOrder = f.Type.ComputedOwnershipLookup.ColumnOrder;
                         if (f.Type.ComputedOwnershipLookup.Description != null)
@@ -837,6 +840,11 @@ from	IntersectType I
                     }
                     else if (f.Type.ComputedRelationshipLookup != null)
                     {
+                        if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
+                        {
+                            throw new RestApiException(HttpStatusCode.BadRequest, "Field type error", $"You may not use a Relationship Lookup type on an action type or relationship type for field {f.Name}.");
+                        }
+
                         newFieldType.Type = DataType.ComplexRelationLookup.ToString();
                         newFieldType.ColumnOrder = f.Type.ComputedRelationshipLookup.ColumnOrder;
                         if (f.Type.ComputedRelationshipLookup.Description != null)
@@ -856,6 +864,11 @@ from	IntersectType I
                     }
                     else if (f.Type.ComputedRelationshipReferenceList != null)
                     {
+                        if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
+                        {
+                            throw new RestApiException(HttpStatusCode.BadRequest, "Field type error", $"You may not use a Reference Item List from Relationship type on an action type or relationship type for field {f.Name}.");
+                        }
+
                         newFieldType.Type = DataType.RefListRelationship.ToString();
                         newFieldType.ColumnOrder = f.Type.ComputedRelationshipReferenceList.ColumnOrder;
                         if (f.Type.ComputedRelationshipReferenceList.Description != null)
@@ -893,7 +906,6 @@ from	IntersectType I
                         if (f.Type.Date.Validation != null)
                         {
                             newFieldType.IsRequired = f.Type.Date.Validation.IsRequired;
-                            newFieldType.ValidationDescription = f.Type.Date.Validation.Message;
                         }
                     }
                     else if (f.Type.DateTime != null)
@@ -917,7 +929,6 @@ from	IntersectType I
                         if (f.Type.DateTime.Validation != null)
                         {
                             newFieldType.IsRequired = f.Type.DateTime.Validation.IsRequired;
-                            newFieldType.ValidationDescription = f.Type.DateTime.Validation.Message;
                         }
                     }
                     else if (f.Type.Decimal != null)
@@ -942,7 +953,6 @@ from	IntersectType I
                         if (f.Type.Decimal.Validation != null)
                         {
                             newFieldType.IsRequired = f.Type.Decimal.Validation.IsRequired;
-                            newFieldType.ValidationDescription = f.Type.Decimal.Validation.Message;
                             newFieldType.MaximumLength = f.Type.Decimal.Validation.MaximumLength;
                             newFieldType.MinimumLength = f.Type.Decimal.Validation.MinimumLength;
                             newFieldType.Precision = f.Type.Decimal.Validation.Precision;
@@ -969,13 +979,16 @@ from	IntersectType I
                         if (f.Type.Html.Validation != null)
                         {
                             newFieldType.IsRequired = f.Type.Html.Validation.IsRequired;
-                            newFieldType.ValidationDescription = f.Type.Html.Validation.Message;
                             newFieldType.MaximumLength = f.Type.Html.Validation.MaximumLength;
                             newFieldType.MinimumLength = f.Type.Html.Validation.MinimumLength;
                         }
                     }
                     else if (f.Type.Json != null)
                     {
+                        if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
+                        {
+                            throw new RestApiException(HttpStatusCode.BadRequest, "Field type error", $"You may not use a JSON type on an action type or relationship type for field {f.Name}.");
+                        }
                         newFieldType.Type = DataType.JSON.ToString();
                         newFieldType.ColumnOrder = f.Type.Json.ColumnOrder;
                         if (f.Type.Json.Description != null)
@@ -1006,7 +1019,6 @@ from	IntersectType I
                         if (f.Type.Link.Validation != null)
                         {
                             newFieldType.IsRequired = f.Type.Link.Validation.IsRequired;
-                            newFieldType.ValidationDescription = f.Type.Link.Validation.Message;
                         }
                     }
                     else if (f.Type.Lookup != null)
@@ -1105,6 +1117,10 @@ from	IntersectType I
                         newFieldType.IsPrimaryFilter = f.Type.Lookup.IsPrimaryFilter;
                         newFieldType.ShowIfEmpty = f.Type.Lookup.ShowIfEmpty;
                         newFieldType.SortOrder = f.Type.Lookup.SortOrder;
+                        if (f.Type.Lookup.Validation != null)
+                        {
+                            newFieldType.IsRequired = f.Type.Lookup.Validation.IsRequired;
+                        }
                     }
                     else if (f.Type.Number != null)
                     {
@@ -1128,7 +1144,6 @@ from	IntersectType I
                         if (f.Type.Number.Validation != null)
                         {
                             newFieldType.IsRequired = f.Type.Number.Validation.IsRequired;
-                            newFieldType.ValidationDescription = f.Type.Number.Validation.Message;
                             newFieldType.MaximumLength = f.Type.Number.Validation.MaximumLength;
                             newFieldType.MinimumLength = f.Type.Number.Validation.MinimumLength;
                         }
@@ -1160,7 +1175,6 @@ from	IntersectType I
                         if (f.Type.Relationship.Validation != null)
                         {
                             newFieldType.IsRequired = f.Type.Relationship.Validation.IsRequired;
-                            newFieldType.ValidationDescription = f.Type.Relationship.Validation.Message;
                         }
                     }
                     else if (f.Type.Text != null)
@@ -1316,6 +1330,9 @@ from	IntersectType I
         /// <summary>
         /// Removes field types contained within your environment.
         /// </summary>
+        /// <remarks>
+        /// You may only provide one of the following: ActionTypeUid, AssetTypeUid, or RelationshipTypeUid.
+        /// </remarks>
         /// <returns>A list of field types corresponding to the given criteria, if any.</returns>
         [
             HttpDelete,
@@ -1441,6 +1458,12 @@ from	IntersectType I
                 if (anyExistingItems && keyFieldsWillBeDeleted)
                 {
                     throw new RestApiException(HttpStatusCode.BadRequest, "Existing items in system", $"You may not remove key fields as there are existing items in your environment. You may not perform a Delete action until those items are removed, or you alter the key fields defined on this type.");
+                }
+
+                var anyInvalidFields = fieldNamesToDelete.Any(f => !currentFieldTypes.Any(c => c.Name == f));
+                if (anyInvalidFields)
+                {
+                    throw new RestApiException(HttpStatusCode.BadRequest, "Invalid fields", $"You are attempting to remove one or more fields that do not exist on this type.");
                 }
 
                 #endregion

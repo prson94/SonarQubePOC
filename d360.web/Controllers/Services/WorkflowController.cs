@@ -2565,7 +2565,7 @@ order by wi.StartedOn desc";
             List<WorkflowStepFieldChange> fieldChanges = new List<WorkflowStepFieldChange>();
             if (detail.Settings != null && detail.Settings.FieldUpdate != null && detail.Settings.FieldUpdate.Field != null)
             {
-                
+
                 dynamic fields = new JArray(detail.Settings.FieldUpdate.Field);
                 for (int i = 0; i < fields.Count; i++)
                 {
@@ -2590,7 +2590,38 @@ order by wi.StartedOn desc";
                         stepFields = XmlToDynamic(stepFields, false);
 
 
-                        if (stepFields.fields != null && stepFields.fields.form != null && stepFields.fields.form.field != null)
+                        if (stepFields.fields != null && stepFields.fields.form != null && stepFields.fields.form.Count > 1)
+                        {
+                            List<string> vlist = new List<string>();
+                            string fieldValue = string.Empty;
+                            for (int k = 0; k < stepFields.fields.form.Count; k++)
+                            {
+                                JArray sfields = new JArray(stepFields.fields.form[k].field);
+                                JObject jo = sfields.Children<JObject>()
+                                    .FirstOrDefault(o => o["@id"] != null && o["@id"].ToString() == formFieldId);
+                                var displayvalue = jo != null && jo["@displayvalue"] != null ? jo["@displayvalue"].ToString() : "";
+                                var fieldtype = jo != null && jo["@fieldtype"] != null ? jo["@fieldtype"].ToString() : "";
+                                switch (fieldtype)
+                                {
+                                    case "date":
+                                        fieldValue = displayvalue != "" ? Convert.ToDateTime(displayvalue).ToShortDateString() : "";
+                                        break;
+                                    default:
+                                        if (fieldChange.AppendValue == "true")
+                                            vlist.AddRange(displayvalue.Split(','));
+                                        else
+                                            fieldValue = displayvalue;
+                                        break;
+                                }
+                            }
+
+                            if (fieldChange.AppendValue == "true")
+                                fieldChange.Value = string.Join(",", vlist.Distinct().ToArray());
+                            else
+                                fieldChange.Value = fieldValue;
+
+                        }
+                        else
                         {
                             JArray sfields = new JArray(stepFields.fields.form.field);
                             JObject jo = sfields.Children<JObject>()
@@ -2606,7 +2637,6 @@ order by wi.StartedOn desc";
                                     fieldChange.Value = displayvalue;
                                     break;
                             }
-
                         }
                     }
                     else if (fieldChange.UseCurrentDate)
@@ -2616,7 +2646,7 @@ order by wi.StartedOn desc";
 
                     fieldChanges.Add(fieldChange);
                 }
-  
+
             }
 
             return fieldChanges;
@@ -3110,6 +3140,9 @@ order by wi.StartedOn desc";
 
                             foreach (var res in itemFields.Reassignments)
                             {
+                                if (res.ByResourceID == 0)
+                                    continue;
+
                                 var ix = users.FindIndex(u => u.ResourceID == res.FromResourceID);
                                 if (ix > -1) users.RemoveAt(ix);
 

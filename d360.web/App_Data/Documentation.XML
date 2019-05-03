@@ -2402,6 +2402,9 @@
             <summary>
             Removes field types contained within your environment.
             </summary>
+            <remarks>
+            You may only provide one of the following: ActionTypeUid, AssetTypeUid, or RelationshipTypeUid.
+            </remarks>
             <returns>A list of field types corresponding to the given criteria, if any.</returns>
         </member>
         <member name="T:d360.web.Controllers.V2.AuditController">
@@ -2887,6 +2890,28 @@
             </summary>
             <param name="assetTypeUid">The Uid of the asset type</param>
             <returns>An HTTP status code and message.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.AssetsController.PostAssetTypeAsync(d360.core.entities.AssetTypeInsert)">
+            <summary>
+            Add an asset type based on Asset Type Class
+            </summary>
+            <remarks>
+            This endpoint can add the following asset type class
+            Glossary,Model,Organization,Policy,Reference,Rule
+            </remarks>
+            <param name="model">Asset Type</param>
+            <returns>An HTTP status code and message.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.AssetsController.PutAssetTypeAsync(d360.core.entities.AssetTypeInsert)">
+            <summary>
+            Updates an asset type based on the specific asset type unique identifier.
+            </summary>
+            <remarks>
+            This endpoint can update the following asset type class
+            Glossary,Model,Organization,Policy,Reference,Rule
+            </remarks>
+            <param name="model"></param>
+            <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.V2.AssetsController.PostAssetsAsync(System.Guid,System.Collections.Generic.List{d360.core.entities.AssetInsert})">
             <summary>
