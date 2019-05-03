@@ -159,15 +159,6 @@ namespace d360.web.Controllers.V2
                     list.ToList().ForEach(y => { item.Add(y.Name, y.FormattedValue); });
                 }
             }
-            //as an single array of items in the response
-            results.ToList().ForEach(x =>
-            {
-                if (x.ResourceID > 0)
-                {
-                    IQueryable<FieldWithRelation> list = Company.GetFieldRelationsByObject(core.SystemObjects.Resource, x.ResourceID);
-                    x.fieldsAsArray = list.Select(y => new { y.Name, y.FormattedValue });
-                }
-            });
             #endregion
 
             return Request.CreateResponse(HttpStatusCode.OK, results);
