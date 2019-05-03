@@ -1067,7 +1067,7 @@ namespace d360.web.Controllers.V2
                     model.ObjectID = assetType.ObjectID;
                 }
 
-                if (model.ParentUid != Guid.Empty)
+                if (model.ParentUid.HasValue && model.ParentUid != Guid.Empty)
                 {
                     parentAssetType = Company.Filter<AssetType>(x => x.uid == model.ParentUid).SingleOrDefault();
                     if (parentAssetType == null)
@@ -1078,10 +1078,10 @@ namespace d360.web.Controllers.V2
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Invalid request", "Not valid ParentUid for the Class.Please check your request and try again."));
                 }
 
-                if(model.ParentUid == model.Uid)
+                if(model.ParentUid.HasValue  && model.ParentUid == model.Uid)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Not valid ParentUid provided.Please check your request and try again."));
 
-                if (model.Hierarchy != null && model.Hierarchy.PredicateUid != Guid.Empty)
+                if (model.Hierarchy != null && model.Hierarchy.PredicateUid.HasValue &&  model.Hierarchy.PredicateUid != Guid.Empty)
                 {
                     predicate = Company.Filter<Predicate>(x => x.UID == model.Hierarchy.PredicateUid).SingleOrDefault();
                     if (predicate == null)
