@@ -14,7 +14,7 @@ declare var CurrentResourceID;
     <div class="row">
         <div class="col s12">
             <div>
-                Completed Forms ({{step.ItemFields['@NumberOfResponses']}}/{{step.ItemFields['@TotalResources']}}):
+                Completed Forms ({{step.ItemFields['@NumberOfResponses'] ? step.ItemFields['@NumberOfResponses'] : 0 }}/{{step.ItemFields['@TotalResources']}}):
             </div>
             <ng-container *ngFor="let form of step.ItemFields.form">
                 <div class="panel-section">        
