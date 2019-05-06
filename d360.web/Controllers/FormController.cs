@@ -75,11 +75,32 @@ namespace d360.web.Controllers
             var words = objectName.Split(' ');
             if (words.Length > 1 && words[1].Length > 0)
             {
-                iconText = words[0][0].ToString().ToUpper() + words[1][0].ToString().ToLower();
+                if (!string.IsNullOrEmpty(words[0]))
+                {
+                    iconText = words[0][0].ToString().ToUpper();
+                }
+                else
+                {
+                    iconText = "_"; // first character is space.
+                }
+                
+
+                if (!string.IsNullOrEmpty(words[1]))
+                {
+                    
+                    iconText+=words[1][0].ToString().ToLower();
+                }
             }
             else
             {
-                iconText = objectName[0].ToString().ToUpper() + objectName[1].ToString().ToLower();
+                if (!string.IsNullOrEmpty(objectName))
+                {
+                    iconText = objectName[0].ToString().ToUpper();
+                    if(objectName.Length > 1)
+                    {
+                        iconText += objectName[1].ToString().ToLower();
+                    }
+                }
             }
 
             if (add)
