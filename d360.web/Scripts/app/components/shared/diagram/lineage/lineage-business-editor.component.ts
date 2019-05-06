@@ -42,7 +42,6 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
     @Output() onSaveComplete = new EventEmitter();
     @Output() onSaveSuccess = new EventEmitter();
 
-    //permissions: ResponsibilityTypeRelationPermission[] = [];
     lineage: LineageEditorRow[] = [];
     model: LineageEditorModel;
     queryResults: AutoCompleteItem[] = [];
@@ -72,10 +71,13 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
 
     ngOnInit() {
         this.load();
-        this.permissionsService.getPermissions(this.objectId, this.object)
-            .then(data => {
+
+        this.permissionsService.getPermissions(this.objectId, this.object).subscribe(
+            data => {
                 this.permissions = data;
-            });
+            }
+        );
+
         this.model = new LineageEditorModel();
         this.model.Focal = this.object;
         this.model.FocalID = this.objectId;
@@ -107,7 +109,7 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
     select(field: string, i: LineageEditorRow, e: any) {
         this.setObjectValue(i, i[field]);
 
-        let data = i[field].data;
+        const data = i[field].data;
 
         switch (field) {
             case 'selectedSourceRelationshipType':
@@ -136,7 +138,7 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
                 break;
         }
 
-        //update source and target keys
+        // update source and target keys
         if (i.SourceIntersectTypeID != null && i.SourceSubjectID != null && i.SourceObjectID != null) {
             i.sourcekey = `${i.SourceIntersectTypeID}.${i.SourceSubjectID}.${i.SourceObjectID}`;
         }
@@ -145,8 +147,8 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
             i.targetkey = `${i.TargetIntersectTypeID}.${i.TargetSubjectID}.${i.TargetObjectID}`;
         }
 
-        //update connection checks
-        this.updateConnections()
+        // update connection checks
+        this.updateConnections();
     }
 
     query(field: string, i: LineageEditorRow, e: any) {
@@ -156,130 +158,150 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
                     r => {
                         this.queryResults = [];
 
-                        r.forEach(i => {
-                            let a = new AutoCompleteItem();
-                            a.label = i.Name;
-                            a.value = i.ID;
-                            a.labelField = 'SourceIntersectTypeName';
-                            a.valueField = 'SourceIntersectTypeID';
-                            a.templateValue = this.formTemplateString(i.Name, e.query);
+                        r.forEach(
+                            i => {
+                                const a = new AutoCompleteItem();
 
-                            a.data = {
-                                Subject: i.Subject,
-                                SubjectID: i.SubjectID,
-                                Object: i.Object,
-                                ObjectID: i.ObjectID
-                            };
+                                a.label = i.Name;
+                                a.value = i.ID;
+                                a.labelField = 'SourceIntersectTypeName';
+                                a.valueField = 'SourceIntersectTypeID';
+                                a.templateValue = this.formTemplateString(i.Name, e.query);
 
-                            this.queryResults.push(a);
-                        });
+                                a.data = {
+                                    Subject: i.Subject,
+                                    SubjectID: i.SubjectID,
+                                    Object: i.Object,
+                                    ObjectID: i.ObjectID
+                                };
+
+                                this.queryResults.push(a);
+                            }
+                        );
 
                         if (this.queryResults.length == 1) {
                             this.setObjectValue(i, this.queryResults[0]);
                         }
-                    });
+                    }
+                );
                 break;
             case 'selectedSourceSubject':
                 this.diagramService.queryObjects(i.SourceSubjectType, i.SourceSubjectTypeID, e.query).subscribe(
                     r => {
                         this.sourceSubResults = [];
 
-                        r.forEach(i => {
-                            let a = new AutoCompleteItem();
-                            a.label = i.TextPath;
-                            a.value = i.ObjectID;
-                            a.labelField = 'SourceSubjectName';
-                            a.valueField = 'SourceSubjectID';
-                            a.templateValue = this.formTemplateString(i.TextPath, e.query);
+                        r.forEach(
+                            i => {
+                                const a = new AutoCompleteItem();
 
-                            a.data = {
-                                Object: i.Object
-                            };
+                                a.label = i.TextPath;
+                                a.value = i.ObjectID;
+                                a.labelField = 'SourceSubjectName';
+                                a.valueField = 'SourceSubjectID';
+                                a.templateValue = this.formTemplateString(i.TextPath, e.query);
 
-                            this.sourceSubResults.push(a);
-                        });
+                                a.data = {
+                                    Object: i.Object
+                                };
+
+                                this.sourceSubResults.push(a);
+                            }
+                        );
 
                         if (this.sourceSubResults.length == 1) {
                             this.setObjectValue(i, this.sourceSubResults[0]);
                         }
-                    });
+                    }
+                );
                 break;
             case 'selectedSourceObject':
                 this.diagramService.queryObjects(i.SourceObjectType, i.SourceObjectTypeID, e.query).subscribe(
                     r => {
                         this.sourceObjResults = [];
 
-                        r.forEach(i => {
-                            let a = new AutoCompleteItem();
-                            a.label = i.TextPath;
-                            a.value = i.ObjectID;
-                            a.labelField = 'SourceObjectName';
-                            a.valueField = 'SourceObjectID';
-                            a.templateValue = this.formTemplateString(i.TextPath, e.query);
+                        r.forEach(
+                            i => {
+                                const a = new AutoCompleteItem();
 
-                            a.data = {
-                                Object: i.Object
-                            };
+                                a.label = i.TextPath;
+                                a.value = i.ObjectID;
+                                a.labelField = 'SourceObjectName';
+                                a.valueField = 'SourceObjectID';
+                                a.templateValue = this.formTemplateString(i.TextPath, e.query);
 
-                            this.sourceObjResults.push(a);
-                        });
+                                a.data = {
+                                    Object: i.Object
+                                };
+
+                                this.sourceObjResults.push(a);
+                            }
+                        );
 
                         if (this.sourceObjResults.length == 1) {
                             this.setObjectValue(i, this.sourceObjResults[0]);
                         }
-                    });
+                    }
+                );
                 break;
             case 'selectedTargetRelationshipType':
                 this.diagramService.queryRelationshipTypes(e.query).subscribe(
                     r => {
                         this.queryResults = [];
-                        r.forEach(i => {
-                            let a = new AutoCompleteItem();
-                            a.label = i.Name;
-                            a.value = i.ID;
-                            a.labelField = 'TargetIntersectTypeName';
-                            a.valueField = 'TargetIntersectTypeID';
-                            a.templateValue = this.formTemplateString(i.Name, e.query);
+                        r.forEach(
+                            i => {
+                                const a = new AutoCompleteItem();
 
-                            a.data = {
-                                Subject: i.Subject,
-                                SubjectID: i.SubjectID,
-                                Object: i.Object,
-                                ObjectID: i.ObjectID
-                            };
+                                a.label = i.Name;
+                                a.value = i.ID;
+                                a.labelField = 'TargetIntersectTypeName';
+                                a.valueField = 'TargetIntersectTypeID';
+                                a.templateValue = this.formTemplateString(i.Name, e.query);
 
-                            this.queryResults.push(a);
-                        });
+                                a.data = {
+                                    Subject: i.Subject,
+                                    SubjectID: i.SubjectID,
+                                    Object: i.Object,
+                                    ObjectID: i.ObjectID
+                                };
+
+                                this.queryResults.push(a);
+                            }
+                        );
 
                         if (this.queryResults.length == 1) {
                             this.setObjectValue(i, this.queryResults[0]);
                         }
-                    });
+                    }
+                );
                 break;
             case 'selectedTargetSubject':
                 this.diagramService.queryObjects(i.TargetSubjectType, i.TargetSubjectTypeID, e.query).subscribe(
                     r => {
                         this.targetSubResults = [];
 
-                        r.forEach(i => {
-                            let a = new AutoCompleteItem();
-                            a.label = i.TextPath;
-                            a.value = i.ObjectID;
-                            a.labelField = 'TargetSubjectName';
-                            a.valueField = 'TargetSubjectID';
-                            a.templateValue = this.formTemplateString(i.TextPath, e.query);
+                        r.forEach(
+                            i => {
+                                const a = new AutoCompleteItem();
 
-                            a.data = {
-                                Object: i.Object
-                            };
+                                a.label = i.TextPath;
+                                a.value = i.ObjectID;
+                                a.labelField = 'TargetSubjectName';
+                                a.valueField = 'TargetSubjectID';
+                                a.templateValue = this.formTemplateString(i.TextPath, e.query);
 
-                            this.targetSubResults.push(a);
-                        });
+                                a.data = {
+                                    Object: i.Object
+                                };
+
+                                this.targetSubResults.push(a);
+                            }
+                        );
 
                         if (this.targetSubResults.length == 1) {
                             this.setObjectValue(i, this.targetSubResults[0]);
                         }
-                    });
+                    }
+                );
                 break;
             case 'selectedTargetObject':
                 this.diagramService.queryObjects(i.TargetObjectType, i.TargetObjectTypeID, e.query).subscribe(
@@ -290,25 +312,29 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
                             return;
                         }
 
-                        r.forEach(i => {
-                            let a = new AutoCompleteItem();
-                            a.label = i.TextPath;
-                            a.value = i.ObjectID;
-                            a.labelField = 'TargetObjectName';
-                            a.valueField = 'TargetObjectID';
-                            a.templateValue = this.formTemplateString(i.TextPath, e.query);
+                        r.forEach(
+                            i => {
+                                const a = new AutoCompleteItem();
 
-                            a.data = {
-                                Object: i.Object
-                            };
+                                a.label = i.TextPath;
+                                a.value = i.ObjectID;
+                                a.labelField = 'TargetObjectName';
+                                a.valueField = 'TargetObjectID';
+                                a.templateValue = this.formTemplateString(i.TextPath, e.query);
 
-                            this.targetObjResults.push(a);
-                        });
+                                a.data = {
+                                    Object: i.Object
+                                };
+
+                                this.targetObjResults.push(a);
+                            }
+                        );
 
                         if (this.targetObjResults.length == 1) {
                             this.setObjectValue(i, this.targetObjResults[0]);
                         }
-                    });
+                    }
+                );
                 break;
             default:
                 console.warn(`Invalid field '${field}' passed to query()`);
@@ -321,24 +347,24 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
     }
 
     add() {
-        let l = new LineageEditorRow();
+        const l = new LineageEditorRow();
 
         this.initializeLineageRow(l);
 
         l.ID = this.lineage.length * -1;
         l.isNew = true;
-        l.selectedSourceObject = "";
-        l.selectedSourceSubject = "";
-        l.selectedTargetObject = "";
-        l.selectedTargetRelationshipType = "";
-        l.selectedTargetSubject = "";
-        l.selectedSourceRelationshipType = "";
+        l.selectedSourceObject = '';
+        l.selectedSourceSubject = '';
+        l.selectedTargetObject = '';
+        l.selectedTargetRelationshipType = '';
+        l.selectedTargetSubject = '';
+        l.selectedSourceRelationshipType = '';
         this.lineage.push(l);
     }
 
     delete(i: LineageEditorRow) {
         if (i.isNew) {
-            let x = this.lineage.indexOf(i);
+            const x = this.lineage.indexOf(i);
 
             if (x >= 0) {
                 this.lineage.splice(x, 1);
@@ -351,14 +377,19 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
     }
 
     updateConnections() {
-        this.lineage.filter(l => l.isNew).forEach(l => l.isConnected = this.checkConnected(l));
+        this.lineage.filter(l => l.isNew).forEach(
+            l => l.isConnected = this.checkConnected(l)
+        );
 
         this.valid = true;
 
         this.lineage.filter(l => l.isNew).forEach(l => l.isDupe = false);
         this.lineage.filter(l => l.isNew).forEach(l => {
-            let other = this.lineage.find(o => o.ID != l.ID &&
-                o.sourcekey == l.sourcekey && o.targetkey == l.targetkey);
+            const other = this.lineage.find(
+                o => o.ID != l.ID
+                    && o.sourcekey == l.sourcekey
+                    && o.targetkey == l.targetkey
+            );
 
             l.isDupe = !!other;
         });
@@ -420,13 +451,18 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
     }
 
     preview() {
-        let valid = this.lineage.filter(l => l.isDeleting || (l.isNew &&
-            l.SourceObjectID != null &&
-            l.SourceSubjectID != null &&
-            l.TargetObjectID != null &&
-            l.TargetSubjectID != null &&
-            l.SourceIntersectTypeID != null &&
-            l.TargetIntersectTypeID != null));
+        const valid = this.lineage.filter(
+            l => l.isDeleting
+                || (
+                    l.isNew
+                    && l.SourceObjectID != null
+                    && l.SourceSubjectID != null
+                    && l.TargetObjectID != null
+                    && l.TargetSubjectID != null
+                    && l.SourceIntersectTypeID != null
+                    && l.TargetIntersectTypeID != null
+                )
+        );
 
         this.model.Adds = valid.filter(l => l.isNew);
         this.model.Deletes = valid.filter(l => l.isDeleting);
@@ -447,8 +483,8 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
                 this.model.Focal = this.object;
                 this.model.FocalID = this.objectId;
 
-                let addErrors = (this.model.Adds == null) ? null : this.model.Adds.filter(m => m.HasError);
-                let deleteErrors = (this.model.Deletes == null) ? null : this.model.Deletes.filter(m => m.HasError);
+                const addErrors = (this.model.Adds == null) ? null : this.model.Adds.filter(m => m.HasError);
+                const deleteErrors = (this.model.Deletes == null) ? null : this.model.Deletes.filter(m => m.HasError);
 
                 this.onSaveComplete.emit();
 
@@ -456,10 +492,12 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
                     this.saveComplete = true;
                     this.isLoading = false;
 
-                    //remove successful items
+                    // remove successful items
                     if (this.model.Adds) {
                         this.model.Adds.filter(a => !a.HasError).forEach(a => {
-                            let added = this.lineage.findIndex(l => l.sourcekey == a.sourcekey && l.targetkey == a.targetkey);
+                            const added = this.lineage.findIndex(
+                                l => l.sourcekey == a.sourcekey && l.targetkey == a.targetkey
+                            );
 
                             if (added >= 0) {
                                 this.lineage[added] = a;
@@ -469,16 +507,27 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
                     }
 
                     if (this.model.Deletes) {
-                        this.model.Deletes.filter(d => !d.HasError).forEach(d => {
-                            let deleted = this.lineage.findIndex(l => l.ID == d.ID);
-                            if (deleted >= 0) this.lineage.splice(deleted, 1);
-                        });
+                        this.model.Deletes.filter(d => !d.HasError).forEach(
+                            d => {
+                                const deleted = this.lineage.findIndex(l => l.ID == d.ID);
+
+                                if (deleted >= 0) {
+                                    this.lineage.splice(deleted, 1);
+                                }
+                            }
+                        );
                     }
 
-                    this.messagesService.showError("Error occurred", "Not all mappings were added/removed successfully.");
+                    this.messagesService.showError(
+                        'Error occurred',
+                        'Not all mappings were added/removed successfully.'
+                    );
                     this.mode = LineageEditorMode.Default;
                 } else {
-                    this.messagesService.showInfoMessage("Save Successful", "Mappings were added/removed from the lineage successfully.");
+                    this.messagesService.showInfoMessage(
+                        'Save Successful',
+                        'Mappings were added/removed from the lineage successfully.'
+                    );
                     this.load();
                     this.mode = LineageEditorMode.Default;
                 }
@@ -490,17 +539,18 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
             rows = this.lineage;
         }
 
-        //incomplete record
-        if (i.SourceIntersectTypeID < 1 ||
-            i.TargetIntersectTypeID < 1 ||
-            i.SourceSubjectID < 1 ||
-            i.SourceObjectID < 1 ||
-            i.TargetSubjectID < 1 ||
-            i.TargetObjectID < 1) {
+        // incomplete record
+        if (i.SourceIntersectTypeID < 1
+            || i.TargetIntersectTypeID < 1
+            || i.SourceSubjectID < 1
+            || i.SourceObjectID < 1
+            || i.TargetSubjectID < 1
+            || i.TargetObjectID < 1
+        ) {
             return false;
         }
 
-        //has intersect related to focal
+        // has intersect related to focal
         if ((i.SourceSubjectID == this.objectId && i.SourceSubject == this.object) ||
             (i.SourceObjectID == this.objectId && i.SourceObject == this.object) ||
             (i.TargetSubjectID == this.objectId && i.TargetSubject == this.object) ||
@@ -508,10 +558,10 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
             return true;
         }
 
-        //get a copy of rows
-        let r = _.cloneDeep(rows);
-        //remove this row from the list
-        let x = r.findIndex(s => s.ID == i.ID);
+        // get a copy of rows
+        const r = _.cloneDeep(rows);
+        // remove this row from the list
+        const x = r.findIndex(s => s.ID == i.ID);
 
         if (x >= 0) {
             r.splice(x, 1);
@@ -523,7 +573,10 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
                 continue;
             }
 
-            if (i.sourcekey == r[j].targetkey || i.targetkey == r[j].sourcekey || i.targetkey == r[j].targetkey) {
+            if (i.sourcekey == r[j].targetkey
+                || i.targetkey == r[j].sourcekey
+                || i.targetkey == r[j].targetkey
+            ) {
                 return this.checkConnected(r[j], r);
             }
         }
@@ -532,8 +585,12 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
     }
 
     formTemplateString(val: string, query: string): string {
-        let x = val.toLowerCase().indexOf(query.toLowerCase());
+        const x = val.toLowerCase().indexOf(query.toLowerCase());
 
-        return val.substring(0, x) + '<strong>' + val.substr(x, query.length) + '</strong>' + val.substring(x + query.length);
+        return val.substring(0, x)
+            + '<strong>'
+            + val.substr(x, query.length)
+            + '</strong>'
+            + val.substring(x + query.length);
     }
 }
