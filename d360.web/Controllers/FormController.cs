@@ -70,9 +70,43 @@ namespace d360.web.Controllers
             var style = Company.GetObjectStyle(type, id);
             bool add = (style == null);
 
-            string iconText = "Tx";
+            if (add)
+            {
+                style = new ObjectStyle
+                {
+                    ObjectType = type,
+                    ObjectID = id,
+                    IconBackColor = backColor,
+                    IconForeColor = foreColor,
+                    IconText = getIconText(objectName)
+                };
+                Company.Add<ObjectStyle>(style);
+            }
+            else
+            {
+                style.IconBackColor = backColor;
+                style.IconForeColor = foreColor;
+                style.IconText = getIconText(objectName);
+                Company.Update<ObjectStyle>(style);
+            }
+        }
 
-            var words = objectName.Split(' ');
+        /// <summary>
+        /// Generates the icon text shown on icons that represent the Asset 
+        /// </summary>
+        /// <param name="assetName"></param>
+        /// <returns></returns>
+        private string getIconText(string assetName)
+        {
+            string iconText = "Tx";
+            if (string.IsNullOrEmpty(assetName))
+            {
+                return iconText;
+            }
+
+            var name = assetName.Trim();
+            
+            var words = name.Split(' ');
             if (words.Length > 1 && words[1].Length > 0)
             {
                 if (!string.IsNullOrEmpty(words[0]))
@@ -84,44 +118,26 @@ namespace d360.web.Controllers
                     iconText = "_"; // first character is space.
                 }
                 
-
                 if (!string.IsNullOrEmpty(words[1]))
                 {
-                    
-                    iconText+=words[1][0].ToString().ToLower();
+
+                    iconText += words[1][0].ToString().ToLower();
                 }
             }
             else
             {
-                if (!string.IsNullOrEmpty(objectName))
+                if (!string.IsNullOrEmpty(name))
                 {
-                    iconText = objectName[0].ToString().ToUpper();
-                    if(objectName.Length > 1)
+                    iconText = name[0].ToString().ToUpper();
+                    if (name.Length > 1)
                     {
-                        iconText += objectName[1].ToString().ToLower();
+                        iconText += name[1].ToString().ToLower();
                     }
                 }
             }
 
-            if (add)
-            {
-                style = new ObjectStyle
-                {
-                    ObjectType = type,
-                    ObjectID = id,
-                    IconBackColor = backColor,
-                    IconForeColor = foreColor,
-                    IconText = iconText
-                };
-                Company.Add<ObjectStyle>(style);
-            }
-            else
-            {
-                style.IconBackColor = backColor;
-                style.IconForeColor = foreColor;
-                style.IconText = iconText;
-                Company.Update<ObjectStyle>(style);
-            }
+            return iconText;
+
         }
 
         void upsertObjectStyle(SystemObjects type, int id, string foreColor, string backColor, string objectName = "Tx")
