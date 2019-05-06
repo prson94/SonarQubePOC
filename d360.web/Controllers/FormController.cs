@@ -1313,6 +1313,7 @@ namespace d360.web.Controllers
                             DisplayFormat = model.AssetType.DisplayFormat,
                             Description = model.AssetType.Description,
                             CanOwnFusion = model.CanOwnFusion ?? false,
+                            AutoDisplayDescription = model.AutoDisplayDescription ?? false
                         };
                         Company.Add(a);
                         parentType = SystemObjects.ArtifactType;
