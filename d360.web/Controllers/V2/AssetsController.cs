@@ -936,10 +936,10 @@ namespace d360.web.Controllers.V2
             if (assetTypeId == 0)
                 fieldNames = new List<string> { "name" };
             else
-                fieldNames = Company.Filter<FieldType>(x => x.AssetTypeID == assetTypeId).Select(x => x.Name.ToLower()).ToList();
+                fieldNames = Company.Filter<FieldType>(x => x.AssetTypeID == assetTypeId).Select(x => x.FriendlyName.ToLower()).ToList();
 
             displayFormat = displayFormat.Replace("}{", "} {");
-            var displayFieldNames = displayFormat.Split().Where(x => x.StartsWith("{") && x.EndsWith("}"))
+                var displayFieldNames = displayFormat.Split().Where(x => x.StartsWith("{") && x.EndsWith("}"))
                     .Select(x => x.ToLower().Replace("{", string.Empty).Replace("}", string.Empty))
                     .ToList();
             return !displayFieldNames.Except(fieldNames).Any();
@@ -972,7 +972,7 @@ namespace d360.web.Controllers.V2
 
             string iconText = "Tx";
 
-            var words = objectName.Split(' ');
+            var words = objectName.Trim().Split(' ');
             if (words.Length > 1 && words[1].Length > 0)
             {
                 iconText = words[0][0].ToString().ToUpper() + words[1][0].ToString().ToLower();
