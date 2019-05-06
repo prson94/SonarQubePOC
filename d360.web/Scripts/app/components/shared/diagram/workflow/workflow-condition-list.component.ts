@@ -1,4 +1,4 @@
-﻿import { Component, NgZone, Output, EventEmitter, Input, OnChanges, SimpleChanges } from '@angular/core';
+﻿import { Component, NgZone, Output, EventEmitter, Input, OnChanges, SimpleChanges, OnInit } from '@angular/core';
 import { BaseComponent } from '../../../shared/base.component';
 import { Column, Header, MenuItem } from 'primeng/primeng';
 
@@ -6,9 +6,27 @@ import { Column, Header, MenuItem } from 'primeng/primeng';
     selector: 'd3s-workflow-condition-list',
     template: `
     <header>
-        &nbsp;
+                <div class="row" *ngIf="!isLoading && isAllAnyVisible()">
+                        <input type="radio" name="isAll"
+                               [(ngModel)]="satisfyAll"
+                               (ngModelChange)="connectorChange.emit($event)"
+                               [value]="true"
+                               style="width: 15px;" />
+                        <div class="FieldName">
+                            Satisfy all&nbsp;&nbsp;&nbsp;&nbsp;
+                        </div>
+                        <input type="radio" name="isAll"
+                               [(ngModel)]="satisfyAll"
+                               (ngModelChange)="connectorChange.emit($event)"
+                               [value]="false"
+                               style="width: 15px;" />
+                        <div class="FieldName">
+                            Satisfy any
+                        </div>
+                    </div>
         <d3s-tile-actions hideTooltip="true" [hasAdd]="!readonly" (addClick)="addClick.emit()"></d3s-tile-actions>
-    </header>
+<div *ngIf="!isAllAnyVisible()">&nbsp;</div>
+</header>
     <p-table #dt [value]="filteredConditions" selectionMode="single" [metaKeySelection]="true" [pageLinks]="3" [paginator]="true" [rows]="5" [rowsPerPageOptions]="defaultPagingOptions">
         <ng-template pTemplate="header">
             <tr>
@@ -41,19 +59,29 @@ import { Column, Header, MenuItem } from 'primeng/primeng';
 `
 })
 
-export class WorkflowConditionListComponent extends BaseComponent implements OnChanges {
+export class WorkflowConditionListComponent extends BaseComponent implements OnChanges, OnInit {
     @Input() conditions: any[] = [];
     @Input() selection;
     @Input() readonly = false;
+    @Input() satisfyAll: boolean = true;
     @Output() selectionChange = new EventEmitter();
     @Output() addClick = new EventEmitter();
     @Output() removeClick = new EventEmitter();
     @Output() editClick = new EventEmitter();
+    @Output() connectorChange = new EventEmitter();
 
     private filteredConditions: any[] = [];
+    
+    ngOnInit() {
+        this.satisfyAll = this.conditions.every(c => c["@Connector"] == "AND");
+    }
 
     ngOnChanges(changes: SimpleChanges) {
         this.filteredConditions = this.conditions.filter(c => c['@ContextualFieldID'] == null || (c['@ContextualFieldID'] != 'IssueObject' && c['@ContextualFieldID'] != 'IssueObjectID'));
+    }
+
+    isAllAnyVisible() {
+        return this.conditions.filter(x => x["@FieldTypeID"]).length > 1;
     }
 
     constructor() {

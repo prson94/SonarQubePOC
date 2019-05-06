@@ -816,7 +816,7 @@ select	@pageSize as 'pageSize',
 				OT.Uid as 'Object.AssetTypeUid'
 		from	[Intersect] I
 				inner join IntersectType T on T.ID = I.IntersectTypeID
-				inner join [Predicate] P on P.ID = T.PredicateID
+				left join [Predicate] P on P.ID = T.PredicateID
 				inner join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID
 				inner join AssetType ST on ST.ID = S.AssetTypeID
 				inner join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID
@@ -1368,6 +1368,224 @@ from	IntersectType I
                         Connection.Close();
 
                         SendWorkflowEvents(at.Object, at.ObjectID, results, ChangeType.Delete);
+                    }
+                }
+            }
+
+            return results;
+        }
+
+        public List<DatabaseBulkAssetTypeResult> RemoveAssetTypes(ApiExecution execution, AssetTypeDeletes import, int timeout = 7200)
+        {
+            var results = new List<DatabaseBulkAssetTypeResult>();
+            var dt = DateTime.UtcNow;
+            bool generalChecksCompleted = false;
+            CurrentExecutionLocationModel currentLocation = null;
+
+            var executionItemDupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
+            if (executionItemDupes.Any())
+            {
+                execution.ErrorMessage = $"Duplicate execution item identifiers: {string.Join(", ", executionItemDupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
+                results.AddRange(import.Select(i => new DatabaseBulkAssetTypeResult { ExecutionItemUid = i.ExecutionItemUid, uid = i.Uid, Message = execution.ErrorMessage, Success = false }));
+            }
+            else
+            {
+                var uidDupes = import.GroupBy(i => i.Uid).Where(i => i.Count() > 1).Select(i => new { Uid = i.Key, Count = i.Count() }).ToList();
+                if (uidDupes.Any())
+                {
+                    execution.ErrorMessage = $"Duplicate Asset Type Uids: {string.Join(", ", uidDupes.Select(i => i.Uid.ToString()))}. Identifiers must be unique within a batch.";
+                    results.AddRange(import.Select(i => new DatabaseBulkAssetTypeResult { ExecutionItemUid = i.ExecutionItemUid, uid = i.Uid, Message = execution.ErrorMessage, Success = false }));
+                }
+                else
+                {
+                    try
+                    {
+                        currentLocation = GetCurrentExecutionLocation(execution.ExecutionID, "api.ExecutionDeletedAssetType");
+
+                        if (currentLocation.HighestItemNumberProcessed > 0)
+                        {
+                            results.AddRange(
+                                Query<DatabaseBulkAssetTypeResult>(
+                                    $"select * from api.ExecutionDeletedAssetType where ExecutionID = @ExecutionID and ItemNumber <= {currentLocation.HighestItemNumberProcessed}",
+                                    new { execution.ExecutionID }
+                                )
+                            );
+                        }
+
+                        #region Build data tables.
+
+                        var table = new DataTable();
+                        table.Columns.Add("ExecutionID", typeof(Guid));
+                        table.Columns.Add("ItemNumber", typeof(int));
+                        table.Columns.Add("ExecutionItemUid", typeof(Guid));
+                        table.Columns.Add("Uid", typeof(Guid));
+                        table.Columns.Add("Cascade", typeof(bool));
+                        table.Columns.Add("AssetTypeID", typeof(int));
+                        table.Columns.Add("Message", typeof(string));
+                        table.Columns.Add("Success", typeof(bool));
+
+                        #endregion
+
+                        #region Generate data sets
+
+                        for (int i = 1; i <= import.Count; i++)
+                        {
+                            if (i > currentLocation.HighestItemNumber)
+                            {
+                                var model = import[i - 1];
+
+                                var row = table.NewRow();
+
+                                row["ExecutionID"] = execution.ExecutionID;
+                                row["ItemNumber"] = i;
+                                if (model.ExecutionItemUid.HasValue) row["ExecutionItemUid"] = model.ExecutionItemUid.Value;
+                                row["Uid"] = model.Uid;
+                                row["Cascade"] = model.Cascade;
+
+                                table.Rows.Add(row);
+                            }
+                        }
+
+                        #endregion
+
+                        if (Database.Connection.State != ConnectionState.Open)
+                            Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+                        #region Bulk Copy
+
+                        SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection);
+
+                        bulkCopy.BatchSize = table.Rows.Count;
+                        bulkCopy.DestinationTableName = "api.ExecutionDeletedAssetType";
+                        bulkCopy.BulkCopyTimeout = timeout;
+
+                        bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                        bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                        bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                        bulkCopy.ColumnMappings.Add("Uid", "Uid");
+                        bulkCopy.ColumnMappings.Add("Cascade", "Cascade");
+
+                        bulkCopy.WriteToServer(table);
+
+                        bulkCopy = null;
+
+                        #endregion
+
+                        #region Resolve asset types based on UIDs
+
+                        Connection.Execute(@"
+    update	T
+    set		T.Object = S.Object, 
+            T.ObjectID = S.ObjectID, 
+            T.AssetTypeID = S.ID
+    from	api.ExecutionDeletedAssetType T
+		    inner join AssetType S on S.Uid = T.Uid and T.ExecutionID = @ExecutionID;",
+                    new { execution.ExecutionID }, commandTimeout: timeout);
+
+                        #endregion
+
+                        #region Log lookup errors
+
+                        Connection.Execute($@"
+    update	api.ExecutionDeletedAssetType
+    set		Success = 0,
+		    [Message] = coalesce([Message] + '; ', '') + 'You must provide a valid Uid for this asset type when you are attempting to delete it'
+    where	ExecutionID = @ExecutionID and ([Uid] is null or [Uid] = CAST(CAST(0 AS BINARY) AS UNIQUEIDENTIFIER)); 
+
+    update	api.ExecutionDeletedAssetType
+    set		Success = 0,
+		    [Message] = coalesce([Message] + '; ', '') + 'Not found based on Uid provided'
+    where	ExecutionID = @ExecutionID and AssetTypeID is null;",
+                        new { execution.ExecutionID }, commandTimeout: timeout);
+
+                        #endregion
+
+                        #region Log cascade errors
+
+                        Connection.Execute($@"
+    update	T
+    set		T.Success = 0,
+		    T.[Message] = coalesce([Message] + '; ', '') + 'You have not enabled Cascade, yet there are ' + cast(A.AssetCount as nvarchar) + ' asset(s) present for this type.'
+    from    api.ExecutionDeletedAssetType T
+            cross apply (
+                select  count(1) as AssetCount
+                from    Asset
+                where   AssetTypeID = T.AssetTypeID
+                        and [State] not in (3,4)
+            ) A 
+    where	T.ExecutionID = @ExecutionID
+            and T.[Cascade] = 0
+            and A.AssetCount > 0; 
+
+    update	T
+    set		T.Success = 0,
+		    T.[Message] = coalesce([Message] + '; ', '') + 'You have not enabled Cascade, yet there are ' + cast(A.ChildCount as nvarchar) + ' child asset type(s) present for this type.'
+    from    api.ExecutionDeletedAssetType T
+            cross apply (
+                select  count(1) as ChildCount
+                from	IntersectType I
+		                inner join AssetType A on I.Object = A.Object and I.ObjectID = A.ObjectID and I.Subject = T.Object and I.SubjectID = T.ObjectID and A.[State] not in (3,4)
+		                inner join [Predicate] P on P.ID = I.PredicateID and P.[Type] in (3,4)
+            ) A 
+    where	T.ExecutionID = @ExecutionID
+            and T.[Cascade] = 0
+            and A.ChildCount > 0;",
+                        new { execution.ExecutionID }, commandTimeout: timeout);
+
+                        #endregion
+
+                        generalChecksCompleted = true;
+                    }
+                    catch (Exception generalEx)
+                    {
+                        generalChecksCompleted = false;
+                        var msg = generalEx.GetFullExceptionData(false);
+                        execution.ErrorMessage = msg;
+                        execution.Processed = 0;
+                        execution.Error = import.Count();
+
+                        results = new List<DatabaseBulkAssetTypeResult>();
+                        results.AddRange(import.Select(i => new DatabaseBulkAssetTypeResult { ExecutionItemUid = i.ExecutionItemUid, Message = msg, Success = false }));
+                    }
+
+                    if (generalChecksCompleted)
+                    {
+                        int itemNumber = 1;
+
+                        foreach (var t in import)
+                        {
+                            bool runCompleted = false;
+                            int retryCount = 0;
+
+                            while (!runCompleted && retryCount <= API_V2_RETRY_LIMIT)
+                            {
+                                try
+                                {
+                                    var thisResult = Connection.Query<DatabaseBulkAssetTypeResult>(
+                                        "exec api.DeleteAssetType @executionUid, @itemNumber, @resourceID", 
+                                        new { executionUid = execution.ExecutionID, itemNumber, resourceID = CurrentResourceID }, 
+                                        commandTimeout: timeout
+                                    ).Single();
+
+                                    results.Add(thisResult);
+
+                                    runCompleted = true;
+                                }
+                                catch (Exception ex)
+                                {
+                                    retryCount++;
+
+                                    if (retryCount > API_V2_RETRY_LIMIT)
+                                    {
+                                        LogLoopExecutionError(execution.ExecutionID, itemNumber, itemNumber, "api.ExecutionDeletedAssetType", ex.GetFullExceptionData(false), timeout);
+                                    }
+                                }
+                            }
+
+                            itemNumber++;
+                        }
+
+                        Connection.Close();
                     }
                 }
             }

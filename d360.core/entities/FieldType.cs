@@ -4,6 +4,7 @@ using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System;
+using d360.core.enums;
 
 namespace d360.core.entities
 {
@@ -166,8 +167,6 @@ namespace d360.core.entities
     {
         [DataMember]
         public bool IsRequired { get; set; }
-        [DataMember]
-        public string Message { get; set; }
     }
     public class FieldTypeDescriptionApiViewModel_ValidationLength : FieldTypeDescriptionApiViewModel_Validation
     {
@@ -175,8 +174,6 @@ namespace d360.core.entities
         public decimal? MinimumLength { get; set; }
         [DataMember]
         public decimal? MaximumLength { get; set; }
-        [DataMember]
-        public int? Length { get; set; }
     }
     public class FieldTypeDescriptionApiViewModel_ValidationDecimal: FieldTypeDescriptionApiViewModel_ValidationLength
     {
@@ -185,6 +182,9 @@ namespace d360.core.entities
     }
     public class FieldTypeDescriptionApiViewModel_ValidationText : FieldTypeDescriptionApiViewModel_ValidationLength
     {
+        [DataMember]
+        public string Message { get; set; }
+
         [DataMember]
         public string Pattern { get; set; }
     }
@@ -310,7 +310,7 @@ namespace d360.core.entities
         [DataMember]
         public FieldTypeDescriptionApiViewModel_Display Description { get; set; }
         [DataMember]
-        public FieldTypeComplexLookupDefinition Definition { get; set; }
+        public FieldTypeComplexLookupDefinitionApiViewModel Definition { get; set; }
         [DataMember]
         public bool IsDisplayable { get; set; }
         [DataMember]
@@ -425,7 +425,9 @@ namespace d360.core.entities
     public class FieldTypeDataTypeLookupApiViewModel_List
     {
         [DataMember]
-        public Guid Uid { get; set; }
+        public Guid? Uid { get; set; }
+        [DataMember]
+        public AssetTypeClass? Class { get; set; }
         [DataMember]
         public bool AllowMultipleValues { get; set; }
     }
@@ -436,7 +438,7 @@ namespace d360.core.entities
         [DataMember]
         public FieldTypeDescriptionApiViewModel_DisplayForm Description { get; set; }
         [DataMember]
-        public bool AllowAllValue { get; set; }
+        public bool? AllowAllValue { get; set; }
         [DataMember]
         public string AllowAllLabel { get; set; }
         [DataMember]
@@ -445,6 +447,8 @@ namespace d360.core.entities
         public FieldTypeDataTypeLookupApiViewModel_Format Format { get; set; }
         [DataMember]
         public FieldTypeDataTypeLookupApiViewModel_List List { get; set; }
+        [DataMember]
+        public FieldTypeDescriptionApiViewModel_Validation Validation { get; set; }
     }
 
     public class FieldTypeDataTypeNumberApiViewModel : FieldTypeEditableApiViewModel
@@ -567,6 +571,12 @@ namespace d360.core.entities
         [DataMember]
         public string Category { get; set; }
         [DataMember]
+        public Guid? ActionTypeUid { get; set; }
+        [DataMember]
+        public Guid? AssetTypeUid { get; set; }
+        [DataMember]
+        public Guid? RelationshipTypeUid { get; set; }
+        [DataMember]
         public FieldTypeDataTypeApiViewModel Type { get; set; }
     }
 
@@ -588,6 +598,18 @@ namespace d360.core.entities
         Replace = 2
     }
 
+    public class FieldTypeApiEditModel
+    {
+        [DataMember]
+        public string Name { get; set; }
+        [DataMember]
+        public string FriendlyName { get; set; }
+        [DataMember]
+        public string Category { get; set; }
+        [DataMember]
+        public FieldTypeDataTypeApiViewModel Type { get; set; }
+    }
+
     public class FieldTypesApiEditModel
     {
         [DataMember]
@@ -603,7 +625,7 @@ namespace d360.core.entities
         public FieldTypesApiEditAction Action { get; set; }
 
         [DataMember]
-        public List<FieldTypeApiViewModel> Fields { get; set; }
+        public List<FieldTypeApiEditModel> Fields { get; set; }
     }
 
     public class FieldTypeApiDeleteModel

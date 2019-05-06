@@ -1,4 +1,4 @@
-﻿import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
+import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
 import { DetailRow, DetailField, DetailModel, DetailFieldType } from '../../../models/object-detail.model';
 import { ObjectDetailService } from '../../../services/object-detail.service';
 import { LookupGrid } from '../../../models/grid-definition.model';
@@ -27,7 +27,7 @@ export class ObjectDetailComponent implements OnChanges {
 
     rows = new Array<DetailRow>();
 
-    constructor(private objectDetailService: ObjectDetailService, protected messagesService: MessagesService) {}
+    constructor(private objectDetailService: ObjectDetailService, protected messagesService: MessagesService) { }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         for (let p in changes) {
@@ -41,15 +41,15 @@ export class ObjectDetailComponent implements OnChanges {
 
         this.load();
     }
-        
+
     public load(): void {
         if (this.objectType && this.objectID) {
             this.isLoading = true;
             this.objectDetailService.getObjectDetail(this.objectID, this.objectType)
-                .then(data => {                    
+                .subscribe(data => {
                     this.rows = data.rows;
                     this.categories = [];
-                    
+
                     this.rows.forEach(r => {
                         if (r.Category && this.categories.find(c => c.name == r.Category) == null)
                             this.categories.push(new Category(r.Category));
@@ -64,11 +64,9 @@ export class ObjectDetailComponent implements OnChanges {
                             }
                             if (f.Type == DetailFieldType.Lookup) {
                                 this.objectDetailService.getLookupGrid(f.LookupGridUrl)
-                                    .then(i => {
+                                    .subscribe(i => {
                                         f.Data = i;
-                                    })
-                                    .then(() => {
-                                        if (!f.Data || !f.Data.Values || f.Data.Values.length == 0) {
+                                        if ((!f.Data || !f.Data.Values || f.Data.Values.length == 0) && (!f.ShowIfEmpty)) {
                                             f.Type = DetailFieldType.None;
                                             r.FirstColumnFields.splice(r.FirstColumnFields.indexOf(f), 1);
                                         }
@@ -88,11 +86,9 @@ export class ObjectDetailComponent implements OnChanges {
                             }
                             if (s.Type == DetailFieldType.Lookup) {
                                 this.objectDetailService.getLookupGrid(s.LookupGridUrl)
-                                    .then(i => {
+                                    .subscribe(i => {
                                         s.Data = i;
-                                    })
-                                    .then(() => {
-                                        if (!s.Data || !s.Data.Values || s.Data.Values.length == 0) {
+                                        if ((!s.Data || !s.Data.Values || s.Data.Values.length == 0) && (!s.ShowIfEmpty)) {
                                             s.Type = DetailFieldType.None;
                                             r.SecondColumnFields.splice(r.SecondColumnFields.indexOf(s), 1);
                                         }
@@ -103,11 +99,11 @@ export class ObjectDetailComponent implements OnChanges {
                         r.SecondColumnFields = r.SecondColumnFields.filter(f => f.Type != DetailFieldType.None);
                     });
 
-                    
+
 
                     let displayRows = this.rows.filter(r => r.Category == null && ((r.FirstColumnFields && r.FirstColumnFields.length > 0) || (r.SecondColumnFields && r.SecondColumnFields.length > 0)));
 
-                    
+
 
                     for (let i = 0; i < this.categories.length; i++) {
                         let items = this.rows.filter(r => r.Category == this.categories[i].name);
@@ -120,7 +116,7 @@ export class ObjectDetailComponent implements OnChanges {
                     }
                     this.rows = displayRows;
                     this.loadCategory();
-                    this.isLoading = false;                    
+                    this.isLoading = false;
                 });
         }
     }
@@ -128,7 +124,7 @@ export class ObjectDetailComponent implements OnChanges {
 
     private setDetailFieldType(field: DetailField) {
         field.Type = DetailFieldType.Field;
-        if ((field.Value == null || field.Value == '') && field.ShowIfEmpty==false)
+        if ((field.Value == null || field.Value == '') && field.ShowIfEmpty == false)
             field.Type = DetailFieldType.None;
         if (field.TooltipContext != null) {
             if (field.Value != null && field.Value != '')
@@ -136,7 +132,7 @@ export class ObjectDetailComponent implements OnChanges {
             else
                 field.Type = DetailFieldType.None;
         }
-           
+
         if (field.LookupGridUrl != null) {
             field.Type = DetailFieldType.Lookup;
         }
@@ -148,6 +144,7 @@ export class ObjectDetailComponent implements OnChanges {
             c.rows.forEach(r => {
                 let fcount = r.FirstColumnFields.length;
                 r.FirstColumnFields.forEach(f => {
+                    console.log(f.Type);
                     if (f.Type == DetailFieldType.Lookup) {
                         if (!f.Data || !f.Data.Values || f.Data.Values.length == 0) {
                             c.hasData = true;
@@ -172,7 +169,7 @@ export class ObjectDetailComponent implements OnChanges {
                 });
             });
         });
-
+        console.log(this.categories);
     }
 }
 

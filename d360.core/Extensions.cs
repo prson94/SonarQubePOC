@@ -8,6 +8,7 @@ using d360.core.resources;
 using System.Data.SqlClient;
 using System.Security.Cryptography;
 using System.Text;
+using System.IO;
 
 namespace d360.core
 {
@@ -156,6 +157,21 @@ namespace d360.core
                     root.Elements().Select(el => StripNamespaces(el)) :
                     (object)root.Value
             );
+        }
+
+        public static string GetSafeFilename(this string filename)
+        {
+            if (string.IsNullOrEmpty(filename))
+                return string.Empty;
+
+            //restricted characters check
+            var fn = string.Join("_", filename.Split(Path.GetInvalidFileNameChars()));
+
+            // max filename check
+            if (fn.Length > 250)
+                fn = fn.Substring(0, 250);
+
+            return fn;
         }
 
         public static XElement ToXElement(this string xml)

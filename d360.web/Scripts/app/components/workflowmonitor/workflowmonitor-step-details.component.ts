@@ -3,7 +3,7 @@ import { BaseComponent } from '../shared/base.component';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { WorkflowService } from '../../services/workflow.service';
-import { WorkflowItemStep, WorkflowActivityType, StepType, WorkflowDiagramNode, NodeModel, ActivityTypeInfo, DiagramObjectType, WorkflowStepDetail, WorkflowChangeType } from '../../models/workflow.model';
+import { WorkflowItemStep, WorkflowActivityType, StepType, WorkflowDiagramNode, NodeModel, ActivityTypeInfo, DiagramObjectType, WorkflowStepDetail, WorkflowChangeType, WorkflowStepReassignment } from '../../models/workflow.model';
 import { ResponsibilityTypeService } from '../../services/responsibility-type.service';
 import { WorkflowHelpers } from '../../static/workflow-helpers';
 
@@ -22,6 +22,7 @@ export class WorkflowMonitorStepDetailsComponent extends BaseComponent implement
     @Output() visibleChange = new EventEmitter();
     @Output() onCloseClick = new EventEmitter();
     step: WorkflowStepDetail = null;
+    reassignments: WorkflowStepReassignment[] = [];
     StepType = StepType;
     WorkflowActivityType = WorkflowActivityType;
     WorkflowChangeType = WorkflowChangeType
@@ -34,6 +35,8 @@ export class WorkflowMonitorStepDetailsComponent extends BaseComponent implement
         { value: '2', label: 'Pending Delete' },
         { value: '3', label: 'Deleted' },
     ];
+    private showAllAnyCondition: boolean = false;
+    private isSatisfyAll: boolean = true;
 
     constructor(private workflowService: WorkflowService, private ref: ChangeDetectorRef, private responsibilityService: ResponsibilityTypeService) {
         super();
@@ -67,12 +70,37 @@ export class WorkflowMonitorStepDetailsComponent extends BaseComponent implement
                 .then(r => {
                     this.isLoading = false;
                     this.step = r;
+                    this.reassignments = [];
+
+                    if (this.step.ItemFields != null && this.step.ItemFields.Reassigned != null) {
+                        for (let i = 0; i < this.step.ItemFields.Reassigned.length; i++) {
+                            this.reassignments.push(new WorkflowStepReassignment(this.step.ItemFields.Reassigned[i]));
+                        }
+                    }
+
                     this.ref.markForCheck();
-                    console.log('load', this.step);
+                })
+                .then(r => {
+                    this.showAllAnyCondition = this.step.Condition.filter(x => x["@FieldTypeID"]).length > 1;
+                    this.isSatisfyAll = this.step.Condition.every(x => x["@Connector"] == "AND");
                 });
         }
         else
             return Promise.resolve();
+    }
+
+
+    private get bulkReassignments() {
+        return this.reassignments.filter(r => r.IsBulkReassignment);
+    }
+
+    private get reassignment() {
+        if (this.reassignments == null || this.reassignments.length < 1)
+            return null;
+        else if (this.reassignments.length == 1)
+            return this.reassignments[0];
+        else
+            return this.reassignments.find(r => !r.IsBulkReassignment);
     }
 
     private close() {

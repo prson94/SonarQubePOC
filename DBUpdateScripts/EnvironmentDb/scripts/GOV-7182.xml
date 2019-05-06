@@ -1,0 +1,23 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="BHoward" id="GOV-7182">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[  
+    UPDATE [dbo].[SiteNav] SET Title =  N'Fusion', SortOrder = 5 WHERE Name = '#Fusion' 
+		]]>
+    </sql>
+    <rollback>
+	<![CDATA[					   		 	 
+    UPDATE [dbo].[SiteNav] SET [SortOrder] = 7, [Icon] = N'fa-database', [Title] = N'Fusion' WHERE [Name] = N'#Fusion'		   	
+			]]>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>

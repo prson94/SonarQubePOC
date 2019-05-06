@@ -23,4 +23,6 @@
   <include file="scripts/GOV-6723.xml"/>
   <include file="scripts/GOV-6629.xml"/>
   <include file="scripts/GOV-7061.xml"/>
+  <include file="scripts/GOV-7113.xml"/>
+  <include file="scripts/GOV-7198.xml"/> <!--system setting for draft statuses-->
 </databaseChangeLog>

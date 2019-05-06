@@ -17,7 +17,7 @@ import { createWriteStream } from 'fs';
 @Component({
     selector: 'd3s-site-menu-category',
     template: ` 
-                    <li #item [ngClass]="{'menu-category':true,'menu-parent':menu && (menu.NavigationItems),'menu-active':menu?.isActiveItem}" title="{{title}}" (mouseenter)="show(item);clearInput(); clearSearches(event, item);" (mouseleave)="hide(item);" [routerLink]="url ? url : []" style="cursor: pointer;" >
+                    <li #item [ngClass]="{'menu-category':true,'menu-parent':menu && (menu.NavigationItems),'menu-active':menu?.isActiveItem}" title="{{title}}" (mouseenter)="show(item); clearSearches(event, item);" (mouseleave)="hide(item);" [routerLink]="url ? url : []" style="cursor: pointer;" >
                        <div style="display:inline-flex;">
                             <i *ngIf="rootIconName" [class]="'fa ' + rootIconName" style="padding: 10px;"></i>
                             <img *ngIf="imageUrl" [src]="imageUrl" style="max-width: 20px; max-height: 20px; margin:10px 10px 10px 10px" />
@@ -26,10 +26,10 @@ import { createWriteStream } from 'fs';
                                 <i [ngClass]="{'pull-right menu-category fa fa-caret-right':(menu && menu.NavigationItems && menu.NavigationItems.length > 0),'icon-active':expanded, 'icon':!expanded}"></i>
                             </div>
                         </div>
-                        <div #panel *ngIf="menu && menu.NavigationItems && menu.NavigationItems.length > 0" class="menu-child megamenu-panel" [ngStyle]="{'display:flex; flex-direction:column': menu.isActiveItem}" (click)="stopNavigation($event)" (keyup)="checkKey($event,panel)">
+                        <div #panel *ngIf="menu && menu.NavigationItems && menu.NavigationItems.length > 0" class="menu-child megamenu-panel" title="" [ngStyle]="{'display:flex; flex-direction:column': menu.isActiveItem}" (click)="stopNavigation($event)" (keyup)="checkKey($event,panel)">
                             <div>
                                 <div class="row megamenu-title truncate">
-                                    <input (keyup)="positionMenu(item)" #searchinput type="search" [(ngModel)]=searchText placeholder="Search menu..."/>
+                                    <input (keyup)="positionMenu($event,item)" #searchinput type="search" [(ngModel)]=searchText placeholder="Search menu..."/>
                                     <i (click)="clearInput()" [ngClass]="{'fa fa-times':searchText != '', 'fa fa-search':searchText == '' ||  !seachtext}" style="padding: 10px;margin-left:auto;"></i>
                                 </div>
                                     <span class="megamenu-tools" *ngIf="showClearButton">
@@ -112,17 +112,23 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
             });
         }
     }
-    show(item) {        
-        this.positionMenu(item);
+    show(item) {
+        if (this.menu.isActiveItem)
+            return;
+        this.positionMenu(null,item);
     }
 
-    private positionMenu(item: any) {
+    private positionMenu(event: any, item: any) {
+        if (event != null && (event.keyCode == 40 || event.keyCode == 13 || event.keyCode == 38)) {
+            return;
+        }
         if (this.menu && this.menu.NavigationItems) {
             let submenu = item.children[0].nextElementSibling;
             if (submenu) {
+                var dims = item.getBoundingClientRect();
                 this.menu.isActiveItem = true;
                 submenu.style.zIndex = ++SiteNav.zindex;
-                submenu.style.top = '0px';
+                submenu.style.top = dims.top + 'px';
                 submenu.style.left = item.offsetWidth + 'px';
                 window.setTimeout(() => {
                     this.searchInput.nativeElement.focus();
@@ -178,24 +184,24 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
 
     repositionMenuToFit(element) {
         var dims = element.getBoundingClientRect();
-        let windowHeight = window.innerHeight - 40;
+        let windowHeight = window.innerHeight;
         if (dims) {
             var maxHeight = dims.top + dims.height;
 
             //case where menu is bigger than height of page
             if (dims.height > windowHeight) {                
-               
-                element.style.top = '-' + 40 + 'px';
                 dims = element.getBoundingClientRect();
+                element.style.top = 40 + 'px';
                 maxHeight = dims.top + dims.height;
                 if (maxHeight > windowHeight) { //case where bottom is below page after resizing
-                    var topOffset = windowHeight - maxHeight;
+                    var topOffset = dims.top + (windowHeight - maxHeight);
                     element.style.top = topOffset + 'px';
                 }
             }
             else if (maxHeight > windowHeight) { //case where bottom is below page
-                var topOffset = windowHeight - maxHeight;
-                element.style.top = (topOffset + 40) + 'px';
+                var topOffset = dims.top + (windowHeight - maxHeight);
+
+                element.style.top = topOffset + 'px';
             }            
         } 
     }

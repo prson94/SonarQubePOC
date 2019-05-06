@@ -70,18 +70,6 @@ namespace d360.web.Controllers
             var style = Company.GetObjectStyle(type, id);
             bool add = (style == null);
 
-            string iconText = "Tx";
-
-            var words = objectName.Split(' ');
-            if (words.Length > 1 && words[1].Length > 0)
-            {
-                iconText = words[0][0].ToString().ToUpper() + words[1][0].ToString().ToLower();
-            }
-            else
-            {
-                iconText = objectName[0].ToString().ToUpper() + objectName[1].ToString().ToLower();
-            }
-
             if (add)
             {
                 style = new ObjectStyle
@@ -90,7 +78,7 @@ namespace d360.web.Controllers
                     ObjectID = id,
                     IconBackColor = backColor,
                     IconForeColor = foreColor,
-                    IconText = iconText
+                    IconText = getIconText(objectName)
                 };
                 Company.Add<ObjectStyle>(style);
             }
@@ -98,9 +86,58 @@ namespace d360.web.Controllers
             {
                 style.IconBackColor = backColor;
                 style.IconForeColor = foreColor;
-                style.IconText = iconText;
+                style.IconText = getIconText(objectName);
                 Company.Update<ObjectStyle>(style);
             }
+        }
+
+        /// <summary>
+        /// Generates the icon text shown on icons that represent the Asset 
+        /// </summary>
+        /// <param name="assetName"></param>
+        /// <returns></returns>
+        private string getIconText(string assetName)
+        {
+            string iconText = "Tx";
+            if (string.IsNullOrEmpty(assetName))
+            {
+                return iconText;
+            }
+
+            var name = assetName.Trim();
+            
+            var words = name.Split(' ');
+            if (words.Length > 1 && words[1].Length > 0)
+            {
+                if (!string.IsNullOrEmpty(words[0]))
+                {
+                    iconText = words[0][0].ToString().ToUpper();
+                }
+                else
+                {
+                    iconText = "_"; // first character is space.
+                }
+                
+                if (!string.IsNullOrEmpty(words[1]))
+                {
+
+                    iconText += words[1][0].ToString().ToLower();
+                }
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(name))
+                {
+                    iconText = name[0].ToString().ToUpper();
+                    if (name.Length > 1)
+                    {
+                        iconText += name[1].ToString().ToLower();
+                    }
+                }
+            }
+
+            return iconText;
+
         }
 
         void upsertObjectStyle(SystemObjects type, int id, string foreColor, string backColor, string objectName = "Tx")
@@ -1276,6 +1313,7 @@ namespace d360.web.Controllers
                             DisplayFormat = model.AssetType.DisplayFormat,
                             Description = model.AssetType.Description,
                             CanOwnFusion = model.CanOwnFusion ?? false,
+                            AutoDisplayDescription = model.AutoDisplayDescription ?? false
                         };
                         Company.Add(a);
                         parentType = SystemObjects.ArtifactType;

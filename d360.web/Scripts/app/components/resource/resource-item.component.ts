@@ -1,29 +1,40 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
-import { BaseComponent } from '../shared/base.component';
-import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
-import { ResourcesService } from '../../services/resources.service';
-import { ObjectStatisticsService } from '../../services/object-statistics.service';
-import { UriBasedService } from '../../services/uri-based.service';
-import { SocialService } from '../../services/social.service';
-import { Breadcrumb } from '../../models/breadcrumb.model';
-import { Resource } from '../../models/resource.model';
-import { ObjectStatistics } from '../../models/object-statistics.model';
-import { WorkflowType } from '../../models/workflow.model';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import { RightSidebarItem } from '../../models/rightsidebar.model';
-import { RightSidebarService } from '../../services/right-sidebar.service';
-import { MessagesService } from '../../services/messages.service';
+﻿import {Input, Component, EventEmitter, Output, OnInit, OnDestroy} from '@angular/core';
+import {Router, ActivatedRoute} from '@angular/router';
+import {BaseComponent} from '../shared/base.component';
+import {Title} from '@angular/platform-browser';
+import {HeaderBreadcrumbService} from '../../services/header-breadcrumb.service';
+import {ResourcesService} from '../../services/resources.service';
+import {ObjectStatisticsService} from '../../services/object-statistics.service';
+import {UriBasedService} from '../../services/uri-based.service';
+import {SocialService} from '../../services/social.service';
+import {Breadcrumb} from '../../models/breadcrumb.model';
+import {Resource} from '../../models/resource.model';
+import {ObjectStatistics} from '../../models/object-statistics.model';
+import {WorkflowType} from '../../models/workflow.model';
+import {SiteUrlHelpers} from '../../static/site-url-helpers';
+import {RightSidebarItem} from '../../models/rightsidebar.model';
+import {RightSidebarService} from '../../services/right-sidebar.service';
+import {MessagesService} from '../../services/messages.service';
 
 declare var CompanySettings;
 declare var CurrentResourceID;
 declare var SingleSignOn;
 
+enum PageMode {
+    Default,
+    Board,
+    Followers,
+    Governance,
+    Assignment,
+    EditingInfo,
+    EditingPassword,
+    ViewingAPICredentials
+}
+
 @Component({
     selector: 'd3s-resource-item',
     templateUrl: './resource-item.component.html',
-    providers: [ResourcesService, ObjectStatisticsService, UriBasedService, SocialService ]
+    providers: [ResourcesService, ObjectStatisticsService, UriBasedService, SocialService]
 })
 
 export class ResourceItemComponent extends BaseComponent implements OnInit, OnDestroy {
@@ -31,9 +42,9 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
     private resourceId = -1;
     private resource: Resource;
     private isMe = false;
-    private totNumber: number = 0;
-    private days: number = 90;
-    private resourceType: string = " ";
+    private totNumber = 0;
+    private days = 90;
+    private resourceType = ' ';
 
     private statistics: ObjectStatistics;
     private selectedWorkflow: WorkflowType;
@@ -66,7 +77,8 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
         this.isLoading = true;
 
         this.sub = this.route.params.subscribe(params => {
-            let resourceId = +params['resourceId'];
+            const resourceId = +params['resourceId'];
+
             this.resourceId = resourceId;
 
             this.headerBreadcrumbService.setCurrentObjectInfo('Resource', resourceId);
@@ -79,43 +91,66 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(`${this.resource.FirstName} ${this.resource.LastName}`));
 
                     this.setBrowserTitle(this.titleService, `${this.resource.FirstName} ${this.resource.LastName}`);
-                    if (this.resourceId.toString() === CurrentResourceID.toString())
-                        this.isMe = true;
-                    else
-                        this.isMe = false;
 
-                    this.socialService.getTheCounts(this.resourceId, this.days)
-                        .then(k => {
-                            for (var i = 0; i < k.length; i++) {
+                    if (this.resourceId.toString() === CurrentResourceID.toString()) {
+                        this.isMe = true;
+                    } else {
+                        this.isMe = false;
+                    }
+
+                    this.socialService.getTheCounts(this.resourceId, this.days).then(
+                        k => {
+                            for (let i = 0; i < k.length; i++) {
                                 this.totNumber += k[i].Total;
                             }
-                        });
+                        }
+                    );
 
                     this.isLoading = false;
 
                     this.clearSidebar();
-                    this.setCommonRightSideBar(false, false, false, false, false, false, false, false);
-                    this.itemsOwn = new RightSidebarItem('Items Own', 'itemOwn', ['fa-tasks'], `/sidebar/itemown/${resourceId}`);
+                    this.setCommonRightSideBar(
+                        false, false, false,
+                        false, false, false,
+                        false, false
+                    );
+                    this.itemsOwn = new RightSidebarItem(
+                        'Items Own', 'itemOwn', ['fa-tasks'],
+                        `/sidebar/itemown/${resourceId}`
+                    );
                     this.rightSidebarService.showItem(this.itemsOwn);
-                    this.memberGroups = new RightSidebarItem('Member Groups', 'memberGroup', ['fa-user-circle'], `/sidebar/membergroup/${resourceId}`);
+                    this.memberGroups = new RightSidebarItem(
+                        'Member Groups', 'memberGroup', ['fa-user-circle'],
+                        `/sidebar/membergroup/${resourceId}`
+                    );
                     this.rightSidebarService.showItem(this.memberGroups);
-                    this.itemsFollow = new RightSidebarItem('Items Follow', 'itemFollow', ['fa-user-plus'], `/sidebar/itemfollow/${resourceId}`);
+                    this.itemsFollow = new RightSidebarItem(
+                        'Items Follow', 'itemFollow', ['fa-user-plus'],
+                        `/sidebar/itemfollow/${resourceId}`
+                    );
                     this.rightSidebarService.showItem(this.itemsFollow);
-                    this.hasRelations = new RightSidebarItem('Relations', 'hasRelations', ['fa-retweet'], `/sidebar/relationships/resource/${resourceId}`);
+                    this.hasRelations = new RightSidebarItem(
+                        'Relations', 'hasRelations', ['fa-retweet'],
+                        `/sidebar/relationships/resource/${resourceId}`
+                    );
                     this.rightSidebarService.showItem(this.hasRelations);
-                    this.comments = new RightSidebarItem(this.resource.FirstName + "'s Comments", 'comments', ['fa-comments'], `/sidebar/comments/Resource/${resourceId}/${this.resource.FirstName}`); 
+                    this.comments = new RightSidebarItem(
+                        this.resource.FirstName + '\'s Comments', 'comments', ['fa-comments'],
+                        `/sidebar/comments/Resource/${resourceId}/${this.resource.FirstName}`
+                    );
                     this.rightSidebarService.showItem(this.comments);
                 });
 
-            this.pageMode = PageMode.Default;            
+            this.pageMode = PageMode.Default;
         });
     }
 
     updateStatistics() {
-        this.statisticsService.getObjectStatistics(this.resourceId, 'Resource')
-            .then(s => {
+        this.statisticsService.getObjectStatistics(this.resourceId, 'Resource').subscribe(
+            s => {
                 this.statistics = s;
-            });
+            }
+        );
     }
 
     ngOnDestroy() {
@@ -123,7 +158,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
         this.sub.unsubscribe();
     }
 
-    showAssignment(e: any) {  
+    showAssignment(e: any) {
         if (e.resourceID > 0) {
             if (e.workflowId)
                 this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_LIST_V2}/${e.workflowId}/${e.version}/${e.stepId};resourceID=${e.resourceID}`);
@@ -156,24 +191,14 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
     }
 
     save(e: any) {
-        let values = e.item;
+        const values = e.item;
         values.ID = -1;
 
-        this.uriBasedService.saveItem(null, "form/dynamicedit/edit/resourceself", values)
-            .then(result => {
+        this.uriBasedService.saveItem(null, 'form/dynamicedit/edit/resourceself', values).then(
+            result => {
                 this.pageMode = PageMode.Default;
                 this.showMessageForResult(this.messagesService, result);
-            });
+            }
+        );
     }
-};
-
-enum PageMode {
-    Default,
-    Board,
-    Followers,
-    Governance,
-    Assignment,
-    EditingInfo,
-    EditingPassword,
-    ViewingAPICredentials
 }

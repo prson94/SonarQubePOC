@@ -1,21 +1,21 @@
 ﻿import {Injectable} from '@angular/core';
 import {HttpClient, HttpHeaders} from "@angular/common/http";
-import {Headers, Http} from '@angular/http';
 import {Observable} from "rxjs";
 import {catchError, map} from "rxjs/operators";
 
-import {BaseObservableService} from "./baseObservable.service";
-import {MessagesService} from './messages.service';
 import {AttributeType, AttributeTypeAllocation} from '../models/attribute-type.model';
 import {JsonResult} from '../models/jsonresult.model';
 import {DropdownOption} from '../models/dropdown.model';
+
+import {BaseObservableService} from "./baseObservable.service";
+import {MessagesObservableService} from './messages-observable.service';
 
 @Injectable()
 export class AttributeTypeService extends BaseObservableService {
 
     constructor(
         private http: HttpClient,
-        messagesService: MessagesService
+        messagesService: MessagesObservableService
     ) {
         super(messagesService);
     }

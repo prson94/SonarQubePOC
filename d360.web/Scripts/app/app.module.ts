@@ -19,13 +19,14 @@ import {AdminUserGuard} from './guards/admin-user.guard';
 
 import {AuthenticationService} from './services/authentication.service';
 import {MessagesService} from './services/messages.service';
+import {MessagesObservableService} from "./services/messages-observable.service";
 import {HeaderBreadcrumbService} from './services/header-breadcrumb.service';
 import {HeaderActionsService} from './services/header-actions.service';
 import {RightSidebarService} from './services/right-sidebar.service';
 import {StateService} from './services/state.service';
 import {WebAnalyticsService} from './services/web-analytics.service';
-import {TooltipSingletonService} from './services/tooltip-singleton.service'
 
+import {TooltipSingletonService} from './services/tooltip-singleton.service'
 import {AuthenticationConnectionBackend} from './authentication-connection-backend';
 import {GovernPostRequestInterceptor} from "./http-interceptors/govern-post-request.interceptor";
 import { CookieService } from './services/cookie.service';
@@ -72,6 +73,7 @@ export function getLocale() {
         HeaderActionsService,
         HeaderBreadcrumbService,
         MessagesService,
+        MessagesObservableService,
         RightSidebarService,
         WebAnalyticsService,
         TooltipSingletonService,

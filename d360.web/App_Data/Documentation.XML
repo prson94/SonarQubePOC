@@ -2402,6 +2402,9 @@
             <summary>
             Removes field types contained within your environment.
             </summary>
+            <remarks>
+            You may only provide one of the following: ActionTypeUid, AssetTypeUid, or RelationshipTypeUid.
+            </remarks>
             <returns>A list of field types corresponding to the given criteria, if any.</returns>
         </member>
         <member name="T:d360.web.Controllers.V2.AuditController">
@@ -2868,7 +2871,7 @@
             <summary>
             GET a list of asset types.
             </summary>
-            <param name="_assetTypeClass">Allows for filtering the Asset type's by Class.</param>
+            <param name="Class">Allows for filtering the Asset type's by Class.</param>
             <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.V2.AssetsController.GetAssetsAsync(System.Guid)">
@@ -2887,6 +2890,28 @@
             </summary>
             <param name="assetTypeUid">The Uid of the asset type</param>
             <returns>An HTTP status code and message.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.AssetsController.PostAssetTypeAsync(d360.core.entities.AssetTypeInsert)">
+            <summary>
+            Add an asset type based on Asset Type Class
+            </summary>
+            <remarks>
+            This endpoint can add the following asset type class
+            Glossary,Model,Organization,Policy,Reference,Rule
+            </remarks>
+            <param name="model">Asset Type</param>
+            <returns>An HTTP status code and message.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.AssetsController.PutAssetTypeAsync(d360.core.entities.AssetTypeInsert)">
+            <summary>
+            Updates an asset type based on the specific asset type unique identifier.
+            </summary>
+            <remarks>
+            This endpoint can update the following asset type class
+            Glossary,Model,Organization,Policy,Reference,Rule
+            </remarks>
+            <param name="model"></param>
+            <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.V2.AssetsController.PostAssetsAsync(System.Guid,System.Collections.Generic.List{d360.core.entities.AssetInsert})">
             <summary>
@@ -2982,6 +3007,21 @@
             </remarks>
             <param name="assetTypeUid">The unique identifier of the asset type.</param>
             <param name="assets">The payload of your request.</param>
+            <returns>An HTTP status code and message.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.AssetsController.DeleteBulkAssetTypesAsync(d360.core.entities.AssetTypeDeletes)">
+            <summary>
+            Removes a given set of asset types. This endpoint is meant for a greater number of items as it stores the asset list for asynchronous or batch processing.
+            </summary>
+            <remarks>
+            When using the ExecutionItemUid, keep in mind:
+            * ExecutionItemUid is optional.
+            * If you do not wish to provide an ExecutionItemUid, remove the entire line, including the preceding comma (, "ExecutionItemUid": "00000000-0000-0000-0000-000000000000").
+            * If you provide ExecutionItemUids, values must be a unique across the entire request body.
+            * You do not have to provide ExecutionItemUid values for all entries in a request.
+            * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+            </remarks>
+            <param name="assetTypes">The payload of your request.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.AssetsController.GetExecutionStatus(System.Guid)">

@@ -100,6 +100,7 @@ namespace d360.extensions.search
 
         protected string SearchServerUrl { get; set; }
         protected Version SearchServerVersion { get; set; }
+        public int? IndexFieldLimit { get; set; }
 
         #region Utility methods
 
@@ -229,7 +230,12 @@ namespace d360.extensions.search
 
                 if (SearchServerVersion.Major >= 5)
                 {
-                    loadMessageInRequestBody(webReq, JObject.Parse(MAPPING_VERSION_5));
+                    string esSettings = MAPPING_VERSION_5;
+                    if (IndexFieldLimit.HasValue)
+                    {
+                        esSettings = esSettings.Replace("\"number_of_replicas\": 1", "\"number_of_replicas\": 1, \"mapping.total_fields.limit\" : "+IndexFieldLimit);
+                    }
+                    loadMessageInRequestBody(webReq, JObject.Parse(esSettings));
                 }
                 else
                 {
@@ -502,11 +508,25 @@ namespace d360.extensions.search
                 else
                 {
                     //Not exact match, so append *
-                    if (!phrase.EndsWith("*"))
-                    {
-                        phrase += "*";
+                    if (SearchServerVersion.Major == 2) {
+                        if (!phrase.EndsWith("*"))
+                        {
+                            //ES2 tokenizer not working great with stuff like UID, so we'll do a 
+                            // bool:(must(bool:(should:prase, should:phrase*))) ~= an OR of phrase and phrase*
+                            sb.Append("{\"query\":{\"bool\": {\"must\": { \"bool\": { \"should\": { \"query_string\": { \"query\":\"" + phrase + "\"} }, \"should\": { \"query_string\": { \"query\":\"" + phrase + "*\"} } } }");
+                        } else
+                        {
+                            sb.Append("{\"query\":{\"bool\": {\"must\":  { \"query_string\": { \"query\":\"" + phrase + "\"} }");
+
+                        }
                     }
-                    sb.Append("{\"query\":{\"bool\": {\"must\":  { \"query_string\": { \"query\":\"" + phrase + "\"} }");
+                    else {
+                        if (!phrase.EndsWith("*"))
+                        {
+                            phrase += "*";
+                        }
+                        sb.Append("{\"query\":{\"bool\": {\"must\":  { \"query_string\": { \"query\":\"" + phrase + "\"} }");
+                    }
                 }
             }
             else if(!string.IsNullOrEmpty(advancedFilterJSON))

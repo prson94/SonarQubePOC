@@ -94,11 +94,21 @@ nav.top, .left-side-nav {
     background-color: @igx-left-side-nav;
     width: 200px;
     margin-top: 40px;
-    overflow-y: visible;
+    overflow-y: scroll;
     transition: width 200ms ease;
-    padding-bottom: 80px;
     outline: none !important;
 
+    //cross browser bottom padding hack
+    >:last-child::after {
+        content: "";
+        height: 80px;
+        display: block;
+    }
+
+    /* hiding scrollbar */
+    -ms-overflow-style: none !important; /* IE 10+ */
+    scrollbar-width: none !important; /* Firefox */
+    /* end hiding scrollbar*/
     li {
         padding: 0;
         outline: none !important;
@@ -168,6 +178,15 @@ nav.top, .left-side-nav {
         }
     }
 }
+
+.left-side-nav::-webkit-scrollbar { /* WebKit hide scrollbar */
+    width: 0px !important;
+}
+
+.left-side-nav-open::-webkit-scrollbar { /* WebKit hide scrollbar */
+    width: 0px !important;
+}
+
 .left-side-nav {
     width: 40px;
     li .caption {
@@ -216,17 +235,18 @@ nav.top, .left-side-nav {
     display: none;
     min-width:220px;
     max-width: 800px;
-    position: absolute;
+    position: fixed;
     margin: 0;
     outline: 0;
     text-decoration: none;
     font-size: 100%;
     list-style: none;
+    overflow-y:auto;
 }
 
 .menu-active > .megamenu-panel {
     display: block !important;
-    width: auto;
+    width: min-content;
     background: @igx-left-side-nav;
 }        
 
@@ -242,7 +262,7 @@ nav.top, .left-side-nav {
     font-size: 100%;
 
     &:hover {
-        background-color: #878b97 !important;
+        background-color: @igx-gray-color !important;
         color: white !important;
     }
 
@@ -1191,4 +1211,11 @@ div.home-image-title-text {
 }
 .json-view {
     white-space: pre-wrap;
+}
+.tile {
+    header {
+        .row {
+            font-size: 14px;
+        }
+    }
 }

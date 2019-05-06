@@ -1284,7 +1284,7 @@ select	case SE.IntegrationSystem
 		O.DefaultValue
 from	(
 		select	ST.IntegrationSettingID,
-				ST.Active,
+				F.Active,
 				'Field' as MappingType,
 				ST.SourceAssetTypeName,
 				F.SourceField,
@@ -1297,7 +1297,7 @@ from	(
 				inner join [integration].[SynchedAssetTypeFieldItem] F on F.SynchedAssetTypeID = ST.ID
 		union
 		select	ST.IntegrationSettingID,
-				ST.Active,
+				F.Active,
 				'Relation' as MappingType,
 				ST.SourceAssetTypeName,
 				F.SourceField,
@@ -1311,7 +1311,7 @@ from	(
 				inner join [integration].[SynchedAssetTypeRelationItemTarget] FT on FT.[SynchedAssetTypeRelationItemID] = F.ID
 		union
 		select	ST.IntegrationSettingID,
-				ST.Active,
+				F.Active,
 				'Role' as MappingType,
 				ST.SourceAssetTypeName,
 				F.SourceIdField + ' : ' + F.SourceNameField as SourceField,

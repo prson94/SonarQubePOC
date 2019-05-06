@@ -66,7 +66,7 @@
                                    type="text"
                                    [(ngModel)]="model.FieldType.Name"
                                    style="width: 98%; display: block;"
-                                   (keyup)="syncApiNameWithName=false;"
+                                   (keyup)="syncApiNameWithName=false;updateApiName($event);"
                                    #apiName="ngModel"/>
                             <div [hidden]="apiName.valid || apiName.pristine">API name is required</div>
                         </div>

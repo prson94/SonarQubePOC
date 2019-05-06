@@ -1,5 +1,8 @@
 ﻿import {Injectable} from '@angular/core';
-import {MessagesService} from './messages.service';
+import {HttpClient} from "@angular/common/http";
+import {Observable} from "rxjs";
+import {catchError, map} from "rxjs/operators";
+
 import {
     IGroupService,
     GroupSearchResultModel,
@@ -10,16 +13,15 @@ import {
 } from '../models/group.model';
 import {JsonResult} from '../models/jsonresult.model';
 import {CountObject} from '../models/resource.model';
+
+import {MessagesObservableService} from './messages-observable.service';
 import {BaseObservableService} from "./baseObservable.service";
-import {HttpClient} from "@angular/common/http";
-import {Observable} from "rxjs";
-import {catchError, map} from "rxjs/operators";
 
 @Injectable()
 export class GroupService extends BaseObservableService implements IGroupService {
     constructor(
         private http: HttpClient,
-        messagesService: MessagesService
+        messagesService: MessagesObservableService
     ) {
         super(messagesService);
     }

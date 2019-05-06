@@ -91,6 +91,12 @@ namespace igx.jobs.indexer
 
                     company.OpenWithRetry(RetryPolicy.DefaultFixed);
 
+                    int SuggestedIndexLimit = SuggestIndexLimit(company);
+                    if(SuggestedIndexLimit > 1000)
+                    {
+                        source.IndexFieldLimit = SuggestedIndexLimit;
+                    }
+
                     source.ClearIndex(c.CompanyID);
 
                     LogReindexStart("Artifacts", c.CompanyID);
@@ -273,7 +279,14 @@ namespace igx.jobs.indexer
         }
 
 
-#region Supporting Functions
+        #region Supporting Functions
+
+        private static int SuggestIndexLimit(SqlConnection context) {
+            var sql = "SELECT COUNT(*) FROM [dbo].[FieldType]";
+            int FieldTypeCount = context.Query<int>(sql).FirstOrDefault();
+            double MultiplicationFactor = 1.2;
+            return Convert.ToInt16(FieldTypeCount * MultiplicationFactor);
+        }
 
         private static IEnumerable<AddToIndexModel> LoadArtifactSynonyms(SqlConnection context, int companyID, ElasticSearchSource source)
         {

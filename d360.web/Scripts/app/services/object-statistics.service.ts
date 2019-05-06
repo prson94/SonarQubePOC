@@ -1,25 +1,39 @@
-﻿import { Injectable } from '@angular/core';
-import { Headers, Http } from '@angular/http';
-import { MessagesService } from './messages.service';
-import { BaseService } from './base.service';
-import { ObjectStatistics } from '../models/object-statistics.model';
+﻿import {Injectable} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {Observable} from 'rxjs';
+import {catchError, map} from 'rxjs/operators';
+
+import {ObjectStatistics} from '../models/object-statistics.model';
+
+import { MessagesObservableService } from './messages-observable.service';
+import { BaseObservableService } from './baseObservable.service';
 
 @Injectable()
-export class ObjectStatisticsService extends BaseService {
-
-    constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
-
-    getObjectStatistics(objectID: number, objectType: string): Promise<ObjectStatistics> {
-        return this.http.get(`api/${objectType}/${objectID}/object/statistics`)
-            .toPromise()
-            .then(response => <ObjectStatistics>response.json())
-            .catch(err => this.handleError(err));
+export class ObjectStatisticsService extends BaseObservableService {
+    constructor(
+        private http: HttpClient,
+        messagesService: MessagesObservableService
+    ) {
+        super(messagesService);
     }
 
-    getObjectStatus(objectID: number, objectType: string): Promise<string> {
-        return this.http.get(`api/${objectType}/${objectID}/status`)
-            .toPromise()
-            .then(response => <string>response.json())
-            .catch(err => this.handleError(err));
+    getObjectStatistics(
+        objectID: number,
+        objectType: string
+    ): Observable<ObjectStatistics> {
+        return this.http.get(`api/${objectType}/${objectID}/object/statistics`).pipe(
+            map(response => <ObjectStatistics>response),
+            catchError(err => this.handleError(err))
+        );
+    }
+
+    getObjectStatus(
+        objectID: number,
+        objectType: string
+    ): Observable<string> {
+        return this.http.get(`api/${objectType}/${objectID}/status`).pipe(
+            map(response => <string>response),
+            catchError(err => this.handleError(err))
+        );
     }
 }

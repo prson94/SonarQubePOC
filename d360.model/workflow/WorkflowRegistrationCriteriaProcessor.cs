@@ -18,9 +18,10 @@ namespace d360.model.workflow
 
             //take the string criteria and generate the class
             List<WorkflowCriteriaExpressionModel> expression = PopulateExpressionFromXml(criteria);
+            bool satisfyAll = expression.All(x => x.CriteriaConnector == core.enums.Workflow.CriteriaConnector.AND); 
 
             //load the values for each of the fields for the given object
-            return EvaluateObject(expression, context, @object, objectId, itemId, score, issueObject, issueObjectId, changedFields);            
+            return EvaluateObject(expression, context, @object, objectId, itemId, score, issueObject, issueObjectId, changedFields, satisfyAll);
         }
 
         public static string ToPlainText(ICompanyContext context, string criteria)
@@ -43,172 +44,181 @@ namespace d360.model.workflow
         }
 
         /// <summary>
-        /// Given an object determin if it matches this criteria
+        /// Given an object determine if it matches this criteria
         /// </summary>
         /// <param name="context"></param>
         /// <param name="object"></param>
         /// <param name="objectId"></param>
-        private static bool EvaluateObject(List<WorkflowCriteriaExpressionModel> expression, CompanyContext context, string @object, int objectId, long itemId, int score = -1, string issueObjectType = "", int issueObjectTypeId = -1, List<int> changedFields = null)
+        private static bool EvaluateObject(List<WorkflowCriteriaExpressionModel> expression, CompanyContext context, string @object, int objectId, long itemId, int score = -1, string issueObjectType = "", int issueObjectTypeId = -1, List<int> changedFields = null, bool satisfyAll = true)
         {
-            bool hasChangeCondition = expression.Any(e => e.Operator == core.enums.Workflow.CriteriaOperator.Changed);
 
             //since field and object events come in separately, we need to skip eval in some cases to prevent duplicate runs
             //1. There is a change condition on the workflow, and no change fields are present: Ignore the initial object event and wait for the field event to come in
             //2. There is not a change condition on the workflow and change fields are present: Ignore the fields event, the object event was already processed
-            if (hasChangeCondition && !changedFields.Any()) return false;
-            if (!hasChangeCondition && changedFields.Any()) return false;
+            bool hasChangeCondition = expression.Any(e => e.Operator == core.enums.Workflow.CriteriaOperator.Changed);
+            if (satisfyAll && hasChangeCondition && !changedFields.Any()) return false;
+            if (satisfyAll && !hasChangeCondition && changedFields.Any()) return false;
 
             var fields = context.Fields.Where(x => x.ObjectID == objectId && x.ObjectType == @object);
 
             foreach (var item in expression)
             {
-                if (item.FieldTypeId > 0)
+                item.IsCriteriaChecked = EvaluateField(context, item, fields, @object, objectId, itemId, score, issueObjectType, issueObjectTypeId, changedFields);
+                if (satisfyAll && item.IsCriteriaChecked == false) return false;
+                if (!satisfyAll && item.IsCriteriaChecked == true) return true;
+            }
+
+            return satisfyAll ? expression.All(x => x.IsCriteriaChecked) : expression.Any(x => x.IsCriteriaChecked);
+        }
+
+        private static bool EvaluateField(ICompanyContext context, WorkflowCriteriaExpressionModel item, IQueryable<Field> fields, string @object, int objectId, long itemId, int score = -1, string issueObjectType = "", int issueObjectTypeId = -1, List<int> changedFields = null)
+        {
+            if (item.FieldTypeId > 0)
+            {
+                var value = fields.Where(x => x.FieldTypeID == item.FieldTypeId).FirstOrDefault();
+
+                if (value == null) return false;
+
+                //special case for changed operator. If it's in the list of changed fields, return true
+                if (item.Operator == core.enums.Workflow.CriteriaOperator.Changed)
+                    return changedFields.Contains(item.FieldTypeId);
+
+                if (item.ValueDataType == core.enums.Workflow.CriteriaValueDataType.Lookup)
                 {
-                    var value = fields.Where(x => x.FieldTypeID == item.FieldTypeId).FirstOrDefault();
-
-                    if (value == null) return false;
-
-                    //special case for changed operator. If it's in the list of changed fields, return true
-                    if (item.Operator == core.enums.Workflow.CriteriaOperator.Changed)
-                        return changedFields.Contains(item.FieldTypeId);
-
-                    if (item.ValueDataType == core.enums.Workflow.CriteriaValueDataType.Lookup)
-                    {
-                        if (!item.IsValueMatch(value.Value)) return false;
-                    }
-                    else
-                    {
-                        if (!item.IsValueMatch(value.FormattedValue)) return false;
-                    }
+                    if (!item.IsValueMatch(value.Value)) return false;
                 }
-                else if ((item.ContextualFieldID ?? "").ToLower() == "score")
+                else
                 {
-                    if (!item.IsValueMatch(score.ToString())) return false;
+                    if (!item.IsValueMatch(value.FormattedValue)) return false;
                 }
-                else if ((item.ContextualFieldID ?? "").ToLower() == "requestedon")
+            }
+            else if ((item.ContextualFieldID ?? "").ToLower() == "score")
+            {
+                if (!item.IsValueMatch(score.ToString())) return false;
+            }
+            else if ((item.ContextualFieldID ?? "").ToLower() == "requestedon")
+            {
+                var requestedOn = context.GetById<ShoppingCart>(objectId).RequestedOn;
+                if (!item.IsValueMatch(requestedOn.ToString())) return false;
+            }
+            else if ((item.ContextualFieldID ?? "").ToLower() == "name")
+            {
+                var name = context.GetObjectDetail(@object, objectId).Name;
+                if (!item.IsValueMatch(name?.ToString() ?? "")) return false;
+            }
+            else if ((item.ContextualFieldID ?? "").ToLower() == "description")
+            {
+                var description = context.GetObjectDetail(@object, objectId).Description;
+                if (!item.IsValueMatch(description?.ToString() ?? "")) return false;
+            }
+            else if ((item.ContextualFieldID ?? "").ToLower() == "issueobject")
+            {
+                if (!item.IsValueMatch(issueObjectType)) return false;
+            }
+            else if ((item.ContextualFieldID ?? "").ToLower() == "issueobjectid")
+            {
+                if (!item.IsValueMatch(issueObjectTypeId.ToString())) return false;
+            }
+            else if (item.VersionStepId > 0)
+            {
+                //load the results of the form version step
+                var formStep = context.WorkflowItemSteps.Where(x => x.ItemID == itemId && x.StepID == item.VersionStepId).Include(x => x.Step).OrderByDescending(x => x.ID).FirstOrDefault();
+
+                if (formStep == null)
                 {
-                    var requestedOn = context.GetById<ShoppingCart>(objectId).RequestedOn;
-                    if (!item.IsValueMatch(requestedOn.ToString())) return false;
+                    Console.WriteLine("DEBUG - CANNOT FIND THE RESULTS OF THE FORM STEP SELECTED.");
+
+                    return false;
                 }
-                else if ((item.ContextualFieldID ?? "").ToLower() == "name")
+
+                //get the results of the form input with the specified id
+                var xml = formStep.Fields;
+
+                if (string.IsNullOrEmpty(xml))
                 {
-                    var name = context.GetObjectDetail(@object, objectId).Name;
-                    if (!item.IsValueMatch(name?.ToString() ?? "")) return false;
+                    Console.WriteLine("DEBUG - FORM RESULT HAS NO XML");
+
+                    return false;
                 }
-                else if ((item.ContextualFieldID ?? "").ToLower() == "description")
+
+                var formModel = WorkflowFormModel.ParseXml(XElement.Parse(xml));
+
+                if ((formStep.Step == null) || string.IsNullOrEmpty(formStep.Step.Settings))
                 {
-                    var description = context.GetObjectDetail(@object, objectId).Description;
-                    if (!item.IsValueMatch(description?.ToString() ?? "")) return false;
+                    Console.WriteLine("DEBUG - FORM SETTINGS ARE MISSING");
+
+                    return false;
                 }
-                else if((item.ContextualFieldID ?? "").ToLower() == "issueobject")
+
+                //check the form response type is it all, first or majority
+                var formSettings = WorkflowItemStepSettingModel.ParseXml(XElement.Parse(formStep.Step.Settings));
+
+                switch (formSettings.ResponseType)
                 {
-                    if (!item.IsValueMatch(issueObjectType)) return false;
-                }
-                else if ((item.ContextualFieldID ?? "").ToLower() == "issueobjectid")
-                {
-                    if (!item.IsValueMatch(issueObjectTypeId.ToString())) return false;
-                }
-                else if(item.VersionStepId > 0)
-                {
-                    //load the results of the form version step
-                    var formStep = context.WorkflowItemSteps.Where(x => x.ItemID == itemId && x.StepID == item.VersionStepId).Include(x=>x.Step).OrderByDescending(x=>x.ID).FirstOrDefault();
-                    
-                    if(formStep == null)
-                    {
-                        Console.WriteLine("DEBUG - CANNOT FIND THE RESULTS OF THE FORM STEP SELECTED.");
-
-                        return false;
-                    }
-
-                    //get the results of the form input with the specified id
-                    var xml = formStep.Fields;
-
-                    if(string.IsNullOrEmpty(xml))
-                    {
-                        Console.WriteLine("DEBUG - FORM RESULT HAS NO XML");
-
-                        return false;
-                    }
-
-                    var formModel = WorkflowFormModel.ParseXml(XElement.Parse(xml));
-
-                    if ( (formStep.Step == null) || string.IsNullOrEmpty(formStep.Step.Settings))
-                    {
-                        Console.WriteLine("DEBUG - FORM SETTINGS ARE MISSING");
-
-                        return false;
-                    }
-
-                    //check the form response type is it all, first or majority
-                    var formSettings = WorkflowItemStepSettingModel.ParseXml(XElement.Parse(formStep.Step.Settings));
-
-                    switch (formSettings.ResponseType)
+                    case core.enums.Workflow.FormResponseType.FirstResponse:
                         {
-                            case core.enums.Workflow.FormResponseType.FirstResponse:
-                                {
-                                    //check if the value matches
-                                    var formValue = formModel.GetFormValueById(item.FormInputId);
+                            //check if the value matches
+                            var formValue = formModel.GetFormValueById(item.FormInputId);
 
-                                    if (item.Operator == core.enums.Workflow.CriteriaOperator.NotEqual)
-                                    {
-                                    //
-                                        if (string.Compare(formValue, (item.Value.ToString() ?? "").Trim(), true) == 0) return false;
-                                    }
-                                    else
-                                    {
-                                        //true operator
-                                        if (string.Compare(formValue, (item.Value.ToString() ?? "").Trim(), true) != 0) return false;
-                                        
-                                    }
-                                break;
-                                }
-                        case core.enums.Workflow.FormResponseType.All:
-                                {
-                                    // ALL USERS NEED TO RESPOND AND APPROVE
-
-                                    // GET RESPONSES FROM EACH FORM AND MAKE SURE THEY ARE THE SAME IF NOT RETURN FALSE
-                                    var formValues = formModel.GetFormValuesById(item.FormInputId);
-
-                                    foreach (var val in formValues)
-                                    {
-                                        if (item.Operator == core.enums.Workflow.CriteriaOperator.NotEqual)
-                                        {
-                                            if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) == 0) return false;
-                                        }
-                                        else
-                                        {
-                                            if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) != 0) return false;
-                                        }
-                                        
-                                    }
-                                    return true;
-                                }
-                        case core.enums.Workflow.FormResponseType.Majority:
+                            if (item.Operator == core.enums.Workflow.CriteriaOperator.NotEqual)
                             {
-                                var formValues = formModel.GetFormValuesById(item.FormInputId);
+                                //
+                                if (string.Compare(formValue, (item.Value.ToString() ?? "").Trim(), true) == 0) return false;
+                            }
+                            else
+                            {
+                                //true operator
+                                if (string.Compare(formValue, (item.Value.ToString() ?? "").Trim(), true) != 0) return false;
 
-                                var matchCount = 0;
-                                
-                                foreach (var val in formValues)
+                            }
+                            break;
+                        }
+                    case core.enums.Workflow.FormResponseType.All:
+                        {
+                            // ALL USERS NEED TO RESPOND AND APPROVE
+
+                            // GET RESPONSES FROM EACH FORM AND MAKE SURE THEY ARE THE SAME IF NOT RETURN FALSE
+                            var formValues = formModel.GetFormValuesById(item.FormInputId);
+
+                            foreach (var val in formValues)
+                            {
+                                if (item.Operator == core.enums.Workflow.CriteriaOperator.NotEqual)
                                 {
-                                    if (item.Operator == core.enums.Workflow.CriteriaOperator.NotEqual)
-                                    {
-                                        if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) != 0) matchCount++;
-                                    }
-                                    else
-                                    {
-                                        if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) == 0) matchCount++;
-                                    }
-                                    
+                                    if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) == 0) return false;
+                                }
+                                else
+                                {
+                                    if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) != 0) return false;
                                 }
 
-                                return matchCount > (formValues.Count / 2);
                             }
-                        default:
-                            Console.WriteLine("DEBUG - FORM HAS UNKNOWN OR UNSUPPORTED FORM RESPONSE TYPE");
+                            return true;
+                        }
+                    case core.enums.Workflow.FormResponseType.Majority:
+                        {
+                            var formValues = formModel.GetFormValuesById(item.FormInputId);
 
-                            return false;
-                    }
+                            var matchCount = 0;
+
+                            foreach (var val in formValues)
+                            {
+                                if (item.Operator == core.enums.Workflow.CriteriaOperator.NotEqual)
+                                {
+                                    if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) != 0) matchCount++;
+                                }
+                                else
+                                {
+                                    if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) == 0) matchCount++;
+                                }
+
+                            }
+
+                            return matchCount > (formValues.Count / 2);
+                        }
+                    default:
+                        Console.WriteLine("DEBUG - FORM HAS UNKNOWN OR UNSUPPORTED FORM RESPONSE TYPE");
+
+                        return false;
                 }
             }
 
@@ -216,7 +226,7 @@ namespace d360.model.workflow
         }
 
         private static List<WorkflowCriteriaExpressionModel> PopulateExpressionFromXml(string criteria)
-        {            
+        {
             // PARSE THE XML
             XElement exprXml = null;
             try
@@ -233,7 +243,7 @@ namespace d360.model.workflow
 
             foreach (var expr in exprXml.Elements("Condition"))
             {
-                expression.Add(WorkflowCriteriaExpressionModel.Parse(expr));                
+                expression.Add(WorkflowCriteriaExpressionModel.Parse(expr));
             }
 
             return expression;

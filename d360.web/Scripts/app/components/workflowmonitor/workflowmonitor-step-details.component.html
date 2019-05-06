@@ -78,13 +78,13 @@
                     <ng-container *ngIf="step.Settings.SendFormEmail == 'true' && step.ItemSettings.hasEmails == true">
                         <d3s-workflow-monitor-step-email-details [step]="step"></d3s-workflow-monitor-step-email-details>
                     </ng-container>
-                    <div class="row" *ngIf="step?.ItemFields != null && step?.ItemFields?.Reassigned != null && step?.ItemFields?.Reassigned['@reassignType']=='Resource' && step?.ItemFields?.Reassigned['@reassignToResourceId'] != null">
+                    <div *ngIf="bulkReassignments.length > 0" class="row">
                         <div class="col s12">
                             <div class="FieldName">
                                 Form was reassigned to another User
                             </div>
-                            <div>
-                                {{step?.ItemFields?.Reassigned['@reassignByResourceName']}} reassigned this action from {{step?.ItemFields?.Reassigned['@reassignFromResourceName']}} to {{step?.ItemFields?.Reassigned['@reassignToResourceName']}} on {{(step?.ItemFields?.Reassigned['@reassignOn'] | date:'short')}}
+                            <div *ngFor="let r of bulkReassignments; let i = index">
+                                {{r.ByResourceName}} reassigned this action from {{r.FromResourceName}} to {{r.ToResourceName}} on {{(r.ReassignOn | date: 'short')}} <br *ngIf="i != last"/>
                             </div>
                         </div>
                     </div>
@@ -110,10 +110,10 @@
                             </div>
                         </div>
                     </div>
-                    <div *ngIf="step.ItemFields && step.ItemFields.Reassigned">
+                    <div *ngIf="reassignment != null">
                         <div class="row">
                             <div class="col s12 FieldName">
-                                Action is Reassigned to {{step?.ItemFields?.Reassigned['@reassignType']}}
+                                Action is Reassigned to {{reassignment.ReassignType}}
                             </div>
                         </div>
                         <div class="row" *ngIf="step?.ItemFields?.Reassigned['@reassignType']=='Object'">
@@ -122,7 +122,7 @@
                                     Asset Type:
                                 </span>
                                 <span>
-                                    {{step?.ItemFields?.Reassigned['@objectType']}}
+                                    {{reassignment.ObjectType}}
                                 </span>
                             </div>
                             <div class="col s6">
@@ -130,7 +130,7 @@
                                     Asset Name:
                                 </span>
                                 <span>
-                                    {{step?.ItemFields?.Reassigned['@objectName']}}
+                                    {{reassignment.ObjectName}}
                                 </span>
                             </div>
                         </div>
@@ -259,6 +259,9 @@
                                     Trigger Conditions:
                                 </div>
                                 <div class="panel-section">
+                                    <div *ngIf="showAllAnyCondition">
+                                        Satisfy <strong>{{isSatisfyAll ? "all" : "any" }}</strong>
+                                    </div>
                                     <ng-container *ngFor="let condition of step.Condition">
                                         <div *ngIf="condition['@ContextualFieldID'] == null">
                                             {{condition['@FieldLabel']}} {{condition['@Operator'] == 'C' ? '[any value change]' : condition['@Operator']}} {{condition['@ValueLabel']}}
@@ -267,10 +270,10 @@
                                 </div>
                             </div>
                         </div>
-                        <div *ngIf="step.ChangeType == WorkflowChangeType.Schedule"  class="row">
+                        <div *ngIf="step.ChangeType == WorkflowChangeType.Schedule" class="row">
                             <div class="col s12">
                                 <span class="FieldName">
-                                    Send Aggregate Email: 
+                                    Send Aggregate Email:
                                 </span>
                                 <span>
                                     {{(step?.EventSettings?.SendAggregateEmail == 'true' ? 'Yes' : 'No')}}

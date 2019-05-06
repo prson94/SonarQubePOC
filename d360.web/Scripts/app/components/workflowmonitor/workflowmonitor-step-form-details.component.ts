@@ -14,7 +14,7 @@ declare var CurrentResourceID;
     <div class="row">
         <div class="col s12">
             <div>
-                Completed Forms ({{step.ItemFields['@NumberOfResponses']}}/{{step.ItemFields['@TotalResources']}}):
+                Completed Forms ({{step.ItemFields['@NumberOfResponses'] ? step.ItemFields['@NumberOfResponses'] : 0 }}/{{step.ItemFields['@TotalResources']}}):
             </div>
             <ng-container *ngFor="let form of step.ItemFields.form">
                 <div class="panel-section">        
@@ -88,8 +88,6 @@ export class WorkflowMonitorStepFormDetailsComponent extends BaseComponent imple
     }
 
     doSelect() {
-        console.log(this.step);
-       // this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_LIST_V2}/${this.step.TypeID}/${this.step.Version}/${this.step.StepID};resourceID=${CurrentResourceID}`);
         this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_FORM}/${this.step.TypeID}/${this.step.ItemStepID}/${this.step.ItemID}`);
 
   }
