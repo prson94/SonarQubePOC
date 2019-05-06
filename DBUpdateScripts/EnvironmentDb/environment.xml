@@ -169,6 +169,8 @@
   <include file="scripts/GOV-6994.xml"/>
   <include file="scripts/GOV-7151.xml"/>
 
+
   <!-- Sprint 5 2019 Start -->
   <include file="scripts/GOV-7184.xml"/>
+  <include file="scripts/GOV-7182.xml"/>
 </databaseChangeLog>

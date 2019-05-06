@@ -12,7 +12,7 @@ import {BaseComponent} from '../shared/base.component';
     template: `
         <header>
             Items {{group?.Name}} Owns
-            <d3s-tile-actions hasExport="false" hasFilterMode="true" [filterMode]="showFilter"
+            <d3s-tile-actions [hasExport]="false" [hasFilterMode]="true" [filterMode]="showFilter"
                               (filterModeChange)="showFilter = !showFilter"></d3s-tile-actions>
         </header>
         <div *ngIf="!isLoading" class="row">

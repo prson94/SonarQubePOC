@@ -1,7 +1,8 @@
-﻿import { Component, OnInit, Input, EventEmitter, Output, ChangeDetectionStrategy} from '@angular/core';
+﻿import { Component, OnInit, Input, EventEmitter, Output, ChangeDetectionStrategy, ViewChild} from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { SearchService } from '../../services/search.service';
 import { SearchResultsObject, SearchResultInfo, SearchCategories } from '../../models/search-result.model';
+import { Paginator } from 'primeng/primeng';
 
 @Component({
     selector: 'd3s-search-results',    
@@ -51,7 +52,7 @@ import { SearchResultsObject, SearchResultInfo, SearchCategories } from '../../m
                                     </div>
                                 </span>
                                 <d3s-loading [isLoading]="loading"></d3s-loading>
-                                <p-paginator [rows]="itemsPerPage" [totalRecords]="results?.Result?.Matches" (onPageChange)="paginate($event)"></p-paginator>
+                                <p-paginator [first]="from" [rows]="itemsPerPage" [totalRecords]="results?.Result?.Matches" (onPageChange)="paginate($event)" #pag></p-paginator>
                             </div>
                         </div>
                     </div>
@@ -78,14 +79,19 @@ export class SearchResultsComponent extends BaseComponent {
     @Input() results: SearchResultsObject;
     @Input() categories: SearchCategories[] = [];    
     @Input() itemsPerPage: number = 5;
+    @Input() from: number = 0;
     @Input() loading: boolean = false;
         
     @Output() paginateClick = new EventEmitter();    
     @Input() selectedCategory: SearchCategories;
     @Output() selectedCategoryChange = new EventEmitter();
 
-    constructor() {
-        super();
+    @ViewChild('pag') paginator: Paginator;
+
+    ngOnChanges(changes: any) {
+        if (changes.from != undefined) {
+            this.paginator.updatePaginatorState();
+        }
     }
         
 

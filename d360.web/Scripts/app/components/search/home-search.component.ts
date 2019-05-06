@@ -18,6 +18,7 @@ declare var CompanySettings;
                     [categories]="categories" 
                     (paginateClick)="paginate($event);" 
                     (selectedCategoryChange)="filterByCategory($event);"
+                    [from]="pageNumber"
                 ></d3s-search-results>
                 `,
     providers: [SearchService, TypeaheadSearchService],
@@ -55,6 +56,7 @@ export class HomeSearchComponent extends BaseComponent {
        
     private filterByCategory(category) {        
         this.selectedCategory = category;
+        this.pageNumber = 0;
         this.doSearch(this.selectedCategory);
     }
 

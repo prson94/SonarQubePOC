@@ -2640,6 +2640,7 @@ order by    rnk, [Name]";
             if (ft != null)
             {
                 fileName = ft.FriendlyName.GetSafeFilename();
+                fileName += " List";
             }
 
             switch ((DataType)lookupType)
@@ -2651,6 +2652,7 @@ order by    rnk, [Name]";
                     if(assetType != null)
                     {
                         fileName = assetType.Name.GetSafeFilename();
+                        fileName += " List";
                     }
                     break;
                 case DataType.ComplexRelationLookup:
@@ -2720,7 +2722,7 @@ order by    rnk, [Name]";
             response.Content.Headers.ContentLength = stream.Length;
             response.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
             {
-                FileName = $"{fileName} {DateTime.Now.ToString("MMM dd, yyyy")}.xlsx"
+                FileName = $"{fileName} {DateTime.Now.ToString("MMM dd yyyy")}.xlsx"
             };
             return response;
         }

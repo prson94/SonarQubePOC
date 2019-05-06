@@ -1,5 +1,7 @@
-﻿using d360.core.enums.Workflow;
+﻿using d360.core.enums;
+using d360.core.enums.Workflow;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -30,6 +32,67 @@ namespace d360.core.entities
     {
         Guid? ExecutionItemUid { get; set; }
     }
+
+    public class AssetTypeInsert
+    {
+        [DataMember]
+        public Guid Uid { get; set; }
+        
+        [DataMember]
+        public string Name { get; set; }
+        
+        [DataMember]
+        [JsonConverter(typeof(StringEnumConverter))]
+        public AssetTypeClass Class { get; set; }
+        [DataMember]
+        public string Description { get; set; }
+        [DataMember]
+        public bool AutoDisplayDescription { get; set; }
+        [DataMember]
+        public string DisplayFormat { get; set; }
+        public HierarchyInsert Hierarchy { get; set; }
+        
+        public IconStyleInsert IconStyle { get; set; }
+
+        [DataMember]
+        public Guid? ParentUid { get; set; }
+        [DataMember]
+        public string Notes { get; set; }
+        [JsonIgnore]
+        public int ObjectID { get; set; }
+        [JsonIgnore]
+        public string Object { get; set; }
+
+    }
+
+    public class AssetTypeSuccess
+    {
+        [DataMember]
+        public Guid Uid { get; set; }
+        [DataMember]
+        public string Message { get; set; }
+        [DataMember]
+        public bool Success { get; set; }
+    }
+
+    [DataContract(Name = "Hierarchy")]
+    public class HierarchyInsert
+    {
+       [DataMember] public int MaximumDepth { get; set; }
+        [DataMember] public Guid? PredicateUid { get; set; }
+    }
+
+
+    [DataContract(Name = "IconStyle")]
+    public class IconStyleInsert
+    {
+        [DataMember]
+        public string ForeColor { get; set; }
+
+        [DataMember]
+        public string BackColor { get; set; }
+    }
+
 
     [DataContract(Name = "asset")]
     public class AssetInsert : IAssetUpsert, IExecutionItem
