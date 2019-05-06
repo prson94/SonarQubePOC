@@ -4,14 +4,14 @@ import {Observable} from 'rxjs';
 import {catchError, map} from 'rxjs/operators';
 
 import { ResponsibilityTypeRelationPermission } from '../models/responsibility-type.model';
-import { MessagesService } from './messages.service';
-import {BaseObservableService} from './baseObservable.service';
+import { BaseObservableService } from './baseObservable.service';
+import { MessagesObservableService } from './messages-observable.service';
 
 @Injectable()
 export class PermissionsService extends BaseObservableService {
     constructor(
         private http: HttpClient,
-        messagesService: MessagesService
+        messagesService: MessagesObservableService
     ) {
         super(messagesService);
     }
