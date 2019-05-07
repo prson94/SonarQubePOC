@@ -148,5 +148,79 @@ namespace d360.web.Controllers.V2
             model.total = count.FirstOrDefault();
             return Request.CreateResponse(HttpStatusCode.OK, model);
         }
+        [
+           HttpGet,
+           MapToApiVersion("2.0"),
+           Route("members"),
+           SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+           SwaggerResponse(HttpStatusCode.OK, "A list of FollowingBreakdown.", typeof(ResourceApiViewModel)),
+           SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+           SwaggerParameter("_groupName", "The name of the group.", DataType = "string", ParameterType = "query", Required = true),
+           SwaggerParameter("_pageSize", "The number of results to return per page. The default is 5 users per page and max value is 250.", DataType = "integer", ParameterType = "query", Required = false),
+           SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
+       ]
+        public async Task<HttpResponseMessage> GetMembers()
+        {
+            string sql = @"
+                            select  gr.FirstName,
+                                    gr.LastName ,
+                                    gr.Email, 
+                                    gr.IsAdministrator,
+                                    gr.LastLoggedInOn, 
+                                    gr.State  
+                                    from[reporting].[Global_Resource] as gr 
+                                        inner join[dbo].[ResourceGroup] rg on rg.ResourceID = gr.ResourceID
+                                        inner join [dbo].[Group] g on g.ID = rg.GroupID
+                            ";
+            var groupName = "";
+            var pageSize = 5;
+            var pageNum = 1;
+            DynamicParameters dbArgs = new DynamicParameters();
+            List<string> queries = new List<string>();
+            ResourceApiViewModel model = new ResourceApiViewModel();
+            var queryParams = Request.GetQueryNameValuePairs();
+            queryParams.ToList().ForEach(q =>
+            {
+                var key = q.Key.ToLower();
+                if (key.StartsWith("_"))
+                {
+                    switch (key)
+                    {
+                        case "_groupname":
+                            groupName = q.Value;
+                            dbArgs.Add("groupName", q.Value);
+                            sql += " where g.Name = @groupName";
+                            break;
+                        case "_pagesize":
+                            if (int.TryParse(q.Value, out pageSize))
+                            {
+                                if (pageSize < 1) pageSize = 1;
+                            }
+                            if (pageSize > 250) pageSize = 250; // max page size is 250 people.
+                            break;
+                        case "_pagenum":
+                            if (int.TryParse(q.Value, out pageNum))
+                            {
+                                if (pageNum < 1) pageNum = 1;
+                            }
+                            break;
+                    }
+                }
+            });
+
+            if (pageSize > 0 || pageNum > 0)
+            {
+                if (pageSize < 1) pageSize = 1;
+                if (pageNum < 1) pageNum = 1;
+                model.pageNum = pageNum;
+                model.pageSize = pageSize;
+                string offsetSql = $" Order by gr.ResourceID offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
+                sql += offsetSql;
+            }
+            var results = await Company.QueryAsync<dynamic>(sql, dbArgs);
+            model.items = results;
+            model.total = results.Count();
+            return Request.CreateResponse(HttpStatusCode.OK, model);
+        }
     }
 }
