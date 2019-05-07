@@ -13,7 +13,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using static d360.core.entities.Resource;
-
 namespace d360.web.Controllers.V2
 {
     [
@@ -49,10 +48,10 @@ namespace d360.web.Controllers.V2
             var firstName = "";
             var lastName = "";
             var state = -1;
-            var isAdministrator = false;
+            bool isAdministrator = false;
+            bool is_AdminParam = false;
             var pageSize = 5;
             var pageNum = 1;
-
             List<string> queries = new List<string>();
             ResourceApiViewModel model = new ResourceApiViewModel();
             var queryParams = Request.GetQueryNameValuePairs();
@@ -76,6 +75,7 @@ namespace d360.web.Controllers.V2
                             int.TryParse(q.Value, out state);
                             break;
                         case "_isadministrator":
+                            is_AdminParam = true;
                             bool.TryParse(q.Value, out isAdministrator);
                             break;
                         case "_pagesize":
@@ -94,7 +94,7 @@ namespace d360.web.Controllers.V2
                     }
                 }
             });
-            if (uid != "" || firstName != "" || lastName != "" || state != -1 || isAdministrator != false)
+            if (uid != "" || firstName != "" || lastName != "" || state != -1 || is_AdminParam)
             {
                 sql += "where ";
             }
@@ -114,14 +114,11 @@ namespace d360.web.Controllers.V2
             {
                 queries.Add(" state = " + state);
             }
-            if (isAdministrator == false)
+            if (is_AdminParam)
             {
-                queries.Add(" isAdministrator = " + 0);
+                queries.Add(" isAdministrator = " + (isAdministrator ? 1 : 0));
             }
-            if (isAdministrator == true)
-            {
-                queries.Add(" isAdministrator = " + 1);
-            }
+
             for (int i = 0; i < queries.Count(); i++)
             {
                 sql += queries[i].ToString();
@@ -139,10 +136,8 @@ namespace d360.web.Controllers.V2
                 string offsetSql = $" Order by ResourceID offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
                 sql += offsetSql;
             }
-
             var results = await Company.QueryAsync<dynamic>(sql);
             #region GetDynamicFields
-            //as individual items in the response
             foreach (IDictionary<string, object> item in results)
             {
                 int resourceId = 0;
