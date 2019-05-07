@@ -10943,6 +10943,13 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 if ((targetCardinality == Cardinality.One && items.Count > 1))
                     return jsonException("Invalid relationship cardinality for multiple items.", HttpStatusCode.BadRequest);
 
+                if (items
+                    .Select(i => i.Split('|'))
+                    .Any(i => i.Length == 2 && string.Compare(i[0], source, true) == 0 && string.Compare(i[1], sourceID.ToString(), true) == 0))
+                {
+                    return jsonException("The item cannot be related to itself.", HttpStatusCode.BadRequest);
+                }
+
                 items.ForEach(item =>
                 {
                     var itemInfo = item.Split('|');
@@ -11023,7 +11030,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             int objectTypeID = -1;
             string parentType = string.Empty;
 
-            #region
+            #region Resolve Type
 
             if(type == SystemObjects.FusionAttribute)
             {
@@ -11083,6 +11090,7 @@ where	FA.ID not in (
 					from	[IntersectDetail]
 					where	( (Subject = @source and SubjectID = @id) AND (ObjectType = @targetType and ObjectTypeID = @targetTypeID) )
 					)
+        and FA.ID != @id
 order by F.Name, FA.TextPath";
                     }
                     else
@@ -11151,6 +11159,7 @@ where	FA.ID not in (
 					from	[IntersectDetail]
 					where	IntersectTypeID = @it and ( (Subject = @source and SubjectID = @id) AND (ObjectType = @targetType and ObjectTypeID = @targetTypeID) )
 					)
+        and FA.ID != @id
 order by 3";
                     }
                     break;
@@ -11169,6 +11178,7 @@ where	FA.ID not in (
 					from	[IntersectDetail]
 					where	( (Subject = @source and SubjectID = @id) AND (ObjectType = @targetType and ObjectTypeID = @targetTypeID) )
 					)
+        and FA.ID != @id
 order by F.Name, FA.DisplayValue";                 
                     break;
                 #endregion
@@ -11191,6 +11201,7 @@ where	D.ID not in (
 							 ( (SubjectType = 'Group') AND (Object = @source and ObjectID = @id) )
 							)
 					)
+        and D.ID != @id
 order by D.Name";
                     break;
                 #endregion
@@ -11213,6 +11224,7 @@ where   D.ResourceID not in (
 							 ( (SubjectType = 'Resource') AND (Object = @source and ObjectID = @id) )
 							)
 					)
+        and D.ResourceID != @id
 order by D.LastName, D.FirstName";
                     break;
                 #endregion
@@ -11236,6 +11248,7 @@ where   r.ID not in (
 							 ( (SubjectType = 'ReferenceItemType') AND (Object = @source and ObjectID = @id) )
 							)
 					)
+        and r.ID != @id
 order by r.Name";
                     }
                     else
@@ -11256,7 +11269,8 @@ where   r.ID not in (
 							 ( (SubjectType = 'ReferenceItem' and SubjectTypeID = r.ReferenceItemTypeID) AND (Object = @source and ObjectID = @id) )
 							)
 					)
-        and r.ReferenceItemTypeID = @targetTypeID 
+        and r.ReferenceItemTypeID = @targetTypeID
+        and r.ID != @id
 order by r.DisplayValue";
                     }
                     break;
@@ -11281,6 +11295,7 @@ where   r.ID not in (
 							 ( (SubjectType = 'RuleImplementation') AND (Object = @source and ObjectID = @id) )
 							)
 					)
+        and r.ID != @id
 order by r.Name";
                     }
                     else
@@ -11301,6 +11316,7 @@ where   r.ID not in (
 							 ( (SubjectType = 'RuleImplementation' and SubjectTypeID = r.RuleID) AND (Object = @source and ObjectID = @id) )
 							)
 					)
+        and r.ID != @id
         and r.RuleID = @targetTypeID 
 order by r.Name";
                     }
@@ -11317,7 +11333,7 @@ from		Asset D
 											( (I.Subject = @source and I.SubjectID = @id) AND (I.Object = D.[Object] and I.ObjectID = D.ObjectID) ) OR
 											( (I.Subject = D.[Object] and I.SubjectID = D.ObjectID) AND (I.Object = @source and I.ObjectID = @id) )
 										)
-where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetType
+where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetType and D.ObjectID != @id
 ) C on C.ObjectID = O.ID";
 
                     switch (targetType)
