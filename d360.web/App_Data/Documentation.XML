@@ -2403,7 +2403,7 @@
             Removes field types contained within your environment.
             </summary>
             <remarks>
-            You may only provide one of the following: ActionTypeUid, AssetTypeUid, or RelationshipTypeUid. Additionally, please keep in mind that the Name property for each item in the Fields collection refers to the **API Name** of the field.
+            You may only provide one of the following: ActionTypeUid, AssetTypeUid, or RelationshipTypeUid. Additionally, please keep in mind that the **Name** property for each item in the Fields collection refers to the **API Name** of the field.
             </remarks>
             <returns>A list of field types corresponding to the given criteria, if any.</returns>
         </member>
