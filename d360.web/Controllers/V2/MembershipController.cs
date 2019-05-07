@@ -34,11 +34,11 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "A list of FollowingBreakdown.", typeof(ResourceApiViewModel)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-            SwaggerParameter("_uid", "The number of re", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_firstName", "The page number to return results for.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_lastName", "The page number to return results for.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_state", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
-            SwaggerParameter("_isAdministrator", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_uid", "The uid of the user.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_firstName", "First Name of user.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_lastName", "Last Name of user.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_state", "What state is the user.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_isAdministrator", "Is the user an adminstrator or not.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_pageSize", "The number of results to return per page. The default is 5 users per page and max value is 250.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
         ]
@@ -49,7 +49,7 @@ namespace d360.web.Controllers.V2
             var firstName = "";
             var lastName = "";
             var state = -1;
-            var isAdministrator = -1;
+            var isAdministrator = false;
             var pageSize = 5;
             var pageNum = 1;
 
@@ -76,7 +76,7 @@ namespace d360.web.Controllers.V2
                             int.TryParse(q.Value, out state);
                             break;
                         case "_isadministrator":
-                            int.TryParse(q.Value, out isAdministrator);
+                            bool.TryParse(q.Value, out isAdministrator);
                             break;
                         case "_pagesize":
                             if (int.TryParse(q.Value, out pageSize))
@@ -94,7 +94,7 @@ namespace d360.web.Controllers.V2
                     }
                 }
             });
-            if (uid != "" || firstName != "" || lastName != "" || state != -1 || isAdministrator != -1)
+            if (uid != "" || firstName != "" || lastName != "" || state != -1 || isAdministrator != false)
             {
                 sql += "where ";
             }
@@ -114,9 +114,13 @@ namespace d360.web.Controllers.V2
             {
                 queries.Add(" state = " + state);
             }
-            if (isAdministrator != -1)
+            if (isAdministrator == false)
             {
-                queries.Add(" isAdministrator = " + isAdministrator);
+                queries.Add(" isAdministrator = " + 0);
+            }
+            if (isAdministrator == true)
+            {
+                queries.Add(" isAdministrator = " + 1);
             }
             for (int i = 0; i < queries.Count(); i++)
             {
