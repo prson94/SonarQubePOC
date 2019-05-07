@@ -280,7 +280,10 @@ nav.top, .left-side-nav {
         line-height: 32px;
     }
 }
-
+.ie-min-content {
+    display: -ms-grid;
+    -ms-grid-columns: min-content;
+}
 .megamenu-panel {
     background: @igx-left-side-nav;
     box-shadow: rgba(0, 0, 0, 0.33) 0 1px 2px;
@@ -300,6 +303,7 @@ nav.top, .left-side-nav {
         background: #878b97;
         display: flex;
         height: 40px;
+        min-width: 220px;
 
         .megamenu-tools {
             font-size: 14px;
@@ -321,8 +325,8 @@ nav.top, .left-side-nav {
             color: #ffffff;
             z-index: 1002;
             line-height: 30px;
-
             outline: none !important;
+
             ::-ms-clear {
                 display: none;
             }
@@ -356,6 +360,7 @@ nav.top, .left-side-nav {
     .megamenu-items {
         overflow-y: auto;
         overflow-x: hidden;
+        -ms-overflow-style: auto;
     }
 }
 
