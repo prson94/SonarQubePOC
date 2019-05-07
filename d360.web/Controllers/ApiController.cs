@@ -5912,13 +5912,14 @@ where    A.RuleID = @id", new { id });
                     if (intersectType != null)
                     {
                         model.columns = 1;
+                        string intersectName = Company.GetIntersectTypeName(intersectType);
 
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = intersectType.GetName(i => i.Name), FieldName = "IntersectTypeName", FieldDescription = intersectType.GetDescription(i => i.Name), Value = intersectType.Name }
+                                new ReadOnlyField { Name = intersectName, FieldName = "IntersectTypeName", FieldDescription = "" , Value = intersectName }
                             }
                         });
                     }
