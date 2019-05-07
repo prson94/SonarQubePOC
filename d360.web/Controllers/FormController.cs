@@ -7483,7 +7483,9 @@ namespace d360.web.Controllers
                 Company.Add<IntersectType>(model);
                 var id = model.ID;
 
-                return jsonSuccess(model.Name + " successfully created.", id.ToString(), "add", HttpStatusCode.Created);
+                var name = Company.GetIntersectTypeName(model);
+
+                return jsonSuccess(name + " successfully created.", id.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -7587,8 +7589,9 @@ namespace d360.web.Controllers
                 model.PredicateID = int.Parse(predicate);
 
                 Company.Update<IntersectType>(model);
+                var name = Company.GetIntersectTypeName(model);
 
-                return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);
+                return jsonSuccess(name + " successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -10954,8 +10957,9 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                         Company.AddOrUpdateFields(fields);
                     }
                 });
+                var name = Company.GetIntersectTypeName(relationshipType);
 
-                return jsonSuccess(relationshipType.Name + " successfully created.", "0", "add", HttpStatusCode.Created, new { ObjectType = SystemObjects.Intersect.ToString(), ObjectID = 0 });
+                return jsonSuccess(name + " successfully created.", "0", "add", HttpStatusCode.Created, new { ObjectType = SystemObjects.Intersect.ToString(), ObjectID = 0 });
             }
             catch (BaseException ex)
             {
