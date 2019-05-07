@@ -151,15 +151,16 @@ namespace d360.web.Controllers.V2
         [
            HttpGet,
            MapToApiVersion("2.0"),
-           Route("members"),
+           Route("groups/{groupUid:Guid}/members"),
            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
            SwaggerResponse(HttpStatusCode.OK, "A list of FollowingBreakdown.", typeof(ResourceApiViewModel)),
            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-           SwaggerParameter("_groupName", "The name of the group.", DataType = "string", ParameterType = "query", Required = true),
+           SwaggerParameter("_firstName", "The First Name of the user.", DataType = "string", ParameterType = "query", Required = false),
+           SwaggerParameter("_lastName", "The last name of the user.", DataType = "string", ParameterType = "query", Required = false),
            SwaggerParameter("_pageSize", "The number of results to return per page. The default is 5 users per page and max value is 250.", DataType = "integer", ParameterType = "query", Required = false),
            SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
        ]
-        public async Task<HttpResponseMessage> GetMembers()
+        public async Task<HttpResponseMessage> GetMembers(Guid groupUid)
         {
             string sql = @"
                            select  gr.FirstName,
@@ -169,16 +170,19 @@ namespace d360.web.Controllers.V2
                                    gr.LastLoggedInOn,
                                    gr.State
                                    from[reporting].[Global_Resource] as gr
-                                       inner join[dbo].[ResourceGroup] rg on rg.ResourceID = gr.ResourceID
+                                       inner join [dbo].[ResourceGroup] rg on rg.ResourceID = gr.ResourceID
                                        inner join [dbo].[Group] g on g.ID = rg.GroupID
-                           ";
+									   inner join [dbo].[Asset] a on a.uid = '"
+                                    + groupUid + "' where g.ID = a.ObjectID";
             string countSql = @"
                            select count(*)
                                    from[reporting].[Global_Resource] as gr
-                                       inner join[dbo].[ResourceGroup] rg on rg.ResourceID = gr.ResourceID
+                                       inner join [dbo].[ResourceGroup] rg on rg.ResourceID = gr.ResourceID
                                        inner join [dbo].[Group] g on g.ID = rg.GroupID
-                           ";
-            var groupName = "";
+									   inner join [dbo].[Asset] a on a.uid = '"
+                                    + groupUid + "' where g.ID = a.ObjectID";
+            var firstName = "";
+            var lastName = "";
             var pageSize = 5;
             var pageNum = 1;
             DynamicParameters dbArgs = new DynamicParameters();
@@ -192,11 +196,17 @@ namespace d360.web.Controllers.V2
                 {
                     switch (key)
                     {
-                        case "_groupname":
-                            groupName = q.Value;
-                            dbArgs.Add("groupName", q.Value);
-                            sql += " where g.Name = @groupName";
-                            countSql += " where g.Name = @groupName";
+                        case "_firstname":
+                            firstName = q.Value;
+                            dbArgs.Add("firstName", q.Value);
+                            sql += " and gr.FirstName = @firstName";
+                            countSql += " and gr.FirstName = @firstName";
+                            break;
+                        case "_lastname":
+                            lastName = q.Value;
+                            dbArgs.Add("lastName", q.Value);
+                            sql += " and gr.lastName = @lastName";
+                            countSql += " and gr.LastName = @lastName";
                             break;
                         case "_pagesize":
                             if (int.TryParse(q.Value, out pageSize))
