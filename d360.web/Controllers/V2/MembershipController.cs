@@ -162,16 +162,22 @@ namespace d360.web.Controllers.V2
         public async Task<HttpResponseMessage> GetMembers()
         {
             string sql = @"
-                            select  gr.FirstName,
-                                    gr.LastName ,
-                                    gr.Email, 
-                                    gr.IsAdministrator,
-                                    gr.LastLoggedInOn, 
-                                    gr.State  
-                                    from[reporting].[Global_Resource] as gr 
-                                        inner join[dbo].[ResourceGroup] rg on rg.ResourceID = gr.ResourceID
-                                        inner join [dbo].[Group] g on g.ID = rg.GroupID
-                            ";
+                           select  gr.FirstName,
+                                   gr.LastName ,
+                                   gr.Email,
+                                   gr.IsAdministrator,
+                                   gr.LastLoggedInOn,
+                                   gr.State
+                                   from[reporting].[Global_Resource] as gr
+                                       inner join[dbo].[ResourceGroup] rg on rg.ResourceID = gr.ResourceID
+                                       inner join [dbo].[Group] g on g.ID = rg.GroupID
+                           ";
+            string countSql = @"
+                           select count(*)
+                                   from[reporting].[Global_Resource] as gr
+                                       inner join[dbo].[ResourceGroup] rg on rg.ResourceID = gr.ResourceID
+                                       inner join [dbo].[Group] g on g.ID = rg.GroupID
+                           ";
             var groupName = "";
             var pageSize = 5;
             var pageNum = 1;
@@ -190,6 +196,7 @@ namespace d360.web.Controllers.V2
                             groupName = q.Value;
                             dbArgs.Add("groupName", q.Value);
                             sql += " where g.Name = @groupName";
+                            countSql += " where g.Name = @groupName";
                             break;
                         case "_pagesize":
                             if (int.TryParse(q.Value, out pageSize))
@@ -218,8 +225,9 @@ namespace d360.web.Controllers.V2
                 sql += offsetSql;
             }
             var results = await Company.QueryAsync<dynamic>(sql, dbArgs);
+            var count = await Company.QueryAsync<int>(countSql, dbArgs);
             model.items = results;
-            model.total = results.Count();
+            model.total = count.FirstOrDefault();
             return Request.CreateResponse(HttpStatusCode.OK, model);
         }
     }
