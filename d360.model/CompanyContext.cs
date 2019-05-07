@@ -1159,6 +1159,14 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
             return intersectType;
         }
 
+        public string GetIntersectTypeName(IntersectType intersectType)
+        {
+            string @sql = "SELECT * FROM [dbo].[GetIntersectTypeNames] (@id)";
+            var itName = Query<string>(sql, new { id = intersectType.ID }).FirstOrDefault();
+
+            return itName != null ? itName : "Name";
+        }
+
         public IEnumerable<AssetType> GetChildTypes(int id, SystemObjects obj) 
         {
             

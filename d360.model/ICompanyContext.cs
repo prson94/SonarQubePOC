@@ -240,6 +240,7 @@ namespace d360.model
         List<FusionOwnerOption> GetFusionOwnerOptions();
         List<FusionPromotionOption> GetFusionPromotionOptions();
         IntersectType GetHierarchyIntersectType(SystemObjects objectType, int subjectId, int objectId, PredicateType predicateType = PredicateType.InterTypeHierarchy);
+        string GetIntersectTypeName(IntersectType intersectType);
         List<IntersectTypeOption> GetIntersectTypeOptions(SystemObjects? subject = null, int? subjectID = null, SystemObjects? @object = null, int? objectID = null, int? predicateID = null);
         Task<List<IntersectTypeApiViewModel>> GetIntersectTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "");
         IEnumerable<dynamic> GetLoadColumnDetails(int id);
