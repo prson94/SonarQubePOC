@@ -3,6 +3,7 @@ using d360.model;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Models.Attributes;
+using Dapper;
 using Microsoft.Web.Http;
 using Swashbuckle.Swagger.Annotations;
 using System;
@@ -44,6 +45,7 @@ namespace d360.web.Controllers.V2
         public async Task<HttpResponseMessage> GetUsers()
         {
             string sql = "select uid, ResourceID, FirstName, LastName, Email, IsAdministrator, LastLoggedInOn, State from [reporting].[Global_Resource] ";
+            string countSql = "select count(*) from [reporting].[Global_Resource] ";
             var uid = "";
             var firstName = "";
             var lastName = "";
@@ -52,6 +54,7 @@ namespace d360.web.Controllers.V2
             bool is_AdminParam = false;
             var pageSize = 5;
             var pageNum = 1;
+            DynamicParameters dbArgs = new DynamicParameters();
             List<string> queries = new List<string>();
             ResourceApiViewModel model = new ResourceApiViewModel();
             var queryParams = Request.GetQueryNameValuePairs();
@@ -64,19 +67,29 @@ namespace d360.web.Controllers.V2
                     {
                         case "_uid":
                             uid = q.Value;
+                            dbArgs.Add("uid", q.Value);
+                            queries.Add(" uid = @uid");
                             break;
                         case "_firstname":
                             firstName = q.Value;
+                            dbArgs.Add("FirstName", q.Value);
+                            queries.Add(" FirstName = @FirstName");
                             break;
                         case "_lastname":
                             lastName = q.Value;
+                            dbArgs.Add("LastName", q.Value);
+                            queries.Add(" LastName = @LastName");
                             break;
                         case "_state":
                             int.TryParse(q.Value, out state);
+                            dbArgs.Add("state", q.Value);
+                            queries.Add(" state = @state");
                             break;
                         case "_isadministrator":
                             is_AdminParam = true;
                             bool.TryParse(q.Value, out isAdministrator);
+                            dbArgs.Add("isAdministrator", isAdministrator);
+                            queries.Add(" isAdministrator = @isAdministrator");
                             break;
                         case "_pagesize":
                             if (int.TryParse(q.Value, out pageSize))
@@ -97,34 +110,16 @@ namespace d360.web.Controllers.V2
             if (uid != "" || firstName != "" || lastName != "" || state != -1 || is_AdminParam)
             {
                 sql += "where ";
+                countSql += "where ";
             }
-            if (uid != "")
-            {
-                queries.Add(" uid = '" + uid + "'");
-            }
-            if (firstName != "")
-            {
-                queries.Add(" FirstName = '" + firstName + "'");
-            }
-            if (lastName != "")
-            {
-                queries.Add(" LastName = '" + lastName + "'");
-            }
-            if (state != -1)
-            {
-                queries.Add(" state = " + state);
-            }
-            if (is_AdminParam)
-            {
-                queries.Add(" isAdministrator = " + (isAdministrator ? 1 : 0));
-            }
-
             for (int i = 0; i < queries.Count(); i++)
             {
                 sql += queries[i].ToString();
+                countSql += queries[i].ToString();
                 if (i < queries.Count() - 1)
                 {
                     sql += " and ";
+                    countSql += " and ";
                 }
             }
             if (pageSize > 0 || pageNum > 0)
@@ -136,7 +131,8 @@ namespace d360.web.Controllers.V2
                 string offsetSql = $" Order by ResourceID offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
                 sql += offsetSql;
             }
-            var results = await Company.QueryAsync<dynamic>(sql);
+            var results = await Company.QueryAsync<dynamic>(sql, dbArgs);
+            var count = await Company.QueryAsync<int>(countSql, dbArgs);
             #region GetDynamicFields
             foreach (IDictionary<string, object> item in results)
             {
@@ -149,7 +145,7 @@ namespace d360.web.Controllers.V2
             }
             #endregion
             model.items = results;
-            model.total = results.Count();
+            model.total = count.FirstOrDefault();
             return Request.CreateResponse(HttpStatusCode.OK, model);
         }
     }
