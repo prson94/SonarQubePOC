@@ -21,6 +21,9 @@ namespace d360.core.entities
         [DataMember]
         public int IntersectTypeID { get; set; }
 
+        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        public string Name { get; set; }
+
         [DataMember]
         public int? CreatedBy { get; set; }
 

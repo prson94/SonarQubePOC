@@ -5918,7 +5918,7 @@ where    A.RuleID = @id", new { id });
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = "Name", FieldName = "IntersectTypeName", FieldDescription = "The name for this item." }
+                                new ReadOnlyField { Name = intersectType.GetName(i => i.Name), FieldName = "IntersectTypeName", FieldDescription = intersectType.GetDescription(i => i.Name), Value = intersectType.Name }
                             }
                         });
                     }
