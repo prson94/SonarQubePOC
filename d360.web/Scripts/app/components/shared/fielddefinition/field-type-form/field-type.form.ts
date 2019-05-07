@@ -1379,7 +1379,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     }
 
     private updateApiName(event) {
-        this.model.FieldType.Name = event.target.value.replace(/[^a-zA-Z0-9_]/g, '');
+        let nameValue: string = event.target.value.replace(/[^a-zA-Z0-9_]/g, '');
+        this.model.FieldType.Name = nameValue.substring(0,100);
     }
 
     private addFusion() {
