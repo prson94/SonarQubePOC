@@ -16,6 +16,7 @@ using d360.web.Filters;
 using Resources;
 using System.Net;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace d360.web.Controllers
 {
@@ -839,7 +840,7 @@ order by	f.SortOrder";
         }
 
         [HttpGet, Route("GetItemCount/{url}")]
-        public JsonNetResult GetItemCount(string url)
+        public async Task<JsonNetResult> GetItemCount(string url)
         {
             int count = 0;
             string type = ""; 
@@ -860,11 +861,12 @@ order by	f.SortOrder";
                 id = int.TryParse(urlElements[1], out id) ? id : 0;
             type = FormatType(type);
 
-            count = Company.Query<int>(@"
-                        select	count(*)
-                        from    [AssetDetail] AD
-			            where  AD.Type = @type 
-                        and  AD.TypeID = @id", new { type, id }).FirstOrDefault();
+            count = (await Company.QueryAsync<int>(@"
+                        select	count(1)
+                        from    [Asset] A
+						inner join AssetType ATT on (a.AssetTypeID = Att.id)
+			            where  ATT.[Object] = @type and  ATT.ObjectID = @id and A.[State] = 1
+                        ", new { type, id })).FirstOrDefault();
 
             return new JsonNetResult
             {
