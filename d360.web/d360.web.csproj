@@ -307,7 +307,6 @@
     <Compile Include="Controllers\WebAnalyticsController.cs" />
     <Compile Include="Controllers\Services\WorkflowController.cs" />
     <Compile Include="Controllers\Services\EventsController.cs" />
-    <Compile Include="Controllers\Services\Obsolete\GlossaryController.cs" />
     <Compile Include="Controllers\Services\Obsolete\RelationshipsController.cs" />
     <Compile Include="Controllers\Services\FusionController.cs" />
     <Compile Include="Controllers\ApiController.cs" />
