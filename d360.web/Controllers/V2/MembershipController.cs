@@ -27,12 +27,15 @@ namespace d360.web.Controllers.V2
             : base(community, company)
         {
         }
+        /// <summary>
+        /// Retrieves a list of users.
+        /// </summary>
         [
             HttpGet,
             MapToApiVersion("2.0"),
             Route("users"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
-            SwaggerResponse(HttpStatusCode.OK, "A list of FollowingBreakdown.", typeof(ResourceApiViewModel)),
+            SwaggerResponse(HttpStatusCode.OK, "Gets a list of Users.", typeof(ResourceApiViewModel)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             SwaggerParameter("_uid", "The uid of the user.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_firstName", "First Name of user.", DataType = "string", ParameterType = "query", Required = false),
@@ -148,12 +151,17 @@ namespace d360.web.Controllers.V2
             model.total = count.FirstOrDefault();
             return Request.CreateResponse(HttpStatusCode.OK, model);
         }
+
+        /// <summary>
+        /// Retrieves members of a group for a given group unique identifier.
+        /// </summary>
+        /// <param name="groupUid">The unique identifier of the Group.</param>
         [
            HttpGet,
            MapToApiVersion("2.0"),
            Route("groups/{groupUid:Guid}/members"),
            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
-           SwaggerResponse(HttpStatusCode.OK, "A list of FollowingBreakdown.", typeof(ResourceApiViewModel)),
+           SwaggerResponse(HttpStatusCode.OK, "Gets Members of a Group.", typeof(ResourceApiViewModel)),
            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
            SwaggerParameter("_firstName", "The First Name of the user.", DataType = "string", ParameterType = "query", Required = false),
            SwaggerParameter("_lastName", "The last name of the user.", DataType = "string", ParameterType = "query", Required = false),
