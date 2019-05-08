@@ -1,0 +1,371 @@
+<databaseChangeLog    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+  <changeSet author="KMcNamee" id="GOV-7184-drop-striphtml">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+      DROP FUNCTION IF EXISTS [dbo].[StripHTML]
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+CREATE OR ALTER FUNCTION [dbo].[StripHTML] (@HTMLText NVARCHAR(MAX))
+RETURNS NVARCHAR(MAX) AS
+BEGIN
+    DECLARE @Start INT
+    DECLARE @End INT
+    DECLARE @Length INT
+    SET @Start = CHARINDEX('<',@HTMLText)
+    SET @End = CHARINDEX('>',@HTMLText,CHARINDEX('<',@HTMLText))
+    SET @Length = (@End - @Start) + 1
+    WHILE @Start > 0 AND @End > 0 AND @Length > 0
+    BEGIN
+        SET @HTMLText = STUFF(@HTMLText,@Start,@Length,'')
+        SET @Start = CHARINDEX('<',@HTMLText)
+        SET @End = CHARINDEX('>',@HTMLText,CHARINDEX('<',@HTMLText))
+        SET @Length = (@End - @Start) + 1
+    END
+    RETURN LTRIM(RTRIM(@HTMLText))
+END
+		]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="KMcNamee" id="GOV-7184-drop-isinteger">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+      DROP FUNCTION IF EXISTS [dbo].[IsInteger]
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+CREATE OR ALTER Function [dbo].[IsInteger](@Value VarChar(18))
+Returns Bit
+As 
+Begin
+  
+  Return IsNull(
+     (Select Case When CharIndex('.', @Value) > 0 
+                  Then Case When Convert(int, ParseName(@Value, 1)) <> 0
+                            Then 0
+                            Else 1
+                            End
+                  Else 1
+                  End
+      Where IsNumeric(@Value + 'e0') = 1), 0)
+End
+		]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="KMcNamee" id="GOV-7184-drop-glossarygraph">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+      DROP VIEW IF EXISTS [dbo].[GlossaryGraph]
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+CREATE OR ALTER VIEW [dbo].[GlossaryGraph] AS
+select *, 'artifact/' + cast (artifactTypeID as varchar(50)) + '/' + cast(id as varchar(50)) as GlossaryURL
+ from [reporting].[Glossary_All]
+GO
+		]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="KMcNamee" id="GOV-7184-drop-intersectgroupitem">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+      DROP TABLE IF EXISTS [dbo].[IntersectGroupItem]
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+CREATE TABLE [dbo].[IntersectGroupItem](
+	[IntersectGroupID] [int] NOT NULL,
+	[IntersectID] [int] NOT NULL,
+	[State] [int] NOT NULL,
+	[CreatedBy] [int] NOT NULL,
+	[CreatedOn] [datetime] NOT NULL,
+	[UpdatedBy] [int] NOT NULL,
+	[UpdatedOn] [datetime] NOT NULL,
+ CONSTRAINT [PK_IntersectGroupItem] PRIMARY KEY CLUSTERED 
+(
+	[IntersectGroupID] ASC,
+	[IntersectID] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[IntersectGroupItem] ADD  CONSTRAINT [DF_IntersectGroupItem_State]  DEFAULT ((1)) FOR [State]
+GO
+
+ALTER TABLE [dbo].[IntersectGroupItem] ADD  CONSTRAINT [DF_IntersectGroupItem_CreatedBy]  DEFAULT ((0)) FOR [CreatedBy]
+GO
+
+ALTER TABLE [dbo].[IntersectGroupItem] ADD  CONSTRAINT [DF_IntersectGroupItem_CreatedOn]  DEFAULT (getutcdate()) FOR [CreatedOn]
+GO
+
+ALTER TABLE [dbo].[IntersectGroupItem] ADD  CONSTRAINT [DF_IntersectGroupItem_UpdatedBy]  DEFAULT ((0)) FOR [UpdatedBy]
+GO
+
+ALTER TABLE [dbo].[IntersectGroupItem] ADD  CONSTRAINT [DF_IntersectGroupItem_UpdatedOn]  DEFAULT (getutcdate()) FOR [UpdatedOn]
+GO
+
+ALTER TABLE [dbo].[IntersectGroupItem]  WITH CHECK ADD  CONSTRAINT [FK_IntersectGroupItem_IntersectGroup] FOREIGN KEY([IntersectGroupID])
+REFERENCES [dbo].[IntersectGroup] ([ID])
+ON DELETE CASCADE
+GO
+
+ALTER TABLE [dbo].[IntersectGroupItem] CHECK CONSTRAINT [FK_IntersectGroupItem_IntersectGroup]
+GO
+		]]>
+    </rollback>
+  </changeSet>
+
+
+  <changeSet author="KMcNamee" id="GOV-7184-drop-intersectgroup">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+      DROP TABLE IF EXISTS [dbo].[IntersectGroup]
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+
+CREATE TABLE [dbo].[IntersectGroup](
+	[ID] [int] IDENTITY(1,1) NOT NULL,
+	[BusinessTransformation] [nvarchar](max) NULL,
+	[TechnicalTransformation] [nvarchar](max) NULL,
+	[State] [int] NOT NULL,
+	[Owner] [varchar](100) NULL,
+	[CreatedBy] [int] NOT NULL,
+	[CreatedOn] [datetime] NOT NULL,
+	[UpdatedBy] [int] NOT NULL,
+	[UpdatedOn] [datetime] NOT NULL,
+ CONSTRAINT [PK_IntersectGroup] PRIMARY KEY NONCLUSTERED 
+(
+	[ID] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[IntersectGroup] ADD  CONSTRAINT [DF_IntersectGroup_State]  DEFAULT ((1)) FOR [State]
+GO
+
+ALTER TABLE [dbo].[IntersectGroup] ADD  CONSTRAINT [DF_IntersectGroup_CreatedBy]  DEFAULT ((0)) FOR [CreatedBy]
+GO
+
+ALTER TABLE [dbo].[IntersectGroup] ADD  CONSTRAINT [DF_IntersectGroup_CreatedOn]  DEFAULT (getutcdate()) FOR [CreatedOn]
+GO
+
+ALTER TABLE [dbo].[IntersectGroup] ADD  CONSTRAINT [DF_IntersectGroup_UpdatedBy]  DEFAULT ((0)) FOR [UpdatedBy]
+GO
+
+ALTER TABLE [dbo].[IntersectGroup] ADD  CONSTRAINT [DF_IntersectGroup_UpdatedOn]  DEFAULT (getutcdate()) FOR [UpdatedOn]
+GO
+
+		]]>
+    </rollback>
+  </changeSet>
+
+  
+  <changeSet author="KMcNamee" id="GOV-7184-drop-nodegraph">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+      DROP TABLE IF EXISTS [dbo].[Nodes]
+		]]>
+    </sql>    
+  </changeSet>
+
+  <changeSet author="KMcNamee" id="GOV-7184-drop-linkgraph">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+      DROP TABLE IF EXISTS [dbo].[Links]
+		]]>
+    </sql>
+  </changeSet>
+
+  <changeSet author="KMcNamee" id="GOV-7184-drop-artifact-computed">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[      
+	      ALTER TABLE dbo.artifact DROP COLUMN KeyHash
+	      ALTER TABLE dbo.artifact Add KeyHash varchar(50) null      
+	      ALTER TABLE dbo.artifact DROP COLUMN FieldHash
+	      ALTER TABLE dbo.artifact Add FieldHash varchar(50) null      
+		]]>
+    </sql>
+  </changeSet>
+
+  <changeSet author="KMcNamee" id="GOV-7184-drop-reference-computed">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[      
+	      ALTER TABLE dbo.referenceitem DROP COLUMN KeyHash
+	      ALTER TABLE dbo.referenceitem Add KeyHash varchar(50) null
+	      ALTER TABLE dbo.referenceitem DROP COLUMN FieldHash
+	      ALTER TABLE dbo.referenceitem Add FieldHash varchar(50) null
+		]]>
+    </sql>
+  </changeSet>
+
+  <changeSet author="KMcNamee" id="GOV-7184-drop-reference-computed">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[      
+	      ALTER TABLE dbo.referenceitem DROP COLUMN KeyHash
+	      ALTER TABLE dbo.referenceitem Add KeyHash varchar(50) null
+	      ALTER TABLE dbo.referenceitem DROP COLUMN FieldHash
+	      ALTER TABLE dbo.referenceitem Add FieldHash varchar(50) null
+		]]>
+    </sql>
+  </changeSet>
+
+  <changeSet author="KMcNamee" id="GOV-7184-drop-object-hash-wrapper">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+      DROP FUNCTION IF EXISTS [utility].[GetObjectHashWrapper]
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+CREATE OR ALTER FUNCTION [utility].[GetObjectHashWrapper]
+(
+	@Object varchar(50),
+	@ObjectID int,
+	@ObjectTypeID int,
+	@KeyFieldOnly bit
+)
+RETURNS varchar(50)
+AS
+BEGIN
+	return utility.GetObjectHash(@Object, @ObjectID, @ObjectTypeID, @KeyFieldOnly)
+END
+		]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="KMcNamee" id="GOV-7184-drop-object-hash">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+      DROP FUNCTION IF EXISTS [utility].[GetObjectHash]
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+ALTER FUNCTION [utility].[GetObjectHash]
+(
+
+	@Object varchar(50),
+	@ObjectID int,
+	@ObjectTypeID int,
+	@KeyFieldOnly bit
+)
+RETURNS varchar(50)
+AS
+BEGIN
+	declare @hash varchar(50)
+
+	select		@hash = CONVERT(
+					varchar(32), 
+					SUBSTRING(HASHBYTES('SHA1', STRING_AGG(cast(FieldTypeID as nvarchar) + ':' + Value, char(59))), 3, 32), 
+					2)
+	from		(
+				select		top 100 percent
+							F.FieldTypeID,
+							coalesce(F.Value, '') as Value
+				from		Field F
+							inner join FieldType FT on FT.ID = F.FieldTypeID 
+													and F.ObjectType = @Object and F.ObjectID = @ObjectID 
+													and FT.Object = @Object + 'Type' and FT.ObjectID = @ObjectTypeID
+													and ( (@KeyFieldOnly = 1 and FT.IsPartOfKey = @KeyFieldOnly) or (@KeyFieldOnly = 0 and 1=1) )
+				order by	FT.ID
+				) A
+
+	return @hash
+END
+		]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="KMcNamee" id="GOV-7184-drop-update-object">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+      DROP PROCEDURE IF EXISTS [dbo].[UpdateObject]
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+CREATE OR ALTER PROCEDURE [dbo].[UpdateObject]
+	@Object varchar(50),
+	@objectID int,
+	@ResourceID int
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	if @Object = 'FusionAttributeType'
+	begin
+		with S as (
+			select  ID,
+					ParentID
+			from    FusionAttributeType
+			where   ID = @ObjectID
+			union all
+			select	C.ID,
+					C.ParentID
+			from	FusionAttributeType C
+					inner join S on S.ID = C.ParentID
+		)
+		update	T
+		set		T.ScanEnabled = 0,
+				T.UpdatedOn = getutcdate(),
+				T.UpdatedBy = @ResourceID
+		from	FusionAttributeType T
+				inner join S on S.ID = T.ID and S.ID <> @ObjectID
+	end
+END		]]>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>

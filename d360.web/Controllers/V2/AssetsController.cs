@@ -1,6 +1,7 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.enums;
+using d360.core.exceptions;
 using d360.core.queue;
 using d360.extensions;
 using d360.model;
@@ -214,7 +215,8 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "Newly asset type Uid and success / failure message.", typeof(AssetTypeSuccess)),
             SwaggerResponse(HttpStatusCode.NotFound, "Asset Type not found based on Uid provided.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to create an asset type", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to create an asset type", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Conflict, "You already have an asset type with the specified name", typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> PostAssetTypeAsync(AssetTypeInsert model)
         {
@@ -246,7 +248,6 @@ namespace d360.web.Controllers.V2
                 var validationStatus = validator.ValidateModelForPost(model, parentAssetType, predicate);
                 if (validationStatus.StatusCode != HttpStatusCode.OK)
                     return await Task.FromResult(errorMessageResponse(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message));
-
 
                 AssetType assetType = null;
                 var nameFriendlyName = "Name";
@@ -290,6 +291,10 @@ namespace d360.web.Controllers.V2
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
             }
+            catch (BaseException ex)
+            {
+                return await Task.FromResult(errorMessageResponse(ex.StatusCode, ex.StatusMessage, ex.StatusDescription));
+            }
             catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
@@ -298,9 +303,6 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Error", errorMessage));
             }
         }
-
-
-
 
         /// <summary>
         /// Updates an asset type based on the specific asset type unique identifier.
@@ -322,7 +324,8 @@ namespace d360.web.Controllers.V2
     SwaggerResponse(HttpStatusCode.BadRequest, "You have not provided a proper predicate based on its asset type class.", typeof(ErrorResponse)),
     SwaggerResponse(HttpStatusCode.BadRequest, "Display Format contains invalid field references.", typeof(ErrorResponse)),
     SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-    SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse))
+    SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
+    SwaggerResponse(HttpStatusCode.Conflict, "If attempting to alter certain properties of a child asset type and there is a conflict within your Govern environment. For example, changing the predicate between a parent a child asset type", typeof(ErrorResponse))
 ]
         public async Task<IHttpActionResult> PutAssetTypeAsync(AssetTypeInsert model)
         {
@@ -345,7 +348,6 @@ namespace d360.web.Controllers.V2
                 if (model.Hierarchy != null && model.Hierarchy.PredicateUid != Guid.Empty)
                     predicate = AssetRepository.GetPredicateByUID((Guid)model.Hierarchy.PredicateUid);
 
-
                 var validationStatus = validator.ValidateModelForPut(model, parentAssetType, predicate, assetType);
                 if (validationStatus.StatusCode != HttpStatusCode.OK)
                     return await Task.FromResult(errorMessageResponse(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message));
@@ -366,7 +368,11 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
                
             }
-             catch (Exception ex)
+            catch (BaseException ex)
+            {
+                return await Task.FromResult(errorMessageResponse(ex.StatusCode, ex.StatusMessage, ex.StatusDescription));
+            }
+            catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);

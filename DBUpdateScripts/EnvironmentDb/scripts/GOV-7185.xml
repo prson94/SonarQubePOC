@@ -1,0 +1,39 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Tomislav Duric" id="GOV-7185">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[  
+    IF COL_LENGTH('dbo.IntersectType','Name') IS NOT NULL
+	BEGIN
+		ALTER TABLE [dbo].[IntersectType] DROP COLUMN [Name]
+	END
+
+	IF COL_LENGTH('dbo.Intersect','Name') IS NOT NULL
+	BEGIN
+		ALTER TABLE [dbo].[Intersect] DROP COLUMN [Name]
+	END
+		]]>
+    </sql>
+    <rollback>
+	<![CDATA[					   		 	 
+    IF COL_LENGTH('dbo.IntersectType','Name') IS NULL
+	BEGIN
+		ALTER TABLE [dbo].[IntersectType] ADD [Name] VARCHAR(250) NULL
+	END	
+
+	IF COL_LENGTH('dbo.Intersect','Name') IS NULL
+	BEGIN
+		ALTER TABLE [dbo].[Intersect] ADD [Name] VARCHAR(250) NULL
+	END		   	
+		]]>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>

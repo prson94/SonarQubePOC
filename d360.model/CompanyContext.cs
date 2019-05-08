@@ -176,8 +176,7 @@ namespace d360.model
         public DbSet<IntersectDetail> IntersectDetails { get; set; }                /* VIEW */
 
         public DbSet<IntersectTypeDetail> IntersectTypeDetails { get; set; }        /* VIEW */
-
-        public DbSet<IntersectGroup> IntersectGroups { get; set; }
+        
 
         public DbSet<IntersectType> IntersectTypes { get; set; }
 
@@ -1157,6 +1156,14 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
             var intersectType = Query<IntersectType>(sql, new { objectType, subjectId, objectId, type = (int)predicateType }).FirstOrDefault();
 
             return intersectType;
+        }
+
+        public string GetIntersectTypeName(IntersectType intersectType)
+        {
+            string @sql = "SELECT * FROM [dbo].[GetIntersectTypeNames] (@id)";
+            var itName = Query<string>(sql, new { id = intersectType.ID }).FirstOrDefault();
+
+            return itName != null ? itName : "Name";
         }
 
         public IEnumerable<AssetType> GetChildTypes(int id, SystemObjects obj) 

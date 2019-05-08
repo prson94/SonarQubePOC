@@ -74,14 +74,22 @@ export class BaseComponent {
         objectType: string,
         objectID: number
     ) {
-        return permissionsService.getPermissions(objectID, objectType).toPromise();
+
+        return permissionsService.getPermissions(objectID, objectType).toPromise().then(result => {
+            this.permissions = result;
+        });
+
     }
 
     loadPermissionsById(
         permissionsService: PermissionsService,
         assetID: number
     ) {
-        return permissionsService.getPermissionsById(assetID).toPromise();
+
+        return permissionsService.getPermissionsById(assetID).toPromise().then(result => {
+            this.permissions = result;
+        })
+
     }
 
     hasPermission(permission: number) {

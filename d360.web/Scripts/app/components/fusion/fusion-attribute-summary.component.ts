@@ -366,6 +366,11 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
     }
 
     private selectItem(item) {
+
+        // Encoding '(' and ')' as they are valid URI components so are not encoded by encodeURIComponent()
+        // but they break routing
+        item.Name = item.Name.replace(/\(/g, "%28").replace(/\)/g, "%29");
+
         if (item.DataProfileID)
             this.router.navigateByUrl(SiteUrlHelpers.SITE_URL_FUSION_ROOT + '/' + SiteUrlHelpers.SITE_URL_FUSION_ATTRIBUTE_DETAILS + '/' + item.Type + '/' + item.ID + '/' + (item.Name ? encodeURIComponent(item.Name) : 'Fusion Query Attribute') + '/' + item.DataProfileID);
         else

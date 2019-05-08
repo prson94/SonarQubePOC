@@ -91,8 +91,7 @@ namespace d360.model
         DbSet<IntegrationExecutionAssetType> IntegrationExecutionAssetTypes { get; set; }
         DbSet<IntegrationSetting> IntegrationSettings { get; set; }
         DbSet<IntegrationUnresolvedRelationItem> IntegrationUnresolvedRelationItems { get; set; }
-        DbSet<IntersectDetail> IntersectDetails { get; set; }
-        DbSet<IntersectGroup> IntersectGroups { get; set; }
+        DbSet<IntersectDetail> IntersectDetails { get; set; }        
         DbSet<Intersect> Intersects { get; set; }
         DbSet<IntersectTypeDetail> IntersectTypeDetails { get; set; }
         DbSet<IntersectType> IntersectTypes { get; set; }
@@ -240,6 +239,7 @@ namespace d360.model
         List<FusionOwnerOption> GetFusionOwnerOptions();
         List<FusionPromotionOption> GetFusionPromotionOptions();
         IntersectType GetHierarchyIntersectType(SystemObjects objectType, int subjectId, int objectId, PredicateType predicateType = PredicateType.InterTypeHierarchy);
+        string GetIntersectTypeName(IntersectType intersectType);
         List<IntersectTypeOption> GetIntersectTypeOptions(SystemObjects? subject = null, int? subjectID = null, SystemObjects? @object = null, int? objectID = null, int? predicateID = null);
         Task<List<IntersectTypeApiViewModel>> GetIntersectTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "");
         IEnumerable<dynamic> GetLoadColumnDetails(int id);
