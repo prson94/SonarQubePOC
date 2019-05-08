@@ -149,7 +149,6 @@
     <Compile Include="entities\Fusion\FusionRuleStep.cs" />
     <Compile Include="entities\Fusion\FusionRuleStepMapping.cs" />
     <Compile Include="entities\Fusion\FusionRuleStepSetting.cs" />
-    <Compile Include="entities\Relation\IntersectGroup.cs" />
     <Compile Include="entities\Relation\MapRuleItemMapItem.cs" />
     <Compile Include="entities\Relation\MapRule.cs" />
     <Compile Include="entities\Relation\MapRuleItem.cs" />
@@ -193,10 +192,8 @@
     <Compile Include="entities\Transitive\AssetWithoutReadPermission.cs" />
     <Compile Include="entities\Transitive\BulkOwnerImport.cs" />
     <Compile Include="entities\Transitive\BulkMetricImport.cs" />
-    <Compile Include="entities\Transitive\GenerateAssetTypeSqlModel.cs" />
     <Compile Include="entities\Transitive\BulkLoadGetLoadColumnsModel.cs" />
     <Compile Include="entities\Transitive\AssetDetail.cs" />
-    <Compile Include="entities\Transitive\CacheObject.cs" />
     <Compile Include="entities\Transitive\FusionAttributeTypeWithQuery.cs" />
     <Compile Include="entities\Transitive\FusionRuleFilterItem.cs" />
     <Compile Include="entities\Transitive\FieldFilterModel.cs" />
@@ -229,10 +226,7 @@
     <Compile Include="entities\ObjectStyle.cs" />
     <Compile Include="entities\Contracts\ICreatedObject.cs" />
     <Compile Include="entities\Contracts\IUpdatedObject.cs" />
-    <Compile Include="entities\Transitive\ChildArtifactStatisticsByObject.cs" />
-    <Compile Include="entities\Transitive\CriticalRelationshipsByObject.cs" />
     <Compile Include="entities\Transitive\FusionConfigurationScheduleRequestModel.cs" />
-    <Compile Include="entities\Transitive\SocialStatisticsByObject.cs" />
     <Compile Include="entities\Views\IntersectDetail.cs" />
     <Compile Include="entities\Views\IntersectTypeDetail.cs" />
     <Compile Include="entities\Report.cs" />
@@ -279,10 +273,8 @@
     <Compile Include="entities\Transitive\CommentDetail.cs" />
     <Compile Include="entities\Transitive\FusionPromotionOption.cs" />
     <Compile Include="entities\Transitive\GroupResourceInfo.cs" />
-    <Compile Include="entities\Transitive\MostActiveUserReportModel.cs" />
     <Compile Include="entities\Transitive\MicroModels.cs" />
     <Compile Include="entities\Transitive\RenderTemplateModel.cs" />
-    <Compile Include="entities\Views\RelationshipAggregate.cs" />
     <Compile Include="entities\Views\ResponsibilityDetail.cs" />
     <Compile Include="entities\Views\AttributeDetail.cs" />
     <Compile Include="entities\Views\FieldLookupValue.cs" />

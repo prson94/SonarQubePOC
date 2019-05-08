@@ -646,7 +646,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
 
                 if (!hasPermissions)
                 {
-                    throw new RestApiException(HttpStatusCode.Unauthorized, "Not authorized", "You do not have permissions to remove fields on this type.");
+                    throw new RestApiException(HttpStatusCode.Unauthorized, "Not authorized", "You do not have permissions to change fields on this type.");
                 }
 
                 #endregion
@@ -1003,7 +1003,18 @@ from	IntersectType I
                         newFieldType.Type = DataType.Link.ToString();
                         newFieldType.ColumnOrder = f.Type.Link.ColumnOrder;
                         newFieldType.ColumnWidth = f.Type.Link.ColumnWidth;
-                        if (f.Type.Link.DefaultValue != null) newFieldType.DefaultValue = $"{f.Type.Link.DefaultValue.Text}|{f.Type.Link.DefaultValue.Url}";
+                        if (f.Type.Link.DefaultValue != null)
+                        {
+                            if (string.IsNullOrEmpty(f.Type.Link.DefaultValue.Text) || string.IsNullOrWhiteSpace(f.Type.Link.DefaultValue.Text))
+                            {
+                                throw new RestApiException(HttpStatusCode.BadRequest, "Field type error", $"You must provide a link Text value if setting a default value for {f.Name}.");
+                            }
+                            if (string.IsNullOrEmpty(f.Type.Link.DefaultValue.Url) || string.IsNullOrWhiteSpace(f.Type.Link.DefaultValue.Url))
+                            {
+                                throw new RestApiException(HttpStatusCode.BadRequest, "Field type error", $"You must provide a link Url value if setting a default value for {f.Name}.");
+                            }
+                            newFieldType.DefaultValue = $"{f.Type.Link.DefaultValue.Text}|{f.Type.Link.DefaultValue.Url}";
+                        } 
                         if (f.Type.Link.Description != null)
                         {
                             newFieldType.DisplayDescription = f.Type.Link.Description.Display;
@@ -1331,7 +1342,7 @@ from	IntersectType I
         /// Removes field types contained within your environment.
         /// </summary>
         /// <remarks>
-        /// You may only provide one of the following: ActionTypeUid, AssetTypeUid, or RelationshipTypeUid.
+        /// You may only provide one of the following: ActionTypeUid, AssetTypeUid, or RelationshipTypeUid. Additionally, please keep in mind that the **Name** property for each item in the Fields collection refers to the **API Name** of the field.
         /// </remarks>
         /// <returns>A list of field types corresponding to the given criteria, if any.</returns>
         [

@@ -1,6 +1,7 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.enums;
+using d360.core.exceptions;
 using d360.core.queue;
 using d360.extensions;
 using d360.model;
@@ -679,7 +680,8 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "Newly asset type Uid and success / failure message.", typeof(AssetTypeSuccess)),
             SwaggerResponse(HttpStatusCode.NotFound, "Asset Type not found based on Uid provided.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to create an asset type", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to create an asset type", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Conflict, "You already have an asset type with the specified name", typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> PostAssetTypeAsync(AssetTypeInsert model)
         {
@@ -752,7 +754,7 @@ namespace d360.web.Controllers.V2
 
 
 
-                if (!this.IsValidDisplayFormat(0, model.DisplayFormat))
+                if (!this.IsValidDisplayFormat(0, model.DisplayFormat,model.Class))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Display Format contains invalid field references."));
 
                 var regex = "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$";
@@ -921,6 +923,10 @@ namespace d360.web.Controllers.V2
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
             }
+            catch (BaseException ex)
+            {
+                return await Task.FromResult(errorMessageResponse(ex.StatusCode, ex.StatusMessage, ex.StatusDescription));
+            }
             catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
@@ -930,7 +936,7 @@ namespace d360.web.Controllers.V2
             }
         }
 
-        private bool IsValidDisplayFormat(int assetTypeId,string displayFormat)
+        private bool IsValidDisplayFormat(int assetTypeId,string displayFormat, AssetTypeClass assetTypeClass)
         {
             List<string> fieldNames;
             if (assetTypeId == 0)
@@ -938,8 +944,11 @@ namespace d360.web.Controllers.V2
             else
                 fieldNames = Company.Filter<FieldType>(x => x.AssetTypeID == assetTypeId).Select(x => x.Name.ToLower()).ToList();
 
+            if (assetTypeClass == AssetTypeClass.Reference)
+                fieldNames.Add("code");
+
             displayFormat = displayFormat.Replace("}{", "} {");
-            var displayFieldNames = displayFormat.Split().Where(x => x.StartsWith("{") && x.EndsWith("}"))
+                var displayFieldNames = displayFormat.Split().Where(x => x.StartsWith("{") && x.EndsWith("}"))
                     .Select(x => x.ToLower().Replace("{", string.Empty).Replace("}", string.Empty))
                     .ToList();
             return !displayFieldNames.Except(fieldNames).Any();
@@ -972,7 +981,7 @@ namespace d360.web.Controllers.V2
 
             string iconText = "Tx";
 
-            var words = objectName.Split(' ');
+            var words = objectName.Trim().Split(' ');
             if (words.Length > 1 && words[1].Length > 0)
             {
                 iconText = words[0][0].ToString().ToUpper() + words[1][0].ToString().ToLower();
@@ -1022,7 +1031,8 @@ namespace d360.web.Controllers.V2
     SwaggerResponse(HttpStatusCode.BadRequest, "You have not provided a proper predicate based on its asset type class.", typeof(ErrorResponse)),
     SwaggerResponse(HttpStatusCode.BadRequest, "Display Format contains invalid field references.", typeof(ErrorResponse)),
     SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-    SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse))
+    SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
+    SwaggerResponse(HttpStatusCode.Conflict, "If attempting to alter certain properties of a child asset type and there is a conflict within your Govern environment. For example, changing the predicate between a parent a child asset type", typeof(ErrorResponse))
 ]
         public async Task<IHttpActionResult> PutAssetTypeAsync(AssetTypeInsert model)
         {
@@ -1067,7 +1077,7 @@ namespace d360.web.Controllers.V2
                     model.ObjectID = assetType.ObjectID;
                 }
 
-                if (model.ParentUid != Guid.Empty)
+                if (model.ParentUid.HasValue && model.ParentUid != Guid.Empty)
                 {
                     parentAssetType = Company.Filter<AssetType>(x => x.uid == model.ParentUid).SingleOrDefault();
                     if (parentAssetType == null)
@@ -1078,10 +1088,10 @@ namespace d360.web.Controllers.V2
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Invalid request", "Not valid ParentUid for the Class.Please check your request and try again."));
                 }
 
-                if(model.ParentUid == model.Uid)
+                if(model.ParentUid.HasValue  && model.ParentUid == model.Uid)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Not valid ParentUid provided.Please check your request and try again."));
 
-                if (model.Hierarchy != null && model.Hierarchy.PredicateUid != Guid.Empty)
+                if (model.Hierarchy != null && model.Hierarchy.PredicateUid.HasValue &&  model.Hierarchy.PredicateUid != Guid.Empty)
                 {
                     predicate = Company.Filter<Predicate>(x => x.UID == model.Hierarchy.PredicateUid).SingleOrDefault();
                     if (predicate == null)
@@ -1108,7 +1118,7 @@ namespace d360.web.Controllers.V2
                 if (assetCount !=0 && currentParentType !=null  && currentParentType.uid != model.ParentUid)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Assets already exist with assigned parents. You may not change the parent of this asset type."));
                 
-                if(!this.IsValidDisplayFormat(assetType.ID,model.DisplayFormat))
+                if(!this.IsValidDisplayFormat(assetType.ID,model.DisplayFormat,model.Class))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Display Format contains invalid field references."));
 
                 var regex = "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$";
@@ -1302,7 +1312,11 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
                
             }
-             catch (Exception ex)
+            catch (BaseException ex)
+            {
+                return await Task.FromResult(errorMessageResponse(ex.StatusCode, ex.StatusMessage, ex.StatusDescription));
+            }
+            catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
