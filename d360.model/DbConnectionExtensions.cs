@@ -56,8 +56,8 @@ namespace d360.model
 
                             try
                             {
-                                var thenSql = cnn.GetThenResultsSql(rule, false, false);
-                                var whenSql = cnn.GetWhenResultsSql(rule, false);
+                                var thenSql = cnn.GetThenResultsSql(rule, false, transaction, false);
+                                var whenSql = cnn.GetWhenResultsSql(rule, transaction, false);
 
                                 thenSql = string.Format(thenSql, "");
 
@@ -166,7 +166,7 @@ namespace d360.model
             string sqlToExecute = "";
             try
             {                
-                var thenSql = cnn.GetThenResultsSql(rule, false, false);
+                var thenSql = cnn.GetThenResultsSql(rule, false, transaction, false);
                 thenSql = string.Format(thenSql, "");
 
                     //merge into the asset table 
@@ -239,7 +239,7 @@ namespace d360.model
         }
 
 
-        private static string GetWhenResultsSql(this DbConnection cnn, ResponsibilityTypeRelationRule rule, bool includeName = true)
+        private static string GetWhenResultsSql(this DbConnection cnn, ResponsibilityTypeRelationRule rule, SqlTransaction transaction, bool includeName = true)
         {
             string whenSql = "";
 
@@ -251,49 +251,54 @@ namespace d360.model
 
             var fCount = 1;
             var rCount = 1;
-            if (rule.StructuredDefinition != null && rule.StructuredDefinition.When != null)
-            {
-                rule.StructuredDefinition.When.ForEach(w => {
-                    if (w.CheckType == "F")
+
+            
+
+                if (rule.StructuredDefinition != null && rule.StructuredDefinition.When != null)
+                {
+                    rule.StructuredDefinition.When.ForEach(w =>
                     {
-                        if (w.FieldTypeID > 0)
+                        if (w.CheckType == "F")
                         {
-                            var whenFieldType = cnn.Query<FieldType>("select * from FieldType where ID = @FieldTypeID", new { w.FieldTypeID }).SingleOrDefault();
-                            whenSql += $"cross apply (select coalesce(FT.DefaultValue, F.Value) as [Value] from FieldType FT left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = A.Object and F.ObjectID = A.ObjectID ";
-                            if (whenFieldType != null)
+                            if (w.FieldTypeID > 0)
                             {
-                                whenSql += (whenFieldType.AllowMultipleValues) ?
-                                    $"where FT.ID = {w.FieldTypeID} and '{w.Value}' in (select value from string_split(coalesce(F.Value, FT.DefaultValue),',')) ) FV{fCount}" :
-                                    $"where FT.ID = {w.FieldTypeID} and coalesce(F.Value, FT.DefaultValue) = '{w.Value}' ) FV{fCount}";
+                                var whenFieldType = cnn.Query<FieldType>("select * from FieldType where ID = @FieldTypeID", new { w.FieldTypeID },transaction:transaction).SingleOrDefault();
+                                whenSql += $"cross apply (select coalesce(FT.DefaultValue, F.Value) as [Value] from FieldType FT left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = A.Object and F.ObjectID = A.ObjectID ";
+                                if (whenFieldType != null)
+                                {
+                                    whenSql += (whenFieldType.AllowMultipleValues) ?
+                                        $"where FT.ID = {w.FieldTypeID} and '{w.Value}' in (select value from string_split(coalesce(F.Value, FT.DefaultValue),',')) ) FV{fCount}" :
+                                        $"where FT.ID = {w.FieldTypeID} and coalesce(F.Value, FT.DefaultValue) = '{w.Value}' ) FV{fCount}";
+                                }
+                                else
+                                {
+                                    whenSql += $"where FT.ID = {w.FieldTypeID} and coalesce(F.Value, FT.DefaultValue) = '{w.Value}' ) FV{fCount}";
+                                }
                             }
                             else
                             {
-                                whenSql += $"where FT.ID = {w.FieldTypeID} and coalesce(F.Value, FT.DefaultValue) = '{w.Value}' ) FV{fCount}";
+                                //something else here, static field
                             }
+                            fCount++;
                         }
-                        else
+                        if (w.CheckType == "R")
                         {
-                            //something else here, static field
-                        }
-                        fCount++;
-                    }
-                    if (w.CheckType == "R")
-                    {
-                        whenSql += $@"inner join [Intersect] I{rCount} on 
+                            whenSql += $@"inner join [Intersect] I{rCount} on 
         I{rCount}.IntersectTypeID = {w.IntersectTypeID} and 
         ( 
         (I{rCount}.Subject = A.Object and I{rCount}.SubjectID = A.ObjectID and I{rCount}.Object = '{w.TargetObject}' and I{rCount}.ObjectID = {w.TargetObjectID}) OR 
         (I{rCount}.Object = A.Object and I{rCount}.ObjectID = A.ObjectID and I{rCount}.Subject = '{w.TargetObject}' and I{rCount}.SubjectID = {w.TargetObjectID}) 
         ) ";
-                        rCount++;
-                    }
-                });
-            }
+                            rCount++;
+                        }
+                    });
+                }
+            
 
             return whenSql;
         }
 
-        private static string GetThenResultsSql(this DbConnection cnn, ResponsibilityTypeRelationRule rule, bool IsHideData3SixtyUsers, bool includeName = true, string assetIDColumn = "")
+        private static string GetThenResultsSql(this DbConnection cnn, ResponsibilityTypeRelationRule rule, bool IsHideData3SixtyUsers, SqlTransaction transaction, bool includeName = true, string assetIDColumn = "")
         {
             string thenSql = "";
 
@@ -331,7 +336,7 @@ namespace d360.model
                     {
                         if (rc.FieldTypeID > 0)
                         {
-                            var thenFieldType = cnn.Query<FieldType>("select * from FieldType where ID = @FieldTypeID", new { rc.FieldTypeID }).SingleOrDefault();
+                            var thenFieldType = cnn.Query<FieldType>("select * from FieldType where ID = @FieldTypeID", new { rc.FieldTypeID }, transaction:transaction).SingleOrDefault();
                             thenSql += $"cross apply (select coalesce(FT.DefaultValue, F.Value) as [Value] from FieldType FT left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = '{obj}' and F.ObjectID = O.{uniqueIdField} ";
                             if (thenFieldType != null)
                             {
@@ -395,13 +400,13 @@ namespace d360.model
         
         public static IEnumerable<ObjectResult> GetWhenResults(this DbConnection cnn, ResponsibilityTypeRelationRule rule, SqlTransaction trans = null)
         {
-            string sql = cnn.GetWhenResultsSql(rule);
+            string sql = cnn.GetWhenResultsSql(rule,trans);
             return cnn.Query<ObjectResult>(sql, transaction: trans, commandTimeout: 7200);
         }
 
         public static IEnumerable<SecurityResult> GetThenResults(this DbConnection cnn, ResponsibilityTypeRelationRule rule, bool IsHideData3SixtyUsers, SqlTransaction trans = null)
         {
-            string sql = cnn.GetThenResultsSql(rule, IsHideData3SixtyUsers);
+            string sql = cnn.GetThenResultsSql(rule, IsHideData3SixtyUsers, trans);
             return (string.IsNullOrEmpty(sql)) ?
                 new List<SecurityResult>().AsEnumerable() :
                 cnn.Query<SecurityResult>(sql.Replace(" {0} ", ""), transaction: trans, commandTimeout: 7200);
