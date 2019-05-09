@@ -285,7 +285,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         this.formMode = FormMode.Default;
         this.stepChange.emit(this.step);
 
-
+        this.step.fields.form.field = this.step.fields.form.field.slice();
         this.workflowFieldsService.pushFormField(f);
     }
 
