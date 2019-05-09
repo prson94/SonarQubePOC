@@ -63,7 +63,7 @@ import {BaseComponent} from '../../shared/base.component';
                         <div class="FieldName">Body</div>
                         <div>
                             <p-editor [style]="{'height':'150px'}"
-                                      [(ngModel)]="contract.Body"
+                                      [(ngModel)]="contract.Body" required
                                       name="body">
                             </p-editor>
                         </div>
