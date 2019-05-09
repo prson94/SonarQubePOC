@@ -489,16 +489,18 @@ OPTION (RECOMPILE)";
             var whereClause = " where ";
 
             if (string.IsNullOrEmpty(filterWhereStringRaw)) whereClause = "";
-            
-                var sql = $@"
-select	*
-from	(
-		select	AssetID, Object, ObjectID, Type, TypeID, 
-               {editRightsColumnStatement}
-               {parentOuterSqlColumn}                  
-				{selectFieldString} 
-		from	(
-				select	A.ID as AssetID,
+
+
+            #region Build Field Select Statements
+
+            List<string> fieldSql = new List<string>();
+            var fieldsSql = "";
+
+            foreach (var ft in selectFields)
+            {
+
+                fieldSql.Add($@"
+                select	A.ID as AssetID,
                         A.AssetTypeID as AssetTypeID,
 						A.Object,
 						A.ObjectID,        
@@ -510,20 +512,35 @@ from	(
 							when FT.AllowAllValue = 1 and F_O.Value = '0' then FT.AllowAllLabel 
                             when F_O.Value is not null then F_O.FormattedValue
 							when FT.DefaultValue is not null then FT.DefaultFormattedValue 
-							{relationshipCaseStatement}
-							{fieldFromRelationshipCaseStatement}
+							{(ft.Type == "Relationship" ? relationshipCaseStatement : "")}
+							{(ft.Type == "FieldFromRelationship" ? fieldFromRelationshipCaseStatement : "")}
 							else '' 
 						end as [Field]	
 				from	Asset A{tableHints} 
                         {parentSqlJoin} 
                         inner join AssetType AST{tableHints} on AST.ID = A.AssetTypeID and AST.ID = @atID and A.State = 1  
                         {filterJoinString}
-						inner join FieldType FT{tableHints} on FT.ID in ({selectFieldIDs}) and FT.AssetTypeID = A.AssetTypeID
+						inner join FieldType FT{tableHints} on FT.ID = {ft.ID} and FT.AssetTypeID = A.AssetTypeID
 						left join Field F_O{tableHints} on F_O.AssetID = A.ID and F_O.FieldTypeID = FT.ID
-						{relationshipJoinStatement}
-						{fieldFromRelationshipJoinStatement} 
+						{(ft.Type == "Relationship" ? relationshipJoinStatement : "")}
+						{(ft.Type == "FieldFromRelationship" ? fieldFromRelationshipJoinStatement : "")} 
                 {whereClause}                         
-                        {filterWhereStringRaw}
+                        {filterWhereStringRaw}");
+            }
+
+            fieldsSql = string.Join("\nunion all\n", fieldSql);
+
+            #endregion
+
+            var sql = $@"
+select	*
+from	(
+		select	AssetID, Object, ObjectID, Type, TypeID, 
+               {editRightsColumnStatement}
+               {parentOuterSqlColumn}                  
+				{selectFieldString} 
+		from	(
+				{fieldsSql}
 				) A
 		pivot	(
 				MIN([Field]) for FieldTypeID in ({pivotFieldIDs})
