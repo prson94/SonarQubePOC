@@ -102,13 +102,11 @@ export class HeaderMiniMenuComponent implements OnInit, OnDestroy {
         this.subObjectChange = this.breadcrumbService.currentObjectInfo$.subscribe(c => {
             this.currentObject = c.type;
             this.currentObjectId = c.id;
-            if (this.favItems == null) {
                 this.favoritesService.getFavorites().subscribe(
                     fav => {
                         this.favItems = fav;
                     }
                 );
-            }
         });
 
 
