@@ -171,7 +171,8 @@ namespace d360.web.Controllers.V2
         public async Task<HttpResponseMessage> GetMembers(Guid groupUid)
         {
             string sql = @"
-                           select  gr.FirstName,
+                           select  gr.uid,
+                                   gr.FirstName,
                                    gr.LastName ,
                                    gr.Email,
                                    gr.IsAdministrator,
