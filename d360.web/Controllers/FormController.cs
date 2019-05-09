@@ -2245,7 +2245,7 @@ namespace d360.web.Controllers
                 return jsonNetException(ex, HttpStatusCode.InternalServerError, string.Empty);
             }
 
-            return new JsonNetResult { Data = css, Formatting = Newtonsoft.Json.Formatting.None };
+            return new JsonNetResult { Data = (css ?? ""), Formatting = Newtonsoft.Json.Formatting.None };
         }
 
         [HttpPut, ValidateInput(false), Route("UpdateStyleCustomizations")]
