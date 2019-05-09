@@ -178,4 +178,5 @@
   <include file="scripts/GOV-6981-ProcUpdate.xml"/>
   <include file="scripts/GOV-6869.xml"/>
   <include file="scripts/GOV-7218.xml"/>
+  <include file="scripts/GOV-7235-2.xml"/>
 </databaseChangeLog>
