@@ -308,6 +308,24 @@ nav.top, .left-side-nav {
         line-height: 32px;
     }
 }
+.ie-min-content {
+    display: -ms-grid;
+    -ms-grid-columns: min-content;
+}
+
+//anything in this only applies to IE for fixes
+@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
+    .megamenu-items {
+        padding-top: 40px;
+    }
+}
+//anything in this only applies to Edge for fixes
+@supports(-ms-ime-align: auto)
+{
+    .megamenu-items {
+        padding-top: 40px;
+    }
+}
 
 .megamenu-panel {
     background: @igx-left-side-nav;
@@ -328,6 +346,7 @@ nav.top, .left-side-nav {
         background: #878b97;
         display: flex;
         height: 40px;
+        min-width: 220px;
 
         .megamenu-tools {
             font-size: 14px;
@@ -390,7 +409,7 @@ nav.top, .left-side-nav {
     .megamenu-items {
         overflow-y: auto;
         overflow-x: hidden;
-
+        -ms-overflow-style: auto;
         .megamenu-items-container {
             padding: 0px;
         }
