@@ -27,7 +27,7 @@ import { createWriteStream } from 'fs';
                             </div>
                         </div>
                         <div #panel *ngIf="menu && menu.NavigationItems && menu.NavigationItems.length > 0" class="menu-child megamenu-panel" title="" [ngStyle]="{'display:flex; flex-direction:column': menu.isActiveItem}" (click)="stopNavigation($event)" (keyup)="checkKey($event,panel)">
-                            <div>
+                            <div class="ie-min-content">
                                 <div class="row megamenu-title truncate">
                                     <input (keyup)="positionMenu($event,item)" #searchinput type="search" [(ngModel)]=searchText placeholder="Search menu..."/>
                                     <i (click)="clearInput()" [ngClass]="{'fa fa-times':searchText != '', 'fa fa-search':searchText == '' ||  !seachtext}" style="padding: 10px;margin-left:auto;"></i>
@@ -113,7 +113,7 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
         }
     }
     show(item) {
-        if (this.menu.isActiveItem)
+        if (this.menu && this.menu.isActiveItem)
             return;
         this.positionMenu(null,item);
     }
