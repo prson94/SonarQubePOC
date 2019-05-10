@@ -18,9 +18,9 @@ import { createWriteStream } from 'fs';
     selector: 'd3s-site-menu-category',
     template: ` 
                     <li #item [ngClass]="{'menu-category':true,'menu-parent':menu && (menu.NavigationItems),'menu-active':menu?.isActiveItem}" title="{{title}}" (mouseenter)="show(item); clearSearches(event, item);" (mouseleave)="hide(item);" [routerLink]="url ? url : []" style="cursor: pointer;" >
-                       <div style="display:inline-flex;">
-                            <i *ngIf="rootIconName" [class]="'fa ' + rootIconName" style="padding: 10px;"></i>
-                            <img *ngIf="imageUrl" [src]="imageUrl" style="max-width: 20px; max-height: 20px; margin:10px 10px 10px 10px" />
+                       <div class="menu-category-box">
+                            <i *ngIf="rootIconName" [class]="'fa ' + rootIconName"></i>
+                            <img *ngIf="imageUrl" [src]="imageUrl" />
                             <div [ngClass]="{'caption':true, 'min':!expanded}">
                                 <div [ngClass]="{'no-overflow':expanded, 'icon-active':expanded, 'icon':!expanded}"> {{title}} </div>
                                 <i [ngClass]="{'pull-right menu-category fa fa-caret-right':(menu && menu.NavigationItems && menu.NavigationItems.length > 0),'icon-active':expanded, 'icon':!expanded}"></i>
@@ -30,13 +30,13 @@ import { createWriteStream } from 'fs';
                             <div class="ie-min-content">
                                 <div class="row megamenu-title truncate">
                                     <input (keyup)="positionMenu($event,item)" #searchinput type="search" [(ngModel)]=searchText placeholder="Search menu..."/>
-                                    <i (click)="clearInput()" [ngClass]="{'fa fa-times':searchText != '', 'fa fa-search':searchText == '' ||  !seachtext}" style="padding: 10px;margin-left:auto;"></i>
+                                    <i (click)="clearInput()" [ngClass]="{'fa fa-times':searchText != '', 'fa fa-search':searchText == '' ||  !seachtext}"></i>
                                 </div>
                                     <span class="megamenu-tools" *ngIf="showClearButton">
-                                        <i style="line-height: 35px;" (click)="clearClick.emit(true)" class=" pull-right fa fa-eraser" [pTooltip]="'Clear ' + title + ' List'" tooltipZIndex="10001"></i>
+                                        <i (click)="clearClick.emit(true)" class=" pull-right fa fa-eraser" [pTooltip]="'Clear ' + title + ' List'" tooltipZIndex="10001"></i>
                                     </span>
                                 <div class="row megamenu-items"[ngStyle]="{'max-height': getMaxHeight()}">
-                                    <div  style="padding:0px;" [class]="getColumnClass(menu)" *ngFor="let item of menu.NavigationItems | simpleSearch: searchText">
+                                    <div class="col s12 megamenu-items-container" *ngFor="let item of menu.NavigationItems | simpleSearch: searchText">
                                         <ul class="menu-group">                                        
                                             <d3s-site-menu-mega-item [item]="item" [level]="0" [searchText]="searchText" [(active)]="menu.isActiveItem" [count]="item.count"></d3s-site-menu-mega-item>
                                         </ul>
@@ -220,7 +220,5 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
         this.searchText = "";
     }
   
-    private getColumnClass(menu: SiteMenu) {
-        return "col s12";
-    }
+
 }

@@ -97,14 +97,12 @@ nav.top, .left-side-nav {
     overflow-y: scroll;
     transition: width 200ms ease;
     outline: none !important;
-
     //cross browser bottom padding hack
-    >:last-child::after {
+    > :last-child::after {
         content: "";
         height: 80px;
         display: block;
     }
-
     /* hiding scrollbar */
     -ms-overflow-style: none !important; /* IE 10+ */
     scrollbar-width: none !important; /* Firefox */
@@ -168,6 +166,20 @@ nav.top, .left-side-nav {
         height: 40px;
         line-height: 40px;
         position: relative;
+
+        .menu-category-box {
+            display: inline-flex;
+
+            >i {
+                padding: 10px;
+            }
+
+            img {
+                max-width: 20px;
+                max-height: 20px;
+                margin: 10px 10px 10px 10px;
+            }
+        }
 
         &:hover {
             background: @igx-gray-color;
@@ -261,6 +273,22 @@ nav.top, .left-side-nav {
     padding: 4px 15px !important;
     font-size: 100%;
 
+    .mega-item-container {
+        display: inline-flex;
+        width: inherit;
+
+        .caret {
+            margin-left: -5px;
+            padding-right: 5px;
+        }
+
+        .mega-item-title {
+            padding-right: 40px;
+            line-height: 33px;
+            height: 22px;
+        }
+    }
+
     &:hover {
         background-color: @igx-gray-color !important;
         color: white !important;
@@ -325,6 +353,10 @@ nav.top, .left-side-nav {
             padding: 5px 10px;
             font-weight: normal;
             float: right;
+
+            i {
+                line-height: 35px;
+            }
         }
 
         input {
@@ -369,6 +401,8 @@ nav.top, .left-side-nav {
 
         i {
             border: none;
+            padding: 10px;
+            margin-left: auto;
         }
     }
 
@@ -376,6 +410,9 @@ nav.top, .left-side-nav {
         overflow-y: auto;
         overflow-x: hidden;
         -ms-overflow-style: auto;
+        .megamenu-items-container {
+            padding: 0px;
+        }
     }
 }
 
@@ -486,6 +523,7 @@ d3s-navbar-item {
     margin-top: 6px;
     line-height: 18px;
     text-indent: 0px;
+    margin-left: auto;
 }
 /* end side menu*/
 /* main content*/
