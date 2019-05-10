@@ -229,7 +229,7 @@ namespace igx.IntegrationTests.ApiTests
             Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
 
             Assert.True(assetTypeApiViewModels.Count != 0);
-            Assert.Contains(assetTypeApiViewModels, x => x.uid == AssetTestData.assetTypeInsert.Uid && x.Name == AssetTestData.assetTypeInsert.Name && x.Description == AssetTypeTestData.assetTypeInsert.Description);
+            Assert.Contains(assetTypeApiViewModels, x => x.uid == AssetTestData.assetTypeInsert.Uid && x.Name == AssetTestData.assetTypeInsert.Name && x.Description == AssetTestData.assetTypeInsert.Description);
         }
 
         [Fact, Priority(120)]
