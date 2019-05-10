@@ -16,7 +16,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
             <i *ngIf="isLoading" style="color: #000;" class="fa fa-spinner fa-spin"></i>
             Home Page
         </div>
-        <span *ngIf="visible" (click)="handleClick()" class="favorite hide-on-med-and-down" [style.color]="isHomePageItem ? '#66f' : null" [title]="isHomePageItem ? 'Remove home page' : 'Make this my home page'" >
+        <span *ngIf="visible" (click)="handleClick()" class="favorite hide-on-med-and-down" [style.color]="isHomePageItem ? '#54fffb' : null" [title]="isHomePageItem ? 'Remove home page' : 'Make this my home page'" >
             <i *ngIf="!isLoading" class="fa fa-home"></i><i *ngIf="isLoading" style="color: #000;" class="fa fa-spinner fa-spin"></i>    
         </span>
     `,

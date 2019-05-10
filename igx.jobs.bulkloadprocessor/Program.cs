@@ -660,8 +660,8 @@ using		(
 			) S
 on			(T.ResourceID = S.UserID and T.GroupID = S.GroupID)
 when not matched by target then
-	insert (ResourceID, GroupID, IsOwner)
-	values (S.UserID, S.GroupID, 0)
+	insert (ResourceID, GroupID)
+	values (S.UserID, S.GroupID)
 output inserted.ResourceID into #ResourceGroupInsertResult;", transaction: trans);
 
                     company.Execute(@"

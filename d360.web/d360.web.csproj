@@ -297,6 +297,7 @@
     <Compile Include="Controllers\V2\ExportTemplatesController.cs" />
     <Compile Include="Controllers\V2\FusionController.cs" />
     <Compile Include="Controllers\V2\LineageController.cs" />
+    <Compile Include="Controllers\V2\MembershipController.cs" />
     <Compile Include="Controllers\V2\MetricsController.cs" />
     <Compile Include="Controllers\V2\ProfilesController.cs" />
     <Compile Include="Controllers\V2\RelationshipsController.cs" />
@@ -307,7 +308,6 @@
     <Compile Include="Controllers\WebAnalyticsController.cs" />
     <Compile Include="Controllers\Services\WorkflowController.cs" />
     <Compile Include="Controllers\Services\EventsController.cs" />
-    <Compile Include="Controllers\Services\Obsolete\GlossaryController.cs" />
     <Compile Include="Controllers\Services\Obsolete\RelationshipsController.cs" />
     <Compile Include="Controllers\Services\FusionController.cs" />
     <Compile Include="Controllers\ApiController.cs" />
@@ -1145,6 +1145,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-responsibility-selector.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\fielddefinition\field-type-form\field-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\grid-selection-info.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\header\header-mini-menu-component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\responsibility-relations.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\responsibility-relation.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\fusion-attribute-profile-details.component.ts" />

@@ -13,17 +13,19 @@ declare var CompanySettings;
 @Component({
     selector: 'd3s-header-actions',
     template: `
-                <ul class="right hide-on-med-and-down">
-                    <li *ngIf="hasRaiseIssueButton"><d3s-raise-issue-button></d3s-raise-issue-button></li>
-                    <li *ngIf="showShoppingCart" style="cursor: pointer"><d3s-header-shopping-cart ></d3s-header-shopping-cart></li>
-                    <li *ngIf="headerActionsService.showFavorite && !isAdminUrl" style="cursor: pointer"><d3s-header-favorites [uri]="uri" [favItems]="favItems" [currentObject]="currentObject" [currentObjectId]="currentObjectId"></d3s-header-favorites></li>
-                    <li *ngIf="headerActionsService.showFavorite && !isAdminUrl" style="cursor: pointer"><d3s-header-homepage [uri]="uri" [favItems]="favItems" [currentObject]="currentObject" [currentObjectId]="currentObjectId"></d3s-header-homepage></li>
-                    <li *ngIf="headerActionsService.showFollow  && !isAdminUrl" style="cursor: pointer"><d3s-header-follow></d3s-header-follow></li>                    
-                    <li *ngIf="headerActionsService.showHelp"><d3s-header-help></d3s-header-help></li>
-                    <li *ngIf="headerActionsService.showSearch"><d3s-header-typeahead-search></d3s-header-typeahead-search></li>
-                    <li *ngIf="headerActionsService.showNotifications"><a href="#" title="Go to notification settings"><i class="fa fa-bell-o"></i></a></li>
-                    <li><a href="/slo" title="Sign out"><i class="fa fa-sign-out"></i></a></li>
-                    <li><d3s-header-profile></d3s-header-profile></li>                    
+                <ul class="right show-on-medium-and-down hide-on-med-and-up header-actions-list">             
+                    <li style="padding-right:10px;" class="header-action-li"><d3s-header-mini-menu></d3s-header-mini-menu></li>
+                </ul>
+                <ul class="right header-actions-list">
+                    <li class="header-action-li" *ngIf="headerActionsService.showSearch"><d3s-header-typeahead-search></d3s-header-typeahead-search></li>
+                    <li class="header-action-li" *ngIf="hasRaiseIssueButton"><d3s-raise-issue-button></d3s-raise-issue-button></li>
+                    <li class="header-action-li hide-on-med-and-down" *ngIf="showShoppingCart" ><d3s-header-shopping-cart ></d3s-header-shopping-cart></li>
+                    <li class="header-action-li hide-on-med-and-down" *ngIf="headerActionsService.showFavorite && !isAdminUrl" ><d3s-header-favorites [uri]="uri" [favItems]="favItems" [currentObject]="currentObject" [currentObjectId]="currentObjectId"></d3s-header-favorites></li>
+                    <li class="header-action-li hide-on-med-and-down" *ngIf="headerActionsService.showFavorite && !isAdminUrl" ><d3s-header-homepage [uri]="uri" [favItems]="favItems" [currentObject]="currentObject" [currentObjectId]="currentObjectId"></d3s-header-homepage></li>
+                    <li class="header-action-li hide-on-med-and-down" *ngIf="headerActionsService.showFollow  && !isAdminUrl" ><d3s-header-follow></d3s-header-follow></li>                    
+                    <li class="header-action-li" *ngIf="headerActionsService.showHelp"><d3s-header-help></d3s-header-help></li>
+                    <li class="header-action-li hide-on-med-and-down" *ngIf="headerActionsService.showNotifications"><a href="#" title="Go to notification settings"><i class="fa fa-bell-o"></i></a></li>
+                    <li class="header-action-li hide-on-med-and-down" ><d3s-header-profile></d3s-header-profile></li>                    
                 </ul> 
                 `,
     providers: [FavoritesService]
@@ -93,13 +95,11 @@ export class HeaderActionsComponent {
         this.subObjectChange = this.breadcrumbService.currentObjectInfo$.subscribe(c => {
             this.currentObject = c.type;
             this.currentObjectId = c.id;
-            if (this.favItems == null) {
-                this.favoritesService.getFavorites().subscribe(
-                    fav => {
-                        this.favItems = fav;
-                    }
-                );
-            }
+            this.favoritesService.getFavorites().subscribe(
+                fav => {
+                    this.favItems = fav;
+                }
+            );
         });
 
 

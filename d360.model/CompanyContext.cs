@@ -2874,7 +2874,7 @@ select @err";
 
         #region Dynamic Field Methods
 
-        public void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFriendlyName = false, bool listableOnly = true, List<FieldType> fields = null, string idColumn = "A.ID", bool ruleMeansEvent = true)
+        public void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFriendlyName = false, bool listableOnly = true, List<FieldType> fields = null, string idColumn = "A.ID", bool ruleMeansEvent = true, bool enableRelationshipFields = true)
         {
             columns = "";
             joins = "";
@@ -2910,44 +2910,47 @@ select @err";
 
                 if (f.Type == DataType.Relationship.ToString())
                 {
-                    var relationFieldInfo = relationFieldInfos.SingleOrDefault(i => i.FieldTypeID == f.ID);
-
-                    if (relationFieldInfo != null)
+                    if (enableRelationshipFields)
                     {
-                        var isReferenceItemType = (relationFieldInfo.Object == SystemObjects.ReferenceItemType.ToString());
-                        var isFusionAttributeType = (relationFieldInfo.Object == SystemObjects.FusionAttributeType.ToString());
-                        var isTaxonomyType = (relationFieldInfo.Object == SystemObjects.TaxonomyType.ToString());
+                        var relationFieldInfo = relationFieldInfos.SingleOrDefault(i => i.FieldTypeID == f.ID);
 
-                        var tableName = isReferenceItemType ? relationFieldInfo.Object : relationFieldInfo.Object.Replace("Type", "");
-                        var typeIDColumnName = relationFieldInfo.Object + "ID";
-
-                        if (includeIdColumn) columns += $"{name}_T.ID as [{name}ID], ";
-
-                        if (isReferenceItemType || isFusionAttributeType)
-                            columns += $"{name}_OT.Name";
-                        else if (isTaxonomyType)
-                            columns += $"{name}_OTT.TextPath";
-                        else
-                            columns += $"{name}_OTD.DisplayValue";
-
-                        columns += $" as [{(useFriendlyName ? friendlyName : name)}],";
-                        
-                        joins += $" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and";
-                        joins += relationFieldInfo.IsSubject ? $" {name}_T.Subject = '{type.Replace("Type", "")}' and {name}_T.SubjectID = {idColumn}" : $" {name}_T.Object = '{type.Replace("Type", "")}' and {name}_T.ObjectID = {idColumn}";
-                        joins += (isReferenceItemType)
-                            ? $" left join [{tableName}] {name}_OT on "
-                            : $" left join [{tableName}] {name}_OT on {name}_OT.{typeIDColumnName} = {relationFieldInfo.ObjectID} AND ";
-                        joins += $"{name}_OT.ID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
-
-                        if (isTaxonomyType)
+                        if (relationFieldInfo != null)
                         {
-                            joins += $" left join asset {name}_AS on {name}_AS.Object = '{tableName}' and  {name}_AS.ObjectId = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
-                            joins += $" outer apply [dbo].GetAssetTextPathById({name}_AS.ID, '/') {name}_OTT";
-                        }
-                        else if (!isReferenceItemType && !isFusionAttributeType)
-                        {
-                            joins += $" left join asset {name}_AS on {name}_AS.Object = '{tableName}' and  {name}_AS.ObjectId = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
-                            joins += $" cross apply [dbo].GetAssetDisplayValueById({name}_AS.ID) {name}_OTD";
+                            var isReferenceItemType = (relationFieldInfo.Object == SystemObjects.ReferenceItemType.ToString());
+                            var isFusionAttributeType = (relationFieldInfo.Object == SystemObjects.FusionAttributeType.ToString());
+                            var isTaxonomyType = (relationFieldInfo.Object == SystemObjects.TaxonomyType.ToString());
+
+                            var tableName = isReferenceItemType ? relationFieldInfo.Object : relationFieldInfo.Object.Replace("Type", "");
+                            var typeIDColumnName = relationFieldInfo.Object + "ID";
+
+                            if (includeIdColumn) columns += $"{name}_T.ID as [{name}ID], ";
+
+                            if (isReferenceItemType || isFusionAttributeType)
+                                columns += $"{name}_OT.Name";
+                            else if (isTaxonomyType)
+                                columns += $"{name}_OTT.TextPath";
+                            else
+                                columns += $"{name}_OTD.DisplayValue";
+
+                            columns += $" as [{(useFriendlyName ? friendlyName : name)}],";
+
+                            joins += $" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and";
+                            joins += relationFieldInfo.IsSubject ? $" {name}_T.Subject = '{type.Replace("Type", "")}' and {name}_T.SubjectID = {idColumn}" : $" {name}_T.Object = '{type.Replace("Type", "")}' and {name}_T.ObjectID = {idColumn}";
+                            joins += (isReferenceItemType)
+                                ? $" left join [{tableName}] {name}_OT on "
+                                : $" left join [{tableName}] {name}_OT on {name}_OT.{typeIDColumnName} = {relationFieldInfo.ObjectID} AND ";
+                            joins += $"{name}_OT.ID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
+
+                            if (isTaxonomyType)
+                            {
+                                joins += $" left join asset {name}_AS on {name}_AS.Object = '{tableName}' and  {name}_AS.ObjectId = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
+                                joins += $" outer apply [dbo].GetAssetTextPathById({name}_AS.ID, '/') {name}_OTT";
+                            }
+                            else if (!isReferenceItemType && !isFusionAttributeType)
+                            {
+                                joins += $" left join asset {name}_AS on {name}_AS.Object = '{tableName}' and  {name}_AS.ObjectId = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
+                                joins += $" cross apply [dbo].GetAssetDisplayValueById({name}_AS.ID) {name}_OTD";
+                            }
                         }
                     }
                 }
