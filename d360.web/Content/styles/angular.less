@@ -49,8 +49,9 @@ nav.top {
     height: 40px;
     background: @igx-nav-color;
     border-bottom: 1px solid rgba(0, 0, 0, 0.15) !important;
-    display:flex;
+    display:inline-flex;
     flex-wrap:nowrap;
+    min-width:800px;
 
     a {
         color: @primary-nav;
@@ -373,7 +374,7 @@ nav.top, .left-side-nav {
     } 
 }
 
-@media only screen and (max-width : 993px) {
+@media only screen and (max-width : 1200px) {
     .megamenu-panel {
         min-width: 500px;
         max-width: 550px;
@@ -382,6 +383,7 @@ nav.top, .left-side-nav {
     {
         width:150px !important;
     }
+
 }
 
 .menu-level-indicator-0, .menu-level-indicator-1, .menu-level-indicator-2, .menu-level-indicator-3, .menu-level-indicator-4, .menu-level-indicator-5, .menu-level-indicator-n{
