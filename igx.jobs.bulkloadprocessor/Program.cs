@@ -941,7 +941,11 @@ using       (
             select  distinct
 					EnvironmentID as CompanyID,
 					ResourceID,
-                    case UserStatus when 'Active' then 1 else 2 end as [State]
+                    case UserStatus 
+                        when 'Active' then 1 
+                        when 'Inactive' then 2
+                        when 'Deleted' then 3
+                    end as [State]
             from    #Users
 			where	Success = 1
             ) S
@@ -1067,7 +1071,11 @@ using       (
                     LastName, 
                     FirstName, 
                     Email, 
-                    case UserStatus when 'Active' then 1 else 2 end as [State]
+                    case UserStatus 
+                        when 'Active' then 1 
+                        when 'Inactive' then 2
+                        when 'Deleted' then 3
+                    end as [State]
             from    #Users
 			where	Success = 1
             ) S
