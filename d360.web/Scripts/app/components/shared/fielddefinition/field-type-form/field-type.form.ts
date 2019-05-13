@@ -1464,4 +1464,29 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     public isRelationshipWithMultipleCardinality(): boolean {
         return true;
     }
+
+    private isSettingDisabled(val: string) {
+        switch (val) {
+            case 'IsDisplayable':
+                return (['FusionLookup', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup'].indexOf(this.model.FieldType.Type) > -1);
+            case 'IsEditable':
+                return (['ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup', 'JSON'].indexOf(this.model.FieldType.Type) > -1);
+            case 'IsListable':
+                return (['FusionLookup', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup', 'RefListRelationship', 'JSON'].indexOf(this.model.FieldType.Type) > -1
+                    || (this.model.FieldType.Type == 'Relationship' && !this.isListableRelationship));
+            case 'IsRequired':
+                return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup'].indexOf(this.model.FieldType.Type) > -1);
+            case 'IsPartOfKey':
+                return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup', 'JSON'].indexOf(this.model.FieldType.Type) > -1
+                    || this.model.FieldType.AllowMultipleValues || this.objectType == 'ReferenceItemType');
+            case 'IsPrimaryFilter':
+                return (!this.supportsPrimaryFilterOption || ['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup', 'JSON'].indexOf(this.model.FieldType.Type) > -1);
+            case 'AllowMultipleValues':
+                return (['Lookup'].indexOf(this.model.FieldType.Type) == -1);
+            case 'ShowIfEmpty':
+                return (!this.model.FieldType.IsDisplayable);
+            default:
+                console.warn(`invalid setting [${val}] passed to isSettingDisabled`);
+        }
+    }
 }

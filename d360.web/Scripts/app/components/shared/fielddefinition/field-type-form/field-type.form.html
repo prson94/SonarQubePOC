@@ -105,7 +105,7 @@
                                     label="Show In Detail Tile?"
                                     [ngModelOptions]="{standalone: true}"
                                     (ngModelChange)="model.FieldType.IsDisplayable=$event;onShowDetailChange($event);"
-                                    [disabled]="['FusionLookup','ComplexRelationLookup','FilteredLookup','OwnershipLookup'].indexOf(model.FieldType.Type) > -1">
+                                    [disabled]="isSettingDisabled('IsDisplayable')">
                         </p-checkbox>
                     </div>
                     <div>
@@ -113,7 +113,7 @@
                                     [(ngModel)]="model.FieldType.IsEditable"
                                     label="Is Editable?"
                                     [ngModelOptions]="{standalone: true}"
-                                    [disabled]="['ComplexRelationLookup','FilteredLookup','OwnershipLookup','JSON'].indexOf(model.FieldType.Type) > -1"></p-checkbox>
+                                    [disabled]="isSettingDisabled('IsEditable')"></p-checkbox>
                     </div>
                     <div *ngIf="showIsListable">
                         <p-checkbox binary="true"
@@ -121,28 +121,28 @@
                                     label="Is Listable?"
                                     [ngModelOptions]="{standalone: true}"
                                     (ngModelChange)="!$event ? model.FieldType.SortOrder=0:model.FieldType.SortOrder=model.FieldType.SortOrder"
-                                    [disabled]="['FusionLookup','ComplexRelationLookup','FilteredLookup','OwnershipLookup','RefListRelationship','JSON'].indexOf(model.FieldType.Type) > -1 || (model.FieldType.Type == 'Relationship' && !isListableRelationship)"></p-checkbox>
+                                    [disabled]="isSettingDisabled('IsListable')"></p-checkbox>
                     </div>
                     <div>
                         <p-checkbox binary="true"
                                     [(ngModel)]="model.FieldType.IsRequired"
                                     label="Is Required?"
                                     [ngModelOptions]="{standalone: true}"
-                                    [disabled]="['Relationship','FieldFromRelationship','ComplexRelationLookup','FilteredLookup','OwnershipLookup'].indexOf(model.FieldType.Type) > -1"></p-checkbox>
+                                    [disabled]="isSettingDisabled('IsRequired')"></p-checkbox>
                     </div>
                     <div *ngIf="showIsPartOfKey">
                         <p-checkbox binary="true"
                                     [(ngModel)]="model.FieldType.IsPartOfKey"
                                     label="Part Of Key?"
                                     [ngModelOptions]="{standalone: true}"
-                                    [disabled]="['Relationship','FieldFromRelationship','ComplexRelationLookup','FilteredLookup','OwnershipLookup','JSON'].indexOf(model.FieldType.Type) > -1  || model.FieldType.AllowMultipleValues"></p-checkbox>
+                                    [disabled]="isSettingDisabled('IsPartOfKey')"></p-checkbox>
                     </div>
                     <div>
                         <p-checkbox binary="true"
                                     [(ngModel)]="model.FieldType.IsPrimaryFilter"
                                     label="Show As Top Level Filter?"
                                     [ngModelOptions]="{standalone: true}"
-                                    [disabled]="!supportsPrimaryFilterOption || ['Relationship','FieldFromRelationship', 'ComplexRelationLookup', 'FilteredLookup','OwnershipLookup','JSON'].indexOf(model.FieldType.Type) > -1"></p-checkbox>
+                                    [disabled]="isSettingDisabled('IsPrimaryFilter')"></p-checkbox>
                     </div>
                     <div>
                         <p-checkbox binary="true"
@@ -150,14 +150,14 @@
                                     (ngModelChange)="model.FieldType.AllowMultipleValues=$event;model.FieldType.IsPartOfKey=false;"
                                     label="Allow Multiple Items?"
                                     [ngModelOptions]="{standalone: true}"
-                                    [disabled]="['Lookup'].indexOf(model.FieldType.Type) == -1"></p-checkbox>
+                                    [disabled]="isSettingDisabled('AllowMultipleValues')"></p-checkbox>
                     </div>
                     <div>
                         <p-checkbox binary="true"
                                     [(ngModel)]="model.FieldType.ShowIfEmpty"
                                     label="Show if Empty?"
                                     [ngModelOptions]="{standalone: true}"
-                                    [disabled]="!model.FieldType.IsDisplayable"></p-checkbox>
+                                    [disabled]="isSettingDisabled('ShowIfEmpty')"></p-checkbox>
                     </div>
                 </simple-accordion>
             </div>
