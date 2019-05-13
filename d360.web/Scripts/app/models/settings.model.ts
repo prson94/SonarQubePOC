@@ -41,6 +41,7 @@ export class CompanySettings {
     WorkflowDigestEmailEnabled: boolean = false;
     MaxDropdownItems: number;
     WriteActionDescription: boolean;
+    CurrentCompanyLogoPath: string; 
 }
 
 export class IpRestriction {
