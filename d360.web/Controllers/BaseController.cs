@@ -1672,7 +1672,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             return sb.ToString();
         }
 
-        internal string applyHiddenFilteringSuffix(HttpRequestBase Request, Dapper.DynamicParameters dbParams, string idColumn = "A.ID")
+        internal string applyHiddenFilteringSuffix(HttpRequestBase Request, Dapper.DynamicParameters dbParams, string idColumn = "A.ID", List<FieldType> fields = null)
         {
             var query = Request.Params;
 
@@ -1692,7 +1692,12 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                     if (!int.TryParse(fField, out fieldID)) continue;
 
                     var tableId = $"hidft{i}";
-                    filter = $" inner join field {tableId} on ({idColumn} = {tableId}.objectID and {tableId}.ObjectType = 'Artifact'  and {tableId}.fieldtypeid={fieldID} and {getFilteringConditionBind(tableId +".FormattedValue", fCondition, i, dbParams, fValue, tableId, true)} )  ";
+
+                    var fieldType = fields.Where(x => x.ID == fieldID).SingleOrDefault();
+                    if (fieldType != null && fieldType.AllowMultipleValues)
+                        filter= applyMulitSelectFilteringSuffix(dbParams, fValue, tableId, i, fieldType, idColumn);
+                    else
+                        filter = $" inner join field {tableId} on ({idColumn} = {tableId}.objectID and {tableId}.ObjectType = 'Artifact'  and {tableId}.fieldtypeid={fieldID} and {getFilteringConditionBind(tableId +".FormattedValue", fCondition, i, dbParams, fValue, tableId, true)} )  ";
                     
                     if (!string.IsNullOrEmpty(filter))
                     {                        
@@ -1702,6 +1707,22 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             }
 
             return filters;
+        }
+
+        private string applyMulitSelectFilteringSuffix(Dapper.DynamicParameters dbParams, string value, string prefix, int filterNumber,FieldType fieldType, string idColumn = "A.ID")
+        {
+            var bind = $"{prefix}{filterNumber}val";
+            dbParams.Add(bind, $"{value}");
+
+            var filter = $@"			inner join ( 
+			select F.objectID, F.ObjectType, F.FieldTypeID, dd.value as Value, F.[Value] as Val from Field F with (NOLOCK) 
+			cross apply string_split(F.Value,',') dd 
+			where F.FieldTypeID = {fieldType.ID} 
+			and exists (SELECT value  
+			FROM STRING_SPLIT(@{bind}, ',')  WHERE RTRIM(value)=dd.value)
+			)  {prefix}  on   {prefix}.objectID={idColumn} and {prefix}.ObjectType = 'Artifact' ";
+
+            return filter;
         }
 
         internal string applyFilteringSuffixBind(string sql, HttpRequestBase Request, Dapper.DynamicParameters dbParams, bool applyHiddenFilters = false, List<FieldType> fields = null)
@@ -1942,8 +1963,8 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             #region Field Filters
 
             int filterscount = 0;
-            var filters = applyHiddenFilters ? applyHiddenFilteringSuffix(Request, dbParams, idColumn) : string.Empty;
-
+            var filters = applyHiddenFilters ? applyHiddenFilteringSuffix(Request, dbParams, idColumn, fields) : string.Empty;
+            var whereFilter = string.Empty;
             if (int.TryParse(query["filterscount"], out filterscount))
             {
                 for (int i = 0; i < filterscount; i++)
@@ -1952,6 +1973,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                     var fField = query["filterdatafield" + i];
                     var fCondition = query["filtercondition" + i];
                     var fValue = query["filtervalue" + i];
+                    var tableId = $"fieldft{i}";
 
                     if (fValue.EndsWith(".000")) fValue = fValue.Replace(".000", "");
 
@@ -1968,16 +1990,19 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                             }
                         }
                     }
-                    filter = getFilteringConditionBind(fField, fCondition, i, dbParams, fValue, "", ft: filterFieldType);// "flt");
+                    if(filterFieldType.AllowMultipleValues)
+                        filters +=  applyMulitSelectFilteringSuffix(dbParams, fValue, tableId, i, filterFieldType, idColumn);
+                   else
+                        filter = getFilteringConditionBind(fField, fCondition, i, dbParams, fValue, "", ft: filterFieldType);// "flt");
 
                     if (!string.IsNullOrEmpty(filter))
                     {
-                        filters += (i == 0) ? " WHERE " : " AND ";
-                        filters += filter;
+                        whereFilter += (i == 0) ? " WHERE " : " AND ";
+                        whereFilter += filter;
                     }
                 }
             }
-
+             filters += whereFilter;
             #endregion
 
             #region Relationship Filters
