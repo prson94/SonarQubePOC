@@ -280,6 +280,106 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
             new { executionID }, transaction: trans, commandTimeout: timeout);
         }
 
+        private void MergeJsonFieldProperties(Guid executionID, SqlTransaction trans, List<FieldType> jsonFieldTypes, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600)
+        {
+            var jsonFieldTypeIDs = string.Join(",", jsonFieldTypes.Select(i => i.ID));
+            var fields = Connection.Query<dynamic>($@"
+select  F.ID, 
+        F.Value 
+from    Field F 
+        inner join api.ExecutionField E on E.ExecutionID = @executionID and E.ItemNumber between {beginItemNumber} and {endItemNumber} and E.FieldTypeID = F.FieldTypeID and E.FieldTypeID in ({jsonFieldTypeIDs})
+        inner join {tableName} A on A.ExecutionID = E.ExecutionID and A.ItemNumber = E.ItemNumber and A.Object = F.ObjectType and A.ObjectID = F.ObjectID",
+        new { executionID }, transaction: trans, commandTimeout: timeout);
+
+            var collectionFieldroperties = new List<FieldJsonProperty>();
+
+            foreach (var f in fields)
+            {
+                string value = f.Value;
+                List<FieldJsonProperty> assetFieldProperties = value.ParseJsonIntoJsonPropertiesCollection();
+                assetFieldProperties.ForEach(i =>
+                {
+                    i.FieldID = f.ID;
+                });
+                collectionFieldroperties.AddRange(assetFieldProperties);
+            }
+
+            #region Build data tables for bulk load.
+
+            var table = new DataTable();
+            table.Columns.Add("FieldID", typeof(long));
+            table.Columns.Add("Name", typeof(string));
+            table.Columns.Add("Parent", typeof(string));
+            table.Columns.Add("Path", typeof(string));
+            table.Columns.Add("Position", typeof(int));
+            table.Columns.Add("IsArray", typeof(bool));
+            table.Columns.Add("Value", typeof(string));
+
+            foreach (var f in collectionFieldroperties)
+            {
+                var row = table.NewRow();
+
+                row["FieldID"] = f.FieldID;
+                row["Name"] = f.Name;
+                row["Parent"] = f.Parent+"";
+                row["Path"] = f.Path;
+                row["Position"] = f.Position;
+                row["IsArray"] = f.IsArray;
+                row["Value"] = f.Value;
+
+                table.Rows.Add(row);
+            }
+
+            Connection.Execute($@"
+drop table if exists #FieldJsonProperty;
+CREATE TABLE #FieldJsonProperty (
+	[FieldID] bigint NOT NULL,
+	[Name] nvarchar(250) NOT NULL,
+	[Parent] nvarchar(250) NOT NULL,
+	[Path] nvarchar(500) NOT NULL,
+	[Position] int NOT NULL,
+	[IsArray] bit NOT NULL,
+	[Value] nvarchar(2500) NULL,
+)", new { executionID }, transaction: trans);
+
+            var bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection, SqlBulkCopyOptions.Default, trans)
+            {
+                BatchSize = table.Rows.Count,
+                DestinationTableName = "#FieldJsonProperty",
+                BulkCopyTimeout = timeout
+            };
+
+            bulkCopy.ColumnMappings.Add("FieldID", "FieldID");
+            bulkCopy.ColumnMappings.Add("Name", "Name");
+            bulkCopy.ColumnMappings.Add("Parent", "Parent");
+            bulkCopy.ColumnMappings.Add("Path", "Path");
+            bulkCopy.ColumnMappings.Add("Position", "Position");
+            bulkCopy.ColumnMappings.Add("IsArray", "IsArray");
+            bulkCopy.ColumnMappings.Add("Value", "Value");
+
+            bulkCopy.WriteToServer(table);
+
+            bulkCopy = null;
+
+            #endregion
+
+            Connection.Execute($@"
+merge       FieldJsonProperty as T
+using       #FieldJsonProperty as S 
+on          ( T.FieldID = S.FieldID and T.Position = S.Position and T.Parent = S.Parent and T.Name = S.Name )
+when		matched then
+update		set
+				T.Value = S.Value,
+                T.IsArray = S.IsArray,
+                T.[Path] = S.[Path]
+when		not matched by source and T.FieldID in (select FieldID from #FieldJsonProperty) then
+delete
+when		not matched by target then
+insert		(FieldID, Name, Parent, [Path], Position, IsArray, Value)
+values		(S.FieldID, S.Name, S.Parent, S.[Path], S.Position, S.IsArray, S.Value);",
+            new { executionID }, transaction: trans, commandTimeout: timeout);
+        }
+
         private void ResolveFieldLookupValues(Guid executionID, int timeout = 3600)
         {
             Connection.Execute(@"
@@ -1648,6 +1748,7 @@ from	IntersectType I
 
                     bool generalChecksCompleted = false;
                     List<FieldType> fieldTypes = null;
+                    List<FieldType> jsonFieldTypes = null;
                     List<string> requiredFieldTypeNames = null;
                     var predicateType = DeterminePredicateType(at.Object);
                     IntersectType it = null;
@@ -1673,6 +1774,7 @@ from	IntersectType I
 
                         // Get field types.
                         fieldTypes = Query<FieldType>("select * from FieldType where Object = @Object and ObjectID = @ObjectID", new { at.Object, at.ObjectID }).ToList();
+                        jsonFieldTypes = fieldTypes.Where(f => f.Type == DataType.JSON.ToString()).ToList();
                         requiredFieldTypeNames = fieldTypes.Where(f => f.IsRequired).Select(f => f.Name).ToList();
 
                         #region Generate data sets
@@ -2452,6 +2554,11 @@ from	api.ExecutionAsset T
                                         #endregion
 
                                         MergeFields(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout);
+
+                                        if (jsonFieldTypes.Count > 0)
+                                        {
+                                            MergeJsonFieldProperties(execution.ExecutionID, trans, jsonFieldTypes, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout);
+                                        }
 
                                         // Update success flag.
                                         Connection.Execute(

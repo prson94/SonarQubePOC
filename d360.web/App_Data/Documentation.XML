@@ -2121,84 +2121,6 @@
             <param name="model"></param>
             <returns></returns>
         </member>
-        <member name="T:d360.web.Controllers.Services.GlossaryController">
-            <summary>
-            This service houses all endpoints handling glossary-related data such as artifacts and models.
-            </summary>
-        </member>
-        <member name="M:d360.web.Controllers.Services.GlossaryController.GetArtifactTypes">
-            <summary>
-            Gets all artifact types.  You can optionally use OData query parameters: $filter, $order, $skip, $take, etc.
-            </summary>
-            <returns>A list of artifact types.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.GlossaryController.GetArtifactsByType(System.Int32)">
-            <summary>
-            Gets all artifacts based on a given type ID.
-            </summary>
-            <param name="id">The ID of the artifact type.</param>
-            <returns>A list of artifacts.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.GlossaryController.GetArtifact(System.Int32,System.Int32)">
-            <summary>
-            Gets an artifact based on a given ID.
-            </summary>
-            <param name="typeID">The ID of the artifact type.</param>
-            <param name="id">The ID of the specific artifact you want to retrieve.</param>
-            <returns>An instance of an artifact.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.GlossaryController.GetArtifactsByTypeAndSearchModel(System.Int32,System.Collections.Generic.Dictionary{System.String,System.String})">
-            <summary>
-            Gets all artifacts based on a given type ID and a set of search criteria that roughly matches the field layout of the type.
-            </summary>
-            <returns>A list of artifacts.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.GlossaryController.AddArtifact(System.Int32,System.Collections.Generic.Dictionary{System.String,System.String})">
-            <summary>
-            Add an artifact.
-            </summary>
-            <param name="id">The type ID</param>
-            <param name="model">The artifact fields</param>
-            <returns>Artifact</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.GlossaryController.EditArtifact(System.Int32,System.Int32,System.Collections.Generic.Dictionary{System.String,System.String})">
-            <summary>
-            Update a specific artifact.
-            </summary>
-            <param name="typeID">The type ID</param>
-            <param name="id">The artifact ID</param>
-            <param name="model">The artifact fields</param>
-            <returns>Artifact</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.GlossaryController.GetModelTypes">
-            <summary>
-            Gets all model types.  You can optionally use OData query parameters: $filter, $order, $skip, $take, etc.
-            </summary>
-            <returns>A list of model types.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.GlossaryController.GetModelsByType(System.Int32)">
-            <summary>
-            Gets all models based on a given type ID.
-            </summary>
-            <returns>A list of models.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.GlossaryController.AddModel(System.Int32,System.Collections.Generic.Dictionary{System.String,System.String})">
-            <summary>
-            Add a model.
-            </summary>
-            <param name="id">The type ID</param>
-            <param name="model">The model fields</param>
-            <returns>Model</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.GlossaryController.EditModel(System.Int32,System.Int32,System.Collections.Generic.Dictionary{System.String,System.String})">
-            <summary>
-            Update a specific model.
-            </summary>
-            <param name="typeID">The type ID</param>
-            <param name="id">The model ID</param>
-            <param name="model">The model fields</param>
-            <returns>Model</returns>
-        </member>
         <member name="M:d360.web.Controllers.Services.RelationshipsController.GetIntersectTypes">
             <summary>
             Allows for OData filtering on relationships types.
@@ -3106,6 +3028,13 @@
             once fusion rules are retired this can go
             </summary>        
             <param name="id"></param>        
+            <returns></returns>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.getIconText(System.String)">
+            <summary>
+            Generates the icon text shown on icons that represent the Asset 
+            </summary>
+            <param name="assetName"></param>
             <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.FormController.Artifact_AddFields(System.Int32,System.Int32)">

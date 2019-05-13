@@ -1,6 +1,8 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using d360.core;
 
 namespace igx.tests
 {
@@ -13,6 +15,16 @@ namespace igx.tests
             var jsonObj = new { TotalExtractCount = 12.0 };
             var jsonText = JsonConvert.SerializeObject(jsonObj, new DecimalJsonConverter());
             Assert.IsFalse(jsonText.Contains(".0"));
+        }
+
+        [TestMethod]
+        public void JObject_CanParseFieldJsonProperties()
+        {
+            //var content = @"{ p1: '123', o1: {c1:'345',c2:'567'}, a1: [{g1:true,g2:'f'},{g1:true,g2:'f'}] }";
+            //var content = @"{ p1: '123', o1: {c1:'345',c2:'567'}, a1: [{g1:true,g2:'f'},{g1:true,g2:'f',pp:[{d:true},{d:false}]}] }";
+            var content = @"[{ p1: '123', o1: {c1:'345',c2:'567'}, a1: [{g1:true,g2:'f'},{g1:true,g2:'f',pp:[{d:true},{d:false}]}] }]";
+            var list = content.ParseJsonIntoJsonPropertiesCollection();
+            Assert.IsTrue(list.Count > 0);
         }
     }
 

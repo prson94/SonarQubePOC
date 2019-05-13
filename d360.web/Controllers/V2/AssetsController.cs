@@ -80,6 +80,13 @@ namespace d360.web.Controllers.V2
                 var valueColumn = "FormattedValue";
                 var fieldDataType = getFieldDataType(f);
 
+                FieldTypeDefinition_JsonElement jsonElementDefinition = null;
+
+                if (f.Type == "JsonElement")
+                {
+                    jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(f.Definition);
+                }
+
                 if (f.Type == "Link")
                     valueColumn = "Value";
 
@@ -132,9 +139,14 @@ namespace d360.web.Controllers.V2
                             else
                                 fieldColumns.Add($"cast({tableAlias}.{valueColumn} as {fieldDataType}) as [{columnName}]");
                         }
+                        else if (f.Type == "JsonElement")
+                        {
+                            fieldColumns.Add($"try_cast(FJP{f.ID}.[Value] as {jsonElementDefinition.DataType}) as [{columnName}]");
+                        }
                         else
+                        {
                             fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
-
+                        }
                     }
 
                 }
@@ -151,6 +163,14 @@ namespace d360.web.Controllers.V2
                         where I.[Subject] = A.Object and I.SubjectID = A.ObjectID and I.IntersectTypeID = {f.LookupObjectID}
                     ) {tableAlias}");
 
+                }
+                else if (f.Type == "JsonElement")
+                {
+                    fieldJoins.Add($@"
+{joinPrefix} join Field {tableAlias} on {tableAlias}.FieldTypeID = {jsonElementDefinition.FieldTypeID} and {tableAlias}.[ObjectType] = A.[Object] and {tableAlias}.[ObjectID] = A.[ObjectID]
+{joinPrefix} join FieldJsonProperty FJP{f.ID} on FJP{f.ID}.FieldID = {tableAlias}.ID and FJP{f.ID}.[Path] = @jsonPath{f.ID}
+");
+                    dbArgs.Add($"@jsonPath{f.ID}", jsonElementDefinition.Path);
                 }
                 else
                 {
@@ -217,7 +237,17 @@ namespace d360.web.Controllers.V2
                                     if (!string.IsNullOrEmpty(fieldDataType))
                                         orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"cast(F{field.ID}.{valueColumn} as {fieldDataType})";
                                     else
-                                        orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"F{field.ID}.{valueColumn}";
+                                    {
+                                        if (field.Type == "JsonElement")
+                                        {
+                                            orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"FJP{field.ID}.Value";
+                                        }
+                                        else
+                                        {
+                                            orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"F{field.ID}.{valueColumn}";
+                                        }
+                                    }
+                                        
                                 }
                             }
                             else if (key == "_pagenum")
@@ -263,9 +293,16 @@ namespace d360.web.Controllers.V2
 
                                 if (field != null)
                                 {
-                                    var tableAlias = $"F{field.ID}";
-                                    whereStatements.Add($"{tableAlias}.FormattedValue = @field{field.ID}");
-                                    dbArgs.Add($"@field{field.ID}", q.Value);
+                                    if (field.Type == "JsonElement")
+                                    {
+                                        whereStatements.Add($"FJP{field.ID}.Value = @field{field.ID}");
+                                        dbArgs.Add($"@field{field.ID}", q.Value);
+                                    }
+                                    else
+                                    {
+                                        whereStatements.Add($"F{field.ID}.FormattedValue = @field{field.ID}");
+                                        dbArgs.Add($"@field{field.ID}", q.Value);
+                                    }
                                 }
                             }
                         }

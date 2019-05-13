@@ -9,9 +9,103 @@ using System.Data.SqlClient;
 using System.Security.Cryptography;
 using System.Text;
 using System.IO;
+using Newtonsoft.Json.Linq;
+using d360.core.entities;
 
 namespace d360.core
 {
+    public static class JsonExtensions
+    {
+        public static List<FieldJsonProperty> ParseJsonIntoJsonPropertiesCollection(this string o)
+        {
+            var token = JToken.Parse(o);
+            return token.ParseJsonIntoJsonPropertiesCollection();
+        }
+
+        public static List<FieldJsonProperty> ParseJsonIntoJsonPropertiesCollection(this JToken o)
+        {
+            List<FieldJsonProperty> properties = new List<FieldJsonProperty>();
+
+            if (o is JArray)
+            {
+                properties = (o as JArray).ParseJsonIntoJsonPropertiesCollection();
+            }
+            else if (o is JObject)
+            {
+                properties = (o as JObject).ParseJsonIntoJsonPropertiesCollection();
+            }
+
+            return properties;
+        }
+
+        private static List<FieldJsonProperty> ParseJsonIntoJsonPropertiesCollection(this JArray o)
+        {
+            List<FieldJsonProperty> properties = new List<FieldJsonProperty>();
+
+            int pos = 0;
+            foreach (JToken c in o)
+            {
+                properties.AddRange(
+                    (c as JObject).ParseJsonIntoJsonPropertiesCollection(pos)
+                    );
+                pos++;
+            }
+
+            return properties;
+        }
+
+        private static List<FieldJsonProperty> ParseJsonIntoJsonPropertiesCollection(this JObject o, int position = 0, string parentName = null)
+        {
+            List<FieldJsonProperty> properties = new List<FieldJsonProperty>();
+
+            //if (string.IsNullOrEmpty(parentName))
+            //{
+                // Try to resolve based on Parent proeprty on object.
+                if (o.Parent != null)
+                {
+                    parentName = o.Parent.Path;
+                }
+            //}
+
+            foreach (JProperty p in o.Properties())
+            {
+                if (p.Value is JArray)
+                {
+                    properties.Add(new FieldJsonProperty { IsArray = true, Name = p.Name, Parent = parentName, Path = p.Path, Position = position });
+
+                    int pos = 0;
+                    foreach (JToken c in p.Value)
+                    {
+                        properties.AddRange(
+                            (c as JObject).ParseJsonIntoJsonPropertiesCollection(pos, p.Name)
+                            );
+                        pos++;
+                    }
+                }
+                else if (p.Value is JObject)
+                {
+                    properties.Add(new FieldJsonProperty { IsArray = false, Name = p.Name, Parent = parentName, Path = p.Path, Position = position });
+                    properties.AddRange(
+                        (p.Value as JObject).ParseJsonIntoJsonPropertiesCollection(position, p.Name)
+                        );
+                }
+                else
+                {
+                    properties.Add(new FieldJsonProperty {
+                        IsArray = false,
+                        Name = (p as JProperty).Name,
+                        Parent = parentName,
+                        Path = p.Path,
+                        Position = position,
+                        Value = (p as JProperty).Value.ToString()
+                    });
+                }
+            }
+
+            return properties;
+        }
+    }
+
     public static class StringExtensions
     {
         public static bool In<T>(this T t, params T[] values)
