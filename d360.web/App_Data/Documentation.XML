@@ -2615,6 +2615,17 @@
             This service houses all endpoints handling glossary-related data such as artifacts and models.
             </summary>
         </member>
+        <member name="M:d360.web.Controllers.V2.MembershipController.GetUsers">
+            <summary>
+            Retrieves a list of users.
+            </summary>
+        </member>
+        <member name="M:d360.web.Controllers.V2.MembershipController.GetMembers(System.Guid)">
+            <summary>
+            Retrieves members of a group for a given group unique identifier.
+            </summary>
+            <param name="groupUid">The unique identifier of the Group.</param>
+        </member>
         <member name="T:d360.web.Controllers.V2.MetricsController">
             <summary>
             This service houses all endpoints handling metrics and scoring for assets throughout your environment.
