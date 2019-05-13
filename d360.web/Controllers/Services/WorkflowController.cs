@@ -733,12 +733,19 @@ order by wi.StartedOn desc";
                 
             List<WorkflowFormModelField> properties = (
                                  from s in XElement.Parse(xml).Element("form").Elements()
-                                 select new WorkflowFormModelField{ Value = (string)s.Attribute("value"), ID = (string)s.Attribute("id"), Label = (string)s.Attribute("label"), ReferenceFieldID = (string)s.Attribute("referenceFieldId"),
+                                 select new WorkflowFormModelField{
+                                     Value = (string)s.Attribute("value"),
+                                     ID = (string)s.Attribute("id"),
+                                     Label = (string)s.Attribute("label"),
+                                     ReferenceFieldID = (string)s.Attribute("referenceFieldId"),
                                      Required = s.Attribute("required") == null ? false : (bool)s.Attribute("required"),
-                                     IntersectTypeID = int.Parse((string)s.Attribute("intersectTypeId") ?? "0"), FieldType = (WorkflowFormModelFieldType)Enum.Parse( typeof(WorkflowFormModelFieldType), (string)s.Attribute("type")) }
+                                     IntersectTypeID = int.Parse((string)s.Attribute("intersectTypeId") ?? "0"),
+                                     FieldType = (WorkflowFormModelFieldType)Enum.Parse( typeof(WorkflowFormModelFieldType), (string)s.Attribute("type")) }
                                  ).ToList();
 
-
+            properties[1].ReferenceFieldID = "269";
+            properties[1].FieldType = WorkflowFormModelFieldType.textarea;
+    
             ObjectDetail details = null;
             ObjectDetail issueItemDetails = null;
             var issueTypeName = "";
@@ -1343,6 +1350,33 @@ order by wi.StartedOn desc";
                 excludedTypes.Add("Html");
 
             fields = fields.Where(f => !excludedTypes.Contains(f.Type)).ToList();
+
+            fields.ForEach(x => x.FriendlyName = type + "::" + x.FriendlyName);
+
+            if(type == "IssueType")
+            {
+                var evReg = Company.WorkflowEventRegistrations.Where(x => x.ObjectID == id && x.Object == type).FirstOrDefault();
+                if (evReg != null && evReg.Condition != null)
+                {
+                    var xmlData = XmlToDynamic(GetConditionLabels(evReg.Condition));
+                    var xmlObjectType = xmlData["Condition"][0]["@Value"];
+                    var xmlObjectId = xmlData["Condition"][1]["@Value"];
+
+                    if(xmlObjectType != null && xmlObjectId != null)
+                    {
+                        string objectType = Convert.ToString(xmlObjectType);
+                        int objectId = Convert.ToInt32(xmlObjectId);
+                        var workflowItemFields = Company.FieldTypes
+                            .Where(f => f.Object == objectType && f.ObjectID == objectId && !excludedTypes.Contains(f.Type))
+                            .ToList();
+
+                        workflowItemFields.ForEach(x => x.FriendlyName = objectType + "::" + x.FriendlyName);
+                        fields = fields.Union(workflowItemFields).ToList();
+                    }
+
+
+                }
+            }
 
             return Request.CreateResponse(HttpStatusCode.OK, fields);
         }
