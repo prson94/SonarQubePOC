@@ -529,8 +529,6 @@ select	Object as ObjectType,
 from	AssetType
 where	Class in (1,2,3,6,7,9)
 union
-select 'IntersectType' as ObjectType, ID as ObjectTypeID, 'Relationships :: ' + IName.Name as title from intersecttypedetail itd cross apply dbo.GetIntersectTypeNames(itd.ID) IName
-union
 select	'FusionAttributeType' as ObjectType, ID as ObjectTypeID, 'Fusion Attributes :: ' + TextPath as Name from FusionAttributeType").ToList();
 
             list = list.OrderBy(i => i.Name).ToList();
