@@ -101,14 +101,18 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
                 this.currentButtonIndex = 0;
 
             this.ResetColor(allAItems);
-            allAItems[this.currentButtonIndex].style['background-color'] = "#878b97";
+            let arr = allAItems[this.currentButtonIndex].className.split(" ");
+            if (arr.indexOf("highlight") == -1) {
+                allAItems[this.currentButtonIndex].className += " highlight";
+            }
+            
         }
     }
   
     ResetColor(allAItems) {
         if (allAItems.length) {
             Array.prototype.forEach.call(allAItems, function (item) {
-                item.style['background-color'] = "#4e5466";
+                item.className = item.className.replace(/\b highlight\b/g, "");
             });
         }
     }
@@ -209,6 +213,7 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
     hide(item) {
         if (this.menu && this.searchText == "") {
             this.ResetColor(item.getElementsByTagName("a"));
+            this.currentButtonIndex = -1;
             this.menu.isActiveItem = false;
         }
     }
