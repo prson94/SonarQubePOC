@@ -319,6 +319,8 @@ nav.top, .left-side-nav {
         padding-top: 40px;
     }
 }
+
+
 //anything in this only applies to Edge for fixes
 @supports(-ms-ime-align: auto)
 {
@@ -497,11 +499,13 @@ d3s-navbar-item {
 
 .logo {
     height: 39px;
-    min-width: 40px;
+    min-width: auto;
     display: inline-flex;
     flex-shrink: 1;
     cursor: pointer;
-    img{
+    max-width: 400px;
+
+    img {
         background-repeat: no-repeat;
         background-position: left top;
         background-size: auto 40px;
@@ -913,13 +917,13 @@ div.child-container{
  div.breadcrumbs{    
     margin-left:20px;
     vertical-align:top;
-    display:inline-block;   
+    display:inline-flex;   
     color:@rgba-primary-0;    
     .active, .sep{
         color:#fff;    
     }
     .active, .inactive{
-        display:inline-block;
+        display:inline-flex;
         background-color:transparent;
         vertical-align:top;
     }
@@ -955,16 +959,20 @@ a.breadcrumb {
 
 
 /* header search */
+.header-action-container {
+    display: flex;
 
-.header-actions-list {
-
-    li {
-        cursor: pointer;
-        padding-right: 5px;
-    }
-
-    li:last-child {
-        padding-right: 0px;
+    .header-actions-list {
+        display: inline-flex;
+        
+        .issue-button{
+            min-width: 115px;
+        }
+        
+        li {
+            cursor: pointer;
+            padding-right: 10px;
+        }
     }
 }
 

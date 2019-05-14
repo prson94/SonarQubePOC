@@ -13,20 +13,22 @@ declare var CompanySettings;
 @Component({
     selector: 'd3s-header-actions',
     template: `
-                <ul class="right show-on-medium-and-down hide-on-med-and-up header-actions-list">             
-                    <li style="padding-right:10px;" class="header-action-li"><d3s-header-mini-menu></d3s-header-mini-menu></li>
-                </ul>
-                <ul class="right header-actions-list">
-                    <li class="header-action-li" *ngIf="headerActionsService.showSearch"><d3s-header-typeahead-search></d3s-header-typeahead-search></li>
-                    <li class="header-action-li" *ngIf="hasRaiseIssueButton"><d3s-raise-issue-button></d3s-raise-issue-button></li>
-                    <li class="header-action-li hide-on-med-and-down" *ngIf="showShoppingCart" ><d3s-header-shopping-cart ></d3s-header-shopping-cart></li>
-                    <li class="header-action-li hide-on-med-and-down" *ngIf="headerActionsService.showFavorite && !isAdminUrl" ><d3s-header-favorites [uri]="uri" [favItems]="favItems" [currentObject]="currentObject" [currentObjectId]="currentObjectId"></d3s-header-favorites></li>
-                    <li class="header-action-li hide-on-med-and-down" *ngIf="headerActionsService.showFavorite && !isAdminUrl" ><d3s-header-homepage [uri]="uri" [favItems]="favItems" [currentObject]="currentObject" [currentObjectId]="currentObjectId"></d3s-header-homepage></li>
-                    <li class="header-action-li hide-on-med-and-down" *ngIf="headerActionsService.showFollow  && !isAdminUrl" ><d3s-header-follow></d3s-header-follow></li>                    
-                    <li class="header-action-li" *ngIf="headerActionsService.showHelp"><d3s-header-help></d3s-header-help></li>
-                    <li class="header-action-li hide-on-med-and-down" *ngIf="headerActionsService.showNotifications"><a href="#" title="Go to notification settings"><i class="fa fa-bell-o"></i></a></li>
-                    <li class="header-action-li hide-on-med-and-down" ><d3s-header-profile></d3s-header-profile></li>                    
-                </ul> 
+                <div class="header-action-container">
+                    <ul class="header-actions-list">
+                        <li class="header-action-li" *ngIf="headerActionsService.showSearch"><d3s-header-typeahead-search></d3s-header-typeahead-search></li>
+                        <li class="header-action-li" *ngIf="hasRaiseIssueButton"><d3s-raise-issue-button></d3s-raise-issue-button></li>
+                        <li class="header-action-li hide-on-med-and-down" *ngIf="showShoppingCart" ><d3s-header-shopping-cart ></d3s-header-shopping-cart></li>
+                        <li class="header-action-li hide-on-med-and-down" *ngIf="headerActionsService.showFavorite && !isAdminUrl" ><d3s-header-favorites [uri]="uri" [favItems]="favItems" [currentObject]="currentObject" [currentObjectId]="currentObjectId"></d3s-header-favorites></li>
+                        <li class="header-action-li hide-on-med-and-down" *ngIf="headerActionsService.showFavorite && !isAdminUrl" ><d3s-header-homepage [uri]="uri" [favItems]="favItems" [currentObject]="currentObject" [currentObjectId]="currentObjectId"></d3s-header-homepage></li>
+                        <li class="header-action-li hide-on-med-and-down" *ngIf="headerActionsService.showFollow  && !isAdminUrl" ><d3s-header-follow></d3s-header-follow></li>                    
+                        <li class="header-action-li" *ngIf="headerActionsService.showHelp"><d3s-header-help></d3s-header-help></li>
+                        <li class="header-action-li hide-on-med-and-down" *ngIf="headerActionsService.showNotifications"><a href="#" title="Go to notification settings"><i class="fa fa-bell-o"></i></a></li>
+                        <li class="header-action-li hide-on-med-and-down" ><d3s-header-profile></d3s-header-profile></li>                    
+                    </ul> 
+                    <ul class="show-on-medium-and-down hide-on-large-only header-actions-list">             
+                        <li class="header-action-li"><d3s-header-mini-menu></d3s-header-mini-menu></li>
+                    </ul>
+                </div>
                 `,
     providers: [FavoritesService]
 })
