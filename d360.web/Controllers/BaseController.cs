@@ -1711,6 +1711,8 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 
         private string applyMulitSelectFilteringSuffix(Dapper.DynamicParameters dbParams, string value, string prefix, int filterNumber,FieldType fieldType, string idColumn = "A.ID")
         {
+            value = value.Replace("!~!", ",");
+
             if (fieldType.AllowAllValue)
                 value += ",0";
             var bind = $"{prefix}{filterNumber}val";
