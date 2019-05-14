@@ -262,7 +262,7 @@ namespace d360.web.Controllers.V2
 
                 if (model.ObjectID > 0)
                 {
-                    if (model.Class != AssetTypeClass.FusionAttribute)
+                    if (model.Class != AssetTypeClass.FusionAttribute && model.Class !=AssetTypeClass.Reference )
                     {
                         Company.Add(new FieldType
                         {

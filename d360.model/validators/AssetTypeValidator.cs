@@ -81,7 +81,7 @@ namespace d360.core.validators
 
 
 
-            if (!this.IsValidDisplayFormat(0, model.DisplayFormat))
+            if (!this.IsValidDisplayFormat(0, model.DisplayFormat, model.Class))
                 return new ValidationStatus(HttpStatusCode.BadRequest, "Invalid request", "Display Format contains invalid field references.");
 
             var regex = "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$";
@@ -152,7 +152,7 @@ namespace d360.core.validators
             if (assetCount != 0 && currentParentType != null && currentParentType.uid != model.ParentUid)
                 return new ValidationStatus(HttpStatusCode.BadRequest, "Invalid request", "Assets already exist with assigned parents. You may not change the parent of this asset type.");
 
-            if (!this.IsValidDisplayFormat(assetType.ID, model.DisplayFormat))
+            if (!this.IsValidDisplayFormat(assetType.ID, model.DisplayFormat, model.Class) )
                 return new ValidationStatus(HttpStatusCode.BadRequest, "Invalid request", "Display Format contains invalid field references.");
 
             var regex = "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$";
@@ -163,8 +163,14 @@ namespace d360.core.validators
 
         }
 
-        private bool IsValidDisplayFormat(int assetTypeId, string displayFormat)
+        private bool IsValidDisplayFormat(int assetTypeId, string displayFormat, AssetTypeClass assetClass)
         {
+            // reference item types with {code} display format are valid
+            if((assetClass == AssetTypeClass.Reference) && !string.IsNullOrEmpty(displayFormat) && string.Compare(displayFormat,"{CODE}", true) == 0 )
+            {
+                return true;
+            }
+
             List<string> fieldNames;
             if (assetTypeId == 0)
                 fieldNames = new List<string> { "name" };
