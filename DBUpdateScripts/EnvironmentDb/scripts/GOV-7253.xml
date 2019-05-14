@@ -1328,7 +1328,7 @@ begin
 	update	T
 	set		T.SourceFusionAttributeID = S.ID, T.SourceFusionAttributeTypeID = S.FusionAttributeTypeID
 	from	#maps T			
-			inner join fusionattribute S on (S.TextPath = T.SourceObject and S.FusionID = @fusionID)
+			inner join fusionattribute S on (S.TextPath = T.SourceObject and S.FusionID = @fusionID and S.Deleted = 0)
 
 	
 	update	T
@@ -1556,7 +1556,7 @@ UpdatedOn,SourceAssetId,TargetAssetId)
 
 		print 'Saved results to temporary table for webjob processing'
 end
-		]]>
+]]>
     </sql>
     <rollback>
       <![CDATA[
