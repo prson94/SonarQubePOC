@@ -1711,6 +1711,8 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 
         private string applyMulitSelectFilteringSuffix(Dapper.DynamicParameters dbParams, string value, string prefix, int filterNumber,FieldType fieldType, string idColumn = "A.ID")
         {
+            if (fieldType.AllowAllValue)
+                value += ",0";
             var bind = $"{prefix}{filterNumber}val";
             dbParams.Add(bind, $"{value}");
 
@@ -1719,7 +1721,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 			cross apply string_split(F.Value,',') dd 
 			where F.FieldTypeID = {fieldType.ID} 
 			and exists (SELECT value  
-			FROM STRING_SPLIT(@{bind}, ',')  WHERE RTRIM(value)=dd.value)
+			FROM STRING_SPLIT(@{bind}, ',')  WHERE RTRIM(value)=dd.value) 
 			)  {prefix}  on   {prefix}.objectID={idColumn} and {prefix}.ObjectType = 'Artifact' ";
 
             return filter;
