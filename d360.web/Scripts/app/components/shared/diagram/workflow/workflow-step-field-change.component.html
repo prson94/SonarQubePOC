@@ -6,9 +6,6 @@
                 &nbsp; <d3s-tile-actions hasAdd="true" (addClick)="add()"></d3s-tile-actions>
             </header>
 
-
-
-
             <p-table #dt [value]="fieldUpdate.Field" selectionMode="single" [metaKeySelection]="true" [pageLinks]="3" [paginator]="true" [rows]="5" [rowsPerPageOptions]="defaultPagingOptions">
                 <ng-template pTemplate="header">
                     <tr>
@@ -19,7 +16,8 @@
                 </ng-template>
                 <ng-template pTemplate="body" let-item let-i="rowIndex">
                     <tr [pSelectableRow]="item">
-                        <td>{{item['@FieldName']}}</td>
+                        
+                        <td>{{item['@FieldType'] == "IssueType" ? "Action Field::" : "Asset Field::"}}{{item['@FieldName']}}</td>
                         <td>
                             <div *ngIf="item != null">
                                 <span *ngIf="item['@UseCurrentDate'] != null && item['@UseCurrentDate'].toString() == 'true'">[use date at time of execution]</span>
@@ -58,7 +56,7 @@
                 <div>
                     <select style="width: 95%" [ngModel]="selectedField['@FieldId']" (ngModelChange)="select($event, true)">
                         <option value="">Choose...</option>
-                        <option *ngFor="let f of fields" [value]="f.ID">{{f.FriendlyName}}</option>
+                        <option *ngFor="let f of fields" [value]="f.ID">{{f.Object == "IssueType" ? "Action Field::" : "Asset Field::"}}{{f.FriendlyName}}</option>
                     </select>
                 </div>
             </div>
@@ -146,7 +144,6 @@
                 </div>
             </div>
         </div>
-        
         <div class="row" style="padding-top:10px">
             <div class="col s12">
                 <button pButton type="button" label="Cancel" (click)="cancel()"></button>
