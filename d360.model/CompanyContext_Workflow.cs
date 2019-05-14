@@ -59,7 +59,7 @@ namespace d360.model
 
             string issueObjectType = "";
             int issueObjectId = -1;
-            
+
             var workflowType = WorkflowTypes.Where(x => x.ID == registration.TypeID).FirstOrDefault();
             if (workflowType.State != State.Active)
                 return false;
@@ -88,7 +88,7 @@ namespace d360.model
 
                 return false;
             }
-            
+
             Console.WriteLine("DEBUG - OBJECT MATCHES SPECIFIED CRITERIA");
 
             return true;
@@ -208,10 +208,10 @@ namespace d360.model
                     subject = $"{environment}{totalNew} new workflow items require your attention";
 
                     var emailAddress = user.Email;
-                                        
+
                     var emailBase = $"<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><title></title></head><body style=\"font-family: Trebuchet MS, Arial, Helvetica, sans-serif;\">{sb.ToString()}</body></html>";
                     //send email
-                    await extensions.mail.SimpleMessage.SendMessage(subject, emailAddress, "", emailBase, true, fromEmail, fromName);                    
+                    await extensions.mail.SimpleMessage.SendMessage(subject, emailAddress, "", emailBase, true, fromEmail, fromName);
                 }
             }
         }
@@ -494,7 +494,7 @@ namespace d360.model
                         }
                         break;
                     case "ISSUETYPE":
-                        var issues = Query<dynamic>(issueSql, new {  id = registration.ObjectID }).ToList();
+                        var issues = Query<dynamic>(issueSql, new { id = registration.ObjectID }).ToList();
 
                         foreach (var issue in issues)
                         {
@@ -505,7 +505,7 @@ namespace d360.model
                                         ObjectID = issue.ID,
                                         ObjectType = core.SystemObjects.IssueType,
                                         ObjectTypeID = registration.ObjectID,
-                                        
+
                                     },
                                     registration,
                                     0))
@@ -708,7 +708,7 @@ namespace d360.model
                 Console.WriteLine($"DEBUG ADDING WORKFLOW WORKFLOW.ITEMSTEP STEP ID [{transition.ToVersionStepID}] ITEM ID [{itemID}] ");
 
 
-               
+
 
                 var toItemStep = new WorkflowItemStep
                 {
@@ -1032,14 +1032,11 @@ namespace d360.model
                 var objectId = objectInfo.ObjectID;
                 var objectType = objectInfo.Object.ToString();
 
-                if(objectInfo.Object.ToString() == "Issue" && objectType != item.ObjectType)
+                if (objectInfo.Object.ToString() == "Issue" && objectType != item.ObjectType)
                 {
                     var issue = Issues.FirstOrDefault(x => x.ID == objectInfo.ObjectID);
-                    if(item.ObjectType == issue.ObjectType)
-                    {
-                        objectType = issue.ObjectType;
-                        objectId = issue.ObjectID;
-                    }
+                    objectType = issue.Object;
+                    objectId = issue.ObjectID;
                 }
 
                 if (fieldType == null)
@@ -1069,8 +1066,6 @@ namespace d360.model
 
                     // check if the field exists
                     var field = Fields.Where(x => x.ObjectID == objectId && x.ObjectType == objectType && x.FieldTypeID == fieldType.ID).FirstOrDefault();
-
-                    var realFields = Fields.Where(x => x.AssetID == 240).ToList();
 
                     if (field == null)
                     {
@@ -1232,7 +1227,7 @@ namespace d360.model
         public void CompleteItemStepAssignments(long itemStepID)
         {
             var itemAssignments = WorkflowItemAssignments.Where(x => x.ItemStepID == itemStepID);
-                        
+
             foreach (var assignment in itemAssignments)
             {
                 WorkflowItemAssignments.Remove(assignment);
@@ -1346,7 +1341,7 @@ namespace d360.model
                     //resend email to the reassigned user
                     stepSettings.SpecificUser = resource.Email;
                     stepSettings.RecipientType = EmailTaskRecipientType.SpecificUser;
-                    
+
                     await SendFormWorkflowEmail(itemStep, itemStep.ID, itemStep.ItemID, objEventInfo, stepSettings);
                 }
                 else
@@ -1401,7 +1396,7 @@ namespace d360.model
 
                 users.Add(res);
 
-                Console.WriteLine($"DEBUG : FORM STEP IS ASSIGNED TO [{res.Email}].");                
+                Console.WriteLine($"DEBUG : FORM STEP IS ASSIGNED TO [{res.Email}].");
             }
             else if (settings.RecipientType == EmailTaskRecipientType.Responsibility || settings.RecipientType == EmailTaskRecipientType.None)
             {
@@ -1508,9 +1503,9 @@ namespace d360.model
                     {
                         //error sending email
                         TelemetryClient client = new TelemetryClient();
-                        client.TrackException(e, new Dictionary<string, string> {{ "CompanyID", CurrentCompanyID.ToString() }});
+                        client.TrackException(e, new Dictionary<string, string> { { "CompanyID", CurrentCompanyID.ToString() } });
                     }
-            }
+                }
 
                 SaveItemStepEmailedUsers(item, emailedUsers);
             }
@@ -1733,7 +1728,7 @@ namespace d360.model
                                     if (int.TryParse(o.Split('|')[1], out var id))
                                     {
                                         var objDetail = GetObjectDetail(type.Replace("Type", ""), id);
-                                        if(objDetail!= null)
+                                        if (objDetail != null)
                                             objectNames.Add(objDetail.Name);
                                     }
                                 }
@@ -2151,7 +2146,7 @@ namespace d360.model
             return result;
         }
 
-        
+
         /// <summary>
         /// Gets the active workflow item step based on a given ID.
         /// </summary>
@@ -2177,4 +2172,3 @@ namespace d360.model
     }
 
 }
-    

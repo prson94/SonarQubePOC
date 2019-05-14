@@ -1350,8 +1350,6 @@ order by wi.StartedOn desc";
 
             fields = fields.Where(f => !excludedTypes.Contains(f.Type)).ToList();
 
-            fields.ForEach(x => x.FriendlyName = type + "::" + x.FriendlyName);
-
             if(type == "IssueType")
             {
                 var evReg = Company.WorkflowEventRegistrations.Where(x => x.ObjectID == id && x.Object == type).FirstOrDefault();
@@ -1369,7 +1367,6 @@ order by wi.StartedOn desc";
                             .Where(f => f.Object == objectType && f.ObjectID == objectId && !excludedTypes.Contains(f.Type))
                             .ToList();
 
-                        workflowItemFields.ForEach(x => x.FriendlyName = objectType + "::" + x.FriendlyName);
                         fields = fields.Union(workflowItemFields).ToList();
                     }
 

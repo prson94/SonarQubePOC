@@ -425,7 +425,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                         var fieldId = +fieldNode["@FieldId"];
                         var object = fieldData[0];
                         var objectName = fieldData[1];
-                        console.log(fieldId, object, objectName);
                         var f = types.filter(x => x.ID == fieldId && x.Object == object && x.Name == objectName)[0];
                         if (f != undefined)
                             fieldNode["@ObjectType"] = object;

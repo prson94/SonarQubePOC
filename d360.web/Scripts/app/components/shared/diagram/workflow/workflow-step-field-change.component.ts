@@ -93,7 +93,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
 
                 });
             })
-            .then(() => this.isLoading = false);
+            .then(() => this.isLoading = false);     
     }
 
     initField(f: any) {
