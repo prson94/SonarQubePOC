@@ -1311,7 +1311,7 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
 
             #endregion
 
-            filters += applyFilteringSuffixBindRaw(Request, dbArgs, true, fields, idColumn);  // Filtering
+            filters += applyFilteringSuffixBindRaw(Request, dbArgs, true, fields, idColumn:idColumn);  // Filtering
 
             countSql += filters;
             querySql += filters;
@@ -1724,14 +1724,14 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 			where F.FieldTypeID = {fieldType.ID} 
 			and exists (SELECT value  
 			FROM STRING_SPLIT(@{bind}, ',')  WHERE RTRIM(value)=dd.value) 
-			)  {prefix}  on   {prefix}.objectID={idColumn} and {prefix}.ObjectType = 'Artifact' ";
+			)  {prefix}  on   {prefix}.objectID={idColumn} ";
 
             return filter;
         }
 
-        internal string applyFilteringSuffixBind(string sql, HttpRequestBase Request, Dapper.DynamicParameters dbParams, bool applyHiddenFilters = false, List<FieldType> fields = null)
+        internal string applyFilteringSuffixBind(string sql, HttpRequestBase Request, Dapper.DynamicParameters dbParams, bool applyHiddenFilters = false, List<FieldType> fields = null, bool fromArtifact = false)
         {
-            return sql + applyFilteringSuffixBindRaw(Request, dbParams, applyHiddenFilters, fields);
+            return sql + applyFilteringSuffixBindRaw(Request, dbParams, applyHiddenFilters, fields,fromArtifact: fromArtifact);
         }
 
         internal List<UiRequestFilterValue> GetFilterValuesFromRequest(HttpRequestBase Request, bool applyHiddenFilters = false)
@@ -1960,7 +1960,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             return filters;
         }
 
-        internal string applyFilteringSuffixBindRaw(HttpRequestBase Request, Dapper.DynamicParameters dbParams, bool applyHiddenFilters = false, List<FieldType> fields = null, string idColumn = "A.ID")
+        internal string applyFilteringSuffixBindRaw(HttpRequestBase Request, Dapper.DynamicParameters dbParams, bool applyHiddenFilters = false, List<FieldType> fields = null, string idColumn = "A.ID", bool fromArtifact = false)
         {
             var query = Request.Params;
 
@@ -1994,7 +1994,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                             }
                         }
                     }
-                    if(filterFieldType.AllowMultipleValues)
+                    if(fromArtifact && filterFieldType.AllowMultipleValues)
                         filters +=  applyMulitSelectFilteringSuffix(dbParams, fValue, tableId, i, filterFieldType, idColumn);
                    else
                         filter = getFilteringConditionBind(fField, fCondition, i, dbParams, fValue, "", ft: filterFieldType);// "flt");
