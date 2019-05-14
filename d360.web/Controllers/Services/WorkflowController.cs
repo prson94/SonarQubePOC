@@ -743,8 +743,7 @@ order by wi.StartedOn desc";
                                      FieldType = (WorkflowFormModelFieldType)Enum.Parse( typeof(WorkflowFormModelFieldType), (string)s.Attribute("type")) }
                                  ).ToList();
 
-            properties[1].ReferenceFieldID = "269";
-            properties[1].FieldType = WorkflowFormModelFieldType.textarea;
+           
     
             ObjectDetail details = null;
             ObjectDetail issueItemDetails = null;

@@ -416,9 +416,23 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
         let links = []; //(<go.GraphLinksModel>this.myDiagram.model).linkDataArray;
         let nodes = []; //this.myDiagram.model.nodeDataArray;
-
-
+        var types = this.fieldTypes;
         this.diagram.model.nodeDataArray.forEach(n => {
+            if ((<NodeModel>n).activityName === "FieldChange") {
+                ((<NodeModel>n).settings.FieldUpdate.Field).forEach(function (fieldNode) {
+                    var fieldData = fieldNode["@FieldName"].split("::", 2);
+                    if (fieldData.length == 2) {
+                        var fieldId = +fieldNode["@FieldId"];
+                        var object = fieldData[0];
+                        var objectName = fieldData[1];
+                        console.log(fieldId, object, objectName);
+                        var f = types.filter(x => x.ID == fieldId && x.Object == object && x.Name == objectName)[0];
+                        if (f != undefined)
+                            fieldNode["@ObjectType"] = object;
+                    }
+                }); 
+            }
+
             nodes.push(this.convertToWorkflowModel(<NodeModel>n));
         });
 

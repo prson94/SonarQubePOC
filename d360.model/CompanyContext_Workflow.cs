@@ -1029,6 +1029,18 @@ namespace d360.model
             {
                 // get field type info
                 var fieldType = FieldTypes.Where(x => x.ID == item.FieldID).FirstOrDefault();
+                var objectId = objectInfo.ObjectID;
+                var objectType = objectInfo.Object.ToString();
+
+                if(objectInfo.Object.ToString() == "Issue" && objectType != item.ObjectType)
+                {
+                    var issue = Issues.FirstOrDefault(x => x.ID == objectInfo.ObjectID);
+                    if(item.ObjectType == issue.ObjectType)
+                    {
+                        objectType = issue.ObjectType;
+                        objectId = issue.ObjectID;
+                    }
+                }
 
                 if (fieldType == null)
                     throw new Exception($"ERROR - INVALID FIELD TYPE ID SPECIFIED FOR UPDATE FIELD WORKFLOW TASK. FIELD ID[ {item.FieldID} ]");
@@ -1038,7 +1050,7 @@ namespace d360.model
                     //delete the value
                     var sql = "delete field where objectid = @id and objecttype = @objectType and fieldtypeid = @fieldTypeId";
 
-                    Database.Connection.Execute(sql, new { id = objectInfo.ObjectID, objectType = objectInfo.Object.ToString(), fieldTypeId = item.FieldID });
+                    Database.Connection.Execute(sql, new { id = objectId, objectType = objectType.ToString(), fieldTypeId = item.FieldID });
 
                 }
                 else
@@ -1056,7 +1068,9 @@ namespace d360.model
                     }
 
                     // check if the field exists
-                    var field = Fields.Where(x => x.ObjectID == objectInfo.ObjectID && x.ObjectType == objectInfo.Object.ToString() && x.FieldTypeID == fieldType.ID).FirstOrDefault();
+                    var field = Fields.Where(x => x.ObjectID == objectId && x.ObjectType == objectType && x.FieldTypeID == fieldType.ID).FirstOrDefault();
+
+                    var realFields = Fields.Where(x => x.AssetID == 240).ToList();
 
                     if (field == null)
                     {
@@ -1065,8 +1079,8 @@ namespace d360.model
                         {
                             Value = val,
                             FieldTypeID = fieldType.ID,
-                            ObjectID = objectInfo.ObjectID,
-                            ObjectType = objectInfo.Object.ToString(),
+                            ObjectID = objectId,
+                            ObjectType = objectType.ToString(),
                             UpdatedBy = CurrentResourceID
                         };
 
@@ -1099,11 +1113,11 @@ namespace d360.model
                         "exec [utility].[AddAuditEntry]  @ParentObject, @ParentObjectID, @ResourceID, @date, @op, @Object, @ObjectID",
                         new
                         {
-                            Object = objectInfo.Object.ToString(),
-                            ObjectID = objectInfo.ObjectID,
-                            ParentObject = objectInfo.Object.ToString(),
+                            Object = objectType,
+                            ObjectID = objectId,
+                            ParentObject = objectType,
                             date = DateTime.UtcNow,
-                            ParentObjectID = objectInfo.ObjectID,
+                            ParentObjectID = objectId,
                             ResourceID = 0,
                             op = "Update"
                         });
