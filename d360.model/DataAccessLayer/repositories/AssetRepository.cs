@@ -271,14 +271,14 @@ namespace d360.model.DataAccessLayer
                 i.Type
             }).ToList();
         }
-        public List<DatabaseBulkAssetResult> PostAssets(List<AssetInsert> assets, AssetType assetType, ApiExecution execution)
+        public List<DatabaseBulkAssetResult> PostAssets(List<AssetInsert> assets, AssetType assetType, ApiExecution execution, bool fieldJsonPropertyLoadLimitToTopLevel = true)
         {
             CompanyContext.Add(execution);
 
             List<DatabaseBulkAssetResult> results = null;
             try
             {
-                results = CompanyContext.ImportAssets(execution, assetType, assets, true);
+                results = CompanyContext.ImportAssets(execution, assetType, assets, true, fieldJsonPropertyLoadLimitToTopLevel: fieldJsonPropertyLoadLimitToTopLevel);
 
                 // Close execution record.
                 execution.Processed = results.Count;
@@ -429,14 +429,14 @@ namespace d360.model.DataAccessLayer
 
             return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.OK, "", "");
         }
-        public List<DatabaseBulkAssetResult> PutAssets(List<AssetUpdate> assets, AssetType assetType, ApiExecution execution)
+        public List<DatabaseBulkAssetResult> PutAssets(List<AssetUpdate> assets, AssetType assetType, ApiExecution execution, bool fieldJsonPropertyLoadLimitToTopLevel = true)
         {
             CompanyContext.Add(execution);
 
             List<DatabaseBulkAssetResult> results = null;
             try
             {
-                results = CompanyContext.ImportAssets(execution, assetType, assets, false);
+                results = CompanyContext.ImportAssets(execution, assetType, assets, false, fieldJsonPropertyLoadLimitToTopLevel: fieldJsonPropertyLoadLimitToTopLevel);
 
                 // Close execution record.
                 execution.Processed = results.Count;

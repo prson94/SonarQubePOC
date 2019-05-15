@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE)]
-    public class FieldJsonProperty : BaseObject
+    public class FieldJsonProperty : BaseCreatedAndUpdatedObject
     {
         [Key, Column(Order = 1), DataMember]
         public long FieldID { get; set; }

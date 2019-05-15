@@ -280,7 +280,7 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
             new { executionID }, transaction: trans, commandTimeout: timeout);
         }
 
-        private void MergeJsonFieldProperties(Guid executionID, SqlTransaction trans, List<FieldType> jsonFieldTypes, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600)
+        private void MergeJsonFieldProperties(Guid executionID, SqlTransaction trans, List<FieldType> jsonFieldTypes, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true)
         {
             var jsonFieldTypeIDs = string.Join(",", jsonFieldTypes.Select(i => i.ID));
             var fields = Connection.Query<dynamic>($@"
@@ -296,7 +296,7 @@ from    Field F
             foreach (var f in fields)
             {
                 string value = f.Value;
-                List<FieldJsonProperty> assetFieldProperties = value.ParseJsonIntoJsonPropertiesCollection();
+                List<FieldJsonProperty> assetFieldProperties = value.ParseJsonIntoJsonPropertiesCollection(fieldJsonPropertyLoadLimitToTopLevel);
                 assetFieldProperties.ForEach(i =>
                 {
                     i.FieldID = f.ID;
@@ -371,13 +371,15 @@ when		matched then
 update		set
 				T.Value = S.Value,
                 T.IsArray = S.IsArray,
-                T.[Path] = S.[Path]
+                T.[Path] = S.[Path],
+                T.UpdatedBy = @r,
+                T.UpdatedOn = @dt
 when		not matched by source and T.FieldID in (select FieldID from #FieldJsonProperty) then
 delete
 when		not matched by target then
-insert		(FieldID, Name, Parent, [Path], Position, IsArray, Value)
-values		(S.FieldID, S.Name, S.Parent, S.[Path], S.Position, S.IsArray, S.Value);",
-            new { executionID }, transaction: trans, commandTimeout: timeout);
+insert		(FieldID, Name, Parent, [Path], Position, IsArray, Value, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+values		(S.FieldID, S.Name, S.Parent, S.[Path], S.Position, S.IsArray, S.Value, @r, @dt, @r, @dt);",
+            new { executionID, r = CurrentResourceID, dt = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
         }
 
         private void ResolveFieldLookupValues(Guid executionID, int timeout = 3600)
@@ -1693,7 +1695,7 @@ from	IntersectType I
             return results;
         }
 
-        public List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600)
+        public List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true)
         {
             var results = new List<DatabaseBulkAssetResult>();
 
@@ -2154,7 +2156,7 @@ from	api.ExecutionAsset T
 
                     if (generalChecksCompleted)
                     {
-                        int loopSize = 100;
+                        int loopSize = 500;
                         int numberOfLoops = (int)Math.Ceiling((decimal)(execution.Total- currentLocation.HighestItemNumberProcessed) / loopSize);
                         int beginItemNumber = currentLocation.HighestItemNumberProcessed + 1;
                         int endItemNumber = currentLocation.HighestItemNumberProcessed + loopSize;
@@ -2557,7 +2559,7 @@ from	api.ExecutionAsset T
 
                                         if (jsonFieldTypes.Count > 0)
                                         {
-                                            MergeJsonFieldProperties(execution.ExecutionID, trans, jsonFieldTypes, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout);
+                                            MergeJsonFieldProperties(execution.ExecutionID, trans, jsonFieldTypes, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, fieldJsonPropertyLoadLimitToTopLevel);
                                         }
 
                                         // Update success flag.
