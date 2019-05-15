@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("igx.jobs.markitlineageprocessor")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Infogix, Inc.")]
 [assembly: AssemblyProduct("igx.jobs.markitlineageprocessor")]
-[assembly: AssemblyCopyright("Copyright ©  2018")]
+[assembly: AssemblyCopyright("Copyright ©  2019")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -31,5 +31,5 @@ using System.Runtime.InteropServices;
 //
 // You can specify all the values or you can default the Revision and Build Numbers 
 // by using the '*' as shown below:
-[assembly: AssemblyVersion("2019.05.10.0")]
-[assembly: AssemblyFileVersion("2019.05.10.0")]
+[assembly: AssemblyVersion("2019.5.0")]
+[assembly: AssemblyFileVersion("2019.5.0")]
