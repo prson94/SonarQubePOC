@@ -289,6 +289,10 @@ nav.top, .left-side-nav {
         }
     }
 
+    &.highlight {
+        background-color: #878b97;
+    }
+
     &:hover {
         background-color: @igx-gray-color !important;
         color: white !important;
@@ -319,6 +323,8 @@ nav.top, .left-side-nav {
         padding-top: 40px;
     }
 }
+
+
 //anything in this only applies to Edge for fixes
 @supports(-ms-ime-align: auto)
 {
@@ -493,7 +499,23 @@ d3s-navbar-item {
             }
         }
     }
-}                
+}
+
+.logo {
+    height: 39px;
+    min-width: auto;
+    display: inline-flex;
+    flex-shrink: 1;
+    cursor: pointer;
+    max-width: @igx-max-logo-width;
+
+    img {
+        background-repeat: no-repeat;
+        background-position: left top;
+        height:40px;
+        width:auto;
+    }
+}
 
 .left-side-nav.fixed a{
     color:white;
@@ -900,13 +922,13 @@ div.child-container{
  div.breadcrumbs{    
     margin-left:20px;
     vertical-align:top;
-    display:inline-block;   
+    display:inline-flex;   
     color:@rgba-primary-0;    
     .active, .sep{
         color:#fff;    
     }
     .active, .inactive{
-        display:inline-block;
+        display:inline-flex;
         background-color:transparent;
         vertical-align:top;
     }
@@ -942,16 +964,20 @@ a.breadcrumb {
 
 
 /* header search */
+.header-action-container {
+    display: flex;
 
-.header-actions-list {
-
-    li {
-        cursor: pointer;
-        padding-right: 5px;
-    }
-
-    li:last-child {
-        padding-right: 0px;
+    .header-actions-list {
+        display: inline-flex;
+        
+        .issue-button{
+            min-width: 115px;
+        }
+        
+        li {
+            cursor: pointer;
+            padding-right: 10px;
+        }
     }
 }
 
