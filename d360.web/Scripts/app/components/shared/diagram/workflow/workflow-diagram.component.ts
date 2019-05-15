@@ -322,7 +322,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
             }
 
-            return this.workflowService.getWorkflowFieldTypes(this.model.Event.ObjectID, this.model.Event.Object, true)
+            return this.workflowService.getWorkflowFieldTypes(this.model.Event.ObjectID, this.model.Event.Object, true, this.model.Event.IssueObject)
                 .then(r => this.fieldTypes = r)
                 .then(() => this.parseData(this.model))
                 .then(() => this.isLoading = false);

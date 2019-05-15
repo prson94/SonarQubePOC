@@ -56,7 +56,7 @@
                 <div>
                     <select style="width: 95%" [ngModel]="selectedField['@FieldId']" (ngModelChange)="select($event, true)">
                         <option value="">Choose...</option>
-                        <option *ngFor="let f of fields" [value]="f.ID">{{f.Object == "IssueType" ? "Action Field::" : "Asset Field::"}}{{f.FriendlyName}}</option>
+                        <option *ngFor="let f of fields" [value]="f.ID">{{getFieldNameForDropDown(f)}}</option>
                     </select>
                 </div>
             </div>

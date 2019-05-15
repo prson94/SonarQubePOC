@@ -26,6 +26,7 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
     @Input() object: string;
     @Input() objectId: number;
     @Input() step: NodeModel;
+    @Input() issueObject: string;
 
     WorkflowActivityType = WorkflowActivityType;
     StepType = StepType;
@@ -51,7 +52,7 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
         this.isLoading = true;
         this.responsibilityService.getResponsibilityTypes()
             .then(r => this.responsibilities = r)
-            .then(() => this.workflowService.getWorkflowFieldTypes(this.objectId, this.object, true))
+            .then(() => this.workflowService.getWorkflowFieldTypes(this.objectId, this.object, true, this.issueObject))
             .then(r => this.fields = r)
             .then(() => this.load());
     }
@@ -84,9 +85,10 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
     }
 
     renderFieldChangeTableName(item: any): string {
-        if (item['@ObjectType'] == "Artifact")
-            return "Asset Field::" + item['@FieldName'];
-        return "Action Field::" + item['@FieldName'];
+        if (this.issueObject == "") return item['@FieldName'];
+        if (item['@ObjectType'] == 'Issue')
+            return "Action Field::" + item['@FieldName'];
+        return "Asset Field::" + item['@FieldName'];
     }
 
     getResponsibilityName(i: number): string {

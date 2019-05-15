@@ -1034,7 +1034,7 @@ namespace d360.model
                 var objectId = objectInfo.ObjectID;
                 var objectType = objectInfo.Object.ToString();
 
-                if (objectInfo.Object.ToString() == "Issue" && objectType != item.ObjectType)
+                if (objectInfo.Object.ToString() == "Issue" && item.ObjectType == "Artifact")
                 {
                     objectType = issue.Object;
                     objectId = issue.ObjectID;
@@ -1118,15 +1118,6 @@ namespace d360.model
 
             }
 
-            if (isAssetEdited && issue.Object == "Artifact")
-            {
-                var artifact = Artifacts.FirstOrDefault(x => x.ID == issue.ObjectID);
-                if (artifact != null)
-                {
-                    artifact.UpdatedOn = DateTime.Now;
-                    Entry(artifact).State = EntityState.Modified;
-                }
-            }
             SaveChanges();
 
         }

@@ -288,6 +288,9 @@ namespace d360.core.entities.Workflow
 
         [DataMember]
         public string ClearValue { get; set; }
+
+        [DataMember]
+        public string ObjectType { get; set; }
     }
 
     public class WorkflowStepRelationshipChange
