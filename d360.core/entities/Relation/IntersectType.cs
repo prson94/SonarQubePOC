@@ -101,6 +101,12 @@ namespace d360.core.entities
         public Cardinality Cardinality { get; set; }
     }
 
+    public class IntersectTypeApiViewNamed : IntersectType
+    {
+        [DataMember]
+        public string Name { get; set; }
+    }
+
     public class IntersectTypeApiViewModel: BaseObject
     {
         [DataMember]
