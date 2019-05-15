@@ -2345,7 +2345,7 @@ from    [Intersect] I
             if (string.IsNullOrWhiteSpace(query))
                 return Request.CreateResponse(HttpStatusCode.OK, "");
             query = sanitizeQueryString(query);
-            var types = Company.Query<IntersectType>(@"
+            var types = Company.Query<IntersectTypeApiViewNamed>(@"
 select  ID, 
         SubjectName + ' ' + coalesce(PredicateName, '/') + ' ' +  ObjectName as Name, 
         Subject, 
