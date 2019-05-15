@@ -87,6 +87,7 @@
     <Compile Include="entities\Contracts\ICreatedMetadata.cs" />
     <Compile Include="entities\Contracts\IEventTrackedEntity.cs" />
     <Compile Include="entities\Contracts\IUIDMetadata.cs" />
+    <Compile Include="entities\FieldJsonProperty.cs" />
     <Compile Include="entities\FieldValue.cs" />
     <Compile Include="entities\Fusion\FusionMarkitLineageData.cs" />
     <Compile Include="entities\Fusion\FusionMarkitLineageMapToBusinessItems.cs" />

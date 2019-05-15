@@ -1,0 +1,101 @@
+﻿<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="GOV-7032-PropertyTable-CreatedBy">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+IF NOT EXISTS(SELECT 1 FROM sys.columns WHERE Name = N'CreatedBy' AND Object_ID = Object_ID(N'dbo.FieldJsonProperty'))
+begin
+	alter table [dbo].[FieldJsonProperty] add [CreatedBy] int constraint [DF_FieldJsonProperty_CreatedBy] default(0) not null
+end
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+IF EXISTS(SELECT 1 FROM sys.columns WHERE Name = N'CreatedBy' AND Object_ID = Object_ID(N'dbo.FieldJsonProperty'))
+begin
+	alter table [dbo].[FieldJsonProperty] DROP CONSTRAINT [DF_FieldJsonProperty_CreatedBy]
+	alter table [dbo].[FieldJsonProperty] drop column [CreatedBy]
+end
+]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="GOV-7032-PropertyTable-CreatedOn">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+IF NOT EXISTS(SELECT 1 FROM sys.columns WHERE Name = N'CreatedOn' AND Object_ID = Object_ID(N'dbo.FieldJsonProperty'))
+begin
+	alter table [dbo].[FieldJsonProperty] add [CreatedOn] datetime constraint [DF_FieldJsonProperty_CreatedOn] default(getutcdate()) not null
+end
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+IF EXISTS(SELECT 1 FROM sys.columns WHERE Name = N'CreatedOn' AND Object_ID = Object_ID(N'dbo.FieldJsonProperty'))
+begin
+	alter table [dbo].[FieldJsonProperty] DROP CONSTRAINT [DF_FieldJsonProperty_CreatedOn]
+	alter table [dbo].[FieldJsonProperty] drop column [CreatedOn]
+end
+]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="GOV-7032-PropertyTable-UpdatedBy">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+IF NOT EXISTS(SELECT 1 FROM sys.columns WHERE Name = N'UpdatedBy' AND Object_ID = Object_ID(N'dbo.FieldJsonProperty'))
+begin
+	alter table [dbo].[FieldJsonProperty] add [UpdatedBy] int constraint [DF_FieldJsonProperty_UpdatedBy] default(0) not null
+end
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+IF EXISTS(SELECT 1 FROM sys.columns WHERE Name = N'UpdatedBy' AND Object_ID = Object_ID(N'dbo.FieldJsonProperty'))
+begin
+	alter table [dbo].[FieldJsonProperty] DROP CONSTRAINT [DF_FieldJsonProperty_UpdatedBy]
+	alter table [dbo].[FieldJsonProperty] drop column [UpdatedBy]
+end
+]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="GOV-7032-PropertyTable-UpdatedOn">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+IF NOT EXISTS(SELECT 1 FROM sys.columns WHERE Name = N'UpdatedOn' AND Object_ID = Object_ID(N'dbo.FieldJsonProperty'))
+begin
+	alter table [dbo].[FieldJsonProperty] add [UpdatedOn] datetime constraint [DF_FieldJsonProperty_UpdatedOn] default(getutcdate()) not null
+end
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+IF EXISTS(SELECT 1 FROM sys.columns WHERE Name = N'UpdatedOn' AND Object_ID = Object_ID(N'dbo.FieldJsonProperty'))
+begin
+	alter table [dbo].[FieldJsonProperty] DROP CONSTRAINT [DF_FieldJsonProperty_UpdatedOn]
+	alter table [dbo].[FieldJsonProperty] drop column [UpdatedOn]
+end
+]]>
+	</rollback>
+  </changeSet>  
+  
+  </databaseChangeLog>

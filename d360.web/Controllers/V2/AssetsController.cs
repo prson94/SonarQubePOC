@@ -1,4 +1,4 @@
-﻿using d360.core;
+using d360.core;
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.exceptions;
@@ -262,7 +262,7 @@ namespace d360.web.Controllers.V2
 
                 if (model.ObjectID > 0)
                 {
-                    if (model.Class != AssetTypeClass.FusionAttribute && model.Class !=AssetTypeClass.Reference )
+                    if (model.Class != AssetTypeClass.FusionAttribute && model.Class != AssetTypeClass.Reference)
                     {
                         Company.Add(new FieldType
                         {
@@ -433,7 +433,16 @@ namespace d360.web.Controllers.V2
 
                 var execution = getApiExecution(assets.Count, new ApiExecutionFields_PostAssets { AssetTypeUid = assetTypeUid });
 
-                var results = AssetRepository.PostAssets(assets, assetType, execution);
+                bool fieldJsonPropertyLoadLimitToTopLevel = true;
+                try
+                {
+                    fieldJsonPropertyLoadLimitToTopLevel = bool.Parse(Community.GetCompanySettings().Single(i => i.Key == "FieldJsonPropertyLoadLimitToTopLevel").Value);
+                }
+                catch (Exception ex)
+                {
+                }
+
+                var results = AssetRepository.PostAssets(assets, assetType, execution, fieldJsonPropertyLoadLimitToTopLevel);
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
@@ -501,7 +510,16 @@ namespace d360.web.Controllers.V2
 
                 var execution = getApiExecution(assets.Count, new ApiExecutionFields_PutAssets { AssetTypeUid = assetTypeUid });
 
-                var results = AssetRepository.PutAssets(assets, assetType, execution);
+                bool fieldJsonPropertyLoadLimitToTopLevel = true;
+                try
+                {
+                    fieldJsonPropertyLoadLimitToTopLevel = bool.Parse(Community.GetCompanySettings().Single(i => i.Key == "FieldJsonPropertyLoadLimitToTopLevel").Value);
+                }
+                catch (Exception ex)
+                {
+                }
+
+                var results = AssetRepository.PutAssets(assets, assetType, execution, fieldJsonPropertyLoadLimitToTopLevel);
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
