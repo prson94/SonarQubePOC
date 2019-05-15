@@ -29,6 +29,7 @@ namespace igx.IntegrationTests.TestData
                             Class = AssetTypeClass.Glossary,
                             DisplayFormat = "{Name}",
                             Description = "Integration test description!",
+                            ParentUid = Guid.Parse("00000000-0000-0000-0000-000000000000"),
                             IconStyle = new IconStyleInsert()
                             {
                                 BackColor = "#FFF",

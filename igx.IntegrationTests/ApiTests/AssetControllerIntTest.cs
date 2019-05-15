@@ -20,7 +20,7 @@ using Xunit;
 
 namespace igx.IntegrationTests.ApiTests
 {
-    [Trait("Category", "Integration tests")]
+    [Trait("Integration tests", "General tests")]
     [TestCaseOrderer(PriorityOrderer.Name, PriorityOrderer.Assembly)]
     public class AssetControllerGeneralTests : BaseIntegrationTestClass
     {
@@ -73,7 +73,7 @@ namespace igx.IntegrationTests.ApiTests
         }
     }
 
-    [Trait("Category", "Asset type CRUD tests")]
+    [Trait("Integration tests", "Asset type CRUD tests")]
     [TestCaseOrderer(PriorityOrderer.Name, PriorityOrderer.Assembly)]
     public class AssetControllerAssetTypeCRUDTests : BaseIntegrationTestClass
     {
@@ -195,7 +195,7 @@ namespace igx.IntegrationTests.ApiTests
         }
     }
 
-    [Trait("Category", "Assets CRUD tests")]
+    [Trait("Integration tests", "Assets CRUD tests")]
     [TestCaseOrderer(PriorityOrderer.Name, PriorityOrderer.Assembly)]
     public class AssetControllerAssetsCRUDTest : BaseIntegrationTestClass
     {
@@ -409,7 +409,7 @@ namespace igx.IntegrationTests.ApiTests
 
     }
 
-    [Trait("Category", "Asset BULK tests")]
+    [Trait("Integration tests", "Asset BULK tests")]
     [TestCaseOrderer(PriorityOrderer.Name, PriorityOrderer.Assembly)]
     public class AssetControllerBulkTests : BaseIntegrationTestClass
     {

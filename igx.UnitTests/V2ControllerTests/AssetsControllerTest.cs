@@ -17,6 +17,7 @@ using System.Net;
 
 namespace igx.UnitTests
 {
+    [Trait("Unit tests", "Asset controller")]
     public class AssetControllerTest : BaseTest
     {
         internal AssetsController assetsController;

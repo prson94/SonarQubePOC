@@ -1,4 +1,4 @@
-﻿using d360.core;
+using d360.core;
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.exceptions;
