@@ -35,9 +35,6 @@ namespace d360.core.entities
 
         [IgnoreDataMember]
         public FieldType FieldType { get; set; }
-
-        //[IgnoreDataMember, ForeignKey("FieldID")]
-        //public virtual ICollection<FieldJsonProperty> JsonProperties { get; set; }
     }
 
     [DataContract(Namespace = NAMESPACE)]
