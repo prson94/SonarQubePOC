@@ -1,0 +1,50 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="MDonato" id="GOV-7225">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[
+ALTER procedure [bulkload].[UpdateIntersectTypeColumn]
+	@id int,
+	@column int
+as
+begin
+	set nocount on;
+	update	T
+	set		T.LookupObject = 'IntersectType',
+			T.LookupObjectID = S.ID
+	from	LoadItemColumn T
+			inner join IntersectTypeDetail S on coalesce(S.SubjectName,'') + ' ' + coalesce(S.PredicateName,'/') + ' ' + coalesce(S.ObjectName,'') = lower(T.Value) 
+				and T.ColumnIndex = @column and T.LoadID = @id and S.PredicateType not in (3,4)
+end
+			
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+		ALTER procedure [bulkload].[UpdateIntersectTypeColumn]
+	@id int,
+	@column int
+as
+begin
+	set nocount on;
+	update	T
+	set		T.LookupObject = 'IntersectType',
+			T.LookupObjectID = S.ID
+	from	LoadItemColumn T
+			inner join IntersectTypeDetail S on coalesce(S.SubjectName,'') + ' ' + coalesce(S.PredicateName,'/') + ' ' + coalesce(S.ObjectName,'') = lower(T.Value) 
+				and T.ColumnIndex = @column and T.LoadID = @id
+end
+		
+		]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>
