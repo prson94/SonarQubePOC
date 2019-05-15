@@ -443,9 +443,6 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
     }
 
     getFieldNameForDropDown(f: any): string {
-        console.log(this.issueObject);
-        console.log(this.issueObject == "");
-        console.log(this.issueObject === "");
         if (this.issueObject == "") return f.FriendlyName;
         if (f.Object == "IssueType")
             return "Action Field::" + f.FriendlyName;
