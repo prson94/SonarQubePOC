@@ -13,19 +13,19 @@ namespace d360.core.entities
         [Key, Column(Order = 2), DataMember]
         public int Position { get; set; }
 
-        [Key, Column(Order = 3), DataMember]
+        [Key, Column(Order = 3), DataMember, MaxLength(250)]
         public string Parent { get; set; }
 
-        [Key, Column(Order = 4), DataMember]
+        [Key, Column(Order = 4), DataMember, MaxLength(250)]
         public string Name { get; set; }
 
-        [DataMember]
+        [DataMember, MaxLength(500)]
         public string Path { get; set; }
 
         [DataMember]
         public bool IsArray { get; set; }
 
-        [DataMember]
+        [DataMember, MaxLength(2500)]
         public string Value { get; set; }
                 
         [IgnoreDataMember]
