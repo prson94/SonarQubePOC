@@ -100,7 +100,7 @@ namespace d360.core.entities
         [JsonConverter(typeof(StringEnumConverter))]
         public Cardinality Cardinality { get; set; }
     }
-
+    [NotMapped]
     public class IntersectTypeApiViewNamed : IntersectType
     {
         [DataMember]
