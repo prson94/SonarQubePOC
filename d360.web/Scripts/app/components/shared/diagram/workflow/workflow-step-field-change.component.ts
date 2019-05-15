@@ -420,6 +420,11 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         return val;
     }
 
+    getTableFieldName(item: any): string {
+        console.log(item);
+        return item['@FieldName'];
+    }
+
 
     get availableFormFields(): any[] {
         let field = this.fields.find(f => f.ID.toString() == this.selectedField['@FieldId']);

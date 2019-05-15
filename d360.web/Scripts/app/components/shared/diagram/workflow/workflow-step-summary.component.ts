@@ -83,6 +83,12 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
         this.ref.markForCheck();
     }
 
+    renderFieldChangeTableName(item: any): string {
+        if (item['@ObjectType'] == "Artifact")
+            return "Asset Field::" + item['@FieldName'];
+        return "Action Field::" + item['@FieldName'];
+    }
+
     getResponsibilityName(i: number): string {
         let id = this.step.settings.ResponsibilityTypeID[i];
         if (id == null || +id < 0)

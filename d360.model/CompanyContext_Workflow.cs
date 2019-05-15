@@ -1024,6 +1024,8 @@ namespace d360.model
         private void UpdateItemField(WorkflowItemStep itemStep, EventObjectInfo objectInfo, WorkflowItemStepSettingModel settings)
         {
             if (!settings.FieldUpdateSettings.Any()) return;
+            var issue = Issues.FirstOrDefault(x => x.ID == objectInfo.ObjectID);
+            bool isAssetEdited = false;
 
             foreach (var item in settings.FieldUpdateSettings)
             {
@@ -1034,9 +1036,9 @@ namespace d360.model
 
                 if (objectInfo.Object.ToString() == "Issue" && objectType != item.ObjectType)
                 {
-                    var issue = Issues.FirstOrDefault(x => x.ID == objectInfo.ObjectID);
                     objectType = issue.Object;
                     objectId = issue.ObjectID;
+                    isAssetEdited = true;
                 }
 
                 if (fieldType == null)
@@ -1080,8 +1082,6 @@ namespace d360.model
                         };
 
                         Add<core.entities.Field>(newField);
-
-                        SaveChanges();
                     }
                     else
                     {
@@ -1099,8 +1099,6 @@ namespace d360.model
                             //update
                             field.Value = val;
                         }
-
-                        SaveChanges();
                     }
 
                     //update asset table to trigger audit                    
@@ -1119,6 +1117,18 @@ namespace d360.model
                 }
 
             }
+
+            if (isAssetEdited && issue.Object == "Artifact")
+            {
+                var artifact = Artifacts.FirstOrDefault(x => x.ID == issue.ObjectID);
+                if (artifact != null)
+                {
+                    artifact.UpdatedOn = DateTime.Now;
+                    Entry(artifact).State = EntityState.Modified;
+                }
+            }
+            SaveChanges();
+
         }
 
         private string GetFieldValueIntersectFromFormResponse(WorkflowRelationshipUpdateSettings item, long itemId)

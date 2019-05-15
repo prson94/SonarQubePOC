@@ -17,7 +17,7 @@
                 <ng-template pTemplate="body" let-item let-i="rowIndex">
                     <tr [pSelectableRow]="item">
                         
-                        <td>{{item['@FieldType'] == "IssueType" ? "Action Field::" : "Asset Field::"}}{{item['@FieldName']}}</td>
+                        <td>{{getTableFieldName(item)}}</td>
                         <td>
                             <div *ngIf="item != null">
                                 <span *ngIf="item['@UseCurrentDate'] != null && item['@UseCurrentDate'].toString() == 'true'">[use date at time of execution]</span>

@@ -280,7 +280,7 @@
                         <ng-template pTemplate="body"
                             let-item>
                             <tr [pSelectableRow]="item">
-                                <td>{{item['@FieldName']}}</td>
+                                <td>{{renderFieldChangeTableName(item)}}</td>
                                 <td>
                                     <div *ngIf="item != null">
                                         <span *ngIf="item['@UseCurrentDate'] != null && item['@UseCurrentDate'].toString() == 'true'">[use
