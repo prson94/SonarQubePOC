@@ -1,0 +1,185 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Tomislav Duric" id="GOV-7185-2-DeriveIntersectName">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[  
+/****** Object:  UserDefinedFunction [utility].[DeriveIntersectName]    Script Date: 16/05/2019 12:21:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER FUNCTION [utility].[DeriveIntersectName] 
+(	
+	@id int
+)
+RETURNS nvarchar(500)
+AS
+BEGIN
+	DECLARE @result nvarchar(500)
+
+	SET @result =	(
+					SELECT	COALESCE(SA.DisplayValue, '') + ' / ' + COALESCE(OA.DisplayValue, '')
+					FROM	[Intersect] I
+
+							left join AssetDetail SA on SA.Object = I.Subject and SA.ObjectID = I.SubjectID
+							left join AssetDetail OA on OA.Object = I.Object and OA.ObjectID = I.ObjectID
+
+							left join [Intersect] SI on I.Subject = 'Intersect' and SI.ID = I.SubjectID
+
+					WHERE	I.ID = @id										
+					)
+
+	RETURN @result
+END
+		]]>
+    </sql>
+    <rollback>
+	<![CDATA[					   		 	 
+ /****** Object:  UserDefinedFunction [utility].[DeriveIntersectName]    Script Date: 16/05/2019 12:21:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER FUNCTION [utility].[DeriveIntersectName] 
+(	
+	@id int
+)
+RETURNS nvarchar(500)
+AS
+BEGIN
+	DECLARE @result nvarchar(500)
+
+	SET @result =	(
+					SELECT	COALESCE(SA.DisplayValue, SI.Name, '') + ' / ' + COALESCE(OA.DisplayValue, '')
+					FROM	[Intersect] I
+
+							left join AssetDetail SA on SA.Object = I.Subject and SA.ObjectID = I.SubjectID
+							left join AssetDetail OA on OA.Object = I.Object and OA.ObjectID = I.ObjectID
+
+							left join [Intersect] SI on I.Subject = 'Intersect' and SI.ID = I.SubjectID
+
+					WHERE	I.ID = @id										
+					)
+
+	RETURN @result
+END   	
+		]]>
+    </rollback>
+  </changeSet>
+  <changeSet author="Tomislav Duric" id="GOV-7185-2-UpdateItemColumnByType">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[  
+/****** Object:  StoredProcedure [bulkload].[UpdateItemColumnByType]    Script Date: 16/05/2019 12:22:17 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER   procedure [bulkload].[UpdateItemColumnByType]
+	@id int,
+	@ObjectType varchar(50), 
+	@ObjectTypeID int,
+	@subjectAreaColumn int, 
+	@itemColumn int
+as
+begin
+	set nocount on;
+
+	if @ObjectType = 'FusionAttributeType'
+	begin
+		update	T
+		set		T.LookupObject = replace(@ObjectType, 'Type', ''),
+				T.LookupObjectID = S.ID
+		from	LoadItemColumn T
+				left join FusionAttribute S on lower(S.TextPath) = lower(T.Value) and S.FusionAttributeTypeID = @ObjectTypeID
+		where	T.LoadID = @id
+				and T.ColumnIndex = @itemColumn
+	end
+	if @ObjectType = 'IntersectType'
+	begin
+		update	T
+		set		T.LookupObject = replace(@ObjectType, 'Type', ''),
+				T.LookupObjectID = S.ID
+		from	LoadItemColumn T
+				left join [Intersect] S on S.IntersectTypeID = @ObjectTypeID
+		where	T.LoadID = @id
+				and T.ColumnIndex = @itemColumn
+	end
+	
+	if @ObjectType = 'ReferenceItemType' and @ObjectTypeID = 0
+	begin
+		update	T
+		set		T.LookupObject = @ObjectType,
+				T.LookupObjectID = S.ObjectID
+		from	LoadItemColumn T
+				left join AssetType S on lower(S.Name) = lower(T.Value) and S.[Object] = 'ReferenceItemType'
+		where	T.LoadID = @id
+				and T.ColumnIndex = @itemColumn
+	end
+end
+		]]>
+    </sql>
+    <rollback>
+	<![CDATA[					   		 	 
+/****** Object:  StoredProcedure [bulkload].[UpdateItemColumnByType]    Script Date: 16/05/2019 12:22:17 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER   procedure [bulkload].[UpdateItemColumnByType]
+	@id int,
+	@ObjectType varchar(50), 
+	@ObjectTypeID int,
+	@subjectAreaColumn int, 
+	@itemColumn int
+as
+begin
+	set nocount on;
+
+	if @ObjectType = 'FusionAttributeType'
+	begin
+		update	T
+		set		T.LookupObject = replace(@ObjectType, 'Type', ''),
+				T.LookupObjectID = S.ID
+		from	LoadItemColumn T
+				left join FusionAttribute S on lower(S.TextPath) = lower(T.Value) and S.FusionAttributeTypeID = @ObjectTypeID
+		where	T.LoadID = @id
+				and T.ColumnIndex = @itemColumn
+	end
+	if @ObjectType = 'IntersectType'
+	begin
+		update	T
+		set		T.LookupObject = replace(@ObjectType, 'Type', ''),
+				T.LookupObjectID = S.ID
+		from	LoadItemColumn T
+				left join [Intersect] S on lower(S.Name) = lower(T.Value) and S.IntersectTypeID = @ObjectTypeID
+		where	T.LoadID = @id
+				and T.ColumnIndex = @itemColumn
+	end
+	
+	if @ObjectType = 'ReferenceItemType' and @ObjectTypeID = 0
+	begin
+		update	T
+		set		T.LookupObject = @ObjectType,
+				T.LookupObjectID = S.ObjectID
+		from	LoadItemColumn T
+				left join AssetType S on lower(S.Name) = lower(T.Value) and S.[Object] = 'ReferenceItemType'
+		where	T.LoadID = @id
+				and T.ColumnIndex = @itemColumn
+	end
+end
+
+		]]>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>
