@@ -471,4 +471,50 @@ GO
 		]]>
 	</rollback>
   </changeSet>
+
+    <changeSet author="KMcNamee" id="GOV-7227-checkassetwithparent">
+      <sql dbms="mssql"
+              endDelimiter="\nGO"
+              splitStatements="true"
+              stripComments="true">
+        <![CDATA[   
+CREATE OR ALTER function [dbo].[CheckIfAssetExistsWithParent]
+(	
+	@AssetTypeID int,
+	@AssetID bigint, 
+	@Fields nvarchar(max), 
+	@ParentID int = -1
+)
+returns bit
+as
+begin
+	declare @ObjectType varchar(50);
+	declare @ObjectTypeID int;
+	declare @ObjectID int;
+
+	--wrapper around CheckIfObjectExistsWithParent until that is rewritten purely for assets / asset types this way we have one set of logic for both and not 2...
+	select 
+		@ObjectType = ATT.[Object], @ObjectTypeID = ATT.[ObjectID], @ObjectID = A.ObjectID 
+	from 
+		AssetType ATT 
+		inner join Asset A on (A.AssetTypeID = ATT.ID) 
+	where 
+		ATT.ID = @AssetTypeID and A.ID = @AssetID;
+
+	return [dbo].[CheckIfObjectExistsWithParent](@ObjectType,@ObjectTypeID,@ObjectID,@Fields,@ParentID);
+end
+      	  ]]>
+      </sql>
+    </changeSet>
+
+  <changeSet author="KMcNamee" id="GOV-7227-assetobjectidnull">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[   
+        ]]>
+    </sql>
+  </changeSet>
+      
   </databaseChangeLog>

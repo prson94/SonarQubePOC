@@ -10166,12 +10166,13 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 if (!Company.HasAssetTypePermission(SystemObjects.PolicyType, typeID, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
-                var model = new Policy { PolicyTypeID = typeID };
+                var model = new Asset { AssetTypeID = assettype.ID, Object = "Policy", State = State.Active, CreatedBy = Company.CurrentResourceID, CreatedOn = DateTime.UtcNow, UpdatedBy = Company.CurrentResourceID, UpdatedOn = DateTime.UtcNow };
                                 
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Policy, model.ID, Company.GetFieldTypesByObject(SystemObjects.PolicyType, model.PolicyTypeID).ToList(), form, Server);
-                Company.SaveOrUpdate(model,fields, parentId.GetValueOrDefault());
-                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.PolicyType, model.PolicyTypeID).ToList();
-                processFormDynamicRelationshipFields(SystemObjects.PolicyType, model.PolicyTypeID, SystemObjects.Policy, model.ID, fieldTypes, form);
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Policy, model.ObjectID, Company.GetFieldTypesByObject(SystemObjects.PolicyType, assettype.ObjectID).ToList(), form, Server);
+                Company.SaveOrUpdateAsset(model,fields, parentId.GetValueOrDefault());
+
+                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.PolicyType, assettype.ObjectID).ToList();
+                processFormDynamicRelationshipFields(SystemObjects.PolicyType, assettype.ObjectID, SystemObjects.Policy, model.ObjectID, fieldTypes, form);
                                 
                 if (!string.IsNullOrEmpty(form["ParentID"]) && form["ParentID"] != "0")
                 {
@@ -10188,7 +10189,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                             Subject = SystemObjects.Policy.ToString(),
                             SubjectID = parseIntField(form, "ParentID"),
                             Object = SystemObjects.Policy.ToString(),
-                            ObjectID = model.ID,
+                            ObjectID = model.ObjectID,
                             IntersectTypeID = intersectType.ID
                         };
 
@@ -10234,7 +10235,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 if (!form.HasKeys()) throw new NoFormDataException("Policy");
 
                 var id = parseIntField(form, "ID");
-                var model = Company.GetById<Policy>(id);
+                var model = Company.Assets.FirstOrDefault(x => x.ObjectID == id && x.Object == "Policy");
                 if (model == null) throw new NotFoundException("Policy");
 
                 if (!Company.HasAssetPermission(SystemObjects.Policy, id, Permission.DeleteAsset))
@@ -10261,14 +10262,6 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             }
         }
         
-        [HttpDelete, Route("DeletePolicyByID"), NonNullableParameters]
-        public JsonResult DeletePolicyByID(int id)
-        {
-            var form = new FormCollection();
-            form.Add("ID", id.ToString());
-            return DeletePolicy(form);
-        }
-
         [HttpPut, ValidateInput(false), Route("EditPolicy"), NonNullableParameters]
         public JsonResult EditPolicy(FormCollection form)
         {
@@ -10277,15 +10270,16 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 if (!form.HasKeys()) throw new NoFormDataException("Policy");
 
                 var id = parseIntField(form, "ID");
-                var model = Company.GetById<Policy>(id);
+                var model = Company.Assets.Where(x => (x.Object == "Policy" && x.ObjectID == id)).Include(x => x.AssetType).FirstOrDefault();
+
                 if (model == null) throw new NotFoundException("Policy");
 
                 if (!Company.HasAssetPermission(SystemObjects.Policy, id, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
                                 
-                Company.SaveOrUpdate(model, new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Policy, model.ID, Company.GetFieldTypesByObject(SystemObjects.PolicyType, model.PolicyTypeID).ToList(), form, Server, false));
-                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.PolicyType, model.PolicyTypeID).ToList();
-                processFormDynamicRelationshipFields(SystemObjects.PolicyType, model.PolicyTypeID, SystemObjects.Policy, model.ID, fieldTypes, form);
+                Company.SaveOrUpdateAsset(model, new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Policy, model.ObjectID, Company.GetFieldTypesByObject(SystemObjects.PolicyType, model.AssetType.ObjectID).ToList(), form, Server, false));
+                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.PolicyType, model.AssetType.ObjectID).ToList();
+                processFormDynamicRelationshipFields(SystemObjects.PolicyType, model.AssetType.ObjectID, SystemObjects.Policy, model.ObjectID, fieldTypes, form);
                 var sType = SystemObjects.Policy.ToString();
                 var parentID = parseIntField(form, "ParentID");
 
@@ -10294,7 +10288,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                     var intersect = Company.Filter<Intersect>(i =>
                         i.Subject == sType &&
                         i.Object == sType &&
-                        i.ObjectID == model.ID &&
+                        i.ObjectID == model.ObjectID &&
                         i.IntersectType.Predicate.Type == PredicateType.IntraTypeHierarchy
                     ).SingleOrDefault();
 

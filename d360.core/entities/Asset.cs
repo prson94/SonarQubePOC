@@ -1,5 +1,6 @@
 ﻿using d360.core.entities.Contracts;
 using d360.core.enums;
+using d360.core.queue;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -10,7 +11,7 @@ using System.Runtime.Serialization;
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE)]
-    public class Asset : BaseCreatedAndUpdatedLongObject
+    public class Asset : BaseCreatedAndUpdatedLongObject, IEventTrackedEntity
     {
         [DataMember]
         public int AssetTypeID { get; set; }
@@ -47,6 +48,18 @@ namespace d360.core.entities
 
         [IgnoreDataMember]
         public virtual ICollection<Fusion> OwnedFusions { get; set; }
+
+        public EventObjectInfo GetEventObjectInfo()
+        {
+            return new EventObjectInfo
+            {
+                Object = (SystemObjects)Enum.Parse(typeof(SystemObjects), Object),
+                ObjectID = ObjectID,
+                AssetTypeID = AssetTypeID,
+                ObjectType = SystemObjects.Unknown,
+                ObjectTypeID = -1
+            };
+        }
     }
 
     [DataContract(Namespace = NAMESPACE)]

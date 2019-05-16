@@ -2111,7 +2111,50 @@ where	R.SourceObject = 'FusionAttribute'
             return returnValue;
         }
 
-        private void CreateOrUpdateDisplayValue(int assetId, string objectType, int objectId)
+        public bool SaveOrUpdateAsset(Asset asset, List<Field> fields, int parentId = -1)
+        {
+            var isUpdate = IsPersistent(asset);
+
+            var fieldsJson = JsonConvert.SerializeObject(fields.Select(f => new { ID = f.FieldTypeID, Value = f.Value }));            
+            bool exists = false;
+
+            if (isUpdate)
+                exists = Query<bool>("select dbo.CheckIfAssetExistsWithParent(@assetTypeID, @assetID, @f, 0) as Val", new { assetTypeID = asset.AssetTypeID, assetID = asset.ID, f = fieldsJson }).First();
+            else
+                exists = Query<bool>("select dbo.CheckIfAssetExistsWithParent(@assetTypeID, null, @f, @p) as Val", new { assetTypeID = asset.AssetTypeID, f = fieldsJson, p = parentId }).First();
+
+            if (exists)
+            {
+                throw new ApplicationException($"{asset.Object} already exists.");
+            }
+            
+            bool returnValue = true;
+
+            if (isUpdate)
+                ObjectContext.ObjectStateManager.ChangeObjectState(asset, EntityState.Modified);
+            else
+            {
+                returnValue = Add<Asset>(asset);
+
+                //Disable eventing after adding so update event doesnt trigger and cause duplicates without changed field
+                this.IsEventingEnabled = false;
+            }
+
+            if (fields != null)
+            {
+                fields.ForEach(i => {
+                    i.ObjectID = asset.ObjectID;
+                });
+                AddOrUpdateFields(fields);
+            }
+
+            this.IsEventingEnabled = true;
+            CreateOrUpdateDisplayValue(asset.ID);
+
+            return returnValue;
+        }
+
+        private void CreateOrUpdateDisplayValue(long assetId, string objectType = "", int objectId = -1)
         {
             Database.Connection.Execute("exec GenerateAssetDisplayValue @assetID, @objType,@objId", new { assetID = assetId, objId = objectId, objType = new DbString { Value = objectType.Replace("Type",""), IsFixedLength = true, Length = 20, IsAnsi = true } }, null, 2400);
         }
