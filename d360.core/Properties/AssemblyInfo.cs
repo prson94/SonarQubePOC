@@ -1,4 +1,4 @@
-﻿using d360.utils;
+﻿using d360.core;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
@@ -10,9 +10,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
-[assembly: AssemblyTitle(AssemblySettings.TITLE_PREFIX + " Core")]
-[assembly: AssemblyCompany(AssemblySettings.COMPANY)]
-[assembly: AssemblyProduct(AssemblySettings.TITLE_PREFIX + " Core")]
-[assembly: AssemblyCopyright(AssemblySettings.COPYRIGHT)]
+[assembly: AssemblyTitle(constants.TITLE_PREFIX + " Core")]
+[assembly: AssemblyCompany(constants.COMPANY)]
+[assembly: AssemblyProduct(constants.TITLE_PREFIX + " Core")]
+[assembly: AssemblyCopyright(constants.COPYRIGHT)]
 
-[assembly: AssemblyVersion(AssemblySettings.PRODUCT_VERSION)]
+[assembly: AssemblyVersion(constants.PRODUCT_VERSION)]
