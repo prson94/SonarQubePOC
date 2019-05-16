@@ -136,7 +136,7 @@ namespace d360.core.entities
         public bool ShowIfEmpty { get; set; }
 
         [DataMember]
-        public string Definition { get; set; }
+        public string Definition { get; set; } = "{}";
 
         [IgnoreDataMember, ForeignKey("FieldTypeID")]
         public virtual ICollection<Field> Fields { get; set; }
