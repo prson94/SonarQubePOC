@@ -54,11 +54,11 @@ namespace igx.jobs.apiexecutionprocessor
             ApiExecutionInfo info = null;
 #if DEBUG
             info = new ApiExecutionInfo {
-                Action = ApiExecutionAction.DeleteAssetTypes,
+                Action = ApiExecutionAction.PostAssets,
                 CompanyDomainPrefix = "mpappas.eng",
                 CompanyID = 2,
                 ResourceID = 3,
-                ExecutionID = new Guid("d95aa760-e9e2-4a75-ae73-c38f3250e88a") };
+                ExecutionID = new Guid("d04067cc-18e4-44d9-a817-c13dfbc6c6a7") };
 #else
             info = JsonConvert.DeserializeObject<ApiExecutionInfo>(myQueueItem);
 #endif
@@ -114,6 +114,21 @@ namespace igx.jobs.apiexecutionprocessor
 
                     int dbExecutionTimeout = int.Parse(CoreFunction.GetConfigValueByKey("DBExecuteQueryTimeout"));
 
+                    bool fieldJsonPropertyLoadLimitToTopLevel = true;
+                    try
+                    {
+                        fieldJsonPropertyLoadLimitToTopLevel = bool.Parse(community.GetCompanySettings().Single(i => i.Key == "FieldJsonPropertyLoadLimitToTopLevel").Value);
+                    }
+                    catch (Exception ex)
+                    {
+                        CoreFunction.AITrackException(functionName, ex, Info.CompanyID, new Dictionary<string, string>() {
+                            { "ExecutionID", Info.ExecutionID.ToString() },
+                            { "StorageFolder", Info.StorageFolder },
+                            { "RequestFileName", Info.RequestFileName },
+                            { "ResponseFileName", Info.ResponseFileName }
+                        });
+                    }
+                    
                     switch (Info.Action)
                     {
                         case ApiExecutionAction.PostAssets:
@@ -124,7 +139,7 @@ namespace igx.jobs.apiexecutionprocessor
                             var postAssets = JsonConvert.DeserializeObject<List<AssetInsert>>(postAssetsJson);
 
                             log.WriteLine($"POST Assets (DB Start): Total raw assets: {postAssets.Count}. Asset Type Uid: {postAssetsFields.AssetTypeUid}.");
-                            var postAssetsResults = company.ImportAssets(dbExecutionItem, assetType, postAssets, true, dbExecutionTimeout);
+                            var postAssetsResults = company.ImportAssets(dbExecutionItem, assetType, postAssets, true, dbExecutionTimeout, fieldJsonPropertyLoadLimitToTopLevel);
                             dbExecutionItem.Processed = postAssetsResults.Count(i => i.Success);
                             dbExecutionItem.Error = postAssetsResults.Count(i => !i.Success);
                             log.WriteLine($"POST Assets (DB Complete): Total results: {postAssetsResults.Count}.");
@@ -142,7 +157,7 @@ namespace igx.jobs.apiexecutionprocessor
                             var putAssets = JsonConvert.DeserializeObject<List<AssetUpdate>>(putAssetsJson);
 
                             log.WriteLine($"PUT Assets (DB Start): Total raw assets: {putAssets.Count}. Asset Type Uid: {putAssetsFields.AssetTypeUid}.");
-                            var putAssetsResults = company.ImportAssets(dbExecutionItem, assetType, putAssets, false, dbExecutionTimeout);
+                            var putAssetsResults = company.ImportAssets(dbExecutionItem, assetType, putAssets, false, dbExecutionTimeout, fieldJsonPropertyLoadLimitToTopLevel);
                             dbExecutionItem.Processed = putAssetsResults.Count(i => i.Success);
                             dbExecutionItem.Error = putAssetsResults.Count(i => !i.Success);
                             log.WriteLine($"PUT Assets (DB Complete): Total results: {putAssetsResults.Count}.");

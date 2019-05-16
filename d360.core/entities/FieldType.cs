@@ -135,6 +135,9 @@ namespace d360.core.entities
         [DataMember]
         public bool ShowIfEmpty { get; set; }
 
+        [DataMember]
+        public string Definition { get; set; }
+
         [IgnoreDataMember, ForeignKey("FieldTypeID")]
         public virtual ICollection<Field> Fields { get; set; }
 
@@ -148,6 +151,19 @@ namespace d360.core.entities
         [IgnoreDataMember, ForeignKey("FieldTypeID")]
         public virtual ICollection<FieldTypeFusionLookupDefinition> FieldTypeFusionLookupDefinitions { get; set; }
     }
+
+    #region Definition property models
+
+    public class FieldTypeDefinition_JsonElement
+    {
+        public int FieldTypeID { get; set; }
+
+        public string Path { get; set; }
+
+        public string DataType { get; set; }
+    }
+
+    #endregion
 
     #region Data Type models for API
 
