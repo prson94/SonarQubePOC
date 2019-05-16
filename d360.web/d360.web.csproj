@@ -1148,7 +1148,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-mini-menu-component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\responsibility-relations.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\responsibility-relation.form.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\fusion-attribute-profile-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\assettypeeditor\asset-type-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-nym-allocations.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-analytics.component.ts" />
