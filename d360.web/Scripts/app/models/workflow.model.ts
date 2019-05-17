@@ -159,6 +159,12 @@ export class WorkflowTypeNew
     State: State = State.Active;
 }
 
+export class WorkflowVersion {
+    ID: number;
+    TypeID: number;
+    Version: number=1;
+    UID: string;
+}
 
 //#region diagram
 
@@ -168,8 +174,8 @@ export class WorkflowDiagramModel {
     Nodes: WorkflowDiagramNode[] = [];
     Links: WorkflowDiagramLink[] = [];
 
-    CurrentVersion: number;
-    PublishedVersion: number;
+    CurrentVersion: WorkflowVersion;
+    PublishedVersion: WorkflowVersion;
 
 }
 

@@ -73,13 +73,13 @@
                     <div class="FieldName">Current Version</div>
                 </div>
                 <div class="col s2">
-                    <div>{{ (model?.CurrentVersion == null) ? '' : model?.CurrentVersion }}</div>
+                    <div>{{ (model?.CurrentVersion == null || model?.CurrentVersion?.Version ==null) ? '&nbsp;' :  model?.CurrentVersion?.Version }}</div>
                 </div>
                 <div class="col s3">
                     <div class="FieldName">Version UID</div>
                 </div>
                 <div class="col s5">
-                    <div>{{model?.Type?.UID}}</div>
+                    <div>{{ (model?.CurrentVersion == null || model?.CurrentVersion?.UID==null) ? '&nbsp;': model?.CurrentVersion?.UID }}</div>
                 </div>
             </div>
             <div class="row">
@@ -87,13 +87,13 @@
                     <div class="FieldName">Published Version</div>
                 </div>
                 <div class="col s2">
-                    <div>{{ (model?.PublishedVersion < 1) ? 'Unpublished' : model?.PublishedVersion }}</div>
+                    <div>{{ (model?.PublishedVersion == null || model?.PublishedVersion?.Version == null ||  model?.PublishedVersion?.Version < 1) ? 'Unpublished' : model?.PublishedVersion?.Version }}</div>
                 </div>
                 <div class="col s3">
                     <div class="FieldName">Version UID</div>
                 </div>
                 <div class="col s5">
-                    <div>{{model?.Type?.UID}}</div>
+                    <div>{{ (model?.PublishedVersion == null || model?.PublishedVersion?.UID==null) ? '&nbsp;' :   model?.PublishedVersion?.UID  }}</div>
                 </div>
             </div>
         </div>

@@ -31,12 +31,14 @@ import { Router } from '@angular/router';
                         Version
                         <d3s-sortIcon [field]="'Version'"></d3s-sortIcon>
                     </th>
+                     <th style="width: 30px"></th>
                 </tr>
                 <tr [hidden]="showSimpleFilter">
                     <th><d3s-column-filter [field]="'Name'" [datatype]="'text'"></d3s-column-filter></th>
                     <th><d3s-column-filter [field]="'ObjectTypeName'" [datatype]="'text'"></d3s-column-filter></th>
                     <th><d3s-column-filter [field]="'Status'" [datatype]="'text'"></d3s-column-filter></th>
                     <th><d3s-column-filter [field]="'Version'" [datatype]="'text'"></d3s-column-filter></th>
+                    <th></th>
                 </tr>
             </ng-template>
             <ng-template pTemplate="body" let-item>
@@ -45,6 +47,9 @@ import { Router } from '@angular/router';
                     <td>{{item.ObjectTypeName}}</td>
                     <td>{{item.Status}}</td>
                     <td>{{item.Version}}</td>
+                    <td>
+                        <d3s-preview-tooltip objectType="WorkflowVersion" [objectId]="item.VersionID" icon="info"></d3s-preview-tooltip>
+                    </td>
                 </tr>
             </ng-template>
             <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
