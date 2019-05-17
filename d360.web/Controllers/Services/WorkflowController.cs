@@ -298,7 +298,7 @@ order by wi.StartedOn desc";
                 Type = type,
                 Event = @event,
                 CurrentVersion = currentVersion,
-                PublishedVersion = publishedVersion //?.Version ?? -1
+                PublishedVersion = publishedVersion 
             };
         }
 
