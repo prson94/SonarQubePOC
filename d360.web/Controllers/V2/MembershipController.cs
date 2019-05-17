@@ -19,7 +19,8 @@ namespace d360.web.Controllers.V2
     [
         ApiVersion("2.0"),
         RoutePrefix("api/v{version:apiVersion}/membership"),
-        Authorize
+        Authorize,
+        StringEnumController
     ]
     public class MembershipController : BaseV2ApiController
     {
@@ -30,6 +31,13 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Retrieves a list of users.
         /// </summary>
+        /// <param name="Uid">The uid of the user.</param>
+        /// <param name="FirstName">First Name of user.</param>
+        /// <param name="LastName">Last Name of user.</param>
+        /// <param name="State">Select the state of the user from the options in the dropdown.</param>
+        /// <param name="IsAdministrator">Is the user an adminstrator or not.</param>
+        /// <param name="_pageSize">The number of results to return per page. The default is 5 users per page and max value is 250.</param>
+        /// <param name="_pageNum">The page number to return results for.</param>
         [
             HttpGet,
             MapToApiVersion("2.0"),
@@ -37,83 +45,51 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "Gets a list of Users.", typeof(ResourceApiViewModel)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-            SwaggerParameter("_uid", "The uid of the user.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_firstName", "First Name of user.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_lastName", "Last Name of user.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_state", "What state is the user.", DataType = "integer", ParameterType = "query", Required = false),
-            SwaggerParameter("_isAdministrator", "Is the user an adminstrator or not.", DataType = "boolean", ParameterType = "query", Required = false),
-            SwaggerParameter("_pageSize", "The number of results to return per page. The default is 5 users per page and max value is 250.", DataType = "integer", ParameterType = "query", Required = false),
-            SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
         ]
-        public async Task<HttpResponseMessage> GetUsers()
+        public async Task<HttpResponseMessage> GetUsers(Guid? Uid = null, string FirstName = null, string LastName = null, core.enums.State? State = null, bool? IsAdministrator = null, int _pageSize = 5, int _pageNum = 1)
         {
             string sql = "select uid, ResourceID, FirstName, LastName, Email, IsAdministrator, LastLoggedInOn, State from [reporting].[Global_Resource] ";
             string countSql = "select count(*) from [reporting].[Global_Resource] ";
-            var uid = "";
-            var firstName = "";
-            var lastName = "";
-            var state = -1;
-            bool isAdministrator = false;
-            bool is_AdminParam = false;
-            var pageSize = 5;
-            var pageNum = 1;
+
             DynamicParameters dbArgs = new DynamicParameters();
             List<string> queries = new List<string>();
             ResourceApiViewModel model = new ResourceApiViewModel();
-            var queryParams = Request.GetQueryNameValuePairs();
-            queryParams.ToList().ForEach(q =>
-            {
-                var key = q.Key.ToLower();
-                if (key.StartsWith("_"))
-                {
-                    switch (key)
-                    {
-                        case "_uid":
-                            uid = q.Value;
-                            dbArgs.Add("uid", q.Value);
-                            queries.Add(" uid = @uid");
-                            break;
-                        case "_firstname":
-                            firstName = q.Value;
-                            dbArgs.Add("FirstName", q.Value);
-                            queries.Add(" FirstName = @FirstName");
-                            break;
-                        case "_lastname":
-                            lastName = q.Value;
-                            dbArgs.Add("LastName", q.Value);
-                            queries.Add(" LastName = @LastName");
-                            break;
-                        case "_state":
-                            int.TryParse(q.Value, out state);
-                            dbArgs.Add("state", q.Value);
-                            queries.Add(" state = @state");
-                            break;
-                        case "_isadministrator":
-                            is_AdminParam = true;
-                            bool.TryParse(q.Value, out isAdministrator);
-                            dbArgs.Add("isAdministrator", isAdministrator);
-                            queries.Add(" isAdministrator = @isAdministrator");
-                            break;
-                        case "_pagesize":
-                            if (int.TryParse(q.Value, out pageSize))
-                            {
-                                if (pageSize < 1) pageSize = 1;
-                            }
-                            if (pageSize > 250) pageSize = 250; // max page size is 250 people.
-                            break;
-                        case "_pagenum":
-                            if (int.TryParse(q.Value, out pageNum))
-                            {
-                                if (pageNum < 1) pageNum = 1;
-                            }
-                            break;
-                    }
-                }
-            });
-            if (uid != "" || firstName != "" || lastName != "" || state != -1 || is_AdminParam)
+
+            if (_pageNum < 1) _pageNum = 1;
+
+            if (_pageSize < 1) _pageSize = 1;
+            if (_pageSize > 250) _pageSize = 250;
+
+            if (Uid != null || FirstName != null || LastName != null || State != null || IsAdministrator != null)
             {
                 sql += "where ";
                 countSql += "where ";
+
+                if (Uid != null)
+                {
+                    dbArgs.Add("uid", Uid);
+                    queries.Add(" uid = @uid");
+                }
+                if (FirstName != null)
+                {
+                    dbArgs.Add("FirstName", FirstName);
+                    queries.Add(" FirstName = @FirstName");
+                }
+                if (LastName != null)
+                {
+                    dbArgs.Add("LastName", LastName);
+                    queries.Add(" LastName = @LastName");
+                }
+                if (State != null)
+                {
+                    dbArgs.Add("state", State);
+                    queries.Add(" state = @state");
+                }
+                if (IsAdministrator != null)
+                {
+                    dbArgs.Add("isAdministrator", IsAdministrator);
+                    queries.Add(" isAdministrator = @isAdministrator");
+                }
             }
             for (int i = 0; i < queries.Count(); i++)
             {
@@ -125,13 +101,13 @@ namespace d360.web.Controllers.V2
                     countSql += " and ";
                 }
             }
-            if (pageSize > 0 || pageNum > 0)
+            if (_pageSize > 0 || _pageNum > 0)
             {
-                if (pageSize < 1) pageSize = 1;
-                if (pageNum < 1) pageNum = 1;
-                model.pageNum = pageNum;
-                model.pageSize = pageSize;
-                string offsetSql = $" Order by ResourceID offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
+                if (_pageSize < 1) _pageSize = 1;
+                if (_pageNum < 1) _pageNum = 1;
+                model.pageNum = _pageNum;
+                model.pageSize = _pageSize;
+                string offsetSql = $" Order by ResourceID offset {_pageSize * (_pageNum - 1)} rows fetch next {_pageSize} rows only";
                 sql += offsetSql;
             }
             var results = await Company.QueryAsync<dynamic>(sql, dbArgs);
