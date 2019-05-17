@@ -507,12 +507,33 @@ end
       </sql>
     </changeSet>
 
-  <changeSet author="KMcNamee" id="GOV-7227-assetobjectidnull">
+  <changeSet author="KMcNamee" id="GOV-7227-assetobjectseq">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="true">
-      <![CDATA[   
+      <![CDATA[ 
+      begin
+	      DECLARE @max int;
+	      SELECT @max =  max(ObjectID) +1 from Asset;
+
+	      exec('CREATE SEQUENCE Asset_ObjectID_Seq 
+		      START WITH ' + @max +
+	      '   INCREMENT BY 1;')
+
+      end
+        ]]>
+    </sql>
+  </changeSet>
+
+
+  <changeSet author="KMcNamee" id="GOV-7227-assetconstraint">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[ 
+      alter table asset add constraint DF_ObjectId default (next value for dbo.Asset_ObjectID_Seq) for ObjectID
         ]]>
     </sql>
   </changeSet>

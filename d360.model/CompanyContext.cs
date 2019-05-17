@@ -196,8 +196,6 @@ namespace d360.model
 
         public DbSet<ObjectStyle> ObjectStyles { get; set; }
 
-        public DbSet<Policy> Policies { get; set; }
-
         public DbSet<PolicyType> PolicyTypes { get; set; }
 
         public DbSet<Predicate> Predicates { get; set; }

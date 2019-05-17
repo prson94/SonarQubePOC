@@ -37,11 +37,6 @@ namespace d360.core.entities
 
         #endregion
 
-        #region Collection Properties
-
-        [IgnoreDataMember, ForeignKey("PolicyTypeID")]
-        public virtual ICollection<Policy> Policies { get; set; }
-
-        #endregion
+        
     }
 }

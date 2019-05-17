@@ -179,7 +179,6 @@
     <Compile Include="entities\Community\Setting.cs" />
     <Compile Include="entities\Fusion\FusionExecution.cs" />
     <Compile Include="entities\Quality\Rule.cs" />
-    <Compile Include="entities\Quality\Policy.cs" />
     <Compile Include="entities\Glossary\AttributeTypeCategory.cs" />
     <Compile Include="entities\ReportTile.cs" />
     <Compile Include="entities\ReportLayout.cs" />
