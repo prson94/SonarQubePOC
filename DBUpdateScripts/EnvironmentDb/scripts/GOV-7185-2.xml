@@ -11,11 +11,6 @@
             splitStatements="true"
             stripComments="true">
 		<![CDATA[  
-/****** Object:  UserDefinedFunction [utility].[DeriveIntersectName]    Script Date: 16/05/2019 12:21:04 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 ALTER FUNCTION [utility].[DeriveIntersectName] 
 (	
 	@id int
@@ -43,11 +38,6 @@ END
     </sql>
     <rollback>
 	<![CDATA[					   		 	 
- /****** Object:  UserDefinedFunction [utility].[DeriveIntersectName]    Script Date: 16/05/2019 12:21:04 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 ALTER FUNCTION [utility].[DeriveIntersectName] 
 (	
 	@id int
@@ -80,11 +70,6 @@ END
             splitStatements="true"
             stripComments="true">
 		<![CDATA[  
-/****** Object:  StoredProcedure [bulkload].[UpdateItemColumnByType]    Script Date: 16/05/2019 12:22:17 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 ALTER   procedure [bulkload].[UpdateItemColumnByType]
 	@id int,
 	@ObjectType varchar(50), 
@@ -131,11 +116,6 @@ end
     </sql>
     <rollback>
 	<![CDATA[					   		 	 
-/****** Object:  StoredProcedure [bulkload].[UpdateItemColumnByType]    Script Date: 16/05/2019 12:22:17 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 ALTER   procedure [bulkload].[UpdateItemColumnByType]
 	@id int,
 	@ObjectType varchar(50), 
@@ -178,7 +158,6 @@ begin
 				and T.ColumnIndex = @itemColumn
 	end
 end
-
 		]]>
     </rollback>
   </changeSet>
