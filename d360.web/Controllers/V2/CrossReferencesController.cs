@@ -1,5 +1,7 @@
 ﻿using d360.core.entities;
 using d360.model;
+using d360.model.DataAccessLayer;
+using d360.web.Controllers.V2;
 using d360.web.Filters;
 using Dapper;
 using Microsoft.Web.Http;
@@ -22,12 +24,15 @@ namespace d360.web.Controllers.V2
     ]
     public class CrossReferencesController : BaseV2ApiController
     {
+
+        private ICrossReferencesRepository crossReferencesRepository;
+
         #region DI
 
-        public CrossReferencesController(ICommunityContext community, ICompanyContext company)
+        public CrossReferencesController(ICommunityContext community, ICompanyContext company, ICrossReferencesRepository crossReferencesRepository)
             : base(community, company)
         {
-
+            this.crossReferencesRepository = crossReferencesRepository;
         }
 
         #endregion
@@ -51,52 +56,13 @@ namespace d360.web.Controllers.V2
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
 
-            var dbArgs = new DynamicParameters();
-            var sql = "select uid, DataSource, Type, ExternalID, FieldHash from [dbo].[AssetCrossReference]";
-            List<string> queryFilters = new List<string>();
-
             var queryParams = Request.GetQueryNameValuePairs();
 
-            if (queryParams.ToList().Any(q => q.Key.ToLower() == "_assetuid"))
-            {
-                Guid assetUid = new Guid();
+            var assetCrossReferences = await crossReferencesRepository.GetCrossReferences(queryParams);
 
-                var assetUidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_assetuid").Value;
-                if (Guid.TryParse(assetUidString, out assetUid))
-                {
-                    dbArgs.Add("@assetuid", assetUid);
-                    queryFilters.Add($"[UID] = @assetuid");
-                }
-            }
-
-            if (queryParams.ToList().Any(q => q.Key.ToLower() == "_externalid"))
-            {                
-                var externalId = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_externalid").Value;
-                dbArgs.Add("@externalid", externalId);
-                queryFilters.Add($"[ExternalID] = @externalid");
-            }
-
-            if (queryParams.ToList().Any(q => q.Key.ToLower() == "_datasource"))
-            {
-                var ds = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_datasource").Value;
-                dbArgs.Add("@datasource", ds);
-                queryFilters.Add($"[DataSource] = @datasource");
-            }
-
-            if (queryParams.ToList().Any(q => q.Key.ToLower() == "_type"))
-            {
-                var ty = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_type").Value;
-                dbArgs.Add("@type", ty);
-                queryFilters.Add($"[type] = @type");
-            }
-
-            if (queryFilters.Count > 0)
-            {
-                sql += " where " + string.Join(" and ", queryFilters);
-            }
-
-            return Request.CreateResponse(await Company.QueryAsync<AssetCrossReference>(sql,dbArgs));
+            return Request.CreateResponse(assetCrossReferences);
         }
+
 
 
         /// <summary>
@@ -117,8 +83,12 @@ namespace d360.web.Controllers.V2
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
 
-            return Request.CreateResponse<IEnumerable<AssetCrossReference>>(await Company.QueryAsync<AssetCrossReference>("select uid, DataSource,Type,ExternalID,FieldHash from AssetCrossReference where uid = @assetUid", new { assetUid }));
+            var result = await crossReferencesRepository.GetByAssetUid(assetUid);
+
+            return Request.CreateResponse(result);
         }
+
+
 
         /// <summary>
         /// Returns asset cross references for the specified type and external id.
@@ -139,8 +109,11 @@ namespace d360.web.Controllers.V2
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
 
-            return Request.CreateResponse<IEnumerable<AssetCrossReference>>(await Company.QueryAsync<AssetCrossReference>("select uid, DataSource,Type,ExternalID,FieldHash from AssetCrossReference where [type] = @type and [ExternalID] = @externalId", new { type = new DbString { Value = type, IsFixedLength = true, Length = 50, IsAnsi = true }, externalId }));
+            var result = await crossReferencesRepository.GetCrossReferenceByTypeId(type, externalId);
+
+            return Request.CreateResponse(result);
         }
+
 
         /// <summary>
         /// Returns asset cross references for the specified type.
@@ -160,7 +133,9 @@ namespace d360.web.Controllers.V2
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
 
-            return Request.CreateResponse<IEnumerable<AssetCrossReference>>(await Company.QueryAsync<AssetCrossReference>("select uid, DataSource,Type,ExternalID,FieldHash from AssetCrossReference where [type] = @type", new { type = new DbString { Value = type, IsFixedLength = true, Length = 50, IsAnsi = true } }));
+            var result = await crossReferencesRepository.GetCrossReferenceByType(type);
+
+            return Request.CreateResponse(result);
         }
 
 
@@ -182,8 +157,12 @@ namespace d360.web.Controllers.V2
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
 
-            return Request.CreateResponse<IEnumerable<AssetCrossReference>>(await Company.QueryAsync<AssetCrossReference>("select uid, DataSource,Type,ExternalID,FieldHash from AssetCrossReference where [datasource] = @dataSource", new { dataSource = new DbString { Value = dataSource, IsFixedLength = true, Length = 250, IsAnsi = true } }));
+            var result = await crossReferencesRepository.GetCrossReferenceByDataSource(dataSource);
+
+            return Request.CreateResponse(result);
         }
+
+
 
         /// <summary>
         /// Creates a new asset cross reference.  If an asset cross reference exists already an error is returned.  ExternalID and DataSource fields have a limit of 250 ASCII characters each.  Type has a limit of 50 ASCII characters.
@@ -207,14 +186,15 @@ namespace d360.web.Controllers.V2
             if (string.IsNullOrEmpty(model.DataSource) || string.IsNullOrEmpty(model.ExternalID) || string.IsNullOrEmpty(model.Type))
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "Model does not contain required fields."));
 
-            //check if the item already exists            
-            if (await XrefExists(model))
+            //check if the item already exists   
+            bool exists = await crossReferencesRepository.XrefExists(model);
+            if (exists)
             {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Conflict, "Asset cross reference already exists."));
             }
 
             //create the new record
-            var res = await Company.Database.Connection.ExecuteAsync("insert into assetcrossreference (uid,DataSource,Type,ExternalID,FieldHash) values(@u,@d,@t,@e,@f)", new { u = model.uid, d = model.DataSource, t = model.Type, f = model.FieldHash, e = model.ExternalID });
+            int res = await crossReferencesRepository.CreateNewCrossReference(model);
 
             if (res <= 0)
             {
@@ -223,6 +203,7 @@ namespace d360.web.Controllers.V2
 
             return model;
         }
+
 
         /// <summary>
         /// Creates new asset cross references.  If an asset cross reference exists already an error is returned.  ExternalID and DataSource fields have a limit of 250 ASCII characters each.  Type has a limit of 50 ASCII characters.
@@ -243,57 +224,17 @@ namespace d360.web.Controllers.V2
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
 
+            bool isExecuted = false;
 
             try
             {
-                if (Company.Database.Connection.State != ConnectionState.Open)
-                    Company.Database.Connection.Open();
-                // bcp the records in
-                using (var bulkCopy = new SqlBulkCopy((Company.Database.Connection) as SqlConnection))
-                {
-                    bulkCopy.BatchSize = models.Count;
-                    bulkCopy.DestinationTableName = "AssetCrossReference";
-                    bulkCopy.BulkCopyTimeout = 300;
-
-                    var table = new DataTable();
-                    var columnName = "uid";
-                    table.Columns.Add(columnName, typeof(Guid));
-                    bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                    columnName = "DataSource";
-                    table.Columns.Add(columnName, typeof(string));
-                    bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                    columnName = "Type";
-                    table.Columns.Add(columnName, typeof(string));
-                    bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                    columnName = "ExternalID";
-                    table.Columns.Add(columnName, typeof(string));
-                    bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                    columnName = "FieldHash";
-                    table.Columns.Add(columnName, typeof(string));
-                    bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                    foreach (var item in models)
-                    {
-                        var row = table.NewRow();
-
-                        row["uid"] = item.uid;
-                        row["DataSource"] = item.DataSource;
-                        row["Type"] = item.Type;
-                        row["ExternalID"] = item.ExternalID;
-                        row["FieldHash"] = item.FieldHash;
-
-                        table.Rows.Add(row);
-                    }
-
-                    await bulkCopy.WriteToServerAsync(table);
-                }
-
+                isExecuted = await crossReferencesRepository.PostBulkCrossReference(models);
             }
             catch
+            {
+            }
+
+            if (!isExecuted)
             {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Conflict, "One or more asset cross references already exist."));
             }
@@ -303,18 +244,7 @@ namespace d360.web.Controllers.V2
             return models;
         }
 
-        private async Task<bool> XrefExists(AssetCrossReference model)
-        {
-            return await Company.Database.Connection.QuerySingleAsync<bool>(@"if exists (select 1 from assetcrossreference where uid = @u and [type] = @t and datasource = @d and externalid = @e)
-                        begin
-                            select 1;
-                                end
-                        else 
-                        begin
-                            select 0;
-                                end", new { u = model.uid, t = model.Type, d = model.DataSource, e = model.ExternalID });
 
-        }
 
         /// <summary>
         /// Updates the specified asset cross reference.
@@ -344,12 +274,14 @@ namespace d360.web.Controllers.V2
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "Asset cross reference model does not contain required fields."));
 
             //create the new record
-            var res = await Company.Database.Connection.ExecuteAsync("update assetcrossreference set FieldHash = @fh where uid = @uid and DataSource = @ds and [Type] = @t", new { fh = model.FieldHash, uid = uid, ds = dataSource, t = type });
+            int res = await crossReferencesRepository.PutCrossReference(uid, dataSource, type, model);
 
             if (res > 0) return Request.CreateResponse(HttpStatusCode.OK); // updated
 
             return Request.CreateResponse(HttpStatusCode.NotFound); // nothing updated
         }
+
+
 
         /// <summary>
         /// Updates the specified asset cross reference.
@@ -376,12 +308,14 @@ namespace d360.web.Controllers.V2
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "Asset cross reference model does not contain required fields."));
 
             //create the new record
-            var res = await Company.Database.Connection.ExecuteAsync("update assetcrossreference set FieldHash = @fh where uid = @uid and DataSource = @ds and [Type] = @t", new { fh = model.FieldHash, uid = uid, ds = model.DataSource, t = model.Type });
+            int res = await crossReferencesRepository.PutCrossReference(uid, model);
 
             if (res > 0) return Request.CreateResponse(HttpStatusCode.OK); // updated
 
             return Request.CreateResponse(HttpStatusCode.NotFound); // nothing updated
         }
+
+
 
         /// <summary>
         /// Deletes an asset cross reference by the specified unique identifier.
@@ -403,7 +337,7 @@ namespace d360.web.Controllers.V2
 
 
             //deletes the new record
-            var res = await Company.Database.Connection.ExecuteAsync("delete assetcrossreference where uid = @uid", new { uid = uid });
+            int res = await crossReferencesRepository.DeleteCrossReferenceByUid(uid);
 
             if (res > 0) return Request.CreateResponse(HttpStatusCode.OK); // deleted
 
@@ -425,7 +359,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.NotAcceptable, "Request does not contain required parameters datasource and type.", typeof(AssetCrossReference)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference))
         ]
-        public async Task<HttpResponseMessage> DeleteByDatasource(string dataSource, string type)
+        public async Task<HttpResponseMessage> DeleteByDataSource(string dataSource, string type)
         {
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
@@ -434,7 +368,7 @@ namespace d360.web.Controllers.V2
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "Request does not contain required parameters datasource and type."));
 
             //deletes the new record
-            var res = await Company.Database.Connection.ExecuteAsync("delete assetcrossreference where datasource = @d and [type] = @t", new { d = dataSource, t = type });
+            int res = await crossReferencesRepository.DeleteCrossReferenceByDataSource(dataSource, type);
 
             if (res > 0) return Request.CreateResponse(HttpStatusCode.OK); // deleted
 
@@ -464,12 +398,13 @@ namespace d360.web.Controllers.V2
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "Request does not contain required parameter type."));
 
             //deletes the new record
-            var res = await Company.Database.Connection.ExecuteAsync("delete assetcrossreference where [type] = @t", new { t = type });
+            int res = await crossReferencesRepository.DeleteCrossReferenceByType(type);
 
             if (res > 0) return Request.CreateResponse(HttpStatusCode.OK); // deleted
 
             return Request.CreateResponse(HttpStatusCode.NotFound); // nothing deleted
         }
+
         /// <summary>
         /// Deletes any asset cross references with the specified datasource.
         /// </summary>
@@ -493,11 +428,16 @@ namespace d360.web.Controllers.V2
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "Request does not contain required parameter dataSource."));
 
             //deletes the new record
-            var res = await Company.Database.Connection.ExecuteAsync("delete assetcrossreference where [datasource] = @d", new { d = dataSource });
+            int res = await crossReferencesRepository.DeleteCrossReferenceByDataSource(dataSource);
 
             if (res > 0) return Request.CreateResponse(HttpStatusCode.OK); // deleted
 
             return Request.CreateResponse(HttpStatusCode.NotFound); // nothing deleted
         }
+
+
+
+
+
     }
 }

@@ -93,8 +93,8 @@ namespace igx.UnitTests
             mockRepo.Setup(x=> x.GetPredicateByUID(It.IsAny<Guid>()))
                 .Returns((Guid uid) => uid == Guid.Parse(DataConstants.ValidGUID) ? new Predicate() { UID = uid, Type = PredicateType.InterTypeHierarchy } :null);
 
-            mockRepo.Setup(x => x.PostAssets(It.IsAny<List<AssetInsert>>(), It.IsAny<AssetType>(), It.IsAny<ApiExecution>(), true))
-                .Returns((List<AssetInsert> assetInsertList, object o2, object o3) =>
+            mockRepo.Setup(x => x.PostAssets(It.IsAny<List<AssetInsert>>(), It.IsAny<AssetType>(), It.IsAny<ApiExecution>(), It.IsAny<bool>()))
+                .Returns((List<AssetInsert> assetInsertList, object o2, object o3, object o4) =>
                  {
                      if (assetInsertList.Count == 0) return null;
                      else return new List<DatabaseBulkAssetResult>() { };
@@ -102,7 +102,7 @@ namespace igx.UnitTests
                 );
 
             mockRepo.Setup(x => x.PutAssets(It.IsAny<List<AssetUpdate>>(), It.IsAny<AssetType>(), It.IsAny<ApiExecution>(), true))
-                .Returns((List<AssetUpdate> assetUpdateList, object o2, object o3) =>
+                .Returns((List<AssetUpdate> assetUpdateList, object o2, object o3, object o4tdu) =>
                 {
                     if (assetUpdateList.Count == 0) return null;
                     else return new List<DatabaseBulkAssetResult>() { };
@@ -151,6 +151,54 @@ namespace igx.UnitTests
             return mockRepo.Object;
         }
 
+        public ICrossReferencesRepository GetCrossReferencesRepository()
+        {
+            var mock = new Mock<ICrossReferencesRepository>();
+
+            mock.Setup(x => x.GetCrossReferences(It.IsAny<IEnumerable<KeyValuePair<string, string>>>()))
+                .Returns(() => Task.FromResult(new List<AssetCrossReference>() { new AssetCrossReference() { } } as IEnumerable<AssetCrossReference>));
+
+            mock.Setup(x => x.GetByAssetUid(It.IsAny<string>()))
+                .Returns(Task.FromResult<IEnumerable<AssetCrossReference>>(new List<AssetCrossReference>() { new AssetCrossReference() }));
+
+            mock.Setup(x => x.GetCrossReferenceByTypeId(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns(Task.FromResult<IEnumerable<AssetCrossReference>>(new List<AssetCrossReference>() { new AssetCrossReference() }));
+
+            mock.Setup(x => x.GetCrossReferenceByType(It.IsAny<string>()))
+                .Returns(Task.FromResult<IEnumerable<AssetCrossReference>>(new List<AssetCrossReference>() { new AssetCrossReference() }));
+
+            mock.Setup(x => x.GetCrossReferenceByDataSource(It.IsAny<string>()))
+                .Returns(Task.FromResult<IEnumerable<AssetCrossReference>>(new List<AssetCrossReference>() { new AssetCrossReference() }));
+
+            mock.Setup(x => x.CreateNewCrossReference(It.IsAny<AssetCrossReference>()))
+                .Returns(Task.FromResult<int>(1));
+
+            mock.Setup(x => x.XrefExists(It.IsAny<AssetCrossReference>()))
+                .Returns((AssetCrossReference xref) => xref.uid == Guid.Parse(DataConstants.InvalidGUID) ? Task.FromResult(true) : Task.FromResult(false));
+
+            mock.Setup(x => x.PostBulkCrossReference(It.IsAny<List<AssetCrossReference>>()))
+                 .Returns((List<AssetCrossReference> xRefList) => xRefList.Any(x => x.uid == Guid.Parse(DataConstants.InvalidGUID)) ? Task.FromResult(false) : Task.FromResult(true));
+
+            mock.Setup(x => x.PutCrossReference(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<AssetCrossReference>())).
+                Returns((Guid uid, string s1, string s2, AssetCrossReference xRef) => xRef.uid == Guid.Parse(DataConstants.InvalidGUID) ? Task.FromResult(0) : Task.FromResult(1));
+
+            mock.Setup(x => x.PutCrossReference(It.IsAny<Guid>(), It.IsAny<AssetCrossReference>())).
+                Returns((Guid uid, AssetCrossReference xRef) => xRef.uid == Guid.Parse(DataConstants.InvalidGUID) ? Task.FromResult(0) : Task.FromResult(1));
+
+            mock.Setup(x => x.DeleteCrossReferenceByUid(It.IsAny<Guid>()))
+                .Returns((Guid guid) => guid == Guid.Parse(DataConstants.InvalidGUID) ? Task.FromResult(0) : Task.FromResult(1));
+
+            mock.Setup(x => x.DeleteCrossReferenceByDataSource(It.IsAny<string>()))
+              .Returns((string ds) => ds == DataConstants.ValidDataSource ? Task.FromResult(1) : Task.FromResult(0));
+
+            mock.Setup(x => x.DeleteCrossReferenceByDataSource(It.IsAny<string>(), It.IsAny<string>()))
+             .Returns((string ds, string type) => ds == DataConstants.ValidDataSource ? Task.FromResult(1) : Task.FromResult(0));
+
+            mock.Setup(x => x.DeleteCrossReferenceByType(It.IsAny<string>()))
+              .Returns((string t) => t == DataConstants.ValidType ? Task.FromResult(1) : Task.FromResult(0));
+
+            return mock.Object;
+        }
         #endregion
     }
 
