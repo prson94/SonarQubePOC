@@ -195,9 +195,7 @@ namespace d360.model
         public DbSet<NymRelation> NymRelations { get; set; }
 
         public DbSet<ObjectStyle> ObjectStyles { get; set; }
-
-        public DbSet<PolicyType> PolicyTypes { get; set; }
-
+        
         public DbSet<Predicate> Predicates { get; set; }
 
         public DbSet<Question> Questions { get; set; }
@@ -1986,7 +1984,7 @@ where	R.SourceObject = 'FusionAttribute'
                     if (det != null)
                     {                        
                         var events = new List<EventInfo>();
-                        addQE(events, ChangeType.Delete, new EventObjectInfo
+                        AddQE(events, ChangeType.Delete, new EventObjectInfo
                         {
                             Object = type,
                             ObjectID = id,
@@ -2172,8 +2170,20 @@ where	R.SourceObject = 'FusionAttribute'
             Enqueue(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel { CompanyID = CurrentCompanyID });
         }
 
-        private void addQE(List<EventInfo> events, ChangeType action, EventObjectInfo item)
+        private void AddQE(List<EventInfo> events, ChangeType action, EventObjectInfo item)
         {
+            // if assettype id is specified lookup object type info as workflow subscriber still works off object objectid...
+            if(item.AssetTypeID > 0 && item.ObjectTypeID <= 0)
+            {
+                var assetType = AssetTypes.FirstOrDefault(x => x.ID == item.AssetTypeID);
+
+                if(assetType != null)
+                {
+                    item.ObjectType = (SystemObjects)(Enum.Parse(typeof(SystemObjects),assetType.Object));
+                    item.ObjectTypeID = assetType.ObjectID;
+                }
+            }
+
             events.Add(new EventInfo {
                 CompanyID = CurrentCompanyID,
                 DomainPrefix = CurrentCompanyDomain,
@@ -2543,10 +2553,10 @@ select @err";
                 }
                 #endregion
 
-                #region Business logic : PolicyType
-                if (entry.Entity is PolicyType)
+                #region Business logic : AssetType
+                if (entry.Entity is AssetType)
                 {
-                    var o = entry.Entity as PolicyType;                    
+                    var o = entry.Entity as AssetType;                    
                     if (string.IsNullOrEmpty(o.Name.Trim()))   throw new ArgumentException(Messages.Error_Name_Required);
 
 
@@ -2554,11 +2564,11 @@ select @err";
                     switch (entry.State)
                     {
                         case EntityState.Added:
-                            if (Any<PolicyType>(i => i.Name == o.Name))
+                            if (Any<AssetType>(i => i.Name == o.Name && i.Object == o.Object))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                         case EntityState.Modified:
-                            if (Any<PolicyType>(i => i.Name == o.Name && i.ID != o.ID))
+                            if (Any<AssetType>(i => i.Name == o.Name && i.ID != o.ID && i.Object == o.Object))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                     }
@@ -2876,23 +2886,23 @@ select @err";
 
             foreach (var fieldEvent in fieldEvents)
             {
-                addQE(events, ChangeType.Update, fieldEvent);
+                AddQE(events, ChangeType.Update, fieldEvent);
             }
 
 
             foreach (var modified in modifiedEntities)
             {
-                addQE(events, ChangeType.Update, modified.GetEventObjectInfo());
+                AddQE(events, ChangeType.Update, modified.GetEventObjectInfo());
             }
                         
             foreach (var added in addedEntities)
             {
-                addQE(events, ChangeType.Add, added.GetEventObjectInfo());
+                AddQE(events, ChangeType.Add, added.GetEventObjectInfo());
             }
             
             foreach (var deleted in deletedEntities)
             {
-                addQE(events, ChangeType.Delete, deleted.GetEventObjectInfo());
+                AddQE(events, ChangeType.Delete, deleted.GetEventObjectInfo());
             }
 
             if (events.Any())

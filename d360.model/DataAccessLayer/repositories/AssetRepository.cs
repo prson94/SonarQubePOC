@@ -338,16 +338,16 @@ namespace d360.model.DataAccessLayer
                     break;
                 case AssetTypeClass.Policy:
                     #region
-                    var p = new PolicyType
+                    var p = new AssetType
                     {
                         Name = model.Name,
                         DisplayFormat = model.DisplayFormat,
                         Description = model.Description,
-                        MaximumDepth = model.Hierarchy.MaximumDepth,
+                        HierarchyMaximumDepth = model.Hierarchy.MaximumDepth,
                     };
                     CompanyContext.Add(p);
                     parentType = SystemObjects.PolicyType;
-                    model.ObjectID = p.ID;
+                    model.ObjectID = p.ObjectID;
                     model.Object = SystemObjects.PolicyType.ToString();
                     #endregion
                     break;
@@ -468,8 +468,7 @@ namespace d360.model.DataAccessLayer
 
                     a.Name = model.Name;
                     a.DisplayFormat = model.DisplayFormat;
-                    a.Description = model.Description;
-                    //a.CanOwnFusion = model.CanOwnFusion ?? false;
+                    a.Description = model.Description;                    
                     a.AutoDisplayDescription = model.AutoDisplayDescription;
 
                     CompanyContext.Update(a);
@@ -486,16 +485,15 @@ namespace d360.model.DataAccessLayer
 
 
                     break;
-                case AssetTypeClass.Policy:
-                    var p = CompanyContext.GetById<PolicyType>(model.ObjectID);
-                    if (p == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Policy.ToString()}", $"Not valid {AssetTypeClass.Policy.ToString()} provided.Please check your request and try again.");
+                case AssetTypeClass.Policy:                    
+                    if (assetType == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Policy.ToString()}", $"Not valid {AssetTypeClass.Policy.ToString()} provided.Please check your request and try again.");
 
-                    p.Name = model.Name;
-                    p.DisplayFormat = model.DisplayFormat;
-                    p.Description = model.Description;
-                    p.MaximumDepth = model.Hierarchy.MaximumDepth;
+                    assetType.Name = model.Name;
+                    assetType.DisplayFormat = model.DisplayFormat;
+                    assetType.Description = model.Description;
+                    assetType.HierarchyMaximumDepth = model.Hierarchy.MaximumDepth;
 
-                    CompanyContext.Update(p);
+                    CompanyContext.Update(assetType);
 
                     break;
                 case AssetTypeClass.Reference:

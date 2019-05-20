@@ -131,8 +131,7 @@ namespace d360.model
         DbSet<OrganizationResourceDetail> OrganizationResourceDetails { get; set; }
         DbSet<OrganizationResource> OrganizationResources { get; set; }
         DbSet<Organization> Organizations { get; set; }
-        DbSet<OrganizationType> OrganizationTypes { get; set; }
-        DbSet<PolicyType> PolicyTypes { get; set; }
+        DbSet<OrganizationType> OrganizationTypes { get; set; }        
         DbSet<Predicate> Predicates { get; set; }
         DbSet<Question> Questions { get; set; }
         DbSet<QuestionTypeOption> QuestionTypeOptions { get; set; }

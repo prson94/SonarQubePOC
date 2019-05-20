@@ -1356,16 +1356,22 @@ namespace d360.web.Controllers
                         break;
                     case SystemObjects.PolicyType:
                         #region
-                        var p = new PolicyType
+                        var p = new AssetType
                         {
                             Name = model.AssetType.Name,
                             DisplayFormat = model.AssetType.DisplayFormat,
                             Description = model.AssetType.Description,
-                            MaximumDepth = model.AssetType.HierarchyMaximumDepth,
+                            HierarchyMaximumDepth = model.AssetType.HierarchyMaximumDepth,
+                            Object = SystemObjects.PolicyType.ToString(),
+                            State = State.Active,
+                            UpdatedBy = Company.CurrentResourceID,
+                            UpdatedOn = DateTime.UtcNow,
+                            Hierarchical = true,
+                            Class = AssetTypeClass.Policy
                         };
                         Company.Add(p);
                         parentType = SystemObjects.PolicyType;
-                        model.AssetType.ObjectID = p.ID;
+                        model.AssetType.ObjectID = p.ObjectID;
                         #endregion
                         break;
                     case SystemObjects.TaxonomyType:
@@ -1525,13 +1531,13 @@ namespace d360.web.Controllers
                         parentType = SystemObjects.OrganizationType;
                         break;
                     case SystemObjects.PolicyType:
-                        var p = Company.GetById<PolicyType>(model.AssetType.ObjectID);
+                        var p = Company.GetById<AssetType>(model.AssetType.ID);
                         if (p == null) throw new NotFoundException("policy type");
 
                         p.Name = model.AssetType.Name;
                         p.DisplayFormat = model.AssetType.DisplayFormat;
                         p.Description = model.AssetType.Description;
-                        p.MaximumDepth = model.AssetType.HierarchyMaximumDepth;
+                        p.HierarchyMaximumDepth = model.AssetType.HierarchyMaximumDepth;
 
                         Company.Update(p);
 
@@ -1545,6 +1551,9 @@ namespace d360.web.Controllers
                         rt.DisplayFormat = model.AssetType.DisplayFormat;
                         rt.Description = model.AssetType.Description;
                         rt.SourceNotes = model.AssetType.Notes;
+                        rt.UpdatedBy = Company.CurrentResourceID;
+                        rt.UpdatedOn = DateTime.UtcNow;
+
 
                         Company.Update(rt);
 
