@@ -295,7 +295,7 @@ namespace d360.model.DataAccessLayer
 
             return results;
         }
-        public Tuple<HttpStatusCode, string, string> AddAssetType(AssetTypeInsert model, AssetType assetType, AssetType parentAssetType, Predicate predicate, out string nameFriendlyName, out bool isNamePartOfKey)
+        public Tuple<HttpStatusCode, string, string> AddAssetType(AssetTypeInsert model, AssetType assetType, AssetType parentAssetType, Predicate predicate, int resourceId, out string nameFriendlyName, out bool isNamePartOfKey)
         {
             var parentType = SystemObjects.ArtifactType;
             nameFriendlyName = "Name";
@@ -337,13 +337,21 @@ namespace d360.model.DataAccessLayer
                     #endregion
                     break;
                 case AssetTypeClass.Policy:
-                    #region
+                    #region                    
                     var p = new AssetType
                     {
                         Name = model.Name,
                         DisplayFormat = model.DisplayFormat,
                         Description = model.Description,
                         HierarchyMaximumDepth = model.Hierarchy.MaximumDepth,
+                        Object = SystemObjects.PolicyType.ToString(),
+                        State = State.Active,
+                        UpdatedBy = resourceId,
+                        UpdatedOn = DateTime.UtcNow,
+                        CreatedBy = resourceId,
+                        CreatedOn = DateTime.UtcNow,
+                        Hierarchical = true,
+                        Class = AssetTypeClass.Policy
                     };
                     CompanyContext.Add(p);
                     parentType = SystemObjects.PolicyType;

@@ -2267,7 +2267,7 @@ from	api.ExecutionAsset T
     create table #ObjectMergeTableResult (ID int, ItemNumber int);
     CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC );
 
-    merge   [Policy] as T
+    merge   [Asset] as T
     using   (
             select  ItemNumber
             from    api.ExecutionAsset
@@ -2275,10 +2275,10 @@ from	api.ExecutionAsset T
                     and Success is null
                     and ItemNumber between {beginItemNumber} and {endItemNumber}
             ) S
-    on      (T.PolicyTypeID = @ObjectID and T.SourceID = @NonExistentUid)
+    on      (T.AssetTypeID = @AssetTypeID and T.SourceID = @NonExistentUid)
     when    not matched then
-    insert  (PolicyTypeID, UpdatedBy, UpdatedOn)
-    values  (@ObjectID, @R, @D)
+    insert  (AssetTypeID,State,[Object], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+    values  (@AssetTypeID,1,'Policy', @R, @D, @R, @D)
     output  inserted.ID, S.ItemNumber into #ObjectMergeTableResult;
 
     update  T
