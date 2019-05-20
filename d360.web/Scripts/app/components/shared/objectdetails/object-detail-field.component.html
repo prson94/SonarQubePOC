@@ -25,7 +25,7 @@
                 <ngx-json-view [data]="GetJSON(field.Value)"></ngx-json-view>
             </ng-template>
         </div>
-        <div *ngIf="field.Type == DetailFieldType.Field && field.Name != 'Email' && field.DataType != 'date' && field.DataType != 'text' && field.DataType != 'Number' && field.DataType != 'Decimal' && field.DataType != 'bool' && field.DataType != 'JSON'" class="FieldDisplayContent" [innerHtml]="field.Value | safeHtml" [ngStyle]="{'font-weight':(field.Name == 'Name' ? 'bold':'')}"></div>
+        <div *ngIf="field.Type == DetailFieldType.Field && field.Name != 'Email' && field.DataType != 'date' && field.DataType != 'text' && field.DataType != 'Number' && field.DataType != 'Decimal' && field.DataType != 'bool' && field.DataType != 'JSON'" class="FieldDisplayContent" [ngStyle]="{'font-weight':(field.Name == 'Name' ? 'bold':'')}">{{field.Value}}</div>
         <div *ngIf="field.DataType == 'Number' || field.DataType == 'Decimal'" class="FieldDisplayContent" [innerHtml]="formatAsNumber(field.Value)" [ngStyle]="{'font-weight':(field.Name == 'Name' ? 'bold':'')}"></div>
         <div *ngIf="field.Type == DetailFieldType.Tooltip" class="FieldDisplayContent">
             <d3s-preview-tooltip *ngIf="field.TooltipContext == 'Preview';else listTooltip" [objectType]="field.TooltipType" [objectId]="field.TooltipID">
