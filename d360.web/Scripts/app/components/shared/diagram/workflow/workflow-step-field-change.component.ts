@@ -33,6 +33,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
     @Input() objectType: string;
     @Input() fieldUpdate: any = {};
     @Input() formFields = [];
+    @Input() issueObject: string;
     @Output() fieldUpdateChange = new EventEmitter();
 
     private fields: FieldType[] = [];
@@ -68,7 +69,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         this.initField(this.selectedField);
         this.hasFormResponses = this.formFields != null && this.formFields.length > 0;
 
-        this.workflowService.getWorkflowFieldTypes(this.objectId, this.objectType, true)
+        this.workflowService.getWorkflowFieldTypes(this.objectId, this.objectType, true, this.issueObject)
             .then(r => {
                 this.fields = r;
             })
@@ -93,7 +94,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
 
                 });
             })
-            .then(() => this.isLoading = false);
+            .then(() => this.isLoading = false);     
     }
 
     initField(f: any) {
@@ -179,10 +180,24 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         this.formMode = FormMode.Adding;
     }
 
+    formatObjectTypeName(str: any) : string {
+        switch (str) {
+            case "ArtifactType":
+                return "Artifact";
+            case "IssueType":
+                return "Issue";
+            default:
+                return "";
+        }
+    }
+
     save() {
+        console.log("save");
         let field = _.cloneDeep(this.selectedField);
         let fieldTypeIndex = this.fields.findIndex(f => f.ID.toString() == field['@FieldId'].toString());
 
+        var selectedField = this.fields.filter(f => f.ID.toString() == field['@FieldId'].toString())[0];
+        field["@ObjectType"] = this.formatObjectTypeName(selectedField.Object);
         if (this.field.Type.toLowerCase() == 'lookup') {
             //join multiselect value into a comma delimited string
             if (this.field.AllowMultipleValues) {
@@ -418,6 +433,20 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         }
 
         return val;
+    }
+
+    getTableFieldName(item: any): string {
+        if (this.issueObject == "") return item['@FieldName'];
+        if (item['@ObjectType'] == 'Issue')
+            return "Action Field::" + item['@FieldName'];
+        return "Asset Field::" + item['@FieldName'];
+    }
+
+    getFieldNameForDropDown(f: any): string {
+        if (this.issueObject == "") return f.FriendlyName;
+        if (f.Object == "IssueType")
+            return "Action Field::" + f.FriendlyName;
+        return "Asset Field::" + f.FriendlyName;
     }
 
 

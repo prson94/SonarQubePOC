@@ -327,6 +327,7 @@ export class WorkflowEventRegistration {
     SettingsObject: any = {};
     LastExecuted: any;
     conditions: EventCondition[] = [];
+    IssueObject: string = "";
 }
 
 export class WorkflowObjectType {
@@ -617,6 +618,7 @@ export class WorkflowStepFieldChangeDetail {
     FormValue: string;
     AppendValue: string;
     ClearValue: string;
+    ObjectType: string;
 }
 
 

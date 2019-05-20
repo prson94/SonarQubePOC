@@ -32,6 +32,7 @@ import * as go from 'gojs';
 export class WorkflowStepEditorComponent extends BaseComponent implements OnInit, OnChanges, AfterViewChecked, OnDestroy {
     @Input() objectId: number;
     @Input() objectType: string;
+    @Input() issueObject: string;
     @Input() step: NodeModel;
     @Input() diagram: go.Diagram;
     @Output() stepChange = new EventEmitter();
