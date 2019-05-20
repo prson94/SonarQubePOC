@@ -9,96 +9,134 @@
 </style>
 
 <div class="tile tile-detail"
-    style="max-height: 190px; height: 190px;"
-    *ngIf="hasHeader">
-    <div class="row"
-        *ngIf="!isLoading">
-        <div class="col s12 m6">
+     style="max-height: 190px; height: 190px;"
+     *ngIf="hasHeader">
+    <div class="row" *ngIf="!isLoading">
+        <div class="col s12 m4">
             <header>{{model?.Type?.Name}}</header>
         </div>
-        <div class="col s12 m2 pt-10px">
-            <div class="FieldName">Published Version</div>
-            <div>{{ (model?.PublishedVersion < 1) ? 'Unpublished' : model?.PublishedVersion }}</div>
-        </div>
-        <div class="col s12 m2 pt-10px">
-            <div class="FieldName">Current Version</div>
-                <div>{{ (model?.CurrentVersion == null) ? '' : model?.CurrentVersion }}</div>
-            </div>
-            <div class="col s2 pt-10px b-last-exetuced">
-                <div class="FieldName">Last Executed</div>
-                <div>
+        <div class="col s12 m8" >
+            <div class="row">
+                <div class="col s2 pt-10px">
+                    <div class="FieldName">Type Name</div>
+                </div>
+                <div class="col s4 pt-10px">
+                    <div>{{objectTypeName}}</div>
+                </div>
+                <div class="col s3 pt-10px b-last-exetuced">
+                    <div class="FieldName">Last Executed</div>
+                </div>
+                <div class="col s3 pt-10px b-last-exetuced">
                     <ng-container *ngIf="model != null && model.Event != null && model.Event.LastExecuted != null; else never">
                         {{model.Event.LastExecuted | date:'short'}}
                         <a *ngIf="WorkflowChangeType[model?.Event?.ChangeType] == 'Schedule'"
-                            class="e-last-exetuced-clear"
-                            (click)="clearExecuted()">(clear)</a>
+                           class="e-last-exetuced-clear"
+                           (click)="clearExecuted()">(clear)</a>
                     </ng-container>
                     <ng-template #never>Never</ng-template>
                 </div>
             </div>
         </div>
-        <div class="row"
-            *ngIf="isLoading">
-            <div class="col s12">
-                <d3s-loading [isLoading]="true"></d3s-loading>
-            </div>
+    </div>
+    <div class="row"
+         *ngIf="isLoading">
+        <div class="col s12">
+            <d3s-loading [isLoading]="true"></d3s-loading>
         </div>
-        <div class="row"
-            *ngIf="!isLoading">
-            <div class="col s6"
-                *ngIf="!isReadOnly"
-                style="max-height: 90px; overflow-y: auto">
+    </div>
+    <div class="row" *ngIf="!isLoading">
+        <div class="col s12 m4">&nbsp;
+            <div
+                 *ngIf="!isReadOnly"
+                 style="max-height: 90px; overflow-y: auto">
                 <div *ngFor="let e of errors"
-                    class="errorMessage">&bull; {{e}}</div>
-            </div>
-            <div class="col s2"
-                [class.offset-s6]="(!isReadOnly && errors != null && errors.length < 1) || isReadOnly">
-                <div class="FieldName">Type Name</div>
-                <div>{{objectTypeName}}</div>
-            </div>
-            <div class="col s12 m2">
-                <div class="FieldName">Change Type</div>
-                <div>{{WorkflowChangeType[model?.Event?.ChangeType]}}</div>
+                     class="errorMessage">&bull;{{e}}</div>
             </div>
         </div>
-        <div class="row"
-            *ngIf="!isReadOnly && !isLoading"
-            style="position: absolute; top: 137px; width: 100%;">
-            <div class="col s6">
-                <div>
-                    <button pButton
-                        type="button"
-                        label="Back"
-                        (click)="backClick()"></button>
-                    <button pButton
-                        type="button"
-                        label="Save"
-                        (click)="save()"
-                        [disabled]="!isValid"></button>
-                    <button pButton
-                        type="button"
-                        label="Publish"
-                        (click)="save(true)"
-                        [disabled]="!isValid"></button>
+        <div class="col s12 m8">
+            <div class="row ">
+                <div class="col s2">
+                    <div class="FieldName">Change Type</div>
+                </div>
+                <div class="col s2">
+                    <div>{{WorkflowChangeType[model?.Event?.ChangeType]}}</div>
+                </div>
+                <div class="col s3">
+                    <div class="FieldName">Workflow Type UID</div>
+                </div>
+                <div class="col s5">
+                    <div>{{model?.Type?.UID}}</div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s2">
+                    <div class="FieldName">Current Version</div>
+                </div>
+                <div class="col s2">
+                    <div>{{ (model?.CurrentVersion == null || model?.CurrentVersion?.Version ==null) ? '&nbsp;' :  model?.CurrentVersion?.Version }}</div>
+                </div>
+                <div class="col s3">
+                    <div class="FieldName">Version UID</div>
+                </div>
+                <div class="col s5">
+                    <div>{{ (model?.CurrentVersion == null || model?.CurrentVersion?.UID==null) ? '&nbsp;': model?.CurrentVersion?.UID }}</div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s2">
+                    <div class="FieldName">Published Version</div>
+                </div>
+                <div class="col s2">
+                    <div>{{ (model?.PublishedVersion == null || model?.PublishedVersion?.Version == null ||  model?.PublishedVersion?.Version < 1) ? 'Unpublished' : model?.PublishedVersion?.Version }}</div>
+                </div>
+                <div class="col s3">
+                    <div class="FieldName">Version UID</div>
+                </div>
+                <div class="col s5">
+                    <div>{{ (model?.PublishedVersion == null || model?.PublishedVersion?.UID==null) ? '&nbsp;' :   model?.PublishedVersion?.UID  }}</div>
                 </div>
             </div>
         </div>
     </div>
+
+    <div class="row"
+         *ngIf="!isReadOnly && !isLoading"
+         style="position: absolute; top: 137px; width: 100%;">
+        <div class="col s6">
+            <div>
+                <button pButton
+                        type="button"
+                        label="Back"
+                        (click)="backClick()"></button>
+                <button pButton
+                        type="button"
+                        label="Save"
+                        (click)="save()"
+                        [disabled]="!isValid"></button>
+                <button pButton
+                        type="button"
+                        label="Publish"
+                        (click)="save(true)"
+                        [disabled]="!isValid"></button>
+            </div>
+        </div>
+    </div>
+</div>
     <div class="tile tile-detail"
-        [hidden]="isLoading">
+         [hidden]="isLoading">
         <header>
             &nbsp;
             <d3s-tile-actions hasMenu="true"
-                [menuItems]="menuItems"
-                (menuClick)="menuClick($event)"></d3s-tile-actions>
+                              [menuItems]="menuItems"
+                              (menuClick)="menuClick($event)"></d3s-tile-actions>
         </header>
         <div *ngIf="!isLoading"
-            style="position:relative;left: 100%; display: inline; top: 10px">
+             style="position:relative;left: 100%; display: inline; top: 10px">
             <d3s-overlay-window [width]="overlayWidth"
-                padding="0"
-                [(visible)]="isWindowVisible"
-                [headerText]="overlayHeader"
-                [overflowScroll]="true">
+                                padding="0"
+                                [(visible)]="isWindowVisible"
+                                [headerText]="overlayHeader"
+                                [overflowScroll]="true">
                 <ul class="tab-menu">
                     <li *ngIf="isReadOnly"
                         (click)="selectTab('history')"
@@ -119,41 +157,40 @@
                     </li>
                 </ul>
                 <div [ngSwitch]="tab"
-                    class="pt-10px"
-                    style="background-color: #fff; overflow-y: auto; width:100%;"
-                    [style.max-height.px]="overlayMaxHeight">
+                     class="pt-10px"
+                     style="background-color: #fff; overflow-y: auto; width:100%;"
+                     [style.max-height.px]="overlayMaxHeight">
                     <div *ngSwitchCase="'info'">
                         <div *ngIf="selectedData != null && selectedData.diagramObjectType == DiagramObjectType.Node"
-                            class="pt-10px">
+                             class="pt-10px">
                             <d3s-workflow-step-summary [step]="selectedData"
                                 [objectId]="model.Event.ObjectID"
                                 [object]="model.Event.Object"
                                 [issueObject]="model.Event.IssueObject"></d3s-workflow-step-summary>
                         </div>
                         <div *ngIf="selectedData != null && selectedData.diagramObjectType == DiagramObjectType.Link"
-                            class="pt-10px">
+                             class="pt-10px">
                             <d3s-workflow-transition-summary [link]="selectedData"></d3s-workflow-transition-summary>
                         </div>
                         <div *ngIf="selectedData == null">Nothing Selected</div>
                     </div>
                     <div *ngSwitchCase="'edit'">
                         <div *ngIf="selectedData != null && selectedData.diagramObjectType == DiagramObjectType.Node"
-                            class="pt-10px">
+                             class="pt-10px">
                             <d3s-workflow-step-editor [diagram]="diagram"
-                                [objectId]="model.Event.ObjectID"
-                                [objectType]="model.Event.Object"
-                                [issueObject]="model.Event.IssueObject"
-                                [step]="selectedData"
-                                (stepChange)="changeStep($event)">
+                                                      [objectId]="model.Event.ObjectID"
+                                                      [objectType]="model.Event.Object"
+                                                      [step]="selectedData"
+                                                      (stepChange)="changeStep($event)">
                             </d3s-workflow-step-editor>
                         </div>
                         <div *ngIf="selectedData != null && selectedData.diagramObjectType == DiagramObjectType.Link"
-                            class="pt-10px">
+                             class="pt-10px">
                             <d3s-workflow-transition-editor [diagram]="diagram"
-                                [objectId]="model.Event.ObjectID"
-                                [objectType]="model.Event.Object"
-                                [transition]="selectedData"
-                                (transitionChange)="changeTransition($event)">
+                                                            [objectId]="model.Event.ObjectID"
+                                                            [objectType]="model.Event.Object"
+                                                            [transition]="selectedData"
+                                                            (transitionChange)="changeTransition($event)">
                             </d3s-workflow-transition-editor>
                         </div>
                         <div *ngIf="selectedData == null">Nothing selected</div>
@@ -161,12 +198,12 @@
                     <div *ngSwitchCase="'history'">
                         <div *ngIf="selectedData != null">
                             <d3s-workflow-history *ngIf="selectedData.diagramObjectType == DiagramObjectType.Node"
-                                [versionStepId]="selectedData.key"
-                                [filteredObject]="filteredObject"
-                                [filteredObjectId]="filteredObjectId"></d3s-workflow-history>
+                                                  [versionStepId]="selectedData.key"
+                                                  [filteredObject]="filteredObject"
+                                                  [filteredObjectId]="filteredObjectId"></d3s-workflow-history>
                             <d3s-workflow-history *ngIf="selectedData.diagramObjectType == DiagramObjectType.Link"
-                                [versionStepTransitionFromId]="selectedData.from"
-                                [versionStepTransitionToId]="selectedData.to"></d3s-workflow-history>
+                                                  [versionStepTransitionFromId]="selectedData.from"
+                                                  [versionStepTransitionToId]="selectedData.to"></d3s-workflow-history>
                         </div>
                         <div *ngIf="selectedData == null">Nothing selected</div>
                     </div>
@@ -182,15 +219,15 @@
                                 class="p-0"
                                 [style.display]="(isReadOnly) ? 'none' : 'table-cell'">
                                 <div id="WorkflowPalette"
-                                    #workflowPalette
-                                    style="overflow: hidden;"
-                                    class="diagram"></div>
+                                     #workflowPalette
+                                     style="overflow: hidden;"
+                                     class="diagram"></div>
                             </td>
                             <td style="vertical-align: top;">
                                 <div id="WorkflowDiagram"
-                                    #workflowDiagram
-                                    style="overflow: hidden;"
-                                    class="diagram"></div>
+                                     #workflowDiagram
+                                     style="overflow: hidden;"
+                                     class="diagram"></div>
                             </td>
                         </tr>
                     </tbody>

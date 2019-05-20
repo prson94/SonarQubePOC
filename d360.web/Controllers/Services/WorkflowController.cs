@@ -297,8 +297,8 @@ order by wi.StartedOn desc";
                 Links = links,
                 Type = type,
                 Event = @event,
-                CurrentVersion = currentVersion?.Version,
-                PublishedVersion = publishedVersion?.Version ?? -1
+                CurrentVersion = currentVersion,
+                PublishedVersion = publishedVersion 
             };
         }
 
@@ -1337,7 +1337,7 @@ order by wi.StartedOn desc";
             var model = GetWorkflowDiagram(id, currentVersion?.Version);
 
             model.Type = type;
-            model.CurrentVersion = currentVersion?.Version ?? 1;
+            model.CurrentVersion = currentVersion;
 
             return Request.CreateResponse(HttpStatusCode.OK, model);
         }

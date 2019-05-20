@@ -7,7 +7,7 @@ using System.Runtime.Serialization;
 namespace d360.core.entities.Workflow
 {
     [DataContract(Namespace = NAMESPACE), Table("Version", Schema = "workflow")]
-    public class WorkflowVersion : BaseIntObject, IIntObject, ICreatedMetadata, IUpdatedMetadata
+    public class WorkflowVersion : BaseIntObject, IIntObject, ICreatedMetadata, IUpdatedMetadata,IUIDMetadata
     {
         [DataMember]
         public int TypeID { get; set; }
@@ -20,6 +20,7 @@ namespace d360.core.entities.Workflow
 
         public DateTime? UpdatedOn { get; set; }
 
+        [DataMember]
         public int Version { get; set; }
 
         [IgnoreDataMember, ForeignKey("TypeID")]
@@ -27,5 +28,8 @@ namespace d360.core.entities.Workflow
 
         [IgnoreDataMember, ForeignKey("VersionID")]
         public virtual ICollection<WorkflowVersionStep> Steps { get; set; }
+
+        [DataMember]
+        public Guid? UID { get; set; }
     }
 }
