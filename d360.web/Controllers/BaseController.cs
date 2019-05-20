@@ -108,7 +108,7 @@ namespace d360.web.Controllers
         internal ICompanyContext Company;
         internal ICommunityContext Community;
 
-        internal List<string> CalculatedFieldTypes = new List<string>() { DataType.Attribute.ToString(), DataType.ComplexRelationLookup.ToString(), DataType.DataTableSelect.ToString(), DataType.File.ToString(), DataType.FilteredLookup.ToString(), DataType.OwnershipLookup.ToString() };
+        internal List<string> CalculatedFieldTypes = new List<string>() { DataType.Attribute.ToString(), DataType.ComplexRelationLookup.ToString(), DataType.DataTableSelect.ToString(), DataType.File.ToString(), DataType.FilteredLookup.ToString(), DataType.OwnershipLookup.ToString(), DataType.JsonElement.ToString() };
 
         internal const int MAX_SYNCHRONOUS_API_ITEM_COUNT = 250;
 
