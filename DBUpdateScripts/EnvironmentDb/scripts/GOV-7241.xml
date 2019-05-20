@@ -12,15 +12,31 @@
             splitStatements="true"
             stripComments="true">
 <![CDATA[
-ALTER TABLE [workflow].[Type] ADD 	[uid] [uniqueidentifier] NOT NULL
-CONSTRAINT [DF_workflow_Type_uid]  DEFAULT (newid())
+		If not exists(Select 1 from
+			information_schema.Columns where column_name ='uid' and
+			table_name='Type' and TABLE_SCHEMA='workflow')
+		begin
+			ALTER TABLE [workflow].[Type] ADD 	[uid] [uniqueidentifier] NOT NULL
+			CONSTRAINT [DF_workflow_Type_uid]  DEFAULT (newid())
+		end
 ]]>
 
     </sql>
 	<rollback>
 	<![CDATA[
-	ALTER TABLE [workflow].[Type] drop constraint [DF_workflow_Type_uid]
-	ALTER TABLE [workflow].[Type] drop column uid
+if exists (select 1 from sys.default_constraints
+    where name = 'DF_workflow_Type_uid')
+    begin
+		ALTER TABLE [workflow].[Type] drop constraint [DF_workflow_Type_uid]
+	end
+	
+	If  exists(Select 1 from
+			information_schema.Columns where column_name ='uid' and
+			table_name='Type' and TABLE_SCHEMA='workflow')
+	begin
+		ALTER TABLE [workflow].[Type] drop column uid
+	end
+		
 ]]>
 	</rollback>
   </changeSet>
