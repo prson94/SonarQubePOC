@@ -6,7 +6,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="KMcNamee" id="GOV-7227-followdetail">
+  <changeSet author="KMcNamee" id="GOV-7227-followdetail-a">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -238,7 +238,6 @@ TaxonomyParents as
     ) F  
     inner join reporting.Global_Resource R on R.ResourceID = F.ResourceID  
     inner join cache.ObjectDetails O on O.[Object] = F.[Object] and O.ObjectID = F.ObjectID
-GO
 		]]>
     </sql>
 	<rollback>
@@ -467,7 +466,6 @@ TaxonomyParents as
     ) F  
     inner join reporting.Global_Resource R on R.ResourceID = F.ResourceID  
     inner join cache.ObjectDetails O on O.[Object] = F.[Object] and O.ObjectID = F.ObjectID
-GO		
 		]]>
 	</rollback>
   </changeSet>
@@ -513,7 +511,10 @@ end
             splitStatements="true"
             stripComments="true">
       <![CDATA[       
-	      CREATE OR ALTER SEQUENCE Asset_ObjectID_Seq START WITH 100000000 INCREMENT BY 1;
+	      IF OBJECT_ID('dbo.Asset_ObjectID_Seq', 'SO') IS NULL 
+        BEGIN
+            CREATE SEQUENCE Asset_ObjectID_Seq START WITH 100000000 INCREMENT BY 1;
+        END
         ]]>
     </sql>
   </changeSet>
@@ -524,8 +525,11 @@ end
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="true">
-      <![CDATA[       
-      alter table asset add constraint DF_Asset_ObjectId default (next value for dbo.Asset_ObjectID_Seq) for ObjectID
+      <![CDATA[          
+      IF OBJECT_ID('dbo.DF_Asset_ObjectId', 'D') IS NULL 
+      BEGIN
+	      alter table asset add constraint DF_Asset_ObjectId default (next value for dbo.Asset_ObjectID_Seq) for ObjectID
+      END
         ]]>
     </sql>
   </changeSet>
@@ -536,7 +540,10 @@ end
             splitStatements="true"
             stripComments="true">
       <![CDATA[ 
-      CREATE SEQUENCE AssetType_ObjectID_Seq START WITH 100000000 INCREMENT BY 1;
+      IF OBJECT_ID('dbo.AssetType_ObjectID_Seq', 'SO') IS NULL 
+      BEGIN
+          CREATE SEQUENCE AssetType_ObjectID_Seq START WITH 100000000 INCREMENT BY 1;
+      END      
         ]]>
     </sql>
   </changeSet>
@@ -548,7 +555,10 @@ end
             splitStatements="true"
             stripComments="true">
       <![CDATA[ 
-      alter table assettype add constraint DF_AssetType_ObjectId default (next value for dbo.AssetType_ObjectID_Seq) for ObjectID
+      IF OBJECT_ID('dbo.DF_AssetType_ObjectId', 'D') IS NULL 
+      BEGIN
+	      alter table assettype add constraint DF_AssetType_ObjectId default (next value for dbo.AssetType_ObjectID_Seq) for ObjectID
+      END
         ]]>
     </sql>
   </changeSet>

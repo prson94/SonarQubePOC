@@ -1209,10 +1209,7 @@ from	IntersectType I
                                                 break;
                                             case "FusionAttributeType":
                                                 legacyTable = "FusionAttribute";
-                                                break;
-                                            case "PolicyType":
-                                                legacyTable = "[Policy]";
-                                                break;
+                                                break;                                            
                                             case "ReferenceItemType":
                                                 legacyTable = "ReferenceItem";
                                                 break;
@@ -1224,9 +1221,12 @@ from	IntersectType I
                                                 break;
                                         }
 
-                                        Connection.Execute(
-                                            $"delete {legacyTable} where ID in (select S.ObjectID from api.ExecutionDeletedAsset S where {querySuffix})",
-                                            new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                        if (!string.IsNullOrEmpty(legacyTable))
+                                        {
+                                            Connection.Execute(
+                                                $"delete {legacyTable} where ID in (select S.ObjectID from api.ExecutionDeletedAsset S where {querySuffix})",
+                                                new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                        }
 
                                         #endregion
 
