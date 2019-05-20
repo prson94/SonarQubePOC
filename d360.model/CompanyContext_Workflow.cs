@@ -1099,6 +1099,7 @@ namespace d360.model
                             //update
                             field.Value = val;
                         }
+                        SaveChanges();
                     }
 
                     //update asset table to trigger audit                    
