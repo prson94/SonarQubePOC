@@ -48,7 +48,7 @@ import { MessagesService } from '../../services/messages.service';
 
 export class ResourcePasswordComponent extends BaseComponent{
     @Output() onSave = new EventEmitter();
-    @Output() onCancel = new EventEmitter();
+    @Output() onClose = new EventEmitter();
 
     currentPassword = "";
     newPassword = "";

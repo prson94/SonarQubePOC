@@ -1020,20 +1020,25 @@
     <Content Include="fonts\nunitosans\NunitoSans-Regular.ttf" />
     <Content Include="fonts\nunitosans\NunitoSans-SemiBold.ttf" />
     <Content Include="fonts\nunitosans\NunitoSans-SemiBoldItalic.ttf" />
+    <None Include="Properties\PublishProfiles\d3s-ui-au-east - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-au-east-development - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-au-east-uat - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\d3s-ui-central - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-central-Development - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-central-UAT - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\d3s-ui-eu-north - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-eu-north-development - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-eu-north-UAT - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\d3s-ui-london - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-london-development - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-london-uat - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\d3s-ui-pune - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-pune-development - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-pune-UAT - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\d3s-ui-us-east - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-us-east-Development - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-us-east-Nightly - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-us-east-UAT - Web Deploy.pubxml" />
-    <None Include="Properties\PublishProfiles\LocalFolder.pubxml" />
     <Content Include="Views\Authentication\NoAccess.cshtml" />
     <Content Include="Scripts\app\components\shared\relationship\dynamic-relationship-grid.component.html" />
     <Content Include="tslint.json" />
@@ -1108,6 +1113,10 @@
       <Project>{b12a1078-5835-43b8-afb2-c3d24c4aa098}</Project>
       <Name>d360.model</Name>
     </ProjectReference>
+    <ProjectReference Include="..\d360.utils\d360.utils.csproj">
+      <Project>{9775B4DF-0AC8-4524-BA10-4A43BF9CB61E}</Project>
+      <Name>d360.utils</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="Scripts\app\app.module.ts" />
@@ -1148,7 +1157,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-mini-menu-component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\responsibility-relations.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\responsibility-relation.form.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\fusion-attribute-profile-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\assettypeeditor\asset-type-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-nym-allocations.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-analytics.component.ts" />

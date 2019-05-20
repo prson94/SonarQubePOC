@@ -2615,10 +2615,17 @@
             This service houses all endpoints handling glossary-related data such as artifacts and models.
             </summary>
         </member>
-        <member name="M:d360.web.Controllers.V2.MembershipController.GetUsers">
+        <member name="M:d360.web.Controllers.V2.MembershipController.GetUsers(System.Nullable{System.Guid},System.String,System.String,System.Nullable{d360.core.enums.State},System.Nullable{System.Boolean},System.Int32,System.Int32)">
             <summary>
             Retrieves a list of users.
             </summary>
+            <param name="Uid">The uid of the user.</param>
+            <param name="FirstName">First Name of user.</param>
+            <param name="LastName">Last Name of user.</param>
+            <param name="State">Select the state of the user from the options in the dropdown.</param>
+            <param name="IsAdministrator">Is the user an adminstrator or not.</param>
+            <param name="_pageSize">The number of results to return per page. The default is 5 users per page and max value is 250.</param>
+            <param name="_pageNum">The page number to return results for.</param>
         </member>
         <member name="M:d360.web.Controllers.V2.MembershipController.GetMembers(System.Guid)">
             <summary>

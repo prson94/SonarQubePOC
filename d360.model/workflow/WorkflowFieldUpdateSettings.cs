@@ -17,11 +17,13 @@ namespace d360.model.workflow
         private static string FORM_FIELD_ID = "FormFieldId";
         private static string FORM_STEP_ID = "FormStepId";
         private static string APPEND_VALUE = "AppendValue";
+        private static string OBJECT_TYPE = "ObjectType";
 
         public int FieldID { get; set; }
 
         public string Value { get; set; }
 
+        public string ObjectType { get; set; }
         public bool CurrentDate { get; set; }
         public bool ClearValue { get; set; }
 
@@ -44,6 +46,7 @@ namespace d360.model.workflow
             bool isAppendValue = false;
             int formStepId = 0;
             string formField = "";
+            string objectType = "";
 
             if (xml.Attribute(FIELD_ID) != null)
             {
@@ -53,6 +56,11 @@ namespace d360.model.workflow
             if(xml.Attribute(VALUE) != null)
             {
                 value = xml.Attribute(VALUE).Value;                
+            }
+
+            if (xml.Attribute(OBJECT_TYPE) != null)
+            {
+                objectType = xml.Attribute(OBJECT_TYPE).Value;
             }
 
             if (xml.Attribute(CURRENT_DATE) != null)
@@ -93,6 +101,7 @@ namespace d360.model.workflow
             model.FormField = formField;
             model.FormStepID = formStepId;
             model.AppendValue = isAppendValue;
+            model.ObjectType = objectType;
 
             return model;
         }

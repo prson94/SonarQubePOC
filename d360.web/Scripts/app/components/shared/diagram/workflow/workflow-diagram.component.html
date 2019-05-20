@@ -164,8 +164,9 @@
                         <div *ngIf="selectedData != null && selectedData.diagramObjectType == DiagramObjectType.Node"
                              class="pt-10px">
                             <d3s-workflow-step-summary [step]="selectedData"
-                                                       [objectId]="model.Event.ObjectID"
-                                                       [object]="model.Event.Object"></d3s-workflow-step-summary>
+                                [objectId]="model.Event.ObjectID"
+                                [object]="model.Event.Object"
+                                [issueObject]="model.Event.IssueObject"></d3s-workflow-step-summary>
                         </div>
                         <div *ngIf="selectedData != null && selectedData.diagramObjectType == DiagramObjectType.Link"
                              class="pt-10px">
