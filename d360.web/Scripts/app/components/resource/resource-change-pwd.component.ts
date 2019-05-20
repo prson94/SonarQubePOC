@@ -1,9 +1,10 @@
-﻿import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+﻿import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-resource-change-pwd',
@@ -11,15 +12,18 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
             <div class="row">
                 <div class="col s12">
                     <div class="tile tile-detail">  
-                                <d3s-resource-password></d3s-resource-password>      
+                                <d3s-resource-password (onClose)="onCloseEvent()"></d3s-resource-password>      
                     </div>                    
                 </div>
             </div>
         `,
 })
 
-export class ResourceChangePwdComponent extends BaseComponent {
-    constructor(private headerBreadcrumbService: HeaderBreadcrumbService, private titleService: Title) {
+export class ResourceChangePwdComponent extends BaseComponent implements OnInit {
+    constructor(
+        private headerBreadcrumbService: HeaderBreadcrumbService,
+        private titleService: Title,
+        private router: Router) {
         super();
     }
 
@@ -28,4 +32,8 @@ export class ResourceChangePwdComponent extends BaseComponent {
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Change Your Password'));
         this.setBrowserTitle(this.titleService, 'Change Your Password');
     }
+
+    public onCloseEvent() {
+        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_HOME_ROOT}`);
+    }    
 }

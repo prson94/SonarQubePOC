@@ -1,0 +1,667 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Tomislav Duric" id="GOV-7185-2-DeriveIntersectName">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[  
+ALTER FUNCTION [utility].[DeriveIntersectName] 
+(	
+	@id int
+)
+RETURNS nvarchar(500)
+AS
+BEGIN
+	DECLARE @result nvarchar(500)
+
+	SET @result =	(
+					SELECT	COALESCE(SA.DisplayValue, '') + ' / ' + COALESCE(OA.DisplayValue, '')
+					FROM	[Intersect] I
+
+							left join AssetDetail SA on SA.Object = I.Subject and SA.ObjectID = I.SubjectID
+							left join AssetDetail OA on OA.Object = I.Object and OA.ObjectID = I.ObjectID
+
+							left join [Intersect] SI on I.Subject = 'Intersect' and SI.ID = I.SubjectID
+
+					WHERE	I.ID = @id										
+					)
+
+	RETURN @result
+END
+		]]>
+    </sql>
+    <rollback>
+	<![CDATA[					   		 	 
+ALTER FUNCTION [utility].[DeriveIntersectName] 
+(	
+	@id int
+)
+RETURNS nvarchar(500)
+AS
+BEGIN
+	DECLARE @result nvarchar(500)
+
+	SET @result =	(
+					SELECT	COALESCE(SA.DisplayValue, SI.Name, '') + ' / ' + COALESCE(OA.DisplayValue, '')
+					FROM	[Intersect] I
+
+							left join AssetDetail SA on SA.Object = I.Subject and SA.ObjectID = I.SubjectID
+							left join AssetDetail OA on OA.Object = I.Object and OA.ObjectID = I.ObjectID
+
+							left join [Intersect] SI on I.Subject = 'Intersect' and SI.ID = I.SubjectID
+
+					WHERE	I.ID = @id										
+					)
+
+	RETURN @result
+END   	
+		]]>
+    </rollback>
+  </changeSet>
+  <changeSet author="Tomislav Duric" id="GOV-7185-2-DropProcUpdateItemColumnByType">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[  
+DROP  PROCEDURE IF EXISTS [bulkload].[UpdateItemColumnByType]
+		]]>
+    </sql>
+    <rollback>
+	<![CDATA[					   		 	 
+CREATE OR ALTER procedure [bulkload].[UpdateItemColumnByType]
+	@id int,
+	@ObjectType varchar(50), 
+	@ObjectTypeID int,
+	@subjectAreaColumn int, 
+	@itemColumn int
+as
+begin
+	set nocount on;
+
+	if @ObjectType = 'FusionAttributeType'
+	begin
+		update	T
+		set		T.LookupObject = replace(@ObjectType, 'Type', ''),
+				T.LookupObjectID = S.ID
+		from	LoadItemColumn T
+				left join FusionAttribute S on lower(S.TextPath) = lower(T.Value) and S.FusionAttributeTypeID = @ObjectTypeID
+		where	T.LoadID = @id
+				and T.ColumnIndex = @itemColumn
+	end
+	if @ObjectType = 'IntersectType'
+	begin
+		update	T
+		set		T.LookupObject = replace(@ObjectType, 'Type', ''),
+				T.LookupObjectID = S.ID
+		from	LoadItemColumn T
+				left join [Intersect] S on S.IntersectTypeID = @ObjectTypeID
+		where	T.LoadID = @id
+				and T.ColumnIndex = @itemColumn
+	end
+	
+	if @ObjectType = 'ReferenceItemType' and @ObjectTypeID = 0
+	begin
+		update	T
+		set		T.LookupObject = @ObjectType,
+				T.LookupObjectID = S.ObjectID
+		from	LoadItemColumn T
+				left join AssetType S on lower(S.Name) = lower(T.Value) and S.[Object] = 'ReferenceItemType'
+		where	T.LoadID = @id
+				and T.ColumnIndex = @itemColumn
+	end
+end
+		]]>
+    </rollback>
+  </changeSet>
+  <changeSet author="Tomislav Duric" id="GOV-7185-2-DropProcBulkloadRelationship">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[  
+		DROP  PROCEDURE IF EXISTS [bulkload].[Relationships]
+		]]>
+    </sql>
+    <rollback>
+	<![CDATA[					   		 	 
+CREATE OR ALTER procedure [bulkload].[Relationships]
+
+	@id int
+
+as
+begin
+	set nocount on;
+
+	declare @r int,
+			@intersectTypeID int,
+			@subjectHasSubjectArea bit,
+			@subject varchar(50),
+			@subjectID int,
+			@objectHasSubjectArea bit,
+			@object varchar(50),
+			@objectID int,
+			@dt datetime = getutcdate(),
+			@columnCount int,
+			@startDynamicFieldColumnIndex int
+
+	select	@r = UpdatedBy,
+			@intersectTypeID = ObjectID
+	from	[Load] 
+	where	[Action] = 'R' 
+			and ID = @id
+
+	select	@columnCount = count(1) from LoadColumn where LoadID = @id
+
+	select	@subject = Subject,
+			@subjectID = SubjectID,
+			@object = Object,
+			@objectID = ObjectID
+	from	IntersectType
+	where	ID = @intersectTypeID
+
+	if @subject = 'ArtifactType'
+		begin
+			set @subjectHasSubjectArea = 1
+			exec bulkload.UpdateSubjectAreaColumn @id, 1							
+			exec bulkload.UpdateItemColumnByType @id, @subject, @subjectID, 1, 2	
+		end
+	else
+		begin
+			set @subjectHasSubjectArea = 0
+			exec bulkload.UpdateItemColumnByType @id, @subject, @subjectID, 0, 1	
+		end
+
+	if @object = 'ArtifactType'
+		begin
+			set @objectHasSubjectArea = 1
+
+			if @subjectHasSubjectArea = 1
+				begin
+					exec bulkload.UpdateSubjectAreaColumn @id, 3							
+					exec bulkload.UpdateItemColumnByType @id, @object, @objectID, 3, 4		
+				end
+			else
+				begin 
+					exec bulkload.UpdateSubjectAreaColumn @id, 2							
+					exec bulkload.UpdateItemColumnByType @id, @object, @objectID, 2, 3		
+				end
+		end
+	else
+		begin
+			set @objectHasSubjectArea = 0
+
+			if @subjectHasSubjectArea = 1
+				begin
+					exec bulkload.UpdateItemColumnByType @id, @object, @objectID, 0, 3		
+				end
+			else
+				begin 
+					exec bulkload.UpdateItemColumnByType @id, @object, @objectID, 0, 2		
+				end
+		end
+
+	select @startDynamicFieldColumnIndex =	case
+												when @subjectHasSubjectArea = 1 and @objectHasSubjectArea = 1 then 4
+												when @subjectHasSubjectArea = 1 and @objectHasSubjectArea = 0 then 3
+												when @subjectHasSubjectArea = 0 and @objectHasSubjectArea = 1 then 3
+												else 2
+											end
+	set @startDynamicFieldColumnIndex = @startDynamicFieldColumnIndex + 1
+
+
+
+	drop table if exists #Items
+
+	BEGIN TRANSACTION [Tran1]
+
+	BEGIN TRY
+		
+		select	S.RowIndex,
+		
+				S.LookupObject as Subject,
+				S.LookupObjectID as SubjectID,
+
+				O.LookupObject as Object,
+				O.LookupObjectID as ObjectID,
+				
+				cast(0 as int) as IntersectID,
+				cast('' as char(1)) as IntersectChangeType,
+
+				case 
+					when @startDynamicFieldColumnIndex <= @columnCount then cast(0 as bit)
+					else cast(1 as bit)
+				end as DynamicFieldsAreValid,
+
+				cast(0 as bit) as Status,
+				cast('' as nvarchar(500)) as StatusMessage,
+
+				@r as ResourceID  
+		into	#Items
+		from	LoadItemColumn S
+				inner join LoadItemColumn O on O.LoadID = S.LoadID 
+											and O.RowIndex = S.RowIndex 
+											and O.ColumnIndex = @startDynamicFieldColumnIndex-1
+		where	S.LoadID = @id
+				and S.ColumnIndex = case 
+										when @subjectHasSubjectArea = 1 then 2
+										else 1
+									end
+
+		
+		CREATE NONCLUSTERED INDEX [IX_Intersect] ON #Items ( Subject ASC, SubjectID ASC, Object ASC, ObjectID ASC )
+
+		if @startDynamicFieldColumnIndex <= @columnCount	
+		begin
+			
+
+			
+			exec [bulkload].[UpdateDynamicLookupFieldColumns] @id, @startDynamicFieldColumnIndex, @columnCount
+
+			update	T
+			set		T.DynamicFieldsAreValid = case
+												when S.InvalidCount = 0 then cast(1 as bit)
+												else cast(0 as bit)
+											end
+			from	#Items T
+					inner join	(
+								select	I.LoadID,
+										I.RowIndex,
+										C.InvalidCount
+								from	[Load] L
+										inner join [LoadItem] I on I.LoadID = L.ID
+										cross apply (
+													select	count(1) as InvalidCount
+													from	[LoadItemColumn] IC
+															inner join FieldType F on L.[Object] = F.[Object] and L.ObjectID = F.ObjectID and F.[Type] = 'Lookup'
+															inner join [LoadColumn] C on C.LoadID = IC.LoadID and F.Name = C.Name and C.ColumnIndex = IC.ColumnIndex and C.ColumnIndex between @startDynamicFieldColumnIndex and @columnCount
+													where	IC.LoadID = @id 
+															and IC.RowIndex = I.RowIndex
+															and IC.LookupObject is null and IC.LookupObjectID is null
+													) C
+								where	L.ID = @id
+								) S on S.RowIndex = T.RowIndex
+		end
+
+		
+		update	T
+		set		T.IntersectID = S.ID,
+				T.IntersectChangeType = 'U'
+		from	#Items T
+				inner join [Intersect] S on S.IntersectTypeID = @intersectTypeID 
+										and T.Subject = S.Subject 
+										and T.SubjectID = S.SubjectID 
+										and T.Object = S.Object 
+										and T.ObjectID = S.ObjectID
+										
+
+		
+		insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, Deleted, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+			select	distinct
+					@intersectTypeID, 
+					Subject, SubjectID, Object, ObjectID,
+					0, ResourceID, @dt, ResourceID, @dt
+			from	#Items
+			where	IntersectID = 0
+					and IntersectChangeType <> 'U'
+					and Subject is not null 
+					and SubjectID is not null
+					and Object is not null 
+					and ObjectID is not null
+					and DynamicFieldsAreValid = 1;
+
+		
+		update	T
+		set		T.IntersectID = S.ID,
+				T.IntersectChangeType = 'A'
+		from	#Items T
+				inner join [Intersect] S on S.IntersectTypeID = @intersectTypeID 
+										and T.Subject = S.Subject 
+										and T.SubjectID = S.SubjectID 
+										and T.Object = S.Object 
+										and T.ObjectID = S.ObjectID
+										and T.IntersectChangeType <> 'U';
+
+		
+		
+		
+		update	#Items
+		set		Status = 1,
+				StatusMessage = case IntersectChangeType
+									when 'A' then 'Relationship created. '
+									when 'U' then 'Relationship updated. '
+								end
+		where	IntersectID > 0;
+
+		
+		update	T
+		set		T.Status = 0,
+				T.StatusMessage = T.StatusMessage +
+								'Relationship could not be created nor updated. ' + 
+								IIF(T.SubjectID is null, 'Could not find subject. ', '') + 
+								IIF(T.ObjectID is null, 'Could not find object. ', '') + 
+								IIF(T.DynamicFieldsAreValid = 0, 'One or more dynamic lookup fields is invalid. ', '') 
+		from	#Items T
+		where	IntersectID = 0;
+
+		
+		update	T
+		set		T.Status = S.Status,
+				T.StatusMessage = S.StatusMessage,
+				T.Object = case S.Status
+							when 1 then 'Intersect'
+							else NULL
+						   end,
+				T.ObjectID = case S.Status
+							when 1 then S.IntersectID
+							else NULL
+						   end
+		from	LoadItem T
+				inner join #Items S on T.LoadID = @id and S.RowIndex = T.RowIndex;
+
+
+		
+		exec [bulkload].MergeDynamicLookupFields @id, @startDynamicFieldColumnIndex, @columnCount
+
+
+		
+		declare @current int = 2,
+				@max int,
+				@s varchar(50),
+				@sid int,
+				@o varchar(50),
+				@oid int,
+				@intersect int,
+				@ct varchar(25)
+		select	@max = max(Rowindex) from #Items
+
+		while @current <= @max
+		begin
+			select	@s = Subject,
+					@sid = SubjectID,
+					@o = Object,
+					@oid = ObjectID,
+					@intersect = IntersectID,
+					@ct = case IntersectChangeType
+							when 'A' then 'Created'
+							else 'Updated'
+						end
+			from	#items
+			where	RowIndex = @current
+
+			if @intersect > 0
+			begin
+				exec utility.AddAuditEntry @s, @sid, @r, @dt, @ct, 'Intersect', @intersect
+				exec utility.AddAuditEntry @o, @oid, @r, @dt, @ct, 'Intersect', @intersect
+			end
+
+			set @current = @current + 1
+		end
+
+		
+		update	[Load]
+		set		DateCompleted = getutcdate()
+		where	ID = @id;
+
+		COMMIT TRANSACTION [Tran1]
+	END TRY
+	BEGIN CATCH
+		ROLLBACK TRANSACTION [Tran1]
+	END CATCH
+end
+		]]>
+    </rollback>
+  </changeSet>
+  
+   <changeSet author="Tomislav Duric" id="GOV-7185-2-DropProcBulkloadUnrelate">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[  
+		DROP  PROCEDURE IF EXISTS [bulkload].[Unrelate]
+		]]>
+    </sql>
+    <rollback>
+	<![CDATA[					   		 	 
+CREATE OR ALTER  PROCEDURE [bulkload].[Unrelate]
+
+	@id int 
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+
+	declare @r int,
+			@intersectTypeID int,
+			@subjectHasSubjectArea bit,
+			@subject varchar(50),
+			@subjectID int,
+			@objectHasSubjectArea bit,
+			@object varchar(50),
+			@objectID int,
+			@dt datetime = getutcdate(),
+			@columnCount int
+
+	select	@r = UpdatedBy,
+			@intersectTypeID = ObjectID
+	from	[Load] 
+	where	[Action] = 'U'
+			and ID = @id
+
+	select	@columnCount = count(1) from LoadColumn where LoadID = @id
+
+	select	@subject = Subject,
+			@subjectID = SubjectID,
+			@object = Object,
+			@objectID = ObjectID
+	from	IntersectType
+	where	ID = @intersectTypeID
+
+	if @subject = 'ArtifactType'
+		begin
+			set @subjectHasSubjectArea = 1
+			exec bulkload.UpdateSubjectAreaColumn @id, 1							
+			exec bulkload.UpdateItemColumnByType @id, @subject, @subjectID, 1, 2	
+		end
+	else
+		begin
+			set @subjectHasSubjectArea = 0
+			exec bulkload.UpdateItemColumnByType @id, @subject, @subjectID, 0, 1	
+		end
+
+	if @object = 'ArtifactType'
+		begin
+			set @objectHasSubjectArea = 1
+
+			if @subjectHasSubjectArea = 1
+				begin
+					exec bulkload.UpdateSubjectAreaColumn @id, 3							
+					exec bulkload.UpdateItemColumnByType @id, @object, @objectID, 3, 4		
+				end
+			else
+				begin 
+					exec bulkload.UpdateSubjectAreaColumn @id, 2							
+					exec bulkload.UpdateItemColumnByType @id, @object, @objectID, 2, 3		
+				end
+		end
+	else
+		begin
+			set @objectHasSubjectArea = 0
+
+			if @subjectHasSubjectArea = 1
+				begin
+					exec bulkload.UpdateItemColumnByType @id, @object, @objectID, 0, 3		
+				end
+			else
+				begin 
+					exec bulkload.UpdateItemColumnByType @id, @object, @objectID, 0, 2		
+				end
+		end
+
+	drop table if exists #Items
+
+	BEGIN TRANSACTION [Tran1]
+
+	BEGIN TRY
+		
+		select	S.RowIndex,
+		
+				S.LookupObject as Subject,
+				S.LookupObjectID as SubjectID,
+
+				O.LookupObject as Object,
+				O.LookupObjectID as ObjectID,
+				
+				cast(0 as int) as IntersectID,
+
+				cast(0 as bit) as Status,
+				cast('' as nvarchar(500)) as StatusMessage,
+
+				@r as ResourceID  
+		into	#Items
+		from	LoadItemColumn S
+				inner join LoadItemColumn O on O.LoadID = S.LoadID 
+											and O.RowIndex = S.RowIndex 
+											and S.LoadID = @id
+											and S.ColumnIndex = case 
+												when @subjectHasSubjectArea = 1 then 2
+												else 1
+											end
+											and O.ColumnIndex = case
+																	when @subjectHasSubjectArea = 1 and @objectHasSubjectArea = 1 then 4
+																	when @subjectHasSubjectArea = 1 and @objectHasSubjectArea = 0 then 3
+																	when @subjectHasSubjectArea = 0 and @objectHasSubjectArea = 1 then 3
+																	else 2
+																end			
+
+		
+		CREATE NONCLUSTERED INDEX [IX_Intersect] ON #Items ( Subject ASC, SubjectID ASC, Object ASC, ObjectID ASC )
+
+
+		
+		update	T
+		set		T.IntersectID = S.ID
+		from	#Items T
+				inner join [Intersect] S on S.IntersectTypeID = @intersectTypeID 
+										and T.Subject = S.Subject 
+										and T.SubjectID = S.SubjectID 
+										and T.Object = S.Object 
+										and T.ObjectID = S.ObjectID;
+
+		
+		declare @tbl table (ID int)
+
+		insert into @tbl
+			select IntersectID from #Items where IntersectID > 0
+
+		insert into @tbl
+			select ID from [Intersect] where Subject = 'Intersect' and SubjectID in (select IntersectID from #Items where IntersectID > 0)
+
+		insert into @tbl
+			select ID from [Intersect] where Object = 'Intersect' and ObjectID in (select IntersectID from #Items where IntersectID > 0)
+
+		
+		delete Field where ObjectType = 'Intersect'and ObjectID in (select ID from @tbl)
+		delete [Attribute] where ObjectType = 'Intersect'and ObjectID in (select ID from @tbl)
+		delete MapRuleItemMapItem where MapItemID in (
+			select	M.ID 
+			from	MapItem M
+					inner join @tbl I on (I.ID = M.TargetIntersectID) OR (I.ID = M.SourceIntersectID)
+		)
+		delete MapItemMap where MapItemID in (
+			select	M.ID 
+			from	MapItem M
+					inner join @tbl I on (I.ID = M.TargetIntersectID) OR (I.ID = M.SourceIntersectID)
+		)
+		delete	MapItem 
+		where	SourceIntersectID in (select ID from @tbl)
+				or TargetIntersectID in (select ID from @tbl)
+
+		
+		delete [Intersect] where ID in (select ID from @tbl)
+
+		
+		update	#Items
+		set		Status = 1,
+				StatusMessage = 'Relationship removed. '
+		where	IntersectID > 0;
+
+		
+		update	T
+		set		T.Status = 0,
+				T.StatusMessage = T.StatusMessage +
+								'Relationship could not be removed. ' + 
+								IIF(T.SubjectID is null, 'Could not find subject. ', '') + 
+								IIF(T.ObjectID is null, 'Could not find object. ', '')
+		from	#Items T
+		where	IntersectID = 0;
+
+		
+		update	T
+		set		T.Status = S.Status,
+				T.StatusMessage = S.StatusMessage,
+				T.Object = case S.Status
+							when 1 then 'Intersect'
+							else NULL
+						   end,
+				T.ObjectID = case S.Status
+							when 1 then S.IntersectID
+							else NULL
+						   end
+		from	LoadItem T
+				inner join #Items S on T.LoadID = @id and S.RowIndex = T.RowIndex;
+
+		
+		declare @current int = 2,
+				@max int,
+				@s varchar(50),
+				@sid int,
+				@o varchar(50),
+				@oid int,
+				@intersect int,
+				@ct varchar(25)
+		select	@max = max(Rowindex) from #Items
+
+		while @current <= @max
+		begin
+			select	@s = Subject,
+					@sid = SubjectID,
+					@o = Object,
+					@oid = ObjectID,
+					@intersect = IntersectID,
+					@ct = 'Delete'
+			from	#items
+			where	RowIndex = @current
+
+			if @intersect > 0
+			begin
+				exec utility.AddAuditEntry @s, @sid, @r, @dt, @ct, 'Intersect', @intersect
+				exec utility.AddAuditEntry @o, @oid, @r, @dt, @ct, 'Intersect', @intersect
+			end
+
+			set @current = @current + 1
+		end
+
+		
+		update	[Load]
+		set		DateCompleted = getutcdate()
+		where	ID = @id;
+
+		COMMIT TRANSACTION [Tran1]
+	END TRY
+	BEGIN CATCH
+		ROLLBACK TRANSACTION [Tran1]
+	END CATCH
+END
+		]]>
+    </rollback>
+  </changeSet>
+  
+</databaseChangeLog>
