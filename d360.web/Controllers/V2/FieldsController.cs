@@ -680,7 +680,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
                 var duplicateFieldNames = model.Fields.Select(f => f.Name).GroupBy(f => f).Where(f => f.Count() > 1).Select(f => f.Key).ToList();
                 if (duplicateFieldNames.Count > 0)
                 {
-                    throw new RestApiException(HttpStatusCode.BadRequest, "Duplicate field names", $"The following field names are used more than once: {string.Join(", ", fieldsHaveErrorsList)}. Field names must be unique.");
+                    throw new RestApiException(HttpStatusCode.BadRequest, "Duplicate field names", $"The following field names are used more than once: {string.Join(", ", duplicateFieldNames)}. Field names must be unique.");
                 }
 
                 if (model.Action == FieldTypesApiEditAction.Replace)
