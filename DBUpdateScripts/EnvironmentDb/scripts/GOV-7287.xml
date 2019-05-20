@@ -218,6 +218,14 @@ begin
 						where	[Action] = 'U'
 					) S on S.ID = T.ID
 
+			update	H
+			set		H.UpdateHash = '0'
+			from	integration.AssetHash H
+					inner join #Assets C on C.SourceID = H.SourceID and C.ParentSourceID is not null
+					inner join FusionAttribute F on F.SourceID = C.SourceID and F.ParentID is null
+			where	H.RequestNumber = @RequestNumber and H.Section = @Section;
+
+
 			--if @ParentIntersectTypeID is not null
 			--begin
 			--	insert into [Intersect] (IntersectTypeID, Subject, SubjectID, Object, ObjectID, CreatedBy, UpdatedBy)
@@ -369,6 +377,14 @@ begin
 		from	#Assets T
 				inner join Asset S on S.AssetTypeID = T.AssetTypeID and S.SourceID = T.SourceID and T.[Action] = 'A' and T.AssetID is null;
 		
+		update	H
+		set		H.UpdateHash = '0'
+		from	integration.AssetHash H
+				inner join #Assets C on C.SourceID = H.SourceID and C.ParentSourceID is not null
+				left join Asset P on P.SourceID = C.ParentSourceID
+		where	H.Section = @Section and H.RequestNumber = @RequestNumber and P.ID is null;
+
+
 		if @ParentIntersectTypeID is not null
 		begin
 			insert into integration.UnresolvedRelationships (
