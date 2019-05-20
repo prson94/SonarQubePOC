@@ -11368,6 +11368,7 @@ from	AssetDetail A
 where   A.Type = @targetType 
         and A.TypeID = @targetTypeID 
         and A.[State] = 1 
+        and A.ObjectID != @id
         and A.ID not in ({GetNoReadSqlStatement()}) 
 order by TP.TextPath"; 
                             
