@@ -839,6 +839,33 @@ order by	f.SortOrder";
 
         }
 
+        [HttpGet, Route("GetCounts")]
+        public async Task<JsonNetResult> GetCounts()
+        {
+            string sql = @"
+SELECT count(ATT.[Object]) as count, 
+		ATT.[Object], 
+		ATT.ObjectID,
+		ATT.Name
+		from    [Asset] A
+		inner join AssetType ATT on (a.AssetTypeID = Att.id)
+		WHERE A.ID NOT IN (SELECT AssetID FROM dbo.AssetsByTypeUserCantRead(@ResourceID, ATT.ID))
+		Group by 
+		ATT.[Object], 
+		ATT.ObjectID,
+		ATT.Name
+		Order By ATT.Name
+";
+          var ItemCounts = await Company.QueryAsync<dynamic>(sql, 
+              new { ResourceID = Company.CurrentResourceID });
+
+            return new JsonNetResult
+            {
+                Data = ItemCounts,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
         [HttpGet, Route("GetItemCount/{url}")]
         public async Task<JsonNetResult> GetItemCount(string url)
         {
