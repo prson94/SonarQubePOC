@@ -35,6 +35,23 @@ namespace igx.UnitTests
         {
             var mock = new Mock<ICompanyContext>();
             mock.Setup(x => x.CurrentResourceIsAdmin).Returns(true);
+            mock.Setup(x => x.GetTypeIdentifierInfoModel(It.IsAny<TypeIdentifierInfoModelType>(), It.IsAny<Guid>()))
+                 .Returns((TypeIdentifierInfoModelType type, Guid uid) =>
+                       {
+                           if (uid != Guid.Parse(DataConstants.ValidGUID))
+                               return null;
+                           else
+                           {
+                               var result = new List<TypeIdentifierInfoModel>();
+                               result.Add(new TypeIdentifierInfoModel() {
+                                   Object = type.ToString(),
+                                   Uid = uid
+                               });
+                               return Task.FromResult(result as IEnumerable<TypeIdentifierInfoModel>);
+                           }
+                       }
+
+                 );
             return mock.Object;
         }
 
@@ -90,11 +107,11 @@ namespace igx.UnitTests
             mockRepo.Setup(x => x.GetAssetTypeByUID(It.IsAny<Guid>()))
                 .Returns((Guid uid) => uid == Guid.Parse(DataConstants.ValidGUID) || uid == Guid.Parse(DataConstants.ValidGUID2) ? new AssetType() { Object = "ArtifactType", uid = uid } : null);
 
-            mockRepo.Setup(x=> x.GetPredicateByUID(It.IsAny<Guid>()))
-                .Returns((Guid uid) => uid == Guid.Parse(DataConstants.ValidGUID) ? new Predicate() { UID = uid, Type = PredicateType.InterTypeHierarchy } :null);
+            mockRepo.Setup(x => x.GetPredicateByUID(It.IsAny<Guid>()))
+                .Returns((Guid uid) => uid == Guid.Parse(DataConstants.ValidGUID) ? new Predicate() { UID = uid, Type = PredicateType.InterTypeHierarchy } : null);
 
             mockRepo.Setup(x => x.PostAssets(It.IsAny<List<AssetInsert>>(), It.IsAny<AssetType>(), It.IsAny<ApiExecution>(), true))
-                .Returns((List<AssetInsert> assetInsertList, object o2, object o3) =>
+                .Returns((List<AssetInsert> assetInsertList, object o2, object o3, object o4) =>
                  {
                      if (assetInsertList.Count == 0) return null;
                      else return new List<DatabaseBulkAssetResult>() { };
@@ -102,7 +119,7 @@ namespace igx.UnitTests
                 );
 
             mockRepo.Setup(x => x.PutAssets(It.IsAny<List<AssetUpdate>>(), It.IsAny<AssetType>(), It.IsAny<ApiExecution>(), true))
-                .Returns((List<AssetUpdate> assetUpdateList, object o2, object o3) =>
+                .Returns((List<AssetUpdate> assetUpdateList, object o2, object o3, object o4) =>
                 {
                     if (assetUpdateList.Count == 0) return null;
                     else return new List<DatabaseBulkAssetResult>() { };
@@ -150,6 +167,23 @@ namespace igx.UnitTests
 
             return mockRepo.Object;
         }
+
+        public IFieldsRepository GetFieldsRepository()
+        {
+            var mockRepo = new Mock<IFieldsRepository>();
+            mockRepo.Setup(x => x.GetFieldTypes(It.IsAny<IEnumerable<KeyValuePair<string, string>>>()))
+                            .Returns(Task.FromResult(new Tuple<FieldTypesApiViewModel, WorkHttpStatus>(new FieldTypesApiViewModel(), new WorkHttpStatus(HttpStatusCode.OK, "", ""))));
+
+            mockRepo.Setup(x => x.UpdateFields(It.IsAny<FieldTypesApiEditModel>(), It.IsAny<TypeIdentifierInfoModel>()))
+                .Returns(new WorkHttpStatus(HttpStatusCode.OK, "", ""));
+
+
+            mockRepo.Setup(x => x.GetFieldTypes(It.IsAny<TypeIdentifierInfoModel>()))
+                .Returns(new List<FieldType>());
+
+            return mockRepo.Object;
+        }
+
 
         #endregion
     }

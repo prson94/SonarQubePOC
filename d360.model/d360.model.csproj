@@ -113,6 +113,8 @@
     <Compile Include="CompanyContext_MarkitLineage.cs" />
     <Compile Include="DataAccessLayer\repositories\AssetRepository.cs" />
     <Compile Include="DataAccessLayer\IAssetRepository.cs" />
+    <Compile Include="DataAccessLayer\repositories\FieldsRepository.cs" />
+    <Compile Include="DataAccessLayer\IFieldsRepository.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="IBaseContext.cs" />
     <Compile Include="ICommunityContext.cs" />
@@ -121,6 +123,8 @@
     <Compile Include="QueryConstants.cs" />
     <Compile Include="DbConnectionExtensions.cs" />
     <Compile Include="validators\AssetTypeValidator.cs" />
+    <Compile Include="validators\FieldApiModelValidator.cs" />
+    <Compile Include="validators\WorkHttpStatus.cs" />
     <Compile Include="workflow\WorkflowCriteriaExpressionModel.cs" />
     <Compile Include="workflow\WorkflowEventRegistrationSettingsModel.cs" />
     <Compile Include="workflow\WorkflowFieldUpdateSettings.cs" />
