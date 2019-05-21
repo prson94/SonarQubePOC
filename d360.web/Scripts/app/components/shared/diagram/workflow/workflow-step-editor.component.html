@@ -93,6 +93,7 @@
             <d3s-workflow-step-field-change [formFields]="formFields"
                                             [objectId]="objectId"
                                             [objectType]="objectType"
+                                            [issueObject]="issueObject"
                                             [fieldUpdate]="step.settings.FieldUpdate"
                                             (fieldUpdateChange)="step.settings.FieldUpdate = $event; stepChange.emit(step)">
             </d3s-workflow-step-field-change>

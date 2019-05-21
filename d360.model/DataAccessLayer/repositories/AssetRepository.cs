@@ -271,14 +271,14 @@ namespace d360.model.DataAccessLayer
                 i.Type
             }).ToList();
         }
-        public List<DatabaseBulkAssetResult> PostAssets(List<AssetInsert> assets, AssetType assetType, ApiExecution execution)
+        public List<DatabaseBulkAssetResult> PostAssets(List<AssetInsert> assets, AssetType assetType, ApiExecution execution, bool fieldJsonPropertyLoadLimitToTopLevel = true)
         {
             CompanyContext.Add(execution);
 
             List<DatabaseBulkAssetResult> results = null;
             try
             {
-                results = CompanyContext.ImportAssets(execution, assetType, assets, true);
+                results = CompanyContext.ImportAssets(execution, assetType, assets, true, fieldJsonPropertyLoadLimitToTopLevel: fieldJsonPropertyLoadLimitToTopLevel);
 
                 // Close execution record.
                 execution.Processed = results.Count;
@@ -310,7 +310,8 @@ namespace d360.model.DataAccessLayer
                         Name = model.Name,
                         DisplayFormat = model.DisplayFormat,
                         Description = model.Description,
-                        CanOwnFusion = false
+                        CanOwnFusion = false,
+                        AutoDisplayDescription = model.AutoDisplayDescription 
                     };
                     CompanyContext.Add(a);
                     parentType = SystemObjects.ArtifactType;
@@ -437,14 +438,14 @@ namespace d360.model.DataAccessLayer
 
             return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.OK, "", "");
         }
-        public List<DatabaseBulkAssetResult> PutAssets(List<AssetUpdate> assets, AssetType assetType, ApiExecution execution)
+        public List<DatabaseBulkAssetResult> PutAssets(List<AssetUpdate> assets, AssetType assetType, ApiExecution execution, bool fieldJsonPropertyLoadLimitToTopLevel = true)
         {
             CompanyContext.Add(execution);
 
             List<DatabaseBulkAssetResult> results = null;
             try
             {
-                results = CompanyContext.ImportAssets(execution, assetType, assets, false);
+                results = CompanyContext.ImportAssets(execution, assetType, assets, false, fieldJsonPropertyLoadLimitToTopLevel: fieldJsonPropertyLoadLimitToTopLevel);
 
                 // Close execution record.
                 execution.Processed = results.Count;
@@ -827,6 +828,13 @@ namespace d360.model.DataAccessLayer
                 var valueColumn = "FormattedValue";
                 var fieldDataType = getFieldDataType(f);
 
+                FieldTypeDefinition_JsonElement jsonElementDefinition = null;
+
+                if (f.Type == "JsonElement")
+                {
+                    jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(f.Definition);
+                }
+
                 if (f.Type == "Link")
                     valueColumn = "Value";
 
@@ -879,11 +887,15 @@ namespace d360.model.DataAccessLayer
                             else
                                 fieldColumns.Add($"cast({tableAlias}.{valueColumn} as {fieldDataType}) as [{columnName}]");
                         }
+                        else if (f.Type == "JsonElement")
+                        {
+                            fieldColumns.Add($"try_cast(FJP{f.ID}.[Value] as {jsonElementDefinition.DataType}) as [{columnName}]");
+                        }
                         else
+                        {
                             fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
-
+                        }
                     }
-
                 }
 
                 if (f.Type == "FieldFromRelationship")
@@ -897,7 +909,14 @@ namespace d360.model.DataAccessLayer
                         inner join Field F on F.FieldTypeID = {f.LookupObjectFieldTypeID} and F.AssetID = R.ID
                         where I.[Subject] = A.Object and I.SubjectID = A.ObjectID and I.IntersectTypeID = {f.LookupObjectID}
                     ) {tableAlias}");
-
+                }
+                else if (f.Type == "JsonElement")
+                {
+                    fieldJoins.Add($@"
+                        {joinPrefix} join Field {tableAlias} on {tableAlias}.FieldTypeID = {jsonElementDefinition.FieldTypeID} and {tableAlias}.[ObjectType] = A.[Object] and {tableAlias}.[ObjectID] = A.[ObjectID]
+                        {joinPrefix} join FieldJsonProperty FJP{f.ID} on FJP{f.ID}.FieldID = {tableAlias}.ID and FJP{f.ID}.[Path] = @jsonPath{f.ID}
+                    ");
+                    dbArgs.Add($"@jsonPath{f.ID}", jsonElementDefinition.Path);
                 }
                 else
                 {
@@ -963,7 +982,16 @@ namespace d360.model.DataAccessLayer
                                     if (!string.IsNullOrEmpty(fieldDataType))
                                         orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"cast(F{field.ID}.{valueColumn} as {fieldDataType})";
                                     else
-                                        orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"F{field.ID}.{valueColumn}";
+                                    {
+                                        if (field.Type == "JsonElement")
+                                        {
+                                            orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"FJP{field.ID}.Value";
+                                        }
+                                        else
+                                        {
+                                            orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"F{field.ID}.{valueColumn}";
+                                        }
+                                    }
                                 }
                             }
                             else if (key == "_pagenum")
@@ -1009,9 +1037,16 @@ namespace d360.model.DataAccessLayer
 
                                 if (field != null)
                                 {
-                                    var tableAlias = $"F{field.ID}";
-                                    whereStatements.Add($"{tableAlias}.FormattedValue = @field{field.ID}");
-                                    dbArgs.Add($"@field{field.ID}", q.Value);
+                                    if (field.Type == "JsonElement")
+                                    {
+                                        whereStatements.Add($"FJP{field.ID}.Value = @field{field.ID}");
+                                        dbArgs.Add($"@field{field.ID}", q.Value);
+                                    }
+                                    else
+                                    {
+                                        whereStatements.Add($"F{field.ID}.FormattedValue = @field{field.ID}");
+                                        dbArgs.Add($"@field{field.ID}", q.Value);
+                                    }
                                 }
                             }
                         }

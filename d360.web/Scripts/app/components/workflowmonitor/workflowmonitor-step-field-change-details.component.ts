@@ -36,7 +36,7 @@ import { WorkflowStepFieldChangeDetail } from "../../models/workflow.model";
                             </ng-template>
                             <ng-template pTemplate="body" let-item>
                                 <tr [pSelectableRow]="item">
-                                    <td>{{item.FieldName}}</td>
+                                    <td>{{getFieldName(item)}}</td>
                                     <td>
                                          <div [ngSwitch]="item.Type">
 	                                        <span *ngSwitchCase="'Html'" style="display:block; word-wrap:break-word !important" [innerHtml]="item.Value"></span>
@@ -67,4 +67,11 @@ export class WorkflowMonitorStepFieldChangeDetailsComponent extends BaseComponen
 
     ngOnChanges(changes: SimpleChanges): void {
     }
+
+    getFieldName(item: WorkflowStepFieldChangeDetail): string {
+        if (item.ObjectType != "Issue")
+            return "Asset Field::" + item.FieldName;
+        return "Action Field::" + item.FieldName;
+    }
+
 }
