@@ -14,7 +14,7 @@ declare var CompanySettings;
     selector: 'd3s-header-actions',
     template: `
                 <ul class="right show-on-medium-and-down hide-on-med-and-up header-actions-list">             
-                    <li style="padding-right:10px;" class="header-action-li"><d3s-header-mini-menu></d3s-header-mini-menu></li>
+                    <li class="header-action-li mini-menu"><d3s-header-mini-menu></d3s-header-mini-menu></li>
                 </ul>
                 <ul class="right header-actions-list">
                     <li class="header-action-li" *ngIf="headerActionsService.showSearch"><d3s-header-typeahead-search></d3s-header-typeahead-search></li>

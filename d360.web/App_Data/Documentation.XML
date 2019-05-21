@@ -2403,7 +2403,7 @@
             Removes field types contained within your environment.
             </summary>
             <remarks>
-            You may only provide one of the following: ActionTypeUid, AssetTypeUid, or RelationshipTypeUid. Additionally, please keep in mind that the Name property for each item in the Fields collection refers to the **API Name** of the field.
+            You may only provide one of the following: ActionTypeUid, AssetTypeUid, or RelationshipTypeUid. Additionally, please keep in mind that the **Name** property for each item in the Fields collection refers to the **API Name** of the field.
             </remarks>
             <returns>A list of field types corresponding to the given criteria, if any.</returns>
         </member>
@@ -3106,6 +3106,13 @@
             once fusion rules are retired this can go
             </summary>        
             <param name="id"></param>        
+            <returns></returns>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.getIconText(System.String)">
+            <summary>
+            Generates the icon text shown on icons that represent the Asset 
+            </summary>
+            <param name="assetName"></param>
             <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.FormController.Artifact_AddFields(System.Int32,System.Int32)">

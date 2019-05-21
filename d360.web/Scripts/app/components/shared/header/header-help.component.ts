@@ -4,13 +4,13 @@ import { CurrentEnvironmentSettings } from '../../../static/environment-settings
 
 @Component({
     selector: 'd3s-header-help',
-    template: ` <span #item style="display:table;" class="header-search" [ngClass]="{'header-search-active':active}" (mouseenter)="show(item)" (mouseleave)="hide(item)">
+    template: ` <span #item class="header-search header-table" [ngClass]="{'header-search-active':active}" (mouseenter)="show(item)" (mouseleave)="hide(item)">
                     <a class="photo"><i class="fa fa-question-circle"></i></a>
-                    <div class="search-child header-search-panel" style="background-color: white; padding: 0; width: 175px">
+                    <div class="header-help search-child header-search-panel">
                        <ul>
-                            <li style="width:100%;padding:10px;display:inline-block"><a target="_blank" [href]="userGuide">User Guide</a></li>
-                            <li style="width:100%;padding:10px;display:inline-block"><a target="_blank" [href]="adminGuide">Admin Guide</a></li>
-                            <li style="width:100%;padding:10px;display:inline-block"><a target="_blank" [href]="whatIsNew">What's New</a></li>
+                            <li class="header-help-li"><a target="_blank" [href]="userGuide">User Guide</a></li>
+                            <li class="header-help-li"><a target="_blank" [href]="adminGuide">Admin Guide</a></li>
+                            <li class="header-help-li"><a target="_blank" [href]="whatIsNew">What's New</a></li>
                        </ul>
                     </div>
                 <span>`,
