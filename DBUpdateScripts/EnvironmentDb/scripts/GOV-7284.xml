@@ -109,7 +109,8 @@ begin
 					and A.RequestNumber = @RequestNumber
 					and A.Section = 1
 					and A.[Action] in ('A', 'U')
-					and F.ArrayValueDelimiter is null;
+					and F.ArrayValueDelimiter is null
+					and F.Active = 1;
 
 		BEGIN	
 			declare @ParentContextPosition int;
@@ -449,7 +450,7 @@ begin
 					NULL, NULL
 			from	[integration].[AssetHash] H
 					inner join integration.AssetField RF on RF.SynchedAssetTypeID = H.SynchedAssetTypeID and RF.Section = H.Section and RF.SourceID = H.SourceID
-					inner join [integration].[SynchedAssetTypeFieldItem] F on F.SynchedAssetTypeID = RF.SynchedAssetTypeID and F.SourceField = RF.FieldName
+					inner join [integration].[SynchedAssetTypeFieldItem] F on F.SynchedAssetTypeID = RF.SynchedAssetTypeID and F.SourceField = RF.FieldName and F.Active = 1
 					inner join Asset A on A.AssetTypeID = @AssetTypeID and A.SourceID = RF.SourceID
 					left join FieldType FT on FT.AssetTypeID = @AssetTypeID and FT.Name = F.TargetField
 			where	H.SynchedAssetTypeID = @SynchedAssetTypeID
@@ -1235,6 +1236,7 @@ begin
 		select	@hasCriteria = IIF(count(1) > 0, 1, 0)
 		from	integration.SynchedAssetTypeFieldItem 
 		where	SynchedAssetTypeID = @SynchedAssetTypeID
+				and Active = 1
 				and ConsiderWhenDeleting = 1;
 
 		select	@hierarchyContributingAssetTypeCount = count(1) 
@@ -1291,7 +1293,7 @@ begin
 						cross apply (
 							select		F.AssetID
 							from		integration.SynchedAssetTypeFieldItem SF
-										inner join FieldType T on T.Name = SF.TargetField and SF.ConsiderWhenDeleting = 1 and SF.SynchedAssetTypeID = S.ID and T.AssetTypeID = S.AssetTypeID
+										inner join FieldType T on T.Name = SF.TargetField and SF.ConsiderWhenDeleting = 1 and SF.SynchedAssetTypeID = S.ID and SF.Active = 1 and T.AssetTypeID = S.AssetTypeID
 										inner join Field F on F.FieldTypeID = T.ID and F.Value = SF.DefaultValue and F.AssetID = A.ID
 							group by	F.AssetID
 						) D
@@ -1327,7 +1329,7 @@ begin
 						cross apply (
 							select		F.AssetID
 							from		integration.SynchedAssetTypeFieldItem SF
-										inner join FieldType T on T.Name = SF.TargetField and SF.ConsiderWhenDeleting = 1 and SF.SynchedAssetTypeID = @SynchedAssetTypeID and T.AssetTypeID = A.AssetTypeID
+										inner join FieldType T on T.Name = SF.TargetField and SF.ConsiderWhenDeleting = 1 and SF.SynchedAssetTypeID = @SynchedAssetTypeID and SF.Active = 1 and T.AssetTypeID = A.AssetTypeID
 										inner join Field F on F.FieldTypeID = T.ID and F.Value = SF.DefaultValue and F.AssetID = A.ID
 							group by	F.AssetID
 						) D
@@ -1629,8 +1631,7 @@ begin
 			from	#DeleteAssets;
 	end
 	
-end
-			
+end		
 		]]>
     </sql>
 	<rollback>
