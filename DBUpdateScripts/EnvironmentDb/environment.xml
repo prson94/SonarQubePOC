@@ -191,4 +191,5 @@
   <include file="scripts/GOV-7287.xml"/>
   <include file="scripts/GOV-7241.xml"/>
   <include file="scripts/GOV-7242.xml"/>
+  <include file="scripts/GOV-7284.xml"/>
 </databaseChangeLog>
