@@ -310,7 +310,8 @@ namespace d360.model.DataAccessLayer
                         Name = model.Name,
                         DisplayFormat = model.DisplayFormat,
                         Description = model.Description,
-                        CanOwnFusion = false
+                        CanOwnFusion = false,
+                        AutoDisplayDescription = model.AutoDisplayDescription 
                     };
                     CompanyContext.Add(a);
                     parentType = SystemObjects.ArtifactType;
