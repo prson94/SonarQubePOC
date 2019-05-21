@@ -21,6 +21,7 @@ using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.Http;
+using System.Web.Http.Description;
 using System.Xml.Linq;
 
 namespace d360.web.Controllers.Services
@@ -28,7 +29,7 @@ namespace d360.web.Controllers.Services
     /// <summary>
     /// This service houses all endpoints handling third-party metadata synchronization.
     /// </summary>
-    [ApiVersion("1.0"), RoutePrefix("services/fusion"), Authorize, Name("Fusion Service")]
+    [ApiVersion("1.0"), RoutePrefix("services/fusion"), Authorize, Name("Fusion Service"), ApiExplorerSettings(IgnoreApi = true)]
     public class FusionController : BaseApiController
     {
         #region DI

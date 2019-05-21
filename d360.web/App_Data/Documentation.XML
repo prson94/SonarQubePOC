@@ -2386,7 +2386,7 @@
             <param name="uid">The unique identifier of the asset cross reference.</param>
             <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted.</returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.CrossReferencesController.DeleteByDatasource(System.String,System.String)">
+        <member name="M:d360.web.Controllers.V2.CrossReferencesController.DeleteByDataSource(System.String,System.String)">
             <summary>
             Deletes any asset cross references with the specified datasource and type.
             </summary>
