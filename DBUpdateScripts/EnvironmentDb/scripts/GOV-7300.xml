@@ -6,7 +6,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="MDonato" id="GOV-7300">
+  <changeSet author="MDonato" id="GOV-7300-2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -538,8 +538,8 @@ begin
 				update	T
 				set		T.[UpdatedBy] = @ResourceID,
 						T.[UpdatedOn] = @date
-				from	[Policy] T
-						inner join #ObjectsToUpdateDateOn S on S.ObjectID = T.ID;
+				from	Asset T
+						inner join #ObjectsToUpdateDateOn S on S.ObjectID = T.ObjectID and T.[Object] = 'Policy';
 			end
 			if @ObjToUpdate = 'ReferenceItem'
 			begin
