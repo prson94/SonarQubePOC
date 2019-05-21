@@ -225,21 +225,24 @@ begin
 		end
 		if @Object = 'PolicyType'
 		begin
-			insert into [Policy] (PolicyTypeID, SourceID, UpdatedBy)
-				select	@ObjectID,
-						SourceID,
+
+			insert into Asset (AssetTypeID, SourceID, [Object], CreatedBy, UpdatedBy)
+				select	T.ID,
+						A.SourceID,
+						'Policy',
+						@ResourceID,
 						@ResourceID
-				from	#Assets
-				where	[Action] = 'A'
+				from	#Assets A
+						inner join AssetType T on T.[Object] = 'PolicyType' and T.ObjectID = @ObjectID
+				where	A.[Action] = 'A'
+
 			update	T
 			set		T.Object = 'Policy',
-					T.ObjectID = S.ID
+					T.ObjectID = S.ObjectID
 			from	#Assets T
-					inner join [Policy] S on S.PolicyTypeID = @ObjectID and S.SourceID = T.SourceID
-			
-			
-			
-			
+			inner join Assets S on S.SourceID = T.SourceID
+			inner join AssetType P on P.ID = S.AssetTypeID and P.[Object] = 'PolicyType' and P.ObjectID = @ObjectID
+
 			
 			
 			
