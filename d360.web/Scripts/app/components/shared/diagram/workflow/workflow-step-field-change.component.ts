@@ -45,6 +45,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         { value: 'true', label: 'True' }
     ];
     private hasFormResponses = false;
+    private canSelectFromAction = false;
     private selectedFormFieldId;
 
     private selectedField: any;
@@ -94,7 +95,48 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
 
                 });
             })
+            .then(() => {
+                if (this.issueObject != '') {
+                    var actionFields = this.fields.filter(x => x.Object == 'IssueType');
+                    actionFields.forEach(function (item) {
+                        var actionFormField: any = {};
+                        actionFormField['@FieldName'] = 'Action Type::' + item.FriendlyName;
+                        actionFormField['@FormFieldId'] = item.Object + '|' + item.ID;
+                        actionFormField['@FormLabel'] = 'Action Type::' + item.FriendlyName;
+                        actionFormField['@VersionStepID'] = '-1';
+                        actionFormField['@id'] = item.ID;
+                        actionFormField['@label'] = item.FriendlyName;
+                        actionFormField['@stepId'] = '-1';
+                        actionFormField['@type'] = this.getFieldTypeForFormType(item.Type);
+                        actionFormField['@isActionType'] = true;
+                        actionFormField['@UseFormValue'] = true;
+                        this.formFields.push(actionFormField);
+                    }, this);
+                }
+              
+            })
             .then(() => this.isLoading = false);     
+
+
+    }
+
+    getFieldTypeForFormType(fieldType: string): string {
+        switch (fieldType) {
+            case 'Lookup':
+                return 'list';
+            case 'Number':
+            case 'Decimal':
+                return 'integer';
+            case 'Boolean':
+                'boolean';
+            case 'Date':
+            case 'DateTime':
+                return 'date';
+            case 'Text':
+            case 'Html':
+            default:
+                return 'text';
+        }
     }
 
     initField(f: any) {
@@ -141,6 +183,10 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         }
 
         this.fieldUpdateChange.emit(this.fieldUpdate);
+        if (typeof f !== 'undefined' && f.Object == 'ArtifactType' && this.issueObject != '') {
+            this.canSelectFromAction = true;
+        }
+        else this.canSelectFromAction = true;
     }
 
     changeDate(e: any) {
@@ -156,6 +202,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
             delete this.selectedField['@FormFieldId'];
             delete this.selectedField['@FormStepId'];
             delete this.selectedField['@FormLabel'];
+            delete this.selectedField['@IsActionForm'];
         }
     }
 
@@ -166,9 +213,17 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
             this.selectedField['@FormFieldId'] = null;
             return;
         }
-        this.selectedField['@FormFieldId'] = field['@id'];
+        if (field["@isActionType"] == true) {
+            this.selectedField['@FormFieldId'] = field["@FormFieldId"];
+            this.selectedField['@IsActionForm'] = true;
+        }
+        else {
+            this.selectedField['@FormFieldId'] = field['@id'];
+            this.selectedField['@IsActionForm'] = false;
+        }
         this.selectedField['@FormStepId'] = field['@stepId'];
         this.selectedField['@FormLabel'] = field['@label'];
+        console.log(this.selectedField);
     }
 
     add() {
@@ -192,7 +247,6 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
     }
 
     save() {
-        console.log("save");
         let field = _.cloneDeep(this.selectedField);
         let fieldTypeIndex = this.fields.findIndex(f => f.ID.toString() == field['@FieldId'].toString());
 
@@ -305,6 +359,9 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         if (this.valueType == 'form')
             this.selectedFormFieldId = this.selectedField['@FormFieldId'] + '|' + this.selectedField['@FormStepId'];
 
+        if (this.valueType == "actionForm")
+            this.selectedFormFieldId = this.selectedField['@FormFieldId'];
+
         this.select(this.selectedField['@FieldId'], false);
         this.formMode = FormMode.Editing;
     }
@@ -353,6 +410,9 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
 
         let useCurrentDate = this.selectedField['@UseCurrentDate'] == null ? false : (this.selectedField['@UseCurrentDate'].toString() == 'true' ? true : false);
         let useFormValue = this.selectedField['@UseFormValue'] == null ? false : (this.selectedField['@UseFormValue'].toString() == 'true' ? true : false);
+        if (!useFormValue)
+            useFormValue = this.selectedField['@IsActionForm'] == null ? false : (this.selectedField['@IsActionForm'].toString() == 'true' ? true : false);
+
         let clearValue = this.selectedField['@ClearValue'] == null ? false : (this.selectedField['@ClearValue'].toString() == 'true' ? true : false);
 
         if (useFormValue) {
@@ -376,11 +436,13 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
                 delete this.selectedField['@UseFormValue'];
                 delete this.selectedField['@ClearValue'];
                 delete this.selectedField['@UseCurrentDate'];
+                delete this.selectedField['@IsActionForm'];
                 break;
             case 'clear':
                 delete this.selectedField['@UseFormValue'];
                 delete this.selectedField['@Value'];
                 delete this.selectedField['@UseCurrentDate'];
+                delete this.selectedField['@IsActionForm'];
                 this.selectedField['@ClearValue'] = true;
                 break;
             case 'form':
@@ -389,9 +451,21 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
                 delete this.selectedField['@UseCurrentDate'];
                 delete this.selectedField['@AppendValue'];
                 this.selectedField['@UseFormValue'] = true;
+                this.selectedField['@IsActionForm'] = false;
+
+                break;
+            case 'actionForm':
+                this.changeFormValue('form');
+                delete this.selectedField['@ClearValue'];
+                delete this.selectedField['@Value'];
+                delete this.selectedField['@UseCurrentDate'];
+                delete this.selectedField['@AppendValue'];
+                this.selectedField['@UseFormValue'] = true;
+                this.selectedField['@IsActionForm'] = true;
                 break;
             case 'timestamp':
                 delete this.selectedField['@UseFormValue'];
+                delete this.selectedField['@IsActionForm'];
                 delete this.selectedField['@ClearValue'];
                 delete this.selectedField['@Value'];
                 this.selectedField['@UseCurrentDate'] = true;
@@ -402,8 +476,10 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
     setValueType() {
         if (this.selectedField == null)
             this.valueType = null;
-        else if (this.selectedField['@UseFormValue'] != null)
+        else if (this.selectedField['@UseFormValue'] != null && this.selectedField['@IsActionForm'] != 'true')
             this.valueType = 'form';
+        else if (this.selectedField['@UseFormValue'] != null && this.selectedField['@IsActionForm'] == 'true')
+            this.valueType = 'actionForm';
         else if (this.selectedField['@ClearValue'] != null)
             this.valueType = 'clear';
         else if (this.selectedField['@UseCurrentDate'] != null)
@@ -428,7 +504,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
                 val = i['@Value'];
         }
 
-        if (val.length > 50) {
+        if (val != undefined && val.length > 50) {
             val = val.substr(0, 47) + '...';
         }
 
@@ -449,30 +525,58 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         return "Asset Field::" + f.FriendlyName;
     }
 
-
-    get availableFormFields(): any[] {
+    get availableActionFields(): any[] {
         let field = this.fields.find(f => f.ID.toString() == this.selectedField['@FieldId']);
-
         if (field == null)
             return null;
 
         let fieldType = field.Type;
 
+        var formFieldsWithAction = this.formFields.filter(f => f["@isActionType"] == true);
+ 
         switch (fieldType) {
             case 'Lookup':
-                return this.formFields.filter(f => f['@type'] == 'list' && f['@referenceFieldId'] == field.ID.toString());
+                return formFieldsWithAction.filter(f => f['@type'] == 'list' && f['@referenceFieldId'] == field.ID.toString());
             case 'Number':
             case 'Decimal':
-                return this.formFields.filter(f => f['@type'] == 'integer');
+                return formFieldsWithAction.filter(f => f['@type'] == 'integer');
             case 'Boolean':
-                return this.formFields.filter(f => f['@type'] == 'boolean');
+                return formFieldsWithAction.filter(f => f['@type'] == 'boolean');
             case 'Date':
             case 'DateTime':
-                return this.formFields.filter(f => f['@type'] == 'date');
+                return formFieldsWithAction.filter(f => f['@type'] == 'date');
             case 'Text':
             case 'Html':
             default:
-                return this.formFields;
+                return formFieldsWithAction;
+        }
+    }
+
+
+    get availableFormFields(): any[] {
+        let field = this.fields.find(f => f.ID.toString() == this.selectedField['@FieldId']);
+        if (field == null)
+            return null;
+
+        let fieldType = field.Type;
+
+        var formFieldsWithouAction = this.formFields.filter(f => f["@isActionType"] != true);
+
+        switch (fieldType) {
+            case 'Lookup':
+                return formFieldsWithouAction.filter(f => f['@type'] == 'list' && f['@referenceFieldId'] == field.ID.toString());
+            case 'Number':
+            case 'Decimal':
+                return formFieldsWithouAction.filter(f => f['@type'] == 'integer');
+            case 'Boolean':
+                return formFieldsWithouAction.filter(f => f['@type'] == 'boolean');
+            case 'Date':
+            case 'DateTime':
+                return formFieldsWithouAction.filter(f => f['@type'] == 'date');
+            case 'Text':
+            case 'Html':
+            default:
+                return formFieldsWithouAction;
         }
 
     }
