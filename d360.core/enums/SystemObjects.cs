@@ -8,6 +8,9 @@ namespace d360.core
 {
     public enum SystemObjects
     {
+        [Description("Unknown"), EnableAudit(false), IsType(false),
+         ExcludeDataType(DataType.JSON)]
+        Unknown = -1,
         [Description("Artifact"), EnableAudit(true), IsType(false),
          ExcludeDataType(DataType.JSON)]
         Artifact = 1,
