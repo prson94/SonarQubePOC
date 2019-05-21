@@ -195,9 +195,11 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         if (isString(items.Name) && isString(items.Url) && items.Url.indexOf('/') != -1) {
             //get count for item
             var id = _.findIndex(arr, function (o) {
+                let currentURL = items.Url.toLowerCase();
+                currentURL = items.Url.replace('model', 'taxonomy');
                 return o.Name == items.Name
-                    && _.includes(items.Url.toLowerCase(), o.Object.toLowerCase().replace('type', ''))
-                    && _.includes(items.Url.toLowerCase(), o.ObjectID);
+                    && _.includes(currentURL, o.Object.toLowerCase().replace('type', ''))
+                    && _.includes(currentURL, o.ObjectID);
             });
             if (id !== -1) {
                 items.count = arr[id].count;
