@@ -2109,7 +2109,7 @@ where	R.SourceObject = 'FusionAttribute'
 
         public bool SaveOrUpdateAsset(Asset asset, List<Field> fields, int parentId = -1)
         {
-            var isUpdate = IsPersistent(asset);
+            var isUpdate = asset.ID > 0;
 
             var fieldsJson = JsonConvert.SerializeObject(fields.Select(f => new { ID = f.FieldTypeID, Value = f.Value }));            
             bool exists = false;
