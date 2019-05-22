@@ -3899,6 +3899,7 @@ offset 0 rows fetch next 25 rows only
                             model.FieldType.IsPartOfKey = false;
                             model.FieldType.IsEditable = false;
                             model.FieldType.IsRequired = false;
+                            model.FieldType.IsPrimaryFilter = false;
 
                             Company.Add(model.FieldType);
                         }
@@ -4447,6 +4448,7 @@ offset 0 rows fetch next 25 rows only
                             ft.IsPartOfKey = false;
                             ft.IsEditable = false;
                             ft.IsRequired = false;
+                            ft.IsPrimaryFilter = false;
                         }
                         catch
                         {
