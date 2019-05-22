@@ -654,21 +654,8 @@ namespace igx.UnitTests
 
             insertItem.Uid = Guid.Parse(DataConstants.ValidGUID);
             responseMessageResult = await GetResponseForPutAsset(insertItem);
-            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.NotFound);
-
-            insertItem.ParentUid = Guid.Parse(DataConstants.ValidGUID);
-            responseMessageResult = await GetResponseForPutAsset(insertItem);
-            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.BadRequest);
-
-           
-            insertItem.ParentUid = Guid.Parse(DataConstants.ValidGUID2);
-            responseMessageResult = await GetResponseForPutAsset(insertItem);
-            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.NotFound);
-
-            insertItem.Hierarchy = new HierarchyInsert() { PredicateUid = Guid.Parse(DataConstants.ValidGUID) };
-            responseMessageResult = await GetResponseForPutAsset(insertItem);
             Assert.True(responseMessageResult.StatusCode == HttpStatusCode.InternalServerError);
-
+           
             insertItem.DisplayFormat = "{name}";
             responseMessageResult = await GetResponseForPutAsset(insertItem);
             Assert.True(responseMessageResult.StatusCode == HttpStatusCode.InternalServerError);
