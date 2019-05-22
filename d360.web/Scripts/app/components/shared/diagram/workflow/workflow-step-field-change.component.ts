@@ -106,6 +106,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
             f['@UseCurrentDate'] = f['@UseCurrentDate'].toString().toLowerCase() == 'true' ? true : false;
         if (f['@UseFormValue'] != null)
             f['@UseFormValue'] = f['@UseFormValue'].toString().toLowerCase() == 'true' ? true : false;
+
     }
 
     selectField(i: number) {
@@ -138,6 +139,10 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
                     });
             }
             this.allowMultiple = this.field.AllowMultipleValues;
+        }
+
+        if (typeof this.selectedField["@AppendValue"] == 'string') {
+            this.selectedField["@AppendValue"] = this.selectedField["@AppendValue"].toLowerCase() == 'true' ? true : false;
         }
 
         this.fieldUpdateChange.emit(this.fieldUpdate);
@@ -192,7 +197,6 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
     }
 
     save() {
-        console.log("save");
         let field = _.cloneDeep(this.selectedField);
         let fieldTypeIndex = this.fields.findIndex(f => f.ID.toString() == field['@FieldId'].toString());
 
