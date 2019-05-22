@@ -87,6 +87,7 @@
     <Compile Include="entities\Contracts\ICreatedMetadata.cs" />
     <Compile Include="entities\Contracts\IEventTrackedEntity.cs" />
     <Compile Include="entities\Contracts\IUIDMetadata.cs" />
+    <Compile Include="entities\FieldJsonProperty.cs" />
     <Compile Include="entities\FieldValue.cs" />
     <Compile Include="entities\Fusion\FusionMarkitLineageData.cs" />
     <Compile Include="entities\Fusion\FusionMarkitLineageMapToBusinessItems.cs" />
@@ -353,6 +354,7 @@
     <Compile Include="exceptions\UnauthorizedException.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="helpers\PluralServiceHelper.cs" />
+    <Compile Include="helpers\SystemObjectHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="queue\ApiExecutionInfo.cs" />
     <Compile Include="queue\DisplayUpdateInfo.cs" />

@@ -1402,9 +1402,7 @@ namespace d360.web.Controllers
                             DisplayFormat = model.AssetType.DisplayFormat,
                             Description = model.AssetType.Description,     
                             SourceNotes = model.AssetType.Notes
-                        };
-                        isNamePartOfKey = false;
-                        nameFriendlyName = "Long Description";
+                        };                                            
                         Company.Add(rt);
                         parentType = SystemObjects.ReferenceItemType;
                         model.AssetType.ObjectID = rt.ID;
@@ -1438,7 +1436,7 @@ namespace d360.web.Controllers
 
                 if (model.AssetType.ObjectID > 0)
                 {
-                    if (model.AssetType.Class != AssetTypeClass.FusionAttribute && model.AssetType.Class != AssetTypeClass.Organization)
+                    if (model.AssetType.Class != AssetTypeClass.FusionAttribute && model.AssetType.Class != AssetTypeClass.Organization && model.AssetType.Class != AssetTypeClass.ReferenceItemType)
                     {
                         Company.Add(new FieldType
                         {
@@ -2283,7 +2281,7 @@ namespace d360.web.Controllers
                 return jsonNetException(ex, HttpStatusCode.InternalServerError, string.Empty);
             }
 
-            return new JsonNetResult { Data = css, Formatting = Newtonsoft.Json.Formatting.None };
+            return new JsonNetResult { Data = (css ?? ""), Formatting = Newtonsoft.Json.Formatting.None };
         }
 
         [HttpPut, ValidateInput(false), Route("UpdateStyleCustomizations")]

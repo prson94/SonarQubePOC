@@ -39,6 +39,12 @@ namespace d360.core.entities
         [DataMember]
         public int DeleteExecutionTimeoutHours { get; set; }
 
+        [DataMember]
+        public bool AutoTrustServerCertificate { get; set; }
+
+        [DataMember]
+        public bool RemoveUriPortOnConnect { get; set; }
+
         [IgnoreDataMember, ForeignKey("IntegrationSettingID")]
         public virtual ICollection<IntegrationAssetType> IntegrationAssetTypes { get; set; }
     }

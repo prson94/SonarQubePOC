@@ -118,8 +118,10 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
                         break;
                     case "Date":
                     case "DateTime":
-                        this.condition.Values = new Date(<string>this.condition.Values);
-                        this.condition.Values.setMinutes(this.condition.Values.getMinutes() + this.condition.Values.getTimezoneOffset());
+                        if (this.condition.Values) {
+                            this.condition.Values = new Date(<string>this.condition.Values);
+                            this.condition.Values.setMinutes(this.condition.Values.getMinutes() + this.condition.Values.getTimezoneOffset());
+                        }
                         break;
                 }
             }

@@ -108,7 +108,7 @@ where   A.Type = 'ArtifactType'
             
             sql = $"select * from ({sql}) A ";
             
-            var filterSql = applyFilteringSuffixBindRaw(Request, dbArgs, fields:fields, applyHiddenFilters:true);
+            var filterSql = applyFilteringSuffixBindRaw(Request, dbArgs, fields:fields, applyHiddenFilters:true,fromArtifact:true);
 
             sql = sql + filterSql;
 
@@ -258,7 +258,7 @@ where   A.Type = 'ArtifactType'
             
             sql = string.Format(@"select * from ({0}) A", sql);
 
-            sql = applyFilteringSuffixBind(sql, Request, dbArgs, fields: oldFields);
+            sql = applyFilteringSuffixBind(sql, Request, dbArgs, fields: oldFields,fromArtifact:true);
                         
             if (string.IsNullOrEmpty(sortDataField))
             {

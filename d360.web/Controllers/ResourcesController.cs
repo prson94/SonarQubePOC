@@ -1030,6 +1030,11 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                         var responbilityReleationRule = Company.GetById<ResponsibilityTypeRelationRule>(objectID);
                         uid = responbilityReleationRule?.UID.ToString();
                     }
+                    else if (objectType == "RuleDimension")
+                    {
+                        var ruleDimension = Company.GetById<RuleDimension>(objectID);
+                        desc = ruleDimension?.Description;
+                    }
                 }
 
                 return Json(

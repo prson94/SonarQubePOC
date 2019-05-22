@@ -175,5 +175,17 @@
   <include file="scripts/GOV-7182.xml"/>
   <include file="scripts/GOV-7185.xml"/>
   <include file="scripts/GOV-7085-Update1.xml"/>
+  <include file="scripts/GOV-6981-ProcUpdate.xml"/>
+  <include file="scripts/GOV-6869.xml"/>
   <include file="scripts/GOV-7218.xml"/>
+  <include file="scripts/GOV-7235-2.xml"/>
+  <include file="scripts/GOV-7196.xml"/>
+  <include file="scripts/GOV-7032.xml"/>
+  <include file="scripts/GOV-7032-Update1.xml"/>
+  <include file="scripts/GOV-7270.xml"/>
+  <include file="scripts/GOV-7253.xml"/>
+  <include file="scripts/GOV-7225.xml"/>
+  <include file="scripts/GOV-7185-2.xml"/>
+  <include file="scripts/GOV-7285.xml"/>
+  <include file="scripts/GOV-7289.xml"/>
 </databaseChangeLog>

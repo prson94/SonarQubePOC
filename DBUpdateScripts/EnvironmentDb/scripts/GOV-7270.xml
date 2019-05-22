@@ -1,0 +1,98 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+	<changeSet author="Pappas" id="GOV-7270-RetryLog-Column">
+		<sql dbms="mssql"
+			endDelimiter="\nGO"
+			splitStatements="true"
+			stripComments="true">
+<![CDATA[
+IF NOT EXISTS(SELECT 1 FROM sys.columns WHERE Name = N'RetryLog' AND Object_ID = Object_ID(N'integration.ExecutionAssetType'))
+begin
+	alter table integration.ExecutionAssetType add [RetryLog] varchar(2500) null
+end
+]]>
+		</sql>
+		<rollback>
+<![CDATA[
+IF EXISTS(SELECT 1 FROM sys.columns WHERE Name = N'RetryLog' AND Object_ID = Object_ID(N'integration.ExecutionAssetType'))
+begin
+	alter table integration.ExecutionAssetType drop column [RetryLog]
+end
+]]>
+		</rollback>
+	</changeSet>
+
+	<changeSet author="Pappas" id="GOV-7270-Index">
+		<sql dbms="mssql"
+			endDelimiter="\nGO"
+			splitStatements="true"
+			stripComments="true">
+		<![CDATA[
+		IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='IX_IntegrationAssetHash_RequestInfo' AND object_id = OBJECT_ID('[integration].[AssetHash]'))
+		begin
+		CREATE NONCLUSTERED INDEX [IX_IntegrationAssetHash_RequestInfo] ON [integration].[AssetHash] ([SynchedAssetTypeID], [Section], [RequestNumber])
+		end
+		]]>
+		</sql>
+		<rollback>
+		<![CDATA[
+		IF EXISTS (SELECT * FROM sys.indexes WHERE name='IX_IntegrationAssetHash_RequestInfo' AND object_id = OBJECT_ID('[integration].[AssetHash]'))
+		begin
+		DROP INDEX [IX_IntegrationAssetHash_RequestInfo] ON [integration].[AssetHash];
+		end
+		]]>
+		</rollback>
+	</changeSet>	
+	
+	<changeSet author="Pappas" id="GOV-7270-AutoTrustServerCertificate-Column">
+		<sql dbms="mssql"
+			endDelimiter="\nGO"
+			splitStatements="true"
+			stripComments="true">
+<![CDATA[
+IF NOT EXISTS(SELECT 1 FROM sys.columns WHERE Name = N'AutoTrustServerCertificate' AND Object_ID = Object_ID(N'integration.Setting'))
+begin
+	ALTER TABLE [integration].[Setting] ADD [AutoTrustServerCertificate] bit constraint DF_IntegrationSetting_AutoTrustServerCertificate default(0) NOT NULL
+end
+]]>
+		</sql>
+		<rollback>
+<![CDATA[
+IF EXISTS(SELECT 1 FROM sys.columns WHERE Name = N'AutoTrustServerCertificate' AND Object_ID = Object_ID(N'integration.Setting'))
+begin
+	alter table [integration].[Setting] DROP CONSTRAINT [DF_IntegrationSetting_AutoTrustServerCertificate]
+	alter table [integration].[Setting] drop column [AutoTrustServerCertificate]
+end
+]]>
+		</rollback>
+	</changeSet>
+
+	<changeSet author="Pappas" id="GOV-7270-RemoveUriPortOnConnect-Column">
+		<sql dbms="mssql"
+			endDelimiter="\nGO"
+			splitStatements="true"
+			stripComments="true">
+<![CDATA[
+IF NOT EXISTS(SELECT 1 FROM sys.columns WHERE Name = N'RemoveUriPortOnConnect' AND Object_ID = Object_ID(N'integration.Setting'))
+begin
+	ALTER TABLE [integration].[Setting] ADD [RemoveUriPortOnConnect] bit constraint DF_IntegrationSetting_RemoveUriPortOnConnect default(1) NOT NULL
+end
+]]>
+		</sql>
+		<rollback>
+<![CDATA[
+IF EXISTS(SELECT 1 FROM sys.columns WHERE Name = N'RemoveUriPortOnConnect' AND Object_ID = Object_ID(N'integration.Setting'))
+begin
+	alter table [integration].[Setting] DROP CONSTRAINT [DF_IntegrationSetting_RemoveUriPortOnConnect]
+	alter table [integration].[Setting] drop column [RemoveUriPortOnConnect]
+end
+]]>
+		</rollback>
+	</changeSet>
+	
+  </databaseChangeLog>

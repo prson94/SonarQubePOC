@@ -2345,7 +2345,7 @@ from    [Intersect] I
             if (string.IsNullOrWhiteSpace(query))
                 return Request.CreateResponse(HttpStatusCode.OK, "");
             query = sanitizeQueryString(query);
-            var types = Company.Query<IntersectType>(@"
+            var types = Company.Query<IntersectTypeApiViewNamed>(@"
 select  ID, 
         SubjectName + ' ' + coalesce(PredicateName, '/') + ' ' +  ObjectName as Name, 
         Subject, 
@@ -7109,7 +7109,7 @@ where v.id = {0}", id)).FirstOrDefault();
             var sourceJoins = "";
             var sourceColumns = "";
 
-            getDynamicFieldJoinStatements(targetID, targetType.ToString().Replace("Type", ""), out sourceJoins, out sourceColumns, false, false, false, true, "A.ObjectID", "A.Name");
+            getDynamicFieldJoinStatements(targetID, targetType.ToString().Replace("Type", ""), out sourceJoins, out sourceColumns, false, false, false, true, "A.ObjectID", "A.Name",false);
 
             joins = joins + sourceJoins;
             columns = columns + sourceColumns;

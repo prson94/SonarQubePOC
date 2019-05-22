@@ -1078,18 +1078,12 @@ namespace d360.model
                     {
                         if (item.AppendValue)
                         {
-                            var oldValues = field.Value?.Trim(',')?.Split(',') ?? new string[0];
-                            var newValues = val?.Trim(',')?.Split(',')?.Except(oldValues) ?? new string[0];
+                            var oldValues = field.Value?.Split(',').Where(s => !string.IsNullOrEmpty(s.Trim())).Select(x => x.Trim()) ?? new string[0];
+                            var newValues = val?.Split(',').Where(s => !string.IsNullOrEmpty(s.Trim())).Select(x => x.Trim()) ?? new string[0];
+                            newValues = oldValues.Union(newValues).Distinct().OrderBy(x => x);
+                            field.Value = string.Join(",", newValues);
 
-                            val = string.Join(",", newValues);
 
-                            if (!string.IsNullOrEmpty(val))
-                            {
-                                if (field.Value.EndsWith(","))
-                                    field.Value += val;
-                                else
-                                    field.Value += ("," + val);
-                            }
                         }
                         else
                         {

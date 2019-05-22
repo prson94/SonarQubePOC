@@ -227,6 +227,10 @@
       <Project>{88BBA351-DA2A-4551-AF28-5F1568952F7E}</Project>
       <Name>d360.utils.company</Name>
     </ProjectReference>
+    <ProjectReference Include="..\d360.utils\d360.utils.csproj">
+      <Project>{9775B4DF-0AC8-4524-BA10-4A43BF9CB61E}</Project>
+      <Name>d360.utils</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

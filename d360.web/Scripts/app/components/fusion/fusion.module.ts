@@ -16,7 +16,6 @@ import { TilesModule  } from '../shared/tiles/tiles.module';
 import { SharedDeleteFormModule } from '../shared/delete.form';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { SharedFusionAttributeItemDetailsModule } from '../shared/fusion-attribute-item-details.component';
-import { SharedFusionAttributeProfileDetailsModule } from '../shared/fusion-attribute-profile-details.component';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 import { SharedRelationshipModule } from '../shared/relationship/shared-relationship.module';
 import { SharedFieldDefinitionModule } from '../shared/fielddefinition/shared-field-definition.module';
@@ -129,7 +128,6 @@ export function highchartsFactory() {
         SharedDynamicGridEditorModule,
         SharedFieldDefinitionModule,
         SharedFusionAttributeItemDetailsModule,
-        SharedFusionAttributeProfileDetailsModule,
         SharedGridPagingInfoModule,
         SharedRelationshipModule,
         TilesModule,  
