@@ -133,7 +133,7 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
                 val = i['@Value'];
         }
 
-        if (val.length > 50) {
+        if (val != undefined && val.length > 50) {
             val = val.substr(0, 47) + '...';
         }
 

@@ -69,9 +69,9 @@ export class WorkflowMonitorStepFieldChangeDetailsComponent extends BaseComponen
     }
 
     getFieldName(item: WorkflowStepFieldChangeDetail): string {
-        if (item.ObjectType != "Issue")
-            return "Asset Field::" + item.FieldName;
-        return "Action Field::" + item.FieldName;
+        if (item.ObjectType != '' && item.ObjectType != 'Issue')
+            return 'Asset Field::' + item.FieldName;
+        return 'Action Field::' + item.FieldName;
     }
 
 }
