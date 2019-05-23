@@ -13,11 +13,11 @@
             stripComments="true">
 <![CDATA[
 		If not exists(Select 1 from
-			information_schema.Columns where column_name ='uid' and
+			information_schema.Columns where column_name ='UID' and
 			table_name='Item' and TABLE_SCHEMA='workflow')
 		begin
-			ALTER TABLE [workflow].[Item] ADD 	[uid] [uniqueidentifier] NOT NULL
-			CONSTRAINT [DF_workflow_Item_uid]  DEFAULT (newid())
+			ALTER TABLE [workflow].[Item] ADD 	[UID] [uniqueidentifier] NOT NULL
+			CONSTRAINT [DF_workflow_Item_UID]  DEFAULT (newid())
 		end
 ]]>
 
@@ -25,16 +25,16 @@
 	<rollback>
 	<![CDATA[
 if exists (select 1 from sys.default_constraints
-    where name = 'DF_workflow_Item_uid')
+    where name = 'DF_workflow_Item_UID')
     begin
-		ALTER TABLE [workflow].[Item] drop constraint [DF_workflow_Item_uid]
+		ALTER TABLE [workflow].[Item] drop constraint [DF_workflow_Item_UID]
 	end
 	
 	If  exists(Select 1 from
-			information_schema.Columns where column_name ='uid' and
+			information_schema.Columns where column_name ='UID' and
 			table_name='Item' and TABLE_SCHEMA='workflow')
 	begin
-		ALTER TABLE [workflow].[Item] drop column uid
+		ALTER TABLE [workflow].[Item] drop column UID
 	end
 		
 ]]>
