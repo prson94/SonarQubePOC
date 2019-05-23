@@ -27,13 +27,6 @@ namespace d360.web
 {
     public class UserIDCheckMiddleware
     {
-
-        public class CompanyState
-        {
-            public int Id { get; set; }
-            public bool IsActive { get; set; }
-            public string Name { get; set; }
-        }
         public class usercompany
         {
             public int ResourceID { get; set; }
@@ -46,7 +39,7 @@ namespace d360.web
             public string Password { get; set; }
             public string APIPublicKey { get; set; }
             public string APIPrivateKey { get; set; }
-
+   
         }
 
         public class user
@@ -107,7 +100,7 @@ namespace d360.web
 
             [JsonProperty(PropertyName = "upn", NullValueHandling = NullValueHandling.Ignore, Order = 14)]
             public string Upn { get; set; }
-
+            
             [JsonProperty(PropertyName = "lmg_cert_dn", NullValueHandling = NullValueHandling.Ignore, Order = 16)]
             public string Lmg_cert_dn { get; set; }
 
@@ -123,8 +116,7 @@ namespace d360.web
 
         public ConcurrentBag<usercompany> Users
         {
-            get
-            {
+            get {
                 var cache = new MemoryCachingProvider();// RedisCachingProvider();
                 var users = cache.GetItem<ConcurrentBag<usercompany>>("Users");
                 if (users == null)
@@ -133,8 +125,7 @@ namespace d360.web
                 }
                 return users;
             }
-            set
-            {
+            set {
                 var cache = new MemoryCachingProvider();// RedisCachingProvider();
                 cache.SetItem("Users", value, true, 10);
             }
@@ -177,54 +168,6 @@ from	Resource R
             return u;
         }
 
-        public ConcurrentBag<CompanyState> Companies
-        {
-            get
-            {
-                var cache = new MemoryCachingProvider();// RedisCachingProvider();
-                var companyStates = cache.GetItem<ConcurrentBag<CompanyState>>("CompanyState");
-                if (companyStates == null)
-                {
-                    companyStates = new ConcurrentBag<CompanyState>();
-                }
-                return companyStates;
-            }
-            set
-            {
-                var cache = new MemoryCachingProvider();// RedisCachingProvider();
-                cache.SetItem("CompanyState", value, true, 10);
-            }
-        }
-
-        CompanyState LoadCompanyState(int companyID)
-        {
-            CompanyState cs = new CompanyState();
-
-            try
-            {
-                using (var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
-                {
-                    cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
-                    var baseSql = @"Select ID, Status, Name from Company where ID = @companyID";
-                    dynamic result = cnn.Query<dynamic>(baseSql, new { companyID }).FirstOrDefault();
-                    if (result != null)
-                    {
-                        cs.Id = result.ID;
-                        cs.IsActive = result.Status == "Active" ? true : false;
-                        cs.Name = result.Name;
-                    }
-
-                }
-            }
-            catch (Exception ex)
-            {
-                Trace.TraceError($"UserIDCheckMiddleware: {ex.GetFullExceptionData()}");
-            }
-
-            return cs;
-        }
-
-
         public async Task Invoke(IDictionary<string, object> environment)
         {
             IOwinContext context = new OwinContext(environment);
@@ -240,7 +183,6 @@ from	Resource R
                 var token = string.Empty;
 
                 var cachedUsers = Users;
-                var cachedCompanies = Companies;
 
                 // llyods custom auth depends on ceriticate and JWT token
                 if (!string.IsNullOrEmpty(apiCredentials) && apiCredentials.ToUpper().Contains("BEARER"))
@@ -257,7 +199,7 @@ from	Resource R
 
                         var claim = await ValidateJwt(jwtToken, context, jwtTelemetry);
 
-                        if (claim != null && claim.Identity != null && !string.IsNullOrEmpty(claim.Identity.Name))
+                        if (claim != null && claim.Identity != null &&  !string.IsNullOrEmpty(claim.Identity.Name))
                         {
                             jwtTelemetry.TrackTrace(new TraceTelemetry { Message = $"JWT Username {claim.Identity.Name}", SeverityLevel = SeverityLevel.Verbose });
                             u = LoadUserFromDatabase(companyID, null, null, null, claim.Identity.Name);
@@ -272,7 +214,7 @@ from	Resource R
                         }
 
                     }
-
+                    
                 }
                 else if (!string.IsNullOrEmpty(apiCredentials))
                 {
@@ -320,15 +262,6 @@ from	Resource R
                         context.Set("IsAdministrator", u.IsAdministrator);
                         context.Set("ResourceID", u.ResourceID);
                         context.Request.User = new System.Security.Principal.GenericPrincipal(new System.Security.Principal.GenericIdentity(u.ResourceID.ToString(), "ID"), null);
-
-                        try
-                        {
-                            u = CheckCompanyStatus(context, u, cachedCompanies);
-                        }
-                        catch (Exception ex)
-                        {
-                            Trace.TraceError($"UserIDCheckMiddleware - {ex.GetFullExceptionData()}");
-                        }
                     }
                     else
                     {
@@ -346,10 +279,10 @@ from	Resource R
                         if (!string.IsNullOrEmpty(token)) Trace.TraceWarning("Could not locate the user with API token of: {0}", token);
                         if (context.Request.User.Identity.IsAuthenticated) Trace.TraceWarning("Could not locate the user with name of: {0}", context.Request.User.Identity.Name);
                         if (!string.IsNullOrEmpty(apiCredentials) || !string.IsNullOrEmpty(token) || context.Request.User.Identity.IsAuthenticated)
-                        {
+                        {                            
                             System.Web.HttpContext.Current.Response.SuppressFormsAuthenticationRedirect = true;
-
-                            context.Response.StatusCode = 401;
+                           
+                            context.Response.StatusCode = 401;                            
                             return;
                         }
                     }
@@ -375,41 +308,6 @@ from	Resource R
             await _next.Invoke(environment);
         }
 
-        private usercompany CheckCompanyStatus(IOwinContext context, usercompany u, ConcurrentBag<CompanyState> cachedCompanies)
-        {
-            //Lets check company status exists in cached data
-            var companyStatus = cachedCompanies.FirstOrDefault(x => x.Id == u.CompanyID);
-            if (companyStatus == null)
-            {
-                companyStatus = LoadCompanyState(u.CompanyID);
-                if (companyStatus != null)
-                {
-                    if (!cachedCompanies.Any<CompanyState>(cs => cs.Id == companyStatus.Id))
-                    {
-                        cachedCompanies.Add(companyStatus);
-                    }
-                    Companies = cachedCompanies;
-                }
-            }
-            //If company is inactive, redirect to inactive company view
-            if (!companyStatus.IsActive)
-            {
-                u = null;
-                var req = System.Web.HttpContext.Current.Request;
-                System.Web.HttpContext.Current.Response.SuppressFormsAuthenticationRedirect = true;
-
-                var inactiveCompanyUrl = "/inactive-company";
-
-                //Check if view is trying to fetch resources (css, jquery) and allow it
-                var isContentResource = req.UrlReferrer != null && req.UrlReferrer.AbsolutePath == inactiveCompanyUrl && context.Request.Uri.AbsolutePath != inactiveCompanyUrl;
-
-                if (context.Request.Uri.AbsolutePath != inactiveCompanyUrl && !isContentResource)
-                    context.Response.Redirect(inactiveCompanyUrl);
-            }
-
-            return u;
-        }
-
         public const string Authority = "http://localhost:5000";
         private static readonly bool jwtDiscoveryValidateIssuerName = (ConfigurationManager.AppSettings["jwtDiscoveryValidateIssuerName"] ?? "").ToUpper() == "TRUE";
         private static readonly bool jwtValidateAudience = (ConfigurationManager.AppSettings["jwtValidateAudience"] ?? "").ToUpper() == "TRUE";
@@ -425,7 +323,7 @@ from	Resource R
 
             telemetry.TrackTrace(new TraceTelemetry { Message = $"Discovery Client Starting", SeverityLevel = SeverityLevel.Verbose });
 
-            if (string.IsNullOrEmpty(authority))
+            if(string.IsNullOrEmpty(authority))
             {
                 telemetry.TrackTrace(new TraceTelemetry { Message = $"Jwt Authority Uri is not set cannot continue", SeverityLevel = SeverityLevel.Verbose });
 
@@ -438,10 +336,10 @@ from	Resource R
             };
 
             var di = new DiscoveryClient(authority, httpHandler);
-
+            
             di.Policy.ValidateIssuerName = jwtDiscoveryValidateIssuerName;
             var disco = await di.GetAsync();
-
+            
 
             if (disco == null)
             {
@@ -451,7 +349,7 @@ from	Resource R
             }
 
             if (disco.IsError)
-            {
+            {                
                 telemetry.TrackTrace(new TraceTelemetry { Message = $"Discovery response indicated error(s). {disco.Error}", SeverityLevel = SeverityLevel.Verbose });
 
                 return null;
@@ -481,8 +379,8 @@ from	Resource R
             telemetry.TrackTrace(new TraceTelemetry { Message = $"Discovery Client Done", SeverityLevel = SeverityLevel.Verbose });
 
             var parameters = new TokenValidationParameters
-            {
-                NameClaimType = "upn",
+            {                
+                NameClaimType = "upn",                
             };
 
             // The signing key must match!

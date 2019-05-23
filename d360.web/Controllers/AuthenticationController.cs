@@ -1526,13 +1526,6 @@ namespace d360.web.Controllers
             return View("NoAccess");
         }
 
-        [AllowAnonymous, Route("inactive-company")]
-        public ActionResult InactiveCompany()
-        {
-            ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
-            return View("InactiveCompany");
-        }
-
         [AllowAnonymous, Route("Error")]
         public ActionResult Error()
         {
