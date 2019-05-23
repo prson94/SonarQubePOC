@@ -128,7 +128,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
             case 'Decimal':
                 return 'integer';
             case 'Boolean':
-                'boolean';
+                return 'boolean';
             case 'Date':
             case 'DateTime':
                 return 'date';
@@ -228,7 +228,6 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         }
         this.selectedField['@FormStepId'] = field['@stepId'];
         this.selectedField['@FormLabel'] = field['@label'];
-        console.log(this.selectedField);
     }
 
     add() {
@@ -538,10 +537,10 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         let fieldType = field.Type;
 
         var formFieldsWithAction = this.formFields.filter(f => f["@isActionType"] == true);
- 
+        
         switch (fieldType) {
             case 'Lookup':
-                return formFieldsWithAction.filter(f => f['@type'] == 'list' && f['@referenceFieldId'] == field.ID.toString());
+                return formFieldsWithAction.filter(f => f['@type'] == 'list');
             case 'Number':
             case 'Decimal':
                 return formFieldsWithAction.filter(f => f['@type'] == 'integer');
@@ -553,7 +552,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
             case 'Text':
             case 'Html':
             default:
-                return formFieldsWithAction;
+                return formFieldsWithAction.filter(f => f['@type'] == 'text');
         }
     }
 
@@ -565,23 +564,23 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
 
         let fieldType = field.Type;
 
-        var formFieldsWithouAction = this.formFields.filter(f => f["@isActionType"] != true);
+        var formFieldsWithoutAction = this.formFields.filter(f => f["@isActionType"] != true);
 
         switch (fieldType) {
             case 'Lookup':
-                return formFieldsWithouAction.filter(f => f['@type'] == 'list' && f['@referenceFieldId'] == field.ID.toString());
+                return formFieldsWithoutAction.filter(f => f['@type'] == 'list' && f['@referenceFieldId'] == field.ID.toString());
             case 'Number':
             case 'Decimal':
-                return formFieldsWithouAction.filter(f => f['@type'] == 'integer');
+                return formFieldsWithoutAction.filter(f => f['@type'] == 'integer');
             case 'Boolean':
-                return formFieldsWithouAction.filter(f => f['@type'] == 'boolean');
+                return formFieldsWithoutAction.filter(f => f['@type'] == 'boolean');
             case 'Date':
             case 'DateTime':
-                return formFieldsWithouAction.filter(f => f['@type'] == 'date');
+                return formFieldsWithoutAction.filter(f => f['@type'] == 'date');
             case 'Text':
             case 'Html':
             default:
-                return formFieldsWithouAction;
+                return formFieldsWithoutAction.filter(f => f['@type'] == 'text');
         }
 
     }
