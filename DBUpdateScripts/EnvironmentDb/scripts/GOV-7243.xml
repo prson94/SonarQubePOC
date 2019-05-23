@@ -1,0 +1,43 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Sebastian Abraham" id="GOV-7243">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+		If not exists(Select 1 from
+			information_schema.Columns where column_name ='uid' and
+			table_name='Item' and TABLE_SCHEMA='workflow')
+		begin
+			ALTER TABLE [workflow].[Item] ADD 	[uid] [uniqueidentifier] NOT NULL
+			CONSTRAINT [DF_workflow_Item_uid]  DEFAULT (newid())
+		end
+]]>
+
+    </sql>
+	<rollback>
+	<![CDATA[
+if exists (select 1 from sys.default_constraints
+    where name = 'DF_workflow_Item_uid')
+    begin
+		ALTER TABLE [workflow].[Item] drop constraint [DF_workflow_Item_uid]
+	end
+	
+	If  exists(Select 1 from
+			information_schema.Columns where column_name ='uid' and
+			table_name='Item' and TABLE_SCHEMA='workflow')
+	begin
+		ALTER TABLE [workflow].[Item] drop column uid
+	end
+		
+]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>
