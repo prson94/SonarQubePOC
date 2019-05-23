@@ -2419,7 +2419,7 @@ from	api.ExecutionAsset T
     when    not matched then
     insert  (AssetTypeID,State,[Object], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
     values  (@AssetTypeID,1,'Policy', @R, @D, @R, @D)
-    output  inserted.ID, S.ItemNumber into #ObjectMergeTableResult;
+    output  inserted.ObjectID, S.ItemNumber into #ObjectMergeTableResult;
 
     update  T
     set     T.Object = 'Policy',
@@ -2437,8 +2437,8 @@ from	api.ExecutionAsset T
     update	T
     set		T.UpdatedBy = @R,
 		    T.UpdatedOn = @D
-    from	[Policy] T
-		    inner join api.ExecutionAsset S on S.ObjectID = T.ID and {executionAssetWhereSql};
+    from	[Asset] T
+		    inner join api.ExecutionAsset S on S.ObjectID = T.ObjectID and T.[Object] = 'Policy' and {executionAssetWhereSql};
 
     update	api.ExecutionAsset
     set		IsNew = 0
