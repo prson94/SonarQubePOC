@@ -16,25 +16,20 @@ import { SubscriptionLike as ISubscription } from 'rxjs';
         '(document:click)': 'onClick($event)',
         '(window:resize)': 'setMaxHeight()'
     },  
-    template: ` <a *ngIf="breadcrumb.hasLink()" (click)="navigateToLink(breadcrumb.link)" class="breadcrumb" style="cursor:pointer">{{ breadcrumb.text }}</a>
-                <div *ngIf="!breadcrumb.hasLink() && !showSearch" (mouseover)="in(treePanel,$event)" class="breadcrumb" [ngClass]="{'breadcrumb-link':isChangableItem() || isTreeItem()}">{{ breadcrumb.text }}</div>
-                <p-autoComplete size="40"                                                      
-                            *ngIf="showSearch" 
-                            [inputStyle]="{'border':'2px solid #54a4da','border-radius':'4px'}"
-                            styleClass="searchTypeahead"             
-                            [minLength]="1"                               
-                            [(ngModel)]="result" 
-                            [suggestions]="results" 
-                            (completeMethod)="search($event)" 
-                            field="Name"  
-                            [placeholder]="breadcrumb.text"
-                            [autoHighlight]="true"
-                            (onSelect)="selectItem()">                       
-                    </p-autoComplete>                    
+    template: ` <a *ngIf="breadcrumb.hasLink()" (click)="navigateToLink(breadcrumb.link)" (mouseover)="in(treePanel,searchPanel,$event)" class="breadcrumb" style="cursor:pointer">{{ breadcrumb.text }}</a>
+                <div *ngIf="!breadcrumb.hasLink()" (mouseover)="in(treePanel,searchPanel,$event)" class="breadcrumb" [ngClass]="{'breadcrumb-link':isChangableItem() || isTreeItem()}">{{ breadcrumb.text }}</div>
+                <p-overlayPanel [ngClass]="'search-results'" #searchPanel>  
+                    <div>
+                        <span class="header-search-input"><input type="text" [(ngModel)]="searchValue" placeholder="Search" (keyup)="search(searchValue)"> <i class="fa fa-search"></i></span> 
+                        <div *ngFor="let result of results;" class="breadcrumb-search-results">
+                            <div class="breadcrumb-search-result" [ngClass]="{'current-crumb': breadcrumb.text === result.Name}" (click)="navigateToLink(result.Url)">{{result.Name}}</div>
+                        </div>
+                    </div>
+                </p-overlayPanel>                
                 <div *ngIf="!lastItem && showSeperator" class="sep breadcrumb"><i class="fa fa-angle-right"></i></div>                
                 <p-overlayPanel #treePanel>  
-                        <input type="text" pInputText [(ngModel)]="searchValue" placeholder="Search" style="width: 100%;">                      
-                        <p-tree [value]="treeItems | treeSearch: searchValue" selectionMode="single" [(selection)]="breadcrumb.selectedTreeNode" styleClass="breadcrumbTree" [style]="{'max-height':maxOverlayHeight,'overflow':'auto','line-height':'25px'}" 
+                        <input type="text" pInputText [(ngModel)]="searchTreeValue" placeholder="Search" style="width: 100%;">                      
+                        <p-tree [value]="treeItems | treeSearch: searchTreeValue" selectionMode="single" [(selection)]="breadcrumb.selectedTreeNode" styleClass="breadcrumbTree" [style]="{'max-height':maxOverlayHeight,'overflow':'auto','line-height':'25px'}" 
                             (onNodeSelect)="nodeSelect($event,treePanel)">
                             <ng-template let-node pTemplate type="default">
                                 <span [ngStyle]="setTreeNodeStyles(node)">{{node.label}} <i *ngIf="node.data?.hasRelations" class="fa fa-share-alt" aria-hidden="true" title="Item has relationships" style="color:#999;"></i></span>
@@ -56,6 +51,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
     public showSearch: boolean;
     private hasTree: boolean;
     public searchValue: string;
+    public searchTreeValue: string;
     public treeItems: TreeNode[] = [];
     public maxOverlayHeight: string = '800px'
     private searchSub: ISubscription
@@ -81,16 +77,17 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
     }
 
     private isChangableItem() {
-        return (this.lastItem && this.breadcrumb.objectType && this.breadcrumb.objectId && !this.isTreeItem());
+        return (this.breadcrumb.objectType && this.breadcrumb.objectId && !this.isTreeItem());
     }
 
     private isTreeItem(): boolean {
         return this.breadcrumb.objectType == 'Taxonomy' || this.breadcrumb.objectType == 'Policy';
     }
     
-    private in(panel, event) {
+    private in(panel, searchPanel, event) {
         if (this.isChangableItem()) {
             this.showSearch = true;
+            searchPanel.toggle(event);
         }        
         if (this.isTreeItem()) {
             panel.toggle(event);            
@@ -98,8 +95,10 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
     }    
 
     search(event) {
-        
-        this.searchSub = this.typeaheadSearchService.getObjectTypeItems(10, event.query, this.breadcrumb.objectType, this.breadcrumb.objectId).pipe(
+
+        let q = event.query ? event.query : event;
+
+        this.searchSub = this.typeaheadSearchService.getObjectTypeItems(10, q, this.breadcrumb.objectType, this.breadcrumb.objectId).pipe(
             debounceTime(400))
             .subscribe(data => {
                 this.results = data;
@@ -113,7 +112,8 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
 
     onClick(event) {
         if (this.showSearch && !this.elementRef.nativeElement.contains(event.target)) { 
-            this.showSearch = false;            
+            this.showSearch = false; 
+            
         }
     }
     
