@@ -9,6 +9,10 @@ namespace d360.core.entities
     [DataContract(Namespace = NAMESPACE)]
     public class Company : BaseIntObject, IIntObject
     {
+
+        [DataMember]
+        public string Status { get; set; }
+
         [DataMember]
         public int DatabaseServerID { get; set; }
 
