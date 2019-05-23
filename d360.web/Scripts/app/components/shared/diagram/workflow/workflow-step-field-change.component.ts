@@ -518,7 +518,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
 
     getTableFieldName(item: any): string {
         if (this.issueObject == "") return item['@FieldName'];
-        if (item['@ObjectType'] == 'Issue')
+        if (typeof item['@ObjectType'] == 'undefined' || item['@ObjectType'] == 'Issue')
             return "Action Field::" + item['@FieldName'];
         return "Asset Field::" + item['@FieldName'];
     }
