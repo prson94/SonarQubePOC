@@ -111,10 +111,12 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="CompanyContext_MarkitLineage.cs" />
+    <Compile Include="DataAccessLayer\ITagRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\CrossReferencesRepository.cs" />
     <Compile Include="DataAccessLayer\ICrossReferencesRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\AssetRepository.cs" />
     <Compile Include="DataAccessLayer\IAssetRepository.cs" />
+    <Compile Include="DataAccessLayer\repositories\TagRepository.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="IBaseContext.cs" />
     <Compile Include="ICommunityContext.cs" />

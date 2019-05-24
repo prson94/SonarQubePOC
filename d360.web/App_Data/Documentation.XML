@@ -3006,6 +3006,17 @@
             <param name="phrase">Search term</param>
             <returns></returns>
         </member>
+        <member name="T:d360.web.Controllers.V2.TagsController">
+            <summary>
+            This service houses all endpoints handling glossary-related data such as artifacts and models.
+            </summary>
+        </member>
+        <member name="M:d360.web.Controllers.V2.TagsController.Get">
+            <summary>
+            Returns all tags.
+            </summary>
+            <returns>A list of tags</returns>
+        </member>
         <member name="M:d360.web.Controllers.D3SApiController.GetFieldFiltersByType(d360.core.SystemObjects,System.Int32)">
             <summary>
             Gets a list of available field-level filters for a grid in the UI. This includes standard/custom fields, relationships, attributes, owner.
