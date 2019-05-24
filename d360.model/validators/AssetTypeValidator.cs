@@ -114,7 +114,7 @@ namespace d360.core.validators
                 model.ObjectID = assetType.ObjectID;
             }
 
-            if (model.ParentUid != Guid.Empty)
+            if (model.ParentUid.HasValue && model.ParentUid != Guid.Empty)
             {
                 if (parentAssetType == null)
                     return new ValidationStatus(HttpStatusCode.NotFound, "Invalid request", "Not valid ParentUid provided.Please check your request and try again.");
@@ -124,10 +124,10 @@ namespace d360.core.validators
                     return new ValidationStatus(HttpStatusCode.NotFound, "Invalid request", "Not valid ParentUid for the Class.Please check your request and try again.");
             }
 
-            if (model.ParentUid == model.Uid)
+            if (model.ParentUid.HasValue && model.ParentUid == model.Uid)
                 return new ValidationStatus(HttpStatusCode.BadRequest, "Invalid request", "Not valid ParentUid provided.Please check your request and try again.");
 
-            if (model.Hierarchy != null && model.Hierarchy.PredicateUid != Guid.Empty)
+            if (model.Hierarchy != null && model.Hierarchy.PredicateUid.HasValue && model.Hierarchy.PredicateUid != Guid.Empty)
             {
                 if (predicate == null)
                     return new ValidationStatus(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class.");
@@ -177,7 +177,10 @@ namespace d360.core.validators
             if (assetTypeId == 0)
                 fieldNames = new List<string> { "name" };
             else
-                fieldNames = CompanyContext.Filter<FieldType>(x => x.AssetTypeID == assetTypeId && !fieldsToIgnore.Contains(x.Type)).Select(x => x.Name.ToLower()).ToList();
+                fieldNames = CompanyContext.Filter<FieldType>(x => x.AssetTypeID == assetTypeId && !fieldsToIgnore.Contains(x.Type)).Select(x => x.FriendlyName.ToLower()).ToList();
+
+            if (assetClass == AssetTypeClass.Reference)
+                fieldNames.Add("code");
 
             displayFormat = displayFormat.Replace("}{", "} {");
             var displayFieldNames = displayFormat.Split().Where(x => x.StartsWith("{") && x.EndsWith("}"))

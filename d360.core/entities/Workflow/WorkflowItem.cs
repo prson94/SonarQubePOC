@@ -8,7 +8,7 @@ using System.Runtime.Serialization;
 namespace d360.core.entities.Workflow
 {
     [DataContract(Namespace = NAMESPACE), Table("Item", Schema = "workflow")]
-    public class WorkflowItem : BaseObject
+    public class WorkflowItem : BaseObject, IUIDMetadata
     {
         [DataMember]
         public long ID { get; set; }
@@ -55,5 +55,8 @@ namespace d360.core.entities.Workflow
 
         [IgnoreDataMember, ForeignKey("ItemID")]
         public virtual ICollection<WorkflowItemStep> Steps { get; set; }
+
+        [DataMember]
+        public Guid? UID { get; set; }
     }
 }

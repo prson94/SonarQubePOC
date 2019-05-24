@@ -4803,26 +4803,27 @@ from    ResponsibilityTypeRelationRule R
 
             var querySql = $@"
 select	top 100 percent 
-        A.ID, 
-        OA.[Uid],
-        OA.ID as AssetID, 
+        A.ObjectID as ID, 
+        A.[Uid],
+        A.ID as AssetID, 
         P.SubjectID as ParentID,
         TD.DisplayValue,
         {columns}
-        A.[Level],
+       -- 0 as Level,
         {permissionSql}
-from	[Policy] A 
-        inner join Asset OA on OA.Object = 'Policy' and OA.ObjectID = A.ID and A.PolicyTypeID = @id 
+from	
+        Asset A
+        inner join AssetType ATT on ATT.ID = A.AssetTypeID and ATT.ObjectID = @id  and A.Object = 'Policy'
         {joins} 
-        left join dbo.GetAssetDisplayValue() TD on TD.ID = OA.ID
+        left join dbo.GetAssetDisplayValue() TD on TD.ID = A.ID
         outer apply (
 					select	I.SubjectID
 					from	[Intersect] I
-                            inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = 'Policy' and I.ObjectID = A.ID
+                            inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = 'Policy' and I.ObjectID = A.ObjectID
 							inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
 					) P
-where   OA.ID not in ({Company.GetNoReadSqlStatement()})
-        and OA.AssetTypeID not in ({Company.GetAssetTypeNoReadSqlStatement()})";
+where   A.ID not in ({Company.GetNoReadSqlStatement()})
+        and A.AssetTypeID not in ({Company.GetAssetTypeNoReadSqlStatement()})";
 
             var sql = string.Format(@"select * from ({0}) A", querySql);
 
@@ -4830,7 +4831,7 @@ where   OA.ID not in ({Company.GetNoReadSqlStatement()})
 
             sql += " order by A.DisplayValue";
 
-            var policies = Company.Query<dynamic>(sql, new { id = id, r = Company.CurrentResourceID }).ToList();
+            var policies = Company.Query<dynamic>(sql, new { id, r = Company.CurrentResourceID }).ToList();
 
             return policies;
         }

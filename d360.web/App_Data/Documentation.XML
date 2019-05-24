@@ -2020,34 +2020,11 @@
             Used internally.
             </summary>
         </member>
-        <member name="M:d360.web.Controllers.Services.EventsController.GetPolicies">
-            <summary>
-            Gets an OData-queryable list of policies contained within your environment.
-            </summary>
-            <returns>A list of policies.</returns>
-        </member>
         <member name="M:d360.web.Controllers.Services.EventsController.GetRules">
             <summary>
             Gets an OData-queryable list of rules contained within your environment.
             </summary>
             <returns>A list of rules.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.EventsController.AddPolicy(System.Int32,System.Collections.Generic.Dictionary{System.String,System.String})">
-            <summary>
-            Add a policy to your environment.  Once created, this policy can hold child policies and rules.
-            </summary>
-            <param name="id">The type ID</param>
-            <param name="model">A policy</param>
-            <returns>Http Status. 401:Unauthorized, 404:NotFound, 201:Created.  If 201, the new policy is also returned.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.EventsController.EditPolicy(System.Int32,System.Int32,System.Collections.Generic.Dictionary{System.String,System.String})">
-            <summary>
-            Update a specific policy.
-            </summary>
-            <param name="typeID">The type ID</param>
-            <param name="id">The policy ID</param>
-            <param name="model">The policy fields</param>
-            <returns>Artifact</returns>
         </member>
         <member name="M:d360.web.Controllers.Services.EventsController.AddRule(System.Int32,d360.core.entities.RuleModel)">
             <summary>
@@ -2409,7 +2386,7 @@
             <param name="uid">The unique identifier of the asset cross reference.</param>
             <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted.</returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.CrossReferencesController.DeleteByDatasource(System.String,System.String)">
+        <member name="M:d360.web.Controllers.V2.CrossReferencesController.DeleteByDataSource(System.String,System.String)">
             <summary>
             Deletes any asset cross references with the specified datasource and type.
             </summary>

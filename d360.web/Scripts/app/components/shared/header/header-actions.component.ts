@@ -28,7 +28,7 @@ declare var CompanySettings;
                     <ul class="show-on-medium-and-down hide-on-large-only header-actions-list">             
                         <li class="header-action-li"><d3s-header-mini-menu></d3s-header-mini-menu></li>
                     </ul>
-                </div>
+                </div> 
                 `,
     providers: [FavoritesService]
 })

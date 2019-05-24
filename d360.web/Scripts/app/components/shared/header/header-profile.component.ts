@@ -12,20 +12,20 @@ declare var CompanySettings;
 
 @Component({
     selector: 'd3s-header-profile',
-    template: ` <span #item style="display:table;" class="header-search" [ngClass]="{'header-search-active':active}" (mouseenter)="show(item)" (mouseleave)="hide(item)" >
+    template: ` <span #item class="header-search header-table" [ngClass]="{'header-search-active':active}" (mouseenter)="show(item)" (mouseleave)="hide(item)" >
                     <a class="photo hide-on-med-and-down"><img [src]="'/resources/image/' + resourceId + '?size=25'" height="25" width="25" /></a>
                     <div class="show-on-medium-and-down hide-on-med-and-up">My Account <i class="fa fa-caret-right"></i></div>
                     <div class="search-child header-profile-panel">                        
                         <div class="row">          
-                            <div class="row"  style="opacity:0.5; padding:5px;">
+                            <div class="row header-profile-name">
                                 <div class="col s12"><h4>{{userName}}</h4></div>
                                 <div class="col s12"><h5>{{userEmail}}</h5></div>
                             </div>
                             <ul>
-                                <li [routerLink]="resourceUrl()" class="header-item">Edit Profile</li>
+                                <li [routerLink]="resourceUrl()" class="header-item">View Profile</li>
                                 <li *ngIf="showAllUsersAPIKey" [routerLink]="'/resource/my/apikey'" class="header-item">API Key</li>
                                 <li *ngIf="!singleSignOn"  [routerLink]="'/resource/'+resourceId+'/changepassword'" class="header-item">Change Password</li>
-                                <li class="header-item"><a style="padding:0px;" href="/slo" title="Sign out">Sign Out</a></li>
+                                <li class="header-item"><a class="sign-out" href="/slo" title="Sign out">Sign Out</a></li>
                             </ul>                                                    
                         </div>
                     </div>

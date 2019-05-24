@@ -182,6 +182,22 @@ insert into [api].[ExecutionField] (ExecutionID, ItemNumber, FieldName, FieldVal
 	where	A.ExecutionID = @executionID 
             and F.ItemNumber is null;",
                 new { executionID }, commandTimeout: timeout);
+
+                Connection.Execute(@"
+insert into [api].[ExecutionField] (ExecutionID, ItemNumber, FieldName, FieldValue, FieldTypeID, LookupValue, Ignore)
+	select	A.ExecutionID,
+            A.ItemNumber,
+			'FusionID',
+			R.FusionID,
+			0,
+			R.FusionID,
+			1
+	from	[api].[ExecutionAsset] A
+            inner join FusionAttribute R on A.Object = 'FusionAttribute' and R.ID = A.ObjectID
+			left join [api].[ExecutionField] F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldName = 'FusionID'
+	where	A.ExecutionID = @executionID 
+            and F.ItemNumber is null;",
+                new { executionID }, commandTimeout: timeout);
             }
         }
 
@@ -206,6 +222,19 @@ set		Success = 0,
 where	ExecutionID = @executionID
         and ParentAssetID is null
 		and ParentUid is not null;",
+            new { executionID }, commandTimeout: timeout);
+        }
+
+        private void LogErrorsWhereChildFusionConfigDifferentFromParent(Guid executionID, int timeout = 3600)
+        {
+            Connection.Execute(@"
+update	E
+set		E.Message = 'Unable to add or update child asset as the fusion configuration does not match it''s parent''s configuration.',
+		E.Success = 0
+from	api.ExecutionAsset E
+		inner join FusionAttribute P on P.ID = E.ParentObjectID and E.ParentObject = 'FusionAttribute'
+		inner join api.ExecutionField C on C.ExecutionID = E.ExecutionID and C.FieldName = 'FusionID' and C.FieldValue <> P.FusionID
+where	E.ExecutionID = @executionID;",
             new { executionID }, commandTimeout: timeout);
         }
 
@@ -1311,10 +1340,7 @@ from	IntersectType I
                                                 break;
                                             case "FusionAttributeType":
                                                 legacyTable = "FusionAttribute";
-                                                break;
-                                            case "PolicyType":
-                                                legacyTable = "[Policy]";
-                                                break;
+                                                break;                                            
                                             case "ReferenceItemType":
                                                 legacyTable = "ReferenceItem";
                                                 break;
@@ -1326,9 +1352,12 @@ from	IntersectType I
                                                 break;
                                         }
 
-                                        Connection.Execute(
-                                            $"delete {legacyTable} where ID in (select S.ObjectID from api.ExecutionDeletedAsset S where {querySuffix})",
-                                            new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                        if (!string.IsNullOrEmpty(legacyTable))
+                                        {
+                                            Connection.Execute(
+                                                $"delete {legacyTable} where ID in (select S.ObjectID from api.ExecutionDeletedAsset S where {querySuffix})",
+                                                new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                        }
 
                                         #endregion
 
@@ -2005,27 +2034,34 @@ from    api.ExecutionAsset T
 
                         if (at.Object == "FusionAttributeType")
                         {
+                            LogErrorsWhereChildFusionConfigDifferentFromParent(execution.ExecutionID);
+
                             Connection.Execute($@"
 update  T
 set     T.ProposedKey = utility.GetHash(S.ProposedKey)
 from    api.ExecutionAsset T
 		inner join	(
 					select		A.ItemNumber,
-								COALESCE(cast(A.ParentUid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.LookupValue, F.FieldValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ProposedKey
+								FC.FieldValue + '|' + COALESCE(cast(A.ParentUid as nvarchar(50))+'|', '') + FN.FieldValue + coalesce('|'+DF.DynamicProposedKey,'') as ProposedKey
 					from		api.ExecutionAsset A
-								inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber
-								left join FieldType FT on FT.AssetTypeID = @ID and FT.ID = F.FieldTypeID
-					where		A.ExecutionID = @ExecutionID	
-								and (F.FieldName = 'Name' OR FT.IsPartOfKey = 1)
-					group by	A.ItemNumber, A.ParentUid
+                                inner join api.ExecutionField FC on FC.ExecutionID = A.ExecutionID and FC.ItemNumber = A.ItemNumber and FC.FieldName = 'FusionID'
+                                inner join api.ExecutionField FN on FN.ExecutionID = A.ExecutionID and FN.ItemNumber = A.ItemNumber and FN.FieldName = 'Name'
+								outer apply (
+									select		DF.ItemNumber,
+												STRING_AGG(coalesce(DF.LookupValue, DF.FieldValue, DFT.DefaultValue), '|') within group (order by DFT.ColumnOrder asc, DFT.Name asc) as DynamicProposedKey
+									from		api.ExecutionField DF
+												inner join FieldType DFT on DFT.ID = DF.FieldTypeID and DFT.IsPartOfKey = 1 and DF.ExecutionID = A.ExecutionID and DF.ItemNumber = A.ItemNumber
+									group by    DF.ItemNumber
+								) DF
+					where		A.ExecutionID = @ExecutionID 
 					) S on T.ExecutionID = @ExecutionID and S.ItemNumber = T.ItemNumber;
 
 {keyTableTempCreation}
 
 insert into #Keys
     select	A.ID,
-		    COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + O.Name + COALESCE('|'+DF.ProposedKey,'') as ActiveKey,
-            utility.GetHash(COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + O.Name + COALESCE('|'+DF.ProposedKey,'')) as ActiveKeyHash
+		    cast(O.FusionID as nvarchar) + '|' + COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + O.Name + COALESCE('|'+DF.ProposedKey,'') as ActiveKey,
+            utility.GetHash(cast(O.FusionID as nvarchar) + '|' + COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + O.Name + COALESCE('|'+DF.ProposedKey,'')) as ActiveKeyHash
     from	Asset A 
 		    inner join FusionAttribute O on A.Object = 'FusionAttribute' and O.ID = A.ObjectID
 		    left join Asset P on P.Object = 'FusionAttribute' and P.ObjectID = O.ParentID and O.ParentID is not null
@@ -2371,7 +2407,7 @@ from	api.ExecutionAsset T
     create table #ObjectMergeTableResult (ID int, ItemNumber int);
     CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC );
 
-    merge   [Policy] as T
+    merge   [Asset] as T
     using   (
             select  ItemNumber
             from    api.ExecutionAsset
@@ -2379,11 +2415,11 @@ from	api.ExecutionAsset T
                     and Success is null
                     and ItemNumber between {beginItemNumber} and {endItemNumber}
             ) S
-    on      (T.PolicyTypeID = @ObjectID and T.SourceID = @NonExistentUid)
+    on      (T.AssetTypeID = @AssetTypeID and T.SourceID = @NonExistentUid)
     when    not matched then
-    insert  (PolicyTypeID, UpdatedBy, UpdatedOn)
-    values  (@ObjectID, @R, @D)
-    output  inserted.ID, S.ItemNumber into #ObjectMergeTableResult;
+    insert  (AssetTypeID,State,[Object], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+    values  (@AssetTypeID,1,'Policy', @R, @D, @R, @D)
+    output  inserted.ObjectID, S.ItemNumber into #ObjectMergeTableResult;
 
     update  T
     set     T.Object = 'Policy',
@@ -2401,8 +2437,8 @@ from	api.ExecutionAsset T
     update	T
     set		T.UpdatedBy = @R,
 		    T.UpdatedOn = @D
-    from	[Policy] T
-		    inner join api.ExecutionAsset S on S.ObjectID = T.ID and {executionAssetWhereSql};
+    from	[Asset] T
+		    inner join api.ExecutionAsset S on S.ObjectID = T.ObjectID and T.[Object] = 'Policy' and {executionAssetWhereSql};
 
     update	api.ExecutionAsset
     set		IsNew = 0

@@ -13,6 +13,7 @@ import * as _ from 'lodash';
 import { isString, isArray } from 'util';
 import { Element } from '@angular/compiler';
 import { SiteMenuCategoryComponent } from './site-menu-category.component';
+import { forEach } from '@angular/router/src/utils/collection';
 
 declare var CompanySettings;
 
@@ -161,10 +162,8 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                         menu.Icon = 'fa-folder';
                     }
 
-                    this.loadCounts(menu);
-
                 }
-
+               
                 this.siteMenu = _.sortBy(result.MenuItems, 'SortOrder'); // sort the menu's by display order
 
                 if (result.IsAdmin) {
@@ -177,25 +176,42 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                 this.isAdmin = result.IsAdmin;
 
                 this.ref.markForCheck();
+            }).then(() => {
+                this.siteMenuService.getCounts().then((res) => {
+                    this.siteMenu.forEach(menu => {
+                        this.loadCounts(menu, res);
+                    });
+                });
             });
     }
 
-    loadCounts(menu: any) {
+    loadCounts(menu: any, items: any[]) {
         if (menu && menu.NavigationItems && menu.NavigationItems.length > 0 && !menu.MenuID.startsWith('-')) {
-            menu.NavigationItems.forEach((item) => this.getCount(item));
+                menu.NavigationItems.forEach((item) => this.getAllCounts(item, items));
         }
     }
 
-    getCount(items) {
+    getAllCounts(items, arr:any[]) {
         if (isString(items.Name) && isString(items.Url) && items.Url.indexOf('/') != -1) {
             //get count for item
-            this.siteMenuService.getItemCount(items.Url.replace(new RegExp('/', 'g'), '-')).then((res) => { items.count = res; });
+            var id = _.findIndex(arr, function (o) {
+                let currentURL = items.Url.toLowerCase();
+                currentURL = items.Url.replace('model', 'taxonomy');
+                return o.Name == items.Name
+                    && _.includes(currentURL, o.Object.toLowerCase().replace('type', ''))
+                    && _.includes(currentURL, o.ObjectID);
+            });
+            if (id !== -1) {
+                items.count = arr[id].count;
+            } else {
+                items.count = 0;
+            }
         }
 
         //check if sub items exist
         if (isArray(items.Items)) {
             //recursively check sub items
-            items.Items.forEach((item) => this.getCount(item));
+            items.Items.forEach((item) => this.getAllCounts(item, arr));
         }
     }
 
