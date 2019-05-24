@@ -1056,9 +1056,24 @@ namespace d360.model
                 {
                     var val = item.CurrentDate ? DateTime.UtcNow.Date.ToShortDateString() : item.Value;
                     //if the value is a form value get it
-                    if (item.UseFormValue && !string.IsNullOrEmpty(item.FormField) && item.FormStepID > 0)
+                    if (!item.IsActionForm && item.UseFormValue && !string.IsNullOrEmpty(item.FormField) && item.FormStepID > 0)
                     {
                         val = GetFieldValueFromFormResponse(item, itemStep.ItemID);
+
+                        if (DateTime.TryParse(val, out DateTime tempDate))
+                        {
+                            val = tempDate.Date.ToShortDateString();
+                        }
+                    }
+                    //Get the value from action form (Issue)
+                    if (item.IsActionForm)
+                    {
+                        var fieldData = item.FormField.Split('|');
+                        if (fieldData.Count() == 2)
+                        {
+                            int fieldTypeId = int.Parse(fieldData[1]);
+                            val = Fields.FirstOrDefault(x => x.ObjectID == objectInfo.ObjectID && x.ObjectType == "Issue" && x.FieldTypeID == fieldTypeId)?.FormattedValue;
+                        }
 
                         if (DateTime.TryParse(val, out DateTime tempDate))
                         {
@@ -1072,7 +1087,7 @@ namespace d360.model
                     if (field == null)
                     {
                         //insert
-                        var newField = new core.entities.Field
+                        var newField = new Field
                         {
                             Value = val,
                             FieldTypeID = fieldType.ID,
@@ -1081,7 +1096,7 @@ namespace d360.model
                             UpdatedBy = CurrentResourceID
                         };
 
-                        Add<core.entities.Field>(newField);
+                        Add<Field>(newField);
                     }
                     else
                     {
@@ -1098,8 +1113,8 @@ namespace d360.model
                         {
                             //update
                             field.Value = val;
+
                         }
-                        SaveChanges();
                     }
 
                     //update asset table to trigger audit                    
@@ -1119,8 +1134,13 @@ namespace d360.model
 
             }
 
-            SaveChanges();
+            if (isAssetEdited)
+            {
+                var asset = Assets.Where(x => x.Object == issue.Object && x.ObjectID == issue.ObjectID).FirstOrDefault();
+                ObjectContext.ObjectStateManager.ChangeObjectState(asset, EntityState.Modified);
+            }
 
+            SaveChanges();
         }
 
         private string GetFieldValueIntersectFromFormResponse(WorkflowRelationshipUpdateSettings item, long itemId)

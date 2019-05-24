@@ -1,0 +1,3241 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="KMcNamee" id="GOV-7227-followdetail-a">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[    
+CREATE or ALTER  VIEW [dbo].[FollowDetail]  
+AS  
+ with ArtifactTypes as  
+ (  
+ select ID as FollowID,  
+   ObjectType as [Object],  
+   ObjectID,  
+   ResourceID,  
+   1 as HardFollow  
+ from Follow  
+ where ObjectType = 'ArtifactType' and FollowTypeID = 3  
+ union all  
+ select P.ID as FollowID,  
+   cast('Artifact' as varchar(50)) as [Object],  
+   A.ObjectID as ObjectID,  
+   P.ResourceID,  
+   0 as HardFollow  
+ from Asset A
+   inner join AssetType ATT on A.AssetTypeID = ATT.ID and A.[Object] = 'Artifact'  
+   inner join Follow P on P.ObjectType = 'ArtifactType' and P.ObjectID = ATT.ObjectID and P.FollowTypeID = 3  
+ ),  
+ DomainTypes as  
+ (  
+ select ID as FollowID,  
+   ObjectType as [Object],  
+   ObjectID,  
+   ResourceID,  
+   1 as HardFollow  
+ from Follow  
+ where ObjectType = 'ReferenceItemType' and FollowTypeID = 3  
+ ),  
+ Groups as  
+ (  
+ select ID as FollowID,  
+   ObjectType as [Object],  
+   ObjectID,  
+   ResourceID,  
+   1 as HardFollow  
+ from Follow  
+ where ObjectType = 'Group' and ObjectID = 0 and FollowTypeID = 3  
+ union all  
+ select P.ID as FollowID,  
+   P.ObjectType as [Object],  
+   C.ID as ObjectID,  
+   P.ResourceID,  
+   0 as HardFollow  
+ from [Group] C  
+   inner join Follow P on P.ObjectType = 'Group' and P.ObjectID = 0 and P.FollowTypeID = 3  
+ ),  
+ PolicyTypes as  
+ (  
+ select ID as FollowID,  
+   ObjectType as [Object],  
+   ObjectID,  
+   ResourceID,  
+   1 as HardFollow  
+ from Follow  
+ where ObjectType = 'PolicyType' and FollowTypeID = 3  
+ union all  
+ select P.ID as FollowID,  
+   cast('Policy' as varchar(50)) as [Object],  
+   A.ObjectID as ObjectID,  
+   P.ResourceID,  
+   0 as HardFollow  
+ from Asset A   
+   inner join AssetType ATT on ATT.ID = A.AssetTypeID and A.[Object] = 'Policy'
+   inner join Follow P on P.ObjectType = 'PolicyType' and P.ObjectID = ATT.ObjectID and P.FollowTypeID = 3  
+ ),  
+ PolicyParents as  
+ (  
+ select   
+   F.ID as FollowID,  
+   T.ObjectID as ID,     
+   null as ParentID,  
+   F.ResourceID,  
+   1 as HardFollow  
+ from AssetDetail T  
+   left join PredicateIntersect I on I.Object = 'Policy' and I.ObjectID = T.ObjectID and I.PredicateType = 4  
+   inner join Follow F on F.ObjectType = 'Policy' and F.ObjectID = T.ObjectID and F.FollowTypeID = 3  
+ where I.IntersectID is null and T.Object = 'Policy'  
+ union all  
+ select P.FollowID,  
+   T.ObjectID,  
+   I.SubjectID as ParentID,  
+   P.ResourceID,  
+   0 as HardFollow  
+ from AssetDetail T  
+   inner join PredicateIntersect I on I.Object = 'Policy' and I.ObjectID = T.ObjectID and I.PredicateType = 4  
+   inner join PolicyParents p on I.Subject = 'Policy' and I.SubjectID = p.ID  
+ where T.Object = 'Policy'  
+ ),  
+ Resources as  
+ (  
+ select ID as FollowID,  
+   ObjectType as [Object],  
+   ObjectID,  
+   ResourceID,  
+   1 as HardFollow  
+ from Follow  
+ where ObjectType = 'ResourceType' and FollowTypeID = 3  
+ union all  
+ select P.ID as FollowID,  
+   cast('Resource' as varchar(50)) as [Object],  
+   C.ResourceID as ObjectID,  
+   P.ResourceID,  
+   0 as HardFollow  
+ from reporting.Global_Resource C  
+   inner join Follow P on P.ObjectType = 'ResourceType' and P.FollowTypeID = 3  
+ where C.ResourceID > 0  
+ ),  
+TaxonomyParents as  
+ (  
+ select   
+   F.ID as FollowID,  
+   T.ObjectID as ID,     
+   null as ParentID,  
+   F.ResourceID,  
+   1 as HardFollow  
+ from AssetDetail T  
+   left join PredicateIntersect I on I.Object = 'Taxonomy' and I.ObjectID = T.ObjectID and I.PredicateType = 4  
+   inner join Follow F on F.ObjectType = 'Taxonomy' and F.ObjectID = T.ObjectID and F.FollowTypeID = 3  
+ where I.IntersectID is null and T.Object = 'Taxonomy'  
+ union all  
+ select P.FollowID,  
+   T.ObjectID,  
+   I.SubjectID as ParentID,  
+   P.ResourceID,  
+   0 as HardFollow  
+ from AssetDetail T  
+   inner join PredicateIntersect I on I.Object = 'Taxonomy' and I.ObjectID = T.ObjectID and I.PredicateType = 4  
+   inner join TaxonomyParents  p on I.Subject = 'Taxonomy' and I.SubjectID = p.ID  
+ where T.Object = 'Taxonomy'  
+ ) 
+  
+ SELECT  F.FollowID,  
+    F.ResourceID,  
+    R.Email,  
+    R.Email as FollowerEmail,  
+    R.FirstName + ' ' + R.LastName as FollowerName,  
+    R.FirstName as FollowerFirstName,  
+    R.LastName as FollowerLastName,  
+    'Resource' as FollowerObjectType,  
+    F.ResourceID as FollowerObjectID,  
+    dbo.GenerateAssetUrl((select ID from Asset where Object ='Resource' and ObjectID = F.ResourceID)) as FollowerUrl,  
+    F.ObjectID,  
+    F.[Object] as ObjectType,  
+    O.ObjectID as ID,  
+    O.Name,  
+    O.TextPath,  
+    O.Description,  
+    O.ParentID,  
+    O.Parent as ParentType,  
+    O.Url,  
+    O.ObjectTypeID as TypeID,  
+    O.ObjectType as [Type],  
+    case O.ObjectType  
+     when 'ResourceType' then 'User'  
+     when 'Group' then 'Group'  
+     else O.ObjectTypeName  
+    end as [TypeName],  
+    O.IconBackColor,  
+    O.IconForeColor,  
+    O.IconText,  
+    0 AS OpenEventCount,  
+    0 as CurrentScore,  
+    cast(F.HardFollow as bit) as HardFollow  
+ FROM  (  
+    select FollowID,  
+      [Object],   
+      ObjectID,   
+      ResourceID,   
+      HardFollow   
+    from ArtifactTypes  
+    union  
+    select FollowID,  
+      [Object],   
+      ObjectID,   
+      ResourceID,   
+      HardFollow   
+    from DomainTypes  
+    union  
+    select FollowID,  
+      [Object],   
+      ObjectID,   
+      ResourceID,   
+      HardFollow   
+    from Groups  
+    union  
+    select FollowID,  
+      [Object],   
+      ObjectID,   
+      ResourceID,   
+      HardFollow   
+    from PolicyTypes  
+    union  
+    select FollowID,  
+      'Policy',   
+      ID as ObjectID,   
+      ResourceID,   
+      HardFollow   
+    from PolicyParents  
+    union  
+    select FollowID,  
+      [Object],   
+      ObjectID,   
+      ResourceID,   
+      HardFollow   
+    from Resources  
+    union  
+    select FollowID,  
+      'Taxonomy' as [Object],   
+      ID as ObjectID,   
+      ResourceID,   
+      HardFollow   
+    from TaxonomyParents  
+    union  
+    select ID as FollowID,  
+      ObjectType as [Object],   
+      ObjectID,   
+      ResourceID,   
+      1 as HardFollow   
+    from Follow  
+    where FollowTypeID = 1   
+    ) F  
+    inner join reporting.Global_Resource R on R.ResourceID = F.ResourceID  
+    inner join cache.ObjectDetails O on O.[Object] = F.[Object] and O.ObjectID = F.ObjectID
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+	CREATE or ALTER  VIEW [dbo].[FollowDetail]  
+AS  
+ with ArtifactTypes as  
+ (  
+ select ID as FollowID,  
+   ObjectType as [Object],  
+   ObjectID,  
+   ResourceID,  
+   1 as HardFollow  
+ from Follow  
+ where ObjectType = 'ArtifactType' and FollowTypeID = 3  
+ union all  
+ select P.ID as FollowID,  
+   cast('Artifact' as varchar(50)) as [Object],  
+   C.ID as ObjectID,  
+   P.ResourceID,  
+   0 as HardFollow  
+ from Artifact C  
+   inner join Follow P on P.ObjectType = 'ArtifactType' and P.ObjectID = C.ArtifactTypeID and P.FollowTypeID = 3  
+ ),  
+ DomainTypes as  
+ (  
+ select ID as FollowID,  
+   ObjectType as [Object],  
+   ObjectID,  
+   ResourceID,  
+   1 as HardFollow  
+ from Follow  
+ where ObjectType = 'ReferenceItemType' and FollowTypeID = 3  
+ ),  
+ Groups as  
+ (  
+ select ID as FollowID,  
+   ObjectType as [Object],  
+   ObjectID,  
+   ResourceID,  
+   1 as HardFollow  
+ from Follow  
+ where ObjectType = 'Group' and ObjectID = 0 and FollowTypeID = 3  
+ union all  
+ select P.ID as FollowID,  
+   P.ObjectType as [Object],  
+   C.ID as ObjectID,  
+   P.ResourceID,  
+   0 as HardFollow  
+ from [Group] C  
+   inner join Follow P on P.ObjectType = 'Group' and P.ObjectID = 0 and P.FollowTypeID = 3  
+ ),  
+ PolicyTypes as  
+ (  
+ select ID as FollowID,  
+   ObjectType as [Object],  
+   ObjectID,  
+   ResourceID,  
+   1 as HardFollow  
+ from Follow  
+ where ObjectType = 'PolicyType' and FollowTypeID = 3  
+ union all  
+ select P.ID as FollowID,  
+   cast('Policy' as varchar(50)) as [Object],  
+   C.ID as ObjectID,  
+   P.ResourceID,  
+   0 as HardFollow  
+ from Policy C  
+   inner join Follow P on P.ObjectType = 'PolicyType' and P.ObjectID = C.PolicyTypeID and P.FollowTypeID = 3  
+ ),  
+ PolicyParents as  
+ (  
+ select   
+   F.ID as FollowID,  
+   T.ObjectID as ID,     
+   null as ParentID,  
+   F.ResourceID,  
+   1 as HardFollow  
+ from AssetDetail T  
+   left join PredicateIntersect I on I.Object = 'Policy' and I.ObjectID = T.ObjectID and I.PredicateType = 4  
+   inner join Follow F on F.ObjectType = 'Policy' and F.ObjectID = T.ObjectID and F.FollowTypeID = 3  
+ where I.IntersectID is null and T.Object = 'Policy'  
+ union all  
+ select P.FollowID,  
+   T.ObjectID,  
+   I.SubjectID as ParentID,  
+   P.ResourceID,  
+   0 as HardFollow  
+ from AssetDetail T  
+   inner join PredicateIntersect I on I.Object = 'Policy' and I.ObjectID = T.ObjectID and I.PredicateType = 4  
+   inner join PolicyParents p on I.Subject = 'Policy' and I.SubjectID = p.ID  
+ where T.Object = 'Policy'  
+ ),  
+ Resources as  
+ (  
+ select ID as FollowID,  
+   ObjectType as [Object],  
+   ObjectID,  
+   ResourceID,  
+   1 as HardFollow  
+ from Follow  
+ where ObjectType = 'ResourceType' and FollowTypeID = 3  
+ union all  
+ select P.ID as FollowID,  
+   cast('Resource' as varchar(50)) as [Object],  
+   C.ResourceID as ObjectID,  
+   P.ResourceID,  
+   0 as HardFollow  
+ from reporting.Global_Resource C  
+   inner join Follow P on P.ObjectType = 'ResourceType' and P.FollowTypeID = 3  
+ where C.ResourceID > 0  
+ ),  
+TaxonomyParents as  
+ (  
+ select   
+   F.ID as FollowID,  
+   T.ObjectID as ID,     
+   null as ParentID,  
+   F.ResourceID,  
+   1 as HardFollow  
+ from AssetDetail T  
+   left join PredicateIntersect I on I.Object = 'Taxonomy' and I.ObjectID = T.ObjectID and I.PredicateType = 4  
+   inner join Follow F on F.ObjectType = 'Taxonomy' and F.ObjectID = T.ObjectID and F.FollowTypeID = 3  
+ where I.IntersectID is null and T.Object = 'Taxonomy'  
+ union all  
+ select P.FollowID,  
+   T.ObjectID,  
+   I.SubjectID as ParentID,  
+   P.ResourceID,  
+   0 as HardFollow  
+ from AssetDetail T  
+   inner join PredicateIntersect I on I.Object = 'Taxonomy' and I.ObjectID = T.ObjectID and I.PredicateType = 4  
+   inner join TaxonomyParents  p on I.Subject = 'Taxonomy' and I.SubjectID = p.ID  
+ where T.Object = 'Taxonomy'  
+ ) 
+  
+ SELECT  F.FollowID,  
+    F.ResourceID,  
+    R.Email,  
+    R.Email as FollowerEmail,  
+    R.FirstName + ' ' + R.LastName as FollowerName,  
+    R.FirstName as FollowerFirstName,  
+    R.LastName as FollowerLastName,  
+    'Resource' as FollowerObjectType,  
+    F.ResourceID as FollowerObjectID,  
+    dbo.GenerateAssetUrl((select ID from Asset where Object ='Resource' and ObjectID = F.ResourceID)) as FollowerUrl,  
+    F.ObjectID,  
+    F.[Object] as ObjectType,  
+    O.ObjectID as ID,  
+    O.Name,  
+    O.TextPath,  
+    O.Description,  
+    O.ParentID,  
+    O.Parent as ParentType,  
+    O.Url,  
+    O.ObjectTypeID as TypeID,  
+    O.ObjectType as [Type],  
+    case O.ObjectType  
+     when 'ResourceType' then 'User'  
+     when 'Group' then 'Group'  
+     else O.ObjectTypeName  
+    end as [TypeName],  
+    O.IconBackColor,  
+    O.IconForeColor,  
+    O.IconText,  
+    0 AS OpenEventCount,  
+    0 as CurrentScore,  
+    cast(F.HardFollow as bit) as HardFollow  
+ FROM  (  
+    select FollowID,  
+      [Object],   
+      ObjectID,   
+      ResourceID,   
+      HardFollow   
+    from ArtifactTypes  
+    union  
+    select FollowID,  
+      [Object],   
+      ObjectID,   
+      ResourceID,   
+      HardFollow   
+    from DomainTypes  
+    union  
+    select FollowID,  
+      [Object],   
+      ObjectID,   
+      ResourceID,   
+      HardFollow   
+    from Groups  
+    union  
+    select FollowID,  
+      [Object],   
+      ObjectID,   
+      ResourceID,   
+      HardFollow   
+    from PolicyTypes  
+    union  
+    select FollowID,  
+      'Policy',   
+      ID as ObjectID,   
+      ResourceID,   
+      HardFollow   
+    from PolicyParents  
+    union  
+    select FollowID,  
+      [Object],   
+      ObjectID,   
+      ResourceID,   
+      HardFollow   
+    from Resources  
+    union  
+    select FollowID,  
+      'Taxonomy' as [Object],   
+      ID as ObjectID,   
+      ResourceID,   
+      HardFollow   
+    from TaxonomyParents  
+    union  
+    select ID as FollowID,  
+      ObjectType as [Object],   
+      ObjectID,   
+      ResourceID,   
+      1 as HardFollow   
+    from Follow  
+    where FollowTypeID = 1   
+    ) F  
+    inner join reporting.Global_Resource R on R.ResourceID = F.ResourceID  
+    inner join cache.ObjectDetails O on O.[Object] = F.[Object] and O.ObjectID = F.ObjectID
+		]]>
+	</rollback>
+  </changeSet>
+
+    <changeSet author="KMcNamee" id="GOV-7227-checkassetwithparent">
+      <sql dbms="mssql"
+              endDelimiter="\nGO"
+              splitStatements="true"
+              stripComments="true">
+        <![CDATA[   
+CREATE OR ALTER function [dbo].[CheckIfAssetExistsWithParent]
+(	
+	@AssetTypeID int,
+	@AssetID bigint, 
+	@Fields nvarchar(max), 
+	@ParentID int = -1
+)
+returns bit
+as
+begin
+	declare @ObjectType varchar(50);
+	declare @ObjectTypeID int;
+	declare @ObjectID int;
+
+	--wrapper around CheckIfObjectExistsWithParent until that is rewritten purely for assets / asset types this way we have one set of logic for both and not 2...
+	select 
+		@ObjectType = ATT.[Object], @ObjectTypeID = ATT.[ObjectID], @ObjectID = A.ObjectID 
+	from 
+		AssetType ATT 
+		inner join Asset A on (A.AssetTypeID = ATT.ID) 
+	where 
+		ATT.ID = @AssetTypeID and A.ID = @AssetID;
+
+	return [dbo].[CheckIfObjectExistsWithParent](@ObjectType,@ObjectTypeID,@ObjectID,@Fields,@ParentID);
+end
+      	  ]]>
+      </sql>
+    </changeSet>
+
+  <changeSet author="KMcNamee" id="GOV-7227-assetobjectseq">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[       
+	      IF OBJECT_ID('dbo.Asset_ObjectID_Seq', 'SO') IS NULL 
+        BEGIN
+            CREATE SEQUENCE Asset_ObjectID_Seq START WITH 100000000 INCREMENT BY 1;
+        END
+        ]]>
+    </sql>
+  </changeSet>
+
+
+  <changeSet author="KMcNamee" id="GOV-7227-assetconstraint">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[          
+      IF OBJECT_ID('dbo.DF_Asset_ObjectId', 'D') IS NULL 
+      BEGIN
+	      alter table asset add constraint DF_Asset_ObjectId default (next value for dbo.Asset_ObjectID_Seq) for ObjectID
+      END
+        ]]>
+    </sql>
+  </changeSet>
+
+  <changeSet author="KMcNamee" id="GOV-7227-assettypeobjectseq">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[ 
+      IF OBJECT_ID('dbo.AssetType_ObjectID_Seq', 'SO') IS NULL 
+      BEGIN
+          CREATE SEQUENCE AssetType_ObjectID_Seq START WITH 100000000 INCREMENT BY 1;
+      END      
+        ]]>
+    </sql>
+  </changeSet>
+
+
+  <changeSet author="KMcNamee" id="GOV-7227-assettypeconstraint">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[ 
+      IF OBJECT_ID('dbo.DF_AssetType_ObjectId', 'D') IS NULL 
+      BEGIN
+	      alter table assettype add constraint DF_AssetType_ObjectId default (next value for dbo.AssetType_ObjectID_Seq) for ObjectID
+      END
+        ]]>
+    </sql>
+  </changeSet>
+
+
+
+  <changeSet author="KMcNamee" id="GOV-7227-deleteobject">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[ 
+      ALTER procedure [dbo].[DeleteObject]    
+ @ObjTemp varchar(50),    
+ @ObjectIDTemp int,    
+ @ResourceIDTemp int    
+as     
+begin    
+ set nocount on    
+ declare    @Obj varchar(50) = @ObjTemp,    
+  @ObjectID int = @ObjectIDTemp,    
+  @ResourceID int = @ResourceIDTemp    
+     
+ declare    @Object varchar(50) = @Obj,    
+  @CurrentDate datetime = getutcdate(),    
+  @predicateType int = 0,    
+  @trans varchar(25) = 'Trans',    
+  @current int = 1,    
+  @max int,    
+  @IsType bit = 0    
+    
+ declare @h table (IntersectID int, ID bigint, ObjectID int, Processed bit null)    
+ declare @ht table (IntersectTypeID int, ID int, ObjectID int, Processed bit null)    
+ declare @workflowItem table (ItemId int)    
+ declare @ClearAttributes bit = 0,    
+   @ClearComments bit = 0,    
+   @ClearIntersects bit = 0,    
+   @ClearFavorites bit = 0,    
+   @ClearFields bit = 0,    
+   @ClearFollows bit = 0,    
+   @ClearIssues bit = 0,    
+   @ClearNyms bit = 0,    
+   @ClearResponsibilities bit = 0,    
+   @ClearSiteNav bit = 0,    
+   @ClearPromotion bit = 0    
+       
+    
+ if charindex('Type', @Object) > 0    
+ begin    
+  set @IsType = 1    
+ end    
+    
+ begin try    
+  begin transaction @trans    
+    
+  insert into @workflowItem    
+   select   distinct wi.Id from workflow.type wt    
+   inner join workflow.EventRegistration we on    
+   we.typeid = wt.id    
+   inner join workflow.version wv on    
+   wt.id = wv.typeId    
+   inner join [workflow].[Item] wi on    
+   wv.id = wi.VersionID    
+   where  we.changetype <> 3 and wi.[object]=@Obj and wi.objectId=@ObjectID     
+    
+  insert into @workflowItem    
+   select wi.id from workflow.item wi    
+   inner join Issue i on i.id = wi.objectid and wi.object = 'Issue'    
+   where i.object = @Obj and i.objectid = @ObjectID    
+    
+  if @Obj = 'Artifact' or @Obj = 'ArtifactType' or @Obj = 'FusionAttribute' or @Obj = 'FusionAttributeType' or @Obj = 'ReferenceItem' or @Obj = 'ReferenceItemType' or @Obj = 'Rule'    
+  begin    
+   set @predicateType = 3    
+  end    
+  if @Obj = 'Policy' or @Obj = 'PolicyType' or @Obj = 'Taxonomy' or @Obj = 'TaxonomyType'    
+  begin    
+   set @predicateType = 4    
+  end    
+    
+  if @predicateType > 0    
+  begin    
+   if @IsType = 1    
+    begin    
+     insert into @ht    
+      select null,    
+        ID,    
+        ObjectID,    
+        0    
+      from AssetType    
+      where [Object] = @Obj and ObjectID = @ObjectID    
+    
+     while exists(select 1 from @ht where Processed = 0)    
+     begin    
+      insert into @ht    
+       select I.ID,    
+         C.ID,    
+         C.ObjectID,    
+         null    
+       from AssetType C    
+         inner join IntersectType I on I.Subject = @Obj and I.Object = @Obj and I.ObjectID = C.ObjectID and C.[Object] = @Obj    
+         inner join [Predicate] PR on PR.ID = I.PredicateID and PR.[Type] = @predicateType    
+         inner join AssetType P on P.Object = I.Subject and P.ObjectID = I.SubjectID    
+         inner join @ht T on T.ID = P.ID and T.Processed = 0    
+    
+      update @ht set Processed = 1 where Processed = 0    
+      update @ht set Processed = 0 where Processed is null    
+     end    
+    
+         
+     insert into @h     
+      select null, ID, ObjectID, 1 from Asset where AssetTypeID in (select ID from @ht)    
+    end    
+   else    
+    begin    
+     insert into @h    
+      select null,    
+        ID,    
+        ObjectID,    
+        0    
+      from Asset    
+      where [Object] = @Obj and ObjectID = @ObjectID    
+    
+     while exists(select 1 from @h where Processed = 0)    
+     begin    
+      insert into @h    
+       select I.IntersectID,    
+         C.ID,    
+         C.ObjectID,    
+         null    
+       from Asset C    
+         inner join PredicateIntersect I on I.PredicateType = @predicateType and I.Subject = @Obj and I.Object = @Obj and I.ObjectID = C.ObjectID    
+         inner join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID    
+         inner join @h T on T.ID = P.ID and T.Processed = 0    
+    
+      update @h set Processed = 1 where Processed = 0    
+      update @h set Processed = 0 where Processed is null    
+     end    
+    end    
+  end    
+      
+      
+  INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])    
+   select 'ObjectIndex',     
+     'D',    
+     O.Object,     
+     O.ObjectID,    
+     O.ID    
+   from Asset O    
+     inner join @h I on O.ID = I.ID    
+    
+      
+  insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)    
+   select O.Object,     
+     O.ObjectID,    
+     SUBSTRING(O.DisplayValue,1,250),     
+     @ResourceID,     
+     @CurrentDate,     
+     'Deleted',     
+     O.Object,     
+     O.ObjectID,     
+     O.TypeName,     
+     SUBSTRING(O.DisplayValue,1,250),     
+     'This asset has been removed.'     
+   from AssetDetail O    
+     inner join @h I on O.ID = I.ID    
+   union    
+   select O.Object,     
+     O.ObjectID,     
+     O.Name,     
+     @ResourceID,     
+     @CurrentDate,     
+     'Deleted',     
+     O.Object,     
+     O.ObjectID,     
+     O.Name,     
+     O.Name,     
+     'This asset type has been removed.'     
+   from AssetType O    
+     inner join @ht I on O.ID = I.ID    
+    
+      
+  delete AssetDataProfile    
+  where AssetId in (select ID from @h)   
+
+  delete AssetCrossReference    
+  where [Uid] in (select [Uid]     
+        from Asset A    
+          inner join @h I on I.ID = A.ID)    
+  
+   
+    
+  delete AssetCrossReference    
+  where [Uid] in (select [Uid]     
+        from AssetType O    
+        inner join @ht I on O.ID = I.ID)    
+    
+    
+  if @Object = 'Artifact'    
+  begin    
+   set @ClearAttributes = 1    
+   set @ClearComments = 1    
+   set @ClearIntersects = 1    
+   set @ClearFavorites = 1    
+   set @ClearFields = 1    
+   set @ClearFollows = 1    
+   set @ClearIssues = 1    
+   set @ClearNyms = 1    
+   set @ClearResponsibilities = 1    
+   set @ClearPromotion = 1    
+    
+   delete Artifact where ID in (select ObjectID from @h)    
+  end    
+    
+  if @Object = 'ArtifactType'    
+  begin    
+   set @ClearAttributes = 1    
+   set @ClearComments = 1    
+   set @ClearIntersects = 1    
+   set @ClearFavorites = 1    
+   set @ClearFields = 1    
+   set @ClearFollows = 1    
+   set @ClearIssues = 1    
+   set @ClearNyms = 1    
+   set @ClearResponsibilities = 1    
+   set @ClearSiteNav = 1       
+       
+   delete Artifact    
+   where ID in (select ObjectID from @h)    
+    
+   delete ArtifactType       
+   where ID in (select ObjectID from @ht)    
+  end    
+    
+  if @Object = 'AttributeType'    
+  begin    
+   declare @at table (ID int)    
+   declare @a table (ID int);    
+    
+   with ht as (    
+      select ID,     
+        ParentID    
+      from AttributeType    
+      where ID = @ObjectID    
+      union all    
+      select C.ID,    
+        C.ParentID    
+      from AttributeType C    
+        inner join ht P on P.ID = C.ParentID    
+      )    
+    
+   insert into @at     
+    select ID from ht    
+    
+   insert into @a    
+    select ID from Attribute where AttributeTypeID in (select ID from @at)    
+    
+       
+   insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)    
+    select A.Object,     
+      A.ObjectID,     
+      A.DisplayValue,     
+      @ResourceID,     
+      @CurrentDate,     
+      'Deleted',     
+      'Attribute',     
+      O.ID,     
+      O.Name,     
+      O.FormattedValue,     
+      'This attribute has been removed.'     
+    from AttributeDetail O    
+      inner join AssetDetail A on A.Object = O.ObjectType and A.ObjectID = O.ObjectID    
+      inner join @a I on O.ID = I.ID    
+    union    
+    select A.Object,     
+      A.ObjectID,     
+      A.Name,     
+      @ResourceID,     
+      @CurrentDate,     
+      'Deleted',     
+      'AttributeType',     
+      O.ID,     
+      'Attribute Type',     
+      O.Name,     
+      'This attribute type has been removed.'     
+    from AttributeType O    
+      inner join @at I on O.ID = I.ID    
+      inner join AttributeTypeRelation R on R.AttributeTypeID = O.ID    
+      inner join AssetType A on A.Object = R.ObjectType and A.ObjectID = R.ObjectID    
+    
+   update T    
+   set  T.UpdatedBy = @ResourceID,    
+     T.UpdatedOn = @CurrentDate    
+   from Asset T    
+     inner join [Attribute] S on S.ObjectType = T.Object and S.ObjectID = T.ObjectID and S.ID in (select ID from @a)    
+    
+   update T    
+   set  T.UpdatedBy = @ResourceID,    
+     T.UpdatedOn = @CurrentDate    
+   from AssetType T    
+     inner join AttributeTypeRelation S on S.ObjectType = T.Object and S.ObjectID = T.ObjectID     
+     inner join AttributeType A on A.ID = S.AttributeTypeID and A.ID in (select ID from @at)    
+    
+   delete Field     where ObjectType = 'Attribute' and ObjectID in (select ID from @a)    
+   delete Attribute    where ID in (select ID from @a)    
+   delete FieldType    where Object = 'AttributeType' and ObjectID in (select ID from @at)    
+   delete AttributeTypeRelation where AttributeTypeID in (select ID from @at)    
+   delete AttributeType   where ID in (select ID from @at)    
+  end    
+    
+  if @Object = 'FieldType'    
+  begin    
+       
+   insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)    
+    select A.Object,     
+      A.ObjectID,     
+      A.DisplayValue,     
+      @ResourceID,     
+      @CurrentDate,     
+      'Deleted',     
+      A.Object,     
+      A.ObjectID,     
+      T.Name,     
+      O.FormattedValue,     
+      'This field has been removed.'     
+    from Field O    
+      inner join FieldType T on T.ID = O.FieldTypeID and T.ID = @ObjectID    
+      inner join AssetDetail A on A.Object = O.ObjectType and A.ObjectID = O.ObjectID    
+    union    
+    select A.Object,     
+      A.ObjectID,     
+      A.Name,     
+      @ResourceID,     
+      @CurrentDate,     
+      'Deleted',     
+      'FieldType',     
+      O.ID,     
+      'Field Type',     
+      O.Name,     
+      'This field type has been removed.'     
+    from FieldType O    
+      inner join AssetType A on A.Object = O.Object and A.ObjectID = O.ObjectID and O.ID = @ObjectID    
+    
+   update T    
+   set  T.UpdatedBy = @ResourceID,    
+     T.UpdatedOn = @CurrentDate    
+   from Asset T    
+     inner join Field S on S.ObjectType = T.Object and S.ObjectID = T.ObjectID and S.FieldTypeID = @ObjectID    
+    
+   update T    
+   set  T.UpdatedBy = @ResourceID,    
+     T.UpdatedOn = @CurrentDate    
+   from AssetType T    
+     inner join FieldType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ID = @ObjectID    
+    
+   delete Field     
+   where FieldTypeID = @ObjectID    
+       
+   update FieldType     
+   set  ParentFieldTypeID = null     
+   where ParentFieldTypeID = @ObjectID    
+    
+   delete FieldType     
+   where ID = @ObjectID    
+  end    
+    
+  if @Object = 'FusionAttribute'    
+  begin    
+   set @ClearAttributes = 1    
+   set @ClearComments = 1    
+   set @ClearIntersects = 1    
+   set @ClearFavorites = 1    
+   set @ClearFields = 1    
+   set @ClearFollows = 1    
+   set @ClearIssues = 1    
+   set @ClearNyms = 1    
+   set @ClearResponsibilities = 1    
+   set @ClearPromotion = 1    
+    
+   delete FusionAttribute where ID in (select ObjectID from @h)    
+  end    
+    
+  if @Object = 'FusionAttributeType'    
+  begin    
+   set @ClearAttributes = 1    
+   set @ClearComments = 1    
+   set @ClearIntersects = 1    
+   set @ClearFavorites = 1    
+   set @ClearFields = 1    
+   set @ClearFollows = 1    
+   set @ClearIssues = 1    
+   set @ClearNyms = 1    
+   set @ClearResponsibilities = 1    
+    
+   delete FusionAttribute  where ID in (select ObjectID from @h)    
+   delete FusionAttributeType where ID in (select ObjectID from @ht)    
+  end    
+    
+  if @Object = 'Fusion'    
+  begin    
+   set @ClearAttributes = 1    
+   set @ClearComments = 1    
+   set @ClearFavorites = 1    
+   set @ClearFields = 1    
+   set @ClearFollows = 1    
+   set @ClearIssues = 1    
+   set @ClearNyms = 1    
+   set @ClearResponsibilities = 1    
+    
+   insert into @h            
+    select I.ID, null, F.ID, null     
+    from [Intersect] I    
+    inner join IntersectType T on T.ID = I.IntersectTypeID    
+    inner join [Predicate] P on P.ID = T.PredicateID and P.[Type] = 3    
+    inner join FusionAttribute F on I.[Subject] = 'FusionAttribute' and I.[Object] = 'FusionAttribute'    
+     and (I.SubjectID = F.ID or I.ObjectID = F.ID) and F.FusionID = @ObjectID;    
+    
+   delete FusionAttribute where FusionID = @ObjectID    
+   delete Fusion where ID = @ObjectID    
+  end    
+    
+  if @Object = 'FusionType'    
+  begin    
+   set @ClearAttributes = 1    
+   set @ClearComments = 1    
+   set @ClearIntersects = 1     set @ClearFavorites = 1    
+   set @ClearFields = 1    
+   set @ClearFollows = 1    
+   set @ClearIssues = 1    
+   set @ClearNyms = 1    
+   set @ClearResponsibilities = 1    
+    
+   insert into @ht    
+    select ID, null, null, null    
+    from IntersectType    
+    where Subject = 'FusionAttributeType'     
+      and Object = 'FusionAttributeType'     
+      and (    
+       SubjectID in (select ID from FusionAttributeType where FusionTypeID = @ObjectID)    
+       or ObjectID in (select ID from FusionAttributeType where FusionTypeID = @ObjectID)    
+       )    
+    
+   insert into @h    
+    select ID, null, null, null from [Intersect] where IntersectTypeID in (select IntersectTypeID from @ht)    
+    
+   delete FusionAttribute where FusionAttributeTypeID in (select ID from FusionAttributeType where FusionTypeID = @ObjectID)    
+   delete Fusion where FusionTypeID = @ObjectID    
+   delete FusionAttributeType where FusionTypeID = @ObjectID    
+   delete FusionType where ID = @ObjectID    
+  end    
+    
+  if @Object = 'Intersect'    
+  begin    
+   update [Intersect] set Deleted = 1 where ID = @ObjectID    
+  end    
+    
+  if @Object = 'IntersectType'    
+  begin    
+   set @ClearAttributes = 1    
+   set @ClearFields = 1    
+    
+   delete [Intersect] where IntersectTypeID = @ObjectID    
+   delete IntersectType where ID = @ObjectID    
+  end    
+    
+  if @Object = 'LookupType'    
+  begin    
+   set @ClearFields = 1    
+    
+   delete [Lookup] where LookupTypeID = @ObjectID    
+   delete  LookupType where ID=@ObjectID    
+  end    
+    
+  if @Object = 'Policy'    
+  begin    
+   set @ClearAttributes = 1    
+   set @ClearComments = 1    
+   set @ClearIntersects = 1    
+   set @ClearFavorites = 1    
+   set @ClearFields = 1    
+   set @ClearFollows = 1    
+   set @ClearIssues = 1    
+   set @ClearNyms = 1    
+   set @ClearResponsibilities = 1    
+   set @ClearPromotion = 1    
+   
+   delete [Asset] where [Object] = 'Policy' and ObjectID in (select ObjectID from @h)    
+  end    
+    
+  if @Object = 'PolicyType'    
+  begin    
+   set @ClearAttributes = 1    
+   set @ClearComments = 1    
+   set @ClearIntersects = 1    
+   set @ClearFavorites = 1    
+   set @ClearFields = 1    
+   set @ClearFollows = 1    
+   set @ClearIssues = 1    
+   set @ClearNyms = 1    
+   set @ClearResponsibilities = 1    
+   set @ClearSiteNav = 1    
+   
+   delete [Asset] where AssetTypeID in (Select ID from AssetType where object='PolicyType' and objectId in (select ObjectID from @ht))      
+   delete AssetTypeLevel where AssetTypeID in (Select ID from AssetType where object='PolicyType' and objectId in (select ObjectID from @ht))   
+   delete AssetType where ID in (Select ID from AssetType where object='PolicyType' and objectId in (select ObjectID from @ht))   
+      
+  end    
+    
+  if @Object = 'ReferenceItem'    
+  begin    
+   set @ClearAttributes = 1    
+   set @ClearComments = 1    
+   set @ClearIntersects = 1    
+   set @ClearFavorites = 1    
+   set @ClearFields = 1    
+   set @ClearFollows = 1    
+   set @ClearIssues = 1    
+   set @ClearNyms = 1    
+   set @ClearResponsibilities = 1    
+    
+   delete ReferenceItem where ID = @ObjectID       
+  end    
+    
+  if @Object = 'ReferenceItemType'    
+  begin    
+   set @ClearAttributes = 1    
+   set @ClearComments = 1    
+   set @ClearIntersects = 1    
+   set @ClearFavorites = 1    
+   set @ClearFields = 1    
+   set @ClearFollows = 1    
+   set @ClearIssues = 1    
+   set @ClearNyms = 1    
+   set @ClearResponsibilities = 1    
+    
+   delete ReferenceItem where ReferenceItemTypeID = @ObjectID    
+   delete ReferenceItemType where ID = @ObjectID    
+  end    
+    
+  if @Object = 'ResponsibilityType'    
+  begin    
+   delete ResponsibilityTypeRelationOverrideItem where ResponsibilityTypeID = @ObjectID       
+   delete O from [dbo].[ResponsibilityRuleResultSecurityAsset] O inner join ResponsibilityTypeRelationRule R on O.RuleID = R.ID and R.ResponsibilityTypeID = @ObjectID    
+   delete O from [dbo].[ResponsibilityRuleResultAsset] O inner join ResponsibilityTypeRelationRule R on O.RuleID = R.ID and R.ResponsibilityTypeID = @ObjectID    
+   delete ResponsibilityTypeRelationRule where ResponsibilityTypeID = @ObjectID  
+   delete ResponsibilityTypeRelation where ResponsibilityTypeID = @ObjectID   
+   delete ResponsibilityType where ID = @ObjectID    
+  end    
+    
+  if @Object = 'Rule'    
+  begin    
+   set @ClearAttributes = 1    
+   set @ClearComments = 1    
+   set @ClearIntersects = 1    
+   set @ClearFavorites = 1    
+   set @ClearFields = 1    
+   set @ClearFollows = 1    
+   set @ClearIssues = 1    
+   set @ClearNyms = 1    
+   set @ClearResponsibilities = 1    
+    
+       
+   delete T    
+   from   RuleResultQualifierType T    
+       inner join RuleImplementation I on I.ID = T.RuleImplementationID and I.RuleID = @ObjectID    
+    
+   delete Q    
+   from RuleResultQualifier Q     
+     inner join RuleResult S on S.ID = Q.RuleResultID    
+     inner join RuleImplementation I on I.ID = S.RuleImplementationID and I.RuleID = @ObjectID    
+    
+   delete F    
+   from RuleResultFusionAttribute F    
+     inner join RuleResult S on S.ID = F.RuleResultID    
+     inner join RuleImplementation I on I.ID = S.RuleImplementationID and I.RuleID = @ObjectID    
+    
+   delete RuleImplementation where RuleID = @ObjectID    
+    
+   delete [Rule] where ID = @ObjectID    
+  end    
+    
+  if @Object = 'RuleType'    
+  begin    
+   set @ClearAttributes = 1    
+   set @ClearComments = 1    
+   set @ClearIntersects = 1    
+   set @ClearFavorites = 1    
+   set @ClearFields = 1    
+   set @ClearFollows = 1    
+   set @ClearIssues = 1    
+   set @ClearNyms = 1    
+   set @ClearResponsibilities = 1    
+    
+   delete Q    
+   from RuleResultQualifier Q     
+     inner join RuleResult S on S.ID = Q.RuleResultID    
+     inner join RuleImplementation I on I.ID = S.RuleImplementationID    
+     inner join [Rule] R on R.ID = I.RuleID and R.RuleTypeID = @ObjectID    
+    
+   delete F    
+   from RuleResultQualifierType F    
+     inner join RuleImplementation I on I.ID = F.RuleImplementationID    
+     inner join [Rule] R on R.ID = I.RuleID and R.RuleTypeID = @ObjectID    
+    
+   delete F    
+   from RuleResultFusionAttribute F    
+     inner join RuleResult S on S.ID = F.RuleResultID    
+     inner join RuleImplementation I on I.ID = S.RuleImplementationID    
+     inner join [Rule] R on R.ID = I.RuleID and R.RuleTypeID = @ObjectID    
+    
+   delete S    
+   from RuleResult S    
+     inner join RuleImplementation I on I.ID = S.RuleImplementationID    
+     inner join [Rule] R on R.ID = I.RuleID and R.RuleTypeID = @ObjectID    
+    
+   delete [RuleImplementation] where RuleID in (select ID from [Rule] where RuleTypeID = @ObjectID)    
+    
+   delete [Rule] where RuleTypeID = @ObjectID    
+    
+   delete RuleType where ID = @ObjectID    
+  end    
+    
+  if @Object = 'SurveyType'    
+  begin    
+   delete Survey where SurveyTypeID = @ObjectID    
+   delete SurveyType where ID = @ObjectID    
+  end    
+    
+  if @Object = 'Taxonomy'    
+  begin    
+   set @ClearAttributes = 1    
+   set @ClearComments = 1    
+   set @ClearIntersects = 1    
+   set @ClearFavorites = 1    
+   set @ClearFields = 1    
+   set @ClearFollows = 1    
+   set @ClearIssues = 1    
+   set @ClearNyms = 1    
+   set @ClearResponsibilities = 1    
+   set @ClearPromotion = 1    
+    
+   delete Taxonomy where ID in (select ObjectID from @h)    
+  end    
+    
+  if @Object = 'TaxonomyType'    
+  begin       set @ClearAttributes = 1    
+   set @ClearComments = 1    
+   set @ClearIntersects = 1    
+   set @ClearFavorites = 1    
+   set @ClearFields = 1    
+   set @ClearFollows = 1    
+   set @ClearIssues = 1    
+   set @ClearNyms = 1    
+   set @ClearResponsibilities = 1    
+   set @ClearSiteNav = 1    
+    
+   delete Taxonomy where TaxonomyTypeID = @ObjectID    
+   delete TaxonomyTypeLevel where TaxonomyTypeID = @ObjectID   
+   delete AssetTypeLevel where AssetTypeID in (Select ID from AssetType where object='TaxonomyType' and objectId in (select ObjectID from @ht))   
+   delete TaxonomyType where ID = @ObjectID    
+  end    
+    
+      
+    
+      
+  IF @ClearAttributes = 1 AND @IsType = 0    
+  BEGIN    
+   delete Field where ObjectType = 'Attribute' and ObjectID in (select ID from Attribute where ObjectType = @Object and ObjectID in (select ObjectID from @h))    
+   delete Attribute where ObjectType = @Object and ObjectID in (select ObjectID from @h)    
+  END    
+    
+      
+  IF @ClearIntersects = 1    
+  BEGIN    
+   DECLARE @tblIntersectIDs table (ID int)    
+    
+   INSERT INTO @tblIntersectIDs    
+    SELECT ID    
+    FROM [Intersect]    
+    WHERE (Subject = @Object and SubjectID in (select ObjectID from @h)) OR (Object = @Object and ObjectID in (select ObjectID from @h))    
+    
+       
+       
+       
+    
+   delete [Intersect] where ID in (select ID from @tblIntersectIDs)    
+  END    
+    
+      
+  IF @ClearComments = 1 AND @IsType = 0    
+  BEGIN    
+   delete CommentRelation    
+   where ObjectType = @Object     
+     and ObjectID in (select ObjectID from @h)    
+    
+   delete CommentVote    
+   where CommentID in (    
+        select ID    
+        from Comment    
+        where OwnerObjectType = @Object     
+          and OwnerObjectID in (select ObjectID from @h)       
+        )    
+    
+   delete Comment    
+   where OwnerObjectType = @Object     
+     and OwnerObjectID in (select ObjectID from @h)    
+  END    
+    
+      
+  IF @ClearSiteNav = 1    
+  BEGIN    
+   delete sitenav where objectid = @ObjectID and [object] = @Object    
+       
+       
+   delete nav    
+   from sitenav nav    
+   inner join @ht t on t.ObjectID = nav.ObjectID and nav.Object = @Object;    
+  END    
+    
+  IF @ClearPromotion = 1    
+  BEGIN    
+   delete from fusion.rulepromotion where objecttype = @Object and objectid = @ObjectID    
+  END     
+    
+      
+  IF @ClearFavorites = 1    
+  BEGIN    
+   IF @IsType = 1    
+    BEGIN    
+     delete Favorite    
+     where Object = @Object     
+       and ObjectID in (select ObjectID from @ht)    
+    END    
+   ELSE    
+    BEGIN     
+     delete Favorite    
+     where Object = @Object    
+       and ObjectID in (select ObjectID from @h)    
+    END    
+  END    
+    
+      
+  IF @ClearFields = 1    
+  BEGIN    
+   IF @IsType = 1    
+    BEGIN    
+     delete FieldType    
+     where [Object] = @Object     
+       and ObjectID in (select ObjectID from @ht)     
+    END    
+   ELSE    
+    BEGIN    
+     delete Field    
+     where ObjectType = @Object     
+       and ObjectID in (select ObjectID from @h)    
+    END    
+  END    
+    
+      
+  IF @ClearFollows = 1    
+  BEGIN    
+   IF @IsType = 1    
+    BEGIN    
+     delete Follow    
+     where ObjectType = @Object     
+       and ObjectID in (select ObjectID from @ht)    
+    END    
+   ELSE    
+    BEGIN     
+     delete Follow    
+     where ObjectType = @Object    
+       and ObjectID in (select ObjectID from @h)    
+    END    
+  END    
+    
+      
+  IF @ClearIssues = 1 AND @IsType = 0    
+  BEGIN    
+   delete Issue    
+   where Object = @Object     
+     and ObjectID in (select ObjectID from @h)    
+  END    
+    
+      
+  IF @ClearNyms = 1 AND @IsType = 0    
+  BEGIN    
+   IF @IsType = 1    
+    BEGIN     
+     delete NymRelation    
+     where Object = @Object     
+       and ObjectID in (select ObjectID from @ht)       
+    END    
+   ELSE    
+    BEGIN    
+     delete Nym    
+     where Object = @Object     
+       and ObjectID in (select ObjectID from @h)    
+    END    
+  END    
+    
+      
+  IF @ClearResponsibilities = 1 AND @IsType = 0    
+  BEGIN    
+   IF @IsType = 1    
+    BEGIN    
+     delete ResponsibilityTypeRelation  where ObjectType = @Obj and ObjectID in (select ObjectID from @ht)    
+    END    
+   ELSE    
+    BEGIN    
+     delete T    
+     from ResponsibilityTypeRelationOverrideItem T    
+     where   T.AssetID  in (select ID from @h)    
+    
+     delete T    
+     from [ResponsibilityRuleResultAsset] T    
+     where   T.AssetID in (select ID from @h)    
+    END    
+  END    
+      
+    
+  if @IsType = 1    
+  begin    
+   delete AttributeTypeRelation   where ObjectType = @Obj AND ObjectID in (select ObjectID from @ht)    
+   delete IntersectType     where (Object = @Obj and ObjectID in (select ObjectID from @ht)) OR (Subject = @Obj and SubjectID in (select ObjectID from @ht))    
+   delete ObjectStyle      where ObjectType = @Obj AND ObjectID in (select ObjectID from @ht)    
+  end    
+    
+  if exists(Select 1 from @workflowItem)    
+  begin    
+    
+     Delete from [workflow].[ItemAssignment]       
+      where ItemID in (Select wfi.ItemID from @workflowItem wfi )    
+    
+     Delete  from [workflow].[ItemStepTransition]     
+      where FromItemStepID in (select  wis.ID from workflow.itemstep wis    
+        where wis.ItemID in (Select wfi.ItemID from @workflowItem wfi))    
+       or ToItemStepID in (select  wis.ID from workflow.itemstep wis    
+        where wis.ItemID in (Select wfi.ItemID from @workflowItem wfi));    
+    
+     Delete  from workflow.itemstep     
+      where ItemID in (Select wfi.ItemID from @workflowItem wfi)    
+     
+     Delete  from [workflow].[Item]     
+      where Id in (Select wfi.ItemID from @workflowItem wfi)    
+    
+  end    
+     
+      
+  commit transaction @trans    
+ end try    
+ begin catch    
+  DECLARE @ErrorMessage NVARCHAR(4000)    
+  DECLARE @ErrorSeverity INT    
+     DECLARE @ErrorState INT    
+    
+  SELECT     
+   @ErrorMessage = ERROR_MESSAGE(),    
+   @ErrorSeverity = ERROR_SEVERITY(),    
+   @ErrorState = ERROR_STATE()    
+    
+      
+      
+      
+  RAISERROR (@ErrorMessage,     
+       @ErrorSeverity,     
+       @ErrorState     
+       )    
+    
+  rollback transaction @trans    
+ end catch    
+end
+        ]]>
+    </sql>
+    <rollback>
+      <![CDATA[ 
+      ALTER procedure [dbo].[DeleteObject]    
+ @ObjTemp varchar(50),    
+ @ObjectIDTemp int,    
+ @ResourceIDTemp int    
+as     
+begin    
+ set nocount on    
+ declare    @Obj varchar(50) = @ObjTemp,    
+  @ObjectID int = @ObjectIDTemp,    
+  @ResourceID int = @ResourceIDTemp    
+     
+ declare    @Object varchar(50) = @Obj,    
+  @CurrentDate datetime = getutcdate(),    
+  @predicateType int = 0,    
+  @trans varchar(25) = 'Trans',    
+  @current int = 1,    
+  @max int,    
+  @IsType bit = 0    
+    
+ declare @h table (IntersectID int, ID bigint, ObjectID int, Processed bit null)    
+ declare @ht table (IntersectTypeID int, ID int, ObjectID int, Processed bit null)    
+ declare @workflowItem table (ItemId int)    
+ declare @ClearAttributes bit = 0,    
+   @ClearComments bit = 0,    
+   @ClearIntersects bit = 0,    
+   @ClearFavorites bit = 0,    
+   @ClearFields bit = 0,    
+   @ClearFollows bit = 0,    
+   @ClearIssues bit = 0,    
+   @ClearNyms bit = 0,    
+   @ClearResponsibilities bit = 0,    
+   @ClearSiteNav bit = 0,    
+   @ClearPromotion bit = 0    
+       
+    
+ if charindex('Type', @Object) > 0    
+ begin    
+  set @IsType = 1    
+ end    
+    
+ begin try    
+  begin transaction @trans    
+    
+  insert into @workflowItem    
+   select   distinct wi.Id from workflow.type wt    
+   inner join workflow.EventRegistration we on    
+   we.typeid = wt.id    
+   inner join workflow.version wv on    
+   wt.id = wv.typeId    
+   inner join [workflow].[Item] wi on    
+   wv.id = wi.VersionID    
+   where  we.changetype <> 3 and wi.[object]=@Obj and wi.objectId=@ObjectID     
+    
+  insert into @workflowItem    
+   select wi.id from workflow.item wi    
+   inner join Issue i on i.id = wi.objectid and wi.object = 'Issue'    
+   where i.object = @Obj and i.objectid = @ObjectID    
+    
+  if @Obj = 'Artifact' or @Obj = 'ArtifactType' or @Obj = 'FusionAttribute' or @Obj = 'FusionAttributeType' or @Obj = 'ReferenceItem' or @Obj = 'ReferenceItemType' or @Obj = 'Rule'    
+  begin    
+   set @predicateType = 3    
+  end    
+  if @Obj = 'Policy' or @Obj = 'PolicyType' or @Obj = 'Taxonomy' or @Obj = 'TaxonomyType'    
+  begin    
+   set @predicateType = 4    
+  end    
+    
+  if @predicateType > 0    
+  begin    
+   if @IsType = 1    
+    begin    
+     insert into @ht    
+      select null,    
+        ID,    
+        ObjectID,    
+        0    
+      from AssetType    
+      where [Object] = @Obj and ObjectID = @ObjectID    
+    
+     while exists(select 1 from @ht where Processed = 0)    
+     begin    
+      insert into @ht    
+       select I.ID,    
+         C.ID,    
+         C.ObjectID,    
+         null    
+       from AssetType C    
+         inner join IntersectType I on I.Subject = @Obj and I.Object = @Obj and I.ObjectID = C.ObjectID and C.[Object] = @Obj    
+         inner join [Predicate] PR on PR.ID = I.PredicateID and PR.[Type] = @predicateType    
+         inner join AssetType P on P.Object = I.Subject and P.ObjectID = I.SubjectID    
+         inner join @ht T on T.ID = P.ID and T.Processed = 0    
+    
+      update @ht set Processed = 1 where Processed = 0    
+      update @ht set Processed = 0 where Processed is null    
+     end    
+    
+         
+     insert into @h     
+      select null, ID, ObjectID, 1 from Asset where AssetTypeID in (select ID from @ht)    
+    end    
+   else    
+    begin    
+     insert into @h    
+      select null,    
+        ID,    
+        ObjectID,    
+        0    
+      from Asset    
+      where [Object] = @Obj and ObjectID = @ObjectID    
+    
+     while exists(select 1 from @h where Processed = 0)    
+     begin    
+      insert into @h    
+       select I.IntersectID,    
+         C.ID,    
+         C.ObjectID,    
+         null    
+       from Asset C    
+         inner join PredicateIntersect I on I.PredicateType = @predicateType and I.Subject = @Obj and I.Object = @Obj and I.ObjectID = C.ObjectID    
+         inner join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID    
+         inner join @h T on T.ID = P.ID and T.Processed = 0    
+    
+      update @h set Processed = 1 where Processed = 0    
+      update @h set Processed = 0 where Processed is null    
+     end    
+    end    
+  end    
+      
+      
+  INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])    
+   select 'ObjectIndex',     
+     'D',    
+     O.Object,     
+     O.ObjectID,    
+     O.ID    
+   from Asset O    
+     inner join @h I on O.ID = I.ID    
+    
+      
+  insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)    
+   select O.Object,     
+     O.ObjectID,    
+     SUBSTRING(O.DisplayValue,1,250),     
+     @ResourceID,     
+     @CurrentDate,     
+     'Deleted',     
+     O.Object,     
+     O.ObjectID,     
+     O.TypeName,     
+     SUBSTRING(O.DisplayValue,1,250),     
+     'This asset has been removed.'     
+   from AssetDetail O    
+     inner join @h I on O.ID = I.ID    
+   union    
+   select O.Object,     
+     O.ObjectID,     
+     O.Name,     
+     @ResourceID,     
+     @CurrentDate,     
+     'Deleted',     
+     O.Object,     
+     O.ObjectID,     
+     O.Name,     
+     O.Name,     
+     'This asset type has been removed.'     
+   from AssetType O    
+     inner join @ht I on O.ID = I.ID    
+    
+      
+  delete AssetDataProfile    
+  where AssetId in (select ID from @h)   
+
+  delete AssetCrossReference    
+  where [Uid] in (select [Uid]     
+        from Asset A    
+          inner join @h I on I.ID = A.ID)    
+  
+   
+    
+  delete AssetCrossReference    
+  where [Uid] in (select [Uid]     
+        from AssetType O    
+        inner join @ht I on O.ID = I.ID)    
+    
+    
+  if @Object = 'Artifact'    
+  begin    
+   set @ClearAttributes = 1    
+   set @ClearComments = 1    
+   set @ClearIntersects = 1    
+   set @ClearFavorites = 1    
+   set @ClearFields = 1    
+   set @ClearFollows = 1    
+   set @ClearIssues = 1    
+   set @ClearNyms = 1    
+   set @ClearResponsibilities = 1    
+   set @ClearPromotion = 1    
+    
+   delete Artifact where ID in (select ObjectID from @h)    
+  end    
+    
+  if @Object = 'ArtifactType'    
+  begin    
+   set @ClearAttributes = 1    
+   set @ClearComments = 1    
+   set @ClearIntersects = 1    
+   set @ClearFavorites = 1    
+   set @ClearFields = 1    
+   set @ClearFollows = 1    
+   set @ClearIssues = 1    
+   set @ClearNyms = 1    
+   set @ClearResponsibilities = 1    
+   set @ClearSiteNav = 1       
+       
+   delete Artifact    
+   where ID in (select ObjectID from @h)    
+    
+   delete ArtifactType       
+   where ID in (select ObjectID from @ht)    
+  end    
+    
+  if @Object = 'AttributeType'    
+  begin    
+   declare @at table (ID int)    
+   declare @a table (ID int);    
+    
+   with ht as (    
+      select ID,     
+        ParentID    
+      from AttributeType    
+      where ID = @ObjectID    
+      union all    
+      select C.ID,    
+        C.ParentID    
+      from AttributeType C    
+        inner join ht P on P.ID = C.ParentID    
+      )    
+    
+   insert into @at     
+    select ID from ht    
+    
+   insert into @a    
+    select ID from Attribute where AttributeTypeID in (select ID from @at)    
+    
+       
+   insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)    
+    select A.Object,     
+      A.ObjectID,     
+      A.DisplayValue,     
+      @ResourceID,     
+      @CurrentDate,     
+      'Deleted',     
+      'Attribute',     
+      O.ID,     
+      O.Name,     
+      O.FormattedValue,     
+      'This attribute has been removed.'     
+    from AttributeDetail O    
+      inner join AssetDetail A on A.Object = O.ObjectType and A.ObjectID = O.ObjectID    
+      inner join @a I on O.ID = I.ID    
+    union    
+    select A.Object,     
+      A.ObjectID,     
+      A.Name,     
+      @ResourceID,     
+      @CurrentDate,     
+      'Deleted',     
+      'AttributeType',     
+      O.ID,     
+      'Attribute Type',     
+      O.Name,     
+      'This attribute type has been removed.'     
+    from AttributeType O    
+      inner join @at I on O.ID = I.ID    
+      inner join AttributeTypeRelation R on R.AttributeTypeID = O.ID    
+      inner join AssetType A on A.Object = R.ObjectType and A.ObjectID = R.ObjectID    
+    
+   update T    
+   set  T.UpdatedBy = @ResourceID,    
+     T.UpdatedOn = @CurrentDate    
+   from Asset T    
+     inner join [Attribute] S on S.ObjectType = T.Object and S.ObjectID = T.ObjectID and S.ID in (select ID from @a)    
+    
+   update T    
+   set  T.UpdatedBy = @ResourceID,    
+     T.UpdatedOn = @CurrentDate    
+   from AssetType T    
+     inner join AttributeTypeRelation S on S.ObjectType = T.Object and S.ObjectID = T.ObjectID     
+     inner join AttributeType A on A.ID = S.AttributeTypeID and A.ID in (select ID from @at)    
+    
+   delete Field     where ObjectType = 'Attribute' and ObjectID in (select ID from @a)    
+   delete Attribute    where ID in (select ID from @a)    
+   delete FieldType    where Object = 'AttributeType' and ObjectID in (select ID from @at)    
+   delete AttributeTypeRelation where AttributeTypeID in (select ID from @at)    
+   delete AttributeType   where ID in (select ID from @at)    
+  end    
+    
+  if @Object = 'FieldType'    
+  begin    
+       
+   insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)    
+    select A.Object,     
+      A.ObjectID,     
+      A.DisplayValue,     
+      @ResourceID,     
+      @CurrentDate,     
+      'Deleted',     
+      A.Object,     
+      A.ObjectID,     
+      T.Name,     
+      O.FormattedValue,     
+      'This field has been removed.'     
+    from Field O    
+      inner join FieldType T on T.ID = O.FieldTypeID and T.ID = @ObjectID    
+      inner join AssetDetail A on A.Object = O.ObjectType and A.ObjectID = O.ObjectID    
+    union    
+    select A.Object,     
+      A.ObjectID,     
+      A.Name,     
+      @ResourceID,     
+      @CurrentDate,     
+      'Deleted',     
+      'FieldType',     
+      O.ID,     
+      'Field Type',     
+      O.Name,     
+      'This field type has been removed.'     
+    from FieldType O    
+      inner join AssetType A on A.Object = O.Object and A.ObjectID = O.ObjectID and O.ID = @ObjectID    
+    
+   update T    
+   set  T.UpdatedBy = @ResourceID,    
+     T.UpdatedOn = @CurrentDate    
+   from Asset T    
+     inner join Field S on S.ObjectType = T.Object and S.ObjectID = T.ObjectID and S.FieldTypeID = @ObjectID    
+    
+   update T    
+   set  T.UpdatedBy = @ResourceID,    
+     T.UpdatedOn = @CurrentDate    
+   from AssetType T    
+     inner join FieldType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ID = @ObjectID    
+    
+   delete Field     
+   where FieldTypeID = @ObjectID    
+       
+   update FieldType     
+   set  ParentFieldTypeID = null     
+   where ParentFieldTypeID = @ObjectID    
+    
+   delete FieldType     
+   where ID = @ObjectID    
+  end    
+    
+  if @Object = 'FusionAttribute'    
+  begin    
+   set @ClearAttributes = 1    
+   set @ClearComments = 1    
+   set @ClearIntersects = 1    
+   set @ClearFavorites = 1    
+   set @ClearFields = 1    
+   set @ClearFollows = 1    
+   set @ClearIssues = 1    
+   set @ClearNyms = 1    
+   set @ClearResponsibilities = 1    
+   set @ClearPromotion = 1    
+    
+   delete FusionAttribute where ID in (select ObjectID from @h)    
+  end    
+    
+  if @Object = 'FusionAttributeType'    
+  begin    
+   set @ClearAttributes = 1    
+   set @ClearComments = 1    
+   set @ClearIntersects = 1    
+   set @ClearFavorites = 1    
+   set @ClearFields = 1    
+   set @ClearFollows = 1    
+   set @ClearIssues = 1    
+   set @ClearNyms = 1    
+   set @ClearResponsibilities = 1    
+    
+   delete FusionAttribute  where ID in (select ObjectID from @h)    
+   delete FusionAttributeType where ID in (select ObjectID from @ht)    
+  end    
+    
+  if @Object = 'Fusion'    
+  begin    
+   set @ClearAttributes = 1    
+   set @ClearComments = 1    
+   set @ClearFavorites = 1    
+   set @ClearFields = 1    
+   set @ClearFollows = 1    
+   set @ClearIssues = 1    
+   set @ClearNyms = 1    
+   set @ClearResponsibilities = 1    
+    
+       
+       
+       
+       
+       
+       
+       
+       
+    
+   insert into @h            
+    select I.ID, null, F.ID, null     
+    from [Intersect] I    
+    inner join IntersectType T on T.ID = I.IntersectTypeID    
+    inner join [Predicate] P on P.ID = T.PredicateID and P.[Type] = 3    
+    inner join FusionAttribute F on I.[Subject] = 'FusionAttribute' and I.[Object] = 'FusionAttribute'    
+     and (I.SubjectID = F.ID or I.ObjectID = F.ID) and F.FusionID = @ObjectID;    
+    
+   delete FusionAttribute where FusionID = @ObjectID    
+   delete Fusion where ID = @ObjectID    
+  end    
+    
+  if @Object = 'FusionType'    
+  begin    
+   set @ClearAttributes = 1    
+   set @ClearComments = 1    
+   set @ClearIntersects = 1     set @ClearFavorites = 1    
+   set @ClearFields = 1    
+   set @ClearFollows = 1    
+   set @ClearIssues = 1    
+   set @ClearNyms = 1    
+   set @ClearResponsibilities = 1    
+    
+   insert into @ht    
+    select ID, null, null, null    
+    from IntersectType    
+    where Subject = 'FusionAttributeType'     
+      and Object = 'FusionAttributeType'     
+      and (    
+       SubjectID in (select ID from FusionAttributeType where FusionTypeID = @ObjectID)    
+       or ObjectID in (select ID from FusionAttributeType where FusionTypeID = @ObjectID)    
+       )    
+    
+   insert into @h    
+    select ID, null, null, null from [Intersect] where IntersectTypeID in (select IntersectTypeID from @ht)    
+    
+   delete FusionAttribute where FusionAttributeTypeID in (select ID from FusionAttributeType where FusionTypeID = @ObjectID)    
+   delete Fusion where FusionTypeID = @ObjectID    
+   delete FusionAttributeType where FusionTypeID = @ObjectID    
+   delete FusionType where ID = @ObjectID    
+  end    
+    
+  if @Object = 'Intersect'    
+  begin    
+   update [Intersect] set Deleted = 1 where ID = @ObjectID    
+  end    
+    
+  if @Object = 'IntersectType'    
+  begin    
+   set @ClearAttributes = 1    
+   set @ClearFields = 1    
+    
+   delete [Intersect] where IntersectTypeID = @ObjectID    
+   delete IntersectType where ID = @ObjectID    
+  end    
+    
+  if @Object = 'LookupType'    
+  begin    
+   set @ClearFields = 1    
+    
+   delete [Lookup] where LookupTypeID = @ObjectID    
+   delete  LookupType where ID=@ObjectID    
+  end    
+    
+  if @Object = 'Policy'    
+  begin    
+   set @ClearAttributes = 1    
+   set @ClearComments = 1    
+   set @ClearIntersects = 1    
+   set @ClearFavorites = 1    
+   set @ClearFields = 1    
+   set @ClearFollows = 1    
+   set @ClearIssues = 1    
+   set @ClearNyms = 1    
+   set @ClearResponsibilities = 1    
+   set @ClearPromotion = 1    
+    
+   delete [Policy] where ID in (select ObjectID from @h)    
+  end    
+    
+  if @Object = 'PolicyType'    
+  begin    
+   set @ClearAttributes = 1    
+   set @ClearComments = 1    
+   set @ClearIntersects = 1    
+   set @ClearFavorites = 1    
+   set @ClearFields = 1    
+   set @ClearFollows = 1    
+   set @ClearIssues = 1    
+   set @ClearNyms = 1    
+   set @ClearResponsibilities = 1    
+   set @ClearSiteNav = 1    
+    
+   delete [Policy] where PolicyTypeID in (select ObjectID from @ht)    
+   delete PolicyTypeLevel where PolicyTypeID in (select ObjectID from @ht)   
+   delete AssetTypeLevel where AssetTypeID in (Select ID from AssetType where object='PolicyType' and objectId in (select ObjectID from @ht))   
+   delete PolicyType where ID in (select ObjectID from @ht)    
+  end    
+    
+  if @Object = 'ReferenceItem'    
+  begin    
+   set @ClearAttributes = 1    
+   set @ClearComments = 1    
+   set @ClearIntersects = 1    
+   set @ClearFavorites = 1    
+   set @ClearFields = 1    
+   set @ClearFollows = 1    
+   set @ClearIssues = 1    
+   set @ClearNyms = 1    
+   set @ClearResponsibilities = 1    
+    
+   delete ReferenceItem where ID = @ObjectID       
+  end    
+    
+  if @Object = 'ReferenceItemType'    
+  begin    
+   set @ClearAttributes = 1    
+   set @ClearComments = 1    
+   set @ClearIntersects = 1    
+   set @ClearFavorites = 1    
+   set @ClearFields = 1    
+   set @ClearFollows = 1    
+   set @ClearIssues = 1    
+   set @ClearNyms = 1    
+   set @ClearResponsibilities = 1    
+    
+   delete ReferenceItem where ReferenceItemTypeID = @ObjectID    
+   delete ReferenceItemType where ID = @ObjectID    
+  end    
+    
+  if @Object = 'ResponsibilityType'    
+  begin    
+   delete ResponsibilityTypeRelationOverrideItem where ResponsibilityTypeID = @ObjectID       
+   delete O from [dbo].[ResponsibilityRuleResultSecurityAsset] O inner join ResponsibilityTypeRelationRule R on O.RuleID = R.ID and R.ResponsibilityTypeID = @ObjectID    
+   delete O from [dbo].[ResponsibilityRuleResultAsset] O inner join ResponsibilityTypeRelationRule R on O.RuleID = R.ID and R.ResponsibilityTypeID = @ObjectID    
+   delete ResponsibilityTypeRelationRule where ResponsibilityTypeID = @ObjectID  
+   delete ResponsibilityTypeRelation where ResponsibilityTypeID = @ObjectID   
+   delete ResponsibilityType where ID = @ObjectID    
+  end    
+    
+  if @Object = 'Rule'    
+  begin    
+   set @ClearAttributes = 1    
+   set @ClearComments = 1    
+   set @ClearIntersects = 1    
+   set @ClearFavorites = 1    
+   set @ClearFields = 1    
+   set @ClearFollows = 1    
+   set @ClearIssues = 1    
+   set @ClearNyms = 1    
+   set @ClearResponsibilities = 1    
+    
+       
+   delete T    
+   from   RuleResultQualifierType T    
+       inner join RuleImplementation I on I.ID = T.RuleImplementationID and I.RuleID = @ObjectID    
+    
+   delete Q    
+   from RuleResultQualifier Q     
+     inner join RuleResult S on S.ID = Q.RuleResultID    
+     inner join RuleImplementation I on I.ID = S.RuleImplementationID and I.RuleID = @ObjectID    
+    
+   delete F    
+   from RuleResultFusionAttribute F    
+     inner join RuleResult S on S.ID = F.RuleResultID    
+     inner join RuleImplementation I on I.ID = S.RuleImplementationID and I.RuleID = @ObjectID    
+    
+   delete RuleImplementation where RuleID = @ObjectID    
+    
+   delete [Rule] where ID = @ObjectID    
+  end    
+    
+  if @Object = 'RuleType'    
+  begin    
+   set @ClearAttributes = 1    
+   set @ClearComments = 1    
+   set @ClearIntersects = 1    
+   set @ClearFavorites = 1    
+   set @ClearFields = 1    
+   set @ClearFollows = 1    
+   set @ClearIssues = 1    
+   set @ClearNyms = 1    
+   set @ClearResponsibilities = 1    
+    
+   delete Q    
+   from RuleResultQualifier Q     
+     inner join RuleResult S on S.ID = Q.RuleResultID    
+     inner join RuleImplementation I on I.ID = S.RuleImplementationID    
+     inner join [Rule] R on R.ID = I.RuleID and R.RuleTypeID = @ObjectID    
+    
+   delete F    
+   from RuleResultQualifierType F    
+     inner join RuleImplementation I on I.ID = F.RuleImplementationID    
+     inner join [Rule] R on R.ID = I.RuleID and R.RuleTypeID = @ObjectID    
+    
+   delete F    
+   from RuleResultFusionAttribute F    
+     inner join RuleResult S on S.ID = F.RuleResultID    
+     inner join RuleImplementation I on I.ID = S.RuleImplementationID    
+     inner join [Rule] R on R.ID = I.RuleID and R.RuleTypeID = @ObjectID    
+    
+   delete S    
+   from RuleResult S    
+     inner join RuleImplementation I on I.ID = S.RuleImplementationID    
+     inner join [Rule] R on R.ID = I.RuleID and R.RuleTypeID = @ObjectID    
+    
+   delete [RuleImplementation] where RuleID in (select ID from [Rule] where RuleTypeID = @ObjectID)    
+    
+   delete [Rule] where RuleTypeID = @ObjectID    
+    
+   delete RuleType where ID = @ObjectID    
+  end    
+    
+  if @Object = 'SurveyType'    
+  begin    
+   delete Survey where SurveyTypeID = @ObjectID    
+   delete SurveyType where ID = @ObjectID    
+  end    
+    
+  if @Object = 'Taxonomy'    
+  begin    
+   set @ClearAttributes = 1    
+   set @ClearComments = 1    
+   set @ClearIntersects = 1    
+   set @ClearFavorites = 1    
+   set @ClearFields = 1    
+   set @ClearFollows = 1    
+   set @ClearIssues = 1    
+   set @ClearNyms = 1    
+   set @ClearResponsibilities = 1    
+   set @ClearPromotion = 1    
+    
+   delete Taxonomy where ID in (select ObjectID from @h)    
+  end    
+    
+  if @Object = 'TaxonomyType'    
+  begin       set @ClearAttributes = 1    
+   set @ClearComments = 1    
+   set @ClearIntersects = 1    
+   set @ClearFavorites = 1    
+   set @ClearFields = 1    
+   set @ClearFollows = 1    
+   set @ClearIssues = 1    
+   set @ClearNyms = 1    
+   set @ClearResponsibilities = 1    
+   set @ClearSiteNav = 1    
+    
+   delete Taxonomy where TaxonomyTypeID = @ObjectID    
+   delete TaxonomyTypeLevel where TaxonomyTypeID = @ObjectID   
+   delete AssetTypeLevel where AssetTypeID in (Select ID from AssetType where object='TaxonomyType' and objectId in (select ObjectID from @ht))   
+   delete TaxonomyType where ID = @ObjectID    
+  end    
+    
+      
+    
+      
+  IF @ClearAttributes = 1 AND @IsType = 0    
+  BEGIN    
+   delete Field where ObjectType = 'Attribute' and ObjectID in (select ID from Attribute where ObjectType = @Object and ObjectID in (select ObjectID from @h))    
+   delete Attribute where ObjectType = @Object and ObjectID in (select ObjectID from @h)    
+  END    
+    
+      
+  IF @ClearIntersects = 1    
+  BEGIN    
+   DECLARE @tblIntersectIDs table (ID int)    
+    
+   INSERT INTO @tblIntersectIDs    
+    SELECT ID    
+    FROM [Intersect]    
+    WHERE (Subject = @Object and SubjectID in (select ObjectID from @h)) OR (Object = @Object and ObjectID in (select ObjectID from @h))    
+    
+       
+       
+       
+    
+   delete [Intersect] where ID in (select ID from @tblIntersectIDs)    
+  END    
+    
+      
+  IF @ClearComments = 1 AND @IsType = 0    
+  BEGIN    
+   delete CommentRelation    
+   where ObjectType = @Object     
+     and ObjectID in (select ObjectID from @h)    
+    
+   delete CommentVote    
+   where CommentID in (    
+        select ID    
+        from Comment    
+        where OwnerObjectType = @Object     
+          and OwnerObjectID in (select ObjectID from @h)       
+        )    
+    
+   delete Comment    
+   where OwnerObjectType = @Object     
+     and OwnerObjectID in (select ObjectID from @h)    
+  END    
+    
+      
+  IF @ClearSiteNav = 1    
+  BEGIN    
+   delete sitenav where objectid = @ObjectID and [object] = @Object    
+       
+       
+   delete nav    
+   from sitenav nav    
+   inner join @ht t on t.ObjectID = nav.ObjectID and nav.Object = @Object;    
+  END    
+    
+  IF @ClearPromotion = 1    
+  BEGIN    
+   delete from fusion.rulepromotion where objecttype = @Object and objectid = @ObjectID    
+  END     
+    
+      
+  IF @ClearFavorites = 1    
+  BEGIN    
+   IF @IsType = 1    
+    BEGIN    
+     delete Favorite    
+     where Object = @Object     
+       and ObjectID in (select ObjectID from @ht)    
+    END    
+   ELSE    
+    BEGIN     
+     delete Favorite    
+     where Object = @Object    
+       and ObjectID in (select ObjectID from @h)    
+    END    
+  END    
+    
+      
+  IF @ClearFields = 1    
+  BEGIN    
+   IF @IsType = 1    
+    BEGIN    
+     delete FieldType    
+     where [Object] = @Object     
+       and ObjectID in (select ObjectID from @ht)     
+    END    
+   ELSE    
+    BEGIN    
+     delete Field    
+     where ObjectType = @Object     
+       and ObjectID in (select ObjectID from @h)    
+    END    
+  END    
+    
+      
+  IF @ClearFollows = 1    
+  BEGIN    
+   IF @IsType = 1    
+    BEGIN    
+     delete Follow    
+     where ObjectType = @Object     
+       and ObjectID in (select ObjectID from @ht)    
+    END    
+   ELSE    
+    BEGIN     
+     delete Follow    
+     where ObjectType = @Object    
+       and ObjectID in (select ObjectID from @h)    
+    END    
+  END    
+    
+      
+  IF @ClearIssues = 1 AND @IsType = 0    
+  BEGIN    
+   delete Issue    
+   where Object = @Object     
+     and ObjectID in (select ObjectID from @h)    
+  END    
+    
+      
+  IF @ClearNyms = 1 AND @IsType = 0    
+  BEGIN    
+   IF @IsType = 1    
+    BEGIN     
+     delete NymRelation    
+     where Object = @Object     
+       and ObjectID in (select ObjectID from @ht)       
+    END    
+   ELSE    
+    BEGIN    
+     delete Nym    
+     where Object = @Object     
+       and ObjectID in (select ObjectID from @h)    
+    END    
+  END    
+    
+      
+  IF @ClearResponsibilities = 1 AND @IsType = 0    
+  BEGIN    
+   IF @IsType = 1    
+    BEGIN    
+     delete ResponsibilityTypeRelation  where ObjectType = @Obj and ObjectID in (select ObjectID from @ht)    
+    END    
+   ELSE    
+    BEGIN    
+     delete T    
+     from ResponsibilityTypeRelationOverrideItem T    
+     where   T.AssetID  in (select ID from @h)    
+    
+     delete T    
+     from [ResponsibilityRuleResultAsset] T    
+     where   T.AssetID in (select ID from @h)    
+    END    
+  END    
+      
+    
+  if @IsType = 1    
+  begin    
+   delete AttributeTypeRelation   where ObjectType = @Obj AND ObjectID in (select ObjectID from @ht)    
+   delete IntersectType     where (Object = @Obj and ObjectID in (select ObjectID from @ht)) OR (Subject = @Obj and SubjectID in (select ObjectID from @ht))    
+   delete ObjectStyle      where ObjectType = @Obj AND ObjectID in (select ObjectID from @ht)    
+  end    
+    
+  if exists(Select 1 from @workflowItem)    
+  begin    
+    
+     Delete from [workflow].[ItemAssignment]       
+      where ItemID in (Select wfi.ItemID from @workflowItem wfi )    
+    
+     Delete  from [workflow].[ItemStepTransition]     
+      where FromItemStepID in (select  wis.ID from workflow.itemstep wis    
+        where wis.ItemID in (Select wfi.ItemID from @workflowItem wfi))    
+       or ToItemStepID in (select  wis.ID from workflow.itemstep wis    
+        where wis.ItemID in (Select wfi.ItemID from @workflowItem wfi));    
+    
+     Delete  from workflow.itemstep     
+      where ItemID in (Select wfi.ItemID from @workflowItem wfi)    
+     
+     Delete  from [workflow].[Item]     
+      where Id in (Select wfi.ItemID from @workflowItem wfi)    
+    
+  end    
+     
+      
+  commit transaction @trans    
+ end try    
+ begin catch    
+  DECLARE @ErrorMessage NVARCHAR(4000)    
+  DECLARE @ErrorSeverity INT    
+     DECLARE @ErrorState INT    
+    
+  SELECT     
+   @ErrorMessage = ERROR_MESSAGE(),    
+   @ErrorSeverity = ERROR_SEVERITY(),    
+   @ErrorState = ERROR_STATE()    
+    
+      
+      
+      
+  RAISERROR (@ErrorMessage,     
+       @ErrorSeverity,     
+       @ErrorState     
+       )    
+    
+  rollback transaction @trans    
+ end catch    
+end
+      
+      ]]>
+    </rollback>
+  </changeSet>
+
+
+  <changeSet author="KMcNamee" id="GOV-7227-apideleteassettype">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[ 
+ALTER procedure [api].[DeleteAssetType]
+	@executionUid uniqueidentifier,
+	@itemNumber int,
+	@resource int
+as
+begin
+	set nocount on;
+
+	declare @date datetime = getutcdate(),
+			@success bit;
+
+	BEGIN TRANSACTION [Tran1]
+
+	BEGIN TRY
+
+		select	@success = Success
+		from	api.ExecutionDeletedAssetType
+		where	ExecutionID = @executionUid
+				and ItemNumber = @itemNumber
+				and FromHierarchy = 0;
+
+		if @success is null or @success = 1
+		begin
+
+			with h as (
+				select	D.ExecutionID,
+						D.ItemNumber,
+						D.AssetTypeID,
+						D.[Uid],
+						A.Object,
+						A.ObjectID, 
+						D.IntersectTypeID,
+						0 as [Level]
+				from	api.ExecutionDeletedAssetType D
+						inner join AssetType A on D.ExecutionID = @executionUid and A.ID = D.AssetTypeID and D.ItemNumber = @itemNumber
+				where	D.AssetTypeID is not null
+				union all
+				select	P.ExecutionID,
+						P.ItemNumber,
+						C.ID as AssetTypeID,
+						C.[Uid],
+						C.Object,
+						C.ObjectID, 
+						I.ID as IntersectTypeID,
+						P.[Level] + 1 as [Level]
+				from	IntersectType I 
+						inner join h as P on P.ExecutionID = @executionUid and P.Object = I.Subject and P.ObjectID = I.SubjectID
+						inner join AssetType C on C.Object = I.Object and C.ObjectID = I.ObjectID
+						inner join [Predicate] PR on PR.ID = I.PredicateID and PR.[Type] in (3,4)
+				where   P.[Level] <= 15
+			)
+			insert into api.ExecutionDeletedAssetType ([ExecutionID],[ItemNumber],[Uid],[AssetTypeID],Object,ObjectID,[IntersectTypeID],[FromHierarchy])
+				select  distinct 
+						ExecutionID, 
+						ItemNumber, 
+						[Uid], 
+						AssetTypeID, 
+						Object,
+						ObjectID,
+						IntersectTypeID, 
+						1 
+				from    h 
+				where   IntersectTypeID is not null 
+						and [Level] > 0 
+						and Uid not in (select Uid from api.ExecutionDeletedAsset where ExecutionID = @executionUid);
+			
+			INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
+				select	'ObjectIndex', 
+						'D',
+						A.Object, 
+						A.ObjectID, 
+						A.ID
+				from	Asset A
+						inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			delete	T
+			from	api.EntityFieldTypeMultiSelectField T
+					inner join api.EntityFieldType F on F.ID = T.EntityFieldTypeID
+					inner join api.Entity E on E.ID = F.EntityID
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	api.EntityFieldType T
+					inner join api.Entity E on E.ID = T.EntityID
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	api.EntityUri T
+					inner join api.Entity E on E.ID = T.EntityID
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	api.Entity T
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = T.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			delete	T
+			from	Field T 
+					inner join [Attribute] A on T.ObjectType = 'Attribute' and A.ID = T.ObjectID
+					inner join Asset O on O.Object = A.ObjectType and O.ObjectID = A.ObjectID 
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	[Attribute] T
+					inner join Asset O on O.Object = T.ObjectType and O.ObjectID = T.ObjectID 
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			delete  E
+			from    AttributeTypeRelation E 
+					inner join api.ExecutionDeletedAssetType S on S.Object = E.ObjectType and S.ObjectID = E.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			drop table if exists #w;
+			create table #w (ID int);
+
+			insert into #w
+				select	distinct 
+						wi.ID 
+				from	workflow.[Type] wt
+						inner join workflow.EventRegistration we on we.typeid = wt.id and we.changetype <> 3
+						inner join workflow.[Version] wv on wt.id = wv.typeId
+						inner join workflow.Item wi on 	wv.id = wi.VersionID
+						inner join Asset A on A.Object = wi.Object and A.ObjectID = wi.ObjectID
+						inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			insert into #w
+				select	wi.id 
+				from	workflow.Item wi
+						inner join Issue i on wi.object = 'Issue' and i.id = wi.objectid
+						inner join Asset A on A.Object = i.ObjectType and A.ObjectID = i.ObjectID
+						inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	[workflow].[ItemAssignment] T
+					inner join #w S on S.ID = T.ItemID;
+
+			delete  T
+			from	[workflow].[ItemStepTransition] T
+					inner join workflow.itemstep wis on (wis.ID = T.ToItemStepID or wis.ID = T.FromItemStepID)
+					inner join #w S on S.ID = wis.ItemID;
+
+			delete  workflow.itemstep 
+			where	ItemID in (Select ID from #w);
+ 
+			delete  [workflow].[Item] 
+			where	ID in (Select ID from #w);
+
+			truncate table #w;
+
+			insert into #w
+				select	distinct 
+						wt.ID 
+				from	workflow.[Type] wt
+						inner join workflow.EventRegistration we on we.typeid = wt.id and we.changetype <> 3
+						inner join api.ExecutionDeletedAssetType S on S.Object = we.Object and S.ObjectID = we.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete  T
+			from	[workflow].[VersionStepTransition] T
+					inner join workflow.Versionstep wis on (wis.ID = T.ToVersionStepID or wis.ID = T.FromVersionStepID)
+					inner join [workflow].[Version] v on v.ID = wis.VersionID
+					inner join [workflow].[Type] wt on wt.ID = v.TypeID
+					inner join #w S on S.ID = wt.ID;
+
+			delete  wis
+			from	workflow.Versionstep wis
+					inner join [workflow].[Version] v on v.ID = wis.VersionID
+					inner join [workflow].[Type] wt on wt.ID = v.TypeID
+					inner join #w S on S.ID = wt.ID;
+ 
+			delete  v
+			from	[workflow].[Version] v
+					inner join [workflow].[Type] wt on wt.ID = v.TypeID
+					inner join #w S on S.ID = wt.ID;
+
+			delete  wt
+			from	[workflow].[Type] wt
+					inner join #w S on S.ID = wt.ID;
+			
+			delete	T
+			from	ResponsibilityRuleResultAsset T
+					inner join ResponsibilityTypeRelationRule R on R.ID = T.RuleID
+					inner join api.ExecutionDeletedAssetType S on S.Object = R.Object and S.ObjectID = R.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	ResponsibilityRuleResultSecurityAsset T
+					inner join ResponsibilityTypeRelationRule R on R.ID = T.RuleID
+					inner join api.ExecutionDeletedAssetType S on S.Object = R.Object and S.ObjectID = R.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	ResponsibilityTypeRelationRule T
+					inner join api.ExecutionDeletedAssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	ResponsibilityTypeRelation T
+					inner join api.ExecutionDeletedAssetType S on S.Object = T.ObjectType and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	ResponsibilityTypeRelationOverrideItem T
+					inner join Asset A on A.ID = T.AssetID
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			delete	T
+			from	reporting.Global_Audit T
+					inner join Asset A on A.Object = T.Object and A.ObjectID = T.ObjectID
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			delete	T
+			from	[Load] T
+					inner join api.ExecutionDeletedAssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			delete	T
+			from	AssetCrossReference T
+					inner join Asset A on A.Uid = T.Uid
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			delete	T
+			from	AssetDataProfile T
+					inner join Asset A on A.ID = T.AssetID
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			delete	T
+			from	AssetDisplayValue T
+					inner join Asset A on A.ID = T.AssetID
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			delete	T
+			from	fusion.[Rule] T
+					inner join api.ExecutionDeletedAssetType S on S.Object = T.ObjectType and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			delete	T
+			from	[Intersect] T 
+					inner join api.ExecutionDeletedAssetType S on S.IntersectTypeID = T.IntersectTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	[Intersect] T
+					inner join Asset A on A.Object = T.Subject and A.ObjectID = T.SubjectID
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	[Intersect] T
+					inner join Asset A on A.Object = T.Object and A.ObjectID = T.ObjectID
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	[IntersectType] T
+					inner join api.ExecutionDeletedAssetType S on S.Object = T.Subject and S.ObjectID = T.SubjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	[IntersectType] T
+					inner join api.ExecutionDeletedAssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			delete	T
+			from	CommentRelation T
+					inner join Asset O on O.Object = T.ObjectType and O.ObjectID = T.ObjectID 
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	CommentVote T
+					inner join Comment C on C.ID = T.CommentID
+					inner join Asset O on O.Object = C.OwnerObjectType and O.ObjectID = C.OwnerObjectID 
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	Comment T
+					inner join Asset O on O.Object = T.OwnerObjectType and O.ObjectID = T.OwnerObjectID
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	Favorite T
+					inner join Asset O on O.Object = T.Object and O.ObjectID = T.ObjectID 
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	Follow T
+					inner join Asset O on O.Object = T.ObjectType and O.ObjectID = T.ObjectID 
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			delete	T
+			from	Field T
+					inner join Asset O on O.Object = T.ObjectType and O.ObjectID = T.ObjectID 
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	Field T
+					inner join Issue I on T.ObjectType = 'Issue' and I.ID = T.ObjectID
+					inner join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID 
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	D
+			from	FieldTypeFusionLookupDefinition D
+					inner join FieldType T on T.ID = D.FieldTypeID
+					inner join api.ExecutionDeletedAssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	FieldType T
+					inner join api.ExecutionDeletedAssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			delete	T
+			from	Issue T
+					inner join Asset O on O.Object = T.Object and O.ObjectID = T.ObjectID 
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	IssueTypeRelation T
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = T.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			delete	T
+			from	[metrics].[ScoreItem] T
+					inner join Asset O on O.Uid = T.AssetUid
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	[metrics].[Score] T
+					inner join Asset O on O.Uid = T.AssetUid
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	[metrics].[Asset] T
+					inner join api.ExecutionDeletedAssetType S on S.Uid = T.AssetTypeUid and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			delete	T
+			from	SiteNavPermission T
+					inner join SiteNav O on O.ID = T.SiteNavID
+					inner join api.ExecutionDeletedAssetType S on S.Object = O.Object and S.ObjectID = O.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	O
+			from	SiteNav O
+					inner join api.ExecutionDeletedAssetType S on S.Object = O.Object and S.ObjectID = O.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			delete	T
+			from	Nym T
+					inner join Asset O on O.Object = T.Object and O.ObjectID = T.ObjectID 
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	NymRelation T
+					inner join api.ExecutionDeletedAssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			delete  T
+			from    AssetTypeExportTemplateStyle T
+					inner join AssetTypeExportTemplate E on E.ID = T.AssetTypeExportTemplateID
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+		
+			delete  E
+			from    AssetTypeExportTemplate E 
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+		
+			delete  E
+			from    AssetTypeLevel E 
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+		
+			delete  E
+			from    AssetTypeStyle E 
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			delete	T
+			from	Artifact T
+					inner join ArtifactType A on A.ID = T.ArtifactTypeID
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'ArtifactType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	A
+			from	ArtifactType A
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'ArtifactType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	Fusion T
+					inner join FusionType A on A.ID = T.FusionTypeID
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'FusionType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	A
+			from	FusionType A
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'FusionType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	FusionAttribute T
+					inner join FusionType A on A.ID = T.FusionAttributeTypeID
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'FusionAttributeType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	A
+			from	FusionAttributeType A
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'FusionAttributeType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			-- BEGIN - Delete ONLY POLICY TYPES FROM ASSET / ASSET TYPE TABLE DIRECTLY
+			--  as other assets are directly written here they can be added below.
+			delete T
+			from	AssetType T
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'PolicyType' and S.AssetTypeID = T.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete A
+			from	Asset A
+					inner join AssetType ATT on A.AssetTypeID = ATT.ID and ATT.[Object] = 'PolicyType' and A.[Object] = 'Policy'
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'PolicyType' and S.AssetTypeID = ATT.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			-- END - Delete ONLY POLICY TYPES FROM ASSET / ASSET TYPE TABLE DIRECTLY
+
+			delete	T
+			from	ReferenceItem T
+					inner join ReferenceItemType A on A.ID = T.ReferenceItemTypeID
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'ReferenceItemType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	A
+			from	ReferenceItemType A
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'ReferenceItemType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	[Rule] T
+					inner join RuleType A on A.ID = T.RuleTypeID
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'RuleType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	A
+			from	RuleType A
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'RuleType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	Taxonomy T
+					inner join TaxonomyType A on A.ID = T.TaxonomyTypeID
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'TaxonomyType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	A
+			from	TaxonomyTypeLevel A
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'TaxonomyType' and S.ObjectID = A.TaxonomyTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	A
+			from	TaxonomyType A
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'TaxonomyType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			delete	T
+			from	Asset T
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = T.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+	
+			delete	T
+			from	AssetType T
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = T.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			update	api.ExecutionDeletedAssetType
+			set		[Message] = 'Removed Asset type from environment, along with all related assets, scores, and relationships.',
+					Success = 1
+			where	ExecutionID = @executionUid 
+					and ItemNumber = @itemNumber
+					and FromHierarchy = 0;
+		end;
+
+		COMMIT TRANSACTION [Tran1];
+	END TRY
+	BEGIN CATCH
+		update	api.ExecutionDeletedAssetType
+		set		[Message] = 'Error occurred: ' + ERROR_MESSAGE(),
+				Success = 0
+		where	ExecutionID = @executionUid 
+				and ItemNumber = @itemNumber
+				and FromHierarchy = 0;
+
+		ROLLBACK TRANSACTION [Tran1]
+	END CATCH
+
+	select	*
+	from	api.ExecutionDeletedAssetType
+	where	ExecutionID = @executionUid 
+			and ItemNumber = @itemNumber
+			and FromHierarchy = 0;
+end
+        ]]>
+    </sql>
+    <rollback>
+      <![CDATA[ 
+ALTER procedure [api].[DeleteAssetType]
+	@executionUid uniqueidentifier,
+	@itemNumber int,
+	@resource int
+as
+begin
+	set nocount on;
+
+	declare @date datetime = getutcdate(),
+			@success bit;
+
+	BEGIN TRANSACTION [Tran1]
+
+	BEGIN TRY
+
+		select	@success = Success
+		from	api.ExecutionDeletedAssetType
+		where	ExecutionID = @executionUid
+				and ItemNumber = @itemNumber
+				and FromHierarchy = 0;
+
+		if @success is null or @success = 1
+		begin
+
+			with h as (
+				select	D.ExecutionID,
+						D.ItemNumber,
+						D.AssetTypeID,
+						D.[Uid],
+						A.Object,
+						A.ObjectID, 
+						D.IntersectTypeID,
+						0 as [Level]
+				from	api.ExecutionDeletedAssetType D
+						inner join AssetType A on D.ExecutionID = @executionUid and A.ID = D.AssetTypeID and D.ItemNumber = @itemNumber
+				where	D.AssetTypeID is not null
+				union all
+				select	P.ExecutionID,
+						P.ItemNumber,
+						C.ID as AssetTypeID,
+						C.[Uid],
+						C.Object,
+						C.ObjectID, 
+						I.ID as IntersectTypeID,
+						P.[Level] + 1 as [Level]
+				from	IntersectType I 
+						inner join h as P on P.ExecutionID = @executionUid and P.Object = I.Subject and P.ObjectID = I.SubjectID
+						inner join AssetType C on C.Object = I.Object and C.ObjectID = I.ObjectID
+						inner join [Predicate] PR on PR.ID = I.PredicateID and PR.[Type] in (3,4)
+				where   P.[Level] <= 15
+			)
+			insert into api.ExecutionDeletedAssetType ([ExecutionID],[ItemNumber],[Uid],[AssetTypeID],Object,ObjectID,[IntersectTypeID],[FromHierarchy])
+				select  distinct 
+						ExecutionID, 
+						ItemNumber, 
+						[Uid], 
+						AssetTypeID, 
+						Object,
+						ObjectID,
+						IntersectTypeID, 
+						1 
+				from    h 
+				where   IntersectTypeID is not null 
+						and [Level] > 0 
+						and Uid not in (select Uid from api.ExecutionDeletedAsset where ExecutionID = @executionUid);
+			
+			INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
+				select	'ObjectIndex', 
+						'D',
+						A.Object, 
+						A.ObjectID, 
+						A.ID
+				from	Asset A
+						inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			delete	T
+			from	api.EntityFieldTypeMultiSelectField T
+					inner join api.EntityFieldType F on F.ID = T.EntityFieldTypeID
+					inner join api.Entity E on E.ID = F.EntityID
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	api.EntityFieldType T
+					inner join api.Entity E on E.ID = T.EntityID
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	api.EntityUri T
+					inner join api.Entity E on E.ID = T.EntityID
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	api.Entity T
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = T.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			delete	T
+			from	Field T 
+					inner join [Attribute] A on T.ObjectType = 'Attribute' and A.ID = T.ObjectID
+					inner join Asset O on O.Object = A.ObjectType and O.ObjectID = A.ObjectID 
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	[Attribute] T
+					inner join Asset O on O.Object = T.ObjectType and O.ObjectID = T.ObjectID 
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			delete  E
+			from    AttributeTypeRelation E 
+					inner join api.ExecutionDeletedAssetType S on S.Object = E.ObjectType and S.ObjectID = E.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			drop table if exists #w;
+			create table #w (ID int);
+
+			insert into #w
+				select	distinct 
+						wi.ID 
+				from	workflow.[Type] wt
+						inner join workflow.EventRegistration we on we.typeid = wt.id and we.changetype <> 3
+						inner join workflow.[Version] wv on wt.id = wv.typeId
+						inner join workflow.Item wi on 	wv.id = wi.VersionID
+						inner join Asset A on A.Object = wi.Object and A.ObjectID = wi.ObjectID
+						inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			insert into #w
+				select	wi.id 
+				from	workflow.Item wi
+						inner join Issue i on wi.object = 'Issue' and i.id = wi.objectid
+						inner join Asset A on A.Object = i.ObjectType and A.ObjectID = i.ObjectID
+						inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	[workflow].[ItemAssignment] T
+					inner join #w S on S.ID = T.ItemID;
+
+			delete  T
+			from	[workflow].[ItemStepTransition] T
+					inner join workflow.itemstep wis on (wis.ID = T.ToItemStepID or wis.ID = T.FromItemStepID)
+					inner join #w S on S.ID = wis.ItemID;
+
+			delete  workflow.itemstep 
+			where	ItemID in (Select ID from #w);
+ 
+			delete  [workflow].[Item] 
+			where	ID in (Select ID from #w);
+
+			truncate table #w;
+
+			insert into #w
+				select	distinct 
+						wt.ID 
+				from	workflow.[Type] wt
+						inner join workflow.EventRegistration we on we.typeid = wt.id and we.changetype <> 3
+						inner join api.ExecutionDeletedAssetType S on S.Object = we.Object and S.ObjectID = we.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete  T
+			from	[workflow].[VersionStepTransition] T
+					inner join workflow.Versionstep wis on (wis.ID = T.ToVersionStepID or wis.ID = T.FromVersionStepID)
+					inner join [workflow].[Version] v on v.ID = wis.VersionID
+					inner join [workflow].[Type] wt on wt.ID = v.TypeID
+					inner join #w S on S.ID = wt.ID;
+
+			delete  wis
+			from	workflow.Versionstep wis
+					inner join [workflow].[Version] v on v.ID = wis.VersionID
+					inner join [workflow].[Type] wt on wt.ID = v.TypeID
+					inner join #w S on S.ID = wt.ID;
+ 
+			delete  v
+			from	[workflow].[Version] v
+					inner join [workflow].[Type] wt on wt.ID = v.TypeID
+					inner join #w S on S.ID = wt.ID;
+
+			delete  wt
+			from	[workflow].[Type] wt
+					inner join #w S on S.ID = wt.ID;
+			
+			delete	T
+			from	ResponsibilityRuleResultAsset T
+					inner join ResponsibilityTypeRelationRule R on R.ID = T.RuleID
+					inner join api.ExecutionDeletedAssetType S on S.Object = R.Object and S.ObjectID = R.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	ResponsibilityRuleResultSecurityAsset T
+					inner join ResponsibilityTypeRelationRule R on R.ID = T.RuleID
+					inner join api.ExecutionDeletedAssetType S on S.Object = R.Object and S.ObjectID = R.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	ResponsibilityTypeRelationRule T
+					inner join api.ExecutionDeletedAssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	ResponsibilityTypeRelation T
+					inner join api.ExecutionDeletedAssetType S on S.Object = T.ObjectType and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	ResponsibilityTypeRelationOverrideItem T
+					inner join Asset A on A.ID = T.AssetID
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			delete	T
+			from	reporting.Global_Audit T
+					inner join Asset A on A.Object = T.Object and A.ObjectID = T.ObjectID
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			delete	T
+			from	[Load] T
+					inner join api.ExecutionDeletedAssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			delete	T
+			from	AssetCrossReference T
+					inner join Asset A on A.Uid = T.Uid
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			delete	T
+			from	AssetDataProfile T
+					inner join Asset A on A.ID = T.AssetID
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			delete	T
+			from	AssetDisplayValue T
+					inner join Asset A on A.ID = T.AssetID
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			delete	T
+			from	fusion.[Rule] T
+					inner join api.ExecutionDeletedAssetType S on S.Object = T.ObjectType and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			delete	T
+			from	[Intersect] T 
+					inner join api.ExecutionDeletedAssetType S on S.IntersectTypeID = T.IntersectTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	[Intersect] T
+					inner join Asset A on A.Object = T.Subject and A.ObjectID = T.SubjectID
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	[Intersect] T
+					inner join Asset A on A.Object = T.Object and A.ObjectID = T.ObjectID
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	[IntersectType] T
+					inner join api.ExecutionDeletedAssetType S on S.Object = T.Subject and S.ObjectID = T.SubjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	[IntersectType] T
+					inner join api.ExecutionDeletedAssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			delete	T
+			from	CommentRelation T
+					inner join Asset O on O.Object = T.ObjectType and O.ObjectID = T.ObjectID 
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	CommentVote T
+					inner join Comment C on C.ID = T.CommentID
+					inner join Asset O on O.Object = C.OwnerObjectType and O.ObjectID = C.OwnerObjectID 
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	Comment T
+					inner join Asset O on O.Object = T.OwnerObjectType and O.ObjectID = T.OwnerObjectID
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	Favorite T
+					inner join Asset O on O.Object = T.Object and O.ObjectID = T.ObjectID 
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	Follow T
+					inner join Asset O on O.Object = T.ObjectType and O.ObjectID = T.ObjectID 
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			delete	T
+			from	Field T
+					inner join Asset O on O.Object = T.ObjectType and O.ObjectID = T.ObjectID 
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	Field T
+					inner join Issue I on T.ObjectType = 'Issue' and I.ID = T.ObjectID
+					inner join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID 
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	D
+			from	FieldTypeFusionLookupDefinition D
+					inner join FieldType T on T.ID = D.FieldTypeID
+					inner join api.ExecutionDeletedAssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	FieldType T
+					inner join api.ExecutionDeletedAssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			delete	T
+			from	Issue T
+					inner join Asset O on O.Object = T.Object and O.ObjectID = T.ObjectID 
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	IssueTypeRelation T
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = T.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			delete	T
+			from	[metrics].[ScoreItem] T
+					inner join Asset O on O.Uid = T.AssetUid
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	[metrics].[Score] T
+					inner join Asset O on O.Uid = T.AssetUid
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	[metrics].[Asset] T
+					inner join api.ExecutionDeletedAssetType S on S.Uid = T.AssetTypeUid and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			delete	T
+			from	SiteNavPermission T
+					inner join SiteNav O on O.ID = T.SiteNavID
+					inner join api.ExecutionDeletedAssetType S on S.Object = O.Object and S.ObjectID = O.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	O
+			from	SiteNav O
+					inner join api.ExecutionDeletedAssetType S on S.Object = O.Object and S.ObjectID = O.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			delete	T
+			from	Nym T
+					inner join Asset O on O.Object = T.Object and O.ObjectID = T.ObjectID 
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	NymRelation T
+					inner join api.ExecutionDeletedAssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			delete  T
+			from    AssetTypeExportTemplateStyle T
+					inner join AssetTypeExportTemplate E on E.ID = T.AssetTypeExportTemplateID
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+		
+			delete  E
+			from    AssetTypeExportTemplate E 
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+		
+			delete  E
+			from    AssetTypeLevel E 
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+		
+			delete  E
+			from    AssetTypeStyle E 
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			delete	T
+			from	Artifact T
+					inner join ArtifactType A on A.ID = T.ArtifactTypeID
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'ArtifactType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	A
+			from	ArtifactType A
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'ArtifactType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	Fusion T
+					inner join FusionType A on A.ID = T.FusionTypeID
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'FusionType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	A
+			from	FusionType A
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'FusionType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	FusionAttribute T
+					inner join FusionType A on A.ID = T.FusionAttributeTypeID
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'FusionAttributeType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	A
+			from	FusionAttributeType A
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'FusionAttributeType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	[Policy] T
+					inner join PolicyType A on A.ID = T.PolicyTypeID
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'PolicyType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	A
+			from	PolicyTypeLevel A
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'PolicyType' and S.ObjectID = A.PolicyTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	A
+			from	PolicyType A
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'PolicyType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	ReferenceItem T
+					inner join ReferenceItemType A on A.ID = T.ReferenceItemTypeID
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'ReferenceItemType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	A
+			from	ReferenceItemType A
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'ReferenceItemType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	[Rule] T
+					inner join RuleType A on A.ID = T.RuleTypeID
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'RuleType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	A
+			from	RuleType A
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'RuleType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	Taxonomy T
+					inner join TaxonomyType A on A.ID = T.TaxonomyTypeID
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'TaxonomyType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	A
+			from	TaxonomyTypeLevel A
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'TaxonomyType' and S.ObjectID = A.TaxonomyTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	A
+			from	TaxonomyType A
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'TaxonomyType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			delete	T
+			from	Asset T
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = T.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+	
+			delete	T
+			from	AssetType T
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = T.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			update	api.ExecutionDeletedAssetType
+			set		[Message] = 'Removed Asset type from environment, along with all related assets, scores, and relationships.',
+					Success = 1
+			where	ExecutionID = @executionUid 
+					and ItemNumber = @itemNumber
+					and FromHierarchy = 0;
+		end;
+
+		COMMIT TRANSACTION [Tran1];
+	END TRY
+	BEGIN CATCH
+		update	api.ExecutionDeletedAssetType
+		set		[Message] = 'Error occurred: ' + ERROR_MESSAGE(),
+				Success = 0
+		where	ExecutionID = @executionUid 
+				and ItemNumber = @itemNumber
+				and FromHierarchy = 0;
+
+		ROLLBACK TRANSACTION [Tran1]
+	END CATCH
+
+	select	*
+	from	api.ExecutionDeletedAssetType
+	where	ExecutionID = @executionUid 
+			and ItemNumber = @itemNumber
+			and FromHierarchy = 0;
+end
+      ]]>    
+    </rollback>
+  </changeSet>
+
+</databaseChangeLog>

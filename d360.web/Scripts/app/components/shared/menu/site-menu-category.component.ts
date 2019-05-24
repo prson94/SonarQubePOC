@@ -32,10 +32,10 @@ import * as _ from 'lodash';
                                 <div class="row megamenu-title truncate">
                                     <input (keyup)="positionMenu($event,item)" #searchinput type="search" [(ngModel)]=searchText placeholder="Search menu..."/>
                                     <i (click)="clearInput()" [ngClass]="{'fa fa-times':searchText != '', 'fa fa-search':searchText == '' ||  !seachtext}"></i>
-                                </div>
-                                    <span class="megamenu-tools" *ngIf="showClearButton">
+                                    <div class="megamenu-tools" *ngIf="showClearButton">
                                         <i (click)="clearClick.emit(true)" class=" pull-right fa fa-eraser" [pTooltip]="'Clear ' + title + ' List'" tooltipZIndex="10001"></i>
-                                    </span>
+                                    </div>
+                                </div> 
                                 <div class="row megamenu-items"[ngStyle]="{'max-height': getMaxHeight()}">
                                     <div class="col s12 megamenu-items-container" *ngFor="let item of menu.NavigationItems | simpleSearch: searchText">
                                         <ul class="menu-group">                                        
@@ -159,9 +159,11 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
         if (isString(items.Name) && isString(items.Url) && items.Url.indexOf('/') != -1) {
             //get count for item
             var id = _.findIndex(arr, function (o) {
+                let currentURL = items.Url.toLowerCase();
+                currentURL = items.Url.replace('model', 'taxonomy');
                 return o.Name == items.Name
-                    && _.includes(items.Url.toLowerCase(), o.Object.toLowerCase().replace('type', ''))
-                    && _.includes(items.Url.toLowerCase(), o.ObjectID);
+                    && _.includes(currentURL, o.Object.toLowerCase().replace('type', ''))
+                    && _.includes(currentURL, o.ObjectID);
             });
             if (id !== -1) {
                 items.count = arr[id].count;

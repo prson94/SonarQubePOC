@@ -1340,10 +1340,7 @@ from	IntersectType I
                                                 break;
                                             case "FusionAttributeType":
                                                 legacyTable = "FusionAttribute";
-                                                break;
-                                            case "PolicyType":
-                                                legacyTable = "[Policy]";
-                                                break;
+                                                break;                                            
                                             case "ReferenceItemType":
                                                 legacyTable = "ReferenceItem";
                                                 break;
@@ -1355,9 +1352,12 @@ from	IntersectType I
                                                 break;
                                         }
 
-                                        Connection.Execute(
-                                            $"delete {legacyTable} where ID in (select S.ObjectID from api.ExecutionDeletedAsset S where {querySuffix})",
-                                            new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                        if (!string.IsNullOrEmpty(legacyTable))
+                                        {
+                                            Connection.Execute(
+                                                $"delete {legacyTable} where ID in (select S.ObjectID from api.ExecutionDeletedAsset S where {querySuffix})",
+                                                new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                        }
 
                                         #endregion
 
@@ -2407,7 +2407,7 @@ from	api.ExecutionAsset T
     create table #ObjectMergeTableResult (ID int, ItemNumber int);
     CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC );
 
-    merge   [Policy] as T
+    merge   [Asset] as T
     using   (
             select  ItemNumber
             from    api.ExecutionAsset
@@ -2415,11 +2415,11 @@ from	api.ExecutionAsset T
                     and Success is null
                     and ItemNumber between {beginItemNumber} and {endItemNumber}
             ) S
-    on      (T.PolicyTypeID = @ObjectID and T.SourceID = @NonExistentUid)
+    on      (T.AssetTypeID = @AssetTypeID and T.SourceID = @NonExistentUid)
     when    not matched then
-    insert  (PolicyTypeID, UpdatedBy, UpdatedOn)
-    values  (@ObjectID, @R, @D)
-    output  inserted.ID, S.ItemNumber into #ObjectMergeTableResult;
+    insert  (AssetTypeID,State,[Object], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+    values  (@AssetTypeID,1,'Policy', @R, @D, @R, @D)
+    output  inserted.ObjectID, S.ItemNumber into #ObjectMergeTableResult;
 
     update  T
     set     T.Object = 'Policy',
@@ -2437,8 +2437,8 @@ from	api.ExecutionAsset T
     update	T
     set		T.UpdatedBy = @R,
 		    T.UpdatedOn = @D
-    from	[Policy] T
-		    inner join api.ExecutionAsset S on S.ObjectID = T.ID and {executionAssetWhereSql};
+    from	[Asset] T
+		    inner join api.ExecutionAsset S on S.ObjectID = T.ObjectID and T.[Object] = 'Policy' and {executionAssetWhereSql};
 
     update	api.ExecutionAsset
     set		IsNew = 0

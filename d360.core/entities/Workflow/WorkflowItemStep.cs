@@ -1,4 +1,5 @@
-﻿using System;
+﻿using d360.core.entities.Contracts;
+using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 using System.Xml.Linq;
@@ -6,7 +7,7 @@ using System.Xml.Linq;
 namespace d360.core.entities.Workflow
 {
     [DataContract(Namespace = NAMESPACE), Table("ItemStep", Schema = "workflow")]
-    public class WorkflowItemStep : BaseObject
+    public class WorkflowItemStep : BaseObject, IUIDMetadata
     {
         [DataMember]
         public long ID { get; set; }
@@ -46,5 +47,8 @@ namespace d360.core.entities.Workflow
 
         [IgnoreDataMember, ForeignKey("StepID")]
         public virtual WorkflowVersionStep Step { get; set; }
+
+        [DataMember]
+        public Guid? UID { get; set; }
     }
 }

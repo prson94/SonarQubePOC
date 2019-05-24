@@ -253,7 +253,7 @@ namespace d360.web.Controllers.V2
                 var nameFriendlyName = "Name";
                 var isNamePartOfKey = true;
 
-                var insertStatus = AssetRepository.AddAssetType(model, assetType, parentAssetType, predicate, out nameFriendlyName, out isNamePartOfKey);
+                var insertStatus = AssetRepository.AddAssetType(model, assetType, parentAssetType, predicate, Company.CurrentResourceID, out nameFriendlyName, out isNamePartOfKey);
                 if (insertStatus.Item1 != HttpStatusCode.OK)
                     return await Task.FromResult(errorMessageResponse(insertStatus.Item1, insertStatus.Item2, insertStatus.Item3));
 

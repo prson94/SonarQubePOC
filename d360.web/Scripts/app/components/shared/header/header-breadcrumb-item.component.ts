@@ -16,7 +16,7 @@ import { SubscriptionLike as ISubscription } from 'rxjs';
         '(document:click)': 'onClick($event)',
         '(window:resize)': 'setMaxHeight()'
     },  
-    template: ` <a *ngIf="breadcrumb.hasLink()" (click)="navigateToLink(breadcrumb.link)" class="breadcrumb" style="cursor:pointer">{{ breadcrumb.text }}</a>
+    template: ` <a *ngIf="breadcrumb.hasLink()" (click)="navigateToLink(breadcrumb.link)" class="breadcrumb">{{ breadcrumb.text }}</a>
                 <div *ngIf="!breadcrumb.hasLink() && !showSearch" (mouseover)="in(treePanel,$event)" class="breadcrumb" [ngClass]="{'breadcrumb-link':isChangableItem() || isTreeItem()}">{{ breadcrumb.text }}</div>
                 <p-autoComplete size="40"                                                      
                             *ngIf="showSearch" 
@@ -34,7 +34,7 @@ import { SubscriptionLike as ISubscription } from 'rxjs';
                 <div *ngIf="!lastItem && showSeperator" class="sep breadcrumb"><i class="fa fa-angle-right"></i></div>                
                 <p-overlayPanel #treePanel>  
                         <input type="text" pInputText [(ngModel)]="searchValue" placeholder="Search" style="width: 100%;">                      
-                        <p-tree [value]="treeItems | treeSearch: searchValue" selectionMode="single" [(selection)]="breadcrumb.selectedTreeNode" styleClass="breadcrumbTree" [style]="{'max-height':maxOverlayHeight,'overflow':'auto','line-height':'25px'}" 
+                        <p-tree [value]="treeItems | treeSearch: searchValue" selectionMode="single" [(selection)]="breadcrumb.selectedTreeNode" styleClass="breadcrumbTree" [style]="{'max-height':maxOverlayHeight}" 
                             (onNodeSelect)="nodeSelect($event,treePanel)">
                             <ng-template let-node pTemplate type="default">
                                 <span [ngStyle]="setTreeNodeStyles(node)">{{node.label}} <i *ngIf="node.data?.hasRelations" class="fa fa-share-alt" aria-hidden="true" title="Item has relationships" style="color:#999;"></i></span>
