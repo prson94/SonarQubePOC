@@ -309,7 +309,7 @@ export class FieldsService extends BaseService implements IFieldsService {
     }
 
     getTypeaheadJsonPropertyOptionsForJsonField(fieldTypeId: number, phrase: string): Promise<string[]> {
-        return this.http.get(`form/FieldType_TypeaheadJsonPropertyOptionsForJsonField?fieldTypeId=${encodeURIComponent(fieldTypeId)}&phrase=${encodeURIComponent(phrase)}`)
+        return this.http.get(`form/FieldType_TypeaheadJsonPropertyOptionsForJsonField?fieldTypeId=${fieldTypeId}&phrase=${encodeURIComponent(phrase)}`)
             .toPromise()
             .then(response => response.json())
             .catch(err => this.handleError(err));
