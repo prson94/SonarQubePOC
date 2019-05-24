@@ -121,6 +121,8 @@ namespace d360.model
 
         public DbSet<Field> Fields { get; set; }
 
+        public DbSet<FieldJsonProperty> FieldJsonProperties { get; set; }
+
         public DbSet<FieldValue> FieldValues { get; set; }
 
         public DbSet<FieldLookupValue> FieldLookupValues { get; set; }                          /* VIEW */

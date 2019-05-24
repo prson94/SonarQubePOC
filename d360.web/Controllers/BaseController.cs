@@ -1,6 +1,7 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.enums;
+using d360.core.helpers;
 using d360.model;
 using d360.web.Models;
 using Microsoft.ApplicationInsights;
@@ -108,7 +109,7 @@ namespace d360.web.Controllers
         internal ICompanyContext Company;
         internal ICommunityContext Community;
 
-        internal List<string> CalculatedFieldTypes = new List<string>() { DataType.Attribute.ToString(), DataType.ComplexRelationLookup.ToString(), DataType.DataTableSelect.ToString(), DataType.File.ToString(), DataType.FilteredLookup.ToString(), DataType.OwnershipLookup.ToString(), DataType.JsonElement.ToString() };
+        internal List<string> CalculatedFieldTypes = DataType.Text.GetComputedFields();
 
         internal const int MAX_SYNCHRONOUS_API_ITEM_COUNT = 250;
 

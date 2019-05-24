@@ -816,4 +816,99 @@ end
 	</rollback>
   </changeSet>
 
+  <changeSet author="Pappas" id="GOV-7230-FieldDetail-View">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[
+ALTER VIEW [dbo].[FieldWithRelation]
+AS
+	SELECT	F.ID,
+			F.FieldTypeID,
+			T.Name,
+			T.FriendlyName,
+			T.Category,
+			T.Description,
+			T.DisplayDescription,
+			T.FormDescription,
+			T.ValidationDescription,
+			T.Type,
+			T.LookupObjectType,
+			T.LookupObjectID,
+			T.LookupDisplayFormat,
+			T.MinimumLength,
+			T.MaximumLength,
+			T.Length,
+			T.Pattern,
+			T.IsDisplayable,
+			T.IsEditable,
+			T.IsListable,
+			T.IsRequired,
+			T.SortOrder,
+			T.AllowMultipleValues,
+			F.ObjectType,
+			F.ObjectID,
+			F.Value,
+			F.FormattedValue,
+			case  
+				when (T.AllowMultipleValues = 0 and T.LookupObjectType = 'ReferenceItemType') then 
+					[dbo].GenerateAssetTypeUrl((select ID from AssetType Where Object = 'ReferenceItemType' and ObjectID = T.LookupObjectID))
+				when (T.AllowMultipleValues = 0 and T.LookupObjectType = 'ReferenceItem') then 
+					[dbo].GenerateAssetUrl((select ID from AssetType Where Object = 'ReferenceItem' and ObjectID = T.LookupObjectID))
+				when (T.AllowMultipleValues = 0 and T.LookupObjectType = 'Resource') then 
+					[dbo].GenerateAssetUrl((select ID from Asset WHere Object = 'Resource' and ObjectID = T.LookupObjectID))
+				else null
+			end as LookupUrl
+	FROM	FieldType T
+			left join Field F on F.FieldTypeID = T.ID
+	WHERE	(F.Value is not null OR T.DefaultValue is not null)
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+ALTER VIEW [dbo].[FieldWithRelation]
+AS
+	SELECT	F.FieldTypeID,
+			T.Name,
+			T.FriendlyName,
+			T.Category,
+			T.Description,
+			T.DisplayDescription,
+			T.FormDescription,
+			T.ValidationDescription,
+			T.Type,
+			T.LookupObjectType,
+			T.LookupObjectID,
+			T.LookupDisplayFormat,
+			T.MinimumLength,
+			T.MaximumLength,
+			T.Length,
+			T.Pattern,
+			T.IsDisplayable,
+			T.IsEditable,
+			T.IsListable,
+			T.IsRequired,
+			T.SortOrder,
+			T.AllowMultipleValues,
+			F.ObjectType,
+			F.ObjectID,
+			F.Value,
+			F.FormattedValue,
+			case  
+				when (T.AllowMultipleValues = 0 and T.LookupObjectType = 'ReferenceItemType') then 
+					[dbo].GenerateAssetTypeUrl((select ID from AssetType Where Object = 'ReferenceItemType' and ObjectID = T.LookupObjectID))
+				when (T.AllowMultipleValues = 0 and T.LookupObjectType = 'ReferenceItem') then 
+					[dbo].GenerateAssetUrl((select ID from AssetType Where Object = 'ReferenceItem' and ObjectID = T.LookupObjectID))
+				when (T.AllowMultipleValues = 0 and T.LookupObjectType = 'Resource') then 
+					[dbo].GenerateAssetUrl((select ID from Asset WHere Object = 'Resource' and ObjectID = T.LookupObjectID))
+				else null
+			end as LookupUrl
+	FROM	FieldType T
+			left join Field F on F.FieldTypeID = T.ID
+	WHERE	(F.Value is not null OR T.DefaultValue is not null)
+		]]>
+	</rollback>
+  </changeSet>  
+  
   </databaseChangeLog>

@@ -6376,7 +6376,9 @@ offset 0 rows fetch next 25 rows only
             int promotionObjectID = 0;
             int.TryParse(ruleStep.GetSettingValueByName("ObjectID"), out promotionObjectID);
 
-            var targetDynamicFields = Company.Filter<FieldType>(i => i.Object == promotionType && i.ObjectID == promotionObjectID)
+            var ignoreFields = DataType.Text.GetComputedFields();
+
+            var targetDynamicFields = Company.Filter<FieldType>(i => i.Object == promotionType && i.ObjectID == promotionObjectID && !ignoreFields.Contains(i.Type))
                 .OrderBy(i => i.FriendlyName)
                 .ToList()
                 .Where(i => !targetFieldIDs.Contains(i.ID))
