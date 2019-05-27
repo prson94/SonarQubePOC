@@ -113,7 +113,7 @@ namespace d360.core.validators
             }
 
             if (model.ParentUid.HasValue && model.ParentUid == model.Uid)
-                return new ValidationStatus(HttpStatusCode.BadRequest, "Invalid request", "Not valid ParentUid provided.Please check your request and try again.");
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid request", "Not valid ParentUid provided.Please check your request and try again.");
 
             if (model.Hierarchy != null && model.Hierarchy.PredicateUid.HasValue && model.Hierarchy.PredicateUid != Guid.Empty)
             {
