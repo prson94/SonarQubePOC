@@ -407,15 +407,6 @@ begin
    set @ClearNyms = 1    
    set @ClearResponsibilities = 1    
     
-       
-       
-       
-       
-       
-       
-       
-       
-    
    insert into @h            
     select I.ID, null, F.ID, null     
     from [Intersect] I    
@@ -452,16 +443,14 @@ begin
    insert into @h    
     select ID, null, null, null from [Intersect] where IntersectTypeID in (select IntersectTypeID from @ht)    
     
-   delete IT from [dbo].[IntersectType] as IT
-	    inner join [dbo].[FusionAttributeType] FAT on FAT.FusionTypeId = @ObjectID
-	    where 
-	     ([IT].[Subject] = 'FusionAttributeType' AND [SubjectID] = FAT.ID) OR ([IT].[Object] = 'FusionAttributeType' AND [ObjectId] = FAT.ID)
+	delete IT from [dbo].[IntersectType] as IT
+           inner join [dbo].[FusionAttributeType] FAT on FAT.FusionTypeId = @ObjectID
+           where ([IT].[Subject] = 'FusionAttributeType' AND [SubjectID] = FAT.ID) OR ([IT].[Object] = 'FusionAttributeType' AND [ObjectId] = FAT.ID)
 
    delete FusionAttribute where FusionAttributeTypeID in (select ID from FusionAttributeType where FusionTypeID = @ObjectID)    
    delete Fusion where FusionTypeID = @ObjectID    
    delete FusionAttributeType where FusionTypeID = @ObjectID    
-   delete FusionType where ID = @ObjectID   
-
+   delete FusionType where ID = @ObjectID    
   end    
     
   if @Object = 'Intersect'    
@@ -498,8 +487,8 @@ begin
    set @ClearNyms = 1    
    set @ClearResponsibilities = 1    
    set @ClearPromotion = 1    
-    
-   delete [Policy] where ID in (select ObjectID from @h)    
+   
+   delete [Asset] where [Object] = 'Policy' and ObjectID in (select ObjectID from @h)    
   end    
     
   if @Object = 'PolicyType'    
@@ -514,11 +503,11 @@ begin
    set @ClearNyms = 1    
    set @ClearResponsibilities = 1    
    set @ClearSiteNav = 1    
-    
-   delete [Policy] where PolicyTypeID in (select ObjectID from @ht)    
-   delete PolicyTypeLevel where PolicyTypeID in (select ObjectID from @ht)   
+   
+   delete [Asset] where AssetTypeID in (Select ID from AssetType where object='PolicyType' and objectId in (select ObjectID from @ht))      
    delete AssetTypeLevel where AssetTypeID in (Select ID from AssetType where object='PolicyType' and objectId in (select ObjectID from @ht))   
-   delete PolicyType where ID in (select ObjectID from @ht)    
+   delete AssetType where ID in (Select ID from AssetType where object='PolicyType' and objectId in (select ObjectID from @ht))   
+      
   end    
     
   if @Object = 'ReferenceItem'    
@@ -1284,15 +1273,6 @@ begin
    set @ClearNyms = 1    
    set @ClearResponsibilities = 1    
     
-       
-       
-       
-       
-       
-       
-       
-       
-    
    insert into @h            
     select I.ID, null, F.ID, null     
     from [Intersect] I    
@@ -1369,8 +1349,8 @@ begin
    set @ClearNyms = 1    
    set @ClearResponsibilities = 1    
    set @ClearPromotion = 1    
-    
-   delete [Policy] where ID in (select ObjectID from @h)    
+   
+   delete [Asset] where [Object] = 'Policy' and ObjectID in (select ObjectID from @h)    
   end    
     
   if @Object = 'PolicyType'    
@@ -1385,11 +1365,11 @@ begin
    set @ClearNyms = 1    
    set @ClearResponsibilities = 1    
    set @ClearSiteNav = 1    
-    
-   delete [Policy] where PolicyTypeID in (select ObjectID from @ht)    
-   delete PolicyTypeLevel where PolicyTypeID in (select ObjectID from @ht)   
+   
+   delete [Asset] where AssetTypeID in (Select ID from AssetType where object='PolicyType' and objectId in (select ObjectID from @ht))      
    delete AssetTypeLevel where AssetTypeID in (Select ID from AssetType where object='PolicyType' and objectId in (select ObjectID from @ht))   
-   delete PolicyType where ID in (select ObjectID from @ht)    
+   delete AssetType where ID in (Select ID from AssetType where object='PolicyType' and objectId in (select ObjectID from @ht))   
+      
   end    
     
   if @Object = 'ReferenceItem'    
