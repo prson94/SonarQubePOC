@@ -198,4 +198,6 @@
   <include file="scripts/GOV-7313.xml"/>
   <include file="scripts/GOV-7317.xml"/>
   <include file="scripts/GOV-7320.xml"/>
+  <include file="scripts/GOV-7244.xml"/>
+  <include file="scripts/GOV-7243.xml"/>
 </databaseChangeLog>
