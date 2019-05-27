@@ -191,7 +191,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         if (typeof f !== 'undefined' && f.Object == 'ArtifactType' && this.issueObject != '') {
             this.canSelectFromAction = true;
         }
-        else this.canSelectFromAction = true;
+        else this.canSelectFromAction = false;
     }
 
     changeDate(e: any) {
