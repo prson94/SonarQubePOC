@@ -102,7 +102,7 @@ namespace igx.jobs.reportlayer
         #endregion
 
         const string functionName = "ReportingLayer_Generate";
-        
+
 #if DEBUG
         const string timerSettings = "*/5 * * * * *";
 #else
@@ -112,7 +112,7 @@ namespace igx.jobs.reportlayer
         public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
         {
             try
-            {                
+            {
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
 
@@ -149,7 +149,7 @@ namespace igx.jobs.reportlayer
                                     var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
                                     objectName = pluralize.Pluralize(cleanObjectName(o.Name));
                                 }
-                                
+
 
                                 if (objectName.Length > 100)
                                     objectName = objectName.Substring(0, 100);
@@ -160,11 +160,11 @@ namespace igx.jobs.reportlayer
 
                                 // Get fields for asset
                                 getDynamicFieldJoinStatements(
-                                    fieldTypes.Where(f => f.AssetTypeID == o.ID).ToList(), 
-                                    o.Object.Replace("Type", ""), 
-                                    out joins, 
-                                    out columns, 
-                                    reservedNames, 
+                                    fieldTypes.Where(f => f.AssetTypeID == o.ID).ToList(),
+                                    o.Object.Replace("Type", ""),
+                                    out joins,
+                                    out columns,
+                                    reservedNames,
                                     "A.ID");
 
 
@@ -186,7 +186,7 @@ namespace igx.jobs.reportlayer
 				    from	[PredicateIntersect] I
                             inner join Asset IA on I.Object = A.Object and I.ObjectID = A.ObjectID and IA.Object = 'Artifact' and IA.ObjectID = I.SubjectID and I.PredicateType = 3
                             inner join AssetType IAT on IAT.ID = IA.AssetTypeID
-                            left join dbo.GetAssetDisplayValue() ID on ID.ID = IA.ID
+                            left join dbo.AssetDisplayValue ID on ID.AssetID = IA.ID
 				    ) P";
                                     }
 
@@ -622,7 +622,7 @@ select  O.ID as AssetID,
 	    F.FormattedValue as FieldValue 
 from	Asset O 
         inner join AssetType T on T.ID = O.AssetTypeID and T.Class = 2 and O.State = 1
-		cross apply dbo.GetAssetDisplayValueById(O.ID) as D		
+        inner join dbo.AssetDisplayValue D on D.AssetID = O.ID	
         inner join Field F on F.ObjectType = O.Object and F.ObjectID = O.ObjectID
 	    inner join FieldType FT on FT.ID = F.FieldTypeID";
 
@@ -1027,7 +1027,7 @@ select	R.RuleTypeID,
 		RT.Name as RuleType,
 		D.ID as AssetID,
         I.RuleID,
-		D.DisplayValue as [Rule],
+		AD.DisplayValue as [Rule],
 		I.ID as RuleImplementationID,
 		coalesce(I.Name, 'Implementation ' + cast(I.ID as nvarchar)) as RuleImplementation,
 		I.SourceID,
@@ -1040,13 +1040,14 @@ select	R.RuleTypeID,
 from	RuleImplementation I
 		left join RuleResultQualifierType Q on Q.RuleImplementationID = I.ID
 		inner join [Rule] R on R.ID = I.RuleID
-        inner join dbo.GetAssetDisplayValue() D on D.Object = 'Rule' and D.ObjectID = R.ID 
+        inner join dbo.Asset D on D.Object = 'Rule' and D.ObjectID = R.ID
+        inner join dbo.AssetDisplayValue AD on AD.AssetId = D.ID
 		inner join RuleType RT on RT.ID = R.RuleTypeID 
 group by R.RuleTypeID,
 		RT.Name,
         D.ID,
 		I.RuleID,
-		D.DisplayValue,
+		AD.DisplayValue,
 		I.ID,
 		coalesce(I.Name, 'Implementation ' + cast(I.ID as nvarchar)),
 		I.SourceID,
@@ -1370,7 +1371,7 @@ from	(
             catch (Exception ex)
             {
                 CoreFunction.AITrackException(functionName, ex);
-            }            
+            }
         }
     }
 }
