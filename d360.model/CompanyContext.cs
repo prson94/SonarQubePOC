@@ -2093,12 +2093,16 @@ where	R.SourceObject = 'FusionAttribute'
                 this.IsEventingEnabled = false;
             }
 
-            if (fields != null)
+            if (fields != null && fields.Count > 0)
             {
                 fields.ForEach(i => {
                     i.ObjectID = entity.ID;
                 });
                 AddOrUpdateFields(fields);
+            }
+            else
+            {
+                SaveChanges();
             }
 
             this.IsEventingEnabled = true;
