@@ -31,5 +31,14 @@ export class TypeaheadSearchService extends BaseService {
             }),
             catchError(err => this.handleError(err)),);
             
-    }    
+    }  
+    getObjectItems(size: number, term: string, objectType: string, objectId: number) {
+        return this.http.get(`api/breadcrumb/typeaheadfortype?q=${term}&num=${size}&objectType=${objectType}&objectId=${objectId}`).pipe(
+            map(response => {
+                return response.json().map(item => { return <SearchResult[]>item; }
+                )
+            }),
+            catchError(err => this.handleError(err)));
+
+    }  
 }

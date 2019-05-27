@@ -8,6 +8,7 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 import { SearchResult } from '../../../models/search-result.model';
 import { TreeNode } from 'primeng/components/common/api';
 import { SubscriptionLike as ISubscription } from 'rxjs';
+import { createWriteStream } from 'fs';
 
 @Component({
     selector: 'd3s-header-breadcrumb-item',
@@ -17,32 +18,35 @@ import { SubscriptionLike as ISubscription } from 'rxjs';
         '(window:resize)': 'setMaxHeight()'
     },  
     template: ` <a *ngIf="breadcrumb.hasLink()" (click)="navigateToLink(breadcrumb.link)" (mouseover)="in(treePanel,searchPanel,$event)" class="breadcrumb" style="cursor:pointer">{{ breadcrumb.text }}</a>
-                <div *ngIf="!breadcrumb.hasLink()" (mouseover)="in(treePanel,searchPanel,$event)" class="breadcrumb" [ngClass]="{'breadcrumb-link':isChangableItem() || isTreeItem()}">{{ breadcrumb.text }}</div>
-                <p-overlayPanel [ngClass]="'search-results'" #searchPanel>  
-                    <div>
-                        <span class="header-search-input"><input type="text" [(ngModel)]="searchValue" placeholder="Search" (keyup)="search(searchValue)"> <i class="fa fa-search"></i></span> 
-                        <div *ngFor="let result of results;" class="breadcrumb-search-results">
-                            <div class="breadcrumb-search-result" [ngClass]="{'current-crumb': breadcrumb.text === result.Name}" (click)="navigateToLink(result.Url)">{{result.Name}}</div>
+                    <div *ngIf="!breadcrumb.hasLink()" (mouseover)="in(treePanel,searchPanel,$event)" class="breadcrumb" [ngClass]="{'breadcrumb-link':isChangableItem() || isTreeItem()}">{{ breadcrumb.text }}</div>
+                    <p-overlayPanel [ngClass]="'search-results'" #searchPanel>  
+                        <div>
+                            <span class="header-search-input"><input type="text" [(ngModel)]="searchValue" placeholder="Search" (keyup)="search(searchValue)"> <i class="fa fa-search"></i></span> 
+                            <div *ngFor="let result of results;" class="breadcrumb-search-results">
+                                <div class="breadcrumb-search-result" [ngClass]="{'current-crumb': breadcrumb.text === result.Name}" (click)="navigateToLink(result.Url)">{{result.Name}}</div>
+                            </div>
                         </div>
-                    </div>
-                </p-overlayPanel>                
-                <div *ngIf="!lastItem && showSeperator" class="sep breadcrumb"><i class="fa fa-angle-right"></i></div>                
-                <p-overlayPanel #treePanel>  
-                        <input type="text" pInputText [(ngModel)]="searchTreeValue" placeholder="Search" style="width: 100%;">                      
-                        <p-tree [value]="treeItems | treeSearch: searchTreeValue" selectionMode="single" [(selection)]="breadcrumb.selectedTreeNode" styleClass="breadcrumbTree" [style]="{'max-height':maxOverlayHeight,'overflow':'auto','line-height':'25px'}" 
-                            (onNodeSelect)="nodeSelect($event,treePanel)">
-                            <ng-template let-node pTemplate type="default">
-                                <span [ngStyle]="setTreeNodeStyles(node)">{{node.label}} <i *ngIf="node.data?.hasRelations" class="fa fa-share-alt" aria-hidden="true" title="Item has relationships" style="color:#999;"></i></span>
-                            </ng-template>
-                        </p-tree>
-                </p-overlayPanel>                
+                    </p-overlayPanel>                
+                    <div *ngIf="!isLastItem && showSeperator" class="sep breadcrumb"><i class="fa fa-angle-right"></i></div>                
+                    <p-overlayPanel #treePanel>  
+                        <div class="tree-breadcrumb">    
+                            <input type="text" pInputText [(ngModel)]="searchTreeValue" placeholder="Search" style="width: 100%;">                      
+                            <p-tree [value]="treeItems | treeSearch: searchTreeValue" selectionMode="single" [(selection)]="breadcrumb.selectedTreeNode" styleClass="breadcrumbTree" [style]="{'max-height':maxOverlayHeight,'overflow':'auto','line-height':'25px'}" 
+                                (onNodeSelect)="nodeSelect($event,treePanel)">
+                                <ng-template let-node pTemplate type="default">
+                                    <span [ngStyle]="setTreeNodeStyles(node)">{{node.label}} <i *ngIf="node.data?.hasRelations" class="fa fa-share-alt" aria-hidden="true" title="Item has relationships" style="color:#999;"></i></span>
+                                </ng-template>
+                            </p-tree>
+                        </div>
+                    </p-overlayPanel>
               `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestroy {    
     @Input() breadcrumb: Breadcrumb;
-    @Input() lastItem: boolean;
+    @Input() isLastItem: boolean;
+    @Input() lastItem: Breadcrumb;
     @Output() treeClick = new EventEmitter();
     @Input() showSeperator: boolean = true;
     

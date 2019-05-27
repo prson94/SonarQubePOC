@@ -1241,7 +1241,7 @@ where   h.ID <> @t order by h.[Level] desc;
 
             var assetType = Company.Filter<AssetType>(i => i.Object == "ArtifactType" && i.ObjectID == typeID).SingleOrDefault();
             if (assetType == null) throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
-
+            
             var model = new Dictionary<string, object>();
 
             model.Add("ID", assetType.ObjectID);
@@ -7845,6 +7845,25 @@ from	    AssetType T where T.Object = 'TaxonomyType' ");
             var sql = $"select top {num} ad.DisplayValue as Name, u.Url  from asset ast inner join assettype astt on (ast.assetTypeID = astt.id)  inner join AssetDisplayValue AD on AD.assetid = ast.id cross apply [dbo].GetAssetUrlById(ast.ID) u where ast.[object] = @typeName and astt.objectId = @typeId and ad.DisplayValuePrefix like @search";
 
             return await Company.QueryAsync<BreadcrumbTypeAheadModel>(sql, new { typeName = new DbString { Value = objectType.ToString(), IsFixedLength = true, Length = 20, IsAnsi = true }, typeId = objectId, search = $"{q}%" });            
+        }
+
+        [Route("breadcrumb/typeaheadfortype")]
+        public async Task<IEnumerable<BreadcrumbTypeAheadModel>> GetBreadcrumbTypeaheadfortype(string q, int num, SystemObjects objectType, int objectId)
+        {
+            //var sql = $"select top {num} ad.DisplayValue as Name, u.Url  from asset ast inner join assettype astt on (ast.assetTypeID = astt.id)  inner join AssetDisplayValue AD on AD.assetid = ast.id cross apply [dbo].GetAssetUrlById(ast.ID) u where ast.[object] = @typeName and astt.objectId = @typeId and ad.DisplayValuePrefix like @search";
+            var sql = $" select top {num} AT.ID, AT.ObjectID, AT.Name, u.Url,IT.SubjectID as ParentID from AssetType AT " +
+                        $"cross apply [dbo].GetAssetTypeUrlById(AT.ID) u " +
+                        $"outer apply (SELECT IT.SubjectID from IntersectType IT " +
+                        $"              inner join [Predicate] P on IT.Object = @typeName " +
+                        $"              and IT.ObjectID = AT.ObjectID and P.ID = IT.PredicateID and P.Type = 3) IT " +
+                        $" WHERE IT.SubjectID = " +
+                        $" (SELECT  IT.SubjectID as ParentID FROM AssetType AT " +
+                        $"          outer apply (select	IT.SubjectID from	IntersectType IT " +
+                        $"          inner join [Predicate] P on IT.Object = @typeName and IT.ObjectID = AT.ObjectID " +
+                        $"          and P.ID = IT.PredicateID and P.Type = 3) IT " +
+                        $"where AT.[Object] = @typeName and AT.[objectId] = @typeId)";
+
+            return await Company.QueryAsync<BreadcrumbTypeAheadModel>(sql, new { typeName = new DbString { Value = objectType.ToString(), IsFixedLength = true, Length = 30, IsAnsi = true }, typeId = objectId, search = $"{q}%" });
         }
 
         #endregion

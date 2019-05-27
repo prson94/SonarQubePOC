@@ -8,12 +8,12 @@ import { Subscription }   from 'rxjs';
     template: ` <div #bread class="breadcrumbs" (window:resize)="onResize($event)">
                  <i *ngIf="showLastOnly" class="fa fa-ellipsis-h breadcrumb-collapse" aria-hidden="true" (mouseover)="smallPanel.toggle($event);"></i>
                  <div *ngFor="let breadcrumb of breadcrumbs;let last=last" [ngClass]="{'active':last,'inactive':!last}">
-                    <d3s-header-breadcrumb-item *ngIf="(showLastOnly && last) || !showLastOnly" [breadcrumb]="breadcrumb" [lastItem]="last" (treeClick)="handleTreeClick($event)"></d3s-header-breadcrumb-item>                    
+                    <d3s-header-breadcrumb-item *ngIf="(showLastOnly && last) || !showLastOnly" [breadcrumb]="breadcrumb" [isLastItem]="last" [lastItem]="breadcrumbs[breadcrumbs.length - 1]" (treeClick)="handleTreeClick($event)"></d3s-header-breadcrumb-item>                    
                  </div>                
                 </div>  
                 <p-overlayPanel #smallPanel>
                     <div *ngFor="let breadcrumb of breadcrumbs;let last=last;let index=index" class="collapsed-crumb-container">
-                        <d3s-header-breadcrumb-item *ngIf="!last" [ngClass]="'collapsed-crumb'" [ngStyle]="{'padding-left': index *10 + 'px'}" [showSeperator]="false" [breadcrumb]="breadcrumb" [lastItem]="last"></d3s-header-breadcrumb-item>
+                        <d3s-header-breadcrumb-item *ngIf="!last" [ngClass]="'collapsed-crumb'" [ngStyle]="{'padding-left': index *10 + 'px'}" [showSeperator]="false" [breadcrumb]="breadcrumb" [isLastItem]="last"></d3s-header-breadcrumb-item>
                     </div>
                 </p-overlayPanel>
               `,
