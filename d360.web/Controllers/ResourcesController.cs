@@ -908,6 +908,8 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                 string typeName = "";
                 string uid = "";
                 ObjectDetail det = null;
+                string workflowTypeUid = "";
+                string workflowVersionUid = "";
 
                 if (Company.HasAssetDefaultReadPermission(objectType, objectID))
                 {
@@ -1035,6 +1037,21 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                         var ruleDimension = Company.GetById<RuleDimension>(objectID);
                         desc = ruleDimension?.Description;
                     }
+                    else if (objectType == "WorkflowVersion")
+                    {
+                        var worflowSql = @"	Select t.uid as TypeUID,v.uid as VersionUID from workflow.[type] as t
+	                                    inner join  [workflow].[Version] as v on
+	                                    t.id = v.TypeId
+	                                    where v.id=@id";
+                        var workflow = Company.Query<dynamic>(worflowSql, new { id = objectID }).FirstOrDefault();
+                        workflowTypeUid = workflow.TypeUID.ToString();
+                        workflowVersionUid = workflow.VersionUID.ToString();
+                        det = null;
+                        uid = null;
+                        dispName = null;
+                        typeName = null;
+ 
+                    }
                 }
 
                 return Json(
@@ -1048,7 +1065,10 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                         Url = ((det != null && det.Url != null) ? $"/{det.Url}" : ""),
                         Levels = levels,
                         FieldValues = res,
-                        Description = desc
+                        Description = desc,
+                        WorkflowTypeUID = workflowTypeUid,
+                        WorkflowVersionUID= workflowVersionUid
+
                     },
                     JsonRequestBehavior.AllowGet);
             }

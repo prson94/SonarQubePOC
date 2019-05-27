@@ -7,7 +7,7 @@ using System.Runtime.Serialization;
 namespace d360.core.entities.Workflow
 {
     [DataContract(Namespace = NAMESPACE), Table("Type", Schema = "workflow")]
-    public class Type : BaseIntObject, IIntObject, ICreatedMetadata, IUpdatedMetadata
+    public class Type : BaseIntObject, IIntObject, ICreatedMetadata, IUpdatedMetadata,IUIDMetadata
     {
         [DataMember]
         public string Name { get; set; }
@@ -29,5 +29,7 @@ namespace d360.core.entities.Workflow
         [DataMember]
         public State State { get; set; } = State.Unknown;
 
+        [DataMember]
+        public Guid? UID { get; set; }
     }
 }

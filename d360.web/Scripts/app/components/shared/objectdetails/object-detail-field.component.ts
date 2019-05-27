@@ -33,5 +33,34 @@ export class ObjectDetailFieldComponent {
             return "Error";
         }
     }
+
+    private get isArrayValue(): boolean {
+        return this.field != null && this.field.Values && this.field.Values.length > 0;
+    }
+
+    private get isEmail(): boolean {
+        return this.field != null && this.field.Name != null && this.field.Name.toLowerCase() == 'email' && this.fieldDataType == 'text';
+    }
+
+    private get fieldDataType(): string {
+        if (this.field == null || this.field.DataType == null)
+            return null;
+        switch (this.field.DataType.toLowerCase()) {
+            case 'text':
+            case 'string':
+                return 'text';
+            case 'date':
+            case 'datetime':
+                return 'date';
+            case 'number':
+            case 'decimal':
+                return 'number';
+            case 'bool':
+            case 'boolean':
+                return 'bool';
+            default:
+                return this.field.DataType.toLowerCase();
+        }
+    }
 }
 

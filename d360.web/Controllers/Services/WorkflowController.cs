@@ -93,14 +93,14 @@ from	    Issue I
 			left outer join reporting.Global_Resource R on R.ResourceID = I.CreatedBy
 			left outer join Comment C on C.ID = I.CommentID
             left join workflow.ItemAssignment IA on IA.ItemID = wi.ID and IA.ResourceObject = 'Resource' {0}
-order by wi.StartedOn desc", 
+order by wi.StartedOn desc",
             resourceID.HasValue ? $"and IA.ResourceObjectID = {resourceID.Value}" : ""
             );
 
-            
+
             return Company.Query<dynamic>(sql);
         }
-                
+
         [Route("all/issues"), HttpGet]
         public HttpResponseMessage GetIssuesForAllUsers()
         {
@@ -116,9 +116,9 @@ order by wi.StartedOn desc",
 
         [Route("all/issues/excel/excel.xls"), HttpGet]
         public HttpResponseMessage GetIssuesForAllUsersExcel(bool all = true)
-        {    
+        {
             var results = all ? getIssues(null) : getIssues(Company.CurrentResourceID);
-            
+
             var document = new SLDocument();
             document.AddWorksheet("Items");
 
@@ -152,7 +152,7 @@ order by wi.StartedOn desc",
                 document.SetCellValue(rowIndex, ++dataColIndex, row.Object ?? "");
                 document.SetCellValue(rowIndex, ++dataColIndex, row.RaisedBy ?? "");
                 document.SetCellValue(rowIndex, ++dataColIndex, row.DateStarted.ToShortDateString());
-                document.SetCellValue(rowIndex, ++dataColIndex, row.DateCompleted != null ? row.DateCompleted.ToShortDateString(): "");
+                document.SetCellValue(rowIndex, ++dataColIndex, row.DateCompleted != null ? row.DateCompleted.ToShortDateString() : "");
                 document.SetCellValue(rowIndex, ++dataColIndex, row.ActivityName ?? "");
                 document.SetCellValue(rowIndex, ++dataColIndex, row.Notes ?? "");
                 document.SetCellValue(rowIndex, ++dataColIndex, row.IssueTypeName ?? "");
@@ -163,12 +163,12 @@ order by wi.StartedOn desc",
 
 
             var stream = new MemoryStream();
-            document.SaveAs(stream);            
+            document.SaveAs(stream);
             stream.Position = 0;
             HttpResponseMessage result = null;
             // serve the file to the client      
             result = Request.CreateResponse(HttpStatusCode.OK);
-            
+
             result.Content = new StreamContent(stream);
             result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
             result.Content.Headers.ContentLength = stream.Length;
@@ -178,28 +178,28 @@ order by wi.StartedOn desc",
             };
             return result;
         }
-        
+
         [HttpGet, Route("workflowmonitor/filter/definition")]
         public HttpResponseMessage GetFilerDefinition()
         {
-            var filterValues = new List<string>() { "Artifact", "Rule", "Policy", "Model", "Action", "Relationship", "Fusion" }.OrderBy(x=>x).ToList();
-           
+            var filterValues = new List<string>() { "Artifact", "Rule", "Policy", "Model", "Action", "Relationship", "Fusion" }.OrderBy(x => x).ToList();
+
             var filterColumns = new List<GridFilterColumn>();
             filterColumns.Add(new GridFilterColumn { text = "Asset", datafield = "Asset", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
-            filterColumns.Add(new GridFilterColumn { text = "Type", datafield = "Type", filtertype = GridColumn.FILTER_TYPE_LIST, filteritems = filterValues,columntype=GridColumn.COLUMN_TYPE_COMBO });
+            filterColumns.Add(new GridFilterColumn { text = "Type", datafield = "Type", filtertype = GridColumn.FILTER_TYPE_LIST, filteritems = filterValues, columntype = GridColumn.COLUMN_TYPE_COMBO });
             filterColumns.Add(new GridFilterColumn { text = "Type Name", datafield = "TypeName", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
-            filterColumns.Add(new GridFilterColumn { text = "Started", datafield = "StartedOn",  filtertype = GridColumn.FILTER_TYPE_DATE, columntype = GridColumn.COLUMN_TYPE_STRING });
+            filterColumns.Add(new GridFilterColumn { text = "Started", datafield = "StartedOn", filtertype = GridColumn.FILTER_TYPE_DATE, columntype = GridColumn.COLUMN_TYPE_STRING });
             filterColumns.Add(new GridFilterColumn { text = "Completed", datafield = "CompletedOn", filtertype = GridColumn.FILTER_TYPE_DATE, columntype = GridColumn.COLUMN_TYPE_STRING });
             filterColumns.Add(new GridFilterColumn { text = "Assigned To", datafield = "AssignedTo", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
             filterColumns.Add(new GridFilterColumn { text = "Initiator", datafield = "Initiator", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
             filterColumns.Add(new GridFilterColumn { text = "Status", datafield = "Status", filtertype = GridColumn.FILTER_TYPE_LIST, filteritems = new List<string> { "Complete", "Pending" }, columntype = GridColumn.COLUMN_TYPE_COMBO });
-            
+
             return Request.CreateResponse(HttpStatusCode.OK, filterColumns.OrderBy(x => x.text).ToList());
 
         }
 
         [Route("issue/type/{objectid:int}/{objecttype}"), HttpGet]
-        public HttpResponseMessage GetTaskByIDForObjectAndType(int objectid, string objecttype) 
+        public HttpResponseMessage GetTaskByIDForObjectAndType(int objectid, string objecttype)
         {
             var sql = @"
 select		distinct 
@@ -268,7 +268,7 @@ order by wi.StartedOn desc";
         public WorkflowDiagramModel GetWorkflowDiagram(int id, int? version = null)
         {
             var nodes = Company.Query<WorkflowDiagramNode>(QueryConstants.WorkflowDiagramNodes, new { id, version }).ToList();
-            var links = Company.Query<WorkflowDiagramLink>(QueryConstants.WorkflowDiagramLinks, new { id, version }).ToList();            
+            var links = Company.Query<WorkflowDiagramLink>(QueryConstants.WorkflowDiagramLinks, new { id, version }).ToList();
             var type = Company.WorkflowTypes.Find(id);
             var @event = Company.WorkflowEventRegistrations.Single(e => e.TypeID == id);
 
@@ -297,8 +297,8 @@ order by wi.StartedOn desc";
                 Links = links,
                 Type = type,
                 Event = @event,
-                CurrentVersion = currentVersion?.Version,
-                PublishedVersion = publishedVersion?.Version ?? -1
+                CurrentVersion = currentVersion,
+                PublishedVersion = publishedVersion 
             };
         }
 
@@ -322,7 +322,7 @@ order by wi.StartedOn desc";
                 //remove all the current version step items assignments
                 var currentAssignments = Company.WorkflowItemAssignments.Where(x => x.ItemID == itemStep.ItemID);
 
-                if(currentAssignments != null)
+                if (currentAssignments != null)
                 {
                     Company.WorkflowItemAssignments.RemoveRange(currentAssignments);
 
@@ -363,7 +363,7 @@ order by wi.StartedOn desc";
                 //look up change event registration
                 var reg = Company.WorkflowEventRegistrations.Where(x => x.TypeID == workflowId).FirstOrDefault();
 
-                if(reg == null) return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Workflow registration is missing or invalid");
+                if (reg == null) return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Workflow registration is missing or invalid");
 
                 //add new event for the requested object and change type                
                 Company.AssignActivityWorkflowToNewObject(reg, itemId, workflowId, objectId, objectType);
@@ -372,7 +372,7 @@ order by wi.StartedOn desc";
 
                 var workflowItem = Company.WorkflowItems.Where(x => x.ID == itemId).FirstOrDefault();
 
-                if(workflowItem == null)
+                if (workflowItem == null)
                 {
                     return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Invalid Workflow item id.");
                 }
@@ -421,7 +421,7 @@ order by wi.StartedOn desc";
 
                 var versionStep = Company.WorkflowVersionSteps.Where(x => x.ID == itemStepsModel.StepID).FirstOrDefault();
 
-                if(itemStepsModel == null)
+                if (itemStepsModel == null)
                 {
                     return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "CANNOT FIND THE ITEM STEP FOR THE SPECIFIED PARAMETERS");
                 }
@@ -431,16 +431,16 @@ order by wi.StartedOn desc";
 
                 var formSettings = WorkflowItemStepSettingModel.ParseXml(XElement.Parse(versionStep.Settings));
                 var isCompleted = false;
-                
+
                 StringBuilder sb = new StringBuilder();
 
                 var root = XElement.Parse(itemStepsModel.Fields);
 
                 //increment the number of responses attribute
 
-                if(root.Attribute("NumberOfResponses") != null)
-                {                    
-                    int.TryParse((string)root.Attribute("NumberOfResponses"), out numberOfResponses);                    
+                if (root.Attribute("NumberOfResponses") != null)
+                {
+                    int.TryParse((string)root.Attribute("NumberOfResponses"), out numberOfResponses);
                     root.Attribute("NumberOfResponses").SetValue(++numberOfResponses);
                 }
                 else
@@ -448,9 +448,9 @@ order by wi.StartedOn desc";
                     root.Add(new XAttribute("NumberOfResponses", numberOfResponses));
                 }
 
-                if(root.Attribute("TotalResources") != null)
+                if (root.Attribute("TotalResources") != null)
                 {
-                    int.TryParse((string)root.Attribute("TotalResources"), out totalResources);                    
+                    int.TryParse((string)root.Attribute("TotalResources"), out totalResources);
                 }
 
                 var newForm = new XElement("form", new XAttribute("ResourceID", Company.CurrentResourceID));
@@ -463,7 +463,7 @@ order by wi.StartedOn desc";
                     {
                         val = (val ?? "").ToUpper() == "TRUE" ? "TRUE" : "FALSE";
                     }
-                    else if(field.FieldType == WorkflowFormModelFieldType.list)
+                    else if (field.FieldType == WorkflowFormModelFieldType.list)
                     {
                         var fieldTypeId = int.Parse(field.ReferenceFieldID);
                         var fieldType = Company.FieldTypes.Where(x => x.ID == fieldTypeId).FirstOrDefault();
@@ -489,7 +489,7 @@ order by wi.StartedOn desc";
                             }
                         }
                         else
-                        {                            
+                        {
                             if (fieldType != null && int.TryParse(val, out intVal))
                             {
 
@@ -509,7 +509,7 @@ order by wi.StartedOn desc";
                             new XAttribute("label", field.Label),
                             new XAttribute("value", val),
                             new XAttribute("displayvalue", displayVal),
-                            new XAttribute("fieldtype", field.FieldType.ToString().ToLower()))                            
+                            new XAttribute("fieldtype", field.FieldType.ToString().ToLower()))
                         );
                 }
 
@@ -533,7 +533,7 @@ order by wi.StartedOn desc";
                         break;
                     case FormResponseType.Majority:
                         //wait for all users to complete so we can determine what the majority says.
-                       isCompleted = numberOfResponses >= (totalResources / 2) + 1;
+                        isCompleted = numberOfResponses >= (totalResources / 2) + 1;
                         //isCompleted = numberOfResponses >= totalResources;
                         break;
                 }
@@ -551,7 +551,7 @@ order by wi.StartedOn desc";
                 //remove any assignment records in the workflow item assignment table so this item doesnt appear assigned to this user anymore
                 var assignment = Company.WorkflowItemAssignments.Where(x => x.ItemID == itemId && x.ResourceObject == "Resource" && x.ResourceObjectID == Company.CurrentResourceID && x.ItemStepID == itemStepsModel.ID).FirstOrDefault();
 
-                if (assignment!= null)
+                if (assignment != null)
                 {
                     Company.WorkflowItemAssignments.Remove(assignment);
                 }
@@ -559,12 +559,12 @@ order by wi.StartedOn desc";
                 Company.SaveChanges();
 
                 var @object = (SystemObjects)Enum.Parse(typeof(SystemObjects), item.Object);
-                
+
                 var obj = Company.GetObjectDetail(item.Object, item.ObjectID);
 
                 var type = SystemObjects.IssueType;
 
-                if(obj != null) type  = (SystemObjects)Enum.Parse(typeof(SystemObjects), obj.Type);
+                if (obj != null) type = (SystemObjects)Enum.Parse(typeof(SystemObjects), obj.Type);
 
 
                 if (isCompleted)
@@ -572,7 +572,7 @@ order by wi.StartedOn desc";
                     //clear other assignments
                     Company.CompleteItemStepAssignments(itemStepId);
 
-                    SendEvent("Workflow Form Completed", new Dictionary<string, string> { { "WorkflowItemID", "itemId" }, { "ResourceID", Company.CurrentResourceID.ToString() } });                    
+                    SendEvent("Workflow Form Completed", new Dictionary<string, string> { { "WorkflowItemID", "itemId" }, { "ResourceID", Company.CurrentResourceID.ToString() } });
                     int transitionsCount = await Company.MarkStepAsCompleteAndContinue(itemStepsModel, itemId, new core.queue.EventObjectInfo { Object = @object, ObjectID = item.ObjectID, ObjectTypeID = (obj != null ? obj.TypeID : -1), ObjectType = type });
 
                     if (transitionsCount == 0)
@@ -586,12 +586,12 @@ order by wi.StartedOn desc";
                 }
 
                 return Request.CreateResponse(HttpStatusCode.Accepted, itemStepsModel);
-            }            
+            }
             catch (Exception ex)
             {
                 SendException(ex, new Dictionary<string, string> { { "WorkflowItemID", "itemId" } });
 
-                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);                
+                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
             }
         }
 
@@ -627,7 +627,7 @@ order by wi.StartedOn desc";
             {
                 var omittedCount = 0;
                 var validItemSteps = new List<WorkflowItemStep>();
-                foreach(var i in itemSteps)
+                foreach (var i in itemSteps)
                 {
 
 
@@ -685,7 +685,7 @@ order by wi.StartedOn desc";
                 }
 
                 //submit the valid item steps
-                foreach(var i in validItemSteps)
+                foreach (var i in validItemSteps)
                     await SubmitWorkflowForm((int)i.ItemID, (int)i.ID, model.Fields);
 
 
@@ -700,14 +700,14 @@ order by wi.StartedOn desc";
         [Route("form/{typeID:int}/{itemStepID:int}"), HttpGet]
         public async Task<HttpResponseMessage> GetWorkflowForm(int typeID, int itemStepID)
         {
-            var itemStep = Company.WorkflowItemSteps.Where(x => x.ID == itemStepID).Include(x=>x.Item).Include(x=>x.Step).FirstOrDefault();
+            var itemStep = Company.WorkflowItemSteps.Where(x => x.ID == itemStepID).Include(x => x.Item).Include(x => x.Step).FirstOrDefault();
 
 
-            if(itemStep == null)
+            if (itemStep == null)
             {
                 return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Workflow item has been deleted.");
             }
-            
+
             string sql = @"
                     SELECT vs.[Fields]      
                       FROM 
@@ -722,21 +722,29 @@ order by wi.StartedOn desc";
             {
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "INVALID WORKFLOW FORM DEFINITION,  FORM XML IS NULL.");
             }
-            
+
             var desc = (string)XElement.Parse(xml).Element("form").Attribute("description");
             var title = (string)XElement.Parse(xml).Element("form").Attribute("title");
             bool.TryParse((string)XElement.Parse(xml).Element("form").Attribute("allowReassignResource"), out bool allowReassignResource);
             bool.TryParse((string)XElement.Parse(xml).Element("form").Attribute("allowReassignObject"), out bool allowReassignObject);
-            
+
             if (string.IsNullOrEmpty(xml))
                 return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Workflow with specified version step id not found");
-                
+
             List<WorkflowFormModelField> properties = (
                                  from s in XElement.Parse(xml).Element("form").Elements()
-                                 select new WorkflowFormModelField{ Value = (string)s.Attribute("value"), ID = (string)s.Attribute("id"), Label = (string)s.Attribute("label"), ReferenceFieldID = (string)s.Attribute("referenceFieldId"),
+                                 select new WorkflowFormModelField
+                                 {
+                                     Value = (string)s.Attribute("value"),
+                                     ID = (string)s.Attribute("id"),
+                                     Label = (string)s.Attribute("label"),
+                                     ReferenceFieldID = (string)s.Attribute("referenceFieldId"),
                                      Required = s.Attribute("required") == null ? false : (bool)s.Attribute("required"),
-                                     IntersectTypeID = int.Parse((string)s.Attribute("intersectTypeId") ?? "0"), FieldType = (WorkflowFormModelFieldType)Enum.Parse( typeof(WorkflowFormModelFieldType), (string)s.Attribute("type")) }
+                                     IntersectTypeID = int.Parse((string)s.Attribute("intersectTypeId") ?? "0"),
+                                     FieldType = (WorkflowFormModelFieldType)Enum.Parse(typeof(WorkflowFormModelFieldType), (string)s.Attribute("type"))
+                                 }
                                  ).ToList();
+
 
 
             ObjectDetail details = null;
@@ -749,7 +757,7 @@ order by wi.StartedOn desc";
             {
                 int fieldId = 0;
 
-                if(item.FieldType == WorkflowFormModelFieldType.relationshipType)
+                if (item.FieldType == WorkflowFormModelFieldType.relationshipType)
                 {
                     if (item.IntersectTypeID <= 0) throw new Exception("RELATIONSHIP INPUT HAS AN INVALID INTERSECTTYPE ID VALUE");
 
@@ -763,7 +771,7 @@ order by wi.StartedOn desc";
                     if (reg == null) throw new Exception("RELATIONSHIP INPUT CANNOT IDENTIFY WORKFLOW EVENT REGISTRATION");
 
                     var itemSql = "select A.DisplayValue as [Text], A.Object + '|' + cast(A.ObjectID as varchar) as [Value] from AssetDetail A where A.Type = @objectType and A.TypeID = @objectTypeId order by 1";
-                                        
+
                     item.Values = new List<System.Web.Mvc.SelectListItem>();
 
                     if (reg.Object == intersectType.Subject && reg.ObjectID == intersectType.SubjectID)
@@ -784,7 +792,7 @@ order by wi.StartedOn desc";
                         );
                     }
                 }
-                
+
                 if (string.IsNullOrEmpty(item.ReferenceFieldID) || !int.TryParse(item.ReferenceFieldID, out fieldId) || item.FieldType != WorkflowFormModelFieldType.list) continue;
 
                 //load the field type
@@ -794,7 +802,7 @@ order by wi.StartedOn desc";
 
                 //get the possible values for this field
                 if (!string.IsNullOrEmpty(fieldType.LookupObjectType))
-                {                    
+                {
                     try
                     {
                         item.AllowMultipleValues = fieldType.AllowMultipleValues;
@@ -811,11 +819,11 @@ order by wi.StartedOn desc";
                 }
             }
 
-           switch (itemStep.Item.Object)
+            switch (itemStep.Item.Object)
             {
                 case "Issue":
                     var issue = Company.Issues.Where(x => x.ID == itemStep.Item.ObjectID).Include(x => x.IssueType).FirstOrDefault();
-                    
+
                     if (issue != null)
                     {
                         var comment = Company.Comments.Where(x => x.ID == issue.CommentID).FirstOrDefault();
@@ -826,7 +834,7 @@ order by wi.StartedOn desc";
                             TypeName = issue.IssueType.Name
                         };
 
-                        if(issue.IssueType != null)
+                        if (issue.IssueType != null)
                             issueTypeName = issue.IssueType.Name;
                         issueItemDetails = Company.GetObjectDetail(issue.Object, issue.ObjectID);
                         issueObjectType = issue.Object;
@@ -847,7 +855,7 @@ order by wi.StartedOn desc";
             //check if the current user already completed the form
             var formResults = XElement.Parse(itemStep.Fields);
             bool isCompletedByCurrentUser = false;
-            
+
             foreach (var form in formResults.Elements("form"))
             {
                 int completedById = 0;
@@ -857,7 +865,7 @@ order by wi.StartedOn desc";
                 {
                     isCompletedByCurrentUser = true;
                     continue;
-                }                
+                }
             }
 
             // check if the user has access
@@ -1112,7 +1120,7 @@ order by wi.StartedOn desc";
         [Route("changetypes"), HttpGet]
         public List<ChangeTypeInfo> GetChangeTypes()
         {
-            return ChangeType.Add.GetList().Where(x=>x.ID != ChangeType.ScoreUpdate).ToList();
+            return ChangeType.Add.GetList().Where(x => x.ID != ChangeType.ScoreUpdate).ToList();
         }
 
         [Route("transitiontypes"), HttpGet]
@@ -1209,7 +1217,7 @@ order by wi.StartedOn desc";
         public HttpResponseMessage GetItemDetail(int itemId)
         {
             var item = Company.WorkflowItems.Include(x => x.Version).Where(x => x.ID == itemId).FirstOrDefault();
-            
+
             if (item == null)
                 return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Cannot find the specified workflow instance.");
 
@@ -1261,14 +1269,14 @@ order by wi.StartedOn desc";
                     break;
             }
 
-            return Request.CreateResponse(HttpStatusCode.OK, 
+            return Request.CreateResponse(HttpStatusCode.OK,
                 new
                 {
                     Item = item,
                     Workflow = workflow,
                     ItemSteps = itemSteps,
                     Steps = steps,
-                    ObjectDetails = objectDetails                    
+                    ObjectDetails = objectDetails
                 });
         }
 
@@ -1324,18 +1332,18 @@ order by wi.StartedOn desc";
             if (type == null || (type.State != core.enums.State.Active && type.State != core.enums.State.InActive))
                 return Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Workflow type id {id} could not be found");
 
-            
+
             var currentVersion = Company.WorkflowVersions.Where(v => v.TypeID == type.ID).OrderByDescending(v => v.Version).First();
             var model = GetWorkflowDiagram(id, currentVersion?.Version);
 
             model.Type = type;
-            model.CurrentVersion = currentVersion?.Version ?? 1;
+            model.CurrentVersion = currentVersion;
 
             return Request.CreateResponse(HttpStatusCode.OK, model);
         }
 
         [Route("fieldtypes/{type}/{id:int}"), HttpGet]
-        public HttpResponseMessage GetFieldTypes(int id, string type, bool allowHtml = false)
+        public HttpResponseMessage GetFieldTypes(int id, string type, bool allowHtml = false, string additionalFields = "")
         {
             var fields = Company.FieldTypes.Where(f => f.Object == type && f.ObjectID == id).ToList();
             List<string> excludedTypes = new List<string>() { "ComplexRelationLookup", "Password", "Link", "FilteredLookup", "FusionLookup", "OwnershipLookup", "RefListRelationship", "Relationship" };
@@ -1343,6 +1351,22 @@ order by wi.StartedOn desc";
                 excludedTypes.Add("Html");
 
             fields = fields.Where(f => !excludedTypes.Contains(f.Type)).ToList();
+
+            if (type == "IssueType" && !string.IsNullOrEmpty(additionalFields) && additionalFields.Contains("|"))
+            {
+                var objectData = additionalFields.Split('|');
+                if (objectData.Count() == 2)
+                {
+                    string objectType = objectData[0];
+                    int objectId = int.Parse(objectData[1]);
+                    var assetFields = Company.FieldTypes
+                        .Where(f => f.Object == objectType && f.ObjectID == objectId && !excludedTypes.Contains(f.Type))
+                        .ToList();
+
+                    fields = fields.Union(assetFields).ToList();
+                }
+
+            }
 
             return Request.CreateResponse(HttpStatusCode.OK, fields);
         }
@@ -1385,7 +1409,7 @@ order by wi.StartedOn desc";
                 @version.UpdatedOn = DateTime.UtcNow;
                 @version.Version = 1;
 
-                Company.Add(@version);                
+                Company.Add(@version);
 
                 Company.SaveChanges();
 
@@ -1409,7 +1433,8 @@ order by wi.StartedOn desc";
 
                 Dictionary<int, int> keyMapping = new Dictionary<int, int>();
 
-                omodel.Nodes.ForEach(n => {
+                omodel.Nodes.ForEach(n =>
+                {
                     int key = 0;
                     int.TryParse(n.Key, out key);
 
@@ -1481,7 +1506,7 @@ order by wi.StartedOn desc";
                         link.Name = l.Name;
                         link.TransitionType = l.TransitionType;
                         //need to map new form conditions to their appropriate step id's 
-                    
+
                         l.Condition = MapWorkflowConditionsFromXml(l.Condition, keyMapping);
 
                         link.Condition = l.Condition;
@@ -1569,13 +1594,13 @@ order by wi.StartedOn desc";
                         type.State = model.Type.State;
                         type.UpdatedOn = DateTime.UtcNow;
                         type.UpdatedBy = Company.CurrentResourceID;
-                        
-                       
+
+
                         var currentVersion = Company.WorkflowVersions.Where(v => v.TypeID == type.ID).OrderByDescending(v => v.Version).First();
                         versionID = currentVersion.ID;
 
                         //the current version is published
-                        if (type.PublishedVersionID == versionID && model.Nodes.Count > 0 && model.Links.Count > 0 && model.Type.PublishedVersionID ==-1)
+                        if (type.PublishedVersionID == versionID && model.Nodes.Count > 0 && model.Links.Count > 0 && model.Type.PublishedVersionID == -1)
                         {
 
                             var version = new WorkflowVersion();
@@ -1594,14 +1619,14 @@ order by wi.StartedOn desc";
                             {
                                 versionID = version.ID;
                                 newVersion = true;
-                            } 
+                            }
                             else
                             {
                                 versionID = version.ID;
                                 type.PublishedVersionID = version.ID;
                                 newVersion = true;
                             }
-                        } 
+                        }
                         //current version is not published
                         else if (type.PublishedVersionID != versionID && model.Nodes.Count > 0 && model.Links.Count > 0)
                         {
@@ -1645,7 +1670,7 @@ order by wi.StartedOn desc";
                             @event.ObjectID = model.Event.ObjectID;
                             @event.TypeID = model.Type.ID;
                             @event.ChangeType = model.Event.ChangeType;
-                           
+
                             @event.Condition = JsonConvert.DeserializeXNode(model.Event.Condition).ToString();
                             @event.Settings = JsonConvert.DeserializeXNode(model.Event.Settings).ToString();
 
@@ -1657,7 +1682,7 @@ order by wi.StartedOn desc";
                     #endregion
 
                     Dictionary<int, int> keyMapping = new Dictionary<int, int>();
-                    
+
                     if (newVersion)
                     {
                         #region Create New Version
@@ -1862,7 +1887,7 @@ order by wi.StartedOn desc";
 
                                     var node = Company.GetById<WorkflowVersionStep>(key);
                                     node.Settings = MapWorkflowFieldSettings(node.Settings, keyMapping);
-                                    
+
                                 }
                                 if (n.ActivityType == WorkflowActivityType.RelationshipChange)
                                 {
@@ -1902,7 +1927,7 @@ order by wi.StartedOn desc";
                                 bool fromNew = (from < 0);
                                 bool toNew = (to < 0);
 
-                                var link = Company.WorkflowVersionStepTransitions.SingleOrDefault(v => v.FromVersionStepID == from && v.ToVersionStepID == to && v.State== core.enums.State.Active);
+                                var link = Company.WorkflowVersionStepTransitions.SingleOrDefault(v => v.FromVersionStepID == from && v.ToVersionStepID == to && v.State == core.enums.State.Active);
 
                                 if (fromNew || toNew || link == null)
                                 {
@@ -1926,7 +1951,7 @@ order by wi.StartedOn desc";
                                     Company.Add(link);
                                 }
                                 else
-                                {                                    
+                                {
                                     var existing = existingLinks.Find(t => t.FromVersionStepID == link.FromVersionStepID && t.ToVersionStepID == link.ToVersionStepID);
                                     if (existing != null) existingLinks.Remove(existing);
 
@@ -1954,7 +1979,7 @@ order by wi.StartedOn desc";
                             existingLinks.ForEach(l => l.State = core.enums.State.Deleted);
                             Company.SaveChanges();
                         }
-                        
+
                         #endregion
                     }
 
@@ -1985,7 +2010,7 @@ order by wi.StartedOn desc";
             type.UpdatedBy = Company.CurrentResourceID;
             Company.SaveChanges();
 
-           return Request.CreateResponse(HttpStatusCode.OK, id);
+            return Request.CreateResponse(HttpStatusCode.OK, id);
         }
 
         [Route("type/{id:int}/versions")]
@@ -1995,7 +2020,7 @@ order by wi.StartedOn desc";
         }
 
         [Route("type/{typeId:int}/myinstances")]
-        public HttpResponseMessage GetAssignedWorkflowInstances(int typeId, int version,int stepId, int resourceId = 0)
+        public HttpResponseMessage GetAssignedWorkflowInstances(int typeId, int version, int stepId, int resourceId = 0)
         {
             try
             {
@@ -2098,11 +2123,11 @@ order by wi.StartedOn desc";
                                    
                            ";
 
-               
+
 
                 var res = Company.Query<WorkflowAssignmentSummary>(sql, new { r = (resourceId > 0 ? resourceId : Company.CurrentResourceID), typeId = typeId, verid = version, sid = stepId }).FirstOrDefault<WorkflowAssignmentSummary>();
 
-                return Request.CreateResponse(new { item=res });
+                return Request.CreateResponse(new { item = res });
             }
             catch (Exception ex)
             {
@@ -2110,7 +2135,7 @@ order by wi.StartedOn desc";
             }
         }
 
-        [Route("type/{typeId:int}/haspendingitems"),HttpGet]
+        [Route("type/{typeId:int}/haspendingitems"), HttpGet]
         public HttpResponseMessage HasPendingWorkflowsItems(int typeId)
         {
             var sql = $@"		Select count(*)        from workflow.type t
@@ -2168,7 +2193,7 @@ order by wi.StartedOn desc";
 
         [Route("versionstep/history/{id:int}"), HttpGet]
         public HttpResponseMessage GetWorkflowVersionStepHistory(int id, string filteredObject = null, int? filteredObjectId = null)
-        {            
+        {
             var sql = QueryConstants.WorkflowVersionStepHistory;
 
             if (filteredObject != null && filteredObjectId != null)
@@ -2182,7 +2207,7 @@ order by wi.StartedOn desc";
             {
                 sql = string.Format(sql, "left join workflow.item m on m.id = i.itemid", "left join issue s on m.object = 'Issue' and s.id = m.objectID");
             }
-            
+
 
             var results = Company.Query<dynamic>(sql, new { id, filteredObject, filteredObjectId }).ToList();
 
@@ -2196,7 +2221,7 @@ order by wi.StartedOn desc";
         }
 
         [Route("versionstep/history/{id:int}/excel.xls"), HttpGet]
-        public HttpResponseMessage GetWorkflowVersionStepHistoryExcel(int id,  string filteredObject = null, int? filteredObjectId = null)
+        public HttpResponseMessage GetWorkflowVersionStepHistoryExcel(int id, string filteredObject = null, int? filteredObjectId = null)
         {
 
             var sql = QueryConstants.WorkflowVersionStepHistory;
@@ -2246,7 +2271,7 @@ order by wi.StartedOn desc";
             document.AutoFitColumn(1, index);
 
             var stream = new MemoryStream();
-            document.SaveAs(stream);            
+            document.SaveAs(stream);
             stream.Position = 0;
             HttpResponseMessage result = null;
             result = Request.CreateResponse(HttpStatusCode.OK);
@@ -2309,14 +2334,14 @@ order by wi.StartedOn desc";
             return Request.CreateResponse(HttpStatusCode.OK, results);
 
         }
-        
+
         [Route("lastexecution/{id:int}"), HttpDelete]
         public HttpResponseMessage DeleteLastExecution(int id)
         {
             if (!Company.CurrentResourceIsAdmin)
-                return Request.CreateErrorResponse(HttpStatusCode.Forbidden,new Exception("Access Denied"));
+                return Request.CreateErrorResponse(HttpStatusCode.Forbidden, new Exception("Access Denied"));
 
-            if(!Company.WorkflowEventRegistrations.Any(x=>x.TypeID == id))
+            if (!Company.WorkflowEventRegistrations.Any(x => x.TypeID == id))
                 return Request.CreateErrorResponse(HttpStatusCode.NotFound, new Exception("Workflow not found"));
 
             var workflow = Company.WorkflowEventRegistrations.First(x => x.TypeID == id);
@@ -2339,7 +2364,7 @@ order by wi.StartedOn desc";
 
             var results = Company.Query<WorkflowItemStepDetail>(QueryConstants.WorkflowItemSteps, new { itemId }).ToList();
 
-            foreach(var result in results)
+            foreach (var result in results)
             {
                 result.FieldsObject = (WorkflowItemStepDetail.FieldsModel)new XmlSerializer(typeof(WorkflowItemStepDetail.FieldsModel)).Deserialize(new StringReader(result.Fields));
                 var fields = result.FieldsObject;
@@ -2350,10 +2375,10 @@ order by wi.StartedOn desc";
                     {
                         //get responsible users
                         var users = Company.GetWorkflowUsersBasedOnResponsibility(result.TypeID, result.StepID, result.ItemID).ToList();
-                        
+
                         if (fields?.Reassignments?.Any() ?? false)
                         {
-                            foreach(var reassign in fields.Reassignments)
+                            foreach (var reassign in fields.Reassignments)
                             {
                                 //continue if it's not a bulk resource reassignment
                                 if (reassign.ReassignType != "Resource" || reassign.ToResourceID == 0)
@@ -2373,7 +2398,7 @@ order by wi.StartedOn desc";
                         //forms
                         if (fields?.Forms?.Any() ?? false)
                         {
-                            foreach(var form in fields.Forms)
+                            foreach (var form in fields.Forms)
                             {
                                 var ix = users.FindIndex(u => u.ResourceID == form.ResourceID);
                                 if (ix > -1) users.RemoveAt(ix);
@@ -2405,7 +2430,7 @@ order by wi.StartedOn desc";
                                 formattedUserList.Add(u);
 
                             if (user != null && user.ResourceID == Company.CurrentResourceID)
-                                result.IsAssignedLoginUser =  Boolean.TrueString;
+                                result.IsAssignedLoginUser = Boolean.TrueString;
                         }
                         result.Assignee = string.Join(", ", formattedUserList);
                     }
@@ -2429,7 +2454,7 @@ order by wi.StartedOn desc";
                 string changedTypes = jo != null && jo["@value"] != null ? jo["@value"].ToString() : null;
                 if (changedTypes != null)
                 {
-                   
+
                     foreach (var changedType in changedTypes.Split(','))
                     {
                         var types = changedType.Split('|');
@@ -2447,22 +2472,22 @@ order by wi.StartedOn desc";
                     jo["@displayvalue"] = assets;
                     form.field = sfields;
                 }
-          
+
             }
-           
+
         }
-        private WorkflowStepRelationshipChange GetWorkFlowStepRelationshipChanges(dynamic settings, int itemId,string objectName)
+        private WorkflowStepRelationshipChange GetWorkFlowStepRelationshipChanges(dynamic settings, int itemId, string objectName)
         {
-            WorkflowStepRelationshipChange relChange =null;
+            WorkflowStepRelationshipChange relChange = null;
             if (settings != null && settings.RelationshipUpdate != null && settings.RelationshipUpdate.Relationship != null)
             {
 
                 dynamic relations = new JArray(settings.RelationshipUpdate.Relationship);
-                if(relations[0] != null)
+                if (relations[0] != null)
                 {
-                     relChange = new WorkflowStepRelationshipChange();
+                    relChange = new WorkflowStepRelationshipChange();
                     var relation = relations[0];
-                    relChange.AppendValue = relation["@AppendValue"] != null ? relation["@AppendValue"] :false;
+                    relChange.AppendValue = relation["@AppendValue"] != null ? relation["@AppendValue"] : false;
                     relChange.ClearValue = relation["@ClearValue"] != null ? relation["@ClearValue"] : false;
 
                     int stepId = relation["@FormStepId"] != null ? relation["@FormStepId"] : 0;
@@ -2477,8 +2502,8 @@ order by wi.StartedOn desc";
                             JArray sfields = new JArray(stepFields.fields.form.field);
                             JObject jo = sfields.Children<JObject>()
                                     .FirstOrDefault(o => o["@type"] != null && o["@type"].ToString() == "relationshipType" && o["@intersectTypeId"] != null); ;
-                            
-                            int IntersectTypeId =  jo != null && jo["@intersectTypeId"] != null ? Convert.ToInt32(jo["@intersectTypeId"]) : 0;
+
+                            int IntersectTypeId = jo != null && jo["@intersectTypeId"] != null ? Convert.ToInt32(jo["@intersectTypeId"]) : 0;
                             var interceptSql = @"SELECT	
 						                         ITypeName.Name AS Name
 					                        FROM	IntersectType IT    
@@ -2496,28 +2521,30 @@ order by wi.StartedOn desc";
                         {
                             JArray sfields = new JArray(itemStepFields.fields.form.field);
                             JObject jo = sfields.Children<JObject>()
-                                    .FirstOrDefault(o => o["@fieldtype"] != null && o["@fieldtype"].ToString() == "relationshiptype" );
+                                    .FirstOrDefault(o => o["@fieldtype"] != null && o["@fieldtype"].ToString() == "relationshiptype");
 
                             //var sfield = sfields[0];
                             string changedTypes = jo != null && jo["@value"] != null ? jo["@value"].ToString() : null;
                             if (changedTypes != null)
                             {
                                 relChange.Relationship += $"{objectName}";
-                                foreach (var changedType in changedTypes.Split(',')){
+                                foreach (var changedType in changedTypes.Split(','))
+                                {
                                     var types = changedType.Split('|');
-                                    if (types.Length == 2) {
+                                    if (types.Length == 2)
+                                    {
                                         var typeSql = @"Select DisplayValue from assetdetail where object =@obj and objectId=@objId";
                                         string displayValue = Company.Query<string>(typeSql, new { obj = types[0].Replace("Type", ""), objId = types[1] }).FirstOrDefault();
                                         displayValue = string.IsNullOrEmpty(displayValue) ? "Not Found" : displayValue;
                                         relChange.Relationship += $" / {displayValue}";
                                     }
                                 }
-                               
+
                             }
 
                         }
                     }
-                    
+
                 }
 
             }
@@ -2525,23 +2552,23 @@ order by wi.StartedOn desc";
             return relChange;
         }
 
-        private List<EmailedResourceResponsibility> GetEmailResources(int assetId,List<int> responsiblities,List<string> emails)
+        private List<EmailedResourceResponsibility> GetEmailResources(int assetId, List<int> responsiblities, List<string> emails)
         {
-  
+
             string sql = string.Empty;
             var asset = Company.GetAssetDetail(assetId);
 
             if (responsiblities.Count != 0 && asset != null)
             {
-               
-                
-                    sql = $@"WITH CTE(FullName,ResourceID,ResponsibilityTypeName,Email) 
+
+
+                sql = $@"WITH CTE(FullName,ResourceID,ResponsibilityTypeName,Email) 
                         as 
                          (Select distinct  R.FirstName + ' ' + R.LastName as FullName, r.ResourceID,rd.ResponsibilityTypeName,R.Email
                         from ResponsibilityDetail rd
                          inner join reporting.Global_Resource R on
                          rd.resourceId = r.resourceId 
-                         where r.email  IN ('{string.Join("','",emails)}')
+                         where r.email  IN ('{string.Join("','", emails)}')
                          and ((rd.AssetID = {assetId}) or (rd.AssetID = 0 and rd.AssetTypeID ={asset.AssetTypeID}) and rd.IsVisible=1)
                         and rd.ResponsibilityTypeID IN ( {string.Join(",", responsiblities)}))
 
@@ -2574,6 +2601,7 @@ order by wi.StartedOn desc";
                     int fieldTypeId = field["@FieldId"] != null ? field["@FieldId"] : 0;
                     if (fieldTypeId == 0) continue;
                     fieldChange.FormValue = field["@UseFormValue"] != null ? field["@UseFormValue"] : false;
+                    fieldChange.ObjectType = field["@ObjectType"] != null ? field["@ObjectType"] : "";
                     fieldChange.UseCurrentDate = field["@UseCurrentDate"] != null ? field["@UseCurrentDate"] : false;
                     fieldChange.AppendValue = field["@AppendValue"] != null ? field["@AppendValue"] : "";
                     fieldChange.ClearValue = field["@ClearValue"] != null ? field["@ClearValue"] : "";
@@ -2811,7 +2839,7 @@ order by wi.StartedOn desc";
             try
             {
                 detail.FieldChanges = this.GetWorkFlowStepFieldChanges(detail);
-                detail.RelationshipChange= this.GetWorkFlowStepRelationshipChanges(detail.Settings, detail.ItemID, detail.ObjectName);
+                detail.RelationshipChange = this.GetWorkFlowStepRelationshipChanges(detail.Settings, detail.ItemID, detail.ObjectName);
 
                 var itemFields = (WorkflowItemStepDetail.FieldsModel)new XmlSerializer(typeof(WorkflowItemStepDetail.FieldsModel)).Deserialize(new StringReader(detail.ItemFieldsXml));
 
@@ -3130,7 +3158,7 @@ order by wi.StartedOn desc";
                             else if (detail.Settings.MessageRecipientType == "SpecificUser")
                             {
                                 users = new List<GlobalReportingResource>();
-                                foreach(var email in ((string)detail.Settings.MessageToUser).Split(';'))
+                                foreach (var email in ((string)detail.Settings.MessageToUser).Split(';'))
                                 {
                                     var user = Company.GlobalReportingResources.FirstOrDefault(g => g.Email.ToLower() == email);
                                     if (user != null)
@@ -3159,7 +3187,7 @@ order by wi.StartedOn desc";
                         }
                     }
 
-                    foreach(var form in itemFields.Forms)
+                    foreach (var form in itemFields.Forms)
                     {
                         if (form.ResourceID != 0 && !resourceIds.Any(r => r == form.ResourceID))
                             resourceIds.Add(form.ResourceID);
@@ -3264,7 +3292,7 @@ order by wi.StartedOn desc";
 
 
             var stream = new MemoryStream();
-            document.SaveAs(stream);            
+            document.SaveAs(stream);
             stream.Position = 0;
             HttpResponseMessage result = null;
             // serve the file to the client      
@@ -3304,7 +3332,7 @@ order by wi.StartedOn desc";
 
             var sql = $@"select * from ({innerSql}) users where 1=1 {filter} order by [Text] asc {pagingSuffix}";
             var countSql = $@"select count(1) from ({innerSql}) users where 1=1 {filter}";
-            
+
 
             var total = Company.Query<int>(countSql, dbArgs).First();
             var results = Company.Query<dynamic>(sql, dbArgs);
@@ -3400,29 +3428,29 @@ order by wi.StartedOn desc";
 
         private string MapWorkflowConditionsFromXml(string condtionXml, Dictionary<int, int> mappings)
         {
-            
-                if (!string.IsNullOrEmpty(condtionXml))
+
+            if (!string.IsNullOrEmpty(condtionXml))
+            {
+                XElement root = XElement.Parse(condtionXml);
+
+                IEnumerable<XElement> conditions =
+                                from el in root.Elements("Condition")
+                                where el.Attribute("VersionStepID") != null
+                                select el;
+
+                foreach (XElement el in conditions)
                 {
-                    XElement root = XElement.Parse(condtionXml);
-
-                    IEnumerable<XElement> conditions =
-                                    from el in root.Elements("Condition")
-                                    where el.Attribute("VersionStepID") != null
-                                    select el;
-
-                    foreach (XElement el in conditions)
+                    if (mappings.ContainsKey((int)el.Attribute("VersionStepID")))
                     {
-                        if (mappings.ContainsKey((int)el.Attribute("VersionStepID")))
-                        {
-                            el.Attribute("VersionStepID").SetValue(mappings[(int)el.Attribute("VersionStepID")]);
-                        }
-
+                        el.Attribute("VersionStepID").SetValue(mappings[(int)el.Attribute("VersionStepID")]);
                     }
-                    return root.ToString();
-                }
-                return condtionXml;
 
-               
+                }
+                return root.ToString();
+            }
+            return condtionXml;
+
+
         }
 
         /// <summary>
@@ -3439,7 +3467,7 @@ order by wi.StartedOn desc";
                     var fields = settings.FieldUpdate.Field;
                     var count = fields.Count == null ? 1 : fields.Count;
 
-                    
+
                     if (fields.Count == null)
                     {
                         var field = fields;
@@ -3447,7 +3475,8 @@ order by wi.StartedOn desc";
                         if (field["@UseFormValue"] != null && field["@UseFormValue"].ToString().ToLower() == "true" && mappings.ContainsKey((int)field["@FormStepId"]))
                             field["@FormStepId"] = mappings[(int)field["@FormStepId"]];
                     }
-                    else {
+                    else
+                    {
                         for (var i = 0; i < count; i++)
                         {
                             var field = fields[i];
@@ -3458,7 +3487,7 @@ order by wi.StartedOn desc";
                     }
 
                 }
-                
+
                 return JsonConvert.DeserializeXNode(JsonConvert.SerializeObject(new { settings = settings })).ToString();
             }
 

@@ -131,9 +131,7 @@ namespace d360.model
         DbSet<OrganizationResourceDetail> OrganizationResourceDetails { get; set; }
         DbSet<OrganizationResource> OrganizationResources { get; set; }
         DbSet<Organization> Organizations { get; set; }
-        DbSet<OrganizationType> OrganizationTypes { get; set; }
-        DbSet<Policy> Policies { get; set; }        
-        DbSet<PolicyType> PolicyTypes { get; set; }
+        DbSet<OrganizationType> OrganizationTypes { get; set; }        
         DbSet<Predicate> Predicates { get; set; }
         DbSet<Question> Questions { get; set; }
         DbSet<QuestionTypeOption> QuestionTypeOptions { get; set; }
@@ -296,6 +294,7 @@ namespace d360.model
         void RequestObjectCertification(SystemObjects @object, int objectId, SystemObjects objectType, int objectTypeId);
         int SaveChanges();
         bool SaveOrUpdate<T>(T entity, List<Field> fields, int parentId = -1, bool forceUpdate = false) where T : BaseIntObject, IFieldsObject;
+        bool SaveOrUpdateAsset(Asset asset, List<Field> fields, int parentId = -1);
         List<string> SelectQueryColumns(string statement);
         Task SendDigestEmails(EnvironmentLevel environmentLevel);
         bool TypeHasChildren(SystemObjects type, int id);

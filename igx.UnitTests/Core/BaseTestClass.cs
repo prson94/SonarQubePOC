@@ -156,7 +156,7 @@ namespace igx.UnitTests
 
             string outString;
             bool outBool;
-            mockRepo.Setup(x => x.AddAssetType(It.IsAny<AssetTypeInsert>(), It.IsAny<AssetType>(), It.IsAny<AssetType>(), It.IsAny<Predicate>(), out outString, out outBool))
+            mockRepo.Setup(x => x.AddAssetType(It.IsAny<AssetTypeInsert>(), It.IsAny<AssetType>(), It.IsAny<AssetType>(), It.IsAny<Predicate>(), 0 , out outString, out outBool))
                 .Returns(() => new Tuple<HttpStatusCode, string, string>(HttpStatusCode.OK, "", ""));
 
             mockRepo.Setup(x => x.UpsertObjectStyle(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()));
@@ -184,7 +184,54 @@ namespace igx.UnitTests
             return mockRepo.Object;
         }
 
+        public ICrossReferencesRepository GetCrossReferencesRepository()
+        {
+            var mock = new Mock<ICrossReferencesRepository>();
 
+            mock.Setup(x => x.GetCrossReferences(It.IsAny<IEnumerable<KeyValuePair<string, string>>>()))
+                .Returns(() => Task.FromResult(new List<AssetCrossReference>() { new AssetCrossReference() { } } as IEnumerable<AssetCrossReference>));
+
+            mock.Setup(x => x.GetByAssetUid(It.IsAny<string>()))
+                .Returns(Task.FromResult<IEnumerable<AssetCrossReference>>(new List<AssetCrossReference>() { new AssetCrossReference() }));
+
+            mock.Setup(x => x.GetCrossReferenceByTypeId(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns(Task.FromResult<IEnumerable<AssetCrossReference>>(new List<AssetCrossReference>() { new AssetCrossReference() }));
+
+            mock.Setup(x => x.GetCrossReferenceByType(It.IsAny<string>()))
+                .Returns(Task.FromResult<IEnumerable<AssetCrossReference>>(new List<AssetCrossReference>() { new AssetCrossReference() }));
+
+            mock.Setup(x => x.GetCrossReferenceByDataSource(It.IsAny<string>()))
+                .Returns(Task.FromResult<IEnumerable<AssetCrossReference>>(new List<AssetCrossReference>() { new AssetCrossReference() }));
+
+            mock.Setup(x => x.CreateNewCrossReference(It.IsAny<AssetCrossReference>()))
+                .Returns(Task.FromResult<int>(1));
+
+            mock.Setup(x => x.XrefExists(It.IsAny<AssetCrossReference>()))
+                .Returns((AssetCrossReference xref) => xref.uid == Guid.Parse(DataConstants.InvalidGUID) ? Task.FromResult(true) : Task.FromResult(false));
+
+            mock.Setup(x => x.PostBulkCrossReference(It.IsAny<List<AssetCrossReference>>()))
+                 .Returns((List<AssetCrossReference> xRefList) => xRefList.Any(x => x.uid == Guid.Parse(DataConstants.InvalidGUID)) ? Task.FromResult(false) : Task.FromResult(true));
+
+            mock.Setup(x => x.PutCrossReference(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<AssetCrossReference>())).
+                Returns((Guid uid, string s1, string s2, AssetCrossReference xRef) => xRef.uid == Guid.Parse(DataConstants.InvalidGUID) ? Task.FromResult(0) : Task.FromResult(1));
+
+            mock.Setup(x => x.PutCrossReference(It.IsAny<Guid>(), It.IsAny<AssetCrossReference>())).
+                Returns((Guid uid, AssetCrossReference xRef) => xRef.uid == Guid.Parse(DataConstants.InvalidGUID) ? Task.FromResult(0) : Task.FromResult(1));
+
+            mock.Setup(x => x.DeleteCrossReferenceByUid(It.IsAny<Guid>()))
+                .Returns((Guid guid) => guid == Guid.Parse(DataConstants.InvalidGUID) ? Task.FromResult(0) : Task.FromResult(1));
+
+            mock.Setup(x => x.DeleteCrossReferenceByDataSource(It.IsAny<string>()))
+              .Returns((string ds) => ds == DataConstants.ValidDataSource ? Task.FromResult(1) : Task.FromResult(0));
+
+            mock.Setup(x => x.DeleteCrossReferenceByDataSource(It.IsAny<string>(), It.IsAny<string>()))
+             .Returns((string ds, string type) => ds == DataConstants.ValidDataSource ? Task.FromResult(1) : Task.FromResult(0));
+
+            mock.Setup(x => x.DeleteCrossReferenceByType(It.IsAny<string>()))
+              .Returns((string t) => t == DataConstants.ValidType ? Task.FromResult(1) : Task.FromResult(0));
+
+            return mock.Object;
+        }
         #endregion
     }
 

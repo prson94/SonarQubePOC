@@ -59,7 +59,7 @@ namespace d360.model
 
             string issueObjectType = "";
             int issueObjectId = -1;
-            
+
             var workflowType = WorkflowTypes.Where(x => x.ID == registration.TypeID).FirstOrDefault();
             if (workflowType.State != State.Active)
                 return false;
@@ -88,7 +88,7 @@ namespace d360.model
 
                 return false;
             }
-            
+
             Console.WriteLine("DEBUG - OBJECT MATCHES SPECIFIED CRITERIA");
 
             return true;
@@ -208,10 +208,10 @@ namespace d360.model
                     subject = $"{environment}{totalNew} new workflow items require your attention";
 
                     var emailAddress = user.Email;
-                                        
+
                     var emailBase = $"<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><title></title></head><body style=\"font-family: Trebuchet MS, Arial, Helvetica, sans-serif;\">{sb.ToString()}</body></html>";
                     //send email
-                    await extensions.mail.SimpleMessage.SendMessage(subject, emailAddress, "", emailBase, true, fromEmail, fromName);                    
+                    await extensions.mail.SimpleMessage.SendMessage(subject, emailAddress, "", emailBase, true, fromEmail, fromName);
                 }
             }
         }
@@ -494,7 +494,7 @@ namespace d360.model
                         }
                         break;
                     case "ISSUETYPE":
-                        var issues = Query<dynamic>(issueSql, new {  id = registration.ObjectID }).ToList();
+                        var issues = Query<dynamic>(issueSql, new { id = registration.ObjectID }).ToList();
 
                         foreach (var issue in issues)
                         {
@@ -505,7 +505,7 @@ namespace d360.model
                                         ObjectID = issue.ID,
                                         ObjectType = core.SystemObjects.IssueType,
                                         ObjectTypeID = registration.ObjectID,
-                                        
+
                                     },
                                     registration,
                                     0))
@@ -708,7 +708,7 @@ namespace d360.model
                 Console.WriteLine($"DEBUG ADDING WORKFLOW WORKFLOW.ITEMSTEP STEP ID [{transition.ToVersionStepID}] ITEM ID [{itemID}] ");
 
 
-               
+
 
                 var toItemStep = new WorkflowItemStep
                 {
@@ -1024,11 +1024,22 @@ namespace d360.model
         private void UpdateItemField(WorkflowItemStep itemStep, EventObjectInfo objectInfo, WorkflowItemStepSettingModel settings)
         {
             if (!settings.FieldUpdateSettings.Any()) return;
+            var issue = Issues.FirstOrDefault(x => x.ID == objectInfo.ObjectID);
+            bool isAssetEdited = false;
 
             foreach (var item in settings.FieldUpdateSettings)
             {
                 // get field type info
                 var fieldType = FieldTypes.Where(x => x.ID == item.FieldID).FirstOrDefault();
+                var objectId = objectInfo.ObjectID;
+                var objectType = objectInfo.Object.ToString();
+
+                if (objectInfo.Object.ToString() == "Issue" && item.ObjectType == "Artifact")
+                {
+                    objectType = issue.Object;
+                    objectId = issue.ObjectID;
+                    isAssetEdited = true;
+                }
 
                 if (fieldType == null)
                     throw new Exception($"ERROR - INVALID FIELD TYPE ID SPECIFIED FOR UPDATE FIELD WORKFLOW TASK. FIELD ID[ {item.FieldID} ]");
@@ -1038,14 +1049,14 @@ namespace d360.model
                     //delete the value
                     var sql = "delete field where objectid = @id and objecttype = @objectType and fieldtypeid = @fieldTypeId";
 
-                    Database.Connection.Execute(sql, new { id = objectInfo.ObjectID, objectType = objectInfo.Object.ToString(), fieldTypeId = item.FieldID });
+                    Database.Connection.Execute(sql, new { id = objectId, objectType = objectType.ToString(), fieldTypeId = item.FieldID });
 
                 }
                 else
                 {
                     var val = item.CurrentDate ? DateTime.UtcNow.Date.ToShortDateString() : item.Value;
                     //if the value is a form value get it
-                    if (item.UseFormValue && !string.IsNullOrEmpty(item.FormField) && item.FormStepID > 0)
+                    if (!item.IsActionForm && item.UseFormValue && !string.IsNullOrEmpty(item.FormField) && item.FormStepID > 0)
                     {
                         val = GetFieldValueFromFormResponse(item, itemStep.ItemID);
 
@@ -1054,25 +1065,38 @@ namespace d360.model
                             val = tempDate.Date.ToShortDateString();
                         }
                     }
+                    //Get the value from action form (Issue)
+                    if (item.IsActionForm)
+                    {
+                        var fieldData = item.FormField.Split('|');
+                        if (fieldData.Count() == 2)
+                        {
+                            int fieldTypeId = int.Parse(fieldData[1]);
+                            val = Fields.FirstOrDefault(x => x.ObjectID == objectInfo.ObjectID && x.ObjectType == "Issue" && x.FieldTypeID == fieldTypeId)?.FormattedValue;
+                        }
+
+                        if (DateTime.TryParse(val, out DateTime tempDate))
+                        {
+                            val = tempDate.Date.ToShortDateString();
+                        }
+                    }
 
                     // check if the field exists
-                    var field = Fields.Where(x => x.ObjectID == objectInfo.ObjectID && x.ObjectType == objectInfo.Object.ToString() && x.FieldTypeID == fieldType.ID).FirstOrDefault();
+                    var field = Fields.Where(x => x.ObjectID == objectId && x.ObjectType == objectType && x.FieldTypeID == fieldType.ID).FirstOrDefault();
 
                     if (field == null)
                     {
                         //insert
-                        var newField = new core.entities.Field
+                        var newField = new Field
                         {
                             Value = val,
                             FieldTypeID = fieldType.ID,
-                            ObjectID = objectInfo.ObjectID,
-                            ObjectType = objectInfo.Object.ToString(),
+                            ObjectID = objectId,
+                            ObjectType = objectType.ToString(),
                             UpdatedBy = CurrentResourceID
                         };
 
-                        Add<core.entities.Field>(newField);
-
-                        SaveChanges();
+                        Add<Field>(newField);
                     }
                     else
                     {
@@ -1089,9 +1113,8 @@ namespace d360.model
                         {
                             //update
                             field.Value = val;
-                        }
 
-                        SaveChanges();
+                        }
                     }
 
                     //update asset table to trigger audit                    
@@ -1099,17 +1122,25 @@ namespace d360.model
                         "exec [utility].[AddAuditEntry]  @ParentObject, @ParentObjectID, @ResourceID, @date, @op, @Object, @ObjectID",
                         new
                         {
-                            Object = objectInfo.Object.ToString(),
-                            ObjectID = objectInfo.ObjectID,
-                            ParentObject = objectInfo.Object.ToString(),
+                            Object = objectType,
+                            ObjectID = objectId,
+                            ParentObject = objectType,
                             date = DateTime.UtcNow,
-                            ParentObjectID = objectInfo.ObjectID,
+                            ParentObjectID = objectId,
                             ResourceID = 0,
                             op = "Update"
                         });
                 }
 
             }
+
+            if (isAssetEdited)
+            {
+                var asset = Assets.Where(x => x.Object == issue.Object && x.ObjectID == issue.ObjectID).FirstOrDefault();
+                ObjectContext.ObjectStateManager.ChangeObjectState(asset, EntityState.Modified);
+            }
+
+            SaveChanges();
         }
 
         private string GetFieldValueIntersectFromFormResponse(WorkflowRelationshipUpdateSettings item, long itemId)
@@ -1218,7 +1249,7 @@ namespace d360.model
         public void CompleteItemStepAssignments(long itemStepID)
         {
             var itemAssignments = WorkflowItemAssignments.Where(x => x.ItemStepID == itemStepID);
-                        
+
             foreach (var assignment in itemAssignments)
             {
                 WorkflowItemAssignments.Remove(assignment);
@@ -1332,7 +1363,7 @@ namespace d360.model
                     //resend email to the reassigned user
                     stepSettings.SpecificUser = resource.Email;
                     stepSettings.RecipientType = EmailTaskRecipientType.SpecificUser;
-                    
+
                     await SendFormWorkflowEmail(itemStep, itemStep.ID, itemStep.ItemID, objEventInfo, stepSettings);
                 }
                 else
@@ -1387,7 +1418,7 @@ namespace d360.model
 
                 users.Add(res);
 
-                Console.WriteLine($"DEBUG : FORM STEP IS ASSIGNED TO [{res.Email}].");                
+                Console.WriteLine($"DEBUG : FORM STEP IS ASSIGNED TO [{res.Email}].");
             }
             else if (settings.RecipientType == EmailTaskRecipientType.Responsibility || settings.RecipientType == EmailTaskRecipientType.None)
             {
@@ -1494,9 +1525,9 @@ namespace d360.model
                     {
                         //error sending email
                         TelemetryClient client = new TelemetryClient();
-                        client.TrackException(e, new Dictionary<string, string> {{ "CompanyID", CurrentCompanyID.ToString() }});
+                        client.TrackException(e, new Dictionary<string, string> { { "CompanyID", CurrentCompanyID.ToString() } });
                     }
-            }
+                }
 
                 SaveItemStepEmailedUsers(item, emailedUsers);
             }
@@ -1719,7 +1750,7 @@ namespace d360.model
                                     if (int.TryParse(o.Split('|')[1], out var id))
                                     {
                                         var objDetail = GetObjectDetail(type.Replace("Type", ""), id);
-                                        if(objDetail!= null)
+                                        if (objDetail != null)
                                             objectNames.Add(objDetail.Name);
                                     }
                                 }
@@ -2137,7 +2168,7 @@ namespace d360.model
             return result;
         }
 
-        
+
         /// <summary>
         /// Gets the active workflow item step based on a given ID.
         /// </summary>
@@ -2163,4 +2194,3 @@ namespace d360.model
     }
 
 }
-    
