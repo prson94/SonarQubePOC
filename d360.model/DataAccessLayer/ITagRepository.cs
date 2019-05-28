@@ -7,6 +7,6 @@ namespace d360.model.DataAccessLayer
 {
     public interface ITagRepository
     {
-        Task<IEnumerable<Tag>> GetTags(IEnumerable<KeyValuePair<string, string>> queryParams);
+        Task<TagApiModelWrapper> GetTags(IEnumerable<KeyValuePair<string, string>> queryParams);
     }
 }
