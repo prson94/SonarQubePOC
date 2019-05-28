@@ -985,7 +985,10 @@ namespace d360.model.DataAccessLayer
                                     {
                                         if (field.Type == "JsonElement")
                                         {
-                                            orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"FJP{field.ID}.Value";
+                                            FieldTypeDefinition_JsonElement jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(field.Definition);
+                                            fieldDataType = jsonElementDefinition.DataType;
+
+                                            orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"try_cast(FJP{field.ID}.Value as {fieldDataType})";
                                         }
                                         else
                                         {
