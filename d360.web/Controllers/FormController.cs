@@ -3503,7 +3503,7 @@ namespace d360.web.Controllers
             //Hide self reference relationships for models and policies 
             if (type == SystemObjects.TaxonomyType || type == SystemObjects.PolicyType)
             {
-                queryAllRelationships = queryAllRelationships.Where(x => (x.Object != x.Subject) || (x.ObjectID != x.SubjectID));
+                queryAllRelationships = queryAllRelationships.Where(x => x.PredicateType != PredicateType.IntraTypeHierarchy);
             }
 
             var allRelationships = queryAllRelationships.ToList();
