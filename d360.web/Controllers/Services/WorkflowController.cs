@@ -2597,6 +2597,9 @@ order by wi.StartedOn desc";
                 for (int i = 0; i < fields.Count; i++)
                 {
                     var fieldChange = new WorkflowStepFieldChange();
+                    bool isFromActionForm = false;
+
+
                     var field = fields[i];
                     int fieldTypeId = field["@FieldId"] != null ? field["@FieldId"] : 0;
                     if (fieldTypeId == 0) continue;
@@ -2610,7 +2613,9 @@ order by wi.StartedOn desc";
                     fieldChange.Type = fieldType?.Type;
                     string formFieldId = field["@FormFieldId"] != null ? field["@FormFieldId"] : null;
                     int stepId = field["@FormStepId"] != null ? field["@FormStepId"] : 0;
-                    if (fieldChange.FormValue && formFieldId != null && stepId != 0)
+                    isFromActionForm = field["@IsActionForm"] != null ? bool.Parse(field["@IsActionForm"].ToString()) : false;
+
+                    if (!isFromActionForm && fieldChange.FormValue && formFieldId != null && stepId != 0)
                     {
 
                         var stepSql = @"select fields from workflow.itemstep where  stepid=@stepid and itemid=@itemid";
@@ -2671,6 +2676,17 @@ order by wi.StartedOn desc";
                         fieldChange.Value = detail.CompletedOn.HasValue ? detail.CompletedOn.Value.ToShortDateString() : "";
                     else
                         fieldChange.Value = field["@ValueLabel"] != null ? field["@ValueLabel"] : field["@Value"] != null ? field["@Value"] : "";
+
+                    if(isFromActionForm && formFieldId != null && stepId != 0)
+                    {
+                        var fieldData = formFieldId.Trim().Split('|');
+                        var actionFieldType = fieldData[0];
+                        var actionFieldTypeId= int.Parse(fieldData[1]);
+
+                        var actionField = Company.Fields.FirstOrDefault(x => x.FieldTypeID == actionFieldTypeId && x.ObjectID == detail.ObjectID);
+                        fieldChange.Value = actionField?.FormattedValue;
+
+                    }
 
                     fieldChanges.Add(fieldChange);
                 }
