@@ -48,7 +48,7 @@ begin
 			set			R.[Action] = 'U',
 						R.RequestNumber = @RequestNumber
 			from		integration.AssetHash R
-						left join Asset A on A.AssetTypeID = @AssetTypeID and A.SourceID = R.SourceID
+						inner join Asset A on A.AssetTypeID = @AssetTypeID and A.SourceID = R.SourceID
 						left join [Intersect] I on I.IntersectTypeID = @ParentIntersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
 			where		R.SynchedAssetTypeID = @SynchedAssetTypeID
 						and R.Section = 1
@@ -1264,7 +1264,7 @@ begin
 												and H.SynchedAssetTypeID = @SynchedAssetTypeID
 												and H.Section = 1
 												and A.SourceID = H.SourceID 
-												and H.UpdateHash is null;
+												and H.[Hash] is null;
 		end
 		
 		BEGIN 
@@ -1485,7 +1485,6 @@ begin
 	end
 	
 end
-			
 		]]>
     </sql>
 	<rollback>
