@@ -24,7 +24,7 @@ namespace d360.web.Controllers.V2
         ApiVersion("2.0"),
         RoutePrefix("api/v{version:apiVersion}/tags"),
         Authorize,
-        ApiExplorerSettings(IgnoreApi = false)
+        ApiExplorerSettings(IgnoreApi = true)
     ]
     public class TagsController : BaseV2ApiController
     {        
