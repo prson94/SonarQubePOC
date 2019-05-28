@@ -198,6 +198,7 @@
   <include file="scripts/GOV-7300.xml"/> <!--must go after GOV-7284-->
   <include file="scripts/GOV-7313.xml"/>
   <include file="scripts/GOV-7317.xml"/>
+  <include file="scripts/GOV-7255.xml"/>
   <include file="scripts/GOV-7320.xml"/>
   <include file="scripts/GOV-7244.xml"/>
   <include file="scripts/GOV-7243.xml"/>

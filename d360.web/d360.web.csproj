@@ -305,6 +305,7 @@
     <Compile Include="Controllers\V2\ResponsibilitiesController.cs" />
     <Compile Include="Controllers\V2\SearchController.cs" />
     <Compile Include="Controllers\V2\SocialController.cs" />
+    <Compile Include="Controllers\V2\TagsController.cs" />
     <Compile Include="Controllers\WebAnalyticsController.cs" />
     <Compile Include="Controllers\Services\WorkflowController.cs" />
     <Compile Include="Controllers\Services\EventsController.cs" />
