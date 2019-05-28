@@ -1250,6 +1250,7 @@ namespace d360.web.Controllers
                     if (@class == AssetTypeClass.ReferenceItemType)
                     {
                         model.AssetType.DisplayFormat = "{Code}";
+                        model.Tokens.Clear(); // remove the name token for reference item type it isnt created by default.
                         model.Tokens.Add(new PrimeSelectItem { label = "Code", value = "{Code}" });
                     }
                     model.FormName = string.Format(FormInfo.Edit_Asset_Type_Title, appendTitle);
