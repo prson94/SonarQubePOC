@@ -3495,10 +3495,18 @@ namespace d360.web.Controllers
 
             var sType = type.ToString();
 
-            var allRelationships = Company.Filter<IntersectTypeDetail>(i =>
+            IQueryable<IntersectTypeDetail> queryAllRelationships = Company.Filter<IntersectTypeDetail>(i =>
                 (i.Subject == sType && i.SubjectID == id) ||
                 (i.Object == sType && i.ObjectID == id)
-            ).ToList();
+            );
+
+            //Hide self reference relationships for models and policies 
+            if (type == SystemObjects.TaxonomyType || type == SystemObjects.PolicyType)
+            {
+                queryAllRelationships = queryAllRelationships.Where(x => (x.Object != x.Subject) || (x.ObjectID != x.SubjectID));
+            }
+
+            var allRelationships = queryAllRelationships.ToList();
 
             var cardinalRelationships = allRelationships.Where(i =>
                 (i.Subject == sType && i.SubjectID == id && i.SubjectCardinality == Cardinality.One) ||
