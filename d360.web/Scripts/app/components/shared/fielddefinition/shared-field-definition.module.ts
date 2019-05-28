@@ -16,7 +16,7 @@ import {
     SharedModule,
     CheckboxModule
 } from 'primeng/primeng';
-
+import { AutoCompleteModule } from 'primeng/autocomplete';
 import { TableModule } from 'primeng/table';
 
 import { CoreModule } from '../core.module';
@@ -43,6 +43,7 @@ import { FieldDefinitionComponent } from './field-definition.component';
         SimpleAccordionModule,   
 
         //prime
+        AutoCompleteModule,
         CalendarModule,
         ButtonModule,
         CheckboxModule,

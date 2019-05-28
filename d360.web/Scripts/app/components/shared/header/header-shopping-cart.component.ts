@@ -9,7 +9,7 @@ import { HeaderActionsService } from '../../../services/header-actions.service';
     selector: 'd3s-header-shopping-cart',
     template:
     `
-        <div style="font-size: 1.2em; padding: 0 15px;" routerLink="/cart">
+        <div class="header-cart" routerLink="/cart">
             <i class="fa fa-shopping-cart"></i>
         </div>
     `,

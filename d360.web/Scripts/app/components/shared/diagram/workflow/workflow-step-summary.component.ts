@@ -86,9 +86,12 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
 
     renderFieldChangeTableName(item: any): string {
         if (this.issueObject == "") return item['@FieldName'];
-        if (item['@ObjectType'] == 'Issue')
+        if (typeof item['@ObjectType'] == 'undefined' || item['@ObjectType'] == 'Issue')
             return "Action Field::" + item['@FieldName'];
-        return "Asset Field::" + item['@FieldName'];
+        else {
+            let f = this.fields.find(f => f.ID == +item['@FieldId']);
+            return "Asset Field::" + f.FriendlyName;
+        }
     }
 
     getResponsibilityName(i: number): string {
@@ -133,7 +136,7 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
                 val = i['@Value'];
         }
 
-        if (val.length > 50) {
+        if (val != undefined && val.length > 50) {
             val = val.substr(0, 47) + '...';
         }
 

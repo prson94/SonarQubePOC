@@ -1,16 +1,16 @@
 ﻿import { Component, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { CurrentEnvironmentSettings } from '../../../static/environment-settings';
 
 @Component({
     selector: 'd3s-header-help',
-    template: ` <span #item style="display:table;" class="header-search" [ngClass]="{'header-search-active':active}" (mouseenter)="show(item)" (mouseleave)="hide(item)">
+    template: ` <span #item class="header-search header-table" [ngClass]="{'header-search-active':active}" (mouseenter)="show(item)" (mouseleave)="hide(item)">
                     <a class="photo"><i class="fa fa-question-circle"></i></a>
-                    <div class="search-child header-search-panel" style="background-color: white; padding: 0; width: 175px">
+                    <div class="header-help search-child header-search-panel">
                        <ul>
-                            <li style="width:100%;padding:10px;display:inline-block"><a target="_blank" [href]="userGuide">User Guide</a></li>
-                            <li style="width:100%;padding:10px;display:inline-block"><a target="_blank" [href]="adminGuide">Admin Guide</a></li>
-                            <li style="width:100%;padding:10px;display:inline-block"><a target="_blank" [href]="whatIsNew">What's New</a></li>
+                            <li class="header-help-li"><a target="_blank" [href]="userGuide">User Guide</a></li>
+                            <li class="header-help-li"><a target="_blank" [href]="adminGuide">Admin Guide</a></li>
+                            <li class="header-help-li"><a target="_blank" [href]="whatIsNew">What's New</a></li>
+                            <li class="header-help-li"><a target="_blank" [href]="community">Community</a></li>
                        </ul>
                     </div>
                 <span>`,
@@ -21,9 +21,10 @@ export class HeaderHelpComponent {
     public active: boolean = false;
     private hideHandle: number = 0;
 
-    private userGuide = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#c-user-guide/user-guide.htm%3FTocPath%3DUser%2520guide%7C_____0";
-    private adminGuide = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#d-admin/admin-intro.htm%3FTocPath%3DAdministration%2520guide%7C_____0";
-    private whatIsNew = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#b-release-notes/whats-new.htm%3FTocPath%3DWhat";
+    public userGuide = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#c-user-guide/user-guide.htm%3FTocPath%3DUser%2520guide%7C_____0";
+    public adminGuide = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#d-admin/admin-intro.htm%3FTocPath%3DAdministration%2520guide%7C_____0";
+    public whatIsNew = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#b-release-notes/whats-new.htm%3FTocPath%3DWhat";
+    public community = "https://support.infogix.com/hc/en-us/community/topics/360000029388-Data3Sixty-Govern"; 
 
     constructor(
         private ref: ChangeDetectorRef
@@ -56,4 +57,3 @@ export class HeaderHelpComponent {
             500);
     }
 }
-

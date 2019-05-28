@@ -18,19 +18,20 @@ using d360.core;
 
 namespace igx.UnitTests
 {
+    [Trait("Unit tests", "JsonTest")]
     public class JsonTest : BaseTest
     {
         public JsonTest()
         {
         }
 
-        [Fact]
-        public void JObject_CanParseFieldJsonProperties()
+        [Theory]
+        [InlineData(@"[{ p1: '123', o1: {c1:'345',c2:'567'}, a1: [{g1:true,g2:'f'},{g1:true,g2:'f',pp:[{d:true},{d:false}]}] }]")]
+        [InlineData(@"{ p1: '123', o1: {c1:'345',c2:'567'}, a1: [{g1:true,g2:'f'},{g1:true,g2:'f',pp:[{d:true},{d:false}]}] }")]
+        [InlineData(@"{ p1: '123', o1: {c1:'345',c2:'567'}, a1: [{g1:true,g2:'f'},{g1:true,g2:'f'}] }")]
+        public void JObject_CanParseFieldJsonProperties(string json)
         {
-            //var content = @"{ p1: '123', o1: {c1:'345',c2:'567'}, a1: [{g1:true,g2:'f'},{g1:true,g2:'f'}] }";
-            //var content = @"{ p1: '123', o1: {c1:'345',c2:'567'}, a1: [{g1:true,g2:'f'},{g1:true,g2:'f',pp:[{d:true},{d:false}]}] }";
-            var content = @"[{ p1: '123', o1: {c1:'345',c2:'567'}, a1: [{g1:true,g2:'f'},{g1:true,g2:'f',pp:[{d:true},{d:false}]}] }]";
-            var list = content.ParseJsonIntoJsonPropertiesCollection();
+            var list = json.ParseJsonIntoJsonPropertiesCollection();
             Assert.True(list.Count > 0);
         }
 

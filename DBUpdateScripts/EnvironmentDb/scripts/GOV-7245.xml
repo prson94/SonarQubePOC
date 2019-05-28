@@ -1,0 +1,322 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+	<changeSet author="Tomislav Duric" id="GOV-7245">
+		<sql dbms="mssql"
+			endDelimiter="\nGO"
+			splitStatements="true"
+			stripComments="true">
+<![CDATA[
+ALTER FUNCTION [metrics].[CompareConditionValueToFieldValue]
+(
+	@dataType varchar(25),
+	@operator varchar(5),
+	@conditionValue nvarchar(250),
+	@fieldValue nvarchar(max)
+)
+RETURNS bit
+AS
+BEGIN
+	declare @valid bit = 0,
+			@false bit = 0,
+			@true bit = 1,
+			@defaultCheckText bit = 1
+
+	IF @fieldValue is null
+	begin
+		set @fieldValue = ''
+	end
+
+	if @dataType = 'Boolean'
+	begin
+		declare @bCV bit = case lower(ltrim(rtrim(@conditionValue))) when 'true' then 1 when '1' then 1 when 'on' then 1 else 0 end,
+				@bFV bit = case lower(ltrim(rtrim(@fieldValue))) when 'true' then 1 when '1' then 1 when 'on' then 1 else 0 end
+
+		select @valid = case 
+							when @operator = 'eq' and @bFV = @bCV then @true
+							when @operator = 'neq' and @bFV <> @bCV then @true
+							when @operator = 'lt' and @bFV < @bCV then @true
+							when @operator = 'lte' and @bFV <= @bCV then @true
+							when @operator = 'gt' and @bFV > @bCV then @true
+							when @operator = 'gte' and @bFV >= @bCV then @true
+							else @false
+						end
+
+		set @defaultCheckText = 0
+	end
+	if @dataType = 'Date' or @dataType = 'DateTime' 
+	begin 
+		if isdate(@conditionValue) = 1 and isdate(@fieldValue) = 1
+		begin
+			declare @dtCV datetime, @dtFV datetime
+			if @dataType = 'DateTime'
+			begin
+				set @dtCV = try_cast(convert(char(16),@conditionValue,121)+':00.000' as datetime)
+				set @dtFV = try_cast(convert(char(16),@fieldValue,121)+':00.000' as datetime)
+			end
+
+			if @dataType = 'Date'
+			begin
+				set @dtCV = try_cast(try_cast(@conditionValue as date) as datetime)
+				set @dtFV = try_cast(try_cast(@fieldValue as date) as datetime)
+			end
+
+			select @valid = case 
+								when @operator = 'eq' and @dtFV = @dtCV then @true
+								when @operator = 'neq' and @dtFV <> @dtCV then @true
+								when @operator = 'lt' and @dtFV < @dtCV then @true
+								when @operator = 'lte' and @dtFV <= @dtCV then @true
+								when @operator = 'gt' and @dtFV > @dtCV then @true
+								when @operator = 'gte' and @dtFV >= @dtCV then @true
+								else @false
+							end
+
+			set @defaultCheckText = 0
+		end
+	end
+	if @dataType = 'Decimal' 
+	begin 
+		if REPLACE(ISNUMERIC(REPLACE(@conditionValue,'+','A') + 'e0'),1,CHARINDEX('.',@conditionValue)) = 1
+		   and REPLACE(ISNUMERIC(REPLACE(@fieldValue,'+','A') + 'e0'),1,CHARINDEX('.',@fieldValue)) = 1
+		begin
+			declare @dCV decimal = try_cast(@conditionValue as decimal),
+					@dFV decimal = try_cast(@fieldValue as decimal)
+
+			select @valid = case 
+								when @operator = 'eq' and @dFV = @dCV then @true
+								when @operator = 'neq' and @dFV <> @dCV then @true
+								when @operator = 'lt' and @dFV < @dCV then @true
+								when @operator = 'lte' and @dFV <= @dCV then @true
+								when @operator = 'gt' and @dFV > @dCV then @true
+								when @operator = 'gte' and @dFV >= @dCV then @true
+								else @false
+							end
+
+			set @defaultCheckText = 0
+		end
+	end
+	if @dataType = 'Number' 
+	begin 
+		if ISNUMERIC(Replace(Replace(@conditionValue,'+','A'),'-','A') + '.0e0') = 1
+		   and ISNUMERIC(Replace(Replace(@fieldValue,'+','A'),'-','A') + '.0e0') = 1
+		begin
+			declare @nCV int = try_cast(@conditionValue as int),
+					@nFV int = try_cast(@fieldValue as int)
+
+			select @valid = case 
+								when @operator = 'eq' and @nFV = @nCV then @true
+								when @operator = 'neq' and @nFV <> @nCV then @true
+								when @operator = 'lt' and @nFV < @nCV then @true
+								when @operator = 'lte' and @nFV <= @nCV then @true
+								when @operator = 'gt' and @nFV > @nCV then @true
+								when @operator = 'gte' and @nFV >= @nCV then @true
+								else @false
+							end
+		
+			set @defaultCheckText = 0
+		end
+	end
+
+	if @dataType = 'Lookup'
+	begin 
+		declare @tblValues table (FieldValue nvarchar(250), ConditionValue nvarchar(250), Matches bit)
+		insert into @tblValues (FieldValue, ConditionValue, Matches)
+			select	lower(ltrim(rtrim(value))), lower(@conditionValue), 0 from string_split(@fieldValue, ',')
+
+		update	@tblValues
+		set		Matches = case 
+							when @operator = 'eq' and FieldValue = ConditionValue then @true
+							when @operator = 'neq' and FieldValue <> ConditionValue then @true
+							else @false
+						end
+		if @operator = 'eq'
+		begin
+			if exists (select 1 from @tblValues where Matches = 1)
+			begin
+				set @valid = 1
+			end
+		end
+		else
+		begin 
+			if not exists (select 1 from @tblValues where Matches = 0)
+			begin
+				set @valid = 1
+			end		
+		end
+		
+		set @defaultCheckText = 0
+	end
+
+	if @defaultCheckText = 1
+	begin
+		select @valid = case 
+							when @operator = 'eq' and lower(@fieldValue) = lower(@conditionValue) then @true
+							when @operator = 'neq' and lower(@fieldValue) <> lower(@conditionValue) then @true
+							when @operator = 'lt' and lower(@fieldValue) < lower(@conditionValue) then @true
+							when @operator = 'lte' and lower(@fieldValue) <= lower(@conditionValue) then @true
+							when @operator = 'gt' and lower(@fieldValue) > lower(@conditionValue) then @true
+							when @operator = 'gte' and lower(@fieldValue) >= lower(@conditionValue) then @true
+							else @false
+						end
+	end
+
+	return @valid
+END
+]]>
+		</sql>
+		<rollback>
+<![CDATA[
+ALTER FUNCTION [metrics].[CompareConditionValueToFieldValue]
+(
+	@dataType varchar(25),
+	@operator varchar(5),
+	@conditionValue nvarchar(250),
+	@fieldValue nvarchar(max)
+)
+RETURNS bit
+AS
+BEGIN
+	declare @valid bit = 0,
+			@false bit = 0,
+			@true bit = 1,
+			@defaultCheckText bit = 1
+
+	IF @fieldValue is null
+	begin
+		set @fieldValue = ''
+	end
+
+	if @dataType = 'Boolean'
+	begin
+		declare @bCV bit = case lower(ltrim(rtrim(@conditionValue))) when 'true' then 1 when '1' then 1 when 'on' then 1 else 0 end,
+				@bFV bit = case lower(ltrim(rtrim(@fieldValue))) when 'true' then 1 when '1' then 1 when 'on' then 1 else 0 end
+
+		select @valid = case 
+							when @operator = 'eq' and @bFV = @bCV then @true
+							when @operator = 'neq' and @bFV <> @bCV then @true
+							when @operator = 'lt' and @bFV < @bCV then @true
+							when @operator = 'lte' and @bFV <= @bCV then @true
+							when @operator = 'gt' and @bFV > @bCV then @true
+							when @operator = 'gte' and @bFV >= @bCV then @true
+							else @false
+						end
+
+		set @defaultCheckText = 0
+	end
+	if @dataType = 'Date' or @dataType = 'DateTime' 
+	begin 
+		if isdate(@conditionValue) = 1 and isdate(@fieldValue) = 1
+		begin
+			declare @dtCV datetime = try_cast(@conditionValue as datetime),
+					@dtFV datetime = try_cast(@fieldValue as datetime)
+
+			select @valid = case 
+								when @operator = 'eq' and @dtFV = @dtCV then @true
+								when @operator = 'neq' and @dtFV <> @dtCV then @true
+								when @operator = 'lt' and @dtFV < @dtCV then @true
+								when @operator = 'lte' and @dtFV <= @dtCV then @true
+								when @operator = 'gt' and @dtFV > @dtCV then @true
+								when @operator = 'gte' and @dtFV >= @dtCV then @true
+								else @false
+							end
+
+			set @defaultCheckText = 0
+		end
+	end
+	if @dataType = 'Decimal' 
+	begin 
+		if REPLACE(ISNUMERIC(REPLACE(@conditionValue,'+','A') + 'e0'),1,CHARINDEX('.',@conditionValue)) = 1
+		   and REPLACE(ISNUMERIC(REPLACE(@fieldValue,'+','A') + 'e0'),1,CHARINDEX('.',@fieldValue)) = 1
+		begin
+			declare @dCV decimal = try_cast(@conditionValue as decimal),
+					@dFV decimal = try_cast(@fieldValue as decimal)
+
+			select @valid = case 
+								when @operator = 'eq' and @dFV = @dCV then @true
+								when @operator = 'neq' and @dFV <> @dCV then @true
+								when @operator = 'lt' and @dFV < @dCV then @true
+								when @operator = 'lte' and @dFV <= @dCV then @true
+								when @operator = 'gt' and @dFV > @dCV then @true
+								when @operator = 'gte' and @dFV >= @dCV then @true
+								else @false
+							end
+
+			set @defaultCheckText = 0
+		end
+	end
+	if @dataType = 'Number' 
+	begin 
+		if ISNUMERIC(Replace(Replace(@conditionValue,'+','A'),'-','A') + '.0e0') = 1
+		   and ISNUMERIC(Replace(Replace(@fieldValue,'+','A'),'-','A') + '.0e0') = 1
+		begin
+			declare @nCV int = try_cast(@conditionValue as int),
+					@nFV int = try_cast(@fieldValue as int)
+
+			select @valid = case 
+								when @operator = 'eq' and @nFV = @nCV then @true
+								when @operator = 'neq' and @nFV <> @nCV then @true
+								when @operator = 'lt' and @nFV < @nCV then @true
+								when @operator = 'lte' and @nFV <= @nCV then @true
+								when @operator = 'gt' and @nFV > @nCV then @true
+								when @operator = 'gte' and @nFV >= @nCV then @true
+								else @false
+							end
+		
+			set @defaultCheckText = 0
+		end
+	end
+
+	if @dataType = 'Lookup'
+	begin 
+		declare @tblValues table (FieldValue nvarchar(250), ConditionValue nvarchar(250), Matches bit)
+		insert into @tblValues (FieldValue, ConditionValue, Matches)
+			select	lower(ltrim(rtrim(value))), lower(@conditionValue), 0 from string_split(@fieldValue, ',')
+
+		update	@tblValues
+		set		Matches = case 
+							when @operator = 'eq' and FieldValue = ConditionValue then @true
+							when @operator = 'neq' and FieldValue <> ConditionValue then @true
+							else @false
+						end
+		if @operator = 'eq'
+		begin
+			if exists (select 1 from @tblValues where Matches = 1)
+			begin
+				set @valid = 1
+			end
+		end
+		else
+		begin 
+			if not exists (select 1 from @tblValues where Matches = 0)
+			begin
+				set @valid = 1
+			end		
+		end
+		
+		set @defaultCheckText = 0
+	end
+
+	if @defaultCheckText = 1
+	begin
+		select @valid = case 
+							when @operator = 'eq' and lower(@fieldValue) = lower(@conditionValue) then @true
+							when @operator = 'neq' and lower(@fieldValue) <> lower(@conditionValue) then @true
+							when @operator = 'lt' and lower(@fieldValue) < lower(@conditionValue) then @true
+							when @operator = 'lte' and lower(@fieldValue) <= lower(@conditionValue) then @true
+							when @operator = 'gt' and lower(@fieldValue) > lower(@conditionValue) then @true
+							when @operator = 'gte' and lower(@fieldValue) >= lower(@conditionValue) then @true
+							else @false
+						end
+	end
+
+	return @valid
+END
+]]>
+		</rollback>
+	</changeSet>
+
+  </databaseChangeLog>

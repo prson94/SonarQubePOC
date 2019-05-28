@@ -784,7 +784,7 @@ namespace d360.model.DataAccessLayer
 
             string iconText = "Tx";
 
-            var words = objectName.Split(' ');
+            var words = objectName.Trim().Split(' ');
             if (words.Length > 1 && words[1].Length > 0)
             {
                 iconText = words[0][0].ToString().ToUpper() + words[1][0].ToString().ToLower();
@@ -985,7 +985,10 @@ namespace d360.model.DataAccessLayer
                                     {
                                         if (field.Type == "JsonElement")
                                         {
-                                            orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"FJP{field.ID}.Value";
+                                            FieldTypeDefinition_JsonElement jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(field.Definition);
+                                            fieldDataType = jsonElementDefinition.DataType;
+
+                                            orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"try_cast(FJP{field.ID}.Value as {fieldDataType})";
                                         }
                                         else
                                         {

@@ -19,7 +19,8 @@
                     <div style="float: left; width: 49%">
                         <div>
                             <div id='FriendlyNameTip'
-                                 class="FieldNameRequired">Name
+                                 class="FieldNameRequired">
+                                Name
                             </div>
                             <input required
                                    name="friendlyname"
@@ -28,12 +29,13 @@
                                    [(ngModel)]="model.FieldType.FriendlyName"
                                    style="width: 98%; display: block;"
                                    (keyup)="syncApiNameWithName && updateApiName($event)"
-                                   #friendlyName="ngModel"/>
+                                   #friendlyName="ngModel" />
                             <div [hidden]="friendlyName.valid || friendlyName.pristine">Friendly name is required</div>
                         </div>
                         <div>
                             <div id='TypeTip'
-                                 class="FieldNameRequired">Input Type
+                                 class="FieldNameRequired">
+                                Input Type
                             </div>
                             <p-dropdown required
                                         name="datatype"
@@ -52,13 +54,14 @@
                                    pInputText
                                    type="number"
                                    [(ngModel)]="model.FieldType.ColumnWidth"
-                                   style="width: 25%; display: block;"/>
+                                   style="width: 25%; display: block;" />
                         </div>
                     </div>
                     <div style="float: left; width: 49%">
                         <div>
                             <div id='NameTip'
-                                 class="FieldNameRequired">API Name
+                                 class="FieldNameRequired">
+                                API Name
                             </div>
                             <input required
                                    name="name"
@@ -67,18 +70,19 @@
                                    [(ngModel)]="model.FieldType.Name"
                                    style="width: 98%; display: block;"
                                    (keyup)="syncApiNameWithName=false;updateApiName($event);"
-                                   #apiName="ngModel"/>
+                                   #apiName="ngModel" />
                             <div [hidden]="apiName.valid || apiName.pristine">API name is required</div>
                         </div>
                         <div>
                             <div id='CategoryTip'
-                                 class="FieldName">Category
+                                 class="FieldName">
+                                Category
                             </div>
                             <input name="category"
                                    pInputText
                                    type="text"
                                    [(ngModel)]="model.FieldType.Category"
-                                   style="width: 98%; display: block;"/>
+                                   style="width: 98%; display: block;" />
                         </div>
                         <div>
                             <div>
@@ -89,7 +93,7 @@
                                        [(ngModel)]="model.FieldType.SortOrder"
                                        [disabled]="!model.FieldType.IsListable"
                                        [ngStyle]="{'background':(!model.FieldType.IsListable ? '#EFEFEF': '')}"
-                                       style="width: 25%; display: block;"/>
+                                       style="width: 25%; display: block;" />
                             </div>
                         </div>
                     </div>
@@ -183,11 +187,12 @@
                            pInputText
                            type="text"
                            [(ngModel)]="model.FieldType.LookupDisplayFormat"
-                           style="width: 98%; display: block;"/>
+                           style="width: 98%; display: block;" />
                 </div>
                 <div class="col s3">
                     <div class="FieldName"
-                         style="display:block">&nbsp;
+                         style="display:block">
+                        &nbsp;
                     </div>
                     <select [ngModel]="selectedLookupToken"
                             (ngModelChange)="selectDisplayToken($event)"
@@ -196,7 +201,9 @@
                             name="lookupTokens2">
                         <option [value]="null"></option>
                         <option *ngFor="let t of model.LookupTokens"
-                                [value]="t.value">{{t.label}}</option>
+                                [value]="t.value">
+                            {{t.label}}
+                        </option>
                     </select>
                 </div>
                 <div class="col s6"
@@ -217,11 +224,12 @@
                            pInputText
                            type="text"
                            [(ngModel)]="model.FieldType.LookupEditFormat"
-                           style="width: 98%; display: block;"/>
+                           style="width: 98%; display: block;" />
                 </div>
                 <div class="col s3">
                     <div class="FieldName"
-                         style="display:block">&nbsp;
+                         style="display:block">
+                        &nbsp;
                     </div>
                     <select [ngModel]="selectedFormatToken"
                             (ngModelChange)="selectEditToken($event)"
@@ -230,11 +238,14 @@
                             name="lookupTokens">
                         <option [value]="null"></option>
                         <option *ngFor="let t of model.LookupTokens"
-                                [value]="t.value">{{t.label}}</option>
+                                [value]="t.value">
+                            {{t.label}}
+                        </option>
                     </select>
                 </div>
             </div>
         </simple-accordion>
+        
         <simple-accordion header="Filter Configuration"
                           [active]="expandFilterConfiguration"
                           *ngIf="model.FieldType.Type == 'Lookup' && listFilterable">
@@ -279,19 +290,21 @@
                 <div *ngIf="model.FieldType.Type == 'Text'"
                      class="col s3">
                     <div id='PatternTip'
-                         class="FieldName">Validation Pattern
+                         class="FieldName">
+                        Validation Pattern
                     </div>
                     <input name="validationPattern"
                            pInputText
                            type="text"
                            [(ngModel)]="model.FieldType.Pattern"
                            (change)="validatePattern();"
-                           style="width: 98%; display: block;"/>
+                           style="width: 98%; display: block;" />
                 </div>
                 <div *ngIf="model.FieldType.Type == 'Text'"
                      class="col s3">
                     <div class="FieldName"
-                         style="display:block">&nbsp;
+                         style="display:block">
+                        &nbsp;
                     </div>
                     <p-dropdown name="validationPattersOpt"
                                 [options]="lookups.Patterns"
@@ -301,29 +314,30 @@
                 </div>
                 <div class="col s3">
                     <div id='MinimumLengthTip'
-                         class="FieldName">Minimum {{model.FieldType.Type == 'Text' ? "Length" : "Value"}}</div>
+                         class="FieldName">Minimum{{model.FieldType.Type == 'Text' ? "Length" : "Value"}}</div>
                     <input name="minLength"
                            type="number"
                            step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}"
                            [disabled]="CheckMinRequired(model)"
                            [(ngModel)]="model.FieldType.MinimumLength"
                            (input)="validate('MinimumLength')"
-                           style="width: 98%; display: block;"/>
+                           style="width: 98%; display: block;" />
                 </div>
                 <div class="col s3">
                     <div id='MaximumLengthTip'
-                         class="FieldName">Maximum {{model.FieldType.Type == 'Text' ? "Length" : "Value"}}</div>
+                         class="FieldName">Maximum{{model.FieldType.Type == 'Text' ? "Length" : "Value"}}</div>
                     <input name="maxLength"
                            type="number"
                            step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}"
                            [(ngModel)]="model.FieldType.MaximumLength"
                            (input)="validate('MaximumLength')"
-                           style="width: 98%; display: block;"/>
+                           style="width: 98%; display: block;" />
                 </div>
                 <div *ngIf="model.FieldType.Type == 'Decimal'"
                      class="col s3">
                     <div id='decimalPlaces'
-                         class="FieldName">Decimal Places
+                         class="FieldName">
+                        Decimal Places
                     </div>
                     <input name="Precision"
                            type="number"
@@ -331,7 +345,7 @@
                            (input)="validate('Precision')"
                            min="0"
                            max="5"
-                           style="width: 98%; display: block;"/>
+                           style="width: 98%; display: block;" />
                 </div>
             </div>
             <div class="row"
@@ -344,7 +358,7 @@
                            type="text"
                            [(ngModel)]="testPattern"
                            (change)="validatePattern()"
-                           style="width: 98%; display: block;"/>
+                           style="width: 98%; display: block;" />
                 </div>
                 <div class="col s3">
                     <div for="FieldNameRequired">&nbsp;</div>
@@ -356,7 +370,8 @@
                 <div *ngIf="['Number', 'Decimal'].indexOf(model.FieldType.Type) == -1"
                      class="col s12">
                     <div id='ValidationDescriptionTip'
-                         class="FieldName">Validation Message
+                         class="FieldName">
+                        Validation Message
                     </div>
                     <textarea pInputTextarea
                               autoResize="'true'"
@@ -380,7 +395,8 @@
                 <div class="col l6 m6 s12"
                      *ngIf="['Number','Decimal'].indexOf(model.FieldType.Type) > -1">
                     <div class="FieldName"
-                         style="display:block">Increment
+                         style="display:block">
+                        Increment
                     </div>
                 </div>
             </div>
@@ -410,7 +426,7 @@
                            [(ngModel)]="model.FieldType.DefaultValue"
                            style="width: 98%; display: block;"
                            [ngModelOptions]="{standalone: true}"
-                           (change)="validate('DefaultValue')"/>
+                           (change)="validate('DefaultValue')" />
                     <p-editor *ngIf="model.FieldType.Type == 'Html'"
                               [(ngModel)]="model.FieldType.DefaultValue"
                               [ngModelOptions]="{standalone: true}"></p-editor>
@@ -424,7 +440,8 @@
                                style="width: 100%;"
                                type="string"
                                [ngModelOptions]="{standalone: true}">
-                        <div>(Link Url: Your Url should start with a protocol prefix. For example 'http://' or
+                        <div>
+                            (Link Url: Your Url should start with a protocol prefix. For example 'http://' or
                             'https://')
                         </div>
                     </div>
@@ -435,7 +452,7 @@
                            (keyup)="validate('DefaultValue')"
                            [(ngModel)]="model.FieldType.DefaultValue"
                            style="width: 98%; display: block;"
-                           [ngModelOptions]="{standalone: true}"/>
+                           [ngModelOptions]="{standalone: true}" />
                 </div>
                 <div class="col l1 m1 s12"
                      *ngIf="model.FieldType.Type == 'Lookup'">
@@ -450,7 +467,7 @@
                            [(ngModel)]="model.FieldType.AllowAllLabel"
                            [ngModelOptions]="{standalone: true}"
                            style="width: 100%"
-                           [disabled]="!model.FieldType.AllowAllValue"/>
+                           [disabled]="!model.FieldType.AllowAllValue" />
                 </div>
                 <div class="col l5 m5 s12"
                      *ngIf="model.FieldType.Type == 'Number' || model.FieldType.Type == 'Decimal'">
@@ -458,7 +475,7 @@
                            type="number"
                            [(ngModel)]="model.FieldType.Increment"
                            (input)="validate('Increment')"
-                           style="width: 98%; display: block;"/>
+                           style="width: 98%; display: block;" />
                 </div>
             </div>
         </simple-accordion>
@@ -473,65 +490,72 @@
                     <table class="highlight, striped"
                            cellpadding="5">
                         <thead>
-                        <tr>
-                            <th>Target Item</th>
-                            <th>Reference Type</th>
-                            <th>Reference Item</th>
-                            <th>Reference Columns</th>
-                            <th>Table Settings</th>
-                            <th style="width: 50px; text-align: right">
-                                <a style="text-decoration:none; color:#000; cursor: pointer; font-size:1.5em; padding:5px"
-                                   (click)="addFusion()"><i class='fa fa-plus'
-                                                            title='Add fusion item'></i></a>
-                            </th>
-                        </tr>
+                            <tr>
+                                <th>Target Item</th>
+                                <th>Reference Type</th>
+                                <th>Reference Item</th>
+                                <th>Reference Columns</th>
+                                <th>Table Settings</th>
+                                <th style="width: 50px; text-align: right">
+                                    <a style="text-decoration:none; color:#000; cursor: pointer; font-size:1.5em; padding:5px"
+                                       (click)="addFusion()">
+                                        <i class='fa fa-plus'
+                                           title='Add fusion item'></i>
+                                    </a>
+                                </th>
+                            </tr>
                         </thead>
                         <tbody *ngFor="let item of model.FusionItems; let i=index;">
-                        <tr>
-                            <td>
-                                <p-dropdown [ngModelOptions]="{standalone: true}"
-                                            [options]="lookups.FusionAttributeTypes"
-                                            [(ngModel)]="item.SourceFusionAttributeType"
-                                            [style]="{ 'width' : '95%' }"
-                                            (onChange)="loadTargetFusionAttributes(item)"></p-dropdown>
-                            </td>
-                            <td>
-                                <p-dropdown [ngModelOptions]="{standalone: true}"
-                                            [options]="lookups.ReferenceTypes"
-                                            [(ngModel)]="item.ReferenceType"
-                                            [style]="{ 'width' : '95%' }"
-                                            (onChange)="loadTargetFusionAttributes(item)"></p-dropdown>
-                            </td>
-                            <td>
-                                <p-dropdown [ngModelOptions]="{standalone: true}"
-                                            [options]="item.TargetFusionAttributeTypes"
-                                            [(ngModel)]="item.TargetFusionAttributeType"
-                                            [style]="{ 'width' : '95%' }"
-                                            (onChange)="loadFusionDisplayFields(item)"></p-dropdown>
-                            </td>
-                            <td>
-                                <p-multiSelect [ngModelOptions]="{standalone: true}"
-                                               [options]="item.FusionDisplayFields"
-                                               [(ngModel)]="item.DisplayFields"
-                                               [style]="{ 'width' : '95%' }"></p-multiSelect>
-                            </td>
-                            <td>
-                                <div><input pCheckbox
-                                            type="checkbox"
-                                            [(ngModel)]="item.HideHeader"
-                                            [ngModelOptions]="{standalone: true}"/> Hide Header?
-                                </div>
-                                <div><input pCheckbox
-                                            type="checkbox"
-                                            [(ngModel)]="item.HideFooter"
-                                            [ngModelOptions]="{standalone: true}"/> Hide Footer?
-                                </div>
-                            </td>
-                            <td>
-                                <a style="text-decoration:none; color:#000; cursor: pointer; font-size:1.5em; padding:5px"
-                                   (click)="removeFusion(i)"><i class='fa fa-trash'
-                                                                title='Remove'></i></a></td>
-                        </tr>
+                            <tr>
+                                <td>
+                                    <p-dropdown [ngModelOptions]="{standalone: true}"
+                                                [options]="lookups.FusionAttributeTypes"
+                                                [(ngModel)]="item.SourceFusionAttributeType"
+                                                [style]="{ 'width' : '95%' }"
+                                                (onChange)="loadTargetFusionAttributes(item)"></p-dropdown>
+                                </td>
+                                <td>
+                                    <p-dropdown [ngModelOptions]="{standalone: true}"
+                                                [options]="lookups.ReferenceTypes"
+                                                [(ngModel)]="item.ReferenceType"
+                                                [style]="{ 'width' : '95%' }"
+                                                (onChange)="loadTargetFusionAttributes(item)"></p-dropdown>
+                                </td>
+                                <td>
+                                    <p-dropdown [ngModelOptions]="{standalone: true}"
+                                                [options]="item.TargetFusionAttributeTypes"
+                                                [(ngModel)]="item.TargetFusionAttributeType"
+                                                [style]="{ 'width' : '95%' }"
+                                                (onChange)="loadFusionDisplayFields(item)"></p-dropdown>
+                                </td>
+                                <td>
+                                    <p-multiSelect [ngModelOptions]="{standalone: true}"
+                                                   [options]="item.FusionDisplayFields"
+                                                   [(ngModel)]="item.DisplayFields"
+                                                   [style]="{ 'width' : '95%' }"></p-multiSelect>
+                                </td>
+                                <td>
+                                    <div>
+                                        <input pCheckbox
+                                               type="checkbox"
+                                               [(ngModel)]="item.HideHeader"
+                                               [ngModelOptions]="{standalone: true}" /> Hide Header?
+                                    </div>
+                                    <div>
+                                        <input pCheckbox
+                                               type="checkbox"
+                                               [(ngModel)]="item.HideFooter"
+                                               [ngModelOptions]="{standalone: true}" /> Hide Footer?
+                                    </div>
+                                </td>
+                                <td>
+                                    <a style="text-decoration:none; color:#000; cursor: pointer; font-size:1.5em; padding:5px"
+                                       (click)="removeFusion(i)">
+                                        <i class='fa fa-trash'
+                                           title='Remove'></i>
+                                    </a>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -548,157 +572,174 @@
                     <table cellpadding="5"
                            class="relation-table">
                         <thead>
-                        <tr>
-                            <th>&nbsp;</th>
-                            <th>Relation</th>
-                            <th>Lookup Type</th>
-                            <th>Relationship Type</th>
-                            <th>Table Settings</th>
-                        </tr>
+                            <tr>
+                                <th>&nbsp;</th>
+                                <th>Relation</th>
+                                <th>Lookup Type</th>
+                                <th>Relationship Type</th>
+                                <th>Table Settings</th>
+                            </tr>
                         </thead>
                         <tbody *ngFor="let i of model.RelationItems; let x=index;">
-                        <tr [style.background-color]="x%2 == 1 ? '#fff' : '#fff'">
-                            <td colspan="5">&nbsp;</td>
-                        </tr>
-                        <tr style="height: 10px; font-size: 9px; background-color: #f2f2f2;">
-                            <td colspan="5">&nbsp;</td>
-                        </tr>
-                        <tr [style.background-color]="x%2 == 1 ? '#f2f2f2' : '#f2f2f2'">
-                            <td rowspan="3"
-                                style="width: 3%">&nbsp;
-                            </td>
+                            <tr [style.background-color]="x%2 == 1 ? '#fff' : '#fff'">
+                                <td colspan="5">&nbsp;</td>
+                            </tr>
+                            <tr style="height: 10px; font-size: 9px; background-color: #f2f2f2;">
+                                <td colspan="5">&nbsp;</td>
+                            </tr>
+                            <tr [style.background-color]="x%2 == 1 ? '#f2f2f2' : '#f2f2f2'">
+                                <td rowspan="3"
+                                    style="width: 3%">
+                                    &nbsp;
+                                </td>
 
-                            <td style="vertical-align: top; width:29%"
-                                *ngIf="x == 0">{{objectName}}</td>
-                            <td style="vertical-align: top; width:29%"
-                                *ngIf="x > 0">{{i.displayValue}}</td>
+                                <td style="vertical-align: top; width:29%"
+                                    *ngIf="x == 0">
+                                    {{objectName}}
+                                </td>
+                                <td style="vertical-align: top; width:29%"
+                                    *ngIf="x > 0">
+                                    {{i.displayValue}}
+                                </td>
 
-                            <td style="vertical-align: top; width:29%">
-                                <select [ngModelOptions]="{standalone: true}"
-                                        [(ngModel)]="i.ReferenceType"
-                                        style="width:95%"
-                                        (ngModelChange)="changeRefType(x)"
-                                        [disabled]="x < relationItemCount-1">
-                                    <option *ngFor="let j of lookups.ComplexLookupRelations"
-                                            [value]="j.ID">{{j.DisplayName}}</option>
-                                </select>
-                            </td>
+                                <td style="vertical-align: top; width:29%">
+                                    <select [ngModelOptions]="{standalone: true}"
+                                            [(ngModel)]="i.ReferenceType"
+                                            style="width:95%"
+                                            (ngModelChange)="changeRefType(x)"
+                                            [disabled]="x < relationItemCount-1">
+                                        <option *ngFor="let j of lookups.ComplexLookupRelations"
+                                                [value]="j.ID">
+                                            {{j.DisplayName}}
+                                        </option>
+                                    </select>
+                                </td>
 
-                            <td *ngIf="i.relationsLoading"
-                                style="vertical-align: top; width:29%">
-                                <span><i class="fa fa-spinner fa-spin"></i></span>
-                            </td>
-                            <td *ngIf="!i.relationsLoading"
-                                style="vertical-align: top; width:29%">
-                                <select [ngModelOptions]="{standalone: true}"
-                                        [(ngModel)]="i.selectedRelationItemID"
-                                        style="width:95%"
-                                        (ngModelChange)="changeRel(x)"
-                                        [disabled]="x < relationItemCount-1">
-                                    <option *ngFor="let j of i.relationItems"
-                                            [value]="j.value">{{j.title}}</option>
-                                </select>
-                            </td>
+                                <td *ngIf="i.relationsLoading"
+                                    style="vertical-align: top; width:29%">
+                                    <span><i class="fa fa-spinner fa-spin"></i></span>
+                                </td>
+                                <td *ngIf="!i.relationsLoading"
+                                    style="vertical-align: top; width:29%">
+                                    <select [ngModelOptions]="{standalone: true}"
+                                            [(ngModel)]="i.selectedRelationItemID"
+                                            style="width:95%"
+                                            (ngModelChange)="changeRel(x)"
+                                            [disabled]="x < relationItemCount-1">
+                                        <option *ngFor="let j of i.relationItems"
+                                                [value]="j.value">
+                                            {{j.title}}
+                                        </option>
+                                    </select>
+                                </td>
 
-                            <td rowspan="3"
-                                style="vertical-align: top">
-                                <div *ngIf="x == 0">
-                                    <div><input [ngModelOptions]="{standalone: true}"
-                                                type="checkbox"
-                                                [(ngModel)]="i.HideFooter"/> Hide Footer?
-                                    </div>
-                                    <div><input [ngModelOptions]="{standalone: true}"
-                                                type="checkbox"
-                                                [(ngModel)]="i.HideHeader"/> Hide Header?
-                                    </div>
-                                    <div><input [ngModelOptions]="{standalone: true}"
-                                                type="checkbox"
-                                                [(ngModel)]="i.HideFilter"/> Hide Search?
-                                    </div>
-                                </div>
-                                <div class="RowTools">
-                                    <a *ngIf="i.selectedRelationItemID != null && x == relationItemCount-1"
-                                       (click)="addRelation(i)"
-                                       style="cursor: pointer; display: inline-block;"><i class="fa fa-plus"></i></a>
-                                    <a *ngIf="x == relationItemCount-1 && x > 0"
-                                       (click)="removeRelation(i)"
-                                       style="cursor: pointer; display: inline-block;"><i class="fa fa-trash-o"></i></a>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr [style.background-color]="x%2 == 1 ? '#fff' : '#fff'">
-                            <td colspan="3"
-                                class="display-table-title">Reference Columns
-                            </td>
-                        </tr>
-                        <tr [style.background-color]="x%2 == 1 ? '#fff' : '#fff'">
-                            <td colspan="3">
-                                <table class="striped highlight display-table">
-                                    <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Display Name Override</th>
-                                        <th>Show?</th>
-                                        <th>Column Width (px)</th>
-                                        <th>Column Order</th>
-                                        <th>Sort Order</th>
-                                        <th>Filter</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr *ngFor="let d of i.DisplayFields">
-                                        <td style="width: 20%; word-break:break-all">{{d.FieldTypeName}}</td>
-                                        <td style="width: 20%;">
-                                            <input [ngModelOptions]="{standalone: true}"
-                                                   type="text"
-                                                   [(ngModel)]="d.OverrideDisplayName"
-                                                   style="width:95%"/>
-                                        </td>
-                                        <td style="width: 10%; max-width: 64px">
+                                <td rowspan="3"
+                                    style="vertical-align: top">
+                                    <div *ngIf="x == 0">
+                                        <div>
                                             <input [ngModelOptions]="{standalone: true}"
                                                    type="checkbox"
-                                                   [ngModel]="d.Show"
-                                                   (ngModelChange)="d.Show=$event; anyDisplayFieldsSelected($event);"
-                                                   style="width:95%"/>
-                                        </td>
-                                        <td style="width: 10%; max-width: 64px">
+                                                   [(ngModel)]="i.HideFooter" /> Hide Footer?
+                                        </div>
+                                        <div>
                                             <input [ngModelOptions]="{standalone: true}"
-                                                   type="number"
-                                                   [(ngModel)]="d.Width"
-                                                   style="width:95%"/>
-                                        </td>
-                                        <td style="width: 10%; min-width: 64px">
-                                            <select [ngModelOptions]="{standalone: true}"
-                                                    [(ngModel)]="d.DisplayOrder"
-                                                    style="width:95%"
-                                                    (ngModelChange)="changeDisplayOrder(d, i)">
-                                                <option *ngFor="let j of i.SortOrderList"
-                                                        [value]="j.id">{{j.text}}</option>
-                                            </select>
-                                        </td>
-                                        <td style="width: 10%; min-width: 64px">
-                                            <select [ngModelOptions]="{standalone: true}"
-                                                    [(ngModel)]="d.SortOrder"
-                                                    style="width:95%">
-                                                <option></option>
-                                                <option *ngFor="let j of i.SortOrderList"
-                                                        [value]="j.id">{{j.text}}</option>
-                                            </select>
-                                        </td>
-                                        <td style="width:15%; max-width: 100px">
+                                                   type="checkbox"
+                                                   [(ngModel)]="i.HideHeader" /> Hide Header?
+                                        </div>
+                                        <div>
                                             <input [ngModelOptions]="{standalone: true}"
-                                                   type="text"
-                                                   [(ngModel)]="d.FilterValue"
-                                                   style="width:95%"/>
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                        <tr style="height: 10px; font-size: 9px; background-color: #f2f2f2;">
-                            <td colspan="7">&nbsp;</td>
-                        </tr>
+                                                   type="checkbox"
+                                                   [(ngModel)]="i.HideFilter" /> Hide Search?
+                                        </div>
+                                    </div>
+                                    <div class="RowTools">
+                                        <a *ngIf="i.selectedRelationItemID != null && x == relationItemCount-1"
+                                           (click)="addRelation(i)"
+                                           style="cursor: pointer; display: inline-block;"><i class="fa fa-plus"></i></a>
+                                        <a *ngIf="x == relationItemCount-1 && x > 0"
+                                           (click)="removeRelation(i)"
+                                           style="cursor: pointer; display: inline-block;"><i class="fa fa-trash-o"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr [style.background-color]="x%2 == 1 ? '#fff' : '#fff'">
+                                <td colspan="3"
+                                    class="display-table-title">
+                                    Reference Columns
+                                </td>
+                            </tr>
+                            <tr [style.background-color]="x%2 == 1 ? '#fff' : '#fff'">
+                                <td colspan="3">
+                                    <table class="striped highlight display-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Display Name Override</th>
+                                                <th>Show?</th>
+                                                <th>Column Width (px)</th>
+                                                <th>Column Order</th>
+                                                <th>Sort Order</th>
+                                                <th>Filter</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr *ngFor="let d of i.DisplayFields">
+                                                <td style="width: 20%; word-break:break-all">{{d.FieldTypeName}}</td>
+                                                <td style="width: 20%;">
+                                                    <input [ngModelOptions]="{standalone: true}"
+                                                           type="text"
+                                                           [(ngModel)]="d.OverrideDisplayName"
+                                                           style="width:95%" />
+                                                </td>
+                                                <td style="width: 10%; max-width: 64px">
+                                                    <input [ngModelOptions]="{standalone: true}"
+                                                           type="checkbox"
+                                                           [ngModel]="d.Show"
+                                                           (ngModelChange)="d.Show=$event; anyDisplayFieldsSelected($event);"
+                                                           style="width:95%" />
+                                                </td>
+                                                <td style="width: 10%; max-width: 64px">
+                                                    <input [ngModelOptions]="{standalone: true}"
+                                                           type="number"
+                                                           [(ngModel)]="d.Width"
+                                                           style="width:95%" />
+                                                </td>
+                                                <td style="width: 10%; min-width: 64px">
+                                                    <select [ngModelOptions]="{standalone: true}"
+                                                            [(ngModel)]="d.DisplayOrder"
+                                                            style="width:95%"
+                                                            (ngModelChange)="changeDisplayOrder(d, i)">
+                                                        <option *ngFor="let j of i.SortOrderList"
+                                                                [value]="j.id">
+                                                            {{j.text}}
+                                                        </option>
+                                                    </select>
+                                                </td>
+                                                <td style="width: 10%; min-width: 64px">
+                                                    <select [ngModelOptions]="{standalone: true}"
+                                                            [(ngModel)]="d.SortOrder"
+                                                            style="width:95%">
+                                                        <option></option>
+                                                        <option *ngFor="let j of i.SortOrderList"
+                                                                [value]="j.id">
+                                                            {{j.text}}
+                                                        </option>
+                                                    </select>
+                                                </td>
+                                                <td style="width:15%; max-width: 100px">
+                                                    <input [ngModelOptions]="{standalone: true}"
+                                                           type="text"
+                                                           [(ngModel)]="d.FilterValue"
+                                                           style="width:95%" />
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
+                            <tr style="height: 10px; font-size: 9px; background-color: #f2f2f2;">
+                                <td colspan="7">&nbsp;</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -779,72 +820,76 @@
                      style="margin: 10px 0 10px 0">
                     <table cellpadding="5">
                         <thead>
-                        <tr>
-                            <th style="width:25%">List</th>
-                            <th>Reference Columns</th>
-                            <th>Table Settings</th>
-                        </tr>
+                            <tr>
+                                <th style="width:25%">List</th>
+                                <th>Reference Columns</th>
+                                <th>Table Settings</th>
+                            </tr>
                         </thead>
                         <tbody>
-                        <tr>
-                            <td style="vertical-align: top">
-                                <select [ngModelOptions]="{standalone: true}"
-                                        [(ngModel)]="filteredLookup"
-                                        (ngModelChange)="changeFilteredLookup()"
-                                        style="width:100%">
-                                    <option></option>
-                                    <option *ngFor="let i of lookups.FilteredLookups"
-                                            [value]="i.value">{{i.title}}</option>
-                                </select>
-                            </td>
-                            <td>
-                                <table class="striped highlight">
-                                    <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Show</th>
-                                        <th>Sort</th>
-                                        <th>Filter by Current Object?</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr *ngFor="let d of filteredLookupDisplayFields">
-                                        <td>
-                                            {{d.title}}
-                                        </td>
-                                        <td>
-                                            <input type="checkbox"
-                                                   [(ngModel)]="d.Show"
-                                                   [ngModelOptions]="{standalone: true}"/>
-                                        </td>
-                                        <td>
-                                            <select [ngModelOptions]="{standalone: true}"
-                                                    [(ngModel)]="d.SortOrder"
-                                                    style="width:95%">
-                                                <option></option>
-                                                <option *ngFor="let j of filteredSortOrderList"
-                                                        [value]="j.id">{{j.text}}</option>
-                                            </select>
-                                        </td>
-                                        <td>
-                                            <input type="checkbox"
-                                                   [(ngModel)]="d.Filter"
-                                                   [ngModelOptions]="{standalone: true}"
-                                                   [disabled]="!d.AllowFilter"/>
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-                            <td>
-                                <input type="checkbox"
-                                       [(ngModel)]="filteredLookupHideHeader"
-                                       [ngModelOptions]="{standalone: true}"/> Hide Header? <br/>
-                                <input type="checkbox"
-                                       [(ngModel)]="filteredLookupHideFooter"
-                                       [ngModelOptions]="{standalone: true}"/> Hide Footer?
-                            </td>
-                        </tr>
+                            <tr>
+                                <td style="vertical-align: top">
+                                    <select [ngModelOptions]="{standalone: true}"
+                                            [(ngModel)]="filteredLookup"
+                                            (ngModelChange)="changeFilteredLookup()"
+                                            style="width:100%">
+                                        <option></option>
+                                        <option *ngFor="let i of lookups.FilteredLookups"
+                                                [value]="i.value">
+                                            {{i.title}}
+                                        </option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <table class="striped highlight">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Show</th>
+                                                <th>Sort</th>
+                                                <th>Filter by Current Object?</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr *ngFor="let d of filteredLookupDisplayFields">
+                                                <td>
+                                                    {{d.title}}
+                                                </td>
+                                                <td>
+                                                    <input type="checkbox"
+                                                           [(ngModel)]="d.Show"
+                                                           [ngModelOptions]="{standalone: true}" />
+                                                </td>
+                                                <td>
+                                                    <select [ngModelOptions]="{standalone: true}"
+                                                            [(ngModel)]="d.SortOrder"
+                                                            style="width:95%">
+                                                        <option></option>
+                                                        <option *ngFor="let j of filteredSortOrderList"
+                                                                [value]="j.id">
+                                                            {{j.text}}
+                                                        </option>
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <input type="checkbox"
+                                                           [(ngModel)]="d.Filter"
+                                                           [ngModelOptions]="{standalone: true}"
+                                                           [disabled]="!d.AllowFilter" />
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                                <td>
+                                    <input type="checkbox"
+                                           [(ngModel)]="filteredLookupHideHeader"
+                                           [ngModelOptions]="{standalone: true}" /> Hide Header? <br />
+                                    <input type="checkbox"
+                                           [(ngModel)]="filteredLookupHideFooter"
+                                           [ngModelOptions]="{standalone: true}" /> Hide Footer?
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -861,14 +906,14 @@
                     <input name="expandGroupMembership"
                            pCheckbox
                            type="checkbox"
-                           [(ngModel)]="model.OwnershipLookupSettings.ExpandGroupMembership"/>Expand Group Membership?
+                           [(ngModel)]="model.OwnershipLookupSettings.ExpandGroupMembership" />Expand Group Membership?
                 </div>
                 <div class="col l3 m3 s6"
                      style="margin: 10px 0 10px 0">
                     <input name="displayAssignmentSource"
                            pCheckbox
                            type="checkbox"
-                           [(ngModel)]="model.OwnershipLookupSettings.DisplayAssignmentSource"/>Display Assignment
+                           [(ngModel)]="model.OwnershipLookupSettings.DisplayAssignmentSource" />Display Assignment
                     Source?
                 </div>
                 <div class="col l2 m2 s6"
@@ -876,21 +921,54 @@
                     <input name="hideFilter"
                            pCheckbox
                            type="checkbox"
-                           [(ngModel)]="model.OwnershipLookupSettings.HideFilter"/>Hide Grid Filter?
+                           [(ngModel)]="model.OwnershipLookupSettings.HideFilter" />Hide Grid Filter?
                 </div>
                 <div class="col l2 m2 s6"
                      style="margin: 10px 0 10px 0">
                     <input name="hideFooter"
                            pCheckbox
                            type="checkbox"
-                           [(ngModel)]="model.OwnershipLookupSettings.HideFooter"/>Hide Grid Footer?
+                           [(ngModel)]="model.OwnershipLookupSettings.HideFooter" />Hide Grid Footer?
                 </div>
                 <div class="col l2 m2 s12"
                      style="margin: 10px 0 10px 0">
                     <input name="hideHeader"
                            pCheckbox
                            type="checkbox"
-                           [(ngModel)]="model.OwnershipLookupSettings.HideHeader"/>Hide Grid Column Headers?
+                           [(ngModel)]="model.OwnershipLookupSettings.HideHeader" />Hide Grid Column Headers?
+                </div>
+            </div>
+        </simple-accordion>
+
+        <!-- json property -->
+        <simple-accordion header="JSON Element" active="true" *ngIf="model.FieldType.Type == 'JsonElement'">
+            <div class="row">
+                <div class="col l4 m4 s12" style="margin: 10px 0 10px 0">
+                    <div class="FieldNameRequired">Json Field Type</div>
+                    <p-dropdown required
+                                [ngModelOptions]="{standalone: true}"
+                                [options]="lookups.Field_JsonFields"
+                                [(ngModel)]="model.JsonElementSettings.FieldTypeID"
+                                [style]="{ 'width': '98%' }"
+                                ngDefaultControl></p-dropdown>
+                </div>
+                <div class="col l4 m4 s12" style="margin: 10px 0 10px 0">
+                    <div class="FieldNameRequired">Property Path</div><br/>
+                    <p-autoComplete 
+                        [ngModelOptions]="{standalone: true}" 
+                        [(ngModel)]="model.JsonElementSettings.Path" 
+                        [suggestions]="TypeaheadJsonPropertyOptionsForJsonFieldResults" 
+                        (completeMethod)="searchJsonForProperty($event)">
+                    </p-autoComplete>
+                </div>
+                <div class="col l4 m4 s12" style="margin: 10px 0 10px 0">
+                    <div class="FieldNameRequired">Property Data Type</div>
+                    <p-dropdown required
+                                [ngModelOptions]="{standalone: true}"
+                                [options]="lookups.Field_JsonDataTypes"
+                                [(ngModel)]="model.JsonElementSettings.DataType"
+                                [style]="{ 'width': '98%' }"
+                                ngDefaultControl></p-dropdown>
                 </div>
             </div>
         </simple-accordion>
@@ -900,7 +978,8 @@
             <div class="row">
                 <div class="col s6">
                     <div id='DisplayDescriptionTip'
-                         class="FieldName">Display Description
+                         class="FieldName">
+                        Display Description
                     </div>
                     <textarea pInputTextarea
                               autoResize="'true'"
@@ -909,7 +988,8 @@
                 </div>
                 <div class="col s6">
                     <div id='FormDescriptionTip'
-                         class="FieldName">Form Description
+                         class="FieldName">
+                        Form Description
                     </div>
                     <textarea pInputTextarea
                               autoResize="'true'"

@@ -305,6 +305,7 @@
     <Compile Include="Controllers\V2\ResponsibilitiesController.cs" />
     <Compile Include="Controllers\V2\SearchController.cs" />
     <Compile Include="Controllers\V2\SocialController.cs" />
+    <Compile Include="Controllers\V2\TagsController.cs" />
     <Compile Include="Controllers\WebAnalyticsController.cs" />
     <Compile Include="Controllers\Services\WorkflowController.cs" />
     <Compile Include="Controllers\Services\EventsController.cs" />
@@ -1042,6 +1043,7 @@
     <Content Include="Views\Authentication\NoAccess.cshtml" />
     <Content Include="Scripts\app\components\shared\relationship\dynamic-relationship-grid.component.html" />
     <Content Include="tslint.json" />
+    <Content Include="Views\Authentication\InactiveCompany.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
