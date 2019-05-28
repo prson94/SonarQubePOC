@@ -121,6 +121,8 @@ namespace d360.model
 
         public DbSet<Field> Fields { get; set; }
 
+        public DbSet<FieldJsonProperty> FieldJsonProperties { get; set; }
+
         public DbSet<FieldValue> FieldValues { get; set; }
 
         public DbSet<FieldLookupValue> FieldLookupValues { get; set; }                          /* VIEW */
@@ -3070,6 +3072,18 @@ end as [{(useFriendlyName ? friendlyName : name)}], ";
 
                     joins += $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationType}' and {name}_TT.ObjectID = {typeID} 
 left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ";
+                }
+                else if (f.Type == DataType.JsonElement.ToString())
+                {
+                    var jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(f.Definition);
+
+                    var sqlType = DetermineSqlDataTypeForFieldType(f);
+
+                    columns += $@"try_cast({name}_P.Value as {sqlType}) as [{(useFriendlyName ? friendlyName : name)}], ";
+
+                    joins += $@" 
+left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = {idColumn} and {name}_T.FieldTypeID = {jsonElementDefinition.FieldTypeID} 
+left join FieldJsonProperty {name}_P on {name}_P.FieldID = {name}_T.ID and {name}_P.[Path] = '{jsonElementDefinition.Path.CleanForSql()}' ";
                 }
                 else
                 {

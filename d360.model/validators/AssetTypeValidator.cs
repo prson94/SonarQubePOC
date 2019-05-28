@@ -159,11 +159,13 @@ namespace d360.core.validators
                 return true;
             }
 
+            var fieldsToIgnore = DataType.Text.GetNonDisplayFormatFields();
+
             List<string> fieldNames;
             if (assetTypeId == 0)
                 fieldNames = new List<string> { "name" };
             else
-                fieldNames = CompanyContext.Filter<FieldType>(x => x.AssetTypeID == assetTypeId).Select(x => x.FriendlyName.ToLower()).ToList();
+                fieldNames = CompanyContext.Filter<FieldType>(x => x.AssetTypeID == assetTypeId && !fieldsToIgnore.Contains(x.Type)).Select(x => x.FriendlyName.ToLower()).ToList();
 
             if (assetClass == AssetTypeClass.Reference)
                 fieldNames.Add("code");

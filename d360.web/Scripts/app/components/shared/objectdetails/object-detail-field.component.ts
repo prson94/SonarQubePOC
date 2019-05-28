@@ -14,7 +14,6 @@ export class ObjectDetailFieldComponent {
 
     constructor(private router: Router) {}
     ngOnInit() {
-
           if ((this.field.DataType == 'date' || this.field.DataType == 'datetime') && isNaN(Date.parse(this.field.Value)))
                 this.field.Value = null;
     }

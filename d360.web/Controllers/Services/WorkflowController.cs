@@ -32,6 +32,7 @@ using Dapper;
 using d360.core.enums;
 using System.Web.Http.Description;
 using System.Xml.Serialization;
+using d360.core.helpers;
 
 namespace d360.web.Controllers.Services
 {
@@ -1346,7 +1347,7 @@ order by wi.StartedOn desc";
         public HttpResponseMessage GetFieldTypes(int id, string type, bool allowHtml = false, string additionalFields = "")
         {
             var fields = Company.FieldTypes.Where(f => f.Object == type && f.ObjectID == id).ToList();
-            List<string> excludedTypes = new List<string>() { "ComplexRelationLookup", "Password", "Link", "FilteredLookup", "FusionLookup", "OwnershipLookup", "RefListRelationship", "Relationship" };
+            List<string> excludedTypes = DataType.Text.GetNonWorkflowConditionFields();
             if (!allowHtml)
                 excludedTypes.Add("Html");
 

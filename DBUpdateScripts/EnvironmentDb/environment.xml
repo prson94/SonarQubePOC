@@ -189,6 +189,7 @@
   <include file="scripts/GOV-7185-2.xml"/>
   <include file="scripts/GOV-7285.xml"/>
   <include file="scripts/GOV-7289.xml"/>
+  <include file="scripts/GOV-7230.xml"/> 
   <include file="scripts/GOV-7287.xml"/>
   <include file="scripts/GOV-7241.xml"/>
   <include file="scripts/GOV-7242.xml"/>

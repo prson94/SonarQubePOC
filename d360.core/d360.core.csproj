@@ -353,6 +353,7 @@
     <Compile Include="exceptions\UnauthorizedException.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="helpers\PluralServiceHelper.cs" />
+    <Compile Include="helpers\DataTypeHelper.cs" />
     <Compile Include="helpers\SystemObjectHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="queue\ApiExecutionInfo.cs" />
