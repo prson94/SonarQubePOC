@@ -1,0 +1,27 @@
+<databaseChangeLog    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="kmcnamee" id="GOV-7257">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+IF NOT EXISTS(SELECT 1 FROM sys.columns WHERE Name = N'state' AND Object_ID = Object_ID(N'dbo.tag'))
+begin
+	alter table [tag] add [State] int constraint DF_Tag_State DEFAULT (1) not null 
+END
+]]>
+    </sql>
+	<rollback>
+	<![CDATA[
+		ALTER TABLE [dbo].[tag] DROP CONSTRAINT DF_Tag_State
+    alter table [dbo].[tag] drop column state
+]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>

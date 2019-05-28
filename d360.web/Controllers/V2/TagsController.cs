@@ -1,7 +1,9 @@
 ﻿using d360.core.entities;
+using d360.core.enums;
 using d360.model;
 using d360.model.DataAccessLayer;
 using d360.web.Filters;
+using d360.web.Models;
 using Microsoft.Web.Http;
 using Swashbuckle.Swagger.Annotations;
 using System;
@@ -22,7 +24,7 @@ namespace d360.web.Controllers.V2
         ApiVersion("2.0"),
         RoutePrefix("api/v{version:apiVersion}/tags"),
         Authorize,
-        ApiExplorerSettings(IgnoreApi = true)
+        ApiExplorerSettings(IgnoreApi = false)
     ]
     public class TagsController : BaseV2ApiController
     {        
@@ -59,6 +61,33 @@ namespace d360.web.Controllers.V2
             var tags = await tagRepository.GetTags(queryParams);
 
             return Request.CreateResponse(tags);
+        }
+
+
+        /// <summary>
+        /// Allows you to remove a tag based on its Uid.
+        /// </summary>
+        /// <param name="uid">The public identifier for the tag.</param>
+        /// <returns>A status for the DELETE request.</returns>
+        [
+            HttpDelete,
+            Route("{uid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the DELETE request.", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the tag was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse))
+        ]
+        public IHttpActionResult DeleteById(Guid uid)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+
+            if (!tagRepository.DeleteTag(uid))
+            {
+                return errorMessageResponse(HttpStatusCode.NotFound, "Error removing tag", "Tag not found.");
+            }
+
+            return successMessageResponse(HttpStatusCode.OK, "Tag removed.", "Tag successfully removed.");
         }
     }
 }
