@@ -3569,7 +3569,8 @@ namespace d360.web.Controllers
             var jsonFieldType = new Dictionary<string, string>()
             {
                 { "Boolean", "bit" },
-                { "Date", "datetime" },
+                { "Date", "date" },
+                { "Date With Time", "datetime" },
                 { "Decimal", "decimal" },
                 { "Text (non-Unicode)", "varchar" },
                 { "Text (Unicode)", "nvarchar" },

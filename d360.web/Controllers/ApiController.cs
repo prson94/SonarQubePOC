@@ -341,17 +341,21 @@ namespace d360.web.Controllers
                         {
                             case "date":
                             case "datetime":
-                                jsonElementDataType = "DateTime";
+                                jsonElementDataType = "date";
+                                DateTime jsonDate;
+                                if (DateTime.TryParse(jsonElementValue, out jsonDate))
+                                {
+                                    jsonElementValue = jsonDate.ToString("yyyy-MM-ddTHH:mm:ss\"Z\"");
+                                }
                                 break;
                             case "int":
                             case "bigint":
                             case "decimal":
-                                jsonElementDataType = "Number";
+                                jsonElementDataType = "number";
                                 break;
                             case "bit":
-                                jsonElementDataType = "Boolean";
+                                jsonElementDataType = "bool";
                                 break;
-
                         }
 
                         var ro = new ReadOnlyField
@@ -664,6 +668,7 @@ namespace d360.web.Controllers
                     case "bit":
                         fieldType = "bool";
                         break;
+                    case "date":
                     case "datetime":
                         fieldType = "date";
                         break;
