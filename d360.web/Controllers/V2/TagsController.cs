@@ -56,9 +56,9 @@ namespace d360.web.Controllers.V2
 
             var queryParams = Request.GetQueryNameValuePairs();
 
-            var assetCrossReferences = await tagRepository.GetTags(queryParams);
+            var tags = await tagRepository.GetTags(queryParams);
 
-            return Request.CreateResponse(assetCrossReferences);
+            return Request.CreateResponse(tags);
         }
     }
 }
