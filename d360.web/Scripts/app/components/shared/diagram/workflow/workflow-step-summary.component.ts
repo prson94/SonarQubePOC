@@ -86,7 +86,7 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
 
     renderFieldChangeTableName(item: any): string {
         if (this.issueObject == "") return item['@FieldName'];
-        if (item['@ObjectType'] == 'Issue')
+        if (typeof item['@ObjectType'] == 'undefined' || item['@ObjectType'] == 'Issue')
             return "Action Field::" + item['@FieldName'];
         return "Asset Field::" + item['@FieldName'];
     }

@@ -169,7 +169,7 @@ namespace igx.IntegrationTests.ApiTests
         {
 
             int retryCount = 1;
-            int retryMax = 10;
+            int retryMax = 50;
             bool doRetry = true;
             bool isSuccess = false;
 
@@ -188,7 +188,7 @@ namespace igx.IntegrationTests.ApiTests
                 retryCount++;
                 if (retryCount == retryMax) doRetry = false;
 
-                Thread.Sleep(10000);
+                Thread.Sleep(2000);
             }
 
             return isSuccess;
@@ -597,7 +597,7 @@ namespace igx.IntegrationTests.ApiTests
         {
 
             int retryCount = 1;
-            int retryMax = 10;
+            int retryMax = 50;
             bool doRetry = true;
             bool isSuccess = false;
 
@@ -616,7 +616,7 @@ namespace igx.IntegrationTests.ApiTests
                 retryCount++;
                 if (retryCount == retryMax) doRetry = false;
 
-                Thread.Sleep(10000);
+                Thread.Sleep(2000);
             }
 
             return isSuccess;

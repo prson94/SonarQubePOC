@@ -8,6 +8,7 @@ import {
     FilteredLookupItem,
     Lookups,
     FieldTypeFusionItemEditorModel,
+    JsonElementSettings,
     OwnershipLookupSettings,
     FieldTypeFusionLookupDisplayField,
     FieldTypeRelationItemEditorModel,
@@ -98,6 +99,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private displayFieldSelected: boolean = true;
     public listParentFields: SelectItem[] = [];
 
+    public TypeaheadJsonPropertyOptionsForJsonFieldResults: string[] = [];
+
     private validationErrors: Map<string, string> = new Map<string, string>();
     private errorMessage: string = "";
     private isListableRelationship: boolean = false;
@@ -163,19 +166,22 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
     };
 
-    private getLookupsFieldTypeHandler = (responseGetLookups) => {
+    private getLookupsHandler = (responseGetLookups) => {
         this.lookups = responseGetLookups;
         this.lookups.IntersectTypes.forEach(
             i => {
                 i.id = i.value.split('|')[0];
             }
         );
-
         this.lookups.ReferenceTypes = this.fieldsService.getReferenceTypes();
+        this.lookups.Field_JsonDataTypes.unshift({ label: 'Choose...', value: null });
+        this.lookups.Field_JsonFields.unshift({ label: 'Choose...', value: null });
+        this.lookups.DataTypes.unshift({ label: 'Choose...', value: null });
     };
 
     private getFormDataHandler = (responseGetFormData) => {
         if (responseGetFormData) {
+            this.model.JsonElementSettings = responseGetFormData.JsonElementSettings;
             this.model.OwnershipLookupSettings = responseGetFormData.OwnershipLookupSettings;
             this.model.RelationItems = responseGetFormData.RelationItems;
             this.model.FusionItems = responseGetFormData.FusionItems;
@@ -201,13 +207,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
     };
 
-    private getLookupsHandler = (responseGetLookups) => {
-        this.lookups = responseGetLookups;
-        this.lookups.ReferenceTypes = this.fieldsService.getReferenceTypes();
-        this.lookups.DataTypes.unshift({label: 'Choose...', value: null});
-        this.model.FieldType.Type = null;
-    };
-
     private load(): void {
         if (this.id > 0) {
             this.actionName = 'Edit';
@@ -215,7 +214,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.fieldsService.getFieldTypeEditor(this.id)
                 .then(this.getFieldTypeEditorHandler)
                 .then(() => this.fieldsService.getLookups(this.model.FieldType.ObjectID, this.model.FieldType.Object))
-                .then(this.getLookupsFieldTypeHandler)
+                .then(this.getLookupsHandler)
                 .then(() => {
                     if (this.id > 0) {
                         return this.fieldsService.getFormData(this.id);
@@ -238,6 +237,11 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.model.FieldType.IsEditable = true;
             this.model.FieldType.IsListable = false;
 
+            this.model.JsonElementSettings = new JsonElementSettings();
+            this.model.JsonElementSettings.DataType = '';
+            this.model.JsonElementSettings.FieldTypeID = 0;
+            this.model.JsonElementSettings.Path = '';
+
             this.model.OwnershipLookupSettings = new OwnershipLookupSettings();
             this.model.OwnershipLookupSettings.DisplayAssignmentSource = false;
             this.model.OwnershipLookupSettings.ExpandGroupMembership = true;
@@ -245,6 +249,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.fieldsService.getLookups(this.objectID, this.objectType)
                 .then(this.getLookupsHandler)
                 .then(() => {
+                    this.model.FieldType.Type = null; //Set as NULL to allow for selection.
                     this.isLoading = false;
                 });
         }
@@ -458,6 +463,13 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.model.FieldType.IsRequired = false;
                 this.model.FieldType.LookupDisplayFormat = null;
                 this.loadFilteredLookup();
+                break;
+            case 'jsonelement':
+                if (!this.model.JsonElementSettings) this.model.JsonElementSettings = new JsonElementSettings();
+                this.model.FieldType.IsEditable = false;
+                this.model.FieldType.IsPartOfKey = false;
+                this.model.FieldType.IsRequired = false;
+                this.model.FieldType.LookupDisplayFormat = null;
                 break;
             case 'ownershiplookup':
                 if (!this.model.OwnershipLookupSettings) this.model.OwnershipLookupSettings = new OwnershipLookupSettings();
@@ -1166,6 +1178,12 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
     //#endregion
 
+    searchJsonForProperty(event) {
+        this.fieldsService.getTypeaheadJsonPropertyOptionsForJsonField(this.model.JsonElementSettings.FieldTypeID, event.query).then(data => {
+            this.TypeaheadJsonPropertyOptionsForJsonFieldResults = data;
+        });
+    }
+
     private selectDisplayToken(value: string) {
         if (value == null || value == '' || value == 'null') {
             return;
@@ -1470,17 +1488,17 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             case 'IsDisplayable':
                 return (['FusionLookup', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup'].indexOf(this.model.FieldType.Type) > -1);
             case 'IsEditable':
-                return (['ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup', 'JSON'].indexOf(this.model.FieldType.Type) > -1);
+                return (['ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup', 'JSON', 'JsonElement'].indexOf(this.model.FieldType.Type) > -1);
             case 'IsListable':
                 return (['FusionLookup', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup', 'RefListRelationship', 'JSON'].indexOf(this.model.FieldType.Type) > -1
                     || (this.model.FieldType.Type == 'Relationship' && !this.isListableRelationship));
             case 'IsRequired':
-                return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup'].indexOf(this.model.FieldType.Type) > -1);
+                return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup', 'JsonElement'].indexOf(this.model.FieldType.Type) > -1);
             case 'IsPartOfKey':
-                return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup', 'JSON'].indexOf(this.model.FieldType.Type) > -1
+                return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup', 'JSON', 'JsonElement'].indexOf(this.model.FieldType.Type) > -1
                     || this.model.FieldType.AllowMultipleValues || this.objectType == 'ReferenceItemType');
             case 'IsPrimaryFilter':
-                return (!this.supportsPrimaryFilterOption || ['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup', 'JSON'].indexOf(this.model.FieldType.Type) > -1);
+                return (!this.supportsPrimaryFilterOption || ['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup', 'JSON', 'JsonElement'].indexOf(this.model.FieldType.Type) > -1);
             case 'AllowMultipleValues':
                 return (['Lookup'].indexOf(this.model.FieldType.Type) == -1);
             case 'ShowIfEmpty':

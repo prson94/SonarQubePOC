@@ -47,6 +47,7 @@ namespace d360.core.entities
         public HashAlgorithmType HashAlgorithmType { get; set; }
 
         public bool SignInitialSSORequest { get; set; }
+        public bool IsCompanyActive { get; set; }
     }
 
     /// <summary>

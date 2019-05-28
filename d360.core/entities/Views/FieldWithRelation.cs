@@ -6,6 +6,8 @@ namespace d360.core.entities
 {
     public class FieldWithRelation : BaseObject
     {
+        public long ID { get; set; }
+
         [Key, Column(Order = 1)]
         public int FieldTypeID { get; set; }
         public string Name { get; set; }

@@ -55,7 +55,14 @@ export class FieldTypeEditorModel {
     FilteredLookupItems: FilteredLookupItem[] = [];
     FilteredLookupItem: FilteredLookupItem;
     OwnershipLookupSettings: OwnershipLookupSettings;
+    JsonElementSettings: JsonElementSettings;
     IsPrimaryFilter: boolean;
+}
+
+export class JsonElementSettings {
+    FieldTypeID: number;
+    Path: string;
+    DataType: string;
 }
 
 export class OwnershipLookupSettings {
@@ -243,6 +250,8 @@ export class Lookups {
     IntersectTypes: LookupItem[];
     FusionAttributeTypes: SelectItem[];
     Lookups: SelectItem[];
+    Field_JsonFields: SelectItem[];
+    Field_JsonDataTypes: SelectItem[];
     Field_Relationships: SelectItem[];
     Field_CardinalRelationships: SelectItem[];
     Field_CardinalReferenceRelationships: SelectItem[];
