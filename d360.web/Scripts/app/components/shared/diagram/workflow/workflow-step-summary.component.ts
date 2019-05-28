@@ -88,7 +88,10 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
         if (this.issueObject == "") return item['@FieldName'];
         if (typeof item['@ObjectType'] == 'undefined' || item['@ObjectType'] == 'Issue')
             return "Action Field::" + item['@FieldName'];
-        return "Asset Field::" + item['@FieldName'];
+        else {
+            let f = this.fields.find(f => f.ID == +item['@FieldId']);
+            return "Asset Field::" + f.FriendlyName;
+        }
     }
 
     getResponsibilityName(i: number): string {

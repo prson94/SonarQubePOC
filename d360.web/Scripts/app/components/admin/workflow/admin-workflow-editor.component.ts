@@ -161,6 +161,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                         }
                     })
                     .then(() => {
+                        this.model.Event.IssueObject = '';
                         if (this.objectType == 'IssueType') {
                             this.issueObjectTypes = this.workflowObjectTypes.slice().filter(w => w.type != 'IssueType');
 
