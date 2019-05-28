@@ -301,6 +301,7 @@
     <Compile Include="enums\CompanyResourceState.cs" />
     <Compile Include="enums\State.cs" />
     <Compile Include="enums\ContractType.cs" />
+    <Compile Include="enums\TypeIdentifierInfoModelType.cs" />
     <Compile Include="enums\Workflow\ActivityType.cs" />
     <Compile Include="enums\Workflow\CriteriaConnector.cs" />
     <Compile Include="enums\Workflow\CriteriaValueDataType.cs" />

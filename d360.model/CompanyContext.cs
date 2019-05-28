@@ -402,6 +402,26 @@ namespace d360.model
             return JObject.Parse(json);
         }
 
+        public async Task<IEnumerable<TypeIdentifierInfoModel>> GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType type, Guid guid)
+        {
+            IEnumerable<TypeIdentifierInfoModel> result;
+            switch (type)
+            {
+                case TypeIdentifierInfoModelType.ActionType:
+                    result = await QueryAsync<TypeIdentifierInfoModel>("select ID, Uid, 'IssueType' as Object, ID as ObjectID from IssueType where Uid = @uid", new { uid = guid });
+                    break;
+                case TypeIdentifierInfoModelType.AssetType:
+                    result = await QueryAsync<TypeIdentifierInfoModel>("select ID, Uid, Object, ObjectID from AssetType where Uid = @uid", new { uid = guid });
+                    break;
+                case TypeIdentifierInfoModelType.RelationshipType:
+                    result = await QueryAsync<TypeIdentifierInfoModel>("select ID, Uid, 'IntersectType' as Object, ID as ObjectID from IntersectType where Uid = @uid", new { uid = guid });
+                    break;
+                default:
+                    throw new Exception("Invalid Relationship field encountered no relationship type to lookup found in definition.");
+            }
+            return result;
+        }
+
         public List<AllocationPossibility> GetTypes()
         {
             var list = Database.Connection.Query<AllocationPossibility>(@"
