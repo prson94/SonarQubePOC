@@ -32,10 +32,10 @@ import * as _ from 'lodash';
                                 <div class="row megamenu-title truncate">
                                     <input (keyup)="positionMenu($event,item)" #searchinput type="search" [(ngModel)]=searchText placeholder="Search menu..."/>
                                     <i (click)="clearInput()" [ngClass]="{'fa fa-times':searchText != '', 'fa fa-search':searchText == '' ||  !seachtext}"></i>
-                                </div>
-                                    <span class="megamenu-tools" *ngIf="showClearButton">
+                                    <div class="megamenu-tools" *ngIf="showClearButton">
                                         <i (click)="clearClick.emit(true)" class=" pull-right fa fa-eraser" [pTooltip]="'Clear ' + title + ' List'" tooltipZIndex="10001"></i>
-                                    </span>
+                                    </div>
+                                </div> 
                                 <div class="row megamenu-items"[ngStyle]="{'max-height': getMaxHeight()}">
                                     <div class="col s12 megamenu-items-container" *ngFor="let item of menu.NavigationItems | simpleSearch: searchText">
                                         <ul class="menu-group">                                        

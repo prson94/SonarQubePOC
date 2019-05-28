@@ -104,45 +104,70 @@ where   A.RuleImplementationID = @id";
         [Route("ExportResultsByRule"), FileDownload, NonNullableParameters]
         public FileResult ExportQueryItemsByAttributeType(int id)
         {
-            var detail = Company.GetObjectDetail("Rule", id);
-            var results = Company.Filter<RuleResult>(i => i.RuleImplementation.RuleID == id).OrderByDescending(i => i.EffectiveDate);
+            string sql = @"select R.DisplayValue as SheetName,
+	                              RR.RunDate,
+	                              RR.EffectiveDate,
+	                              RR.PassFraction,
+	                              RR.RowsPassed,
+	                              RR.RowsFailed,
+	                              RR.Passed,
+	                              FA.TextPath as Fusion
+	                           from [dbo].RuleResult as RR
+	                           left join RuleResultFusionAttribute RRFA on RRFA.RuleResultID = RR.Id
+	                           left join FusionAttribute FA on FA.Id = RRFA.FusionAttributeID
+	                           inner join RuleImplementation RI on RI.ID = RR.RuleImplementationID 
+	                           inner join [Rule] R on R.ID = RI.RuleID
+ 	                           where RuleImplementationID = @ruleImplementationID
+	                           order by RR.EffectiveDate desc";
+
+            var results = Company.Query<dynamic>(sql, new { ruleImplementationID = id }).ToList();
+
+
 
             #region Create the list sheet
+            var defaultSheetName = "";
+            if (results.FirstOrDefault() != null)
+                defaultSheetName = results.FirstOrDefault().SheetName;
 
             var document = new SLDocument();
-            var defaultSheet = detail.PluralizedName;
-            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, defaultSheet);
-            document.SelectWorksheet(defaultSheet);
+            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, defaultSheetName);
+            document.SelectWorksheet(defaultSheetName);
 
             var row = 1;
 
             #region Header
 
-            document.SetCellValue(row, 1, "Effective Date");
-            document.SetCellValue(row, 2, "Rows Passed");
-            document.SetCellValue(row, 3, "Rows Failed");
-            document.SetCellValue(row, 4, "Passed");
-            document.SetCellValue(row, 5, "Created On");
+            document.SetCellValue(row, 1, "Run date");
+            document.SetCellValue(row, 2, "Effective Date");
+            document.SetCellValue(row, 3, "Pass Fraction");
+            document.SetCellValue(row, 4, "Rows Passed");
+            document.SetCellValue(row, 5, "Rows Failed");
+            document.SetCellValue(row, 6, "Passed");
+            document.SetCellValue(row, 7, "Fusion");
+
 
             #endregion
 
             foreach (var item in results)
             {
                 row++;
-                document.SetCellValue(row, 1, item.EffectiveDate.ToShortDateString());
-                document.SetCellValue(row, 2, item.RowsPassed);
-                document.SetCellValue(row, 3, item.RowsFailed);
-                document.SetCellValue(row, 4, (item.Passed) ? "Y" : "N");
-                document.SetCellValue(row, 5, item.CreatedOn.ToShortDateString());
+
+                document.SetCellValue(row, 1, item.RunDate.ToShortDateString());
+                document.SetCellValue(row, 2, item.EffectiveDate.ToShortDateString());
+                document.SetCellValue(row, 3, item.PassFraction);
+                document.SetCellValue(row, 4, item.RowsPassed);
+                document.SetCellValue(row, 5, item.RowsFailed);
+                document.SetCellValue(row, 6, (item.Passed) ? "Y" : "N");
+                document.SetCellValue(row, 7, item.Fusion ?? "");
             }
 
-            document.AutoFitColumn(1, 5);
+            document.AutoFitColumn(1, 7);
 
             #endregion
 
             var stream = new MemoryStream();
             document.SaveAs(stream);
-            return File(stream.ToArray(), "application/vnd.ms-excel", $"{detail.PluralizedName}.xlsx");
+            return File(stream.ToArray(), "application/vnd.ms-excel", $"{defaultSheetName}.xlsx");
         }
 
         [Route("workflowmonitor/items/download/excel.xls"), HttpGet, FileDownload]

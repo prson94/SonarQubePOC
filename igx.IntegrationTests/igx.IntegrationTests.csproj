@@ -89,6 +89,7 @@
   <ItemGroup>
     <Compile Include="ApiTests\AssetControllerIntTest.cs" />
     <Compile Include="ApiTests\CrossReferenceIntegrationTests.cs" />
+    <Compile Include="ApiTests\FieldsControllerIntegrationTests.cs" />
     <Compile Include="Core\BaseIntegrationTestClass.cs" />
     <Compile Include="Core\Helpers.cs" />
     <Compile Include="Core\Settings.cs" />
@@ -97,6 +98,7 @@
     <Compile Include="TestData\AssetTypeTestData.cs" />
     <Compile Include="TestData\BulkTestData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestData\FieldsTestData.cs" />
     <Compile Include="TestData\XRefTestData.cs" />
   </ItemGroup>
   <ItemGroup>

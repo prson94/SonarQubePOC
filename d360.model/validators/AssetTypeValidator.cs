@@ -12,18 +12,6 @@ using System.Threading.Tasks;
 
 namespace d360.core.validators
 {
-    public class ValidationStatus
-    {
-        public HttpStatusCode StatusCode { get; set; }
-        public string Error { get; set; }
-        public string Message { get; set; }
-        public ValidationStatus(HttpStatusCode hsc, string err, string msg)
-        {
-            this.StatusCode = hsc;
-            this.Error = err;
-            this.Message = msg;
-        }
-    }
     public class AssetTypeValidator
     {
         ICompanyContext CompanyContext;
@@ -32,7 +20,7 @@ namespace d360.core.validators
             this.CompanyContext = companyContext;
         }
 
-        public ValidationStatus ValidateModelForPost(AssetTypeInsert model, AssetType parentAssetType, Predicate predicate)
+        public WorkHttpStatus ValidateModelForPost(AssetTypeInsert model, AssetType parentAssetType, Predicate predicate)
         {
 
             List<AssetTypeClass> predicateClass = new List<AssetTypeClass>() { AssetTypeClass.Glossary, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Reference };
@@ -40,74 +28,74 @@ namespace d360.core.validators
 
             List<AssetTypeClass> supportedClass = new List<AssetTypeClass>() { AssetTypeClass.Glossary, AssetTypeClass.Model, AssetTypeClass.Organization, AssetTypeClass.Policy, AssetTypeClass.Reference, AssetTypeClass.Rule };
             if (!supportedClass.Contains(model.Class))
-                return new ValidationStatus(HttpStatusCode.BadRequest, "Invalid request", "Not supported class type");
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid request", "Not supported class type");
 
 
             if (string.IsNullOrEmpty(model.Name.Trim()))
-                return new ValidationStatus(HttpStatusCode.BadRequest, "Invalid request", "No valid Name provided.Please check your request and try again.");
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid request", "No valid Name provided.Please check your request and try again.");
 
             if (model.ParentUid.HasValue && model.ParentUid != Guid.Empty)
             {
                 if (parentAssetType == null)
-                    return new ValidationStatus(HttpStatusCode.NotFound, "Invalid request", "Not valid ParentUid provided.Please check your request and try again.");
+                    return new WorkHttpStatus(HttpStatusCode.NotFound, "Invalid request", "Not valid ParentUid provided.Please check your request and try again.");
                 else if (parentAssetType.Object != SystemObjectHelper.GetSystemObjects(model.Class).ToString())
-                    return new ValidationStatus(HttpStatusCode.NotFound, "Invalid request", "Not valid ParentUid provided.Please check your request and try again.");
+                    return new WorkHttpStatus(HttpStatusCode.NotFound, "Invalid request", "Not valid ParentUid provided.Please check your request and try again.");
                 else if (!parentAssetTypeClass.Contains(model.Class))
-                    return new ValidationStatus(HttpStatusCode.NotFound, "Invalid request", "Not valid ParentUid for the Class.Please check your request and try again.");
+                    return new WorkHttpStatus(HttpStatusCode.NotFound, "Invalid request", "Not valid ParentUid for the Class.Please check your request and try again.");
             }
 
 
             if (model.Hierarchy != null && model.Hierarchy.PredicateUid.HasValue && model.Hierarchy.PredicateUid != Guid.Empty)
             {
                 if (predicate == null)
-                    return new ValidationStatus(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class");
+                    return new WorkHttpStatus(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class");
                 else if (predicate != null && !predicateClass.Contains(model.Class))
-                    return new ValidationStatus(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class");
+                    return new WorkHttpStatus(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class");
 
             }
 
 
 
             if (parentAssetType != null && predicate == null && predicateClass.Contains(model.Class))
-                return new ValidationStatus(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class");
+                return new WorkHttpStatus(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class");
             else if (predicate == null && (model.Class == AssetTypeClass.Model || model.Class == AssetTypeClass.Policy))
-                return new ValidationStatus(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class");
+                return new WorkHttpStatus(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class");
             else if (parentAssetType == null && predicate != null && parentAssetTypeClass.Contains(model.Class))
-                return new ValidationStatus(HttpStatusCode.NotFound, "Invalid request", "Asset Type not found based on Uid provided");
+                return new WorkHttpStatus(HttpStatusCode.NotFound, "Invalid request", "Asset Type not found based on Uid provided");
             else if (parentAssetType != null && predicate != null && (model.Class == AssetTypeClass.Glossary || model.Class == AssetTypeClass.Reference) && predicate.Type != PredicateType.InterTypeHierarchy)
-                return new ValidationStatus(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class");
+                return new WorkHttpStatus(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class");
             else if (predicate != null && (model.Class == AssetTypeClass.Model || model.Class == AssetTypeClass.Policy) && (predicate.Type != PredicateType.IntraTypeHierarchy))
-                return new ValidationStatus(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class");
+                return new WorkHttpStatus(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class");
 
 
 
             if (!this.IsValidDisplayFormat(0, model.DisplayFormat, model.Class))
-                return new ValidationStatus(HttpStatusCode.BadRequest, "Invalid request", "Display Format contains invalid field references.");
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid request", "Display Format contains invalid field references.");
 
             var regex = "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$";
             if (model.IconStyle == null || !Regex.Match(model.IconStyle.BackColor, regex, RegexOptions.IgnoreCase).Success || !Regex.Match(model.IconStyle.ForeColor, regex, RegexOptions.IgnoreCase).Success)
-                return new ValidationStatus(HttpStatusCode.BadRequest, "Invalid request", "Not valid Icon Style provided.Please check your request and try again.");
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid request", "Not valid Icon Style provided.Please check your request and try again.");
 
-            return new ValidationStatus(HttpStatusCode.OK, "", "");
+            return new WorkHttpStatus(HttpStatusCode.OK, "", "");
         }
 
-        public ValidationStatus ValidateModelForPut(AssetTypeInsert model, AssetType parentAssetType, Predicate predicate, AssetType assetType)
+        public WorkHttpStatus ValidateModelForPut(AssetTypeInsert model, AssetType parentAssetType, Predicate predicate, AssetType assetType)
         {
             List<AssetTypeClass> predicateClass = new List<AssetTypeClass>() { AssetTypeClass.Glossary, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Reference };
             List<AssetTypeClass> parentAssetTypeClass = new List<AssetTypeClass>() { AssetTypeClass.Glossary, AssetTypeClass.Reference };
 
             List<AssetTypeClass> supportedClass = new List<AssetTypeClass>() { AssetTypeClass.Glossary, AssetTypeClass.Model, AssetTypeClass.Organization, AssetTypeClass.Policy, AssetTypeClass.Reference, AssetTypeClass.Rule };
             if (!supportedClass.Contains(model.Class))
-                return new ValidationStatus(HttpStatusCode.BadRequest, "Invalid request", "Not supported class type");
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid request", "Not supported class type");
 
 
             if (string.IsNullOrEmpty(model.Name.Trim()))
-                return new ValidationStatus(HttpStatusCode.BadRequest, "Invalid request", "No valid Name provided.Please check your request and try again.");
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid request", "No valid Name provided.Please check your request and try again.");
 
             if (assetType == null)
-                return new ValidationStatus(HttpStatusCode.NotFound, "Invalid request", "Asset Type not found based on Uid provided.");
+                return new WorkHttpStatus(HttpStatusCode.NotFound, "Invalid request", "Asset Type not found based on Uid provided.");
             else if (assetType.Object != SystemObjectHelper.GetSystemObjects(model.Class).ToString())
-                return new ValidationStatus(HttpStatusCode.NotFound, "Invalid request", "Asset Type not found based on Class provided.");
+                return new WorkHttpStatus(HttpStatusCode.NotFound, "Invalid request", "Asset Type not found based on Class provided.");
             else
             {
                 model.Object = assetType.Object;
@@ -117,49 +105,49 @@ namespace d360.core.validators
             if (model.ParentUid.HasValue && model.ParentUid != Guid.Empty)
             {
                 if (parentAssetType == null)
-                    return new ValidationStatus(HttpStatusCode.NotFound, "Invalid request", "Not valid ParentUid provided.Please check your request and try again.");
+                    return new WorkHttpStatus(HttpStatusCode.NotFound, "Invalid request", "Not valid ParentUid provided.Please check your request and try again.");
                 else if (parentAssetType.Object != model.Object)
-                    return new ValidationStatus(HttpStatusCode.NotFound, "Invalid request", "Not valid ParentUid provided.Please check your request and try again.");
+                    return new WorkHttpStatus(HttpStatusCode.NotFound, "Invalid request", "Not valid ParentUid provided.Please check your request and try again.");
                 else if (!parentAssetTypeClass.Contains(model.Class))
-                    return new ValidationStatus(HttpStatusCode.NotFound, "Invalid request", "Not valid ParentUid for the Class.Please check your request and try again.");
+                    return new WorkHttpStatus(HttpStatusCode.NotFound, "Invalid request", "Not valid ParentUid for the Class.Please check your request and try again.");
             }
 
             if (model.ParentUid.HasValue && model.ParentUid == model.Uid)
-                return new ValidationStatus(HttpStatusCode.BadRequest, "Invalid request", "Not valid ParentUid provided.Please check your request and try again.");
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid request", "Not valid ParentUid provided.Please check your request and try again.");
 
             if (model.Hierarchy != null && model.Hierarchy.PredicateUid.HasValue && model.Hierarchy.PredicateUid != Guid.Empty)
             {
                 if (predicate == null)
-                    return new ValidationStatus(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class.");
+                    return new WorkHttpStatus(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class.");
                 else if (predicate != null && !predicateClass.Contains(model.Class))
-                    return new ValidationStatus(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class");
+                    return new WorkHttpStatus(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class");
 
             }
 
             if (parentAssetType != null && predicate == null && predicateClass.Contains(model.Class))
-                return new ValidationStatus(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class");
+                return new WorkHttpStatus(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class");
             else if (predicate == null && (model.Class == AssetTypeClass.Model || model.Class == AssetTypeClass.Policy))
-                return new ValidationStatus(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class");
+                return new WorkHttpStatus(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class");
             else if (parentAssetType == null && predicate != null && parentAssetTypeClass.Contains(model.Class))
-                return new ValidationStatus(HttpStatusCode.NotFound, "Invalid request", "Asset Type not found based on Uid provided");
+                return new WorkHttpStatus(HttpStatusCode.NotFound, "Invalid request", "Asset Type not found based on Uid provided");
             else if (parentAssetType != null && predicate != null && (model.Class == AssetTypeClass.Glossary || model.Class == AssetTypeClass.Reference) && predicate.Type != PredicateType.InterTypeHierarchy)
-                return new ValidationStatus(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class");
+                return new WorkHttpStatus(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class");
             else if (predicate != null && (model.Class == AssetTypeClass.Model || model.Class == AssetTypeClass.Policy) && (predicate.Type != PredicateType.IntraTypeHierarchy))
-                return new ValidationStatus(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class");
+                return new WorkHttpStatus(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class");
 
             int assetCount = CompanyContext.Filter<Asset>(x => x.AssetTypeID == assetType.ID).Count();
             AssetType currentParentType = CompanyContext.GetParentType(assetType.ID, SystemObjectHelper.GetSystemObjects(model.Class));
             if (assetCount != 0 && currentParentType != null && currentParentType.uid != model.ParentUid)
-                return new ValidationStatus(HttpStatusCode.BadRequest, "Invalid request", "Assets already exist with assigned parents. You may not change the parent of this asset type.");
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid request", "Assets already exist with assigned parents. You may not change the parent of this asset type.");
 
             if (!this.IsValidDisplayFormat(assetType.ID, model.DisplayFormat, model.Class) )
-                return new ValidationStatus(HttpStatusCode.BadRequest, "Invalid request", "Display Format contains invalid field references.");
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid request", "Display Format contains invalid field references.");
 
             var regex = "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$";
             if (model.IconStyle == null || !Regex.Match(model.IconStyle.BackColor, regex, RegexOptions.IgnoreCase).Success || !Regex.Match(model.IconStyle.ForeColor, regex, RegexOptions.IgnoreCase).Success)
-                return new ValidationStatus(HttpStatusCode.BadRequest, "Invalid request", "Not valid Icon Style provided.Please check your request and try again.");
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid request", "Not valid Icon Style provided.Please check your request and try again.");
 
-            return new ValidationStatus(HttpStatusCode.OK, "", "");
+            return new WorkHttpStatus(HttpStatusCode.OK, "", "");
 
         }
 
@@ -171,11 +159,13 @@ namespace d360.core.validators
                 return true;
             }
 
+            var fieldsToIgnore = DataType.Text.GetNonDisplayFormatFields();
+
             List<string> fieldNames;
             if (assetTypeId == 0)
                 fieldNames = new List<string> { "name" };
             else
-                fieldNames = CompanyContext.Filter<FieldType>(x => x.AssetTypeID == assetTypeId).Select(x => x.FriendlyName.ToLower()).ToList();
+                fieldNames = CompanyContext.Filter<FieldType>(x => x.AssetTypeID == assetTypeId && !fieldsToIgnore.Contains(x.Type)).Select(x => x.FriendlyName.ToLower()).ToList();
 
             if (assetClass == AssetTypeClass.Reference)
                 fieldNames.Add("code");
