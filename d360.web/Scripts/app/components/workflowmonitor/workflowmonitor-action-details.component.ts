@@ -14,6 +14,14 @@ import { ToolTipService } from '../../services/tooltip.service';
                     {{data?.TypeName}}
                 </span>
             </div>
+            <div>
+                <span class="FieldName">
+                    UID:&nbsp;
+                </span>
+                <span>
+                    {{data?.UID}}
+                </span>
+            </div>
             <ng-container *ngFor="let field of data?.FieldValues">
                 <div *ngIf="field.Value">
                     <span class="FieldName">

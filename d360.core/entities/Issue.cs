@@ -9,7 +9,7 @@ using d360.core.queue;
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE)]
-    public class Issue : BaseIntObject, IIntObject, IFieldsObject, IUpdatedMetadata, IEventTrackedEntity
+    public class Issue : BaseIntObject, IIntObject, IFieldsObject, IUpdatedMetadata, IEventTrackedEntity, IUIDMetadata
     {
         public int IssueTypeID { get; set; }
 
@@ -39,6 +39,9 @@ namespace d360.core.entities
 
         [DataMember]
         public int? CommentID { get; set; }
+
+        [DataMember]
+        public Guid? UID { get; set; }
 
         public EventObjectInfo GetEventObjectInfo()
         {
