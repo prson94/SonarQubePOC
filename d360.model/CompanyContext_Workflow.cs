@@ -1035,7 +1035,7 @@ namespace d360.model
                 var objectId = objectInfo.ObjectID;
                 var objectType = objectInfo.Object.ToString();
 
-                if (objectInfo.Object.ToString() == "Issue" && item.ObjectType == "Artifact")
+                if (objectInfo.Object.ToString() == "Issue" && item.ObjectType != "Issue")
                 {
                     objectType = issue.Object;
                     objectId = issue.ObjectID;
