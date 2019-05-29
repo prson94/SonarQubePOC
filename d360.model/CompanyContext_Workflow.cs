@@ -1025,6 +1025,7 @@ namespace d360.model
         {
             if (!settings.FieldUpdateSettings.Any()) return;
             var issue = Issues.FirstOrDefault(x => x.ID == objectInfo.ObjectID);
+            Asset asset = null;
             bool isAssetEdited = false;
 
             foreach (var item in settings.FieldUpdateSettings)
@@ -1034,11 +1035,14 @@ namespace d360.model
                 var objectId = objectInfo.ObjectID;
                 var objectType = objectInfo.Object.ToString();
 
-                if (objectInfo.Object.ToString() == "Issue" && item.ObjectType == "Artifact")
+                if (objectInfo.Object.ToString() == "Issue" && item.ObjectType != "Issue")
                 {
                     objectType = issue.Object;
                     objectId = issue.ObjectID;
+                    asset = Assets.Where(x => x.Object == issue.Object && x.ObjectID == issue.ObjectID).FirstOrDefault();
+                    ObjectContext.ObjectStateManager.ChangeObjectState(asset, EntityState.Modified);
                     isAssetEdited = true;
+
                 }
 
                 if (fieldType == null)
@@ -1068,11 +1072,27 @@ namespace d360.model
                     //Get the value from action form (Issue)
                     if (item.IsActionForm)
                     {
+                        val = "";
                         var fieldData = item.FormField.Split('|');
                         if (fieldData.Count() == 2)
                         {
                             int fieldTypeId = int.Parse(fieldData[1]);
-                            val = Fields.FirstOrDefault(x => x.ObjectID == objectInfo.ObjectID && x.ObjectType == "Issue" && x.FieldTypeID == fieldTypeId)?.FormattedValue;
+                            var actionField = Fields.FirstOrDefault(x => x.ObjectID == objectInfo.ObjectID && x.ObjectType == "Issue" && x.FieldTypeID == fieldTypeId);
+                            if(actionField != null)
+                            {
+                                var actionFieldType = FieldTypes.FirstOrDefault(x => x.Object == "IssueType" && x.ID == actionField.FieldTypeID);
+                                if(actionFieldType.Type == "Lookup")
+                                {
+                                    var lookupSql = @"select top 1 Value from [dbo].[FieldLookupValue]
+                                        where LookupObjectType = @Object and LookupObjectID = @ObjectId and Text = @Value";
+                                    var lookupValue = Query<int?>(lookupSql, new { Object = actionFieldType.LookupObjectType, ObjectId = actionFieldType.LookupObjectID, Value = actionField?.FormattedValue }).FirstOrDefault();
+                                    val = lookupValue.ToString();
+                                }
+                                else
+                                {
+                                    val = actionField?.FormattedValue;
+                                }
+                            }
                         }
 
                         if (DateTime.TryParse(val, out DateTime tempDate))
@@ -1095,6 +1115,9 @@ namespace d360.model
                             ObjectType = objectType.ToString(),
                             UpdatedBy = CurrentResourceID
                         };
+
+                        if(isAssetEdited)
+                            newField.AssetID =  asset.ID;
 
                         Add<Field>(newField);
                     }
@@ -1132,12 +1155,6 @@ namespace d360.model
                         });
                 }
 
-            }
-
-            if (isAssetEdited)
-            {
-                var asset = Assets.Where(x => x.Object == issue.Object && x.ObjectID == issue.ObjectID).FirstOrDefault();
-                ObjectContext.ObjectStateManager.ChangeObjectState(asset, EntityState.Modified);
             }
 
             SaveChanges();
