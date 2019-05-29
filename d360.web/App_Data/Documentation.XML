@@ -3019,6 +3019,13 @@
             <param name="Uid">The uid of a specific tag.</param>        
             <returns>A list of tags</returns>
         </member>
+        <member name="M:d360.web.Controllers.V2.TagsController.DeleteById(System.Guid)">
+            <summary>
+            Allows you to remove a tag based on its Uid.
+            </summary>
+            <param name="uid">The public identifier for the tag.</param>
+            <returns>A status for the DELETE request.</returns>
+        </member>
         <member name="M:d360.web.Controllers.D3SApiController.GetFieldFiltersByType(d360.core.SystemObjects,System.Int32)">
             <summary>
             Gets a list of available field-level filters for a grid in the UI. This includes standard/custom fields, relationships, attributes, owner.
