@@ -1,0 +1,411 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+	<changeSet author="Tomislav Duric" id="GOV-7250">
+		<sql dbms="mssql"
+			endDelimiter="\nGO"
+			splitStatements="true"
+			stripComments="true">
+<![CDATA[
+IF NOT EXISTS(SELECT 1 FROM
+			information_schema.Columns where column_name ='Uid' and
+			table_name='Issue' and TABLE_SCHEMA='dbo')
+		BEGIN
+			ALTER TABLE dbo.[Issue] ADD [Uid] [uniqueidentifier] NOT NULL
+			CONSTRAINT [DF_Issue_Uid]  DEFAULT (newid())
+		END
+]]>
+		</sql>
+		<rollback>
+<![CDATA[
+IF EXISTS (SELECT 1 FROM sys.default_constraints
+    WHERE NAME = 'DF_Issue_Uid')
+    begin
+		ALTER TABLE [dbo].[Issue] DROP CONSTRAINT [DF_Issue_Uid]
+	end
+	
+IF EXISTS(SELECT 1 FROM
+			information_schema.Columns where column_name ='Uid' and
+			table_name='Issue' and TABLE_SCHEMA='dbo')
+	BEGIN
+		ALTER TABLE [dbo].[Issue] DROP COLUMN Uid
+	END
+]]>
+		</rollback>
+	</changeSet>
+
+<changeSet author="Tomislav Duric" id="GOV-7250-UpdateObjectDetail">
+		<sql dbms="mssql"
+			endDelimiter="\nGO"
+			splitStatements="true"
+			stripComments="true">
+<![CDATA[
+ALTER   FUNCTION [utility].[ObjectDetail]
+(
+
+	@type varchar(50), 
+	@id int
+
+
+)
+RETURNS @tbl TABLE 
+(
+	ID int,
+	AssetID bigint,
+	UID uniqueidentifier,
+	AssetTypeID int,
+	Name nvarchar(max),
+	TextPath nvarchar(2500),
+	Description nvarchar(max),
+	ParentID int null,
+	ParentType nvarchar(250),
+	Url nvarchar(2500),
+	TypeID int,
+	[Type] varchar(25),
+	[TypeName] nvarchar(250),
+	IconBackColor varchar(15),
+	IconForeColor varchar(15),
+	IconText varchar(15),
+	Status nvarchar(25) null
+) 
+AS
+BEGIN
+	if @type in 
+	(
+		'Artifact',
+		'Attribute',
+		'Fusion',
+		'FusionAttribute',
+		'Policy',
+		'ReferenceItem',
+		'Rule',
+		'Taxonomy',
+		'Group',
+		'FusionQueryAttribute',
+		'Resource'
+	)
+	begin
+		insert into @tbl (	ID,		UID,	AssetID,	AssetTypeID, Name,			TextPath,		[Description],	ParentID,	ParentType, Url,											TypeID,	[Type],	TypeName, Status)
+			SELECT			ObjectID,	UID, ID, 		AssetTypeID, DisplayValue,	DisplayValue,	NULL,			null,		null,		dbo.GenerateAssetUrl(ID),	TypeID,	Type,	TypeName, NULL
+			FROM	AssetDetail
+			where	Object = @type 
+					and ObjectID = @id
+	end
+
+	if @type in
+	(
+		'ArtifactType',
+		'AttributeType',
+		'FusionType',
+		'FusionAttributeType',
+		'FusionQueryAttributeType',
+		'PolicyType',
+		'ReferenceItemType',
+		'RuleType',
+		'TaxonomyType'
+	)
+	begin
+		insert into @tbl (	ID,		UID, Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
+			SELECT			ObjectID, UID,		Name,	Name,		Description,	NULL,		NULL,		turl.[url] as Url,	ObjectID,		@type,	'Asset Type'
+			FROM	AssetType O
+			cross apply [dbo].GetAssetTypeUrlById(o.id) turl
+			WHERE	Object = @type
+					and ObjectID = @id
+	end
+
+	if @type = 'Intersect'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,													TypeID,				[Type],				TypeName)
+			SELECT			O.ID,	IName.Name,	IName.Name,		'',				NULL,		@type,		null,	O.IntersectTypeID,	'IntersectType', ITN.Name	
+			FROM	[Intersect] O
+					INNER JOIN IntersectType T ON O.IntersectTypeID = T.ID and O.ID = @id
+					CROSS APPLY dbo.GetIntersectNames(O.ID) IName	
+					CROSS APPLY dbo.GetIntersectTypeNames(T.ID) ITN
+	end
+
+	if @type = 'IntersectType'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName,[UID])
+			SELECT			ID,		T.Name,	T.Name,		'',				NULL,		NULL,		null,	ID,		@type,	'Intersect Type', uid
+			FROM	IntersectType 
+			CROSS APPLY dbo.GetIntersectTypeNames(@id) T	
+			WHERE	ID = @id
+	end
+
+	if @type = 'Issue'
+	begin
+		insert into @tbl (	ID,	UID,	Name,				TextPath,	[Description],	ParentID,	ParentType, Url,												TypeID,			[Type],			TypeName)
+			SELECT			O.ID,O.Uid,	'',	'',		'',				NULL,		NULL,		null,	O.IssueTypeID,	'IssueType',	T.Name
+			FROM	Issue O
+					INNER JOIN IssueType T ON O.IssueTypeID = T.ID AND O.ID = @id
+	end
+
+	if @type = 'IssueType'
+	begin
+		insert into @tbl (	ID,		UID,Name,	TextPath,	[Description],	ParentID,	ParentType, Url,													TypeID,				[Type],				TypeName)
+			SELECT			O.ID,	O.uid,O.Name,	O.Name,		O.Description,				NULL,		@type,		NULL,	O.ID,	'IssueType',	'Issue Type'
+			FROM	IssueType O
+			WHERE	ID = @id
+	end
+
+	if @type = 'Lookup'
+	begin
+		insert into @tbl (	ID,		Name,				TextPath,	[Description],	ParentID,	ParentType, Url,												TypeID,			[Type],			TypeName)
+			SELECT			O.ID,	T.Name + ' Item',	T.Name,		'',				NULL,		NULL,		dbo.GenerateUrlByTypeName(@type, O.LookupTypeID, O.ID),	O.LookupTypeID,	'LookupType',	T.Name
+			FROM	[Lookup] O
+					INNER JOIN LookupType T ON O.LookupTypeID = T.ID AND O.ID = @id
+	end
+
+	if @type = 'LookupType'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
+			SELECT			ID,		Name,	Name,		'',				0,			@type,		dbo.GenerateUrlByTypeName(@type, ID, 0),	ID,		@type,	'Lookup Type'
+			FROM	LookupType O
+			WHERE	ID = @id
+	end
+
+	if @type = 'Report'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,				[Type],			TypeName)
+			SELECT			O.ID,	O.Name,	O.Name,	O.Description,	NULL,		@type,		'#',	0,	'Report',	'Report'
+			FROM	Report O
+			WHERE	O.ID = @id
+	end
+
+	if @type = 'ResponsibilityType'
+	begin
+		insert into @tbl (	ID, Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
+			SELECT			ID,	O.Name,	NULL,		Description,	NULL,		NULL,		null,	ID,		@type,	'Responsibility Type'
+			FROM	ResponsibilityType O
+			WHERE	ID = @id
+	end
+
+	if @type = 'ResourceType'
+	begin
+		insert into @tbl (ID, Name, Url, TypeID, [Type], TypeName)
+		values			(@id, 'Resource Type', '#/resources/administration', @id, @type, 'Resource Type')
+	end
+
+	if @type = 'RuleImplementation'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,				[Type],			TypeName, Status)
+			SELECT			O.ID,	coalesce(O.Name,'Implementation ' + cast(o.id as nvarchar)) ,	coalesce(O.Name,'Implementation ' + cast(o.id as nvarchar)),	null,	T.ID,		'Rule',		null,	T.RuleTypeID,	'RuleType',	T.DisplayValue, 'Active'
+			FROM	[RuleImplementation] O
+					inner join [Rule] T on T.ID = O.RuleID
+			WHERE	O.ID = @id
+	end
+
+	if @type = 'ShoppingCart'
+	begin
+			insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
+			SELECT			O.ID,		Name,	Name,		NULL,	NULL,		NULL,		dbo.GenerateUrlByTypeName('ShoppingCartType', O.ShoppingCartTypeID, O.ID),	O.ID,		@type,	T.Name
+			FROM	ShoppingCart O
+			inner join ShoppingCartType T on O.ShoppingCartTypeID = T.ID
+			WHERE	O.ID = @id
+	end
+
+	update	T
+	set		T.IconBackColor = coalesce(S.IconBackColor, '#000000'),
+			T.IconForeColor = coalesce(S.IconForeColor, '#ffffff'),
+			T.IconText =	
+							
+							
+								
+								COALESCE(S.IconText, 'leaf') 
+							
+	from	@tbl T
+			left join ObjectStyle S ON S.ObjectType = T.[Type] and S.ObjectID = T.TypeID
+
+	RETURN
+END
+]]>
+		</sql>
+		<rollback>
+<![CDATA[
+ALTER   FUNCTION [utility].[ObjectDetail]
+(
+
+	@type varchar(50), 
+	@id int
+
+
+)
+RETURNS @tbl TABLE 
+(
+	ID int,
+	AssetID bigint,
+	UID uniqueidentifier,
+	AssetTypeID int,
+	Name nvarchar(max),
+	TextPath nvarchar(2500),
+	Description nvarchar(max),
+	ParentID int null,
+	ParentType nvarchar(250),
+	Url nvarchar(2500),
+	TypeID int,
+	[Type] varchar(25),
+	[TypeName] nvarchar(250),
+	IconBackColor varchar(15),
+	IconForeColor varchar(15),
+	IconText varchar(15),
+	Status nvarchar(25) null
+) 
+AS
+BEGIN
+	if @type in 
+	(
+		'Artifact',
+		'Attribute',
+		'Fusion',
+		'FusionAttribute',
+		'Policy',
+		'ReferenceItem',
+		'Rule',
+		'Taxonomy',
+		'Group',
+		'FusionQueryAttribute',
+		'Resource'
+	)
+	begin
+		insert into @tbl (	ID,		UID,	AssetID,	AssetTypeID, Name,			TextPath,		[Description],	ParentID,	ParentType, Url,											TypeID,	[Type],	TypeName, Status)
+			SELECT			ObjectID,	UID, ID, 		AssetTypeID, DisplayValue,	DisplayValue,	NULL,			null,		null,		dbo.GenerateAssetUrl(ID),	TypeID,	Type,	TypeName, NULL
+			FROM	AssetDetail
+			where	Object = @type 
+					and ObjectID = @id
+	end
+
+	if @type in
+	(
+		'ArtifactType',
+		'AttributeType',
+		'FusionType',
+		'FusionAttributeType',
+		'FusionQueryAttributeType',
+		'PolicyType',
+		'ReferenceItemType',
+		'RuleType',
+		'TaxonomyType'
+	)
+	begin
+		insert into @tbl (	ID,		UID, Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
+			SELECT			ObjectID, UID,		Name,	Name,		Description,	NULL,		NULL,		turl.[url] as Url,	ObjectID,		@type,	'Asset Type'
+			FROM	AssetType O
+			cross apply [dbo].GetAssetTypeUrlById(o.id) turl
+			WHERE	Object = @type
+					and ObjectID = @id
+	end
+
+	if @type = 'Intersect'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,													TypeID,				[Type],				TypeName)
+			SELECT			O.ID,	IName.Name,	IName.Name,		'',				NULL,		@type,		null,	O.IntersectTypeID,	'IntersectType', ITN.Name	
+			FROM	[Intersect] O
+					INNER JOIN IntersectType T ON O.IntersectTypeID = T.ID and O.ID = @id
+					CROSS APPLY dbo.GetIntersectNames(O.ID) IName	
+					CROSS APPLY dbo.GetIntersectTypeNames(T.ID) ITN
+	end
+
+	if @type = 'IntersectType'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName,[UID])
+			SELECT			ID,		T.Name,	T.Name,		'',				NULL,		NULL,		null,	ID,		@type,	'Intersect Type', uid
+			FROM	IntersectType 
+			CROSS APPLY dbo.GetIntersectTypeNames(@id) T	
+			WHERE	ID = @id
+	end
+
+	if @type = 'Issue'
+	begin
+		insert into @tbl (	ID,		Name,				TextPath,	[Description],	ParentID,	ParentType, Url,												TypeID,			[Type],			TypeName)
+			SELECT			O.ID,	'',	'',		'',				NULL,		NULL,		null,	O.IssueTypeID,	'IssueType',	T.Name
+			FROM	Issue O
+					INNER JOIN IssueType T ON O.IssueTypeID = T.ID AND O.ID = @id
+	end
+
+	if @type = 'IssueType'
+	begin
+		insert into @tbl (	ID,		UID,Name,	TextPath,	[Description],	ParentID,	ParentType, Url,													TypeID,				[Type],				TypeName)
+			SELECT			O.ID,	O.uid,O.Name,	O.Name,		O.Description,				NULL,		@type,		NULL,	O.ID,	'IssueType',	'Issue Type'
+			FROM	IssueType O
+			WHERE	ID = @id
+	end
+
+	if @type = 'Lookup'
+	begin
+		insert into @tbl (	ID,		Name,				TextPath,	[Description],	ParentID,	ParentType, Url,												TypeID,			[Type],			TypeName)
+			SELECT			O.ID,	T.Name + ' Item',	T.Name,		'',				NULL,		NULL,		dbo.GenerateUrlByTypeName(@type, O.LookupTypeID, O.ID),	O.LookupTypeID,	'LookupType',	T.Name
+			FROM	[Lookup] O
+					INNER JOIN LookupType T ON O.LookupTypeID = T.ID AND O.ID = @id
+	end
+
+	if @type = 'LookupType'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
+			SELECT			ID,		Name,	Name,		'',				0,			@type,		dbo.GenerateUrlByTypeName(@type, ID, 0),	ID,		@type,	'Lookup Type'
+			FROM	LookupType O
+			WHERE	ID = @id
+	end
+
+	if @type = 'Report'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,				[Type],			TypeName)
+			SELECT			O.ID,	O.Name,	O.Name,	O.Description,	NULL,		@type,		'#',	0,	'Report',	'Report'
+			FROM	Report O
+			WHERE	O.ID = @id
+	end
+
+	if @type = 'ResponsibilityType'
+	begin
+		insert into @tbl (	ID, Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
+			SELECT			ID,	O.Name,	NULL,		Description,	NULL,		NULL,		null,	ID,		@type,	'Responsibility Type'
+			FROM	ResponsibilityType O
+			WHERE	ID = @id
+	end
+
+	if @type = 'ResourceType'
+	begin
+		insert into @tbl (ID, Name, Url, TypeID, [Type], TypeName)
+		values			(@id, 'Resource Type', '#/resources/administration', @id, @type, 'Resource Type')
+	end
+
+	if @type = 'RuleImplementation'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,				[Type],			TypeName, Status)
+			SELECT			O.ID,	coalesce(O.Name,'Implementation ' + cast(o.id as nvarchar)) ,	coalesce(O.Name,'Implementation ' + cast(o.id as nvarchar)),	null,	T.ID,		'Rule',		null,	T.RuleTypeID,	'RuleType',	T.DisplayValue, 'Active'
+			FROM	[RuleImplementation] O
+					inner join [Rule] T on T.ID = O.RuleID
+			WHERE	O.ID = @id
+	end
+
+	if @type = 'ShoppingCart'
+	begin
+			insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName)
+			SELECT			O.ID,		Name,	Name,		NULL,	NULL,		NULL,		dbo.GenerateUrlByTypeName('ShoppingCartType', O.ShoppingCartTypeID, O.ID),	O.ID,		@type,	T.Name
+			FROM	ShoppingCart O
+			inner join ShoppingCartType T on O.ShoppingCartTypeID = T.ID
+			WHERE	O.ID = @id
+	end
+
+	update	T
+	set		T.IconBackColor = coalesce(S.IconBackColor, '#000000'),
+			T.IconForeColor = coalesce(S.IconForeColor, '#ffffff'),
+			T.IconText =	
+							
+							
+								
+								COALESCE(S.IconText, 'leaf') 
+							
+	from	@tbl T
+			left join ObjectStyle S ON S.ObjectType = T.[Type] and S.ObjectID = T.TypeID
+
+	RETURN
+END
+]]>
+		</rollback>
+	</changeSet>
+
+  </databaseChangeLog>
