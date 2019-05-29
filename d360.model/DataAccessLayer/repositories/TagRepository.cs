@@ -115,5 +115,46 @@ namespace d360.model.DataAccessLayer
             
             return results;
         }
+
+        public TagApiModel CreateTag(TagApiModel model)
+        {
+            if(model == null)
+            {
+                throw new Exception("Invalid tag specified [null model].");
+            }
+
+            if(string.IsNullOrEmpty(model.Value))
+            {
+                throw new Exception("Invalid tag specified [no value].");
+            }
+
+            if(model.Value.Length > 250)
+            {
+                throw new Exception("Invalid tag specified [too long].");
+            }
+
+            var tag = new Tag
+            {
+                Value = model.Value,
+                UpdatedBy = companyContext.CurrentResourceID,
+                CreatedBy = companyContext.CurrentResourceID,
+                UpdatedOn = DateTime.UtcNow,
+                CreatedOn = DateTime.UtcNow
+            };
+
+            companyContext.Tags.Add(tag);
+
+            companyContext.SaveChanges();
+
+            var user = companyContext.GlobalReportingResources.FirstOrDefault(x => x.ResourceID == companyContext.CurrentResourceID);
+
+            model.uid = tag.uid;
+            model.UpdatedOn = tag.UpdatedOn.GetValueOrDefault();
+            model.UpdatedByUid = user.Uid;
+            model.CreatedOn = tag.CreatedOn.GetValueOrDefault();
+            model.CreatedByUid = user.Uid;
+
+            return model;
+        }
     }
 }

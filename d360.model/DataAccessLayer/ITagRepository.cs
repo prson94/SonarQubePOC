@@ -10,5 +10,6 @@ namespace d360.model.DataAccessLayer
     {
         Task<TagApiModelWrapper> GetTags(IEnumerable<KeyValuePair<string, string>> queryParams);
         bool DeleteTag(Guid uid);
+        TagApiModel CreateTag(TagApiModel model);
     }
 }
