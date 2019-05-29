@@ -13,11 +13,11 @@ namespace d360.core.entities
     [DataContract(Namespace = NAMESPACE)]
     public class Tag : BaseCreatedAndUpdatedIntObject
     {
-        [DataMember]
+        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid uid { get; set; }
         [DataMember, StringLength(250)]
         public string Value { get; set; }
         [DataMember]
-        public State State { get; set; }
+        public State State { get; set; } = State.Active;
     }
 }
