@@ -277,10 +277,12 @@ order by wi.StartedOn desc";
             var currentVersion = Company.WorkflowVersions.Where(v => v.TypeID == type.ID).OrderByDescending(v => v.Version).First();
             var publishedVersion = Company.WorkflowVersions.Find(type.PublishedVersionID);
 
+            List<FieldType> fieldTypes = this.getFieldTypes(@event.ObjectID, @event.Object);
+
             nodes.ForEach(n =>
             {
-                n.SettingsObject = XmlToDynamic(n.Settings, false);
-                n.FieldsObject = XmlToDynamic(n.Fields);
+                n.SettingsObject = XmlToDynamic(this.DeFormatMessageBodyTemplate(@event.Object, fieldTypes,n.Settings),false);
+                n.FieldsObject = XmlToDynamic(this.DeFormatFormDescription(@event.Object,fieldTypes, n.Fields));
             });
 
             links.ForEach(l =>
@@ -1346,6 +1348,13 @@ order by wi.StartedOn desc";
         [Route("fieldtypes/{type}/{id:int}"), HttpGet]
         public HttpResponseMessage GetFieldTypes(int id, string type, bool allowHtml = false, string additionalFields = "")
         {
+
+            var fields = this.getFieldTypes(id, type, allowHtml, additionalFields);
+            return Request.CreateResponse(HttpStatusCode.OK, fields);
+        }
+
+        private List<FieldType> getFieldTypes(int id, string type, bool allowHtml = false, string additionalFields = "")
+        {
             var fields = Company.FieldTypes.Where(f => f.Object == type && f.ObjectID == id).ToList();
             List<string> excludedTypes = DataType.Text.GetNonWorkflowConditionFields();
             if (!allowHtml)
@@ -1368,10 +1377,8 @@ order by wi.StartedOn desc";
                 }
 
             }
-
-            return Request.CreateResponse(HttpStatusCode.OK, fields);
+            return fields;
         }
-
         [Route("diagram/clone"), HttpPost]
         public HttpResponseMessage CloneWorkflowDiagramModel(core.entities.Workflow.Type workflowType)
         {
@@ -1682,6 +1689,8 @@ order by wi.StartedOn desc";
 
                     #endregion
 
+                    List<FieldType> fieldTypes = this.getFieldTypes(model.Event.ObjectID, model.Event.Object);
+
                     Dictionary<int, int> keyMapping = new Dictionary<int, int>();
 
                     if (newVersion)
@@ -1704,13 +1713,13 @@ order by wi.StartedOn desc";
                                 step.XPosition = n.XPosition;
                                 step.YPosition = n.YPosition;
                                 step.VersionID = versionID;
-                                step.Settings = JsonConvert.DeserializeXNode(n.Settings).ToString();
+                                step.Settings = this.FormatMessageBodyTemplate(model.Event.Object, fieldTypes, JsonConvert.DeserializeXNode(n.Settings).ToString());
                                 step.State = core.enums.State.Active;
 
                                 if (string.IsNullOrEmpty(n.Fields))
                                     step.Fields = null;
                                 else
-                                    step.Fields = JsonConvert.DeserializeXNode(n.Fields).ToString();
+                                    step.Fields = this.FormatFormDescription(model.Event.Object, fieldTypes, JsonConvert.DeserializeXNode(n.Fields).ToString());
 
                                 Company.Add(step);
                                 Company.SaveChanges();
@@ -1815,6 +1824,8 @@ order by wi.StartedOn desc";
 
                         Company.SaveChanges();
 
+                        
+
                         if (model?.Nodes?.Count > 0)
                         {
                             model.Nodes.ForEach(n =>
@@ -1834,13 +1845,13 @@ order by wi.StartedOn desc";
                                     step.XPosition = n.XPosition;
                                     step.YPosition = n.YPosition;
                                     step.VersionID = versionID;
-                                    step.Settings = JsonConvert.DeserializeXNode(n.Settings).ToString();
+                                    step.Settings = this.FormatMessageBodyTemplate( model.Event.Object, fieldTypes, JsonConvert.DeserializeXNode(n.Settings).ToString());
                                     step.State = core.enums.State.Active;
 
                                     if (string.IsNullOrEmpty(n.Fields))
                                         step.Fields = null;
                                     else
-                                        step.Fields = JsonConvert.DeserializeXNode(n.Fields).ToString();
+                                        step.Fields =this.FormatFormDescription(model.Event.Object, fieldTypes,  JsonConvert.DeserializeXNode(n.Fields).ToString());
 
                                     Company.Add(step);
                                     Company.SaveChanges();
@@ -1862,12 +1873,12 @@ order by wi.StartedOn desc";
                                         node.XPosition = n.XPosition;
                                         node.YPosition = n.YPosition;
                                         node.VersionID = versionID;
-                                        node.Settings = JsonConvert.DeserializeXNode(n.Settings).ToString();
+                                        node.Settings = this.FormatMessageBodyTemplate(model.Event.Object, fieldTypes, JsonConvert.DeserializeXNode(n.Settings).ToString());
 
                                         if (string.IsNullOrEmpty(n.Fields))
                                             node.Fields = null;
                                         else
-                                            node.Fields = JsonConvert.DeserializeXNode(n.Fields).ToString();
+                                            node.Fields =this.FormatFormDescription(model.Event.Object, fieldTypes, JsonConvert.DeserializeXNode(n.Fields).ToString());
 
                                         keyMapping.Add(id, id);
                                     }
@@ -1994,6 +2005,83 @@ order by wi.StartedOn desc";
                 return Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex);
             }
         }
+
+        private string FormatFormDescription(string type, List<FieldType> fieldTypes, string data)
+        {
+            dynamic fields = XmlToDynamic(data);
+            if (fields != null && fields.form != null && fields.form["@description"] != null)
+            {
+                string desc = fields.form["@description"];
+                var fieldType = type == "IssueType" ? "issueField" : "assetField";
+                fieldTypes.ForEach(x =>
+                {
+                    var f = "[" + fieldType + " :: " + x.Name + "]";
+                    var t = "[FIELD" + x.ID + "]";
+                    desc = desc.Replace(f, t);
+                });
+                fields.form["@description"] = desc;
+                return JsonConvert.DeserializeXNode(fields.ToString(), "fields").ToString();
+            }
+            return data;
+        }
+
+        private string DeFormatFormDescription(string type, List<FieldType> fieldTypes, string data)
+        {
+            dynamic fields = XmlToDynamic(data);
+            if (fields != null && fields.form != null && fields.form["@description"] != null)
+            {
+                string desc = fields.form["@description"];
+                var fieldType = type == "IssueType" ? "issueField" : "assetField";
+                fieldTypes.ForEach(x =>
+                {
+                    var f = "[" + fieldType + " :: " + x.Name + "]";
+                    var t = "[FIELD" + x.ID + "]";
+                    desc = desc.Replace(t, f);
+                });
+                fields.form["@description"] = desc;
+                return JsonConvert.DeserializeXNode(fields.ToString(), "fields").ToString();
+            }
+            return data;
+        }
+
+        private string FormatMessageBodyTemplate( string type, List<FieldType> fieldTypes, string data)
+        {
+            dynamic settings = XmlToDynamic(data);
+            if(settings != null && settings.MessageBodyTemplate != null)
+            {
+                string msg = settings.MessageBodyTemplate;
+                var fieldType = type == "IssueType" ? "issueField" : "assetField";
+                fieldTypes.ForEach(x =>
+                {
+                    var f = "[" + fieldType + " :: " + x.Name + "]";
+                var t = "[FIELD" + x.ID + "]";
+                    msg = msg.Replace(f, t);
+                });
+                settings.MessageBodyTemplate = msg;
+                return JsonConvert.DeserializeXNode(settings.ToString(), "settings").ToString();
+            }
+            return data;
+        }
+
+        private string DeFormatMessageBodyTemplate(string type, List<FieldType> fieldTypes, string data)
+        {
+            dynamic settings = XmlToDynamic(data);
+            if (settings != null && settings.MessageBodyTemplate != null)
+            {
+                string msg = settings.MessageBodyTemplate;
+                var fieldType = type == "IssueType" ? "issueField" : "assetField";
+                fieldTypes.ForEach(x =>
+                {
+                    var f = "[" + fieldType + " :: " + x.Name + "]";
+                    var t = "[FIELD" + x.ID + "]";
+                    msg = msg.Replace(t, f);
+                });
+                settings.MessageBodyTemplate = msg;
+                return JsonConvert.DeserializeXNode(settings.ToString(), "settings").ToString();
+            }
+            return data;
+        }
+
 
         [Route("type/{id:int}/delete")]
         public HttpResponseMessage DeleteWorkflow(int id)
