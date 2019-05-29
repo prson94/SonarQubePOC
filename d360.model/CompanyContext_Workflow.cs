@@ -1083,7 +1083,7 @@ namespace d360.model
                                 var actionFieldType = FieldTypes.FirstOrDefault(x => x.Object == "IssueType" && x.ID == actionField.FieldTypeID);
                                 if(actionFieldType.Type == "Lookup")
                                 {
-                                    var lookupSql = @"select top 1 Value, Text from [dbo].[FieldLookupValue]
+                                    var lookupSql = @"select top 1 Value from [dbo].[FieldLookupValue]
                                         where LookupObjectType = @Object and LookupObjectID = @ObjectId and Text = @Value";
                                     var lookupValue = Query<int?>(lookupSql, new { Object = actionFieldType.LookupObjectType, ObjectId = actionFieldType.LookupObjectID, Value = actionField?.FormattedValue }).FirstOrDefault();
                                     val = lookupValue.ToString();
