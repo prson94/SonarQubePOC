@@ -252,6 +252,8 @@ namespace d360.model
 
         public DbSet<AssetTypeLevel> AssetTypeLevels { get; set; }
 
+        public DbSet<Tag> Tags { get; set; }
+
         public DbSet<TaxonomyType> TaxonomyTypes { get; set; }
 
         public DbSet<AuditField> AuditFields { get; set; }
