@@ -277,6 +277,36 @@ where	ExecutionID = @executionID
          new { executionID, msg }, commandTimeout: timeout);
         }
 
+        private void MergeAssetDisplayValues(Guid executionID, SqlTransaction trans, int beginItemNumber, int endItemNumber, int timeout = 3600)
+        {
+            Connection.Execute($@"
+merge       AssetDisplayValue as T
+using       (
+                select  A.AssetID as ID,
+                        ADV.DisplayValue,
+                        CONVERT(NVARCHAR(32), HashBytes('SHA1', ADV.DisplayValue), 2) as DisplayValueHash,
+                        SUBSTRING(ADV.DisplayValue, 1, 250) as DisplayValuePrefix
+                from    api.ExecutionAsset A
+                        cross apply GetAssetDisplayValueByID(A.AssetID) ADV
+                where   A.ExecutionID = @executionID
+                        and A.ItemNumber between {beginItemNumber} and {endItemNumber} 
+                        and A.Success is null 
+                        and A.[Object] not in( 'FusionAttribute', 'FusionQueryAttribute')
+                        and ADV.DisplayValue is not null
+            ) as S 
+on          ( T.AssetID = S.ID )
+when		matched then
+update		set
+				T.DisplayValue = S.DisplayValue,
+                T.DisplayValueHash = S.DisplayValueHash,
+                T.[DisplayValuePrefix] = S.DisplayValuePrefix,
+                T.UpdatedOn = @dt
+when		not matched by target then
+insert		(AssetID, DisplayValue, DisplayValueHash, DisplayValuePrefix, UpdatedOn)
+values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, @dt);",
+            new { executionID, r = CurrentResourceID, dt = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
+        }
+
         private void MergeFields(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600)
         {
             Connection.Execute($@"
@@ -2600,6 +2630,9 @@ from	api.ExecutionAsset T
                                         {
                                             MergeJsonFieldProperties(execution.ExecutionID, trans, jsonFieldTypes, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, fieldJsonPropertyLoadLimitToTopLevel);
                                         }
+
+                                        // Must execute BEFORE the Success flag is updated below.
+                                        MergeAssetDisplayValues(execution.ExecutionID, trans, beginItemNumber, endItemNumber, timeout);
 
                                         // Update success flag.
                                         Connection.Execute(
