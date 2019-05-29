@@ -142,7 +142,7 @@ set     T.ParentUid = S.Uid,
         T.ParentObject = S.Object,
         T.ParentObjectID = S.ObjectID
 from    api.ExecutionAsset T
-        inner join [Intersect] I on T.ExecutionID = @executionID and I.IntersectTypeID = T.IntersectTypeID and I.Object = T.Object and I.ObjectID = T.ObjectID
+        inner join [Intersect] I on T.ExecutionID = @executionID and I.IntersectTypeID = T.IntersectTypeID and I.Object = T.Object and I.ObjectID = T.ObjectID and T.ParentUid is null
         inner join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID;",
             new { executionID, assetTypeID = at.ID }, commandTimeout: timeout);
 
@@ -2013,14 +2013,12 @@ from	IntersectType I
                         LogFieldLookupErrors(execution.ExecutionID, at.Object, at.ObjectID, "Asset", timeout);
                         ValidateAssetAndParent(execution.ExecutionID, at.ID, timeout);
 
-                        if (isInsert)
+                        LogParentErrors(execution.ExecutionID, timeout);                // If you cannot find parent based on Uids provided.
+
+                        if (!isInsert)
                         {
-                            LogParentErrors(execution.ExecutionID, timeout);                // If you cannot find parent based on Uids provided.
-                        }
-                        else
-                        {
-                            LogAssetErrors(execution.ExecutionID, timeout);                 // If you cannot find asset based on Uids provided.
-                            LoadMissingKeyFields(execution.ExecutionID, at, timeout);    // Get missing key fields if this is an update.
+                            LogAssetErrors(execution.ExecutionID, timeout);             // If you cannot find asset based on Uids provided.
+                            LoadMissingKeyFields(execution.ExecutionID, at, timeout);   // Get missing key fields if this is an update.
                         }
 
                         #region Generate proposed key hash and compare against existing data.
@@ -2565,7 +2563,7 @@ from	api.ExecutionAsset T
 
                                         #region Parent/Child Relationship
 
-                                        if (isInsert && intersectTypeID.HasValue)
+                                        if (intersectTypeID.HasValue)
                                         {
                                             Connection.Execute($@"
     merge       [Intersect] as T
@@ -2582,6 +2580,11 @@ from	api.ExecutionAsset T
                         and ObjectID is not null 
                 ) as S
     on          ( T.IntersectTypeID = S.IntersectTypeID and S.Object = T.Object and S.ObjectID = T.ObjectID )
+    when matched then
+        update 
+        set     T.Subject = S.ParentObject,
+                T.SubjectID = S.ParentObjectID,
+                T.UpdatedBy = @R
     when not matched by target then
 	    insert  (IntersectTypeID, Subject, SubjectID, Object, ObjectID, CreatedBy, UpdatedBy)
 	    values  (S.IntersectTypeID, S.ParentObject, S.ParentObjectID, S.Object, S.ObjectID, @R, @R);",

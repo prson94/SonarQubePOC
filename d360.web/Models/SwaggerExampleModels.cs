@@ -59,6 +59,7 @@ namespace d360.web.Models
                 {
                     ExecutionItemUid = Guid.Empty,
                     Uid = Guid.Empty,
+                    ParentUid = Guid.Empty,
                     Fields = new Dictionary<string, string>() {
                         { "MyApiFieldName1", "My Field value" },
                         { "MyApiFieldName2", "My Field value" }
