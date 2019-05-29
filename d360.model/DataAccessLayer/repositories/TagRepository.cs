@@ -156,5 +156,61 @@ namespace d360.model.DataAccessLayer
 
             return model;
         }
+
+        public TagApiModel UpdateTag(Guid uid, TagApiModel model)
+        {
+            if (model == null)
+            {
+                throw new Exception("Invalid tag specified [null model].");
+            }
+
+            if (string.IsNullOrEmpty(model.Value))
+            {
+                throw new Exception("Invalid tag specified [no value].");
+            }
+
+            if (model.Value.Length > 250)
+            {
+                throw new Exception("Invalid tag specified [too long].");
+            }
+
+            if(uid == Guid.Empty)
+            {
+                throw new Exception("Invalid uid specified.");
+            }
+
+            if(uid != model.uid)
+            {
+                throw new Exception("Invalid update tag request specified uid doesnt match model uid.");
+            }
+
+            var existingTag = companyContext.Tags.FirstOrDefault(x => x.uid == uid);
+
+            if(existingTag == null)
+            {
+                throw new Exception("Invalid uid no tag exists with the specified uid.");
+            }
+
+            existingTag.Value = model.Value;
+            existingTag.UpdatedBy = companyContext.CurrentResourceID;
+            existingTag.UpdatedOn = DateTime.UtcNow;
+            
+            companyContext.SaveChanges();
+
+            var updateUser = companyContext.GlobalReportingResources.First(x => x.ResourceID == companyContext.CurrentResourceID);
+
+            var createUser = companyContext.GlobalReportingResources.FirstOrDefault(x => x.ResourceID == existingTag.CreatedBy);
+            
+            model.UpdatedOn = existingTag.UpdatedOn.GetValueOrDefault();            
+            model.UpdatedByUid = updateUser.Uid;
+            model.CreatedOn = existingTag.CreatedOn.GetValueOrDefault();
+
+            if (createUser != null)
+            {
+                model.CreatedByUid = createUser.Uid;
+            }
+
+            return model;
+        }
     }
 }
