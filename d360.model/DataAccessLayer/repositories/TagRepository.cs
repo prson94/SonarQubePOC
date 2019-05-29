@@ -1,4 +1,5 @@
 ﻿using d360.core.entities;
+using d360.core.enums;
 using Dapper;
 using System;
 using System.Collections.Generic;
@@ -15,6 +16,17 @@ namespace d360.model.DataAccessLayer
         {
             this.companyContext = context;
         }
+
+        public bool DeleteTag(Guid uid)
+        {
+            var model = companyContext.Filter<Tag>(i => i.uid == uid).SingleOrDefault();
+
+            if (model == null && model.State != State.Deleted) return false;
+                
+            model.State = State.Deleted;
+            return companyContext.SaveChanges() > 0;
+        }
+
 
         public async Task<TagApiModelWrapper> GetTags(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
@@ -40,6 +52,9 @@ namespace d360.model.DataAccessLayer
 
 
             List<string> queryFilters = new List<string>();
+
+            dbArgs.Add("@state", State.Active);
+            queryFilters.Add($"t.[state] = @state");
 
 
             if (queryParams.ToList().Any(q => q.Key.ToLower() == "uid"))
