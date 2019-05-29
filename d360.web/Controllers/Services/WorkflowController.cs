@@ -1590,6 +1590,8 @@ order by wi.StartedOn desc";
                     else
                     {
                         var type = Company.WorkflowTypes.Find(model.Type.ID);
+                        bool isActiveStatusChanged = type.State != model.Type.State;
+
                         type.Name = model.Type.Name;
                         type.Description = model.Type.Description;
                         type.State = model.Type.State;
@@ -1597,8 +1599,25 @@ order by wi.StartedOn desc";
                         type.UpdatedBy = Company.CurrentResourceID;
 
 
-                        var currentVersion = Company.WorkflowVersions.Where(v => v.TypeID == type.ID).OrderByDescending(v => v.Version).First();
+                        var currentVersion = Company.WorkflowVersions.Where(v => v.TypeID == type.ID).OrderByDescending(v => v.Version).Select(x=> new { x.ID, x.Version }).First();
                         versionID = currentVersion.ID;
+
+                        //Create new workflow version for every save except when we are changing status from active to inactive or vice versa
+                        if (!isActiveStatusChanged)
+                        {
+                            var version = new WorkflowVersion();
+                            version.TypeID = type.ID;
+                            version.CreatedBy = Company.CurrentResourceID;
+                            version.CreatedOn = DateTime.UtcNow;
+                            version.UpdatedBy = Company.CurrentResourceID;
+                            version.UpdatedOn = DateTime.UtcNow;
+                            version.Version = currentVersion.Version + 1;
+
+                            Company.WorkflowVersions.Add(version);
+                            Company.SaveChanges();
+                            newVersion = true;
+                            versionID = version.ID;
+                        }
 
                         //the current version is published
                         if (type.PublishedVersionID == versionID && model.Nodes.Count > 0 && model.Links.Count > 0 && model.Type.PublishedVersionID == -1)
