@@ -1019,11 +1019,19 @@ where	S.SourceID is null;", new { f = FusionID }, commandTimeout: ExecuteQueryTi
             //COMPARE FUSION ATTRIBUTE INITIAL VALUE TO NEW ONE           
             foreach (var x in _workArea.FusionAttributeTempValues)
             {
-
                 string oldValue = string.Empty;
                 string action = string.Empty;
 
-                DetermineItemChange(_workArea.ExistingFusionAttributes, x.Name, x.SourceID, out action, out oldValue);
+                // no need if the action specified is delete to verify simply call a delete a delete
+                if(x.Action == Action.Delete)
+                {
+                    _workArea.Changes.DeleteCount++;
+                    action = "D";
+                }
+                else
+                {
+                    DetermineItemChange(_workArea.ExistingFusionAttributes, x.Name, x.SourceID, out action, out oldValue);
+                }
 
                 if (!string.IsNullOrEmpty(action))
                     _workArea.Changes.ChangedValues.Add(new FusionChangeTableValue(x, oldValue, action));
