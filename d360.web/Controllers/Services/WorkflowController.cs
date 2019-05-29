@@ -2012,7 +2012,7 @@ order by wi.StartedOn desc";
             if (fields != null && fields.form != null && fields.form["@description"] != null)
             {
                 string desc = fields.form["@description"];
-                var fieldType = type == "IssueType" ? "issueField" : "assetField";
+                var fieldType = type == "IssueType" ? "Action Field" : "Asset Field";
                 fieldTypes.ForEach(x =>
                 {
                     var f = "[" + fieldType + " :: " + x.Name + "]";
@@ -2031,7 +2031,7 @@ order by wi.StartedOn desc";
             if (fields != null && fields.form != null && fields.form["@description"] != null)
             {
                 string desc = fields.form["@description"];
-                var fieldType = type == "IssueType" ? "issueField" : "assetField";
+                var fieldType = type == "IssueType" ? "Action Field" : "Asset Field";
                 fieldTypes.ForEach(x =>
                 {
                     var f = "[" + fieldType + " :: " + x.Name + "]";
@@ -2050,7 +2050,7 @@ order by wi.StartedOn desc";
             if(settings != null && settings.MessageBodyTemplate != null)
             {
                 string msg = settings.MessageBodyTemplate;
-                var fieldType = type == "IssueType" ? "issueField" : "assetField";
+                var fieldType = type == "IssueType" ? "Action Field" : "Asset Field";
                 fieldTypes.ForEach(x =>
                 {
                     var f = "[" + fieldType + " :: " + x.Name + "]";
@@ -2069,7 +2069,7 @@ order by wi.StartedOn desc";
             if (settings != null && settings.MessageBodyTemplate != null)
             {
                 string msg = settings.MessageBodyTemplate;
-                var fieldType = type == "IssueType" ? "issueField" : "assetField";
+                var fieldType = type == "IssueType" ? "Action Field" : "Asset Field";
                 fieldTypes.ForEach(x =>
                 {
                     var f = "[" + fieldType + " :: " + x.Name + "]";

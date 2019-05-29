@@ -53,7 +53,7 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked {
                     if (this.objectType == 'IntersectType')
                         this.fields = this.fields.concat(_.cloneDeep(this.relationshipFields));
 
-                    let fieldType = this.objectType == "IssueType" ? "issueField" : "assetField";
+                    let fieldType = this.objectType == "IssueType" ? "Action Field" : "Asset Field";
                    
                     r.forEach(f => {
                         this.fields.push({
