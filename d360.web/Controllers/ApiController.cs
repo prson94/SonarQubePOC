@@ -4784,7 +4784,7 @@ from    ResponsibilityTypeRelationRule R
         {
             var joins = "";
             var columns = "";
-            getDynamicFieldJoinStatements(id, "Policy", out joins, out columns, false, false);
+            getDynamicFieldJoinStatements(id, "Policy", out joins, out columns, false, false,true,false,"A.ObjectID");
 
             var permissionSql = @"case when exists (
                                         select 1 from UserAssetPermissions(@r, OA.AssetTypeID) u where u.PermissionsBitMask & 2 = 2 and (u.AssetID = OA.ID  or (u.AssetID = 0 and u.AssetTypeID = OA.AssetTypeID))
