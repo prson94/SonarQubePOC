@@ -1064,7 +1064,7 @@ namespace d360.model
                     {
                         val = GetFieldValueFromFormResponse(item, itemStep.ItemID);
 
-                        if (DateTime.TryParse(val, out DateTime tempDate))
+                        if (DateTime.TryParse(val, out DateTime tempDate) && item.FieldID.ToString().Contains("date"))
                         {
                             val = tempDate.Date.ToShortDateString();
                         }
@@ -1092,12 +1092,12 @@ namespace d360.model
                                 {
                                     val = actionField?.FormattedValue;
                                 }
-                            }
-                        }
 
-                        if (DateTime.TryParse(val, out DateTime tempDate))
-                        {
-                            val = tempDate.Date.ToShortDateString();
+                                if (DateTime.TryParse(val, out DateTime tempDate) && (actionFieldType.Type == "Date" || actionFieldType.Type == "DateTime"))
+                                {
+                                    val = tempDate.Date.ToShortDateString();
+                                }
+                            }
                         }
                     }
 
