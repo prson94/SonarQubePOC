@@ -20,6 +20,9 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
 export class ArtifactListComponent extends ArtifactBaseComponent implements OnInit, OnDestroy {
     private artifactType: ArtifactType;
     private sub: any;
+    private currentAreaNameSubscription: any;
+    private currentAreaName: string;
+
 
     constructor(private route: ActivatedRoute,
         private router: Router,
@@ -34,6 +37,10 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
     ngOnInit() {
         this.sub = this.route.params.subscribe(params => {
             let artifactTypeId = +params['artifactTypeId']; // (+) converts string 'id' to a number
+            this.currentAreaNameSubscription =
+                this.headerBreadcrumbService
+                    .getAreaName('ArtifactType', artifactTypeId)
+                    .subscribe(result => { this.currentAreaName = result });
             this.isLoading = true;
             this.headerBreadcrumbService.setCurrentObjectInfo('ArtifactType', artifactTypeId);
             this.logAction('open', 'ArtifactType', artifactTypeId);
@@ -44,7 +51,7 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
                     this.artifactType = artifactType;
                     this.setObjectInfo('ArtifactType', this.artifactType.ID);
                     this.headerBreadcrumbService.clearBreadcrumbs();
-                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.area, this.areaLink));
+                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : this.folderTitle, this.areaLink));
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.artifactType.Name, this.router.url));
                     this.clearSidebar();
                     this.setBrowserTitle(this.titleService, this.artifactType.Name);

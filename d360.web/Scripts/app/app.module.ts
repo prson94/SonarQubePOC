@@ -30,6 +30,7 @@ import {TooltipSingletonService} from './services/tooltip-singleton.service'
 import {AuthenticationConnectionBackend} from './authentication-connection-backend';
 import {GovernPostRequestInterceptor} from "./http-interceptors/govern-post-request.interceptor";
 import { CookieService } from './services/cookie.service';
+import { SiteMenuService } from './services/site-menu.service';
 
 export function getLocale() {
     console.log(navigator.language);
@@ -85,7 +86,8 @@ export function getLocale() {
             }
         },
 
-        CookieService
+        CookieService,
+        SiteMenuService
     ],
 })
 

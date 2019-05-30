@@ -25,7 +25,9 @@ import {GridDefinitionService} from '../../services/grid-definition.service';
 })
 
 export class ModelItemStructureComponent extends BaseComponent implements OnInit, OnDestroy {
-    sub: any;
+    routeParamsSubscription: any;
+    private currentAreaNameSubscription: any;
+    private currentAreaName: string;
     rightSub: any;
 
     model: Model;
@@ -63,7 +65,6 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
         super();
 
         this.rightSidebarService = rightSidebarService;
-
         this.theDeleteCallback = this.deleteModelHierarchy.bind(this);
         router.events.subscribe(
             (value) => {
@@ -74,12 +75,17 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
 
     ngOnInit() {
 
-        this.sub = this.route.params.subscribe(params => {
+        this.routeParamsSubscription = this.route.params.subscribe(params => {
 
             this.modelId = +params['modelId'];
 
             this.setObjectInfo('TaxonomyType', this.modelId);
             this.setCommonRightSideBar(true);
+            this.currentAreaNameSubscription =
+                this.headerBreadcrumbService
+                    .getAreaName('TaxonomyType', this.modelId)
+                    .subscribe(result => { this.currentAreaName = result });
+
 
             this.getFieldsDefinition();
 
@@ -94,9 +100,11 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
                     this.searchValue = "";
                     this.model = result;
 
-                    this.headerBreadcrumbService.clearBreadcrumbs();
-                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Models', `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`));
-                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.Name, SiteUrlHelpers.getObjectUrl('TAXONOMYTYPE', this.model.ID)));
+                    this.headerBreadcrumbService.getFolderTitle('#Models').then((res) => {
+                        this.headerBreadcrumbService.clearBreadcrumbs();
+                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : res, `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`));
+                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.Name, SiteUrlHelpers.getObjectUrl('TAXONOMYTYPE', this.model.ID)));
+                    });
 
                     this.loadModelHierarchy(this.modelId);
 
@@ -115,7 +123,8 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
 
     ngOnDestroy() {
         this.clearSidebar();
-        this.sub.unsubscribe();
+        this.routeParamsSubscription.unsubscribe();
+        this.currentAreaNameSubscription.unsubscribe();
     }
 
     private loadModelHierarchy(modelId: number) {

@@ -102,7 +102,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
             id => {
                 this.showHierarchy(id);
             });
-
+        
         this.sub = this.route.params.subscribe(params => {
             let newModelId = +params['modelId'];
             let hierarchyId = +params['id'];// if hierarchyId is passed via alternative route to workaround bug with router escaping ; = and other chars.
@@ -144,11 +144,11 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
         this.modelsService.getModel(this.modelId).subscribe(
             result => {
                 this.model = result;
-
-                this.headerBreadcrumbService.clearBreadcrumbs();
-                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Models', `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`));
-                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.Name, SiteUrlHelpers.getObjectUrl('TAXONOMYTYPE', this.model.ID)));
-
+                this.headerBreadcrumbService.getFolderTitle("#Models").then((res) => {
+                    this.headerBreadcrumbService.clearBreadcrumbs();
+                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res, `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`));
+                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.Name, SiteUrlHelpers.getObjectUrl('TAXONOMYTYPE', this.model.ID)));
+                });
                 this.loadModelHierarchy(this.modelId, hierarchyId);
             }
         );

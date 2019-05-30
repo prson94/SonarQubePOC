@@ -68,7 +68,9 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
     policyType: PolicyType;
     treeNodeArray: TreeNode[] = [];
     selected: Policy;
-    sub: any;
+    routeParamsSubscription: any;
+    private currentAreaNameSubscription: any;
+    private currentAreaName: string;
     treeSub: any;
 
     private showSocialScoreBar = true;
@@ -90,22 +92,7 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
     ngOnInit() {
         this.setBrowserTitle(this.titleService, '- Policy');
 
-        this.headerBreadcrumbService.clearBreadcrumbs();
-        this.headerBreadcrumbService.clearCurrentObjectInfo();
-        this.headerBreadcrumbService.showBreadcrumb(
-            new Breadcrumb(
-                'Policy',
-                `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_POLICY_CLASSIFICATION}`
-            )
-        );
-
-        this.treeSub = this.headerBreadcrumbService.breadcrumbTreeSource$.subscribe(
-            id => {
-                this.showHierarchy(id);
-            }
-        );
-
-        this.sub = this.route.params.subscribe(params => {
+        this.routeParamsSubscription = this.route.params.subscribe(params => {
             const newPolicyTypeId = +params['policyTypeId'];
             // if hierarchyId is passed via alternative route to workaround
             // bug with router escaping ; = and other chars.
@@ -115,12 +102,36 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
                 hierarchyId = +params['hierarchyId'] || 0;
             }
 
+            this.currentAreaNameSubscription =
+                this.headerBreadcrumbService
+                    .getAreaName('PolicyType', newPolicyTypeId)
+                    .subscribe(result => { this.currentAreaName = result });
+
+            
+
             if (hierarchyId != 0) {
                 this.headerBreadcrumbService.setCurrentObjectInfo('Policy', hierarchyId);
             } else {
                 this.headerBreadcrumbService.setCurrentObjectInfo('PolicyType', newPolicyTypeId);
             }
             this.setObjectInfo('Policy', hierarchyId);
+
+            this.headerBreadcrumbService.getFolderTitle('#Policy').then((res) => {
+                this.headerBreadcrumbService.clearBreadcrumbs();
+                this.headerBreadcrumbService.clearCurrentObjectInfo();
+                this.headerBreadcrumbService.showBreadcrumb(
+                    new Breadcrumb(
+                        this.currentAreaName ? this.currentAreaName : res,
+                        `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_POLICY_CLASSIFICATION}`
+                    )
+                );
+            });
+
+            this.treeSub = this.headerBreadcrumbService.breadcrumbTreeSource$.subscribe(
+                id => {
+                    this.showHierarchy(id);
+                }
+            );
 
             if (this.policyTypeId != newPolicyTypeId) {
                 this.policyTypeId = newPolicyTypeId;
@@ -145,7 +156,8 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
 
     ngOnDestroy() {
         this.clearSidebar();
-        this.sub.unsubscribe();
+        this.routeParamsSubscription.unsubscribe();
+        this.currentAreaNameSubscription.unsubscribe();
         this.treeSub.unsubscribe();
     }
 
@@ -154,20 +166,21 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
             .then(
                 result => {
                     this.policyType = result;
-
-                    this.headerBreadcrumbService.clearBreadcrumbs();
-                    this.headerBreadcrumbService.showBreadcrumb(
-                        new Breadcrumb(
-                            'Policies',
-                            `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_POLICY_CLASSIFICATION}`
-                        )
-                    );
-                    this.headerBreadcrumbService.showBreadcrumb(
-                        new Breadcrumb(
-                            this.policyType.Name,
-                            `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${this.policyType.ID}/structure`
-                        )
-                    );
+                    this.headerBreadcrumbService.getFolderTitle('#Policy').then((res) => {
+                        this.headerBreadcrumbService.clearBreadcrumbs();
+                        this.headerBreadcrumbService.showBreadcrumb(
+                            new Breadcrumb(
+                                this.currentAreaName ? this.currentAreaName : res,
+                                `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_POLICY_CLASSIFICATION}`
+                            )
+                        );
+                        this.headerBreadcrumbService.showBreadcrumb(
+                            new Breadcrumb(
+                                this.policyType.Name,
+                                `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${this.policyType.ID}/structure`
+                            )
+                        );
+                    });
 
                     this.loadPolicyItems(this.policyTypeId, hierarchyId).then(
                         n => {

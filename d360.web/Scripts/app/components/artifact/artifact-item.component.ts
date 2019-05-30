@@ -31,7 +31,9 @@ declare var CompanySettings;
 
 export class ArtifactItemComponent extends ArtifactBaseComponent implements OnInit, OnDestroy {
     private artifact: Artifact
-    private sub: any;        
+    private sub: any; 
+    private currentAreaNameSubscription: any;
+    private currentAreaName: string;
     private artifactTypeId: number;
     private messages: MessageBarItem[]=[];
     private surveyType: SurveyType;
@@ -47,9 +49,9 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
         webAnalyticsService: WebAnalyticsService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         private surveysService: SurveysService,
-        protected permissionsService: PermissionsService            
+        protected permissionsService: PermissionsService
     ) {
-        super(headerBreadcrumbService, rightSidebarService, webAnalyticsService);        
+        super(headerBreadcrumbService, rightSidebarService, webAnalyticsService);       
     }
 
     ngOnInit() {
@@ -60,7 +62,11 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
             this.logAction('open', 'Artifact', artifactId);
             this.isLoading = true;
             this.messages = [];
-            
+            this.currentAreaNameSubscription =
+                this.headerBreadcrumbService
+                    .getAreaName('ArtifactType', this.artifactTypeId)
+                    .subscribe(result => { this.currentAreaName = result });
+
             this
                 .loadPermissions(this.permissionsService, StringConstants.ObjectArtifact, artifactId)
                 .then(p => {
@@ -75,6 +81,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
 
     ngOnDestroy() {
         this.sub.unsubscribe();
+        this.currentAreaNameSubscription.unsubscribe();
         this.clearSidebar();
     }
 
@@ -98,6 +105,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                         index++;
 
                         if (index == this.artifact.Breadcrumbs.length) {
+                            //last item in the breadcrumb
                             this
                                 .headerBreadcrumbService
                                 .showBreadcrumb(
@@ -110,18 +118,15 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                                     )
                                 )
                             ;
-                        } else if (index == 1) {
-                            //top level link
+                        } else if (index == 1) {                           
+                            let areaBreadcrumb = new Breadcrumb(
+                                this.currentAreaName ? this.currentAreaName : this.folderTitle,
+                                this.areaLink,
+                                breadcrumb.Active
+                            );
                             this
                                 .headerBreadcrumbService
-                                .showBreadcrumb(
-                                    new Breadcrumb(
-                                        this.area,
-                                        this.areaLink,
-                                        breadcrumb.Active
-                                    )
-                                )
-                            ;
+                                .showBreadcrumb(areaBreadcrumb);
                         } else {
                             this
                                 .headerBreadcrumbService

@@ -7866,6 +7866,16 @@ from	    AssetType T where T.Object = 'TaxonomyType' ");
             return await Company.QueryAsync<BreadcrumbTypeAheadModel>(sql, new { typeName = new DbString { Value = objectType.ToString(), IsFixedLength = true, Length = 30, IsAnsi = true }, typeId = objectId, search = $"{q}%" });
         }
 
+        [Route("breadcrumb/getArea")]
+        public async Task<string> GetBreadcrumbAreaByType(SystemObjects objectType, int objectId)
+        {
+            //var sql = $"select top {num} ad.DisplayValue as Name, u.Url  from asset ast inner join assettype astt on (ast.assetTypeID = astt.id)  inner join AssetDisplayValue AD on AD.assetid = ast.id cross apply [dbo].GetAssetUrlById(ast.ID) u where ast.[object] = @typeName and astt.objectId = @typeId and ad.DisplayValuePrefix like @search";
+            var sql = $" select Title FROM [dbo].[SiteNav] WHERE ID = (Select top 1 ParentID FROM [dbo].[SiteNav] WHERE [Object] = @typeName and [objectId] = @typeId)";
+
+            var res = await Company.QueryAsync<string>(sql, new { typeName = new DbString { Value = objectType.ToString(), IsFixedLength = true, Length = 30, IsAnsi = true }, typeId = objectId });
+            return res.FirstOrDefault();
+        }
+
         #endregion
 
         #region Reference - new replaces domain

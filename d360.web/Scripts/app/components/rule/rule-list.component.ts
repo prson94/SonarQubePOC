@@ -31,7 +31,9 @@ import * as _ from 'lodash';
 })
 
 export class RuleListComponent extends BaseComponent implements OnInit, OnDestroy {
-    sub: any;
+    routeParamsSubscription: any;
+    private currentAreaNameSubscription: any;
+    private currentAreaName: string;
     ruleTypeId: number;
     private rules: any[] = [];
     private selected: Rule;
@@ -70,9 +72,13 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     ngOnInit() {
-        this.sub = this.route.params.subscribe(params => {
+        this.routeParamsSubscription = this.route.params.subscribe(params => {
 
             this.ruleTypeId = +params['ruleTypeId'];
+            this.currentAreaNameSubscription =
+                this.headerBreadcrumbService
+                    .getAreaName('RuleType', this.ruleTypeId)
+                    .subscribe(result => { this.currentAreaName = result });
             this.headerBreadcrumbService.setCurrentObjectInfo('RuleType', this.ruleTypeId);
 
             this.loadPermissions(this.permissionsService, StringConstants.ObjectRuleType, this.ruleTypeId);
@@ -85,10 +91,11 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
                     this.isLoading = false;
                     this.ruleType = result;
                     this.setObjectInfo('RuleType', this.ruleType.ID);
-                    this.headerBreadcrumbService.clearBreadcrumbs();
-                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Rules', undefined));
-                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.ruleType.Name, `${SiteUrlHelpers.SITE_URL_RULE_ROOT}/${this.ruleTypeId}`));
-
+                    this.headerBreadcrumbService.getFolderTitle('#Data Quality').then((res) => {
+                        this.headerBreadcrumbService.clearBreadcrumbs();
+                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : res, undefined));
+                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.ruleType.Name, `${SiteUrlHelpers.SITE_URL_RULE_ROOT}/${this.ruleTypeId}`));
+                    });
                     this.loadPermissions(this.permissionsService, StringConstants.ObjectRuleType, this.ruleTypeId);
 
                     this.setCommonRightSideBar(false, false, this.ruleType.HasDashboards);
@@ -102,7 +109,8 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
 
     ngOnDestroy() {
         this.clearSidebar();
-        this.sub.unsubscribe();
+        this.currentAreaNameSubscription.unsubscribe();
+        this.routeParamsSubscription.unsubscribe();
     }
 
     getFieldsDefinition() {

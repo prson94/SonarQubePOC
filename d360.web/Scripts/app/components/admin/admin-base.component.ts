@@ -19,6 +19,7 @@ export class AdminBaseComponent extends BaseComponent {
     }
 
     setCommonItems() {
+        this.area = ['Artifacts'].indexOf(this.areaName) !== -1 ? 'Configuration' : "Administration";
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.area));
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.areaName, this.areaLink));     

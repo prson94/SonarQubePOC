@@ -37,7 +37,9 @@ import {StringConstants} from '../../static/string-constants';
 })
 
 export class PolicyItemStructureComponent extends BaseComponent implements OnInit, OnDestroy {
-    sub: any;
+    routeParamsSubscription: any;
+    private currentAreaNameSubscription: any;
+    private currentAreaName: string;
 
     policyType: PolicyType;
     policies: Policy[] = [];
@@ -58,6 +60,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
 
     theDeleteCallback: Function;
 
+
     constructor(
         protected titleService: Title,
         private headerActionsService: HeaderActionsService,
@@ -72,7 +75,6 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
         private gridDefinitionService: GridDefinitionService
     ) {
         super();
-
         this.rightSidebarService = rightSidebarService;
         this.theDeleteCallback = this.deletePolicyItem.bind(this);
         router.events.subscribe(
@@ -83,10 +85,18 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
     }
 
     ngOnInit() {
-        this.sub = this.route.params.subscribe(
+        this.routeParamsSubscription = this.route.params.subscribe(
             params => {
                 this.policyTypeId = +params['policyTypeId'];
                 this.headerBreadcrumbService.setCurrentObjectInfo('PolicyType', this.policyTypeId);
+
+
+                this.currentAreaNameSubscription =
+                    this.headerBreadcrumbService
+                        .getAreaName('PolicyType', this.policyTypeId)
+                        .subscribe(result => { this.currentAreaName = result });
+
+                
 
                 this.setObjectInfo('PolicyType', this.policyTypeId);
                 this.clearSidebar();
@@ -99,19 +109,21 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
                     result => {
 
                         this.policyType = result;
-                        this.headerBreadcrumbService.clearBreadcrumbs();
-                        this.headerBreadcrumbService.showBreadcrumb(
-                            new Breadcrumb(
-                                'Policies',
-                                `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_POLICY_CLASSIFICATION}`
-                            )
-                        );
-                        this.headerBreadcrumbService.showBreadcrumb(
-                            new Breadcrumb(
-                                this.policyType.Name,
-                                `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${this.policyTypeId}/structure`
-                            )
-                        );
+                        this.headerBreadcrumbService.getFolderTitle('#Policy').then((res) => {
+                            this.headerBreadcrumbService.clearBreadcrumbs();
+                            this.headerBreadcrumbService.showBreadcrumb(
+                                new Breadcrumb(
+                                    this.currentAreaName ? this.currentAreaName : res,
+                                    `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_POLICY_CLASSIFICATION}`
+                                )
+                            );
+                            this.headerBreadcrumbService.showBreadcrumb(
+                                new Breadcrumb(
+                                    this.policyType.Name,
+                                    `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${this.policyTypeId}/structure`
+                                )
+                            );
+                        });
 
                         this.loadPolicyHierarchy(this.policyTypeId);
                         this.setBrowserTitle(this.titleService, this.policyType.Name);
@@ -130,7 +142,8 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
 
     ngOnDestroy() {
         this.clearSidebar();
-        this.sub.unsubscribe();
+        this.routeParamsSubscription.unsubscribe();
+        this.currentAreaNameSubscription.unsubscribe();
     }
 
     private loadPolicyHierarchy(policyTypeId: number) {
