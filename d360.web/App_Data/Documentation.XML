@@ -2587,6 +2587,18 @@
             <param name="model">The fusion status log model.</param>
             <returns>The model of the updated fusion status log entry.</returns>
         </member>
+        <member name="T:d360.web.Controllers.V2.IssuesController">
+            <summary>
+            This service houses all endpoints handling user action data.
+            </summary>
+        </member>
+        <member name="M:d360.web.Controllers.V2.IssuesController.Get">
+            <summary>
+            Returns all issue types that are defined in Govern.  
+            
+            </summary>
+            <returns>A list of issue types</returns>
+        </member>
         <member name="T:d360.web.Controllers.V2.LineageController">
             <summary>
             This service houses all endpoints handling glossary-related data such as artifacts and models.
@@ -3008,15 +3020,13 @@
         </member>
         <member name="T:d360.web.Controllers.V2.TagsController">
             <summary>
-            This service houses all endpoints handling glossary-related data such as artifacts and models.
+            This service houses all endpoints handling tag management in Govern
             </summary>
         </member>
         <member name="M:d360.web.Controllers.V2.TagsController.Get">
             <summary>
-            Returns all tags that are defined in Govern.  
-            
-            </summary>
-            <param name="Uid">The uid of a specific tag.</param>        
+            Returns all tags that are defined in Govern.          
+            </summary>        
             <returns>A list of tags</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.TagsController.DeleteById(System.Guid)">
@@ -3025,6 +3035,21 @@
             </summary>
             <param name="uid">The public identifier for the tag.</param>
             <returns>A status for the DELETE request.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.TagsController.PostTag(d360.core.entities.TagApiModel)">
+            <summary>
+            Adds one tag to Govern.
+            </summary>        
+            <param name="model">The tag to be created.</param>
+            <returns>The created tag.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.TagsController.Put(System.Guid,d360.core.entities.TagApiModel)">
+            <summary>
+            Updates the specified tag.
+            </summary>
+            <param name="uid">The unique identifier of the asset cross reference.</param>        
+            <param name="model">The tag to be updated.</param>
+            <returns>The updated tag.</returns>
         </member>
         <member name="M:d360.web.Controllers.D3SApiController.GetFieldFiltersByType(d360.core.SystemObjects,System.Int32)">
             <summary>

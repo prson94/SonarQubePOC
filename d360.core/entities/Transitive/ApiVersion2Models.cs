@@ -119,7 +119,7 @@ namespace d360.core.entities
         [DataMember]
         public Guid? ExecutionItemUid { get; set; }
 
-        [IgnoreDataMember]
+        [DataMember]
         public Guid? ParentUid { get; set; }
 
         [DataMember]

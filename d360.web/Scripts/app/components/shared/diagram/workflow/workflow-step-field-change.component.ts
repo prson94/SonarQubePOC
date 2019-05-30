@@ -188,7 +188,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         }
 
         this.fieldUpdateChange.emit(this.fieldUpdate);
-        if (typeof f !== 'undefined' && f.Object == 'ArtifactType' && this.issueObject != '') {
+        if (typeof f !== 'undefined' && this.issueObject != '' && f.Object != 'IssueType') {
             this.canSelectFromAction = true;
         }
         else this.canSelectFromAction = false;
@@ -228,6 +228,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         }
         this.selectedField['@FormStepId'] = field['@stepId'];
         this.selectedField['@FormLabel'] = field['@label'];
+
     }
 
     add() {
@@ -239,15 +240,8 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         this.formMode = FormMode.Adding;
     }
 
-    formatObjectTypeName(str: any) : string {
-        switch (str) {
-            case "ArtifactType":
-                return "Artifact";
-            case "IssueType":
-                return "Issue";
-            default:
-                return "";
-        }
+    formatObjectTypeName(str: any): string {
+        return str.replace('Type', '');
     }
 
     save() {
@@ -289,15 +283,18 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
 
         let useCurrentDate = field['@UseCurrentDate'] == null ? false : (field['@UseCurrentDate'].toString() == 'true' ? true : false);
         let useFormValue = field['@UseFormValue'] == null ? false : (field['@UseFormValue'].toString() == 'true' ? true : false);
+        let useActionValue = field['@IsActionForm'] == null ? false : (field['@IsActionForm'].toString() == 'true' ? true : false);
+
         let clearValue = field['@ClearValue'] == null ? false : (field['@ClearValue'].toString() == 'true' ? true : false);
 
         if (clearValue || useCurrentDate || useFormValue) {
             delete field['@Value'];
             delete field['@ValueLabel'];
         }
-        if (useFormValue) {
+        if (useFormValue || useActionValue) {
             delete field['@UseCurrentDate'];
             delete field['@ClearValue'];
+            delete field['@UseCurrentDate'];
         }
         if (clearValue) {
             delete field['@UseFormValue'];
@@ -480,9 +477,9 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
     setValueType() {
         if (this.selectedField == null)
             this.valueType = null;
-        else if (this.selectedField['@UseFormValue'] != null && this.selectedField['@IsActionForm'] != 'true')
+        else if (this.selectedField['@UseFormValue'] != null && this.selectedField['@IsActionForm'].toString() != 'true')
             this.valueType = 'form';
-        else if (this.selectedField['@IsActionForm'] != null && this.selectedField['@IsActionForm'] == 'true')
+        else if (this.selectedField['@IsActionForm'] != null && this.selectedField['@IsActionForm'].toString() == 'true')
             this.valueType = 'actionForm';
         else if (this.selectedField['@ClearValue'] != null)
             this.valueType = 'clear';

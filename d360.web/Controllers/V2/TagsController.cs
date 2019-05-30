@@ -18,7 +18,7 @@ using System.Web.Http.Description;
 namespace d360.web.Controllers.V2
 {
     /// <summary>
-    /// This service houses all endpoints handling glossary-related data such as artifacts and models.
+    /// This service houses all endpoints handling tag management in Govern
     /// </summary>
     [
         ApiVersion("2.0"),
@@ -37,10 +37,8 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Returns all tags that are defined in Govern.  
-        /// 
-        /// </summary>
-        /// <param name="Uid">The uid of a specific tag.</param>        
+        /// Returns all tags that are defined in Govern.          
+        /// </summary>        
         /// <returns>A list of tags</returns>
         [
             HttpGet, MapToApiVersion("2.0"), Route(""),
@@ -88,6 +86,75 @@ namespace d360.web.Controllers.V2
             }
 
             return successMessageResponse(HttpStatusCode.OK, "Tag removed.", "Tag successfully removed.");
+        }
+
+
+        /// <summary>
+        /// Adds one tag to Govern.
+        /// </summary>        
+        /// <param name="model">The tag to be created.</param>
+        /// <returns>The created tag.</returns>
+        [
+            HttpPost,
+            Route(""),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "The specified tag was saved, returns the properties of the created tag.", typeof(TagApiModel)),            
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
+        ]
+        public IHttpActionResult PostTag(TagApiModel model)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to create tags."));
+
+            if (model == null)
+                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "You have submitted an invalid or empty request please check your request and try again."));
+
+            TagApiModel result = new TagApiModel();
+            try
+            {
+                result = tagRepository.CreateTag(model);
+            }
+            catch(Exception e)
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error while creating tag", e.Message);
+            }
+            
+            return ResponseMessage(Request.CreateResponse<TagApiModel>(HttpStatusCode.OK, result));
+        }
+
+        /// <summary>
+        /// Updates the specified tag.
+        /// </summary>
+        /// <param name="uid">The unique identifier of the asset cross reference.</param>        
+        /// <param name="model">The tag to be updated.</param>
+        /// <returns>The updated tag.</returns>
+        [
+            HttpPut,
+            MapToApiVersion("2.0"),
+            Route("{uid:Guid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "The specified tag was updated, returns the properties of the created tag.", typeof(TagApiModel)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the tag was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
+        ]
+        public IHttpActionResult Put(Guid uid, TagApiModel model)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to update tags."));
+
+            TagApiModel result = new TagApiModel();
+            try
+            {
+                result = tagRepository.UpdateTag(uid, model);
+            }
+            catch (Exception e)
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while updating tag", e.Message);
+            }
+
+            return ResponseMessage(Request.CreateResponse<TagApiModel>(HttpStatusCode.OK, result));
         }
     }
 }

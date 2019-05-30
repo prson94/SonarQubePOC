@@ -104,9 +104,10 @@
     <Compile Include="entities\Integration\IntegrationUnresolvedRelationItem.cs" />
     <Compile Include="entities\Integration\IntegrationExecutionAssetType.cs" />
     <Compile Include="entities\Integration\IntegrationSetting.cs" />
-    <Compile Include="entities\Issue.cs" />
-    <Compile Include="entities\IssueType.cs" />
-    <Compile Include="entities\IssueTypeRelation.cs" />
+    <Compile Include="entities\Issue\Issue.cs" />
+    <Compile Include="entities\Issue\IssueType.cs" />
+    <Compile Include="entities\Issue\IssueTypeApiModel.cs" />
+    <Compile Include="entities\Issue\IssueTypeRelation.cs" />
     <Compile Include="entities\Metric\MetricAsset.cs" />
     <Compile Include="entities\Metric\MetricAssetVersion.cs" />
     <Compile Include="entities\Metric\MetricAssetVersionCondition.cs" />

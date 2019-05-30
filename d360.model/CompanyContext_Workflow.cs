@@ -1063,6 +1063,7 @@ namespace d360.model
         {
             if (!settings.FieldUpdateSettings.Any()) return;
             var issue = Issues.FirstOrDefault(x => x.ID == objectInfo.ObjectID);
+            Asset asset = null;
             bool isAssetEdited = false;
 
             foreach (var item in settings.FieldUpdateSettings)
@@ -1072,11 +1073,14 @@ namespace d360.model
                 var objectId = objectInfo.ObjectID;
                 var objectType = objectInfo.Object.ToString();
 
-                if (objectInfo.Object.ToString() == "Issue" && item.ObjectType == "Artifact")
+                if (objectInfo.Object.ToString() == "Issue" && item.ObjectType != "Issue")
                 {
                     objectType = issue.Object;
                     objectId = issue.ObjectID;
+                    asset = Assets.Where(x => x.Object == issue.Object && x.ObjectID == issue.ObjectID).FirstOrDefault();
+                    ObjectContext.ObjectStateManager.ChangeObjectState(asset, EntityState.Modified);
                     isAssetEdited = true;
+
                 }
 
                 if (fieldType == null)

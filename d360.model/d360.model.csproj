@@ -111,6 +111,8 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="CompanyContext_MarkitLineage.cs" />
+    <Compile Include="DataAccessLayer\IIssueRepository.cs" />
+    <Compile Include="DataAccessLayer\repositories\IssueRepository.cs" />
     <Compile Include="DataAccessLayer\ITagRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\CrossReferencesRepository.cs" />
     <Compile Include="DataAccessLayer\ICrossReferencesRepository.cs" />
