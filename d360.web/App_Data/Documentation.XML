@@ -3043,6 +3043,14 @@
             <param name="model">The tag to be created.</param>
             <returns>The created tag.</returns>
         </member>
+        <member name="M:d360.web.Controllers.V2.TagsController.Put(System.Guid,d360.core.entities.TagApiModel)">
+            <summary>
+            Updates the specified tag.
+            </summary>
+            <param name="uid">The unique identifier of the asset cross reference.</param>        
+            <param name="model">The tag to be updated.</param>
+            <returns>The updated tag.</returns>
+        </member>
         <member name="M:d360.web.Controllers.D3SApiController.GetFieldFiltersByType(d360.core.SystemObjects,System.Int32)">
             <summary>
             Gets a list of available field-level filters for a grid in the UI. This includes standard/custom fields, relationships, attributes, owner.

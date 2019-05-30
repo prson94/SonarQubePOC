@@ -97,9 +97,8 @@ namespace d360.web.Controllers.V2
         [
             HttpPost,
             Route(""),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
-            SwaggerResponse(HttpStatusCode.OK, "The list of staging results, containing any potential errors. A value of true for the IsSuccess property indicates that the metric was saved for further processing.", typeof(List<BulkMetricTemporaryTableModel>)),
-            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the metric was not found.", typeof(ErrorResponse)),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "The specified tag was saved, returns the properties of the created tag.", typeof(TagApiModel)),            
             SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
         ]
@@ -121,6 +120,40 @@ namespace d360.web.Controllers.V2
                 return errorMessageResponse(HttpStatusCode.InternalServerError, "Error while creating tag", e.Message);
             }
             
+            return ResponseMessage(Request.CreateResponse<TagApiModel>(HttpStatusCode.OK, result));
+        }
+
+        /// <summary>
+        /// Updates the specified tag.
+        /// </summary>
+        /// <param name="uid">The unique identifier of the asset cross reference.</param>        
+        /// <param name="model">The tag to be updated.</param>
+        /// <returns>The updated tag.</returns>
+        [
+            HttpPut,
+            MapToApiVersion("2.0"),
+            Route("{uid:Guid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "The specified tag was updated, returns the properties of the created tag.", typeof(TagApiModel)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the tag was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
+        ]
+        public IHttpActionResult Put(Guid uid, TagApiModel model)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to update tags."));
+
+            TagApiModel result = new TagApiModel();
+            try
+            {
+                result = tagRepository.UpdateTag(uid, model);
+            }
+            catch (Exception e)
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while updating tag", e.Message);
+            }
+
             return ResponseMessage(Request.CreateResponse<TagApiModel>(HttpStatusCode.OK, result));
         }
     }
