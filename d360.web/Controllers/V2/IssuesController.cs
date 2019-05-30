@@ -13,18 +13,18 @@ using System.Web.Http;
 namespace d360.web.Controllers.V2
 {
     /// <summary>
-    /// This service houses all endpoints handling glossary-related data such as artifacts and models.
+    /// This service houses all endpoints handling issue management in Govern.
     /// </summary>
     [
         ApiVersion("2.0"),
         RoutePrefix("api/v{version:apiVersion}/issues"),
         Authorize
     ]
-    public class IssueController : BaseV2ApiController
+    public class IssuesController : BaseV2ApiController
     {
         IIssueRepository issueRepository;
 
-        public IssueController(ICommunityContext community, ICompanyContext company, IIssueRepository repository)
+        public IssuesController(ICommunityContext community, ICompanyContext company, IIssueRepository repository)
             : base(community, company)
         {
             this.issueRepository = repository;
@@ -39,13 +39,9 @@ namespace d360.web.Controllers.V2
             HttpGet, MapToApiVersion("2.0"), Route("types"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A full list of issue types.", typeof(List<IssueTypeApiModel>)),
-            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied")
         ]
         public async Task<HttpResponseMessage> Get()
         {
-            if (!Company.CurrentResourceIsAdmin)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
-
             var issueTypes = await issueRepository.GetIssueTypes();
 
             return Request.CreateResponse(issueTypes);

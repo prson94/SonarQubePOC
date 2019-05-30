@@ -2587,12 +2587,12 @@
             <param name="model">The fusion status log model.</param>
             <returns>The model of the updated fusion status log entry.</returns>
         </member>
-        <member name="T:d360.web.Controllers.V2.IssueController">
+        <member name="T:d360.web.Controllers.V2.IssuesController">
             <summary>
-            This service houses all endpoints handling glossary-related data such as artifacts and models.
+            This service houses all endpoints handling user action data.
             </summary>
         </member>
-        <member name="M:d360.web.Controllers.V2.IssueController.Get">
+        <member name="M:d360.web.Controllers.V2.IssuesController.Get">
             <summary>
             Returns all issue types that are defined in Govern.  
             

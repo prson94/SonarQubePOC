@@ -16,7 +16,7 @@
     <AssemblyName>d360.web</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
-    <UseIISExpress>true</UseIISExpress>
+    <UseIISExpress>false</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -296,7 +296,7 @@
     <Compile Include="Controllers\V2\ErrorsController.cs" />
     <Compile Include="Controllers\V2\ExportTemplatesController.cs" />
     <Compile Include="Controllers\V2\FusionController.cs" />
-    <Compile Include="Controllers\V2\IssueController.cs" />
+    <Compile Include="Controllers\V2\IssuesController.cs" />
     <Compile Include="Controllers\V2\LineageController.cs" />
     <Compile Include="Controllers\V2\MembershipController.cs" />
     <Compile Include="Controllers\V2\MetricsController.cs" />
