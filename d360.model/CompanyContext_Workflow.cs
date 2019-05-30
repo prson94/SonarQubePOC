@@ -1021,6 +1021,44 @@ namespace d360.model
             Database.Connection.Execute(sql, new { obj = @object.ToString(), objectid = objectID, intersectTypeId = intersectTypeId });
         }
 
+        private void UpdateField(int objectId,string objectType,FieldType fieldType, WorkflowFieldUpdateSettings item,string val)
+        {
+            var field = Fields.Where(x => x.ObjectID == objectId && x.ObjectType == objectType && x.FieldTypeID == fieldType.ID).FirstOrDefault();
+
+            if (field == null)
+            {
+                //insert
+                var newField = new Field
+                {
+                    Value = val,
+                    FieldTypeID = fieldType.ID,
+                    ObjectID = objectId,
+                    ObjectType = objectType.ToString(),
+                    UpdatedBy = CurrentResourceID
+                };
+
+                Add<Field>(newField);
+            }
+            else
+            {
+                if (item.AppendValue)
+                {
+                    var oldValues = field.Value?.Split(',').Where(s => !string.IsNullOrEmpty(s.Trim())).Select(x => x.Trim()) ?? new string[0];
+                    var newValues = val?.Split(',').Where(s => !string.IsNullOrEmpty(s.Trim())).Select(x => x.Trim()) ?? new string[0];
+                    newValues = oldValues.Union(newValues).Distinct().OrderBy(x => x);
+                    field.Value = string.Join(",", newValues);
+
+
+                }
+                else
+                {
+                    //update
+                    field.Value = val;
+
+                }
+            }
+            SaveChanges();
+        }
         private void UpdateItemField(WorkflowItemStep itemStep, EventObjectInfo objectInfo, WorkflowItemStepSettingModel settings)
         {
             if (!settings.FieldUpdateSettings.Any()) return;
@@ -1056,109 +1094,80 @@ namespace d360.model
                     Database.Connection.Execute(sql, new { id = objectId, objectType = objectType.ToString(), fieldTypeId = item.FieldID });
 
                 }
-                else
+                else if (item.CurrentDate)
                 {
-                    var val = item.CurrentDate ? DateTime.UtcNow.Date.ToShortDateString() : item.Value;
-                    //if the value is a form value get it
-                    if (!item.IsActionForm && item.UseFormValue && !string.IsNullOrEmpty(item.FormField) && item.FormStepID > 0)
-                    {
-                        val = GetFieldValueFromFormResponse(item, itemStep.ItemID);
+                    var val = DateTime.UtcNow.Date.ToShortDateString();
+                    this.UpdateField(objectId, objectType, fieldType, item, val);
+                }
+                //if the value is a form value get it
+                else if (!item.IsActionForm && item.UseFormValue && !string.IsNullOrEmpty(item.FormField) && item.FormStepID > 0)
+                {
 
-                        if (DateTime.TryParse(val, out DateTime tempDate) && item.FieldID.ToString().Contains("date"))
+                   foreach(var newValue in GetFieldValueFromFormResponse(item, itemStep.ItemID))
+                    {
+                        string val = newValue;
+                        if (DateTime.TryParse(val, out DateTime tempDate))
                         {
-                            val = tempDate.Date.ToShortDateString();
+                                val = tempDate.Date.ToShortDateString();
                         }
+                        this.UpdateField(objectId, objectType, fieldType, item, val);
                     }
-                    //Get the value from action form (Issue)
-                    if (item.IsActionForm)
+                }
+                //Get the value from action form (Issue)
+                else if (item.IsActionForm)
+                {
+                    var fieldData = item.FormField.Split('|');
+                    string val = string.Empty;
+                    if (fieldData.Count() == 2)
                     {
-                        val = "";
-                        var fieldData = item.FormField.Split('|');
-                        if (fieldData.Count() == 2)
+                        int fieldTypeId = int.Parse(fieldData[1]);
+                        var actionField = Fields.FirstOrDefault(x => x.ObjectID == objectInfo.ObjectID && x.ObjectType == "Issue" && x.FieldTypeID == fieldTypeId);
+                        if (actionField != null)
                         {
-                            int fieldTypeId = int.Parse(fieldData[1]);
-                            var actionField = Fields.FirstOrDefault(x => x.ObjectID == objectInfo.ObjectID && x.ObjectType == "Issue" && x.FieldTypeID == fieldTypeId);
-                            if(actionField != null)
+                            var actionFieldType = FieldTypes.FirstOrDefault(x => x.Object == "IssueType" && x.ID == actionField.FieldTypeID);
+                            if (actionFieldType.Type == "Lookup")
                             {
-                                var actionFieldType = FieldTypes.FirstOrDefault(x => x.Object == "IssueType" && x.ID == actionField.FieldTypeID);
-                                if(actionFieldType.Type == "Lookup")
-                                {
-                                    var lookupSql = @"select top 1 Value from [dbo].[FieldLookupValue]
+                                var lookupSql = @"select top 1 Value from [dbo].[FieldLookupValue]
                                         where LookupObjectType = @Object and LookupObjectID = @ObjectId and Text = @Value";
-                                    var lookupValue = Query<int?>(lookupSql, new { Object = actionFieldType.LookupObjectType, ObjectId = actionFieldType.LookupObjectID, Value = actionField?.FormattedValue }).FirstOrDefault();
-                                    val = lookupValue.ToString();
-                                }
-                                else
-                                {
-                                    val = actionField?.FormattedValue;
-                                }
+                                var lookupValue = Query<int?>(lookupSql, new { Object = actionFieldType.LookupObjectType, ObjectId = actionFieldType.LookupObjectID, Value = actionField?.FormattedValue }).FirstOrDefault();
+                                val = lookupValue.ToString();
+                            }
+                            else
+                            {
+                                val = actionField?.FormattedValue;
+                            }
 
-                                if (DateTime.TryParse(val, out DateTime tempDate) && (actionFieldType.Type == "Date" || actionFieldType.Type == "DateTime"))
-                                {
-                                    val = tempDate.Date.ToShortDateString();
-                                }
+                            if (DateTime.TryParse(val, out DateTime tempDate) && (actionFieldType.Type == "Date" || actionFieldType.Type == "DateTime"))
+                            {
+                                val = tempDate.Date.ToShortDateString();
                             }
                         }
                     }
-
-                    // check if the field exists
-                    var field = Fields.Where(x => x.ObjectID == objectId && x.ObjectType == objectType && x.FieldTypeID == fieldType.ID).FirstOrDefault();
-
-                    if (field == null)
-                    {
-                        //insert
-                        var newField = new Field
-                        {
-                            Value = val,
-                            FieldTypeID = fieldType.ID,
-                            ObjectID = objectId,
-                            ObjectType = objectType.ToString(),
-                            UpdatedBy = CurrentResourceID
-                        };
-
-                        if(isAssetEdited)
-                            newField.AssetID =  asset.ID;
-
-                        Add<Field>(newField);
-                    }
-                    else
-                    {
-                        if (item.AppendValue)
-                        {
-                            var oldValues = field.Value?.Split(',').Where(s => !string.IsNullOrEmpty(s.Trim())).Select(x => x.Trim()) ?? new string[0];
-                            var newValues = val?.Split(',').Where(s => !string.IsNullOrEmpty(s.Trim())).Select(x => x.Trim()) ?? new string[0];
-                            newValues = oldValues.Union(newValues).Distinct().OrderBy(x => x);
-                            field.Value = string.Join(",", newValues);
-
-
-                        }
-                        else
-                        {
-                            //update
-                            field.Value = val;
-
-                        }
-                    }
-
-                    //update asset table to trigger audit                    
-                    Database.Connection.Execute(
-                        "exec [utility].[AddAuditEntry]  @ParentObject, @ParentObjectID, @ResourceID, @date, @op, @Object, @ObjectID",
-                        new
-                        {
-                            Object = objectType,
-                            ObjectID = objectId,
-                            ParentObject = objectType,
-                            date = DateTime.UtcNow,
-                            ParentObjectID = objectId,
-                            ResourceID = 0,
-                            op = "Update"
-                        });
+                    this.UpdateField(objectId, objectType, fieldType, item, val);
+                }
+                else
+                {
+                    this.UpdateField(objectId, objectType, fieldType, item, item.Value);
                 }
 
+                //update asset table to trigger audit                    
+                Database.Connection.Execute(
+                    "exec [utility].[AddAuditEntry]  @ParentObject, @ParentObjectID, @ResourceID, @date, @op, @Object, @ObjectID",
+                    new
+                    {
+                        Object = objectType,
+                        ObjectID = objectId,
+                        ParentObject = objectType,
+                        date = DateTime.UtcNow,
+                        ParentObjectID = objectId,
+                        ResourceID = 0,
+                        op = "Update"
+                    });
             }
 
             SaveChanges();
         }
+      
 
         private string GetFieldValueIntersectFromFormResponse(WorkflowRelationshipUpdateSettings item, long itemId)
         {
@@ -1182,26 +1191,24 @@ namespace d360.model
             return "";
         }
 
-        private string GetFieldValueFromFormResponse(WorkflowFieldUpdateSettings item, long itemId)
+
+        private IEnumerable<string> GetFieldValueFromFormResponse(WorkflowFieldUpdateSettings item, long itemId)
         {
             var formResponses = WorkflowItemSteps.Where(x => x.ItemID == itemId && x.StepID == item.FormStepID && x.Step.ActivityType == WorkflowActivityType.Form);
 
             var firstResponse = formResponses.FirstOrDefault();
 
-            if (firstResponse == null) return string.Empty;
+    
+            XElement root = XElement.Parse(firstResponse.Fields);
 
-            var xml = XElement.Parse(firstResponse.Fields);
+            IEnumerable<XElement> fields =
+            from el in root.Elements("form").Elements("field")
+            where (string)el.Attribute("id") == item.FormField
+            select el;
 
-            foreach (var form in xml.Elements("form"))
-            {
-                foreach (var field in form.Elements("field"))
-                {
-                    if ((string)field.Attribute("id") == item.FormField)
-                        return (string)field.Attribute("value");
-                }
-            }
+            foreach (XElement el in fields)
+                yield return (string)el.Attribute("value");
 
-            return "";
         }
 
         private void ExecuteProc(WorkflowItemStep itemStep, EventObjectInfo objectInfo, WorkflowItemStepSettingModel settings)
