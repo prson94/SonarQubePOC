@@ -1121,12 +1121,27 @@ namespace d360.model
                     if (fieldData.Count() == 2)
                     {
                         int fieldTypeId = int.Parse(fieldData[1]);
-                        val = Fields.FirstOrDefault(x => x.ObjectID == objectInfo.ObjectID && x.ObjectType == "Issue" && x.FieldTypeID == fieldTypeId)?.FormattedValue;
-                    }
+                        var actionField = Fields.FirstOrDefault(x => x.ObjectID == objectInfo.ObjectID && x.ObjectType == "Issue" && x.FieldTypeID == fieldTypeId);
+                        if (actionField != null)
+                        {
+                            var actionFieldType = FieldTypes.FirstOrDefault(x => x.Object == "IssueType" && x.ID == actionField.FieldTypeID);
+                            if (actionFieldType.Type == "Lookup")
+                            {
+                                var lookupSql = @"select top 1 Value from [dbo].[FieldLookupValue]
+                                        where LookupObjectType = @Object and LookupObjectID = @ObjectId and Text = @Value";
+                                var lookupValue = Query<int?>(lookupSql, new { Object = actionFieldType.LookupObjectType, ObjectId = actionFieldType.LookupObjectID, Value = actionField?.FormattedValue }).FirstOrDefault();
+                                val = lookupValue.ToString();
+                            }
+                            else
+                            {
+                                val = actionField?.FormattedValue;
+                            }
 
-                    if (DateTime.TryParse(val, out DateTime tempDate))
-                    {
-                        val = tempDate.Date.ToShortDateString();
+                            if (DateTime.TryParse(val, out DateTime tempDate) && (actionFieldType.Type == "Date" || actionFieldType.Type == "DateTime"))
+                            {
+                                val = tempDate.Date.ToShortDateString();
+                            }
+                        }
                     }
                     this.UpdateField(objectId, objectType, fieldType, item, val);
                 }
@@ -1148,14 +1163,6 @@ namespace d360.model
                         ResourceID = 0,
                         op = "Update"
                     });
-            }
-
-
-
-            if (isAssetEdited)
-            {
-                var asset = Assets.Where(x => x.Object == issue.Object && x.ObjectID == issue.ObjectID).FirstOrDefault();
-                ObjectContext.ObjectStateManager.ChangeObjectState(asset, EntityState.Modified);
             }
 
             SaveChanges();
