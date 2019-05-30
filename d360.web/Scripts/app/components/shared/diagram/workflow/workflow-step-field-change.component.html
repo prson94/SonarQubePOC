@@ -23,9 +23,12 @@
                               
                                 <span *ngIf="item['@UseCurrentDate'] != null && item['@UseCurrentDate'].toString() == 'true'">[use date at time of execution]</span>
                                 <span *ngIf="item['@ClearValue'] != null && item['@ClearValue'].toString() == 'true'">[clear the field value]</span>
-                                <span *ngIf="item['@UseFormValue'] != null && item['@UseFormValue'].toString() == 'true'">[use value from form input {{item['@Formlabel']}}]</span>
+                                <span *ngIf="item['@UseFormValue'] != null && item['@UseFormValue'].toString() == 'true' && (item['@IsActionForm'] == null || item['@IsActionForm'].toString() == 'false')">[use value from form input {{item['@Formlabel']}}]</span>
                                 <span *ngIf="item['@IsActionForm'] != null && item['@IsActionForm'].toString() == 'true'">[use value from action form field {{item['@Formlabel']}}]</span>
-                                <div *ngIf="(item['@UseCurrentDate'] == null || item['@UseCurrentDate'].toString() == 'false') && (item['@UseFormValue'] == null || item['@UseFormValue'].toString() == 'false') && (item['@ClearValue'] == null || item['@ClearValue'].toString() == 'false')">
+                                <div *ngIf="(item['@UseCurrentDate'] == null || item['@UseCurrentDate'].toString() == 'false') 
+                                     && (item['@UseFormValue'] == null || item['@UseFormValue'].toString() == 'false') 
+                                     && (item['@IsActionForm'] == null || item['@IsActionForm'].toString() == 'false') 
+                                     && (item['@ClearValue'] == null || item['@ClearValue'].toString() == 'false')">
                                     <ng-container *ngIf="isHtml(item); else str">
                                         <div [innerHtml]="getValue(item)" style="max-height: 42px; overflow: hidden; text-overflow: ellipsis">
                                         </div>
