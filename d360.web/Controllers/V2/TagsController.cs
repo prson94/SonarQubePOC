@@ -1,7 +1,9 @@
 ﻿using d360.core.entities;
+using d360.core.enums;
 using d360.model;
 using d360.model.DataAccessLayer;
 using d360.web.Filters;
+using d360.web.Models;
 using Microsoft.Web.Http;
 using Swashbuckle.Swagger.Annotations;
 using System;
@@ -16,7 +18,7 @@ using System.Web.Http.Description;
 namespace d360.web.Controllers.V2
 {
     /// <summary>
-    /// This service houses all endpoints handling glossary-related data such as artifacts and models.
+    /// This service houses all endpoints handling tag management in Govern
     /// </summary>
     [
         ApiVersion("2.0"),
@@ -35,10 +37,8 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Returns all tags that are defined in Govern.  
-        /// 
-        /// </summary>
-        /// <param name="Uid">The uid of a specific tag.</param>        
+        /// Returns all tags that are defined in Govern.          
+        /// </summary>        
         /// <returns>A list of tags</returns>
         [
             HttpGet, MapToApiVersion("2.0"), Route(""),
@@ -59,6 +59,69 @@ namespace d360.web.Controllers.V2
             var tags = await tagRepository.GetTags(queryParams);
 
             return Request.CreateResponse(tags);
+        }
+
+
+        /// <summary>
+        /// Allows you to remove a tag based on its Uid.
+        /// </summary>
+        /// <param name="uid">The public identifier for the tag.</param>
+        /// <returns>A status for the DELETE request.</returns>
+        [
+            HttpDelete,
+            Route("{uid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the DELETE request.", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the tag was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse))
+        ]
+        public IHttpActionResult DeleteById(Guid uid)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+
+            if (!tagRepository.DeleteTag(uid))
+            {
+                return errorMessageResponse(HttpStatusCode.NotFound, "Error removing tag", "Tag not found.");
+            }
+
+            return successMessageResponse(HttpStatusCode.OK, "Tag removed.", "Tag successfully removed.");
+        }
+
+
+        /// <summary>
+        /// Adds one tag to Govern.
+        /// </summary>        
+        /// <param name="model">The tag to be created.</param>
+        /// <returns>The created tag.</returns>
+        [
+            HttpPost,
+            Route(""),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerResponse(HttpStatusCode.OK, "The list of staging results, containing any potential errors. A value of true for the IsSuccess property indicates that the metric was saved for further processing.", typeof(List<BulkMetricTemporaryTableModel>)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the metric was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
+        ]
+        public IHttpActionResult PostTag(TagApiModel model)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to create tags."));
+
+            if (model == null)
+                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "You have submitted an invalid or empty request please check your request and try again."));
+
+            TagApiModel result = new TagApiModel();
+            try
+            {
+                result = tagRepository.CreateTag(model);
+            }
+            catch(Exception e)
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error while creating tag", e.Message);
+            }
+            
+            return ResponseMessage(Request.CreateResponse<TagApiModel>(HttpStatusCode.OK, result));
         }
     }
 }

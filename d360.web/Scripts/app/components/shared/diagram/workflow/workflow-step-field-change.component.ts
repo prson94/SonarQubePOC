@@ -188,7 +188,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         }
 
         this.fieldUpdateChange.emit(this.fieldUpdate);
-        if (typeof f !== 'undefined' && f.Object == 'ArtifactType' && this.issueObject != '') {
+        if (typeof f !== 'undefined' && this.issueObject != '') {
             this.canSelectFromAction = true;
         }
         else this.canSelectFromAction = false;
@@ -239,15 +239,8 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         this.formMode = FormMode.Adding;
     }
 
-    formatObjectTypeName(str: any) : string {
-        switch (str) {
-            case "ArtifactType":
-                return "Artifact";
-            case "IssueType":
-                return "Issue";
-            default:
-                return "";
-        }
+    formatObjectTypeName(str: any): string {
+        return str.replace('Type', '');
     }
 
     save() {
@@ -482,7 +475,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
             this.valueType = null;
         else if (this.selectedField['@UseFormValue'] != null && this.selectedField['@IsActionForm'] != 'true')
             this.valueType = 'form';
-        else if (this.selectedField['@UseFormValue'] != null && this.selectedField['@IsActionForm'] == 'true')
+        else if (this.selectedField['@IsActionForm'] != null && this.selectedField['@IsActionForm'] == 'true')
             this.valueType = 'actionForm';
         else if (this.selectedField['@ClearValue'] != null)
             this.valueType = 'clear';

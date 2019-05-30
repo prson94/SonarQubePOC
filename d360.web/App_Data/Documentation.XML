@@ -3020,16 +3020,28 @@
         </member>
         <member name="T:d360.web.Controllers.V2.TagsController">
             <summary>
-            This service houses all endpoints handling glossary-related data such as artifacts and models.
+            This service houses all endpoints handling tag management in Govern
             </summary>
         </member>
         <member name="M:d360.web.Controllers.V2.TagsController.Get">
             <summary>
-            Returns all tags that are defined in Govern.  
-            
-            </summary>
-            <param name="Uid">The uid of a specific tag.</param>        
+            Returns all tags that are defined in Govern.          
+            </summary>        
             <returns>A list of tags</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.TagsController.DeleteById(System.Guid)">
+            <summary>
+            Allows you to remove a tag based on its Uid.
+            </summary>
+            <param name="uid">The public identifier for the tag.</param>
+            <returns>A status for the DELETE request.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.TagsController.PostTag(d360.core.entities.TagApiModel)">
+            <summary>
+            Adds one tag to Govern.
+            </summary>        
+            <param name="model">The tag to be created.</param>
+            <returns>The created tag.</returns>
         </member>
         <member name="M:d360.web.Controllers.D3SApiController.GetFieldFiltersByType(d360.core.SystemObjects,System.Int32)">
             <summary>
