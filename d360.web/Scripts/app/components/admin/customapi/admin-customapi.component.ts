@@ -37,6 +37,7 @@ export class AdminCustomAPIComponent extends AdminBaseComponent implements OnIni
         super(headerBreadcrumbService, titleService, rightSidebarService);
 
         this.areaName = "Custom API";
+        this.adminHeading = 'Integration';
         this.setCommonItems();
         this.clearSidebar();
         this.theDeleteCallback = this.deleteService.bind(this);

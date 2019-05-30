@@ -15,7 +15,8 @@ import { RightSidebarService } from '../../../services/right-sidebar.service';
 export class AdminResourcesComponent extends AdminBaseComponent {    
     constructor(headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title, rightSideBarService: RightSidebarService,) {
         super(headerBreadcrumbService, titleService);        
-        this.areaName = "Resources";
+        this.areaName = "Users";
+        this.adminHeading = "Security";
         this.rightSidebarService = rightSideBarService;
        
         this.setCommonItems();

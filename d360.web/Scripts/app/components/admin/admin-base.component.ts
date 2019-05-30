@@ -12,6 +12,7 @@ export class AdminBaseComponent extends BaseComponent {
     public areaName: string;
     public areaLink: string = undefined;    
     public area: string = "Administration";
+    public adminHeading: string;
 
     constructor(protected headerBreadcrumbService: HeaderBreadcrumbService, protected titleService: Title, rightSidebarService?: RightSidebarService) {
         super();
@@ -19,9 +20,15 @@ export class AdminBaseComponent extends BaseComponent {
     }
 
     setCommonItems() {
-        this.area = ['Artifacts'].indexOf(this.areaName) !== -1 ? 'Configuration' : "Administration";
+
+        this.area = ['Artifacts', 'Attribute Groups', 'Lookup Types', 'Models', 'Policy Types', 'Predicates', 'Relationship Types', 'Rule Types', 'Surveys']
+            .indexOf(this.areaName) !== -1 ? 'Configuration' : "Administration";
+
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.area));
+        if (this.adminHeading)
+            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.adminHeading));     
+        
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.areaName, this.areaLink));     
         this.setBrowserTitle(this.titleService, this.areaName);
     }       
