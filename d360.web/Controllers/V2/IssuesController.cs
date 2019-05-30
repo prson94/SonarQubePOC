@@ -40,7 +40,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A full list of issue types.", typeof(List<IssueTypeApiModel>)),
         ]
-        public async Task<HttpResponseMessage> Get()
+        public async Task<HttpResponseMessage> GetIssueTypes()
         {
             var issueTypes = await issueRepository.GetIssueTypes();
 
