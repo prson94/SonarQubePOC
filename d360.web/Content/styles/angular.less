@@ -1112,12 +1112,14 @@ a.breadcrumb {
     font-size: 1.2em;
     padding: 0 10px;
 
-    &:active, .active {
+    &:active, &.active {
         background: #676C7A;
-        color: #54fffb;
+        .fa{
+            color: #54fffb;
+        }
     }
 
-    &:hover, .hover {
+    &:hover, &.hover {
         background: rgba(255, 255, 255, 0.2);
     }
 }
