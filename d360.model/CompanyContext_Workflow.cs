@@ -1083,10 +1083,7 @@ namespace d360.model
                                 var actionFieldType = FieldTypes.FirstOrDefault(x => x.Object == "IssueType" && x.ID == actionField.FieldTypeID);
                                 if(actionFieldType.Type == "Lookup")
                                 {
-                                    var lookupSql = @"select top 1 Value from [dbo].[FieldLookupValue]
-                                        where LookupObjectType = @Object and LookupObjectID = @ObjectId and Text = @Value";
-                                    var lookupValue = Query<int?>(lookupSql, new { Object = actionFieldType.LookupObjectType, ObjectId = actionFieldType.LookupObjectID, Value = actionField?.FormattedValue }).FirstOrDefault();
-                                    val = lookupValue.ToString();
+                                    val = actionField?.Value;
                                 }
                                 else
                                 {
@@ -1097,6 +1094,7 @@ namespace d360.model
                                 {
                                     val = tempDate.Date.ToShortDateString();
                                 }
+
                             }
                         }
                     }
@@ -1104,7 +1102,8 @@ namespace d360.model
                     // check if the field exists
                     var field = Fields.Where(x => x.ObjectID == objectId && x.ObjectType == objectType && x.FieldTypeID == fieldType.ID).FirstOrDefault();
 
-                    if (field == null)
+
+                    if (field == null && !string.IsNullOrEmpty(val))
                     {
                         //insert
                         var newField = new Field
@@ -1116,12 +1115,13 @@ namespace d360.model
                             UpdatedBy = CurrentResourceID
                         };
 
-                        if(isAssetEdited)
-                            newField.AssetID =  asset.ID;
-
+                        if (isAssetEdited)
+                        {
+                            newField.AssetID = asset.ID;
+                        }
                         Add<Field>(newField);
                     }
-                    else
+                    else if(field != null)
                     {
                         if (item.AppendValue)
                         {
@@ -1136,7 +1136,15 @@ namespace d360.model
                         {
                             //update
                             field.Value = val;
+                            if(isAssetEdited)
+                                ObjectContext.ObjectStateManager.ChangeObjectState(field, EntityState.Modified);
 
+                        }
+
+                        //Remove the field from db if field value is null or empty 
+                        if (string.IsNullOrEmpty(field.Value))
+                        {
+                            ObjectContext.ObjectStateManager.ChangeObjectState(field, EntityState.Deleted);
                         }
                     }
 
