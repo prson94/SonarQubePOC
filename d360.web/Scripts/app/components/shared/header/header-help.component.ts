@@ -5,7 +5,7 @@ import { CurrentEnvironmentSettings } from '../../../static/environment-settings
 @Component({
     selector: 'd3s-header-help',
     template: ` <span #item class="header-search header-table" [ngClass]="{'header-search-active':active}" (mouseenter)="show(item)" (mouseleave)="hide(item)">
-                    <a class="photo"><i class="fa fa-question-circle"></i></a>
+                    <div class="header-button"><i class="fa fa-question-circle"></i></div>
                     <div class="header-help search-child header-search-panel">
                        <ul>
                             <li class="header-help-li"><a target="_blank" [href]="userGuide">User Guide</a></li>

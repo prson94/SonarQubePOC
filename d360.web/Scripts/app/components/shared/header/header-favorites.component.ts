@@ -21,13 +21,18 @@ import {SiteUrlHelpers} from '../../../static/site-url-helpers';
     template:
     `
         <div *ngIf="visible" class="show-on-medium-and-down hide-on-med-and-up" (click)="handleClick()">
-            <i *ngIf="isFavoriteItem && !isLoading" class="fa fa-check"></i>
-            <i *ngIf="isLoading" style="color: #000;" class="fa fa-spinner fa-spin"></i>
-            Favourite
+            <div class="mini-menu-line">
+                <div class="check-gutter">
+                    <i *ngIf="isFavoriteItem && !isLoading" class="fa fa-check"></i>
+                    <i *ngIf="isLoading" style="color: #000;" class="fa fa-spinner fa-spin"></i>
+                </div>
+                <div class="text">Favourite</div>
+                <div class="expand-gutter"></div>            
+            </div>
         </div>
-        <span *ngIf="visible" (click)="handleClick()" class="favorite hide-on-med-and-down" [ngClass]="{'active' : isFavoriteItem }" [title]="isFavoriteItem ? 'Remove from favorites' : 'Add to favorites'" >
+        <div *ngIf="visible" (click)="handleClick()" class="header-button hide-on-med-and-down" [ngClass]="{'active' : isFavoriteItem }" [title]="isFavoriteItem ? 'Remove from favorites' : 'Add to favorites'">
             <i *ngIf="!isLoading" class="fa fa-star"></i><i *ngIf="isLoading" style="color: #000;" class="fa fa-spinner fa-spin"></i>    
-        </span>
+        </div>
     `,
     providers: [FavoritesService],
     changeDetection: ChangeDetectionStrategy.OnPush
@@ -114,7 +119,6 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
         this.isFavoriteItem = false;
         if (!this.uri) this.uri = 'home';
         let index = this.favItems.findIndex(x => x.Route == this.uri);
-
         this.isFavoriteItem = index >= 0;
     }
 

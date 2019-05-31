@@ -3,6 +3,7 @@ import { Router, NavigationEnd } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { AuthenticationService } from '../../../services/authentication.service';
 import { Subscription } from 'rxjs';
+import { retry } from 'rxjs/operators';
 
 declare var CurrentResourceID;
 declare var SingleSignOn;
@@ -14,7 +15,11 @@ declare var CompanySettings;
     selector: 'd3s-header-profile',
     template: ` <span #item class="header-search header-table" [ngClass]="{'header-search-active':active}" (mouseenter)="show(item)" (mouseleave)="hide(item)" >
                     <a class="photo hide-on-med-and-down"><img [src]="'/resources/image/' + resourceId + '?size=25'" height="25" width="25" /></a>
-                    <div class="show-on-medium-and-down hide-on-med-and-up">My Account <i class="fa fa-caret-right"></i></div>
+                    <div class="show-on-medium-and-down hide-on-med-and-up">
+                        <div class="mini-menu-line">
+                            <div class="check-gutter"></div><div class="text">My Account</div><div class="expand-gutter right"><i class="fa fa-caret-right"></i></div>
+                        </div>
+                    </div>
                     <div class="search-child header-profile-panel">                        
                         <div class="row">          
                             <div class="row header-profile-name">
@@ -22,10 +27,26 @@ declare var CompanySettings;
                                 <div class="col s12"><h5>{{userEmail}}</h5></div>
                             </div>
                             <ul>
-                                <li [routerLink]="resourceUrl()" class="header-item">View Profile</li>
-                                <li *ngIf="showAllUsersAPIKey" [routerLink]="'/resource/my/apikey'" class="header-item">API Key</li>
-                                <li *ngIf="!singleSignOn"  [routerLink]="'/resource/'+resourceId+'/changepassword'" class="header-item">Change Password</li>
-                                <li class="header-item"><a class="sign-out" href="/slo" title="Sign out">Sign Out</a></li>
+                                <li [routerLink]="resourceUrl()" class="header-item">
+                                    <div class="mini-menu-line">
+                                        <div class="text">View Profile</div>
+                                    </div>
+                                </li>
+                                <li *ngIf="showAllUsersAPIKey" [routerLink]="'/resource/my/apikey'" class="header-item">
+                                    <div class="mini-menu-line">
+                                        <div class="text">API Key</div>
+                                    </div>                                
+                                </li>
+                                <li *ngIf="!singleSignOn"  [routerLink]="'/resource/'+resourceId+'/changepassword'" class="header-item">
+                                    <div class="mini-menu-line">
+                                        <div class="text">Change Password</div>
+                                    </div>                                
+                                </li>
+                                <li class="header-item" (click)="signOut()">
+                                    <div class="mini-menu-line">
+                                        <div class="text">Sign Out</div>
+                                    </div>                                
+                                </li>
                             </ul>                                                    
                         </div>
                     </div>
@@ -69,6 +90,9 @@ export class HeaderProfileComponent implements OnInit , OnDestroy{
     public resourceUrl() {
         return SiteUrlHelpers.getObjectUrl('Resource', this.resourceId);
     }
+    public signOut() {
+        window.location.href = '/slo';
+    }
 
     show(item) {
         // check for any pending hides and cancel them
@@ -85,9 +109,9 @@ export class HeaderProfileComponent implements OnInit , OnDestroy{
             menuPanel.style.zIndex = 1000;
 
             menuPanel.style.top = (item.offsetHeight - 1) + 'px'; // -1 for the border so it blends
-            menuPanel.style.right = (dims.width + 11) + 'px';
+            menuPanel.style.right = (dims.width) + 'px';
             if (dims.width > 0) {
-                menuPanel.style.top = '-10px';
+                menuPanel.style.top = '0px';
                 menuPanel.style['border-right'] = 'none';
             }
         }
