@@ -110,6 +110,9 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
                         actionFormField['@type'] = this.getFieldTypeForFormType(item.Type);
                         actionFormField['@isActionType'] = true;
                         actionFormField['@UseFormValue'] = true;
+                        if (item.Type == 'Lookup') {
+                            actionFormField['@LookupFieldID'] = item.LookupObjectType + '|' + item.LookupObjectID;
+                        }
                         this.formFields.push(actionFormField);
                     }, this);
                 }
@@ -533,11 +536,13 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
 
         let fieldType = field.Type;
 
+
         var formFieldsWithAction = this.formFields.filter(f => f["@isActionType"] == true);
-        
+
         switch (fieldType) {
             case 'Lookup':
-                return formFieldsWithAction.filter(f => f['@type'] == 'list');
+                var lookupField = field.LookupObjectType + '|' + field.LookupObjectID;
+                return formFieldsWithAction.filter(f => f['@type'] == 'list' && f['@LookupFieldID'] == lookupField);
             case 'Number':
             case 'Decimal':
                 return formFieldsWithAction.filter(f => f['@type'] == 'integer');
