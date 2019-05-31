@@ -2067,6 +2067,13 @@ namespace d360.model
                     {
                         var fieldRecord = Fields.Where(x => x.ObjectID == objectID && x.ObjectType == obj.ToString() && x.FieldTypeID == fieldId).FirstOrDefault();
 
+                        //If there is no field and type is Issue, this might be asset field
+                        if(fieldRecord == null && obj == SystemObjects.Issue)
+                        {
+                            var issue = Issues.FirstOrDefault(x => x.ID == objectID);
+                            fieldRecord = Fields.Where(x => x.ObjectID == issue.ObjectID && x.ObjectType == issue.Object && x.FieldTypeID == fieldId).FirstOrDefault();
+                        }
+
                         if ((obj.ToString() ?? "").ToUpper() == "INTERSECT")
                         {
                             var intersect = Intersects.Where(i => i.ID == objectID).FirstOrDefault();

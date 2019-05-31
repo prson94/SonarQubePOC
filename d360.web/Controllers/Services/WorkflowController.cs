@@ -277,7 +277,8 @@ order by wi.StartedOn desc";
             var currentVersion = Company.WorkflowVersions.Where(v => v.TypeID == type.ID).OrderByDescending(v => v.Version).First();
             var publishedVersion = Company.WorkflowVersions.Find(type.PublishedVersionID);
 
-            List<FieldType> fieldTypes = this.getFieldTypes(@event.ObjectID, @event.Object);
+            @event.ConditionObject = XmlToDynamic(GetConditionLabels(@event.Condition));
+            List<FieldType> fieldTypes = GetFieldsForDiagramModel(new WorkflowDiagramModel() { Event = @event });
 
             nodes.ForEach(n =>
             {
@@ -291,7 +292,6 @@ order by wi.StartedOn desc";
                 l.SettingsObject = XmlToDynamic(l.Settings);
             });
 
-            @event.ConditionObject = XmlToDynamic(GetConditionLabels(@event.Condition));
             @event.SettingsObject = XmlToDynamic(@event.Settings, false);
 
             return new WorkflowDiagramModel
@@ -1689,7 +1689,8 @@ order by wi.StartedOn desc";
 
                     #endregion
 
-                    List<FieldType> fieldTypes = this.getFieldTypes(model.Event.ObjectID, model.Event.Object);
+
+                    List<FieldType> fieldTypes = GetFieldsForDiagramModel(model);
 
                     Dictionary<int, int> keyMapping = new Dictionary<int, int>();
 
@@ -1824,7 +1825,7 @@ order by wi.StartedOn desc";
 
                         Company.SaveChanges();
 
-                        
+
 
                         if (model?.Nodes?.Count > 0)
                         {
@@ -1845,13 +1846,13 @@ order by wi.StartedOn desc";
                                     step.XPosition = n.XPosition;
                                     step.YPosition = n.YPosition;
                                     step.VersionID = versionID;
-                                    step.Settings = this.FormatMessageBodyTemplate( model.Event.Object, fieldTypes, JsonConvert.DeserializeXNode(n.Settings).ToString());
+                                    step.Settings = this.FormatMessageBodyTemplate(model.Event.Object, fieldTypes, JsonConvert.DeserializeXNode(n.Settings).ToString());
                                     step.State = core.enums.State.Active;
 
                                     if (string.IsNullOrEmpty(n.Fields))
                                         step.Fields = null;
                                     else
-                                        step.Fields =this.FormatFormDescription(model.Event.Object, fieldTypes,  JsonConvert.DeserializeXNode(n.Fields).ToString());
+                                        step.Fields = this.FormatFormDescription(model.Event.Object, fieldTypes, JsonConvert.DeserializeXNode(n.Fields).ToString());
 
                                     Company.Add(step);
                                     Company.SaveChanges();
@@ -1878,7 +1879,7 @@ order by wi.StartedOn desc";
                                         if (string.IsNullOrEmpty(n.Fields))
                                             node.Fields = null;
                                         else
-                                            node.Fields =this.FormatFormDescription(model.Event.Object, fieldTypes, JsonConvert.DeserializeXNode(n.Fields).ToString());
+                                            node.Fields = this.FormatFormDescription(model.Event.Object, fieldTypes, JsonConvert.DeserializeXNode(n.Fields).ToString());
 
                                         keyMapping.Add(id, id);
                                     }
@@ -2006,15 +2007,52 @@ order by wi.StartedOn desc";
             }
         }
 
+        private List<FieldType> GetFieldsForDiagramModel(WorkflowDiagramModel model)
+        {
+            List<FieldType> fieldTypes = this.getFieldTypes(model.Event.ObjectID, model.Event.Object);
+
+            //Get asset fields for action
+            if (model.Event.Object == "IssueType")
+            {
+                try
+                {
+                    string IssueObjectType = string.Empty;
+                    int IssueObjectId = -1;
+                    if (model.Event.ConditionObject != null && model.Event.ConditionObject.Condition != null)
+                    {
+                        var conditions = model.Event.ConditionObject.Condition;
+                        if (Convert.ToInt32(conditions.Count) >= 2)
+                        {
+                            if (conditions[0]["@ContextualFieldID"] == "IssueObject" && conditions[1]["@ContextualFieldID"] == "IssueObjectID")
+                            {
+                                IssueObjectType = conditions[0]["@Value"];
+                                IssueObjectId = Convert.ToInt32(conditions[1]["@Value"]);
+                            }
+                        }
+                    }
+                    if (IssueObjectId > 0 && !string.IsNullOrEmpty(IssueObjectType))
+                    {
+                        fieldTypes = fieldTypes.Union(this.getFieldTypes(IssueObjectId, IssueObjectType)).ToList();
+                    }
+                }
+                catch
+                {
+
+                }
+            }
+
+            return fieldTypes;
+        }
+
         private string FormatFormDescription(string type, List<FieldType> fieldTypes, string data)
         {
             dynamic fields = XmlToDynamic(data);
             if (fields != null && fields.form != null && fields.form["@description"] != null)
             {
                 string desc = fields.form["@description"];
-                var fieldType = type == "IssueType" ? "Action Field" : "Asset Field";
                 fieldTypes.ForEach(x =>
                 {
+                    var fieldType = x.Object == "IssueType" ? "Action Field" : "Asset Field";
                     var f = "[" + fieldType + " :: " + x.Name + "]";
                     var t = "[FIELD" + x.ID + "]";
                     desc = desc.Replace(f, t);
@@ -2031,9 +2069,9 @@ order by wi.StartedOn desc";
             if (fields != null && fields.form != null && fields.form["@description"] != null)
             {
                 string desc = fields.form["@description"];
-                var fieldType = type == "IssueType" ? "Action Field" : "Asset Field";
                 fieldTypes.ForEach(x =>
                 {
+                    var fieldType = x.Object == "IssueType" ? "Action Field" : "Asset Field";
                     var f = "[" + fieldType + " :: " + x.Name + "]";
                     var t = "[FIELD" + x.ID + "]";
                     desc = desc.Replace(t, f);
