@@ -2589,10 +2589,10 @@
         </member>
         <member name="T:d360.web.Controllers.V2.IssuesController">
             <summary>
-            This service houses all endpoints handling user action data.
+            This service houses all endpoints handling issue management in Govern.
             </summary>
         </member>
-        <member name="M:d360.web.Controllers.V2.IssuesController.Get">
+        <member name="M:d360.web.Controllers.V2.IssuesController.GetIssueTypes">
             <summary>
             Returns all issue types that are defined in Govern.  
             

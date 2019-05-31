@@ -132,11 +132,11 @@ namespace d360.model
 
             #region Relationship Sql Syntax
 
-            var relationshipCaseStatement = "";
+            var relationshipFieldStatement = "";
             var relationshipJoinStatement = "";
             if (selectFields.Any(i => i.Type == "Relationship"))
             {
-                relationshipCaseStatement = @" when FT.Type = 'Relationship' and FT.LookupObjectType = 'IntersectType' then RD.DisplayValue ";
+                relationshipFieldStatement = @" RD.DisplayValue ";
                 
                 relationshipJoinStatement = $@"
  left join [Intersect] F_R{tableHints} on	FT.LookupObjectType = 'IntersectType' 
@@ -154,11 +154,11 @@ outer apply dbo.GetRelationshipDisplayValue(
 
             #region Relationship Field Sql Syntax
 
-            var fieldFromRelationshipCaseStatement = "";
+            var fieldFromRelationshipFieldStatement = "";
             var fieldFromRelationshipJoinStatement = "";
             if (selectFields.Any(i => i.Type == "FieldFromRelationship"))
             {
-                fieldFromRelationshipCaseStatement = @"when FT.Type = 'FieldFromRelationship' and FT.LookupObjectType = 'IntersectType' then F_RF.FormattedValue";
+                fieldFromRelationshipFieldStatement = @" F_RF.FormattedValue";
                 fieldFromRelationshipJoinStatement = $@"
  left join [Intersect] F_REL{tableHints} on	FT.LookupObjectType = 'IntersectType' 
 										and F_REL.IntersectTypeID = FT.LookupObjectID 
@@ -592,11 +592,11 @@ OPTION (RECOMPILE)";
                 }
                 else if (ft.Type == "Relationship")
                 {
-                    fieldValueStatement = $"{relationshipCaseStatement}";
+                    fieldValueStatement = $"{relationshipFieldStatement}";
                 }
                 else if (ft.Type == "FieldFromRelationship")
                 {
-                    fieldValueStatement = $"{fieldFromRelationshipCaseStatement})";
+                    fieldValueStatement = $"{fieldFromRelationshipFieldStatement}";
                 }
                 fieldValueStatement += " as [Field]";
 
