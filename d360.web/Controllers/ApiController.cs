@@ -4953,7 +4953,7 @@ select  A.FirstName,
 		A.LastName,
         A.Email,
 		A.LastLoggedInOn,
-        case A.State when 1 then 'Active' else 'Inactive' end as [State],
+        case A.State when 1 then 'Active' when 2 then 'Inactive' else 'Deleted' end as [State],
         A.IsAdministrator,
         {columns}
 		A.ID,
