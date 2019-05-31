@@ -133,6 +133,7 @@ namespace d360.web.Controllers
                             };
 
                             if (ft.Type == DataType.Date.ToString()) ro.DataType = "date";
+                            else if (ft.Type == DataType.DateTime.ToString()) ro.DataType = "datetime";
                             else if (ft.Type == DataType.Boolean.ToString()) ro.DataType = "bool";
 
                             if (!string.IsNullOrEmpty(ft.LookupObjectType) && ft.LookupObjectID.HasValue)
@@ -341,7 +342,7 @@ namespace d360.web.Controllers
                         {
                             case "date":
                             case "datetime":
-                                jsonElementDataType = "date";
+                                jsonElementDataType = jsonElementDefinition.DataType;
                                 DateTime jsonDate;
                                 if (DateTime.TryParse(jsonElementValue, out jsonDate))
                                 {

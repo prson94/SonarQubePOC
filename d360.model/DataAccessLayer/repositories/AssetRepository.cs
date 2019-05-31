@@ -889,6 +889,10 @@ namespace d360.model.DataAccessLayer
                         }
                         else if (f.Type == "JsonElement")
                         {
+                            if (jsonElementDefinition.DataType == "decimal")
+                            {
+                                jsonElementDefinition.DataType = "float";
+                            }
                             fieldColumns.Add($"try_cast(FJP{f.ID}.[Value] as {jsonElementDefinition.DataType}) as [{columnName}]");
                         }
                         else
@@ -986,6 +990,12 @@ namespace d360.model.DataAccessLayer
                                         if (field.Type == "JsonElement")
                                         {
                                             FieldTypeDefinition_JsonElement jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(field.Definition);
+
+                                            if (jsonElementDefinition.DataType == "decimal")
+                                            {
+                                                jsonElementDefinition.DataType = "float";
+                                            }
+
                                             fieldDataType = jsonElementDefinition.DataType;
 
                                             orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"try_cast(FJP{field.ID}.Value as {fieldDataType})";
