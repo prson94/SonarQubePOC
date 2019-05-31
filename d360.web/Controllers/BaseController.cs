@@ -1996,7 +1996,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                             }
                         }
                     }
-                    if(fromArtifact && filterFieldType.AllowMultipleValues)
+                    if(fromArtifact && filterFieldType != null && filterFieldType.AllowMultipleValues)
                         filters +=  applyMulitSelectFilteringSuffix(dbParams, fValue, tableId, i, filterFieldType, idColumn);
                    else
                         filter = getFilteringConditionBind(fField, fCondition, i, dbParams, fValue, "", ft: filterFieldType);// "flt");
