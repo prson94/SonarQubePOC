@@ -9,5 +9,7 @@ namespace d360.model.validators
     public interface IWorkflowApiModelValidator
     {
        bool ValidateWorkflowGetTypeModel(IEnumerable<KeyValuePair<string, string>> queryParams);
+
+        bool ValidateWorkflowGeVersioneModel(IEnumerable<KeyValuePair<string, string>> queryParams);
     }
 }
