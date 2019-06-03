@@ -15,6 +15,8 @@ using d360.web.Models;
 using System.Collections.Generic;
 using System.Linq;
 using d360.model.DataAccessLayer;
+using d360.model.validators;
+
 
 namespace d360.web
 {
@@ -41,6 +43,8 @@ namespace d360.web
             builder.RegisterType<CrossReferencesRepository>().As<ICrossReferencesRepository>().InstancePerRequest();
             builder.RegisterType<TagRepository>().As<ITagRepository>().InstancePerRequest();
             builder.RegisterType<FieldsRepository>().As<IFieldsRepository>().InstancePerRequest();
+            builder.RegisterType<WorkflowRepository>().As<IWorkflowRepository>().InstancePerRequest();
+            builder.RegisterType<WorkflowApiModelValidator>().As<IWorkflowApiModelValidator>().InstancePerRequest();
             builder.RegisterType<IssueRepository>().As<IIssueRepository>().InstancePerRequest();
 
 

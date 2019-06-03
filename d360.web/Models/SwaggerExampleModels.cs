@@ -1,4 +1,5 @@
 ﻿using d360.core.entities;
+using d360.core.entities.Workflow;
 using System;
 using System.Collections.Generic;
 
@@ -68,4 +69,28 @@ namespace d360.web.Models
             //};
         }
     }
+
+    #region Workflow Type Examples
+
+    public class WorkWorkflowTypeApiViewModelExample : IExamplesProvider
+    {
+        public object GetExamples()
+        {
+            return new WorkflowTypeApiViewModel()
+            {
+                ActionTypeUid = Guid.Empty,
+                AssetTypeUid = Guid.Empty,
+                RelationshipTypeUid = Guid.Empty,
+                Name = string.Empty,
+                Description = string.Empty,
+                State = core.enums.State.Active,
+                ChangeType = core.enums.Workflow.ChangeType.Add,
+                PublishedVersionUid = Guid.Empty,
+                CreatedOn = DateTime.Now,
+                UpdatedOn = DateTime.Now
+            };
+        }
+    }
+
+    #endregion
 }
