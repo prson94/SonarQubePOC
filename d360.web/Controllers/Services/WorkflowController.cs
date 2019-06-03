@@ -277,7 +277,7 @@ order by wi.StartedOn desc";
             var currentVersion = Company.WorkflowVersions.Where(v => v.TypeID == type.ID).OrderByDescending(v => v.Version).First();
             var publishedVersion = Company.WorkflowVersions.Find(type.PublishedVersionID);
 
-            List<FieldType> fieldTypes = this.getFieldTypes(@event.ObjectID, @event.Object);
+            List<FieldType> fieldTypes = this.getFieldTypes(@event.ObjectID, @event.Object,allowHtml:true);
 
             nodes.ForEach(n =>
             {
@@ -1689,7 +1689,7 @@ order by wi.StartedOn desc";
 
                     #endregion
 
-                    List<FieldType> fieldTypes = this.getFieldTypes(model.Event.ObjectID, model.Event.Object);
+                    List<FieldType> fieldTypes = this.getFieldTypes(model.Event.ObjectID, model.Event.Object,allowHtml:true);
 
                     Dictionary<int, int> keyMapping = new Dictionary<int, int>();
 
