@@ -941,10 +941,10 @@
         </simple-accordion>
 
         <!-- json property -->
-        <simple-accordion header="JSON Element" active="true" *ngIf="model.FieldType.Type == 'JsonElement'">
+        <simple-accordion header="JSON Attribute" active="true" *ngIf="model.FieldType.Type == 'JsonElement'">
             <div class="row">
                 <div class="col l4 m4 s12" style="margin: 10px 0 10px 0">
-                    <div class="FieldNameRequired">Json Field Type</div>
+                    <div class="FieldNameRequired">JSON Field</div>
                     <p-dropdown required
                                 [ngModelOptions]="{standalone: true}"
                                 [options]="lookups.Field_JsonFields"
@@ -953,7 +953,7 @@
                                 ngDefaultControl></p-dropdown>
                 </div>
                 <div class="col l4 m4 s12" style="margin: 10px 0 10px 0">
-                    <div class="FieldNameRequired">Property Path</div><br/>
+                    <div class="FieldNameRequired">JSON Attribute Path</div><br/>
                     <p-autoComplete 
                         [ngModelOptions]="{standalone: true}" 
                         [(ngModel)]="model.JsonElementSettings.Path" 
@@ -962,7 +962,7 @@
                     </p-autoComplete>
                 </div>
                 <div class="col l4 m4 s12" style="margin: 10px 0 10px 0">
-                    <div class="FieldNameRequired">Property Data Type</div>
+                    <div class="FieldNameRequired">JSON Attribute Data Type</div>
                     <p-dropdown required
                                 [ngModelOptions]="{standalone: true}"
                                 [options]="lookups.Field_JsonDataTypes"
