@@ -60,9 +60,6 @@ export class ObjectDetailFieldComponent {
             case 'text':
             case 'string':
                 return 'text';
-            case 'date':
-            case 'datetime':
-                return 'date';
             case 'number':
             case 'decimal':
                 return 'number';
