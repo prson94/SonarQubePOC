@@ -46,6 +46,9 @@
                 <ng-container *ngSwitchCase="'html'">
                     <div class="FieldDisplayContent" [innerHtml]="field.Value" [ngStyle]="{'font-weight':(isName ? 'bold':'')}"></div>
                 </ng-container>
+                <ng-container *ngSwitchCase="'link'">
+                    <div class="FieldDisplayContent" [innerHtml]="field.Value" [ngStyle]="{'font-weight':(isName ? 'bold':'')}"></div>
+                </ng-container>
                 <ng-container *ngSwitchDefault>
                     <div class="FieldDisplayContent" [ngStyle]="{'font-weight':(isName ? 'bold':'')}">{{field.Value}}</div>
                 </ng-container>
