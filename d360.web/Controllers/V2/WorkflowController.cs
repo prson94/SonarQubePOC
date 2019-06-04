@@ -110,52 +110,39 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Retrieves workflow versions for the given asset type unique identifier / action type unique identifier/ relationship unique identifier .
         /// </summary>
-        /// <param name="ActionTypeUid">Action Type unique identifier</param>
-        /// <param name="AssetTypeUid">Asset Type unique identifier</param>
-        /// <param name="RelationshipTypeUid">Relationship unique identifier</param>
-        /// <param name="WorkflowTypeUid">Workflow Type unique identifier</param>
         /// <param name="State">State</param>
         /// <returns>Returns list of workflow versions and An HTTP status code </returns>
         [
         HttpGet,
             Route("versions"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "", typeof(WorkflowVersionsApiViewModel)),
+            SwaggerParameter("ActionTypeUid", "Action Type unique identifier", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("AssetTypeUid", "Asset Type unique identifier.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("RelationshipTypeUid", "Relationship unique identifier.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("WorkflowTypeUid", "Workflow Type unique identifier.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
-            SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by AssetId.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by VersionNumber.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(WorkflowVersionsApiViewModel)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this workflow type is invalid, possibly due to an incorrectly formatted identifier ActionTypeUid/AssetTypeUid/RelationshipTypeUid.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             ]
-        public async Task<IHttpActionResult> GetWorkflowVersionAsync(Guid? ActionTypeUid = null, Guid? AssetTypeUid = null, Guid? RelationshipTypeUid = null,
-                                            Guid? WorkflowTypeUid = null, State? State = null)
+        public async Task<IHttpActionResult> GetWorkflowVersionAsync(State? State = null)
         {
             var prefix = "Workflow.GetWorkflowVersionAsync => ";
             var errorMessage = "";
             try
             {
-                List<KeyValuePair<string, string>> queryParams = new List<KeyValuePair<string, string>>();
+                
 
-                if (ActionTypeUid.HasValue)
-                    queryParams.Add(new KeyValuePair<string, string>("ActionTypeUid", ActionTypeUid.ToString()));
+                var queryParams = Request.GetQueryNameValuePairs();
 
-                if (AssetTypeUid.HasValue)
-                    queryParams.Add(new KeyValuePair<string, string>("AssetTypeUid", AssetTypeUid.ToString()));
 
-                if (RelationshipTypeUid.HasValue)
-                    queryParams.Add(new KeyValuePair<string, string>("RelationshipTypeUid", RelationshipTypeUid.ToString()));
+                if (!validator.IsValidGuidCountForWorkflowGetVersionModel(queryParams))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request, either  ActionTypeUid OR AssetTypeUid OR RelationshipTypeUid"));
 
-                if (WorkflowTypeUid.HasValue)
-                    queryParams.Add(new KeyValuePair<string, string>("WorkflowTypeUid", RelationshipTypeUid.ToString()));
-
-                if (State.HasValue)
-                    queryParams.Add(new KeyValuePair<string, string>("State", State.ToString()));
-
-                var qParams = Request.GetQueryNameValuePairs();
-                qParams=  qParams.Concat(queryParams);
-
-                if (!validator.ValidateWorkflowGeVersioneModel(qParams))
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request, either ActionTypeUid OR AssetTypeUid OR RelationshipTypeUid"));
+                if (!validator.IsValidGuidForWorkflowGetVersionModel(queryParams))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Your request to retrieve this workflow version is invalid, possibly due to an incorrectly formatted identifier ActionTypeUid/AssetTypeUid/RelationshipTypeUid/WorkflowTypeUid"));
 
 
                 var workflowVersions = await this.workflowRepository.GetWorkflowVersions(queryParams);

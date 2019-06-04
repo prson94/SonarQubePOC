@@ -192,7 +192,6 @@ namespace d360.model.DataAccessLayer
                 var pageNum = -1;
                 var pageSize = -1;
 
-                //add base sort if none is specified
                 if (!queryParams.Any(p => p.Key == "_order"))
                 {
                     orderBySql = "order by v.[version] asc";
@@ -275,21 +274,22 @@ namespace d360.model.DataAccessLayer
 
                     }
 
-                    pagingSql.Add(orderBySql);
-
-                    if (pageSize > 0 || pageNum > 0)
-                    {
-                        if (pageSize < 1) pageSize = 1;
-                        if (pageNum < 1) pageNum = 1;
-
-                        model.pageSize = pageSize;
-                        model.pageNum = pageNum;
-
-                        offsetSql = $"offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
-                        pagingSql.Add(offsetSql);
-                    }
+                   
                 });
 
+                pagingSql.Add(orderBySql);
+
+                if (pageSize > 0 || pageNum > 0)
+                {
+                    if (pageSize < 1) pageSize = 1;
+                    if (pageNum < 1) pageNum = 1;
+
+                    model.pageSize = pageSize;
+                    model.pageNum = pageNum;
+
+                    offsetSql = $"offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
+                    pagingSql.Add(offsetSql);
+                }
             }
         }
 
