@@ -3062,6 +3062,13 @@
             <param name="State">State</param>
             <returns>Returns list of workflow types and An HTTP status code </returns>
         </member>
+        <member name="M:d360.web.Controllers.V2.WorkflowController.GetWorkflowVersionAsync(System.Nullable{d360.core.enums.State})">
+            <summary>
+            Retrieves workflow versions for the given asset type unique identifier / action type unique identifier/ relationship unique identifier .
+            </summary>
+            <param name="State">State</param>
+            <returns>Returns list of workflow versions and An HTTP status code </returns>
+        </member>
         <member name="M:d360.web.Controllers.D3SApiController.GetFieldFiltersByType(d360.core.SystemObjects,System.Int32)">
             <summary>
             Gets a list of available field-level filters for a grid in the UI. This includes standard/custom fields, relationships, attributes, owner.
