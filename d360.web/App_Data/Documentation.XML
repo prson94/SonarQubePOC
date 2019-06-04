@@ -3055,9 +3055,6 @@
             <summary>
             Retrieves workflow types for the given asset type unique identifier / action type unique identifier/ relationship type unique identifier .
             </summary>
-            <param name="ActionTypeUid">Action Type unique identifier</param>
-            <param name="AssetTypeUid">Asset Type unique identifier</param>
-            <param name="RelationshipTypeUid">Relationship unique identifier</param>
             <param name="ChangeType">ChangeType</param>
             <param name="State">State</param>
             <returns>Returns list of workflow types and An HTTP status code </returns>
