@@ -5,6 +5,7 @@ using d360.web.Models;
 using d360.web.Models.Attributes;
 using Dapper;
 using Microsoft.Web.Http;
+using Newtonsoft.Json;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
@@ -59,6 +60,17 @@ namespace d360.web.Controllers.V2
 
             if (_pageSize < 1) _pageSize = 1;
             if (_pageSize > 250) _pageSize = 250;
+
+            IDictionary<string, string> customFields = new Dictionary<string, string>();
+            
+            var queryParams = Request.GetQueryNameValuePairs();
+            queryParams.ToList().ForEach(q =>
+            {
+                if(q.Key != "Uid" && q.Key != "FirstName" && q.Key != "LastName" && q.Key != "State" && q.Key != "IsAdministrator" && q.Key != "_pageSize" && q.Key != "_pageNum")
+                {
+                    customFields.Add(q);
+                }
+            });
 
             if (Uid != null || FirstName != null || LastName != null || State != null || IsAdministrator != null)
             {
@@ -123,7 +135,29 @@ namespace d360.web.Controllers.V2
                 }
             }
             #endregion
-            model.items = results;
+            List<object> customFieldResult = new List<object>();
+            if (customFields.Count() > 0)
+            {
+                foreach (var cusField in customFields)
+                {
+                    foreach (ICollection<KeyValuePair<string, object>> res in results)
+                    {
+                        res.ToList().ForEach(q =>
+                        {
+                            if (q.Key.Equals(cusField.Key) && q.Value.ToString().Equals(cusField.Value))
+                            {
+                                customFieldResult.Add(res);
+                            }
+                        });
+                    }
+                }
+            }
+            if (customFields.Count() > 0)
+            {
+                model.items = customFieldResult;
+            }
+            else
+                model.items = results;
             model.total = count.FirstOrDefault();
             return Request.CreateResponse(HttpStatusCode.OK, model);
         }
