@@ -1053,25 +1053,19 @@ namespace d360.model
                     var newValues = val?.Split(',').Where(s => !string.IsNullOrEmpty(s.Trim())).Select(x => x.Trim()) ?? new string[0];
                     newValues = oldValues.Union(newValues).Distinct().OrderBy(x => x);
                     field.Value = string.Join(",", newValues);
-
-
                 }
                 else
                 {
                     //update
                     field.Value = val;
-                    if (isAssetEdited)
-                        ObjectContext.ObjectStateManager.ChangeObjectState(field, EntityState.Modified);
-
                 }
 
                 //Remove the field from db if field value is null or empty 
                 if (string.IsNullOrEmpty(field.Value))
                 {
-                    ObjectContext.ObjectStateManager.ChangeObjectState(field, EntityState.Deleted);
+                    Fields.Remove(field);
                 }
             }
-
         }
         private void UpdateItemField(WorkflowItemStep itemStep, EventObjectInfo objectInfo, WorkflowItemStepSettingModel settings)
         {
@@ -1091,10 +1085,12 @@ namespace d360.model
                 {
                     objectType = issue.Object;
                     objectId = issue.ObjectID;
-                    asset = Assets.Where(x => x.Object == issue.Object && x.ObjectID == issue.ObjectID).FirstOrDefault();
-                    ObjectContext.ObjectStateManager.ChangeObjectState(asset, EntityState.Modified);
-                    isAssetEdited = true;
-
+                    if (!isAssetEdited)
+                    {
+                        asset = Assets.Where(x => x.Object == issue.Object && x.ObjectID == issue.ObjectID).FirstOrDefault();
+                        ObjectContext.ObjectStateManager.ChangeObjectState(asset, EntityState.Modified);
+                        isAssetEdited = true;
+                    }
                 }
 
                 if (fieldType == null)
@@ -1158,22 +1154,23 @@ namespace d360.model
                     this.UpdateField(objectId, objectType, fieldType, item, val, isAssetEdited, asset);
                 }
 
-                //update asset table to trigger audit                    
-                Database.Connection.Execute(
-                    "exec [utility].[AddAuditEntry]  @ParentObject, @ParentObjectID, @ResourceID, @date, @op, @Object, @ObjectID",
-                    new
-                    {
-                        Object = objectType,
-                        ObjectID = objectId,
-                        ParentObject = objectType,
-                        date = DateTime.UtcNow,
-                        ParentObjectID = objectId,
-                        ResourceID = 0,
-                        op = "Update"
-                    });
-            }
 
+            }
             SaveChanges();
+
+            //update asset table to trigger audit                    
+            Database.Connection.Execute(
+                     "exec [utility].[AddAuditEntry]  @ParentObject, @ParentObjectID, @ResourceID, @date, @op, @Object, @ObjectID",
+                     new
+                     {
+                         Object = objectInfo.Object.ToString(),
+                         ObjectID = objectInfo.ObjectID,
+                         ParentObject = objectInfo.Object.ToString(),
+                         date = DateTime.UtcNow,
+                         ParentObjectID = objectInfo.ObjectID,
+                         ResourceID = 0,
+                         op = "Update"
+                     });
         }
 
 
