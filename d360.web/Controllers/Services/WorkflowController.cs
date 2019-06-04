@@ -282,8 +282,8 @@ order by wi.StartedOn desc";
 
             nodes.ForEach(n =>
             {
-                n.SettingsObject = XmlToDynamic(this.DeFormatMessageBodyTemplate(@event.Object, fieldTypes,n.Settings),false);
-                n.FieldsObject = XmlToDynamic(this.DeFormatFormDescription(@event.Object,fieldTypes, n.Fields));
+                n.SettingsObject = XmlToDynamic(this.DeFormatMessageBodyTemplate(@event.Object, fieldTypes, n.Settings), false);
+                n.FieldsObject = XmlToDynamic(this.DeFormatFormDescription(@event.Object, fieldTypes, n.Fields));
             });
 
             links.ForEach(l =>
@@ -301,7 +301,7 @@ order by wi.StartedOn desc";
                 Type = type,
                 Event = @event,
                 CurrentVersion = currentVersion,
-                PublishedVersion = publishedVersion 
+                PublishedVersion = publishedVersion
             };
         }
 
@@ -2014,13 +2014,20 @@ order by wi.StartedOn desc";
             //Get asset fields for action
             if (model.Event.Object == "IssueType")
             {
-                try
+                string IssueObjectType = string.Empty;
+                int IssueObjectId = -1;
+                if (model.Event != null && model.Event.Condition != null)
                 {
-                    string IssueObjectType = string.Empty;
-                    int IssueObjectId = -1;
-                    if (model.Event.ConditionObject != null && model.Event.ConditionObject.Condition != null)
+                    string asXML = string.Empty;
+                    if (model.Event.Condition.TrimStart().First() == '{')
+                        asXML = JsonConvert.DeserializeXNode(model.Event.Condition).ToString();
+                    else
+                        asXML = model.Event.Condition;
+
+                    var parsedConditions = XmlToDynamic(GetConditionLabels(asXML));
+                    if (parsedConditions != null && parsedConditions.Condition != null)
                     {
-                        var conditions = model.Event.ConditionObject.Condition;
+                        var conditions = parsedConditions.Condition;
                         if (Convert.ToInt32(conditions.Count) >= 2)
                         {
                             if (conditions[0]["@ContextualFieldID"] == "IssueObject" && conditions[1]["@ContextualFieldID"] == "IssueObjectID")
@@ -2030,14 +2037,10 @@ order by wi.StartedOn desc";
                             }
                         }
                     }
-                    if (IssueObjectId > 0 && !string.IsNullOrEmpty(IssueObjectType))
-                    {
-                        fieldTypes = fieldTypes.Union(this.getFieldTypes(IssueObjectId, IssueObjectType)).ToList();
-                    }
                 }
-                catch
+                if (IssueObjectId > 0 && !string.IsNullOrEmpty(IssueObjectType))
                 {
-
+                    fieldTypes = fieldTypes.Union(this.getFieldTypes(IssueObjectId, IssueObjectType)).ToList();
                 }
             }
 
@@ -2082,17 +2085,17 @@ order by wi.StartedOn desc";
             return data;
         }
 
-        private string FormatMessageBodyTemplate( string type, List<FieldType> fieldTypes, string data)
+        private string FormatMessageBodyTemplate(string type, List<FieldType> fieldTypes, string data)
         {
             dynamic settings = XmlToDynamic(data);
-            if(settings != null && settings.MessageBodyTemplate != null)
+            if (settings != null && settings.MessageBodyTemplate != null)
             {
                 string msg = settings.MessageBodyTemplate;
-                var fieldType = type == "IssueType" ? "Action Field" : "Asset Field";
                 fieldTypes.ForEach(x =>
                 {
+                    var fieldType = x.Object == "IssueType" ? "Action Field" : "Asset Field";
                     var f = "[" + fieldType + " :: " + x.Name + "]";
-                var t = "[FIELD" + x.ID + "]";
+                    var t = "[FIELD" + x.ID + "]";
                     msg = msg.Replace(f, t);
                 });
                 settings.MessageBodyTemplate = msg;
@@ -2107,9 +2110,9 @@ order by wi.StartedOn desc";
             if (settings != null && settings.MessageBodyTemplate != null)
             {
                 string msg = settings.MessageBodyTemplate;
-                var fieldType = type == "IssueType" ? "Action Field" : "Asset Field";
                 fieldTypes.ForEach(x =>
                 {
+                    var fieldType = x.Object == "IssueType" ? "Action Field" : "Asset Field";
                     var f = "[" + fieldType + " :: " + x.Name + "]";
                     var t = "[FIELD" + x.ID + "]";
                     msg = msg.Replace(t, f);
@@ -2804,11 +2807,11 @@ order by wi.StartedOn desc";
                     else
                         fieldChange.Value = field["@ValueLabel"] != null ? field["@ValueLabel"] : field["@Value"] != null ? field["@Value"] : "";
 
-                    if(isFromActionForm && formFieldId != null && stepId != 0)
+                    if (isFromActionForm && formFieldId != null && stepId != 0)
                     {
                         var fieldData = formFieldId.Trim().Split('|');
                         var actionFieldType = fieldData[0];
-                        var actionFieldTypeId= int.Parse(fieldData[1]);
+                        var actionFieldTypeId = int.Parse(fieldData[1]);
 
                         var actionField = Company.Fields.FirstOrDefault(x => x.FieldTypeID == actionFieldTypeId && x.ObjectID == detail.ObjectID);
                         fieldChange.Value = actionField?.FormattedValue;
