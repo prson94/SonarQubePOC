@@ -13,5 +13,8 @@ namespace d360.model.DataAccessLayer
     {
          Task<IEnumerable<WorkflowTypeApiViewModel>> GetWorkflowTypes(IEnumerable<KeyValuePair<string, string>> queryParams);
         Task<WorkflowVersionsApiViewModel> GetWorkflowVersions(IEnumerable<KeyValuePair<string, string>> queryParams);
+
+        Task<IEnumerable<WorkflowVersionSteps>> GetWorkflowVersionSteps(Guid uid);
+
     }
 }

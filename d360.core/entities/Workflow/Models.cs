@@ -379,5 +379,28 @@ namespace d360.core.entities.Workflow
         [DataMember]
         public IEnumerable<WorkflowVersionApiViewModel> items { get; set; }
     }
+
+
+
+    public class WorkflowVersionSteps
+    {
+        public Guid Uid { get; set; }
+        public string Name { get; set; }
+        [DataMember, JsonConverter(typeof(StringEnumConverter))]
+        public State  State { get; set; }
+        [DataMember, JsonConverter(typeof(StringEnumConverter))]
+        public StepType StepType { get; set; }
+
+        [DataMember, JsonConverter(typeof(StringEnumConverter))]
+        public WorkflowActivityType ActivityType { get; set; }
+        public string Settings { get; set; }
+
+        public Guid? StartedByUid { get; set; }
+        public DateTime? StartedOn { get; set; }
+        public Guid? CompletedByUid { get; set; }
+        public DateTime? CompletedOn { get; set; }
+
+
+    }
     #endregion
 }

@@ -159,5 +159,35 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
         }
+
+        /// <summary>
+        /// Retrieves workflow versions  steps for the given workflow version unique identifier .
+        /// </summary>
+        /// <param name="workflowVersionUid"> workflow version unique identifier</param>
+        /// <returns>Returns list of workflow version steps and An HTTP status code</returns>
+        [HttpGet,Route("versions/{workflowVersionUid}/steps"),
+        SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+        SwaggerResponse(HttpStatusCode.OK, "", typeof(WorkflowVersionSteps)),
+        SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this workflow version steps is invalid, possibly due to an incorrectly formatted  workflow version unique identifier.", typeof(ErrorResponse)),
+        SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))]
+       
+        public async Task<IHttpActionResult> GetWorkflowVersionStepsAsync(Guid workflowVersionUid)
+        {
+            var prefix = "Workflow.GetWorkflowVersionStepsAsync => ";
+            var errorMessage = "";
+            try {
+                var workflowVersionSteps = await this.workflowRepository.GetWorkflowVersionSteps(workflowVersionUid);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, workflowVersionSteps)));
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix  }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
     }
 }
