@@ -2372,6 +2372,14 @@ where	R.SourceObject = 'FusionAttribute'
                             if (Any<FieldType>(i => i.Object == o.Object && i.ObjectID == o.ObjectID && i.Name == o.Name))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             break;
+                        case EntityState.Deleted:
+                            if (o.Type == DataType.JSON.ToString())
+                            {
+                                var count = Query<int>("select count(1) from FieldType T cross apply openjson(T.[Definition]) with (FieldTypeID int '$.FieldTypeID') D where AssetTypeID = @at and [Type] = 'JsonElement' and D.FieldTypeID = @ft", new { at = o.AssetTypeID, ft = o.ID }).Single();
+                                if (count > 0)
+                                    throw new ArgumentException(Messages.Error_Item_FieldJsonAttributeReferences);
+                            }
+                            break;
                         case EntityState.Modified:
                             if (Any<FieldType>(i => i.Object == o.Object && i.ObjectID == o.ObjectID && i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
