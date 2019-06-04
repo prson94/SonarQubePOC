@@ -2009,7 +2009,7 @@ order by wi.StartedOn desc";
 
         private List<FieldType> GetFieldsForDiagramModel(WorkflowDiagramModel model)
         {
-            List<FieldType> fieldTypes = this.getFieldTypes(model.Event.ObjectID, model.Event.Object);
+            List<FieldType> fieldTypes = this.getFieldTypes(model.Event.ObjectID, model.Event.Object, true);
 
             //Get asset fields for action
             if (model.Event.Object == "IssueType")
@@ -2040,7 +2040,7 @@ order by wi.StartedOn desc";
                 }
                 if (IssueObjectId > 0 && !string.IsNullOrEmpty(IssueObjectType))
                 {
-                    fieldTypes = fieldTypes.Union(this.getFieldTypes(IssueObjectId, IssueObjectType)).ToList();
+                    fieldTypes = fieldTypes.Union(this.getFieldTypes(IssueObjectId, IssueObjectType, true)).ToList();
                 }
             }
 
