@@ -61,7 +61,7 @@ namespace d360.core
         RefListRelationship= 1 << 23,
         [Description("JSON")]
         JSON = 1 << 24,
-        [Description("JSON Element")]
+        [Description("JSON Attribute")]
         JsonElement = 1 << 25
     } 
 
