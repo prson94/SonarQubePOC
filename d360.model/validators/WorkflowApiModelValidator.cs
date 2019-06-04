@@ -14,40 +14,82 @@ namespace d360.model.validators
             
         }
 
-        public bool ValidateWorkflowGetTypeModel(IEnumerable<KeyValuePair<string, string>> queryParams)
+        
+
+    public bool IsValidGuidCountForWorkflowGetTypeModel(IEnumerable<KeyValuePair<string, string>> queryParams)
+    {
+        int count = 0;
+        if (queryParams != null)
         {
-            int count = 0;
-            if (queryParams.ToList().Any(q => q.Key.ToLower() == "actiontypeuid"))
-            {
-                Guid actionTypeUid;
-                var actionTypeUidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "actiontypeuid").Value;
-                if ((Guid.TryParse(actionTypeUidString, out actionTypeUid)) && (actionTypeUid != Guid.Empty))
+            queryParams.ToList().ForEach(x => {
+                switch (x.Key.ToLower())
                 {
-                    count++;
-                }
-            }
+                    case "actiontypeuid":
+                        Guid actionTypeUid;
 
-            if (queryParams.ToList().Any(q => q.Key.ToLower() == "assettypeuid"))
-            {
-                Guid assetTypeUid;
-                var assettypeUidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "assettypeuid").Value;
-                if ((Guid.TryParse(assettypeUidString, out assetTypeUid)) && (assetTypeUid != Guid.Empty))
-                {
-                    count++;
+                        if ((Guid.TryParse(x.Value, out actionTypeUid)) && (actionTypeUid != Guid.Empty))
+                        {
+                            count++;
+                        }
+                        break;
+                    case "assettypeuid":
+                        Guid assetTypeUid;
+                        if ((Guid.TryParse(x.Value, out assetTypeUid)) && (assetTypeUid != Guid.Empty))
+                        {
+                            count++;
+                        }
+                        break;
+                    case "relationshiptypeuid":
+                        Guid relationshipTypeUid;
+                        if ((Guid.TryParse(x.Value, out relationshipTypeUid)) && (relationshipTypeUid != Guid.Empty))
+                        {
+                            count++;
+                        }
+                        break;
                 }
-            }
+            });
 
-            if (queryParams.ToList().Any(q => q.Key.ToLower() == "relationshiptypeuid"))
-            {
-                Guid relationshipTypeUid;
-                var relationshipTypeUidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "relationshiptypeuid").Value;
-                if ((Guid.TryParse(relationshipTypeUidString, out relationshipTypeUid)) && (relationshipTypeUid != Guid.Empty))
-                {
-                    count++;
-                }
-            }
-
-            return !(count >1);
         }
+
+        return !(count > 1);
+    }
+
+    public bool IsValidGuidForWorkflowGetTypeModel(IEnumerable<KeyValuePair<string, string>> queryParams)
+    {
+        bool isValidGuid = true;
+        if (queryParams != null)
+        {
+            queryParams.ToList().ForEach(x =>
+            {
+
+                Guid uid;
+                switch (x.Key.ToLower())
+                {
+                    case "actiontypeuid":
+                        if (!Guid.TryParse(x.Value, out uid))
+                        {
+                            isValidGuid = false;
+                        }
+                        break;
+                    case "assettypeuid":
+                        if (!Guid.TryParse(x.Value, out uid))
+                        {
+                            isValidGuid = false;
+                        }
+                        break;
+                    case "relationshiptypeuid":
+                        if (!Guid.TryParse(x.Value, out uid))
+                        {
+                            isValidGuid = false;
+                        }
+                        break;
+                      
+                }
+
+            });
+        }
+
+        return isValidGuid;
+    }
     }
 }
