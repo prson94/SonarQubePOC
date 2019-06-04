@@ -112,5 +112,35 @@ namespace d360.model.DataAccessLayer
             var workflowTypes = await this.CompanyContext.QueryAsync<WorkflowTypeApiViewModel>(sql, dbArgs);
             return workflowTypes;
         }
+
+
+        public async Task<IEnumerable<WorkflowVersionSteps>> GetWorkflowVersionSteps(Guid uid)
+        {
+            var dbArgs = new DynamicParameters();
+            string whereClause = " where v.uid=@uid";
+            dbArgs.Add("@uid", uid);
+            string sql = $@"	select 
+		            itemstep.UID,
+		            vs.Name,
+		            VS.State,
+		            vs.StepType,
+		            vs.ActivityType,
+		            itemstep.Settings,
+		            itemstep.StartedOn,
+		            itemstep.CompletedOn,
+		            R.uid as CreatedByUid,
+		            R1.uid as UpdatedByUid
+	            from workflow.[version]  v 
+	            inner join  workflow.VersionStep  vs  on
+	            vs.VersionID = v.id
+	            inner join workflow.ItemStep itemstep on
+	            itemstep.StepID = vs.id
+	            left outer join reporting.Global_Resource R on R.ResourceID = itemstep.StartedBy
+	            left outer join reporting.Global_Resource R1 on R1.ResourceID = itemstep.CompletedBy
+	            {whereClause}"; 
+
+            var workflowVersionSteps = await this.CompanyContext.QueryAsync<WorkflowVersionSteps>(sql, dbArgs);
+            return workflowVersionSteps;
+        }
     }
 }
