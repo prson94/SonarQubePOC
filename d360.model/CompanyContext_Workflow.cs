@@ -1113,6 +1113,11 @@ namespace d360.model
                     var val = DateTime.UtcNow.Date.ToShortDateString();
                     this.UpdateField(objectId, objectType, fieldType, item, val);
                 }
+                else if (!item.IsActionForm && !item.UseFormValue)
+                {
+                    var val = item.Value;
+                    this.UpdateField(objectId, objectType, fieldType, item, val);
+                }
                 //if the value is a form value get it
                 else if (!item.IsActionForm && item.UseFormValue && !string.IsNullOrEmpty(item.FormField) && item.FormStepID > 0)
                 {
@@ -1128,7 +1133,7 @@ namespace d360.model
                     }
                 }
                 //Get the value from action form (Issue)
-                if (item.IsActionForm)
+                else if (item.IsActionForm)
                 {
                     var val = "";
                     var fieldData = item.FormField.Split('|');
@@ -1157,6 +1162,7 @@ namespace d360.model
                     }
                     this.UpdateField(objectId, objectType, fieldType, item, val, isAssetEdited, asset);
                 }
+
 
                 //update asset table to trigger audit                    
                 Database.Connection.Execute(
