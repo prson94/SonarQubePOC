@@ -21,6 +21,11 @@
                         <div>{{(field.Value | date:'shortDate')}}</div>
                     </div>
                 </ng-container>
+                <ng-container *ngSwitchCase="'datetime'">
+                    <div class="FieldDisplayContent">
+                        <div>{{(field.Value | date:'medium')}}</div>
+                    </div>
+                </ng-container>
                 <ng-container *ngSwitchCase="'bool'">
                     <div class="FieldDisplayContent">
                         <i *ngIf="(field.Value || '').toUpperCase() == 'TRUE'" class="fa fa-check enabled" title="True"></i>
@@ -39,6 +44,9 @@
                     <div class="FieldDisplayContent" [ngStyle]="{'font-weight':(isName ? 'bold':'')}">{{formatAsNumber(field.Value)}}</div>
                 </ng-container>
                 <ng-container *ngSwitchCase="'html'">
+                    <div class="FieldDisplayContent" [innerHtml]="field.Value" [ngStyle]="{'font-weight':(isName ? 'bold':'')}"></div>
+                </ng-container>
+                <ng-container *ngSwitchCase="'link'">
                     <div class="FieldDisplayContent" [innerHtml]="field.Value" [ngStyle]="{'font-weight':(isName ? 'bold':'')}"></div>
                 </ng-container>
                 <ng-container *ngSwitchDefault>

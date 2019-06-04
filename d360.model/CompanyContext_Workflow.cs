@@ -1021,11 +1021,13 @@ namespace d360.model
             Database.Connection.Execute(sql, new { obj = @object.ToString(), objectid = objectID, intersectTypeId = intersectTypeId });
         }
 
-        private void UpdateField(int objectId,string objectType,FieldType fieldType, WorkflowFieldUpdateSettings item,string val)
+        private void UpdateField(int objectId, string objectType, FieldType fieldType, WorkflowFieldUpdateSettings item, string val, bool isAssetEdited = false, Asset asset = null)
         {
+            // check if the field exists
             var field = Fields.Where(x => x.ObjectID == objectId && x.ObjectType == objectType && x.FieldTypeID == fieldType.ID).FirstOrDefault();
 
-            if (field == null)
+
+            if (field == null && !string.IsNullOrEmpty(val))
             {
                 //insert
                 var newField = new Field
@@ -1037,9 +1039,13 @@ namespace d360.model
                     UpdatedBy = CurrentResourceID
                 };
 
+                if (isAssetEdited)
+                {
+                    newField.AssetID = asset.ID;
+                }
                 Add<Field>(newField);
             }
-            else
+            else if (field != null)
             {
                 if (item.AppendValue)
                 {
@@ -1054,10 +1060,18 @@ namespace d360.model
                 {
                     //update
                     field.Value = val;
+                    if (isAssetEdited)
+                        ObjectContext.ObjectStateManager.ChangeObjectState(field, EntityState.Modified);
 
                 }
+
+                //Remove the field from db if field value is null or empty 
+                if (string.IsNullOrEmpty(field.Value))
+                {
+                    ObjectContext.ObjectStateManager.ChangeObjectState(field, EntityState.Deleted);
+                }
             }
-            SaveChanges();
+
         }
         private void UpdateItemField(WorkflowItemStep itemStep, EventObjectInfo objectInfo, WorkflowItemStepSettingModel settings)
         {
@@ -1103,21 +1117,21 @@ namespace d360.model
                 else if (!item.IsActionForm && item.UseFormValue && !string.IsNullOrEmpty(item.FormField) && item.FormStepID > 0)
                 {
 
-                   foreach(var newValue in GetFieldValueFromFormResponse(item, itemStep.ItemID))
+                    foreach (var newValue in GetFieldValueFromFormResponse(item, itemStep.ItemID))
                     {
                         string val = newValue;
                         if (DateTime.TryParse(val, out DateTime tempDate))
                         {
-                                val = tempDate.Date.ToShortDateString();
+                            val = tempDate.Date.ToShortDateString();
                         }
                         this.UpdateField(objectId, objectType, fieldType, item, val);
                     }
                 }
                 //Get the value from action form (Issue)
-                else if (item.IsActionForm)
+                if (item.IsActionForm)
                 {
+                    var val = "";
                     var fieldData = item.FormField.Split('|');
-                    string val = string.Empty;
                     if (fieldData.Count() == 2)
                     {
                         int fieldTypeId = int.Parse(fieldData[1]);
@@ -1127,10 +1141,7 @@ namespace d360.model
                             var actionFieldType = FieldTypes.FirstOrDefault(x => x.Object == "IssueType" && x.ID == actionField.FieldTypeID);
                             if (actionFieldType.Type == "Lookup")
                             {
-                                var lookupSql = @"select top 1 Value from [dbo].[FieldLookupValue]
-                                        where LookupObjectType = @Object and LookupObjectID = @ObjectId and Text = @Value";
-                                var lookupValue = Query<int?>(lookupSql, new { Object = actionFieldType.LookupObjectType, ObjectId = actionFieldType.LookupObjectID, Value = actionField?.FormattedValue }).FirstOrDefault();
-                                val = lookupValue.ToString();
+                                val = actionField?.Value;
                             }
                             else
                             {
@@ -1141,13 +1152,10 @@ namespace d360.model
                             {
                                 val = tempDate.Date.ToShortDateString();
                             }
+
                         }
                     }
-                    this.UpdateField(objectId, objectType, fieldType, item, val);
-                }
-                else
-                {
-                    this.UpdateField(objectId, objectType, fieldType, item, item.Value);
+                    this.UpdateField(objectId, objectType, fieldType, item, val, isAssetEdited, asset);
                 }
 
                 //update asset table to trigger audit                    
@@ -1167,7 +1175,7 @@ namespace d360.model
 
             SaveChanges();
         }
-      
+
 
         private string GetFieldValueIntersectFromFormResponse(WorkflowRelationshipUpdateSettings item, long itemId)
         {
@@ -1198,7 +1206,7 @@ namespace d360.model
 
             var firstResponse = formResponses.FirstOrDefault();
 
-    
+
             XElement root = XElement.Parse(firstResponse.Fields);
 
             IEnumerable<XElement> fields =

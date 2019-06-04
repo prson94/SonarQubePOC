@@ -3580,7 +3580,7 @@ namespace d360.web.Controllers
                 { "Boolean", "bit" },
                 { "Date", "date" },
                 { "Date With Time", "datetime" },
-                { "Decimal", "decimal" },
+                { "Decimal", "float" },
                 { "Text (non-Unicode)", "varchar" },
                 { "Text (Unicode)", "nvarchar" },
                 { "Whole Number", "int" },

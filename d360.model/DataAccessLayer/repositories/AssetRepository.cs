@@ -209,7 +209,7 @@ namespace d360.model.DataAccessLayer
                     count(*)
                 from Asset A
                 {(assetType.Object == "ReferenceItemType" ? " inner join ReferenceItem RI on RI.ID = A.ObjectID" : "")} 
-                {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID" : "")} 
+                {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
                 {string.Join("\n", string.IsNullOrWhiteSpace(whereSql) ? countJoins : fieldJoins)}
                 {whereSql}";
 
@@ -226,7 +226,7 @@ namespace d360.model.DataAccessLayer
                     {fieldsSql}
                 from Asset A
                 {(assetType.Object == "ReferenceItemType" ? " inner join ReferenceItem RI on RI.ID = A.ObjectID" : "")} 
-                {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID" : "")} 
+                {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
                 {string.Join("\n", fieldJoins)}
                 {whereSql}
                 {string.Join("\n", pagingSql)}
@@ -889,6 +889,10 @@ namespace d360.model.DataAccessLayer
                         }
                         else if (f.Type == "JsonElement")
                         {
+                            if (jsonElementDefinition.DataType == "decimal")
+                            {
+                                jsonElementDefinition.DataType = "float";
+                            }
                             fieldColumns.Add($"try_cast(FJP{f.ID}.[Value] as {jsonElementDefinition.DataType}) as [{columnName}]");
                         }
                         else
@@ -986,6 +990,12 @@ namespace d360.model.DataAccessLayer
                                         if (field.Type == "JsonElement")
                                         {
                                             FieldTypeDefinition_JsonElement jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(field.Definition);
+
+                                            if (jsonElementDefinition.DataType == "decimal")
+                                            {
+                                                jsonElementDefinition.DataType = "float";
+                                            }
+
                                             fieldDataType = jsonElementDefinition.DataType;
 
                                             orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"try_cast(FJP{field.ID}.Value as {fieldDataType})";

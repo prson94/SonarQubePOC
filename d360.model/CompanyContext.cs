@@ -2343,7 +2343,7 @@ where	R.SourceObject = 'FusionAttribute'
 
                     field.UpdatedOn = DateTime.UtcNow;
 
-                    if (field.FieldType != null && field.FieldType.Type == "Html")
+                    if (field.FieldType != null && (field.FieldType.Type == "Html" || field.FieldType.Type == "Link"))
                     {
                         var sanitizer = new HtmlSanitizer();
                         sanitizer.AllowedSchemes.Add("data");

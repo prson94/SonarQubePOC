@@ -1041,7 +1041,7 @@ a.breadcrumb {
         }
 
         li:last-child {
-            padding-right: 0px;
+            padding-right: 10px;
         }
     }
 
@@ -1108,10 +1108,20 @@ a.breadcrumb {
         }
     }
 }
-
-.header-cart {
+.header-button {
     font-size: 1.2em;
-    padding: 0 15px;
+    padding: 0 10px;
+
+    &:active, &.active {
+        background: #676C7A;
+        .fa{
+            color: #54fffb;
+        }
+    }
+
+    &:hover, &.hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
 }
 
 .header-search {
@@ -1131,15 +1141,62 @@ a.breadcrumb {
     text-decoration: none;
     font-size: 100%;
     list-style: none;
+    border: none !important;
+    border-radius: 3px;
+    box-shadow: rgba(0, 0, 0, 0.33) 0 1px 3px;
+
 
     .header-item {
         width: 100%;
-        padding: 10px;
         display: inline-block;
         cursor: pointer;
 
-        .sign-out {
-            padding: 0px;
+        &:hover {
+            background-color: #DFF3F7;
+        }
+
+        .mini-menu-line {
+            display: flex;
+            flex-basis: auto;
+            flex-direction: row;
+            width: 100%;
+            flex-grow: 1;
+            flex-wrap: nowrap;
+            min-width: 150px;
+
+            .text {
+                padding: 10px;
+                min-width: 150px;
+                max-width: 150px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .check-gutter {
+                background: rgba(0, 0, 0, 0.05);
+                width: 20px;
+                min-width: 40px;
+                text-align: center;
+                line-height: 35px;
+            }
+
+            .expand-gutter {
+                display: flex;
+                padding-left: 20px;
+                min-width: 20px;
+                padding: 10px;
+
+
+                i {
+                    margin-left: auto;
+                }
+            }
+
+            .separator {
+                height: 1px;
+                background-color: #DCDFE2;
+                width: inherit;
+            }
         }
     }
 }
@@ -1186,6 +1243,8 @@ a.breadcrumb {
     white-space: nowrap;
     color: black;
     background-color: white;
+    border-radius: 3px;
+    box-shadow: rgba(0, 0, 0, 0.33) 0 1px 3px;
 
     .header-profile-name {
         opacity: 0.5;
@@ -1197,16 +1256,7 @@ a.breadcrumb {
     margin-bottom: 10px !important;
     width: 100%;
 }
-/* follow header styles*/
-.follow {
-    font-size: 1.2em;
-    color: #fff;
-    padding: 0 15px;
-}
 
-.follow.active {
-    color: @igx-button-active-color !important;
-}
 /* permission tile header styles*/
 th.permission-header {
     border-top: 0 !important;

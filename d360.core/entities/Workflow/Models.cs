@@ -1,8 +1,10 @@
 ﻿using d360.core.enums;
 using d360.core.enums.Workflow;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
@@ -323,4 +325,26 @@ namespace d360.core.entities.Workflow
         public int AssetId { get; set; }
     }
 
+
+    #region API View Model
+   
+    public class WorkflowTypeApiViewModel
+    {
+
+        public Guid? ActionTypeUid { get; set; }
+        public Guid? AssetTypeUid { get; set; }
+        public Guid? RelationshipTypeUid { get; set; }
+        public string Name { get; set; }
+        [DataMember, JsonConverter(typeof(StringEnumConverter))]
+        public State State { get; set; }
+        [DataMember, JsonConverter(typeof(StringEnumConverter))]
+        public ChangeType ChangeType { get; set; }
+        public string Description { get; set; }
+        public Guid? PublishedVersionUid { get; set; }
+        public DateTime CreatedOn { get; set; }
+        public DateTime UpdatedOn { get; set; }
+
+    }
+      
+    #endregion
 }
