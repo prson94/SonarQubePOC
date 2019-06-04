@@ -120,7 +120,10 @@ namespace d360.web.Controllers.V2
         HttpGet,
             Route("versions"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "", typeof(WorkflowVersionApiViewModel)),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(WorkflowVersionsApiViewModel)),
+            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by AssetId.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this workflow type is invalid, possibly due to an incorrectly formatted identifier ActionTypeUid/AssetTypeUid/RelationshipTypeUid.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             ]
@@ -148,7 +151,10 @@ namespace d360.web.Controllers.V2
                 if (State.HasValue)
                     queryParams.Add(new KeyValuePair<string, string>("State", State.ToString()));
 
-                if (!validator.ValidateWorkflowGeVersioneModel(queryParams))
+                var qParams = Request.GetQueryNameValuePairs();
+                qParams=  qParams.Concat(queryParams);
+
+                if (!validator.ValidateWorkflowGeVersioneModel(qParams))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request, either ActionTypeUid OR AssetTypeUid OR RelationshipTypeUid"));
 
 
