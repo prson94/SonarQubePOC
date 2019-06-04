@@ -75,6 +75,7 @@
             <d3s-workflow-step-form-editor [objectType]="objectType"
                                            [objectId]="objectId"
                                            [step]="step"
+                                           [issueObject]="issueObject"
                                            (stepChange)="step = $event; stepChange.emit(step)">
             </d3s-workflow-step-form-editor>
         </div>
