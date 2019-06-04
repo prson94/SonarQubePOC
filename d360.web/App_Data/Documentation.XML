@@ -3051,9 +3051,9 @@
             <param name="model">The tag to be updated.</param>
             <returns>The updated tag.</returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.WorkflowController.GetWorkflowTypeAsync(System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{d360.core.enums.Workflow.ChangeType},System.Nullable{d360.core.enums.State})">
+        <member name="M:d360.web.Controllers.V2.WorkflowController.GetWorkflowTypeAsync(System.Nullable{d360.core.enums.Workflow.ChangeType},System.Nullable{d360.core.enums.State})">
             <summary>
-            Retrieves workflow types for the given asset type unique identifier / action type unique identifier/ relationship unique identifier .
+            Retrieves workflow types for the given asset type unique identifier / action type unique identifier/ relationship type unique identifier .
             </summary>
             <param name="ActionTypeUid">Action Type unique identifier</param>
             <param name="AssetTypeUid">Asset Type unique identifier</param>
@@ -3064,7 +3064,7 @@
         </member>
         <member name="M:d360.web.Controllers.V2.WorkflowController.GetWorkflowVersionAsync(System.Nullable{d360.core.enums.State})">
             <summary>
-            Retrieves workflow versions for the given asset type unique identifier / action type unique identifier/ relationship unique identifier .
+            Retrieves workflow versions for the given asset type unique identifier / action type unique identifier/ relationship type unique identifier / workflow type  unique identifier.
             </summary>
             <param name="State">State</param>
             <returns>Returns list of workflow versions and An HTTP status code </returns>

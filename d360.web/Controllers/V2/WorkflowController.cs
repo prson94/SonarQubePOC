@@ -45,7 +45,7 @@ namespace d360.web.Controllers.V2
         #endregion
 
         /// <summary>
-        /// Retrieves workflow types for the given asset type unique identifier / action type unique identifier/ relationship unique identifier .
+        /// Retrieves workflow types for the given asset type unique identifier / action type unique identifier/ relationship type unique identifier .
         /// </summary>
         /// <param name="ActionTypeUid">Action Type unique identifier</param>
         /// <param name="AssetTypeUid">Asset Type unique identifier</param>
@@ -54,42 +54,34 @@ namespace d360.web.Controllers.V2
         /// <param name="State">State</param>
         /// <returns>Returns list of workflow types and An HTTP status code </returns>
         [
-        HttpGet,
-        Route("types"),
-        SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-        SwaggerResponse(HttpStatusCode.OK, "", typeof(WorkflowTypeApiViewModel)),
-        SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this workflow type is invalid, possibly due to an incorrectly formatted identifier ActionTypeUid/AssetTypeUid/RelationshipTypeUid.", typeof(ErrorResponse)),
-        SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-        ]
-        public async Task<IHttpActionResult> GetWorkflowTypeAsync(Guid? ActionTypeUid=null,Guid? AssetTypeUid=null,Guid? RelationshipTypeUid=null, ChangeType? ChangeType = null, State? State = null)
+    HttpGet,
+    Route("types"),
+    SwaggerParameter("ActionTypeUid", "Action Type unique identifier", DataType = "string", ParameterType = "query", Required = false),
+    SwaggerParameter("AssetTypeUid", "Asset Type unique identifier.", DataType = "string", ParameterType = "query", Required = false),
+    SwaggerParameter("RelationshipTypeUid", "Relationship unique identifier.", DataType = "string", ParameterType = "query", Required = false),
+    SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+    SwaggerResponse(HttpStatusCode.OK, "", typeof(WorkflowTypeApiViewModel)),
+    SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this workflow type is invalid, possibly due to an incorrectly formatted identifier ActionTypeUid/AssetTypeUid/RelationshipTypeUid.", typeof(ErrorResponse)),
+    SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+   ]
+       
+        public async Task<IHttpActionResult> GetWorkflowTypeAsync(ChangeType? ChangeType = null, State? State = null)
         {
             var prefix = "Workflow.GetWorkflowTypeAsync => ";
             var errorMessage = "";
 
             try
             {
-                List<KeyValuePair<string, string>> queryParams = new List<KeyValuePair<string, string>>();
+                var queryParams = Request.GetQueryNameValuePairs();
 
-                if (ActionTypeUid.HasValue)
-                    queryParams.Add(new KeyValuePair<string, string>("ActionTypeUid", ActionTypeUid.ToString()));
+               
+                if (!validator.IsValidGuidCountForWorkflowGetTypeModel(queryParams))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request, either  ActionTypeUid OR AssetTypeUid OR RelationshipTypeUid"));
 
-                if (AssetTypeUid.HasValue)
-                    queryParams.Add(new KeyValuePair<string, string>("AssetTypeUid", AssetTypeUid.ToString()));
-
-                if (RelationshipTypeUid.HasValue)
-                    queryParams.Add(new KeyValuePair<string, string>("RelationshipTypeUid", RelationshipTypeUid.ToString()));
-
-                if (ChangeType.HasValue)
-                    queryParams.Add(new KeyValuePair<string, string>("ChangeType", ChangeType.ToString()));
-
-                if (State.HasValue)
-                    queryParams.Add(new KeyValuePair<string, string>("State", State.ToString()));
+                if (!validator.IsValidGuidForWorkflowGetTypeModel(queryParams))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Your request to retrieve this workflow version is invalid, possibly due to an incorrectly formatted identifier ActionTypeUid/AssetTypeUid/RelationshipTypeUid"));
 
 
-
-                if (!validator.ValidateWorkflowGetTypeModel(queryParams))
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request, either ActionTypeUid OR AssetTypeUid OR RelationshipTypeUid"));
-                
                 var workflowtypes = await this.workflowRepository.GetWorkflowTypes(queryParams);
                  return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, workflowtypes)));
 
@@ -108,7 +100,7 @@ namespace d360.web.Controllers.V2
 
 
         /// <summary>
-        /// Retrieves workflow versions for the given asset type unique identifier / action type unique identifier/ relationship unique identifier .
+        /// Retrieves workflow versions for the given asset type unique identifier / action type unique identifier/ relationship type unique identifier / workflow type  unique identifier.
         /// </summary>
         /// <param name="State">State</param>
         /// <returns>Returns list of workflow versions and An HTTP status code </returns>
