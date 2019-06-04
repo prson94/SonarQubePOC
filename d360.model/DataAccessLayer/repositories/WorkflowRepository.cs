@@ -128,8 +128,8 @@ namespace d360.model.DataAccessLayer
 		            itemstep.Settings,
 		            itemstep.StartedOn,
 		            itemstep.CompletedOn,
-		            R.uid as CreatedByUid,
-		            R1.uid as UpdatedByUid
+		            R.uid as StartedByUid,
+		            R1.uid as CompletedByUid
 	            from workflow.[version]  v 
 	            inner join  workflow.VersionStep  vs  on
 	            vs.VersionID = v.id
