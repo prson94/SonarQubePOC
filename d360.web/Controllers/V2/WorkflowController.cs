@@ -45,7 +45,7 @@ namespace d360.web.Controllers.V2
         #endregion
 
         /// <summary>
-        /// Retrieves workflow types for the given asset type unique identifier / action type unique identifier/ relationship unique identifier .
+        /// Retrieves workflow types for the given asset type unique identifier / action type unique identifier/ relationship type unique identifier .
         /// </summary>
         /// <param name="ActionTypeUid">Action Type unique identifier</param>
         /// <param name="AssetTypeUid">Asset Type unique identifier</param>
@@ -59,7 +59,6 @@ namespace d360.web.Controllers.V2
     SwaggerParameter("ActionTypeUid", "Action Type unique identifier", DataType = "string", ParameterType = "query", Required = false),
     SwaggerParameter("AssetTypeUid", "Asset Type unique identifier.", DataType = "string", ParameterType = "query", Required = false),
     SwaggerParameter("RelationshipTypeUid", "Relationship unique identifier.", DataType = "string", ParameterType = "query", Required = false),
-    SwaggerRequestExample(typeof(WorkflowTypeApiViewModel), typeof(WorkWorkflowTypeApiViewModelExample)),
     SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
     SwaggerResponse(HttpStatusCode.OK, "", typeof(WorkflowTypeApiViewModel)),
     SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this workflow type is invalid, possibly due to an incorrectly formatted identifier ActionTypeUid/AssetTypeUid/RelationshipTypeUid.", typeof(ErrorResponse)),
@@ -101,7 +100,7 @@ namespace d360.web.Controllers.V2
 
 
         /// <summary>
-        /// Retrieves workflow versions for the given asset type unique identifier / action type unique identifier/ relationship unique identifier .
+        /// Retrieves workflow versions for the given asset type unique identifier / action type unique identifier/ relationship type unique identifier / workflow type  unique identifier.
         /// </summary>
         /// <param name="State">State</param>
         /// <returns>Returns list of workflow versions and An HTTP status code </returns>
