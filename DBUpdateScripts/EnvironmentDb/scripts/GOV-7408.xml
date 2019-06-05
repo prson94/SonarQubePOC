@@ -1264,7 +1264,7 @@ begin
 												and H.SynchedAssetTypeID = @SynchedAssetTypeID
 												and H.Section = 1
 												and A.SourceID = H.SourceID 
-												and ((H.[Hash] is null) or (H.[Hash] is not null and H.[Action] is null));
+												and ((H.[Hash] is null and H.[Action] != 'A') or (H.[Hash] is not null and H.[Action] is null));
 		end
 		
 		BEGIN 
