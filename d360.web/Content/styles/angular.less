@@ -720,14 +720,15 @@ div.powerbi iframe {
     border: none;
     border-radius: 3px;
     line-height: 25px;
-    padding: 0 20px;
+    padding: 0 15px;
+    height: 30px;
 
     &:hover {
-        background: lighten(#ff7155, 5%);
+        background: mix(black, #ff7155, 7%)
     }
 
     &:active {
-        background: lighten(#ff7155, 10%);
+        background: mix(black, #ff7155, 14%)
     }
 }
 
@@ -1035,9 +1036,12 @@ a.breadcrumb {
             min-width: 115px;
         }
 
+        .spacer{
+            padding-right: 5px;
+        }
+
         li {
             cursor: pointer;
-            padding-right: 5px;
         }
 
         li:last-child {
@@ -1147,9 +1151,15 @@ a.breadcrumb {
 
 
     .header-item {
-        width: 100%;
-        display: inline-block;
         cursor: pointer;
+        display: table-row;
+        float: none;
+
+        &.label {
+            cursor: default;
+            opacity: 0.33;
+            pointer-events: none;
+        }
 
         &:hover {
             background-color: #DFF3F7;
@@ -1159,15 +1169,11 @@ a.breadcrumb {
             display: flex;
             flex-basis: auto;
             flex-direction: row;
-            width: 100%;
             flex-grow: 1;
             flex-wrap: nowrap;
-            min-width: 150px;
 
             .text {
                 padding: 10px;
-                min-width: 150px;
-                max-width: 150px;
                 overflow: hidden;
                 text-overflow: ellipsis;
             }
@@ -1178,6 +1184,7 @@ a.breadcrumb {
                 min-width: 40px;
                 text-align: center;
                 line-height: 35px;
+                display: table-cell;
             }
 
             .expand-gutter {
@@ -1185,7 +1192,7 @@ a.breadcrumb {
                 padding-left: 20px;
                 min-width: 20px;
                 padding: 10px;
-
+                display: table-cell;
 
                 i {
                     margin-left: auto;
@@ -1245,6 +1252,7 @@ a.breadcrumb {
     background-color: white;
     border-radius: 3px;
     box-shadow: rgba(0, 0, 0, 0.33) 0 1px 3px;
+    display:table;
 
     .header-profile-name {
         opacity: 0.5;

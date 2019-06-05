@@ -22,7 +22,7 @@ import { HeaderActionsService } from '../../../services/header-actions.service';
         </div>
         <div *ngIf="visible" (click)="toggleFollow()" [class.active]="active" class="header-button hide-on-med-and-down" [title]="tooltipString">
             <i *ngIf="!isLoading" class="fa fa-bookmark"></i>
-            <i *ngIf="isLoading" class="fa fa-spinner fa-spin" style="color:black;"></i>
+            <i *ngIf="isLoading" class="fa fa-spinner fa-spin"></i>
         </div>
     `,
     providers: [FollowerService],
