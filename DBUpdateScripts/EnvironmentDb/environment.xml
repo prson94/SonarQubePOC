@@ -211,4 +211,5 @@
   <include file="scripts/GOV-7235-3.xml"/>
   <include file="scripts/GOV-7354.xml"/>
   <include file="scripts/GOV-7289-Permissions.xml"/>
+  <include file="scripts/GOV-7127.xml"/>
 </databaseChangeLog>
