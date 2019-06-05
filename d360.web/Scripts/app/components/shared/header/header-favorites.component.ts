@@ -26,7 +26,7 @@ import {SiteUrlHelpers} from '../../../static/site-url-helpers';
                     <i *ngIf="isFavoriteItem && !isLoading" class="fa fa-check"></i>
                     <i *ngIf="isLoading" style="color: #000;" class="fa fa-spinner fa-spin "></i>
                 </div>
-                <div class="text">Favourite</div>
+                <div class="text">Favorite</div>
                 <div class="expand-gutter"></div>            
             </div>
         </div>
