@@ -5480,7 +5480,7 @@ where    A.RuleID = @id", new { id });
                         {
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField> {
-                                new ReadOnlyField { Name =Fields.Description_Name, FieldName = "ArtifactTypeDescription", FieldDescription =Fields.Description_Description, Value = string.IsNullOrEmpty(artifactType.Description) ? "None provided" : artifactType.Description }
+                                new ReadOnlyField { Name =Fields.Description_Name, FieldName = "ArtifactTypeDescription", FieldDescription =Fields.Description_Description, DataType = "Html", Value = string.IsNullOrEmpty(artifactType.Description) ? "None provided" : artifactType.Description }
                             }
                         });
 
@@ -5540,7 +5540,7 @@ where    A.RuleID = @id", new { id });
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = Fields.Description_Name, FieldName = "AttributeTypeDescription", FieldDescription = Fields.Description_Description, Value = string.IsNullOrEmpty(attributeType.Description) ? "None provided" : attributeType.Description }
+                                new ReadOnlyField { Name = Fields.Description_Name, FieldName = "AttributeTypeDescription", FieldDescription = Fields.Description_Description, DataType = "Html", Value = string.IsNullOrEmpty(attributeType.Description) ? "None provided" : attributeType.Description }
                             }
                         });
                     }
@@ -5590,7 +5590,7 @@ where    A.RuleID = @id", new { id });
                                 columns = 1,
                                 FirstColumnFields = new List<ReadOnlyField>
                                 {
-                                    new ReadOnlyField { Name = group.GetName(i => i.Description), FieldName = "GroupDescription", FieldDescription = group.GetDescription(i => i.Description), Value = group.Description }
+                                    new ReadOnlyField { Name = group.GetName(i => i.Description), FieldName = "GroupDescription", FieldDescription = group.GetDescription(i => i.Description), DataType = "Html", Value = group.Description }
                                 }
                             });
                         }
@@ -5765,7 +5765,7 @@ where    A.RuleID = @id", new { id });
                                 columns = 1,
                                 FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Row = 7, Column = 1, Name = fieldType.GetName(i => i.DisplayDescription), FieldName = "FieldTypeDisplayDescription", FieldDescription = fieldType.GetDescription(i => i.DisplayDescription), Value = fieldType.DisplayDescription }
+                                new ReadOnlyField { Row = 7, Column = 1, Name = fieldType.GetName(i => i.DisplayDescription), FieldName = "FieldTypeDisplayDescription", FieldDescription = fieldType.GetDescription(i => i.DisplayDescription), DataType = "Html", Value = fieldType.DisplayDescription }
                             }
                             });
                         }
@@ -5777,7 +5777,7 @@ where    A.RuleID = @id", new { id });
                                 columns = 1,
                                 FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Row = 7, Column = 1, Name = fieldType.GetName(i => i.FormDescription), FieldName = "FieldTypeFormDescription", FieldDescription = fieldType.GetDescription(i => i.FormDescription), Value = fieldType.FormDescription }
+                                new ReadOnlyField { Row = 7, Column = 1, Name = fieldType.GetName(i => i.FormDescription), FieldName = "FieldTypeFormDescription", FieldDescription = fieldType.GetDescription(i => i.FormDescription), DataType = "Html", Value = fieldType.FormDescription }
                             }
                             });
                         }
@@ -5810,7 +5810,7 @@ where    A.RuleID = @id", new { id });
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = fusion.GetName(i => i.Description), FieldName = "FusionDescription", FieldDescription = fusion.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(fusion.Description) ? "None provided" : fusion.Description }
+                                new ReadOnlyField { Name = fusion.GetName(i => i.Description), FieldName = "FusionDescription", FieldDescription = fusion.GetDescription(i => i.Description), DataType = "Html",  Value = string.IsNullOrEmpty(fusion.Description) ? "None provided" : fusion.Description }
                             }
                         });
 
@@ -5996,7 +5996,7 @@ where    A.RuleID = @id", new { id });
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name =Fields.Description_Name, FieldName = "FusionTypeDescription", FieldDescription = Fields.Description_Description, Value = string.IsNullOrEmpty(fusionType.Description) ? "None provided" : fusionType.Description }
+                                new ReadOnlyField { Name =Fields.Description_Name, FieldName = "FusionTypeDescription", FieldDescription = Fields.Description_Description, DataType = "Html", Value = string.IsNullOrEmpty(fusionType.Description) ? "None provided" : fusionType.Description }
                             }
                         });
                     }
@@ -6394,7 +6394,7 @@ where    A.RuleID = @id", new { id });
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = Resources.FieldInfo.Description_Name, FieldName = "RuleTypeDescription", Value = string.IsNullOrEmpty(ruleType.Description) ? "None provided" : ruleType.Description }
+                                new ReadOnlyField { Name = Resources.FieldInfo.Description_Name, FieldName = "RuleTypeDescription", DataType = "Html", Value = string.IsNullOrEmpty(ruleType.Description) ? "None provided" : ruleType.Description }
                             }
                         });
                     }
@@ -6433,7 +6433,7 @@ where    A.RuleID = @id", new { id });
                                 columns = 1,
                                 FirstColumnFields = new List<ReadOnlyField>
                                 {
-                                    new ReadOnlyField { Name = responsibilityType.GetName(i => i.Description), FieldName = "Description", FieldDescription = responsibilityType.GetDescription(i => i.Description), Value = responsibilityType.Description }
+                                    new ReadOnlyField { Name = responsibilityType.GetName(i => i.Description), FieldName = "Description", DataType = "Html", FieldDescription = responsibilityType.GetDescription(i => i.Description), Value = responsibilityType.Description }
                                 }
                             });
                         }
@@ -6472,7 +6472,7 @@ where    A.RuleID = @id", new { id });
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = Fields.Description_Name, FieldName = "PolicyTypeDescription", FieldDescription = Fields.Description_Description, Value = string.IsNullOrEmpty(policyType.Description) ? "None provided" : policyType.Description }
+                                new ReadOnlyField { Name = Fields.Description_Name, FieldName = "PolicyTypeDescription", FieldDescription = Fields.Description_Description, DataType = "Html", Value = string.IsNullOrEmpty(policyType.Description) ? "None provided" : policyType.Description }
                             }
                         });
                     }
@@ -6503,7 +6503,7 @@ where    A.RuleID = @id", new { id });
                             {
                                 columns = 1,
                                 FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = Fields.Description_Name, FieldName = "Description", FieldDescription = Fields.Description_Description, Value = refType.Description }
+                                    new ReadOnlyField { Name = Fields.Description_Name, FieldName = "Description", FieldDescription = Fields.Description_Description, DataType = "Html", Value = refType.Description }
                                 }
                             });
                         }
@@ -6916,7 +6916,7 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = Fields.Description_Name, FieldName = "TaxonomyTypeDescription", FieldDescription = Fields.Description_Description, Value = string.IsNullOrEmpty(taxonomyType.Description) ? "None provided" : taxonomyType.Description }
+                                new ReadOnlyField { Name = Fields.Description_Name, FieldName = "TaxonomyTypeDescription", FieldDescription = Fields.Description_Description, DataType = "Html", Value = string.IsNullOrEmpty(taxonomyType.Description) ? "None provided" : taxonomyType.Description }
                             }
                         });
                     }

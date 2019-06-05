@@ -24,14 +24,14 @@ import {SiteUrlHelpers} from '../../../static/site-url-helpers';
             <div class="mini-menu-line">
                 <div class="check-gutter">
                     <i *ngIf="isFavoriteItem && !isLoading" class="fa fa-check"></i>
-                    <i *ngIf="isLoading" style="color: #000;" class="fa fa-spinner fa-spin"></i>
+                    <i *ngIf="isLoading" style="color: #000;" class="fa fa-spinner fa-spin "></i>
                 </div>
-                <div class="text">Favourite</div>
+                <div class="text">Favorite</div>
                 <div class="expand-gutter"></div>            
             </div>
         </div>
         <div *ngIf="visible" (click)="handleClick()" class="header-button hide-on-med-and-down" [ngClass]="{'active' : isFavoriteItem }" [title]="isFavoriteItem ? 'Remove from favorites' : 'Add to favorites'">
-            <i *ngIf="!isLoading" class="fa fa-star"></i><i *ngIf="isLoading" style="color: #000;" class="fa fa-spinner fa-spin"></i>    
+            <i *ngIf="!isLoading" class="fa fa-star"></i><i *ngIf="isLoading" class="fa fa-spinner fa-spin"></i>    
         </div>
     `,
     providers: [FavoritesService],

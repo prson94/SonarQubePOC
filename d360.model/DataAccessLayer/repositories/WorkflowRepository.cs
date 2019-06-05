@@ -33,7 +33,7 @@ namespace d360.model.DataAccessLayer
                         dbArgs.Add("@actionTypeUid", actionTypeUid);
                         whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" [is_t].[UID] = @actionTypeUid";
                     }
-                }
+                }   
 
                 if (queryParams.ToList().Any(q => q.Key.ToLower() == "assettypeuid"))
                 {

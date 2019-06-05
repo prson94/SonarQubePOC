@@ -26,6 +26,7 @@ using System.Web.Mvc;
 using System.Xml.Linq;
 using System.Configuration;
 using d360.core.helpers;
+using Ganss.XSS;
 
 namespace d360.web.Controllers
 {    
@@ -1308,6 +1309,14 @@ namespace d360.web.Controllers
                 if (!Company.CurrentResourceIsAdmin)
                     throw new UnauthorizedException(FormInfo.Permisions_Error_Add, FormInfo.Permisions_Error_Add);
 
+                //sanitize HTML input
+                if (!string.IsNullOrEmpty(model?.AssetType?.Description ?? null))
+                {
+                    var sanitizer = new HtmlSanitizer();
+                    sanitizer.AllowedSchemes.Add("data");
+                    model.AssetType.Description = sanitizer.Sanitize(model.AssetType.Description);
+                }
+
                 switch (ot)
                 {
                     case SystemObjects.ArtifactType:
@@ -1496,6 +1505,14 @@ namespace d360.web.Controllers
 
                 if (!Company.HasAssetTypePermission(ot, model.AssetType.ObjectID, Permission.ModifyAsset))
                     throw new UnauthorizedException(FormInfo.Permisions_Error_Edit, FormInfo.Permisions_Error_Edit);
+
+                //sanitize HTML input
+                if (!string.IsNullOrEmpty(model?.AssetType?.Description ?? null))
+                {
+                    var sanitizer = new HtmlSanitizer();
+                    sanitizer.AllowedSchemes.Add("data");
+                    model.AssetType.Description = sanitizer.Sanitize(model.AssetType.Description);
+                }
 
                 switch (ot)
                 {

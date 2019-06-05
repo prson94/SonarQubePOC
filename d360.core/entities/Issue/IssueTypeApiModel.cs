@@ -10,7 +10,7 @@ namespace d360.core.entities
     public class IssueTypeApiModel
     {
         [DataMember]
-        public Guid uid { get; set; }
+        public Guid Uid { get; set; }
 
         [DataMember]
         public string Name { get; set; }

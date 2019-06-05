@@ -14,6 +14,7 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked {
     @Input() objectType: string;
     @Input() objectId: number;
     @Output() onItemClick = new EventEmitter();
+    @Input() issueObject: string;
     @ViewChild('sel') select;
     @ViewChild('cont') container;
 
@@ -45,17 +46,17 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked {
 
     ngOnChanges() {
         if (this.objectType != null && this.objectId != null)
-            this.workflowService.getWorkflowFieldTypes(this.objectId, this.objectType, true)
+            this.workflowService.getWorkflowFieldTypes(this.objectId, this.objectType, true, this.issueObject)
                 .then(r => {
                     this.fields = [];
                     this.fields = _.cloneDeep(this.defaultFields);
 
                     if (this.objectType == 'IntersectType')
                         this.fields = this.fields.concat(_.cloneDeep(this.relationshipFields));
-
-                    let fieldType = this.objectType == "IssueType" ? "Action Field" : "Asset Field";
-                   
+                
                     r.forEach(f => {
+                        let fieldType = f.Object == "IssueType" ? "Action Field" : "Asset Field";
+
                         this.fields.push({
                             value: '[FIELD' + f.ID + ']#[' + fieldType + ' :: ' + f.Name +']',
                             label: fieldType + ' :: ' + f.Name

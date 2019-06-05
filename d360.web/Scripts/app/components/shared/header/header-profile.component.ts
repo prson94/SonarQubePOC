@@ -17,16 +17,22 @@ declare var CompanySettings;
                     <a class="photo hide-on-med-and-down"><img [src]="'/resources/image/' + resourceId + '?size=25'" height="25" width="25" /></a>
                     <div class="show-on-medium-and-down hide-on-med-and-up">
                         <div class="mini-menu-line">
-                            <div class="check-gutter"></div><div class="text">My Account</div><div class="expand-gutter right"><i class="fa fa-caret-right"></i></div>
+                            <div class="check-gutter"></div><div class="text">My Account</div><div class="expand-gutter"><i class="fa fa-caret-right"></i></div>
                         </div>
                     </div>
                     <div class="search-child header-profile-panel">                        
                         <div class="row">          
-                            <div class="row header-profile-name">
-                                <div class="col s12"><h4>{{userName}}</h4></div>
-                                <div class="col s12"><h5>{{userEmail}}</h5></div>
-                            </div>
                             <ul>
+                                <li class="header-item label">
+                                    <div class="mini-menu-line">
+                                        <div class="text">
+                                            <span>
+                                                {{userName}} <br>
+                                                {{userEmail}}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </li>
                                 <li [routerLink]="resourceUrl()" class="header-item">
                                     <div class="mini-menu-line">
                                         <div class="text">View Profile</div>

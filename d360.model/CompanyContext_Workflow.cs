@@ -1106,6 +1106,11 @@ namespace d360.model
                     var val = DateTime.UtcNow.Date.ToShortDateString();
                     this.UpdateField(objectId, objectType, fieldType, item, val);
                 }
+                else if (!item.IsActionForm && !item.UseFormValue)
+                {
+                    var val = item.Value;
+                    this.UpdateField(objectId, objectType, fieldType, item, val);
+                }
                 //if the value is a form value get it
                 else if (!item.IsActionForm && item.UseFormValue && !string.IsNullOrEmpty(item.FormField) && item.FormStepID > 0)
                 {
@@ -1121,7 +1126,7 @@ namespace d360.model
                     }
                 }
                 //Get the value from action form (Issue)
-                if (item.IsActionForm)
+                else if (item.IsActionForm)
                 {
                     var val = "";
                     var fieldData = item.FormField.Split('|');
@@ -2068,6 +2073,13 @@ namespace d360.model
                     if (fieldId > 0)
                     {
                         var fieldRecord = Fields.Where(x => x.ObjectID == objectID && x.ObjectType == obj.ToString() && x.FieldTypeID == fieldId).FirstOrDefault();
+
+                        //If there is no field and type is Issue, this might be asset field
+                        if(fieldRecord == null && obj == SystemObjects.Issue)
+                        {
+                            var issue = Issues.FirstOrDefault(x => x.ID == objectID);
+                            fieldRecord = Fields.Where(x => x.ObjectID == issue.ObjectID && x.ObjectType == issue.Object && x.FieldTypeID == fieldId).FirstOrDefault();
+                        }
 
                         if ((obj.ToString() ?? "").ToUpper() == "INTERSECT")
                         {
