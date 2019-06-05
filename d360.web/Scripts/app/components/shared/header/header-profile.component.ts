@@ -113,8 +113,6 @@ export class HeaderProfileComponent implements OnInit , OnDestroy{
             this.active = true;
 
             menuPanel.style.zIndex = 1000;
-            console.log(menuPanel);
-            console.log(minimizedMenuItem);
             menuPanel.style.top = 40 + 'px'; // -1 for the border so it blends
             menuPanel.style.right = (dims.width) + 'px';
             menuPanel.style.position = 'fixed';  
