@@ -1599,62 +1599,38 @@ order by wi.StartedOn desc";
                         type.UpdatedBy = Company.CurrentResourceID;
 
 
-                        var currentVersion = Company.WorkflowVersions.Where(v => v.TypeID == type.ID).OrderByDescending(v => v.Version).Select(x=> new { x.ID, x.Version }).First();
+                        var currentVersion = Company.WorkflowVersions.Where(v => v.TypeID == type.ID).OrderByDescending(v => v.Version).FirstOrDefault();
+                        int version = currentVersion.Version;
+
                         versionID = currentVersion.ID;
 
                         //Create new workflow version for every save except when we are changing status from active to inactive or vice versa
-                        if (!isActiveStatusChanged)
+                        bool isSameVersion = currentVersion.ID == type.PublishedVersionID;
+                        if (model.Nodes.Count > 0 && model.Links.Count > 0 && (isSameVersion || model.Type.PublishedVersionID == -1) && !isActiveStatusChanged)
                         {
-                            var version = new WorkflowVersion();
-                            version.TypeID = type.ID;
-                            version.CreatedBy = Company.CurrentResourceID;
-                            version.CreatedOn = DateTime.UtcNow;
-                            version.UpdatedBy = Company.CurrentResourceID;
-                            version.UpdatedOn = DateTime.UtcNow;
-                            version.Version = currentVersion.Version + 1;
-
-                            Company.WorkflowVersions.Add(version);
-                            Company.SaveChanges();
-                            newVersion = true;
-                            versionID = version.ID;
-                        }
-
-                        //the current version is published
-                        if (type.PublishedVersionID == versionID && model.Nodes.Count > 0 && model.Links.Count > 0 && model.Type.PublishedVersionID == -1)
-                        {
-
-                            var version = new WorkflowVersion();
-                            version.TypeID = type.ID;
-                            version.CreatedBy = Company.CurrentResourceID;
-                            version.CreatedOn = DateTime.UtcNow;
-                            version.UpdatedBy = Company.CurrentResourceID;
-                            version.UpdatedOn = DateTime.UtcNow;
-                            version.Version = currentVersion.Version + 1;
-
-                            Company.WorkflowVersions.Add(version);
-                            Company.SaveChanges();
-
-                            //create a new version
-                            if (model.Type.PublishedVersionID == null)
+                            if (isSameVersion)
                             {
-                                versionID = version.ID;
+                                currentVersion = new WorkflowVersion();
+                                currentVersion.TypeID = type.ID;
+                                currentVersion.CreatedBy = Company.CurrentResourceID;
+                                currentVersion.CreatedOn = DateTime.UtcNow;
+                                currentVersion.UpdatedBy = Company.CurrentResourceID;
+                                currentVersion.UpdatedOn = DateTime.UtcNow;
+                                currentVersion.Version = version + 1;
+
+                                Company.WorkflowVersions.Add(currentVersion);
+                                Company.SaveChanges();
+
                                 newVersion = true;
+                                versionID = currentVersion.ID;
                             }
-                            else
+
+                            //set new published version
+                            if (model.Type.PublishedVersionID == -1)
                             {
-                                versionID = version.ID;
-                                type.PublishedVersionID = version.ID;
-                                newVersion = true;
+                                type.PublishedVersionID = currentVersion.ID;
                             }
-                        }
-                        //current version is not published
-                        else if (type.PublishedVersionID != versionID && model.Nodes.Count > 0 && model.Links.Count > 0)
-                        {
-                            //publish it
-                            if (model.Type.PublishedVersionID != null)
-                            {
-                                type.PublishedVersionID = versionID;
-                            }
+
                         }
 
                         Company.SaveChanges();
