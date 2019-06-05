@@ -7,7 +7,7 @@ import { Subscription }   from 'rxjs';
     selector: 'd3s-header-breadcrumb',
     template: ` <div #bread class="breadcrumbs" (window:resize)="onResize($event)">
                  <i *ngIf="showLastOnly" class="fa fa-ellipsis-h breadcrumb-collapse" aria-hidden="true" (mouseover)="smallPanel.toggle($event);"></i>
-                 <div *ngFor="let breadcrumb of breadcrumbs;let last=last" [ngClass]="{'active':last,'inactive':!last}">
+                 <div *ngFor="let breadcrumb of breadcrumbs;let last=last">
                     <d3s-header-breadcrumb-item *ngIf="(showLastOnly && last) || !showLastOnly" [breadcrumb]="breadcrumb" [isLastItem]="last" [lastItem]="breadcrumbs[breadcrumbs.length - 1]" (treeClick)="handleTreeClick($event)"></d3s-header-breadcrumb-item>                    
                  </div>                
                 </div>  

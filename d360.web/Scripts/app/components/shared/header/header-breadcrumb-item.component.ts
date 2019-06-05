@@ -1,5 +1,5 @@
 
-import {debounceTime} from 'rxjs/operators';
+import {debounceTime, debounce} from 'rxjs/operators';
 import { Component, Input, ElementRef, ViewChildren, OnChanges, SimpleChange, Output, EventEmitter, AfterViewInit, OnInit,OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Router }       from '@angular/router';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
@@ -17,8 +17,19 @@ import { createWriteStream } from 'fs';
         '(document:click)': 'onClick($event)',
         '(window:resize)': 'setMaxHeight()'
     },  
-    template: ` <a *ngIf="breadcrumb.hasLink()" (click)="navigateToLink(breadcrumb.link)" (mouseover)="in(treePanel,searchPanel,$event)" class="breadcrumb" style="cursor:pointer">{{ breadcrumb.text }}</a>
-                    <div *ngIf="!breadcrumb.hasLink()" (mouseover)="in(treePanel,searchPanel,$event)" class="breadcrumb" [ngClass]="{'breadcrumb-link':isChangableItem() || isTreeItem()}">{{ breadcrumb.text }}</div>
+    template: ` <a *ngIf="breadcrumb.hasLink()"         
+                        (click)="navigateToLink(breadcrumb.link)" 
+                        (mouseover)="in(treePanel,searchPanel,$event)" 
+                        class="breadcrumb" 
+                        style="cursor:pointer">
+                            {{ breadcrumb.text }} <span *ngIf="breadcrumb.Parent">breadcrumb.Parent</span>
+                </a>
+                    <div *ngIf="!breadcrumb.hasLink()" 
+                         (mouseover)="in(treePanel,searchPanel,$event)" 
+                        class="breadcrumb"  
+                        [ngClass]="{'breadcrumb-link':isChangableItem() || isTreeItem()}">
+                        {{ breadcrumb.text }} <span *ngIf="breadcrumb.Parent">breadcrumb.Parent</span>
+                    </div>
                     <p-overlayPanel [ngClass]="'search-results'" #searchPanel>  
                         <div>
                             <span class="header-search-input"><input type="text" [(ngModel)]="searchValue" placeholder="Search" (keyup)="search(searchValue)"> <i class="fa fa-search"></i></span> 
@@ -102,12 +113,31 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
 
         let q = event.query ? event.query : event;
 
-        this.searchSub = this.typeaheadSearchService.getObjectTypeItems(10, q, this.breadcrumb.objectType, this.breadcrumb.objectId).pipe(
-            debounceTime(400))
-            .subscribe(data => {
-                this.results = data;
-                this.ref.markForCheck();
-            });
+        if (this.breadcrumb.isType) {
+            console.log(this.breadcrumb);
+            if (this.breadcrumb.hasParent) {
+                this.typeaheadSearchService.getObjectTypeItemsFromParent(10, q, this.breadcrumb.objectType, this.breadcrumb.objectId).pipe(
+                    debounceTime(400))
+                    .subscribe(data => {
+                        this.results = data;
+                        this.ref.markForCheck();
+                    });
+            } else {
+                this.typeaheadSearchService.getObjectTypeItems(10, q, this.breadcrumb.objectType).pipe(
+                    debounceTime(400))
+                    .subscribe(data => {
+                        this.results = data;
+                        this.ref.markForCheck();
+                    });
+            }
+        } else {
+            this.searchSub = this.typeaheadSearchService.getObjectItems(10, q, this.breadcrumb.objectType, this.breadcrumb.objectId).pipe(
+                debounceTime(400))
+                .subscribe(data => {
+                    this.results = data;
+                    this.ref.markForCheck();
+                });
+        }
     }
 
     selectItem() {

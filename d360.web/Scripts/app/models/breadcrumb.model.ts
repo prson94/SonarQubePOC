@@ -8,8 +8,10 @@ export class Breadcrumb {
     objectId: number;
     treeItems: TreeNode[];
     selectedTreeNode: TreeNode;
-    
-    constructor(text?: string, link?: string, active?: boolean, type?: string, objectId?: number, treeItems?: TreeNode[], selectedTreeNode?: TreeNode) {
+    isType: boolean;
+    hasParent: boolean;
+
+    constructor(text?: string, link?: string, active?: boolean, type?: string, objectId?: number, treeItems?: TreeNode[], selectedTreeNode?: TreeNode, isType?: boolean, hasParent?:boolean) {
         this.text = text === undefined ? "-" : text;
         this.link = link === undefined ? null : link;
         this.active = active === undefined ? false : active;
@@ -17,6 +19,8 @@ export class Breadcrumb {
         this.objectId = objectId === undefined ? undefined : objectId;
         this.treeItems = treeItems === undefined ? undefined : treeItems;
         this.selectedTreeNode = selectedTreeNode === undefined ? undefined : selectedTreeNode;
+        this.isType = isType === undefined ? false : isType;
+        this.hasParent = hasParent === undefined ? false : hasParent;
     }
 
     public hasLink(): boolean {
