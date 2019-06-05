@@ -1043,7 +1043,7 @@ namespace d360.model
                 {
                     newField.AssetID = asset.ID;
                 }
-                Add<Field>(newField);
+                Fields.Add(newField);
             }
             else if (field != null)
             {
@@ -1085,12 +1085,9 @@ namespace d360.model
                 {
                     objectType = issue.Object;
                     objectId = issue.ObjectID;
-                    if (!isAssetEdited)
-                    {
-                        asset = Assets.Where(x => x.Object == issue.Object && x.ObjectID == issue.ObjectID).FirstOrDefault();
-                        ObjectContext.ObjectStateManager.ChangeObjectState(asset, EntityState.Modified);
-                        isAssetEdited = true;
-                    }
+                    asset = Assets.Where(x => x.Object == issue.Object && x.ObjectID == issue.ObjectID).FirstOrDefault();
+                    ObjectContext.ObjectStateManager.ChangeObjectState(asset, EntityState.Modified);
+                    isAssetEdited = true;
                 }
 
                 if (fieldType == null)
