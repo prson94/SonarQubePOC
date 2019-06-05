@@ -81,8 +81,10 @@ export class WorkflowMonitorStepDetailsComponent extends BaseComponent implement
                     this.ref.markForCheck();
                 })
                 .then(r => {
-                    this.showAllAnyCondition = this.step.Condition.filter(x => x["@FieldTypeID"]).length > 1;
-                    this.isSatisfyAll = this.step.Condition.every(x => x["@Connector"] == "AND");
+                    if (typeof this.step.Condition != 'undefined' && typeof this.step.Condition.length != 'undefined') {
+                        this.showAllAnyCondition = this.step.Condition.filter(x => x['@FieldTypeID']).length > 1;
+                        this.isSatisfyAll = this.step.Condition.every(x => x['@Connector'] == 'AND');
+                    }
                 });
         }
         else

@@ -98,6 +98,9 @@
     <Compile Include="LibraryTests\JsonTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="V2ControllerTests\AssetsControllerTest.cs" />
+    <Compile Include="V2ControllerTests\FieldsControllerTest.cs" />
+    <Compile Include="ValidatorTests\FieldValidatorTests.cs" />
+    <Compile Include="V2ControllerTests\CrossReferenceControllerTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

@@ -186,4 +186,7 @@
   <data name="Error_Name_Required" xml:space="preserve">
     <value>The name is required.</value>
   </data>
+  <data name="Error_Item_FieldJsonAttributeReferences" xml:space="preserve">
+    <value>One or more JSON Attribute fields reference the field you are attempting to remove.</value>
+  </data>
 </root>

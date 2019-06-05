@@ -14,7 +14,6 @@ export class ObjectDetailFieldComponent {
 
     constructor(private router: Router) {}
     ngOnInit() {
-
           if ((this.field.DataType == 'date' || this.field.DataType == 'datetime') && isNaN(Date.parse(this.field.Value)))
                 this.field.Value = null;
     }
@@ -31,6 +30,44 @@ export class ObjectDetailFieldComponent {
             return JSON.parse(value);
         } catch{
             return "Error";
+        }
+    }
+
+    private get isArrayValue(): boolean {
+        return this.field != null
+            && this.field.Values
+            && this.field.Values.length > 0;
+    }
+
+    private get isEmail(): boolean {
+        return this.field != null
+            && this.field.Name != null
+            && this.field.Name.toLowerCase() == 'email'
+            && this.fieldDataType == 'text';
+    }
+
+    private get isName(): boolean {
+        return this.field != null
+            && this.field.Name != null
+            && ['name', 'implementation name'].indexOf(this.field.Name.toLowerCase()) > -1;
+    }
+
+
+    private get fieldDataType(): string {
+        if (this.field == null || this.field.DataType == null)
+            return null;
+        switch (this.field.DataType.toLowerCase()) {
+            case 'text':
+            case 'string':
+                return 'text';
+            case 'number':
+            case 'decimal':
+                return 'number';
+            case 'bool':
+            case 'boolean':
+                return 'bool';
+            default:
+                return this.field.DataType.toLowerCase();
         }
     }
 }

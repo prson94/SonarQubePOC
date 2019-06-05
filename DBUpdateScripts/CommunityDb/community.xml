@@ -26,4 +26,7 @@
   <include file="scripts/GOV-7113.xml"/>
   <include file="scripts/GOV-7198.xml"/> <!--system setting for draft statuses-->
   <include file="scripts/GOV-7032.xml"/> <!--system setting for FieldJsonPropertyLoadLimitToTopLevel-->
+  <include file="scripts/GOV-7217.xml"/>
+  <include file="scripts/GOV-7316.xml"/> <!--add environmentlevel to databaseserver table and comments column-->
+  <include file="scripts/GOV-7381.xml"/> <!--system setting for verbose v1 lineage-->
 </databaseChangeLog>

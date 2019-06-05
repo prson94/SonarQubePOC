@@ -46,7 +46,7 @@ namespace d360.core.entities
         [DataMember, Column(TypeName = "varchar"), StringLength(50)]
         public string Object { get; set; }
 
-        [DataMember]
+        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int ObjectID { get; set; }
 
         [IgnoreDataMember, ForeignKey("AssetTypeID")]

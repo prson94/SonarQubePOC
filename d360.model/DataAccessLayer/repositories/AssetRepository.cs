@@ -209,7 +209,7 @@ namespace d360.model.DataAccessLayer
                     count(*)
                 from Asset A
                 {(assetType.Object == "ReferenceItemType" ? " inner join ReferenceItem RI on RI.ID = A.ObjectID" : "")} 
-                {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID" : "")} 
+                {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
                 {string.Join("\n", string.IsNullOrWhiteSpace(whereSql) ? countJoins : fieldJoins)}
                 {whereSql}";
 
@@ -226,7 +226,7 @@ namespace d360.model.DataAccessLayer
                     {fieldsSql}
                 from Asset A
                 {(assetType.Object == "ReferenceItemType" ? " inner join ReferenceItem RI on RI.ID = A.ObjectID" : "")} 
-                {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID" : "")} 
+                {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
                 {string.Join("\n", fieldJoins)}
                 {whereSql}
                 {string.Join("\n", pagingSql)}
@@ -295,7 +295,7 @@ namespace d360.model.DataAccessLayer
 
             return results;
         }
-        public Tuple<HttpStatusCode, string, string> AddAssetType(AssetTypeInsert model, AssetType assetType, AssetType parentAssetType, Predicate predicate, out string nameFriendlyName, out bool isNamePartOfKey)
+        public Tuple<HttpStatusCode, string, string> AddAssetType(AssetTypeInsert model, AssetType assetType, AssetType parentAssetType, Predicate predicate, int resourceId, out string nameFriendlyName, out bool isNamePartOfKey)
         {
             var parentType = SystemObjects.ArtifactType;
             nameFriendlyName = "Name";
@@ -310,7 +310,8 @@ namespace d360.model.DataAccessLayer
                         Name = model.Name,
                         DisplayFormat = model.DisplayFormat,
                         Description = model.Description,
-                        CanOwnFusion = false
+                        CanOwnFusion = false,
+                        AutoDisplayDescription = model.AutoDisplayDescription 
                     };
                     CompanyContext.Add(a);
                     parentType = SystemObjects.ArtifactType;
@@ -337,17 +338,25 @@ namespace d360.model.DataAccessLayer
                     #endregion
                     break;
                 case AssetTypeClass.Policy:
-                    #region
-                    var p = new PolicyType
+                    #region                    
+                    var p = new AssetType
                     {
                         Name = model.Name,
                         DisplayFormat = model.DisplayFormat,
                         Description = model.Description,
-                        MaximumDepth = model.Hierarchy.MaximumDepth,
+                        HierarchyMaximumDepth = model.Hierarchy.MaximumDepth,
+                        Object = SystemObjects.PolicyType.ToString(),
+                        State = State.Active,
+                        UpdatedBy = resourceId,
+                        UpdatedOn = DateTime.UtcNow,
+                        CreatedBy = resourceId,
+                        CreatedOn = DateTime.UtcNow,
+                        Hierarchical = true,
+                        Class = AssetTypeClass.Policy
                     };
                     CompanyContext.Add(p);
                     parentType = SystemObjects.PolicyType;
-                    model.ObjectID = p.ID;
+                    model.ObjectID = p.ObjectID;
                     model.Object = SystemObjects.PolicyType.ToString();
                     #endregion
                     break;
@@ -468,8 +477,7 @@ namespace d360.model.DataAccessLayer
 
                     a.Name = model.Name;
                     a.DisplayFormat = model.DisplayFormat;
-                    a.Description = model.Description;
-                    //a.CanOwnFusion = model.CanOwnFusion ?? false;
+                    a.Description = model.Description;                    
                     a.AutoDisplayDescription = model.AutoDisplayDescription;
 
                     CompanyContext.Update(a);
@@ -486,16 +494,15 @@ namespace d360.model.DataAccessLayer
 
 
                     break;
-                case AssetTypeClass.Policy:
-                    var p = CompanyContext.GetById<PolicyType>(model.ObjectID);
-                    if (p == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Policy.ToString()}", $"Not valid {AssetTypeClass.Policy.ToString()} provided.Please check your request and try again.");
+                case AssetTypeClass.Policy:                    
+                    if (assetType == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Policy.ToString()}", $"Not valid {AssetTypeClass.Policy.ToString()} provided.Please check your request and try again.");
 
-                    p.Name = model.Name;
-                    p.DisplayFormat = model.DisplayFormat;
-                    p.Description = model.Description;
-                    p.MaximumDepth = model.Hierarchy.MaximumDepth;
+                    assetType.Name = model.Name;
+                    assetType.DisplayFormat = model.DisplayFormat;
+                    assetType.Description = model.Description;
+                    assetType.HierarchyMaximumDepth = model.Hierarchy.MaximumDepth;
 
-                    CompanyContext.Update(p);
+                    CompanyContext.Update(assetType);
 
                     break;
                 case AssetTypeClass.Reference:
@@ -777,7 +784,7 @@ namespace d360.model.DataAccessLayer
 
             string iconText = "Tx";
 
-            var words = objectName.Split(' ');
+            var words = objectName.Trim().Split(' ');
             if (words.Length > 1 && words[1].Length > 0)
             {
                 iconText = words[0][0].ToString().ToUpper() + words[1][0].ToString().ToLower();
@@ -882,6 +889,10 @@ namespace d360.model.DataAccessLayer
                         }
                         else if (f.Type == "JsonElement")
                         {
+                            if (jsonElementDefinition.DataType == "decimal")
+                            {
+                                jsonElementDefinition.DataType = "float";
+                            }
                             fieldColumns.Add($"try_cast(FJP{f.ID}.[Value] as {jsonElementDefinition.DataType}) as [{columnName}]");
                         }
                         else
@@ -978,7 +989,16 @@ namespace d360.model.DataAccessLayer
                                     {
                                         if (field.Type == "JsonElement")
                                         {
-                                            orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"FJP{field.ID}.Value";
+                                            FieldTypeDefinition_JsonElement jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(field.Definition);
+
+                                            if (jsonElementDefinition.DataType == "decimal")
+                                            {
+                                                jsonElementDefinition.DataType = "float";
+                                            }
+
+                                            fieldDataType = jsonElementDefinition.DataType;
+
+                                            orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"try_cast(FJP{field.ID}.Value as {fieldDataType})";
                                         }
                                         else
                                         {

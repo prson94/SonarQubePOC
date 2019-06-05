@@ -129,12 +129,15 @@ namespace d360.web.Controllers
         [HttpGet, Route("{type}/{id:int}/lineage/{view:int}/{usageOnly:bool}")]
         public JsonNetResult GetLineageByObject(SystemObjects type, int id, int view, bool usageOnly)
         {
-            var list = Company.Query<string>(@"exec GetLineage @type, @id, @view, @usageOnly", 
+            var verboseLineage = Community.GetCompanySettings().Single(s => s.Key == "EnableVersion1VerboseLineage");
+
+            var list = Company.Query<string>(@"exec GetLineage @type, @id, @view, @usageOnly, @verboseLineage", 
                 new {
                     type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true },
                     id,
                     view,
-                    usageOnly
+                    usageOnly,
+                    verboseLineage = (verboseLineage.Value == "true")
                 }
             ).ToList();
 
@@ -241,7 +244,11 @@ namespace d360.web.Controllers
             dtTechnical.SetTypeName("LineageTechnicalTable");
             parameters.Add("technicalRows", dtTechnical);
 
-            var list = Company.Query<string>("exec GetLineage @type, @id, @view, @usageOnly, @rows, @technicalRows", parameters);
+            var verboseLineage = Community.GetCompanySettings().Single(s => s.Key == "EnableVersion1VerboseLineage");
+
+            parameters.Add("verboseLineage", (verboseLineage.Value == "true"));
+
+            var list = Company.Query<string>("exec GetLineage @type, @id, @view, @usageOnly, @verboseLineage, @rows, @technicalRows", parameters);
 
             var json = string.Join("", list);
             var obj = (string.IsNullOrEmpty(json)) ? new JObject() : JObject.Parse(json);

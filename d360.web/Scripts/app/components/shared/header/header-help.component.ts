@@ -1,5 +1,4 @@
 ﻿import { Component, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { CurrentEnvironmentSettings } from '../../../static/environment-settings';
 
 @Component({
@@ -11,6 +10,7 @@ import { CurrentEnvironmentSettings } from '../../../static/environment-settings
                             <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="userGuide">User Guide</a></div></div></li>
                             <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="adminGuide">Admin Guide</a></div></div></li>
                             <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="whatIsNew">What's New</a></div></div></li>
+                            <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="community">Community</a></div></div></li>
                        </ul>
                     </div>
                 <span>`,
@@ -21,9 +21,10 @@ export class HeaderHelpComponent {
     public active: boolean = false;
     private hideHandle: number = 0;
 
-    private userGuide = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#c-user-guide/user-guide.htm%3FTocPath%3DUser%2520guide%7C_____0";
-    private adminGuide = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#d-admin/admin-intro.htm%3FTocPath%3DAdministration%2520guide%7C_____0";
-    private whatIsNew = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#b-release-notes/whats-new.htm%3FTocPath%3DWhat";
+    public userGuide = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#c-user-guide/user-guide.htm%3FTocPath%3DUser%2520guide%7C_____0";
+    public adminGuide = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#d-admin/admin-intro.htm%3FTocPath%3DAdministration%2520guide%7C_____0";
+    public whatIsNew = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#b-release-notes/whats-new.htm%3FTocPath%3DWhat";
+    public community = "https://support.infogix.com/hc/en-us/community/topics/360000029388-Data3Sixty-Govern"; 
 
     constructor(
         private ref: ChangeDetectorRef
@@ -56,4 +57,3 @@ export class HeaderHelpComponent {
             500);
     }
 }
-

@@ -1,0 +1,48 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+	<changeSet author="Pappas" id="GOV-7315">
+		<sql dbms="mssql"
+			endDelimiter="\nGO"
+			splitStatements="true"
+			stripComments="true">
+<![CDATA[
+IF NOT EXISTS(select 1 from [INFORMATION_SCHEMA].[TABLES] where TABLE_SCHEMA = 'integration' and TABLE_NAME = 'AssetFieldRelationship')
+begin
+	CREATE TABLE [integration].[AssetFieldRelationship] (
+		[Uid] uniqueidentifier constraint DF_IntegrationAssetFieldRelationship_Uid default(newid()) not null,
+		[SynchedAssetTypeID] int NOT NULL,
+		[SourceID] varchar(100) NOT NULL,
+		[FieldName] nvarchar(250) NOT NULL,
+		[AssetSourceType] varchar(100) NOT NULL,
+		[AssetSourceID] varchar(100) NOT NULL,
+		IsSubject bit NOT NULL,
+		IntersectTypeID int NULL,
+		SubjectID bigint NULL,
+		ObjectID bigint NULL,
+		IntersectID int NULL,
+		Present bit constraint DF_IntegrationAssetFieldRelationship_Present default(0) NOT NULL,
+		[Action] varchar(1) NULL,
+		CONSTRAINT [PK_IntegrationAssetFieldRelationship] PRIMARY KEY NONCLUSTERED ( [Uid] ASC )
+	);
+
+	create clustered index CX_IntegrationAssetFieldRelationship on [integration].[AssetFieldRelationship] (SynchedAssetTypeID, SourceID, FieldName, AssetSourceType, AssetSourceID);
+
+end
+]]>
+		</sql>
+		<rollback>
+<![CDATA[
+IF EXISTS(select 1 from [INFORMATION_SCHEMA].[TABLES] where TABLE_SCHEMA = 'integration' and TABLE_NAME = 'AssetFieldRelationship')
+begin
+	DROP TABLE [integration].[AssetFieldRelationship];
+end
+]]>
+		</rollback>
+	</changeSet>
+
+  </databaseChangeLog>

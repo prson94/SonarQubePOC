@@ -13,6 +13,7 @@ import { HeaderActionsService } from '../../../services/header-actions.service';
 import { isString, isArray } from 'util';
 import { stringify } from '@angular/core/src/util';
 import { createWriteStream } from 'fs';
+import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-site-menu-category',
@@ -31,10 +32,10 @@ import { createWriteStream } from 'fs';
                                 <div class="row megamenu-title truncate">
                                     <input (keyup)="positionMenu($event,item)" #searchinput type="search" [(ngModel)]=searchText placeholder="Search menu..."/>
                                     <i (click)="clearInput()" [ngClass]="{'fa fa-times':searchText != '', 'fa fa-search':searchText == '' ||  !seachtext}"></i>
-                                </div>
-                                    <span class="megamenu-tools" *ngIf="showClearButton">
+                                    <div class="megamenu-tools" *ngIf="showClearButton">
                                         <i (click)="clearClick.emit(true)" class=" pull-right fa fa-eraser" [pTooltip]="'Clear ' + title + ' List'" tooltipZIndex="10001"></i>
-                                    </span>
+                                    </div>
+                                </div> 
                                 <div class="row megamenu-items"[ngStyle]="{'max-height': getMaxHeight()}">
                                     <div class="col s12 megamenu-items-container" *ngFor="let item of menu.NavigationItems | simpleSearch: searchText">
                                         <ul class="menu-group">                                        
@@ -71,7 +72,8 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
     private currentButtonIndex: number = -1;
 
     constructor(private menuService: SiteMenuService,
-        private headerActionsService: HeaderActionsService) {
+        private headerActionsService: HeaderActionsService,
+        private siteMenuService: SiteMenuService) {
         super();
     }
 
@@ -145,29 +147,42 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
         }
     }
 
-    loadCounts() {
-        if (this.menu && this.menu.NavigationItems && this.menu.NavigationItems.length > 0 && !this.menu.MenuID.startsWith('-')) {
-            this.menu.NavigationItems.forEach((item) => this.getCount(item));
+    loadCounts(menu: any) {
+        if (menu && menu.NavigationItems && menu.NavigationItems.length > 0 && !menu.MenuID.startsWith('-')) {
+            this.siteMenuService.getCounts().then((res) => {
+                menu.NavigationItems.forEach((item) => this.getAllCounts(item, res));
+            });
         }
     }
 
-    getCount(items) {
+    getAllCounts(items, arr: any[]) {
         if (isString(items.Name) && isString(items.Url) && items.Url.indexOf('/') != -1) {
             //get count for item
-            this.menuService.getItemCount(items.Url.replace(new RegExp('/', 'g'), '-')).then((res) => { items.count = res });
+            var id = _.findIndex(arr, function (o) {
+                let currentURL = items.Url.toLowerCase();
+                currentURL = items.Url.replace('model', 'taxonomy');
+                return o.Name == items.Name
+                    && _.includes(currentURL, o.Object.toLowerCase().replace('type', ''))
+                    && _.includes(currentURL, o.ObjectID);
+            });
+            if (id !== -1) {
+                items.count = arr[id].count;
+            } else {
+                items.count = 0;
+            }
         }
 
         //check if sub items exist
         if (isArray(items.Items)) {
             //recursively check sub items
-            items.Items.forEach((item) => this.getCount(item));
+            items.Items.forEach((item) => this.getAllCounts(item, arr));
         }
     }
 
     ngAfterViewInit(): void {
 
         this.subReloadCounts = this.headerActionsService.onSiteCountsChange.subscribe(() => {
-            this.loadCounts();
+            this.loadCounts(this.menu);
         });
 
         this.viewReady = true;
