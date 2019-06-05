@@ -16,7 +16,7 @@ declare var CompanySettings;
 @Component({
     selector: 'd3s-header-mini-menu',
     template: ` <span #item class="header-search header-table" [ngClass]="{'header-search-active':active}" (mouseenter)="show(item)" (mouseleave)="hide(item)" >
-                    <div><i class="fa fa-bars"></i></div>
+                    <div class="header-button"><i class="fa fa-bars"></i></div>
                     <div class="search-child header-profile-panel">                        
                         <div class="row">          
                             <ul>
