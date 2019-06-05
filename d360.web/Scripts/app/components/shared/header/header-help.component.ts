@@ -6,11 +6,11 @@ import { CurrentEnvironmentSettings } from '../../../static/environment-settings
     selector: 'd3s-header-help',
     template: ` <span #item class="header-search header-table" [ngClass]="{'header-search-active':active}" (mouseenter)="show(item)" (mouseleave)="hide(item)">
                     <div class="header-button"><i class="fa fa-question-circle"></i></div>
-                    <div class="header-help search-child header-search-panel">
+                    <div class="header-help search-child header-profile-panel">
                        <ul>
-                            <li class="header-help-li"><a target="_blank" [href]="userGuide">User Guide</a></li>
-                            <li class="header-help-li"><a target="_blank" [href]="adminGuide">Admin Guide</a></li>
-                            <li class="header-help-li"><a target="_blank" [href]="whatIsNew">What's New</a></li>
+                            <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="userGuide">User Guide</a></div></div></li>
+                            <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="adminGuide">Admin Guide</a></div></div></li>
+                            <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="whatIsNew">What's New</a></div></div></li>
                        </ul>
                     </div>
                 <span>`,

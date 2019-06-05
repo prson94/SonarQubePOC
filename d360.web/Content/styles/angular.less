@@ -1043,10 +1043,6 @@ a.breadcrumb {
         li {
             cursor: pointer;
         }
-
-        li:last-child {
-            padding-right: 10px;
-        }
     }
 
     .searchTypeahead {
@@ -1115,6 +1111,8 @@ a.breadcrumb {
 .header-button {
     font-size: 1.2em;
     padding: 0 10px;
+    width: 40px;
+    text-align: center;
 
     &:active, &.active {
         background: #676C7A;
@@ -1161,8 +1159,12 @@ a.breadcrumb {
             pointer-events: none;
         }
 
-        &:hover {
-            background-color: #DFF3F7;
+        &:hover, &.hover {
+            background-color: @igx-lightblue-xlight;
+        }
+
+        &:active, &.active {
+            background: @igx-lightblue-light;
         }
 
         .mini-menu-line {
@@ -1176,6 +1178,10 @@ a.breadcrumb {
                 padding: 10px;
                 overflow: hidden;
                 text-overflow: ellipsis;
+
+                &.no-gutter {
+                    padding-left: 20px;
+                }
             }
 
             .check-gutter {
@@ -1188,14 +1194,14 @@ a.breadcrumb {
             }
 
             .expand-gutter {
-                display: flex;
-                padding-left: 20px;
-                min-width: 20px;
                 padding: 10px;
                 display: table-cell;
+                padding-left: 0;
+                padding-right: 20px;
+                margin-left: auto;
 
                 i {
-                    margin-left: auto;
+                    text-align: right;
                 }
             }
 
@@ -1213,15 +1219,6 @@ a.breadcrumb {
     width: auto;
 }
 
-.header-search-panel, .header-profile-panel {
-    background-color: #E7E7E7; //10 opacity of hover color for li items in header xFF (x) .1 = F FF - F = F0
-    border-radius: 0 0 3px 3px;
-
-    a {
-        color: #000;
-    }
-}
-
 .header-help {
     display: none;
     position: absolute;
@@ -1234,16 +1231,6 @@ a.breadcrumb {
     background-color: white;
     padding: 0;
     width: 175px;
-
-    .header-help-li {
-        width: 100%;
-        padding: 10px;
-        display: inline-block;
-
-        a {
-            width: 150px;
-        }
-    }
 }
 
 .header-profile-panel {
