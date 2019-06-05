@@ -149,6 +149,7 @@ namespace d360.web.Controllers.V2
             string sql = @"
                            select  gr.uid,
                                    gr.FirstName,
+                                   gr.ResourceID,
                                    gr.LastName ,
                                    gr.Email,
                                    gr.IsAdministrator,
@@ -173,10 +174,15 @@ namespace d360.web.Controllers.V2
             DynamicParameters dbArgs = new DynamicParameters();
             List<string> queries = new List<string>();
             ResourceApiViewModel model = new ResourceApiViewModel();
+            IDictionary<string, string> customFields = new Dictionary<string, string>();
             var queryParams = Request.GetQueryNameValuePairs();
             queryParams.ToList().ForEach(q =>
             {
                 var key = q.Key.ToLower();
+                if (q.Key != "_lastName" && q.Key != "_pageSize" && q.Key != "_pageNum")
+                {
+                    customFields.Add(q);
+                }
                 if (key.StartsWith("_"))
                 {
                     switch (key)
@@ -221,7 +227,41 @@ namespace d360.web.Controllers.V2
             }
             var results = await Company.QueryAsync<dynamic>(sql, dbArgs);
             var count = await Company.QueryAsync<int>(countSql, dbArgs);
-            model.items = results;
+
+            #region GetDynamicFields
+            foreach (IDictionary<string, object> item in results)
+            {
+                int resourceId = 0;
+                if (int.TryParse(item["ResourceID"].ToString(), out resourceId))
+                {
+                    IQueryable<FieldWithRelation> list = Company.GetFieldRelationsByObject(core.SystemObjects.Resource, resourceId);
+                    list.ToList().ForEach(y => { item.Add(y.Name, y.FormattedValue); });
+                }
+            }
+            #endregion
+            List<object> customFieldResult = new List<object>();
+            if (customFields.Count() > 0)
+            {
+                foreach (var cusField in customFields)
+                {
+                    foreach (ICollection<KeyValuePair<string, object>> res in results)
+                    {
+                        res.ToList().ForEach(q =>
+                        {
+                            if (q.Key.Equals(cusField.Key) && q.Value.ToString().Equals(cusField.Value))
+                            {
+                                customFieldResult.Add(res);
+                            }
+                        });
+                    }
+                }
+            }
+            if (customFields.Count() > 0)
+            {
+                model.items = customFieldResult;
+            }
+            else
+                model.items = results;
             model.total = count.FirstOrDefault();
             return Request.CreateResponse(HttpStatusCode.OK, model);
         }
