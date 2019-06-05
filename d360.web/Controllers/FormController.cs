@@ -3598,8 +3598,7 @@ namespace d360.web.Controllers
                 { "Date", "date" },
                 { "Date With Time", "datetime" },
                 { "Decimal", "float" },
-                { "Text (non-Unicode)", "varchar" },
-                { "Text (Unicode)", "nvarchar" },
+                { "Text", "nvarchar" },
                 { "Whole Number", "int" },
                 { "Whole Number (Large)", "bigint" },
             };
