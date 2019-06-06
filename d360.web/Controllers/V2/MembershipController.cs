@@ -25,9 +25,11 @@ namespace d360.web.Controllers.V2
     ]
     public class MembershipController : BaseV2ApiController
     {
+        ICompanyContext _company;
         public MembershipController(ICommunityContext community, ICompanyContext company)
             : base(community, company)
         {
+            _company = company;
         }
         /// <summary>
         /// Retrieves a list of users.
@@ -49,32 +51,33 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<HttpResponseMessage> GetUsers(Guid? Uid = null, string FirstName = null, string LastName = null, core.enums.State? State = null, bool? IsAdministrator = null, int _pageSize = 5, int _pageNum = 1)
         {
-            string sql = "select uid, ResourceID, FirstName, LastName, Email, IsAdministrator, LastLoggedInOn, State from [reporting].[Global_Resource] ";
+            string finalSql = "";
+            string joinsSql = " left join Asset A on A.Object = 'ResourceType' ";
+            string whereSql = "";
+            string selectSql = $"select gr.uid, ResourceID, FirstName, LastName, Email, IsAdministrator, LastLoggedInOn, gr.State";
             string countSql = "select count(*) from [reporting].[Global_Resource] ";
 
             DynamicParameters dbArgs = new DynamicParameters();
             List<string> queries = new List<string>();
             ResourceApiViewModel model = new ResourceApiViewModel();
+            List<string> fieldColumns = new List<string>();
+            List<string> fieldJoins = new List<string>();
 
             if (_pageNum < 1) _pageNum = 1;
 
             if (_pageSize < 1) _pageSize = 1;
             if (_pageSize > 250) _pageSize = 250;
 
-            IDictionary<string, string> customFields = new Dictionary<string, string>();
-            
-            var queryParams = Request.GetQueryNameValuePairs();
-            queryParams.ToList().ForEach(q =>
-            {
-                if(q.Key != "Uid" && q.Key != "FirstName" && q.Key != "LastName" && q.Key != "State" && q.Key != "IsAdministrator" && q.Key != "_pageSize" && q.Key != "_pageNum")
-                {
-                    customFields.Add(q);
-                }
-            });
+            var fieldTypes = _company.FieldTypes.Where(f => f.Object == "ResourceType" && f.ObjectID == 1).ToList();
 
+            IDictionary<string, string> customFields = new Dictionary<string, string>();
+            var queryParams = Request.GetQueryNameValuePairs();
+            getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
+
+            if (_pageSize > 0 || _pageNum > 0)
             if (Uid != null || FirstName != null || LastName != null || State != null || IsAdministrator != null)
             {
-                sql += "where ";
+                whereSql += "where ";
                 countSql += "where ";
 
                 if (Uid != null)
@@ -103,61 +106,48 @@ namespace d360.web.Controllers.V2
                     queries.Add(" isAdministrator = @isAdministrator");
                 }
             }
+            foreach (var col in fieldColumns)
+            {
+                selectSql += "," + col;
+            }
+            foreach (var join in fieldJoins)
+            {
+                joinsSql += join;
+            }
+            foreach (FieldType customField in fieldTypes)
+            {
+                if(queryParams.Any(x=> x.Key == customField.Name))
+                {
+                    var paramval = queryParams.FirstOrDefault(x => x.Key == customField.Name).Value;
+                    queries.Add(string.Format("{0} = @{1}",customField.Name,paramval));
+                    dbArgs.Add(paramval, paramval);
+                }
+            }
+
             for (int i = 0; i < queries.Count(); i++)
             {
-                sql += queries[i].ToString();
+                whereSql += queries[i].ToString();
                 countSql += queries[i].ToString();
                 if (i < queries.Count() - 1)
                 {
-                    sql += " and ";
+                    whereSql += " and ";
                     countSql += " and ";
                 }
             }
-            if (_pageSize > 0 || _pageNum > 0)
+            finalSql = selectSql + "from[reporting].[Global_Resource] gr" + joinsSql + whereSql;
             {
                 if (_pageSize < 1) _pageSize = 1;
                 if (_pageNum < 1) _pageNum = 1;
                 model.pageNum = _pageNum;
                 model.pageSize = _pageSize;
                 string offsetSql = $" Order by ResourceID offset {_pageSize * (_pageNum - 1)} rows fetch next {_pageSize} rows only";
-                sql += offsetSql;
+                finalSql += offsetSql;
             }
-            var results = await Company.QueryAsync<dynamic>(sql, dbArgs);
+            
+            var results = await Company.QueryAsync<dynamic>(finalSql, dbArgs);
             var count = await Company.QueryAsync<int>(countSql, dbArgs);
-            #region GetDynamicFields
-            foreach (IDictionary<string, object> item in results)
-            {
-                int resourceId = 0;
-                if (int.TryParse(item["ResourceID"].ToString(), out resourceId))
-                {
-                    IQueryable<FieldWithRelation> list = Company.GetFieldRelationsByObject(core.SystemObjects.Resource, resourceId);
-                    list.ToList().ForEach(y => { item.Add(y.Name, y.FormattedValue); });
-                }
-            }
-            #endregion
-            List<object> customFieldResult = new List<object>();
-            if (customFields.Count() > 0)
-            {
-                foreach (var cusField in customFields)
-                {
-                    foreach (ICollection<KeyValuePair<string, object>> res in results)
-                    {
-                        res.ToList().ForEach(q =>
-                        {
-                            if (q.Key.Equals(cusField.Key) && q.Value.ToString().Equals(cusField.Value))
-                            {
-                                customFieldResult.Add(res);
-                            }
-                        });
-                    }
-                }
-            }
-            if (customFields.Count() > 0)
-            {
-                model.items = customFieldResult;
-            }
-            else
-                model.items = results;
+
+            model.items = results;
             model.total = count.FirstOrDefault();
             return Request.CreateResponse(HttpStatusCode.OK, model);
         }
