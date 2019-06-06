@@ -146,10 +146,15 @@ namespace d360.web.Controllers.V2
        ]
         public async Task<HttpResponseMessage> GetMembers(Guid groupUid)
         {
+            string finalSql = "";
+            string joinsSql = " ";
+            string whereSql = "";
+            List<string> fieldColumns = new List<string>();
+            List<string> fieldJoins = new List<string>();
+            string selectSql = $"select gr.uid, gr.ResourceID, gr.FirstName, gr.LastName, gr.Email, gr.IsAdministrator, gr.LastLoggedInOn, gr.State";
             string sql = @"
                            select  gr.uid,
                                    gr.FirstName,
-                                   gr.ResourceID,
                                    gr.LastName ,
                                    gr.Email,
                                    gr.IsAdministrator,
@@ -172,17 +177,11 @@ namespace d360.web.Controllers.V2
             var pageSize = 5;
             var pageNum = 1;
             DynamicParameters dbArgs = new DynamicParameters();
-            List<string> queries = new List<string>();
             ResourceApiViewModel model = new ResourceApiViewModel();
-            IDictionary<string, string> customFields = new Dictionary<string, string>();
             var queryParams = Request.GetQueryNameValuePairs();
             queryParams.ToList().ForEach(q =>
             {
                 var key = q.Key.ToLower();
-                if (q.Key != "_lastName" && q.Key != "_pageSize" && q.Key != "_pageNum")
-                {
-                    customFields.Add(q);
-                }
                 if (key.StartsWith("_"))
                 {
                     switch (key)
@@ -190,13 +189,13 @@ namespace d360.web.Controllers.V2
                         case "_firstname":
                             firstName = q.Value;
                             dbArgs.Add("firstName", q.Value);
-                            sql += " and gr.FirstName = @firstName";
+                            whereSql += " and gr.FirstName = @firstName";
                             countSql += " and gr.FirstName = @firstName";
                             break;
                         case "_lastname":
                             lastName = q.Value;
                             dbArgs.Add("lastName", q.Value);
-                            sql += " and gr.lastName = @lastName";
+                            whereSql += " and gr.lastName = @lastName";
                             countSql += " and gr.LastName = @lastName";
                             break;
                         case "_pagesize":
@@ -216,6 +215,31 @@ namespace d360.web.Controllers.V2
                 }
             });
 
+            var fieldTypes = _company.FieldTypes.Where(f => f.Object == "ResourceType" && f.ObjectID == 1).ToList();
+            getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
+            foreach (var col in fieldColumns)
+            {
+                selectSql += "," + col;
+            }
+            foreach (var join in fieldJoins)
+            {
+                joinsSql += join;
+            }
+
+            foreach (FieldType customField in fieldTypes)
+            {
+                if (queryParams.Any(x => x.Key == customField.Name))
+                {
+                    var paramval = queryParams.FirstOrDefault(x => x.Key == customField.Name).Value;
+                    whereSql += (string.Format(" and {0} = @{1}", customField.Name, paramval));
+                    dbArgs.Add(paramval, paramval);
+                }
+            }
+            finalSql = selectSql + @"from[reporting].[Global_Resource] gr inner join [dbo].[ResourceGroup] rg on rg.ResourceID = gr.ResourceID 
+                                      inner join[dbo].[Group] g on g.ID = rg.GroupID
+                                      inner join[dbo].[Asset] a on a.uid = '"
+                                      + groupUid + "'" + joinsSql + " where g.ID = a.ObjectID" + whereSql;
+
             if (pageSize > 0 || pageNum > 0)
             {
                 if (pageSize < 1) pageSize = 1;
@@ -224,44 +248,11 @@ namespace d360.web.Controllers.V2
                 model.pageSize = pageSize;
                 string offsetSql = $" Order by gr.ResourceID offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
                 sql += offsetSql;
+                finalSql += offsetSql;
             }
-            var results = await Company.QueryAsync<dynamic>(sql, dbArgs);
+            var results = await Company.QueryAsync<dynamic>(finalSql, dbArgs);
             var count = await Company.QueryAsync<int>(countSql, dbArgs);
-
-            #region GetDynamicFields
-            foreach (IDictionary<string, object> item in results)
-            {
-                int resourceId = 0;
-                if (int.TryParse(item["ResourceID"].ToString(), out resourceId))
-                {
-                    IQueryable<FieldWithRelation> list = Company.GetFieldRelationsByObject(core.SystemObjects.Resource, resourceId);
-                    list.ToList().ForEach(y => { item.Add(y.Name, y.FormattedValue); });
-                }
-            }
-            #endregion
-            List<object> customFieldResult = new List<object>();
-            if (customFields.Count() > 0)
-            {
-                foreach (var cusField in customFields)
-                {
-                    foreach (ICollection<KeyValuePair<string, object>> res in results)
-                    {
-                        res.ToList().ForEach(q =>
-                        {
-                            if (q.Key.Equals(cusField.Key) && q.Value.ToString().Equals(cusField.Value))
-                            {
-                                customFieldResult.Add(res);
-                            }
-                        });
-                    }
-                }
-            }
-            if (customFields.Count() > 0)
-            {
-                model.items = customFieldResult;
-            }
-            else
-                model.items = results;
+            model.items = results;
             model.total = count.FirstOrDefault();
             return Request.CreateResponse(HttpStatusCode.OK, model);
         }
