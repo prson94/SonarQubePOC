@@ -112,6 +112,7 @@
     </Compile>
     <Compile Include="CompanyContext_MarkitLineage.cs" />
     <Compile Include="DataAccessLayer\IIssueRepository.cs" />
+    <Compile Include="DataAccessLayer\IRelationshipRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\IssueRepository.cs" />
     <Compile Include="DataAccessLayer\ITagRepository.cs" />
     <Compile Include="DataAccessLayer\IWorkflowRepository.cs" />
@@ -119,6 +120,7 @@
     <Compile Include="DataAccessLayer\ICrossReferencesRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\AssetRepository.cs" />
     <Compile Include="DataAccessLayer\IAssetRepository.cs" />
+    <Compile Include="DataAccessLayer\repositories\RelationshipRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\TagRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\FieldsRepository.cs" />
     <Compile Include="DataAccessLayer\IFieldsRepository.cs" />
