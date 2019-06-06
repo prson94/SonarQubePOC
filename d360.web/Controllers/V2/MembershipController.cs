@@ -231,8 +231,8 @@ namespace d360.web.Controllers.V2
                 if (queryParams.Any(x => x.Key == customField.Name))
                 {
                     var paramval = queryParams.FirstOrDefault(x => x.Key == customField.Name).Value;
-                    whereSql += (string.Format(" and {0} = @{1}", customField.Name, paramval));
-                    dbArgs.Add(paramval, paramval);
+                    whereSql += $"F{customField.ID}.FormattedValue = @field{customField.ID}";
+                    dbArgs.Add($"@field{customField.ID}", paramval);
                 }
             }
             finalSql = selectSql + @"from[reporting].[Global_Resource] gr inner join [dbo].[ResourceGroup] rg on rg.ResourceID = gr.ResourceID 
@@ -251,9 +251,8 @@ namespace d360.web.Controllers.V2
                 finalSql += offsetSql;
             }
             var results = await Company.QueryAsync<dynamic>(finalSql, dbArgs);
-            var count = await Company.QueryAsync<int>(countSql, dbArgs);
             model.items = results;
-            model.total = count.FirstOrDefault();
+            model.total = results.Count();
             return Request.CreateResponse(HttpStatusCode.OK, model);
         }
     }
