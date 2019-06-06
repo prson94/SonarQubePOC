@@ -323,5 +323,15 @@ namespace d360.model.DataAccessLayer
             var workflowVersionSteps = await this.CompanyContext.QueryAsync<WorkflowVersionSteps>(sql, dbArgs);
             return workflowVersionSteps;
         }
+
+        public core.entities.Workflow.Type GetWorkflowTypeByUID(Guid workflowTypUid)
+        {
+            return this.CompanyContext.Filter<core.entities.Workflow.Type>(i => i.UID == workflowTypUid).SingleOrDefault();
+        }
+
+        public WorkflowVersion GetWorkflowVersionByUID(Guid workflowVerionUid)
+        {
+            return this.CompanyContext.Filter<WorkflowVersion>(i => i.UID == workflowVerionUid).SingleOrDefault();
+        }
     }
 }
