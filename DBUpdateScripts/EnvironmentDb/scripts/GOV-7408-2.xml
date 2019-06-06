@@ -530,6 +530,13 @@ begin
 				T.UpdateHash = null
 		from	integration.AssetHash T
 				inner join #ObjectsToUpdateDateOn S on T.SynchedAssetTypeID = @SynchedAssetTypeID and S.SourceID = T.SourceID and T.Section = @section and T.RequestNumber = @RequestNumber;
+				
+		update	T
+		set		T.[Hash] = T.UpdateHash,
+				T.UpdateHash = null
+		from	integration.AssetHash T
+				inner join #Field_Step1 F on F.SourceID = T.SourceID and T.Section = @section and T.RequestNumber = @RequestNumber 
+					and T.SynchedAssetTypeID = @SynchedAssetTypeID and F.FieldTypeID is null and F.SourceFieldName = '_name';
 	end
 	
 	if @section = 2
