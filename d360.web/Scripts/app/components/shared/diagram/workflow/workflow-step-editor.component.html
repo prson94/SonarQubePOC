@@ -49,7 +49,7 @@
                     <p-editor [ngModel]="step.settings.MessageBodyTemplate" (ngModelChange)="step.settings.MessageBodyTemplate = $event; stepChange.emit(step)" #ed>
                         <p-header>
                             <d3s-editor-header></d3s-editor-header>
-                            <d3s-workflow-template-tool [objectType]="objectType" [objectId]="objectId" (onItemClick)="appendField($event)"></d3s-workflow-template-tool>
+                            <d3s-workflow-template-tool [issueObject]="issueObject" [objectType]="objectType" [objectId]="objectId" (onItemClick)="appendField($event)"></d3s-workflow-template-tool>
                         </p-header>
                     </p-editor>
                 </div>
