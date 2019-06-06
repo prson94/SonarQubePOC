@@ -52,10 +52,9 @@ namespace d360.web.Controllers.V2
         public async Task<HttpResponseMessage> GetUsers(Guid? Uid = null, string FirstName = null, string LastName = null, core.enums.State? State = null, bool? IsAdministrator = null, int _pageSize = 5, int _pageNum = 1)
         {
             string finalSql = "";
-            string joinsSql = " left join Asset A on A.Object = 'ResourceType' ";
+            string joinsSql = " left join Asset A on A.Object = 'Resource' ";
             string whereSql = "";
             string selectSql = $"select gr.uid, ResourceID, FirstName, LastName, Email, IsAdministrator, LastLoggedInOn, gr.State";
-            string countSql = "select count(*) from [reporting].[Global_Resource] ";
 
             DynamicParameters dbArgs = new DynamicParameters();
             List<string> queries = new List<string>();
@@ -77,9 +76,6 @@ namespace d360.web.Controllers.V2
             if (_pageSize > 0 || _pageNum > 0)
             if (Uid != null || FirstName != null || LastName != null || State != null || IsAdministrator != null)
             {
-                whereSql += "where ";
-                countSql += "where ";
-
                 if (Uid != null)
                 {
                     dbArgs.Add("uid", Uid);
@@ -116,25 +112,28 @@ namespace d360.web.Controllers.V2
             }
             foreach (FieldType customField in fieldTypes)
             {
-                if(queryParams.Any(x=> x.Key == customField.Name))
+                if (queryParams.Any(x => x.Key == customField.Name))
                 {
                     var paramval = queryParams.FirstOrDefault(x => x.Key == customField.Name).Value;
-                    queries.Add(string.Format("{0} = @{1}",customField.Name,paramval));
-                    dbArgs.Add(paramval, paramval);
+                    queries.Add($"F{customField.ID}.FormattedValue = @field{customField.ID}");
+                    dbArgs.Add($"@field{customField.ID}", paramval);
                 }
+            }
+
+            if (queries.Count() > 0)
+            {
+                whereSql += "where ";
             }
 
             for (int i = 0; i < queries.Count(); i++)
             {
                 whereSql += queries[i].ToString();
-                countSql += queries[i].ToString();
                 if (i < queries.Count() - 1)
                 {
                     whereSql += " and ";
-                    countSql += " and ";
                 }
             }
-            finalSql = selectSql + "from[reporting].[Global_Resource] gr" + joinsSql + whereSql;
+            finalSql = selectSql + " from[reporting].[Global_Resource] gr " + joinsSql + " " + whereSql;
             {
                 if (_pageSize < 1) _pageSize = 1;
                 if (_pageNum < 1) _pageNum = 1;
@@ -143,12 +142,9 @@ namespace d360.web.Controllers.V2
                 string offsetSql = $" Order by ResourceID offset {_pageSize * (_pageNum - 1)} rows fetch next {_pageSize} rows only";
                 finalSql += offsetSql;
             }
-            
             var results = await Company.QueryAsync<dynamic>(finalSql, dbArgs);
-            var count = await Company.QueryAsync<int>(countSql, dbArgs);
-
             model.items = results;
-            model.total = count.FirstOrDefault();
+            model.total = results.Count();
             return Request.CreateResponse(HttpStatusCode.OK, model);
         }
 
