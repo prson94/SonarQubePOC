@@ -152,26 +152,13 @@ namespace d360.web.Controllers.V2
             List<string> fieldColumns = new List<string>();
             List<string> fieldJoins = new List<string>();
             string selectSql = $"select gr.uid, gr.ResourceID, gr.FirstName, gr.LastName, gr.Email, gr.IsAdministrator, gr.LastLoggedInOn, gr.State";
-            string sql = @"
-                           select  gr.uid,
-                                   gr.FirstName,
-                                   gr.LastName ,
-                                   gr.Email,
-                                   gr.IsAdministrator,
-                                   gr.LastLoggedInOn,
-                                   gr.State
-                                   from[reporting].[Global_Resource] as gr
-                                       inner join [dbo].[ResourceGroup] rg on rg.ResourceID = gr.ResourceID
-                                       inner join [dbo].[Group] g on g.ID = rg.GroupID
-									   inner join [dbo].[Asset] a on a.uid = '"
-                                    + groupUid + "' where g.ID = a.ObjectID";
             string countSql = @"
                            select count(*)
                                    from[reporting].[Global_Resource] as gr
                                        inner join [dbo].[ResourceGroup] rg on rg.ResourceID = gr.ResourceID
                                        inner join [dbo].[Group] g on g.ID = rg.GroupID
 									   inner join [dbo].[Asset] a on a.uid = '"
-                                    + groupUid + "' where g.ID = a.ObjectID";
+                                    + groupUid + "'";
             var firstName = "";
             var lastName = "";
             var pageSize = 5;
@@ -239,6 +226,7 @@ namespace d360.web.Controllers.V2
                                       inner join[dbo].[Group] g on g.ID = rg.GroupID
                                       inner join[dbo].[Asset] a on a.uid = '"
                                       + groupUid + "'" + joinsSql + " where g.ID = a.ObjectID" + whereSql;
+            countSql += joinsSql + " where g.ID = a.ObjectID" + whereSql;
 
             if (pageSize > 0 || pageNum > 0)
             {
@@ -247,12 +235,12 @@ namespace d360.web.Controllers.V2
                 model.pageNum = pageNum;
                 model.pageSize = pageSize;
                 string offsetSql = $" Order by gr.ResourceID offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
-                sql += offsetSql;
                 finalSql += offsetSql;
             }
             var results = await Company.QueryAsync<dynamic>(finalSql, dbArgs);
+            var count = await Company.QueryAsync<int>(countSql, dbArgs);
             model.items = results;
-            model.total = results.Count();
+            model.total = count.FirstOrDefault();
             return Request.CreateResponse(HttpStatusCode.OK, model);
         }
     }
