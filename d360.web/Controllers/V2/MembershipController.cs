@@ -52,9 +52,10 @@ namespace d360.web.Controllers.V2
         public async Task<HttpResponseMessage> GetUsers(Guid? Uid = null, string FirstName = null, string LastName = null, core.enums.State? State = null, bool? IsAdministrator = null, int _pageSize = 5, int _pageNum = 1)
         {
             string finalSql = "";
-            string joinsSql = " left join Asset A on A.Object = 'Resource' ";
+            string joinsSql = " left join Asset A on A.Object = 'Resource' and A.ObjectID = gr.ResourceID ";
             string whereSql = "";
             string selectSql = $"select gr.uid, ResourceID, FirstName, LastName, Email, IsAdministrator, LastLoggedInOn, gr.State";
+            string countSql = "select count(*) from [reporting].[Global_Resource] gr ";
 
             DynamicParameters dbArgs = new DynamicParameters();
             List<string> queries = new List<string>();
@@ -94,7 +95,7 @@ namespace d360.web.Controllers.V2
                 if (State != null)
                 {
                     dbArgs.Add("state", State);
-                    queries.Add(" state = @state");
+                    queries.Add(" gr.state = @state");
                 }
                 if (IsAdministrator != null)
                 {
@@ -134,6 +135,7 @@ namespace d360.web.Controllers.V2
                 }
             }
             finalSql = selectSql + " from[reporting].[Global_Resource] gr " + joinsSql + " " + whereSql;
+            countSql += joinsSql + " " + whereSql;
             {
                 if (_pageSize < 1) _pageSize = 1;
                 if (_pageNum < 1) _pageNum = 1;
@@ -143,8 +145,9 @@ namespace d360.web.Controllers.V2
                 finalSql += offsetSql;
             }
             var results = await Company.QueryAsync<dynamic>(finalSql, dbArgs);
+            var countResults = await Company.QueryAsync<int>(countSql, dbArgs);
             model.items = results;
-            model.total = results.Count();
+            model.total = countResults.FirstOrDefault();
             return Request.CreateResponse(HttpStatusCode.OK, model);
         }
 
