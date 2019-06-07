@@ -2587,17 +2587,24 @@
             <param name="model">The fusion status log model.</param>
             <returns>The model of the updated fusion status log entry.</returns>
         </member>
-        <member name="T:d360.web.Controllers.V2.IssuesController">
+        <member name="T:d360.web.Controllers.V2.ActionsController">
             <summary>
-            This service houses all endpoints handling issue management in Govern.
+            This service houses all endpoints handling actions management in Govern.
             </summary>
         </member>
-        <member name="M:d360.web.Controllers.V2.IssuesController.GetIssueTypes">
+        <member name="M:d360.web.Controllers.V2.ActionsController.GetIssueTypes">
             <summary>
-            Returns all issue types that are defined in Govern.  
+            Returns all actions types that are defined in Govern.  
             
             </summary>
-            <returns>A list of issue types</returns>
+            <returns>A list of actions types</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.ActionsController.GetAllocationByAssetTypeAsync(System.Guid)">
+            <summary>
+            Returns actions types that are associated with a particular asset type
+            </summary>
+            <param name="AssetTypeUid">Asset Type Uid</param>
+            <returns>A list of actions types</returns>
         </member>
         <member name="T:d360.web.Controllers.V2.LineageController">
             <summary>

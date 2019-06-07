@@ -327,6 +327,16 @@ namespace d360.model.DataAccessLayer
             return workflowVersionSteps;
         }
 
+        public core.entities.Workflow.Type GetWorkflowTypeByUID(Guid workflowTypUid)
+        {
+            return this.CompanyContext.Filter<core.entities.Workflow.Type>(i => i.UID == workflowTypUid).SingleOrDefault();
+        }
+
+        public WorkflowVersion GetWorkflowVersionByUID(Guid workflowVerionUid)
+        {
+            return this.CompanyContext.Filter<WorkflowVersion>(i => i.UID == workflowVerionUid).SingleOrDefault();
+        }
+
         public async Task<IEnumerable<WorkflowInstanceApiViewModel>> GetWorkflowInstances(Guid workflowUid)
         {
             var dbArgs = new DynamicParameters();

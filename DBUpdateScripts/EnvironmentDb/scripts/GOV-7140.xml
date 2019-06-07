@@ -1,0 +1,77 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+	<changeSet author="Tomislav Duric" id="GOV-7140">
+		<sql dbms="mssql"
+			endDelimiter="\nGO"
+			splitStatements="true"
+			stripComments="true">
+<![CDATA[
+ALTER FUNCTION [dbo].[GetAssetDisplayValueById]
+(
+	@Id bigint
+)
+RETURNS TABLE 
+AS
+RETURN 
+(
+	
+		select	top 1	
+					string_agg(coalesce(D.FormattedValue, D.value), '') as DisplayValue
+		from		dbo.Asset A
+					inner join dbo.AssetType T on T.ID = A.AssetTypeID 					
+					outer apply (
+								select	TF.value,
+										coalesce(case when TF.Value = 'FirstName' then R.FirstName + ' ' else R.LastName end, F.FormattedValue, RI.Code, FA.Name, GRP.Name) as FormattedValue
+								from	string_split(replace(replace(T.DisplayFormat, '{', '|'),'}','|'), '|') TF									
+										left join dbo.FieldType FT on FT.AssetTypeID = T.ID and FT.Name = TF.Value
+										left join dbo.Field F on F.FieldTypeID = FT.ID and F.AssetID = A.ID
+										left join dbo.ReferenceItem RI on TF.Value = 'Code' and A.Object = 'ReferenceItem' and RI.ID = A.ObjectID
+										left join dbo.FusionAttribute FA on TF.Value = 'Name' and A.Object = 'FusionAttribute' and FA.ID = A.ObjectID
+										left join reporting.Global_resource R on TF.Value in ('FirstName', 'LastName') and A.Object = 'Resource' and R.ResourceID = A.ObjectID
+										left join dbo.[Group] GRP on A.Object = 'Group' and GRP.ID = A.ObjectID
+								where	RTRIM(TF.value) <> ''									
+								) D
+		where A.ID = @Id 
+					
+)
+]]>
+		</sql>
+		<rollback>
+<![CDATA[
+ALTER FUNCTION [dbo].[GetAssetDisplayValueById]
+(
+	@Id bigint
+)
+RETURNS TABLE 
+AS
+RETURN 
+(
+	
+		select	top 1	
+					string_agg(coalesce(D.FormattedValue, D.value), '') as DisplayValue
+		from		dbo.Asset A
+					inner join dbo.AssetType T on T.ID = A.AssetTypeID 					
+					outer apply (
+								select	TF.value,
+										coalesce(case when TF.Value = 'FirstName' then R.FirstName + ' ' else R.LastName end, F.FormattedValue, RI.Code, FA.Name) as FormattedValue
+								from	string_split(replace(replace(T.DisplayFormat, '{', '|'),'}','|'), '|') TF									
+										left join dbo.FieldType FT on FT.AssetTypeID = T.ID and FT.Name = TF.Value
+										left join dbo.Field F on F.FieldTypeID = FT.ID and F.AssetID = A.ID
+										left join dbo.ReferenceItem RI on TF.Value = 'Code' and A.Object = 'ReferenceItem' and RI.ID = A.ObjectID
+										left join dbo.FusionAttribute FA on TF.Value = 'Name' and A.Object = 'FusionAttribute' and FA.ID = A.ObjectID
+										left join reporting.Global_resource R on TF.Value in ('FirstName', 'LastName') and A.Object = 'Resource' and R.ResourceID = A.ObjectID
+								where	RTRIM(TF.value) <> ''									
+								) D
+		where A.ID = @Id 
+					
+)
+]]>
+		</rollback>
+	</changeSet>
+
+  </databaseChangeLog>

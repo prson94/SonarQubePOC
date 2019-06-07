@@ -1,6 +1,7 @@
 ﻿using d360.core.entities.Workflow;
 using d360.core.enums;
 using d360.core.enums.Workflow;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +16,11 @@ namespace d360.model.DataAccessLayer
         Task<WorkflowVersionsApiViewModel> GetWorkflowVersions(IEnumerable<KeyValuePair<string, string>> queryParams);
 
         Task<IEnumerable<WorkflowVersionSteps>> GetWorkflowVersionSteps(Guid uid);
+
+        d360.core.entities.Workflow.Type GetWorkflowTypeByUID(Guid workflowTypUid);
+        WorkflowVersion GetWorkflowVersionByUID(Guid workflowVerionUid);
+
+
 
         Task<IEnumerable<WorkflowInstanceApiViewModel>> GetWorkflowInstances(Guid workflowUid);
     }
