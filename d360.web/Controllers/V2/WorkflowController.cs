@@ -178,5 +178,36 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
         }
+
+        /// <summary>
+        /// Get a list of steps and their relevant information for a specific workflow instance contained within the system.
+        /// </summary>
+        /// <param name="workflowUid">workflow instance unique identifie</param>
+        /// <returns></returns>
+        [HttpGet,Route("{workflowUid}/steps"),
+        SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+        SwaggerResponse(HttpStatusCode.OK, "", typeof(WorkflowInstanceApiViewModel)),
+        SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this workflow instance is invalid, possibly due to an incorrectly formatted  workflow instance unique identifier.", typeof(ErrorResponse)),
+        SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))]
+
+        public async Task<IHttpActionResult> GetWorkflowInstances(Guid workflowUid)
+        {
+            var prefix = "Workflow.GetWorkflowInstances => ";
+            var errorMessage = "";
+            try
+            {
+                var workflowInstances = await this.workflowRepository.GetWorkflowInstances(workflowUid);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, workflowInstances)));
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix  }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
     }
 }

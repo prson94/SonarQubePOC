@@ -16,5 +16,6 @@ namespace d360.model.DataAccessLayer
 
         Task<IEnumerable<WorkflowVersionSteps>> GetWorkflowVersionSteps(Guid uid);
 
+        Task<IEnumerable<WorkflowInstanceApiViewModel>> GetWorkflowInstances(Guid workflowUid);
     }
 }

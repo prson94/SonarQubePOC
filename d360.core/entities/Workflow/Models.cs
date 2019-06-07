@@ -9,6 +9,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web.Script.Serialization;
 using System.Xml.Serialization;
 
 namespace d360.core.entities.Workflow
@@ -401,6 +402,55 @@ namespace d360.core.entities.Workflow
         public DateTime? CompletedOn { get; set; }
 
 
+    }
+
+    public class WorkflowInstanceApiViewModel
+    {
+        public WorkflowInstanceApiViewModel()
+        {
+            Settings = new WorkflowStepSettingsApiViewModel();
+
+        }
+
+        [JsonIgnore]
+        public int ID { get; set; }
+        public Guid Uid { get; set; }
+        public string Name { get; set; }
+        [DataMember, JsonConverter(typeof(StringEnumConverter))]
+        public State State { get; set; }
+        [DataMember, JsonConverter(typeof(StringEnumConverter))]
+        public StepType StepType { get; set; }
+
+        [DataMember, JsonConverter(typeof(StringEnumConverter))]
+        public WorkflowActivityType ActivityType { get; set; }
+        public WorkflowStepSettingsApiViewModel Settings { get; set; }
+
+        public dynamic Responses { get; set; }
+        [JsonIgnore]
+        public string Setting1 { get; set; }
+        [JsonIgnore]
+        public string Setting2 { get; set; }
+
+        [JsonIgnore]
+        public string Response1 { get; set; }
+        [JsonIgnore]
+        public string Response2 { get; set; }
+        public IList<WorkflowAssignmentApiViewModel> Assignments { get; set; }
+
+        public Guid? StartedByUid { get; set; }
+        public DateTime? StartedOn { get; set; }
+        public Guid? CompletedByUid { get; set; }
+        public DateTime? CompletedOn { get; set; }
+
+    }
+    public class WorkflowAssignmentApiViewModel
+    {
+        public Guid AssigneeUid { get; set; }
+    }
+    public class WorkflowStepSettingsApiViewModel
+    {
+        public dynamic Setting1 { get; set; }
+        public dynamic Setting2 { get; set; }
     }
     #endregion
 }

@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using d360.core.entities;
 using d360.core.entities.Workflow;
 using d360.core.enums;
 using d360.core.enums.Workflow;
 using Dapper;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace d360.model.DataAccessLayer
 {
@@ -322,6 +325,212 @@ namespace d360.model.DataAccessLayer
 
             var workflowVersionSteps = await this.CompanyContext.QueryAsync<WorkflowVersionSteps>(sql, dbArgs);
             return workflowVersionSteps;
+        }
+
+        public async Task<IEnumerable<WorkflowInstanceApiViewModel>> GetWorkflowInstances(Guid workflowUid)
+        {
+            var dbArgs = new DynamicParameters();
+      
+            dbArgs.Add("@uid", workflowUid);
+            string sql = @" select Item.ID,
+                                itemstep.UID,
+                                vs.Name,
+                                VS.State,
+                                vs.StepType,
+                                vs.ActivityType,
+                                vs.Settings as Setting1,
+                                vs.Fields as Setting2,
+                                itemstep.Settings as Response1,
+                                itemstep.Fields as Response2,
+                                item.StartedOn,
+                                item.CompletedOn,
+                                R.uid as StartedByUid,
+                                R1.uid as CompletedByUid
+                                from workflow.[version]  v 
+                                inner join  workflow.VersionStep  vs  on
+                                vs.VersionID = v.id
+                                inner join workflow.ItemStep itemstep on
+                                itemstep.StepID = vs.id
+                                inner join [workflow].[Item] item on
+                                item.VersionID =v.id and itemstep.ItemID = item.id
+                                left outer join reporting.Global_Resource R on R.ResourceID = item.StartedBy
+                                left outer join reporting.Global_Resource R1 on R1.ResourceID = item.CompletedBy
+                                 where item.uid=@uid";
+
+            var workflowInstances = await this.CompanyContext.QueryAsync<WorkflowInstanceApiViewModel>(sql, dbArgs);
+
+            workflowInstances.ToList().ForEach(x => {
+                x.Settings.Setting1 = this.XmlToDynamic(x.Setting1, false);
+                x.Settings.Setting2 = this.XmlToDynamic(x.Setting2, false);
+                if (x.ActivityType == WorkflowActivityType.FieldChange)
+                {
+                    x.Responses = this.GetWorkFlowStepFieldChanges(this.XmlToDynamic(x.Setting1), x.ID);
+                }else
+                {
+                    x.Responses = this.XmlToDynamic(x.Response2, false);
+                }
+
+                x.Assignments = this.GetWorkflowAssignments(this.XmlToDynamic(x.Response1));
+
+
+            });
+            return workflowInstances;
+        }
+
+
+        private IEnumerable<WorkflowAssignmentApiViewModel> GetWorkflowAssignments(dynamic settings)
+        {
+            IEnumerable<WorkflowAssignmentApiViewModel> assignment = new List<WorkflowAssignmentApiViewModel>();
+            IList<string> resourceEmails = this.GetEmails(settings);
+            if (resourceEmails.Count != 0)
+                assignment =   this.GeWorkflowAssignmentApiViewModels(resourceEmails);
+            
+            return assignment;
+
+        }
+
+        private IEnumerable<WorkflowAssignmentApiViewModel> GeWorkflowAssignmentApiViewModels(IList<string> emails)
+        {
+
+            var sql = $@"select UID as AssigneeUid from reporting.Global_Resource  where email  IN ('{string.Join("','", emails)}')";
+            var assignments =   this.CompanyContext.Query<WorkflowAssignmentApiViewModel>(sql).ToList();
+            return assignments;
+
+        }
+        private List<string> GetEmails(dynamic settings)
+        {
+            List<string> resourceEmails = new List<string>();
+            if (settings != null && settings.emails != null && settings.emails.email != null)
+            {
+                var emails = settings.emails;
+
+                if (emails.email != null)
+                {
+                    if (emails.email.GetType().Name != "JArray")
+                    {
+                        emails.email = new JArray(emails.email);
+                    }
+                }
+
+
+                for (int i = 0; i < emails.email.Count; i++)
+                {
+                    var e = emails.email[i];
+                    string address = e["@address"].Value;
+
+                    if (!resourceEmails.Any(r => r == address.ToLower()))
+                        resourceEmails.Add(address.ToLower());
+                }
+            }
+            return resourceEmails;
+        }
+        private List<WorkflowStepFieldChange> GetWorkFlowStepFieldChanges(dynamic setting,int itemId)
+        {
+            List<WorkflowStepFieldChange> fieldChanges = new List<WorkflowStepFieldChange>();
+            if (setting != null && setting.FieldUpdate != null && setting.FieldUpdate.Field != null)
+            {
+
+                dynamic fields = new JArray(setting.FieldUpdate.Field);
+                for (int i = 0; i < fields.Count; i++)
+                {
+                    var fieldChange = new WorkflowStepFieldChange();
+                    bool isFromActionForm = false;
+
+
+                    var field = fields[i];
+                    int fieldTypeId = field["@FieldId"] != null ? field["@FieldId"] : 0;
+                    if (fieldTypeId == 0) continue;
+                    fieldChange.FormValue = field["@UseFormValue"] != null ? field["@UseFormValue"] : false;
+                    fieldChange.ObjectType = field["@ObjectType"] != null ? field["@ObjectType"] : "";
+                    fieldChange.UseCurrentDate = field["@UseCurrentDate"] != null ? field["@UseCurrentDate"] : false;
+                    fieldChange.AppendValue = field["@AppendValue"] != null ? field["@AppendValue"] : "";
+                    fieldChange.ClearValue = field["@ClearValue"] != null ? field["@ClearValue"] : "";
+                    FieldType fieldType = this.CompanyContext.GetById<FieldType>(fieldTypeId);
+                    fieldChange.FieldName = fieldType?.FriendlyName;
+                    fieldChange.Type = fieldType?.Type;
+                    string formFieldId = field["@FormFieldId"] != null ? field["@FormFieldId"] : null;
+                    int stepId = field["@FormStepId"] != null ? field["@FormStepId"] : 0;
+                    isFromActionForm = field["@IsActionForm"] != null ? bool.Parse(field["@IsActionForm"].ToString()) : false;
+
+                    if (!isFromActionForm && fieldChange.FormValue && formFieldId != null && stepId != 0)
+                    {
+
+                        var stepSql = @"select fields from workflow.itemstep where  stepid=@stepid and itemid=@itemid";
+                        dynamic stepFields = this.CompanyContext.Query<string>(stepSql, new { stepid = stepId, itemid = itemId }).FirstOrDefault();
+                        stepFields = XmlToDynamic(stepFields, false);
+
+
+                        if (stepFields.fields != null && stepFields.fields.form != null && stepFields.fields.form.Count > 1)
+                        {
+                            List<string> vlist = new List<string>();
+                            string fieldValue = string.Empty;
+                            for (int k = 0; k < stepFields.fields.form.Count; k++)
+                            {
+                                JArray sfields = new JArray(stepFields.fields.form[k].field);
+                                JObject jo = sfields.Children<JObject>()
+                                    .FirstOrDefault(o => o["@id"] != null && o["@id"].ToString() == formFieldId);
+                                var displayvalue = jo != null && jo["@displayvalue"] != null ? jo["@displayvalue"].ToString() : "";
+                                var fieldtype = jo != null && jo["@fieldtype"] != null ? jo["@fieldtype"].ToString() : "";
+                                switch (fieldtype)
+                                {
+                                    case "date":
+                                        fieldValue = displayvalue != "" ? Convert.ToDateTime(displayvalue).ToShortDateString() : "";
+                                        break;
+                                    default:
+                                        if (fieldChange.AppendValue == "true")
+                                            vlist.AddRange(displayvalue.Split(','));
+                                        else
+                                            fieldValue = displayvalue;
+                                        break;
+                                }
+                            }
+
+                            if (fieldChange.AppendValue == "true")
+                                fieldChange.Value = string.Join(",", vlist.Distinct().ToArray());
+                            else
+                                fieldChange.Value = fieldValue;
+
+                        }
+                        else
+                        {
+                            JArray sfields = new JArray(stepFields.fields.form.field);
+                            JObject jo = sfields.Children<JObject>()
+                                .FirstOrDefault(o => o["@id"] != null && o["@id"].ToString() == formFieldId);
+                            var displayvalue = jo != null && jo["@displayvalue"] != null ? jo["@displayvalue"].ToString() : "";
+                            var fieldtype = jo != null && jo["@fieldtype"] != null ? jo["@fieldtype"].ToString() : "";
+                            switch (fieldtype)
+                            {
+                                case "date":
+                                    fieldChange.Value = displayvalue != "" ? Convert.ToDateTime(displayvalue).ToShortDateString() : "";
+                                    break;
+                                default:
+                                    fieldChange.Value = displayvalue;
+                                    break;
+                            }
+                        }
+                    }
+
+                    else
+                        fieldChange.Value = field["@ValueLabel"] != null ? field["@ValueLabel"] : field["@Value"] != null ? field["@Value"] : "";
+
+                    
+
+                    fieldChanges.Add(fieldChange);
+                }
+
+            }
+
+            return fieldChanges;
+        }
+
+        private dynamic XmlToDynamic(string xml, bool omitRootElement = true)
+        {
+            return XmlToObject<dynamic>(xml, omitRootElement);
+        }
+
+        private T XmlToObject<T>(string xml, bool omitRootElement = true)
+        {
+            return string.IsNullOrEmpty(xml) ? JsonConvert.DeserializeObject<T>("{}") : JsonConvert.DeserializeObject<T>(JsonConvert.SerializeXNode(XElement.Parse(xml), Formatting.None, omitRootElement));
         }
     }
 }
