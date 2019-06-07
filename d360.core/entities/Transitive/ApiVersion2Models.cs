@@ -229,6 +229,35 @@ namespace d360.core.entities
         public Dictionary<string, string> Fields { get; set; } = new Dictionary<string, string>();
     }
 
+
+    [JsonArray]
+    [DataContract(Name = "relationships")]
+    public class RelationshipDeletes : List<RelationshipDelete>
+    {
+    }
+    public class RelationshipDelete
+    {
+        [DataMember]
+        public Guid Uid { get; set; }
+
+        [DataMember]
+        public bool Cascade { get; set; }
+
+    }
+
+    public class RelationshipDeleteApiStatus
+    {
+        [DataMember]
+        public Guid Uid { get; set; }
+
+        [DataMember]
+        public string Message { get; set; }
+
+        [DataMember]
+        public bool Success { get; set; }
+    }
+
+
     public class RelationshipImportRequest
     {
         public int ItemNumber { get; set; }

@@ -18,6 +18,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
@@ -680,6 +681,160 @@ namespace d360.web.Controllers.V2
         }
 
         #endregion
+
+        /// <summary>
+        /// Deletes a relationship and children of a given uid.
+        /// </summary>
+        /// <param name="intersectTypeUid">The unique identifier of the relationship type.</param>
+        /// <param name="relationships">The list of relationships for deletions.</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpDelete,
+            MapToApiVersion("2.0"),
+            Route("types/{intersectTypeUid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the DELETE request.", typeof(List<RelationshipDeleteApiStatus>)), 
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to delete relationship of this type.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> DeleteRelationship(Guid intersectTypeUid, RelationshipDeletes relationships)
+        {
+            var prefix = "Relationships.DeleteRelationship => ";
+            var errorMessage = "";
+
+
+
+            try
+            {
+                var intersectType = Company.IntersectTypes.FirstOrDefault(x => x.uid == intersectTypeUid);
+                if (intersectType == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Relationship Type with Uid {intersectTypeUid} could not be found."));
+
+                bool hasRight = Company.CurrentResourceIsAdmin;
+
+                if (!hasRight)
+                {
+                    hasRight = Company.HasAssetTypePermission(intersectType.Object, intersectType.ObjectID, Permission.ModifyAsset)
+                           && Company.HasAssetTypePermission(intersectType.Subject, intersectType.SubjectID, Permission.ModifyAsset)
+                           && Company.HasAssetTypePermission(intersectType.Object, intersectType.ObjectID, Permission.ModifyRelationships)
+                           && Company.HasAssetTypePermission(intersectType.Subject, intersectType.SubjectID, Permission.ModifyRelationships);
+                }
+
+                if (!hasRight)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to delete relationships of this type."));
+                }
+
+                if (relationships == null || relationships.Count == 0)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "You have not provided a valid JSON structure for this request.!"));
+                }
+
+                foreach (var item in relationships)
+                {
+                    if (item.Uid == null && item.Uid == Guid.Empty)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "You have not provided a valid JSON structure for this request.!"));
+                    }
+                }
+
+
+
+                StringBuilder relationshipUids = new StringBuilder();
+                foreach(var rel in relationships)
+                {
+                    relationshipUids.Append($"('{rel.Uid.ToString()}')");
+                    if (rel != relationships.Last())
+                        relationshipUids.Append(",");
+                }
+
+                //Get Intersect ID for delete and union all child Intersects
+                var getRelationshipIDsForDeleting = @"declare @relationships table(uid uniqueidentifier)
+                                                      insert into @relationships values "+ relationshipUids.ToString()+ @"
+                                                   
+                                                      declare @results table(ID int, Uid uniqueidentifier,ParentUid uniqueidentifier )
+                                                      ;WITH ITS AS
+                                                          (  
+                                                            SELECT T.*, REL.uid as ParentUid
+                                                            FROM [Intersect] as T
+                                                              inner join @relationships REL on REL.uid = T.uid
+                                                            WHERE T.uid in (select uid from @relationships)  AND T.IntersectTypeID = @intersectTypeId
+                                                      )
+                                                      insert into @results (ID, Uid, ParentUid) select ID, Uid, ParentUid from ITS
+                                                   
+                                                      ;WITH CHILDREN AS
+                                                       (
+                                                        SELECT I.ID, I.uid, RES.ParentUid FROM [Intersect] AS I
+	                                                      inner join @results RES on (I.Subject = 'Intersect' and I.SubjectID = RES.ID) OR (I.Object = 'Intersect' and I.ObjectID = RES.ID)
+                                                        )
+                                                      insert into @results (ID, Uid, ParentUid) select ID, Uid, ParentUid from CHILDREN
+                                                   
+                                                      select * from @results";
+
+                var forDeleteCheck = await Company.QueryAsync<dynamic>(getRelationshipIDsForDeleting, new { intersectTypeId = intersectType.ID });
+
+
+                List<int> parentRelationships = new List<int>();
+                List<int> childrenRelationships = new List<int>();
+
+                var response = new List<RelationshipDeleteApiStatus>();
+                foreach(var rel in relationships)
+                {
+                    var status = new RelationshipDeleteApiStatus();
+                    status.Uid = rel.Uid;
+                    status.Success = true;
+                    status.Message = "Relationship deleted";
+
+                    var deleteItems = forDeleteCheck.Where(x => x.ParentUid == rel.Uid);
+                    if(deleteItems.Count() == 0)
+                    {
+                        status.Success = false;
+                        status.Message = $"Relationship with Uid {rel.Uid} could not be found.";
+                    }
+
+                    if(deleteItems.Count() > 1 && !rel.Cascade)
+                    {
+                        status.Success = false;
+                        status.Message = $"Relationship with Uid {rel.Uid} have child relationships. Use Cascade = true to delete all child relationships.";
+                    }
+
+                    if (status.Success)
+                    {
+                        foreach(var item in deleteItems)
+                        {
+                            if (rel.Uid == Guid.Parse(item.Uid.ToString()))
+                                parentRelationships.Add(int.Parse(item.ID.ToString()));
+                            else
+                                childrenRelationships.Add(int.Parse(item.ID.ToString()));
+                        }
+                    }
+
+                    response.Add(status);
+                }
+
+                Company.Delete<Intersect>(x => childrenRelationships.Contains(x.ID));
+                Company.Delete<Intersect>(x => parentRelationships.Contains(x.ID));
+
+                return await Task.FromResult<IHttpActionResult>(
+                    ResponseMessage(
+                        Request.CreateResponse(
+                            HttpStatusCode.OK,
+                            response
+                        )
+                    )
+                );
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
 
     }
 
