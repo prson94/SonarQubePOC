@@ -24,9 +24,11 @@ namespace d360.web.Controllers.V2
     ]
     public class MembershipController : BaseV2ApiController
     {
+        ICompanyContext _company;
         public MembershipController(ICommunityContext community, ICompanyContext company)
             : base(community, company)
         {
+            _company = company;
         }
         /// <summary>
         /// Retrieves a list of users.
