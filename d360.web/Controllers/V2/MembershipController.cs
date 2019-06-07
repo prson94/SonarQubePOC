@@ -149,7 +149,7 @@ namespace d360.web.Controllers.V2
         public async Task<HttpResponseMessage> GetMembers(Guid groupUid)
         {
             string finalSql = "";
-            string joinsSql = " ";
+            string joinsSql = " left join Asset A on A.Object = 'Resource' and A.ObjectID = gr.ResourceID ";
             string whereSql = "";
             List<string> fieldColumns = new List<string>();
             List<string> fieldJoins = new List<string>();
@@ -159,7 +159,7 @@ namespace d360.web.Controllers.V2
                                    from[reporting].[Global_Resource] as gr
                                        inner join [dbo].[ResourceGroup] rg on rg.ResourceID = gr.ResourceID
                                        inner join [dbo].[Group] g on g.ID = rg.GroupID
-									   inner join [dbo].[Asset] a on a.uid = '"
+									   inner join [dbo].[Asset] AB on AB.uid = '"
                                     + groupUid + "'";
             var firstName = "";
             var lastName = "";
@@ -220,15 +220,15 @@ namespace d360.web.Controllers.V2
                 if (queryParams.Any(x => x.Key == customField.Name))
                 {
                     var paramval = queryParams.FirstOrDefault(x => x.Key == customField.Name).Value;
-                    whereSql += $"F{customField.ID}.FormattedValue = @field{customField.ID}";
+                    whereSql += $" and F{customField.ID}.FormattedValue = @field{customField.ID}";
                     dbArgs.Add($"@field{customField.ID}", paramval);
                 }
             }
             finalSql = selectSql + @"from[reporting].[Global_Resource] gr inner join [dbo].[ResourceGroup] rg on rg.ResourceID = gr.ResourceID 
                                       inner join[dbo].[Group] g on g.ID = rg.GroupID
-                                      inner join[dbo].[Asset] a on a.uid = '"
-                                      + groupUid + "'" + joinsSql + " where g.ID = a.ObjectID" + whereSql;
-            countSql += joinsSql + " where g.ID = a.ObjectID" + whereSql;
+                                      inner join[dbo].[Asset] AB on AB.uid = '"
+                                      + groupUid + "'" + joinsSql + " where g.ID = AB.ObjectID" + whereSql;
+            countSql += joinsSql + " where g.ID = AB.ObjectID" + whereSql;
 
             if (pageSize > 0 || pageNum > 0)
             {
