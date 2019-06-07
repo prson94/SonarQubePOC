@@ -15,6 +15,7 @@ namespace d360.web.Controllers.V2
         ICompanyContext _company;
         public BaseV2ApiController(ICommunityContext community, ICompanyContext company)
             : base(community,company)
+
         {
             _company = company;
         }
@@ -161,7 +162,7 @@ namespace d360.web.Controllers.V2
                 json = await request.Content.ReadAsStringAsync();
             }
 
-            if(deserializeAsIs) return JsonConvert.DeserializeObject<T>(json);
+            if (deserializeAsIs) return JsonConvert.DeserializeObject<T>(json);
 
             if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 return default(T);

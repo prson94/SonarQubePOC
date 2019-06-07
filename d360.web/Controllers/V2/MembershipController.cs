@@ -169,32 +169,24 @@ namespace d360.web.Controllers.V2
        ]
         public async Task<HttpResponseMessage> GetMembers(Guid groupUid)
         {
-            string sql = @"
-                           select  gr.uid,
-                                   gr.FirstName,
-                                   gr.LastName ,
-                                   gr.Email,
-                                   gr.IsAdministrator,
-                                   gr.LastLoggedInOn,
-                                   gr.State
-                                   from[reporting].[Global_Resource] as gr
-                                       inner join [dbo].[ResourceGroup] rg on rg.ResourceID = gr.ResourceID
-                                       inner join [dbo].[Group] g on g.ID = rg.GroupID
-									   inner join [dbo].[Asset] a on a.uid = '"
-                                    + groupUid + "' where g.ID = a.ObjectID";
+            string finalSql = "";
+            string joinsSql = " left join Asset A on A.Object = 'Resource' and A.ObjectID = gr.ResourceID ";
+            string whereSql = "";
+            List<string> fieldColumns = new List<string>();
+            List<string> fieldJoins = new List<string>();
+            string selectSql = $"select gr.uid, gr.ResourceID, gr.FirstName, gr.LastName, gr.Email, gr.IsAdministrator, gr.LastLoggedInOn, gr.State";
             string countSql = @"
                            select count(*)
                                    from[reporting].[Global_Resource] as gr
                                        inner join [dbo].[ResourceGroup] rg on rg.ResourceID = gr.ResourceID
                                        inner join [dbo].[Group] g on g.ID = rg.GroupID
-									   inner join [dbo].[Asset] a on a.uid = '"
-                                    + groupUid + "' where g.ID = a.ObjectID";
+									   inner join [dbo].[Asset] AB on AB.uid = '"
+                                    + groupUid + "'";
             var firstName = "";
             var lastName = "";
             var pageSize = 5;
             var pageNum = 1;
             DynamicParameters dbArgs = new DynamicParameters();
-            List<string> queries = new List<string>();
             ResourceApiViewModel model = new ResourceApiViewModel();
             var queryParams = Request.GetQueryNameValuePairs();
             queryParams.ToList().ForEach(q =>
@@ -207,13 +199,13 @@ namespace d360.web.Controllers.V2
                         case "_firstname":
                             firstName = q.Value;
                             dbArgs.Add("firstName", q.Value);
-                            sql += " and gr.FirstName = @firstName";
+                            whereSql += " and gr.FirstName = @firstName";
                             countSql += " and gr.FirstName = @firstName";
                             break;
                         case "_lastname":
                             lastName = q.Value;
                             dbArgs.Add("lastName", q.Value);
-                            sql += " and gr.lastName = @lastName";
+                            whereSql += " and gr.lastName = @lastName";
                             countSql += " and gr.LastName = @lastName";
                             break;
                         case "_pagesize":
@@ -233,6 +225,32 @@ namespace d360.web.Controllers.V2
                 }
             });
 
+            var fieldTypes = _company.FieldTypes.Where(f => f.Object == "ResourceType" && f.ObjectID == 1).ToList();
+            getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
+            foreach (var col in fieldColumns)
+            {
+                selectSql += "," + col;
+            }
+            foreach (var join in fieldJoins)
+            {
+                joinsSql += join;
+            }
+
+            foreach (FieldType customField in fieldTypes)
+            {
+                if (queryParams.Any(x => x.Key == customField.Name))
+                {
+                    var paramval = queryParams.FirstOrDefault(x => x.Key == customField.Name).Value;
+                    whereSql += $" and F{customField.ID}.FormattedValue = @field{customField.ID}";
+                    dbArgs.Add($"@field{customField.ID}", paramval);
+                }
+            }
+            finalSql = selectSql + @"from[reporting].[Global_Resource] gr inner join [dbo].[ResourceGroup] rg on rg.ResourceID = gr.ResourceID 
+                                      inner join[dbo].[Group] g on g.ID = rg.GroupID
+                                      inner join[dbo].[Asset] AB on AB.uid = '"
+                                      + groupUid + "'" + joinsSql + " where g.ID = AB.ObjectID" + whereSql;
+            countSql += joinsSql + " where g.ID = AB.ObjectID" + whereSql;
+
             if (pageSize > 0 || pageNum > 0)
             {
                 if (pageSize < 1) pageSize = 1;
@@ -240,9 +258,9 @@ namespace d360.web.Controllers.V2
                 model.pageNum = pageNum;
                 model.pageSize = pageSize;
                 string offsetSql = $" Order by gr.ResourceID offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
-                sql += offsetSql;
+                finalSql += offsetSql;
             }
-            var results = await Company.QueryAsync<dynamic>(sql, dbArgs);
+            var results = await Company.QueryAsync<dynamic>(finalSql, dbArgs);
             var count = await Company.QueryAsync<int>(countSql, dbArgs);
             model.items = results;
             model.total = count.FirstOrDefault();
