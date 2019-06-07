@@ -97,7 +97,7 @@ namespace d360.model
             selectFields.ForEach(f =>
             {
                 var sqlDataType = DetermineSqlDataTypeForFieldType(f);
-                selectFieldStringList.Add((useFieldNames ? $"try_cast([{f.ID}] as {sqlDataType}) as {f.Name}" : $"try_cast([{f.ID}] as {sqlDataType}) as Field{f.ID}"));
+                selectFieldStringList.Add(GetFieldTypeValue(f, useFieldNames));
             });
             var selectFieldString = string.Join(",", selectFieldStringList);
 
@@ -588,7 +588,7 @@ OPTION (RECOMPILE)";
 
                 if (ft.Type == dtJsonElement)
                 {
-                    fieldValueStatement = "FJP.[Value]";// $"try_cast(FJP.[Value] as {jsonElementDefinition.DataType})";
+                    fieldValueStatement = "FJP.[Value]";
                 }
                 else if (ft.Type == "Relationship")
                 {
@@ -654,6 +654,29 @@ OPTION (RECOMPILE)";
             results.Results =  await QueryAsync<dynamic>(sql, dbArgs);
 
             return results;
+        }
+
+        private string GetFieldTypeValue(FieldType f, bool useFieldNames)
+        {
+            var sqlDataType = DetermineSqlDataTypeForFieldType(f);
+            var selectString = "";
+
+            switch (sqlDataType)
+            {
+                case "int":
+                case "date":
+                case "datetime":
+                    selectString += $"try_parse(coalesce([{f.ID}],'') as {sqlDataType}) as {(useFieldNames ? $"{f.Name}" : $"Field{f.ID}")}";
+                    break;
+                case "nvarchar":
+                    selectString += $"try_cast([{f.ID}] as {sqlDataType}) as {(useFieldNames ? $"{f.Name}" : $"Field{f.ID}")}";
+                    break;
+                case "decimal":
+                case "bit":
+                    selectString += $"case when try_cast(coalesce([{f.ID}],'') as {sqlDataType}) is not null then [{f.ID}] else null end as {(useFieldNames ? $"{f.Name}" : $"Field{f.ID}")}";
+                    break;
+            }
+            return selectString;
         }
 
         private string GetFieldTypeSort(string fieldName, bool ascending, FieldType ft)
