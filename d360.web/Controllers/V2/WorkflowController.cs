@@ -178,7 +178,7 @@ namespace d360.web.Controllers.V2
         /// <returns>Returns list of workflow version steps and An HTTP status code</returns>
         [HttpGet,Route("versions/{workflowVersionUid}/steps"),
         SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-        SwaggerResponse(HttpStatusCode.OK, "", typeof(WorkflowVersionSteps)),
+        SwaggerResponse(HttpStatusCode.OK, "", typeof(WorkflowVersionStepsApiViewModel)),
         SwaggerResponse(HttpStatusCode.NotFound, "Workflow Version  not found based on Uid provided.", typeof(ErrorResponse)),
         SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this workflow version steps is invalid, possibly due to an incorrectly formatted  workflow version unique identifier.", typeof(ErrorResponse)),
         SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))]
@@ -219,6 +219,41 @@ namespace d360.web.Controllers.V2
      
             }
             return uid;
+        }
+
+        /// <summary>
+        /// Get a list of steps and their relevant information for a specific workflow instance contained within the system.
+        /// </summary>
+        /// <param name="workflowUid">workflow instance unique identifie</param>
+        /// <returns></returns>
+        [HttpGet,Route("{workflowUid}/steps"),
+        SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+        SwaggerResponse(HttpStatusCode.OK, "", typeof(WorkflowInstanceApiViewModel)),
+        SwaggerResponse(HttpStatusCode.NotFound, "Workflow Instance  not found based on Uid provided.", typeof(ErrorResponse)),
+        SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this workflow instance is invalid, possibly due to an incorrectly formatted  workflow instance unique identifier.", typeof(ErrorResponse)),
+        SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))]
+
+        public async Task<IHttpActionResult> GetWorkflowInstances(Guid workflowUid)
+        {
+            var prefix = "Workflow.GetWorkflowInstances => ";
+            var errorMessage = "";
+            try
+            {
+                if (!this.validator.IsValidWorkflowInstance(workflowUid))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Workflow  Uid {workflowUid.ToString()} could not be found."));
+
+                var workflowInstances = await this.workflowRepository.GetWorkflowInstances(workflowUid);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, workflowInstances)));
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix  }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
         }
     }
 }

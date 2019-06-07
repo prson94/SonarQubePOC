@@ -3088,6 +3088,13 @@
             <param name="workflowVersionUid"> workflow version unique identifier</param>
             <returns>Returns list of workflow version steps and An HTTP status code</returns>
         </member>
+        <member name="M:d360.web.Controllers.V2.WorkflowController.GetWorkflowInstances(System.Guid)">
+            <summary>
+            Get a list of steps and their relevant information for a specific workflow instance contained within the system.
+            </summary>
+            <param name="workflowUid">workflow instance unique identifie</param>
+            <returns></returns>
+        </member>
         <member name="M:d360.web.Controllers.D3SApiController.GetFieldFiltersByType(d360.core.SystemObjects,System.Int32)">
             <summary>
             Gets a list of available field-level filters for a grid in the UI. This includes standard/custom fields, relationships, attributes, owner.
