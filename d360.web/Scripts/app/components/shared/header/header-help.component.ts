@@ -17,15 +17,15 @@ import { CurrentEnvironmentSettings } from '../../../static/environment-settings
                        </ul>
                     </div>
                 <span>
-                <div><p-dialog header="About" [(visible)]="display" [responsive]="true" [width]="700" [height]="350" [baseZIndex]="10000" img src="../../../../../Content/images/logo.new.color.png">
-                        <div><b>Data3Sixty Govern v2019.4.0</b>
-                              <br><b>Build Version:</b> 2019.4.5.0
-                              <br><b>Build Date:</b> 24-04-2019 7:17:27 PM</div>
-                              <div><b>Support:</b> http://support.infogix.com</div>
-                              <p>© 2005-2019 Infogix. All rights reserved.<br>
-                              Confidential - Limited distribution to authoroized persons only, pursuant to the teams of Infogix Inc. license agreement. This software is protected
-                              as an unpublished work and constitutes a trade secret of Infogix Inc.</p>
-                </p-dialog></div>`,
+                <p-dialog header="About" [(visible)]="display" [responsive]="true" [width]="700" [minWidth]="100" [minY]="70">
+                        <p-header><img src="../../../../../Content/images/logo.new.color.png"></p-header>         
+                        <span><b>Data3Sixty Govern v2019.4.0</b>
+                              <br /><b>Build Version:</b> 2019.4.5.0
+                              <br /><b>Build Date:</b> 24-04-2019 7:17:27 PM
+                              <br /><b>Support:</b> http://support.infogix.com
+                              <p>© 2005-2019 Infogix. All rights reserved.<br />Confidential - Limited distribution to authoroized persons only, pursuant to the teams of Infogix Inc. license agreement. This software is protected<br />as an unpublished work and constitutes a trade secret of Infogix Inc.</span>
+                    <p-footer><button type="button" style="background-color: #1E90FF;color: white;" (click)="display=false">Close</button></p-footer>
+                </p-dialog>`,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
