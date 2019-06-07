@@ -117,7 +117,7 @@ namespace d360.web.Controllers.V2
             }
             catch(Exception e)
             {
-                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error while creating tag", e.Message);
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while creating tag", e.Message);
             }
             
             return ResponseMessage(Request.CreateResponse<TagApiModel>(HttpStatusCode.OK, result));

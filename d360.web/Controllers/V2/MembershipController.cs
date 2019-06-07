@@ -5,6 +5,7 @@ using d360.web.Models;
 using d360.web.Models.Attributes;
 using Dapper;
 using Microsoft.Web.Http;
+using Newtonsoft.Json;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
@@ -50,23 +51,32 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<HttpResponseMessage> GetUsers(Guid? Uid = null, string FirstName = null, string LastName = null, core.enums.State? State = null, bool? IsAdministrator = null, int _pageSize = 5, int _pageNum = 1)
         {
-            string sql = "select uid, ResourceID, FirstName, LastName, Email, IsAdministrator, LastLoggedInOn, State from [reporting].[Global_Resource] ";
-            string countSql = "select count(*) from [reporting].[Global_Resource] ";
+            string finalSql = "";
+            string joinsSql = " left join Asset A on A.Object = 'Resource' and A.ObjectID = gr.ResourceID ";
+            string whereSql = "";
+            string selectSql = $"select gr.uid, ResourceID, FirstName, LastName, Email, IsAdministrator, LastLoggedInOn, gr.State";
+            string countSql = "select count(*) from [reporting].[Global_Resource] gr ";
 
             DynamicParameters dbArgs = new DynamicParameters();
             List<string> queries = new List<string>();
             ResourceApiViewModel model = new ResourceApiViewModel();
+            List<string> fieldColumns = new List<string>();
+            List<string> fieldJoins = new List<string>();
 
             if (_pageNum < 1) _pageNum = 1;
 
             if (_pageSize < 1) _pageSize = 1;
             if (_pageSize > 250) _pageSize = 250;
 
+            var fieldTypes = _company.FieldTypes.Where(f => f.Object == "ResourceType" && f.ObjectID == 1).ToList();
+
+            IDictionary<string, string> customFields = new Dictionary<string, string>();
+            var queryParams = Request.GetQueryNameValuePairs();
+            getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
+
+            if (_pageSize > 0 || _pageNum > 0)
             if (Uid != null || FirstName != null || LastName != null || State != null || IsAdministrator != null)
             {
-                sql += "where ";
-                countSql += "where ";
-
                 if (Uid != null)
                 {
                     dbArgs.Add("uid", Uid);
@@ -85,7 +95,7 @@ namespace d360.web.Controllers.V2
                 if (State != null)
                 {
                     dbArgs.Add("state", State);
-                    queries.Add(" state = @state");
+                    queries.Add(" gr.state = @state");
                 }
                 if (IsAdministrator != null)
                 {
@@ -93,40 +103,51 @@ namespace d360.web.Controllers.V2
                     queries.Add(" isAdministrator = @isAdministrator");
                 }
             }
-            for (int i = 0; i < queries.Count(); i++)
+            foreach (var col in fieldColumns)
             {
-                sql += queries[i].ToString();
-                countSql += queries[i].ToString();
-                if (i < queries.Count() - 1)
+                selectSql += "," + col;
+            }
+            foreach (var join in fieldJoins)
+            {
+                joinsSql += join;
+            }
+            foreach (FieldType customField in fieldTypes)
+            {
+                if (queryParams.Any(x => x.Key == customField.Name))
                 {
-                    sql += " and ";
-                    countSql += " and ";
+                    var paramval = queryParams.FirstOrDefault(x => x.Key == customField.Name).Value;
+                    queries.Add($"F{customField.ID}.FormattedValue = @field{customField.ID}");
+                    dbArgs.Add($"@field{customField.ID}", paramval);
                 }
             }
-            if (_pageSize > 0 || _pageNum > 0)
+
+            if (queries.Count() > 0)
+            {
+                whereSql += "where ";
+            }
+
+            for (int i = 0; i < queries.Count(); i++)
+            {
+                whereSql += queries[i].ToString();
+                if (i < queries.Count() - 1)
+                {
+                    whereSql += " and ";
+                }
+            }
+            finalSql = selectSql + " from[reporting].[Global_Resource] gr " + joinsSql + " " + whereSql;
+            countSql += joinsSql + " " + whereSql;
             {
                 if (_pageSize < 1) _pageSize = 1;
                 if (_pageNum < 1) _pageNum = 1;
                 model.pageNum = _pageNum;
                 model.pageSize = _pageSize;
                 string offsetSql = $" Order by ResourceID offset {_pageSize * (_pageNum - 1)} rows fetch next {_pageSize} rows only";
-                sql += offsetSql;
+                finalSql += offsetSql;
             }
-            var results = await Company.QueryAsync<dynamic>(sql, dbArgs);
-            var count = await Company.QueryAsync<int>(countSql, dbArgs);
-            #region GetDynamicFields
-            foreach (IDictionary<string, object> item in results)
-            {
-                int resourceId = 0;
-                if (int.TryParse(item["ResourceID"].ToString(), out resourceId))
-                {
-                    IQueryable<FieldWithRelation> list = Company.GetFieldRelationsByObject(core.SystemObjects.Resource, resourceId);
-                    list.ToList().ForEach(y => { item.Add(y.Name, y.FormattedValue); });
-                }
-            }
-            #endregion
+            var results = await Company.QueryAsync<dynamic>(finalSql, dbArgs);
+            var countResults = await Company.QueryAsync<int>(countSql, dbArgs);
             model.items = results;
-            model.total = count.FirstOrDefault();
+            model.total = countResults.FirstOrDefault();
             return Request.CreateResponse(HttpStatusCode.OK, model);
         }
 
