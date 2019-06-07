@@ -1,6 +1,6 @@
 
 import {debounceTime, debounce} from 'rxjs/operators';
-import { Component, Input, ElementRef, ViewChildren, OnChanges, SimpleChange, Output, EventEmitter, AfterViewInit, OnInit,OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, ElementRef, ViewChildren, OnChanges, SimpleChange, Output, EventEmitter, AfterViewInit, OnInit,OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { Router }       from '@angular/router';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { TypeaheadSearchService } from '../../../services/typeahead-search.service';
@@ -9,28 +9,28 @@ import { SearchResult } from '../../../models/search-result.model';
 import { TreeNode } from 'primeng/components/common/api';
 import { SubscriptionLike as ISubscription } from 'rxjs';
 import { createWriteStream } from 'fs';
+import { clearLine } from 'readline';
 
 @Component({
     selector: 'd3s-header-breadcrumb-item',
     providers: [TypeaheadSearchService],    
     host: {
-        '(document:click)': 'onClick($event)',
+       // '(document:click)': 'onClick($event)',
         '(window:resize)': 'setMaxHeight()'
     },  
-    template: ` <a *ngIf="breadcrumb.hasLink()"         
-                        (click)="navigateToLink(breadcrumb.link)" 
-                        (mouseover)="in(treePanel,searchPanel,$event)" 
-                        class="breadcrumb" 
-                        style="cursor:pointer">
-                            {{ breadcrumb.text }} <span *ngIf="breadcrumb.Parent">breadcrumb.Parent</span>
-                </a>
-                    <div *ngIf="!breadcrumb.hasLink()" 
-                         (mouseover)="in(treePanel,searchPanel,$event)" 
-                        class="breadcrumb"  
-                        [ngClass]="{'breadcrumb-link':isChangableItem() || isTreeItem()}">
-                        {{ breadcrumb.text }} <span *ngIf="breadcrumb.Parent">breadcrumb.Parent</span>
-                    </div>
-                    <p-overlayPanel [ngClass]="'search-results'" #searchPanel>  
+    template: ` <div #hovertarget class="hover-container" (mouseenter)="in(treePanel,searchPanel,$event)" (mouseleave)="out(treePanel,searchPanel,$event)" >
+                    <a id="breadlink" (click)="navigateToLink(breadcrumb.link)" 
+                            class="breadcrumb" 
+                            style="cursor:pointer">
+                            <span class="breadcrumb-text">{{breadcrumb.text}} </span>
+                            <span class="parent" *ngIf="breadcrumb.parentTypeName"   
+                                  (click)="stopParentNav($event);navigateToLink(breadcrumb.parentUrl)">
+                                    {{breadcrumb.parentTypeName}}
+                            </span>
+                            <div *ngIf="!isChangableItem()" class="gutter"></div>
+                            <i *ngIf="isChangableItem()" class="fa fa-caret-right crumb-arrow right"></i>
+                    </a>
+                    <p-overlayPanel [ngClass]="'search-results'" #searchPanel for="hovertarget" my="left top" at="top right">  
                         <div>
                             <span class="header-search-input"><input type="text" [(ngModel)]="searchValue" placeholder="Search" (keyup)="search(searchValue)"> <i class="fa fa-search"></i></span> 
                             <div *ngFor="let result of results;" class="breadcrumb-search-results">
@@ -50,7 +50,8 @@ import { createWriteStream } from 'fs';
                             </p-tree>
                         </div>
                     </p-overlayPanel>
-              `,
+                </div>
+          `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
@@ -60,7 +61,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
     @Input() lastItem: Breadcrumb;
     @Output() treeClick = new EventEmitter();
     @Input() showSeperator: boolean = true;
-    
+    @ViewChild('hovertarget') hoverTarget: ElementRef;
     private results: SearchResult[];
     private result: SearchResult;
     public showSearch: boolean;
@@ -100,21 +101,46 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
     }
     
     private in(panel, searchPanel, event) {
+
+        let parent = this.hoverTarget.nativeElement.parentNode;
         if (this.isChangableItem()) {
             this.showSearch = true;
-            searchPanel.toggle(event);
+            if (this.hasClass(parent, 'collapsed-crumb')) {
+                searchPanel.show(event, this.hoverTarget.nativeElement.parentNode);
+                searchPanel.el.nativeElement.children[0].opacity = 0;
+                window.setTimeout(() => {
+                    let lineDims = this.hoverTarget.nativeElement.getBoundingClientRect();
+                    searchPanel.el.nativeElement.children[0].style.top = (lineDims.top - 30) + "px";
+                    searchPanel.el.nativeElement.children[0].style.left = (lineDims.width) + "px";
+                }, 100);
+                
+            } else {
+                searchPanel.show(event);
+            }
         }        
         if (this.isTreeItem()) {
-            panel.toggle(event);            
+            if (this.hasClass(parent, 'collapsed-crumb'))
+                panel.show(event, this.hoverTarget.nativeElement.parentNode);
+            else
+                panel.show(event);
         }
     }    
+
+    out(treePanel, searchPanel, event) {
+        if (this.isChangableItem()) {
+            this.showSearch = true;
+            searchPanel.hide();
+        }
+        if (this.isTreeItem()) {
+            treePanel.hide();
+        }
+    }
 
     search(event) {
 
         let q = event.query ? event.query : event;
 
         if (this.breadcrumb.isType) {
-            console.log(this.breadcrumb);
             if (this.breadcrumb.hasParent) {
                 this.typeaheadSearchService.getObjectTypeItemsFromParent(10, q, this.breadcrumb.objectType, this.breadcrumb.objectId).pipe(
                     debounceTime(400))
@@ -143,13 +169,6 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
     selectItem() {
         this.router.navigateByUrl(this.result.Url);
     }
-
-    onClick(event) {
-        if (this.showSearch && !this.elementRef.nativeElement.contains(event.target)) { 
-            this.showSearch = false; 
-            
-        }
-    }
     
     nodeSelect(event, panel) {        
         this.breadcrumb.text = event.node.label;
@@ -165,9 +184,17 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
         };
         return styles;
     }
-
-    private navigateToLink(url: string) {
-        this.router.navigateByUrl(url);
+    private stopParentNav(event) {
+        event.stopPropagation();
     }
-    
+    private navigateToLink(url: string) {
+
+        console.log(url);
+        if (url && url.length > 0)
+            this.router.navigateByUrl(url);
+
+    }
+    private hasClass(element, className) {
+        return (' ' + element.className + ' ').indexOf(' ' + className + ' ') > -1;
+    }
 }

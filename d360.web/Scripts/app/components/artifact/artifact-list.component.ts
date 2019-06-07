@@ -41,10 +41,7 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
     ngOnInit() {
         this.sub = this.route.params.subscribe(params => {
             let artifactTypeId = +params['artifactTypeId']; // (+) converts string 'id' to a number
-            this.currentAreaNameSubscription =
-                this.headerBreadcrumbService
-                    .getAreaName('ArtifactType', artifactTypeId)
-                    .subscribe(result => { this.currentAreaName = result });
+            
             this.isLoading = true;
             this.artifactTypeHierarchy = [];
             this.headerBreadcrumbService.setCurrentObjectInfo('ArtifactType', artifactTypeId);
@@ -98,18 +95,24 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
 
     displayBreadcrumb() {
         this.headerBreadcrumbService.clearBreadcrumbs();
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : this.folderTitle, this.areaLink));
-        this.artifactTypeHierarchy.forEach(x => {
-            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(
-                x.Name,
-                SiteUrlHelpers.getObjectUrl("ArtifactType", x.ID),
-                false,
-                "ArtifactType",
-                x.ID,
-                null,
-                null,
-                true,
-                x.ParentID > 0));
+        this.currentAreaNameSubscription =
+            this.headerBreadcrumbService
+                .getAreaName('ArtifactType', this.artifactTypeHierarchy[0].ID)
+                .subscribe(result => {
+                    this.currentAreaName = result
+                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : this.folderTitle, this.areaLink));
+                    this.artifactTypeHierarchy.forEach(x => {
+                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(
+                            x.Name,
+                            SiteUrlHelpers.getObjectUrl("ArtifactType", x.ID),
+                            false,
+                            "ArtifactType",
+                            x.ID,
+                            null,
+                            null,
+                            true,
+                            x.ParentID > 0));
+                });
         });
 
     }

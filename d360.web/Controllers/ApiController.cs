@@ -1213,25 +1213,6 @@ where   h.ID <> @t order by h.[Level] desc;
                 return Request.CreateResponse(HttpStatusCode.NotFound, json);
             }
 
-            var isPluralize = PluralCultureHelper.IsNeutralCultureEnglish();
-
-            foreach (var br in json["Breadcrumbs"].Children())
-            {
-                if (br["IsType"].ToObject<bool>())
-                {
-                    if (isPluralize)
-                    {
-                        var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
-                        br["Name"] = pluralize.Pluralize(br["Name"].Value<string>());
-                        pluralize = null;
-                    } else
-                    {
-                        br["Name"] = "";
-                    }
-                    
-                }
-            }
-
             return Request.CreateResponse(HttpStatusCode.OK, json);
         }
 

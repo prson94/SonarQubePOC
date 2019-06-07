@@ -11,9 +11,9 @@ import { Subscription }   from 'rxjs';
                     <d3s-header-breadcrumb-item *ngIf="(showLastOnly && last) || !showLastOnly" [breadcrumb]="breadcrumb" [isLastItem]="last" [lastItem]="breadcrumbs[breadcrumbs.length - 1]" (treeClick)="handleTreeClick($event)"></d3s-header-breadcrumb-item>                    
                  </div>                
                 </div>  
-                <p-overlayPanel #smallPanel>
+                <p-overlayPanel #smallPanel ngClass="collapsed-overlay">
                     <div *ngFor="let breadcrumb of breadcrumbs;let last=last;let index=index" class="collapsed-crumb-container">
-                        <d3s-header-breadcrumb-item *ngIf="!last" [ngClass]="'collapsed-crumb'" [ngStyle]="{'padding-left': index *10 + 'px'}" [showSeperator]="false" [breadcrumb]="breadcrumb" [isLastItem]="last"></d3s-header-breadcrumb-item>
+                        <d3s-header-breadcrumb-item *ngIf="!last" [ngClass]="'collapsed-crumb'" [ngStyle]="{'text-indent': index *10 + 'px'}" [showSeperator]="false" [breadcrumb]="breadcrumb" [isLastItem]="last"></d3s-header-breadcrumb-item>
                     </div>
                 </p-overlayPanel>
               `,

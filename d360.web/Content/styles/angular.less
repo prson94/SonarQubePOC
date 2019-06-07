@@ -914,13 +914,21 @@ div.child-container{
 
 
  /* breadcrumbs*/
-
+.collapsed-overlay {
+    .ui-overlaypanel-content {
+        padding: 0px;
+    }
+}
 div.breadcrumbs {
     margin-left: 20px;
     vertical-align: top;
     display: inline-flex;
     color: @igx-header-breadcrumb-color;
     white-space: nowrap;
+
+    .hover-container {
+        height: 40px;
+    }
 
     .active, .sep {
         color: #fff;
@@ -951,15 +959,68 @@ div.breadcrumbs {
 
 .collapsed-crumb-container {
     line-height: 20px;
+    text-indent: 0px;
+
     .collapsed-crumb {
+        display: flex;
+
+        .hover-container {
+            width: 100%;
+        }
+
+        .breadcrumb-text {
+            padding-right: 5px;
+        }
+
         a {
             color: black;
+            display: flex;
+            flex-grow: 1;
+            max-width: none;
+            padding: 10px;
+
+            &:hover, .hover {
+                background-color: #ceecf2;
+            }
+        }
+
+        .crumb-arrow {
+            display: inline-flex;
+            margin-left: auto;
+            line-height: 20px;
+        }
+
+        .parent {
+            background-color: dodgerblue;
+            border-radius: 3px;
+            text-indent: 0px;
+
+            &:hover {
+                text-decoration: underline;
+            }
         }
     }
 }
 
 a.breadcrumb {
-    color: @igx-header-breadcrumb-color;
+    color: white;
+    display: inline-block;
+
+    .parent {
+        color: @igx-header-breadcrumb-color;
+
+        &:before {
+            content: '(';
+        }
+
+        &:after {
+            content: ')';
+        }
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
 }
 .breadcrumb {
     display: inline-block;
@@ -970,6 +1031,22 @@ a.breadcrumb {
     position: relative;
     top: 1px;
     text-transform: none;
+
+    .breadcrumb-text {
+        padding-right: 0px;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
+    .gutter {
+        min-width: 20px;
+    }
+
+    .crumb-arrow {
+        display: none;
+    }
 
     i {
         padding: 0 8px;
@@ -1010,14 +1087,16 @@ a.breadcrumb {
         padding: 0px;
     }
 
-    .header-search-input{
+    .header-search-input {
         margin: 10px;
+        border-radius: 5px;
     }
+
     .breadcrumb-search-result {
         cursor: pointer;
         padding-left: 10px;
 
-        &:hover {
+        &:hover, &.hover {
             background-color: #ceecf2;
         }
 

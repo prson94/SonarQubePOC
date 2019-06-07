@@ -65,7 +65,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
             this.currentAreaNameSubscription =
                 this.headerBreadcrumbService
                     .getAreaName('ArtifactType', this.artifactTypeId)
-                    .subscribe(result => { this.currentAreaName = result });
+                    .subscribe(result => { this.currentAreaName = result; if (this.artifact) this.buildBreadcrumb(); });
 
             this
                 .loadPermissions(this.permissionsService, StringConstants.ObjectArtifact, artifactId)
@@ -98,49 +98,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
             .subscribe(
                 artifact => {
                     this.artifact = artifact;
-                    this.headerBreadcrumbService.clearBreadcrumbs();
-                    let index = 0;
-
-                    for (let breadcrumb of this.artifact.Breadcrumbs) {
-                        index++;
-
-                        if (index == this.artifact.Breadcrumbs.length) {
-                            //last item in the breadcrumb
-                            this
-                                .headerBreadcrumbService
-                                .showBreadcrumb(
-                                    new Breadcrumb(
-                                        breadcrumb.Name,
-                                        breadcrumb.Url,
-                                        breadcrumb.Active,
-                                        'Artifact',
-                                        this.artifactTypeId
-                                    )
-                                )
-                            ;
-                        } else if (index == 1) {                           
-                            let areaBreadcrumb = new Breadcrumb(
-                                this.currentAreaName ? this.currentAreaName : this.folderTitle,
-                                this.areaLink,
-                                breadcrumb.Active
-                            );
-                            this
-                                .headerBreadcrumbService
-                                .showBreadcrumb(areaBreadcrumb);
-                        } else {
-                            this
-                                .headerBreadcrumbService
-                                .showBreadcrumb(
-                                    new Breadcrumb(
-                                        breadcrumb.Name,
-                                        breadcrumb.Url,
-                                        breadcrumb.Active
-                                    )
-                                )
-                            ;
-                        }
-                    }
-
+                    this.buildBreadcrumb();
                     this.setBrowserTitle(this.titleService, this.artifact.DisplayValue);
 
                     this
@@ -211,6 +169,69 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
             });
     }
 
+    private buildBreadcrumb() {
+        let index = 0;
+        this.headerBreadcrumbService.clearBreadcrumbs();
+        let areaBreadcrumb = new Breadcrumb(
+            this.currentAreaName ? this.currentAreaName : this.folderTitle,
+            this.areaLink,
+            false
+        );
+        this.headerBreadcrumbService.showBreadcrumb(areaBreadcrumb);
+
+        for (let breadcrumb of this.artifact.Breadcrumbs) {
+            index++;
+
+            if (index == this.artifact.Breadcrumbs.length) {
+                //last item in the breadcrumb
+                this
+                    .headerBreadcrumbService
+                    .showBreadcrumb(
+                        new Breadcrumb(
+                            breadcrumb.Name,
+                            breadcrumb.Url,
+                            false,
+                            'Artifact',
+                            this.artifactTypeId,
+                            null,
+                            null,
+                            false,
+                            breadcrumb.TypeName !== undefined,
+                            breadcrumb.TypeName,
+                            'ArtifactType',
+                            this.GetIDFromUrl(breadcrumb.TypeUrl),
+                            breadcrumb.TypeUrl
+                        )
+                    )
+                    ;
+            } else {
+                this
+                    .headerBreadcrumbService
+                    .showBreadcrumb(
+                        new Breadcrumb(
+                            breadcrumb.Name,
+                            breadcrumb.Url,
+                            false,
+                            'Artifact',
+                            this.GetIDFromUrl(breadcrumb.Url),
+                            null,
+                            null,
+                            false,
+                            breadcrumb.TypeName !== undefined,
+                            breadcrumb.TypeName,
+                            'ArtifactType',
+                            this.GetIDFromUrl(breadcrumb.TypeUrl),
+                            breadcrumb.TypeUrl
+                        )
+                    )
+                    ;
+            }
+        }
+    }
+
+    private GetIDFromUrl(url: string) {
+        return +url.split("/")[url.split.length - 1];
+    }
     private completeSurvey() {
         this.showSurvey = false;
         var index = this.messages.findIndex(x => x.data == 'Survey');
