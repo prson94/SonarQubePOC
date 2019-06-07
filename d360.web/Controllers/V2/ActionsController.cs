@@ -15,19 +15,19 @@ using System.Web.Http;
 namespace d360.web.Controllers.V2
 {
     /// <summary>
-    /// This service houses all endpoints handling issue management in Govern.
+    /// This service houses all endpoints handling actions management in Govern.
     /// </summary>
     [
         ApiVersion("2.0"),
-        RoutePrefix("api/v{version:apiVersion}/issues"),
+        RoutePrefix("api/v{version:apiVersion}/actions"),
         Authorize
     ]
-    public class IssuesController : BaseV2ApiController
+    public class ActionsController : BaseV2ApiController
     {
         IIssueRepository issueRepository;
         IAssetRepository assetRepository;
 
-        public IssuesController(ICommunityContext community, ICompanyContext company, IIssueRepository repository, IAssetRepository assetRepository)
+        public ActionsController(ICommunityContext community, ICompanyContext company, IIssueRepository repository, IAssetRepository assetRepository)
             : base(community, company)
         {
             this.issueRepository = repository;
@@ -35,14 +35,14 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Returns all issue types that are defined in Govern.  
+        /// Returns all actions types that are defined in Govern.  
         /// 
         /// </summary>
-        /// <returns>A list of issue types</returns>
+        /// <returns>A list of actions types</returns>
         [
             HttpGet, MapToApiVersion("2.0"), Route("types"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "A full list of issue types.", typeof(List<IssueTypeApiModel>)),
+            SwaggerResponse(HttpStatusCode.OK, "A full list of actions types.", typeof(List<IssueTypeApiModel>)),
         ]
         public async Task<HttpResponseMessage> GetIssueTypes()
         {
@@ -51,6 +51,11 @@ namespace d360.web.Controllers.V2
             return Request.CreateResponse(issueTypes);
         }
 
+        /// <summary>
+        /// Returns actions types that are associated with a particular asset type
+        /// </summary>
+        /// <param name="AssetTypeUid">Asset Type Uid</param>
+        /// <returns>A list of actions types</returns>
         [HttpGet,
             Route("types/{AssetTypeUid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),

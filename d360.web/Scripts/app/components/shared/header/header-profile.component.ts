@@ -13,38 +13,44 @@ declare var CompanySettings;
 
 @Component({
     selector: 'd3s-header-profile',
-    template: ` <span #item class="header-search header-table" [ngClass]="{'header-search-active':active}" (mouseenter)="show(item)" (mouseleave)="hide(item)" >
+    template: ` <span #item class="header-search" [ngClass]="{'header-search-active':active}" (mouseenter)="show(item)" (mouseleave)="hide(item)" >
                     <a class="photo hide-on-med-and-down"><img [src]="'/resources/image/' + resourceId + '?size=25'" height="25" width="25" /></a>
                     <div class="show-on-medium-and-down hide-on-med-and-up">
                         <div class="mini-menu-line">
-                            <div class="check-gutter"></div><div class="text">My Account</div><div class="expand-gutter right"><i class="fa fa-caret-right"></i></div>
+                            <div class="check-gutter"></div><div class="text">My Account</div><div class="expand-gutter"><i class="fa fa-caret-right"></i></div>
                         </div>
                     </div>
                     <div class="search-child header-profile-panel">                        
                         <div class="row">          
-                            <div class="row header-profile-name">
-                                <div class="col s12"><h4>{{userName}}</h4></div>
-                                <div class="col s12"><h5>{{userEmail}}</h5></div>
-                            </div>
                             <ul>
+                                <li class="header-item label">
+                                    <div class="mini-menu-line">
+                                        <div class="text no-gutter">
+                                            <span>
+                                                {{userName}} <br>
+                                                {{userEmail}}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </li>
                                 <li [routerLink]="resourceUrl()" class="header-item">
                                     <div class="mini-menu-line">
-                                        <div class="text">View Profile</div>
+                                        <div class="text no-gutter">View Profile</div>
                                     </div>
                                 </li>
                                 <li *ngIf="showAllUsersAPIKey" [routerLink]="'/resource/my/apikey'" class="header-item">
                                     <div class="mini-menu-line">
-                                        <div class="text">API Key</div>
+                                        <div class="text no-gutter">API Key</div>
                                     </div>                                
                                 </li>
                                 <li *ngIf="!singleSignOn"  [routerLink]="'/resource/'+resourceId+'/changepassword'" class="header-item">
                                     <div class="mini-menu-line">
-                                        <div class="text">Change Password</div>
+                                        <div class="text no-gutter">Change Password</div>
                                     </div>                                
                                 </li>
                                 <li class="header-item" (click)="signOut()">
                                     <div class="mini-menu-line">
-                                        <div class="text">Sign Out</div>
+                                        <div class="text no-gutter">Sign Out</div>
                                     </div>                                
                                 </li>
                             </ul>                                                    
@@ -107,11 +113,11 @@ export class HeaderProfileComponent implements OnInit , OnDestroy{
             this.active = true;
 
             menuPanel.style.zIndex = 1000;
-
-            menuPanel.style.top = (item.offsetHeight - 1) + 'px'; // -1 for the border so it blends
+            menuPanel.style.top = 40 + 'px'; // -1 for the border so it blends
             menuPanel.style.right = (dims.width) + 'px';
+            menuPanel.style.position = 'fixed';  
             if (dims.width > 0) {
-                menuPanel.style.top = '0px';
+                menuPanel.style.top = dims.top + 'px';
                 menuPanel.style['border-right'] = 'none';
             }
         }

@@ -328,6 +328,11 @@ nav.top, .left-side-nav {
     }
 }
 
+@media only screen and (max-width : 992px), (-ms-high-contrast: none), (-ms-high-contrast: active) {
+    .show-on-medium-and-down {
+        display: inline !important;
+    }
+}
 
 //anything in this only applies to Edge for fixes
 @supports
@@ -720,14 +725,15 @@ div.powerbi iframe {
     border: none;
     border-radius: 3px;
     line-height: 25px;
-    padding: 0 20px;
+    padding: 0 15px;
+    height: 30px;
 
     &:hover {
-        background: lighten(#ff7155, 5%);
+        background: mix(black, #ff7155, 7%)
     }
 
     &:active {
-        background: lighten(#ff7155, 10%);
+        background: mix(black, #ff7155, 14%)
     }
 }
 
@@ -1035,13 +1041,12 @@ a.breadcrumb {
             min-width: 115px;
         }
 
-        li {
-            cursor: pointer;
+        .spacer{
             padding-right: 5px;
         }
 
-        li:last-child {
-            padding-right: 10px;
+        li {
+            cursor: pointer;
         }
     }
 
@@ -1111,6 +1116,8 @@ a.breadcrumb {
 .header-button {
     font-size: 1.2em;
     padding: 0 10px;
+    width: 40px;
+    text-align: center;
 
     &:active, &.active {
         background: #676C7A;
@@ -1147,29 +1154,39 @@ a.breadcrumb {
 
 
     .header-item {
-        width: 100%;
-        display: inline-block;
         cursor: pointer;
+        display: table-row;
+        float: none;
 
-        &:hover {
-            background-color: #DFF3F7;
+        &.label {
+            cursor: default;
+            opacity: 0.33;
+            pointer-events: none;
+        }
+
+        &:hover, &.hover {
+            background-color: @igx-lightblue-xlight;
+        }
+
+        &:active, &.active {
+            background: @igx-lightblue-light;
         }
 
         .mini-menu-line {
             display: flex;
             flex-basis: auto;
             flex-direction: row;
-            width: 100%;
             flex-grow: 1;
             flex-wrap: nowrap;
-            min-width: 150px;
 
             .text {
                 padding: 10px;
-                min-width: 150px;
-                max-width: 150px;
                 overflow: hidden;
                 text-overflow: ellipsis;
+
+                &.no-gutter {
+                    padding-left: 20px;
+                }
             }
 
             .check-gutter {
@@ -1178,17 +1195,18 @@ a.breadcrumb {
                 min-width: 40px;
                 text-align: center;
                 line-height: 35px;
+                display: table-cell;
             }
 
             .expand-gutter {
-                display: flex;
-                padding-left: 20px;
-                min-width: 20px;
                 padding: 10px;
-
+                display: table-cell;
+                padding-left: 0;
+                padding-right: 20px;
+                margin-left: auto;
 
                 i {
-                    margin-left: auto;
+                    text-align: right;
                 }
             }
 
@@ -1206,15 +1224,6 @@ a.breadcrumb {
     width: auto;
 }
 
-.header-search-panel, .header-profile-panel {
-    background-color: #E7E7E7; //10 opacity of hover color for li items in header xFF (x) .1 = F FF - F = F0
-    border-radius: 0 0 3px 3px;
-
-    a {
-        color: #000;
-    }
-}
-
 .header-help {
     display: none;
     position: absolute;
@@ -1227,16 +1236,6 @@ a.breadcrumb {
     background-color: white;
     padding: 0;
     width: 175px;
-
-    .header-help-li {
-        width: 100%;
-        padding: 10px;
-        display: inline-block;
-
-        a {
-            width: 150px;
-        }
-    }
 }
 
 .header-profile-panel {
@@ -1245,6 +1244,7 @@ a.breadcrumb {
     background-color: white;
     border-radius: 3px;
     box-shadow: rgba(0, 0, 0, 0.33) 0 1px 3px;
+    display:table;
 
     .header-profile-name {
         opacity: 0.5;

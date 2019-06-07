@@ -14,7 +14,8 @@ namespace d360.web.Controllers.V2
     {
         ICompanyContext _company;
         public BaseV2ApiController(ICommunityContext community, ICompanyContext company)
-            : base(community, company)
+            : base(community,company)
+
         {
             _company = company;
         }

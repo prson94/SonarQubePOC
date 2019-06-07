@@ -1043,7 +1043,7 @@ namespace d360.model
                 {
                     newField.AssetID = asset.ID;
                 }
-                Add<Field>(newField);
+                Fields.Add(newField);
             }
             else if (field != null)
             {
@@ -1053,25 +1053,19 @@ namespace d360.model
                     var newValues = val?.Split(',').Where(s => !string.IsNullOrEmpty(s.Trim())).Select(x => x.Trim()) ?? new string[0];
                     newValues = oldValues.Union(newValues).Distinct().OrderBy(x => x);
                     field.Value = string.Join(",", newValues);
-
-
                 }
                 else
                 {
                     //update
                     field.Value = val;
-                    if (isAssetEdited)
-                        ObjectContext.ObjectStateManager.ChangeObjectState(field, EntityState.Modified);
-
                 }
 
                 //Remove the field from db if field value is null or empty 
                 if (string.IsNullOrEmpty(field.Value))
                 {
-                    ObjectContext.ObjectStateManager.ChangeObjectState(field, EntityState.Deleted);
+                    Fields.Remove(field);
                 }
             }
-
         }
         private void UpdateItemField(WorkflowItemStep itemStep, EventObjectInfo objectInfo, WorkflowItemStepSettingModel settings)
         {
@@ -1094,7 +1088,6 @@ namespace d360.model
                     asset = Assets.Where(x => x.Object == issue.Object && x.ObjectID == issue.ObjectID).FirstOrDefault();
                     ObjectContext.ObjectStateManager.ChangeObjectState(asset, EntityState.Modified);
                     isAssetEdited = true;
-
                 }
 
                 if (fieldType == null)
@@ -1113,6 +1106,11 @@ namespace d360.model
                     var val = DateTime.UtcNow.Date.ToShortDateString();
                     this.UpdateField(objectId, objectType, fieldType, item, val);
                 }
+                else if (!item.IsActionForm && !item.UseFormValue)
+                {
+                    var val = item.Value;
+                    this.UpdateField(objectId, objectType, fieldType, item, val);
+                }
                 //if the value is a form value get it
                 else if (!item.IsActionForm && item.UseFormValue && !string.IsNullOrEmpty(item.FormField) && item.FormStepID > 0)
                 {
@@ -1128,7 +1126,7 @@ namespace d360.model
                     }
                 }
                 //Get the value from action form (Issue)
-                if (item.IsActionForm)
+                else if (item.IsActionForm)
                 {
                     var val = "";
                     var fieldData = item.FormField.Split('|');
@@ -1158,22 +1156,23 @@ namespace d360.model
                     this.UpdateField(objectId, objectType, fieldType, item, val, isAssetEdited, asset);
                 }
 
-                //update asset table to trigger audit                    
-                Database.Connection.Execute(
-                    "exec [utility].[AddAuditEntry]  @ParentObject, @ParentObjectID, @ResourceID, @date, @op, @Object, @ObjectID",
-                    new
-                    {
-                        Object = objectType,
-                        ObjectID = objectId,
-                        ParentObject = objectType,
-                        date = DateTime.UtcNow,
-                        ParentObjectID = objectId,
-                        ResourceID = 0,
-                        op = "Update"
-                    });
-            }
 
+            }
             SaveChanges();
+
+            //update asset table to trigger audit                    
+            Database.Connection.Execute(
+                     "exec [utility].[AddAuditEntry]  @ParentObject, @ParentObjectID, @ResourceID, @date, @op, @Object, @ObjectID",
+                     new
+                     {
+                         Object = objectInfo.Object.ToString(),
+                         ObjectID = objectInfo.ObjectID,
+                         ParentObject = objectInfo.Object.ToString(),
+                         date = DateTime.UtcNow,
+                         ParentObjectID = objectInfo.ObjectID,
+                         ResourceID = 0,
+                         op = "Update"
+                     });
         }
 
 

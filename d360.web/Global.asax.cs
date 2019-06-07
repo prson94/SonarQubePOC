@@ -46,6 +46,7 @@ namespace d360.web
             builder.RegisterType<WorkflowRepository>().As<IWorkflowRepository>().InstancePerRequest();
             builder.RegisterType<WorkflowApiModelValidator>().As<IWorkflowApiModelValidator>().InstancePerRequest();
             builder.RegisterType<IssueRepository>().As<IIssueRepository>().InstancePerRequest();
+            builder.RegisterType<RelationshipRepository>().As<IRelationshipRepository>().InstancePerRequest();
 
 
             builder.RegisterType<d360.extensions.info.UriSecurityContextProvider>().As<ISecurityContextProvider>()

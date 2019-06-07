@@ -133,6 +133,12 @@ namespace d360.model.DataAccessLayer
                 throw new Exception("Invalid tag specified [too long].");
             }
 
+            //make sure no tag with the same name exists
+            if(companyContext.Tags.Any(x=>x.Value == model.Value))
+            {
+                throw new Exception("Invalid tag specified [same tag already exists].");
+            }
+
             var tag = new Tag
             {
                 Value = model.Value,
@@ -189,6 +195,11 @@ namespace d360.model.DataAccessLayer
             if(existingTag == null)
             {
                 throw new Exception("Invalid uid no tag exists with the specified uid.");
+            }
+
+            if (companyContext.Tags.Any(x => x.Value == model.Value && x.uid != model.uid))
+            {
+                throw new Exception("Invalid tag specified [same tag already exists].");
             }
 
             existingTag.Value = model.Value;

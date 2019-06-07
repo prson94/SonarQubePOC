@@ -22,7 +22,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
             </div>
         </div>
         <div *ngIf="visible" (click)="handleClick()" class="header-button hide-on-med-and-down" [ngClass]="{'active' : isHomePageItem }"  [title]="isHomePageItem ? 'Remove home page' : 'Make this my home page'" >
-            <i *ngIf="!isLoading" class="fa fa-home"></i><i *ngIf="isLoading" style="color: #000;" class="fa fa-spinner fa-spin"></i>    
+            <i *ngIf="!isLoading" class="fa fa-home"></i><i *ngIf="isLoading" class="fa fa-spinner fa-spin"></i>    
         </div>
     `,
     providers: [FavoritesService],
