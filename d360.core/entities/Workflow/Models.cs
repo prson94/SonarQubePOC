@@ -385,11 +385,7 @@ namespace d360.core.entities.Workflow
 
     public class WorkflowVersionStepsApiViewModel
     {
-        public WorkflowVersionStepsApiViewModel()
-        {
-            Settings = new WorkflowStepSettingsApiViewModel();
-
-        }
+        
         public Guid Uid { get; set; }
         public string Name { get; set; }
         [DataMember, JsonConverter(typeof(StringEnumConverter))]
@@ -399,11 +395,11 @@ namespace d360.core.entities.Workflow
 
         [DataMember, JsonConverter(typeof(StringEnumConverter))]
         public WorkflowActivityType ActivityType { get; set; }
-        public WorkflowStepSettingsApiViewModel Settings { get; set; }
+        public dynamic Settings { get; set; }
         [JsonIgnore]
         public string SettingsXml { get; set; }
         [JsonIgnore]
-        public string ItemSettingsXml { get; set; }
+        public string FieldsXml { get; set; }
         public Guid? StartedByUid { get; set; }
         public DateTime? StartedOn { get; set; }
         public Guid? CompletedByUid { get; set; }
@@ -414,11 +410,6 @@ namespace d360.core.entities.Workflow
 
     public class WorkflowInstanceApiViewModel
     {
-        public WorkflowInstanceApiViewModel()
-        {
-            Settings = new WorkflowStepSettingsApiViewModel();
-
-        }
 
         [JsonIgnore]
         public int ID { get; set; }
@@ -431,13 +422,13 @@ namespace d360.core.entities.Workflow
 
         [DataMember, JsonConverter(typeof(StringEnumConverter))]
         public WorkflowActivityType ActivityType { get; set; }
-        public WorkflowStepSettingsApiViewModel Settings { get; set; }
+        public dynamic Settings { get; set; }
 
         public dynamic Responses { get; set; }
         [JsonIgnore]
-        public string Setting1 { get; set; }
+        public string SettingsXml { get; set; }
         [JsonIgnore]
-        public string Setting2 { get; set; }
+        public string FieldsXml { get; set; }
 
         [JsonIgnore]
         public string Response1 { get; set; }
@@ -455,10 +446,6 @@ namespace d360.core.entities.Workflow
     {
         public Guid AssigneeUid { get; set; }
     }
-    public class WorkflowStepSettingsApiViewModel
-    {
-        public dynamic Setting1 { get; set; }
-        public dynamic Setting2 { get; set; }
-    }
+
     #endregion
 }

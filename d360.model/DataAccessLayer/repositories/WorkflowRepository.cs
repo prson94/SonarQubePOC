@@ -310,7 +310,7 @@ namespace d360.model.DataAccessLayer
 		            vs.StepType,
 		            vs.ActivityType,
                     vs.Settings as SettingsXml,
-		            itemstep.Settings as ItemSettingsXml,
+                    vs.Fields as FieldsXml,
 		            itemstep.StartedOn,
 		            itemstep.CompletedOn,
 		            R.uid as StartedByUid,
@@ -327,8 +327,7 @@ namespace d360.model.DataAccessLayer
             var workflowVersionSteps = await this.CompanyContext.QueryAsync<WorkflowVersionStepsApiViewModel>(sql, dbArgs);
 
             workflowVersionSteps.ToList().ForEach(x => {
-                x.Settings.Setting1 = XmlToDynamic(x.SettingsXml);
-                x.Settings.Setting2 = XmlToDynamic(x.ItemSettingsXml);
+                x.Settings = new { settings = this.XmlToDynamic(x.SettingsXml), fields = this.XmlToDynamic(x.FieldsXml) };
             });
             return workflowVersionSteps;
         }
@@ -354,8 +353,8 @@ namespace d360.model.DataAccessLayer
                                 VS.State,
                                 vs.StepType,
                                 vs.ActivityType,
-                                vs.Settings as Setting1,
-                                vs.Fields as Setting2,
+                                vs.Settings as SettingsXml,
+                                vs.Fields as FieldsXml,
                                 itemstep.Settings as Response1,
                                 itemstep.Fields as Response2,
                                 item.StartedOn,
@@ -376,11 +375,11 @@ namespace d360.model.DataAccessLayer
             var workflowInstances = await this.CompanyContext.QueryAsync<WorkflowInstanceApiViewModel>(sql, dbArgs);
 
             workflowInstances.ToList().ForEach(x => {
-                x.Settings.Setting1 = this.XmlToDynamic(x.Setting1, false);
-                x.Settings.Setting2 = this.XmlToDynamic(x.Setting2, false);
+
+                x.Settings = new { settings = this.XmlToDynamic(x.SettingsXml) , fields = this.XmlToDynamic(x.FieldsXml) };
                 if (x.ActivityType == WorkflowActivityType.FieldChange)
                 {
-                    x.Responses = this.GetWorkFlowStepFieldChanges(this.XmlToDynamic(x.Setting1), x.ID);
+                    x.Responses = this.GetWorkFlowStepFieldChanges(this.XmlToDynamic(x.SettingsXml), x.ID);
                 }else
                 {
                     x.Responses = this.XmlToDynamic(x.Response2, false);
