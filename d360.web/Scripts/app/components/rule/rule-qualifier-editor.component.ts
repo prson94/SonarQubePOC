@@ -3,6 +3,7 @@ import { BaseComponent } from '../shared/base.component';
 import { QualifierService } from '../../services/qualifier.service';
 import { MessagesService } from '../../services/messages.service';
 import { QualifierType, ResolutionObjectType } from '../../models/qualifier.model';
+import { Subject, Observable } from 'rxjs';
 
 @Component({
     selector: 'd3s-rule-qualifier-editor',
@@ -79,15 +80,15 @@ export class RuleQualifierEditorComponent extends BaseComponent implements OnIni
             this.qualifier.RuleImplementationID = this.implementationId;
         }
         this.loadResolutionObjects()
-            .then(() => this.loadResolutionFields())
-            .then(() => {
+            .subscribe(() => {
+                this.loadResolutionFields();
                 this.isLoading = false;
             });
     }
 
-    private loadResolutionObjects(): Promise<any> {
+    private loadResolutionObjects(): Observable<any> {
         return this.qualifierService.getQualifierResolutionObjects()
-            .then(r => {
+            .subscribe(r => {
                 this.resolutionObjects = r;
                 if (this.qualifier && this.qualifier.ResolutionObject != null && this.qualifier.ResolutionObjectID != null) {
                     this.resolutionObject = this.qualifier.ResolutionObject + '|' + this.qualifier.ResolutionObjectID.toString();
@@ -95,15 +96,15 @@ export class RuleQualifierEditorComponent extends BaseComponent implements OnIni
             });
     }
 
-    private loadResolutionFields(): Promise<any> {
+    private loadResolutionFields(): Observable<any> {
         if (this.resolutionObject.indexOf('|') == -1) {
             this.resolutionFields = [];
             this.qualifier.ResolutionFieldTypeID = null;
-            return Promise.resolve();
+            return Observable.create();
         }
         else    
             return this.qualifierService.getQualifierResolutionFields(+this.resolutionObject.split('|')[1], this.resolutionObject.split('|')[0])
-                .then(r => {
+                .subscribe(r => {
                     this.resolutionFields = r;
                     this.resolutionFields.push({ ID: 0, FriendlyName: 'Name' });
                     this.resolutionFields.push({ ID: -2, FriendlyName: 'ParentID' });
@@ -136,13 +137,13 @@ export class RuleQualifierEditorComponent extends BaseComponent implements OnIni
 
         if (this.qualifier.ID == null || this.qualifier.ID < 1) {
             this.qualifierService.postAddRuleQualifierType(this.qualifier)
-                .then(r => {
+                .subscribe(r => {
                     this.showMessageForResult(this.messagesService, r);
                     this.onSave.emit();
                 });
         } else {
             this.qualifierService.putEditRuleQualifierType(this.qualifier)
-                .then(r => {
+                .subscribe(r => {
                     this.showMessageForResult(this.messagesService, r);
                     this.onSave.emit();
                 });

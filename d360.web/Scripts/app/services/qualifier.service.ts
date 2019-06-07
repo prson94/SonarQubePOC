@@ -2,7 +2,6 @@
 import { HttpClient } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { catchError, map } from "rxjs/operators";
-
 import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from "./baseObservable.service";
 import { QualifierType, ResolutionObjectType } from '../models/qualifier.model';
@@ -33,30 +32,42 @@ export class QualifierService extends BaseObservableService {
     }
 
     getQualifierResolutionObjects(): Observable<ResolutionObjectType[]> {
-        return this.http.get(`api/qualifier/resolutiontypes`)
-            .toPromise()
-            .then(response => <ResolutionObjectType[]>response.json())
-            .catch(err => this.handleError(err));
+        return this
+            .http
+            .get(`api/qualifier/resolutiontypes`)
+            .pipe(
+                map(response => <ResolutionObjectType[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
     getQualifierResolutionFields(id: number, type: string): Observable<any> {
-        return this.http.get(`fields/${type}/${id}.json`)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+        return this
+            .http
+            .get(`fields/${type}/${id}.json`)
+            .pipe(
+                map(response => <any>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
     postAddRuleQualifierType(model: QualifierType): Observable<any> {
-        return this.http.post('form/AddRuleQualifierType', model)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+        return this
+            .http
+            .post('form/AddRuleQualifierType', model)
+            .pipe(
+                map(response => <any>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
     putEditRuleQualifierType(model: QualifierType): Observable<any> {
-        return this.http.put('form/EditRuleQualifierType', model)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+        return this
+            .http
+            .put('form/EditRuleQualifierType', model)
+            .pipe(
+                map(response => <any>response),
+                catchError(err => this.handleError(err))
+            );
     }
 }
