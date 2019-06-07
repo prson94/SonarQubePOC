@@ -298,7 +298,7 @@ namespace d360.model.DataAccessLayer
 
 
 
-        public async Task<IEnumerable<WorkflowVersionSteps>> GetWorkflowVersionSteps(Guid uid)
+        public async Task<IEnumerable<WorkflowVersionStepsApiViewModel>> GetWorkflowVersionSteps(Guid uid)
         {
             var dbArgs = new DynamicParameters();
             string whereClause = " where v.uid=@uid";
@@ -309,7 +309,8 @@ namespace d360.model.DataAccessLayer
 		            VS.State,
 		            vs.StepType,
 		            vs.ActivityType,
-		            itemstep.Settings,
+                    vs.Settings as SettingsXml,
+		            itemstep.Settings as ItemSettingsXml,
 		            itemstep.StartedOn,
 		            itemstep.CompletedOn,
 		            R.uid as StartedByUid,
@@ -323,7 +324,12 @@ namespace d360.model.DataAccessLayer
 	            left outer join reporting.Global_Resource R1 on R1.ResourceID = itemstep.CompletedBy
 	            {whereClause}"; 
 
-            var workflowVersionSteps = await this.CompanyContext.QueryAsync<WorkflowVersionSteps>(sql, dbArgs);
+            var workflowVersionSteps = await this.CompanyContext.QueryAsync<WorkflowVersionStepsApiViewModel>(sql, dbArgs);
+
+            workflowVersionSteps.ToList().ForEach(x => {
+                x.Settings.Setting1 = XmlToDynamic(x.SettingsXml);
+                x.Settings.Setting2 = XmlToDynamic(x.ItemSettingsXml);
+            });
             return workflowVersionSteps;
         }
 
@@ -541,6 +547,11 @@ namespace d360.model.DataAccessLayer
         private T XmlToObject<T>(string xml, bool omitRootElement = true)
         {
             return string.IsNullOrEmpty(xml) ? JsonConvert.DeserializeObject<T>("{}") : JsonConvert.DeserializeObject<T>(JsonConvert.SerializeXNode(XElement.Parse(xml), Formatting.None, omitRootElement));
+        }
+
+        public WorkflowItem GetWorkflowItemByUID(Guid workflowItemUid)
+        {
+            return this.CompanyContext.Filter<WorkflowItem>(i => i.UID == workflowItemUid).SingleOrDefault();
         }
     }
 }

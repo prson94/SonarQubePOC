@@ -285,5 +285,14 @@ namespace d360.model.validators
                 isValid = false;
             return isValid;
         }
+
+        public bool IsValidWorkflowInstance(Guid workflowInstanceUID)
+        {
+            bool isValid = true;
+            var workflowInstance = this.workflowRepository.GetWorkflowItemByUID(workflowInstanceUID);
+            if (workflowInstance == null)
+                isValid = false;
+            return isValid;
+        }
     }
 }
