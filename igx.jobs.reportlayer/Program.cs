@@ -1315,7 +1315,7 @@ from	(
 				F.Active,
 				'Role' as MappingType,
 				ST.SourceAssetTypeName,
-				F.SourceIdField + ' : ' + F.SourceNameField as SourceField,
+				F.SourceIdField as SourceField,
 				ST.Object as TargetType,
 				T.Name as TargetAssetTypeName,
 				RT.Name as TargetField,
