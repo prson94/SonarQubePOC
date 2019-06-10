@@ -968,21 +968,21 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                     }
                     else
                     {
-
                         var sql = @"
 select  ISNULL(FormattedValue,' ') as Value,
 	    FriendlyName as Name
 from    FieldDetail 
-where   [Object]= @o and ObjectID = @oid and [Name] != 'Description'
+where   [Object]= @o and ObjectID = @oid and [Name] != 'Description' and [Type] <> 'JsonElement'
 union
 select	p.[Value],
 		RT.FriendlyName as [Name]
 from	FieldType RT 
 		cross apply openjson(RT.Definition) with (FieldTypeID int '$.FieldTypeID', [Path] nvarchar(250) '$.Path', DataType varchar(50) '$.DataType') D
 		inner join Field F on  F.ObjectType = @o and F.ObjectID = @oid and F.FieldTypeID = D.FieldTypeID and RT.[Type] = 'JsonElement'
-		inner join FieldJsonProperty P on P.FieldID = F.ID and P.[Path] = D.[Path]";
+		inner join FieldJsonProperty P on P.FieldID = F.ID and P.[Path] = D.[Path] 
+where   RT.Object = @type and RT.ObjectID = @typeID";
 
-                        res = Company.Query<FieldTooltipValueModel>(sql, new { oid = objectID, o = objectType }).ToList();
+                        res = Company.Query<FieldTooltipValueModel>(sql, new { oid = objectID, o = objectType, type = det.Type, typeID = det.TypeID }).ToList();
 
 
                     }
