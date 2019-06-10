@@ -193,7 +193,7 @@ namespace d360.model.DataAccessLayer
                 var orderBySql = "";
                 var offsetSql = "";
                 var pageNum = -1;
-                var pageSize = -1;
+                var pageSize = model.pageSize != 0 ? model.pageSize : -1;
 
                 if (!queryParams.Any(p => p.Key == "_order"))
                 {

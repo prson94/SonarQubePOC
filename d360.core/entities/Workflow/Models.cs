@@ -372,7 +372,7 @@ namespace d360.core.entities.Workflow
     public class WorkflowVersionsApiViewModel
     {
         [DataMember]
-        public int pageSize { get; set; } = 25000;
+        public int pageSize { get; set; } = 250;
         [DataMember]
         public int pageNum { get; set; } = 1;
         [DataMember]
