@@ -328,7 +328,6 @@ nav.top, .left-side-nav {
     }
 }
 
-
 //anything in this only applies to Edge for fixes
 @supports
 
@@ -447,10 +446,6 @@ nav.top, .left-side-nav {
     .megamenu-panel {
         min-width: 500px;
         max-width: 550px;
-    }
-
-    .header-search-input input {
-        width: 150px !important;
     }
 }
 
@@ -1032,20 +1027,20 @@ a.breadcrumb {
             padding-right: 10px;
         }
 
-        .issue-button {
-            min-width: 115px;
-        }
-
-        .spacer{
+        .spacer {
             padding-right: 5px;
         }
 
         li {
             cursor: pointer;
-        }
 
-        li:last-child {
-            padding-right: 10px;
+            .photo {
+                padding: 0px 10px;
+
+                &:hover, &.hover {
+                    background: rgba(255, 255, 255, 0.2);                    
+                }
+            }
         }
     }
 
@@ -1074,7 +1069,7 @@ a.breadcrumb {
         background: none;
         flex-grow: 1;
         outline: none;
-        width: 300px;
+        width: 150px;
 
         &.placeholder {
             color: #bbbbbb;
@@ -1115,6 +1110,8 @@ a.breadcrumb {
 .header-button {
     font-size: 1.2em;
     padding: 0 10px;
+    width: 40px;
+    text-align: center;
 
     &:active, &.active {
         background: #676C7A;
@@ -1161,8 +1158,12 @@ a.breadcrumb {
             pointer-events: none;
         }
 
-        &:hover {
-            background-color: #DFF3F7;
+        &:hover, &.hover {
+            background-color: @igx-lightblue-xlight;
+        }
+
+        &:active, &.active {
+            background: @igx-lightblue-light;
         }
 
         .mini-menu-line {
@@ -1176,6 +1177,10 @@ a.breadcrumb {
                 padding: 10px;
                 overflow: hidden;
                 text-overflow: ellipsis;
+
+                &.no-gutter {
+                    padding-left: 20px;
+                }
             }
 
             .check-gutter {
@@ -1188,21 +1193,21 @@ a.breadcrumb {
             }
 
             .expand-gutter {
-                display: flex;
-                padding-left: 20px;
-                min-width: 20px;
                 padding: 10px;
                 display: table-cell;
+                padding-left: 0;
+                padding-right: 20px;
+                margin-left: auto;
 
                 i {
-                    margin-left: auto;
+                    text-align: right;
                 }
             }
 
             .separator {
                 height: 1px;
                 background-color: #DCDFE2;
-                width: inherit;
+                width: 100%;
             }
         }
     }
@@ -1211,15 +1216,6 @@ a.breadcrumb {
 .header-search-active > .header-search-panel, .header-search-active > .header-profile-panel {
     display: block !important;
     width: auto;
-}
-
-.header-search-panel, .header-profile-panel {
-    background-color: #E7E7E7; //10 opacity of hover color for li items in header xFF (x) .1 = F FF - F = F0
-    border-radius: 0 0 3px 3px;
-
-    a {
-        color: #000;
-    }
 }
 
 .header-help {
@@ -1234,16 +1230,6 @@ a.breadcrumb {
     background-color: white;
     padding: 0;
     width: 175px;
-
-    .header-help-li {
-        width: 100%;
-        padding: 10px;
-        display: inline-block;
-
-        a {
-            width: 150px;
-        }
-    }
 }
 
 .header-profile-panel {

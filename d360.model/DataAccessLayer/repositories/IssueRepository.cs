@@ -42,5 +42,10 @@ namespace d360.model.DataAccessLayer
             var allocations = await this.companyContext.QueryAsync<IssueTypeApiModel>(sql, dbArgs);
             return allocations;
         }
+
+        public IssueType GetIssueTypeByUID(Guid issueTypeUid)
+        {
+            return this.companyContext.Filter<IssueType>(i => i.uid == issueTypeUid).SingleOrDefault();
+        }
     }
 }
