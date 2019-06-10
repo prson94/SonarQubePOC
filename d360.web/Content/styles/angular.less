@@ -447,10 +447,6 @@ nav.top, .left-side-nav {
         min-width: 500px;
         max-width: 550px;
     }
-
-    .header-search-input input {
-        width: 150px !important;
-    }
 }
 
 .menu-level-indicator-0, .menu-level-indicator-1, .menu-level-indicator-2, .menu-level-indicator-3, .menu-level-indicator-4, .menu-level-indicator-5, .menu-level-indicator-n {
@@ -972,7 +968,7 @@ div.breadcrumbs {
     }
 
     .active, .sep {
-        color: @igx-gray-color;
+        color: #fff;
     }
 
     .active, .inactive {
@@ -1031,16 +1027,20 @@ a.breadcrumb {
             padding-right: 10px;
         }
 
-        .issue-button {
-            min-width: 115px;
-        }
-
-        .spacer{
+        .spacer {
             padding-right: 5px;
         }
 
         li {
             cursor: pointer;
+
+            .photo {
+                padding: 0px 10px;
+
+                &:hover, &.hover {
+                    background: rgba(255, 255, 255, 0.2);                    
+                }
+            }
         }
     }
 
@@ -1069,7 +1069,7 @@ a.breadcrumb {
         background: none;
         flex-grow: 1;
         outline: none;
-        width: 300px;
+        width: 150px;
 
         &.placeholder {
             color: #bbbbbb;
