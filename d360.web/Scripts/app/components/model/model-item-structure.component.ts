@@ -99,11 +99,11 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
                 result => {
                     this.searchValue = "";
                     this.model = result;
-
+                    console.log(result);
                     this.headerBreadcrumbService.getFolderTitle('#Models').then((res) => {
                         this.headerBreadcrumbService.clearBreadcrumbs();
                         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : res, `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`));
-                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.Name, SiteUrlHelpers.getObjectUrl('TAXONOMYTYPE', this.model.ID)));
+                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.Name, SiteUrlHelpers.getObjectUrl('TAXONOMYTYPE', this.model.ID), undefined, 'TAXONOMYTYPE', this.model.ID, undefined, undefined,true));
                     });
 
                     this.loadModelHierarchy(this.modelId);

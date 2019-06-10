@@ -21,8 +21,8 @@ import { clearLine } from 'readline';
     template: ` <div #hovertarget class="hover-container" (mouseenter)="in(treePanel,searchPanel,$event)" (mouseleave)="out(treePanel,searchPanel,$event)" >
                     <a id="breadlink" (click)="navigateToLink(breadcrumb.link)" 
                             class="breadcrumb" 
-                            style="cursor:pointer">
-                            <span class="breadcrumb-text">{{breadcrumb.text}} </span>
+                            [ngClass]="{'breadcrumb-link' : hasLink(breadcrumb.link)}">
+                            <span class="breadcrumb-text" [ngClass]="{'highlight' : breadcrumb.isType}">{{breadcrumb.text}} </span>
                             <span class="parent" *ngIf="breadcrumb.parentTypeName"   
                                   (click)="stopParentNav($event);navigateToLink(breadcrumb.parentUrl)">
                                     {{breadcrumb.parentTypeName}}
@@ -31,7 +31,7 @@ import { clearLine } from 'readline';
                             <i *ngIf="isChangableItem()" class="fa fa-caret-right crumb-arrow right"></i>
                     </a>
                     <p-overlayPanel [ngClass]="'search-results'" #searchPanel for="hovertarget" my="left top" at="top right">  
-                        <div>
+                        <div class="breadcrumb-search">
                             <span class="header-search-input"><input type="text" [(ngModel)]="searchValue" placeholder="Search" (keyup)="search(searchValue)"> <i class="fa fa-search"></i></span> 
                             <div *ngFor="let result of results;" class="breadcrumb-search-results">
                                 <div class="breadcrumb-search-result" [ngClass]="{'current-crumb': breadcrumb.text === result.Name}" (click)="navigateToLink(result.Url)">{{result.Name}}</div>
@@ -39,13 +39,13 @@ import { clearLine } from 'readline';
                         </div>
                     </p-overlayPanel>                
                     <div *ngIf="!isLastItem && showSeperator" class="sep breadcrumb"><i class="fa fa-angle-right"></i></div>                
-                    <p-overlayPanel #treePanel>  
-                        <div class="tree-breadcrumb">    
-                            <input type="text" pInputText [(ngModel)]="searchTreeValue" placeholder="Search" style="width: 100%;">                      
+                    <p-overlayPanel [ngClass]="'search-results'" #treePanel>  
+                        <div class="breadcrumb-search tree-breadcrumb-panel">    
+                            <span class="header-search-input"><input type="text" [(ngModel)]="searchTreeValue" placeholder="Search"> <i class="fa fa-search"></i></span> 
                             <p-tree [value]="treeItems | treeSearch: searchTreeValue" selectionMode="single" [(selection)]="breadcrumb.selectedTreeNode" styleClass="breadcrumbTree" [style]="{'max-height':maxOverlayHeight,'overflow':'auto','line-height':'25px'}" 
                                 (onNodeSelect)="nodeSelect($event,treePanel)">
                                 <ng-template let-node pTemplate type="default">
-                                    <span [ngStyle]="setTreeNodeStyles(node)">{{node.label}} <i *ngIf="node.data?.hasRelations" class="fa fa-share-alt" aria-hidden="true" title="Item has relationships" style="color:#999;"></i></span>
+                                    <span class="breadcrumb-search-result" [ngClass]="{'current-crumb': breadcrumb.text === node.label}" [ngStyle]="setTreeNodeStyles(node)">{{node.label}}  <i *ngIf="node.data?.hasRelations" class="fa fa-share-alt" aria-hidden="true" title="Item has relationships" style="color:#999;"></i></span>
                                 </ng-template>
                             </p-tree>
                         </div>
@@ -61,6 +61,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
     @Input() lastItem: Breadcrumb;
     @Output() treeClick = new EventEmitter();
     @Input() showSeperator: boolean = true;
+    @Input() index: number;
     @ViewChild('hovertarget') hoverTarget: ElementRef;
     private results: SearchResult[];
     private result: SearchResult;
@@ -93,13 +94,15 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
     }
 
     private isChangableItem() {
-        return (this.breadcrumb.objectType && this.breadcrumb.objectId && !this.isTreeItem());
+        return (this.breadcrumb.objectType && this.breadcrumb.objectId) || this.breadcrumb.treeItems;
     }
 
     private isTreeItem(): boolean {
         return this.breadcrumb.objectType == 'Taxonomy' || this.breadcrumb.objectType == 'Policy';
     }
-    
+    private isModelOrPolicyType():boolean {
+        return this.breadcrumb.objectType == 'TAXONOMYTYPE' || this.breadcrumb.objectType == 'POLICYTYPE';
+    }
     private in(panel, searchPanel, event) {
 
         let parent = this.hoverTarget.nativeElement.parentNode;
@@ -111,16 +114,23 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
                 window.setTimeout(() => {
                     let lineDims = this.hoverTarget.nativeElement.getBoundingClientRect();
                     searchPanel.el.nativeElement.children[0].style.top = (lineDims.top - 30) + "px";
-                    searchPanel.el.nativeElement.children[0].style.left = (lineDims.width) + "px";
+                    searchPanel.el.nativeElement.children[0].style.left = (lineDims.width + (10 * this.index)) + "px";
                 }, 100);
                 
             } else {
                 searchPanel.show(event);
             }
-        }        
+        }
         if (this.isTreeItem()) {
-            if (this.hasClass(parent, 'collapsed-crumb'))
+            if (this.hasClass(parent, 'collapsed-crumb')) {
                 panel.show(event, this.hoverTarget.nativeElement.parentNode);
+                window.setTimeout(() => {
+                    let lineDims = this.hoverTarget.nativeElement.getBoundingClientRect();
+                    panel.el.nativeElement.children[0].style.top = (lineDims.top - 30) + "px";
+                    panel.el.nativeElement.children[0].style.left = (lineDims.width + (10 * this.index)) + "px";
+                }, 100);
+            }
+
             else
                 panel.show(event);
         }
@@ -188,11 +198,13 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
         event.stopPropagation();
     }
     private navigateToLink(url: string) {
-
-        console.log(url);
         if (url && url.length > 0)
             this.router.navigateByUrl(url);
 
+    }
+    private hasLink(url: string) {
+        if (url && url.length > 0) return true;
+        else false;
     }
     private hasClass(element, className) {
         return (' ' + element.className + ' ').indexOf(' ' + className + ' ') > -1;

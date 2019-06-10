@@ -68,6 +68,7 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
     policyType: PolicyType;
     treeNodeArray: TreeNode[] = [];
     selected: Policy;
+    private crumbs: Breadcrumb[] = [];
     routeParamsSubscription: any;
     private currentAreaNameSubscription: any;
     private currentAreaName: string;
@@ -101,31 +102,13 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
             if (!hierarchyId) {
                 hierarchyId = +params['hierarchyId'] || 0;
             }
-
-            this.currentAreaNameSubscription =
-                this.headerBreadcrumbService
-                    .getAreaName('PolicyType', newPolicyTypeId)
-                    .subscribe(result => { this.currentAreaName = result });
-
-            
-
+            this.headerBreadcrumbService.clearCurrentObjectInfo();
             if (hierarchyId != 0) {
                 this.headerBreadcrumbService.setCurrentObjectInfo('Policy', hierarchyId);
             } else {
                 this.headerBreadcrumbService.setCurrentObjectInfo('PolicyType', newPolicyTypeId);
             }
             this.setObjectInfo('Policy', hierarchyId);
-
-            this.headerBreadcrumbService.getFolderTitle('#Policy').then((res) => {
-                this.headerBreadcrumbService.clearBreadcrumbs();
-                this.headerBreadcrumbService.clearCurrentObjectInfo();
-                this.headerBreadcrumbService.showBreadcrumb(
-                    new Breadcrumb(
-                        this.currentAreaName ? this.currentAreaName : res,
-                        `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_POLICY_CLASSIFICATION}`
-                    )
-                );
-            });
 
             this.treeSub = this.headerBreadcrumbService.breadcrumbTreeSource$.subscribe(
                 id => {
@@ -161,27 +144,71 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
         this.treeSub.unsubscribe();
     }
 
+    buildBreadcrumb() {
+        this.headerBreadcrumbService.getFolderTitle('#Policy').then((res) => {
+            this.headerBreadcrumbService.clearBreadcrumbs();
+
+            let areaBreadcrumb = new Breadcrumb(
+                this.currentAreaName ? this.currentAreaName : res, `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`
+            );
+            this.headerBreadcrumbService.showBreadcrumb(areaBreadcrumb);
+
+            this.headerBreadcrumbService.showBreadcrumb(
+                new Breadcrumb(
+                    this.policyType.Name,
+                    SiteUrlHelpers.getObjectUrl('PolicyType', this.policyType.ID), undefined, 'POLICYTYPE', this.policyTypeId, undefined, undefined, true
+                )
+            );
+
+            if (this.selected && this.selected.ID > 0) {
+                this.checkParent(this.selected);
+                this.headerBreadcrumbService.showBreadcrumb(
+                    new Breadcrumb(
+                        this.selected.DisplayValue,
+                        undefined,
+                        true,
+                        'Policy',
+                        this.selected.ID,
+                        this.buildTreeNodeArray(this.policies, this.selected.ParentID),
+                        this.findSelectedTreeNode(this.selected.ID)));
+            }
+        });
+        this.currentAreaNameSubscription =
+            this.headerBreadcrumbService
+                .getAreaName('PolicyType', this.policyTypeId)
+                .subscribe(result => {
+                    this.currentAreaName = result
+                    
+                });
+    }
+
+    private checkParent(modelItem: Policy) {
+        if (modelItem.ParentID > 0 && this.policies) {
+            let parentAr = this.policies.filter(x => x.ID == modelItem.ParentID);
+            let parent: Policy;
+            if (parentAr.length > 0) {
+                parent = parentAr[0];
+                let crumb = new Breadcrumb(parent.DisplayValue,
+                    SiteUrlHelpers.getObjectUrl('POLICYTYPE', parent.ID, this.policyTypeId),
+                    true,
+                    'Policy',
+                    parent.ID,
+                    this.buildTreeNodeArray(this.policies, parent.ParentID),
+                    this.findSelectedTreeNode(parent.ID), false)
+                this.crumbs.unshift(crumb);
+                this.checkParent(parent);
+            }
+        } else {
+            this.crumbs.forEach(x => this.headerBreadcrumbService.showBreadcrumb(x));
+        }
+    }
+
     load(hierarchyId: number): Promise<any> {
         return this.policiesService.getPolicyType(this.policyTypeId).toPromise()
             .then(
                 result => {
                     this.policyType = result;
-                    this.headerBreadcrumbService.getFolderTitle('#Policy').then((res) => {
-                        this.headerBreadcrumbService.clearBreadcrumbs();
-                        this.headerBreadcrumbService.showBreadcrumb(
-                            new Breadcrumb(
-                                this.currentAreaName ? this.currentAreaName : res,
-                                `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_POLICY_CLASSIFICATION}`
-                            )
-                        );
-                        this.headerBreadcrumbService.showBreadcrumb(
-                            new Breadcrumb(
-                                this.policyType.Name,
-                                `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${this.policyType.ID}/structure`
-                            )
-                        );
-                    });
-
+                    this.buildBreadcrumb();
                     this.loadPolicyItems(this.policyTypeId, hierarchyId).then(
                         n => {
                             this.setBrowserTitle(this.titleService, this.policyType.Name);
@@ -269,17 +296,7 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
             }
         );
 
-        this.headerBreadcrumbService.showBreadcrumb(
-            new Breadcrumb(
-                this.selected.DisplayValue,
-                undefined,
-                true,
-                'Policy',
-                this.selected.ID,
-                this.treeNodeArray,
-                this.findSelectedTreeNode(selectedHierarchyId)
-            )
-        );
+        this.buildBreadcrumb();
 
         return Promise.resolve(null);
     }

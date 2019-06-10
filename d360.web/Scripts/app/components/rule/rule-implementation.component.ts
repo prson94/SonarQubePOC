@@ -93,7 +93,6 @@ export class RuleImplementationComponent extends BaseComponent implements OnInit
                 this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Rules', undefined));//SiteUrlHelpers.SITE_URL_RULE_ROOT
                 this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.implementation.RuleTypeName, `${SiteUrlHelpers.SITE_URL_RULE_ROOT}/${this.implementation.RuleTypeID}`));
                 this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.implementation.RuleName, SiteUrlHelpers.getObjectUrl('rule', this.implementation.RuleID, this.implementation.RuleTypeID)));
-                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.implementation.Name, undefined, true, 'RuleImplementation', this.implementation.ID));
                  
                 this.setBrowserTitle(this.titleService, this.implementation.Name);
 

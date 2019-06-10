@@ -955,11 +955,19 @@ div.breadcrumbs {
         line-height: 10px;
         margin-right: 5px;
     }
+
+    .breadcrumb-search {
+        border-radius:3px;
+    }
 }
 
 .collapsed-crumb-container {
     line-height: 20px;
     text-indent: 0px;
+
+    &:hover, .hover {
+        background: #ceecf2;
+    }
 
     .collapsed-crumb {
         display: flex;
@@ -970,6 +978,11 @@ div.breadcrumbs {
 
         .breadcrumb-text {
             padding-right: 5px;
+
+            &.highlight {
+                background-color: dodgerblue;
+                border-radius: 3px;
+            }
         }
 
         a {
@@ -978,10 +991,6 @@ div.breadcrumbs {
             flex-grow: 1;
             max-width: none;
             padding: 10px;
-
-            &:hover, .hover {
-                background-color: #ceecf2;
-            }
         }
 
         .crumb-arrow {
@@ -995,8 +1004,20 @@ div.breadcrumbs {
             border-radius: 3px;
             text-indent: 0px;
 
-            &:hover {
-                text-decoration: underline;
+            &:before {
+                content: '';
+            }
+
+            &:after {
+                content: '';
+            }
+        }
+
+        .breadcrumb-search-result {
+            padding: 10px;
+
+            &:hover, .hover {
+                background: #ceecf2;
             }
         }
     }
@@ -1018,7 +1039,11 @@ a.breadcrumb {
         }
 
         &:hover {
-            text-decoration: underline;
+            cursor: pointer;
+
+            icon {
+                text-decoration: none;
+            }
         }
     }
 }
@@ -1035,8 +1060,12 @@ a.breadcrumb {
     .breadcrumb-text {
         padding-right: 0px;
 
-        &:hover {
-            text-decoration: underline;
+        &:hover, .hover {
+            cursor: pointer;
+        }
+
+        &.highlight {
+            color: @igx-header-breadcrumb-color;
         }
     }
 
@@ -1052,10 +1081,6 @@ a.breadcrumb {
         padding: 0 8px;
     }
 }
- .breadcrumb-link {    
-    cursor:pointer;
-    text-decoration: underline;
-}           
 
 /*end breadcrumbs */
 
@@ -1085,11 +1110,40 @@ a.breadcrumb {
 .search-results {
     .ui-overlaypanel-content {
         padding: 0px;
+        border-radius: 3px;
     }
 
     .header-search-input {
-        margin: 10px;
+        margin: 5px;
         border-radius: 5px;
+    }
+
+    .tree-breadcrumb-panel {
+
+        .breadcrumbTree {
+            width: 100%;
+
+            .ui-tree-container {
+                padding: 0px;
+            }
+
+            .ui-treenode {
+                width: 100%;
+                padding: 0px;
+            }
+
+            .ui-treenode-content {
+                padding: 5px;
+
+                &.current-crumb {
+                    background-color: #ffef99;
+                }
+
+                &:hover, &.hover {
+                    background-color: #ceecf2;
+                }
+            }
+        }
     }
 
     .breadcrumb-search-result {

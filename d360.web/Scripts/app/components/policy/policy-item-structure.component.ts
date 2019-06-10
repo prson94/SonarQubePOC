@@ -89,14 +89,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
             params => {
                 this.policyTypeId = +params['policyTypeId'];
                 this.headerBreadcrumbService.setCurrentObjectInfo('PolicyType', this.policyTypeId);
-
-
-                this.currentAreaNameSubscription =
-                    this.headerBreadcrumbService
-                        .getAreaName('PolicyType', this.policyTypeId)
-                        .subscribe(result => { this.currentAreaName = result });
-
-                
+               
 
                 this.setObjectInfo('PolicyType', this.policyTypeId);
                 this.clearSidebar();
@@ -109,21 +102,27 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
                     result => {
 
                         this.policyType = result;
-                        this.headerBreadcrumbService.getFolderTitle('#Policy').then((res) => {
-                            this.headerBreadcrumbService.clearBreadcrumbs();
-                            this.headerBreadcrumbService.showBreadcrumb(
-                                new Breadcrumb(
-                                    this.currentAreaName ? this.currentAreaName : res,
-                                    `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_POLICY_CLASSIFICATION}`
-                                )
-                            );
-                            this.headerBreadcrumbService.showBreadcrumb(
-                                new Breadcrumb(
-                                    this.policyType.Name,
-                                    `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${this.policyTypeId}/structure`
-                                )
-                            );
-                        });
+                        this.currentAreaNameSubscription =
+                            this.headerBreadcrumbService
+                                .getAreaName('PolicyType', this.policyTypeId)
+                                .subscribe(result => {
+                                    this.currentAreaName = result
+                                    this.headerBreadcrumbService.getFolderTitle('#Policy').then((res) => {
+                                        this.headerBreadcrumbService.clearBreadcrumbs();
+                                        this.headerBreadcrumbService.showBreadcrumb(
+                                            new Breadcrumb(
+                                                this.currentAreaName ? this.currentAreaName : res,
+                                                `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_POLICY_CLASSIFICATION}`
+                                            )
+                                        );
+                                        this.headerBreadcrumbService.showBreadcrumb(
+                                            new Breadcrumb(
+                                                this.policyType.Name,
+                                                SiteUrlHelpers.getObjectUrl('POLICYTYPE', this.policyTypeId),
+                                                undefined, 'POLICYTYPE', this.policyTypeId, undefined, undefined, true)
+                                        );
+                                    });
+                                });
 
                         this.loadPolicyHierarchy(this.policyTypeId);
                         this.setBrowserTitle(this.titleService, this.policyType.Name);

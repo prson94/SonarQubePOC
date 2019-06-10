@@ -13,7 +13,7 @@ import { Subscription }   from 'rxjs';
                 </div>  
                 <p-overlayPanel #smallPanel ngClass="collapsed-overlay">
                     <div *ngFor="let breadcrumb of breadcrumbs;let last=last;let index=index" class="collapsed-crumb-container">
-                        <d3s-header-breadcrumb-item *ngIf="!last" [ngClass]="'collapsed-crumb'" [ngStyle]="{'text-indent': index *10 + 'px'}" [showSeperator]="false" [breadcrumb]="breadcrumb" [isLastItem]="last"></d3s-header-breadcrumb-item>
+                        <d3s-header-breadcrumb-item *ngIf="!last" [ngClass]="'collapsed-crumb'" [ngStyle]="{'padding-left': index *10 + 'px'}" [index]="index" [showSeperator]="false" [breadcrumb]="breadcrumb" [isLastItem]="last"></d3s-header-breadcrumb-item>
                     </div>
                 </p-overlayPanel>
               `,
