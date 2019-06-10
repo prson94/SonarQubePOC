@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
-import {Input, Output, Component, EventEmitter, OnInit, OnChanges, SimpleChange} from '@angular/core';
-import {SelectItem} from 'primeng/primeng';
+import { Input, Output, Component, EventEmitter, OnInit, OnChanges, SimpleChange } from '@angular/core';
+import { SelectItem } from 'primeng/primeng';
 
 import {
     FieldType,
@@ -16,19 +16,20 @@ import {
     FieldTypeItemDisplayFieldEditorModel,
 } from '../../../../models/fields.model';
 
-import {FieldsService} from '../../../../services/fields.service';
-import {MessagesService} from '../../../../services/messages.service';
-import {ObjectDetailService} from '../../../../services/object-detail.service';
+import { FieldsService } from '../../../../services/fields.service';
+import { MessagesService } from '../../../../services/messages.service';
+import { ObjectDetailService } from '../../../../services/object-detail.service';
 
-import {BaseComponent} from '../../../shared/base.component';
+import { BaseComponent } from '../../../shared/base.component';
 
-import {FormHelpers} from '../../../../static/form-helpers';
+import { FormHelpers } from '../../../../static/form-helpers';
+import { Observable } from 'rxjs';
 
 @Component({
     selector: 'd3s-field-type-form',
     templateUrl: './field-type.form.html',
     styles: [
-            `
+        `
             .display-table tr td {
                 padding: 3px;
                 border-radius: 0;
@@ -116,9 +117,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.model.FieldType.Object = this.objectType;
         this.model.FieldType.ObjectID = this.objectID;
         this.booleanDefaultValueOptions = [
-            {label: '-No Default-', value: null},
-            {label: 'True', value: 'true'},
-            {label: 'False', value: 'false'},
+            { label: '-No Default-', value: null },
+            { label: 'True', value: 'true' },
+            { label: 'False', value: 'false' },
         ]
     }
 
@@ -212,20 +213,21 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.actionName = 'Edit';
             this.isLoading = true;
             this.fieldsService.getFieldTypeEditor(this.id)
-                .then(this.getFieldTypeEditorHandler)
-                .then(() => this.fieldsService.getLookups(this.model.FieldType.ObjectID, this.model.FieldType.Object))
-                .then(this.getLookupsHandler)
-                .then(() => {
-                    if (this.id > 0) {
-                        return this.fieldsService.getFormData(this.id);
-                    }
-                })
-                .then(this.getFormDataHandler)
-                .then(() => {
-                    return this.loadDataType(this.model.FieldType.Type);
-                })
-                .then(() => {
-                    this.isLoading = false;
+                .subscribe(ret => {
+                    this.getFieldTypeEditorHandler(ret);
+                    this.fieldsService.getLookups(this.model.FieldType.ObjectID, this.model.FieldType.Object)
+                        .subscribe(s => {
+                            this.getLookupsHandler(s);
+                            if (this.id > 0) {
+                                this.fieldsService.getFormData(this.id)
+                                    .subscribe(formData => {
+                                        this.getFormDataHandler(formData);
+                                        this.loadDataType(this.model.FieldType.Type)
+                                        this.isLoading = false;
+                                    });
+                            }
+
+                        })
                 });
         } else {
             this.actionName = 'Add';
@@ -247,8 +249,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.model.OwnershipLookupSettings.ExpandGroupMembership = true;
 
             this.fieldsService.getLookups(this.objectID, this.objectType)
-                .then(this.getLookupsHandler)
-                .then(() => {
+                .subscribe(x => {
+                    this.getLookupsHandler(x);
                     this.model.FieldType.Type = null; //Set as NULL to allow for selection.
                     this.isLoading = false;
                 });
@@ -347,7 +349,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
                         for (let i = 1; i <= r.DisplayFields.length; i++) {
                             r.DisplayFields[i - 1].DisplayOrder = i;
-                            s.push({id: i, text: i});
+                            s.push({ id: i, text: i });
                         }
 
                         r.SortOrderList = s;
@@ -539,11 +541,12 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
         this.isListableRelationship = false;
 
-        this.fieldsService.getRelationshipFieldIsListable(this.objectType, this.objectID, value).then(res => {
-            this.isListableRelationship = res;
-            if (!this.isListableRelationship)
-                this.model.FieldType.IsListable = false;
-        });
+        this.fieldsService.getRelationshipFieldIsListable(this.objectType, this.objectID, value)
+            .subscribe(res => {
+                this.isListableRelationship = res;
+                if (!this.isListableRelationship)
+                    this.model.FieldType.IsListable = false;
+            });
 
         //update the model to have correct lookuptype object and id
         this.model.FieldType.LookupObjectID = value;
@@ -561,7 +564,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.model.FieldType.LookupObjectType = "IntersectType";
 
         this.fieldsService.getRelationObjectFields(this.objectType, this.objectID, value)
-            .then(
+            .subscribe(
                 d => {
                     this.fieldsFromRelation = d;
 
@@ -603,7 +606,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             return;
         }
 
-        this.fieldsService.getReferenceTypeHierarchyFields(objectId, this.objectType, this.objectID).then(
+        this.fieldsService.getReferenceTypeHierarchyFields(objectId, this.objectType, this.objectID).subscribe(
             r => {
                 this.listParentFields = r;
 
@@ -632,7 +635,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
         this.listFilterable = true;
 
-        this.fieldsService.getListFilterOptions(objectType + 'Type', objectId, this.objectType, this.objectID).then(
+        this.fieldsService.getListFilterOptions(objectType + 'Type', objectId, this.objectType, this.objectID).subscribe(
             r => {
                 r.forEach(
                     d => {
@@ -658,12 +661,12 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     }
                 );
 
-                this.listFilterPredicates.push({value: null, label: 'Choose...'});
+                this.listFilterPredicates.push({ value: null, label: 'Choose...' });
                 this.listFilterOptions.forEach(
                     d => {
                         if (d.fieldtypeOptions.length > 0)
-                        //only include predicates with possible field options
-                            this.listFilterPredicates.push({value: d.value, label: d.label});
+                            //only include predicates with possible field options
+                            this.listFilterPredicates.push({ value: d.value, label: d.label });
                     }
                 );
 
@@ -711,7 +714,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         return;
     }
 
-    private loadDefaultValueOptions(objectType: string, objectId: number): Promise<void> {
+    private loadDefaultValueOptions(objectType: string, objectId: number): Observable<void> {
         if (this.model.FieldType.LookupObjectType == undefined || this.model.FieldType.LookupObjectID == undefined) {
             console.log("[ERROR] - NO TYPE OR ID SPECIFIED TO LOAD DEFAULT VALUES FOR", this.model.FieldType.LookupObjectID, this.model.FieldType.LookupObjectType);
             return;
@@ -721,14 +724,14 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             objectType += 'Type';
         }
 
-        return this.fieldsService.getLookupDefaultValueOptions(objectId, objectType).then(
+        return this.fieldsService.getLookupDefaultValueOptions(objectId, objectType).subscribe(
             r => {
                 this.lookupDefaultValueOptions = r;
             }
         );
     }
 
-    private loadTokens(objectType: string, objectId: number): Promise<void> {
+    private loadTokens(objectType: string, objectId: number): Observable<void> {
         if (this.model.FieldType.LookupObjectType == undefined || this.model.FieldType.LookupObjectID == undefined) {
             console.log("[ERROR] - NO TYPE OR ID SPECIFIED TO LOAD TOKENS FOR", this.model.FieldType.LookupObjectID, this.model.FieldType.LookupObjectType);
             return;
@@ -738,7 +741,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             objectType += 'Type';
         }
 
-        return this.fieldsService.getLookupTokens(objectId, objectType).then(
+        return this.fieldsService.getLookupTokens(objectId, objectType).subscribe(
             r => {
                 this.model.LookupTokens = r;
                 if (this.model.LookupTokens
@@ -765,7 +768,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             id = item.SourceFusionAttributeType;
         }
 
-        return this.fieldsService.getFusionLookupTargetAttributeTypes(+id, item.ReferenceType).then(
+        return this.fieldsService.getFusionLookupTargetAttributeTypes(+id, item.ReferenceType).subscribe(
             d => {
                 item.TargetFusionAttributeTypes = d;
             }
@@ -773,7 +776,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     }
 
     private loadFusionDisplayFields(item: FieldTypeFusionItemEditorModel): Promise<void> {
-        return this.fieldsService.getFusionDisplayFields(+item.TargetFusionAttributeType || +item.SourceFusionAttributeType).then(
+        return this.fieldsService.getFusionDisplayFields(+item.TargetFusionAttributeType || +item.SourceFusionAttributeType).subscribe(
             d => {
                 item.FusionDisplayFields = d;
             }
@@ -882,24 +885,24 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.isLoading = true;
 
         if (this.model.FieldType.ID > 0) {
-            this.fieldsService.putFieldType(this.model).then(
+            this.fieldsService.putFieldType(this.model).subscribe(
                 r => {
                     this.isLoading = false;
                     this.showMessageForResult(this.messagesService, r);
 
                     if (r.type != 'error') {
-                        this.onComplete.emit({action: 'edit', field: this.model});
+                        this.onComplete.emit({ action: 'edit', field: this.model });
                     }
                 }
             );
         } else {
-            this.fieldsService.postFieldType(this.model).then(
+            this.fieldsService.postFieldType(this.model).subscribe(
                 r => {
                     this.showMessageForResult(this.messagesService, r);
                     this.isLoading = false;
 
                     if (r.type != 'error') {
-                        this.onComplete.emit({action: 'add', field: this.model});
+                        this.onComplete.emit({ action: 'add', field: this.model });
                     }
                 }
             );
@@ -1009,7 +1012,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
             item.DisplayFields = [];
             return this.fieldsService.getRelationLookupDisplayFields(id, type, intersectType)
-                .then(
+                .flatMap(
                     r => {
                         r.forEach(
                             i => {
@@ -1036,7 +1039,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                         let s = [];
                         for (let i = 1; i <= item.DisplayFields.length; i++) {
                             item.DisplayFields[i - 1].DisplayOrder = i;
-                            s.push({id: i, text: i});
+                            s.push({ id: i, text: i });
                         }
 
                         item.SortOrderList = s;
@@ -1139,7 +1142,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                         let s = [];
                         for (let i = 1; i <= item.DisplayFields.length; i++) {
                             item.DisplayFields[i - 1].DisplayOrder = i;
-                            s.push({id: i, text: i});
+                            s.push({ id: i, text: i });
                         }
                         item.SortOrderList = s;
                     }
@@ -1179,7 +1182,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     //#endregion
 
     searchJsonForProperty(event) {
-        this.fieldsService.getTypeaheadJsonPropertyOptionsForJsonField(this.model.JsonElementSettings.FieldTypeID, event.query).then(data => {
+        this.fieldsService.getTypeaheadJsonPropertyOptionsForJsonField(this.model.JsonElementSettings.FieldTypeID, event.query).subscribe(data => {
             this.TypeaheadJsonPropertyOptionsForJsonFieldResults = data;
         });
     }
@@ -1398,7 +1401,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
     private updateApiName(event) {
         let nameValue: string = event.target.value.replace(/[^a-zA-Z0-9_]/g, '');
-        this.model.FieldType.Name = nameValue.substring(0,100);
+        this.model.FieldType.Name = nameValue.substring(0, 100);
     }
 
     private addFusion() {
