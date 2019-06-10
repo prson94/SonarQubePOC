@@ -79,11 +79,11 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
             this.modelId = +params['modelId'];
 
             this.setObjectInfo('TaxonomyType', this.modelId);
-            this.setCommonRightSideBar(true);
+            
 
             this.getFieldsDefinition();
 
-            this.rightSidebarService.showItem(new RightSidebarItem('Hierarchy Diagram', 'modeldiagram', ['fa-sitemap'], `/sidebar/visualization/diagram/${this.objectID}`))
+            
             this.loadPermissions(this.permissionsService, StringConstants.ObjectTaxonomyType, this.modelId);
             this.setObjectInfo(StringConstants.ObjectTaxonomyType, this.modelId);
 
@@ -97,6 +97,9 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
                     this.headerBreadcrumbService.clearBreadcrumbs();
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Models', `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`));
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.Name, SiteUrlHelpers.getObjectUrl('TAXONOMYTYPE', this.model.ID)));
+
+                    this.setCommonRightSideBar(true, false, this.model.HasDashboards);
+                    this.rightSidebarService.showItem(new RightSidebarItem('Hierarchy Diagram', 'modeldiagram', ['fa-sitemap'], `/sidebar/visualization/diagram/${this.objectID}`))
 
                     this.loadModelHierarchy(this.modelId);
 
