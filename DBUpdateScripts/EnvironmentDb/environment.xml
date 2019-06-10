@@ -215,6 +215,7 @@
   <include file="scripts/GOV-7408-2.xml"/>
   <include file="scripts/GOV-7140.xml"/>
   <include file="scripts/GOV-7426.xml"/>
+  <include file="scripts/GOV-7433.xml"/>
   <include file="scripts/GOV-6668.xml"/> <!--IGC proc-->
   <include file="scripts/GOV-7436.xml"/>
 </databaseChangeLog>
