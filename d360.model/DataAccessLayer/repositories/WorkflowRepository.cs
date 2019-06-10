@@ -251,7 +251,7 @@ namespace d360.model.DataAccessLayer
                                 if (pageSize < 1) pageSize = 1;
                             }
                             break;
-                        case "_pageno":
+                        case "_pagenum":
                              if (int.TryParse(x.Value, out pageNum))
                             {
                                 if (pageNum < 1) pageNum = 1;
