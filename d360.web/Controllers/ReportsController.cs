@@ -141,11 +141,12 @@ namespace d360.web.Controllers
 
                 SystemObjects objectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), type);
                 var objectId = id;
-                if (objectType == SystemObjects.Artifact)
+                if (objectType == SystemObjects.Artifact || objectType == SystemObjects.Taxonomy)
                 {
-                    var artifact = Company.Artifacts.Where(x => x.ID == id).First();
-                    objectId = artifact.ArtifactTypeID;
-                }
+                    var asset = Company.AssetDetails.Where(x => x.Object == objectType.ToString() && x.ObjectID == id).First();
+
+                    objectId = asset.TypeID;
+                }                
 
                 var reports = Company.Filter<Report>(x => x.ObjectType == type && x.ObjectID == objectId && x.ReportType != "legacy").Include(rpt => rpt.Responsibilities).OrderBy(i => i.Name).ToList();
 
