@@ -1,6 +1,8 @@
 ﻿import { Component, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CurrentEnvironmentSettings } from '../../../static/environment-settings';
 //import { CurrentEnvironmentSettings } from '../../../../../Content/images/';
+declare var __BUILD_DATE: string;
+declare var VersionNumber: string;
 
 
 @Component({
@@ -19,11 +21,10 @@ import { CurrentEnvironmentSettings } from '../../../static/environment-settings
                 <span>
                 <p-dialog header="About" [(visible)]="display" [responsive]="true" [width]="700" [minWidth]="100" [minY]="70">
                         <p-header><img src="../../../../../Content/images/logo.new.color.png"></p-header>         
-                        <span><b>Data3Sixty Govern v2019.4.0</b>
-                              <br /><b>Build Version:</b> 2019.4.5.0
-                              <br /><b>Build Date:</b> 24-04-2019 7:17:27 PM
+                        <span><b>Build Version:</b> {{this.versionNumber}}
+                              <br /><b>Build Date:</b> {{this.buildDate}}
                               <br /><b>Support:</b> http://support.infogix.com
-                              <p>© 2005-2019 Infogix. All rights reserved.<br />Confidential - Limited distribution to authoroized persons only, pursuant to the teams of Infogix Inc. license agreement. This software is protected<br />as an unpublished work and constitutes a trade secret of Infogix Inc.</span>
+                              <p>© 2005-2019 Infogix. All rights reserved.<br />Confidential - Limited distribution to authoroized persons only, pursuant to the teams of Infogix Inc. license agreement. This software is protected as an unpublished work and constitutes a trade secret of Infogix Inc.</span>
                     <p-footer><button type="button" style="background-color: #1E90FF;color: white;" (click)="display=false">Close</button></p-footer>
                 </p-dialog>`,
     changeDetection: ChangeDetectionStrategy.OnPush
@@ -38,6 +39,8 @@ export class HeaderHelpComponent {
     public adminGuide = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#d-admin/admin-intro.htm%3FTocPath%3DAdministration%2520guide%7C_____0";
     public whatIsNew = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#b-release-notes/whats-new.htm%3FTocPath%3DWhat";
     public community = "https://support.infogix.com/hc/en-us/community/topics/360000029388-Data3Sixty-Govern";
+    buildDate: string = __BUILD_DATE;
+    versionNumber: string = VersionNumber;
 
     constructor(
         private ref: ChangeDetectorRef
