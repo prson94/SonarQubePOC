@@ -6,6 +6,7 @@ using d360.web.Models.Attributes;
 using System.Web;
 using d360.core;
 using d360.core.enums;
+using System.Collections.Generic;
 
 namespace d360.web.Controllers
 {
@@ -32,7 +33,11 @@ select	A.ObjectID as ID,
         A.DisplayValue,
         A.DisplayValue as TextPath,
         P.SubjectID as ParentID,
-        A.ID as AssetID
+        A.ID as AssetID,        
+        CASE WHEN EXISTS (select 1 from report where [objecttype] = 'Taxonomy' and [objectid] = A.TypeID)    
+            THEN 1  
+            ELSE 0 
+        END AS 'HasDashboards'
 from	AssetDetail A
 		outer apply (
 					select	I.SubjectID
@@ -40,8 +45,10 @@ from	AssetDetail A
                             inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
 							inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
 					) P
+        
 where   A.Type = 'TaxonomyType' and A.TypeID = @id AND A.[State] = 1 order by A.DisplayValue", new { id });
 
+            
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
