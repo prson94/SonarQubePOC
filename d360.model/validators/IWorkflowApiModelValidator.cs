@@ -18,5 +18,6 @@ namespace d360.model.validators
         bool IsValidRelationshipType(IEnumerable<KeyValuePair<string, string>> queryParams);
         bool IsValidWorkflowType(IEnumerable<KeyValuePair<string, string>> queryParams);
         bool IsValidWorkflowVersion(Guid workflowVersionUID);
+        bool IsValidWorkflowInstance(Guid workflowVersionUID);
     }
 }

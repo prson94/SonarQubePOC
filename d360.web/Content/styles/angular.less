@@ -328,12 +328,6 @@ nav.top, .left-side-nav {
     }
 }
 
-@media only screen and (max-width : 992px), (-ms-high-contrast: none), (-ms-high-contrast: active) {
-    .show-on-medium-and-down {
-        display: inline !important;
-    }
-}
-
 //anything in this only applies to Edge for fixes
 @supports
 
@@ -452,10 +446,6 @@ nav.top, .left-side-nav {
     .megamenu-panel {
         min-width: 500px;
         max-width: 550px;
-    }
-
-    .header-search-input input {
-        width: 150px !important;
     }
 }
 
@@ -1037,16 +1027,20 @@ a.breadcrumb {
             padding-right: 10px;
         }
 
-        .issue-button {
-            min-width: 115px;
-        }
-
-        .spacer{
+        .spacer {
             padding-right: 5px;
         }
 
         li {
             cursor: pointer;
+
+            .photo {
+                padding: 0px 10px;
+
+                &:hover, &.hover {
+                    background: rgba(255, 255, 255, 0.2);                    
+                }
+            }
         }
     }
 
@@ -1075,7 +1069,7 @@ a.breadcrumb {
         background: none;
         flex-grow: 1;
         outline: none;
-        width: 300px;
+        width: 150px;
 
         &.placeholder {
             color: #bbbbbb;
@@ -1213,7 +1207,7 @@ a.breadcrumb {
             .separator {
                 height: 1px;
                 background-color: #DCDFE2;
-                width: inherit;
+                width: 100%;
             }
         }
     }

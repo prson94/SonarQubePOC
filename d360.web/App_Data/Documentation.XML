@@ -2792,6 +2792,14 @@
             <param name="executionUid">The execution's unique identifier to retrieve status for.</param>
             <returns></returns>
         </member>
+        <member name="M:d360.web.Controllers.V2.RelationshipsController.DeleteRelationship(System.Guid,d360.core.entities.RelationshipDeletes)">
+            <summary>
+            Deletes a relationship and children of a given uid.
+            </summary>
+            <param name="intersectTypeUid">The unique identifier of the relationship type.</param>
+            <param name="relationships">The list of relationships for deletions.</param>
+            <returns>An HTTP status code and message.</returns>
+        </member>
         <member name="T:d360.web.Controllers.V2.AssetsController">
             <summary>
             This service houses all endpoints handling glossary-related data such as artifacts and models.
@@ -3079,6 +3087,13 @@
             </summary>
             <param name="workflowVersionUid"> workflow version unique identifier</param>
             <returns>Returns list of workflow version steps and An HTTP status code</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.WorkflowController.GetWorkflowInstances(System.Guid)">
+            <summary>
+            Get a list of steps and their relevant information for a specific workflow instance contained within the system.
+            </summary>
+            <param name="workflowUid">workflow instance unique identifie</param>
+            <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.D3SApiController.GetFieldFiltersByType(d360.core.SystemObjects,System.Int32)">
             <summary>
