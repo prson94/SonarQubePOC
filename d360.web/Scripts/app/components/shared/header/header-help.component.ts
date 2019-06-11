@@ -23,7 +23,7 @@ declare var VersionNumber: string;
                               <br /><b>Build Date:</b> {{this.buildDate}}
                               <br /><b>Support:</b> http://support.infogix.com
                               <p>© 2005-2019 Infogix. All rights reserved.<br />Confidential - Limited distribution to authoroized persons only, pursuant to the teams of Infogix Inc. license agreement. This software is protected as an unpublished work and constitutes a trade secret of Infogix Inc.</span>
-                    <p-footer><button type="button" style="background-color: #1E90FF;color: white;" (click)="display=false">Close</button></p-footer>
+                    <p-footer><button class="aboutbutton primary" type="button" (click)="display=false">Close</button></p-footer>
                 </p-dialog>`,
     changeDetection: ChangeDetectionStrategy.OnPush
 })

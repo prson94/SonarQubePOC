@@ -81,6 +81,141 @@ nav.top, .left-side-nav {
     box-shadow: none;
 }
 
+///////////////////////////////////////////////////////////////////////////////////
+// Panel Button
+///////////////////////////////////////////////////////////////////////////////////
+
+.aboutbutton {
+    display: inline-flex;
+    position: relative;
+    box-sizing: border-box;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+    cursor: pointer;
+    font-family: 'Nunito Sans';
+    font-size: 14px;
+    text-align: center;
+    white-space: nowrap;
+    background: #f0f0f0;
+    color: #202020;
+    border: none;
+    border-radius: 3px;
+
+    &:not(.icon):not(.bar) {
+        padding: 0 15px;
+
+        i.fa {
+            padding-right: 7px;
+        }
+    }
+
+    &.icon {
+        width: 30px;
+    }
+
+
+    &:not(:disabled):hover, &.hover {
+        background: mix(black, #f0f0f0, 7%)
+    }
+
+    &:not(:disabled):active, &.active {
+        background: mix(black, #f0f0f0, 14%)
+    }
+
+    &.primary {
+        background: #006FBA;
+        color: #ffffff;
+
+        &:not(:disabled):hover, &.hover {
+            background: #4093CB;
+        }
+
+        &:not(:disabled):active, &.active {
+            background: #66A9D6;
+        }
+    }
+
+    &.accent {
+        background: coral;
+        color: #ffffff;
+
+        &:not(:disabled):hover, &.hover {
+            background: mix(black, coral, 7%)
+        }
+
+        &:not(:disabled):active, &.active {
+            background: mix(black, coral, 14%)
+        }
+    }
+
+    &.negative {
+        background: red;
+        color: #ffffff;
+
+        &:not(:disabled):hover, &.hover {
+            background: mix(black, red, 7%)
+        }
+
+        &:not(:disabled):active, &.active {
+            background: mix(black, red, 14%)
+        }
+    }
+
+    .loader {
+        position: absolute;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+    }
+
+    &.loading {
+        opacity: 1;
+
+        .content {
+            visibility: hidden;
+        }
+
+        .loader {
+            display: inline-flex;
+        }
+    }
+
+    &.bar {
+        width: 40px;
+        height: 40px;
+        background: none;
+        color: #ffffff;
+        font-size: 16px;
+        border-radius: 0;
+
+        &:not(:disabled):hover, &.hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        &:not(:disabled):active, &.active {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        &.light {
+            color: #202020;
+
+            &:not(:disabled):hover, &.hover {
+                background: rgba(0, 0, 0, 0.07);
+            }
+
+            &:not(:disabled):active, &.active {
+                background: rgba(0, 0, 0, 0.14);
+            }
+        }
+    }
+}
+
 
 /* end top menu*/
 
