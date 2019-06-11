@@ -517,6 +517,7 @@
     <Content Include="Content\primeng\v6.0.1\images\loading.gif" />
     <Content Include="Content\primeng\v6.0.1\images\password-meter.png" />
     <Content Include="Content\primeng\v6.0.1\images\rating.png" />
+    <Content Include="Content\primeng\v6.0.1\images\ui-icons_222222_256x240.png" />
     <Content Include="Content\primeng\v6.0.1\primeng.css" />
     <Content Include="Content\primeng\v6.0.1\primeng.min.css">
       <DependentUpon>primeng.css</DependentUpon>

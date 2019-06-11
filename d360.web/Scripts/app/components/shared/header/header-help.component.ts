@@ -22,7 +22,7 @@ declare var VersionNumber: string;
                         <span><b>Build Version:</b> {{this.versionNumber}}
                               <br /><b>Build Date:</b> {{this.buildDate}}
                               <br /><b>Support:</b> http://support.infogix.com
-                              <p>© 2005-2019 Infogix. All rights reserved.<br />Confidential - Limited distribution to authoroized persons only, pursuant to the teams of Infogix Inc. license agreement. This software is protected as an unpublished work and constitutes a trade secret of Infogix Inc.</span>
+                              <p>© 2005-2019 Infogix. All rights reserved.<br />Confidential - Limited distribution to authorized persons only, pursuant to the terms of Infogix Inc. license agreement. This software is protected as an unpublished work and constitutes a trade secret of Infogix Inc.</span>
                     <p-footer><button class="aboutbutton primary" type="button" (click)="display=false">Close</button></p-footer>
                 </p-dialog>`,
     changeDetection: ChangeDetectionStrategy.OnPush
