@@ -13,7 +13,6 @@ declare var VersionNumber: string;
                             <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="adminGuide">Admin Guide</a></div></div></li>
                             <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="whatIsNew">What's New</a></div></div></li>
                             <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="community">Community</a></div></div></li>
-							<li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" (click)="popup()" >About Data3Sixty</a></div></div></li>
                        </ul>
                     </div>
                 <span>
