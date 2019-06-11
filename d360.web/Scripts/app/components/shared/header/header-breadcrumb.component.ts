@@ -44,14 +44,9 @@ export class HeaderBreadcrumbComponent {
                         breadcrumb.active = false;
                     }
                     this.breadcrumbs.push(breadcrumb);
-                    this.resizeControlsToFit(window.innerWidth, this.breadcrumbUIElement);
+                    this.resizeControlsToFit(window.innerWidth);
                     this.ref.markForCheck();
                 }
-
-                this.breadcrumbs.push(breadcrumb);
-                this.resizeControlsToFit(window.innerWidth);
-                this.ref.markForCheck();
-
             });
         this.subscriptionClear = headerBreadcrumbService.breadcrumbClear$.subscribe(
             breadcrumb => {

@@ -132,7 +132,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
                     window.setTimeout(() => {
                         this.standardInput.nativeElement.focus();
                         if (this.results === undefined && !this.isTreeItem()) this.search("");
-                    }, 100);
+                    }, 150);
                 }
             }
         }

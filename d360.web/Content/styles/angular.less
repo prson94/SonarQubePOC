@@ -113,11 +113,11 @@ nav.top, .left-side-nav {
 
 
     &:not(:disabled):hover, &.hover {
-        background: mix(black, #f0f0f0, 7%)
+        background: mix(black, #f0f0f0, 7%);
     }
 
     &:not(:disabled):active, &.active {
-        background: mix(black, #f0f0f0, 14%)
+        background: mix(black, #f0f0f0, 14%);
     }
 
     &.primary {
@@ -1085,15 +1085,6 @@ div.child .empty-count {
 }
 
 
-/* breadcrumbs*/
-
-div.breadcrumbs {
-    margin-left: 20px;
-    vertical-align: top;
-    display: inline-block;
-    color: @rgba-primary-0;
-
-
  /* breadcrumbs*/
 .collapsed-overlay {
     .ui-overlaypanel-content {
@@ -1113,11 +1104,6 @@ div.breadcrumbs {
 
     .active, .sep {
         color: #fff;
-    }
-  
-    i {
-        color: black;
-        padding-right: 10px
     }
   
     .active, .inactive {
@@ -1274,16 +1260,6 @@ a.breadcrumb {
     }
 }
 
-.breadcrumbTree {
-    overflow: auto;
-    line-height: 25px;
-}
-
-.breadcrumb-link {
-    cursor: pointer;
-    text-decoration: underline;
-}
-
 
 /*end breadcrumbs */
 
@@ -1295,28 +1271,29 @@ a.breadcrumb {
     .header-action-container {
         display: flex;
 
-
         .header-actions-list {
-        display: inline-flex;
+            display: inline-flex;
 
-        &.mini-menu {
-            padding-right: 10px;
-        }
+            &.mini-menu {
+                padding-right: 10px;
+            }
 
-        .spacer {
-            padding-right: 5px;
-        }
+            .spacer {
+                padding-right: 5px;
+            }
 
-        li {
-            cursor: pointer;
+            li {
+                cursor: pointer;
 
-            .photo {
-                padding: 0px 10px;
+                .photo {
+                    padding: 0px 10px;
 
-                &:hover, &.hover {
-                    background: rgba(255, 255, 255, 0.2);                    
+                    &:hover, &.hover {
+                        background: rgba(255, 255, 255, 0.2);                    
+                    }
                 }
             }
+        }
     }
 }
 
