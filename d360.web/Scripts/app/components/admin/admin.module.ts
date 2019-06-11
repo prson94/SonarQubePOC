@@ -35,7 +35,7 @@ import { AdminLevelEditorComponent } from './admin-level-editor.component';
 import { AdminLevelListComponent } from './admin-level-list.component';
 import { AdminNymAllocationsComponent } from './admin-nym-allocations.component';
 import { SimpleAccordionModule } from "../shared/simple-accordion.part";
-import { Dialog, DialogModule } from 'primeng/dialog';
+import { DialogModule } from 'primeng/dialog';
 
 @NgModule({
     declarations: [        
@@ -69,7 +69,6 @@ import { Dialog, DialogModule } from 'primeng/dialog';
         ButtonModule,
         SharedModule,
         TableModule,
-        Dialog,
         DialogModule,
         
         //d3s        
