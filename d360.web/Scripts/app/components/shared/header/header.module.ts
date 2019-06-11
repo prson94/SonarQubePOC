@@ -10,7 +10,8 @@ import {
     AutoCompleteModule,    
     TreeModule,
     OverlayPanelModule,
-    SharedModule,    
+    SharedModule,
+    DialogModule,    
 } from 'primeng/primeng';
 
 import { PipesModule } from '../../../pipes/pipes.module';
@@ -43,7 +44,8 @@ import { HeaderMiniMenuComponent } from './header-mini-menu-component';
         AutoCompleteModule,        
         OverlayPanelModule,
         SharedModule,        
-        TreeModule,                
+        TreeModule, 
+        DialogModule,
     ],
     declarations: [
         HeaderActionsComponent,
