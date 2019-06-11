@@ -24,6 +24,7 @@ import { BaseComponent } from '../../../shared/base.component';
 
 import { FormHelpers } from '../../../../static/form-helpers';
 import { Observable } from 'rxjs';
+import { map, scan } from 'rxjs/operators';
 
 @Component({
     selector: 'd3s-field-type-form',
@@ -502,10 +503,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     }
 
     // called when the lookup type field is changed
-    private lookupTypeSelected(value: string): Promise<any> {
+    private lookupTypeSelected(value: string): Observable<any> {
         if (value == undefined) {
             console.log("[ERROR] - LOOKUP TYPE IS UNDEFINED", value);
-            return Promise.resolve();
+            return null;
         }
 
         //update the model to have correct lookuptype object and id
@@ -724,10 +725,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             objectType += 'Type';
         }
 
-        return this.fieldsService.getLookupDefaultValueOptions(objectId, objectType).subscribe(
-            r => {
-                this.lookupDefaultValueOptions = r;
-            }
+        return this.fieldsService.getLookupDefaultValueOptions(objectId, objectType).pipe(
+            map(r => this.lookupDefaultValueOptions = r)
         );
     }
 
