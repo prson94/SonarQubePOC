@@ -1,51 +1,53 @@
 ﻿import { Injectable } from '@angular/core';
-import { Headers, Http, Response, ResponseContentType } from '@angular/http';
+import { HttpClient, HttpRequest, HttpResponse } from '@angular/common/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
 import { ReferenceItemType, ReferenceItem } from '../models/reference.model';
 import { JsonResult } from '../models/jsonresult.model';
+import { Observable } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 
 @Injectable()
 export class ReferenceService extends BaseService {
 
-    constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
+    constructor(private http: HttpClient, messagesService: MessagesService) { super(messagesService); }
 
-    getReferenceItemTypes(): Promise<ReferenceItemType[]> {
+    getReferenceItemTypes(): Observable<ReferenceItemType[]> {
         return this.http.get(`api/referenceItemTypes`)
-            .toPromise()
-            .then(response => <ReferenceItemType[]>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <ReferenceItemType[]>response),
+                catchError(err => this.handleError(err)));
     }
 
-    canReadReferenceType(id: number): Promise<boolean> {
+    canReadReferenceType(id: number): Observable<boolean> {
         return this.http.get(`api/canReadReferenceItemType/${id}`)
-            .toPromise()
-            .then(response => <boolean>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+             map(response => <boolean>response),
+            catchError(err => this.handleError(err)));
     };
 
     saveReferenceItemType(item: ReferenceItemType) {
         if (item.ID == undefined || !item.ID) {
-            return this.postDynamic(this.http, 'referenceItemType', item);
+            return this.postDynamicObs(this.http, 'referenceItemType', item);
         }
-        return this.putDynamic(this.http, 'referenceItemType', item);
+        return this.putDynamicObs(this.http, 'referenceItemType', item);
     }
 
-    deleteReferenceItemType(id: number): Promise<JsonResult> {
-        return this.deleteDynamicWithResult(this.http, 'referenceItemType', id);
+    deleteReferenceItemType(id: number): Observable<JsonResult> {
+        return this.deleteDynamicWithResultObs(this.http, 'referenceItemType', id);
     }
 
     exportReferenceItems(id: number, name: string) {
-        this.http.get(`api/referenceItems/${id}/items.xls`, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data, name));
+        this.http.get(`api/referenceItems/${id}/items.xls`, { responseType : 'blob' }).subscribe(data => this.downloadFile(data, name));
     }
 
-    downloadFile(data: Response, name: string) {
+    downloadFile(data: Blob, name: string) {
         var filename = `${name} List ${new Date().toDateString()}.xlsx`;
         if (window.navigator.msSaveOrOpenBlob) {
-            window.navigator.msSaveOrOpenBlob(data.blob(), filename);
+            window.navigator.msSaveOrOpenBlob(data, filename);
         }
         else {
-            var url = window.URL.createObjectURL(data.blob());
+            var url = window.URL.createObjectURL(data);
             var anchor = document.createElement("a");
             anchor.setAttribute("style", "display:none;");
             document.body.appendChild(anchor);
