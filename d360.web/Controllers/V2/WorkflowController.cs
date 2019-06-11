@@ -40,13 +40,16 @@ namespace d360.web.Controllers.V2
             this.workflowRepository = workflowRepository;
             this.validator = validator;
         }
-    
+
 
         #endregion
 
         /// <summary>
         /// Retrieves workflow types for the given asset type unique identifier / action type unique identifier/ relationship type unique identifier .
         /// </summary>
+        /// <remarks>
+        /// If using Uid parametes, you may provide only one of the following: ActionTypeUid,AssetTypeUid,RelationshipTypeUid
+        /// </remarks>
         /// <param name="ChangeType">ChangeType</param>
         /// <param name="State">State</param>
         /// <returns>Returns list of workflow types and An HTTP status code </returns>
@@ -74,7 +77,7 @@ namespace d360.web.Controllers.V2
 
                
                 if (!validator.IsValidGuidCountForWorkflowGetTypeModel(queryParams))
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request, either  ActionTypeUid OR AssetTypeUid OR RelationshipTypeUid"));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "More than one uid is passed in the request, either  ActionTypeUid OR AssetTypeUid OR RelationshipTypeUid"));
 
                 if (!validator.IsValidGuidForWorkflowGetTypeModel(queryParams))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Your request to retrieve this workflow version is invalid, possibly due to an incorrectly formatted identifier ActionTypeUid/AssetTypeUid/RelationshipTypeUid"));
@@ -109,6 +112,9 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Retrieves workflow versions for the given asset type unique identifier / action type unique identifier/ relationship type unique identifier / workflow type  unique identifier.
         /// </summary>
+        /// <remarks>
+        /// If using Uid parametes, you may provide only one of the following: ActionTypeUid,AssetTypeUid,RelationshipTypeUid,WorkflowTypeUid
+        /// </remarks>
         /// <param name="State">State</param>
         /// <returns>Returns list of workflow versions and An HTTP status code </returns>
         [
@@ -124,7 +130,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "", typeof(WorkflowVersionsApiViewModel)),
             SwaggerResponse(HttpStatusCode.NotFound, "Action Type / Asset Type / Relationship Type / Workfflow Type  not found based on Uid provided.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this workflow type is invalid, possibly due to an incorrectly formatted identifier ActionTypeUid/AssetTypeUid/RelationshipTypeUid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this workflow type is invalid, possibly due to an incorrectly formatted identifier ActionTypeUid/AssetTypeUid/RelationshipTypeUid/WorkflowTypeUid.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             ]
         public async Task<IHttpActionResult> GetWorkflowVersionAsync(State? State = null)
@@ -139,7 +145,7 @@ namespace d360.web.Controllers.V2
 
 
                 if (!validator.IsValidGuidCountForWorkflowGetVersionModel(queryParams))
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request, either  ActionTypeUid OR AssetTypeUid OR RelationshipTypeUid"));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "More than one uid is passed in the request , either  ActionTypeUid OR AssetTypeUid OR RelationshipTypeUid or WorkflowTypeUid"));
 
                 if (!validator.IsValidGuidForWorkflowGetVersionModel(queryParams))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Your request to retrieve this workflow version is invalid, possibly due to an incorrectly formatted identifier ActionTypeUid/AssetTypeUid/RelationshipTypeUid/WorkflowTypeUid"));
