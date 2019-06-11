@@ -1,6 +1,6 @@
 import { distinctUntilChanged, switchMap, map, catchError } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
-import { Headers, Http } from '@angular/http';
+import { HttpClient } from '@angular/common/http';
 import { FieldDefinition, IFieldsService, FieldTypeEditorModel, Lookups } from '../models/fields.model';
 import { EditorDropDownItem } from '../models/editor-field.model'
 import { SelectItem } from 'primeng/components/common/api';
@@ -12,12 +12,12 @@ import { pipe } from '@angular/core/src/render3';
 
 @Injectable()
 export class FieldsService extends BaseService implements IFieldsService {
-    constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
+    constructor(private http: HttpClient, messagesService: MessagesService) { super(messagesService); }
 
     getFields(objectID: number, objectType: string): Observable<FieldDefinition[]> {
         return this.http.get(`/fields/${objectType}/${objectID}/full`)
             .pipe(
-                map(response => <FieldDefinition[]>response.json()),
+                map(response => <FieldDefinition[]>response),
                 catchError(err => this.handleError(err))
             );
     }
@@ -25,7 +25,7 @@ export class FieldsService extends BaseService implements IFieldsService {
     getAssetTypeFields(assetTypeUID: string): Observable<FieldDefinition[]> {
         return this.http.get(`/api/v2/assets/fields/${assetTypeUID}`)
             .pipe(
-                map(response => <FieldDefinition[]>response.json()),
+                map(response => <FieldDefinition[]>response),
                 catchError(err => this.handleError(err))
             );
     }
@@ -33,7 +33,7 @@ export class FieldsService extends BaseService implements IFieldsService {
     getFieldTypeEditor(id: number): Observable<any> {
         return this.http.get(`form/FieldType?id=${id}`)
             .pipe(
-                map(response => <any>response.json()),
+                map(response => <any>response),
                 catchError(err => this.handleError(err))
             );
     }
@@ -41,7 +41,7 @@ export class FieldsService extends BaseService implements IFieldsService {
     getFusionLookupDisplayFields(id: number): Observable<SelectItem[]> {
         return this.http.get(`form/FieldType_FusionLookup_DisplayFields?id=${id}`)
             .pipe(
-                map(response => <FtItem[]>response.json()),
+                map(response => <FtItem[]>response),
                 map(r => this.ftItemToSelectItem(r)),
                 catchError(err => this.handleError(err))
             );
@@ -50,7 +50,7 @@ export class FieldsService extends BaseService implements IFieldsService {
     getFusionLookupTargetAttributeTypes(sourceID: number, referenceTypeID: number): Observable<SelectItem[]> {
         return this.http.get(`form/FieldType_FusionLookup_TargetAttributeTypes?s=${sourceID}&r=${referenceTypeID}`)
             .pipe(
-                map(response => <FtItem[]>response.json()),
+                map(response => <FtItem[]>response),
                 map(r => this.ftItemToSelectItem(r)),
                 catchError(err => this.handleError(err))
             );
@@ -59,7 +59,7 @@ export class FieldsService extends BaseService implements IFieldsService {
     getRelationObjectFields(type: string, id: number, intersectTypeID: number): Observable<SelectItem[]> {
         return this.http.get(`form/FieldType_FieldFromRelationship_Fields?type=${type}&id=${id}&intersectTypeID=${intersectTypeID}`)
             .pipe(
-                map(response => <FtItem[]>response.json()),
+                map(response => <FtItem[]>response),
                 map(r => this.ftItemToSelectItem(r)),
                 catchError(err => this.handleError(err))
             );
@@ -68,7 +68,7 @@ export class FieldsService extends BaseService implements IFieldsService {
     getRelationLookupDisplayFields(id: number, type: string, intersectTypeID: number): Observable<SelectItem[]> {
         return this.http.get(`form/FieldType_RelationLookup_DisplayFields?id=${id}&type=${type}&intersectTypeID=${intersectTypeID}`)
             .pipe(
-                map(response => <FtItem[]>response.json()),
+                map(response => <FtItem[]>response),
                 map(r => this.ftItemToSelectItem(r)),
                 catchError(err => this.handleError(err))
             );
@@ -77,7 +77,7 @@ export class FieldsService extends BaseService implements IFieldsService {
     getReferenceTypeHierarchyFields(id: number, objectType: string, objectId: number): Observable<SelectItem[]> {
         return this.http.get(`form/Reference_Hierarchy?id=${id}&objectType=${objectType}&objectId=${objectId}`)
             .pipe(
-                map(response => <SelectItem[]>response.json()),
+                map(response => <SelectItem[]>response),
                 catchError(err => this.handleError(err))
             );
     }
@@ -85,7 +85,7 @@ export class FieldsService extends BaseService implements IFieldsService {
     getListFilterOptions(objectType: string, objectId: number, type: string, id: number): Observable<any> {
         return this.http.get(`form/FieldType_ListFilter?objectType=${objectType}&objectId=${objectId}&type=${type}&id=${id}`)
             .pipe(
-                map(response => response.json()),
+                map(response => response),
                 catchError(err => this.handleError(err))
             );
     }
@@ -93,7 +93,7 @@ export class FieldsService extends BaseService implements IFieldsService {
     getLookupDefaultValueOptions(id: number, type: string): Observable<SelectItem[]> {
         return this.http.get(`form/FieldType_Lookup_DefaultValueOptions?id=${id}&type=${type}`)
             .pipe(
-                map(response => <FtItem[]>response.json()),
+                map(response => <FtItem[]>response),
                 map(r => this.ftItemToSelectItem(r)),
                 catchError(err => this.handleError(err))
             );
@@ -103,7 +103,7 @@ export class FieldsService extends BaseService implements IFieldsService {
     getLookupTokens(id: number, type: string): Observable<SelectItem[]> {
         return this.http.get(`form/FieldType_Lookup_Tokens?id=${id}&type=${type}`)
             .pipe(
-                map(response => <FtItem[]>response.json()),
+                map(response => <FtItem[]>response),
                 map(r => this.ftItemToSelectItem(r)),
                 catchError(err => this.handleError(err))
             );
@@ -112,7 +112,7 @@ export class FieldsService extends BaseService implements IFieldsService {
     getLookups(id: number, type: string): Observable<Lookups> {
         return this.http.get(`form/FieldType_Lookups?id=${id}&type=${type}&isNg=true`)
             .pipe(
-                map(response => <any>response.json()),
+                map(response => <any>response),
                 map(r => {
                     let l = new Lookups();
                     l.DataTypes = this.ftItemToSelectItem(r.DataTypes);
@@ -142,7 +142,7 @@ export class FieldsService extends BaseService implements IFieldsService {
     getFormData(id: number): Observable<FieldTypeEditorModel> {
         return this.http.get(`form/FieldType_FormData?id=${id}`)
             .pipe(
-                map(response => <FieldTypeEditorModel>response.json()),
+                map(response => <FieldTypeEditorModel>response),
                 catchError(err => this.handleError(err))
             );
     }
@@ -150,7 +150,7 @@ export class FieldsService extends BaseService implements IFieldsService {
     getFusionDisplayFields(id: number): Observable<SelectItem[]> {
         return this.http.get(`form/FieldType_FusionLookup_DisplayFields?id=${id}`)
             .pipe(
-                map(response => <FtItem[]>response.json()),
+                map(response => <FtItem[]>response),
                 map(r => this.ftItemToSelectItem(r)),
                 catchError(err => this.handleError(err))
             );
@@ -175,7 +175,7 @@ export class FieldsService extends BaseService implements IFieldsService {
     putFieldType(model: FieldTypeEditorModel): Observable<JsonResult> {
         return this.http.put('form/EditFieldType', model)
             .pipe(
-                map(response => <JsonResult>response.json()),
+                map(response => <JsonResult>response),
                 catchError(err => this.handleError(err))
             );
     }
@@ -183,7 +183,7 @@ export class FieldsService extends BaseService implements IFieldsService {
     postFieldType(model: FieldTypeEditorModel): Observable<JsonResult> {
         return this.http.post('form/AddFieldType', model)
             .pipe(
-                map(response => <JsonResult>response.json()),
+                map(response => <JsonResult>response),
                 catchError(err => this.handleError(err))
             );
     }
@@ -191,7 +191,7 @@ export class FieldsService extends BaseService implements IFieldsService {
     deleteFieldType(id: number): Observable<JsonResult> {
         return this.http.delete(`form/DeleteFieldTypeByID?id=${id}`)
             .pipe(
-                map(response => <JsonResult>response.json()),
+                map(response => <JsonResult>response),
                 catchError(err => this.handleError(err))
             );
     }
@@ -208,7 +208,7 @@ export class FieldsService extends BaseService implements IFieldsService {
     getRelationLookupChildIntersectTypes(id: number): Observable<SelectItem[]> {
         return this.http.get(`form/FieldType_RelationLookup_ChildIntersectTypes?id=${id}`)
             .pipe(
-                map(response => response.json()),
+                map(response => <SelectItem[]>response),
                 catchError(err => this.handleError(err))
             );
     }
@@ -216,7 +216,7 @@ export class FieldsService extends BaseService implements IFieldsService {
     getChildRelations(type: string, id: number): Observable<any> {
         return this.http.get(`form/FieldType_ComplexLookup_ChildItems?type=${type}&id=${id}`)
             .pipe(
-                map(response => response.json()),
+                map(response => response),
                 catchError(err => this.handleError(err))
             );
     }
@@ -224,7 +224,7 @@ export class FieldsService extends BaseService implements IFieldsService {
     getParentRelations(type: string, id: number): Observable<any> {
         return this.http.get(`form/FieldType_ComplexLookup_ParentItems?type=${type}&id=${id}`)
             .pipe(
-                map(response => response.json()),
+                map(response => response),
                 catchError(err => this.handleError(err))
             );
     }
@@ -232,7 +232,7 @@ export class FieldsService extends BaseService implements IFieldsService {
     getStandardRelations(type: string, id: number): Observable<any> {
         return this.http.get(`form/FieldType_ComplexLookup_IntersectTypes?type=${type}&id=${id}`)
             .pipe(
-                map(response => response.json()),
+                map(response => response),
                 catchError(err => this.handleError(err))
             );
     }
@@ -240,7 +240,7 @@ export class FieldsService extends BaseService implements IFieldsService {
     moveUp(type: string, id: number, fieldId: number) {
         return this.http.post(`fields/${type}/${id}/${fieldId}/move/up`, null)
             .pipe(
-                map(response => response.json()),
+                map(response => response),
                 catchError(err => this.handleError(err))
             );
     }
@@ -248,7 +248,7 @@ export class FieldsService extends BaseService implements IFieldsService {
     moveDown(type: string, id: number, fieldId: number) {
         return this.http.post(`fields/${type}/${id}/${fieldId}/move/dpwn`, null)
             .pipe(
-                map(response => response.json()),
+                map(response => response),
                 catchError(err => this.handleError(err))
             );
     }
@@ -256,7 +256,7 @@ export class FieldsService extends BaseService implements IFieldsService {
     getFilteredLookupDisplayFields(type: string, id: number, listType: string, listID: number): Observable<any> {
         return this.http.get(`form/FieldType_FilteredLookup_DisplayFields?type=${type}&id=${id}&listType=${listType}&listID=${listID}`)
             .pipe(
-                map(response => response.json()),
+                map(response => response),
                 catchError(err => this.handleError(err))
             );
     }
@@ -264,7 +264,7 @@ export class FieldsService extends BaseService implements IFieldsService {
     getCascadingListFieldValues(fieldTypeId: number, parentItemId?: string, parentValues?: string): Observable<EditorDropDownItem[]> {
         return this.http.get(`api/FieldType_CascadingListValues/${fieldTypeId}?parentItemId=${parentItemId != undefined ? parentItemId : ''}&parentValues=${parentValues != undefined ? encodeURIComponent(parentValues) : ''}`)
             .pipe(
-                map(response => response.json()),
+                map(response => <EditorDropDownItem[]>response),
                 catchError(err => this.handleError(err))
             );
     }
@@ -272,7 +272,7 @@ export class FieldsService extends BaseService implements IFieldsService {
     getRelationshipFieldIsListable(type: string, id: number, intersectTypeId): Observable<boolean> {
         return this.http.get(`form/FieldType_Relationship_IsListable?type=${type}&id=${id}&intersectTypeId=${intersectTypeId}`)
             .pipe(
-                map(response => response.json()),
+                map(response => <boolean>response),
                 catchError(err => this.handleError(err))
             );
     }
@@ -313,14 +313,14 @@ export class FieldsService extends BaseService implements IFieldsService {
                 let uri = `form/FieldType_TypeAheadLookup?fieldTypeId=${e.fieldTypeID}&query=${e.event.query}`;
                 if (e.value != null)
                     uri += `&value=${e.value}`;
-                return this.http.get(uri).pipe(map(res => <EditorDropDownItem[]>res.json()));
+                return this.http.get(uri).pipe(map(res => <EditorDropDownItem[]>res));
             }));
     }
 
     getLookupFilteredByPredicate(fieldTypeID: number, objectType: string, id: number): Observable<any> {
         return this.http.get(`form/FieldType_Lookup_FilteredByPredicate?fieldTypeId=${fieldTypeID}&objectType=${objectType}&ObjectID=${id}`)
             .pipe(
-                map(response => response.json()),
+                map(response => response),
                 catchError(err => this.handleError(err))
             );
     }
@@ -332,14 +332,14 @@ export class FieldsService extends BaseService implements IFieldsService {
                 let uri = `form/FieldType_Lookup_FilteredByPredicate?fieldTypeId=${e.fieldTypeID}&objectType=${objectType}&ObjectID=${id}&query=${e.event.query}`
                 if (e.value != null)
                     uri += `&value=${e.value}`;
-                return this.http.get(uri).pipe(map(res => <any[]>res.json().items));
+                return this.http.get(uri).pipe(map(res => <EditorDropDownItem[]>JSON.parse(res.toString()).items));
             }));
     }
 
     getTypeaheadJsonPropertyOptionsForJsonField(fieldTypeId: number, phrase: string): Observable<string[]> {
         return this.http.get(`form/FieldType_TypeaheadJsonPropertyOptionsForJsonField?fieldTypeId=${fieldTypeId}&phrase=${encodeURIComponent(phrase)}`)
             .pipe(
-                map(response => response.json()),
+                map(response => <string[]>response),
                 catchError(err => this.handleError(err))
             );
     }
