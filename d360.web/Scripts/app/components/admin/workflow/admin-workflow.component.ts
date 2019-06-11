@@ -24,22 +24,14 @@ export class AdminWorkflowComponent extends AdminBaseComponent implements OnInit
 
     constructor(rightSidebarService: RightSidebarService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
         super(headerBreadcrumbService, titleService, rightSidebarService);
-        this.clearSidebar();
-        this.headerBreadcrumbService.clearBreadcrumbs();
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Workflow'));
-        this.titleService.setTitle('Workflow');
-
     }
 
     ngOnInit() {
         this.areaName = "Workflow";
-
-        //this.load();
-    }
-
-    load() {
-        //this.isLoading = true;
-
+        this.adminHeading = "Workflow";
+        this.clearSidebar();
+        this.titleService.setTitle('Workflow');
+        this.setCommonItems();
     }
 
     viewReadOnlyDiagram(e: any) {

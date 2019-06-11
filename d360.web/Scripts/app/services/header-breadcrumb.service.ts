@@ -1,10 +1,29 @@
 import { Injectable } from '@angular/core';
-import {Subject} from 'rxjs';
+import {Subject, Observable} from 'rxjs';
 import { Breadcrumb } from '../models/breadcrumb.model';
+import { HttpClient } from '@angular/common/http';
+import { catchError, map } from 'rxjs/operators';
+import { BaseObservableService } from './baseObservable.service';
+import { MessagesObservableService } from './messages-observable.service';
+import { SiteMenuService } from './site-menu.service';
+import { SiteNav } from '../models/site-menu.model';
+import { Promise } from 'core-js';
+import { resolve } from 'url';
 
 
 @Injectable()
-export class HeaderBreadcrumbService {
+export class HeaderBreadcrumbService extends BaseObservableService{
+    private sitenavservice: SiteMenuService;
+
+    constructor(
+        private http: HttpClient,
+        messagesService: MessagesObservableService,
+        sitenavservice: SiteMenuService
+    ) {
+        super(messagesService);
+        this.sitenavservice = sitenavservice;
+    }
+
     // Observable sources
     private breadcrumbSource = new Subject<Breadcrumb>();
     private breadcrumbClearSource = new Subject<boolean>();
@@ -47,5 +66,33 @@ export class HeaderBreadcrumbService {
 
     popLastBreadcrumb() {
         this.breadcrumbPopLastSource.next(true);
+    }
+
+    getAreaName(objectType: string, objectId: number): Observable<string> {
+
+        return this.http
+            .get(`api/breadcrumb/getArea?&objectType=${objectType}&objectId=${objectId}`)
+            .pipe(
+                map(response => <string>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    getFolderTitle(menuID: string) {
+        let folderName = menuID;
+        let promise = new Promise<string>((resolve, reject) => {
+
+            this.sitenavservice.getSiteNavItems().then(res => {
+                res.forEach(s => {
+                    if (s.Name.indexOf(menuID) !== -1) {
+                        folderName = s.Title;
+                    }
+                });
+            }).then(() => {
+                if (folderName != menuID) resolve(folderName);
+                else reject(menuID.substr(1, menuID.length));
+            });
+        });
+        return promise;
     }
 }
