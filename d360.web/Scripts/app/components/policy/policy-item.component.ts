@@ -147,7 +147,7 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
     buildBreadcrumb() {
         this.headerBreadcrumbService.getFolderTitle('#Policy').then((res) => {
             this.headerBreadcrumbService.clearBreadcrumbs();
-
+            this.crumbs = [];
             let areaBreadcrumb = new Breadcrumb(
                 this.currentAreaName ? this.currentAreaName : res, `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`
             );
@@ -194,7 +194,7 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
                     'Policy',
                     parent.ID,
                     this.buildTreeNodeArray(this.policies, parent.ParentID),
-                    this.findSelectedTreeNode(parent.ID), false)
+                    this.findSelectedTreeNode(parent.ID), false, false)
                 this.crumbs.unshift(crumb);
                 this.checkParent(parent);
             }
@@ -239,7 +239,8 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
 
     private buildTreeNodeArray(
         policies: Policy[],
-        Parent?: number
+        Parent?: number,
+        includeChildren?: boolean
     ): TreeNode[] {
         // find the root items then
         let rootNodes = policies.filter(x => (Parent != undefined ? x.ParentID == Parent : !x.ParentID));
@@ -257,7 +258,7 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
                 data: {
                     id: root.ID
                 },
-                children: (this.buildTreeNodeArray(policies, root.ID)) // recursively find its children
+                children: (includeChildren ? this.buildTreeNodeArray(policies, root.ID) : null) // recursively find its children
             });
         }
 
@@ -341,5 +342,6 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
 
     private showHierarchy(id: number) {
         this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${this.policyTypeId};hierarchyId=${id}`);
+        this.buildBreadcrumb();
     }
 }

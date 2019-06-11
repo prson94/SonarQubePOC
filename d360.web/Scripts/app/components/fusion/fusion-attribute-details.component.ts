@@ -51,15 +51,17 @@ export class FusionAttributeDetailsComponent extends BaseComponent implements On
             this.id = +params['id'];
             this.name = params['name'] ? params['name'] : 'Details';
             this.dataProfileId = params['dataProfileId'] ? +params['dataProfileId'] : -1;
-            this.setBrowserTitle(this.titleService, this.name);        
-            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.name));
-            
+            this.setBrowserTitle(this.titleService, this.name);
             this.loadPermissions(this.permissionsService, StringConstants.ObjectFusionAttribute, this.id);
         });
 
         this.fusionAttributeService.getFusionAttributeDetails(this.type, this.id).subscribe(
             item => {
                 this.fusionAttributeDetail = item;
+
+                this.headerBreadcrumbService.popLastBreadcrumb();
+                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.name, undefined, undefined, undefined, undefined, undefined, undefined, undefined, false, this.fusionAttributeDetail.AssetTypeName));
+
                 this.setObjectInfo(this.type, this.id, undefined, this.fusionAttributeDetail.AssetID);
                 this.setCommonRightSideBar(true, true, false, true, true, true, false);
             }

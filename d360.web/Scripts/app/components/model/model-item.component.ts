@@ -227,7 +227,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
                     true,
                     'Taxonomy',
                     parent.ID,
-                    this.buildTreeNodeArray(this.modelHierarchy, parent.ParentID),
+                    this.buildTreeNodeArray(this.modelHierarchy, parent.ParentID,false),
                     this.findSelectedTreeNode(parent.ID), false)
                 this.crumbs.unshift(crumb);
                 this.checkParent(parent);
@@ -283,9 +283,9 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
         }
     }
 
-    private buildTreeNodeArray(models: ModelHierarchy[], Parent?: number): TreeNode[] {
+    private buildTreeNodeArray(models: ModelHierarchy[], Parent?: number, includeChildren?: boolean): TreeNode[] {
         //find the root items then 
-
+        includeChildren = includeChildren == undefined ? true : false;
         let rootNodes = models.filter(x => (Parent != undefined ? x.ParentID == Parent : !x.ParentID));
 
         if (rootNodes.length == 0) return null;
@@ -299,7 +299,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
                 data: {
                     id: root.ID, hasRelations: root.HasChildren, AssetID: root.AssetID
                 },
-                children: (this.buildTreeNodeArray(models, root.ID)) //recursively find its children
+                children: (includeChildren ? this.buildTreeNodeArray(models, root.ID):null) //recursively find its children
             });
         }
 
@@ -308,6 +308,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
 
     private showHierarchy(id: number) {
         this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('TAXONOMY', id, this.modelId));
+        this.buildBreadcrumb();
     }
 
     private loadItemSurvey(modelId: number) {

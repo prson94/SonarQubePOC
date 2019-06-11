@@ -3,7 +3,8 @@
     Name: string;
     DisplayName: string;
     Url: string;
-    Type: string;       
+    Type: string; 
+    ID: string;
 }
 
 export class SearchFullResult {

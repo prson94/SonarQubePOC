@@ -7818,14 +7818,24 @@ from	    AssetType T where T.Object = 'TaxonomyType' ");
         {
             public string Name { get; set; }
             public string Url { get; set; }
+            public int ID { get; set; }
         }
 
         [Route("breadcrumb/typeahead")]
         public async Task<IEnumerable<BreadcrumbTypeAheadModel>> GetBreadcrumbTypeahead(string q, int num, SystemObjects objectType, int objectId)
         {
-            var sql = $"select top {num} ad.DisplayValue as Name, u.Url  from asset ast inner join assettype astt on (ast.assetTypeID = astt.id)  inner join AssetDisplayValue AD on AD.assetid = ast.id cross apply [dbo].GetAssetUrlById(ast.ID) u where ast.[object] = @typeName and astt.objectId = @typeId and ad.DisplayValuePrefix like @search";
+            var sql = $"select top {num} ad.DisplayValue as Name, u.Url  from asset ast inner join assettype astt on (ast.assetTypeID = astt.id)  inner join AssetDisplayValue AD on AD.assetid = ast.id cross apply [dbo].GetAssetUrlById(ast.ID) u where ast.[object] = @typeName and astt.objectId = @typeId and ad.DisplayValuePrefix like @search " +
+                        $"Order By ad.DisplayValue";
 
             return await Company.QueryAsync<BreadcrumbTypeAheadModel>(sql, new { typeName = new DbString { Value = objectType.ToString(), IsFixedLength = true, Length = 20, IsAnsi = true }, typeId = objectId, search = $"{q}%" });            
+        }
+
+        [Route("breadcrumb/typeaheadForFusion")]
+        public async Task<IEnumerable<BreadcrumbTypeAheadModel>> GetFusionTypeahead(string q, int num)
+        {
+            var sql = $"SELECT top {num} Name, 'fusion/' + CAST(ID as varchar) as Url FROM Fusion WHERE name like @search " +
+                        $"Order By Name";
+            return await Company.QueryAsync<BreadcrumbTypeAheadModel>(sql, new { search = $"{q}%",  });
         }
 
         [Route("breadcrumb/typeaheadfortype")]
@@ -7842,7 +7852,8 @@ from	    AssetType T where T.Object = 'TaxonomyType' ");
                         $"          outer apply (select	IT.SubjectID from	IntersectType IT " +
                         $"          inner join [Predicate] P on IT.Object = @typeName and IT.ObjectID = AT.ObjectID " +
                         $"          and P.ID = IT.PredicateID and P.Type = 3) IT " +
-                        $"where AT.[Object] = @typeName and AT.[objectId] = @typeId) AND AT.Name like @search";
+                        $"where AT.[Object] = @typeName and AT.[objectId] = @typeId) AND AT.Name like @search " +
+                        $"Order By AT.Name";
 
             return await Company.QueryAsync<BreadcrumbTypeAheadModel>(sql, new { typeName = new DbString { Value = objectType.ToString(), IsFixedLength = true, Length = 30, IsAnsi = true }, typeId = objectId, search = $"{q}%" });
         }
@@ -7853,7 +7864,8 @@ from	    AssetType T where T.Object = 'TaxonomyType' ");
             //var sql = $"select top {num} ad.DisplayValue as Name, u.Url  from asset ast inner join assettype astt on (ast.assetTypeID = astt.id)  inner join AssetDisplayValue AD on AD.assetid = ast.id cross apply [dbo].GetAssetUrlById(ast.ID) u where ast.[object] = @typeName and astt.objectId = @typeId and ad.DisplayValuePrefix like @search";
             var sql = $" select top {num} AT.ID, AT.ObjectID, AT.Name, u.Url from AssetType AT " +
                         $"cross apply [dbo].GetAssetTypeUrlById(AT.ID) u " +
-                        $" where AT.[Object] = @typeName AND AT.Name like @search";
+                        $" where AT.[Object] = @typeName AND AT.Name like @search " +
+                        $"Order By AT.Name";
 
             return await Company.QueryAsync<BreadcrumbTypeAheadModel>(sql, new { typeName = new DbString { Value = objectType.ToString(), IsFixedLength = true, Length = 30, IsAnsi = true }, search = $"{q}%" });
         }

@@ -48,4 +48,12 @@ export class TypeaheadSearchService extends BaseService {
             }),
             catchError(err => this.handleError(err)));
     }  
+    getFusionObjectItems(size: number, term: string) {
+        return this.http.get(`api/breadcrumb/typeaheadForFusion?q=${term}&num=${size}`).pipe(
+            map(response => {
+                return response.json().map(item => { return <SearchResult[]>item; }
+                )
+            }),
+            catchError(err => this.handleError(err)));
+    }
 }

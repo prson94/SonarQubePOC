@@ -39,7 +39,10 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
 export class RuleImplementationComponent extends BaseComponent implements OnInit, OnDestroy {
     private sub: any;    
     private implementation: RuleImplementationDetail;
+    private currentAreaNameSubscription: any;
+    private currentAreaName: string;
     private messages: MessageBarItem[] = [];
+    private ruleTypeId: number;
     
     constructor(private rulesService: RulesService,
             private route: ActivatedRoute,
@@ -55,7 +58,7 @@ export class RuleImplementationComponent extends BaseComponent implements OnInit
 
     ngOnInit() {                
         this.sub = this.route.params.subscribe(params => {
-            let ruleTypeId = +params['ruleTypeId']; // (+) converts string 'id' to a number    
+            this.ruleTypeId = +params['ruleTypeId']; // (+) converts string 'id' to a number    
             let ruleId = +params['ruleId']; // (+) converts string 'id' to a number
             let implementationId = +params['implementationId']; // (+) converts string 'id' to a number            
             this.isLoading = true;
@@ -89,17 +92,39 @@ export class RuleImplementationComponent extends BaseComponent implements OnInit
                     url: `/quality/rule/implementation/qualifiers/detail/${this.objectID}`
                 });
 
-                this.headerBreadcrumbService.clearBreadcrumbs();
-                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Rules', undefined));//SiteUrlHelpers.SITE_URL_RULE_ROOT
-                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.implementation.RuleTypeName, `${SiteUrlHelpers.SITE_URL_RULE_ROOT}/${this.implementation.RuleTypeID}`));
-                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.implementation.RuleName, SiteUrlHelpers.getObjectUrl('rule', this.implementation.RuleID, this.implementation.RuleTypeID)));
-                 
+               
                 this.setBrowserTitle(this.titleService, this.implementation.Name);
-
+                this.buildBreadcrumb()
                 this.messages = []; //clear any messages for this implementation
             });
     }
+    private buildBreadcrumb() {
+        this.currentAreaNameSubscription =
+            this.headerBreadcrumbService
+                .getAreaName('RuleType', this.ruleTypeId)
+                .subscribe(result => {
+                    this.headerBreadcrumbService.getFolderTitle('#Data Quality').then((res) => {
+                        this.currentAreaName = result
+                        this.headerBreadcrumbService.clearBreadcrumbs();
+                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : res));//SiteUrlHelpers.SITE_URL_RULE_ROOT
+                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.implementation.RuleTypeName, `${SiteUrlHelpers.SITE_URL_RULE_ROOT}/${this.ruleTypeId}`,
+                            undefined,
+                            'RuleType',
+                            this.implementation.RuleTypeID,
+                            undefined,
+                            undefined,
+                            true));
+                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.implementation.RuleName, SiteUrlHelpers.getObjectUrl('Rule',
+                            this.implementation.RuleID, this.implementation.RuleTypeID),
+                            undefined,
+                            'Rule',
+                            this.implementation.RuleID));
+                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.implementation.Name));
 
+                    });
+
+                });
+    }
     editRuleImplementation(e: any) {
         this.load(e.ID);
     }
