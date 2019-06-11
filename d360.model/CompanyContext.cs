@@ -121,6 +121,8 @@ namespace d360.model
 
         public DbSet<Field> Fields { get; set; }
 
+        public DbSet<FieldJsonProperty> FieldJsonProperties { get; set; }
+
         public DbSet<FieldValue> FieldValues { get; set; }
 
         public DbSet<FieldLookupValue> FieldLookupValues { get; set; }                          /* VIEW */
@@ -249,6 +251,8 @@ namespace d360.model
         public DbSet<Taxonomy> Taxonomies { get; set; }        
 
         public DbSet<AssetTypeLevel> AssetTypeLevels { get; set; }
+
+        public DbSet<Tag> Tags { get; set; }
 
         public DbSet<TaxonomyType> TaxonomyTypes { get; set; }
 
@@ -400,6 +404,26 @@ namespace d360.model
 
             var json = string.Concat(jsonRows);
             return JObject.Parse(json);
+        }
+
+        public async Task<IEnumerable<TypeIdentifierInfoModel>> GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType type, Guid guid)
+        {
+            IEnumerable<TypeIdentifierInfoModel> result;
+            switch (type)
+            {
+                case TypeIdentifierInfoModelType.ActionType:
+                    result = await QueryAsync<TypeIdentifierInfoModel>("select ID, Uid, 'IssueType' as Object, ID as ObjectID from IssueType where Uid = @uid", new { uid = guid });
+                    break;
+                case TypeIdentifierInfoModelType.AssetType:
+                    result = await QueryAsync<TypeIdentifierInfoModel>("select ID, Uid, Object, ObjectID from AssetType where Uid = @uid", new { uid = guid });
+                    break;
+                case TypeIdentifierInfoModelType.RelationshipType:
+                    result = await QueryAsync<TypeIdentifierInfoModel>("select ID, Uid, 'IntersectType' as Object, ID as ObjectID from IntersectType where Uid = @uid", new { uid = guid });
+                    break;
+                default:
+                    throw new Exception("Invalid Relationship field encountered no relationship type to lookup found in definition.");
+            }
+            return result;
         }
 
         public List<AllocationPossibility> GetTypes()
@@ -2093,12 +2117,16 @@ where	R.SourceObject = 'FusionAttribute'
                 this.IsEventingEnabled = false;
             }
 
-            if (fields != null)
+            if (fields != null && fields.Count > 0)
             {
                 fields.ForEach(i => {
                     i.ObjectID = entity.ID;
                 });
                 AddOrUpdateFields(fields);
+            }
+            else
+            {
+                SaveChanges();
             }
 
             this.IsEventingEnabled = true;
@@ -2315,7 +2343,7 @@ where	R.SourceObject = 'FusionAttribute'
 
                     field.UpdatedOn = DateTime.UtcNow;
 
-                    if (field.FieldType != null && field.FieldType.Type == "Html")
+                    if (field.FieldType != null && (field.FieldType.Type == "Html" || field.FieldType.Type == "Link"))
                     {
                         var sanitizer = new HtmlSanitizer();
                         sanitizer.AllowedSchemes.Add("data");
@@ -2343,6 +2371,14 @@ where	R.SourceObject = 'FusionAttribute'
                         case EntityState.Added:
                             if (Any<FieldType>(i => i.Object == o.Object && i.ObjectID == o.ObjectID && i.Name == o.Name))
                                 throw new ArgumentException(Messages.Error_NameTaken);
+                            break;
+                        case EntityState.Deleted:
+                            if (o.Type == DataType.JSON.ToString())
+                            {
+                                var count = Query<int>("select count(1) from FieldType T cross apply openjson(T.[Definition]) with (FieldTypeID int '$.FieldTypeID') D where AssetTypeID = @at and [Type] = 'JsonElement' and D.FieldTypeID = @ft", new { at = o.AssetTypeID, ft = o.ID }).Single();
+                                if (count > 0)
+                                    throw new ArgumentException(Messages.Error_Item_FieldJsonAttributeReferences);
+                            }
                             break;
                         case EntityState.Modified:
                             if (Any<FieldType>(i => i.Object == o.Object && i.ObjectID == o.ObjectID && i.Name == o.Name && i.ID != o.ID))
@@ -3046,6 +3082,18 @@ end as [{(useFriendlyName ? friendlyName : name)}], ";
 
                     joins += $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationType}' and {name}_TT.ObjectID = {typeID} 
 left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ";
+                }
+                else if (f.Type == DataType.JsonElement.ToString())
+                {
+                    var jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(f.Definition);
+
+                    var sqlType = DetermineSqlDataTypeForFieldType(f);
+
+                    columns += $@"try_cast({name}_P.Value as {sqlType}) as [{(useFriendlyName ? friendlyName : name)}], ";
+
+                    joins += $@" 
+left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = {idColumn} and {name}_T.FieldTypeID = {jsonElementDefinition.FieldTypeID} 
+left join FieldJsonProperty {name}_P on {name}_P.FieldID = {name}_T.ID and {name}_P.[Path] = '{jsonElementDefinition.Path.CleanForSql()}' ";
                 }
                 else
                 {

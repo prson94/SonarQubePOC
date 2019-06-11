@@ -468,6 +468,21 @@ namespace d360.web.Models
         }
     }
 
+    public class FieldTypeJsoneElementEditorModel
+    {
+        public int FieldTypeID { get; set; }
+
+        public string Path { get; set; }
+
+        public string DataType { get; set; }
+
+        public FieldValidity Validation()
+        {
+            var valid = new FieldValidity();
+            return valid;
+        }
+    }
+
     public class FieldTypeEditorModel
     {
 
@@ -484,6 +499,8 @@ namespace d360.web.Models
         public List<FieldTypeRelationItemEditorModel> RelationItems { get; set; }
 
         public FieldTypeOwnershipLookupEditorModel OwnershipLookupSettings { get; set; }
+
+        public FieldTypeJsoneElementEditorModel JsonElementSettings { get; set; }
 
         public FieldValidity Validation()
         {

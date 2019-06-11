@@ -22,7 +22,8 @@ import { Title } from '@angular/platform-browser';
         <div class="row">
             <div class="col s6">
                 <div class="directions">
-                    You may upload a custom logo for your company.  The following formats are accepted: .GIF, .JPG, .PNG.  The image will be scaled to 40px high a necessary.
+                    You may upload a custom logo for your company.  The following formats are accepted: .GIF, .JPG, .PNG.<br />  
+                    The image will be scaled to 40px high as necessary.
                 </div>
             </div>
             <div class="col s6">

@@ -32,6 +32,7 @@ using Dapper;
 using d360.core.enums;
 using System.Web.Http.Description;
 using System.Xml.Serialization;
+using d360.core.helpers;
 
 namespace d360.web.Controllers.Services
 {
@@ -276,10 +277,13 @@ order by wi.StartedOn desc";
             var currentVersion = Company.WorkflowVersions.Where(v => v.TypeID == type.ID).OrderByDescending(v => v.Version).First();
             var publishedVersion = Company.WorkflowVersions.Find(type.PublishedVersionID);
 
+            @event.ConditionObject = XmlToDynamic(GetConditionLabels(@event.Condition));
+            List<FieldType> fieldTypes = GetFieldsForDiagramModel(new WorkflowDiagramModel() { Event = @event });
+
             nodes.ForEach(n =>
             {
-                n.SettingsObject = XmlToDynamic(n.Settings, false);
-                n.FieldsObject = XmlToDynamic(n.Fields);
+                n.SettingsObject = XmlToDynamic(this.DeFormatMessageBodyTemplate(@event.Object, fieldTypes, n.Settings), false);
+                n.FieldsObject = XmlToDynamic(this.DeFormatFormDescription(@event.Object, fieldTypes, n.Fields));
             });
 
             links.ForEach(l =>
@@ -288,7 +292,6 @@ order by wi.StartedOn desc";
                 l.SettingsObject = XmlToDynamic(l.Settings);
             });
 
-            @event.ConditionObject = XmlToDynamic(GetConditionLabels(@event.Condition));
             @event.SettingsObject = XmlToDynamic(@event.Settings, false);
 
             return new WorkflowDiagramModel
@@ -298,7 +301,7 @@ order by wi.StartedOn desc";
                 Type = type,
                 Event = @event,
                 CurrentVersion = currentVersion,
-                PublishedVersion = publishedVersion 
+                PublishedVersion = publishedVersion
             };
         }
 
@@ -1345,8 +1348,15 @@ order by wi.StartedOn desc";
         [Route("fieldtypes/{type}/{id:int}"), HttpGet]
         public HttpResponseMessage GetFieldTypes(int id, string type, bool allowHtml = false, string additionalFields = "")
         {
+
+            var fields = this.getFieldTypes(id, type, allowHtml, additionalFields);
+            return Request.CreateResponse(HttpStatusCode.OK, fields);
+        }
+
+        private List<FieldType> getFieldTypes(int id, string type, bool allowHtml = false, string additionalFields = "")
+        {
             var fields = Company.FieldTypes.Where(f => f.Object == type && f.ObjectID == id).ToList();
-            List<string> excludedTypes = new List<string>() { "ComplexRelationLookup", "Password", "Link", "FilteredLookup", "FusionLookup", "OwnershipLookup", "RefListRelationship", "Relationship" };
+            List<string> excludedTypes = DataType.Text.GetNonWorkflowConditionFields();
             if (!allowHtml)
                 excludedTypes.Add("Html");
 
@@ -1367,10 +1377,8 @@ order by wi.StartedOn desc";
                 }
 
             }
-
-            return Request.CreateResponse(HttpStatusCode.OK, fields);
+            return fields;
         }
-
         [Route("diagram/clone"), HttpPost]
         public HttpResponseMessage CloneWorkflowDiagramModel(core.entities.Workflow.Type workflowType)
         {
@@ -1589,6 +1597,8 @@ order by wi.StartedOn desc";
                     else
                     {
                         var type = Company.WorkflowTypes.Find(model.Type.ID);
+                        bool isActiveStatusChanged = type.State != model.Type.State;
+
                         type.Name = model.Type.Name;
                         type.Description = model.Type.Description;
                         type.State = model.Type.State;
@@ -1596,45 +1606,38 @@ order by wi.StartedOn desc";
                         type.UpdatedBy = Company.CurrentResourceID;
 
 
-                        var currentVersion = Company.WorkflowVersions.Where(v => v.TypeID == type.ID).OrderByDescending(v => v.Version).First();
+                        var currentVersion = Company.WorkflowVersions.Where(v => v.TypeID == type.ID).OrderByDescending(v => v.Version).FirstOrDefault();
+                        int version = currentVersion.Version;
+
                         versionID = currentVersion.ID;
 
-                        //the current version is published
-                        if (type.PublishedVersionID == versionID && model.Nodes.Count > 0 && model.Links.Count > 0 && model.Type.PublishedVersionID == -1)
+                        //Create new workflow version for every save except when we are changing status from active to inactive or vice versa
+                        bool isSameVersion = currentVersion.ID == type.PublishedVersionID;
+                        if (model.Nodes.Count > 0 && model.Links.Count > 0 && (isSameVersion || model.Type.PublishedVersionID == -1) && !isActiveStatusChanged)
                         {
-
-                            var version = new WorkflowVersion();
-                            version.TypeID = type.ID;
-                            version.CreatedBy = Company.CurrentResourceID;
-                            version.CreatedOn = DateTime.UtcNow;
-                            version.UpdatedBy = Company.CurrentResourceID;
-                            version.UpdatedOn = DateTime.UtcNow;
-                            version.Version = currentVersion.Version + 1;
-
-                            Company.WorkflowVersions.Add(version);
-                            Company.SaveChanges();
-
-                            //create a new version
-                            if (model.Type.PublishedVersionID == null)
+                            if (isSameVersion)
                             {
-                                versionID = version.ID;
+                                currentVersion = new WorkflowVersion();
+                                currentVersion.TypeID = type.ID;
+                                currentVersion.CreatedBy = Company.CurrentResourceID;
+                                currentVersion.CreatedOn = DateTime.UtcNow;
+                                currentVersion.UpdatedBy = Company.CurrentResourceID;
+                                currentVersion.UpdatedOn = DateTime.UtcNow;
+                                currentVersion.Version = version + 1;
+
+                                Company.WorkflowVersions.Add(currentVersion);
+                                Company.SaveChanges();
+
                                 newVersion = true;
+                                versionID = currentVersion.ID;
                             }
-                            else
+
+                            //set new published version
+                            if (model.Type.PublishedVersionID == -1)
                             {
-                                versionID = version.ID;
-                                type.PublishedVersionID = version.ID;
-                                newVersion = true;
+                                type.PublishedVersionID = currentVersion.ID;
                             }
-                        }
-                        //current version is not published
-                        else if (type.PublishedVersionID != versionID && model.Nodes.Count > 0 && model.Links.Count > 0)
-                        {
-                            //publish it
-                            if (model.Type.PublishedVersionID != null)
-                            {
-                                type.PublishedVersionID = versionID;
-                            }
+
                         }
 
                         Company.SaveChanges();
@@ -1681,6 +1684,9 @@ order by wi.StartedOn desc";
 
                     #endregion
 
+
+                    List<FieldType> fieldTypes = GetFieldsForDiagramModel(model);
+
                     Dictionary<int, int> keyMapping = new Dictionary<int, int>();
 
                     if (newVersion)
@@ -1703,13 +1709,13 @@ order by wi.StartedOn desc";
                                 step.XPosition = n.XPosition;
                                 step.YPosition = n.YPosition;
                                 step.VersionID = versionID;
-                                step.Settings = JsonConvert.DeserializeXNode(n.Settings).ToString();
+                                step.Settings = this.FormatMessageBodyTemplate(model.Event.Object, fieldTypes, JsonConvert.DeserializeXNode(n.Settings).ToString());
                                 step.State = core.enums.State.Active;
 
                                 if (string.IsNullOrEmpty(n.Fields))
                                     step.Fields = null;
                                 else
-                                    step.Fields = JsonConvert.DeserializeXNode(n.Fields).ToString();
+                                    step.Fields = this.FormatFormDescription(model.Event.Object, fieldTypes, JsonConvert.DeserializeXNode(n.Fields).ToString());
 
                                 Company.Add(step);
                                 Company.SaveChanges();
@@ -1814,6 +1820,8 @@ order by wi.StartedOn desc";
 
                         Company.SaveChanges();
 
+
+
                         if (model?.Nodes?.Count > 0)
                         {
                             model.Nodes.ForEach(n =>
@@ -1833,13 +1841,13 @@ order by wi.StartedOn desc";
                                     step.XPosition = n.XPosition;
                                     step.YPosition = n.YPosition;
                                     step.VersionID = versionID;
-                                    step.Settings = JsonConvert.DeserializeXNode(n.Settings).ToString();
+                                    step.Settings = this.FormatMessageBodyTemplate(model.Event.Object, fieldTypes, JsonConvert.DeserializeXNode(n.Settings).ToString());
                                     step.State = core.enums.State.Active;
 
                                     if (string.IsNullOrEmpty(n.Fields))
                                         step.Fields = null;
                                     else
-                                        step.Fields = JsonConvert.DeserializeXNode(n.Fields).ToString();
+                                        step.Fields = this.FormatFormDescription(model.Event.Object, fieldTypes, JsonConvert.DeserializeXNode(n.Fields).ToString());
 
                                     Company.Add(step);
                                     Company.SaveChanges();
@@ -1861,12 +1869,12 @@ order by wi.StartedOn desc";
                                         node.XPosition = n.XPosition;
                                         node.YPosition = n.YPosition;
                                         node.VersionID = versionID;
-                                        node.Settings = JsonConvert.DeserializeXNode(n.Settings).ToString();
+                                        node.Settings = this.FormatMessageBodyTemplate(model.Event.Object, fieldTypes, JsonConvert.DeserializeXNode(n.Settings).ToString());
 
                                         if (string.IsNullOrEmpty(n.Fields))
                                             node.Fields = null;
                                         else
-                                            node.Fields = JsonConvert.DeserializeXNode(n.Fields).ToString();
+                                            node.Fields = this.FormatFormDescription(model.Event.Object, fieldTypes, JsonConvert.DeserializeXNode(n.Fields).ToString());
 
                                         keyMapping.Add(id, id);
                                     }
@@ -1993,6 +2001,123 @@ order by wi.StartedOn desc";
                 return Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex);
             }
         }
+
+        private List<FieldType> GetFieldsForDiagramModel(WorkflowDiagramModel model)
+        {
+            List<FieldType> fieldTypes = this.getFieldTypes(model.Event.ObjectID, model.Event.Object, true);
+
+            //Get asset fields for action
+            if (model.Event.Object == "IssueType")
+            {
+                string IssueObjectType = string.Empty;
+                int IssueObjectId = -1;
+                if (model.Event != null && model.Event.Condition != null)
+                {
+                    string asXML = string.Empty;
+                    if (model.Event.Condition.TrimStart().First() == '{')
+                        asXML = JsonConvert.DeserializeXNode(model.Event.Condition).ToString();
+                    else
+                        asXML = model.Event.Condition;
+
+                    var parsedConditions = XmlToDynamic(GetConditionLabels(asXML));
+                    if (parsedConditions != null && parsedConditions.Condition != null)
+                    {
+                        var conditions = parsedConditions.Condition;
+                        if (Convert.ToInt32(conditions.Count) >= 2)
+                        {
+                            if (conditions[0]["@ContextualFieldID"] == "IssueObject" && conditions[1]["@ContextualFieldID"] == "IssueObjectID")
+                            {
+                                IssueObjectType = conditions[0]["@Value"];
+                                IssueObjectId = Convert.ToInt32(conditions[1]["@Value"]);
+                            }
+                        }
+                    }
+                }
+                if (IssueObjectId > 0 && !string.IsNullOrEmpty(IssueObjectType))
+                {
+                    fieldTypes = fieldTypes.Union(this.getFieldTypes(IssueObjectId, IssueObjectType, true)).ToList();
+                }
+            }
+
+            return fieldTypes;
+        }
+
+        private string FormatFormDescription(string type, List<FieldType> fieldTypes, string data)
+        {
+            dynamic fields = XmlToDynamic(data);
+            if (fields != null && fields.form != null && fields.form["@description"] != null)
+            {
+                string desc = fields.form["@description"];
+                fieldTypes.ForEach(x =>
+                {
+                    var fieldType = x.Object == "IssueType" ? "Action Field" : "Asset Field";
+                    var f = "[" + fieldType + " :: " + x.Name + "]";
+                    var t = "[FIELD" + x.ID + "]";
+                    desc = desc.Replace(f, t);
+                });
+                fields.form["@description"] = desc;
+                return JsonConvert.DeserializeXNode(fields.ToString(), "fields").ToString();
+            }
+            return data;
+        }
+
+        private string DeFormatFormDescription(string type, List<FieldType> fieldTypes, string data)
+        {
+            dynamic fields = XmlToDynamic(data);
+            if (fields != null && fields.form != null && fields.form["@description"] != null)
+            {
+                string desc = fields.form["@description"];
+                fieldTypes.ForEach(x =>
+                {
+                    var fieldType = x.Object == "IssueType" ? "Action Field" : "Asset Field";
+                    var f = "[" + fieldType + " :: " + x.Name + "]";
+                    var t = "[FIELD" + x.ID + "]";
+                    desc = desc.Replace(t, f);
+                });
+                fields.form["@description"] = desc;
+                return JsonConvert.DeserializeXNode(fields.ToString(), "fields").ToString();
+            }
+            return data;
+        }
+
+        private string FormatMessageBodyTemplate(string type, List<FieldType> fieldTypes, string data)
+        {
+            dynamic settings = XmlToDynamic(data);
+            if (settings != null && settings.MessageBodyTemplate != null)
+            {
+                string msg = settings.MessageBodyTemplate;
+                fieldTypes.ForEach(x =>
+                {
+                    var fieldType = x.Object == "IssueType" ? "Action Field" : "Asset Field";
+                    var f = "[" + fieldType + " :: " + x.Name + "]";
+                    var t = "[FIELD" + x.ID + "]";
+                    msg = msg.Replace(f, t);
+                });
+                settings.MessageBodyTemplate = msg;
+                return JsonConvert.DeserializeXNode(settings.ToString(), "settings").ToString();
+            }
+            return data;
+        }
+
+        private string DeFormatMessageBodyTemplate(string type, List<FieldType> fieldTypes, string data)
+        {
+            dynamic settings = XmlToDynamic(data);
+            if (settings != null && settings.MessageBodyTemplate != null)
+            {
+                string msg = settings.MessageBodyTemplate;
+                fieldTypes.ForEach(x =>
+                {
+                    var fieldType = x.Object == "IssueType" ? "Action Field" : "Asset Field";
+                    var f = "[" + fieldType + " :: " + x.Name + "]";
+                    var t = "[FIELD" + x.ID + "]";
+                    msg = msg.Replace(t, f);
+                });
+                settings.MessageBodyTemplate = msg;
+                return JsonConvert.DeserializeXNode(settings.ToString(), "settings").ToString();
+            }
+            return data;
+        }
+
 
         [Route("type/{id:int}/delete")]
         public HttpResponseMessage DeleteWorkflow(int id)
@@ -2597,6 +2722,9 @@ order by wi.StartedOn desc";
                 for (int i = 0; i < fields.Count; i++)
                 {
                     var fieldChange = new WorkflowStepFieldChange();
+                    bool isFromActionForm = false;
+
+
                     var field = fields[i];
                     int fieldTypeId = field["@FieldId"] != null ? field["@FieldId"] : 0;
                     if (fieldTypeId == 0) continue;
@@ -2610,7 +2738,9 @@ order by wi.StartedOn desc";
                     fieldChange.Type = fieldType?.Type;
                     string formFieldId = field["@FormFieldId"] != null ? field["@FormFieldId"] : null;
                     int stepId = field["@FormStepId"] != null ? field["@FormStepId"] : 0;
-                    if (fieldChange.FormValue && formFieldId != null && stepId != 0)
+                    isFromActionForm = field["@IsActionForm"] != null ? bool.Parse(field["@IsActionForm"].ToString()) : false;
+
+                    if (!isFromActionForm && fieldChange.FormValue && formFieldId != null && stepId != 0)
                     {
 
                         var stepSql = @"select fields from workflow.itemstep where  stepid=@stepid and itemid=@itemid";
@@ -2671,6 +2801,17 @@ order by wi.StartedOn desc";
                         fieldChange.Value = detail.CompletedOn.HasValue ? detail.CompletedOn.Value.ToShortDateString() : "";
                     else
                         fieldChange.Value = field["@ValueLabel"] != null ? field["@ValueLabel"] : field["@Value"] != null ? field["@Value"] : "";
+
+                    if (isFromActionForm && formFieldId != null && stepId != 0)
+                    {
+                        var fieldData = formFieldId.Trim().Split('|');
+                        var actionFieldType = fieldData[0];
+                        var actionFieldTypeId = int.Parse(fieldData[1]);
+
+                        var actionField = Company.Fields.FirstOrDefault(x => x.FieldTypeID == actionFieldTypeId && x.ObjectID == detail.ObjectID);
+                        fieldChange.Value = actionField?.FormattedValue;
+
+                    }
 
                     fieldChanges.Add(fieldChange);
                 }

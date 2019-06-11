@@ -39,7 +39,7 @@ import { WorkflowStepFieldChangeDetail } from "../../models/workflow.model";
                                     <td>{{getFieldName(item)}}</td>
                                     <td>
                                          <div [ngSwitch]="item.Type">
-	                                        <span *ngSwitchCase="'Html'" style="display:block; word-wrap:break-word !important" [innerHtml]="item.Value"></span>
+	                                        <span *ngSwitchCase="'Html'" style="display:block; word-wrap:break-word !important" [innerHtml]="getHtmlFieldValue(item)"></span>
 	                                        <span *ngSwitchDefault style="display:block; word-wrap:break-word !important" >{{item.Value}}</span>
                                         </div>
                                     </td>
@@ -68,10 +68,16 @@ export class WorkflowMonitorStepFieldChangeDetailsComponent extends BaseComponen
     ngOnChanges(changes: SimpleChanges): void {
     }
 
+    getHtmlFieldValue(item: any) {
+        if (typeof item.Value == 'undefined')
+            return '';
+        return item.Value;
+    }
+
     getFieldName(item: WorkflowStepFieldChangeDetail): string {
-        if (item.ObjectType != "Issue")
-            return "Asset Field::" + item.FieldName;
-        return "Action Field::" + item.FieldName;
+        if (item.ObjectType != '' && item.ObjectType != 'Issue')
+            return 'Asset Field::' + item.FieldName;
+        return 'Action Field::' + item.FieldName;
     }
 
 }

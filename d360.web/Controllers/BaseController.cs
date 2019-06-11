@@ -1,6 +1,7 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.enums;
+using d360.core.helpers;
 using d360.model;
 using d360.web.Models;
 using Microsoft.ApplicationInsights;
@@ -108,7 +109,7 @@ namespace d360.web.Controllers
         internal ICompanyContext Company;
         internal ICommunityContext Community;
 
-        internal List<string> CalculatedFieldTypes = new List<string>() { DataType.Attribute.ToString(), DataType.ComplexRelationLookup.ToString(), DataType.DataTableSelect.ToString(), DataType.File.ToString(), DataType.FilteredLookup.ToString(), DataType.OwnershipLookup.ToString() };
+        internal List<string> CalculatedFieldTypes = DataType.Text.GetComputedFields();
 
         internal const int MAX_SYNCHRONOUS_API_ITEM_COUNT = 250;
 
@@ -369,7 +370,8 @@ namespace d360.web.Controllers
             DataType.FieldFromRelationship.ToString(),
             DataType.DataTableSelect.ToString(),
             DataType.OwnershipLookup.ToString(),
-            DataType.RefListRelationship.ToString()
+            DataType.RefListRelationship.ToString(),
+            DataType.JsonElement.ToString()
         };
 
         public BaseController(ICommunityContext community, ICompanyContext company)
@@ -1994,7 +1996,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                             }
                         }
                     }
-                    if(fromArtifact && filterFieldType.AllowMultipleValues)
+                    if(fromArtifact && filterFieldType != null && filterFieldType.AllowMultipleValues)
                         filters +=  applyMulitSelectFilteringSuffix(dbParams, fValue, tableId, i, filterFieldType, idColumn);
                    else
                         filter = getFilteringConditionBind(fField, fCondition, i, dbParams, fValue, "", ft: filterFieldType);// "flt");

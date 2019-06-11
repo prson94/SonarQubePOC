@@ -15,13 +15,25 @@ declare var CompanySettings;
 
 @Component({
     selector: 'd3s-header-mini-menu',
-    template: ` <span #item style="display:table;" class="header-search" [ngClass]="{'header-search-active':active}" (mouseenter)="show(item)" (mouseleave)="hide(item)" >
-                    <div><i class="fa fa-bars"></i></div>
+    template: ` <span #item class="header-search header-table" [ngClass]="{'header-search-active':active}" (mouseenter)="show(item)" (mouseleave)="hide(item)" >
+                    <div class="header-button"><i class="fa fa-bars"></i></div>
                     <div class="search-child header-profile-panel">                        
                         <div class="row">          
                             <ul>
                                 <li class="header-item"><d3s-header-profile></d3s-header-profile></li>
-                                <li *ngIf="showShoppingCart" routerLink="/cart" class="header-item">Shopping Cart</li>
+                                <li class="header-item">
+                                    <div class="mini-menu-line">
+                                        <div class="separator"></div>       
+                                    </div>
+                                </li>
+                                <li *ngIf="showShoppingCart" routerLink="/cart" class="header-item">
+                                    <div class="mini-menu-line">
+                                        <div class="check-gutter">
+                                        </div>
+                                        <div class="text">Shopping Cart</div>
+                                        <div class="expand-gutter right"></div>            
+                                    </div>
+                                </li>
                                 <li class="header-item" *ngIf="headerActionsService.showFavorite && !isAdminUrl" ><d3s-header-favorites [uri]="uri" [favItems]="favItems" [currentObject]="currentObject" [currentObjectId]="currentObjectId"></d3s-header-favorites></li>
                                 <li class="header-item" *ngIf="headerActionsService.showFavorite && !isAdminUrl" ><d3s-header-homepage [uri]="uri" [favItems]="favItems" [currentObject]="currentObject" [currentObjectId]="currentObjectId"></d3s-header-homepage></li>
                                 <li class="header-item" *ngIf="headerActionsService.showFollow  && !isAdminUrl" ><d3s-header-follow></d3s-header-follow></li>                    

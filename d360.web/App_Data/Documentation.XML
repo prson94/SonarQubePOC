@@ -2587,6 +2587,25 @@
             <param name="model">The fusion status log model.</param>
             <returns>The model of the updated fusion status log entry.</returns>
         </member>
+        <member name="T:d360.web.Controllers.V2.ActionsController">
+            <summary>
+            This service houses all endpoints handling actions management in Govern.
+            </summary>
+        </member>
+        <member name="M:d360.web.Controllers.V2.ActionsController.GetIssueTypes">
+            <summary>
+            Returns all actions types that are defined in Govern.  
+            
+            </summary>
+            <returns>A list of actions types</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.ActionsController.GetAllocationByAssetTypeAsync(System.Guid)">
+            <summary>
+            Returns actions types that are associated with a particular asset type
+            </summary>
+            <param name="AssetTypeUid">Asset Type Uid</param>
+            <returns>A list of actions types</returns>
+        </member>
         <member name="T:d360.web.Controllers.V2.LineageController">
             <summary>
             This service houses all endpoints handling glossary-related data such as artifacts and models.
@@ -2772,6 +2791,14 @@
             </summary>
             <param name="executionUid">The execution's unique identifier to retrieve status for.</param>
             <returns></returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.RelationshipsController.DeleteRelationship(System.Guid,d360.core.entities.RelationshipDeletes)">
+            <summary>
+            Deletes a relationship and children of a given uid.
+            </summary>
+            <param name="intersectTypeUid">The unique identifier of the relationship type.</param>
+            <param name="relationships">The list of relationships for deletions.</param>
+            <returns>An HTTP status code and message.</returns>
         </member>
         <member name="T:d360.web.Controllers.V2.AssetsController">
             <summary>
@@ -3004,6 +3031,74 @@
             
             </summary>
             <param name="phrase">Search term</param>
+            <returns></returns>
+        </member>
+        <member name="T:d360.web.Controllers.V2.TagsController">
+            <summary>
+            This service houses all endpoints handling tag management in Govern
+            </summary>
+        </member>
+        <member name="M:d360.web.Controllers.V2.TagsController.Get">
+            <summary>
+            Returns all tags that are defined in Govern.          
+            </summary>        
+            <returns>A list of tags</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.TagsController.DeleteById(System.Guid)">
+            <summary>
+            Allows you to remove a tag based on its Uid.
+            </summary>
+            <param name="uid">The public identifier for the tag.</param>
+            <returns>A status for the DELETE request.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.TagsController.PostTag(d360.core.entities.TagApiModel)">
+            <summary>
+            Adds one tag to Govern.
+            </summary>        
+            <param name="model">The tag to be created.</param>
+            <returns>The created tag.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.TagsController.Put(System.Guid,d360.core.entities.TagApiModel)">
+            <summary>
+            Updates the specified tag.
+            </summary>
+            <param name="uid">The unique identifier of the asset cross reference.</param>        
+            <param name="model">The tag to be updated.</param>
+            <returns>The updated tag.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.WorkflowController.GetWorkflowTypeAsync(System.Nullable{d360.core.enums.Workflow.ChangeType},System.Nullable{d360.core.enums.State})">
+            <summary>
+            Retrieves workflow types for the given asset type unique identifier / action type unique identifier/ relationship type unique identifier .
+            </summary>
+            <remarks>
+            If using Uid parametes, you may provide only one of the following: ActionTypeUid,AssetTypeUid,RelationshipTypeUid
+            </remarks>
+            <param name="ChangeType">ChangeType</param>
+            <param name="State">State</param>
+            <returns>Returns list of workflow types and An HTTP status code </returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.WorkflowController.GetWorkflowVersionAsync(System.Nullable{d360.core.enums.State})">
+            <summary>
+            Retrieves workflow versions for the given asset type unique identifier / action type unique identifier/ relationship type unique identifier / workflow type  unique identifier.
+            </summary>
+            <remarks>
+            If using Uid parametes, you may provide only one of the following: ActionTypeUid,AssetTypeUid,RelationshipTypeUid,WorkflowTypeUid
+            </remarks>
+            <param name="State">State</param>
+            <returns>Returns list of workflow versions and An HTTP status code </returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.WorkflowController.GetWorkflowVersionStepsAsync(System.Guid)">
+            <summary>
+            Retrieves workflow versions  steps for the given workflow version unique identifier .
+            </summary>
+            <param name="workflowVersionUid"> workflow version unique identifier</param>
+            <returns>Returns list of workflow version steps and An HTTP status code</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.WorkflowController.GetWorkflowInstances(System.Guid)">
+            <summary>
+            Get a list of steps and their relevant information for a specific workflow instance contained within the system.
+            </summary>
+            <param name="workflowUid">workflow instance unique identifie</param>
             <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.D3SApiController.GetFieldFiltersByType(d360.core.SystemObjects,System.Int32)">

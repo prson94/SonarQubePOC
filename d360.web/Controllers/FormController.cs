@@ -26,6 +26,7 @@ using System.Web.Mvc;
 using System.Xml.Linq;
 using System.Configuration;
 using d360.core.helpers;
+using Ganss.XSS;
 
 namespace d360.web.Controllers
 {    
@@ -1250,6 +1251,7 @@ namespace d360.web.Controllers
                     if (@class == AssetTypeClass.ReferenceItemType)
                     {
                         model.AssetType.DisplayFormat = "{Code}";
+                        model.Tokens.Clear(); // remove the name token for reference item type it isnt created by default.
                         model.Tokens.Add(new PrimeSelectItem { label = "Code", value = "{Code}" });
                     }
                     model.FormName = string.Format(FormInfo.Edit_Asset_Type_Title, appendTitle);
@@ -1306,6 +1308,14 @@ namespace d360.web.Controllers
 
                 if (!Company.CurrentResourceIsAdmin)
                     throw new UnauthorizedException(FormInfo.Permisions_Error_Add, FormInfo.Permisions_Error_Add);
+
+                //sanitize HTML input
+                if (!string.IsNullOrEmpty(model?.AssetType?.Description ?? null))
+                {
+                    var sanitizer = new HtmlSanitizer();
+                    sanitizer.AllowedSchemes.Add("data");
+                    model.AssetType.Description = sanitizer.Sanitize(model.AssetType.Description);
+                }
 
                 switch (ot)
                 {
@@ -1495,6 +1505,14 @@ namespace d360.web.Controllers
 
                 if (!Company.HasAssetTypePermission(ot, model.AssetType.ObjectID, Permission.ModifyAsset))
                     throw new UnauthorizedException(FormInfo.Permisions_Error_Edit, FormInfo.Permisions_Error_Edit);
+
+                //sanitize HTML input
+                if (!string.IsNullOrEmpty(model?.AssetType?.Description ?? null))
+                {
+                    var sanitizer = new HtmlSanitizer();
+                    sanitizer.AllowedSchemes.Add("data");
+                    model.AssetType.Description = sanitizer.Sanitize(model.AssetType.Description);
+                }
 
                 switch (ot)
                 {
@@ -3495,10 +3513,18 @@ namespace d360.web.Controllers
 
             var sType = type.ToString();
 
-            var allRelationships = Company.Filter<IntersectTypeDetail>(i =>
+            IQueryable<IntersectTypeDetail> queryAllRelationships = Company.Filter<IntersectTypeDetail>(i =>
                 (i.Subject == sType && i.SubjectID == id) ||
                 (i.Object == sType && i.ObjectID == id)
-            ).ToList();
+            );
+
+            //Hide self reference relationships for models and policies 
+            if (type == SystemObjects.TaxonomyType || type == SystemObjects.PolicyType)
+            {
+                queryAllRelationships = queryAllRelationships.Where(x => x.PredicateType != PredicateType.IntraTypeHierarchy);
+            }
+
+            var allRelationships = queryAllRelationships.ToList();
 
             var cardinalRelationships = allRelationships.Where(i =>
                 (i.Subject == sType && i.SubjectID == id && i.SubjectCardinality == Cardinality.One) ||
@@ -3566,6 +3592,24 @@ namespace d360.web.Controllers
                     .OrderBy(i => i.title)
                     .ToList();
 
+            var jsonFieldType = new Dictionary<string, string>()
+            {
+                { "Boolean", "bit" },
+                { "Date", "date" },
+                { "Date With Time", "datetime" },
+                { "Decimal", "float" },
+                { "Text", "nvarchar" },
+                { "Whole Number", "int" },
+                { "Whole Number (Large)", "bigint" },
+            };
+            var Field_JsonDataTypes = jsonFieldType.Select(i => new { title = i.Key, value = i.Value });
+            var Field_JsonFields = Company.Filter<FieldType>(ft => ft.Object == sType && ft.ObjectID == id && ft.Type == "JSON")
+                .OrderBy(ft => ft.FriendlyName)
+                .Select(ft => new { ft.FriendlyName, ft.Name, ft.ID })
+                .ToList()
+                .Select(ft => new { title = $"{ft.FriendlyName} ({ft.Name})", value = ft.ID.ToString() })
+                .ToList();
+
             #endregion
 
             return new JsonNetResult
@@ -3574,6 +3618,8 @@ namespace d360.web.Controllers
                 {
                     Attributes = attributes,
                     Field_Relationships,
+                    Field_JsonFields,
+                    Field_JsonDataTypes,
                     Field_CardinalRelationships,
                     Field_FieldFromRelRelationships,
                     Field_CardinalReferenceRelationships,
@@ -3597,6 +3643,7 @@ namespace d360.web.Controllers
             List<dynamic> fusionItems = null;
             List<dynamic> relationItems = null;
             dynamic ownershipLookupSettings = null;
+            dynamic JsonElementSettings = null;
 
             if (id > 0)
             {
@@ -3639,6 +3686,14 @@ namespace d360.web.Controllers
                                 HideFooter = i.HideFooter
                             });
                         }
+                    }
+                }
+
+                if (ft.Type == DataType.JsonElement.ToString())
+                {
+                    if (!string.IsNullOrEmpty(ft.Definition))
+                    {
+                        JsonElementSettings = (dynamic)Newtonsoft.Json.JsonConvert.DeserializeObject(ft.Definition);
                     }
                 }
 
@@ -3700,6 +3755,7 @@ namespace d360.web.Controllers
                     FieldType = ft,
                     FilteredLookupItems = filteredLookupItems,
                     FusionItems = fusionItems,
+                    JsonElementSettings,
                     OwnershipLookupSettings = ownershipLookupSettings,
                     RelationItems = relationItems
                 },
@@ -3756,6 +3812,32 @@ namespace d360.web.Controllers
             };
 
         }
+
+        [Route("FieldType_TypeaheadJsonPropertyOptionsForJsonField"), NonNullableParameters]
+        public JsonNetResult FieldType_TypeaheadJsonPropertyOptionsForJsonField(int fieldTypeId, string phrase)
+        {
+            var selectList = new List<SelectListItem>();
+            var ft = Company.GetById<FieldType>(fieldTypeId);
+            phrase = phrase.Replace("[", @"\[");
+            var sql = $@"
+select		P.[Path]
+from		FieldJsonProperty P
+			inner join Field F on F.ID = P.FieldID and F.FieldTypeID = @fieldTypeId and P.[Path] like @phrase+'%' escape '\'
+group by	P.[Path]
+order by	P.[Path]
+offset 0 rows fetch next 25 rows only
+                ";
+
+            var items = Company.Query<string>(sql, new { fieldTypeId, phrase }).ToList();
+
+            return new JsonNetResult
+            {
+                Data = items,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+
+        }
+
         #endregion
 
         #region Form Get/Post
@@ -3841,6 +3923,32 @@ namespace d360.web.Controllers
                         }
                         Company.Add<FieldType>(model.FieldType);
                         break;
+                    case "JsonElement":
+                        #region
+                        try
+                        {
+                            var jsonElementSettings = new
+                            {
+                                FieldTypeID = model.JsonElementSettings.FieldTypeID,
+                                Path = model.JsonElementSettings.Path,
+                                DataType = model.JsonElementSettings.DataType
+                            };
+                            model.FieldType.Definition = Newtonsoft.Json.JsonConvert.SerializeObject(jsonElementSettings);
+
+                            model.FieldType.IsPartOfKey = false;
+                            model.FieldType.IsEditable = false;
+                            model.FieldType.IsRequired = false;
+                            model.FieldType.IsPrimaryFilter = false;
+
+                            Company.Add(model.FieldType);
+                        }
+                        catch
+                        {
+                            throw;
+                        }
+
+                        break;
+                    #endregion
                     case "Html":
                         model.FieldType.MinimumLength = (!model.FieldType.IsRequired) ? (int?)null : 1;
                         model.FieldType.MaximumLength = null;
@@ -4364,6 +4472,30 @@ namespace d360.web.Controllers
 
                 switch (ft.Type)
                 {
+                    case "JsonElement":
+                        #region
+                        try
+                        {
+                            var jsonElementSettings = new
+                            {
+                                FieldTypeID = model.JsonElementSettings.FieldTypeID,
+                                Path = model.JsonElementSettings.Path,
+                                DataType = model.JsonElementSettings.DataType
+                            };
+                            ft.Definition = Newtonsoft.Json.JsonConvert.SerializeObject(jsonElementSettings);
+
+                            ft.IsPartOfKey = false;
+                            ft.IsEditable = false;
+                            ft.IsRequired = false;
+                            ft.IsPrimaryFilter = false;
+                        }
+                        catch
+                        {
+                            throw;
+                        }
+
+                        break;
+                    #endregion
                     case "Html":
                         ft.MinimumLength = (!ft.IsRequired) ? (int?)null : 1;
                         ft.MaximumLength = null;
@@ -6283,7 +6415,9 @@ namespace d360.web.Controllers
             int promotionObjectID = 0;
             int.TryParse(ruleStep.GetSettingValueByName("ObjectID"), out promotionObjectID);
 
-            var targetDynamicFields = Company.Filter<FieldType>(i => i.Object == promotionType && i.ObjectID == promotionObjectID)
+            var ignoreFields = DataType.Text.GetComputedFields();
+
+            var targetDynamicFields = Company.Filter<FieldType>(i => i.Object == promotionType && i.ObjectID == promotionObjectID && !ignoreFields.Contains(i.Type))
                 .OrderBy(i => i.FriendlyName)
                 .ToList()
                 .Where(i => !targetFieldIDs.Contains(i.ID))
@@ -14975,10 +15109,10 @@ order by	case
 
             var items = new List<SelectListItem>();
             //artifacts
-            items.AddRange(Company.AssetTypes.Where(x=>x.Object == SystemObjects.ArtifactType.ToString()).OrderBy(i => i.Name).Select(i => new { i.ID, i.Name }).ToList().Select(i => new SelectListItem { Text = string.Format("Artifact Type :: {0}", i.Name), Value = string.Format("{0}|{1}", SystemObjects.ArtifactType.ToString(), i.ID) }));
+            items.AddRange(Company.AssetTypes.Where(x=>x.Object == SystemObjects.ArtifactType.ToString()).OrderBy(i => i.Name).Select(i => new { ID = i.ObjectID, i.Name }).ToList().Select(i => new SelectListItem { Text = string.Format("Artifact Type :: {0}", i.Name), Value = string.Format("{0}|{1}", SystemObjects.ArtifactType.ToString(), i.ID) }));
 
             //models
-            items.AddRange(Company.AssetTypes.Where(x => x.Object == SystemObjects.TaxonomyType.ToString()).OrderBy(i => i.Name).Select(i => new { i.ID, i.Name }).ToList().Select(i => new SelectListItem { Text = string.Format("Model Type :: {0}", i.Name), Value = string.Format("{0}|{1}", SystemObjects.TaxonomyType.ToString(), i.ID) }));
+            items.AddRange(Company.AssetTypes.Where(x => x.Object == SystemObjects.TaxonomyType.ToString()).OrderBy(i => i.Name).Select(i => new { ID = i.ObjectID, i.Name }).ToList().Select(i => new SelectListItem { Text = string.Format("Model Type :: {0}", i.Name), Value = string.Format("{0}|{1}", SystemObjects.TaxonomyType.ToString(), i.ID) }));
 
             //rules
             items.Add(new SelectListItem { Text = "Rule Type :: Informational", Value = "RuleType|1" });

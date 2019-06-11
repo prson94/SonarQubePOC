@@ -626,17 +626,8 @@ namespace d360.core.entities
         public FieldTypeDataTypeApiViewModel Type { get; set; }
     }
 
-    public class FieldTypesApiEditModel
+    public class FieldTypesApiEditModel : BaseFieldTypesApiModel
     {
-        [DataMember]
-        public Guid? ActionTypeUid { get; set; } = null;
-
-        [DataMember]
-        public Guid? AssetTypeUid { get; set; } = null;
-
-        [DataMember]
-        public Guid? RelationshipTypeUid { get; set; } = null;
-
         [DataMember]
         public FieldTypesApiEditAction Action { get; set; }
 
@@ -650,7 +641,14 @@ namespace d360.core.entities
         public string Name { get; set; }
     }
 
-    public class FieldTypesApiDeleteModel
+    public class FieldTypesApiDeleteModel : BaseFieldTypesApiModel
+    {
+        [DataMember]
+        public List<FieldTypeApiDeleteModel> Fields { get; set; }
+
+    }
+
+    public class BaseFieldTypesApiModel
     {
         [DataMember]
         public Guid? ActionTypeUid { get; set; } = null;
@@ -660,8 +658,5 @@ namespace d360.core.entities
 
         [DataMember]
         public Guid? RelationshipTypeUid { get; set; } = null;
-
-        [DataMember]
-        public List<FieldTypeApiDeleteModel> Fields { get; set; }
     }
 }

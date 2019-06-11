@@ -43,6 +43,9 @@
     </Use64BitIISExpress>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AngleSharp, Version=0.9.9.0, Culture=neutral, PublicKeyToken=e83494dcdc6d31ea, processorArchitecture=MSIL">
+      <HintPath>..\packages\AngleSharp.0.9.9.2\lib\net45\AngleSharp.dll</HintPath>
+    </Reference>
     <Reference Include="Autofac, Version=4.6.2.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
       <HintPath>..\packages\Autofac.4.6.2\lib\net45\Autofac.dll</HintPath>
     </Reference>
@@ -72,6 +75,9 @@
     </Reference>
     <Reference Include="HtmlAgilityPack, Version=1.6.5.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
       <HintPath>..\packages\HtmlAgilityPack.1.6.5\lib\Net45\HtmlAgilityPack.dll</HintPath>
+    </Reference>
+    <Reference Include="HtmlSanitizer, Version=3.0.0.0, Culture=neutral, PublicKeyToken=61c49a1a9e79cc28, processorArchitecture=MSIL">
+      <HintPath>..\packages\HtmlSanitizer.4.0.185\lib\net45\HtmlSanitizer.dll</HintPath>
     </Reference>
     <Reference Include="IdentityModel, Version=3.7.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\IdentityModel.3.7.1\lib\net452\IdentityModel.dll</HintPath>
@@ -296,6 +302,7 @@
     <Compile Include="Controllers\V2\ErrorsController.cs" />
     <Compile Include="Controllers\V2\ExportTemplatesController.cs" />
     <Compile Include="Controllers\V2\FusionController.cs" />
+    <Compile Include="Controllers\V2\ActionsController.cs" />
     <Compile Include="Controllers\V2\LineageController.cs" />
     <Compile Include="Controllers\V2\MembershipController.cs" />
     <Compile Include="Controllers\V2\MetricsController.cs" />
@@ -305,6 +312,8 @@
     <Compile Include="Controllers\V2\ResponsibilitiesController.cs" />
     <Compile Include="Controllers\V2\SearchController.cs" />
     <Compile Include="Controllers\V2\SocialController.cs" />
+    <Compile Include="Controllers\V2\TagsController.cs" />
+    <Compile Include="Controllers\V2\WorkflowController.cs" />
     <Compile Include="Controllers\WebAnalyticsController.cs" />
     <Compile Include="Controllers\Services\WorkflowController.cs" />
     <Compile Include="Controllers\Services\EventsController.cs" />
@@ -508,6 +517,7 @@
     <Content Include="Content\primeng\v6.0.1\images\loading.gif" />
     <Content Include="Content\primeng\v6.0.1\images\password-meter.png" />
     <Content Include="Content\primeng\v6.0.1\images\rating.png" />
+    <Content Include="Content\primeng\v6.0.1\images\ui-icons_222222_256x240.png" />
     <Content Include="Content\primeng\v6.0.1\primeng.css" />
     <Content Include="Content\primeng\v6.0.1\primeng.min.css">
       <DependentUpon>primeng.css</DependentUpon>
@@ -1042,6 +1052,7 @@
     <Content Include="Views\Authentication\NoAccess.cshtml" />
     <Content Include="Scripts\app\components\shared\relationship\dynamic-relationship-grid.component.html" />
     <Content Include="tslint.json" />
+    <Content Include="Views\Authentication\InactiveCompany.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

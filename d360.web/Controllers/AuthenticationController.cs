@@ -104,6 +104,11 @@ namespace d360.web.Controllers
         [AllowAnonymous, Route("sso")]
         public ActionResult Login()
         {
+            if (!Community.CurrentCompanySsoModel.IsCompanyActive)
+            {
+                return InactiveCompany();
+            }
+
             switch (Community.CurrentCompanySsoModel.AuthenticationType)
             {
                 case AuthenticationType.SSO:                    
@@ -1532,5 +1537,13 @@ namespace d360.web.Controllers
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
             return View("../Shared/GenericError");
         }
+
+        [AllowAnonymous, Route("inactive-company")]
+        public ActionResult InactiveCompany()
+        {
+            ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
+            return View("InactiveCompany");
+        }
+
     }
 }

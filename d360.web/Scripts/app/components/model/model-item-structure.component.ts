@@ -86,10 +86,9 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
                     .getAreaName('TaxonomyType', this.modelId)
                     .subscribe(result => { this.currentAreaName = result });
 
-
             this.getFieldsDefinition();
 
-            this.rightSidebarService.showItem(new RightSidebarItem('Hierarchy Diagram', 'modeldiagram', ['fa-sitemap'], `/sidebar/visualization/diagram/${this.objectID}`))
+            
             this.loadPermissions(this.permissionsService, StringConstants.ObjectTaxonomyType, this.modelId);
             this.setObjectInfo(StringConstants.ObjectTaxonomyType, this.modelId);
 
@@ -105,6 +104,9 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
                         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : res, `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`));
                         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.Name, SiteUrlHelpers.getObjectUrl('TAXONOMYTYPE', this.model.ID), undefined, 'TAXONOMYTYPE', this.model.ID, undefined, undefined,true));
                     });
+
+                    this.setCommonRightSideBar(true, false, this.model.HasDashboards);
+                    this.rightSidebarService.showItem(new RightSidebarItem('Hierarchy Diagram', 'modeldiagram', ['fa-sitemap'], `/sidebar/visualization/diagram/${this.objectID}`))
 
                     this.loadModelHierarchy(this.modelId);
 

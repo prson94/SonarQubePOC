@@ -104,9 +104,10 @@
     <Compile Include="entities\Integration\IntegrationUnresolvedRelationItem.cs" />
     <Compile Include="entities\Integration\IntegrationExecutionAssetType.cs" />
     <Compile Include="entities\Integration\IntegrationSetting.cs" />
-    <Compile Include="entities\Issue.cs" />
-    <Compile Include="entities\IssueType.cs" />
-    <Compile Include="entities\IssueTypeRelation.cs" />
+    <Compile Include="entities\Issue\Issue.cs" />
+    <Compile Include="entities\Issue\IssueType.cs" />
+    <Compile Include="entities\Issue\IssueTypeApiModel.cs" />
+    <Compile Include="entities\Issue\IssueTypeRelation.cs" />
     <Compile Include="entities\Metric\MetricAsset.cs" />
     <Compile Include="entities\Metric\MetricAssetVersion.cs" />
     <Compile Include="entities\Metric\MetricAssetVersionCondition.cs" />
@@ -186,6 +187,9 @@
     <Compile Include="entities\SiteNav.cs" />
     <Compile Include="entities\Nym.cs" />
     <Compile Include="entities\NymRelation.cs" />
+    <Compile Include="entities\Tagging\Tag.cs" />
+    <Compile Include="entities\Tagging\TagApiModel.cs" />
+    <Compile Include="entities\Tagging\TagApiModelWrapper.cs" />
     <Compile Include="entities\Transitive\ApiVersion2Models.cs" />
     <Compile Include="entities\Transitive\AzureGraphModels.cs" />
     <Compile Include="entities\Transitive\AssetWithoutReadPermission.cs" />
@@ -299,8 +303,10 @@
     <Compile Include="enums\Cardinality.cs" />
     <Compile Include="enums\ClientState.cs" />
     <Compile Include="enums\CompanyResourceState.cs" />
+    <Compile Include="enums\IntegrationResolutionType.cs" />
     <Compile Include="enums\State.cs" />
     <Compile Include="enums\ContractType.cs" />
+    <Compile Include="enums\TypeIdentifierInfoModelType.cs" />
     <Compile Include="enums\Workflow\ActivityType.cs" />
     <Compile Include="enums\Workflow\CriteriaConnector.cs" />
     <Compile Include="enums\Workflow\CriteriaValueDataType.cs" />
@@ -352,6 +358,7 @@
     <Compile Include="exceptions\UnauthorizedException.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="helpers\PluralServiceHelper.cs" />
+    <Compile Include="helpers\DataTypeHelper.cs" />
     <Compile Include="helpers\SystemObjectHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="queue\ApiExecutionInfo.cs" />

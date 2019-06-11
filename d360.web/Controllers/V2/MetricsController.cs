@@ -117,11 +117,83 @@ namespace d360.web.Controllers.V2
                 return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You must supply a weight greater than 0.");
             }
 
+            if (model.IsGroup && model.Conditions.Count > 0)
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "Groups should not have conditions.");
+            }
+
             MetricAsset metricAsset = null;
+            AssetType targetAssetType = null;
+
+            if (model.Uid != null && model.Uid != Guid.Empty)
+            {
+                Guid assetTypeId = Company.MetricAssets.FirstOrDefault(x => x.Uid == model.Uid).AssetTypeUid;
+                targetAssetType = Company.AssetTypes.FirstOrDefault(x => x.uid == assetTypeId);
+            }
+
+            if (model.AssetTypeUid != null && model.AssetTypeUid != Guid.Empty)
+            {
+                targetAssetType = Company.AssetTypes.FirstOrDefault(x => x.uid == model.AssetTypeUid);
+            }
+
             var isNew = true;
 
             var existingResultCount = 0;
             var childMetricCount = 0;
+
+            if (model.Conditions.Any(x => x.FieldTypeID <= 0))
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "FieldTypeID must be greater than 0.");
+            }
+
+            List<string> validTypes = new List<string>() { "Boolean", "Decimal", "Date", "Lookup", "Number", "Text" };
+
+            foreach (var condition in model.Conditions)
+            {
+                var fieldType = Company.FieldTypes.FirstOrDefault(x => x.ID == condition.FieldTypeID);
+                if (fieldType == null)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "FieldType does not exist!");
+                }
+
+                if (targetAssetType.Object != fieldType.Object || targetAssetType.ObjectID != fieldType.ObjectID)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "Invalid FieldType for this asset!");
+                }
+
+                if (!validTypes.Contains(fieldType.Type))
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", $"FieldType cannot be type of '{fieldType.Type}'!");
+                }
+                bool tempBool;
+                decimal tempDecimal;
+                DateTime tempDate;
+                int tempInt;
+
+                switch (fieldType.Type)
+                {
+                    case "Boolean":
+                        if(!bool.TryParse(condition.Values, out tempBool))
+                            return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", $"Field '{condition.FieldTypeID}' does not contain valid '{fieldType.Type}' value!");
+                        break;
+                    case "Decimal":
+                        if (!decimal.TryParse(condition.Values, out tempDecimal))
+                            return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", $"Field '{condition.FieldTypeID}' does not contain valid '{fieldType.Type}' value!");
+                        break;
+                    case "Date":
+                        if (!DateTime.TryParse(condition.Values, out tempDate))
+                            return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", $"Field '{condition.FieldTypeID}' does not contain valid '{fieldType.Type}' value!");
+                        break;
+                    case "Number":
+                        if (!int.TryParse(condition.Values, out tempInt))
+                            return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", $"Field '{condition.FieldTypeID}' does not contain valid '{fieldType.Type}' value!");
+                        break;
+                    default:
+                        break;
+                }
+
+            }
+
 
             if (model.Uid != Guid.Empty)
             {
@@ -150,14 +222,14 @@ namespace d360.web.Controllers.V2
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", $"You may not convert this grouping to a metric as there are child metrics already associated with it.");
                 }
-                
+
                 // If made it past above, then we can save the grouping change.
                 metricAsset.IsGroup = model.IsGroup;
             }
             else
             {
                 metricAsset = new MetricAsset
-                {               
+                {
                     Uid = Guid.NewGuid(),
                     AssetTypeUid = model.AssetTypeUid,
                     Description = model.Description,
@@ -188,16 +260,16 @@ namespace d360.web.Controllers.V2
                     metricAsset.ParentUid = model.ParentUid;
                 }
                 int metricExistsCount = 0;
-                metricExistsCount = (model.ParentUid.HasValue) ? 
+                metricExistsCount = (model.ParentUid.HasValue) ?
                     Company.Query<int>($"select count(1) from metrics.Asset where lower(Name) = @n and ParentUid = @p", new { n = model.Name.Trim().ToLower(), p = model.ParentUid.Value }).Single() :
                     Company.Query<int>($"select count(1) from metrics.Asset where lower(Name) = @n and ParentUid is null", new { n = model.Name.Trim().ToLower() }).Single();
 
                 if (metricExistsCount > 0)
                 {
                     return errorMessageResponse(
-                        HttpStatusCode.BadRequest, 
+                        HttpStatusCode.BadRequest,
                         "Error adding metric",
-                        (model.ParentUid.HasValue) ? 
+                        (model.ParentUid.HasValue) ?
                         "You may not add a metric with the same name under the same grouping." :
                         "You may not add a metric with the same name at the root of the hierarchy.");
                 }
@@ -245,7 +317,8 @@ namespace d360.web.Controllers.V2
 
                     var usedFieldTypeIDs = new List<int>();
 
-                    model.Conditions.ForEach(c => {
+                    model.Conditions.ForEach(c =>
+                    {
                         // You can only add one of a specific field type ID.
                         if (!usedFieldTypeIDs.Contains(c.FieldTypeID))
                         {
@@ -337,7 +410,8 @@ namespace d360.web.Controllers.V2
 
             var operatorErrorMessage = "";
             var operators = new List<string>() { "eq", "neq", "lt", "lte", "gt", "gte" };
-            model.Conditions.ForEach(c => {
+            model.Conditions.ForEach(c =>
+            {
                 if (!operators.Contains(c.Operator))
                 {
                     operatorErrorMessage += $"Invalid operator used: {c.Operator}; ";
@@ -575,7 +649,7 @@ select	F.ID,
 
 		) as [Values]
 from	AssetType A
-		inner join FieldType F on F.AssetTypeID = A.ID and A.[uid] = '{assetTypeUid.ToString()}' and F.Type in ('Boolean', 'Decimal', 'Date', 'DateTime', 'Lookup', 'Number', 'Text')
+		inner join FieldType F on F.AssetTypeID = A.ID and A.[uid] = '{assetTypeUid.ToString()}' and F.Type in ('Boolean', 'Decimal', 'Date', 'Lookup', 'Number', 'Text')
 for		json path").ToList();
 
                 models = JsonConvert.DeserializeObject<List<MetricFieldTypeViewModel>>(string.Join("", fragments));

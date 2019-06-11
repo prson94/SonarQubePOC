@@ -1021,10 +1021,57 @@ namespace d360.model
             Database.Connection.Execute(sql, new { obj = @object.ToString(), objectid = objectID, intersectTypeId = intersectTypeId });
         }
 
+        private void UpdateField(int objectId, string objectType, FieldType fieldType, WorkflowFieldUpdateSettings item, string val, bool isAssetEdited = false, Asset asset = null)
+        {
+            // check if the field exists
+            var field = Fields.Where(x => x.ObjectID == objectId && x.ObjectType == objectType && x.FieldTypeID == fieldType.ID).FirstOrDefault();
+
+
+            if (field == null && !string.IsNullOrEmpty(val))
+            {
+                //insert
+                var newField = new Field
+                {
+                    Value = val,
+                    FieldTypeID = fieldType.ID,
+                    ObjectID = objectId,
+                    ObjectType = objectType.ToString(),
+                    UpdatedBy = CurrentResourceID
+                };
+
+                if (isAssetEdited)
+                {
+                    newField.AssetID = asset.ID;
+                }
+                Fields.Add(newField);
+            }
+            else if (field != null)
+            {
+                if (item.AppendValue)
+                {
+                    var oldValues = field.Value?.Split(',').Where(s => !string.IsNullOrEmpty(s.Trim())).Select(x => x.Trim()) ?? new string[0];
+                    var newValues = val?.Split(',').Where(s => !string.IsNullOrEmpty(s.Trim())).Select(x => x.Trim()) ?? new string[0];
+                    newValues = oldValues.Union(newValues).Distinct().OrderBy(x => x);
+                    field.Value = string.Join(",", newValues);
+                }
+                else
+                {
+                    //update
+                    field.Value = val;
+                }
+
+                //Remove the field from db if field value is null or empty 
+                if (string.IsNullOrEmpty(field.Value))
+                {
+                    Fields.Remove(field);
+                }
+            }
+        }
         private void UpdateItemField(WorkflowItemStep itemStep, EventObjectInfo objectInfo, WorkflowItemStepSettingModel settings)
         {
             if (!settings.FieldUpdateSettings.Any()) return;
             var issue = Issues.FirstOrDefault(x => x.ID == objectInfo.ObjectID);
+            Asset asset = null;
             bool isAssetEdited = false;
 
             foreach (var item in settings.FieldUpdateSettings)
@@ -1034,10 +1081,12 @@ namespace d360.model
                 var objectId = objectInfo.ObjectID;
                 var objectType = objectInfo.Object.ToString();
 
-                if (objectInfo.Object.ToString() == "Issue" && item.ObjectType == "Artifact")
+                if (objectInfo.Object.ToString() == "Issue" && item.ObjectType != "Issue")
                 {
                     objectType = issue.Object;
                     objectId = issue.ObjectID;
+                    asset = Assets.Where(x => x.Object == issue.Object && x.ObjectID == issue.ObjectID).FirstOrDefault();
+                    ObjectContext.ObjectStateManager.ChangeObjectState(asset, EntityState.Modified);
                     isAssetEdited = true;
                 }
 
@@ -1052,76 +1101,80 @@ namespace d360.model
                     Database.Connection.Execute(sql, new { id = objectId, objectType = objectType.ToString(), fieldTypeId = item.FieldID });
 
                 }
-                else
+                else if (item.CurrentDate)
                 {
-                    var val = item.CurrentDate ? DateTime.UtcNow.Date.ToShortDateString() : item.Value;
-                    //if the value is a form value get it
-                    if (item.UseFormValue && !string.IsNullOrEmpty(item.FormField) && item.FormStepID > 0)
-                    {
-                        val = GetFieldValueFromFormResponse(item, itemStep.ItemID);
+                    var val = DateTime.UtcNow.Date.ToShortDateString();
+                    this.UpdateField(objectId, objectType, fieldType, item, val);
+                }
+                else if (!item.IsActionForm && !item.UseFormValue)
+                {
+                    var val = item.Value;
+                    this.UpdateField(objectId, objectType, fieldType, item, val);
+                }
+                //if the value is a form value get it
+                else if (!item.IsActionForm && item.UseFormValue && !string.IsNullOrEmpty(item.FormField) && item.FormStepID > 0)
+                {
 
+                    foreach (var newValue in GetFieldValueFromFormResponse(item, itemStep.ItemID))
+                    {
+                        string val = newValue;
                         if (DateTime.TryParse(val, out DateTime tempDate))
                         {
                             val = tempDate.Date.ToShortDateString();
                         }
+                        this.UpdateField(objectId, objectType, fieldType, item, val);
                     }
-
-                    // check if the field exists
-                    var field = Fields.Where(x => x.ObjectID == objectId && x.ObjectType == objectType && x.FieldTypeID == fieldType.ID).FirstOrDefault();
-
-                    if (field == null)
+                }
+                //Get the value from action form (Issue)
+                else if (item.IsActionForm)
+                {
+                    var val = "";
+                    var fieldData = item.FormField.Split('|');
+                    if (fieldData.Count() == 2)
                     {
-                        //insert
-                        var newField = new core.entities.Field
+                        int fieldTypeId = int.Parse(fieldData[1]);
+                        var actionField = Fields.FirstOrDefault(x => x.ObjectID == objectInfo.ObjectID && x.ObjectType == "Issue" && x.FieldTypeID == fieldTypeId);
+                        if (actionField != null)
                         {
-                            Value = val,
-                            FieldTypeID = fieldType.ID,
-                            ObjectID = objectId,
-                            ObjectType = objectType.ToString(),
-                            UpdatedBy = CurrentResourceID
-                        };
+                            var actionFieldType = FieldTypes.FirstOrDefault(x => x.Object == "IssueType" && x.ID == actionField.FieldTypeID);
+                            if (actionFieldType.Type == "Lookup")
+                            {
+                                val = actionField?.Value;
+                            }
+                            else
+                            {
+                                val = actionField?.FormattedValue;
+                            }
 
-                        Add<core.entities.Field>(newField);
-                    }
-                    else
-                    {
-                        if (item.AppendValue)
-                        {
-                            var oldValues = field.Value?.Split(',').Where(s => !string.IsNullOrEmpty(s.Trim())).Select(x => x.Trim()) ?? new string[0];
-                            var newValues = val?.Split(',').Where(s => !string.IsNullOrEmpty(s.Trim())).Select(x => x.Trim()) ?? new string[0];
-                            newValues = oldValues.Union(newValues).Distinct().OrderBy(x => x);
-                            field.Value = string.Join(",", newValues);
-
+                            if (DateTime.TryParse(val, out DateTime tempDate) && (actionFieldType.Type == "Date" || actionFieldType.Type == "DateTime"))
+                            {
+                                val = tempDate.Date.ToShortDateString();
+                            }
 
                         }
-                        else
-                        {
-                            //update
-                            field.Value = val;
-                        }
-                        SaveChanges();
                     }
-
-                    //update asset table to trigger audit                    
-                    Database.Connection.Execute(
-                        "exec [utility].[AddAuditEntry]  @ParentObject, @ParentObjectID, @ResourceID, @date, @op, @Object, @ObjectID",
-                        new
-                        {
-                            Object = objectType,
-                            ObjectID = objectId,
-                            ParentObject = objectType,
-                            date = DateTime.UtcNow,
-                            ParentObjectID = objectId,
-                            ResourceID = 0,
-                            op = "Update"
-                        });
+                    this.UpdateField(objectId, objectType, fieldType, item, val, isAssetEdited, asset);
                 }
 
-            }
 
+            }
             SaveChanges();
 
+            //update asset table to trigger audit                    
+            Database.Connection.Execute(
+                     "exec [utility].[AddAuditEntry]  @ParentObject, @ParentObjectID, @ResourceID, @date, @op, @Object, @ObjectID",
+                     new
+                     {
+                         Object = objectInfo.Object.ToString(),
+                         ObjectID = objectInfo.ObjectID,
+                         ParentObject = objectInfo.Object.ToString(),
+                         date = DateTime.UtcNow,
+                         ParentObjectID = objectInfo.ObjectID,
+                         ResourceID = 0,
+                         op = "Update"
+                     });
         }
+
 
         private string GetFieldValueIntersectFromFormResponse(WorkflowRelationshipUpdateSettings item, long itemId)
         {
@@ -1145,26 +1198,24 @@ namespace d360.model
             return "";
         }
 
-        private string GetFieldValueFromFormResponse(WorkflowFieldUpdateSettings item, long itemId)
+
+        private IEnumerable<string> GetFieldValueFromFormResponse(WorkflowFieldUpdateSettings item, long itemId)
         {
             var formResponses = WorkflowItemSteps.Where(x => x.ItemID == itemId && x.StepID == item.FormStepID && x.Step.ActivityType == WorkflowActivityType.Form);
 
             var firstResponse = formResponses.FirstOrDefault();
 
-            if (firstResponse == null) return string.Empty;
 
-            var xml = XElement.Parse(firstResponse.Fields);
+            XElement root = XElement.Parse(firstResponse.Fields);
 
-            foreach (var form in xml.Elements("form"))
-            {
-                foreach (var field in form.Elements("field"))
-                {
-                    if ((string)field.Attribute("id") == item.FormField)
-                        return (string)field.Attribute("value");
-                }
-            }
+            IEnumerable<XElement> fields =
+            from el in root.Elements("form").Elements("field")
+            where (string)el.Attribute("id") == item.FormField
+            select el;
 
-            return "";
+            foreach (XElement el in fields)
+                yield return (string)el.Attribute("value");
+
         }
 
         private void ExecuteProc(WorkflowItemStep itemStep, EventObjectInfo objectInfo, WorkflowItemStepSettingModel settings)
@@ -2022,6 +2073,13 @@ namespace d360.model
                     if (fieldId > 0)
                     {
                         var fieldRecord = Fields.Where(x => x.ObjectID == objectID && x.ObjectType == obj.ToString() && x.FieldTypeID == fieldId).FirstOrDefault();
+
+                        //If there is no field and type is Issue, this might be asset field
+                        if(fieldRecord == null && obj == SystemObjects.Issue)
+                        {
+                            var issue = Issues.FirstOrDefault(x => x.ID == objectID);
+                            fieldRecord = Fields.Where(x => x.ObjectID == issue.ObjectID && x.ObjectType == issue.Object && x.FieldTypeID == fieldId).FirstOrDefault();
+                        }
 
                         if ((obj.ToString() ?? "").ToUpper() == "INTERSECT")
                         {

@@ -70,7 +70,7 @@ namespace igx.jobs.bulkloadprocessor
 
                     #region Create Load Items from Load file
 
-                    load = company.Loads.Include("LoadColumns").SingleOrDefault(i => i.ID == loadInfo.LoadID); //.Include("LoadItems.LoadItemColumns")
+                    load = company.Loads.Include("LoadColumns").SingleOrDefault(i => i.ID == loadInfo.LoadID);
 
                     companyConnection.OpenWithRetry(RetryPolicy.DefaultProgressive);
                     var loadItemRowCount = companyConnection.Query<int>("select count(1) from LoadItem where LoadID = @id", new { id = load.ID }).Single();
@@ -140,12 +140,10 @@ namespace igx.jobs.bulkloadprocessor
 
                                     if (lookupColumn != null && lookupColumn.FieldTypeId != null)
                                     {
-                                        var fieldValue = company.FieldLookupValues
-                                            .AsNoTracking()
-                                            .Where(x => x.FieldTypeID == lookupColumn.FieldTypeId && x.Text == loadValue)
-                                            .FirstOrDefault();
-                                        if (fieldValue != null)
-                                            lookupFieldObjectId = fieldValue.Value;
+                                        int? val = (await company.QueryAsync<int?>("select value from [FieldLookupValue] where FieldTypeID = @fieldTypeID and Text = @val", new { fieldTypeID = lookupColumn.FieldTypeId, val = loadValue }, 180)).FirstOrDefault();
+                                                                                
+                                        if (val.HasValue)
+                                            lookupFieldObjectId = val;
                                     }
                                     loadItemColumns.Add(new LoadItemColumn { ColumnIndex = c.ColumnIndex, LoadID = load.ID, RowIndex = rowIndex, Value = loadValue, LookupObjectID = lookupFieldObjectId });
                                 }

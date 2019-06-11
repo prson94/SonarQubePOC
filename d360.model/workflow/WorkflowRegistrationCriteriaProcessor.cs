@@ -52,6 +52,10 @@ namespace d360.model.workflow
         private static bool EvaluateObject(List<WorkflowCriteriaExpressionModel> expression, CompanyContext context, string @object, int objectId, long itemId, int score = -1, string issueObjectType = "", int issueObjectTypeId = -1, List<int> changedFields = null, bool satisfyAll = true)
         {
 
+            //If there are no conditions object is eligible for workflow
+            if (expression.Count == 0)
+                return true;
+
             //since field and object events come in separately, we need to skip eval in some cases to prevent duplicate runs
             //1. There is a change condition on the workflow, and no change fields are present: Ignore the initial object event and wait for the field event to come in
             //2. There is not a change condition on the workflow and change fields are present: Ignore the fields event, the object event was already processed

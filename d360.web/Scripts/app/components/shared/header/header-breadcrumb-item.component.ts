@@ -53,6 +53,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                     </p-overlayPanel>
                 </div>
           `,
+
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 

@@ -1,0 +1,136 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+	<changeSet author="kmcnamee" id="GOV-7426">
+		<sql dbms="mssql"
+			endDelimiter="\nGO"
+			splitStatements="true"
+			stripComments="true">
+<![CDATA[
+CREATE OR ALTER   view [dbo].[IntersectTypeDetail]
+as
+	select	IT.Uid,
+			IT.ID,
+			IT.Subject,
+			IT.SubjectID,
+			IT.SubjectCardinality,
+			case IT.Subject
+				when 'IntersectType' then utility.DeriveIntersectTypeName(SIT.ID)
+				when 'GroupType' then 'Group'
+				when 'ResourceType' then 'Resource'
+				else coalesce(SFT.TextPath, SATT.Name, SDT.Name) 
+			end as SubjectName,
+			coalesce(SIcon.IconBackColor, '#000') as SubjectIconBackColor,
+			coalesce(SIcon.IconForeColor, '#fff') as SubjectIconForeColor,
+			coalesce(SIcon.IconText, substring(coalesce(SATT.Name, SDT.Name, ''), 1, 2)) as SubjectIconText,
+			
+			IT.Object,
+			IT.ObjectID,
+			IT.ObjectCardinality,
+			case IT.Object
+				when 'IntersectType' then utility.DeriveIntersectTypeName(OIT.ID)
+				when 'GroupType' then 'Group'
+				when 'ResourceType' then 'Resource'
+				else coalesce(OFT.TextPath, OATT.Name, ODT.Name) 
+			end as ObjectName,
+			coalesce(OIcon.IconBackColor, '#000') as ObjectIconBackColor,
+			coalesce(OIcon.IconForeColor, '#fff') as ObjectIconForeColor,			
+			coalesce(OIcon.IconText, substring(coalesce(OATT.Name, ODT.Name, ''), 1, 2)) as ObjectIconText,
+
+			IT.PredicateID,
+			P.Name as [PredicateName],
+			P.Inverse as PredicateInverse,
+			P.Type as PredicateType,
+
+			coalesce(IT.IsSystem, cast(0 as bit)) as IsSystem
+	from	IntersectType IT with(nolock) 
+			left join [Predicate] P with(nolock) on P.ID = IT.PredicateID 
+
+			left join [dbo].[AssetType] SATT with(nolock ) on SATT.[Object] = IT.Subject and SATT.ObjectID = IT.SubjectID and IT.Subject != 'FusionAttributeType'			
+			left join [dbo].[FusionAttributeType] SFT with(nolock ) on SFT.ID = IT.SubjectID and IT.Subject = 'FusionAttributeType'
+			left join (
+				select 1 as ID, 'Reference List' as Name
+			) SDT											on IT.Subject = 'ReferenceItemType'		and IT.SubjectID = 0
+						
+			left join IntersectType SIT with(nolock)		on IT.Subject = 'IntersectType'			and SIT.ID = IT.SubjectID
+			
+			left join [dbo].[AssetType] OATT with(nolock ) on OATT.[Object] = IT.[Subject] and OATT.ObjectID = IT.SubjectID			
+			left join [dbo].[FusionAttributeType] OFT with(nolock ) on OFT.ID = IT.ObjectID and IT.Object = 'FusionAttributeType'
+			left join dbo.IntersectType OIT with(nolock)		on IT.Object = 'IntersectType'			and OIT.ID = IT.ObjectID			
+			left join (
+				select 0 as ID, 'Reference List' as Name
+			) ODT 	on IT.Object = 'ReferenceItemType'		and IT.ObjectID = 0
+
+			left join ObjectStyle SIcon with(nolock) on SIcon.ObjectType = IT.Subject and SIcon.ObjectID =	IT.SubjectID
+			left join ObjectStyle OIcon with(nolock) on OIcon.ObjectType = IT.Object and OIcon.ObjectID = IT.ObjectID
+	where	coalesce(SATT.ID, SDT.ID, SIT.ID) is not null
+			and coalesce(OATT.ID,ODT.ID, OIT.ID) is not null
+]]>
+		</sql>
+		<rollback>
+<![CDATA[
+CREATE OR ALTER   view [dbo].[IntersectTypeDetail]
+as
+	select	IT.Uid,
+			IT.ID,
+			IT.Subject,
+			IT.SubjectID,
+			IT.SubjectCardinality,
+			case IT.Subject
+				when 'IntersectType' then utility.DeriveIntersectTypeName(SIT.ID)
+				when 'GroupType' then 'Group'
+				when 'ResourceType' then 'Resource'
+				else coalesce(SATT.Name, SDT.Name) 
+			end as SubjectName,
+			coalesce(SIcon.IconBackColor, '#000') as SubjectIconBackColor,
+			coalesce(SIcon.IconForeColor, '#fff') as SubjectIconForeColor,
+			coalesce(SIcon.IconText, substring(coalesce(SATT.Name, SDT.Name, ''), 1, 2)) as SubjectIconText,
+			
+			IT.Object,
+			IT.ObjectID,
+			IT.ObjectCardinality,
+			case IT.Object
+				when 'IntersectType' then utility.DeriveIntersectTypeName(OIT.ID)
+				when 'GroupType' then 'Group'
+				when 'ResourceType' then 'Resource'
+				else coalesce(OATT.Name, ODT.Name) 
+			end as ObjectName,
+			coalesce(OIcon.IconBackColor, '#000') as ObjectIconBackColor,
+			coalesce(OIcon.IconForeColor, '#fff') as ObjectIconForeColor,			
+			coalesce(OIcon.IconText, substring(coalesce(OATT.Name, ODT.Name, ''), 1, 2)) as ObjectIconText,
+
+			IT.PredicateID,
+			P.Name as [PredicateName],
+			P.Inverse as PredicateInverse,
+			P.Type as PredicateType,
+
+			coalesce(IT.IsSystem, cast(0 as bit)) as IsSystem
+	from	IntersectType IT with(nolock) 
+			left join [Predicate] P with(nolock) on P.ID = IT.PredicateID 
+
+			left join [dbo].[AssetType] SATT with(nolock ) on SATT.[Object] = IT.Subject and SATT.ObjectID = IT.SubjectID			
+			left join (
+				select 1 as ID, 'Reference List' as Name
+			) SDT											on IT.Subject = 'ReferenceItemType'		and IT.SubjectID = 0
+						
+			left join IntersectType SIT with(nolock)		on IT.Subject = 'IntersectType'			and SIT.ID = IT.SubjectID
+			
+			left join [dbo].[AssetType] OATT with(nolock ) on OATT.[Object] = IT.[Object] and OATT.ObjectID = IT.ObjectID			
+			left join dbo.IntersectType OIT with(nolock)		on IT.Object = 'IntersectType'			and OIT.ID = IT.ObjectID			
+			left join (
+				select 0 as ID, 'Reference List' as Name
+			) ODT 	on IT.Object = 'ReferenceItemType'		and IT.ObjectID = 0
+
+			left join ObjectStyle SIcon with(nolock) on SIcon.ObjectType = IT.Subject and SIcon.ObjectID =	IT.SubjectID
+			left join ObjectStyle OIcon with(nolock) on OIcon.ObjectType = IT.Object and OIcon.ObjectID = IT.ObjectID
+	where	coalesce(SATT.ID, SDT.ID, SIT.ID) is not null
+			and coalesce(OATT.ID,ODT.ID, OIT.ID) is not null
+]]>
+		</rollback>
+	</changeSet>
+
+  </databaseChangeLog>

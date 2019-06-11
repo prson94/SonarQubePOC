@@ -12,13 +12,18 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
     template:
     `
         <div *ngIf="visible" class="show-on-medium-and-down hide-on-med-and-up" (click)="handleClick()">
-            <i *ngIf="isHomePageItem && !isLoading" class="fa fa-check"></i>
-            <i *ngIf="isLoading" style="color: #000;" class="fa fa-spinner fa-spin"></i>
-            Home Page
+            <div class="mini-menu-line">
+                <div class="check-gutter">
+                    <i *ngIf="isHomePageItem && !isLoading" class="fa fa-check"></i>
+                    <i *ngIf="isLoading" style="color: #000;" class="fa fa-spinner fa-spin"></i>
+                </div>
+                <div class="text">Set as Home Page</div>
+                <div class="expand-gutter"></div>            
+            </div>
         </div>
-        <span *ngIf="visible" (click)="handleClick()" class="favorite hide-on-med-and-down" [style.color]="isHomePageItem ? '#54fffb' : null" [title]="isHomePageItem ? 'Remove home page' : 'Make this my home page'" >
-            <i *ngIf="!isLoading" class="fa fa-home"></i><i *ngIf="isLoading" style="color: #000;" class="fa fa-spinner fa-spin"></i>    
-        </span>
+        <div *ngIf="visible" (click)="handleClick()" class="header-button hide-on-med-and-down" [ngClass]="{'active' : isHomePageItem }"  [title]="isHomePageItem ? 'Remove home page' : 'Make this my home page'" >
+            <i *ngIf="!isLoading" class="fa fa-home"></i><i *ngIf="isLoading" class="fa fa-spinner fa-spin"></i>    
+        </div>
     `,
     providers: [FavoritesService],
     changeDetection: ChangeDetectionStrategy.OnPush

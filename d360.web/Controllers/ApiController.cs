@@ -131,17 +131,18 @@ namespace d360.web.Controllers
                                 DataType = !string.IsNullOrEmpty(ft.Type) ? ft.Type : "",
                                 ShowIfEmpty = ft.ShowIfEmpty
                             };
-                            
+
                             if (ft.Type == DataType.Date.ToString()) ro.DataType = "date";
+                            else if (ft.Type == DataType.DateTime.ToString()) ro.DataType = "datetime";
                             else if (ft.Type == DataType.Boolean.ToString()) ro.DataType = "bool";
-                            
+
                             if (!string.IsNullOrEmpty(ft.LookupObjectType) && ft.LookupObjectID.HasValue)
                             {
-                                if(ft.AllowMultipleValues)
+                                if (ft.AllowMultipleValues)
                                 {
                                     ro.Values = new List<ReadOnlyFieldValue>();
                                     ro.Value = "values";
-                                                                        
+
                                     var items = ((k != null) ? k.Value.Split(',') : new string[] { });
                                     var itemIds = new List<long>();
 
@@ -175,7 +176,7 @@ namespace d360.web.Controllers
                                 }
                                 else
                                 {
-                                   bool showPreviewLink = true;
+                                    bool showPreviewLink = true;
                                     if (k != null)
                                     {
                                         if (k.Value == "0")
@@ -185,7 +186,7 @@ namespace d360.web.Controllers
                                     }
 
                                     if (showPreviewLink)
-                                    {                                        
+                                    {
                                         ro.TooltipContext = TemplateAction.LookupPreview.ToString();
 
                                         if (ft.LookupObjectType == "Lookup")
@@ -201,7 +202,7 @@ namespace d360.web.Controllers
                                         }
                                         else
                                         {
-                                            if(ft.LookupObjectType == "Artifact" || ft.LookupObjectType == "Taxonomy" || ft.LookupObjectType == "TaxonomyType")
+                                            if (ft.LookupObjectType == "Artifact" || ft.LookupObjectType == "Taxonomy" || ft.LookupObjectType == "TaxonomyType")
                                                 ro.TooltipContext = TemplateAction.Preview.ToString();
 
                                             if (string.IsNullOrEmpty(value))
@@ -234,140 +235,170 @@ namespace d360.web.Controllers
                         }
                     }
                     else if (ft.Type == DataType.FilteredLookup.ToString())
-                        {
-                            //look at fusionlookup field and figure out what to show
-                            list.AddRange(RenderFilteredLookupField(type.ToString(), id, ft.ID));
-                        }
+                    {
+                        //look at fusionlookup field and figure out what to show
+                        list.AddRange(RenderFilteredLookupField(type.ToString(), id, ft.ID));
+                    }
                     else if (ft.Type == DataType.Attribute.ToString())
-                        {
-                            //look at attribute field and figure out what to show
-                            list.AddRange(RenderAttributeField(type.ToString(), id, ft.ID));
-                        }
+                    {
+                        //look at attribute field and figure out what to show
+                        list.AddRange(RenderAttributeField(type.ToString(), id, ft.ID));
+                    }
                     else if (ft.Type == DataType.ComplexRelationLookup.ToString())
-                        {
-                            //look at fusionlookup field and figure out what to show
-                            list.AddRange(RenderComplexLookupField(type.ToString(), id, ft.ID));
-                        }
+                    {
+                        //look at fusionlookup field and figure out what to show
+                        list.AddRange(RenderComplexLookupField(type.ToString(), id, ft.ID));
+                    }
                     else if (ft.Type == DataType.OwnershipLookup.ToString())
-                        {
-                            //look at ownershiplookup field and figure out what to show
-                            list.AddRange(RenderOwnershipLookupField(type.ToString(), id, ft.ID));
-                        }
-
+                    {
+                        //look at ownershiplookup field and figure out what to show
+                        list.AddRange(RenderOwnershipLookupField(type.ToString(), id, ft.ID));
+                    }
                     else if (ft.Type == DataType.Relationship.ToString() && !string.IsNullOrEmpty(ft.LookupObjectType) && ft.LookupObjectID.HasValue)
+                    {
+                        var intersectTypeID = ft.LookupObjectID.Value;
+                        var sType = type.ToString();
+                        var values = new List<ReadOnlyFieldValue>();
+                        var intersects = Company.Filter<IntersectDetail>(i => i.IntersectTypeID == intersectTypeID && ((i.Subject == sType && i.SubjectID == id) || (i.Object == sType && i.ObjectID == id))).OrderBy(x => x.ObjectName);
+                        if (intersects != null)
                         {
-                            var intersectTypeID = ft.LookupObjectID.Value;
-                            var sType = type.ToString();
-                            var values = new List<ReadOnlyFieldValue>();
-                            var intersects = Company.Filter<IntersectDetail>(i => i.IntersectTypeID == intersectTypeID && ((i.Subject == sType && i.SubjectID == id) || (i.Object == sType && i.ObjectID == id))).OrderBy(x=>x.ObjectName);
-                            if (intersects != null)
-                            {
-                                //load the current users permissions to these objects if they dont have access we cant show the link to let them go nowhere
-                                var objectsToCheckAccesFor = new List<BasicAsset>();
-                                
-                                foreach(var intersect in intersects)
-                                {
-                                    var isSubject = (intersect.Subject == sType && intersect.SubjectID == id);
-                                    
-                                    var obj = isSubject ? intersect.Object : intersect.Subject;
-                                    var objID = isSubject ? intersect.ObjectID : intersect.SubjectID;
+                            //load the current users permissions to these objects if they dont have access we cant show the link to let them go nowhere
+                            var objectsToCheckAccesFor = new List<BasicAsset>();
 
-                                    objectsToCheckAccesFor.Add(new BasicAsset { ObjectID = objID, ObjectName = obj });
-                                }
-
-                                var objectsWithoutReadAccess = GetObjectsWithoutReadAccess(objectsToCheckAccesFor);
-
-                                foreach (var intersect in intersects)
-                                {
-                                    var isSubject = (intersect.Subject == sType && intersect.SubjectID == id);
-                                    var intersectDisplayValue = isSubject ? intersect.ObjectName : intersect.SubjectName;
-                                    var url = isSubject ? intersect.ObjectUrl : intersect.SubjectUrl;
-                                    var obj = isSubject ? intersect.Object : intersect.Subject;
-                                    var objID = isSubject ? intersect.ObjectID : intersect.SubjectID;
-
-                                    if (obj == "Taxonomy")
-                                    {
-                                        var det = Company.Query<string>("select tp.TextPath from  asset a cross apply GetAssetTextPathById(a.id, '/') tp where a.[Object] = 'Taxonomy' and a.ObjectID = @id", new { id = objID }).FirstOrDefault();
-                                        intersectDisplayValue = det;
-                                    }
-
-
-                                    if(objectsWithoutReadAccess != null && objectsWithoutReadAccess.Count > 0)
-                                    {
-                                        if(objectsWithoutReadAccess.Any(x=>(x.Object == obj && x.ObjectID == objID)))
-                                        {
-                                            url = null;
-                                        }
-                                    }
-                                                                        
-                                    values.Add(new ReadOnlyFieldValue { Value = intersectDisplayValue, TooltipContext = "Preview", TooltipID = objID, TooltipType = obj, TooltipUrl = url });                                    
-                                }
-
-                                values = values.OrderBy(x => x.Value).ToList();
-
-                                var ro = new ReadOnlyField
-                                {
-                                    Name = ft.FriendlyName,
-                                    Value = values.Count > 0 ?"values" : "",
-                                    FieldDescription = ft.DisplayDescription,
-                                    FieldName = ft.Name,                                    
-                                    Values = values    ,
-                                    ShowIfEmpty = ft.ShowIfEmpty
-                                };
-                                
-                                list.Add(new DetailReadOnlyRowModel
-                                {
-                                    columns = 1,
-                                    FirstColumnFields = new List<ReadOnlyField> { ro },
-                                    Category = ft.Category
-                                });
-                            }
-                        }
-
-                    else if (ft.Type == DataType.FieldFromRelationship.ToString() && !string.IsNullOrEmpty(ft.LookupObjectType) && ft.LookupObjectID.HasValue && ft.LookupObjectFieldTypeID.HasValue)
-                        {
-                            var intersectTypeID = ft.LookupObjectID.Value;
-                            var fieldTypeID = ft.LookupObjectFieldTypeID.Value;
-                            var sType = type.ToString();
-                            var intersect = Company.Filter<Intersect>(i => i.IntersectTypeID == intersectTypeID && ((i.Subject == sType && i.SubjectID == id) || (i.Object == sType && i.ObjectID == id))).FirstOrDefault();
-                            if (intersect != null)
+                            foreach (var intersect in intersects)
                             {
                                 var isSubject = (intersect.Subject == sType && intersect.SubjectID == id);
+
                                 var obj = isSubject ? intersect.Object : intersect.Subject;
                                 var objID = isSubject ? intersect.ObjectID : intersect.SubjectID;
 
-                                var rfld = Company.Filter<Field>(i => i.FieldTypeID == fieldTypeID && i.ObjectType == obj && i.ObjectID == objID).SingleOrDefault();
-
-                                if (rfld != null)
-                                {
-                                    var ro = new ReadOnlyField
-                                    {
-                                        Name = ft.FriendlyName,
-                                        Value = rfld.FormattedValue,
-                                        FieldDescription = ft.DisplayDescription,
-                                        FieldName = ft.Name,
-                                        DataType = "Html",
-                                        ShowIfEmpty = ft.ShowIfEmpty
-                                    };
-
-                                    list.Add(new DetailReadOnlyRowModel
-                                    {
-                                        columns = 1,
-                                        FirstColumnFields = new List<ReadOnlyField> { ro },
-                                        Category = ft.Category
-                                    });
-                                }
+                                objectsToCheckAccesFor.Add(new BasicAsset { ObjectID = objID, ObjectName = obj });
                             }
-                            else if (ft.ShowIfEmpty)
+
+                            var objectsWithoutReadAccess = GetObjectsWithoutReadAccess(objectsToCheckAccesFor);
+
+                            foreach (var intersect in intersects)
+                            {
+                                var isSubject = (intersect.Subject == sType && intersect.SubjectID == id);
+                                var intersectDisplayValue = isSubject ? intersect.ObjectName : intersect.SubjectName;
+                                var url = isSubject ? intersect.ObjectUrl : intersect.SubjectUrl;
+                                var obj = isSubject ? intersect.Object : intersect.Subject;
+                                var objID = isSubject ? intersect.ObjectID : intersect.SubjectID;
+
+                                if (obj == "Taxonomy")
+                                {
+                                    var det = Company.Query<string>("select tp.TextPath from  asset a cross apply GetAssetTextPathById(a.id, '/') tp where a.[Object] = 'Taxonomy' and a.ObjectID = @id", new { id = objID }).FirstOrDefault();
+                                    intersectDisplayValue = det;
+                                }
+
+
+                                if (objectsWithoutReadAccess != null && objectsWithoutReadAccess.Count > 0)
+                                {
+                                    if (objectsWithoutReadAccess.Any(x => (x.Object == obj && x.ObjectID == objID)))
+                                    {
+                                        url = null;
+                                    }
+                                }
+
+                                values.Add(new ReadOnlyFieldValue { Value = intersectDisplayValue, TooltipContext = "Preview", TooltipID = objID, TooltipType = obj, TooltipUrl = url });
+                            }
+
+                            values = values.OrderBy(x => x.Value).ToList();
+
+                            var ro = new ReadOnlyField
+                            {
+                                Name = ft.FriendlyName,
+                                Value = values.Count > 0 ? "values" : "",
+                                FieldDescription = ft.DisplayDescription,
+                                FieldName = ft.Name,
+                                Values = values,
+                                ShowIfEmpty = ft.ShowIfEmpty
+                            };
+
+                            list.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField> { ro },
+                                Category = ft.Category
+                            });
+                        }
+                    }
+                    else if (ft.Type == DataType.JsonElement.ToString())
+                    {
+                        var jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(ft.Definition);
+                        var jsonElementValue = "";
+                        var jsonElementDataType = "Text";
+
+                        var jsonField = fields.SingleOrDefault(i => i.FieldTypeID == jsonElementDefinition.FieldTypeID);
+                        if (jsonField != null)
+                        {
+                            var jsonElementProperty = Company.Query<FieldJsonProperty>("select * from FieldJsonProperty where FieldID = @ID and [Path] = @Path", new { jsonField.ID, jsonElementDefinition.Path }).FirstOrDefault();
+                            if (jsonElementProperty != null)
+                            {
+                                jsonElementValue = jsonElementProperty.Value;
+                            }
+                        }
+                        switch (jsonElementDefinition.DataType)
+                        {
+                            case "date":
+                            case "datetime":
+                                jsonElementDataType = jsonElementDefinition.DataType;
+                                DateTime jsonDate;
+                                if (DateTime.TryParse(jsonElementValue, out jsonDate))
+                                {
+                                    jsonElementValue = jsonDate.ToString("yyyy-MM-ddTHH:mm:ss\"Z\"");
+                                }
+                                break;
+                            case "int":
+                            case "bigint":
+                            case "decimal":
+                                jsonElementDataType = "number";
+                                break;
+                            case "bit":
+                                jsonElementDataType = "bool";
+                                break;
+                        }
+
+                        var ro = new ReadOnlyField
+                        {
+                            Name = ft.FriendlyName,
+                            Value = jsonElementValue,
+                            FieldDescription = ft.DisplayDescription,
+                            FieldName = ft.Name,
+                            DataType = jsonElementDataType,
+                            ShowIfEmpty = ft.ShowIfEmpty
+                        };
+
+                        list.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField> { ro },
+                            Category = ft.Category
+                        });
+                    }
+                    else if (ft.Type == DataType.FieldFromRelationship.ToString() && !string.IsNullOrEmpty(ft.LookupObjectType) && ft.LookupObjectID.HasValue && ft.LookupObjectFieldTypeID.HasValue)
+                    {
+                        var intersectTypeID = ft.LookupObjectID.Value;
+                        var fieldTypeID = ft.LookupObjectFieldTypeID.Value;
+                        var sType = type.ToString();
+                        var intersect = Company.Filter<Intersect>(i => i.IntersectTypeID == intersectTypeID && ((i.Subject == sType && i.SubjectID == id) || (i.Object == sType && i.ObjectID == id))).FirstOrDefault();
+                        if (intersect != null)
+                        {
+                            var isSubject = (intersect.Subject == sType && intersect.SubjectID == id);
+                            var obj = isSubject ? intersect.Object : intersect.Subject;
+                            var objID = isSubject ? intersect.ObjectID : intersect.SubjectID;
+
+                            var rfld = Company.Filter<Field>(i => i.FieldTypeID == fieldTypeID && i.ObjectType == obj && i.ObjectID == objID).SingleOrDefault();
+
+                            if (rfld != null)
                             {
                                 var ro = new ReadOnlyField
                                 {
                                     Name = ft.FriendlyName,
-                                    Value = "",
+                                    Value = rfld.FormattedValue,
                                     FieldDescription = ft.DisplayDescription,
                                     FieldName = ft.Name,
-                                    Values = null,
-                                    DataType = !string.IsNullOrEmpty(ft.Type) ? ft.Type : "",
+                                    DataType = "Html",
                                     ShowIfEmpty = ft.ShowIfEmpty
                                 };
 
@@ -378,19 +409,39 @@ namespace d360.web.Controllers
                                     Category = ft.Category
                                 });
                             }
-                    }
-
-                    else if (ft.Type == DataType.RefListRelationship.ToString())
-                        {
-                            //look at fusionlookup field and figure out what to show
-                            list.AddRange(RenderReferenceListItemsField(type.ToString(), id, ft.ID));
                         }
+                        else if (ft.ShowIfEmpty)
+                        {
+                            var ro = new ReadOnlyField
+                            {
+                                Name = ft.FriendlyName,
+                                Value = "",
+                                FieldDescription = ft.DisplayDescription,
+                                FieldName = ft.Name,
+                                Values = null,
+                                DataType = !string.IsNullOrEmpty(ft.Type) ? ft.Type : "",
+                                ShowIfEmpty = ft.ShowIfEmpty
+                            };
+
+                            list.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField> { ro },
+                                Category = ft.Category
+                            });
+                        }
+                    }
+                    else if (ft.Type == DataType.RefListRelationship.ToString())
+                    {
+                        //look at fusionlookup field and figure out what to show
+                        list.AddRange(RenderReferenceListItemsField(type.ToString(), id, ft.ID));
+                    }
                     else if (ft.ShowIfEmpty)
                     {
                         var ro = new ReadOnlyField
                         {
                             Name = ft.FriendlyName,
-                            Value =null,
+                            Value = null,
                             FieldDescription = ft.DisplayDescription,
                             FieldName = ft.Name,
                             DataType = !string.IsNullOrEmpty(ft.Type) ? ft.Type : "",
@@ -489,7 +540,38 @@ namespace d360.web.Controllers
             string filterType = GridColumn.FILTER_TYPE_STRING;
             List<string> filterItems = new List<string>();
 
-            switch (item.Type)
+            var columnDataType = item.Type;
+
+            if (columnDataType == DataType.JsonElement.ToString())
+            {
+                FieldTypeDefinition_JsonElement jsonElementDefinition = null;
+                jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(item.Definition);
+                columnDataType = jsonElementDefinition.DataType;
+                switch (columnDataType)
+                {
+                    case "bit":
+                        columnDataType = "Boolean";
+                        break;
+                    case "date":
+                        columnDataType = "Date";
+                        break;
+                    case "datetime":
+                        columnDataType = "DateTime";
+                        break;
+                    case "decimal":
+                        columnDataType = "Decimal";
+                        break;
+                    case "int":
+                    case "bigint":
+                        columnDataType = "Number";
+                        break;
+                    default:
+                        columnDataType = "Text";
+                        break;
+                }
+            }
+
+            switch (columnDataType)
             {
                 case "":
                 case "Lookup":
@@ -577,29 +659,53 @@ namespace d360.web.Controllers
         {
             string fieldType = "string";
 
-            switch (item.Type)
+            if (item.Type == DataType.JsonElement.ToString())
             {
-                case "Date":
-                    fieldType = "date";
-                    break;
-                case "DateTime":
-                    fieldType = "date";
-                    break;
-                case "Number":
-                    fieldType = "number";
-                    break;
-                case "Decimal":
-                    fieldType = "number";
-                    break;
-                case "Boolean":
-                    fieldType = "bool";
-                    break;
-                case "Html":
-                    fieldType = "html";
-                    break;
-                case "Link":
-                    fieldType = "html";
-                    break;
+                FieldTypeDefinition_JsonElement jsonElementDefinition = null;
+                jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(item.Definition);
+                var dt = jsonElementDefinition.DataType;
+                switch (dt)
+                {
+                    case "bit":
+                        fieldType = "bool";
+                        break;
+                    case "date":
+                    case "datetime":
+                        fieldType = "date";
+                        break;
+                    case "decimal":
+                    case "int":
+                    case "bigint":
+                        fieldType = "number";
+                        break;
+                }
+            }
+            else
+            {
+                switch (item.Type)
+                {
+                    case "Date":
+                        fieldType = "date";
+                        break;
+                    case "DateTime":
+                        fieldType = "date";
+                        break;
+                    case "Number":
+                        fieldType = "number";
+                        break;
+                    case "Decimal":
+                        fieldType = "number";
+                        break;
+                    case "Boolean":
+                        fieldType = "bool";
+                        break;
+                    case "Html":
+                        fieldType = "html";
+                        break;
+                    case "Link":
+                        fieldType = "html";
+                        break;
+                }
             }
 
             return fieldType;
@@ -659,8 +765,9 @@ namespace d360.web.Controllers
             #endregion
 
             var sType = type.ToString();
+            var skippedFieldTypes = DataType.Text.GetNonlistableFields();
             var totalItems = Company
-                .Filter<FieldType>(i => i.Object == sType && i.ObjectID == id && !CalculatedFieldTypes.Contains(i.Type))
+                .Filter<FieldType>(i => i.Object == sType && i.ObjectID == id && !skippedFieldTypes.Contains(i.Type))
                 .ToList();
             var items = totalItems.Where(i => i.IsListable).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
 
@@ -773,7 +880,7 @@ namespace d360.web.Controllers
                         items.InsertRange(0, targetKeyFields);
                     }
 
-                    if (targetType == SystemObjects.ReferenceItemType.ToString() || targetType == SystemObjects.FusionAttributeType.ToString() || targetType == SystemObjects.ResourceType.ToString())
+                    if (targetType == SystemObjects.ReferenceItemType.ToString() || targetType == SystemObjects.FusionAttributeType.ToString() || targetType == SystemObjects.ResourceType.ToString() || targetType == SystemObjects.GroupType.ToString())
                     {
                         columns.Add(
                             new GridColumn { text = "Name", datafield = "Name", columntype = GridColumn.COLUMN_TYPE_STRING, filtertype = GridColumn.FILTER_TYPE_STRING }
@@ -4659,7 +4766,7 @@ from    ResponsibilityTypeRelationRule R
         {
             var joins = "";
             var columns = "";
-            getDynamicFieldJoinStatements(id, "Policy", out joins, out columns, false, false);
+            getDynamicFieldJoinStatements(id, "Policy", out joins, out columns, false, false,true,false,"A.ObjectID");
 
             var permissionSql = @"case when exists (
                                         select 1 from UserAssetPermissions(@r, OA.AssetTypeID) u where u.PermissionsBitMask & 2 = 2 and (u.AssetID = OA.ID  or (u.AssetID = 0 and u.AssetTypeID = OA.AssetTypeID))
@@ -4828,7 +4935,7 @@ select  A.FirstName,
 		A.LastName,
         A.Email,
 		A.LastLoggedInOn,
-        case A.State when 1 then 'Active' else 'Inactive' end as [State],
+        case A.State when 1 then 'Active' when 2 then 'Inactive' else 'Deleted' end as [State],
         A.IsAdministrator,
         {columns}
 		A.ID,
@@ -5354,7 +5461,7 @@ where    A.RuleID = @id", new { id });
                         {
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField> {
-                                new ReadOnlyField { Name =Fields.Description_Name, FieldName = "ArtifactTypeDescription", FieldDescription =Fields.Description_Description, Value = string.IsNullOrEmpty(artifactType.Description) ? "None provided" : artifactType.Description }
+                                new ReadOnlyField { Name =Fields.Description_Name, FieldName = "ArtifactTypeDescription", FieldDescription =Fields.Description_Description, DataType = "Html", Value = string.IsNullOrEmpty(artifactType.Description) ? "None provided" : artifactType.Description }
                             }
                         });
 
@@ -5414,7 +5521,7 @@ where    A.RuleID = @id", new { id });
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = Fields.Description_Name, FieldName = "AttributeTypeDescription", FieldDescription = Fields.Description_Description, Value = string.IsNullOrEmpty(attributeType.Description) ? "None provided" : attributeType.Description }
+                                new ReadOnlyField { Name = Fields.Description_Name, FieldName = "AttributeTypeDescription", FieldDescription = Fields.Description_Description, DataType = "Html", Value = string.IsNullOrEmpty(attributeType.Description) ? "None provided" : attributeType.Description }
                             }
                         });
                     }
@@ -5464,7 +5571,7 @@ where    A.RuleID = @id", new { id });
                                 columns = 1,
                                 FirstColumnFields = new List<ReadOnlyField>
                                 {
-                                    new ReadOnlyField { Name = group.GetName(i => i.Description), FieldName = "GroupDescription", FieldDescription = group.GetDescription(i => i.Description), Value = group.Description }
+                                    new ReadOnlyField { Name = group.GetName(i => i.Description), FieldName = "GroupDescription", FieldDescription = group.GetDescription(i => i.Description), DataType = "Html", Value = group.Description }
                                 }
                             });
                         }
@@ -5639,7 +5746,7 @@ where    A.RuleID = @id", new { id });
                                 columns = 1,
                                 FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Row = 7, Column = 1, Name = fieldType.GetName(i => i.DisplayDescription), FieldName = "FieldTypeDisplayDescription", FieldDescription = fieldType.GetDescription(i => i.DisplayDescription), Value = fieldType.DisplayDescription }
+                                new ReadOnlyField { Row = 7, Column = 1, Name = fieldType.GetName(i => i.DisplayDescription), FieldName = "FieldTypeDisplayDescription", FieldDescription = fieldType.GetDescription(i => i.DisplayDescription), DataType = "Html", Value = fieldType.DisplayDescription }
                             }
                             });
                         }
@@ -5651,7 +5758,7 @@ where    A.RuleID = @id", new { id });
                                 columns = 1,
                                 FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Row = 7, Column = 1, Name = fieldType.GetName(i => i.FormDescription), FieldName = "FieldTypeFormDescription", FieldDescription = fieldType.GetDescription(i => i.FormDescription), Value = fieldType.FormDescription }
+                                new ReadOnlyField { Row = 7, Column = 1, Name = fieldType.GetName(i => i.FormDescription), FieldName = "FieldTypeFormDescription", FieldDescription = fieldType.GetDescription(i => i.FormDescription), DataType = "Html", Value = fieldType.FormDescription }
                             }
                             });
                         }
@@ -5684,7 +5791,7 @@ where    A.RuleID = @id", new { id });
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = fusion.GetName(i => i.Description), FieldName = "FusionDescription", FieldDescription = fusion.GetDescription(i => i.Description), Value = string.IsNullOrEmpty(fusion.Description) ? "None provided" : fusion.Description }
+                                new ReadOnlyField { Name = fusion.GetName(i => i.Description), FieldName = "FusionDescription", FieldDescription = fusion.GetDescription(i => i.Description), DataType = "Html",  Value = string.IsNullOrEmpty(fusion.Description) ? "None provided" : fusion.Description }
                             }
                         });
 
@@ -5870,7 +5977,7 @@ where    A.RuleID = @id", new { id });
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name =Fields.Description_Name, FieldName = "FusionTypeDescription", FieldDescription = Fields.Description_Description, Value = string.IsNullOrEmpty(fusionType.Description) ? "None provided" : fusionType.Description }
+                                new ReadOnlyField { Name =Fields.Description_Name, FieldName = "FusionTypeDescription", FieldDescription = Fields.Description_Description, DataType = "Html", Value = string.IsNullOrEmpty(fusionType.Description) ? "None provided" : fusionType.Description }
                             }
                         });
                     }
@@ -6185,7 +6292,7 @@ where    A.RuleID = @id", new { id });
                             columns = 2,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = Resources.FieldInfo.RuleImplementation_Name, FieldName = "RuleImplementation_Name", Value = $"<b>{impl.Name ?? "Implementation " + impl.ID}</b>" }
+                                new ReadOnlyField { Name = Resources.FieldInfo.RuleImplementation_Name, FieldName = "RuleImplementation_Name", Value = $"{impl.Name ?? "Implementation " + impl.ID}" }
                             },
                             SecondColumnFields = new List<ReadOnlyField>
                             {
@@ -6198,7 +6305,7 @@ where    A.RuleID = @id", new { id });
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = Resources.FieldInfo.RuleImplementation_ResultsEndpoint, FieldName = "RuleImplementation_ResultsEndpoint", Value = $"POST to <a href='/swagger/ui/index#!/Events/Events_AddRuleImplementationResults' target='api'>/services/events/rules/{impl.RuleID}/{impl.ID}/results</a>" }
+                                new ReadOnlyField { Name = Resources.FieldInfo.RuleImplementation_ResultsEndpoint, FieldName = "RuleImplementation_ResultsEndpoint", DataType = "HTML", Value = $"POST to <a href='/swagger/ui/index#!/Events/Events_AddRuleImplementationResults' target='api'>/services/events/rules/{impl.RuleID}/{impl.ID}/results</a>" }
                             }
                         });
 
@@ -6268,7 +6375,7 @@ where    A.RuleID = @id", new { id });
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = Resources.FieldInfo.Description_Name, FieldName = "RuleTypeDescription", Value = string.IsNullOrEmpty(ruleType.Description) ? "None provided" : ruleType.Description }
+                                new ReadOnlyField { Name = Resources.FieldInfo.Description_Name, FieldName = "RuleTypeDescription", DataType = "Html", Value = string.IsNullOrEmpty(ruleType.Description) ? "None provided" : ruleType.Description }
                             }
                         });
                     }
@@ -6307,7 +6414,7 @@ where    A.RuleID = @id", new { id });
                                 columns = 1,
                                 FirstColumnFields = new List<ReadOnlyField>
                                 {
-                                    new ReadOnlyField { Name = responsibilityType.GetName(i => i.Description), FieldName = "Description", FieldDescription = responsibilityType.GetDescription(i => i.Description), Value = responsibilityType.Description }
+                                    new ReadOnlyField { Name = responsibilityType.GetName(i => i.Description), FieldName = "Description", DataType = "Html", FieldDescription = responsibilityType.GetDescription(i => i.Description), Value = responsibilityType.Description }
                                 }
                             });
                         }
@@ -6346,7 +6453,7 @@ where    A.RuleID = @id", new { id });
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = Fields.Description_Name, FieldName = "PolicyTypeDescription", FieldDescription = Fields.Description_Description, Value = string.IsNullOrEmpty(policyType.Description) ? "None provided" : policyType.Description }
+                                new ReadOnlyField { Name = Fields.Description_Name, FieldName = "PolicyTypeDescription", FieldDescription = Fields.Description_Description, DataType = "Html", Value = string.IsNullOrEmpty(policyType.Description) ? "None provided" : policyType.Description }
                             }
                         });
                     }
@@ -6377,7 +6484,7 @@ where    A.RuleID = @id", new { id });
                             {
                                 columns = 1,
                                 FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = Fields.Description_Name, FieldName = "Description", FieldDescription = Fields.Description_Description, Value = refType.Description }
+                                    new ReadOnlyField { Name = Fields.Description_Name, FieldName = "Description", FieldDescription = Fields.Description_Description, DataType = "Html", Value = refType.Description }
                                 }
                             });
                         }
@@ -6790,7 +6897,7 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = Fields.Description_Name, FieldName = "TaxonomyTypeDescription", FieldDescription = Fields.Description_Description, Value = string.IsNullOrEmpty(taxonomyType.Description) ? "None provided" : taxonomyType.Description }
+                                new ReadOnlyField { Name = Fields.Description_Name, FieldName = "TaxonomyTypeDescription", FieldDescription = Fields.Description_Description, DataType = "Html", Value = string.IsNullOrEmpty(taxonomyType.Description) ? "None provided" : taxonomyType.Description }
                             }
                         });
                     }

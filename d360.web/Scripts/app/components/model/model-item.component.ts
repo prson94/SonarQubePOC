@@ -211,7 +211,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
 
         this.loadPermissions(this.permissionsService, StringConstants.ObjectTaxonomy, this.selected.ID).then(p => {
             this.clearSidebar();
-            this.setCommonRightSideBar(true, this.hasPermission(Permission.ReadResponsibilities), this.model.HasDashboards, true, true, this.hasPermission(Permission.ReadRelationships), true, true);
+            this.setCommonRightSideBar(true, this.hasPermission(Permission.ReadResponsibilities), (this.selected != null ? this.selected.HasDashboards : false), true, true, this.hasPermission(Permission.ReadRelationships), true, true);
         });
         this.buildBreadcrumb();
         return Promise.resolve(null);
