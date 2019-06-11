@@ -966,7 +966,7 @@ order by A.ID, FT.SortOrder", new { id, attribute });
 
                         
                     }
-                    else
+                    else if (det != null)
                     {
                         var sql = @"
 select  ISNULL(FormattedValue,' ') as Value,
