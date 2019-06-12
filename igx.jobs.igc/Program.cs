@@ -1755,8 +1755,8 @@ delete integration.ExecutionAssetField where SynchedAssetTypeID = @SynchedAssetT
         {
             try
             {
-                var pageException = JsonConvert.DeserializeObject<Exception>(json);
-                var pageExceptionMessage = pageException.GetFullExceptionData(false);
+                var pageException = JsonConvert.DeserializeObject<IgcException>(json);
+                var pageExceptionMessage = pageException.GetErrorMessage();
                 pageException = null;
                 ExecutionAssetType.ErrorMessage += pageExceptionMessage;
             }
