@@ -13786,9 +13786,6 @@ order by	case
         {
             if (!Company.HasAssetPermission(SystemObjects.Rule, id, Permission.ModifyAsset))
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-            var statuses = RuleStatus.Active.GetStatusEnumList().Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList();
-            var dimensions = Company.RuleDimensions.Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList();
             
             var model = Company.GetById<Rule>(id);
 
@@ -13796,9 +13793,6 @@ order by	case
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = model.ID.ToString() });
             
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Status", Name = FieldInfo.RuleStatus_Name, FieldDescription = FieldInfo.RuleStatus_Description, Items = statuses, FieldType = DataType.Lookup.ToString(), Value = ((int)model.Status).ToString() });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = false, FieldName = "RuleDimensionID", Name = FieldInfo.RuleDimension_Name, FieldDescription = FieldInfo.RuleDimension_Description, Items = dimensions, FieldType = DataType.Lookup.ToString(), Value = model.RuleDimensionID.GetValueOrDefault(-1).ToString() });
-
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Threshold", Name = FieldInfo.RuleThreshold_Name, FieldDescription = FieldInfo.RuleThreshold_Description, FieldType = DataType.Percentage.ToString(), Value = model.Threshold.ToString() });
 
             list = (
@@ -13926,18 +13920,11 @@ order by	case
                 if (!Company.HasAssetPermission(SystemObjects.Rule, id, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                var dimension = parseNullableIntField(form, "RuleDimensionID");
-
-                if (dimension.HasValue && dimension.GetValueOrDefault() > 0)
-                    model.RuleDimensionID = dimension;
-                else
-                    model.RuleDimensionID = null;
 
                 var threshold = decimal.Parse(form["Threshold"]);
                 if (threshold < 0 || threshold > 1)
                     throw new InvalidDataException("Threshold value must be between 0 and 1");
 
-                model.Status = (RuleStatus)Enum.Parse(typeof(RuleStatus), form["Status"]);
                 model.Threshold = threshold;
 
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Rule, model.ID, Company.GetFieldTypesByObject(SystemObjects.RuleType, model.RuleTypeID).ToList(), form, Server, false);
