@@ -6206,11 +6206,7 @@ where    A.RuleID = @id", new { id });
                             FirstColumnFields = new List<ReadOnlyField>
                             {
                                 new ReadOnlyField { Name = Resources.FieldInfo.RuleType_Name, FieldName = "RuleRuleType", FieldDescription = Resources.FieldInfo.RuleType_Description, Value = rule.RuleType.Name }
-                            },
-                            SecondColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = Resources.FieldInfo.RuleDimension_Name, FieldName = "RuleDimension", FieldDescription = Resources.FieldInfo.RuleDimension_Description, Value = (rule.RuleDimensionID.HasValue ? rule.Dimension.Name:""), TooltipContext = "Preview", TooltipID = rule.RuleDimensionID.GetValueOrDefault(), TooltipType = "RuleDimension" }
-                            }    
+                            }  
                         });
 
                         model.rows.Add(new DetailReadOnlyRowModel
@@ -6271,9 +6267,6 @@ where    A.RuleID = @id", new { id });
                             columns = 2,
                             FirstColumnFields = new List<ReadOnlyField> {
                                     new ReadOnlyField { Name = rule.GetName(i => i.ID), FieldName = "RuleID", FieldDescription = rule.GetDescription(i => i.ID), Value = $"{rule.ID}" }
-                                },
-                            SecondColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = Resources.FieldInfo.RuleStatus_Name, FieldName = "Status", FieldDescription = Resources.FieldInfo.RuleStatus_Description, Value = rule.Status.GetDisplayName() }
                                 }
                         });
                     }
