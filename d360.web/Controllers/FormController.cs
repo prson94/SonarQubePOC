@@ -13762,16 +13762,9 @@ order by	case
             if (!Company.HasAssetTypePermission(SystemObjects.RuleType, typeID, Permission.ModifyAsset))
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
-            var statuses = RuleStatus.Active.GetStatusEnumList().Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList();
-            var dimensions = Company.RuleDimensions.Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList();
-            
             var list = new List<EditableField>();
 
-            list.Add(new EditableField { FieldType = DataType.Hidden.ToString(), FieldName = "RuleTypeID", Value = typeID.ToString() });
-
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Status", Name = FieldInfo.RuleStatus_Name, FieldDescription = FieldInfo.RuleStatus_Description, Items = statuses, FieldType = DataType.Lookup.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = false, FieldName = "RuleDimensionID", Name = FieldInfo.RuleDimension_Name, FieldDescription = FieldInfo.RuleDimension_Description, Items = dimensions, FieldType = DataType.Lookup.ToString() });
-                        
+            list.Add(new EditableField { FieldType = DataType.Hidden.ToString(), FieldName = "RuleTypeID", Value = typeID.ToString() });   
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Threshold", Name = FieldInfo.RuleThreshold_Name, FieldDescription = FieldInfo.RuleThreshold_Description, FieldType = DataType.Percentage.ToString()});
             
             list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.RuleType, typeID).ToList(), 3);
@@ -13838,9 +13831,7 @@ order by	case
 
                 var model = new Rule
                 {
-                    RuleDimensionID = parseNullableIntField(form, "RuleDimensionID"),
                     RuleTypeID = parseIntField(form, "RuleTypeID"),
-                    Status = (RuleStatus)Enum.Parse(typeof(RuleStatus), form["Status"]),
                     Threshold = threshold
                 };
 
@@ -14039,6 +14030,7 @@ order by	case
         {
             try
             {
+                throw new Exception("RuleDimension is not used anymore!");
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
@@ -14047,11 +14039,6 @@ order by	case
                 var id = parseIntField(form, "ID");
                 var model = Company.GetById<RuleDimension>(id);
                 if (model == null) throw new NotFoundException("RuleDimension");
-
-                if (Company.Rules.Where(x => x.RuleDimensionID == id).Any())
-                {
-                    return jsonException(FormInfo.Delete_Error_Rule_Exist, HttpStatusCode.Forbidden);
-                }
 
                 Company.Delete(model);
 

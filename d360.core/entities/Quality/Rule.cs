@@ -12,14 +12,14 @@ namespace d360.core.entities
         [DataMember]
         public int ID { get; set; }
 
-        [DataMember]
-        public enums.RuleStatus Status { get; set; }
+        //[DataMember]
+        //public enums.RuleStatus Status { get; set; }
 
         [DataMember]
         public decimal? Threshold { get; set; }
 
-        [DataMember]
-        public string RuleDimension { get; set; }
+        //[DataMember]
+        //public string RuleDimension { get; set; }
 
         [DataMember]
         public string SourceID { get; set; }
@@ -39,14 +39,14 @@ namespace d360.core.entities
         [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public string FieldHash { get; set; }
 
-        [DataMember]
-        public enums.RuleStatus Status { get; set; }
+        //[DataMember]
+        //public enums.RuleStatus Status { get; set; }
 
         [DataMember]
         public decimal Threshold { get; set; }
 
-        [DataMember]
-        public int? RuleDimensionID { get; set; }
+        //[DataMember]
+        //public int? RuleDimensionID { get; set; }
 
         [DataMember]
         public int RuleTypeID { get; set; }
