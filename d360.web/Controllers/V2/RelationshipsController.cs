@@ -735,9 +735,9 @@ namespace d360.web.Controllers.V2
 
                 foreach (var item in relationships)
                 {
-                    if (item.Uid == null && item.Uid == Guid.Empty)
+                    if (item.Uid == null || item.Uid == Guid.Empty)
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", "You have not provided a valid JSON structure for this request.!"));
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", "You have not provided a valid GUID!"));
                     }
                 }
 
@@ -790,7 +790,7 @@ namespace d360.web.Controllers.V2
                     var deleteItems = forDeleteCheck.Where(x => x.ParentUid == rel.Uid);
                     if (deleteItems.Count() == 0)
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Relationship with Uid {rel.Uid} could not be found."));
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Relationship with Uid {rel.Uid} could not be found."));
                     }
 
                     if (deleteItems.Count() > 1 && !rel.Cascade)
