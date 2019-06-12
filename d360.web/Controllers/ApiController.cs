@@ -5207,7 +5207,6 @@ select	O.ID as AssetID,
         A.ID,
         A.Threshold,
         A.RuleDimensionID,
-        D.Name as Dimension,
         dbo.GenerateAssetUrl(O.ID) as Url,
         {0}
         A.RuleTypeID,
