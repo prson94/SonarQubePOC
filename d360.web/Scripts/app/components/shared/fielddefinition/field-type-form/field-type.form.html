@@ -418,6 +418,7 @@
                     <p-calendar *ngIf="model.FieldType.Type == 'Date'"
                                 [ngModelOptions]="{standalone: true}"
                                 [(ngModel)]="defaultDate"
+                                [showButtonBar]="true"
                                 (onSelect)="onDateSelectMethod($event)"
                                 [dateFormat]="getLocaleDateString()"></p-calendar>
                     <input *ngIf="model.FieldType.Type == 'Text' "

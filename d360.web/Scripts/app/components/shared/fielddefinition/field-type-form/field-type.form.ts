@@ -877,6 +877,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.model.FieldType.DefaultValue += '|';
                 this.model.FieldType.DefaultValue += this.defaultLinkAdress != null ? this.defaultLinkAdress : '';
             }
+        } else if (this.model.FieldType.Type == 'Date') {
+            this.model.FieldType.DefaultValue = this.defaultDate;
         }
 
         this.isLoading = true;
