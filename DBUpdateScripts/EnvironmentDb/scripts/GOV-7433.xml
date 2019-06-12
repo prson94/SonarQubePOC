@@ -4,13 +4,13 @@
     xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
-  <changeSet author="Tomislav Duric" id="GOV-7433">
+  <changeSet author="Tomislav Duric" id="GOV-7433-fix">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="true">
 <![CDATA[
-CREATE OR ALTER VIEW [dbo].[IntersectTypeDetail] AS
+CREATE OR ALTER   VIEW [dbo].[IntersectTypeDetail] AS
 SELECT        IT.uid, IT.ID, IT.Subject, IT.SubjectID, IT.SubjectCardinality, CASE IT.Subject WHEN 'IntersectType' THEN utility.DeriveIntersectTypeName(SIT.ID) 
                          WHEN 'GroupType' THEN 'Group' WHEN 'ResourceType' THEN 'Resource' ELSE COALESCE (SFT.TextPath, SATT.Name, SDT.Name) END AS SubjectName, COALESCE (SIcon.IconBackColor, '#000') AS SubjectIconBackColor, 
                          COALESCE (SIcon.IconForeColor, '#fff') AS SubjectIconForeColor, COALESCE (SIcon.IconText, SUBSTRING(COALESCE (SATT.Name, SDT.Name, ''), 1, 2)) AS SubjectIconText, IT.Object, IT.ObjectID, IT.ObjectCardinality, 
@@ -23,13 +23,13 @@ FROM            dbo.IntersectType AS IT WITH (nolock) LEFT OUTER JOIN
                          dbo.FusionAttributeType AS SFT WITH (nolock) ON SFT.ID = IT.SubjectID AND IT.Subject = 'FusionAttributeType' LEFT OUTER JOIN
                              (SELECT        1 AS ID, 'Reference List' AS Name) AS SDT ON IT.Subject = 'ReferenceItemType' AND IT.SubjectID = 0 LEFT OUTER JOIN
                          dbo.IntersectType AS SIT WITH (nolock) ON IT.Subject = 'IntersectType' AND SIT.ID = IT.SubjectID LEFT OUTER JOIN
-                         dbo.AssetType AS OATT WITH (nolock) ON OATT.Object = IT.Object AND OATT.ObjectID = IT.ObjectID LEFT OUTER JOIN
+                         dbo.AssetType AS OATT WITH (nolock) ON OATT.Object = IT.Object AND OATT.ObjectID = IT.ObjectID  AND IT.Object <> 'FusionAttributeType' LEFT OUTER JOIN
                          dbo.FusionAttributeType AS OFT WITH (nolock) ON OFT.ID = IT.ObjectID AND IT.Object = 'FusionAttributeType' LEFT OUTER JOIN
                          dbo.IntersectType AS OIT WITH (nolock) ON IT.Object = 'IntersectType' AND OIT.ID = IT.ObjectID LEFT OUTER JOIN
                              (SELECT        0 AS ID, 'Reference List' AS Name) AS ODT ON IT.Object = 'ReferenceItemType' AND IT.ObjectID = 0 LEFT OUTER JOIN
                          dbo.ObjectStyle AS SIcon WITH (nolock) ON SIcon.ObjectType = IT.Subject AND SIcon.ObjectID = IT.SubjectID LEFT OUTER JOIN
                          dbo.ObjectStyle AS OIcon WITH (nolock) ON OIcon.ObjectType = IT.Object AND OIcon.ObjectID = IT.ObjectID
-WHERE        (COALESCE (SATT.ID, SDT.ID, SIT.ID) IS NOT NULL) AND (COALESCE (OATT.ID, ODT.ID, OIT.ID) IS NOT NULL)
+WHERE        (COALESCE (SATT.ID, SFT.ID, SDT.ID, SIT.ID) IS NOT NULL) AND (COALESCE (OATT.ID, OFT.ID, ODT.ID, OIT.ID) IS NOT NULL)
 ]]>
     </sql>
 
