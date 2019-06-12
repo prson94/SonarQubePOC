@@ -6197,7 +6197,7 @@ where    A.RuleID = @id", new { id });
                 case SystemObjects.Rule:
                     #region Fields
 
-                    var rule = Company.GetById<Rule>(id, i => i.Dimension, i => i.RuleType);
+                    var rule = Company.GetById<Rule>(id, i => i.RuleType);
                     if (rule != null)
                     {
                         model.rows.Add(new DetailReadOnlyRowModel
@@ -6276,7 +6276,7 @@ where    A.RuleID = @id", new { id });
                 case SystemObjects.RuleImplementation:
                     #region Fields
 
-                    var impl = Company.GetById<RuleImplementation>(id, i => i.Rule.RuleType, i => i.RuleResultQualifierTypes, i => i.Rule.Dimension);
+                    var impl = Company.GetById<RuleImplementation>(id, i => i.Rule.RuleType, i => i.RuleResultQualifierTypes);
                     if (impl != null)
                     {
                         model.rows.Add(new DetailReadOnlyRowModel

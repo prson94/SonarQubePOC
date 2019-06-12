@@ -57,8 +57,8 @@ namespace d360.core.entities
         [DataMember, ForeignKey("RuleTypeID")]
         public RuleType RuleType { get; set; }
 
-        [DataMember, ForeignKey("RuleDimensionID")]
-        public RuleDimension Dimension { get; set; }
+        //[DataMember, ForeignKey("RuleDimensionID")]
+        //public RuleDimension Dimension { get; set; }
 
         [ForeignKey("RuleID")]
         public virtual ICollection<RuleImplementation> RuleImplementations { get; set; }
