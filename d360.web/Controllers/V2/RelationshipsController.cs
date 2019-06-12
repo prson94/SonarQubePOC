@@ -30,7 +30,7 @@ namespace d360.web.Controllers.V2
     /// </summary>
     [
         ApiVersion("2.0"),
-        RoutePrefix("api/v{version:apiVersion}/relationships"), 
+        RoutePrefix("api/v{version:apiVersion}/relationships"),
         Authorize,
         StringEnumController
     ]
@@ -101,7 +101,7 @@ namespace d360.web.Controllers.V2
 
                 #endregion
 
-                return Request.CreateResponse(HttpStatusCode.OK,  predicates);
+                return Request.CreateResponse(HttpStatusCode.OK, predicates);
             }
             catch (Exception ex)
             {
@@ -131,7 +131,8 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                var types = PredicateType.DataLineage.GetAsList().Select(i => new PredicateTypeApiViewModel {
+                var types = PredicateType.DataLineage.GetAsList().Select(i => new PredicateTypeApiViewModel
+                {
                     Type = i.ID,
                     Name = i.Name,
                     Description = i.Description
@@ -174,7 +175,7 @@ namespace d360.web.Controllers.V2
             string customColumnTableSQL = string.Empty;
             string customColumnValuesSQL = string.Empty;
 
-            if ( customColumns.Count() > 0 )
+            if (customColumns.Count() > 0)
             {
                 customColumnTableSQL = @"DROP TABLE IF EXISTS tempdb.dbo.#TempFieldTable
 
@@ -191,7 +192,7 @@ namespace d360.web.Controllers.V2
                             from fieldtype f  
                             inner join field f2 on f2.fieldtypeid = f.id 
                             where f.[object] = 'IntersectType'";
-                foreach ( var item in customColumns )
+                foreach (var item in customColumns)
                 {
                     customColumnValuesSQL += $",(Select FormattedValue from #TempFieldTable where ObjectId = I.Id and FriendlyName = '" + item.CleanForSql() + "') as '" + item.CleanForSql() + "'";
                 }
@@ -247,7 +248,7 @@ namespace d360.web.Controllers.V2
             #endregion
 
             int rowNumber = 1;
-            foreach ( var row in models )
+            foreach (var row in models)
             {
                 index = 1;
                 rowNumber++;
@@ -262,7 +263,7 @@ namespace d360.web.Controllers.V2
                 document.SetCellValue(rowNumber, index++, (string)row.ObjectName);
                 document.SetCellValue(rowNumber, index++, (string)row.ObjectTypeName);
 
-                foreach ( var col in customColumns )
+                foreach (var col in customColumns)
                 {
                     var data = (IDictionary<string, object>)row;
                     document.SetCellValue(rowNumber, index++, (string)data[col]);
@@ -490,7 +491,7 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Relationship Type with Uid {intersectTypeUid} could not be found.")));
 
                 if (relationships == null)
-                    relationships = readRequestJsonContent<RelationshipInserts>(Request,true).Result;
+                    relationships = readRequestJsonContent<RelationshipInserts>(Request, true).Result;
 
                 if (relationships == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
@@ -563,7 +564,7 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Relationship Type with Uid {intersectTypeUid} could not be found.")));
 
                 if (relationships == null)
-                    relationships = readRequestJsonContent<RelationshipInserts>(Request,true).Result;
+                    relationships = readRequestJsonContent<RelationshipInserts>(Request, true).Result;
 
                 if (relationships == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
@@ -693,7 +694,7 @@ namespace d360.web.Controllers.V2
             MapToApiVersion("2.0"),
             Route("types/{intersectTypeUid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the DELETE request.", typeof(List<RelationshipDeleteApiStatus>)), 
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the DELETE request.", typeof(List<RelationshipDeleteApiStatus>)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to delete relationship of this type.", typeof(ErrorResponse)),
@@ -729,21 +730,21 @@ namespace d360.web.Controllers.V2
 
                 if (relationships == null || relationships.Count == 0)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "You have not provided a valid JSON structure for this request.!"));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", "You have not provided a valid JSON structure for this request.!"));
                 }
 
                 foreach (var item in relationships)
                 {
                     if (item.Uid == null && item.Uid == Guid.Empty)
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "You have not provided a valid JSON structure for this request.!"));
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", "You have not provided a valid JSON structure for this request.!"));
                     }
                 }
 
 
 
                 StringBuilder relationshipUids = new StringBuilder();
-                foreach(var rel in relationships)
+                foreach (var rel in relationships)
                 {
                     relationshipUids.Append($"('{rel.Uid.ToString()}')");
                     if (rel != relationships.Last())
@@ -752,7 +753,7 @@ namespace d360.web.Controllers.V2
 
                 //Get Intersect ID for delete and union all child Intersects
                 var getRelationshipIDsForDeleting = @"declare @relationships table(uid uniqueidentifier)
-                                                      insert into @relationships values "+ relationshipUids.ToString()+ @"
+                                                      insert into @relationships values " + relationshipUids.ToString() + @"
                                                    
                                                       declare @results table(ID int, Uid uniqueidentifier,ParentUid uniqueidentifier )
                                                       ;WITH ITS AS
@@ -780,35 +781,32 @@ namespace d360.web.Controllers.V2
                 List<int> childrenRelationships = new List<int>();
 
                 var response = new List<RelationshipDeleteApiStatus>();
-                foreach(var rel in relationships)
+                foreach (var rel in relationships)
                 {
                     var status = new RelationshipDeleteApiStatus();
                     status.Uid = rel.Uid;
-                    status.Success = true;
                     status.Message = "Relationship deleted";
 
                     var deleteItems = forDeleteCheck.Where(x => x.ParentUid == rel.Uid);
-                    if(deleteItems.Count() == 0)
+                    if (deleteItems.Count() == 0)
                     {
-                        status.Success = false;
-                        status.Message = $"Relationship with Uid {rel.Uid} could not be found.";
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Relationship with Uid {rel.Uid} could not be found."));
                     }
 
-                    if(deleteItems.Count() > 1 && !rel.Cascade)
+                    if (deleteItems.Count() > 1 && !rel.Cascade)
                     {
-                        status.Success = false;
-                        status.Message = $"Relationship with Uid {rel.Uid} have child relationships. Use Cascade = true to delete all child relationships.";
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Relationship with Uid {rel.Uid} have child relationships. Use Cascade = true to delete all child relationships."));
                     }
 
-                    if (status.Success)
+                    status.Success = true;
+
+
+                    foreach (var item in deleteItems)
                     {
-                        foreach(var item in deleteItems)
-                        {
-                            if (rel.Uid == Guid.Parse(item.Uid.ToString()))
-                                parentRelationships.Add(int.Parse(item.ID.ToString()));
-                            else
-                                childrenRelationships.Add(int.Parse(item.ID.ToString()));
-                        }
+                        if (rel.Uid == Guid.Parse(item.Uid.ToString()))
+                            parentRelationships.Add(int.Parse(item.ID.ToString()));
+                        else
+                            childrenRelationships.Add(int.Parse(item.ID.ToString()));
                     }
 
                     response.Add(status);
