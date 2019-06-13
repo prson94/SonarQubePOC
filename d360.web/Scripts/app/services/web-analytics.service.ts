@@ -1,21 +1,21 @@
 ﻿import { Injectable } from '@angular/core';
-import { Headers, Http, RequestOptions } from '@angular/http';
-import { MessagesService } from './messages.service';
-import { BaseService } from './base.service';
+import { HttpClient } from "@angular/common/http";
+import { catchError } from "rxjs/operators";
+import { MessagesObservableService } from './messages-observable.service';
+import { BaseObservableService } from "./baseObservable.service";
 import { WebAnalyticsActivity } from '../models/web-analytics-activity.model';
 
 @Injectable()
-export class WebAnalyticsService extends BaseService {
+export class WebAnalyticsService extends BaseObservableService {
 
-    constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
+    constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
-    logActivity(activity: WebAnalyticsActivity) {
-        
-        let headers = new Headers({ 'Content-Type': 'application/json' });
-        let options = new RequestOptions({ headers: headers });
-        
-        this.http.post('webanalytics/logactivity', JSON.stringify(activity), options)
-            .toPromise()
-            .catch(err => this.handleError(err));          
+    logActivity(activity: WebAnalyticsActivity) {                
+        this
+            .http
+            .post('webanalytics/logactivity', JSON.stringify(activity), { headers: {'Content-Type':'application/json'}})            
+            .pipe(                
+            catchError(err => this.handleError(err))
+            ).subscribe();
     }
 }
