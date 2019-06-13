@@ -6495,7 +6495,7 @@ where    A.RuleID = @id", new { id });
                             {
                                 columns = 1,
                                 FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = Fields.SourceNotes_Name, FieldName = "SourceNotes", FieldDescription = Fields.SourceNotes_Description, Value = refType.Notes }
+                                    new ReadOnlyField { Name = Fields.SourceNotes_Name, FieldName = "SourceNotes", FieldDescription = Fields.SourceNotes_Description, DataType = "Html", Value = refType.Notes }
                                 }
                             });
                         }
