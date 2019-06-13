@@ -79,36 +79,31 @@ export class RuleQualifierEditorComponent extends BaseComponent implements OnIni
             this.qualifier = new QualifierType();
             this.qualifier.RuleImplementationID = this.implementationId;
         }
-        this.loadResolutionObjects()
-            .subscribe(() => {
-                this.loadResolutionFields();
-                this.isLoading = false;
-            });
-    }
-
-    private loadResolutionObjects(): Observable<any> {
         return this.qualifierService.getQualifierResolutionObjects()
             .subscribe(r => {
                 this.resolutionObjects = r;
                 if (this.qualifier && this.qualifier.ResolutionObject != null && this.qualifier.ResolutionObjectID != null) {
                     this.resolutionObject = this.qualifier.ResolutionObject + '|' + this.qualifier.ResolutionObjectID.toString();
                 }
+                this.loadResolutionFields();
+                this.isLoading = false;
             });
+        
     }
-
-    private loadResolutionFields(): Observable<any> {
+    
+    private loadResolutionFields(){
         if (this.resolutionObject.indexOf('|') == -1) {
             this.resolutionFields = [];
             this.qualifier.ResolutionFieldTypeID = null;
             return Observable.create();
         }
         else    
-            return this.qualifierService.getQualifierResolutionFields(+this.resolutionObject.split('|')[1], this.resolutionObject.split('|')[0])
+            this.qualifierService.getQualifierResolutionFields(+this.resolutionObject.split('|')[1], this.resolutionObject.split('|')[0])
                 .subscribe(r => {
                     this.resolutionFields = r;
                     this.resolutionFields.push({ ID: 0, FriendlyName: 'Name' });
                     this.resolutionFields.push({ ID: -2, FriendlyName: 'ParentID' });
-                });
+            });
     }
 
     private changeResolutionObject() {
