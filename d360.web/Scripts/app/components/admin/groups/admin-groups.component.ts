@@ -33,6 +33,7 @@ export class AdminGroupsComponent extends AdminBaseComponent {
     ) {
         super(headerBreadcrumbService, titleService);
         this.areaName = "Groups";
+        this.adminHeading = "Security";
         this.setCommonItems();
     }
 

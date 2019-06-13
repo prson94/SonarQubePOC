@@ -91,8 +91,7 @@ namespace d360.model
         DbSet<IntegrationExecutionAssetType> IntegrationExecutionAssetTypes { get; set; }
         DbSet<IntegrationSetting> IntegrationSettings { get; set; }
         DbSet<IntegrationUnresolvedRelationItem> IntegrationUnresolvedRelationItems { get; set; }
-        DbSet<IntersectDetail> IntersectDetails { get; set; }
-        DbSet<IntersectGroup> IntersectGroups { get; set; }
+        DbSet<IntersectDetail> IntersectDetails { get; set; }        
         DbSet<Intersect> Intersects { get; set; }
         DbSet<IntersectTypeDetail> IntersectTypeDetails { get; set; }
         DbSet<IntersectType> IntersectTypes { get; set; }
@@ -132,9 +131,7 @@ namespace d360.model
         DbSet<OrganizationResourceDetail> OrganizationResourceDetails { get; set; }
         DbSet<OrganizationResource> OrganizationResources { get; set; }
         DbSet<Organization> Organizations { get; set; }
-        DbSet<OrganizationType> OrganizationTypes { get; set; }
-        DbSet<Policy> Policies { get; set; }        
-        DbSet<PolicyType> PolicyTypes { get; set; }
+        DbSet<OrganizationType> OrganizationTypes { get; set; }        
         DbSet<Predicate> Predicates { get; set; }
         DbSet<Question> Questions { get; set; }
         DbSet<QuestionTypeOption> QuestionTypeOptions { get; set; }
@@ -167,6 +164,7 @@ namespace d360.model
         DbSet<SiteNavPermission> SiteNavPermissions { get; set; }
         DbSet<Survey> Surveys { get; set; }
         DbSet<SurveyType> SurveyTypes { get; set; }
+        DbSet<Tag> Tags { get; set; }
         DbSet<Taxonomy> Taxonomies { get; set; }        
         DbSet<TaxonomyType> TaxonomyTypes { get; set; }
         DbSet<WorkflowEventRegistration> WorkflowEventRegistrations { get; set; }
@@ -240,6 +238,7 @@ namespace d360.model
         List<FusionOwnerOption> GetFusionOwnerOptions();
         List<FusionPromotionOption> GetFusionPromotionOptions();
         IntersectType GetHierarchyIntersectType(SystemObjects objectType, int subjectId, int objectId, PredicateType predicateType = PredicateType.InterTypeHierarchy);
+        string GetIntersectTypeName(IntersectType intersectType);
         List<IntersectTypeOption> GetIntersectTypeOptions(SystemObjects? subject = null, int? subjectID = null, SystemObjects? @object = null, int? objectID = null, int? predicateID = null);
         Task<List<IntersectTypeApiViewModel>> GetIntersectTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "");
         IEnumerable<dynamic> GetLoadColumnDetails(int id);
@@ -275,7 +274,7 @@ namespace d360.model
         bool HasAssetPermission(SystemObjects type, int id, Permission permission);
         bool HasAssetTypePermission(string type, int id, Permission permission);
         bool HasAssetTypePermission(SystemObjects type, int id, Permission permission);
-        List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600);
+        List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true);
         List<DatabaseBulkRelationshipResult> ImportRelationships(ApiExecution execution, IntersectType rt, RelationshipInserts import, int timeout = 3600);
         bool IsUserFollowing(SystemObjects type, int objectID, int? resourceID);
         bool IsUserFollowingParent(SystemObjects type, int objectID, int? resourceID);
@@ -296,6 +295,7 @@ namespace d360.model
         void RequestObjectCertification(SystemObjects @object, int objectId, SystemObjects objectType, int objectTypeId);
         int SaveChanges();
         bool SaveOrUpdate<T>(T entity, List<Field> fields, int parentId = -1, bool forceUpdate = false) where T : BaseIntObject, IFieldsObject;
+        bool SaveOrUpdateAsset(Asset asset, List<Field> fields, int parentId = -1);
         List<string> SelectQueryColumns(string statement);
         Task SendDigestEmails(EnvironmentLevel environmentLevel);
         bool TypeHasChildren(SystemObjects type, int id);
@@ -310,7 +310,9 @@ namespace d360.model
         DbEntityEntry<TEntity> Entry<TEntity>(TEntity entity) where TEntity : class;
         Task<int> SaveChangesAsync();
 
-        void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFriendlyName = false, bool listableOnly = true, List<FieldType> fields = null, string idColumn = "A.ID", bool ruleMeansEvent = true);
+        void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFriendlyName = false, bool listableOnly = true, List<FieldType> fields = null, string idColumn = "A.ID", bool ruleMeansEvent = true, bool enableRelationshipFields = true);
         List<RelationshipDirectionFieldInfo> getRelationFieldData(string fieldTypeRelationType, int typeID, List<FieldType> fields);
+
+        Task<IEnumerable<TypeIdentifierInfoModel>> GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType type, Guid guid);
     }
 }

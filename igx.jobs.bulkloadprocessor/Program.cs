@@ -70,7 +70,7 @@ namespace igx.jobs.bulkloadprocessor
 
                     #region Create Load Items from Load file
 
-                    load = company.Loads.Include("LoadColumns").SingleOrDefault(i => i.ID == loadInfo.LoadID); //.Include("LoadItems.LoadItemColumns")
+                    load = company.Loads.Include("LoadColumns").SingleOrDefault(i => i.ID == loadInfo.LoadID);
 
                     companyConnection.OpenWithRetry(RetryPolicy.DefaultProgressive);
                     var loadItemRowCount = companyConnection.Query<int>("select count(1) from LoadItem where LoadID = @id", new { id = load.ID }).Single();
@@ -140,12 +140,10 @@ namespace igx.jobs.bulkloadprocessor
 
                                     if (lookupColumn != null && lookupColumn.FieldTypeId != null)
                                     {
-                                        var fieldValue = company.FieldLookupValues
-                                            .AsNoTracking()
-                                            .Where(x => x.FieldTypeID == lookupColumn.FieldTypeId && x.Text == loadValue)
-                                            .FirstOrDefault();
-                                        if (fieldValue != null)
-                                            lookupFieldObjectId = fieldValue.Value;
+                                        int? val = (await company.QueryAsync<int?>("select value from [FieldLookupValue] where FieldTypeID = @fieldTypeID and Text = @val", new { fieldTypeID = lookupColumn.FieldTypeId, val = loadValue }, 180)).FirstOrDefault();
+                                                                                
+                                        if (val.HasValue)
+                                            lookupFieldObjectId = val;
                                     }
                                     loadItemColumns.Add(new LoadItemColumn { ColumnIndex = c.ColumnIndex, LoadID = load.ID, RowIndex = rowIndex, Value = loadValue, LookupObjectID = lookupFieldObjectId });
                                 }
@@ -660,8 +658,8 @@ using		(
 			) S
 on			(T.ResourceID = S.UserID and T.GroupID = S.GroupID)
 when not matched by target then
-	insert (ResourceID, GroupID, IsOwner)
-	values (S.UserID, S.GroupID, 0)
+	insert (ResourceID, GroupID)
+	values (S.UserID, S.GroupID)
 output inserted.ResourceID into #ResourceGroupInsertResult;", transaction: trans);
 
                     company.Execute(@"
@@ -941,7 +939,11 @@ using       (
             select  distinct
 					EnvironmentID as CompanyID,
 					ResourceID,
-                    case UserStatus when 'Active' then 1 else 2 end as [State]
+                    case UserStatus 
+                        when 'Active' then 1 
+                        when 'Inactive' then 2
+                        when 'Deleted' then 3
+                    end as [State]
             from    #Users
 			where	Success = 1
             ) S
@@ -1067,7 +1069,11 @@ using       (
                     LastName, 
                     FirstName, 
                     Email, 
-                    case UserStatus when 'Active' then 1 else 2 end as [State]
+                    case UserStatus 
+                        when 'Active' then 1 
+                        when 'Inactive' then 2
+                        when 'Deleted' then 3
+                    end as [State]
             from    #Users
 			where	Success = 1
             ) S

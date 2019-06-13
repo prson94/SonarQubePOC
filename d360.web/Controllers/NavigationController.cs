@@ -16,6 +16,7 @@ using d360.web.Filters;
 using Resources;
 using System.Net;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace d360.web.Controllers
 {
@@ -402,7 +403,7 @@ namespace d360.web.Controllers
 
                 siteNav.Name = folder.Name;
                 siteNav.Icon = folder.Icon;
-                siteNav.Title = folder.Name;
+                siteNav.Title = folder.Title ?? folder.Name;
                 siteNav.ImageIconUrl = folder.ImageIconUrl;
                 Company.SaveChanges();
                 SetSiteNavPermissions(folder);
@@ -838,8 +839,35 @@ order by	f.SortOrder";
 
         }
 
+        [HttpGet, Route("GetCounts")]
+        public async Task<JsonNetResult> GetCounts()
+        {
+            string sql = @"
+SELECT count(ATT.[Object]) as count, 
+		ATT.[Object], 
+		ATT.ObjectID,
+		ATT.Name
+		from    [Asset] A
+		inner join AssetType ATT on (a.AssetTypeID = Att.id)
+		WHERE A.ID NOT IN (SELECT AssetID FROM dbo.AssetsByTypeUserCantRead(@ResourceID, ATT.ID))
+		Group by 
+		ATT.[Object], 
+		ATT.ObjectID,
+		ATT.Name
+		Order By ATT.Name
+";
+          var ItemCounts = await Company.QueryAsync<dynamic>(sql, 
+              new { ResourceID = Company.CurrentResourceID });
+
+            return new JsonNetResult
+            {
+                Data = ItemCounts,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
         [HttpGet, Route("GetItemCount/{url}")]
-        public JsonNetResult GetItemCount(string url)
+        public async Task<JsonNetResult> GetItemCount(string url)
         {
             int count = 0;
             string type = ""; 
@@ -860,11 +888,12 @@ order by	f.SortOrder";
                 id = int.TryParse(urlElements[1], out id) ? id : 0;
             type = FormatType(type);
 
-            count = Company.Query<int>(@"
-                        select	count(*)
-                        from    [AssetDetail] AD
-			            where  AD.Type = @type 
-                        and  AD.TypeID = @id", new { type, id }).FirstOrDefault();
+            count = (await Company.QueryAsync<int>(@"
+                        select	count(1)
+                        from    [Asset] A
+						inner join AssetType ATT on (a.AssetTypeID = Att.id)
+			            where  ATT.[Object] = @type and  ATT.ObjectID = @id and A.[State] = 1
+                        ", new { type, id })).FirstOrDefault();
 
             return new JsonNetResult
             {

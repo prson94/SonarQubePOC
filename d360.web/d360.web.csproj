@@ -43,6 +43,9 @@
     </Use64BitIISExpress>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AngleSharp, Version=0.9.9.0, Culture=neutral, PublicKeyToken=e83494dcdc6d31ea, processorArchitecture=MSIL">
+      <HintPath>..\packages\AngleSharp.0.9.9.2\lib\net45\AngleSharp.dll</HintPath>
+    </Reference>
     <Reference Include="Autofac, Version=4.6.2.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
       <HintPath>..\packages\Autofac.4.6.2\lib\net45\Autofac.dll</HintPath>
     </Reference>
@@ -72,6 +75,9 @@
     </Reference>
     <Reference Include="HtmlAgilityPack, Version=1.6.5.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
       <HintPath>..\packages\HtmlAgilityPack.1.6.5\lib\Net45\HtmlAgilityPack.dll</HintPath>
+    </Reference>
+    <Reference Include="HtmlSanitizer, Version=3.0.0.0, Culture=neutral, PublicKeyToken=61c49a1a9e79cc28, processorArchitecture=MSIL">
+      <HintPath>..\packages\HtmlSanitizer.4.0.185\lib\net45\HtmlSanitizer.dll</HintPath>
     </Reference>
     <Reference Include="IdentityModel, Version=3.7.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\IdentityModel.3.7.1\lib\net452\IdentityModel.dll</HintPath>
@@ -296,7 +302,9 @@
     <Compile Include="Controllers\V2\ErrorsController.cs" />
     <Compile Include="Controllers\V2\ExportTemplatesController.cs" />
     <Compile Include="Controllers\V2\FusionController.cs" />
+    <Compile Include="Controllers\V2\ActionsController.cs" />
     <Compile Include="Controllers\V2\LineageController.cs" />
+    <Compile Include="Controllers\V2\MembershipController.cs" />
     <Compile Include="Controllers\V2\MetricsController.cs" />
     <Compile Include="Controllers\V2\ProfilesController.cs" />
     <Compile Include="Controllers\V2\RelationshipsController.cs" />
@@ -304,10 +312,11 @@
     <Compile Include="Controllers\V2\ResponsibilitiesController.cs" />
     <Compile Include="Controllers\V2\SearchController.cs" />
     <Compile Include="Controllers\V2\SocialController.cs" />
+    <Compile Include="Controllers\V2\TagsController.cs" />
+    <Compile Include="Controllers\V2\WorkflowController.cs" />
     <Compile Include="Controllers\WebAnalyticsController.cs" />
     <Compile Include="Controllers\Services\WorkflowController.cs" />
     <Compile Include="Controllers\Services\EventsController.cs" />
-    <Compile Include="Controllers\Services\Obsolete\GlossaryController.cs" />
     <Compile Include="Controllers\Services\Obsolete\RelationshipsController.cs" />
     <Compile Include="Controllers\Services\FusionController.cs" />
     <Compile Include="Controllers\ApiController.cs" />
@@ -508,6 +517,7 @@
     <Content Include="Content\primeng\v6.0.1\images\loading.gif" />
     <Content Include="Content\primeng\v6.0.1\images\password-meter.png" />
     <Content Include="Content\primeng\v6.0.1\images\rating.png" />
+    <Content Include="Content\primeng\v6.0.1\images\ui-icons_222222_256x240.png" />
     <Content Include="Content\primeng\v6.0.1\primeng.css" />
     <Content Include="Content\primeng\v6.0.1\primeng.min.css">
       <DependentUpon>primeng.css</DependentUpon>
@@ -1020,23 +1030,29 @@
     <Content Include="fonts\nunitosans\NunitoSans-Regular.ttf" />
     <Content Include="fonts\nunitosans\NunitoSans-SemiBold.ttf" />
     <Content Include="fonts\nunitosans\NunitoSans-SemiBoldItalic.ttf" />
+    <None Include="Properties\PublishProfiles\d3s-ui-au-east - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-au-east-development - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-au-east-uat - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\d3s-ui-central - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-central-Development - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-central-UAT - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\d3s-ui-eu-north - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-eu-north-development - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-eu-north-UAT - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\d3s-ui-london - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-london-development - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-london-uat - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\d3s-ui-pune - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-pune-development - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-pune-UAT - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\d3s-ui-us-east - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-us-east-Development - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-us-east-Nightly - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-us-east-UAT - Web Deploy.pubxml" />
-    <None Include="Properties\PublishProfiles\LocalFolder.pubxml" />
     <Content Include="Views\Authentication\NoAccess.cshtml" />
     <Content Include="Scripts\app\components\shared\relationship\dynamic-relationship-grid.component.html" />
     <Content Include="tslint.json" />
+    <Content Include="Views\Authentication\InactiveCompany.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -1108,6 +1124,10 @@
       <Project>{b12a1078-5835-43b8-afb2-c3d24c4aa098}</Project>
       <Name>d360.model</Name>
     </ProjectReference>
+    <ProjectReference Include="..\d360.utils\d360.utils.csproj">
+      <Project>{9775B4DF-0AC8-4524-BA10-4A43BF9CB61E}</Project>
+      <Name>d360.utils</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="Scripts\app\app.module.ts" />
@@ -1145,9 +1165,9 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-responsibility-selector.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\fielddefinition\field-type-form\field-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\grid-selection-info.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\header\header-mini-menu-component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\responsibility-relations.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\responsibility-relation.form.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\fusion-attribute-profile-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\assettypeeditor\asset-type-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-nym-allocations.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-analytics.component.ts" />

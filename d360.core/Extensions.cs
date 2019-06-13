@@ -9,9 +9,103 @@ using System.Data.SqlClient;
 using System.Security.Cryptography;
 using System.Text;
 using System.IO;
+using Newtonsoft.Json.Linq;
+using d360.core.entities;
 
 namespace d360.core
 {
+    public static class JsonExtensions
+    {
+        public static List<FieldJsonProperty> ParseJsonIntoJsonPropertiesCollection(this string o, bool fieldJsonPropertyLoadLimitToTopLevel = true)
+        {
+            var token = JToken.Parse(o);
+            return token.ParseJsonIntoJsonPropertiesCollection(fieldJsonPropertyLoadLimitToTopLevel);
+        }
+
+        public static List<FieldJsonProperty> ParseJsonIntoJsonPropertiesCollection(this JToken o, bool fieldJsonPropertyLoadLimitToTopLevel = true)
+        {
+            List<FieldJsonProperty> properties = new List<FieldJsonProperty>();
+
+            if (o is JArray)
+            {
+                properties = (o as JArray).ParseJsonIntoJsonPropertiesCollection(fieldJsonPropertyLoadLimitToTopLevel);
+            }
+            else if (o is JObject)
+            {
+                properties = (o as JObject).ParseJsonIntoJsonPropertiesCollection(0, null, fieldJsonPropertyLoadLimitToTopLevel);
+            }
+
+            return properties;
+        }
+
+        private static List<FieldJsonProperty> ParseJsonIntoJsonPropertiesCollection(this JArray o, bool fieldJsonPropertyLoadLimitToTopLevel = true)
+        {
+            List<FieldJsonProperty> properties = new List<FieldJsonProperty>();
+
+            int pos = 0;
+            foreach (JToken c in o)
+            {
+                properties.AddRange(
+                    (c as JObject).ParseJsonIntoJsonPropertiesCollection(pos, fieldJsonPropertyLoadLimitToTopLevel : fieldJsonPropertyLoadLimitToTopLevel)
+                    );
+                pos++;
+            }
+
+            return properties;
+        }
+
+        private static List<FieldJsonProperty> ParseJsonIntoJsonPropertiesCollection(this JObject o, int position = 0, string parentName = null, bool fieldJsonPropertyLoadLimitToTopLevel = true)
+        {
+            List<FieldJsonProperty> properties = new List<FieldJsonProperty>();
+
+            // Try to resolve based on Parent property on object.
+            if (o.Parent != null)
+            {
+                parentName = o.Parent.Path;
+            }
+
+            if (!fieldJsonPropertyLoadLimitToTopLevel || (fieldJsonPropertyLoadLimitToTopLevel && string.IsNullOrEmpty(parentName)))
+            {
+                foreach (JProperty p in o.Properties())
+                {
+                    if (p.Value is JArray)
+                    {
+                        properties.Add(new FieldJsonProperty { IsArray = true, Name = p.Name, Parent = parentName, Path = p.Path, Position = position });
+
+                        int pos = 0;
+                        foreach (JToken c in p.Value)
+                        {
+                            properties.AddRange(
+                                (c as JObject).ParseJsonIntoJsonPropertiesCollection(pos, p.Name, fieldJsonPropertyLoadLimitToTopLevel)
+                                );
+                            pos++;
+                        }
+                    }
+                    else if (p.Value is JObject)
+                    {
+                        properties.Add(new FieldJsonProperty { IsArray = false, Name = p.Name, Parent = parentName, Path = p.Path, Position = position });
+                        properties.AddRange(
+                            (p.Value as JObject).ParseJsonIntoJsonPropertiesCollection(position, p.Name, fieldJsonPropertyLoadLimitToTopLevel)
+                            );
+                    }
+                    else
+                    {
+                        properties.Add(new FieldJsonProperty {
+                            IsArray = false,
+                            Name = (p as JProperty).Name,
+                            Parent = parentName,
+                            Path = p.Path,
+                            Position = position,
+                            Value = (p as JProperty).Value.ToString()
+                        });
+                    }
+                }
+            }
+
+            return properties;
+        }
+    }
+
     public static class StringExtensions
     {
         public static bool In<T>(this T t, params T[] values)

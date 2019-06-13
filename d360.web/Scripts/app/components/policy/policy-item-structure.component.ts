@@ -1,31 +1,45 @@
-﻿import {Input, Component, EventEmitter, Output, OnInit, OnDestroy} from '@angular/core';
+﻿import {
+    Component,
+    OnInit,
+    OnDestroy
+} from '@angular/core';
 import {Router, ActivatedRoute} from '@angular/router';
 import {Title} from '@angular/platform-browser';
+import {TreeNode} from 'primeng/primeng';
 
-import {BaseComponent} from '../shared/base.component';
+import {Breadcrumb} from '../../models/breadcrumb.model';
+import {Policy, PolicyType, PolicyStatus} from '../../models/policy.model';
+import {GridColumn, GridField} from '../../models/grid-definition.model';
+
 import {HeaderBreadcrumbService} from '../../services/header-breadcrumb.service';
 import {PoliciesService} from '../../services/policies.service';
 import {RightSidebarService} from '../../services/right-sidebar.service';
 import {MessagesService} from '../../services/messages.service';
 import {HeaderActionsService} from '../../services/header-actions.service';
 import {PermissionsService} from '../../services/permissions.service';
-import {Breadcrumb} from '../../models/breadcrumb.model';
-import {Policy, PolicyType, PolicyStatus} from '../../models/policy.model';
-import {TreeNode} from 'primeng/primeng';
+import {LevelsService} from '../../services/levels.service';
+import {GridDefinitionService} from '../../services/grid-definition.service';
+
+import {BaseComponent} from '../shared/base.component';
+
 import {SiteUrlHelpers} from '../../static/site-url-helpers';
 import {StringConstants} from '../../static/string-constants';
-import {LevelsService} from '../../services/levels.service';
-import {GridColumn, GridField} from '../../models/grid-definition.model';
-import {GridDefinitionService} from '../../services/grid-definition.service';
 
 @Component({
     selector: 'd3s-policy-item-structure',
     templateUrl: './policy-item-structure.component.html',
-    providers: [PoliciesService, GridDefinitionService, PermissionsService, LevelsService]
+    providers: [
+        PoliciesService,
+        GridDefinitionService,
+        PermissionsService,
+        LevelsService
+    ]
 })
 
 export class PolicyItemStructureComponent extends BaseComponent implements OnInit, OnDestroy {
-    sub: any;
+    routeParamsSubscription: any;
+    private currentAreaNameSubscription: any;
+    private currentAreaName: string;
 
     policyType: PolicyType;
     policies: Policy[] = [];
@@ -41,10 +55,11 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
 
     searchValue: string;
 
-    showDelete: boolean = false;
-    showEditor: boolean = false;
+    showDelete = false;
+    showEditor = false;
 
     theDeleteCallback: Function;
+
 
     constructor(
         protected titleService: Title,
@@ -62,68 +77,97 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
         super();
         this.rightSidebarService = rightSidebarService;
         this.theDeleteCallback = this.deletePolicyItem.bind(this);
-        router.events.subscribe((value) => {
-            this.showEditor = false;
-        });
+        router.events.subscribe(
+            (value) => {
+                this.showEditor = false;
+            }
+        );
     }
 
     ngOnInit() {
-        this.sub = this.route.params.subscribe(params => {
+        this.routeParamsSubscription = this.route.params.subscribe(
+            params => {
+                this.policyTypeId = +params['policyTypeId'];
+                this.headerBreadcrumbService.setCurrentObjectInfo('PolicyType', this.policyTypeId);
+               
 
-            this.policyTypeId = +params['policyTypeId'];
-            this.headerBreadcrumbService.setCurrentObjectInfo('PolicyType', this.policyTypeId);
+                this.setObjectInfo('PolicyType', this.policyTypeId);
+                this.clearSidebar();
+                this.setCommonRightSideBar(true);
+                this.getFieldsDefinition();
+                this.loadPermissions(this.permissionsService, StringConstants.ObjectPolicyType, this.policyTypeId);
 
-            this.setObjectInfo('PolicyType', this.policyTypeId);
-            this.clearSidebar();
-            this.setCommonRightSideBar(true);
-            this.getFieldsDefinition();
+                this.isLoading = true;
+                this.policiesService.getPolicyType(this.policyTypeId).subscribe(
+                    result => {
 
-            this.loadPermissions(this.permissionsService, StringConstants.ObjectPolicyType, this.policyTypeId);
-            this.isLoading = true;
-            this.policiesService.getPolicyType(this.policyTypeId)
-                .then(result => {
-                    this.isLoading = false;
-                    this.policyType = result;
-                    this.headerBreadcrumbService.clearBreadcrumbs();
-                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Policies', `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_POLICY_CLASSIFICATION}`));
-                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.policyType.Name, `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${this.policyTypeId}/structure`));
+                        this.policyType = result;
+                        this.currentAreaNameSubscription =
+                            this.headerBreadcrumbService
+                                .getAreaName('PolicyType', this.policyTypeId)
+                                .subscribe(result => {
+                                    this.currentAreaName = result
+                                    this.headerBreadcrumbService.getFolderTitle('#Policy').then((res) => {
+                                        this.headerBreadcrumbService.clearBreadcrumbs();
+                                        this.headerBreadcrumbService.showBreadcrumb(
+                                            new Breadcrumb(
+                                                this.currentAreaName ? this.currentAreaName : res,
+                                                `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_POLICY_CLASSIFICATION}`
+                                            )
+                                        );
+                                        this.headerBreadcrumbService.showBreadcrumb(
+                                            new Breadcrumb(
+                                                this.policyType.Name,
+                                                SiteUrlHelpers.getObjectUrl('POLICYTYPE', this.policyTypeId),
+                                                undefined, 'POLICYTYPE', this.policyTypeId, undefined, undefined, true)
+                                        );
+                                    });
+                                });
 
-                    this.loadPolicyHierarchy(this.policyTypeId);
+                        this.loadPolicyHierarchy(this.policyTypeId);
+                        this.setBrowserTitle(this.titleService, this.policyType.Name);
 
-                    this.setBrowserTitle(this.titleService, this.policyType.Name);
-                });
-            this.levelsService.getObjectLevels(this.policyTypeId, StringConstants.ObjectPolicyType).subscribe(
-                result => {
-                    this.levels = result;
-                }
-            );
-        });
+                        this.isLoading = false;
+                    }
+                );
+                this.levelsService.getObjectLevels(this.policyTypeId, StringConstants.ObjectPolicyType).subscribe(
+                    result => {
+                        this.levels = result;
+                    }
+                );
+            }
+        );
     }
 
     ngOnDestroy() {
         this.clearSidebar();
-        this.sub.unsubscribe();
+        this.routeParamsSubscription.unsubscribe();
+        this.currentAreaNameSubscription.unsubscribe();
     }
 
     private loadPolicyHierarchy(policyTypeId: number) {
-        this.policiesService.getPolicies(policyTypeId, true)
-            .then(result => {
+        this.policiesService.getPolicies(policyTypeId, true).subscribe(
+            result => {
+
                 for (let policy of result) {
                     policy.StatusName = PolicyStatus[policy.Status];
                 }
+
                 this.policies = result;
-                this.treeNodeArray = this.buildTreeNodeArray(this.policies, 1)
-            });
+                this.treeNodeArray = this.buildTreeNodeArray(this.policies, 1);
+            }
+        );
     }
 
     private buildTreeNodeArray(models: Policy[], levelNumber: number, Parent?: number): TreeNode[] {
-        //find the root items then 
+        // find the root items then
+        const rootNodes = models.filter(x => (Parent != undefined ? x.ParentID == Parent : !x.ParentID));
 
-        let rootNodes = models.filter(x => (Parent != undefined ? x.ParentID == Parent : !x.ParentID));
+        if (rootNodes.length == 0) {
+            return null;
+        }
 
-        if (rootNodes.length == 0) return null;
-
-        let res: TreeNode[] = [];
+        const res: TreeNode[] = [];
 
         for (let root of rootNodes) {
             root.Level = levelNumber;
@@ -131,7 +175,8 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
                 label: root.DisplayValue,
                 expanded: false,
                 data: root,
-                children: (this.buildTreeNodeArray(models, levelNumber + 1, root.ID)) //recursively find its children
+                // recursively find its children
+                children: (this.buildTreeNodeArray(models, levelNumber + 1, root.ID))
             });
         }
 
@@ -152,25 +197,34 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
     }
 
     setTreeNodeStyles(node) {
-        if (!node.data) return null;
+        if (!node.data) {
+            return null;
+        }
 
-        let styles = {
+        const styles = {
             'font-weight': node.data.hasRelations ? 'bold' : 'normal',
         };
+
         return styles;
     }
 
     deletePolicyItem(id: number) {
         this.isLoading = true;
-        this.policiesService.deletePolicy(id).then(res => {
-            this.showMessageForResult(this.messagesService, res);
-            if (res.type != 'error') {
-                this.deleteSelectedTreeNode(id);
-                this.headerActionsService.emitFavoritesChange();
-                this.selected = null;
+
+        this.policiesService.deletePolicy(id).subscribe(
+            res => {
+                this.showMessageForResult(this.messagesService, res);
+
+                if (res.type != 'error') {
+                    this.deleteSelectedTreeNode(id);
+                    this.headerActionsService.emitFavoritesChange();
+                    this.selected = null;
+                }
+
+                this.isLoading = false;
             }
-            this.isLoading = false;
-        });
+        );
+
         this.showDelete = false;
     }
 
@@ -185,10 +239,11 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
         if (!this.selected) {
             let thisLevel = this.levels.filter(x => x.Level == this.selectedLevel + 1);
 
-            if (thisLevel && thisLevel.length > 0)
+            if (thisLevel && thisLevel.length > 0) {
                 return thisLevel[0].Name;
-            else
+            } else {
                 return `(Level ${this.selectedLevel + 1}) Item`;
+            }
         }
 
         let thisLevel = this.levels.filter(x => x.Level == this.selected.data.Level);
@@ -196,6 +251,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
         if (thisLevel && thisLevel.length > 0) {
             return thisLevel[0].Name;
         }
+
         return `(Level ${this.selected.data.Level + 1}) Item`;
     }
 
@@ -203,17 +259,20 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
         let nodes: TreeNode[] = [];
 
         // add root nodes
-        for (var i = 0; i < this.treeNodeArray.length; i++) {
+        for (let i = 0; i < this.treeNodeArray.length; i++) {
             if (this.treeNodeArray[i].data.ID && this.treeNodeArray[i].data.ID == id) {
                 this.treeNodeArray.splice(i, 1);
-                return
+
+                return;
             }
 
             nodes.push(this.treeNodeArray[i]);
         }
 
-        //do a breadth first search for the given treenode
-        if (nodes.length == 0) return;
+        // do a breadth first search for the given treenode
+        if (nodes.length == 0) {
+            return;
+        }
 
         let node = nodes[0];
 
@@ -222,36 +281,42 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
                 return node;
             }
 
-            //push children
+            // push children
             if (node.children) {
-                for (var i = 0; i < node.children.length; i++) {
+                for (let i = 0; i < node.children.length; i++) {
                     if (node.children[i].data.ID && node.children[i].data.ID == id) {
                         node.children.splice(i, 1);
-                        return
+
+                        return;
                     }
+
                     nodes.push(node.children[i]);
                 }
             }
 
-            //remove this node
+            // remove this node
             nodes.splice(0, 1);
 
             if (nodes.length == 0) {
                 return null;
             }
+
             node = nodes[0];
         }
     }
 
     private savePolicy(event) {
         this.isLoading = true;
-        this.policiesService.savePolicy(event.item)
-            .then(result => {
+
+        this.policiesService.savePolicy(event.item).subscribe(
+            result => {
                 this.showMessageForResult(this.messagesService, result);
                 this.headerActionsService.emitFavoritesChange();
                 this.loadPolicyHierarchy(this.policyTypeId);
-                this.isLoading = false;
                 this.showEditor = false;
-            });
+
+                this.isLoading = false;
+            }
+        );
     }
-};
+}

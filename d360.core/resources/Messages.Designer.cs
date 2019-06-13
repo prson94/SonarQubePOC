@@ -124,6 +124,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to One or more JSON Attribute fields reference the field you are attempting to remove..
+        /// </summary>
+        public static string Error_Item_FieldJsonAttributeReferences {
+            get {
+                return ResourceManager.GetString("Error_Item_FieldJsonAttributeReferences", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to One or more fields reference this item..
         /// </summary>
         public static string Error_Item_FieldReferences {

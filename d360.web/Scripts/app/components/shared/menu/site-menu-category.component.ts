@@ -13,30 +13,31 @@ import { HeaderActionsService } from '../../../services/header-actions.service';
 import { isString, isArray } from 'util';
 import { stringify } from '@angular/core/src/util';
 import { createWriteStream } from 'fs';
+import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-site-menu-category',
     template: ` 
                     <li #item [ngClass]="{'menu-category':true,'menu-parent':menu && (menu.NavigationItems),'menu-active':menu?.isActiveItem}" title="{{title}}" (mouseenter)="show(item); clearSearches(event, item);" (mouseleave)="hide(item);" [routerLink]="url ? url : []" style="cursor: pointer;" >
-                       <div style="display:inline-flex;">
-                            <i *ngIf="rootIconName" [class]="'fa ' + rootIconName" style="padding: 10px;"></i>
-                            <img *ngIf="imageUrl" [src]="imageUrl" style="max-width: 20px; max-height: 20px; margin:10px 10px 10px 10px" />
+                       <div class="menu-category-box">
+                            <i *ngIf="rootIconName" [class]="'fa ' + rootIconName"></i>
+                            <img *ngIf="imageUrl" [src]="imageUrl" />
                             <div [ngClass]="{'caption':true, 'min':!expanded}">
                                 <div [ngClass]="{'no-overflow':expanded, 'icon-active':expanded, 'icon':!expanded}"> {{title}} </div>
                                 <i [ngClass]="{'pull-right menu-category fa fa-caret-right':(menu && menu.NavigationItems && menu.NavigationItems.length > 0),'icon-active':expanded, 'icon':!expanded}"></i>
                             </div>
                         </div>
                         <div #panel *ngIf="menu && menu.NavigationItems && menu.NavigationItems.length > 0" class="menu-child megamenu-panel" title="" [ngStyle]="{'display:flex; flex-direction:column': menu.isActiveItem}" (click)="stopNavigation($event)" (keyup)="checkKey($event,panel)">
-                            <div>
+                            <div class="ie-min-content">
                                 <div class="row megamenu-title truncate">
                                     <input (keyup)="positionMenu($event,item)" #searchinput type="search" [(ngModel)]=searchText placeholder="Search menu..."/>
-                                    <i (click)="clearInput()" [ngClass]="{'fa fa-times':searchText != '', 'fa fa-search':searchText == '' ||  !seachtext}" style="padding: 10px;margin-left:auto;"></i>
-                                </div>
-                                    <span class="megamenu-tools" *ngIf="showClearButton">
-                                        <i style="line-height: 35px;" (click)="clearClick.emit(true)" class=" pull-right fa fa-eraser" [pTooltip]="'Clear ' + title + ' List'" tooltipZIndex="10001"></i>
-                                    </span>
+                                    <i (click)="clearInput()" [ngClass]="{'fa fa-times':searchText != '', 'fa fa-search':searchText == '' ||  !seachtext}"></i>
+                                    <div class="megamenu-tools" *ngIf="showClearButton">
+                                        <i (click)="clearClick.emit(true)" class=" pull-right fa fa-eraser" [pTooltip]="'Clear ' + title + ' List'" tooltipZIndex="10001"></i>
+                                    </div>
+                                </div> 
                                 <div class="row megamenu-items"[ngStyle]="{'max-height': getMaxHeight()}">
-                                    <div  style="padding:0px;" [class]="getColumnClass(menu)" *ngFor="let item of menu.NavigationItems | simpleSearch: searchText">
+                                    <div class="col s12 megamenu-items-container" *ngFor="let item of menu.NavigationItems | simpleSearch: searchText">
                                         <ul class="menu-group">                                        
                                             <d3s-site-menu-mega-item [item]="item" [level]="0" [searchText]="searchText" [(active)]="menu.isActiveItem" [count]="item.count"></d3s-site-menu-mega-item>
                                         </ul>
@@ -71,7 +72,8 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
     private currentButtonIndex: number = -1;
 
     constructor(private menuService: SiteMenuService,
-        private headerActionsService: HeaderActionsService) {
+        private headerActionsService: HeaderActionsService,
+        private siteMenuService: SiteMenuService) {
         super();
     }
 
@@ -101,19 +103,23 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
                 this.currentButtonIndex = 0;
 
             this.ResetColor(allAItems);
-            allAItems[this.currentButtonIndex].style['background-color'] = "#878b97";
+            let arr = allAItems[this.currentButtonIndex].className.split(" ");
+            if (arr.indexOf("highlight") == -1) {
+                allAItems[this.currentButtonIndex].className += " highlight";
+            }
+            
         }
     }
   
     ResetColor(allAItems) {
         if (allAItems.length) {
             Array.prototype.forEach.call(allAItems, function (item) {
-                item.style['background-color'] = "#4e5466";
+                item.className = item.className.replace(/\b highlight\b/g, "");
             });
         }
     }
     show(item) {
-        if (this.menu.isActiveItem)
+        if (this.menu && this.menu.isActiveItem)
             return;
         this.positionMenu(null,item);
     }
@@ -141,29 +147,42 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
         }
     }
 
-    loadCounts() {
-        if (this.menu && this.menu.NavigationItems && this.menu.NavigationItems.length > 0 && !this.menu.MenuID.startsWith('-')) {
-            this.menu.NavigationItems.forEach((item) => this.getCount(item));
+    loadCounts(menu: any) {
+        if (menu && menu.NavigationItems && menu.NavigationItems.length > 0 && !menu.MenuID.startsWith('-')) {
+            this.siteMenuService.getCounts().then((res) => {
+                menu.NavigationItems.forEach((item) => this.getAllCounts(item, res));
+            });
         }
     }
 
-    getCount(items) {
+    getAllCounts(items, arr: any[]) {
         if (isString(items.Name) && isString(items.Url) && items.Url.indexOf('/') != -1) {
             //get count for item
-            this.menuService.getItemCount(items.Url.replace(new RegExp('/', 'g'), '-')).then((res) => { items.count = res });
+            var id = _.findIndex(arr, function (o) {
+                let currentURL = items.Url.toLowerCase();
+                currentURL = items.Url.replace('model', 'taxonomy');
+                return o.Name == items.Name
+                    && _.includes(currentURL, o.Object.toLowerCase().replace('type', ''))
+                    && _.includes(currentURL, o.ObjectID);
+            });
+            if (id !== -1) {
+                items.count = arr[id].count;
+            } else {
+                items.count = 0;
+            }
         }
 
         //check if sub items exist
         if (isArray(items.Items)) {
             //recursively check sub items
-            items.Items.forEach((item) => this.getCount(item));
+            items.Items.forEach((item) => this.getAllCounts(item, arr));
         }
     }
 
     ngAfterViewInit(): void {
 
         this.subReloadCounts = this.headerActionsService.onSiteCountsChange.subscribe(() => {
-            this.loadCounts();
+            this.loadCounts(this.menu);
         });
 
         this.viewReady = true;
@@ -209,6 +228,7 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
     hide(item) {
         if (this.menu && this.searchText == "") {
             this.ResetColor(item.getElementsByTagName("a"));
+            this.currentButtonIndex = -1;
             this.menu.isActiveItem = false;
         }
     }
@@ -220,7 +240,5 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
         this.searchText = "";
     }
   
-    private getColumnClass(menu: SiteMenu) {
-        return "col s12";
-    }
+
 }

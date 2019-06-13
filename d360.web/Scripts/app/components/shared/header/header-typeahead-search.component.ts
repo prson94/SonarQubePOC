@@ -9,17 +9,16 @@ import { SubscriptionLike as ISubscription } from 'rxjs';
 
 @Component({
     selector: 'd3s-header-typeahead-search',    
-    template: ` <span #item style="display:table;" class="header-search" [ngClass]="{'header-search-active':active}" (mouseenter)="show(item)" (mouseleave)="hide(item)" (keyup)="checkKey($event)" >
-                    <a><i class="fa fa-search"></i></a>
-                    <div class="search-child header-search-panel">
-                        <p-autoComplete size="50" *ngIf="active"
+    template: ` <span #item class="header-search header-table" [ngClass]="{'header-search-active':active}" (keyup)="checkKey($event)" >
+                    <div class="header-search-input flat light">
+                        <p-autoComplete size="50"
                                 styleClass="searchTypeahead" 
                                 scrollHeight="400px"
                                 [(ngModel)]="result" 
                                 [suggestions]="results" 
                                 field="Name"
                                 (completeMethod)="search($event)"                              
-                                placeholder="Search Data3Sixty"  
+                                placeholder="Search..."  
                                 [minLength]="1"  
                                 (onSelect)="selectItem()">                       
                             <ng-template let-result>
@@ -28,6 +27,7 @@ import { SubscriptionLike as ISubscription } from 'rxjs';
                                 </div>                            
                             </ng-template>
                         </p-autoComplete>
+                    <i class="fa fa-search"></i>
                     </div>
                 <span>`,
     providers: [TypeaheadSearchService],

@@ -1,0 +1,36 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="MDonato" id="GOV-7289-permissions">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[
+				IF 
+		USER_ID('reporting_reader') IS NOT NULL 
+		AND EXISTS (select 1 from information_schema.routines where routine_schema = 'reporting' and routine_type = 'function' and routine_name = 'StripHTML')
+	BEGIN
+		grant execute on reporting.StripHTML to reporting_reader;
+	END
+			
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+			IF 
+		USER_ID('reporting_reader') IS NOT NULL 
+		AND EXISTS (select 1 from information_schema.routines where routine_schema = 'reporting' and routine_type = 'function' and routine_name = 'StripHTML')
+	BEGIN
+		revoke execute on reporting.StripHTML to reporting_reader;
+	END
+		
+		]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>

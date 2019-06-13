@@ -115,6 +115,8 @@ export class FieldsService extends BaseService implements IFieldsService {
                 l.Field_CardinalRelationships = this.ftItemToSelectItem(r.Field_CardinalRelationships);
                 l.Field_CardinalReferenceRelationships = this.ftItemToSelectItem(r.Field_CardinalReferenceRelationships);
                 l.Field_FieldFromRelRelationships = this.ftItemToSelectItem(r.Field_FieldFromRelRelationships);
+                l.Field_JsonDataTypes = this.ftItemToSelectItem(r.Field_JsonDataTypes);
+                l.Field_JsonFields = this.ftItemToSelectItem(r.Field_JsonFields);
                 l.Lookups = this.ftItemToSelectItem(r.Lookups);
                 l.Patterns = this.ftItemToSelectItem(r.Patterns);
                 l.ComplexLookupRelations = r.ComplexLookupRelations;
@@ -306,6 +308,12 @@ export class FieldsService extends BaseService implements IFieldsService {
             }));
     }
 
+    getTypeaheadJsonPropertyOptionsForJsonField(fieldTypeId: number, phrase: string): Promise<string[]> {
+        return this.http.get(`form/FieldType_TypeaheadJsonPropertyOptionsForJsonField?fieldTypeId=${fieldTypeId}&phrase=${encodeURIComponent(phrase)}`)
+            .toPromise()
+            .then(response => response.json())
+            .catch(err => this.handleError(err));
+    }
 }
 
 class FtItem {

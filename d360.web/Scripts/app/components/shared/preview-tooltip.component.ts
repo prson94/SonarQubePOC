@@ -79,12 +79,16 @@ export class PreviewTooltipComponent {
                 }
 
                 this.data = res;
-                this.showPanel(tip, item);
-                this.ref.markForCheck();
+                if (tip.innerText != " " && tip.textContent != " ") {
+                    this.showPanel(tip, item);
+                    this.ref.markForCheck();
+                }
             });
         } else {
-            this.showPanel(tip, item);
-            this.ref.markForCheck();
+            if (tip.innerText != " " && tip.textContent != " ") {
+                this.showPanel(tip, item);
+                this.ref.markForCheck();
+            }
         }
     }
 

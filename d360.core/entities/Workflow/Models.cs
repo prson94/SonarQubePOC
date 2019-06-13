@@ -1,12 +1,15 @@
 ﻿using d360.core.enums;
 using d360.core.enums.Workflow;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web.Script.Serialization;
 using System.Xml.Serialization;
 
 namespace d360.core.entities.Workflow
@@ -288,6 +291,9 @@ namespace d360.core.entities.Workflow
 
         [DataMember]
         public string ClearValue { get; set; }
+
+        [DataMember]
+        public string ObjectType { get; set; }
     }
 
     public class WorkflowStepRelationshipChange
@@ -320,4 +326,126 @@ namespace d360.core.entities.Workflow
         public int AssetId { get; set; }
     }
 
+
+    #region API View Model
+   
+    public class WorkflowTypeApiViewModel
+    {
+
+        public Guid? ActionTypeUid { get; set; }
+        public Guid? AssetTypeUid { get; set; }
+        public Guid? RelationshipTypeUid { get; set; }
+        public string Name { get; set; }
+        [DataMember, JsonConverter(typeof(StringEnumConverter))]
+        public State State { get; set; }
+        [DataMember, JsonConverter(typeof(StringEnumConverter))]
+        public ChangeType ChangeType { get; set; }
+        public string Description { get; set; }
+        public Guid? PublishedVersionUid { get; set; }
+        public DateTime CreatedOn { get; set; }
+        public DateTime UpdatedOn { get; set; }
+
+    }
+
+    public class WorkflowVersionApiViewModel
+    {
+        public Guid? Uid { get; set; }
+        public Guid? ActionTypeUid { get; set; }
+        public Guid? AssetTypeUid { get; set; }
+        public Guid? RelationshipTypeUid { get; set; }
+        public Guid WorkflowTypeUid { get; set; }
+        public int VersionNumber { get; set; }
+        [DataMember, JsonConverter(typeof(StringEnumConverter))]
+        public State State { get; set; }
+        public bool IsPublished { get; set; }
+        public Guid CreatedByUid { get; set; }
+        public DateTime CreatedOn { get; set; }
+        public Guid UpdatedByUid { get; set; }
+        public DateTime UpdatedOn { get; set; }
+        public int TotalWorkflowItems { get; set; }
+        public int TotalPendingWorkflowItems { get; set; }
+
+    }
+
+
+
+    public class WorkflowVersionsApiViewModel
+    {
+        [DataMember]
+        public int pageSize { get; set; } = 250;
+        [DataMember]
+        public int pageNum { get; set; } = 1;
+        [DataMember]
+        public int total { get; set; } = 0;
+        [DataMember]
+        public IEnumerable<WorkflowVersionApiViewModel> items { get; set; }
+    }
+
+
+
+    public class WorkflowVersionStepsApiViewModel
+    {
+        
+        public Guid Uid { get; set; }
+        public string Name { get; set; }
+        [DataMember, JsonConverter(typeof(StringEnumConverter))]
+        public State  State { get; set; }
+        [DataMember, JsonConverter(typeof(StringEnumConverter))]
+        public StepType StepType { get; set; }
+
+        [DataMember, JsonConverter(typeof(StringEnumConverter))]
+        public WorkflowActivityType ActivityType { get; set; }
+        public dynamic Settings { get; set; }
+        [JsonIgnore]
+        public string SettingsXml { get; set; }
+        [JsonIgnore]
+        public string FieldsXml { get; set; }
+        public Guid? StartedByUid { get; set; }
+        public DateTime? StartedOn { get; set; }
+        public Guid? CompletedByUid { get; set; }
+        public DateTime? CompletedOn { get; set; }
+
+
+    }
+
+    public class WorkflowInstanceApiViewModel
+    {
+
+        [JsonIgnore]
+        public int ID { get; set; }
+        public Guid Uid { get; set; }
+        public string Name { get; set; }
+        [DataMember, JsonConverter(typeof(StringEnumConverter))]
+        public State State { get; set; }
+        [DataMember, JsonConverter(typeof(StringEnumConverter))]
+        public StepType StepType { get; set; }
+
+        [DataMember, JsonConverter(typeof(StringEnumConverter))]
+        public WorkflowActivityType ActivityType { get; set; }
+        public dynamic Settings { get; set; }
+
+        public dynamic Responses { get; set; }
+        [JsonIgnore]
+        public string SettingsXml { get; set; }
+        [JsonIgnore]
+        public string FieldsXml { get; set; }
+
+        [JsonIgnore]
+        public string Response1 { get; set; }
+        [JsonIgnore]
+        public string Response2 { get; set; }
+        public IList<WorkflowAssignmentApiViewModel> Assignments { get; set; }
+
+        public Guid? StartedByUid { get; set; }
+        public DateTime? StartedOn { get; set; }
+        public Guid? CompletedByUid { get; set; }
+        public DateTime? CompletedOn { get; set; }
+
+    }
+    public class WorkflowAssignmentApiViewModel
+    {
+        public Guid AssigneeUid { get; set; }
+    }
+
+    #endregion
 }

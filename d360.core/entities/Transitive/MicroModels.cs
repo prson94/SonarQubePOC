@@ -47,6 +47,7 @@ namespace d360.core.entities
         public HashAlgorithmType HashAlgorithmType { get; set; }
 
         public bool SignInitialSSORequest { get; set; }
+        public bool IsCompanyActive { get; set; }
     }
 
     /// <summary>
@@ -208,15 +209,7 @@ namespace d360.core.entities
         public SiteNav Folder { get; set; }
         public List<SiteNav> Items { get; set; } = new List<SiteNav>();
     }
-
-    [DataContract(Namespace = NAMESPACE)]
-    public class ObjectModel : BaseObject
-    {
-        [DataMember]
-        public string ObjectType { get; set; }
-        [DataMember]
-        public int ObjectID { get; set; }
-    }
+        
 
     #region ResponsibilityRule Models
 
@@ -251,15 +244,6 @@ namespace d360.core.entities
 
     #endregion
 
-    [DataContract(Namespace = NAMESPACE)]
-    public class PermissionModel : BaseObject
-    {
-        [DataMember]
-        public string Claim { get; set; }
-
-        [DataMember]
-        public string ClaimObject { get; set; }
-    }
 
     [DataContract(Namespace = NAMESPACE)]
     public class ObjectStatisticTileModel : BaseObject
@@ -347,15 +331,6 @@ namespace d360.core.entities
 
         [DataMember]
         public List<ReportSchemaModel> Items { get; set; }
-    }
-
-    public class BulkLoadRelationModel
-    {
-        public string DisplayValue { get; set; }
-
-        public string Object { get; set; }
-
-        public int ObjectID { get; set; }
     }
 
     public class BulkLoadMatchingModel

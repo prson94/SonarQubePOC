@@ -1,0 +1,58 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+	<changeSet author="Tomislav Duric" id="GOV-7448">
+		<sql dbms="mssql"
+			endDelimiter="\nGO"
+			splitStatements="true"
+			stripComments="true">
+<![CDATA[
+CREATE OR ALTER VIEW [dbo].[PredicateIntersect] AS
+SELECT        
+I.ID AS IntersectID, 
+I.uid, 
+I.IntersectTypeID, 
+I.Subject, 
+I.SubjectID, 
+I.Object, 
+I.ObjectID, 
+I.State, 
+T.PredicateID, 
+P.Name AS PredicateName, 
+P.Inverse AS PredicateInverse, 
+P.Type AS PredicateType
+FROM            
+dbo.[Intersect] AS I 
+INNER JOIN dbo.IntersectType AS T ON T.ID = I.IntersectTypeID 
+LEFT JOIN dbo.Predicate AS P ON P.ID = T.PredicateID
+]]>
+		</sql>
+		<rollback>
+<![CDATA[
+CREATE OR ALTER VIEW [dbo].[PredicateIntersect] AS
+SELECT        
+I.ID AS IntersectID, 
+I.uid, 
+I.IntersectTypeID, 
+I.Subject, 
+I.SubjectID, 
+I.Object, 
+I.ObjectID, 
+I.State, 
+T.PredicateID, 
+P.Name AS PredicateName, 
+P.Inverse AS PredicateInverse, 
+P.Type AS PredicateType
+FROM            
+dbo.[Intersect] AS I 
+INNER JOIN dbo.IntersectType AS T ON T.ID = I.IntersectTypeID 
+INNER JOIN dbo.Predicate AS P ON P.ID = T.PredicateID
+]]>
+		</rollback>
+	</changeSet>
+
+  </databaseChangeLog>

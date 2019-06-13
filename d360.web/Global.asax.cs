@@ -14,6 +14,9 @@ using d360.web.Filters;
 using d360.web.Models;
 using System.Collections.Generic;
 using System.Linq;
+using d360.model.DataAccessLayer;
+using d360.model.validators;
+
 
 namespace d360.web
 {
@@ -35,6 +38,16 @@ namespace d360.web
 
             builder.RegisterType<CommunityContext>().As<ICommunityContext>().InstancePerRequest();
             builder.RegisterType<CompanyContext>().As<ICompanyContext>().InstancePerRequest();
+
+            builder.RegisterType<AssetRepository>().As<IAssetRepository>().InstancePerRequest();
+            builder.RegisterType<CrossReferencesRepository>().As<ICrossReferencesRepository>().InstancePerRequest();
+            builder.RegisterType<TagRepository>().As<ITagRepository>().InstancePerRequest();
+            builder.RegisterType<FieldsRepository>().As<IFieldsRepository>().InstancePerRequest();
+            builder.RegisterType<WorkflowRepository>().As<IWorkflowRepository>().InstancePerRequest();
+            builder.RegisterType<WorkflowApiModelValidator>().As<IWorkflowApiModelValidator>().InstancePerRequest();
+            builder.RegisterType<IssueRepository>().As<IIssueRepository>().InstancePerRequest();
+            builder.RegisterType<RelationshipRepository>().As<IRelationshipRepository>().InstancePerRequest();
+
 
             builder.RegisterType<d360.extensions.info.UriSecurityContextProvider>().As<ISecurityContextProvider>()
                 .InstancePerRequest()

@@ -234,7 +234,7 @@ where	[AllowChangeDetection] = 0").ToList();
         {
             CoreFunction.AppInsightsInstrumentationKey(CoreFunction.GetConfigValueByKey("IGC_APPINSIGHTS_INSTRUMENTATIONKEY"));
 #if DEBUG
-            var queueModel = new IntegrationQueueModel { CompanyID = 122, ExecutionID = 77115, IntegrationSettingID = 1, SynchedAssetTypeID = 18, To = QueueAction.Integration, UrlPrefix = "statestreet.uat" };
+            var queueModel = new IntegrationQueueModel { CompanyID = 1, ExecutionID = 50003, IntegrationSettingID = 1, SynchedAssetTypeID = 1, To = QueueAction.Integration, UrlPrefix = "integration.eng" };
 #else
             var queueModel = JsonConvert.DeserializeObject<IntegrationQueueModel>(myQueueItem);
 #endif
@@ -322,14 +322,6 @@ where	[AllowChangeDetection] = 0").ToList();
         {
             get
             {
-                if (_client == null)
-                {
-                    var handler = new HttpClientHandler { UseCookies = false }; //SslProtocols = System.Security.Authentication.SslProtocols.Tls, 
-                    _client = new HttpClient(handler, false);
-                    _client.Timeout = new TimeSpan(1, 0, 0);
-                    _client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-                }
-
                 return _client;
             }
         }
@@ -360,6 +352,9 @@ where	[AllowChangeDetection] = 0").ToList();
         public CompanyContext Company { get; set; }
 
         public int DefaultResourceID { get; set; }
+
+        public bool AutoTrustServerCertificate { get; set; }
+        public bool RemoveUriPortOnConnect { get; set; }
 
         #endregion
 
@@ -543,27 +538,6 @@ where	[AllowChangeDetection] = 0").ToList();
 
         #endregion
 
-        void writeLogEntry(string message, int step, bool isError = false)
-        {
-            if (SynchedAssetType.EnableAppInsightsVerboseLogging)
-            {
-                var properties = new Dictionary<string, string>() { { "Step", $"{step}" } };
-                if (ExecutionAssetType != null)
-                {
-                    properties.Add("ExecutionID", ExecutionAssetType.ExecutionID.ToString());
-                    properties.Add("SynchedAssetTypeID", ExecutionAssetType.SynchedAssetTypeID.ToString());
-                }
-                if (isError)
-                    CoreFunction.AITrackException("IGC", new ApplicationException(message), Company.CurrentCompanyID, properties);
-                else
-                    CoreFunction.AITrackTrace("IGC", message, properties, Company.CurrentCompanyID);
-            }
-            else
-            {
-                Log.WriteLine(message);
-            }
-        }
-
         public void RunSingle()
         {
             var Caching = new DummyCachingProvider();
@@ -617,8 +591,12 @@ where	[AllowChangeDetection] = 0").ToList();
             int defaultPageSize = SynchedAssetType.PageSize ?? setting.PageSize;
             int defaultRefreshInterval = setting.RefreshInterval;
             DefaultResourceID = setting.TargetResourceID;
+            AutoTrustServerCertificate = setting.AutoTrustServerCertificate;
+            RemoveUriPortOnConnect = setting.RemoveUriPortOnConnect;
             AuthenticationHeaderValue = $"Basic {Convert.ToBase64String(System.Text.Encoding.GetEncoding("ISO-8859-1").GetBytes(setting.SourceUser + ":" + setting.SourcePassword))}";
             setting = null;
+
+            LogoutUri = $"{baseUri}logout/";
 
             #endregion
 
@@ -626,6 +604,9 @@ where	[AllowChangeDetection] = 0").ToList();
             string url;
             int currentStep = 1;
             bool fatalError = false;
+
+            // Create common client before connecting to any URI.
+            createHttpClient();
 
             #region Get type definition: step (1)
 
@@ -691,7 +672,6 @@ where	[AllowChangeDetection] = 0").ToList();
 
             try
             {
-                LogoutUri = $"{baseUri}logout/";
                 url = $"{baseUri}search/";
 
                 // The raw sql connection to use for the specific company.
@@ -1278,6 +1258,42 @@ where	[AllowChangeDetection] = 0").ToList();
 
         #region Utils
 
+        void createHttpClient()
+        {
+            if (_client == null)
+            {
+                var handler = new HttpClientHandler { UseCookies = false }; //SslProtocols = System.Security.Authentication.SslProtocols.Tls, 
+                if (AutoTrustServerCertificate)
+                {
+                    handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; };
+                }
+                _client = new HttpClient(handler, false);
+                _client.Timeout = new TimeSpan(1, 0, 0);
+                _client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+            }
+        }
+
+        void writeLogEntry(string message, int step, bool isError = false)
+        {
+            if (SynchedAssetType.EnableAppInsightsVerboseLogging)
+            {
+                var properties = new Dictionary<string, string>() { { "Step", $"{step}" } };
+                if (ExecutionAssetType != null)
+                {
+                    properties.Add("ExecutionID", ExecutionAssetType.ExecutionID.ToString());
+                    properties.Add("SynchedAssetTypeID", ExecutionAssetType.SynchedAssetTypeID.ToString());
+                }
+                if (isError)
+                    CoreFunction.AITrackException("IGC", new ApplicationException(message), Company.CurrentCompanyID, properties);
+                else
+                    CoreFunction.AITrackTrace("IGC", message, properties, Company.CurrentCompanyID);
+            }
+            else
+            {
+                Log.WriteLine(message);
+            }
+        }
+
         string CalculateHash(string input)
         {
             MD5 md5 = MD5.Create();
@@ -1383,7 +1399,7 @@ where	[AllowChangeDetection] = 0").ToList();
         async Task<T> GetFromApi<T>(string uri)
         {
             var cleanUri = new Uri(uri);
-            if (cleanUri.Port != 80 && cleanUri.Port != 443)
+            if (cleanUri.Port != 80 && cleanUri.Port != 443 && RemoveUriPortOnConnect)
             {
                 uri = uri.Replace($":{cleanUri.Port}", "");
             }
@@ -1739,8 +1755,8 @@ delete integration.ExecutionAssetField where SynchedAssetTypeID = @SynchedAssetT
         {
             try
             {
-                var pageException = JsonConvert.DeserializeObject<Exception>(json);
-                var pageExceptionMessage = pageException.GetFullExceptionData(false);
+                var pageException = JsonConvert.DeserializeObject<IgcException>(json);
+                var pageExceptionMessage = pageException.GetErrorMessage();
                 pageException = null;
                 ExecutionAssetType.ErrorMessage += pageExceptionMessage;
             }

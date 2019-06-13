@@ -41,7 +41,6 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     private selectedObjectType: any = null;
     private conditions: any[] = [];
     private issueObjectTypes: any[] = [];
-    private selectedIssueObjectType: any = null;
 
     private showAddCondition: boolean = false;
 
@@ -71,7 +70,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
         if (CompanySettings != null && CompanySettings.EnableShoppingCart != null && CompanySettings.EnableShoppingCart.toString() == 'true') {
             this.hideShoppingCart = false;
         }
-
+        
         this.load()
             .then(() => this.model.Event.SettingsObject.Settings.MessageRecipientType = 'SpecificUser')
             .then(() => this.isLoading = false)
@@ -162,6 +161,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                         }
                     })
                     .then(() => {
+                        this.model.Event.IssueObject = '';
                         if (this.objectType == 'IssueType') {
                             this.issueObjectTypes = this.workflowObjectTypes.slice().filter(w => w.type != 'IssueType');
 
@@ -169,7 +169,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                             let objectIdIndex = this.conditions.findIndex(c => c['@ContextualFieldID'] == 'IssueObjectID');
 
                             if (objectIndex > -1 && objectIdIndex > -1) {
-                                this.selectedIssueObjectType = this.conditions[objectIndex]['@Value'] + '|' + this.conditions[objectIdIndex]['@Value'];
+                                this.model.Event.IssueObject = this.conditions[objectIndex]['@Value'] + '|' + this.conditions[objectIdIndex]['@Value'];
                             }
 
                         }
@@ -289,9 +289,9 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
         let objectIdIndex = this.conditions.findIndex(c => c['@ContextualFieldID'] == 'IssueObjectID');
 
         if (this.objectType == 'IssueType') {
-            if (this.selectedIssueObjectType != null && this.selectedIssueObjectType.indexOf('|') > -1) {
-                let obj = this.selectedIssueObjectType.split('|')[0];
-                let objid = this.selectedIssueObjectType.split('|')[1];
+            if (this.model.Event.IssueObject != null && this.model.Event.IssueObject.indexOf('|') > -1) {
+                let obj = this.model.Event.IssueObject.split('|')[0];
+                let objid = this.model.Event.IssueObject.split('|')[1];
 
                 if (objectIndex < 0) {
                     this.conditions.push({

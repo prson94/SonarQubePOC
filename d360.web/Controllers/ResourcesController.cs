@@ -908,6 +908,8 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                 string typeName = "";
                 string uid = "";
                 ObjectDetail det = null;
+                string workflowTypeUid = "";
+                string workflowVersionUid = "";
 
                 if (Company.HasAssetDefaultReadPermission(objectType, objectID))
                 {
@@ -964,17 +966,23 @@ order by A.ID, FT.SortOrder", new { id, attribute });
 
                         
                     }
-                    else
+                    else if (det != null)
                     {
+                        var sql = @"
+select  ISNULL(FormattedValue,' ') as Value,
+	    FriendlyName as Name
+from    FieldDetail 
+where   [Object]= @o and ObjectID = @oid and [Name] != 'Description' and [Type] <> 'JsonElement'
+union
+select	p.[Value],
+		RT.FriendlyName as [Name]
+from	FieldType RT 
+		cross apply openjson(RT.Definition) with (FieldTypeID int '$.FieldTypeID', [Path] nvarchar(250) '$.Path', DataType varchar(50) '$.DataType') D
+		inner join Field F on  F.ObjectType = @o and F.ObjectID = @oid and F.FieldTypeID = D.FieldTypeID and RT.[Type] = 'JsonElement'
+		inner join FieldJsonProperty P on P.FieldID = F.ID and P.[Path] = D.[Path] 
+where   RT.Object = @type and RT.ObjectID = @typeID";
 
-                        var sql = @"select 
-	                                    ISNULL(FormattedValue,' ') as Value,
-	                                    FriendlyName as Name
-	                                    from dbo.FieldDetail 
-		                                    where objectid = @obj and [object]= @ty and [Name] != 'Description'";
-
-
-                        res = Company.Query<FieldTooltipValueModel>(sql, new { obj = objectID, ty = objectType }).ToList();
+                        res = Company.Query<FieldTooltipValueModel>(sql, new { oid = objectID, o = objectType, type = det.Type, typeID = det.TypeID }).ToList();
 
 
                     }
@@ -983,9 +991,9 @@ order by A.ID, FT.SortOrder", new { id, attribute });
 	                                    ISNULL(FormattedValue,' ') as Value,
 	                                    FriendlyName as Name
 	                                    from dbo.FieldDetail 
-		                                    where objectid = @obj and [object]= @ty and [Name] = 'Description'";
+		                                    where objectid = @oid and [object]= @o and [Name] = 'Description'";
 
-                    desc = Company.Query<string>(descSql, new { obj = objectID, ty = objectType, }).FirstOrDefault();
+                    desc = Company.Query<string>(descSql, new { oid = objectID, o = objectType, }).FirstOrDefault();
 
                     dispName = det != null ? det.Name : "";
                     typeName = det != null ? det.TypeName : "";
@@ -1030,6 +1038,26 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                         var responbilityReleationRule = Company.GetById<ResponsibilityTypeRelationRule>(objectID);
                         uid = responbilityReleationRule?.UID.ToString();
                     }
+                    else if (objectType == "RuleDimension")
+                    {
+                        var ruleDimension = Company.GetById<RuleDimension>(objectID);
+                        desc = ruleDimension?.Description;
+                    }
+                    else if (objectType == "WorkflowVersion")
+                    {
+                        var worflowSql = @"	Select t.uid as TypeUID,v.uid as VersionUID from workflow.[type] as t
+	                                    inner join  [workflow].[Version] as v on
+	                                    t.id = v.TypeId
+	                                    where v.id=@id";
+                        var workflow = Company.Query<dynamic>(worflowSql, new { id = objectID }).FirstOrDefault();
+                        workflowTypeUid = workflow.TypeUID.ToString();
+                        workflowVersionUid = workflow.VersionUID.ToString();
+                        det = null;
+                        uid = null;
+                        dispName = null;
+                        typeName = null;
+ 
+                    }
                 }
 
                 return Json(
@@ -1043,7 +1071,10 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                         Url = ((det != null && det.Url != null) ? $"/{det.Url}" : ""),
                         Levels = levels,
                         FieldValues = res,
-                        Description = desc
+                        Description = desc,
+                        WorkflowTypeUID = workflowTypeUid,
+                        WorkflowVersionUID= workflowVersionUid
+
                     },
                     JsonRequestBehavior.AllowGet);
             }

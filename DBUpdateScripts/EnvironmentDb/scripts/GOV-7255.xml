@@ -1,0 +1,39 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="kmcnamee" id="GOV-7255">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+		IF (NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND  TABLE_NAME = 'tag'))
+BEGIN
+	CREATE TABLE [dbo].[Tag](
+			[ID] [int] IDENTITY(1,1) NOT NULL,
+			[uid] [uniqueidentifier] CONSTRAINT [DF_Tag_uid]  DEFAULT (newid()) NOT NULL,
+			[Value] [nvarchar](250) NOT NULL,
+			[CreatedOn] [datetime] CONSTRAINT [DF_Tag_createdOn]  DEFAULT (getutcdate()) NOT NULL,
+			[CreatedBy] [int] CONSTRAINT [DF_Tag_createdBy]  DEFAULT (0) NOT NULL,
+			[UpdatedOn] [datetime] CONSTRAINT [DF_Tag_updatedOn]  DEFAULT (getutcdate()) NOT NULL,
+			[UpdatedBy] [int] CONSTRAINT [DF_Tag_updatedBy]  DEFAULT (0) NOT NULL,
+		 CONSTRAINT [PK_Tag] PRIMARY KEY CLUSTERED 
+		(
+			[ID] ASC
+		)
+	)
+END
+]]>
+    </sql>
+	<rollback>
+	<![CDATA[
+		drop table dbo.tag
+]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>

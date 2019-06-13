@@ -1,0 +1,47 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="MDonato" id="GOV-7289">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[
+DROP FUNCTION IF EXISTS [reporting].[StripHTML];
+GO
+CREATE FUNCTION [reporting].[StripHTML] (@HTMLText NVARCHAR(MAX))
+RETURNS NVARCHAR(MAX) AS
+BEGIN
+    DECLARE @Start INT
+    DECLARE @End INT
+    DECLARE @Length INT
+    SET @Start = CHARINDEX('<',@HTMLText)
+    SET @End = CHARINDEX('>',@HTMLText,CHARINDEX('<',@HTMLText))
+    SET @Length = (@End - @Start) + 1
+    WHILE @Start > 0 AND @End > 0 AND @Length > 0
+    BEGIN
+        SET @HTMLText = STUFF(@HTMLText,@Start,@Length,'')
+        SET @Start = CHARINDEX('<',@HTMLText)
+        SET @End = CHARINDEX('>',@HTMLText,CHARINDEX('<',@HTMLText))
+        SET @Length = (@End - @Start) + 1
+    END
+    RETURN LTRIM(RTRIM(@HTMLText))
+END
+GO
+			
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+	DROP FUNCTION IF EXISTS [reporting].[StripHTML];
+GO	
+		
+		]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>

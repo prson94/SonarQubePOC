@@ -2,6 +2,7 @@
 using d360.core.entities;
 using d360.core.enums;
 using Dapper;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -43,6 +44,39 @@ namespace d360.model
                 return value += "%";
         }
 
+        public string DetermineSqlDataTypeForFieldType(FieldType f)
+        {
+            var sqlDataType = "nvarchar";
+            if (f.Type == DataType.JsonElement.ToString())
+            {
+                FieldTypeDefinition_JsonElement jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(f.Definition);
+                sqlDataType = jsonElementDefinition.DataType;
+                jsonElementDefinition = null;
+            }
+            else if (f.Type == DataType.Boolean.ToString())
+            {
+                sqlDataType = "bit";
+            }
+            else if (f.Type == DataType.Date.ToString())
+            {
+                sqlDataType = "date";
+            }
+            else if (f.Type == DataType.DateTime.ToString())
+            {
+                sqlDataType = "datetime";
+            }
+            else if (f.Type == DataType.Decimal.ToString())
+            {
+                sqlDataType = "decimal";
+            }
+            else if (f.Type == DataType.Number.ToString())
+            {
+                sqlDataType = "int";
+            }
+
+            return sqlDataType;
+        }
+
         /// <summary>
         /// This is the pivot version of the method above, but the paging is where this design broke down.
         /// </summary>
@@ -56,12 +90,19 @@ namespace d360.model
             var fieldTypes = Filter<FieldType>(i => i.AssetTypeID == assetTypeID).ToList();
             var selectFields = fieldTypes.Where(i => i.IsListable).OrderBy(i => i.ColumnOrder).ToList();
 
-            var selectFieldString = string.Join(",", selectFields.Select(i => (useFieldNames ? $"[{i.ID}] as {i.Name}" : $"[{i.ID}] as Field{i.ID}")));
+            var tableHints = " with (NOLOCK)";
+            var dtJsonElement = DataType.JsonElement.ToString();
+
+            var selectFieldStringList = new List<string>();
+            selectFields.ForEach(f =>
+            {
+                var sqlDataType = DetermineSqlDataTypeForFieldType(f);
+                selectFieldStringList.Add(GetFieldTypeValue(f, useFieldNames));
+            });
+            var selectFieldString = string.Join(",", selectFieldStringList);
 
             var selectFieldIDs = string.Join(",", selectFields.Select(i => $"{i.ID}"));
             var pivotFieldIDs = string.Join(",", selectFields.Select(i => $"[{i.ID}]"));
-
-            var tableHints = " with (NOLOCK)";
 
             var dbArgs = new DynamicParameters();
             dbArgs.Add("r", CurrentResourceID, System.Data.DbType.Int32);
@@ -85,17 +126,17 @@ namespace d360.model
 						   then 1 
 						   else 0 
 						end as P_CanDelete, ";            
-            }            
+            }
 
             #endregion
 
             #region Relationship Sql Syntax
 
-            var relationshipCaseStatement = "";
+            var relationshipFieldStatement = "";
             var relationshipJoinStatement = "";
             if (selectFields.Any(i => i.Type == "Relationship"))
             {
-                relationshipCaseStatement = @" when FT.Type = 'Relationship' and FT.LookupObjectType = 'IntersectType' then RD.DisplayValue ";
+                relationshipFieldStatement = @" RD.DisplayValue ";
                 
                 relationshipJoinStatement = $@"
  left join [Intersect] F_R{tableHints} on	FT.LookupObjectType = 'IntersectType' 
@@ -113,11 +154,11 @@ outer apply dbo.GetRelationshipDisplayValue(
 
             #region Relationship Field Sql Syntax
 
-            var fieldFromRelationshipCaseStatement = "";
+            var fieldFromRelationshipFieldStatement = "";
             var fieldFromRelationshipJoinStatement = "";
             if (selectFields.Any(i => i.Type == "FieldFromRelationship"))
             {
-                fieldFromRelationshipCaseStatement = @"when FT.Type = 'FieldFromRelationship' and FT.LookupObjectType = 'IntersectType' then F_RF.FormattedValue";
+                fieldFromRelationshipFieldStatement = @" F_RF.FormattedValue";
                 fieldFromRelationshipJoinStatement = $@"
  left join [Intersect] F_REL{tableHints} on	FT.LookupObjectType = 'IntersectType' 
 										and F_REL.IntersectTypeID = FT.LookupObjectID 
@@ -161,6 +202,7 @@ left join Field F_RF{tableHints} on F_RF.ObjectType = case when F_REL.Subject = 
                 foreach (var filter in filters)
                 {
                     filterIndex++;
+
                     if (filter is UiRequestAttributeFilterValue)
                     {
                         var f = filter as UiRequestAttributeFilterValue;
@@ -238,13 +280,26 @@ select ObjectID from AttributeDetail{tableHints} where AttributeTypeID = @{param
                                 }
                                 else
                                 {
-                                    nonPivotInnerJoinPrefix = $@"inner join (
+                                    if (thisFilterFieldType.Type == DataType.JsonElement.ToString())
+                                    {
+                                        FieldTypeDefinition_JsonElement jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(thisFilterFieldType.Definition);
+
+                                        nonPivotInnerJoinPrefix = $@"inner join (
+                                                                        select SF.AssetID, SF.FieldTypeID, SJP.Value as Value, SJP.[Value] as Val from Field SF{tableHints} inner join FieldJsonProperty SJP{tableHints} on SF.ID = SJP.FieldID and SF.FieldTypeID = {jsonElementDefinition.FieldTypeID}
+                                                                     ) F{thisFilterFieldType.ID}_{filterIndex} on F{thisFilterFieldType.ID}_{filterIndex}.AssetID = A.ID and F{thisFilterFieldType.ID}_{filterIndex}.FieldTypeID = {jsonElementDefinition.FieldTypeID}";
+
+                                    }
+                                    else
+                                    {
+                                        nonPivotInnerJoinPrefix = $@"inner join (
                                                                                 select AssetID, FieldTypeID, FormattedValue as Value, [Value] as Val from Field{tableHints} where FieldTypeID = {thisFilterFieldType.ID}
                                                                                 union all
                                                                                 select SA{thisFilterFieldType.ID}.ID as AssetID, SFT{thisFilterFieldType.ID}.ID as FieldTypeID, DefaultFormattedValue as Value, '' as Val from FieldType SFT{thisFilterFieldType.ID}{tableHints}
 							                                                    inner join Asset SA{thisFilterFieldType.ID}{tableHints} on SA{thisFilterFieldType.ID}.AssetTypeID = @atID
 							                                                    where not exists (select 1 from Field where AssetID = SA{thisFilterFieldType.ID}.ID and FieldTYpeID = {thisFilterFieldType.ID})
                                                                             ) F{thisFilterFieldType.ID}_{filterIndex} on F{thisFilterFieldType.ID}_{filterIndex}.AssetID = A.ID and F{thisFilterFieldType.ID}_{filterIndex}.FieldTypeID = {thisFilterFieldType.ID}";
+
+                                    }
                                 }
 
                                 var bind = $"fld{thisFilterFieldType.ID}";
@@ -343,9 +398,22 @@ select SubjectID from [Intersect]{tableHints} where IntersectTypeID = @{paramPre
             }
             else
             {
-                dbArgs.Add("simpleFilter", $"{wildcardValue(simpleFilter)}", System.Data.DbType.String, System.Data.ParameterDirection.Input, 250);             
+                dbArgs.Add("simpleFilter", $"{wildcardValue(simpleFilter)}", System.Data.DbType.String, System.Data.ParameterDirection.Input, 250);
 
-                var simpleFilterIDs = string.Join(",", selectFields.Select(i => i.ID));
+                var simpleFilterIDList = new List<int>();
+                selectFields.ForEach(i => {
+                    if (i.Type == DataType.JsonElement.ToString())
+                    {
+                        FieldTypeDefinition_JsonElement jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(i.Definition);
+                        simpleFilterIDList.Add(jsonElementDefinition.FieldTypeID);
+                    }
+                    else
+                    {
+                        simpleFilterIDList.Add(i.ID);
+                    }
+                });
+                var simpleFilterIDs = string.Join(",", simpleFilterIDList);
+
                 var fieldFromRelationshipAssets = selectFields.Any(i => i.Type == "FieldFromRelationship") ? $@"union
                                     select	A.ID as AssetID 
                                     from	Field SF
@@ -392,6 +460,10 @@ select SubjectID from [Intersect]{tableHints} where IntersectTypeID = @{paramPre
                                             and (DefaultFormattedValue like @simpleFilter)
                                     union all
 		                            select	AssetID
+		                            from	Field SF{tableHints}
+                                            inner join FieldJsonProperty SJP{tableHints} on SJP.FieldID = SF.ID and SF.FieldTypeID in ({simpleFilterIDs}) and SJP.Value like @simpleFilter
+                                    union all
+		                            select	AssetID
 		                            from	Field SF{tableHints}                                             
 		                            where	FieldTypeID in ({simpleFilterIDs})
                                             and (FormattedValue like @simpleFilter)
@@ -428,7 +500,7 @@ select SubjectID from [Intersect]{tableHints} where IntersectTypeID = @{paramPre
                     selectFields
                         .Where(i => i.SortOrder != 0)
                         .OrderBy(i => i.SortOrder)
-                        .Select(i => (useFieldNames ? GetFieldTypeSort(i.Name, true, i.Type) : GetFieldTypeSort($"{i.ID}", true, i.Type)))
+                        .Select(i => (useFieldNames ? GetFieldTypeSort(i.Name, true, i) : GetFieldTypeSort($"Field{i.ID}", true, i)))
                 );
 
                 if (string.IsNullOrEmpty(orderFieldString))
@@ -438,7 +510,7 @@ select SubjectID from [Intersect]{tableHints} where IntersectTypeID = @{paramPre
                         selectFields
                             .Where(i => i.IsPartOfKey)
                             .OrderBy(i => i.ColumnOrder)
-                            .Select(i => (useFieldNames ? GetFieldTypeSort(i.Name, true, i.Type) : GetFieldTypeSort($"Field{i.ID}", true, i.Type)))
+                            .Select(i => (useFieldNames ? GetFieldTypeSort(i.Name, true, i) : GetFieldTypeSort($"Field{i.ID}", true, i)))
                     );
                 }
                 
@@ -455,7 +527,7 @@ select SubjectID from [Intersect]{tableHints} where IntersectTypeID = @{paramPre
                     selectFields.SingleOrDefault(i => sortField == $"Field{i.ID}");
                 if (sortFieldType != null)
                 {
-                    orderFieldString = useFieldNames ? GetFieldTypeSort(sortFieldType.Name, (sortOrder ??"").ToUpper() == "ASC" , sortFieldType.Type) : GetFieldTypeSort($"{sortFieldType.ID}", (sortOrder ?? "").ToUpper() == "ASC", sortFieldType.Type);
+                    orderFieldString = useFieldNames ? GetFieldTypeSort(sortFieldType.Name, (sortOrder ??"").ToUpper() == "ASC" , sortFieldType) : GetFieldTypeSort($"{sortFieldType.ID}", (sortOrder ?? "").ToUpper() == "ASC", sortFieldType);
                 }
                 else if(string.Compare(sortField,"PARENT",true) == 0)
                 {
@@ -489,16 +561,47 @@ OPTION (RECOMPILE)";
             var whereClause = " where ";
 
             if (string.IsNullOrEmpty(filterWhereStringRaw)) whereClause = "";
-            
-                var sql = $@"
-select	*
-from	(
-		select	AssetID, Object, ObjectID, Type, TypeID, 
-               {editRightsColumnStatement}
-               {parentOuterSqlColumn}                  
-				{selectFieldString} 
-		from	(
-				select	A.ID as AssetID,
+
+
+            #region Build Field Select Statements
+
+            List<string> fieldSql = new List<string>();
+            var fieldsSql = "";
+
+            foreach (var ft in selectFields)
+            {
+                var ftID = ft.ID;
+
+                FieldTypeDefinition_JsonElement jsonElementDefinition = null;
+
+                if (ft.Type == dtJsonElement)
+                {
+                    jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(ft.Definition);
+                    ftID = jsonElementDefinition.FieldTypeID;
+                }
+
+                var fieldValueStatement = $@"case 
+							when FT.AllowAllValue = 1 and F_O.Value = '0' then FT.AllowAllLabel 
+                            when F_O.Value is not null then F_O.FormattedValue
+							when FT.DefaultValue is not null then FT.DefaultFormattedValue 
+							else '' end";
+
+                if (ft.Type == dtJsonElement)
+                {
+                    fieldValueStatement = "FJP.[Value]";
+                }
+                else if (ft.Type == "Relationship")
+                {
+                    fieldValueStatement = $"{relationshipFieldStatement}";
+                }
+                else if (ft.Type == "FieldFromRelationship")
+                {
+                    fieldValueStatement = $"{fieldFromRelationshipFieldStatement}";
+                }
+                fieldValueStatement += " as [Field]";
+
+                fieldSql.Add($@"
+                select	A.ID as AssetID,
                         A.AssetTypeID as AssetTypeID,
 						A.Object,
 						A.ObjectID,        
@@ -506,24 +609,38 @@ from	(
 						AST.ObjectID as TypeID,
                         {parentSqlColumn}
 						FT.ID as FieldTypeID,                        
-						case 
-							when FT.AllowAllValue = 1 and F_O.Value = '0' then FT.AllowAllLabel 
-                            when F_O.Value is not null then F_O.FormattedValue
-							when FT.DefaultValue is not null then FT.DefaultFormattedValue 
-							{relationshipCaseStatement}
-							{fieldFromRelationshipCaseStatement}
-							else '' 
-						end as [Field]	
+						{fieldValueStatement}	
 				from	Asset A{tableHints} 
                         {parentSqlJoin} 
                         inner join AssetType AST{tableHints} on AST.ID = A.AssetTypeID and AST.ID = @atID and A.State = 1  
                         {filterJoinString}
-						inner join FieldType FT{tableHints} on FT.ID in ({selectFieldIDs}) and FT.AssetTypeID = A.AssetTypeID
-						left join Field F_O{tableHints} on F_O.AssetID = A.ID and F_O.FieldTypeID = FT.ID
-						{relationshipJoinStatement}
-						{fieldFromRelationshipJoinStatement} 
-                {whereClause}                         
-                        {filterWhereStringRaw}
+						inner join FieldType FT{tableHints} on FT.ID = {ft.ID} and FT.AssetTypeID = A.AssetTypeID
+						left join Field F_O{tableHints} on F_O.AssetID = A.ID and F_O.FieldTypeID = {ftID}
+                        {(ft.Type == dtJsonElement ? $"left join FieldJsonProperty FJP on FJP.FieldID = F_O.ID and FJP.[Path] = @jsonPath{ft.ID}" : "")} 
+                        {(ft.Type == "Relationship" ? relationshipJoinStatement : "")} 
+						{(ft.Type == "FieldFromRelationship" ? fieldFromRelationshipJoinStatement : "")} 
+                        {whereClause} 
+                        {filterWhereStringRaw}");
+
+                if (ft.Type == dtJsonElement)
+                {
+                    dbArgs.Add($"@jsonPath{ft.ID}", jsonElementDefinition.Path);
+                }
+            }
+
+            fieldsSql = string.Join("\nunion all\n", fieldSql);
+
+            #endregion
+
+            var sql = $@"
+select	*
+from	(
+		select	AssetID, Object, ObjectID, Type, TypeID, 
+               {editRightsColumnStatement}
+               {parentOuterSqlColumn}                  
+				{selectFieldString} 
+		from	(
+				{fieldsSql}
 				) A
 		pivot	(
 				MIN([Field]) for FieldTypeID in ({pivotFieldIDs})
@@ -539,16 +656,40 @@ OPTION (RECOMPILE)";
             return results;
         }
 
-        private string GetFieldTypeSort(string fieldName, bool ascending, string datatype)
+        private string GetFieldTypeValue(FieldType f, bool useFieldNames)
         {
-            if ((datatype ?? "").ToUpper() == "NUMBER")
-                return " CAST( [" + fieldName + "] AS bigint) " + (ascending ? "ASC" : "DESC");
-            else if ((datatype ?? "").ToUpper() == "DATE")
-                return " CAST( [" + fieldName + "] AS date) " + (ascending ? "ASC" : "DESC");
-            else if ((datatype ?? "").ToUpper() == "DECIMAL")
-                return " TRY_CONVERT( DECIMAL(18, 4),  [" + fieldName + "]) " + (ascending ? "ASC" : "DESC");
+            var sqlDataType = DetermineSqlDataTypeForFieldType(f);
+            var selectString = "";
 
-            return " [" + fieldName + "] " + (ascending ? "ASC" : "DESC"); ;
+            switch (sqlDataType)
+            {
+                case "int":
+                case "bigint":
+                case "date":
+                case "datetime":
+                    selectString += $"try_parse(coalesce([{f.ID}],'') as {sqlDataType}) as {(useFieldNames ? $"{f.Name}" : $"Field{f.ID}")}";
+                    break;
+                case "nvarchar":
+                    selectString += $"try_cast([{f.ID}] as {sqlDataType}) as {(useFieldNames ? $"{f.Name}" : $"Field{f.ID}")}";
+                    break;
+                case "decimal":
+                case "float":
+                case "bit":
+                    selectString += $"case when try_cast(coalesce([{f.ID}],'') as {sqlDataType}) is not null then [{f.ID}] else null end as {(useFieldNames ? $"{f.Name}" : $"Field{f.ID}")}";
+                    break;
+                default:
+                    selectString += $"{(useFieldNames ? $"{f.Name}" : $"Field{f.ID}")}";
+                    break;
+            }
+            return selectString;
+        }
+
+        private string GetFieldTypeSort(string fieldName, bool ascending, FieldType ft)
+        {
+            string datatype = DetermineSqlDataTypeForFieldType(ft);
+            return (datatype == "nvarchar") ? 
+                $" [{fieldName}] {(ascending ? "ASC" : "DESC")}" : 
+                $" try_cast([{fieldName}] as {datatype}) {(ascending ? "ASC" : "DESC")}";
         }
 
         private string GetFilterCondition(string condition, string fieldName, string bind, DynamicParameters dbArgs, string value)

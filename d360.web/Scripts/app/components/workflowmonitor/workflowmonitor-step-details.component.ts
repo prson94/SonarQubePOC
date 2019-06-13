@@ -35,6 +35,8 @@ export class WorkflowMonitorStepDetailsComponent extends BaseComponent implement
         { value: '2', label: 'Pending Delete' },
         { value: '3', label: 'Deleted' },
     ];
+    private showAllAnyCondition: boolean = false;
+    private isSatisfyAll: boolean = true;
 
     constructor(private workflowService: WorkflowService, private ref: ChangeDetectorRef, private responsibilityService: ResponsibilityTypeService) {
         super();
@@ -77,6 +79,12 @@ export class WorkflowMonitorStepDetailsComponent extends BaseComponent implement
                     }
 
                     this.ref.markForCheck();
+                })
+                .then(r => {
+                    if (typeof this.step.Condition != 'undefined' && typeof this.step.Condition.length != 'undefined') {
+                        this.showAllAnyCondition = this.step.Condition.filter(x => x['@FieldTypeID']).length > 1;
+                        this.isSatisfyAll = this.step.Condition.every(x => x['@Connector'] == 'AND');
+                    }
                 });
         }
         else

@@ -2020,34 +2020,11 @@
             Used internally.
             </summary>
         </member>
-        <member name="M:d360.web.Controllers.Services.EventsController.GetPolicies">
-            <summary>
-            Gets an OData-queryable list of policies contained within your environment.
-            </summary>
-            <returns>A list of policies.</returns>
-        </member>
         <member name="M:d360.web.Controllers.Services.EventsController.GetRules">
             <summary>
             Gets an OData-queryable list of rules contained within your environment.
             </summary>
             <returns>A list of rules.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.EventsController.AddPolicy(System.Int32,System.Collections.Generic.Dictionary{System.String,System.String})">
-            <summary>
-            Add a policy to your environment.  Once created, this policy can hold child policies and rules.
-            </summary>
-            <param name="id">The type ID</param>
-            <param name="model">A policy</param>
-            <returns>Http Status. 401:Unauthorized, 404:NotFound, 201:Created.  If 201, the new policy is also returned.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.EventsController.EditPolicy(System.Int32,System.Int32,System.Collections.Generic.Dictionary{System.String,System.String})">
-            <summary>
-            Update a specific policy.
-            </summary>
-            <param name="typeID">The type ID</param>
-            <param name="id">The policy ID</param>
-            <param name="model">The policy fields</param>
-            <returns>Artifact</returns>
         </member>
         <member name="M:d360.web.Controllers.Services.EventsController.AddRule(System.Int32,d360.core.entities.RuleModel)">
             <summary>
@@ -2120,84 +2097,6 @@
             </summary>
             <param name="model"></param>
             <returns></returns>
-        </member>
-        <member name="T:d360.web.Controllers.Services.GlossaryController">
-            <summary>
-            This service houses all endpoints handling glossary-related data such as artifacts and models.
-            </summary>
-        </member>
-        <member name="M:d360.web.Controllers.Services.GlossaryController.GetArtifactTypes">
-            <summary>
-            Gets all artifact types.  You can optionally use OData query parameters: $filter, $order, $skip, $take, etc.
-            </summary>
-            <returns>A list of artifact types.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.GlossaryController.GetArtifactsByType(System.Int32)">
-            <summary>
-            Gets all artifacts based on a given type ID.
-            </summary>
-            <param name="id">The ID of the artifact type.</param>
-            <returns>A list of artifacts.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.GlossaryController.GetArtifact(System.Int32,System.Int32)">
-            <summary>
-            Gets an artifact based on a given ID.
-            </summary>
-            <param name="typeID">The ID of the artifact type.</param>
-            <param name="id">The ID of the specific artifact you want to retrieve.</param>
-            <returns>An instance of an artifact.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.GlossaryController.GetArtifactsByTypeAndSearchModel(System.Int32,System.Collections.Generic.Dictionary{System.String,System.String})">
-            <summary>
-            Gets all artifacts based on a given type ID and a set of search criteria that roughly matches the field layout of the type.
-            </summary>
-            <returns>A list of artifacts.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.GlossaryController.AddArtifact(System.Int32,System.Collections.Generic.Dictionary{System.String,System.String})">
-            <summary>
-            Add an artifact.
-            </summary>
-            <param name="id">The type ID</param>
-            <param name="model">The artifact fields</param>
-            <returns>Artifact</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.GlossaryController.EditArtifact(System.Int32,System.Int32,System.Collections.Generic.Dictionary{System.String,System.String})">
-            <summary>
-            Update a specific artifact.
-            </summary>
-            <param name="typeID">The type ID</param>
-            <param name="id">The artifact ID</param>
-            <param name="model">The artifact fields</param>
-            <returns>Artifact</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.GlossaryController.GetModelTypes">
-            <summary>
-            Gets all model types.  You can optionally use OData query parameters: $filter, $order, $skip, $take, etc.
-            </summary>
-            <returns>A list of model types.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.GlossaryController.GetModelsByType(System.Int32)">
-            <summary>
-            Gets all models based on a given type ID.
-            </summary>
-            <returns>A list of models.</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.GlossaryController.AddModel(System.Int32,System.Collections.Generic.Dictionary{System.String,System.String})">
-            <summary>
-            Add a model.
-            </summary>
-            <param name="id">The type ID</param>
-            <param name="model">The model fields</param>
-            <returns>Model</returns>
-        </member>
-        <member name="M:d360.web.Controllers.Services.GlossaryController.EditModel(System.Int32,System.Int32,System.Collections.Generic.Dictionary{System.String,System.String})">
-            <summary>
-            Update a specific model.
-            </summary>
-            <param name="typeID">The type ID</param>
-            <param name="id">The model ID</param>
-            <param name="model">The model fields</param>
-            <returns>Model</returns>
         </member>
         <member name="M:d360.web.Controllers.Services.RelationshipsController.GetIntersectTypes">
             <summary>
@@ -2403,7 +2302,7 @@
             Removes field types contained within your environment.
             </summary>
             <remarks>
-            You may only provide one of the following: ActionTypeUid, AssetTypeUid, or RelationshipTypeUid.
+            You may only provide one of the following: ActionTypeUid, AssetTypeUid, or RelationshipTypeUid. Additionally, please keep in mind that the **Name** property for each item in the Fields collection refers to the **API Name** of the field.
             </remarks>
             <returns>A list of field types corresponding to the given criteria, if any.</returns>
         </member>
@@ -2487,7 +2386,7 @@
             <param name="uid">The unique identifier of the asset cross reference.</param>
             <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted.</returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.CrossReferencesController.DeleteByDatasource(System.String,System.String)">
+        <member name="M:d360.web.Controllers.V2.CrossReferencesController.DeleteByDataSource(System.String,System.String)">
             <summary>
             Deletes any asset cross references with the specified datasource and type.
             </summary>
@@ -2688,10 +2587,47 @@
             <param name="model">The fusion status log model.</param>
             <returns>The model of the updated fusion status log entry.</returns>
         </member>
+        <member name="T:d360.web.Controllers.V2.ActionsController">
+            <summary>
+            This service houses all endpoints handling actions management in Govern.
+            </summary>
+        </member>
+        <member name="M:d360.web.Controllers.V2.ActionsController.GetIssueTypes">
+            <summary>
+            Returns all actions types that are defined in Govern.  
+            
+            </summary>
+            <returns>A list of actions types</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.ActionsController.GetAllocationByAssetTypeAsync(System.Guid)">
+            <summary>
+            Returns actions types that are associated with a particular asset type
+            </summary>
+            <param name="AssetTypeUid">Asset Type Uid</param>
+            <returns>A list of actions types</returns>
+        </member>
         <member name="T:d360.web.Controllers.V2.LineageController">
             <summary>
             This service houses all endpoints handling glossary-related data such as artifacts and models.
             </summary>
+        </member>
+        <member name="M:d360.web.Controllers.V2.MembershipController.GetUsers(System.Nullable{System.Guid},System.String,System.String,System.Nullable{d360.core.enums.State},System.Nullable{System.Boolean},System.Int32,System.Int32)">
+            <summary>
+            Retrieves a list of users.
+            </summary>
+            <param name="Uid">The uid of the user.</param>
+            <param name="FirstName">First Name of user.</param>
+            <param name="LastName">Last Name of user.</param>
+            <param name="State">Select the state of the user from the options in the dropdown.</param>
+            <param name="IsAdministrator">Is the user an adminstrator or not.</param>
+            <param name="_pageSize">The number of results to return per page. The default is 5 users per page and max value is 250.</param>
+            <param name="_pageNum">The page number to return results for.</param>
+        </member>
+        <member name="M:d360.web.Controllers.V2.MembershipController.GetMembers(System.Guid)">
+            <summary>
+            Retrieves members of a group for a given group unique identifier.
+            </summary>
+            <param name="groupUid">The unique identifier of the Group.</param>
         </member>
         <member name="T:d360.web.Controllers.V2.MetricsController">
             <summary>
@@ -2855,6 +2791,14 @@
             </summary>
             <param name="executionUid">The execution's unique identifier to retrieve status for.</param>
             <returns></returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.RelationshipsController.DeleteRelationship(System.Guid,d360.core.entities.RelationshipDeletes)">
+            <summary>
+            Deletes a relationship and children of a given uid.
+            </summary>
+            <param name="intersectTypeUid">The unique identifier of the relationship type.</param>
+            <param name="relationships">The list of relationships for deletions.</param>
+            <returns>An HTTP status code and message.</returns>
         </member>
         <member name="T:d360.web.Controllers.V2.AssetsController">
             <summary>
@@ -3089,6 +3033,74 @@
             <param name="phrase">Search term</param>
             <returns></returns>
         </member>
+        <member name="T:d360.web.Controllers.V2.TagsController">
+            <summary>
+            This service houses all endpoints handling tag management in Govern
+            </summary>
+        </member>
+        <member name="M:d360.web.Controllers.V2.TagsController.Get">
+            <summary>
+            Returns all tags that are defined in Govern.          
+            </summary>        
+            <returns>A list of tags</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.TagsController.DeleteById(System.Guid)">
+            <summary>
+            Allows you to remove a tag based on its Uid.
+            </summary>
+            <param name="uid">The public identifier for the tag.</param>
+            <returns>A status for the DELETE request.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.TagsController.PostTag(d360.core.entities.TagApiModel)">
+            <summary>
+            Adds one tag to Govern.
+            </summary>        
+            <param name="model">The tag to be created.</param>
+            <returns>The created tag.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.TagsController.Put(System.Guid,d360.core.entities.TagApiModel)">
+            <summary>
+            Updates the specified tag.
+            </summary>
+            <param name="uid">The unique identifier of the asset cross reference.</param>        
+            <param name="model">The tag to be updated.</param>
+            <returns>The updated tag.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.WorkflowController.GetWorkflowTypeAsync(System.Nullable{d360.core.enums.Workflow.ChangeType},System.Nullable{d360.core.enums.State})">
+            <summary>
+            Retrieves workflow types for the given asset type unique identifier / action type unique identifier/ relationship type unique identifier .
+            </summary>
+            <remarks>
+            If using Uid parametes, you may provide only one of the following: ActionTypeUid,AssetTypeUid,RelationshipTypeUid
+            </remarks>
+            <param name="ChangeType">ChangeType</param>
+            <param name="State">State</param>
+            <returns>Returns list of workflow types and An HTTP status code </returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.WorkflowController.GetWorkflowVersionAsync(System.Nullable{d360.core.enums.State})">
+            <summary>
+            Retrieves workflow versions for the given asset type unique identifier / action type unique identifier/ relationship type unique identifier / workflow type  unique identifier.
+            </summary>
+            <remarks>
+            If using Uid parametes, you may provide only one of the following: ActionTypeUid,AssetTypeUid,RelationshipTypeUid,WorkflowTypeUid
+            </remarks>
+            <param name="State">State</param>
+            <returns>Returns list of workflow versions and An HTTP status code </returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.WorkflowController.GetWorkflowVersionStepsAsync(System.Guid)">
+            <summary>
+            Retrieves workflow versions  steps for the given workflow version unique identifier .
+            </summary>
+            <param name="workflowVersionUid"> workflow version unique identifier</param>
+            <returns>Returns list of workflow version steps and An HTTP status code</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.WorkflowController.GetWorkflowInstances(System.Guid)">
+            <summary>
+            Get a list of steps and their relevant information for a specific workflow instance contained within the system.
+            </summary>
+            <param name="workflowUid">workflow instance unique identifie</param>
+            <returns></returns>
+        </member>
         <member name="M:d360.web.Controllers.D3SApiController.GetFieldFiltersByType(d360.core.SystemObjects,System.Int32)">
             <summary>
             Gets a list of available field-level filters for a grid in the UI. This includes standard/custom fields, relationships, attributes, owner.
@@ -3106,6 +3118,13 @@
             once fusion rules are retired this can go
             </summary>        
             <param name="id"></param>        
+            <returns></returns>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.getIconText(System.String)">
+            <summary>
+            Generates the icon text shown on icons that represent the Asset 
+            </summary>
+            <param name="assetName"></param>
             <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.FormController.Artifact_AddFields(System.Int32,System.Int32)">

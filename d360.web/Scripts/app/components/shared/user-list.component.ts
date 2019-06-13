@@ -176,8 +176,6 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     ngOnInit() {
         this.setBrowserTitle(this.titleService, 'Resources');
 
-        this.headerBreadcrumbService.clearBreadcrumbs();
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Resources'));
         this.theDeleteCallback = this.deleteUser.bind(this);
         this.load();
     }

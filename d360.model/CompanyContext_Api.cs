@@ -142,7 +142,7 @@ set     T.ParentUid = S.Uid,
         T.ParentObject = S.Object,
         T.ParentObjectID = S.ObjectID
 from    api.ExecutionAsset T
-        inner join [Intersect] I on T.ExecutionID = @executionID and I.IntersectTypeID = T.IntersectTypeID and I.Object = T.Object and I.ObjectID = T.ObjectID
+        inner join [Intersect] I on T.ExecutionID = @executionID and I.IntersectTypeID = T.IntersectTypeID and I.Object = T.Object and I.ObjectID = T.ObjectID and T.ParentUid is null
         inner join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID;",
             new { executionID, assetTypeID = at.ID }, commandTimeout: timeout);
 
@@ -182,6 +182,22 @@ insert into [api].[ExecutionField] (ExecutionID, ItemNumber, FieldName, FieldVal
 	where	A.ExecutionID = @executionID 
             and F.ItemNumber is null;",
                 new { executionID }, commandTimeout: timeout);
+
+                Connection.Execute(@"
+insert into [api].[ExecutionField] (ExecutionID, ItemNumber, FieldName, FieldValue, FieldTypeID, LookupValue, Ignore)
+	select	A.ExecutionID,
+            A.ItemNumber,
+			'FusionID',
+			R.FusionID,
+			0,
+			R.FusionID,
+			1
+	from	[api].[ExecutionAsset] A
+            inner join FusionAttribute R on A.Object = 'FusionAttribute' and R.ID = A.ObjectID
+			left join [api].[ExecutionField] F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldName = 'FusionID'
+	where	A.ExecutionID = @executionID 
+            and F.ItemNumber is null;",
+                new { executionID }, commandTimeout: timeout);
             }
         }
 
@@ -206,6 +222,19 @@ set		Success = 0,
 where	ExecutionID = @executionID
         and ParentAssetID is null
 		and ParentUid is not null;",
+            new { executionID }, commandTimeout: timeout);
+        }
+
+        private void LogErrorsWhereChildFusionConfigDifferentFromParent(Guid executionID, int timeout = 3600)
+        {
+            Connection.Execute(@"
+update	E
+set		E.Message = 'Unable to add or update child asset as the fusion configuration does not match it''s parent''s configuration.',
+		E.Success = 0
+from	api.ExecutionAsset E
+		inner join FusionAttribute P on P.ID = E.ParentObjectID and E.ParentObject = 'FusionAttribute'
+		inner join api.ExecutionField C on C.ExecutionID = E.ExecutionID and C.FieldName = 'FusionID' and C.FieldValue <> P.FusionID
+where	E.ExecutionID = @executionID;",
             new { executionID }, commandTimeout: timeout);
         }
 
@@ -248,6 +277,36 @@ where	ExecutionID = @executionID
          new { executionID, msg }, commandTimeout: timeout);
         }
 
+        private void MergeAssetDisplayValues(Guid executionID, SqlTransaction trans, int beginItemNumber, int endItemNumber, int timeout = 3600)
+        {
+            Connection.Execute($@"
+merge       AssetDisplayValue as T
+using       (
+                select  A.AssetID as ID,
+                        ADV.DisplayValue,
+                        CONVERT(NVARCHAR(32), HashBytes('SHA1', ADV.DisplayValue), 2) as DisplayValueHash,
+                        SUBSTRING(ADV.DisplayValue, 1, 250) as DisplayValuePrefix
+                from    api.ExecutionAsset A
+                        cross apply GetAssetDisplayValueByID(A.AssetID) ADV
+                where   A.ExecutionID = @executionID
+                        and A.ItemNumber between {beginItemNumber} and {endItemNumber} 
+                        and A.Success is null 
+                        and A.[Object] not in( 'FusionAttribute', 'FusionQueryAttribute')
+                        and ADV.DisplayValue is not null
+            ) as S 
+on          ( T.AssetID = S.ID )
+when		matched then
+update		set
+				T.DisplayValue = S.DisplayValue,
+                T.DisplayValueHash = S.DisplayValueHash,
+                T.[DisplayValuePrefix] = S.DisplayValuePrefix,
+                T.UpdatedOn = @dt
+when		not matched by target then
+insert		(AssetID, DisplayValue, DisplayValueHash, DisplayValuePrefix, UpdatedOn)
+values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, @dt);",
+            new { executionID, r = CurrentResourceID, dt = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
+        }
+
         private void MergeFields(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600)
         {
             Connection.Execute($@"
@@ -278,6 +337,108 @@ when		not matched by target then
 insert		(FieldTypeID, ObjectType, ObjectID, Value, FormattedValue)
 values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);", 
             new { executionID }, transaction: trans, commandTimeout: timeout);
+        }
+
+        private void MergeJsonFieldProperties(Guid executionID, SqlTransaction trans, List<FieldType> jsonFieldTypes, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true)
+        {
+            var jsonFieldTypeIDs = string.Join(",", jsonFieldTypes.Select(i => i.ID));
+            var fields = Connection.Query<dynamic>($@"
+select  F.ID, 
+        F.Value 
+from    Field F 
+        inner join api.ExecutionField E on E.ExecutionID = @executionID and E.ItemNumber between {beginItemNumber} and {endItemNumber} and E.FieldTypeID = F.FieldTypeID and E.FieldTypeID in ({jsonFieldTypeIDs})
+        inner join {tableName} A on A.ExecutionID = E.ExecutionID and A.ItemNumber = E.ItemNumber and A.Object = F.ObjectType and A.ObjectID = F.ObjectID",
+        new { executionID }, transaction: trans, commandTimeout: timeout);
+
+            var collectionFieldroperties = new List<FieldJsonProperty>();
+
+            foreach (var f in fields)
+            {
+                string value = f.Value;
+                List<FieldJsonProperty> assetFieldProperties = value.ParseJsonIntoJsonPropertiesCollection(fieldJsonPropertyLoadLimitToTopLevel);
+                assetFieldProperties.ForEach(i =>
+                {
+                    i.FieldID = f.ID;
+                });
+                collectionFieldroperties.AddRange(assetFieldProperties);
+            }
+
+            #region Build data tables for bulk load.
+
+            var table = new DataTable();
+            table.Columns.Add("FieldID", typeof(long));
+            table.Columns.Add("Name", typeof(string));
+            table.Columns.Add("Parent", typeof(string));
+            table.Columns.Add("Path", typeof(string));
+            table.Columns.Add("Position", typeof(int));
+            table.Columns.Add("IsArray", typeof(bool));
+            table.Columns.Add("Value", typeof(string));
+
+            foreach (var f in collectionFieldroperties)
+            {
+                var row = table.NewRow();
+
+                row["FieldID"] = f.FieldID;
+                row["Name"] = f.Name;
+                row["Parent"] = f.Parent+"";
+                row["Path"] = f.Path;
+                row["Position"] = f.Position;
+                row["IsArray"] = f.IsArray;
+                row["Value"] = f.Value;
+
+                table.Rows.Add(row);
+            }
+
+            Connection.Execute($@"
+drop table if exists #FieldJsonProperty;
+CREATE TABLE #FieldJsonProperty (
+	[FieldID] bigint NOT NULL,
+	[Name] nvarchar(250) NOT NULL,
+	[Parent] nvarchar(250) NOT NULL,
+	[Path] nvarchar(500) NOT NULL,
+	[Position] int NOT NULL,
+	[IsArray] bit NOT NULL,
+	[Value] nvarchar(2500) NULL,
+)", new { executionID }, transaction: trans);
+
+            var bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection, SqlBulkCopyOptions.Default, trans)
+            {
+                BatchSize = table.Rows.Count,
+                DestinationTableName = "#FieldJsonProperty",
+                BulkCopyTimeout = timeout
+            };
+
+            bulkCopy.ColumnMappings.Add("FieldID", "FieldID");
+            bulkCopy.ColumnMappings.Add("Name", "Name");
+            bulkCopy.ColumnMappings.Add("Parent", "Parent");
+            bulkCopy.ColumnMappings.Add("Path", "Path");
+            bulkCopy.ColumnMappings.Add("Position", "Position");
+            bulkCopy.ColumnMappings.Add("IsArray", "IsArray");
+            bulkCopy.ColumnMappings.Add("Value", "Value");
+
+            bulkCopy.WriteToServer(table);
+
+            bulkCopy = null;
+
+            #endregion
+
+            Connection.Execute($@"
+merge       FieldJsonProperty as T
+using       #FieldJsonProperty as S 
+on          ( T.FieldID = S.FieldID and T.Position = S.Position and T.Parent = S.Parent and T.Name = S.Name )
+when		matched then
+update		set
+				T.Value = S.Value,
+                T.IsArray = S.IsArray,
+                T.[Path] = S.[Path],
+                T.UpdatedBy = @r,
+                T.UpdatedOn = @dt
+when		not matched by source and T.FieldID in (select FieldID from #FieldJsonProperty) then
+delete
+when		not matched by target then
+insert		(FieldID, Name, Parent, [Path], Position, IsArray, Value, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+values		(S.FieldID, S.Name, S.Parent, S.[Path], S.Position, S.IsArray, S.Value, @r, @dt, @r, @dt);",
+            new { executionID, r = CurrentResourceID, dt = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
         }
 
         private void ResolveFieldLookupValues(Guid executionID, int timeout = 3600)
@@ -470,7 +631,7 @@ from    api.ExecutionAsset T
                 fieldType = fieldTypes.SingleOrDefault(f => f.Name == fieldName);
                 if (fieldType == null)
                 {
-                    if (ot == "FusionAttributeType" && (fieldName == "FusionID" || fieldName == "Name"))
+                    if (ot == "FusionAttributeType" && (fieldName == "FusionID" || fieldName == "Name" || fieldName == "SourceID"))
                     {
                         success = true;
                     }
@@ -1209,10 +1370,7 @@ from	IntersectType I
                                                 break;
                                             case "FusionAttributeType":
                                                 legacyTable = "FusionAttribute";
-                                                break;
-                                            case "PolicyType":
-                                                legacyTable = "[Policy]";
-                                                break;
+                                                break;                                            
                                             case "ReferenceItemType":
                                                 legacyTable = "ReferenceItem";
                                                 break;
@@ -1224,9 +1382,12 @@ from	IntersectType I
                                                 break;
                                         }
 
-                                        Connection.Execute(
-                                            $"delete {legacyTable} where ID in (select S.ObjectID from api.ExecutionDeletedAsset S where {querySuffix})",
-                                            new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                        if (!string.IsNullOrEmpty(legacyTable))
+                                        {
+                                            Connection.Execute(
+                                                $"delete {legacyTable} where ID in (select S.ObjectID from api.ExecutionDeletedAsset S where {querySuffix})",
+                                                new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                        }
 
                                         #endregion
 
@@ -1593,7 +1754,7 @@ from	IntersectType I
             return results;
         }
 
-        public List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600)
+        public List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true)
         {
             var results = new List<DatabaseBulkAssetResult>();
 
@@ -1648,6 +1809,7 @@ from	IntersectType I
 
                     bool generalChecksCompleted = false;
                     List<FieldType> fieldTypes = null;
+                    List<FieldType> jsonFieldTypes = null;
                     List<string> requiredFieldTypeNames = null;
                     var predicateType = DeterminePredicateType(at.Object);
                     IntersectType it = null;
@@ -1673,6 +1835,7 @@ from	IntersectType I
 
                         // Get field types.
                         fieldTypes = Query<FieldType>("select * from FieldType where Object = @Object and ObjectID = @ObjectID", new { at.Object, at.ObjectID }).ToList();
+                        jsonFieldTypes = fieldTypes.Where(f => f.Type == DataType.JSON.ToString()).ToList();
                         requiredFieldTypeNames = fieldTypes.Where(f => f.IsRequired).Select(f => f.Name).ToList();
 
                         #region Generate data sets
@@ -1880,68 +2043,80 @@ from	IntersectType I
                         LogFieldLookupErrors(execution.ExecutionID, at.Object, at.ObjectID, "Asset", timeout);
                         ValidateAssetAndParent(execution.ExecutionID, at.ID, timeout);
 
-                        if (isInsert)
+                        LogParentErrors(execution.ExecutionID, timeout);                // If you cannot find parent based on Uids provided.
+
+                        if (!isInsert)
                         {
-                            LogParentErrors(execution.ExecutionID, timeout);                // If you cannot find parent based on Uids provided.
-                        }
-                        else
-                        {
-                            LogAssetErrors(execution.ExecutionID, timeout);                 // If you cannot find asset based on Uids provided.
-                            LoadMissingKeyFields(execution.ExecutionID, at, timeout);    // Get missing key fields if this is an update.
+                            LogAssetErrors(execution.ExecutionID, timeout);             // If you cannot find asset based on Uids provided.
+                            LoadMissingKeyFields(execution.ExecutionID, at, timeout);   // Get missing key fields if this is an update.
                         }
 
                         #region Generate proposed key hash and compare against existing data.
 
-                        string keyTableTempCreation = @"CREATE TABLE #Keys (AssetID bigint, ActiveKey nvarchar(max), ActiveKeyHash varchar(100)); CREATE CLUSTERED INDEX CIX_TempApiExecutionKeys ON #Keys ( ActiveKeyHash ASC ); ";
-                        string keyComparisonUpdateStatement = @"update  T 
+                        string keyErrorMessage = "'Key values match another asset under a different set of key fields. '";
+                        string keyTableTempCreation = @"CREATE TABLE #Keys (AssetID bigint, ActiveKey varchar(100)); CREATE CLUSTERED INDEX CIX_TempApiExecutionKeys ON #Keys ( ActiveKey ASC ); ";
+                        string keyComparisonUpdateStatement = $@"
+update  T 
 set     T.Success = 0, 
-        T.Message = 'Key values match another asset under a different set of key fields. '
+        T.Message = {keyErrorMessage}
 from    api.ExecutionAsset T 
-        inner join #Keys S on T.ExecutionID = @ExecutionID and S.ActiveKeyHash = T.ProposedKey and ((S.AssetID <> T.AssetID and T.AssetID is not null) OR (T.AssetID is null)); ";
+        inner join #Keys S on T.ExecutionID = @ExecutionID and S.ActiveKey = T.ProposedKey and ((S.AssetID <> T.AssetID and T.AssetID is not null) OR (T.AssetID is null)); ";
 
                         if (at.Object == "FusionAttributeType")
                         {
-                            Connection.Execute($@"
-update  T
-set     T.ProposedKey = utility.GetHash(S.ProposedKey)
-from    api.ExecutionAsset T
-		inner join	(
-					select		A.ItemNumber,
-								COALESCE(cast(A.ParentUid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.LookupValue, F.FieldValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ProposedKey
-					from		api.ExecutionAsset A
-								inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber
-								left join FieldType FT on FT.AssetTypeID = @ID and FT.ID = F.FieldTypeID
-					where		A.ExecutionID = @ExecutionID	
-								and (F.FieldName = 'Name' OR FT.IsPartOfKey = 1)
-					group by	A.ItemNumber, A.ParentUid
-					) S on T.ExecutionID = @ExecutionID and S.ItemNumber = T.ItemNumber;
+                            LogErrorsWhereChildFusionConfigDifferentFromParent(execution.ExecutionID);
 
+                            Connection.Execute($@"
 {keyTableTempCreation}
+
+update  A
+set     A.ProposedKey = utility.GetHash(
+                            FC.FieldValue + '|' + COALESCE(
+                                FS.FieldValue, 
+                                COALESCE(cast(A.ParentUid as nvarchar(50))+'|', '') + FN.FieldValue + coalesce('|'+DF.DynamicProposedKey,'')
+                            )
+                        )
+from	api.ExecutionAsset A
+        inner join api.ExecutionField FC on FC.ExecutionID = A.ExecutionID and FC.ItemNumber = A.ItemNumber and FC.FieldName = 'FusionID'
+        inner join api.ExecutionField FN on FN.ExecutionID = A.ExecutionID and FN.ItemNumber = A.ItemNumber and FN.FieldName = 'Name'
+        left join api.ExecutionField FS on FS.ExecutionID = A.ExecutionID and FS.ItemNumber = A.ItemNumber and FS.FieldName = 'SourceID'
+        outer apply (
+            select		DF.ItemNumber,
+                        STRING_AGG(coalesce(DF.LookupValue, DF.FieldValue, DFT.DefaultValue), '|') within group (order by DFT.ColumnOrder asc, DFT.Name asc) as DynamicProposedKey
+            from		api.ExecutionField DF
+                        inner join FieldType DFT on DFT.ID = DF.FieldTypeID and DFT.IsPartOfKey = 1 and DF.ExecutionID = A.ExecutionID and DF.ItemNumber = A.ItemNumber
+            group by    DF.ItemNumber
+        ) DF
+where	A.ExecutionID = @ExecutionID;
 
 insert into #Keys
     select	A.ID,
-		    COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + O.Name + COALESCE('|'+DF.ProposedKey,'') as ActiveKey,
-            utility.GetHash(COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + O.Name + COALESCE('|'+DF.ProposedKey,'')) as ActiveKeyHash
+            utility.GetHash(
+                cast(O.FusionID as nvarchar) + '|' + COALESCE(
+                    O.SourceID, 
+                    COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + O.Name + COALESCE('|'+DF.ProposedKey,'')
+                )
+            ) as ActiveKey
     from	Asset A 
-		    inner join FusionAttribute O on A.Object = 'FusionAttribute' and O.ID = A.ObjectID
-		    left join Asset P on P.Object = 'FusionAttribute' and P.ObjectID = O.ParentID and O.ParentID is not null
-		    left join (
-			    select		A.ID,
-						    STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ProposedKey
-			    from		Asset A 
-						    inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
-						    left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
-			    where	    A.AssetTypeID = @ID
-			    group by    A.ID
-		    ) DF on DF.ID = A.ID
+            inner join FusionAttribute O on A.Object = 'FusionAttribute' and O.ID = A.ObjectID
+            left join Asset P on P.Object = 'FusionAttribute' and P.ObjectID = O.ParentID and O.ParentID is not null
+            left join (
+                select		A.ID,
+                            STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ProposedKey
+                from		Asset A 
+                            inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
+                            left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
+                where	    A.AssetTypeID = @ID
+                group by    A.ID
+            ) DF on DF.ID = A.ID
     where	A.AssetTypeID = @ID;
 
 {keyComparisonUpdateStatement}",
                             new { execution.ExecutionID, at.ID }, commandTimeout: timeout);
                         }
                         else if (at.Object == "ReferenceItemType")
-                        {
-                            Connection.Execute($@"
+                            {
+                                Connection.Execute($@"
 update  T
 set     T.ProposedKey = utility.GetHash(S.ProposedKey) 
 from    api.ExecutionAsset T
@@ -1957,21 +2132,19 @@ from    api.ExecutionAsset T
 
 insert into #Keys
     select		A.ID,
-			    O.Code as ActiveKey, 
-                utility.GetHash(O.Code) as ActiveKeyHash 
+                utility.GetHash(O.Code) as ActiveKey
     from		Asset A 
 			    inner join ReferenceItem O on A.Object = 'ReferenceItem' and O.ID = A.ObjectID
     where	    A.AssetTypeID = @ID;
 
 {keyComparisonUpdateStatement}",
-                            new { execution.ExecutionID, at.ID }, commandTimeout: timeout);
-                        }
+                                new { execution.ExecutionID, at.ID }, commandTimeout: timeout);
+                            }
                         else
                         {
                             var activeKeySql = $@"
 select		A.ID,
-			STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ActiveKey,
-            utility.GetHash(STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKeyHash 
+			utility.GetHash(STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey 
 from		Asset A 
 			inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
 			left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
@@ -1982,8 +2155,7 @@ group by    A.ID;";
                             {
                                 activeKeySql = $@"
 select		A.ID,
-			COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ActiveKey,
-            utility.GetHash(COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKeyHash 
+			utility.GetHash(COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey
 from		Asset A 
 			inner join [Intersect] I on I.IntersectTypeID = @intersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
 			inner join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
@@ -2052,7 +2224,7 @@ from	api.ExecutionAsset T
 
                     if (generalChecksCompleted)
                     {
-                        int loopSize = 100;
+                        int loopSize = 500;
                         int numberOfLoops = (int)Math.Ceiling((decimal)(execution.Total- currentLocation.HighestItemNumberProcessed) / loopSize);
                         int beginItemNumber = currentLocation.HighestItemNumberProcessed + 1;
                         int endItemNumber = currentLocation.HighestItemNumberProcessed + loopSize;
@@ -2191,18 +2363,20 @@ from	api.ExecutionAsset T
             select  A.ParentObjectID,
                     A.ItemNumber,
                     F.FieldValue as FusionID,
-                    N.FieldValue as Name
+                    N.FieldValue as Name,
+                    FS.FieldValue as SourceID
             from    api.ExecutionAsset A
                     inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldName = 'FusionID'
                     inner join api.ExecutionField N on N.ExecutionID = A.ExecutionID and N.ItemNumber = A.ItemNumber and N.FieldName = 'Name'
+                    left join api.ExecutionField FS on FS.ExecutionID = A.ExecutionID and FS.ItemNumber = A.ItemNumber and FS.FieldName = 'SourceID'
             where   A.ExecutionID = @ExecutionID
                     and A.Success is null
                     and A.ItemNumber between {beginItemNumber} and {endItemNumber}
             ) S
     on      (T.FusionAttributeTypeID = @ObjectID and T.SourceID = @NonExistentUid)
     when    not matched then
-    insert  (FusionAttributeTypeID, ParentID, Name, FusionID)
-    values  (@ObjectID, S.ParentObjectID, S.Name, S.FusionID)
+    insert  (FusionAttributeTypeID, ParentID, Name, FusionID, SourceID)
+    values  (@ObjectID, S.ParentObjectID, S.Name, S.FusionID, S.SourceID)
     output  inserted.ID, S.ItemNumber into #ObjectMergeTableResult;
 
     update  T
@@ -2267,7 +2441,7 @@ from	api.ExecutionAsset T
     create table #ObjectMergeTableResult (ID int, ItemNumber int);
     CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC );
 
-    merge   [Policy] as T
+    merge   [Asset] as T
     using   (
             select  ItemNumber
             from    api.ExecutionAsset
@@ -2275,11 +2449,11 @@ from	api.ExecutionAsset T
                     and Success is null
                     and ItemNumber between {beginItemNumber} and {endItemNumber}
             ) S
-    on      (T.PolicyTypeID = @ObjectID and T.SourceID = @NonExistentUid)
+    on      (T.AssetTypeID = @AssetTypeID and T.SourceID = @NonExistentUid)
     when    not matched then
-    insert  (PolicyTypeID, UpdatedBy, UpdatedOn)
-    values  (@ObjectID, @R, @D)
-    output  inserted.ID, S.ItemNumber into #ObjectMergeTableResult;
+    insert  (AssetTypeID,State,[Object], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+    values  (@AssetTypeID,1,'Policy', @R, @D, @R, @D)
+    output  inserted.ObjectID, S.ItemNumber into #ObjectMergeTableResult;
 
     update  T
     set     T.Object = 'Policy',
@@ -2297,8 +2471,8 @@ from	api.ExecutionAsset T
     update	T
     set		T.UpdatedBy = @R,
 		    T.UpdatedOn = @D
-    from	[Policy] T
-		    inner join api.ExecutionAsset S on S.ObjectID = T.ID and {executionAssetWhereSql};
+    from	[Asset] T
+		    inner join api.ExecutionAsset S on S.ObjectID = T.ObjectID and T.[Object] = 'Policy' and {executionAssetWhereSql};
 
     update	api.ExecutionAsset
     set		IsNew = 0
@@ -2425,7 +2599,7 @@ from	api.ExecutionAsset T
 
                                         #region Parent/Child Relationship
 
-                                        if (isInsert && intersectTypeID.HasValue)
+                                        if (intersectTypeID.HasValue)
                                         {
                                             Connection.Execute($@"
     merge       [Intersect] as T
@@ -2442,6 +2616,11 @@ from	api.ExecutionAsset T
                         and ObjectID is not null 
                 ) as S
     on          ( T.IntersectTypeID = S.IntersectTypeID and S.Object = T.Object and S.ObjectID = T.ObjectID )
+    when matched then
+        update 
+        set     T.Subject = S.ParentObject,
+                T.SubjectID = S.ParentObjectID,
+                T.UpdatedBy = @R
     when not matched by target then
 	    insert  (IntersectTypeID, Subject, SubjectID, Object, ObjectID, CreatedBy, UpdatedBy)
 	    values  (S.IntersectTypeID, S.ParentObject, S.ParentObjectID, S.Object, S.ObjectID, @R, @R);",
@@ -2452,6 +2631,14 @@ from	api.ExecutionAsset T
                                         #endregion
 
                                         MergeFields(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout);
+
+                                        if (jsonFieldTypes.Count > 0)
+                                        {
+                                            MergeJsonFieldProperties(execution.ExecutionID, trans, jsonFieldTypes, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, fieldJsonPropertyLoadLimitToTopLevel);
+                                        }
+
+                                        // Must execute BEFORE the Success flag is updated below.
+                                        MergeAssetDisplayValues(execution.ExecutionID, trans, beginItemNumber, endItemNumber, timeout);
 
                                         // Update success flag.
                                         Connection.Execute(

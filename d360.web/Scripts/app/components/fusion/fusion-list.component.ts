@@ -6,6 +6,7 @@ import { RightSidebarService } from '../../services/right-sidebar.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { MapRuleItemDetail } from '../../models/fusion.model';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-fusion-list',        
@@ -55,7 +56,11 @@ export class FusionListComponent extends BaseComponent implements OnInit, OnDest
         this.setBrowserTitle(this.titleService, 'Fusion');
 
         this.headerBreadcrumbService.clearBreadcrumbs();
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Fusion'));
+        this.headerBreadcrumbService.getFolderTitle('#Fusion').then((res) => {
+            let areaBreadcrumb = new Breadcrumb(res ? res : 'Fusion', `${SiteUrlHelpers.SITE_URL_FUSION_ROOT}`);
+            this.headerBreadcrumbService.showBreadcrumb(areaBreadcrumb);
+        });
+        
 
         this.clearSidebar();
         //this.rightSidebarService.showItem(new RightSidebarItem('Technical Mappings','technical'));

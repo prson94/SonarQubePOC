@@ -3,6 +3,7 @@ import { Router, NavigationEnd } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { AuthenticationService } from '../../../services/authentication.service';
 import { Subscription } from 'rxjs';
+import { retry } from 'rxjs/operators';
 
 declare var CurrentResourceID;
 declare var SingleSignOn;
@@ -12,24 +13,48 @@ declare var CompanySettings;
 
 @Component({
     selector: 'd3s-header-profile',
-    template: ` <span #item style="display:table;" class="header-search" [ngClass]="{'header-search-active':active}" (mouseenter)="show(item)" (mouseleave)="hide(item)" >
-                    <a [routerLink]="resourceUrl()" class="photo" title="Go to your profile"><img [src]="'/resources/image/' + resourceId + '?size=25'" height="25" width="25" /></a>
-                    <div class="search-child header-profile-panel">                        
-                        <div class="row">           
-                            <div class="col s2"><a [routerLink]="resourceUrl()" class="photo" title="Go to your profile"><img [src]="'/resources/image/' + resourceId + '?size=25'" height="25" width="25" /></a></div>
-                            <div class="col s10">
-                                <div class="row">
-                                    <div class="col s12"><h4>{{userName}}</h4></div>
-                                    <div class="col s12"><h5>{{userEmail}}</h5></div>
-                                </div>
-                            </div>                                                        
+    template: ` <span #item class="header-search" [ngClass]="{'header-search-active':active}" (mouseenter)="show(item)" (mouseleave)="hide(item)" >
+                    <a class="photo hide-on-med-and-down"><img [src]="'/resources/image/' + resourceId + '?size=25'" height="25" width="25" /></a>
+                    <div class="show-on-medium-and-down hide-on-med-and-up">
+                        <div class="mini-menu-line">
+                            <div class="check-gutter"></div><div class="text">My Account</div><div class="expand-gutter"><i class="fa fa-caret-right"></i></div>
                         </div>
-                        <div class="row">
-                                <div class="col s12" *ngIf="!singleSignOn">&nbsp;</div>
-                                <div class="col s12" *ngIf="!singleSignOn"><a [routerLink]="'/resource/'+resourceId+'/changepassword'"><i class="fa fa-pencil" aria-hidden="true"></i>&nbsp;Change Password</a></div>
-                                <div class="col s12">&nbsp;</div>
-                                <div class="col s12"  *ngIf="showAllUsersAPIKey"><a [routerLink]="'/resource/my/apikey'"><i class="fa fa-key" aria-hidden="true"></i>&nbsp;API Key</a></div>
-                         </div>
+                    </div>
+                    <div class="search-child header-profile-panel">                        
+                        <div class="row">          
+                            <ul>
+                                <li class="header-item label">
+                                    <div class="mini-menu-line">
+                                        <div class="text no-gutter">
+                                            <span>
+                                                {{userName}} <br>
+                                                {{userEmail}}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li [routerLink]="resourceUrl()" class="header-item">
+                                    <div class="mini-menu-line">
+                                        <div class="text no-gutter">View Profile</div>
+                                    </div>
+                                </li>
+                                <li *ngIf="showAllUsersAPIKey" [routerLink]="'/resource/my/apikey'" class="header-item">
+                                    <div class="mini-menu-line">
+                                        <div class="text no-gutter">API Key</div>
+                                    </div>                                
+                                </li>
+                                <li *ngIf="!singleSignOn"  [routerLink]="'/resource/'+resourceId+'/changepassword'" class="header-item">
+                                    <div class="mini-menu-line">
+                                        <div class="text no-gutter">Change Password</div>
+                                    </div>                                
+                                </li>
+                                <li class="header-item" (click)="signOut()">
+                                    <div class="mini-menu-line">
+                                        <div class="text no-gutter">Sign Out</div>
+                                    </div>                                
+                                </li>
+                            </ul>                                                    
+                        </div>
                     </div>
                 <span>`,    
     changeDetection: ChangeDetectionStrategy.OnPush
@@ -71,6 +96,9 @@ export class HeaderProfileComponent implements OnInit , OnDestroy{
     public resourceUrl() {
         return SiteUrlHelpers.getObjectUrl('Resource', this.resourceId);
     }
+    public signOut() {
+        window.location.href = '/slo';
+    }
 
     show(item) {
         // check for any pending hides and cancel them
@@ -78,15 +106,20 @@ export class HeaderProfileComponent implements OnInit , OnDestroy{
             window.clearTimeout(this.hideHandle);
             this.hideHandle = 0;
         }
-        let panel = item.children[0].nextElementSibling;
-        if (panel) {
+        let menuPanel = item.children[1].nextElementSibling;
+        let minimizedMenuItem = item.children[0].nextElementSibling;
+        let dims = minimizedMenuItem.getBoundingClientRect();
+        if (menuPanel) {
             this.active = true;
 
-            panel.style.zIndex = 1000;
-
-            panel.style.top = (item.offsetHeight - 1) + 'px'; // -1 for the border so it blends
-            panel.style.right = '0px';
-            
+            menuPanel.style.zIndex = 1000;
+            menuPanel.style.top = 40 + 'px'; // -1 for the border so it blends
+            menuPanel.style.right = (dims.width) + 'px';
+            menuPanel.style.position = 'fixed';  
+            if (dims.width > 0) {
+                menuPanel.style.top = dims.top + 'px';
+                menuPanel.style['border-right'] = 'none';
+            }
         }
     }
 

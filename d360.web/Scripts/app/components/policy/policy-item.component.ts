@@ -1,44 +1,64 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
-import { BaseComponent } from '../shared/base.component';
-import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
-import { PoliciesService } from '../../services/policies.service';
-import { RightSidebarService } from '../../services/right-sidebar.service';
-import { HeaderActionsService } from '../../services/header-actions.service';
-import { PermissionsService } from '../../services/permissions.service';
-import { Breadcrumb } from '../../models/breadcrumb.model';
-import { Policy, PolicyType, PolicyStatus } from '../../models/policy.model';
-import { TreeNode } from 'primeng/primeng';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import { StringConstants } from '../../static/string-constants';
-import { Permission } from '../../models/responsibility-type.model';
+﻿import {
+    Component,
+    OnInit,
+    OnDestroy
+} from '@angular/core';
+import {Router, ActivatedRoute} from '@angular/router';
+import {Title} from '@angular/platform-browser';
+import {TreeNode} from 'primeng/primeng';
+
+import {Breadcrumb} from '../../models/breadcrumb.model';
+import {Policy, PolicyType, PolicyStatus} from '../../models/policy.model';
+import {Permission} from '../../models/responsibility-type.model';
+
+import {HeaderBreadcrumbService} from '../../services/header-breadcrumb.service';
+import {PoliciesService} from '../../services/policies.service';
+import {RightSidebarService} from '../../services/right-sidebar.service';
+import {HeaderActionsService} from '../../services/header-actions.service';
+import {PermissionsService} from '../../services/permissions.service';
+
+import {BaseComponent} from '../shared/base.component';
+
+import {StringConstants} from '../../static/string-constants';
+import {SiteUrlHelpers} from '../../static/site-url-helpers';
 
 declare var CompanySettings;
 
 @Component({
     selector: 'd3s-policy-item',
-    template: `                 
-                <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <div *ngIf="!isLoading" class="row">                    
+    template: `
+        <d3s-loading [isLoading]="isLoading"></d3s-loading>
+        <div *ngIf="!isLoading"
+             class="row">
+            <div class="col s12">
+                <div class="row"
+                     *ngIf="showSocialScoreBar">
                     <div class="col s12">
-                        <div class="row" *ngIf="showSocialScoreBar">
-                            <div class="col s12">
-                                 <div class="tile tile-detail" style="padding-left:0;padding-right:0;">
-                                    <d3s-object-governance [uid]="selected?.Uid" [objectType]="'Policy'" [objectID]="selected?.ID" [objectName]="selected?.Name" [status]="selected?.StatusName"></d3s-object-governance>
-                                </div>
-                            </div>
+                        <div class="tile tile-detail"
+                             style="padding-left:0;padding-right:0;">
+                            <d3s-object-governance [uid]="selected?.Uid"
+                                                   [objectType]="'Policy'"
+                                                   [objectID]="selected?.ID"
+                                                   [objectName]="selected?.Name"
+                                                   [status]="selected?.StatusName"></d3s-object-governance>
                         </div>
-                        <div class="row">
-                            <div class="col s12">
-                                <div class="tile tile-detail">
-                                    <d3s-object-definition-tile [nymTypes]="policyType?.NymTypes" [objectPermissions]="permissions" [objectType]="'Policy'" [objectID]="selected?.ID" [hasAttributes]="policyType.AllowAttributes" (onEditComplete)="editComplete($event)"></d3s-object-definition-tile>
-                                </div>
-                            </div>
-                        </div>  
-                    </div>                     
+                    </div>
                 </div>
-                `,
+                <div class="row">
+                    <div class="col s12">
+                        <div class="tile tile-detail">
+                            <d3s-object-definition-tile [nymTypes]="policyType?.NymTypes"
+                                                        [objectPermissions]="permissions"
+                                                        [objectType]="'Policy'"
+                                                        [objectID]="selected?.ID"
+                                                        [hasAttributes]="policyType.AllowAttributes"
+                                                        (onEditComplete)="editComplete($event)"></d3s-object-definition-tile>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `,
     providers: [PoliciesService, PermissionsService]
 })
 
@@ -48,10 +68,13 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
     policyType: PolicyType;
     treeNodeArray: TreeNode[] = [];
     selected: Policy;
-    sub: any;
+    private crumbs: Breadcrumb[] = [];
+    routeParamsSubscription: any;
+    private currentAreaNameSubscription: any;
+    private currentAreaName: string;
     treeSub: any;
 
-    private showSocialScoreBar: boolean = true;
+    private showSocialScoreBar = true;
 
     constructor(
         private headerActionsService: HeaderActionsService,
@@ -69,94 +92,164 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
 
     ngOnInit() {
         this.setBrowserTitle(this.titleService, '- Policy');
-        
-        this.headerBreadcrumbService.clearBreadcrumbs();
-        this.headerBreadcrumbService.clearCurrentObjectInfo();
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Policy',`${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_POLICY_CLASSIFICATION}`));
 
-        this.treeSub = this.headerBreadcrumbService.breadcrumbTreeSource$.subscribe(
-            id => {
-                this.showHierarchy(id);
-            });
+        this.routeParamsSubscription = this.route.params.subscribe(params => {
+            const newPolicyTypeId = +params['policyTypeId'];
+            // if hierarchyId is passed via alternative route to workaround
+            // bug with router escaping ; = and other chars.
+            let hierarchyId = +params['id'];
 
-
-        this.sub = this.route.params.subscribe(params => {
-            let newPolicyTypeId = +params['policyTypeId'];
-
-            let hierarchyId = +params['id'];// if hierarchyId is passed via alternative route to workaround bug with router escaping ; = and other chars.
-
-            if (!hierarchyId)
+            if (!hierarchyId) {
                 hierarchyId = +params['hierarchyId'] || 0;
-            
-            if (hierarchyId != 0)
+            }
+            this.headerBreadcrumbService.clearCurrentObjectInfo();
+            if (hierarchyId != 0) {
                 this.headerBreadcrumbService.setCurrentObjectInfo('Policy', hierarchyId);
-            else
+            } else {
                 this.headerBreadcrumbService.setCurrentObjectInfo('PolicyType', newPolicyTypeId);
+            }
             this.setObjectInfo('Policy', hierarchyId);
+
+            this.treeSub = this.headerBreadcrumbService.breadcrumbTreeSource$.subscribe(
+                id => {
+                    this.showHierarchy(id);
+                }
+            );
 
             if (this.policyTypeId != newPolicyTypeId) {
                 this.policyTypeId = newPolicyTypeId;
 
                 this.isLoading = true;
-                this.load(hierarchyId).then(() => this.isLoading = false);
+
+                this.load(hierarchyId).then(
+                    () => this.isLoading = false
+                );
             } else {
                 this.headerBreadcrumbService.popLastBreadcrumb();
-                this.selectPolicyHierarchy(hierarchyId).then(p => {
-                    //this.clearSidebar();
-                    //this.setCommonRightSideBar(true, true, false, true, true, true, true, true);
-                });
+
+                this.selectPolicyHierarchy(hierarchyId).then(
+                    p => {
+                    }
+                );
             }
         });
 
         this.showSocialScoreBar = (CompanySettings.ShowSocialScoreBar != 'false');
     }
 
-
     ngOnDestroy() {
         this.clearSidebar();
-        this.sub.unsubscribe();
+        this.routeParamsSubscription.unsubscribe();
+        this.currentAreaNameSubscription.unsubscribe();
         this.treeSub.unsubscribe();
     }
 
-    load(hierarchyId: number): Promise<any> {
-        return this.policiesService.getPolicyType(this.policyTypeId)
-            .then(result => {
-                this.policyType = result;
+    buildBreadcrumb() {
+        this.headerBreadcrumbService.getFolderTitle('#Policy').then((res) => {
+            this.headerBreadcrumbService.clearBreadcrumbs();
+            this.crumbs = [];
+            let areaBreadcrumb = new Breadcrumb(
+                this.currentAreaName ? this.currentAreaName : res, `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`
+            );
+            this.headerBreadcrumbService.showBreadcrumb(areaBreadcrumb);
 
-                this.headerBreadcrumbService.clearBreadcrumbs();                
-                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Policies', `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_POLICY_CLASSIFICATION}`));
-                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.policyType.Name, `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${this.policyType.ID}/structure`));
+            this.headerBreadcrumbService.showBreadcrumb(
+                new Breadcrumb(
+                    this.policyType.Name,
+                    SiteUrlHelpers.getObjectUrl('PolicyType', this.policyType.ID), undefined, 'POLICYTYPE', this.policyTypeId, undefined, undefined, true
+                )
+            );
 
-                this.loadPolicyItems(this.policyTypeId, hierarchyId).then(n => {
-                    this.setBrowserTitle(this.titleService, this.policyType.Name);
-
+            if (this.selected && this.selected.ID > 0) {
+                this.checkParent(this.selected);
+                this.headerBreadcrumbService.showBreadcrumb(
+                    new Breadcrumb(
+                        this.selected.DisplayValue,
+                        undefined,
+                        true,
+                        'Policy',
+                        this.selected.ID,
+                        this.buildTreeNodeArray(this.policies, this.selected.ParentID),
+                        this.findSelectedTreeNode(this.selected.ID)));
+            }
+        });
+        this.currentAreaNameSubscription =
+            this.headerBreadcrumbService
+                .getAreaName('PolicyType', this.policyTypeId)
+                .subscribe(result => {
+                    this.currentAreaName = result
+                    
                 });
-            });
     }
 
-    loadPolicyItems(policyTypeId: number, selectedHierarchyId: number ): Promise<any> {
-        return this.policiesService.getPolicies(policyTypeId).then(r => {
-            for (let policy of r) {
-                policy.StatusName = PolicyStatus[policy.Status];
+    private checkParent(modelItem: Policy) {
+        if (modelItem.ParentID > 0 && this.policies) {
+            let parentAr = this.policies.filter(x => x.ID == modelItem.ParentID);
+            let parent: Policy;
+            if (parentAr.length > 0) {
+                parent = parentAr[0];
+                let crumb = new Breadcrumb(parent.DisplayValue,
+                    SiteUrlHelpers.getObjectUrl('POLICYTYPE', parent.ID, this.policyTypeId),
+                    true,
+                    'Policy',
+                    parent.ID,
+                    this.buildTreeNodeArray(this.policies, parent.ParentID),
+                    this.findSelectedTreeNode(parent.ID), false, false)
+                this.crumbs.unshift(crumb);
+                this.checkParent(parent);
             }
-            this.policies = r;
-            this.treeNodeArray = this.buildTreeNodeArray(this.policies);
-            this.selectPolicyHierarchy(selectedHierarchyId);
-        });
+        } else {
+            this.crumbs.forEach(x => this.headerBreadcrumbService.showBreadcrumb(x));
+        }
+    }
+
+    load(hierarchyId: number): Promise<any> {
+        return this.policiesService.getPolicyType(this.policyTypeId).toPromise()
+            .then(
+                result => {
+                    this.policyType = result;
+                    this.buildBreadcrumb();
+                    this.loadPolicyItems(this.policyTypeId, hierarchyId).then(
+                        n => {
+                            this.setBrowserTitle(this.titleService, this.policyType.Name);
+                        }
+                    );
+                }
+            );
+    }
+
+    loadPolicyItems(policyTypeId: number, selectedHierarchyId: number): Promise<any> {
+        return this.policiesService.getPolicies(policyTypeId).toPromise().then(
+            r => {
+                for (let policy of r) {
+                    policy.StatusName = PolicyStatus[policy.Status];
+                }
+
+                this.policies = r;
+
+                this.treeNodeArray = this.buildTreeNodeArray(this.policies);
+                this.selectPolicyHierarchy(selectedHierarchyId);
+            }
+        );
     }
 
     private editComplete(e: any) {
         this.load(e.ID);
     }
 
-    private buildTreeNodeArray(policies: Policy[], Parent?: number): TreeNode[] {
-        //find the root items then 
-
+    private buildTreeNodeArray(
+        policies: Policy[],
+        Parent?: number,
+        includeChildren?: boolean
+    ): TreeNode[] {
+        // find the root items then
         let rootNodes = policies.filter(x => (Parent != undefined ? x.ParentID == Parent : !x.ParentID));
 
-        if (rootNodes.length == 0) return null;
+        if (rootNodes.length == 0) {
+            return null;
+        }
 
-        let res: TreeNode[] = [];
+        const res: TreeNode[] = [];
 
         for (let root of rootNodes) {
             res.push({
@@ -165,7 +258,7 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
                 data: {
                     id: root.ID
                 },
-                children: (this.buildTreeNodeArray(policies, root.ID)) //recursively find its children
+                children: (includeChildren ? this.buildTreeNodeArray(policies, root.ID) : null) // recursively find its children
             });
         }
 
@@ -174,62 +267,81 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
 
     private selectPolicyHierarchy(selectedHierarchyId: number): Promise<any> {
         if (selectedHierarchyId > 0) {
-            let selArray = this.policies.filter(x => x.ID == selectedHierarchyId);
-            if (selArray.length > 0) this.selected = selArray[0];
-            else {
-                console.log("ERROR INVALID SELECTED HIERARCHY ID SPECIFIED.", selectedHierarchyId);
+            const selArray = this.policies.filter(x => x.ID == selectedHierarchyId);
+
+            if (selArray.length > 0) {
+                this.selected = selArray[0];
+            } else {
+                console.log('ERROR INVALID SELECTED HIERARCHY ID SPECIFIED.', selectedHierarchyId);
 
                 this.selected = (this.policies.length && this.policies.length > 0) ? this.policies[0] : null;
             }
-        }
-        else {
+        } else {
             this.selected = (this.policies.length && this.policies.length > 0) ? this.policies[0] : null;
         }
 
         this.assetID = this.selected.AssetID;
 
-        this.loadPermissions(this.permissionsService, StringConstants.ObjectPolicy, this.selected.ID).then(p => {
-            this.clearSidebar();
-            this.setCommonRightSideBar(true, this.hasPermission(Permission.ReadResponsibilities), false, true, true, this.hasPermission(Permission.ReadRelationships), true);
-        });
+        this.loadPermissions(this.permissionsService, StringConstants.ObjectPolicy, this.selected.ID).then(
+            p => {
+                this.clearSidebar();
+                this.setCommonRightSideBar(
+                    true,
+                    this.hasPermission(Permission.ReadResponsibilities),
+                    false,
+                    true,
+                    true,
+                    this.hasPermission(Permission.ReadRelationships),
+                    true
+                );
+            }
+        );
 
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.selected.DisplayValue, undefined, true, 'Policy', this.selected.ID, this.treeNodeArray, this.findSelectedTreeNode(selectedHierarchyId)));
+        this.buildBreadcrumb();
 
         return Promise.resolve(null);
     }
 
     private findSelectedTreeNode(id: number): TreeNode {
-        let nodes: TreeNode[] = [];
+        const nodes: TreeNode[] = [];
 
         // add root nodes
         for (let rNode of this.treeNodeArray) {
             nodes.push(rNode);
         }
 
-        //do a breadth first search for the given treenode
-        if (nodes.length == 0) return;
+        // do a breadth first search for the given treenode
+        if (nodes.length == 0) {
+            return;
+        }
 
         let node = nodes[0];
 
         while (node) {
-            if (node.data.id && node.data.id == id) return node;
+            if (node.data.id && node.data.id == id) {
+                return node;
+            }
 
-            //push children
+            // push children
             if (node.children) {
                 for (let cNode of node.children) {
                     nodes.push(cNode);
                 }
             }
 
-            //remove this node
+            // remove this node
             nodes.splice(0, 1);
 
-            if (nodes.length == 0) return null;
+            if (nodes.length == 0) {
+                return null;
+            }
+
             node = nodes[0];
         }
     }
 
     private showHierarchy(id: number) {
         this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${this.policyTypeId};hierarchyId=${id}`);
+        this.buildBreadcrumb();
     }
-};
+}

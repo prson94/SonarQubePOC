@@ -67,6 +67,7 @@ export class AdminOrganizationsComponent extends AdminBaseComponent implements O
     constructor(private router: Router, private stateService: StateService, rightSidebarService: RightSidebarService, private organizationService: OrganizationsService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
         super(headerBreadcrumbService, titleService, rightSidebarService);        
         this.areaName = "Organizations";
+        this.adminHeading = "Security";
         this.setCommonItems();
     }
 

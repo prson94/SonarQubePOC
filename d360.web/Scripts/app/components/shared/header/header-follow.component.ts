@@ -11,14 +11,19 @@ import { HeaderActionsService } from '../../../services/header-actions.service';
     template:
     `
         <div *ngIf="visible" class="show-on-medium-and-down hide-on-med-and-up" (click)="toggleFollow()">
-            <i *ngIf="active && !isLoading" class="fa fa-check"></i>
-            <i *ngIf="isLoading" style="color: #000;" class="fa fa-spinner fa-spin"></i>
-            Follow
+            <div class="mini-menu-line">
+                <div class="check-gutter">
+                    <i *ngIf="active && !isLoading" class="fa fa-check"></i>
+                    <i *ngIf="isLoading" style="color: #000;" class="fa fa-spinner fa-spin"></i>
+                </div>
+                <div class="text">Follow</div>
+                <div class="expand-gutter"></div>            
+            </div>
         </div>
-        <span *ngIf="visible" (click)="toggleFollow()" [class.active]="active" class="follow hide-on-med-and-down" [title]="tooltipString">
+        <div *ngIf="visible" (click)="toggleFollow()" [class.active]="active" class="header-button hide-on-med-and-down" [title]="tooltipString">
             <i *ngIf="!isLoading" class="fa fa-bookmark"></i>
-            <i *ngIf="isLoading" class="fa fa-spinner fa-spin" style="color:black;"></i>
-        </span>
+            <i *ngIf="isLoading" class="fa fa-spinner fa-spin"></i>
+        </div>
     `,
     providers: [FollowerService],
     changeDetection: ChangeDetectionStrategy.OnPush

@@ -20,14 +20,16 @@ namespace d360.core.entities
         public string SourceIdField { get; set; } = string.Empty;
 
         [DataMember]
-        [Column(TypeName = "varchar"), StringLength(250)]
-        public string SourceNameField { get; set; } = string.Empty;
-
-        [DataMember]
         public int ResponsibilityTypeID { get; set; }
 
         [DataMember]
         public bool Active { get; set; } = true;
+
+        [DataMember]
+        public IntegrationResolutionType ResolutionType { get; set; }
+
+        [DataMember]
+        public int? ResolutionFieldTypeID { get; set; }
 
         [IgnoreDataMember, ForeignKey("SynchedAssetTypeID")]
         public virtual ICollection<IntegrationAssetType> IntegrationAssetType { get; set; }

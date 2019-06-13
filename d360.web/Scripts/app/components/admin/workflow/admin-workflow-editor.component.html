@@ -53,7 +53,7 @@
                 </div>
                 <div>
                     <p-dropdown [options]="issueObjectTypes"
-                                [(ngModel)]="selectedIssueObjectType"
+                                [(ngModel)]="this.model.Event.IssueObject"
                                 [style]="{'width': '95%'}"
                                 filterPlaceholder="Choose a value"
                                 [filter]="true">

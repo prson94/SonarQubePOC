@@ -13,12 +13,12 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
     selector: 'd3s-site-menu-mega-item',    
     template: ` 
                 <a (click)="itemClick()" [ngClass]="{'menu-item truncate':true , 'dim': item.Url == null}">
-                    <div style="display: inline-flex;width: inherit;" [ngStyle]="{'text-indent': getMainIndent()}">
-                        <div style="margin-left: -5px;padding-right: 5px;" (click)="handleArrowClick($event)">
+                    <div class="mega-item-container" [ngStyle]="{'text-indent': getMainIndent()}">
+                        <div class="caret" (click)="handleArrowClick($event)">
                             <i *ngIf="item.Items" [class]="!displayChild ? 'subitem fa fa-caret-right' : 'subitem fa fa-caret-down'" aria-hidden="true"></i>
                         </div>
-                        <div style="padding-right: 40px; line-height: 33px;height: 22px;" [ngStyle]="{'text-indent': getSubIndent()}" [innerHTML]="highlight() | safeHtml"></div>
-                        <div *ngIf="count > 0" style="margin-left: auto;" class="d3s-badge pull-right">{{count}}</div>
+                        <div class="mega-item-title" [ngStyle]="{'text-indent': getSubIndent()}" [innerHTML]="highlight() | safeHtml"></div>
+                        <div *ngIf="count > 0" class="d3s-badge pull-right">{{count}}</div>
                         <ng-container *ngIf="item.IsHomePage">&nbsp;&nbsp;<span style="line-height: 25px;" class="fa fa-home"></span></ng-container>
                     </div>
                 </a>

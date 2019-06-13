@@ -14,6 +14,7 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked {
     @Input() objectType: string;
     @Input() objectId: number;
     @Output() onItemClick = new EventEmitter();
+    @Input() issueObject: string;
     @ViewChild('sel') select;
     @ViewChild('cont') container;
 
@@ -45,18 +46,20 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked {
 
     ngOnChanges() {
         if (this.objectType != null && this.objectId != null)
-            this.workflowService.getWorkflowFieldTypes(this.objectId, this.objectType, true)
+            this.workflowService.getWorkflowFieldTypes(this.objectId, this.objectType, true, this.issueObject)
                 .then(r => {
                     this.fields = [];
                     this.fields = _.cloneDeep(this.defaultFields);
 
                     if (this.objectType == 'IntersectType')
                         this.fields = this.fields.concat(_.cloneDeep(this.relationshipFields));
-
+                
                     r.forEach(f => {
+                        let fieldType = f.Object == "IssueType" ? "Action Field" : "Asset Field";
+
                         this.fields.push({
-                            value: '[FIELD' + f.ID + ']',
-                            label: 'Field :: ' + f.Name
+                            value: '[FIELD' + f.ID + ']#[' + fieldType + ' :: ' + f.Name +']',
+                            label: fieldType + ' :: ' + f.Name
                         });
                     });
                 });
@@ -82,7 +85,11 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked {
     clickItem(e: any) {
         if (e == "none")
             return;
-        this.onItemClick.emit(e);
+        let f = e.split('#');
+        if (f.length == 2)
+            this.onItemClick.emit(f[1]);
+        else
+            this.onItemClick.emit(f[0]);
         this.selected = "none";
         this.select.nativeElement.value = "none";
     }

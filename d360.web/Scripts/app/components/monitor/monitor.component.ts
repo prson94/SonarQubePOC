@@ -186,10 +186,11 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
             this.filtersLoaded = true;
             this.clearSidebar();
             this.setBrowserTitle(this.titleService, 'Workflow');
-
-            this.headerBreadcrumbService.clearBreadcrumbs();
-            this.headerBreadcrumbService.clearCurrentObjectInfo();
-            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Workflow', SiteUrlHelpers.SITE_URL_MONITOR_ROOT));
+            this.headerBreadcrumbService.getFolderTitle('#Monitor').then((res) => {
+                this.headerBreadcrumbService.clearBreadcrumbs();
+                this.headerBreadcrumbService.clearCurrentObjectInfo();
+                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res, SiteUrlHelpers.SITE_URL_MONITOR_ROOT));
+            });
         }
 
 

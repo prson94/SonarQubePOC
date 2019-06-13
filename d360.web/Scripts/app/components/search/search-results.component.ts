@@ -89,7 +89,7 @@ export class SearchResultsComponent extends BaseComponent {
     @ViewChild('pag') paginator: Paginator;
 
     ngOnChanges(changes: any) {
-        if (changes.from != undefined) {
+        if (changes.from != undefined && this.paginator != undefined) {
             this.paginator.updatePaginatorState();
         }
     }

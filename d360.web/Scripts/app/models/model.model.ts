@@ -24,6 +24,7 @@ export class ModelHierarchy {
     TextPath: string;
     ParentID: number;
     Level: number;
+    HasDashboards: boolean;
 }
 
 export class HierarchyDiagramModel {

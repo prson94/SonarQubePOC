@@ -26,6 +26,7 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
     @Input() object: string;
     @Input() objectId: number;
     @Input() step: NodeModel;
+    @Input() issueObject: string;
 
     WorkflowActivityType = WorkflowActivityType;
     StepType = StepType;
@@ -51,7 +52,7 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
         this.isLoading = true;
         this.responsibilityService.getResponsibilityTypes()
             .then(r => this.responsibilities = r)
-            .then(() => this.workflowService.getWorkflowFieldTypes(this.objectId, this.object, true))
+            .then(() => this.workflowService.getWorkflowFieldTypes(this.objectId, this.object, true, this.issueObject))
             .then(r => this.fields = r)
             .then(() => this.load());
     }
@@ -81,6 +82,16 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
         }
         this.isLoading = false
         this.ref.markForCheck();
+    }
+
+    renderFieldChangeTableName(item: any): string {
+        if (this.issueObject == "") return item['@FieldName'];
+        if (typeof item['@ObjectType'] == 'undefined' || item['@ObjectType'] == 'Issue')
+            return "Action Field::" + item['@FieldName'];
+        else {
+            let f = this.fields.find(f => f.ID == +item['@FieldId']);
+            return "Asset Field::" + f.FriendlyName;
+        }
     }
 
     getResponsibilityName(i: number): string {
@@ -124,6 +135,9 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
             else
                 val = i['@Value'];
         }
+
+        if (val == undefined || val == null)
+            return '';
 
         if (val.length > 50) {
             val = val.substr(0, 47) + '...';

@@ -11,8 +11,8 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 export class ArtifactBaseComponent extends BaseComponent {            
     public area: string = "Glossary";
+    public folderTitle: string; 
     public areaLink: string = SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT;
-        
     //sidebar
     sidebarSubscription: Subscription;
     
@@ -20,6 +20,7 @@ export class ArtifactBaseComponent extends BaseComponent {
         super();
         this.rightSidebarService = rightSidebarService;
         this.webAnalyticsService = webAnalyticsService;
+        headerBreadcrumbService.getFolderTitle('#Glossary').then(res => { this.folderTitle = res });
     }        
     
     protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {

@@ -10,7 +10,8 @@ import {
     AutoCompleteModule,    
     TreeModule,
     OverlayPanelModule,
-    SharedModule,    
+    SharedModule,
+    DialogModule,    
 } from 'primeng/primeng';
 
 import { PipesModule } from '../../../pipes/pipes.module';
@@ -27,6 +28,7 @@ import { RaiseIssueButtonComponent } from './raise-issue-button.component';
 import { HeaderShoppingCartComponent } from './header-shopping-cart.component';
 import { HeaderHomePageComponent } from './header-homepage.component';
 import { HeaderProfileComponent } from './header-profile.component';
+import { HeaderMiniMenuComponent } from './header-mini-menu-component';
 
 @NgModule({
     imports: [CommonModule,
@@ -42,7 +44,8 @@ import { HeaderProfileComponent } from './header-profile.component';
         AutoCompleteModule,        
         OverlayPanelModule,
         SharedModule,        
-        TreeModule,                
+        TreeModule, 
+        DialogModule,
     ],
     declarations: [
         HeaderActionsComponent,
@@ -57,6 +60,7 @@ import { HeaderProfileComponent } from './header-profile.component';
         HeaderShoppingCartComponent,
         HeaderHomePageComponent,
         HeaderProfileComponent,
+        HeaderMiniMenuComponent,
     ],
     exports: [
         HeaderComponent

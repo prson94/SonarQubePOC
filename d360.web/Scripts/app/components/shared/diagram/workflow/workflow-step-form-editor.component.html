@@ -19,7 +19,7 @@
                 <p-editor [ngModel]="step.fields.form['@description']" (ngModelChange)="step.fields.form['@description'] = $event; stepChange.emit(step)"  #fed>
                     <p-header>
                         <d3s-editor-header></d3s-editor-header>
-                        <d3s-workflow-template-tool [objectType]="objectType" [objectId]="objectId" (onItemClick)="appendFieldDescription($event)"></d3s-workflow-template-tool>
+                        <d3s-workflow-template-tool [issueObject]="issueObject" [objectType]="objectType" [objectId]="objectId" (onItemClick)="appendFieldDescription($event)"></d3s-workflow-template-tool>
                     </p-header>
                 </p-editor>
             </div>
@@ -103,7 +103,7 @@
                 <p-editor [ngModel]="step.settings.MessageBodyTemplate" (ngModelChange)="step.settings.MessageBodyTemplate = $event; stepChange.emit(step)" #ed>
                     <p-header>
                         <d3s-editor-header></d3s-editor-header>
-                        <d3s-workflow-template-tool [objectType]="objectType" [objectId]="objectId" (onItemClick)="appendField($event)"></d3s-workflow-template-tool>
+                        <d3s-workflow-template-tool [issueObject]="issueObject" [objectType]="objectType" [objectId]="objectId" (onItemClick)="appendField($event)"></d3s-workflow-template-tool>
                     </p-header>
                 </p-editor>
             </div>
@@ -116,7 +116,7 @@
                 <d3s-tile-actions hideTooltip="true" hasAdd="true" (addClick)="add()"></d3s-tile-actions>
             </header>
 
-            <p-table #dt [value]="step.fields.form.field" selectionMode="single" [metaKeySelection]="true" [pageLinks]="3" [paginator]="true" [rows]="5" [rowsPerPageOptions]="defaultPagingOptions">
+            <p-table #dt [value]="step.fields.form.field" selectionMode="single" [metaKeySelection]="true" [pageLinks]="3" [paginator]="true" [rows]="10" [rowsPerPageOptions]="defaultPagingOptions">
                 <ng-template pTemplate="header">
                     <tr>
                         <th>Label</th>
