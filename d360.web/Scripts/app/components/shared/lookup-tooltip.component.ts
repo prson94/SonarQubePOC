@@ -53,7 +53,8 @@ export class LookupTooltipComponent implements OnDestroy  {
         this.tooltipSingletonService.tooltipShow(this.objectType, this.objectId);
         if (!this.data) {
             //get object properties for the tooltip
-            this.toolTipService.getLookupTooltipInfo(this.objectType, this.objectId).then(res => {
+            this.toolTipService.getLookupTooltipInfo(this.objectType, this.objectId)
+                .subscribe(res => {
                 this.data = res;
                 this.showPanel(tip, item);
                 this.ref.markForCheck();
