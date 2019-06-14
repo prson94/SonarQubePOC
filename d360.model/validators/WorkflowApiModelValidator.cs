@@ -136,6 +136,13 @@ namespace d360.model.validators
                                 count++;
                             }
                             break;
+                        case "workflowtypeuid":
+                            Guid workflowTypeUid;
+                            if ((Guid.TryParse(x.Value, out workflowTypeUid)) && (workflowTypeUid != Guid.Empty))
+                            {
+                                count++;
+                            }
+                            break;
                     }
                 });
 

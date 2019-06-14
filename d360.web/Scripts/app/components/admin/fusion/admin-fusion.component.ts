@@ -37,6 +37,7 @@ export class AdminFusionComponent extends AdminBaseComponent implements OnDestro
     ) {
         super(headerBreadcrumbService, titleService, rightSidebarService);
         this.areaName = 'Fusion Types';
+        this.adminHeading = 'Integration';
         this.setCommonItems();
         this.setCommonRightSideBar();
 

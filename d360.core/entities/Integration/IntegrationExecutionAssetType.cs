@@ -69,7 +69,7 @@ namespace d360.core.entities
         public string EnumFieldValues { get; set; }
 
         [DataMember]
-        public string RetryLog { get; set; } = "{RetryCount:0, LastRetryInError: false, LastStepCompleted: 0, Begins:{Fields:0,Relations:0,Responsibilities:0}}";
+        public string RetryLog { get; set; } = "{ \"RetryCount\":0, \"LastRetryInError\": false, \"LastStepCompleted\": 0, \"Begins\":{\"Fields\":0,\"Relations\":0,\"Responsibilities\":0}}";
 
         [DataMember]
         public string StepExecutionTimes { get; set; } = "[]";

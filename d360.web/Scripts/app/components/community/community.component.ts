@@ -65,10 +65,11 @@ export class CommunityComponent extends BaseComponent implements OnInit {
 
     ngOnInit() {
         this.setBrowserTitle(this.titleService, 'Community');
-
-        this.headerBreadcrumbService.clearBreadcrumbs();
-        this.headerBreadcrumbService.clearCurrentObjectInfo();
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Community'));
+        this.headerBreadcrumbService.getFolderTitle('#Community').then((res) => {
+            this.headerBreadcrumbService.clearBreadcrumbs();
+            this.headerBreadcrumbService.clearCurrentObjectInfo();
+            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res));
+        });
         this.clearSidebar();
         this.load();
     }

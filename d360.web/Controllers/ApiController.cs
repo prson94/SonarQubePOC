@@ -1320,25 +1320,6 @@ where   h.ID <> @t order by h.[Level] desc;
                 return Request.CreateResponse(HttpStatusCode.NotFound, json);
             }
 
-            var isPluralize = PluralCultureHelper.IsNeutralCultureEnglish();
-
-            foreach (var br in json["Breadcrumbs"].Children())
-            {
-                if (br["IsType"].ToObject<bool>())
-                {
-                    if (isPluralize)
-                    {
-                        var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
-                        br["Name"] = pluralize.Pluralize(br["Name"].Value<string>());
-                        pluralize = null;
-                    } else
-                    {
-                        br["Name"] = "";
-                    }
-                    
-                }
-            }
-
             return Request.CreateResponse(HttpStatusCode.OK, json);
         }
 
@@ -1348,7 +1329,7 @@ where   h.ID <> @t order by h.[Level] desc;
 
             var assetType = Company.Filter<AssetType>(i => i.Object == "ArtifactType" && i.ObjectID == typeID).SingleOrDefault();
             if (assetType == null) throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
-
+            
             var model = new Dictionary<string, object>();
 
             model.Add("ID", assetType.ObjectID);
@@ -6514,7 +6495,7 @@ where    A.RuleID = @id", new { id });
                             {
                                 columns = 1,
                                 FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = Fields.SourceNotes_Name, FieldName = "SourceNotes", FieldDescription = Fields.SourceNotes_Description, Value = refType.Notes }
+                                    new ReadOnlyField { Name = Fields.SourceNotes_Name, FieldName = "SourceNotes", FieldDescription = Fields.SourceNotes_Description, DataType = "Html", Value = refType.Notes }
                                 }
                             });
                         }
@@ -6605,7 +6586,7 @@ where    A.RuleID = @id", new { id });
                                 columns = 1,
                                 FirstColumnFields = new List<ReadOnlyField>
                                 {
-                                    new ReadOnlyField { Name = report.GetName(i => i.Description), FieldName = "ReportDescription", FieldDescription = report.GetDescription(i => i.Description), Value = report.Description }
+                                    new ReadOnlyField { Name = report.GetName(i => i.Description), FieldName = "ReportDescription", FieldDescription = report.GetDescription(i => i.Description), DataType = "HTML", Value = report.Description }
                                 }
                             });
                         }
@@ -7944,14 +7925,66 @@ from	    AssetType T where T.Object = 'TaxonomyType' ");
         {
             public string Name { get; set; }
             public string Url { get; set; }
+            public int ID { get; set; }
         }
 
         [Route("breadcrumb/typeahead")]
         public async Task<IEnumerable<BreadcrumbTypeAheadModel>> GetBreadcrumbTypeahead(string q, int num, SystemObjects objectType, int objectId)
         {
-            var sql = $"select top {num} ad.DisplayValue as Name, u.Url  from asset ast inner join assettype astt on (ast.assetTypeID = astt.id)  inner join AssetDisplayValue AD on AD.assetid = ast.id cross apply [dbo].GetAssetUrlById(ast.ID) u where ast.[object] = @typeName and astt.objectId = @typeId and ad.DisplayValuePrefix like @search";
+            var sql = $"select top {num} ad.DisplayValue as Name, u.Url  from asset ast inner join assettype astt on (ast.assetTypeID = astt.id)  inner join AssetDisplayValue AD on AD.assetid = ast.id cross apply [dbo].GetAssetUrlById(ast.ID) u where ast.[object] = @typeName and astt.objectId = @typeId and ad.DisplayValuePrefix like @search " +
+                        $"Order By ad.DisplayValue";
 
             return await Company.QueryAsync<BreadcrumbTypeAheadModel>(sql, new { typeName = new DbString { Value = objectType.ToString(), IsFixedLength = true, Length = 20, IsAnsi = true }, typeId = objectId, search = $"{q}%" });            
+        }
+
+        [Route("breadcrumb/typeaheadForFusion")]
+        public async Task<IEnumerable<BreadcrumbTypeAheadModel>> GetFusionTypeahead(string q, int num)
+        {
+            var sql = $"SELECT top {num} Name, 'fusion/' + CAST(ID as varchar) as Url FROM Fusion WHERE name like @search " +
+                        $"Order By Name";
+            return await Company.QueryAsync<BreadcrumbTypeAheadModel>(sql, new { search = $"{q}%",  });
+        }
+
+        [Route("breadcrumb/typeaheadfortype")]
+        public async Task<IEnumerable<BreadcrumbTypeAheadModel>> GetBreadcrumbTypeaheadForType(string q, int num, SystemObjects objectType, int objectId)
+        {
+            //var sql = $"select top {num} ad.DisplayValue as Name, u.Url  from asset ast inner join assettype astt on (ast.assetTypeID = astt.id)  inner join AssetDisplayValue AD on AD.assetid = ast.id cross apply [dbo].GetAssetUrlById(ast.ID) u where ast.[object] = @typeName and astt.objectId = @typeId and ad.DisplayValuePrefix like @search";
+            var sql = $" select top {num} AT.ID, AT.ObjectID, AT.Name, u.Url,IT.SubjectID as ParentID from AssetType AT " +
+                        $"cross apply [dbo].GetAssetTypeUrlById(AT.ID) u " +
+                        $"outer apply (SELECT IT.SubjectID from IntersectType IT " +
+                        $"              inner join [Predicate] P on IT.Object = @typeName " +
+                        $"              and IT.ObjectID = AT.ObjectID and P.ID = IT.PredicateID and P.Type = 3) IT " +
+                        $" WHERE IT.SubjectID = " +
+                        $" (SELECT  IT.SubjectID as ParentID FROM AssetType AT " +
+                        $"          outer apply (select	IT.SubjectID from	IntersectType IT " +
+                        $"          inner join [Predicate] P on IT.Object = @typeName and IT.ObjectID = AT.ObjectID " +
+                        $"          and P.ID = IT.PredicateID and P.Type = 3) IT " +
+                        $"where AT.[Object] = @typeName and AT.[objectId] = @typeId) AND AT.Name like @search " +
+                        $"Order By AT.Name";
+
+            return await Company.QueryAsync<BreadcrumbTypeAheadModel>(sql, new { typeName = new DbString { Value = objectType.ToString(), IsFixedLength = true, Length = 30, IsAnsi = true }, typeId = objectId, search = $"{q}%" });
+        }
+
+        [Route("breadcrumb/typeaheadfortypewithoutparent")]
+        public async Task<IEnumerable<BreadcrumbTypeAheadModel>> GetBreadcrumbTypeaheadForTypewithoutparent(string q, int num, SystemObjects objectType)
+        {
+            //var sql = $"select top {num} ad.DisplayValue as Name, u.Url  from asset ast inner join assettype astt on (ast.assetTypeID = astt.id)  inner join AssetDisplayValue AD on AD.assetid = ast.id cross apply [dbo].GetAssetUrlById(ast.ID) u where ast.[object] = @typeName and astt.objectId = @typeId and ad.DisplayValuePrefix like @search";
+            var sql = $" select top {num} AT.ID, AT.ObjectID, AT.Name, u.Url from AssetType AT " +
+                        $"cross apply [dbo].GetAssetTypeUrlById(AT.ID) u " +
+                        $" where AT.[Object] = @typeName AND AT.Name like @search " +
+                        $"Order By AT.Name";
+
+            return await Company.QueryAsync<BreadcrumbTypeAheadModel>(sql, new { typeName = new DbString { Value = objectType.ToString(), IsFixedLength = true, Length = 30, IsAnsi = true }, search = $"{q}%" });
+        }
+
+        [Route("breadcrumb/getArea")]
+        public async Task<string> GetBreadcrumbAreaByType(SystemObjects objectType, int objectId)
+        {
+            //var sql = $"select top {num} ad.DisplayValue as Name, u.Url  from asset ast inner join assettype astt on (ast.assetTypeID = astt.id)  inner join AssetDisplayValue AD on AD.assetid = ast.id cross apply [dbo].GetAssetUrlById(ast.ID) u where ast.[object] = @typeName and astt.objectId = @typeId and ad.DisplayValuePrefix like @search";
+            var sql = $" select Title FROM [dbo].[SiteNav] WHERE ID = (Select top 1 ParentID FROM [dbo].[SiteNav] WHERE [Object] = @typeName and [objectId] = @typeId)";
+
+            var res = await Company.QueryAsync<string>(sql, new { typeName = new DbString { Value = objectType.ToString(), IsFixedLength = true, Length = 30, IsAnsi = true }, typeId = objectId });
+            return res.FirstOrDefault();
         }
 
         #endregion

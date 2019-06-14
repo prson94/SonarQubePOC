@@ -60,7 +60,9 @@ declare var CompanySettings;
 })
 
 export class RuleItemComponent extends BaseComponent implements OnInit, OnDestroy {
-    private sub: any;
+    private routeParamsSubscription: any;
+    private currentAreaNameSubscription: any;
+    private currentAreaName: string;
     private rightSub: any;
     private rule: RuleDetail;
     private messages: MessageBarItem[] = [];
@@ -84,13 +86,18 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     ngOnInit() {
-        this.sub = this.route.params.subscribe(params => {
+        this.routeParamsSubscription = this.route.params.subscribe(params => {
             let ruleTypeId = +params['ruleTypeId']; // (+) converts string 'id' to a number    
             let ruleId = +params['ruleId']; // (+) converts string 'id' to a number            
             this.isLoading = true;
 
+            this.currentAreaNameSubscription =
+                this.headerBreadcrumbService
+                    .getAreaName('RuleType', ruleTypeId)
+                    .subscribe(result => { this.currentAreaName = result });
+
             this.load(ruleId).then(() => {
-                this.rulesService.getRuleType(ruleTypeId).then(r => this.ruleType = r); 
+                this.rulesService.getRuleType(ruleTypeId).then(r => { this.ruleType = r; this.buildbreadcrumb(); });
                 this.headerBreadcrumbService.setCurrentObjectInfo('Rule', ruleId);
                 this.setObjectInfo('Rule', ruleId, this.rule.Name, this.rule.AssetID);
 
@@ -107,22 +114,34 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     ngOnDestroy() {        
-        this.sub.unsubscribe();        
+        this.routeParamsSubscription.unsubscribe(); 
+        this.currentAreaNameSubscription.unsubscribe();
         this.clearSidebar();
     }
 
+    private buildbreadcrumb() {
+        this.headerBreadcrumbService.getFolderTitle('#Data Quality').then((res) => {
+            this.headerBreadcrumbService.clearBreadcrumbs();
+            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : res, undefined));//SiteUrlHelpers.SITE_URL_RULE_ROOT
+            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.ruleType.Name, `${SiteUrlHelpers.SITE_URL_RULE_ROOT}/${this.ruleType.ID}`,
+                undefined,
+                'RuleType',
+                this.ruleType.ID,
+                undefined,
+                undefined,
+                true));
+            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.rule.Name,
+                SiteUrlHelpers.getObjectUrl('RULEIMPLEMENTATION', this.rule.ID, this.ruleType.ID),
+                true,
+                'Rule',
+                this.ruleType.ID));
+        });
+    }
     load(ruleId: number): Promise<any> {
         return this.rulesService.getRule(ruleId)
             .then(result => {
                 this.rule = result;
-
-                this.headerBreadcrumbService.clearBreadcrumbs();
-                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Rule', undefined));//SiteUrlHelpers.SITE_URL_RULE_ROOT
-                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.rule.TypeName, `${SiteUrlHelpers.SITE_URL_RULE_ROOT}/${this.rule.TypeID}`));
-                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.rule.Name, undefined, true, 'Rule', this.rule.ID));
-                 
                 this.setBrowserTitle(this.titleService, this.rule.Name);
-
                 this.messages = []; //clear any messages for this rule
                 this.loadItemSurvey();
             });

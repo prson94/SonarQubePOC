@@ -128,17 +128,12 @@ export class ModelListComponent extends BaseComponent implements OnInit, OnDestr
         this.sub = this.route.params.subscribe(params => {
             this.modelGroup = params['group'];
 
-            this.headerBreadcrumbService.clearCurrentObjectInfo();
-            this.headerBreadcrumbService.clearBreadcrumbs();
-            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Models', this.modelGroup ? `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}` : undefined));
+            this.loadModels();
 
-            if (this.modelGroup) {
-                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.modelGroup));
-            }
+           
 
             this.setBrowserTitle(this.titleService, `${this.modelGroup ? this.modelGroup + ' ' : ''}Models`);
 
-            this.loadModels();
         });
     }
 
@@ -157,6 +152,15 @@ export class ModelListComponent extends BaseComponent implements OnInit, OnDestr
 
                 if (this.models.length && this.models.length > 0) {
                     this.selected = this.models[0];
+                }
+                    this.headerBreadcrumbService.getFolderTitle('#Models').then((res) => {
+                    this.headerBreadcrumbService.clearCurrentObjectInfo();
+                    this.headerBreadcrumbService.clearBreadcrumbs();
+                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res, this.modelGroup ? `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}` : undefined));
+                });
+
+                if (this.modelGroup) {
+                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.modelGroup));
                 }
             }
         );

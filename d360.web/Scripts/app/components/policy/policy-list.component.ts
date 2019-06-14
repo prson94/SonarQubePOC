@@ -130,9 +130,11 @@ export class PolicyListComponent extends BaseComponent implements OnInit, OnDest
     ngOnInit() {
         this.sub = this.route.params.subscribe(
             params => {
-                this.headerBreadcrumbService.clearCurrentObjectInfo();
-                this.headerBreadcrumbService.clearBreadcrumbs();
-                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Policies'));
+                this.headerBreadcrumbService.getFolderTitle('#Policy').then((res) => {
+                    this.headerBreadcrumbService.clearBreadcrumbs();
+                    this.headerBreadcrumbService.clearCurrentObjectInfo();
+                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res));
+                });
 
                 this.loadPolicies();
             }

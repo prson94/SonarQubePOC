@@ -6,15 +6,15 @@ import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-header-breadcrumb',
-    template: ` <div #bread class="breadcrumbs" (window:resize)="onResize($event,bread)">
-                 <i *ngIf="showLastOnly" class="fa fa-ellipsis-h" aria-hidden="true" (mouseover)="smallPanel.toggle($event);"></i>
-                 <div *ngFor="let breadcrumb of breadcrumbs;let last=last" [ngClass]="{'active':last,'inactive':!last}">
-                    <d3s-header-breadcrumb-item *ngIf="(showLastOnly && last) || !showLastOnly" [breadcrumb]="breadcrumb" [lastItem]="last" (treeClick)="handleTreeClick($event)"></d3s-header-breadcrumb-item>                    
+    template: ` <div #bread class="breadcrumbs" (window:resize)="onResize($event)">
+                 <i *ngIf="showLastOnly" class="fa fa-ellipsis-h breadcrumb-collapse" aria-hidden="true" (mouseover)="smallPanel.toggle($event);"></i>
+                 <div *ngFor="let breadcrumb of breadcrumbs;let last=last">
+                    <d3s-header-breadcrumb-item *ngIf="(showLastOnly && last) || !showLastOnly" [breadcrumb]="breadcrumb" [isLastItem]="last" [lastItem]="breadcrumbs[breadcrumbs.length - 1]" (treeClick)="handleTreeClick($event)"></d3s-header-breadcrumb-item>                    
                  </div>                
                 </div>  
-                <p-overlayPanel #smallPanel>
-                    <div *ngFor="let breadcrumb of breadcrumbs;let last=last;let index=index" style="line-height:20px">
-                        <d3s-header-breadcrumb-item *ngIf="!last" [ngStyle]="{'padding-left': index *10 + 'px'}" [showSeperator]="false" [breadcrumb]="breadcrumb" [lastItem]="last"></d3s-header-breadcrumb-item>
+                <p-overlayPanel #smallPanel ngClass="collapsed-overlay">
+                    <div *ngFor="let breadcrumb of breadcrumbs;let last=last;let index=index" class="collapsed-crumb-container">
+                        <d3s-header-breadcrumb-item *ngIf="!last" [ngClass]="'collapsed-crumb'" [ngStyle]="{'padding-left': index *10 + 'px'}" [index]="index" [showSeperator]="false" [breadcrumb]="breadcrumb" [isLastItem]="last" (treeClick)="handleTreeClick($event)"></d3s-header-breadcrumb-item>
                     </div>
                 </p-overlayPanel>
               `,
@@ -44,7 +44,7 @@ export class HeaderBreadcrumbComponent {
                         breadcrumb.active = false;
                     }
                     this.breadcrumbs.push(breadcrumb);
-                    this.resizeControlsToFit(window.innerWidth, this.breadcrumbUIElement);
+                    this.resizeControlsToFit(window.innerWidth);
                     this.ref.markForCheck();
                 }
             });
@@ -71,14 +71,15 @@ export class HeaderBreadcrumbComponent {
         this.headerBreadcrumbService.breadcrumbTreeClick(event.id);
     }
 
-    resizeControlsToFit(windowWidth, element) {
+    resizeControlsToFit(windowWidth) {
         if (windowWidth < 650) {
             this.showLastOnly = true;
             return;
-        }
-
+        } 
+        let element = this.breadcrumbUIElement.nativeElement;
         var controlsWidth = (windowWidth > 991) ? this.controlWidth : 0; // only visible medium and up
-        var logoWidth = 200;
+        let logo = element.parentElement.previousSibling;
+        var logoWidth = logo.offsetWidth;
         var breadcrumbWidth = element.offsetWidth;        
 
         var combinedWidth = controlsWidth + logoWidth + breadcrumbWidth;
@@ -100,8 +101,8 @@ export class HeaderBreadcrumbComponent {
         }
     }
 
-    onResize(event, element) {                
-        this.resizeControlsToFit(event.target.innerWidth, element);
+    onResize(event) {                
+        this.resizeControlsToFit(event.target.innerWidth);
     }
 
     maxLength(): number {

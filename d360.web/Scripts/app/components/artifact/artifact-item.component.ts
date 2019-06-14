@@ -31,7 +31,9 @@ declare var CompanySettings;
 
 export class ArtifactItemComponent extends ArtifactBaseComponent implements OnInit, OnDestroy {
     private artifact: Artifact
-    private sub: any;        
+    private sub: any; 
+    private currentAreaNameSubscription: any;
+    private currentAreaName: string;
     private artifactTypeId: number;
     private messages: MessageBarItem[]=[];
     private surveyType: SurveyType;
@@ -47,9 +49,9 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
         webAnalyticsService: WebAnalyticsService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         private surveysService: SurveysService,
-        protected permissionsService: PermissionsService            
+        protected permissionsService: PermissionsService
     ) {
-        super(headerBreadcrumbService, rightSidebarService, webAnalyticsService);        
+        super(headerBreadcrumbService, rightSidebarService, webAnalyticsService);       
     }
 
     ngOnInit() {
@@ -60,7 +62,11 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
             this.logAction('open', 'Artifact', artifactId);
             this.isLoading = true;
             this.messages = [];
-            
+            this.currentAreaNameSubscription =
+                this.headerBreadcrumbService
+                    .getAreaName('ArtifactType', this.artifactTypeId)
+                    .subscribe(result => { this.currentAreaName = result; if (this.artifact) this.buildBreadcrumb(); });
+
             this
                 .loadPermissions(this.permissionsService, StringConstants.ObjectArtifact, artifactId)
                 .then(p => {
@@ -75,6 +81,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
 
     ngOnDestroy() {
         this.sub.unsubscribe();
+        this.currentAreaNameSubscription.unsubscribe();
         this.clearSidebar();
     }
 
@@ -91,51 +98,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
             .subscribe(
                 artifact => {
                     this.artifact = artifact;
-                    this.headerBreadcrumbService.clearBreadcrumbs();
-                    let index = 0;
-
-                    for (let breadcrumb of this.artifact.Breadcrumbs) {
-                        index++;
-
-                        if (index == this.artifact.Breadcrumbs.length) {
-                            this
-                                .headerBreadcrumbService
-                                .showBreadcrumb(
-                                    new Breadcrumb(
-                                        breadcrumb.Name,
-                                        breadcrumb.Url,
-                                        breadcrumb.Active,
-                                        'Artifact',
-                                        this.artifactTypeId
-                                    )
-                                )
-                            ;
-                        } else if (index == 1) {
-                            //top level link
-                            this
-                                .headerBreadcrumbService
-                                .showBreadcrumb(
-                                    new Breadcrumb(
-                                        this.area,
-                                        this.areaLink,
-                                        breadcrumb.Active
-                                    )
-                                )
-                            ;
-                        } else {
-                            this
-                                .headerBreadcrumbService
-                                .showBreadcrumb(
-                                    new Breadcrumb(
-                                        breadcrumb.Name,
-                                        breadcrumb.Url,
-                                        breadcrumb.Active
-                                    )
-                                )
-                            ;
-                        }
-                    }
-
+                    this.buildBreadcrumb();
                     this.setBrowserTitle(this.titleService, this.artifact.DisplayValue);
 
                     this
@@ -206,6 +169,69 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
             });
     }
 
+    private buildBreadcrumb() {
+        let index = 0;
+        this.headerBreadcrumbService.clearBreadcrumbs();
+        let areaBreadcrumb = new Breadcrumb(
+            this.currentAreaName ? this.currentAreaName : this.folderTitle,
+            this.areaLink,
+            false
+        );
+        this.headerBreadcrumbService.showBreadcrumb(areaBreadcrumb);
+
+        for (let breadcrumb of this.artifact.Breadcrumbs) {
+            index++;
+
+            if (index == this.artifact.Breadcrumbs.length) {
+                //last item in the breadcrumb
+                this
+                    .headerBreadcrumbService
+                    .showBreadcrumb(
+                        new Breadcrumb(
+                            breadcrumb.Name,
+                            breadcrumb.Url,
+                            false,
+                            'Artifact',
+                            this.artifactTypeId,
+                            null,
+                            null,
+                            false,
+                            breadcrumb.TypeName !== undefined,
+                            breadcrumb.TypeName,
+                            'ArtifactType',
+                            this.GetIDFromUrl(breadcrumb.TypeUrl),
+                            breadcrumb.TypeUrl
+                        )
+                    )
+                    ;
+            } else {
+                this
+                    .headerBreadcrumbService
+                    .showBreadcrumb(
+                        new Breadcrumb(
+                            breadcrumb.Name,
+                            breadcrumb.Url,
+                            false,
+                            'Artifact',
+                            this.GetIDFromUrl(breadcrumb.Url),
+                            null,
+                            null,
+                            false,
+                            breadcrumb.TypeName !== undefined,
+                            breadcrumb.TypeName,
+                            'ArtifactType',
+                            this.GetIDFromUrl(breadcrumb.TypeUrl),
+                            breadcrumb.TypeUrl
+                        )
+                    )
+                    ;
+            }
+        }
+    }
+
+    private GetIDFromUrl(url: string) {
+        return +url.split("/")[url.split.length - 1];
+    }
     private completeSurvey() {
         this.showSurvey = false;
         var index = this.messages.findIndex(x => x.data == 'Survey');

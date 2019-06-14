@@ -53,10 +53,6 @@ nav.top {
     flex-wrap: nowrap;
     min-width: 800px;
 
-    a {
-        color: @primary-nav;
-    }
-
     ul a {
         color: #fff;
     }
@@ -81,6 +77,141 @@ nav.top, .left-side-nav {
     box-shadow: none;
 }
 
+///////////////////////////////////////////////////////////////////////////////////
+// Panel Button
+///////////////////////////////////////////////////////////////////////////////////
+
+.aboutbutton {
+    display: inline-flex;
+    position: relative;
+    box-sizing: border-box;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+    cursor: pointer;
+    font-family: 'Nunito Sans';
+    font-size: 14px;
+    text-align: center;
+    white-space: nowrap;
+    background: #f0f0f0;
+    color: #202020;
+    border: none;
+    border-radius: 3px;
+
+    &:not(.icon):not(.bar) {
+        padding: 0 15px;
+
+        i.fa {
+            padding-right: 7px;
+        }
+    }
+
+    &.icon {
+        width: 30px;
+    }
+
+
+    &:not(:disabled):hover, &.hover {
+        background: mix(black, #f0f0f0, 7%);
+    }
+
+    &:not(:disabled):active, &.active {
+        background: mix(black, #f0f0f0, 14%);
+    }
+
+    &.primary {
+        background: #006FBA;
+        color: #ffffff;
+
+        &:not(:disabled):hover, &.hover {
+            background: #4093CB;
+        }
+
+        &:not(:disabled):active, &.active {
+            background: #66A9D6;
+        }
+    }
+
+    &.accent {
+        background: coral;
+        color: #ffffff;
+
+        &:not(:disabled):hover, &.hover {
+            background: mix(black, coral, 7%)
+        }
+
+        &:not(:disabled):active, &.active {
+            background: mix(black, coral, 14%)
+        }
+    }
+
+    &.negative {
+        background: red;
+        color: #ffffff;
+
+        &:not(:disabled):hover, &.hover {
+            background: mix(black, red, 7%)
+        }
+
+        &:not(:disabled):active, &.active {
+            background: mix(black, red, 14%)
+        }
+    }
+
+    .loader {
+        position: absolute;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+    }
+
+    &.loading {
+        opacity: 1;
+
+        .content {
+            visibility: hidden;
+        }
+
+        .loader {
+            display: inline-flex;
+        }
+    }
+
+    &.bar {
+        width: 40px;
+        height: 40px;
+        background: none;
+        color: #ffffff;
+        font-size: 16px;
+        border-radius: 0;
+
+        &:not(:disabled):hover, &.hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        &:not(:disabled):active, &.active {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        &.light {
+            color: #202020;
+
+            &:not(:disabled):hover, &.hover {
+                background: rgba(0, 0, 0, 0.07);
+            }
+
+            &:not(:disabled):active, &.active {
+                background: rgba(0, 0, 0, 0.14);
+            }
+        }
+    }
+}
+
 
 /* end top menu*/
 
@@ -89,7 +220,7 @@ nav.top, .left-side-nav {
 .left-side-nav-open, .left-side-nav {
     left: 0;
     top: 0;
-    z-index: 10000;
+    z-index: 900;
     height: 100%;
     position: fixed;
     background-color: @igx-left-side-nav;
@@ -328,12 +459,6 @@ nav.top, .left-side-nav {
     }
 }
 
-@media only screen and (max-width : 992px), (-ms-high-contrast: none), (-ms-high-contrast: active) {
-    .show-on-medium-and-down {
-        display: inline !important;
-    }
-}
-
 //anything in this only applies to Edge for fixes
 @supports
 
@@ -452,10 +577,6 @@ nav.top, .left-side-nav {
     .megamenu-panel {
         min-width: 500px;
         max-width: 550px;
-    }
-
-    .header-search-input input {
-        width: 150px !important;
     }
 }
 
@@ -961,40 +1082,148 @@ div.child .empty-count {
 .header-container {
     display: flex;
     flex-direction: row;
+    height:40px;
+    margin-bottom:20px;
 }
 
 
-/* breadcrumbs*/
-
+ /* breadcrumbs*/
+.collapsed-overlay {
+    .ui-overlaypanel-content {
+        padding: 0px;
+    }
+}
 div.breadcrumbs {
     margin-left: 20px;
     vertical-align: top;
-    display: inline-block;
-    color: @rgba-primary-0;
+    display: inline-flex;
+    color: @igx-header-breadcrumb-color;
+    white-space: nowrap;
 
-    i {
-        color: black;
-        padding-right: 10px
+    .hover-container {
+        height: 40px;
     }
 
     .active, .sep {
         color: #fff;
     }
-
+  
     .active, .inactive {
-        display: inline-block;
+        display: inline-flex;
         background-color: transparent;
         vertical-align: top;
     }
+
 
     .sep {
         display: inline-block;
         margin: 0 3px;
     }
+
+    .breadcrumb-collapse {
+        color: @igx-header-breadcrumb-color;
+        padding: 5px;
+        height: 20px;
+        margin-top: 10px;
+        background-color: #5c6f6f;
+        border-radius: 3px;
+        line-height: 10px;
+        margin-right: 5px;
+    }
+
+    .breadcrumb-search {
+        border-radius:3px;
+    }
+}
+
+.collapsed-crumb-container {
+    line-height: 20px;
+    text-indent: 0px;
+
+    &:hover, .hover {
+        background: #ceecf2;
+    }
+
+    .collapsed-crumb {
+        display: flex;
+
+        .hover-container {
+            width: 100%;
+        }
+
+        .breadcrumb-text {
+            padding-right: 5px;
+
+            &.highlight {
+                background-color: dodgerblue;
+                border-radius: 3px;
+                padding: 0px 5px;
+                font-size: 12px;
+            }
+        }
+
+        a {
+            color: black;
+            display: flex;
+            flex-grow: 1;
+            max-width: none;
+            padding: 10px;
+        }
+
+        .crumb-arrow {
+            display: inline-flex;
+            margin-left: auto;
+            line-height: 20px;
+        }
+
+        .parent {
+            background-color: dodgerblue;
+            border-radius: 3px;
+            padding: 0px 5px;
+            font-size: 12px;
+
+            &:before {
+                content: '';
+            }
+
+            &:after {
+                content: '';
+            }
+        }
+
+        .breadcrumb-search-result {
+            padding: 10px;
+
+            &:hover, .hover {
+                background: #ceecf2;
+            }
+        }
+    }
 }
 
 a.breadcrumb {
-    color: #55a4da !important;
+    color: white;
+    display: inline-block;
+
+    .parent {
+        color: @igx-header-breadcrumb-color;
+
+        &:before {
+            content: '(';
+        }
+
+        &:after {
+            content: ')';
+        }
+
+        &:hover {
+            cursor: pointer;
+
+            icon {
+                text-decoration: none;
+            }
+        }
+    }
 }
 
 .breadcrumb {
@@ -1008,45 +1237,118 @@ a.breadcrumb {
     text-transform: none;
     cursor: pointer;
 
+    .breadcrumb-text {
+        padding-right: 0px;
+
+        &:hover, .hover {
+            cursor: pointer;
+        }
+
+        &.highlight {
+            color: @igx-header-breadcrumb-color;
+        }
+    }
+
+    .gutter {
+        min-width: 20px;
+    }
+
+    .crumb-arrow {
+        display: none;
+    }
+
     i {
         padding: 0 8px;
     }
 }
 
-.breadcrumbTree {
-    overflow: auto;
-    line-height: 25px;
-}
-
-.breadcrumb-link {
-    cursor: pointer;
-    text-decoration: underline;
-}
 
 /*end breadcrumbs */
 
 
 /* header search */
-.header-action-container {
-    display: flex;
+.header-action {
+    margin-left:auto;
+    
+    .header-action-container {
+        display: flex;
 
-    .header-actions-list {
-        display: inline-flex;
+        .header-actions-list {
+            display: inline-flex;
 
-        &.mini-menu {
-            padding-right: 10px;
+            &.mini-menu {
+                padding-right: 10px;
+            }
+
+            .spacer {
+                padding-right: 5px;
+            }
+
+            li {
+                cursor: pointer;
+
+                .photo {
+                    padding: 0px 10px;
+
+                    &:hover, &.hover {
+                        background: rgba(255, 255, 255, 0.2);                    
+                    }
+                }
+            }
+        }
+    }
+}
+
+.search-results {
+    .ui-overlaypanel-content {
+        padding: 0px;
+        border-radius: 3px;
+    }
+
+    .header-search-input {
+        margin: 5px;
+        border-radius: 5px;
+    }
+
+    .tree-breadcrumb-panel {
+
+        .breadcrumbTree {
+            width: 100%;
+
+            .ui-tree-container {
+                padding: 0px;
+            }
+
+            .ui-treenode {
+                width: 100%;
+                padding: 0px;
+            }
+
+            .ui-treenode-content {
+                padding: 5px;
+
+                &.current-crumb {
+                    background-color: #ffef99;
+                }
+
+                &:hover, &.hover {
+                    background-color: #ceecf2;
+                }
+            }
+        }
+    }
+
+    .breadcrumb-search-result {
+        cursor: pointer;
+        padding-left: 10px;
+
+        &:hover, &.hover {
+            background-color: #ceecf2;
         }
 
-        .issue-button {
-            min-width: 115px;
-        }
+        &.current-crumb {
+            background-color: #ffef99;
 
-        .spacer{
-            padding-right: 5px;
-        }
-
-        li {
-            cursor: pointer;
         }
     }
 
@@ -1075,7 +1377,7 @@ a.breadcrumb {
         background: none;
         flex-grow: 1;
         outline: none;
-        width: 300px;
+        width: 150px;
 
         &.placeholder {
             color: #bbbbbb;
@@ -1213,7 +1515,7 @@ a.breadcrumb {
             .separator {
                 height: 1px;
                 background-color: #DCDFE2;
-                width: inherit;
+                width: 100%;
             }
         }
     }

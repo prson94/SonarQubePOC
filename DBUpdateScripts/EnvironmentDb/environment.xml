@@ -196,6 +196,7 @@
   <include file="scripts/GOV-7284.xml"/>
   <include file="scripts/GOV-7300.xml"/> <!--must go after GOV-7284-->
   <include file="scripts/GOV-7313.xml"/>
+  <include file="scripts/GOV-7109.xml"/>
   <include file="scripts/GOV-7317.xml"/>
   <include file="scripts/GOV-7255.xml"/>
   <include file="scripts/GOV-7320.xml"/>
@@ -215,5 +216,10 @@
   <include file="scripts/GOV-7408-2.xml"/>
   <include file="scripts/GOV-7140.xml"/>
   <include file="scripts/GOV-7426.xml"/>
+  <include file="scripts/GOV-7433.xml"/>
+  <include file="scripts/GOV-6668.xml"/> <!--IGC proc-->
+  <include file="scripts/GOV-7436.xml"/>
+  <include file="scripts/GOV-7448.xml"/>
+  <include file="scripts/GOV-7461.xml"/> <!--IGC proc-->
   <include file="scripts/GOV-7374.xml"/>
 </databaseChangeLog>
