@@ -41,7 +41,6 @@ import {
 } from '../models/fusion.model';
 import {GridColumn} from '../models/grid-definition.model';
 import {SortOrder} from '../models/enums.model';
-
 import {MessagesObservableService} from './messages-observable.service';
 import {BaseObservableService} from "./baseObservable.service";
 import {FormHelper} from "../models/form.model";
