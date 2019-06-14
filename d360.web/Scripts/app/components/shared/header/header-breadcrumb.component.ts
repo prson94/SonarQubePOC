@@ -7,16 +7,18 @@ import * as _ from 'lodash';
 @Component({
     selector: 'd3s-header-breadcrumb',
     template: ` <div #bread class="breadcrumbs" (window:resize)="onResize($event)">
-                 <i *ngIf="showLastOnly" class="fa fa-ellipsis-h breadcrumb-collapse" aria-hidden="true" (mouseover)="smallPanel.toggle($event);"></i>
-                 <div *ngFor="let breadcrumb of breadcrumbs;let last=last">
+                <span (mouseleave)="smallPanel.hide($event)" (mouseenter)="smallPanel.show($event)"> 
+                    <i *ngIf="showLastOnly" class="fa fa-ellipsis-h breadcrumb-collapse" aria-hidden="true"></i>
+                    <p-overlayPanel #smallPanel ngClass="collapsed-overlay">
+                        <div *ngFor="let breadcrumb of breadcrumbs;let last=last;let index=index" class="collapsed-crumb-container">
+                            <d3s-header-breadcrumb-item [ngClass]="'collapsed-crumb'" [ngStyle]="{'padding-left': index *10 + 'px'}" [index]="index" [showSeperator]="false" [breadcrumb]="breadcrumb" [isLastItem]="last" (treeClick)="handleTreeClick($event)"></d3s-header-breadcrumb-item>
+                        </div>
+                    </p-overlayPanel>
+                </span>
+                <div *ngFor="let breadcrumb of breadcrumbs;let last=last">
                     <d3s-header-breadcrumb-item *ngIf="(showLastOnly && last) || !showLastOnly" [breadcrumb]="breadcrumb" [isLastItem]="last" [lastItem]="breadcrumbs[breadcrumbs.length - 1]" (treeClick)="handleTreeClick($event)"></d3s-header-breadcrumb-item>                    
-                 </div>                
+                </div>                
                 </div>  
-                <p-overlayPanel #smallPanel ngClass="collapsed-overlay">
-                    <div *ngFor="let breadcrumb of breadcrumbs;let last=last;let index=index" class="collapsed-crumb-container">
-                        <d3s-header-breadcrumb-item *ngIf="!last" [ngClass]="'collapsed-crumb'" [ngStyle]="{'padding-left': index *10 + 'px'}" [index]="index" [showSeperator]="false" [breadcrumb]="breadcrumb" [isLastItem]="last" (treeClick)="handleTreeClick($event)"></d3s-header-breadcrumb-item>
-                    </div>
-                </p-overlayPanel>
               `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
