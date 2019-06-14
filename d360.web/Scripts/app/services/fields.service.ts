@@ -4,15 +4,14 @@ import { HttpClient } from '@angular/common/http';
 import { FieldDefinition, IFieldsService, FieldTypeEditorModel, Lookups } from '../models/fields.model';
 import { EditorDropDownItem } from '../models/editor-field.model'
 import { SelectItem } from 'primeng/components/common/api';
-import { MessagesService } from './messages.service';
 import { JsonResult } from '../models/jsonresult.model';
 import { Observable } from 'rxjs';
-import { BaseService } from "./base.service";
-import { pipe } from '@angular/core/src/render3';
+import { BaseObservableService } from './baseObservable.service';
+import { MessagesObservableService } from './messages-observable.service';
 
 @Injectable()
-export class FieldsService extends BaseService implements IFieldsService {
-    constructor(private http: HttpClient, messagesService: MessagesService) { super(messagesService); }
+export class FieldsService extends BaseObservableService implements IFieldsService {
+    constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
     getFields(objectID: number, objectType: string): Observable<FieldDefinition[]> {
         return this.http.get(`/fields/${objectType}/${objectID}/full`)
