@@ -12,12 +12,14 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { FusionAttributeService } from '../../services/fusion-attribute.service';
 import { FusionAttributeValueDetails } from '../../models/fusion-attribute.model';
 import { FormMode } from '../../models/form.model';
+import { FusionService } from '../../services/fusion.service';
+import { FusionConfigurationDetails } from '../../models/fusion.model';
 
 
 @Component({
     selector: 'd3s-fusion-attribute-details',
     templateUrl:'./fusion-attribute-details.component.html',
-    providers: [PermissionsService, FusionAttributeService],
+    providers: [PermissionsService, FusionAttributeService, FusionService],
 })
 
 
@@ -27,9 +29,15 @@ export class FusionAttributeDetailsComponent extends BaseComponent implements On
     private id: number = -1;
     private name: string = '';
     private fusionAttributeDetail: FusionAttributeValueDetails;
+    private fusionAttributeDetailHierarchy: FusionAttributeValueDetails[];
+
+    treeSub: any;
+    private getFusionConfiguration: any;
+    private fusion: FusionConfigurationDetails;
     private formMode :FormMode = FormMode.Default;
     FormMode = FormMode;
     private dataProfileId: number = -1;
+    private crumbs: Breadcrumb[] = [];
   
     constructor(        
         private route: ActivatedRoute,
@@ -38,6 +46,7 @@ export class FusionAttributeDetailsComponent extends BaseComponent implements On
         private titleService: Title,
         private headerBreadcrumbService: HeaderBreadcrumbService,
         private permissionsService: PermissionsService,
+        private fusionService: FusionService,
         private fusionAttributeService: FusionAttributeService
     ) {
         super();
@@ -58,10 +67,14 @@ export class FusionAttributeDetailsComponent extends BaseComponent implements On
         this.fusionAttributeService.getFusionAttributeDetails(this.type, this.id).subscribe(
             item => {
                 this.fusionAttributeDetail = item;
-
-                this.headerBreadcrumbService.popLastBreadcrumb();
-                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.name, undefined, undefined, undefined, undefined, undefined, undefined, undefined, false, this.fusionAttributeDetail.AssetTypeName));
-
+                //get the fusion details for initial breadcrumb
+                this.getFusionConfiguration = this.fusionService.getFusionConfiguration(item.FusionID).subscribe(
+                    result => {
+                        this.fusion = result;
+                        this.buildBreadcrumb();
+                        this.isLoading = false;
+                    }
+                );
                 this.setObjectInfo(this.type, this.id, undefined, this.fusionAttributeDetail.AssetID);
                 this.setCommonRightSideBar(true, true, false, true, true, true, false);
             }
@@ -70,6 +83,52 @@ export class FusionAttributeDetailsComponent extends BaseComponent implements On
 
     ngOnDestroy() {
         this.sub.unsubscribe();
+        this.getFusionConfiguration.unsubscribe();
+    }
+    private buildBreadcrumb() {
+        this.headerBreadcrumbService.getFolderTitle('#Fusion').then((res) => {
+            this.headerBreadcrumbService.clearBreadcrumbs();
+            this.fusionAttributeDetailHierarchy = [];
+            let areaBreadcrumb = new Breadcrumb(res ? res : 'Fusion');
+            this.headerBreadcrumbService.showBreadcrumb(areaBreadcrumb);
+            //need the current fusion details for first crumb
+            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.fusion.Name, SiteUrlHelpers.getObjectUrl('FUSIONTYPE', this.fusion.ID), undefined, 'Fusion', this.fusion.ID, undefined, undefined, true));
+            //build hierachy after
+            if (this.fusionAttributeDetail) {
+                this.crumbs.unshift(new Breadcrumb(
+                    this.name,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    false,
+                    this.fusionAttributeDetail.AssetTypeName));
+
+                this.checkParent(this.fusionAttributeDetail);
+            }
+        });
+       
+    }
+
+    private checkParent(item: FusionAttributeValueDetails) {
+        if (item.ParentID) {
+            this.fusionAttributeService.getFusionAttributeDetails(this.type, item.ParentID).subscribe(parentItem => {
+                this.fusionAttributeDetailHierarchy.unshift(parentItem);
+                let crumb = new Breadcrumb(parentItem.Name,
+                    `/${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${parentItem.FusionID};fusionAttributeTypeId=${parentItem.FusionAttributeTypeID}`,
+                    undefined,
+                    undefined,
+                    undefined,
+                    null, undefined, false, undefined, parentItem.AssetTypeName);
+                this.crumbs.unshift(crumb);
+                this.checkParent(parentItem);
+            });
+        } else {
+            this.crumbs.forEach(x => this.headerBreadcrumbService.showBreadcrumb(x));
+        }
     }
 
     private formModeChange($event: FormMode) {
@@ -78,4 +137,4 @@ export class FusionAttributeDetailsComponent extends BaseComponent implements On
     private close() {
        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('FusionTypeWithFusionAttributeType', this.fusionAttributeDetail.FusionAttributeTypeID, this.fusionAttributeDetail.FusionID ));
     }
-};
+}
