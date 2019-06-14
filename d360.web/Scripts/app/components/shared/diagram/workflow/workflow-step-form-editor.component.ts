@@ -350,6 +350,13 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         }
     }
 
+    private mapHTMLToFormProperty(html: string, prop: string) {
+        if (html == null)
+            delete this.step.fields.form[prop];
+        else
+            this.step.fields.form[prop] = html;
+    }
+
     private getTypeLabel(i: any) {
         switch (i['@type']) {
             case 'list':

@@ -16,7 +16,7 @@
                 Description
             </div>
             <div style="width: 95%">
-                <p-editor [ngModel]="step.fields.form['@description']" (ngModelChange)="step.fields.form['@description'] = $event; stepChange.emit(step)"  #fed>
+                <p-editor [ngModel]="step.fields.form['@description']" (ngModelChange)="mapHTMLToFormProperty($event, '@description'); stepChange.emit(step)"  #fed>
                     <p-header>
                         <d3s-editor-header></d3s-editor-header>
                         <d3s-workflow-template-tool [issueObject]="issueObject" [objectType]="objectType" [objectId]="objectId" (onItemClick)="appendFieldDescription($event)"></d3s-workflow-template-tool>
