@@ -120,6 +120,7 @@ export class FieldType {
     IsListable: boolean;
     IsPartOfKey: boolean;
     IsRequired: boolean;
+    IsPrimaryFilter: boolean;
     AllowAllValue: boolean;
     AllowAllLabel: string;
     AllowMultipleValues: boolean;
