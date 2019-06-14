@@ -116,7 +116,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
                 searchPanel.el.nativeElement.children[0].opacity = 0;
                 window.setTimeout(() => {
                     let lineDims = this.hoverTarget.nativeElement.getBoundingClientRect();
-                    searchPanel.el.nativeElement.children[0].style.top = (lineDims.top - 30) + "px";
+                    searchPanel.el.nativeElement.children[0].style.top = (lineDims.top - 40) + "px";
                     searchPanel.el.nativeElement.children[0].style.left = (lineDims.width + (10 * this.index)) + "px";
                     if (this.standardInput) {
                         this.standardInput.nativeElement.focus();
@@ -140,7 +140,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
                 panel.show(event, this.hoverTarget.nativeElement.parentNode);
                 window.setTimeout(() => {
                     let lineDims = this.hoverTarget.nativeElement.getBoundingClientRect();
-                    panel.el.nativeElement.children[0].style.top = (lineDims.top - 30) + "px";
+                    panel.el.nativeElement.children[0].style.top = (lineDims.top - 40) + "px";
                     panel.el.nativeElement.children[0].style.left = (lineDims.width + (10 * this.index)) + "px";
                     if (this.treeInput) {
                         window.setTimeout(() => {
