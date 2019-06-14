@@ -74,72 +74,86 @@ GO
 <![CDATA[
 --migrate rule data
 
-declare @tempRuleTable table (ID int, RuleTypeId int, RuleDimensionId int, Status int)
 
-insert into @tempRuleTable (ID, RuleTypeId, RuleDimensionId, Status)
-	SELECT ID, RuleTypeId, RuleDimensionId, Status FROM [Rule]
+BEGIN TRY
+    BEGIN TRANSACTION
 
-declare @ruleCount int = (select count(*) from @tempRuleTable)
-declare @cnt int = 0;
+			declare @tempRuleTable table (ID int, RuleTypeId int, RuleDimensionId int, Status int)
+			
+			insert into @tempRuleTable (ID, RuleTypeId, RuleDimensionId, Status)
+				SELECT ID, RuleTypeId, RuleDimensionId, Status FROM [Rule]
+			
+			declare @ruleCount int = (select count(*) from @tempRuleTable)
+			declare @cnt int = 0;
+			
+			declare @statusReferenceListTypeId int = (select ID from [ReferenceItemType] where Name = 'Rule Status')
+			declare @dimensionReferenceListTypeId int = (select ID from [ReferenceItemType] where Name = 'Rule Dimension')
+			
+			while @cnt < @ruleCount
+			begin
+				declare @ruleId int = (select ID from @tempRuleTable order by ID offset @cnt rows fetch next 1 rows only)
+			    declare @ruleTypeId int = (select RuleTypeId from @tempRuleTable order by ID offset @cnt rows fetch next 1 rows only)
+				declare @ruleDimension int = (select RuleDimensionId from @tempRuleTable order by ID offset @cnt rows fetch next 1 rows only)
+				declare @ruleStatus int = (select Status from @tempRuleTable order by ID offset @cnt rows fetch next 1 rows only)
+				declare @fieldValue int
+				declare @fieldTypeId int
+				--create new field types for a rule
+				if @ruleDimension is not null
+					set @fieldTypeId = (select Id from [FieldType] where [LookupObjectType] = 'ReferenceItem' and [LookupObjectID] = @dimensionReferenceListTypeId and [Object] = 'RuleType' and [ObjectID] = @ruleTypeId)
+			
+					IF @fieldTypeId IS NULL
+					BEGIN
+						INSERT INTO [FieldType] 
+							([Name],[FriendlyName],[Type],[LookupObjectType],[LookupObjectID],[LookupDisplayFormat],[Object],[ObjectID],[IsRequired],[IsListable],[IsDisplayable],[IsEditable],[AllowAllValue],[IsPartOfKey],[AllowMultipleValues],[ShowIfEmpty])
+						VALUES
+						   ('Dimension','Dimension','Lookup','ReferenceItem',@dimensionReferenceListTypeId,'{Code}','RuleType',@ruleTypeId,0,1,1,1,0,0,0,0)
+						set @fieldTypeId  = (select Id from [FieldType] where [LookupObjectType] = 'ReferenceItem' and [LookupObjectID] = @dimensionReferenceListTypeId and [Object] = 'RuleType' and [ObjectID] = @ruleTypeId)
+					END
+					set @fieldValue = (select RI.ID from [ReferenceItem] RI
+													inner join [RuleDimension] RD on RD.Name = RI.Code
+												where ReferenceItemTypeID = @dimensionReferenceListTypeId and RD.ID = @ruleDimension)
+			
+					
+					
+					INSERT INTO [dbo].[Field] ([ObjectType],[ObjectID],[FieldTypeID],[Value],[UpdatedBy],[UpdatedOn])
+					VALUES ('Rule',@ruleId,@fieldTypeId,@fieldValue,0,GETDATE())
+			
+				if @ruleStatus is not null
+					set @fieldTypeId = (select Id from [FieldType] where [LookupObjectType] = 'ReferenceItem' and [LookupObjectID] = @statusReferenceListTypeId and [Object] = 'RuleType' and [ObjectID] = @ruleTypeId)
+			
+					IF @fieldTypeId IS NULL
+					BEGIN
+						INSERT INTO [FieldType] 
+							([Name],[FriendlyName],[Type],[LookupObjectType],[LookupObjectID],[LookupDisplayFormat],[Object],[ObjectID],[IsRequired],[IsListable],[IsDisplayable],[IsEditable],[AllowAllValue],[IsPartOfKey],[AllowMultipleValues],[ShowIfEmpty])
+						VALUES
+						   ('Status','Status','Lookup','ReferenceItem',@statusReferenceListTypeId,'{Code}','RuleType',@ruleTypeId,1,0,1,1,0,0,0,0)
+			
+						set @fieldTypeId = (select Id from [FieldType] where [LookupObjectType] = 'ReferenceItem' and [LookupObjectID] = @statusReferenceListTypeId and [Object] = 'RuleType' and [ObjectID] = @ruleTypeId)
+					END
+			
+					declare @fieldTextValue varchar(50)
+					if @ruleStatus = 1 set @fieldTextValue = 'Draft'
+					if @ruleStatus = 2 set @fieldTextValue = 'Active'
+			        if @ruleStatus = 3 set @fieldTextValue = 'Inactive'
+			
+					set @fieldValue = (select ID from [ReferenceItem] where ReferenceItemTypeId = @statusReferenceListTypeId and Code = @fieldTextValue)
+					INSERT INTO [dbo].[Field] ([ObjectType],[ObjectID],[FieldTypeID],[Value],[UpdatedBy],[UpdatedOn])
+					VALUES ('Rule',@ruleId,@fieldTypeId,@fieldValue,0,GETDATE())
+			
+			
+			
+			   set @cnt = @cnt + 1;
+			end
 
-declare @statusReferenceListTypeId int = (select ID from [ReferenceItemType] where Name = 'Rule Status')
-declare @dimensionReferenceListTypeId int = (select ID from [ReferenceItemType] where Name = 'Rule Dimension')
+			COMMIT TRAN -- Transaction Success!
+END TRY
+BEGIN CATCH
 
-while @cnt < @ruleCount
-begin
-	declare @ruleId int = (select ID from @tempRuleTable order by ID offset @cnt rows fetch next 1 rows only)
-    declare @ruleTypeId int = (select RuleTypeId from @tempRuleTable order by ID offset @cnt rows fetch next 1 rows only)
-	declare @ruleDimension int = (select RuleDimensionId from @tempRuleTable order by ID offset @cnt rows fetch next 1 rows only)
-	declare @ruleStatus int = (select Status from @tempRuleTable order by ID offset @cnt rows fetch next 1 rows only)
-	declare @fieldValue int
-	declare @fieldTypeId int
-	--create new field types for a rule
-	if @ruleDimension is not null
-		set @fieldTypeId = (select Id from [FieldType] where [LookupObjectType] = 'ReferenceItem' and [LookupObjectID] = @dimensionReferenceListTypeId and [Object] = 'RuleType' and [ObjectID] = @ruleTypeId)
+    ROLLBACK TRAN --RollBack in case of Error
 
-		IF @fieldTypeId IS NULL
-		BEGIN
-			INSERT INTO [FieldType] 
-				([Name],[FriendlyName],[Type],[LookupObjectType],[LookupObjectID],[LookupDisplayFormat],[Object],[ObjectID],[IsRequired],[IsListable],[IsDisplayable],[IsEditable],[AllowAllValue],[IsPartOfKey],[AllowMultipleValues],[ShowIfEmpty])
-			VALUES
-			   ('Dimension','Dimension','Lookup','ReferenceItem',@dimensionReferenceListTypeId,'{Code}','RuleType',@ruleTypeId,0,1,1,1,0,0,0,0)
-			set @fieldTypeId  = (select Id from [FieldType] where [LookupObjectType] = 'ReferenceItem' and [LookupObjectID] = @dimensionReferenceListTypeId and [Object] = 'RuleType' and [ObjectID] = @ruleTypeId)
-		END
-		set @fieldValue = (select RI.ID from [ReferenceItem] RI
-										inner join [RuleDimension] RD on RD.Name = RI.Code
-									where ReferenceItemTypeID = @dimensionReferenceListTypeId and RD.ID = @ruleDimension)
-
-		
-		
-		INSERT INTO [dbo].[Field] ([ObjectType],[ObjectID],[FieldTypeID],[Value],[UpdatedBy],[UpdatedOn])
-		VALUES ('Rule',@ruleId,@fieldTypeId,@fieldValue,0,GETDATE())
-
-	if @ruleStatus is not null
-		set @fieldTypeId = (select Id from [FieldType] where [LookupObjectType] = 'ReferenceItem' and [LookupObjectID] = @statusReferenceListTypeId and [Object] = 'RuleType' and [ObjectID] = @ruleTypeId)
-
-		IF @fieldTypeId IS NULL
-		BEGIN
-			INSERT INTO [FieldType] 
-				([Name],[FriendlyName],[Type],[LookupObjectType],[LookupObjectID],[LookupDisplayFormat],[Object],[ObjectID],[IsRequired],[IsListable],[IsDisplayable],[IsEditable],[AllowAllValue],[IsPartOfKey],[AllowMultipleValues],[ShowIfEmpty])
-			VALUES
-			   ('Status','Status','Lookup','ReferenceItem',@statusReferenceListTypeId,'{Code}','RuleType',@ruleTypeId,1,0,1,1,0,0,0,0)
-
-			set @fieldTypeId = (select Id from [FieldType] where [LookupObjectType] = 'ReferenceItem' and [LookupObjectID] = @statusReferenceListTypeId and [Object] = 'RuleType' and [ObjectID] = @ruleTypeId)
-		END
-
-		declare @fieldTextValue varchar(50)
-		if @ruleStatus = 1 set @fieldTextValue = 'Draft'
-		if @ruleStatus = 2 set @fieldTextValue = 'Active'
-        if @ruleStatus = 3 set @fieldTextValue = 'Inactive'
-
-		set @fieldValue = (select ID from [ReferenceItem] where ReferenceItemTypeId = @statusReferenceListTypeId and Code = @fieldTextValue)
-		INSERT INTO [dbo].[Field] ([ObjectType],[ObjectID],[FieldTypeID],[Value],[UpdatedBy],[UpdatedOn])
-		VALUES ('Rule',@ruleId,@fieldTypeId,@fieldValue,0,GETDATE())
-
-
-
-   set @cnt = @cnt + 1;
-end
+	THROW
+    -- you can Raise ERROR with RAISEERROR() Statement including the details of the exception
+END CATCH
 ]]>
 		</sql>
 		<rollback>
