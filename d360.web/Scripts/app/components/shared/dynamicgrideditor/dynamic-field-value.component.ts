@@ -55,8 +55,13 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
 
         if (column.type == 'preview')
             return 'preview';
-        if ((column.datafield == 'Name' || column.datafield == 'TextPath') && !this.isComplex)
-            return 'tooltip';
+        if ((column.datafield == 'Name' || column.datafield == 'TextPath') && !this.isComplex) {
+            if (column['objectfield'] != null && column['objectidfield'] != null)
+                return 'preview';
+            else
+                return 'string';
+        }
+            
 
         if (fields.length > 0)
             return fields[0].type;

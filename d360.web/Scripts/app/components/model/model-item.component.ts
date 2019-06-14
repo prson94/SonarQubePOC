@@ -16,6 +16,7 @@ import {SiteUrlHelpers} from '../../static/site-url-helpers';
 import {StringConstants} from '../../static/string-constants';
 import {Permission} from '../../models/responsibility-type.model';
 import {Observable} from "rxjs";
+import { forEach } from '@angular/router/src/utils/collection';
 
 declare var CompanySettings;
 
@@ -72,12 +73,15 @@ declare var CompanySettings;
 
 export class ModelItemComponent extends BaseComponent implements OnInit, OnDestroy {
     sub: any;
+    private currentAreaNameSubscription: any;
+    private currentAreaName: string;
     treeSub: any;
     model: Model;
     modelHierarchy: ModelHierarchy[] = [];
     selected: ModelHierarchy;
     modelId: number;
     treeNodeArray: TreeNode[] = [];
+    crumbs: Breadcrumb[] = [];
     private messages: MessageBarItem[] = [];
     private surveyType: SurveyType;
     private showSurvey: boolean = false;
@@ -102,10 +106,15 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
             id => {
                 this.showHierarchy(id);
             });
-
+        
         this.sub = this.route.params.subscribe(params => {
             let newModelId = +params['modelId'];
             let hierarchyId = +params['id'];// if hierarchyId is passed via alternative route to workaround bug with router escaping ; = and other chars.
+
+            this.currentAreaNameSubscription =
+                this.headerBreadcrumbService
+                .getAreaName('TaxonomyType', newModelId)
+                    .subscribe(result => { this.currentAreaName = result; if (this.model) this.buildBreadcrumb(); });
 
             if (!hierarchyId)
                 hierarchyId = params['hierarchyId'] ? +params['hierarchyId'] : 0;
@@ -138,18 +147,50 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
         this.clearSidebar();
         this.sub.unsubscribe();
         this.treeSub.unsubscribe();
+        this.currentAreaNameSubscription.unsubscribe();
+    }
+
+    private buildBreadcrumb() {
+        this.headerBreadcrumbService.getFolderTitle("#Models").then((res) => {
+            this.crumbs = [];
+            this.headerBreadcrumbService.clearBreadcrumbs();
+            let areaBreadcrumb = new Breadcrumb(
+                this.currentAreaName ? this.currentAreaName : res, `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`
+            );
+            this.headerBreadcrumbService.showBreadcrumb(areaBreadcrumb);
+            this.headerBreadcrumbService.showBreadcrumb(
+                new Breadcrumb(this.model.Name,
+                    SiteUrlHelpers.getObjectUrl('TAXONOMYTYPE', this.model.ID),
+                    undefined,
+                    'TAXONOMYTYPE',
+                    this.model.ID,
+                    undefined,
+                    undefined,
+                    true,
+                    false
+                ));
+
+            if (this.selected && this.selected.ID > 0) {
+                this.checkParent(this.selected);
+                this.headerBreadcrumbService.showBreadcrumb(
+                    new Breadcrumb(this.selected.DisplayValue,
+                        undefined,
+                        true,
+                        'Taxonomy',
+                        this.selected.ID,
+                        this.buildTreeNodeArray(this.modelHierarchy, this.selected.ParentID,false),
+                        this.findSelectedTreeNode(this.selected.ID),
+                        false));
+            }
+        });
     }
 
     private load(hierarchyId: number): void {
         this.modelsService.getModel(this.modelId).subscribe(
             result => {
                 this.model = result;
-
-                this.headerBreadcrumbService.clearBreadcrumbs();
-                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Models', `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`));
-                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.Name, SiteUrlHelpers.getObjectUrl('TAXONOMYTYPE', this.model.ID)));
-
                 this.loadModelHierarchy(this.modelId, hierarchyId);
+                this.buildBreadcrumb();
             }
         );
     }
@@ -172,12 +213,29 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
             this.clearSidebar();
             this.setCommonRightSideBar(true, this.hasPermission(Permission.ReadResponsibilities), (this.selected != null ? this.selected.HasDashboards : false), true, true, this.hasPermission(Permission.ReadRelationships), true, true);
         });
-
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.selected.DisplayValue, undefined, true, 'Taxonomy', this.selected.ID, this.treeNodeArray, this.findSelectedTreeNode(selectedHierarchyId)));
-
+        this.buildBreadcrumb();
         return Promise.resolve(null);
     }
-
+    private checkParent(modelItem: ModelHierarchy) {
+        if (modelItem.ParentID > 0 && this.modelHierarchy) {
+            let parentAr = this.modelHierarchy.filter(x => x.ID == modelItem.ParentID);
+            let parent: ModelHierarchy;
+            if (parentAr.length > 0) {
+                parent = parentAr[0];
+                let crumb = new Breadcrumb(parent.DisplayValue,
+                    SiteUrlHelpers.getObjectUrl('TAXONOMY', parent.ID, this.modelId),
+                    true,
+                    'Taxonomy',
+                    parent.ID,
+                    this.buildTreeNodeArray(this.modelHierarchy, parent.ParentID,false),
+                    this.findSelectedTreeNode(parent.ID), false)
+                this.crumbs.unshift(crumb);
+                this.checkParent(parent);
+            } 
+        } else {
+            this.crumbs.forEach(x => this.headerBreadcrumbService.showBreadcrumb(x));
+        }
+    }
     private loadModelHierarchy(modelId: number, selectedHierarchyId: number): void {
         this.modelsService.getModelHierarchy(modelId).subscribe(result => {
                 this.modelHierarchy = result;
@@ -225,9 +283,9 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
         }
     }
 
-    private buildTreeNodeArray(models: ModelHierarchy[], Parent?: number): TreeNode[] {
+    private buildTreeNodeArray(models: ModelHierarchy[], Parent?: number, includeChildren?: boolean): TreeNode[] {
         //find the root items then 
-
+        includeChildren = includeChildren == undefined ? true : false;
         let rootNodes = models.filter(x => (Parent != undefined ? x.ParentID == Parent : !x.ParentID));
 
         if (rootNodes.length == 0) return null;
@@ -241,7 +299,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
                 data: {
                     id: root.ID, hasRelations: root.HasChildren, AssetID: root.AssetID
                 },
-                children: (this.buildTreeNodeArray(models, root.ID)) //recursively find its children
+                children: (includeChildren ? this.buildTreeNodeArray(models, root.ID):null) //recursively find its children
             });
         }
 
@@ -250,6 +308,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
 
     private showHierarchy(id: number) {
         this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('TAXONOMY', id, this.modelId));
+        this.buildBreadcrumb();
     }
 
     private loadItemSurvey(modelId: number) {

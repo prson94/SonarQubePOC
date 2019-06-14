@@ -53,10 +53,6 @@ nav.top {
     flex-wrap: nowrap;
     min-width: 800px;
 
-    a {
-        color: @primary-nav;
-    }
-
     ul a {
         color: #fff;
     }
@@ -117,11 +113,11 @@ nav.top, .left-side-nav {
 
 
     &:not(:disabled):hover, &.hover {
-        background: mix(black, #f0f0f0, 7%)
+        background: mix(black, #f0f0f0, 7%);
     }
 
     &:not(:disabled):active, &.active {
-        background: mix(black, #f0f0f0, 14%)
+        background: mix(black, #f0f0f0, 14%);
     }
 
     &.primary {
@@ -224,7 +220,7 @@ nav.top, .left-side-nav {
 .left-side-nav-open, .left-side-nav {
     left: 0;
     top: 0;
-    z-index: 10000;
+    z-index: 900;
     height: 100%;
     position: fixed;
     background-color: @igx-left-side-nav;
@@ -704,7 +700,9 @@ d3s-navbar-item {
     margin-left: 200px;
     margin-right: 40px;
 }
-
+main{
+    min-width:800px;
+}
 .panel-section ul,
 .ui-table-tbody ul,
 .ui-treetable :not(.ql-editor) > ul {
@@ -1086,20 +1084,26 @@ div.child .empty-count {
 .header-container {
     display: flex;
     flex-direction: row;
+    height:40px;
+    margin-bottom:20px;
 }
 
 
-/* breadcrumbs*/
-
+ /* breadcrumbs*/
+.collapsed-overlay {
+    .ui-overlaypanel-content {
+        padding: 0px;
+    }
+}
 div.breadcrumbs {
     margin-left: 20px;
     vertical-align: top;
-    display: inline-block;
-    color: @rgba-primary-0;
+    display: inline-flex;
+    color: @igx-header-breadcrumb-color;
+    white-space: nowrap;
 
-    i {
-        color: black;
-        padding-right: 10px
+    .hover-container {
+        height: 40px;
     }
 
     .active, .sep {
@@ -1107,24 +1111,133 @@ div.breadcrumbs {
     }
 
     .active, .inactive {
-        display: inline-block;
+        display: inline-flex;
         background-color: transparent;
         vertical-align: top;
     }
+
 
     .sep {
         display: inline-block;
         margin: 0 3px;
     }
+
+    .breadcrumb-collapse {
+        color: white;
+        padding: 5px;
+        height: 20px;
+        margin-top: 10px;
+        background-color: rgba(255,255,255,0.25);
+        border-radius: 3px;
+        line-height: 10px;
+        margin-right: 5px;
+    }
+
+    .breadcrumb-search {
+        border-radius: 3px;
+    }
+}
+
+.collapsed-crumb-container {
+    line-height: 20px;
+    text-indent: 0px;
+
+    &:hover, &.hover {
+        background-color: @igx-lightblue-xlight;
+    }
+
+    &:active, &.active {
+        background: @igx-lightblue-light;
+    }
+
+    .collapsed-crumb {
+        display: flex;
+
+        .hover-container {
+            width: 100%;
+        }
+
+        .breadcrumb-text {
+            padding-right: 5px;
+
+            &.highlight {
+                color: #000;
+            }
+        }
+
+        a {
+            color: black;
+            display: flex;
+            flex-grow: 1;
+            max-width: none;
+            padding: 10px;
+            padding-left: 20px;
+        }
+
+        .crumb-arrow {
+            display: inline-flex;
+            margin-left: auto;
+            line-height: 20px;
+            padding-left: 40px;
+        }
+
+        .parent {
+            background-color: dodgerblue;
+            border-radius: 3px;
+            padding: 0px 5px;
+            font-size: 12px;
+            color:white;
+
+            &:before {
+                content: '';
+            }
+
+            &:after {
+                content: '';
+            }
+        }
+
+        .breadcrumb-search-result {
+            padding: 10px;
+
+            &:hover, &.hover {
+                background-color: @igx-lightblue-xlight;
+            }
+
+            &:active, &.active {
+                background: @igx-lightblue-light;
+            }
+        }
+    }
 }
 
 a.breadcrumb {
-    color: #55a4da !important;
+    color: white;
+    display: inline-block;
+
+    .parent {
+        color: @igx-header-breadcrumb-color;
+
+        &:before {
+            content: '(';
+        }
+
+        &:after {
+            content: ')';
+        }
+
+        &:hover {
+            cursor: pointer;
+
+            icon {
+                text-decoration: none;
+            }
+        }
+    }
 }
 
 .breadcrumb {
     display: inline-block;
-    max-width: 250px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -1133,49 +1246,130 @@ a.breadcrumb {
     text-transform: none;
     cursor: pointer;
 
+    .breadcrumb-text {
+        padding-right: 0px;
+
+        &:hover, .hover {
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        &.highlight {
+            color: @igx-header-breadcrumb-color;
+        }
+    }
+
+    .gutter {
+        min-width: 20px;
+    }
+
+    .crumb-arrow {
+        display: none;
+    }
+
     i {
         padding: 0 8px;
     }
 }
 
-.breadcrumbTree {
-    overflow: auto;
-    line-height: 25px;
-}
-
-.breadcrumb-link {
-    cursor: pointer;
-    text-decoration: underline;
-}
 
 /*end breadcrumbs */
 
 
 /* header search */
-.header-action-container {
-    display: flex;
+.header-action {
+    margin-left: auto;
 
-    .header-actions-list {
-        display: inline-flex;
+    .header-action-container {
+        display: flex;
 
-        &.mini-menu {
-            padding-right: 10px;
-        }
+        .header-actions-list {
+            display: inline-flex;
 
-        .spacer {
-            padding-right: 5px;
-        }
+            &.mini-menu {
+                padding-right: 10px;
+            }
 
-        li {
-            cursor: pointer;
+            .spacer {
+                padding-right: 5px;
+            }
 
-            .photo {
-                padding: 0px 10px;
-
-                &:hover, &.hover {
-                    background: rgba(255, 255, 255, 0.2);                    
+            .header-actions-li {
+                .active :active, :hover, .hover {
+                    background-color: transparent;
                 }
             }
+
+            li {
+                cursor: pointer;
+
+                .photo {
+                    padding: 0px 10px;
+
+                    &:hover, &.hover {
+                        background: rgba(255, 255, 255, 0.2);
+                    }
+                }
+            }
+        }
+    }
+}
+
+.search-results {
+    .ui-overlaypanel-content {
+        padding: 0px;
+        border-radius: 3px;
+    }
+
+    .header-search-input {
+        margin: 5px;
+        border-radius: 5px;
+        width: 95%;
+    }
+
+    .tree-breadcrumb-panel {
+
+        .breadcrumbTree {
+            width: 100%;
+
+            .ui-tree-container {
+                padding: 0px;
+            }
+
+            .ui-treenode {
+                width: 100%;
+                padding: 0px;
+            }
+
+            .ui-treenode-content {
+                padding: 5px;
+
+                &.current-crumb {
+                    font-weight: bold;
+                }
+
+                &:hover, &.hover {
+                    background-color: #ceecf2;
+                }
+            }
+        }
+    }
+
+    .breadcrumb-search-result {
+        cursor: pointer;
+        padding-left: 20px;
+        padding-right: 40px;
+
+        &:hover, &.hover {
+            background-color: @igx-lightblue-xlight;
+        }
+
+        &:active, &.active {
+            background: @igx-lightblue-light;
+        }
+
+        &.current-crumb {
+            font-weight: bold;
         }
     }
 
@@ -1205,6 +1399,8 @@ a.breadcrumb {
         flex-grow: 1;
         outline: none;
         width: 150px;
+        font-family: 'Nunito Sans', sans-serif;
+        font-size: 14px;
 
         &.placeholder {
             color: #bbbbbb;
@@ -1249,8 +1445,9 @@ a.breadcrumb {
     text-align: center;
 
     &:active, &.active {
-        background: #676C7A;
-        .fa{
+        background: rgba(255, 255, 255, 0.4);
+
+        .fa {
             color: #54fffb;
         }
     }

@@ -30,7 +30,7 @@ namespace d360.web.Controllers.V2
     /// </summary>
     [
         ApiVersion("2.0"),
-        RoutePrefix("api/v{version:apiVersion}/relationships"), 
+        RoutePrefix("api/v{version:apiVersion}/relationships"),
         Authorize,
         StringEnumController
     ]
@@ -101,7 +101,7 @@ namespace d360.web.Controllers.V2
 
                 #endregion
 
-                return Request.CreateResponse(HttpStatusCode.OK,  predicates);
+                return Request.CreateResponse(HttpStatusCode.OK, predicates);
             }
             catch (Exception ex)
             {
@@ -131,7 +131,8 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                var types = PredicateType.DataLineage.GetAsList().Select(i => new PredicateTypeApiViewModel {
+                var types = PredicateType.DataLineage.GetAsList().Select(i => new PredicateTypeApiViewModel
+                {
                     Type = i.ID,
                     Name = i.Name,
                     Description = i.Description
@@ -165,65 +166,32 @@ namespace d360.web.Controllers.V2
         ]
         public IHttpActionResult ExportToExcel(string intersectTypeUid)
         {
+            Guid guid = Guid.Parse(intersectTypeUid);
+            int id = Company.IntersectTypes.FirstOrDefault(x => x.uid == guid).ID;
 
             var customColumns = Company.Query<string>(
                 @"select distinct  f.FriendlyName   as Name from fieldtype f  
-				inner join IntersectType IT on IT.uid = @uid
-				 where f.[object] = 'IntersectType' and f.objectid = IT.Id", new { uid = intersectTypeUid });
+				inner join field f2 on f2.fieldtypeid = f.id 
+				 where f.[object] = 'IntersectType' and f.objectid = @id ", new { id = id });
 
-            string customColumnTableSQL = string.Empty;
-            string customColumnValuesSQL = string.Empty;
-
-            if ( customColumns.Count() > 0 )
-            {
-                customColumnTableSQL = @"DROP TABLE IF EXISTS tempdb.dbo.#TempFieldTable
-
-                            create table #TempFieldTable
-                            (
-                                ObjectId int, 
-                                FriendlyName Varchar(250), 
-                                FormattedValue varchar(250),
-	                            Id int
-                            )
-
-                            insert into #TempFieldTable
-                            select f2.ObjectID, f.FriendlyName,FormattedValue ,f2.id
-                            from fieldtype f  
-                            inner join field f2 on f2.fieldtypeid = f.id 
-                            where f.[object] = 'IntersectType'";
-                foreach ( var item in customColumns )
-                {
-                    customColumnValuesSQL += $",(Select FormattedValue from #TempFieldTable where ObjectId = I.Id and FriendlyName = '" + item.CleanForSql() + "') as '" + item.CleanForSql() + "'";
-                }
-
-            }
+            if (customColumns.Count() > 0) return IntersectTypeItemsExcelWithCustomColumns(id, customColumns);
 
 
             var models = Company.Query<dynamic>(
-                customColumnTableSQL +
-                @"select  I.ID as ID, 
-		                    S.Object as Subject,
-		                    S.ObjectId as SubjectID,
-		                    SVal.DisplayValue as SubjectName,
-		                    ST.Name as SubjectTypeName,
-		                    P.Name as PredicateName,
-		                    O.Object as Object,
-		                    O.ObjectId as ObjectID,
-							OVal.DisplayValue as ObjectName,
-		                    OT.Name as ObjectTypeName
-                            " + customColumnValuesSQL + @"
-							from 
-	                        [Intersect] I
-	                        inner join IntersectType T on T.ID = I.IntersectTypeID
-	                        left outer join [Predicate] P on P.ID = T.PredicateID
-	                        inner join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID
-	                        inner join AssetType ST on ST.ID = S.AssetTypeID
-	                        inner join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID
-	                        inner join AssetType OT on OT.ID = O.AssetTypeID
-							cross apply dbo.GetAssetDisplayValueById(S.ID) as SVal
-							cross apply dbo.GetAssetDisplayValueById(O.ID) as OVal
-
-	                        where T.uid in (@Uid)", new { Uid = intersectTypeUid });
+                @"select 
+                    ID,
+                    [Subject], 
+                    SubjectID, 
+                    SubjectName, 
+                    SubjectTypeName, 
+                    [Object], 
+                    ObjectID, 
+                    ObjectName, 
+                    ObjectTypeName, 
+                    PredicateName 
+                from 
+                    intersectdetail 
+                where intersecttypeid = @id", new { id = id });
 
             var document = new SLDocument();
             document.AddWorksheet("Items");
@@ -271,6 +239,90 @@ namespace d360.web.Controllers.V2
 
             #endregion
 
+            var stream = new System.IO.MemoryStream();
+            document.SaveAs(stream);
+
+            var result = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new ByteArrayContent(stream.GetBuffer())
+            };
+            result.Content.Headers.ContentLength = stream.Length;
+            result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
+            {
+                FileName = $"Relationship Type Items {DateTime.Now.ToShortDateString()}.xlsx"
+            };
+            result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
+
+            return ResponseMessage(result);
+        }
+
+        private IHttpActionResult IntersectTypeItemsExcelWithCustomColumns(int id, IEnumerable<string> customColumns)
+        {
+
+            var customColumnName = "[" + customColumns.Aggregate((x, y) => x + "],[" + y) + "]";
+            var CteColumnName = "CTE.[" + customColumns.Aggregate((x, y) => x + "],CTE.[" + y) + "]";
+
+
+            var sql = @"WITH CTE (ObjectID, " + customColumnName +
+                ") AS ( SELECT ObjectId, " + customColumnName +
+                " FROM ( select f2.ObjectID, f.FriendlyName,FormattedValue from fieldtype f  " +
+                "inner join field f2 on f2.fieldtypeid = f.id where f.[object] = 'IntersectType'" +
+                " and f.objectid = @id  ) as PivotData " +
+                "PIVOT (max(FormattedValue) FOR FriendlyName IN (" + customColumnName + ") ) AS PivotResult) " +
+                "select i.ID, i.[Subject],i.SubjectID, i.SubjectName, i.SubjectTypeName, i.[Object], " +
+                "i.ObjectID, i.ObjectName, i.ObjectTypeName, i.PredicateName , " + CteColumnName +
+                " from  intersectdetail as i left join CTE  on CTE.ObjectID =i.id where intersecttypeid=@id ";
+            var models = Company.Query<dynamic>(sql, new { id = id });
+
+
+            var document = new SLDocument();
+            document.AddWorksheet("Items");
+
+            #region Create the list sheet
+
+            #region Header
+
+            int index = 1;
+            document.SetCellValue(1, index++, "Intersect ID");
+            document.SetCellValue(1, index++, "Subject Type");
+            document.SetCellValue(1, index++, "Subject ID");
+            document.SetCellValue(1, index++, "Subject Name");
+            document.SetCellValue(1, index++, "Subject Type Name");
+            document.SetCellValue(1, index++, "Predicate");
+            document.SetCellValue(1, index++, "Object Type");
+            document.SetCellValue(1, index++, "Object ID");
+            document.SetCellValue(1, index++, "Object Name");
+            document.SetCellValue(1, index++, "Object Type Name");
+            foreach (var col in customColumns)
+            {
+                document.SetCellValue(1, index++, col);
+            }
+
+            #endregion
+
+            int rowNumber = 1;
+            foreach (var row in models)
+            {
+                index = 1;
+                rowNumber++;
+                document.SetCellValue(rowNumber, index++, (int)row.ID);
+                document.SetCellValue(rowNumber, index++, (string)row.Subject);
+                document.SetCellValue(rowNumber, index++, (int)row.SubjectID);
+                document.SetCellValue(rowNumber, index++, (string)row.SubjectName);
+                document.SetCellValue(rowNumber, index++, (string)row.SubjectTypeName);
+                document.SetCellValue(rowNumber, index++, (string)row.PredicateName);
+                document.SetCellValue(rowNumber, index++, (string)row.Object);
+                document.SetCellValue(rowNumber, index++, (int)row.ObjectID);
+                document.SetCellValue(rowNumber, index++, (string)row.ObjectName);
+                document.SetCellValue(rowNumber, index++, (string)row.ObjectTypeName);
+                foreach (var col in customColumns)
+                {
+                    var data = (IDictionary<string, object>)row;
+                    document.SetCellValue(rowNumber, index++, (string)data[col]);
+                }
+            }
+
+            #endregion
             var stream = new System.IO.MemoryStream();
             document.SaveAs(stream);
 
@@ -490,7 +542,7 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Relationship Type with Uid {intersectTypeUid} could not be found.")));
 
                 if (relationships == null)
-                    relationships = readRequestJsonContent<RelationshipInserts>(Request,true).Result;
+                    relationships = readRequestJsonContent<RelationshipInserts>(Request, true).Result;
 
                 if (relationships == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
@@ -563,7 +615,7 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Relationship Type with Uid {intersectTypeUid} could not be found.")));
 
                 if (relationships == null)
-                    relationships = readRequestJsonContent<RelationshipInserts>(Request,true).Result;
+                    relationships = readRequestJsonContent<RelationshipInserts>(Request, true).Result;
 
                 if (relationships == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
@@ -693,7 +745,7 @@ namespace d360.web.Controllers.V2
             MapToApiVersion("2.0"),
             Route("types/{intersectTypeUid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the DELETE request.", typeof(List<RelationshipDeleteApiStatus>)), 
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the DELETE request.", typeof(List<RelationshipDeleteApiStatus>)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to delete relationship of this type.", typeof(ErrorResponse)),
@@ -729,21 +781,21 @@ namespace d360.web.Controllers.V2
 
                 if (relationships == null || relationships.Count == 0)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "You have not provided a valid JSON structure for this request.!"));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", "You have not provided a valid JSON structure for this request.!"));
                 }
 
                 foreach (var item in relationships)
                 {
-                    if (item.Uid == null && item.Uid == Guid.Empty)
+                    if (item.Uid == null || item.Uid == Guid.Empty)
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "You have not provided a valid JSON structure for this request.!"));
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", "You have not provided a valid GUID!"));
                     }
                 }
 
 
 
                 StringBuilder relationshipUids = new StringBuilder();
-                foreach(var rel in relationships)
+                foreach (var rel in relationships)
                 {
                     relationshipUids.Append($"('{rel.Uid.ToString()}')");
                     if (rel != relationships.Last())
@@ -752,7 +804,7 @@ namespace d360.web.Controllers.V2
 
                 //Get Intersect ID for delete and union all child Intersects
                 var getRelationshipIDsForDeleting = @"declare @relationships table(uid uniqueidentifier)
-                                                      insert into @relationships values "+ relationshipUids.ToString()+ @"
+                                                      insert into @relationships values " + relationshipUids.ToString() + @"
                                                    
                                                       declare @results table(ID int, Uid uniqueidentifier,ParentUid uniqueidentifier )
                                                       ;WITH ITS AS
@@ -780,35 +832,32 @@ namespace d360.web.Controllers.V2
                 List<int> childrenRelationships = new List<int>();
 
                 var response = new List<RelationshipDeleteApiStatus>();
-                foreach(var rel in relationships)
+                foreach (var rel in relationships)
                 {
                     var status = new RelationshipDeleteApiStatus();
                     status.Uid = rel.Uid;
-                    status.Success = true;
                     status.Message = "Relationship deleted";
 
                     var deleteItems = forDeleteCheck.Where(x => x.ParentUid == rel.Uid);
-                    if(deleteItems.Count() == 0)
+                    if (deleteItems.Count() == 0)
                     {
-                        status.Success = false;
-                        status.Message = $"Relationship with Uid {rel.Uid} could not be found.";
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Relationship with Uid {rel.Uid} could not be found."));
                     }
 
-                    if(deleteItems.Count() > 1 && !rel.Cascade)
+                    if (deleteItems.Count() > 1 && !rel.Cascade)
                     {
-                        status.Success = false;
-                        status.Message = $"Relationship with Uid {rel.Uid} have child relationships. Use Cascade = true to delete all child relationships.";
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Relationship with Uid {rel.Uid} have child relationships. Use Cascade = true to delete all child relationships."));
                     }
 
-                    if (status.Success)
+                    status.Success = true;
+
+
+                    foreach (var item in deleteItems)
                     {
-                        foreach(var item in deleteItems)
-                        {
-                            if (rel.Uid == Guid.Parse(item.Uid.ToString()))
-                                parentRelationships.Add(int.Parse(item.ID.ToString()));
-                            else
-                                childrenRelationships.Add(int.Parse(item.ID.ToString()));
-                        }
+                        if (rel.Uid == Guid.Parse(item.Uid.ToString()))
+                            parentRelationships.Add(int.Parse(item.ID.ToString()));
+                        else
+                            childrenRelationships.Add(int.Parse(item.ID.ToString()));
                     }
 
                     response.Add(status);

@@ -76,10 +76,12 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
     ngOnInit() {
         this.setBrowserTitle(this.titleService, 'Reference');
 
-        this.headerBreadcrumbService.clearBreadcrumbs();
-        this.headerBreadcrumbService.clearCurrentObjectInfo();
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Reference'));
+        this.headerBreadcrumbService.getFolderTitle('#Reference').then((res) => {
+            this.headerBreadcrumbService.clearBreadcrumbs();
+            this.headerBreadcrumbService.clearCurrentObjectInfo();
+            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res));
 
+        });
         this.loadPermissions(this.permissionsService, "ReferenceItemType", 0);
 
         this.sub = this.route.params.subscribe(params => {

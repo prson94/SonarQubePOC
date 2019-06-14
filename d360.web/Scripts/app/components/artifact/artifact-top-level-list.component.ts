@@ -42,9 +42,6 @@ export class ArtifactTopLevelListComponent extends ArtifactBaseComponent impleme
 
     ngOnInit() {
         this.setBrowserTitle(this.titleService, 'Glossary');
-        this.headerBreadcrumbService.clearBreadcrumbs();
-        this.headerBreadcrumbService.clearCurrentObjectInfo();
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Glossary'));
         this.clearSidebar();
         this.load();
     }
@@ -61,6 +58,10 @@ export class ArtifactTopLevelListComponent extends ArtifactBaseComponent impleme
                 }
                 this.ArtifactTypes = data;
                 this.selectedRow = this.ArtifactTypes[0];
+
+                this.headerBreadcrumbService.clearBreadcrumbs();
+                this.headerBreadcrumbService.clearCurrentObjectInfo();
+                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.folderTitle ? this.folderTitle : this.area));
 
                 this.isLoading = false;
             }

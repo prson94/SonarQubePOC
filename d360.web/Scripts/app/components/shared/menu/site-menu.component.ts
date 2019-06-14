@@ -280,14 +280,10 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
         this.adminMenu.NavigationItems.push({ Name: 'Export Templates', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_EXPORT_TEMPLATES}`, IsLink: false, IsHomePage: false, count:null });
 
-        let metricsMenu = new SiteMenuItem();
-        metricsMenu.Name = "Metrics";
-        metricsMenu.Items = [];
-        metricsMenu.Items.push({ Name: 'Analytics', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ANALYTICS}`, Items: null, IsLink: false, IsHomePage: false, count:null });
-        metricsMenu.Items.push({ Name: 'Dashboard', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_DASHBOARDS}`, Items: null, IsLink: false, IsHomePage: false, count: null });
-        this.adminMenu.NavigationItems.push(metricsMenu);
+        this.adminMenu.NavigationItems.push({ Name: 'Scoring', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ANALYTICS}`, Items: null, IsLink: false, IsHomePage: false, count:null });
 
-
+        this.adminMenu.NavigationItems.push({ Name: 'Dashboard', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_DASHBOARDS}`, Items: null, IsLink: false, IsHomePage: false, count: null });
+               
         let workflowMenu = new SiteMenuItem();
         workflowMenu.Name = "Workflow";
         workflowMenu.Items = [];

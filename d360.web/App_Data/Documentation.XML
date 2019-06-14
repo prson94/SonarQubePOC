@@ -3070,6 +3070,9 @@
             <summary>
             Retrieves workflow types for the given asset type unique identifier / action type unique identifier/ relationship type unique identifier .
             </summary>
+            <remarks>
+            If using Uid parametes, you may provide only one of the following: ActionTypeUid,AssetTypeUid,RelationshipTypeUid
+            </remarks>
             <param name="ChangeType">ChangeType</param>
             <param name="State">State</param>
             <returns>Returns list of workflow types and An HTTP status code </returns>
@@ -3078,6 +3081,9 @@
             <summary>
             Retrieves workflow versions for the given asset type unique identifier / action type unique identifier/ relationship type unique identifier / workflow type  unique identifier.
             </summary>
+            <remarks>
+            If using Uid parametes, you may provide only one of the following: ActionTypeUid,AssetTypeUid,RelationshipTypeUid,WorkflowTypeUid
+            </remarks>
             <param name="State">State</param>
             <returns>Returns list of workflow versions and An HTTP status code </returns>
         </member>

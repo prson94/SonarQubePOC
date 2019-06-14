@@ -46,7 +46,6 @@ export class ResourceListComponent extends BaseComponent {
         this.clearSidebar();
         this.setBrowserTitle(this.titleService, 'Resources');
 
-        this.headerBreadcrumbService.clearBreadcrumbs();
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Resources'));
+        
     }    
 };
