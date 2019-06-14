@@ -178,7 +178,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
                         true,
                         'Taxonomy',
                         this.selected.ID,
-                        this.buildTreeNodeArray(this.modelHierarchy, this.selected.ParentID),
+                        this.buildTreeNodeArray(this.modelHierarchy, this.selected.ParentID,false),
                         this.findSelectedTreeNode(this.selected.ID),
                         false));
             }
