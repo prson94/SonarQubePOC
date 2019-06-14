@@ -346,7 +346,9 @@ where   A.FusionID = @f
             var hasEditRights = Company.HasAssetPermission(SystemObjects.Fusion, fusionID, core.enums.Permission.ModifyAsset);
             if (!hasEditRights) editable = 0;
 
-            getDynamicFieldJoinStatements(fusionAttributeTypeID, "FusionAttribute", filterFields, out joins, out filterjoins, out columns, out filtercolumns, false);
+            var dbArgs = new Dapper.DynamicParameters();
+
+            getDynamicFieldJoinStatements(fusionAttributeTypeID, "FusionAttribute", filterFields, out joins, out filterjoins, out columns, out filtercolumns, dbArgs, false);
 
             #region Parents
 
@@ -397,7 +399,6 @@ where   A.FusionID = @f
             if (columns.Contains("[type]"))
                 columns = columns.Replace("[type]", "[_type]");
 
-            var dbArgs = new Dapper.DynamicParameters();
             dbArgs.Add("f", fusionID);
             dbArgs.Add("t", fusionAttributeTypeID);
 
@@ -608,12 +609,13 @@ where   A.FusionQueryAttributeTypeID = @t
                 }
             }
 
-            getDynamicFieldJoinStatements(fusionQueryAttributeTypeID, "FusionQueryAttribute", filterFields, out joins, out filterjoins, out columns, out filtercolumns, false);
+            var dbArgs = new Dapper.DynamicParameters();
+
+            getDynamicFieldJoinStatements(fusionQueryAttributeTypeID, "FusionQueryAttribute", filterFields, out joins, out filterjoins, out columns, out filtercolumns, dbArgs, false);
 
             if (columns.Contains("[type]"))
                 columns = columns.Replace("[type]", "[_type]");
 
-            var dbArgs = new Dapper.DynamicParameters();
             dbArgs.Add("t", fusionQueryAttributeTypeID);
 
             #region Count SQL
