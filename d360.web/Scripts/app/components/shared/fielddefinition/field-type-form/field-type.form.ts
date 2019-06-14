@@ -378,6 +378,12 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     } else if (this.lookups.Field_Relationships.length > 0) {
                         promises.push(this.cardinalRelationshipSelected(this.lookups.Field_Relationships[0].value));
                     }
+                    this.model.FieldType.IsListable = false;
+                    this.model.FieldType.IsRequired = false;
+                    this.model.FieldType.IsPartOfKey = false;
+                    this.model.FieldType.IsPartOfKey = false;
+                    this.model.FieldType.IsPrimaryFilter = false;
+                    this.model.FieldType.AllowMultipleValues = false;
                 } catch (e) {
                     console.log(e);
                 }
@@ -470,6 +476,13 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.model.FieldType.IsPartOfKey = false;
                 this.model.FieldType.IsRequired = false;
                 this.model.FieldType.LookupDisplayFormat = null;
+                break;
+            case 'json':
+                this.model.FieldType.IsEditable = false;
+                this.model.FieldType.IsListable = false;
+                this.model.FieldType.IsPartOfKey = false;
+                this.model.FieldType.AllowMultipleValues = false;
+                this.model.FieldType.IsPrimaryFilter = false;
                 break;
             case 'ownershiplookup':
                 if (!this.model.OwnershipLookupSettings) this.model.OwnershipLookupSettings = new OwnershipLookupSettings();
