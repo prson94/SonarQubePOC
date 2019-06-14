@@ -2,15 +2,14 @@ import { Injectable } from '@angular/core';
 import { Headers, Http, RequestOptions } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { JsonResult } from '../models/jsonresult.model';
-import { HttpErrorResponse, HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
 
 
 @Injectable()
 export class BaseService {
-    
-    constructor(protected messages: MessagesService) {  }
+
+    constructor(protected messages: MessagesService) { }
 
     handleError(error: HttpErrorResponse) {
 
@@ -36,15 +35,15 @@ export class BaseService {
                         if (errorMessage == null || errorMessage == '') {
                             errorMessage = 'An error has occurred.';
                         }
-                                                
-                        this.messages.showError('Error', errorMessage);                        
+
+                        this.messages.showError('Error', errorMessage);
                     }
                 }
             });
 
         return Promise.reject(error.error || error);
     }
-    
+
     protected deleteDynamicWithResult(http: Http, type: string, id: number): Promise<JsonResult> {
         let headers = new Headers();
         headers.append('Content-Type', 'application/json');
@@ -59,16 +58,16 @@ export class BaseService {
             .then(res => <JsonResult>res.json())
             .catch(err => this.handleError(err));
     }
-   
+
     protected postDynamic(http: Http, type: string, item: any, file?: File, isCopy?: boolean): Promise<JsonResult> {
-        
+
         if (file != undefined) {
             let form = new FormData();
 
             form.append('json', JSON.stringify(item));
             form.append('file', file);
 
-            let method = ( isCopy !== undefined ) ? 'create': 'copy';
+            let method = (isCopy !== undefined) ? 'create' : 'copy';
 
             return http
                 .post(`form/dynamicedit/${method}/${type}`, form)
@@ -76,11 +75,11 @@ export class BaseService {
                 .then(res => <JsonResult>res.json())
                 .catch(err => this.handleError(err));
         }
-               
+
         let headers = new Headers({
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' //pass as text since its a dynamic object and mvc has issue with dynamic models
         });
-        
+
         return http
             .post(`form/dynamicedit/create/${type}`, 'json=' + encodeURIComponent(JSON.stringify(item)), { headers: headers })
             .toPromise()
@@ -88,7 +87,7 @@ export class BaseService {
             .catch(err => this.handleError(err));
     }
 
-    protected putDynamic(http: Http, type: string, item: any, file?: File): Promise<JsonResult> {        
+    protected putDynamic(http: Http, type: string, item: any, file?: File): Promise<JsonResult> {
 
         if (file != undefined) {
             let form = new FormData();
@@ -106,12 +105,11 @@ export class BaseService {
         let headers = new Headers({
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' //pass as text since its a dynamic object and mvc has issue with dynamic models
         });
-        
+
         return http
             .put(`form/dynamicedit/edit/${type}`, 'json=' + encodeURIComponent(JSON.stringify(item)), { headers: headers })
             .toPromise()
             .then(res => <JsonResult>res.json())
             .catch(err => this.handleError(err));
-    }    
-
+    }
 }
