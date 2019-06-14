@@ -76,7 +76,7 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
                 this.getFusionConfiguration = this.fusionService.getFusionConfiguration(this.fusionId).subscribe(
                     result => {
                         this.fusion = result;
-
+                        console.log(result);
                         this.setBrowserTitle(this.titleService, `Fusion - ${this.fusion.Name}`);
                         this.setObjectInfo('Fusion', this.fusionId, undefined, this.fusion.AssetID);
                         this.setRightSideBar(this.fusion.HasDashboards, this.fusion.Manual);
@@ -99,6 +99,7 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
     ngOnDestroy() {
         this.routeParams.unsubscribe();
         this.getFusionConfiguration.unsubscribe();
+        this.treeSub.unsubscribe();
         this.clearSidebar();
     }
 
@@ -208,7 +209,7 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
     }
 
 
-    private buildTreeNodeArray(models: FusionAttributeType[], Parent?: number): TreeNode[] {
+    private buildTreeNodeArray(models: FusionAttributeType[], Parent?: number, includeChildren?: boolean): TreeNode[] {
         //find the root items then 
 
         let rootNodes = models.filter(x => (Parent != undefined ? x.ParentID == Parent : !x.ParentID));
@@ -224,7 +225,7 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
                 data: {
                     id: root.ID
                 },
-                children: (this.buildTreeNodeArray(models, root.ID)) //recursively find its children
+                children: (includeChildren ? this.buildTreeNodeArray(models, root.ID) : null) //recursively find its children
             });
         }
 
