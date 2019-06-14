@@ -19,6 +19,8 @@ using d360.core.enums;
 using Newtonsoft.Json;
 using d360.core.queue;
 using System.Net;
+using d360.core.entities.Workflow;
+using d360.model.validators;
 
 namespace igx.UnitTests
 {
@@ -231,6 +233,33 @@ namespace igx.UnitTests
               .Returns((string t) => t == DataConstants.ValidType ? Task.FromResult(1) : Task.FromResult(0));
 
             return mock.Object;
+        }
+
+        public IWorkflowRepository GetWorkflowRepository()
+        {
+            var mock = new Mock<IWorkflowRepository>();
+
+            mock.Setup(x => x.GetWorkflowTypes(It.IsAny<IEnumerable<KeyValuePair<string, string>>>()))
+                .Returns(Task.FromResult(new List<WorkflowTypeApiViewModel>() { new WorkflowTypeApiViewModel(), new WorkflowTypeApiViewModel() } as IEnumerable<WorkflowTypeApiViewModel>));
+
+            mock.Setup(x => x.GetWorkflowVersionSteps(It.IsAny<Guid>()))
+                .Returns((Guid guid) => {
+                    var result = new List<WorkflowVersionStepsApiViewModel>() as IEnumerable<WorkflowVersionStepsApiViewModel>;
+                    if (guid == Guid.Parse(DataConstants.ValidGUID))
+                        return Task.FromResult(result);
+                    else
+                        return Task.FromResult<IEnumerable<WorkflowVersionSteps>>(null);
+                });
+
+            mock.Setup(x => x.GetWorkflowVersions(It.IsAny<IEnumerable<KeyValuePair<string, string>>>()))
+                .Returns(Task.FromResult(new WorkflowVersionsApiViewModel()));
+
+            return mock.Object;
+        }
+
+        public IWorkflowApiModelValidator GetWorkflowApiModelValidator()
+        {
+            return new WorkflowApiModelValidator();
         }
         #endregion
     }
