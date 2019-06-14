@@ -1,16 +1,16 @@
 ﻿import { Injectable } from '@angular/core';
-import { MessagesService } from './messages.service';
-import { BaseService } from './base.service';
 import { Taxonomy, TaxonomyLevel, TaxonomyClassification } from '../models/taxonomy.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { HttpClient, HttpHeaderResponse, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { BaseObservableService } from './baseObservable.service';
+import { MessagesObservableService } from './messages-observable.service';
 
 @Injectable()
-export class TaxonomiesService extends BaseService {
+export class TaxonomiesService extends BaseObservableService {
 
-    constructor(private http: HttpClient, messagesService: MessagesService) { super(messagesService); }
+    constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
     getTaxonomies(): Observable<Taxonomy[]> {
         return this.http.get('/api/catalogs')
@@ -74,7 +74,7 @@ export class TaxonomiesService extends BaseService {
     }
 
     deleteTaxonomy(taxonomyId: number): Observable<JsonResult> {
-        return this.deleteDynamicWithResultObs(this.http, "TAXONOMYTYPE", taxonomyId);
+        return this.deleteDynamicWithResult(this.http, "TAXONOMYTYPE", taxonomyId);
     }
 }
 

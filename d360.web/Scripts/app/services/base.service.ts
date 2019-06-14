@@ -2,9 +2,9 @@ import { Injectable } from '@angular/core';
 import { Headers, Http, RequestOptions } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { JsonResult } from '../models/jsonresult.model';
-import { HttpErrorResponse, HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+
 
 @Injectable()
 export class BaseService {
@@ -111,75 +111,5 @@ export class BaseService {
             .toPromise()
             .then(res => <JsonResult>res.json())
             .catch(err => this.handleError(err));
-    }    
-
-
-    //New methods with HttpClient, Http will get obsolete
-
-    protected deleteDynamicWithResultObs(httpClient: HttpClient, type: string, id: number): Observable<JsonResult> {
-        let headers = new HttpHeaders();
-        headers.append('Content-Type', 'application/json');
-
-        let url = `form/dynamicedit/delete/${type}/${id}`;
-
-        return httpClient
-            .delete(url, { headers })
-            .pipe(
-                map(res => <JsonResult>res),
-                catchError(err => this.handleError(err)));
-    }
-
-    protected postDynamicObs(httpClient: HttpClient, type: string, item: any, file?: File, isCopy?: boolean): Observable<JsonResult> {
-
-        if (file != undefined) {
-            let form = new FormData();
-
-            form.append('json', JSON.stringify(item));
-            form.append('file', file);
-
-            let method = (isCopy !== undefined) ? 'create' : 'copy';
-
-            return httpClient
-                .post(`form/dynamicedit/${method}/${type}`, form)
-                .pipe(
-                    map(res => <JsonResult>res),
-                    catchError(err => this.handleError(err)));
-        }
-
-        let headers = new HttpHeaders({
-            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' //pass as text since its a dynamic object and mvc has issue with dynamic models
-        });
-
-        return httpClient
-            .post(`form/dynamicedit/create/${type}`, 'json=' + encodeURIComponent(JSON.stringify(item)), { headers })
-            .pipe(
-                map(res => <JsonResult>res),
-                catchError(err => this.handleError(err)));
-    }
-
-    protected putDynamicObs(httpClient: HttpClient, type: string, item: any, file?: File): Observable<JsonResult> {
-
-        if (file != undefined) {
-            let form = new FormData();
-
-            form.append('json', JSON.stringify(item));
-            form.append('file', file);
-
-            return httpClient
-                .put(`form/dynamicedit/edit/${type}`, form)
-                .pipe(
-                    map(res => <JsonResult>res),
-                    catchError(err => this.handleError(err)));
-        }
-
-        let headers = new HttpHeaders({
-            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' //pass as text since its a dynamic object and mvc has issue with dynamic models
-        });
-
-        return httpClient
-            .put(`form/dynamicedit/edit/${type}`, 'json=' + encodeURIComponent(JSON.stringify(item)), { headers })
-            .pipe(
-                map(res => <JsonResult>res),
-                catchError(err => this.handleError(err)));
     }    
 }

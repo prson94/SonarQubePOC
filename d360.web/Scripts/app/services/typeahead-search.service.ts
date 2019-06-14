@@ -1,15 +1,15 @@
 import { catchError, map } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
-import { MessagesService } from './messages.service';
-import { BaseService } from './base.service';
 import { SearchResult } from '../models/search-result.model';
 import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
+import { BaseObservableService } from './baseObservable.service';
+import { MessagesObservableService } from './messages-observable.service';
 
 @Injectable()
-export class TypeaheadSearchService extends BaseService {
+export class TypeaheadSearchService extends BaseObservableService {
 
-    constructor(private http: HttpClient, messagesService: MessagesService) { super(messagesService); }
+    constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
     getResults(size, term, types?: string[]): Observable<SearchResult[]> {
 

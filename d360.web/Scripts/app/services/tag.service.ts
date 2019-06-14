@@ -1,16 +1,15 @@
-
 import {catchError, map} from 'rxjs/operators';
 import { Injectable } from '@angular/core';
-import { MessagesService } from './messages.service';
-import { BaseService } from './base.service';
 import { Tag } from '../models/tag.model';
 import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
+import { BaseObservableService } from './baseObservable.service';
+import { MessagesObservableService } from './messages-observable.service';
 
 @Injectable()
-export class TagService extends BaseService {
+export class TagService extends BaseObservableService {
 
-    constructor(private http: HttpClient, messagesService: MessagesService) { super(messagesService); }
+    constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
     getTags(phrase: string, excludeObjects: string = ''): Observable<Tag[]> {
         let url = `api/tagsuggestions?phrase=${phrase}&excludeObjects=${excludeObjects}`;

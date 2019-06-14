@@ -1,16 +1,16 @@
 ﻿import { Injectable } from '@angular/core';
-import { MessagesService } from './messages.service';
-import { BaseService } from './base.service';
 import { SurveyType, SurveyQuestionType, SurveyQuestionTypeDetails, SurveyResponse } from '../models/survey.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
+import { BaseObservableService } from './baseObservable.service';
+import { MessagesObservableService } from './messages-observable.service';
 
 @Injectable()
-export class SurveysService extends BaseService {
+export class SurveysService extends BaseObservableService {
 
-    constructor(private http: HttpClient, messagesService: MessagesService) { super(messagesService); }
+    constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
     getSurveyTypes(): Observable<SurveyType[]> {
         return this.http.get(`api/surveys`)
@@ -37,20 +37,20 @@ export class SurveysService extends BaseService {
     }
 
     deleteSurveyTypeById(id: number): Observable<JsonResult> {
-        return this.deleteDynamicWithResultObs(this.http, 'surveytype', id);
+        return this.deleteDynamicWithResult(this.http, 'surveytype', id);
     }
 
 
     deleteSurveyQuestionType(id: number): Observable<JsonResult> {
-        return this.deleteDynamicWithResultObs(this.http, 'surveyquestiontype', id);
+        return this.deleteDynamicWithResult(this.http, 'surveyquestiontype', id);
     }
 
 
     saveSurveyType(surveyType: SurveyType): Observable<JsonResult> {
         if (surveyType.ID == undefined || !surveyType.ID) {
-            return this.postDynamicObs(this.http, 'surveytype', surveyType);
+            return this.postDynamic(this.http, 'surveytype', surveyType);
         }
-        return this.putDynamicObs(this.http, 'surveytype', surveyType);
+        return this.putDynamic(this.http, 'surveytype', surveyType);
     }
 
     saveSurveyTypeQuestion(surveyQuestion: SurveyQuestionTypeDetails): Observable<JsonResult> {
