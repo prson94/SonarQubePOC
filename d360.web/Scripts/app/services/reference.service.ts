@@ -1,16 +1,16 @@
 ﻿import { Injectable } from '@angular/core';
 import { HttpClient, HttpRequest, HttpResponse } from '@angular/common/http';
-import { MessagesService } from './messages.service';
-import { BaseService } from './base.service';
 import { ReferenceItemType, ReferenceItem } from '../models/reference.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { Observable } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
+import { BaseObservableService } from './baseObservable.service';
+import { MessagesObservableService } from './messages-observable.service';
 
 @Injectable()
-export class ReferenceService extends BaseService {
+export class ReferenceService extends BaseObservableService {
 
-    constructor(private http: HttpClient, messagesService: MessagesService) { super(messagesService); }
+    constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
     getReferenceItemTypes(): Observable<ReferenceItemType[]> {
         return this.http.get(`api/referenceItemTypes`)
@@ -28,13 +28,13 @@ export class ReferenceService extends BaseService {
 
     saveReferenceItemType(item: ReferenceItemType) {
         if (item.ID == undefined || !item.ID) {
-            return this.postDynamicObs(this.http, 'referenceItemType', item);
+            return this.postDynamic(this.http, 'referenceItemType', item);
         }
-        return this.putDynamicObs(this.http, 'referenceItemType', item);
+        return this.postDynamic(this.http, 'referenceItemType', item);
     }
 
     deleteReferenceItemType(id: number): Observable<JsonResult> {
-        return this.deleteDynamicWithResultObs(this.http, 'referenceItemType', id);
+        return this.deleteDynamicWithResult(this.http, 'referenceItemType', id);
     }
 
     exportReferenceItems(id: number, name: string) {
