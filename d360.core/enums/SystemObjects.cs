@@ -60,10 +60,9 @@ namespace d360.core
         ResourceType,
         [Description("Survey Type"), AllowSurvey(false), EnableAudit(true), IsType(true),ExcludeDataType(DataType.JSON | DataType.JsonElement)]
         SurveyType,
-        [Description("Taxonomy"), EnableAudit(true), IsType(false),ExcludeDataType(DataType.JSON | DataType.JsonElement)]
+        [Description("Taxonomy"), EnableAudit(true), IsType(false)]
         Taxonomy,
-        [Description("Taxonomy Type"), AllowSurvey(true), EnableAudit(true), IsType(true), 
-            ExcludeDataType(DataType.FilteredLookup | DataType.FusionLookup)]
+        [Description("Taxonomy Type"), AllowSurvey(true), EnableAudit(true), IsType(true), ExcludeDataType(DataType.FilteredLookup | DataType.FusionLookup)]
         TaxonomyType,
         [Description("Tooltip  Template"), AllowOwnership(false), EnableAudit(false), IsType(false),ExcludeDataType(DataType.JSON | DataType.JsonElement)]
         TooltipTemplate,
@@ -95,9 +94,9 @@ namespace d360.core
         Policy,
         [Description("Policy Type"), AllowSurvey(false), EnableAudit(true), IsType(true), ExcludeDataType(DataType.FilteredLookup | DataType.FusionLookup)]
         PolicyType,
-        [Description("Rule"), AllowSurvey(false), EnableAudit(true), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement)]
+        [Description("Rule"), AllowSurvey(false), EnableAudit(true), IsType(false)]
         Rule,
-        [Description("Rule Type"), AllowSurvey(false), EnableAudit(true), IsType(true), ExcludeDataType(DataType.FilteredLookup | DataType.FusionLookup | DataType.JSON | DataType.JsonElement)]
+        [Description("Rule Type"), AllowSurvey(false), EnableAudit(true), IsType(true), ExcludeDataType(DataType.FilteredLookup | DataType.FusionLookup)]
         RuleType,
         [Description("Fusion Execution"), AllowSurvey(false), EnableAudit(false), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement)]
         FusionExecution,
