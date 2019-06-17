@@ -28,6 +28,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
     hideDelete: boolean = true;
     queryString: string = "";
     public hasAdd: boolean;
+    public hasFilterMode: boolean=true;
 
     @ViewChild(DynamicRelationshipGridComponent) private relGrid: DynamicRelationshipGridComponent;
 
@@ -133,7 +134,8 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
                 && this.selected.AllowEditFromRelationshipEditor;
         }
         else {
-            this.hasAdd = this.hasModifyRelationshipsPermissions() && !this.readOnly;
+            this.hasAdd = this.hasRelationships &&  this.hasModifyRelationshipsPermissions() && !this.readOnly;
         }
+        this.hasFilterMode = this.hasRelationships;
     }
 }
