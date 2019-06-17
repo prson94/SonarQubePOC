@@ -5229,12 +5229,6 @@ where   A.RuleTypeID = @id
             }
         }
 
-        [Route("ruledimensions")]
-        public IQueryable<RuleDimension> GetRuleDimensions()
-        {
-            return Company.Table<RuleDimension>();
-        }
-
         [Route("ruleimplementations/{id:int}/")]
         public HttpResponseMessage GetRuleImplementation(int id)
         {

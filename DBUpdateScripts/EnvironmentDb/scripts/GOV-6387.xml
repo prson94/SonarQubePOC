@@ -74,10 +74,6 @@ GO
 <![CDATA[
 --migrate rule data
 
-
-BEGIN TRY
-    BEGIN TRANSACTION
-
 			declare @tempRuleTable table (ID int, RuleTypeId int, RuleDimensionId int, Status int)
 			
 			insert into @tempRuleTable (ID, RuleTypeId, RuleDimensionId, Status)
@@ -144,16 +140,6 @@ BEGIN TRY
 			
 			   set @cnt = @cnt + 1;
 			end
-
-			COMMIT TRAN -- Transaction Success!
-END TRY
-BEGIN CATCH
-
-    ROLLBACK TRAN --RollBack in case of Error
-
-	THROW
-    -- you can Raise ERROR with RAISEERROR() Statement including the details of the exception
-END CATCH
 ]]>
 		</sql>
 		<rollback>
@@ -162,21 +148,47 @@ END CATCH
 ]]>
 		</rollback>
 	</changeSet>	
-	
-		<changeSet author="Tomislav Duric" id="GOV-6387-UpdateOldRules">
+		<changeSet author="Tomislav Duric" id="GOV-6387-DeleteFieldsAndDropTables">
 	
 		<sql dbms="mssql"
 			endDelimiter="\nGO"
 			splitStatements="true"
 			stripComments="true">
 <![CDATA[
+ALTER TABLE [dbo].[Rule] DROP CONSTRAINT FK_Rule_RuleDimension
+ALTER TABLE [dbo].[Rule] DROP COLUMN [RuleDimensionId]
+DROP TABLE [dbo].[RuleDimension]
+
+ALTER TABLE [dbo].[Rule] DROP CONSTRAINT DF_Rule_Status
+ALTER TABLE [dbo].[Rule] DROP COLUMN [Status]
 
 ]]>
 		</sql>
 		<rollback>
 <![CDATA[
+CREATE TABLE [dbo].[RuleDimension](
+	[ID] [int] IDENTITY(1,1) NOT NULL,
+	[Name] [nvarchar](250) NOT NULL,
+	[Description] [nvarchar](max) NULL,
+	[IsSystemDefined] [bit] NOT NULL,
+	[UpdatedOn] [datetime] NOT NULL,
+	[UpdatedBy] [int] NOT NULL,
+ CONSTRAINT [PK_RuleDimension] PRIMARY KEY CLUSTERED 
+(
+	[ID] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 
+
+ALTER TABLE [dbo].[RuleDimension] ADD  CONSTRAINT [DF_RuleDimension_IsSystemDefined]  DEFAULT ((0)) FOR [IsSystemDefined]
+ALTER TABLE [dbo].[RuleDimension] ADD  CONSTRAINT [DF_RuleDimension_UpdatedOn]  DEFAULT (getutcdate()) FOR [UpdatedOn]
+
+ALTER TABLE [dbo].[Rule] ADD RuleDimensionId [int] NULL
+ALTER TABLE [dbo].[Rule]  WITH CHECK ADD  CONSTRAINT [FK_Rule_RuleDimension] FOREIGN KEY([RuleDimensionID]) REFERENCES [dbo].[RuleDimension] ([ID])
+
+ALTER TABLE [dbo].[Rule] ADD [Status] [int] NOT NULL CONSTRAINT [DF_Rule_Status] DEFAULT ((1))
 ]]>
 		</rollback>
-	</changeSet>	
+		</changeSet>
+	
   </databaseChangeLog>

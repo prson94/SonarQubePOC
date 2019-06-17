@@ -357,8 +357,6 @@ namespace d360.web.Controllers
                     return Rule_EditFields(oid);
                 case "RULEIMPLEMENTATION":
                     return RuleImplementation_EditFields(oid);
-                case "RULEDIMENSION":
-                    return RuleDimension_EditFields(oid);
                 case "RULETYPE":
                     return RuleType_EditFields(oid);
                 case "SERVICE":
@@ -424,8 +422,6 @@ namespace d360.web.Controllers
                     return Resource_AddFields(objectID.GetValueOrDefault());
                 case "RULE":
                     return Rule_AddFields(objectID.GetValueOrDefault());
-                case "RULEDIMENSION":
-                    return RuleDimension_AddFields();
                 case "RULEIMPLEMENTATION":
                     return RuleImplementation_AddFields(objectID.GetValueOrDefault());
                 case "RULETYPE":
@@ -527,8 +523,6 @@ namespace d360.web.Controllers
                     return ChangeMyPassword(form);
                 case "RULE":
                     return EditRule(form);
-                case "RULEDIMENSION":
-                    return EditRuleDimension(form);
                 case "RULEIMPLEMENTATION":
                     return EditRuleImplementation(form);
                 case "RULETYPE":
@@ -608,8 +602,6 @@ namespace d360.web.Controllers
                     return DeleteReportTile(form);
                 case "RULE":
                     return DeleteRule(form);
-                case "RULEDIMENSION":
-                    return DeleteRuleDimension(form);
                 case "RULETYPE":
                     return DeleteRuleType(form);
                 case "POLICY":
@@ -710,8 +702,6 @@ namespace d360.web.Controllers
                     return AddReportTile(form, true);
                 case "RESOURCE":
                     return AddResource(form);
-                case "RULEDIMENSION":
-                    return AddRuleDimension(form);
                 case "RULEIMPLEMENTATION":
                     return AddRuleImplementation(form);
                 case "RULETYPE":
@@ -13946,166 +13936,6 @@ order by	case
 
         #endregion
         
-        #region RuleDimension
-
-        #region Field Generation
-
-        [Route("RuleDimension_AddFields")]
-        public JsonResult RuleDimension_AddFields()
-        {
-            var model = new RuleDimension();
-            if (!Company.CurrentResourceIsAdmin)
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = model.GetName(i => i.Name), FieldDescription = model.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Description", Name = model.GetName(i => i.Description), FieldDescription = model.GetDescription(i => i.Description), FieldType = DataType.Html.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">RuleID</param>
-        [Route("RuleDimension_EditFields"), NonNullableParameters]
-        public JsonResult RuleDimension_EditFields(int id)
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            var model = Company.GetById<RuleDimension>(id);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = model.ID.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = model.GetName(i => i.Name), FieldDescription = model.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Value = model.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Description", Name = model.GetName(i => i.Name), FieldDescription = model.GetDescription(i => i.Name), FieldType = DataType.Html.ToString(), Value = model.Description });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
-        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddRuleDimension")]
-        public JsonResult AddRuleDimension(FormCollection form)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                if (!form.HasKeys()) throw new NoFormDataException("RuleDimension");
-
-                var model = new RuleDimension
-                {
-                    Name = parseTextField(form, "Name"),
-                    Description = parseTextField(form, "Description"),
-                    UpdatedBy = Company.CurrentResourceID,
-                    UpdatedOn = DateTime.UtcNow
-                };
-
-                Company.Add(model);
-
-                dynamic custom = new
-                {
-                    Name = model.Name,
-                    action = "add",
-                    Context = form["_context"]
-                };
-
-                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpDelete, Route("DeleteRuleDimension")]
-        public JsonResult DeleteRuleDimension(FormCollection form)
-        {
-            try
-            {
-                throw new Exception("RuleDimension is not used anymore!");
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                if (!form.HasKeys()) throw new NoFormDataException("RuleDimension");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<RuleDimension>(id);
-                if (model == null) throw new NotFoundException("RuleDimension");
-
-                Company.Delete(model);
-
-                dynamic custom = new
-                {
-                    model.Name,
-                    action = "delete",
-                    Context = form["_context"]
-                };
-
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpPut, ValidateInput(false), Route("EditRuleDimension")]
-        public JsonResult EditRuleDimension(FormCollection form)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                if (!form.HasKeys()) throw new NoFormDataException("RuleDimension");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<RuleDimension>(id);
-                if (model == null) throw new NotFoundException("RuleDimension");
-
-                model.Name = parseTextField(form, "Name");
-                model.Description = parseTextField(form, "Description");
-
-                model.UpdatedBy = Company.CurrentResourceID;
-                model.UpdatedOn = DateTime.UtcNow;
-
-                Company.Update(model);
-
-                dynamic custom = new
-                {
-                    model.Name,
-                    action = "edit",
-                    Context = form["_context"]
-                };
-
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
         #region RuleImplementation
 
         #region Field Generation
