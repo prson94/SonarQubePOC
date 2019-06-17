@@ -1,11 +1,11 @@
-﻿import {Component, Input, Output, OnChanges, SimpleChange, EventEmitter} from '@angular/core';
-import {Column} from 'primeng/primeng';
-import {Lookup, LookupItem} from '../../../models/lookup.model';
-import {GridDefinition, GridColumn, GridField} from '../../../models/grid-definition.model';
-import {MessagesService} from '../../../services/messages.service';
-import {GridDefinitionService} from '../../../services/grid-definition.service';
-import {UriBasedService} from '../../../services/uri-based.service';
-import {BaseComponent} from '../../shared/base.component';
+﻿import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter } from '@angular/core';
+import { Column } from 'primeng/primeng';
+import { Lookup, LookupItem } from '../../../models/lookup.model';
+import { GridDefinition, GridColumn, GridField } from '../../../models/grid-definition.model';
+import { MessagesService } from '../../../services/messages.service';
+import { GridDefinitionService } from '../../../services/grid-definition.service';
+import { UriBasedService } from '../../../services/uri-based.service';
+import { BaseComponent } from '../../shared/base.component';
 /* FIXME: Extract templates and styles to their own files
 *  https://angular.io/guide/styleguide#style-05-04 */
 @Component({
@@ -150,12 +150,13 @@ export class DynamicGridComponent extends BaseComponent implements OnChanges {
     }
 
     deleteItem(id: number) {
-        this.uriBasedService.deleteItemWithResult(this.deleteUri, id).then(res => {
-            this.showMessageForResult(this.messagesService, res);
-            this.showDelete = false;
-            if (res.type != 'error')
-                this.items = this.items.filter(x => x.ID != id);
-        });
+        this.uriBasedService.deleteItemWithResult(this.deleteUri, id)
+            .subscribe(res => {
+                this.showMessageForResult(this.messagesService, res);
+                this.showDelete = false;
+                if (res.type != 'error')
+                    this.items = this.items.filter(x => x.ID != id);
+            });
     }
 
     getFieldsDefinition() {
@@ -170,7 +171,7 @@ export class DynamicGridComponent extends BaseComponent implements OnChanges {
     getData() {
         this.isLoading = true;
         this.uriBasedService.getItems(this.dataUri)
-            .then(result => {
+            .subscribe(result => {
                 this.items = result;
                 this.isLoading = false;
                 if (this.items.length > 0) this.selected = this.items[0];
@@ -193,7 +194,7 @@ export class DynamicGridComponent extends BaseComponent implements OnChanges {
     saveItem(event) {
         this.isLoading = true;
         this.uriBasedService.saveItem(this.createUri, this.editUri, event.item)
-            .then(result => {
+            .subscribe(result => {
                 this.showMessageForResult(this.messagesService, result);
                 //reload grid for now as the name / id of the field differs in display mode / edit mode
                 this.showEditor = false;

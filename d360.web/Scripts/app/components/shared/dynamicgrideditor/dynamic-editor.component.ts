@@ -383,7 +383,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
             this.isLoading = true;
 
             this.uriBasedService.saveItem(this.createUri, this.editUri, values)
-                .then(result => {
+                .subscribe(result => {
                     this.showMessageForResult(this.messagesService, result);
                     this.isLoading = false;
                     this.saveClick.emit({item: result, action: action, values: values});
