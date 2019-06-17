@@ -20,6 +20,7 @@ namespace d360.core
         public static string COMPANY_RESOURCES_URL = $"https://{AZURE_STORAGE_NAME}.blob.core.windows.net/{COMPANY_RESOURCES_FOLDER}/";
 
         public static string COMPANY_STYLES_FOLDER = "company-styles";
+        public static string COMPANY_BULK_LOAD_FOLDER = "company-bulk-loads";
         public static string COMPANY_STYLES_URL = $"https://{AZURE_STORAGE_NAME}.blob.core.windows.net/{COMPANY_STYLES_FOLDER}/";
 
         //azure container names

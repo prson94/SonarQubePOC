@@ -20,6 +20,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Ganss.XSS;
 using System.Text.RegularExpressions;
+using d360.model.DataAccessLayer;
+using d360.extensions.storage;
 
 namespace igx.jobs.bulkloadprocessor
 {
@@ -58,8 +60,11 @@ namespace igx.jobs.bulkloadprocessor
                 };
                 var cache = new DummyCachingProvider();
                 var queue = new AzureQueueSource();
+                var storage = new AzureStorageProvider();
                 var community = new CommunityContext(cache, queue, sec);
+                
                 var company = new CompanyContext(community, cache, queue, sec, true);
+                var repository = new AssetRepository(company, queue, storage);
                 var isDev = (company.ObjectContext.Connection.DataSource.Contains("dev")) || (loadInfo.CompanyID == 8);
 
                 #endregion
@@ -266,7 +271,8 @@ namespace igx.jobs.bulkloadprocessor
                             await BulkLoadOwnership(company, load.ID);
                             break;
                         case "P":   // Promotions
-                            executeWithTry(companyConnection, $@"EXEC bulkload.Promotions {load.ID}", loadInfo.CompanyID, 2400);
+
+                            await BulkLoadAssets(company, repository, load);
                             company.CreateOrUpdateTypeDisplayValuesAsync(load.ObjectID, load.Object);
                             break;
                         case "R":   // Relations                                
@@ -1319,17 +1325,21 @@ where	ID = @loadId", new { loadId }, transaction: trans);
             if (currentRowIndex > 2) company.SaveChanges();
         }
 
-        static void executeWithTry(SqlConnection companyConnection, string lineageSql, int companyID, int timeout = 1200)
+        private static async Task BulkLoadAssets(CompanyContext company, IAssetRepository repository, Load load)
+        {
+            executeWithTry(company.Connection, $@"EXEC bulkload.Promotions {load.ID}", company.CurrentCompanyID, 2400);
+            await company.BulkLoadAssets(load, repository);
+        }
+
+        static void executeWithTry(SqlConnection companyConnection, string sql, int companyID, int timeout = 1200)
         {
             try
             {
-                companyConnection.Execute(lineageSql, null, null, timeout);
+                companyConnection.Execute(sql, null, null, timeout);
             }
             catch (Exception ex)
             {
-                //logger.Error(lineageSql);
                 CoreFunction.AITrackException(functionName, ex, companyID);
-                //logger.Error(ex.GetFullExceptionData());
             }
         }
     }

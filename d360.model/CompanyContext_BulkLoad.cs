@@ -1,6 +1,9 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.enums;
+using d360.core.helpers;
+using d360.core.queue;
+using d360.model.DataAccessLayer;
 using Dapper;
 using Newtonsoft.Json;
 using SpreadsheetLight;
@@ -720,6 +723,133 @@ order by	ColumnIndex", new { id });
                 if (!columns.Any(x => string.Compare(x.Name, $"{objectTypeName} {field.Name}", true) == 0))
                     throw new Exception($"Bulk Relate cannot find key field {field.Name} id {field.ID} friendly name {field.FriendlyName}");
             }            
+        }
+
+        #endregion
+
+        #region API v2 Methods
+
+        public async Task BulkLoadAssets(Load load, IAssetRepository repository)
+        {
+            var errors = new List<string>();
+            var success = true;
+
+            if (load == null)
+            {
+                errors.Add("Bulk load object is null");
+            }
+
+            if (!load.AssetTypeUid.HasValue)
+            {
+                errors.Add("Asset Type uid not specified");
+            }
+
+            try
+            {
+
+                var assetTypeUid = (Guid)load.AssetTypeUid;
+                AssetType assetType = repository.GetAssetTypeByUID(assetTypeUid);
+
+                if (assetType == null)
+                    errors.Add($"Asset Type with uid '{assetTypeUid}' could not be found.");
+
+                //get parent type if applicable
+                var parentAssetType = GetParentType(assetType.ObjectID, SystemObjectHelper.GetSystemObjects(assetType.Class));
+
+
+                var putAssets = new List<AssetUpdate>();
+                var postAssets = new List<AssetInsert>();
+
+                foreach (var item in load.LoadItems)
+                {
+                    if (!item.ObjectID.HasValue)
+                    {
+                        var insert = new AssetInsert();
+                        insert.Fields = new Dictionary<string, string>();
+
+                        foreach (var field in item.LoadItemColumns)
+                        {
+                            var col = load.LoadColumns.Where(c => c.LoadID == load.ID && c.ColumnIndex == field.ColumnIndex).FirstOrDefault();
+                            insert.Fields.Add(col.Name, field.Value);
+                        }
+                        postAssets.Add(insert);
+                    }
+                    else
+                    {
+                        var update = new AssetUpdate();
+                        var asset = Query<Asset>("select * from Asset Where Object = @object and ObjectID = @objectID", new { @object = item.Object, objectID = item.ObjectID}).FirstOrDefault();
+                        AssetDetail parent = null;
+                        if (parentAssetType != null)
+                        {
+                            if (Enum.TryParse(asset.Object, out SystemObjects obj))
+                            {
+                                parent = GetParentObject(asset.ObjectID, obj);
+                            }
+                            else
+                            {
+                                errors.Add($"Could not parse system object {parent.Object}");
+                            }
+
+                            if (parent != null)
+                                update.ParentUid = parent.uid;
+                        }
+
+                        update.Uid = asset.uid;
+                        update.Fields = new Dictionary<string, string>();
+
+                        foreach (var field in item.LoadItemColumns)
+                        {
+                            var col = load.LoadColumns.Where(c => c.LoadID == load.ID && c.ColumnIndex == field.ColumnIndex).FirstOrDefault();
+                            update.Fields.Add(col.Name, field.Value);
+                        }
+                        putAssets.Add(update);
+                    }
+                }
+
+
+                if (putAssets.Any())
+                {
+                    var execution = getApiExecution(putAssets.Count, new BulkLoadExecutionFields_Assets { AssetTypeUid = assetTypeUid, LoadID = load.ID });
+                    ApiExecutionInfo executionInfo = await repository.PutBulkAssets(assetTypeUid, putAssets, execution);
+                }
+
+                if (postAssets.Any())
+                {
+                    var execution = getApiExecution(postAssets.Count, new BulkLoadExecutionFields_Assets { AssetTypeUid = assetTypeUid, LoadID = load.ID });
+                    ApiExecutionInfo executionInfo = await repository.PostBulkAssets(postAssets, execution);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                errors.Add(ex.Message + (ex.InnerException != null ? ex.InnerException.Message : ""));
+
+            }
+        }
+
+        internal ApiExecution getApiExecution(int total = 0, object fields = null, int error = 0, int processed = 0)
+        {
+
+            var execution = new ApiExecution
+            {
+                ExecutionID = Guid.NewGuid(),
+                StartedOn = DateTime.UtcNow,
+                Route = null,
+                Method = null,
+                ResourceID = CurrentResourceID,
+                Total = total,
+                Fields = fields == null ? "" : JsonConvert.SerializeObject(fields),
+                Error = error,
+                Processed = processed
+            };
+
+            return execution;
+        }
+
+        internal class BulkLoadExecutionFields_Assets
+        {
+            public Guid AssetTypeUid { get; set; }
+            public int LoadID { get; set; }
         }
 
         #endregion

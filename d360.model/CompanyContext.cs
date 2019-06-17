@@ -9,6 +9,7 @@ using d360.core.helpers;
 using d360.core.queue;
 using d360.core.resources;
 using d360.extensions;
+using d360.model.DataAccessLayer;
 using Dapper;
 using Ganss.XSS;
 using Newtonsoft.Json;

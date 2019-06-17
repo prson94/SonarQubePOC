@@ -40,6 +40,9 @@ namespace d360.core.entities
         [DataMember]
         public int? UpdatedBy { get; set; }
 
+        [DataMember]
+        public Guid? AssetTypeUid { get; set; }
+
         #endregion
 
 
