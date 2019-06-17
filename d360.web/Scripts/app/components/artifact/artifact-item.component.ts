@@ -155,8 +155,8 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                 this.artifactTypeId,
                 'ArtifactType',
                 artifactId, 'Artifact'
-            )
-            .then(result => {
+        )
+            .subscribe(result => {
                 this.surveyType = undefined;
                 
                 if (result) {
