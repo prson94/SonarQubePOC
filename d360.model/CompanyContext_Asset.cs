@@ -670,7 +670,7 @@ OPTION (RECOMPILE)";
                     selectString += $"try_parse(coalesce([{f.ID}],'') as {sqlDataType}) as {(useFieldNames ? $"{f.Name}" : $"Field{f.ID}")}";
                     break;
                 case "nvarchar":
-                    selectString += $"try_cast([{f.ID}] as {sqlDataType}) as {(useFieldNames ? $"{f.Name}" : $"Field{f.ID}")}";
+                    selectString += $"try_cast([{f.ID}] as {sqlDataType}(max)) as {(useFieldNames ? $"{f.Name}" : $"Field{f.ID}")}";
                     break;
                 case "decimal":
                 case "float":
