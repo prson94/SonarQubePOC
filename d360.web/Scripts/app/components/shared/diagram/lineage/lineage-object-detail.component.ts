@@ -10,7 +10,14 @@ import { ToolTipService } from '../../../../services/tooltip.service';
             <h3 style="positon: relative"><a [routerLink]="data?.Url">{{data?.DisplayName}}</a> <small *ngIf="data && data.TypeName" style="background-color: #fff; float:right;font-size:65%;">{{data.TypeName}}</small></h3>
             <div>&nbsp;</div>
             <p *ngIf="data?.Description" [innerHtml]="data?.Description"></p>
-            <div *ngFor="let field of data?.FieldValues"><span *ngIf="field.Value"><b>{{field.Name}}</b>: <span [innerHtml]="field.Value"></span></span></div>                        
+            <div *ngFor="let field of data?.FieldValues">
+                <span *ngIf="field.Value">
+                  <b>{{ field.Name }}</b>:<span *ngIf="GetJSON(field.Value) == 'Error'; else showJSON" [innerHtml]="field.Value"></span>
+                  <ng-template #showJSON >
+		                  <ngx-json-view [data]="GetJSON(field.Value)"></ngx-json-view>
+                  </ng-template>
+                </span>
+            </div>                        
         </div>
     `,
     providers: [ToolTipService]
@@ -38,5 +45,13 @@ export class LineageObjectDetailComponent implements OnInit, OnChanges {
                 this.data = data;
                 this.isLoading = false;
             });
+    }
+
+    private GetJSON(value: string) {
+        try {
+            return JSON.parse(value);
+        } catch {
+            return "Error";
+        }
     }
 }
