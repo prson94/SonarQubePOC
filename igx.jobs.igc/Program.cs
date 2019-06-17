@@ -1203,6 +1203,11 @@ where	[AllowChangeDetection] = 0").ToList();
                     ExecutionAssetTypeRetryLog.LastRetryInError = true;
                     ExecutionAssetTypeRetryLog.RetryCount++;
 
+                    if (oex is TaskCanceledException)
+                    {
+                        ExecutionAssetType.ErrorMessage += $"Task cancellation requested: {((TaskCanceledException)oex).CancellationToken.IsCancellationRequested}.";
+                    }
+
                     ExecutionAssetType.ProcessedDelete = true;
                     ExecutionAssetType.ErrorMessage += oex.GetFullExceptionData(false);
                 }
