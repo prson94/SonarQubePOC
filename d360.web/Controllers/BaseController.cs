@@ -346,7 +346,7 @@ namespace d360.web.Controllers
                 StartedOn = DateTime.UtcNow,
                 Route = Request?.RequestUri?.LocalPath,
                 Method =  Request?.Method?.Method,
-                ResourceID = Company.CurrentCompanyID,
+                ResourceID = Company.CurrentResourceID,
                 Total = total,
                 Fields = fields == null ? "" : JsonConvert.SerializeObject(fields),
                 Error = error,

@@ -154,7 +154,7 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
     private loadItemSurvey() {
 
         this.surveysService.getObjectSurvey(this.rule.TypeID, 'RuleType', this.rule.ID, 'Rule')
-            .then(result => {
+            .subscribe(result => {
                 this.surveyType = undefined;
                 if (result) {
                     this.surveyType = result;

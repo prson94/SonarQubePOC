@@ -670,7 +670,7 @@ where   A.FusionQueryAttributeTypeID = @t
                         model["TextPath"] = fusionAttribute.TextPath;
                         model["FusionID"] = fusionAttribute.FusionID;
                         model["FusionAttributeTypeID"] = fusionAttribute.FusionAttributeTypeID;
-
+                        model["ParentID"] = fusionAttribute.ParentID;
                         var asset = Company.Assets.Where(x => x.Object == "FusionAttribute" && x.ObjectID == id).FirstOrDefault();
                         if (asset != null)
                         {

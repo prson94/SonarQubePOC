@@ -6479,7 +6479,7 @@ where    A.RuleID = @id", new { id });
                             {
                                 columns = 1,
                                 FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = Fields.SourceNotes_Name, FieldName = "SourceNotes", FieldDescription = Fields.SourceNotes_Description, Value = refType.Notes }
+                                    new ReadOnlyField { Name = Fields.SourceNotes_Name, FieldName = "SourceNotes", FieldDescription = Fields.SourceNotes_Description, DataType = "Html", Value = refType.Notes }
                                 }
                             });
                         }
@@ -7926,7 +7926,7 @@ from	    AssetType T where T.Object = 'TaxonomyType' ");
         {
             var sql = $"SELECT top {num} Name, 'fusion/' + CAST(ID as varchar) as Url FROM Fusion WHERE name like @search " +
                         $"Order By Name";
-            return await Company.QueryAsync<BreadcrumbTypeAheadModel>(sql, new { search = $"{q}%",  });
+            return await Company.QueryAsync<BreadcrumbTypeAheadModel>(sql, new { search = $"%{q}%",  });
         }
 
         [Route("breadcrumb/typeaheadfortype")]
@@ -7946,7 +7946,7 @@ from	    AssetType T where T.Object = 'TaxonomyType' ");
                         $"where AT.[Object] = @typeName and AT.[objectId] = @typeId) AND AT.Name like @search " +
                         $"Order By AT.Name";
 
-            return await Company.QueryAsync<BreadcrumbTypeAheadModel>(sql, new { typeName = new DbString { Value = objectType.ToString(), IsFixedLength = true, Length = 30, IsAnsi = true }, typeId = objectId, search = $"{q}%" });
+            return await Company.QueryAsync<BreadcrumbTypeAheadModel>(sql, new { typeName = new DbString { Value = objectType.ToString(), IsFixedLength = true, Length = 30, IsAnsi = true }, typeId = objectId, search = $"%{q}%" });
         }
 
         [Route("breadcrumb/typeaheadfortypewithoutparent")]
@@ -7958,7 +7958,7 @@ from	    AssetType T where T.Object = 'TaxonomyType' ");
                         $" where AT.[Object] = @typeName AND AT.Name like @search " +
                         $"Order By AT.Name";
 
-            return await Company.QueryAsync<BreadcrumbTypeAheadModel>(sql, new { typeName = new DbString { Value = objectType.ToString(), IsFixedLength = true, Length = 30, IsAnsi = true }, search = $"{q}%" });
+            return await Company.QueryAsync<BreadcrumbTypeAheadModel>(sql, new { typeName = new DbString { Value = objectType.ToString(), IsFixedLength = true, Length = 30, IsAnsi = true }, search = $"%{q}%" });
         }
 
         [Route("breadcrumb/getArea")]

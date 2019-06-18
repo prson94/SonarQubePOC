@@ -19,6 +19,7 @@ export class FusionAttributeValueDetails {
     FusionAttributeTypeID: number;
     AssetID: number;
     AssetTypeName: string;
+    ParentID: number;
 }
 
 export class FusionAttributeFilter {

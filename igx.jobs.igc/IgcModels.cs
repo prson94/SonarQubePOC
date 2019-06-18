@@ -294,6 +294,28 @@ namespace igx.jobs.igc
         }
     }
     
+    public class IgcException
+    {
+        public string ClassName { get; set; }
+        public string Message { get; set; }
+        public string StackTrace { get; set; }
+
+        public IgcException InnerException { get; set; }
+
+        public string GetErrorMessage()
+        {
+            var error = $"{this.ClassName}::{this.Message}";
+
+            var inner = this.InnerException;
+            while (inner != null)
+            {
+                error += ", " + inner.Message;
+                inner = inner.InnerException;
+            }
+            return error;
+        }
+    }
+
     #region EventArgs
 
     public class PageBeginValueUpdatedEventArgs : EventArgs

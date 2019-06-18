@@ -178,7 +178,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
                         true,
                         'Taxonomy',
                         this.selected.ID,
-                        this.buildTreeNodeArray(this.modelHierarchy, this.selected.ParentID),
+                        this.buildTreeNodeArray(this.modelHierarchy, this.selected.ParentID,false),
                         this.findSelectedTreeNode(this.selected.ID),
                         false));
             }
@@ -318,7 +318,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
             return;
         }
         this.surveysService.getObjectSurvey(modelId, 'TaxonomyType', this.selected.ID, 'Taxonomy')
-            .then(result => {
+            .subscribe(result => {
                 this.surveyType = undefined;
                 if (result) {
                     this.surveyType = result;
