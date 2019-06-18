@@ -16,6 +16,7 @@ using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Security.Cryptography;
 
 namespace d360.model
 {
@@ -756,6 +757,7 @@ order by	ColumnIndex", new { id });
                 //get parent type if applicable
                 var parentAssetType = GetParentType(assetType.ObjectID, SystemObjectHelper.GetSystemObjects(assetType.Class));
 
+                await CalculateHashes(load, assetType);
 
                 var putAssets = new List<AssetUpdate>();
                 var postAssets = new List<AssetInsert>();
@@ -850,6 +852,239 @@ order by	ColumnIndex", new { id });
         {
             public Guid AssetTypeUid { get; set; }
             public int LoadID { get; set; }
+        }
+
+
+        private async Task CalculateHashes(Load load, AssetType assetType)
+        {
+            var parentAssetType = GetParentTypeById(assetType.ID);
+
+            #region Hash Sql
+
+            var glossaryHashSql = @"
+update  L
+set     L.KeyHash = K.KeyHash,
+		L.FieldHash = F.FieldHash
+from    LoadItem L
+        inner join (
+	        select		RowIndex,
+				        CONVERT(
+					        varchar(32), 
+					        SUBSTRING(HASHBYTES('SHA1', STRING_AGG(cast(FieldTypeID as nvarchar) + ':' +Value, char(59))), 3, 32), 
+					        2) as KeyHash
+	        from		(
+				        select		top 1000000000 
+							        I.RowIndex,
+							        FT.ID as FieldTypeID,
+							        coalesce(cast(IC.LookupObjectID as varchar(100)), IC.Value, '') as Value
+				        from		LoadItem I
+							        inner join LoadItemColumn IC on IC.LoadID = I.LoadID and IC.RowIndex = I.RowIndex and I.LoadID = @id and IC.Value is not null
+							        inner join LoadColumn C on C.LoadID = I.LoadID and C.ColumnIndex = IC.ColumnIndex
+							        inner join FieldType FT on FT.Object = @Object and FT.ObjectID = @ObjectID and FT.IsPartOfKey = 1 and FT.Name = C.Name
+				        order by	I.RowIndex,
+							        FT.ID
+				        ) A
+	        group by	A.RowIndex
+        ) K on K.RowIndex = L.RowIndex
+        inner join (
+	        select		RowIndex,
+				        CONVERT(
+					        varchar(32), 
+					        SUBSTRING(HASHBYTES('SHA1', STRING_AGG(cast(FieldTypeID as nvarchar) + ':' + Value, char(59))), 3, 32), 
+					        2) as FieldHash
+	        from		(
+				        select		top 100 percent
+							        I.RowIndex,
+							        FT.ID as FieldTypeID,
+							        coalesce(IC.Value, '') as Value
+				        from		LoadItem I
+							        inner join LoadItemColumn IC on IC.LoadID = I.LoadID and IC.RowIndex = I.RowIndex and I.LoadID = @id
+							        inner join LoadColumn C on C.LoadID = I.LoadID and C.ColumnIndex = IC.ColumnIndex
+							        inner join FieldType FT on FT.Object = @Object and FT.ObjectID = @ObjectID and FT.Name = C.Name
+				        order by	I.RowIndex,
+							        FT.ID
+				        ) A
+	        group by	A.RowIndex	
+        ) F on F.RowIndex = L.RowIndex
+where	L.LoadID = @id
+";
+
+            var glossaryHashWithParentSql = @"
+update  L
+set     L.KeyHash = K.KeyHash,
+		L.FieldHash = F.FieldHash
+from    LoadItem L
+        inner join	(
+	        select		RowIndex,
+				        CONVERT(
+					        varchar(32), 
+					        SUBSTRING(HASHBYTES('SHA1', STRING_AGG(cast(FieldTypeID as nvarchar) + ':' +Value, char(59))), 3, 32), 
+					        2) as KeyHash
+	        from		(
+								
+				        select		top 1000000000 
+							        I.RowIndex,
+							        FT.ID as FieldTypeID,
+							        coalesce(cast(IC.LookupObjectID as varchar(100)), IC.Value, '') as Value
+				        from		LoadItem I
+							        inner join LoadItemColumn IC on IC.LoadID = I.LoadID and IC.RowIndex = I.RowIndex and I.LoadID = @id and IC.Value is not null
+							        inner join LoadColumn C on C.LoadID = I.LoadID and C.ColumnIndex = IC.ColumnIndex
+							        inner join FieldType FT on FT.Object = @Object and FT.ObjectID = @ObjectID and FT.IsPartOfKey = 1 and FT.Name = C.Name
+													
+				        union
+				        select
+					        top 1000000000
+					        I.RowIndex,
+					        -1 as FieldTypeID,
+					        coalesce(cast(IC.LookupObjectID as varchar(100)), IC.Value, '') as Value
+				        from
+					        LoadItem I
+					        inner join LoadItemColumn IC on IC.LoadID = I.LoadID and IC.RowIndex = I.RowIndex and I.LoadID = @id and IC.Value is not null
+					        inner join LoadColumn C on C.LoadID = I.LoadID and C.ColumnIndex = IC.ColumnIndex
+					        inner join ASSETTYPE ATT on ATT.Object = @Object and ATT.ObjectID = @parentTypeID 
+					        inner join ASSET A on A.AssetTypeID = ATT.ID
+					        inner join AssetDisplayValue AD on A.ID = AD.AssetID and AD.DisplayValue = IC.Value
+				        order by	RowIndex,
+							        FieldTypeID
+				        ) A								
+	        group by	A.RowIndex
+        ) K on K.RowIndex = L.RowIndex
+        inner join	(
+	        select		RowIndex,
+				        CONVERT(
+					        varchar(32), 
+					        SUBSTRING(HASHBYTES('SHA1', STRING_AGG(cast(FieldTypeID as nvarchar) + ':' + Value, char(59))), 3, 32), 
+					        2) as FieldHash
+	        from		(
+				        select		top 100 percent
+							        I.RowIndex,
+							        FT.ID as FieldTypeID,
+							        coalesce(IC.Value, '') as Value
+				        from		LoadItem I
+							        inner join LoadItemColumn IC on IC.LoadID = I.LoadID and IC.RowIndex = I.RowIndex and I.LoadID = @id
+							        inner join LoadColumn C on C.LoadID = I.LoadID and C.ColumnIndex = IC.ColumnIndex
+							        inner join FieldType FT on FT.Object = @Object and FT.ObjectID = @ObjectID and FT.Name = C.Name
+				        order by	I.RowIndex,
+							        FT.ID
+				        ) A
+	        group by	A.RowIndex	
+        ) F on F.RowIndex = L.RowIndex
+where	L.LoadID = @id
+";
+
+            var modelHashSql = @"
+update  T
+set     T.KeyHash = K.KeyHash,
+		T.FieldHash = F.FieldHash
+from    LoadItem T
+        left join	(
+	        select		RowIndex,
+				        CONVERT(
+					        varchar(32), 
+					        SUBSTRING(HASHBYTES('SHA1', STRING_AGG(cast(FieldTypeID as nvarchar) + ':' + Value, char(59))), 3, 32), 
+					        2) as KeyHash
+	        from		(
+					        select top 100 percent
+						        IC.RowIndex, 
+						        FT.ID as FieldTypeID, 
+						        coalesce(cast(IC.LookupObjectID as varchar(100)), IC.[Value],'') as [Value] 
+					        from LoadColumn LC
+					        inner join LoadItemColumn IC on IC.LoadID = @id and IC.RowIndex = @rowIndex and IC.ColumnIndex = LC.ColumnIndex
+					        inner join FieldType FT on FT.Object = @Object and FT.ObjectID = @ObjectID and FT.IsPartOfKey = 1 and FT.Name = reverse(substring(reverse(LC.[Name]), 0, charindex(' ',reverse(LC.[Name]))))			
+					        where LC.LoadID = @id and LC.ColumnIndex in (
+			 			        select		LC.ColumnIndex 
+						        from		AssetType ATT
+									        inner join AssetTypeLevel L on (L.AssetTypeID = ATT.ID and ATT.[Object] = 'TaxonomyType')																	
+									        inner join LoadColumn LC on LC.LoadID = @id and L.Name = substring(LC.[Name], 1, len(LC.[Name]) - charindex(' ', reverse(LC.[Name])))
+									        inner join LoadItemColumn LI on LI.LoadID = @id and LI.RowIndex = @rowIndex and LI.ColumnIndex = LC.ColumnIndex and LI.[Value] is not null
+						        where		ATT.ObjectID = @ObjectID and L.[Level] = @currLevel
+						        )
+				        ) A
+	        group by	A.RowIndex
+        ) K on K.RowIndex = T.RowIndex
+        inner join	(
+	        select		RowIndex,
+				        CONVERT(
+					        varchar(32), 
+					        SUBSTRING(HASHBYTES('SHA1', STRING_AGG(cast(FieldTypeID as nvarchar) + ':' + Value, char(59))), 3, 32), 
+					        2) as FieldHash
+	        from		(
+				        select		top 100 percent
+							        I.RowIndex,
+							        FT.ID as FieldTypeID,
+							        coalesce(IC.Value, '') as Value
+				        from		LoadItem I
+							        inner join LoadItemColumn IC on IC.LoadID = I.LoadID and IC.RowIndex = I.RowIndex and I.LoadID = @id
+							        inner join LoadColumn C on C.LoadID = I.LoadID and C.ColumnIndex = IC.ColumnIndex
+							        inner join FieldType FT on FT.Object = @Object and FT.ObjectID = @ObjectID and FT.Name = C.Name
+				        order by	I.RowIndex,
+							        FT.ID
+				        ) A
+	        group by	A.RowIndex	
+        ) F on F.RowIndex = T.RowIndex
+where	T.LoadID = @id and T.RowIndex = @rowIndex;
+";
+
+            #endregion
+
+            if (assetType.Class == AssetTypeClass.Glossary)
+            {
+                if (parentAssetType != null)
+                {
+                    await QueryAsync<int>(glossaryHashWithParentSql, new { @object = assetType.Object, objectID = assetType.ObjectID, id = load.ID, parrentTypeID = parentAssetType.Object });
+                }
+                else
+                {
+                    await QueryAsync<int>(glossaryHashSql, new { @object = assetType.Object, objectID = assetType.ObjectID, id = load.ID });
+                }
+            }
+            else if (assetType.Class == AssetTypeClass.Model)
+            {
+                foreach(var item in load.LoadItems)
+                {
+
+                    var currLevel = (await QueryAsync<int>(@"
+                        select      coalesce(max(L.[Level]), 1) 
+                        from		AssetType ATT
+			                        inner join AssetTypeLevel L on (L.AssetTypeID = ATT.ID and ATT.[Object] = 'TaxonomyType')
+			                        inner join LoadColumn LC on LC.LoadID = @id and L.Name = substring(LC.[Name], 1, len(LC.[Name]) - charindex(' ', reverse(LC.[Name])))
+			                        inner join LoadItemColumn LI on LI.LoadID = @id and LI.RowIndex = @rowIndex and LI.ColumnIndex = LC.ColumnIndex and LI.[Value] is not null
+                        where		ATT.[ObjectID] = @ObjectID"
+                        , new { id = load.ID, rowIndex = item.RowIndex, objectID = assetType.ObjectID })).FirstOrDefault();
+
+                    await QueryAsync<int>(modelHashSql, new { @object = assetType.Object, objectID = assetType.ObjectID, id = load.ID, rowIndex = item.RowIndex, currLevel });
+
+                }
+            }
+
+            //find object/objectid for existing items
+            if (assetType.Class == AssetTypeClass.Glossary && parentAssetType != null)
+            {
+                await QueryAsync<int>(@"
+        update	T
+        set     T.Object = A.Object,
+                T.ObjectID = A.ObjectID
+        from LoadItem T
+                inner join AssetType ST on ST.Object = @Object and ST.ObjectID = @ObjectID
+                inner join Asset A on A.AssetTypeID = ST.ID
+                cross apply[GetArtifactKeyHashByIdWithParent](A.ID) S
+        where S.KeyHash = T.KeyHash and T.LoadID = @id", new { @object = assetType.Object, objectID = assetType.ObjectID, id = load.ID});
+
+            }
+            else
+            {
+                await QueryAsync<int>(@"
+        update	T
+        set     T.Object = A.Object,
+                T.ObjectID = A.ObjectID
+        from LoadItem T
+                inner join AssetType ST on ST.Object = @Object and ST.ObjectID = @ObjectID
+                inner join Asset A on A.AssetTypeID = ST.ID
+                cross apply GetAssetKeyHashById(A.ID) S
+        where S.KeyHash = T.KeyHash and T.LoadID = @id",
+        new { @object = assetType.Object, objectID = assetType.ObjectID, id = load.ID });
+
+            }
         }
 
         #endregion

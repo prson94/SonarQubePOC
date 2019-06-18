@@ -271,8 +271,9 @@ namespace igx.jobs.bulkloadprocessor
                             await BulkLoadOwnership(company, load.ID);
                             break;
                         case "P":   // Promotions
+                            executeWithTry(companyConnection, $@"EXEC bulkload.Promotions {load.ID}", loadInfo.CompanyID, 2400);
+                            //await BulkLoadAssets(company, repository, load);
 
-                            await BulkLoadAssets(company, repository, load);
                             company.CreateOrUpdateTypeDisplayValuesAsync(load.ObjectID, load.Object);
                             break;
                         case "R":   // Relations                                
