@@ -606,7 +606,7 @@
                                     <select [ngModelOptions]="{standalone: true}"
                                             [(ngModel)]="i.ReferenceType"
                                             style="width:95%"
-                                            (ngModelChange)="changeRefType(x)"
+                                            (ngModelChange)="changeRefType(x).subscribe()"
                                             [disabled]="x < relationItemCount-1">
                                         <option *ngFor="let j of lookups.ComplexLookupRelations"
                                                 [value]="j.ID">
@@ -624,7 +624,7 @@
                                     <select [ngModelOptions]="{standalone: true}"
                                             [(ngModel)]="i.selectedRelationItemID"
                                             style="width:95%"
-                                            (ngModelChange)="changeRel(x)"
+                                            (ngModelChange)="changeRel(x).subscribe()"
                                             [disabled]="x < relationItemCount-1">
                                         <option *ngFor="let j of i.relationItems"
                                                 [value]="j.value">
@@ -831,7 +831,7 @@
                                 <td style="vertical-align: top">
                                     <select [ngModelOptions]="{standalone: true}"
                                             [(ngModel)]="filteredLookup"
-                                            (ngModelChange)="changeFilteredLookup()"
+                                            (ngModelChange)="changeFilteredLookup().subscribe()"
                                             style="width:100%">
                                         <option></option>
                                         <option *ngFor="let i of lookups.FilteredLookups"
