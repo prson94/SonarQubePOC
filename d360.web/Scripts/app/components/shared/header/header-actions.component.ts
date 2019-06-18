@@ -13,7 +13,7 @@ declare var CompanySettings;
 @Component({
     selector: 'd3s-header-actions',
     template: `
-                <div #actions class="header-action-container">
+                <div #actions class="header-action-container" (window:resize)="onResize($event)">
                     <ul class="header-actions-list">
                         <li class="header-action-li spacer" *ngIf="headerActionsService.showSearch"><d3s-header-typeahead-search></d3s-header-typeahead-search></li>
                         <li class="header-action-li spacer" *ngIf="hasRaiseIssueButton"><d3s-raise-issue-button></d3s-raise-issue-button></li>
@@ -52,6 +52,8 @@ export class HeaderActionsComponent {
     private currentObject: string;
     private currentObjectId: number;
     private headerActionsSub;
+
+    private resizeTimer: any;
 
     private controlWidth = 0;
 
@@ -118,10 +120,12 @@ export class HeaderActionsComponent {
     private calculateControlWidth() {
         this.controlWidth = this.actionsUIElem.nativeElement.parentElement.offsetWidth;
         this.controlWidth += 10; //small buffer zone to avoid wrapping
-
         this.controlWidthChange.emit(this.controlWidth);
     }
-
+    onResize(event) {
+        clearTimeout(this.resizeTimer);
+        this.resizeTimer = window.setTimeout(() => this.calculateControlWidth(), 250)
+    }
     ngOnDestroy() {
         this.routerSub.unsubscribe();
         this.subFavorites.unsubscribe();
