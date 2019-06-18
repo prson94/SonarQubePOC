@@ -48,7 +48,7 @@ export class LineageInfoComponent implements OnInit, OnChanges {
         //console.log(this.node);
         this.isLoading = true;
         this.tooltipService.getTooltipInfo(this.node.object, this.node.objectId)
-            .then(data => {
+            .subscribe(data => {
                 this.data = data;
                 this.isLoading = false;
             });

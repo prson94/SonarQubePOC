@@ -43,7 +43,7 @@ import { ToolTipService } from '../../services/tooltip.service';
         </div>
     `,
     providers: [ToolTipService],
-     changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class WorkflowMonitorActionDetailsComponent implements OnInit, OnChanges {
@@ -67,7 +67,7 @@ export class WorkflowMonitorActionDetailsComponent implements OnInit, OnChanges 
         this.isLoading = true;
         this.ref.markForCheck();
         this.tooltipService.getTooltipInfo('Issue', this.id)
-            .then(data => {
+            .subscribe(data => {
                 this.data = data;
                 this.isLoading = false;
                 this.ref.markForCheck();

@@ -6,12 +6,6 @@
     AllowAttributes: boolean; 
 }
 
-export class RuleDimension {
-    Name: string;
-    Description: string;
-    ID: number;
-}
-
 
 export enum RuleClassification {
     Informational = 1,
@@ -39,7 +33,6 @@ export class Rule {
     RuleType: RuleClassification;
     RuleTypeName: string;
     SourceID: number;
-    Dimension: RuleDimension;    
 }
 
 export class RuleImplementation {

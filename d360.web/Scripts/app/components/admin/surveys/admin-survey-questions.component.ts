@@ -1,4 +1,4 @@
-﻿import { Component, Input, OnChanges, SimpleChange} from '@angular/core';
+﻿import { Component, Input, OnChanges, SimpleChange } from '@angular/core';
 import { SurveyQuestionType, SurveyType } from '../../../models/survey.model';
 import { SurveysService } from '../../../services/surveys.service';
 import { MessagesService } from '../../../services/messages.service';
@@ -73,7 +73,7 @@ export class AdminSurveyQuestionsComponent extends BaseComponent implements OnCh
     questions: SurveyQuestionType[] = [];
     showEditor: boolean = false;
     showDelete: boolean = false;
-    
+
     selected: SurveyQuestionType = null;
     theDeleteCallback: Function;
 
@@ -95,16 +95,16 @@ export class AdminSurveyQuestionsComponent extends BaseComponent implements OnCh
         this.isLoading = true;
         this.surveysService
             .getSurveyTypeQuestions(this.survey)
-            .then(res => {
+            .subscribe(res => {
                 this.questions = res;
                 this.isLoading = false;
-            })
-            .catch(error => this.error = error);
+            },
+                error => this.error = error);
     }
 
     deleteQuestion(id: number) {
         this.surveysService.deleteSurveyQuestionType(id).
-            then(result => {
+            subscribe(result => {
                 this.showMessageForResult(this.messagesService, result);
                 this.showDelete = false;
                 this.questions.splice(this.findQuestionById(id), 1);
@@ -129,10 +129,10 @@ export class AdminSurveyQuestionsComponent extends BaseComponent implements OnCh
             if (question.ID == id) return index;
         }
     }
-    
+
     saveQuestion(event) {
         this.surveysService.saveSurveyTypeQuestion(event.question)
-            .then(result => {
+            .subscribe(result => {
                 this.showMessageForResult(this.messagesService, result);
                 this.getQuestions(); // incompatible types reload
                 this.showEditor = false;

@@ -11,8 +11,8 @@ import { SubscriptionLike as ISubscription } from 'rxjs';
     selector: 'd3s-header-typeahead-search',    
     template: ` <span #item class="header-search header-table" [ngClass]="{'header-search-active':active}" (keyup)="checkKey($event)" >
                     <div class="header-search-input flat light">
-                        <p-autoComplete size="50"
-                                styleClass="searchTypeahead" 
+                        <p-autoComplete size="300"
+                                styleClass="global-search-typeahead" 
                                 scrollHeight="400px"
                                 [(ngModel)]="result" 
                                 [suggestions]="results" 

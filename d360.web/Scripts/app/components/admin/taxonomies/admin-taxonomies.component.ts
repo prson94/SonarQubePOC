@@ -1,16 +1,16 @@
-﻿import {Component, OnInit, OnDestroy} from '@angular/core';
-import {Taxonomy} from '../../../models/taxonomy.model';
-import {MessagesService} from '../../../services/messages.service';
-import {HeaderBreadcrumbService} from '../../../services/header-breadcrumb.service';
-import {TaxonomiesService} from '../../../services/taxonomies.service';
-import {FieldsService} from '../../../services/fields.service';
-import {RightSidebarService} from '../../../services/right-sidebar.service';
-import {StateService} from '../../../services/state.service';
-import {AdminBaseComponent} from '../admin-base.component';
-import {FieldDefinition} from '../../../models/fields.model';
-import {Title} from '@angular/platform-browser';
-import {RightSidebarItem} from '../../../models/rightsidebar.model';
-import {AssetTypeService} from "../../../services/asset-type.services";
+﻿import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Taxonomy } from '../../../models/taxonomy.model';
+import { MessagesService } from '../../../services/messages.service';
+import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { TaxonomiesService } from '../../../services/taxonomies.service';
+import { FieldsService } from '../../../services/fields.service';
+import { RightSidebarService } from '../../../services/right-sidebar.service';
+import { StateService } from '../../../services/state.service';
+import { AdminBaseComponent } from '../admin-base.component';
+import { FieldDefinition } from '../../../models/fields.model';
+import { Title } from '@angular/platform-browser';
+import { RightSidebarItem } from '../../../models/rightsidebar.model';
+import { AssetTypeService } from "../../../services/asset-type.services";
 
 @Component({
     selector: 'd3s-admin-models-component',
@@ -115,13 +115,13 @@ export class AdminTaxonomiesComponent extends AdminBaseComponent implements OnIn
     protected assetTypeService: AssetTypeService = null;
 
     constructor(private stateService: StateService,
-                assetTypeService: AssetTypeService,
-                rightSidebarService: RightSidebarService,
-                private taxonomiesService: TaxonomiesService,
-                private fieldsService: FieldsService,
-                private messagesService: MessagesService,
-                headerBreadcrumbService: HeaderBreadcrumbService,
-                titleService: Title) {
+        assetTypeService: AssetTypeService,
+        rightSidebarService: RightSidebarService,
+        private taxonomiesService: TaxonomiesService,
+        private fieldsService: FieldsService,
+        private messagesService: MessagesService,
+        headerBreadcrumbService: HeaderBreadcrumbService,
+        titleService: Title) {
 
         super(headerBreadcrumbService, titleService, rightSidebarService);
         this.assetTypeService = assetTypeService;
@@ -150,14 +150,13 @@ export class AdminTaxonomiesComponent extends AdminBaseComponent implements OnIn
         this.isLoading = true;
         this.taxonomiesService
             .getTaxonomies()
-            .then(taxonomies => {
+            .subscribe(taxonomies => {
                 this.taxonomies = taxonomies;
                 if (this.taxonomies.length && this.taxonomies.length > 0) {
                     this.selectedTaxonomy = this.taxonomies[0];
                 }
                 this.isLoading = false;
-            })
-            .catch(error => this.error = error);
+            }, error => this.error = error);
     }
 
 
@@ -195,6 +194,6 @@ export class AdminTaxonomiesComponent extends AdminBaseComponent implements OnIn
 
                 this.showDelete = false;
             })
-        ;
+            ;
     }
 }

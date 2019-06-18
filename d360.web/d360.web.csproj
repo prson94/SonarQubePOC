@@ -1636,7 +1636,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\relationship\object-relationships.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\dashboards\admin-report-items.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\rules\admin-rule-dimensions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-survey-questions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\synonyms.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tiles\tile-actions.component.ts" />
@@ -1748,7 +1747,6 @@
     <TypeScriptCompile Include="Scripts\app\services\site-menu.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\social.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\state.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\statistics.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\artifact-type.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\artifacts.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\base.service.ts" />

@@ -41,7 +41,7 @@ export class LineageObjectDetailComponent implements OnInit, OnChanges {
     load() {
         this.isLoading = true;
         this.tooltipService.getTooltipInfo(this.objectType, this.objectId)
-            .then(data => {
+            .subscribe(data => {
                 this.data = data;
                 this.isLoading = false;
             });
