@@ -1,4 +1,4 @@
-﻿import { Component, NgZone, OnDestroy } from '@angular/core';
+﻿import { Component, NgZone, OnDestroy, ViewChild, ElementRef, ViewChildren } from '@angular/core';
 import { TreeNode } from 'primeng/primeng';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
@@ -13,6 +13,8 @@ import { MessagesService } from '../../../services/messages.service';
 import { AdminBaseComponent } from '../admin-base.component'
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { AssetTypeClass } from "../../../models/asset.model";
+import { type } from 'os';
+import { QueryList } from '@angular/core/src/render3';
 
 @Component({
     selector: 'd3s-admin-artifacts',
@@ -20,12 +22,12 @@ import { AssetTypeClass } from "../../../models/asset.model";
     templateUrl: './admin-artifacts.component.html',
 })
 
-export class AdminArtifactsComponent extends AdminBaseComponent implements OnDestroy { 
+export class AdminArtifactsComponent extends AdminBaseComponent implements OnDestroy {
     searchFilter: string = "";
     objectType: string = "ArtifactType";
     adminType: string = "Artifacts";
     selectedRow: TreeNode;
-    
+
     isAdding = false;
     isEditing = false;
     isDeleting = false;
@@ -34,6 +36,8 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
     ArtifactTypes: TreeNode[];
     theDeleteCallback: Function;
 
+    @ViewChildren('treeline') element: any
+
     constructor(
         private stateService: StateService,
         rightSidebarService: RightSidebarService,
@@ -41,10 +45,10 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
         private artifactsService: ArtifactTypeService,
         titleService: Title,
         protected messagesService: MessagesService,
-        private router: Router) {        
-        super(headerBreadcrumbService, titleService, rightSidebarService);        
+        private router: Router) {
+        super(headerBreadcrumbService, titleService, rightSidebarService);
         this.areaName = "Artifacts";
-        this.setCommonItems();        
+        this.setCommonItems();
         this.load();
         this.setObjectInfo('ArtifactType', -1);
         this.setCommonRightSideBar(true);
@@ -61,14 +65,23 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
         this.clearSidebar();
     }
 
+    ngAfterContentChecked() {
+        if (this.element !== undefined) {
+            this.element.map((x, index) => {
+                if (index == 0)
+                    x.nativeElement.className = "ui-state-highlight";
+            });
+        }
+    }
+
     load() {
         this.isLoading = true;
         this.artifactsService.getArtifactTypeTree()
             .subscribe(data => {
-                this.ArtifactTypes = data;                
+                this.ArtifactTypes = data;
                 this.selectedRow = this.ArtifactTypes[0];
                 this.isLoading = false;
-            }); 
+            });
     }
 
     delete(id: number) {
@@ -126,7 +139,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
         this.isAdding = false;
         this.isEditing = false;
         this.isDeleting = false;
-        this.load();    
+        this.load();
         this.stateService.reloadLeftNavMenu();
     }
 
@@ -134,11 +147,11 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
         this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('ArtifactType', item.ID));
     }
 
-    private deleteArtifactType(id: number) {        
+    private deleteArtifactType(id: number) {
         this.artifactsService.deleteArtifactType(id).subscribe(result => {
-            this.showMessageForResult(this.messagesService, result);    
+            this.showMessageForResult(this.messagesService, result);
             this.isDeleting = false;
-            this.load();    
+            this.load();
             this.stateService.reloadLeftNavMenu();
         })
     }
