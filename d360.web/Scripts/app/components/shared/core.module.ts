@@ -10,7 +10,7 @@ import { D3STreeTableToggler } from './treetable-toggler.component';
 import { D3SColumnFilterModule } from './turbotable-column-filter.component';
 import { D3SSortIconModule } from './turbotable-sorticon.component';
 import { DirectivesModule } from '../../directives/directives.module';
-
+import { NgxJsonViewModule } from 'ng-json-view';
 
 @NgModule({
     declarations: [        
@@ -33,6 +33,8 @@ import { DirectivesModule } from '../../directives/directives.module';
         CommonModule,
         RouterModule,
         DirectivesModule,
+        //JSON Viewer module
+        NgxJsonViewModule,
     ]
 
 })

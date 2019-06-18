@@ -144,6 +144,14 @@ export class PreviewTooltipComponent {
         }
     }
 
+    private GetJSON(value: string) {
+        try {
+            return JSON.parse(value);
+        } catch {
+            return "Error";
+        }
+    }
+
     hide() {
         this.pending = false;
         this.active = false;

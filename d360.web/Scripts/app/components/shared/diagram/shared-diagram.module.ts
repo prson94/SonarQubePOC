@@ -47,6 +47,7 @@ import { SharedDeleteFormModule } from '../delete.form';
 import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
 import { SharedFormMessageModule } from '../form-message.part'
 import { SharedObjectDetailsModule } from '../objectdetails/shared-object-details.module';
+import { NgxJsonViewModule } from 'ng-json-view';
 
 
 
@@ -76,6 +77,8 @@ import { SharedObjectDetailsModule } from '../objectdetails/shared-object-detail
         DropdownModule,
         MenubarModule,
         TableModule,
+        //JSON Viewer module
+        NgxJsonViewModule,
 
     ],
     declarations: [
