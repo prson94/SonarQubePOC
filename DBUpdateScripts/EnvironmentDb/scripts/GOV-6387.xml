@@ -5,14 +5,13 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-	<changeSet author="Tomislav Duric" id="GOV-6387-CreateNewReferenceLists">
+	<changeSet author="Tomislav Duric" id="GOV-6387-NewReferenceLists">
 	
 		<sql dbms="mssql"
 			endDelimiter="\nGO"
 			splitStatements="true"
 			stripComments="true">
 <![CDATA[
---create new refrence type for rule status
 declare @referenceTypeIdStatus int = (SELECT ID FROM [ReferenceItemType] WHERE [Name] ='Rule Status')
 
 if @referenceTypeIdStatus > 0
@@ -23,7 +22,6 @@ INSERT INTO [dbo].[ReferenceItemType]
     VALUES
            ('Rule Status', '{Name}', GETDATE(), 0)
 
---popuplate Rule status reference list
 set @referenceTypeIdStatus = (SELECT ID FROM [ReferenceItemType] WHERE [Name] ='Rule Status')
 INSERT INTO [dbo].[ReferenceItem]
            ([ReferenceItemTypeID],[CreatedOn],[CreatedBy],[Code],[Visible])
@@ -33,7 +31,6 @@ INSERT INTO [dbo].[ReferenceItem]
 		   (@referenceTypeIdStatus,GETDATE(),0,'Active',1)
 
 
---create new refrence type for rule dimension
 declare @referenceTypeIdDimension int = (SELECT ID FROM [ReferenceItemType] WHERE [Name] ='Rule Dimension')
 
 if @referenceTypeIdDimension > 0
@@ -44,7 +41,6 @@ INSERT INTO [dbo].[ReferenceItemType]
     VALUES
            ('Rule Dimension', '{Name}', GETDATE(), 0)
 
---popuplate Rule status reference list
 set @referenceTypeIdDimension = (SELECT ID FROM [ReferenceItemType] WHERE [Name] ='Rule Dimension')
 INSERT INTO [dbo].[ReferenceItem]
            ([ReferenceItemTypeID],[CreatedOn],[CreatedBy],[Code],[Visible])
@@ -55,8 +51,6 @@ INSERT INTO [dbo].[ReferenceItem]
 		   (@referenceTypeIdDimension,GETDATE(),0,'Consistency',1),
 		   (@referenceTypeIdDimension,GETDATE(),0,'Duplication',1),
 		   (@referenceTypeIdDimension,GETDATE(),0,'Integrity',1)
-
-GO
 ]]>
 		</sql>
 		<rollback>
@@ -65,15 +59,13 @@ GO
 ]]>
 		</rollback>
 	</changeSet>
-	<changeSet author="Tomislav Duric" id="GOV-6387-UpdateOldRules">
+	<changeSet author="Tomislav Duric" id="GOV-6387-MigrateOldRules">
 	
 		<sql dbms="mssql"
 			endDelimiter="\nGO"
 			splitStatements="true"
 			stripComments="true">
 <![CDATA[
---migrate rule data
-
 IF EXISTS(SELECT 1 FROM sys.columns 
           WHERE Name = N'Status'
           AND Object_ID = Object_ID(N'dbo.Rule'))
@@ -100,7 +92,7 @@ BEGIN
 				declare @ruleStatus int = (select Status from @tempRuleTable order by ID offset @cnt rows fetch next 1 rows only)
 				declare @fieldValue int
 				declare @fieldTypeId int
-				--create new field types for a rule
+				
 				if @ruleDimension is not null
 					set @fieldTypeId = (select Id from [FieldType] where [LookupObjectType] = 'ReferenceItem' and [LookupObjectID] = @dimensionReferenceListTypeId and [Object] = 'RuleType' and [ObjectID] = @ruleTypeId)
 			
@@ -147,10 +139,7 @@ BEGIN
 			
 			   set @cnt = @cnt + 1;
 			end
-END
-
-
-			
+END		
 ]]>
 		</sql>
 		<rollback>
@@ -159,7 +148,7 @@ END
 ]]>
 		</rollback>
 	</changeSet>	
-		<changeSet author="Tomislav Duric" id="GOV-6387-DeleteFieldsAndDropTables">
+		<changeSet author="Tomislav Duric" id="GOV-6387-DeleteUnusedFieldsAndTables">
 	
 		<sql dbms="mssql"
 			endDelimiter="\nGO"
