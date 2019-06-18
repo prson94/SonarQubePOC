@@ -74,7 +74,14 @@ GO
 <![CDATA[
 --migrate rule data
 
-			declare @tempRuleTable table (ID int, RuleTypeId int, RuleDimensionId int, Status int)
+IF EXISTS(SELECT 1 FROM sys.columns 
+          WHERE Name = N'Status'
+          AND Object_ID = Object_ID(N'dbo.Rule'))
+	AND EXISTS(SELECT 1 FROM sys.columns 
+          WHERE Name = N'RuleDimensionID'
+          AND Object_ID = Object_ID(N'dbo.Rule'))
+BEGIN
+    declare @tempRuleTable table (ID int, RuleTypeId int, RuleDimensionId int, Status int)
 			
 			insert into @tempRuleTable (ID, RuleTypeId, RuleDimensionId, Status)
 				SELECT ID, RuleTypeId, RuleDimensionId, Status FROM [Rule]
@@ -140,6 +147,10 @@ GO
 			
 			   set @cnt = @cnt + 1;
 			end
+END
+
+
+			
 ]]>
 		</sql>
 		<rollback>
@@ -187,6 +198,16 @@ ALTER TABLE [dbo].[Rule] ADD RuleDimensionId [int] NULL
 ALTER TABLE [dbo].[Rule]  WITH CHECK ADD  CONSTRAINT [FK_Rule_RuleDimension] FOREIGN KEY([RuleDimensionID]) REFERENCES [dbo].[RuleDimension] ([ID])
 
 ALTER TABLE [dbo].[Rule] ADD [Status] [int] NOT NULL CONSTRAINT [DF_Rule_Status] DEFAULT ((1))
+
+SET IDENTITY_INSERT [dbo].[RuleDimension] ON 
+
+INSERT [dbo].[RuleDimension] ([ID], [Name], [Description], [IsSystemDefined], [UpdatedOn], [UpdatedBy]) VALUES (1, N'Completeness', N'Is all the requisite information available? Are data values missing, or in an unusable state? In some cases, missing data is irrelevant, but when the information that is missing is critical to a specific business process, completeness becomes an issue. ', 1, CAST(N'2018-12-18T14:40:28.750' AS DateTime), 0)
+INSERT [dbo].[RuleDimension] ([ID], [Name], [Description], [IsSystemDefined], [UpdatedOn], [UpdatedBy]) VALUES (2, N'Conformity', N'Are there expectations that data values conform to specified formats? If so, do all the values conform to those formats? Maintaining conformance to specific formats is important in data representation, presentation, aggregate reporting, search, and establishing key relationships.', 1, CAST(N'2018-12-18T14:40:28.750' AS DateTime), 0)
+INSERT [dbo].[RuleDimension] ([ID], [Name], [Description], [IsSystemDefined], [UpdatedOn], [UpdatedBy]) VALUES (3, N'Consistency', N'Do distinct data instances provide conflicting information about the same underlying data object? Are values consistent across data sets? Do interdependent attributes always appropriately reflect their expected consistency? Inconsistency between data values plagues organizations attempting to reconcile between different systems and applications.', 1, CAST(N'2018-12-18T14:40:28.750' AS DateTime), 0)
+INSERT [dbo].[RuleDimension] ([ID], [Name], [Description], [IsSystemDefined], [UpdatedOn], [UpdatedBy]) VALUES (4, N'Accuracy', N'Do data objects accurately represent the “real-world” values they are expected to model? Incorrect spellings of product or person names, addresses, and even untimely or not current data can impact operational and analytical applications.', 1, CAST(N'2018-12-18T14:40:28.750' AS DateTime), 0)
+INSERT [dbo].[RuleDimension] ([ID], [Name], [Description], [IsSystemDefined], [UpdatedOn], [UpdatedBy]) VALUES (5, N'Duplication', N'Are there multiple, unnecessary representations of the same data objects within your data set? The inability to maintain a single representation for each entity across your systems poses numerous vulnerabilities and risks.', 1, CAST(N'2018-12-18T14:40:28.750' AS DateTime), 0)
+INSERT [dbo].[RuleDimension] ([ID], [Name], [Description], [IsSystemDefined], [UpdatedOn], [UpdatedBy]) VALUES (6, N'Integrity', N'What data is missing important relationship linkages? The inability to link related records together may actually introduce duplication across your systems. Not only that, as more value is derived from analyzing connectivity and relationships, the inability to link related data instance together impedes this valuable analysis.', 1, CAST(N'2018-12-18T14:40:28.750' AS DateTime), 0)
+SET IDENTITY_INSERT [dbo].[RuleDimension] OFF
 ]]>
 		</rollback>
 		</changeSet>

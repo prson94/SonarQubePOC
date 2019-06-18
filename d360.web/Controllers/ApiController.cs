@@ -5206,7 +5206,6 @@ select	O.ID as AssetID,
         O.[Uid],
         A.ID,
         A.Threshold,
-        A.RuleDimensionID,
         dbo.GenerateAssetUrl(O.ID) as Url,
         {0}
         A.RuleTypeID,
@@ -5214,7 +5213,6 @@ select	O.ID as AssetID,
 from	[Rule] A
         inner join Asset O on O.Object = 'Rule' and O.ObjectID = A.ID 
         {1} 
-        left join RuleDimension D on D.ID = A.RuleDimensionID 
 where   A.RuleTypeID = @id 
         and O.ID not in (" + Company.GetNoReadSqlStatement("@r") + ")" +
         "and O.AssetTypeID not in (" + Company.GetAssetTypeNoReadSqlStatement("@r") + ")", columns, joins, permissionSql);
