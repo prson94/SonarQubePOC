@@ -3291,9 +3291,6 @@
         <member name="M:d360.web.Controllers.FormController.Rule_EditFields(System.Int32)">
             <param name="id">RuleID</param>
         </member>
-        <member name="M:d360.web.Controllers.FormController.RuleDimension_EditFields(System.Int32)">
-            <param name="id">RuleID</param>
-        </member>
         <member name="M:d360.web.Controllers.FormController.RuleImplementation_AddFields(System.Int32)">
             <param name="ruleID">RuleID</param>
         </member>

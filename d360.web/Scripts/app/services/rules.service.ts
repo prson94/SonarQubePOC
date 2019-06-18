@@ -3,7 +3,7 @@ import { Headers, Http, ResponseContentType, Response } from '@angular/http';
 import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
 import { GridFilterExpression, GridRelationshipFilterExpression, GridFilterFieldType, GridAttributeFilterExpression } from '../models/grid-definition.model';
-import { RuleType, RuleDimension, Rule, RuleDetail, RuleImplementation, RuleImplementationDetail, RuleResultPagedResults, RuleResultFilter } from '../models/rule.model';
+import { RuleType, Rule, RuleDetail, RuleImplementation, RuleImplementationDetail, RuleResultPagedResults, RuleResultFilter } from '../models/rule.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { SortOrder } from '../models/enums.model';
 
@@ -74,13 +74,6 @@ export class RulesService extends BaseService {
             return this.postDynamic(this.http, 'ruletype', ruleType);
         }
         return this.putDynamic(this.http, 'ruletype', ruleType);
-    }
-
-    getRuleDimensions(): Promise<RuleDimension[]> {
-        return this.http.get('api/ruledimensions')
-            .toPromise()
-            .then(response => <RuleDimension[]>response.json())
-            .catch(err => this.handleError(err));
     }
 
     getResultsByRule(id: number, pageNumber?: number, pageSize?: number, sortField?: string, sortOrder?: SortOrder, filters?: GridFilterExpression[], relationships?: GridRelationshipFilterExpression, attributes?: GridAttributeFilterExpression, simpleFilter?: string): Promise<RuleResultPagedResults> {
@@ -159,18 +152,6 @@ export class RulesService extends BaseService {
         }
     }
 
-
-    deleteDimension(id: number): Promise<JsonResult> {
-        return this.deleteDynamicWithResult(this.http, 'ruledimension', id);
-    }
-        
-
-    saveDimension(ruleDimension: RuleDimension): Promise<JsonResult> {
-        if (ruleDimension.ID == undefined || !ruleDimension.ID) {
-            return this.postDynamic(this.http, 'ruledimension', ruleDimension);
-        }
-        return this.putDynamic(this.http, 'ruledimension', ruleDimension);  
-    }
 
     deleteRuleImplementation(id: number): Promise<JsonResult> {
         return this.deleteDynamicWithResult(this.http, 'ruleimplementation', id);
