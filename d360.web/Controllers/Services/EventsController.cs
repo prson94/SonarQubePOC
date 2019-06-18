@@ -133,18 +133,6 @@ namespace d360.web.Controllers.Services
                 if (type == null)
                     return Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Rule type with ID of ({id}) not found.");
 
-                // Check that the dimension was found.
-                if (string.IsNullOrEmpty(model.RuleDimension))
-                    return Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Rule dimension not provided.");
-
-                // Check that the status was found.
-                if ((int)model.Status <= 0)
-                    return Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Rule status not found.");
-
-                var dimension = Company.Filter<RuleDimension>(i => i.Name.ToLower() == model.RuleDimension.Trim().ToLower()).FirstOrDefault();
-                if (dimension == null)
-                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Rule dimension with name of ({model.RuleDimension}) not found.");
-
 
                 if (!string.IsNullOrEmpty(model.SourceID))
                 {
@@ -159,7 +147,6 @@ namespace d360.web.Controllers.Services
 
                     item.SourceID = model.SourceID;
                     item.Threshold = (model.Threshold.HasValue) ? model.Threshold.Value : 0.90M;
-                    item.RuleDimensionID = dimension.ID;
                 }
                 else
                 {
@@ -167,9 +154,7 @@ namespace d360.web.Controllers.Services
                     {
                         Threshold = (model.Threshold.HasValue) ? model.Threshold.Value : 0.90M,
                         RuleTypeID = id,
-                        Status = model.Status,
                         SourceID = model.SourceID,
-                        RuleDimensionID = dimension.ID
                     };
                 }
 
@@ -234,17 +219,8 @@ namespace d360.web.Controllers.Services
                     }
                 }
 
-                // Check that the dimension was found.
-                var dimension = Company.Filter<RuleDimension>(i => i.Name.ToLower() == model.RuleDimension.Trim().ToLower()).FirstOrDefault();
-                if (dimension == null)
-                {
-                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Rule dimension with name of ({model.RuleDimension}) not found.");
-                }
-
 
                 item.Threshold = (model.Threshold.HasValue) ? model.Threshold.Value : 0.90M;
-                item.Status = item.Status;
-                item.RuleDimensionID = dimension.ID;
 
                 var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.RuleType, typeID).Where(i => !CalculatedFieldTypes.Contains(i.Type)).ToList();
 

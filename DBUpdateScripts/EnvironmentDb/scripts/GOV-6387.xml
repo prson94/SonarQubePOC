@@ -1,0 +1,204 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+	<changeSet author="Tomislav Duric" id="GOV-6387-NewReferenceLists">
+	
+		<sql dbms="mssql"
+			endDelimiter="\nGO"
+			splitStatements="true"
+			stripComments="true">
+<![CDATA[
+declare @referenceTypeIdStatus int = (SELECT ID FROM [ReferenceItemType] WHERE [Name] ='Rule Status')
+
+if @referenceTypeIdStatus > 0
+	update [ReferenceItemType] set [Name] = 'Rule Status #2' where ID = @referenceTypeIdStatus
+
+INSERT INTO [dbo].[ReferenceItemType]
+          ([Name],[DisplayFormat],[CreatedOn],[CreatedBy])
+    VALUES
+           ('Rule Status', '{Name}', GETDATE(), 0)
+
+set @referenceTypeIdStatus = (SELECT ID FROM [ReferenceItemType] WHERE [Name] ='Rule Status')
+INSERT INTO [dbo].[ReferenceItem]
+           ([ReferenceItemTypeID],[CreatedOn],[CreatedBy],[Code],[Visible])
+     VALUES
+           (@referenceTypeIdStatus,GETDATE(),0,'Inactive',1),
+		   (@referenceTypeIdStatus,GETDATE(),0,'Draft',1),
+		   (@referenceTypeIdStatus,GETDATE(),0,'Active',1)
+
+
+declare @referenceTypeIdDimension int = (SELECT ID FROM [ReferenceItemType] WHERE [Name] ='Rule Dimension')
+
+if @referenceTypeIdDimension > 0
+	update [ReferenceItemType] set [Name] = 'Rule Dimension #2' where ID = @referenceTypeIdDimension
+
+INSERT INTO [dbo].[ReferenceItemType]
+          ([Name],[DisplayFormat],[CreatedOn],[CreatedBy])
+    VALUES
+           ('Rule Dimension', '{Name}', GETDATE(), 0)
+
+set @referenceTypeIdDimension = (SELECT ID FROM [ReferenceItemType] WHERE [Name] ='Rule Dimension')
+INSERT INTO [dbo].[ReferenceItem]
+           ([ReferenceItemTypeID],[CreatedOn],[CreatedBy],[Code],[Visible])
+     VALUES
+           (@referenceTypeIdDimension,GETDATE(),0,'Accuracy',1),
+		   (@referenceTypeIdDimension,GETDATE(),0,'Completeness',1),
+		   (@referenceTypeIdDimension,GETDATE(),0,'Conformity',1),
+		   (@referenceTypeIdDimension,GETDATE(),0,'Consistency',1),
+		   (@referenceTypeIdDimension,GETDATE(),0,'Duplication',1),
+		   (@referenceTypeIdDimension,GETDATE(),0,'Integrity',1)
+]]>
+		</sql>
+		<rollback>
+<![CDATA[
+
+]]>
+		</rollback>
+	</changeSet>
+	<changeSet author="Tomislav Duric" id="GOV-6387-MigrateOldRules">
+	
+		<sql dbms="mssql"
+			endDelimiter="\nGO"
+			splitStatements="true"
+			stripComments="true">
+<![CDATA[
+IF EXISTS(SELECT 1 FROM sys.columns 
+          WHERE Name = N'Status'
+          AND Object_ID = Object_ID(N'dbo.Rule'))
+	AND EXISTS(SELECT 1 FROM sys.columns 
+          WHERE Name = N'RuleDimensionID'
+          AND Object_ID = Object_ID(N'dbo.Rule'))
+BEGIN
+    declare @tempRuleTable table (ID int, RuleTypeId int, RuleDimensionId int, Status int)
+			
+			insert into @tempRuleTable (ID, RuleTypeId, RuleDimensionId, Status)
+				SELECT ID, RuleTypeId, RuleDimensionId, Status FROM [Rule]
+			
+			declare @ruleCount int = (select count(*) from @tempRuleTable)
+			declare @cnt int = 0;
+			
+			declare @statusReferenceListTypeId int = (select ID from [ReferenceItemType] where Name = 'Rule Status')
+			declare @dimensionReferenceListTypeId int = (select ID from [ReferenceItemType] where Name = 'Rule Dimension')
+			
+			while @cnt < @ruleCount
+			begin
+				declare @ruleId int = (select ID from @tempRuleTable order by ID offset @cnt rows fetch next 1 rows only)
+			    declare @ruleTypeId int = (select RuleTypeId from @tempRuleTable order by ID offset @cnt rows fetch next 1 rows only)
+				declare @ruleDimension int = (select RuleDimensionId from @tempRuleTable order by ID offset @cnt rows fetch next 1 rows only)
+				declare @ruleStatus int = (select Status from @tempRuleTable order by ID offset @cnt rows fetch next 1 rows only)
+				declare @fieldValue int
+				declare @fieldTypeId int
+				
+				if @ruleDimension is not null
+					set @fieldTypeId = (select Id from [FieldType] where [LookupObjectType] = 'ReferenceItem' and [LookupObjectID] = @dimensionReferenceListTypeId and [Object] = 'RuleType' and [ObjectID] = @ruleTypeId)
+			
+					IF @fieldTypeId IS NULL
+					BEGIN
+						INSERT INTO [FieldType] 
+							([Name],[FriendlyName],[Type],[LookupObjectType],[LookupObjectID],[LookupDisplayFormat],[Object],[ObjectID],[IsRequired],[IsListable],[IsDisplayable],[IsEditable],[AllowAllValue],[IsPartOfKey],[AllowMultipleValues],[ShowIfEmpty])
+						VALUES
+						   ('Dimension','Dimension','Lookup','ReferenceItem',@dimensionReferenceListTypeId,'{Code}','RuleType',@ruleTypeId,0,1,1,1,0,0,0,0)
+						set @fieldTypeId  = (select Id from [FieldType] where [LookupObjectType] = 'ReferenceItem' and [LookupObjectID] = @dimensionReferenceListTypeId and [Object] = 'RuleType' and [ObjectID] = @ruleTypeId)
+					END
+					set @fieldValue = (select RI.ID from [ReferenceItem] RI
+													inner join [RuleDimension] RD on RD.Name = RI.Code
+												where ReferenceItemTypeID = @dimensionReferenceListTypeId and RD.ID = @ruleDimension)
+			
+					
+					
+					INSERT INTO [dbo].[Field] ([ObjectType],[ObjectID],[FieldTypeID],[Value],[UpdatedBy],[UpdatedOn])
+					VALUES ('Rule',@ruleId,@fieldTypeId,@fieldValue,0,GETDATE())
+			
+				if @ruleStatus is not null
+					set @fieldTypeId = (select Id from [FieldType] where [LookupObjectType] = 'ReferenceItem' and [LookupObjectID] = @statusReferenceListTypeId and [Object] = 'RuleType' and [ObjectID] = @ruleTypeId)
+			
+					IF @fieldTypeId IS NULL
+					BEGIN
+						INSERT INTO [FieldType] 
+							([Name],[FriendlyName],[Type],[LookupObjectType],[LookupObjectID],[LookupDisplayFormat],[Object],[ObjectID],[IsRequired],[IsListable],[IsDisplayable],[IsEditable],[AllowAllValue],[IsPartOfKey],[AllowMultipleValues],[ShowIfEmpty])
+						VALUES
+						   ('Status','Status','Lookup','ReferenceItem',@statusReferenceListTypeId,'{Code}','RuleType',@ruleTypeId,1,0,1,1,0,0,0,0)
+			
+						set @fieldTypeId = (select Id from [FieldType] where [LookupObjectType] = 'ReferenceItem' and [LookupObjectID] = @statusReferenceListTypeId and [Object] = 'RuleType' and [ObjectID] = @ruleTypeId)
+					END
+			
+					declare @fieldTextValue varchar(50)
+					if @ruleStatus = 1 set @fieldTextValue = 'Draft'
+					if @ruleStatus = 2 set @fieldTextValue = 'Active'
+			        if @ruleStatus = 3 set @fieldTextValue = 'Inactive'
+			
+					set @fieldValue = (select ID from [ReferenceItem] where ReferenceItemTypeId = @statusReferenceListTypeId and Code = @fieldTextValue)
+					INSERT INTO [dbo].[Field] ([ObjectType],[ObjectID],[FieldTypeID],[Value],[UpdatedBy],[UpdatedOn])
+					VALUES ('Rule',@ruleId,@fieldTypeId,@fieldValue,0,GETDATE())
+			
+			
+			
+			   set @cnt = @cnt + 1;
+			end
+END		
+]]>
+		</sql>
+		<rollback>
+<![CDATA[
+
+]]>
+		</rollback>
+	</changeSet>	
+		<changeSet author="Tomislav Duric" id="GOV-6387-DeleteUnusedFieldsAndTables">
+	
+		<sql dbms="mssql"
+			endDelimiter="\nGO"
+			splitStatements="true"
+			stripComments="true">
+<![CDATA[
+ALTER TABLE [dbo].[Rule] DROP CONSTRAINT FK_Rule_RuleDimension
+ALTER TABLE [dbo].[Rule] DROP COLUMN [RuleDimensionId]
+DROP TABLE [dbo].[RuleDimension]
+
+ALTER TABLE [dbo].[Rule] DROP CONSTRAINT DF_Rule_Status
+ALTER TABLE [dbo].[Rule] DROP COLUMN [Status]
+
+]]>
+		</sql>
+		<rollback>
+<![CDATA[
+CREATE TABLE [dbo].[RuleDimension](
+	[ID] [int] IDENTITY(1,1) NOT NULL,
+	[Name] [nvarchar](250) NOT NULL,
+	[Description] [nvarchar](max) NULL,
+	[IsSystemDefined] [bit] NOT NULL,
+	[UpdatedOn] [datetime] NOT NULL,
+	[UpdatedBy] [int] NOT NULL,
+ CONSTRAINT [PK_RuleDimension] PRIMARY KEY CLUSTERED 
+(
+	[ID] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+
+
+ALTER TABLE [dbo].[RuleDimension] ADD  CONSTRAINT [DF_RuleDimension_IsSystemDefined]  DEFAULT ((0)) FOR [IsSystemDefined]
+ALTER TABLE [dbo].[RuleDimension] ADD  CONSTRAINT [DF_RuleDimension_UpdatedOn]  DEFAULT (getutcdate()) FOR [UpdatedOn]
+
+ALTER TABLE [dbo].[Rule] ADD RuleDimensionId [int] NULL
+ALTER TABLE [dbo].[Rule]  WITH CHECK ADD  CONSTRAINT [FK_Rule_RuleDimension] FOREIGN KEY([RuleDimensionID]) REFERENCES [dbo].[RuleDimension] ([ID])
+
+ALTER TABLE [dbo].[Rule] ADD [Status] [int] NOT NULL CONSTRAINT [DF_Rule_Status] DEFAULT ((1))
+
+SET IDENTITY_INSERT [dbo].[RuleDimension] ON 
+
+INSERT [dbo].[RuleDimension] ([ID], [Name], [Description], [IsSystemDefined], [UpdatedOn], [UpdatedBy]) VALUES (1, N'Completeness', N'Is all the requisite information available? Are data values missing, or in an unusable state? In some cases, missing data is irrelevant, but when the information that is missing is critical to a specific business process, completeness becomes an issue. ', 1, CAST(N'2018-12-18T14:40:28.750' AS DateTime), 0)
+INSERT [dbo].[RuleDimension] ([ID], [Name], [Description], [IsSystemDefined], [UpdatedOn], [UpdatedBy]) VALUES (2, N'Conformity', N'Are there expectations that data values conform to specified formats? If so, do all the values conform to those formats? Maintaining conformance to specific formats is important in data representation, presentation, aggregate reporting, search, and establishing key relationships.', 1, CAST(N'2018-12-18T14:40:28.750' AS DateTime), 0)
+INSERT [dbo].[RuleDimension] ([ID], [Name], [Description], [IsSystemDefined], [UpdatedOn], [UpdatedBy]) VALUES (3, N'Consistency', N'Do distinct data instances provide conflicting information about the same underlying data object? Are values consistent across data sets? Do interdependent attributes always appropriately reflect their expected consistency? Inconsistency between data values plagues organizations attempting to reconcile between different systems and applications.', 1, CAST(N'2018-12-18T14:40:28.750' AS DateTime), 0)
+INSERT [dbo].[RuleDimension] ([ID], [Name], [Description], [IsSystemDefined], [UpdatedOn], [UpdatedBy]) VALUES (4, N'Accuracy', N'Do data objects accurately represent the “real-world” values they are expected to model? Incorrect spellings of product or person names, addresses, and even untimely or not current data can impact operational and analytical applications.', 1, CAST(N'2018-12-18T14:40:28.750' AS DateTime), 0)
+INSERT [dbo].[RuleDimension] ([ID], [Name], [Description], [IsSystemDefined], [UpdatedOn], [UpdatedBy]) VALUES (5, N'Duplication', N'Are there multiple, unnecessary representations of the same data objects within your data set? The inability to maintain a single representation for each entity across your systems poses numerous vulnerabilities and risks.', 1, CAST(N'2018-12-18T14:40:28.750' AS DateTime), 0)
+INSERT [dbo].[RuleDimension] ([ID], [Name], [Description], [IsSystemDefined], [UpdatedOn], [UpdatedBy]) VALUES (6, N'Integrity', N'What data is missing important relationship linkages? The inability to link related records together may actually introduce duplication across your systems. Not only that, as more value is derived from analyzing connectivity and relationships, the inability to link related data instance together impedes this valuable analysis.', 1, CAST(N'2018-12-18T14:40:28.750' AS DateTime), 0)
+SET IDENTITY_INSERT [dbo].[RuleDimension] OFF
+]]>
+		</rollback>
+		</changeSet>
+	
+  </databaseChangeLog>

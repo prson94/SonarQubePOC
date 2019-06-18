@@ -169,7 +169,6 @@
     <Compile Include="entities\Quality\RuleResultQualifier.cs" />
     <Compile Include="entities\Quality\RuleResultQualifierType.cs" />
     <Compile Include="entities\Quality\RuleResult.cs" />
-    <Compile Include="entities\Quality\RuleDimension.cs" />
     <Compile Include="entities\Relation\Predicate.cs" />
     <Compile Include="entities\Social\CommentVote.cs" />
     <Compile Include="entities\Social\CommentCount.cs" />

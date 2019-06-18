@@ -80,7 +80,7 @@ namespace d360.web.Controllers.V2
                 if (Uid != null)
                 {
                     dbArgs.Add("uid", Uid);
-                    queries.Add(" uid = @uid");
+                    queries.Add(" gr.uid = @uid");
                 }
                 if (FirstName != null)
                 {
