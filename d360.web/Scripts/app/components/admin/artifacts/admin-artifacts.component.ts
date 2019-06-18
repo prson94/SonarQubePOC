@@ -2,8 +2,6 @@
 import { TreeNode } from 'primeng/primeng';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
-
-import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { RightSidebarService } from '../../../services/right-sidebar.service';
 import { AuditService } from '../../../services/audit.service';
@@ -12,9 +10,6 @@ import { ArtifactTypeService } from '../../../services/artifact-type.service';
 import { MessagesService } from '../../../services/messages.service';
 import { AdminBaseComponent } from '../admin-base.component'
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
-import { AssetTypeClass } from "../../../models/asset.model";
-import { type } from 'os';
-import { QueryList } from '@angular/core/src/render3';
 
 @Component({
     selector: 'd3s-admin-artifacts',
@@ -35,8 +30,6 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
     isAddingFieldType = false;
     ArtifactTypes: TreeNode[];
     theDeleteCallback: Function;
-
-    @ViewChildren('treeline') element: any
 
     constructor(
         private stateService: StateService,
@@ -63,15 +56,6 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
 
     ngOnDestroy() {
         this.clearSidebar();
-    }
-
-    ngAfterContentChecked() {
-        if (this.element !== undefined) {
-            this.element.map((x, index) => {
-                if (index == 0)
-                    x.nativeElement.className = "ui-state-highlight";
-            });
-        }
     }
 
     load() {

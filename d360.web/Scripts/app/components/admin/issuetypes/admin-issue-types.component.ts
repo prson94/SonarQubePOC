@@ -148,7 +148,7 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
         this.isLoading = true;
         this.workflowService.getAdminWorkflowIssueTypes()
             .then(result => {
-                this.issueTypes = result;
+                this.issueTypes = result.sort((a, b) => a.Name.localeCompare(b.Name));
                 this.selected = this.issueTypes.length > 0 ? this.issueTypes[0] : null;
                 this.isLoading = false;
             });

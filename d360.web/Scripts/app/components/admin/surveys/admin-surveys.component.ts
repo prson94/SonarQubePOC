@@ -115,7 +115,7 @@ export class AdminSurveysComponent extends AdminBaseComponent {
         this.surveysService
             .getSurveyTypes()
             .subscribe(res => {
-                this.surveys = res;
+                this.surveys = res.sort((a, b) => a.Name.localeCompare(b.Name));
                 if (this.surveys.length > 0) this.selected = this.surveys[0];
                 this.isLoading = false;
             }, err => { this.error = err })
