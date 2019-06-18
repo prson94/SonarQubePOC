@@ -50,7 +50,7 @@ namespace igx.UnitTests.V2ControllerTests
             var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
             var str = res.Result.Content.ReadAsStringAsync().Result;
-            var data = JsonConvert.DeserializeObject<List<WorkflowVersionSteps>>(str);
+            var data = JsonConvert.DeserializeObject<List<WorkflowVersionsApiViewModel>>(str);
 
             Assert.True(res.Result.IsSuccessStatusCode);
             Assert.True(data != null);
@@ -59,7 +59,7 @@ namespace igx.UnitTests.V2ControllerTests
             res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
             str = res.Result.Content.ReadAsStringAsync().Result;
-            data = JsonConvert.DeserializeObject<List<WorkflowVersionSteps>>(str);
+            data = JsonConvert.DeserializeObject<List<WorkflowVersionsApiViewModel>>(str);
             Assert.True(data == null);
 
         }

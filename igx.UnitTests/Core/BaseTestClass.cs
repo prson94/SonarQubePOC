@@ -248,18 +248,45 @@ namespace igx.UnitTests
                     if (guid == Guid.Parse(DataConstants.ValidGUID))
                         return Task.FromResult(result);
                     else
-                        return Task.FromResult<IEnumerable<WorkflowVersionSteps>>(null);
+                        return Task.FromResult<IEnumerable<WorkflowVersionStepsApiViewModel>>(null);
                 });
 
             mock.Setup(x => x.GetWorkflowVersions(It.IsAny<IEnumerable<KeyValuePair<string, string>>>()))
                 .Returns(Task.FromResult(new WorkflowVersionsApiViewModel()));
+
+            mock.Setup(x => x.GetWorkflowTypeByUID(It.IsAny<Guid>()))
+                .Returns(new d360.core.entities.Workflow.Type());
+
+            mock.Setup(x => x.GetWorkflowVersionByUID(It.IsAny<Guid>()))
+                 .Returns(new WorkflowVersion());
+
+            mock.Setup(x => x.GetWorkflowItemByUID(It.IsAny<Guid>()))
+           .Returns(new WorkflowItem());
+
+            return mock.Object;
+        }
+
+        public IIssueRepository GetIssueRepository()
+        {
+            var mock = new Mock<IIssueRepository>();
+            mock.Setup(x => x.GetIssueTypeByUID(It.IsAny<Guid>()))
+                .Returns(new IssueType());
+
+            return mock.Object;
+        }
+
+        public IRelationshipRepository GetRelationshipRepository()
+        {
+            var mock = new Mock<IRelationshipRepository>();
+            mock.Setup(x => x.GetRelationshipByUID(It.IsAny<Guid>()))
+                .Returns(new IntersectType());
 
             return mock.Object;
         }
 
         public IWorkflowApiModelValidator GetWorkflowApiModelValidator()
         {
-            return new WorkflowApiModelValidator();
+            return new WorkflowApiModelValidator(GetAssetRepository(), GetIssueRepository(), GetRelationshipRepository(), GetWorkflowRepository());
         }
         #endregion
     }

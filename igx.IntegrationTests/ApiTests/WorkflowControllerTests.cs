@@ -156,7 +156,7 @@ namespace igx.IntegrationTests.ApiTests
         [Fact, Priority(1000)]
         public async void T_2_01_GetWorkflowVersionTest()
         {
-            string endpointUrl = URIHelper.WorkflowVersionUri;
+            string endpointUrl = URIHelper.WorkflowVersionUriWithPageSize;
             var response = await httpClient.GetAsync(endpointUrl);
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<WorkflowVersionsApiViewModel>(content);
@@ -171,11 +171,11 @@ namespace igx.IntegrationTests.ApiTests
         [Fact, Priority(1010)]
         public async void T_2_02_GetWorkflowVersionByStateTest()
         {
-            string endpointUrl = URIHelper.WorkflowVersionUri;
+            string endpointUrl = URIHelper.WorkflowVersionUriWithPageSize;
 
             foreach (var filteredBy in WorkflowTestData.WorkflowVersions.items.GroupBy(x => x.State))
             {
-                var response = await httpClient.GetAsync($"{endpointUrl}?State={filteredBy.Key}");
+                var response = await httpClient.GetAsync($"{endpointUrl}&State={filteredBy.Key}");
                 var content = await response.Content.ReadAsStringAsync();
                 var parsedData = JsonConvert.DeserializeObject<WorkflowVersionsApiViewModel>(content);
 
@@ -186,13 +186,13 @@ namespace igx.IntegrationTests.ApiTests
         }
 
         [Fact, Priority(1020)]
-        public async void T_2_03_GetWorkflowVersionByStateTest()
+        public async void T_2_03_GetWorkflowVersionByActionType()
         {
-            string endpointUrl = URIHelper.WorkflowVersionUri;
+            string endpointUrl = URIHelper.WorkflowVersionUriWithPageSize;
 
             foreach (var filteredBy in WorkflowTestData.WorkflowVersions.items.Where(x => x.ActionTypeUid != null).GroupBy(x => x.ActionTypeUid))
             {
-                var response = await httpClient.GetAsync($"{endpointUrl}?ActionTypeUid={filteredBy.Key}");
+                var response = await httpClient.GetAsync($"{endpointUrl}&ActionTypeUid={filteredBy.Key}");
                 var content = await response.Content.ReadAsStringAsync();
                 var parsedData = JsonConvert.DeserializeObject<WorkflowVersionsApiViewModel>(content);
 
@@ -206,11 +206,11 @@ namespace igx.IntegrationTests.ApiTests
         [Fact, Priority(1030)]
         public async void T_2_04_GetWorkflowVersionByAssetTypeUid()
         {
-            string endpointUrl = URIHelper.WorkflowVersionUri;
+            string endpointUrl = URIHelper.WorkflowVersionUriWithPageSize;
 
             foreach (var filteredBy in WorkflowTestData.WorkflowVersions.items.Where(x => x.AssetTypeUid != null).GroupBy(x => x.AssetTypeUid))
             {
-                var response = await httpClient.GetAsync($"{endpointUrl}?AssetTypeUid={filteredBy.Key}");
+                var response = await httpClient.GetAsync($"{endpointUrl}&AssetTypeUid={filteredBy.Key}");
                 var content = await response.Content.ReadAsStringAsync();
                 var parsedData = JsonConvert.DeserializeObject<WorkflowVersionsApiViewModel>(content);
 
@@ -223,11 +223,11 @@ namespace igx.IntegrationTests.ApiTests
         [Fact, Priority(1040)]
         public async void T_2_05_GetWorkflowVersionByRelationshipTypeUid()
         {
-            string endpointUrl = URIHelper.WorkflowVersionUri;
+            string endpointUrl = URIHelper.WorkflowVersionUriWithPageSize;
 
             foreach (var filteredBy in WorkflowTestData.WorkflowVersions.items.Where(x => x.RelationshipTypeUid != null).GroupBy(x => x.RelationshipTypeUid))
             {
-                var response = await httpClient.GetAsync($"{endpointUrl}?RelationshipTypeUid={filteredBy.Key}");
+                var response = await httpClient.GetAsync($"{endpointUrl}&RelationshipTypeUid={filteredBy.Key}");
                 var content = await response.Content.ReadAsStringAsync();
                 var parsedData = JsonConvert.DeserializeObject<WorkflowVersionsApiViewModel>(content);
 
@@ -240,11 +240,11 @@ namespace igx.IntegrationTests.ApiTests
         [Fact, Priority(1050)]
         public async void T_2_06_GetWorkflowVersionByWorkflowTypeUid()
         {
-            string endpointUrl = URIHelper.WorkflowVersionUri;
+            string endpointUrl = URIHelper.WorkflowVersionUriWithPageSize;
 
             foreach (var filteredBy in WorkflowTestData.WorkflowVersions.items.Where(x => x.WorkflowTypeUid != null).GroupBy(x => x.WorkflowTypeUid))
             {
-                var response = await httpClient.GetAsync($"{endpointUrl}?WorkflowTypeUid={filteredBy.Key}");
+                var response = await httpClient.GetAsync($"{endpointUrl}&WorkflowTypeUid={filteredBy.Key}");
                 var content = await response.Content.ReadAsStringAsync();
                 var parsedData = JsonConvert.DeserializeObject<WorkflowVersionsApiViewModel>(content);
 
@@ -266,9 +266,9 @@ namespace igx.IntegrationTests.ApiTests
         public async void T_2_07_GetWorkflowVersionPageSizeOrdering(int pageNum, int pageSize, string orderBy)
         {
             if (pageNum <= 0) pageNum = 1;
-            string endpointUrl = URIHelper.WorkflowVersionUri;
+            string endpointUrl = URIHelper.WorkflowVersionUriWithoutPageSize;
 
-            var response = await httpClient.GetAsync($"{endpointUrl}?_pageSize={pageSize}&_pageNum={pageNum}&_order={orderBy}");
+            var response = await httpClient.GetAsync($"{endpointUrl.Replace("?_pageSize=10000","")}?_pageSize={pageSize}&_pageNum={pageNum}&_order={orderBy}");
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<WorkflowVersionsApiViewModel>(content);
 
@@ -293,14 +293,14 @@ namespace igx.IntegrationTests.ApiTests
         [Fact, Priority(2000)]
         public async void T_3_01_GetWorkflowSteps()
         {
-            string endpointUrl = URIHelper.WorkflowVersionUri;
+            string endpointUrl = URIHelper.WorkflowVersionUriWithoutPageSize;
 
             foreach (var item in WorkflowTestData.WorkflowVersions.items.Where(x => x.State == d360.core.enums.State.Active).Take(5))
             {
 
                 var response = await httpClient.GetAsync($"{endpointUrl}/{item.Uid}/steps");
                 var content = await response.Content.ReadAsStringAsync();
-                var parsedData = JsonConvert.DeserializeObject<List<WorkflowVersionSteps>>(content);
+                var parsedData = JsonConvert.DeserializeObject<List<WorkflowVersionStepsApiViewModel>>(content);
 
                 Assert.True(response.IsSuccessStatusCode);
                 Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
