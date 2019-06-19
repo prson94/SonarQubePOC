@@ -118,7 +118,8 @@ export class AdminPredicatesComponent extends AdminBaseComponent implements OnDe
         this.isLoading = true;
         this.predicatesService.getPredicates()
             .subscribe(predicates => {
-                this.predicates = predicates
+                this.predicates = predicates;
+                this.selected = predicates[0];
                 this.isLoading = false;
             })
     }
