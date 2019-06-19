@@ -19,6 +19,8 @@ using d360.core.enums;
 using Newtonsoft.Json;
 using d360.core.queue;
 using System.Net;
+using d360.core.entities.Workflow;
+using d360.model.validators;
 
 namespace igx.UnitTests
 {
@@ -231,6 +233,60 @@ namespace igx.UnitTests
               .Returns((string t) => t == DataConstants.ValidType ? Task.FromResult(1) : Task.FromResult(0));
 
             return mock.Object;
+        }
+
+        public IWorkflowRepository GetWorkflowRepository()
+        {
+            var mock = new Mock<IWorkflowRepository>();
+
+            mock.Setup(x => x.GetWorkflowTypes(It.IsAny<IEnumerable<KeyValuePair<string, string>>>()))
+                .Returns(Task.FromResult(new List<WorkflowTypeApiViewModel>() { new WorkflowTypeApiViewModel(), new WorkflowTypeApiViewModel() } as IEnumerable<WorkflowTypeApiViewModel>));
+
+            mock.Setup(x => x.GetWorkflowVersionSteps(It.IsAny<Guid>()))
+                .Returns((Guid guid) => {
+                    var result = new List<WorkflowVersionStepsApiViewModel>() as IEnumerable<WorkflowVersionStepsApiViewModel>;
+                    if (guid == Guid.Parse(DataConstants.ValidGUID))
+                        return Task.FromResult(result);
+                    else
+                        return Task.FromResult<IEnumerable<WorkflowVersionStepsApiViewModel>>(null);
+                });
+
+            mock.Setup(x => x.GetWorkflowVersions(It.IsAny<IEnumerable<KeyValuePair<string, string>>>()))
+                .Returns(Task.FromResult(new WorkflowVersionsApiViewModel()));
+
+            mock.Setup(x => x.GetWorkflowTypeByUID(It.IsAny<Guid>()))
+                .Returns(new d360.core.entities.Workflow.Type());
+
+            mock.Setup(x => x.GetWorkflowVersionByUID(It.IsAny<Guid>()))
+                 .Returns(new WorkflowVersion());
+
+            mock.Setup(x => x.GetWorkflowItemByUID(It.IsAny<Guid>()))
+           .Returns(new WorkflowItem());
+
+            return mock.Object;
+        }
+
+        public IIssueRepository GetIssueRepository()
+        {
+            var mock = new Mock<IIssueRepository>();
+            mock.Setup(x => x.GetIssueTypeByUID(It.IsAny<Guid>()))
+                .Returns(new IssueType());
+
+            return mock.Object;
+        }
+
+        public IRelationshipRepository GetRelationshipRepository()
+        {
+            var mock = new Mock<IRelationshipRepository>();
+            mock.Setup(x => x.GetRelationshipByUID(It.IsAny<Guid>()))
+                .Returns(new IntersectType());
+
+            return mock.Object;
+        }
+
+        public IWorkflowApiModelValidator GetWorkflowApiModelValidator()
+        {
+            return new WorkflowApiModelValidator(GetAssetRepository(), GetIssueRepository(), GetRelationshipRepository(), GetWorkflowRepository());
         }
         #endregion
     }
