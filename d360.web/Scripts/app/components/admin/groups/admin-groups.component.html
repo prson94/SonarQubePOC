@@ -17,7 +17,7 @@
                         </tr>
                     </ng-template>
                     <ng-template pTemplate="body" let-item>
-                        <tr [pSelectableRow]="item">
+                        <tr [pSelectableRow]="item" #treetableRows>
                             <td>{{item.Name}}</td>
                             <td>
                                 <div class="RowTools">

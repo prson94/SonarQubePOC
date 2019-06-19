@@ -53,7 +53,8 @@ export class AdminCustomAPIComponent extends AdminBaseComponent implements OnIni
 
         this.customAPIService.getServices().subscribe(
             res => {
-                this.services = res;
+                this.services = res.sort((a, b) => a.Name.localeCompare(b.Name));
+                this.selected = this.services[0];
                 this.isLoading = false;
             }
         );
