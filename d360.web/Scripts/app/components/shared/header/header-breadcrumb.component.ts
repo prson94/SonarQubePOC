@@ -16,7 +16,7 @@ import * as _ from 'lodash';
                     </p-overlayPanel>
                 </span>
                 <div *ngFor="let breadcrumb of breadcrumbs;let last=last">
-                    <d3s-header-breadcrumb-item *ngIf="(showLastOnly && last) || !showLastOnly" [breadcrumb]="breadcrumb" [isLastItem]="last" [lastItem]="breadcrumbs[breadcrumbs.length - 1]" (treeClick)="handleTreeClick($event)"></d3s-header-breadcrumb-item>                    
+                    <d3s-header-breadcrumb-item *ngIf="(showLastOnly && last) || !showLastOnly" [breadcrumb]="breadcrumb" [isLastItem]="last" [lastItem]="breadcrumbs[breadcrumbs.length - 1]" (treeClick)="handleTreeClick($event)" [maxLastCrumbWidth]="maxSingleCrumbWidth"></d3s-header-breadcrumb-item>                    
                 </div>                
                 </div>  
               `,
@@ -32,6 +32,8 @@ export class HeaderBreadcrumbComponent {
     showLastOnly: boolean = false;
     @ViewChild('bread') breadcrumbUIElement;
     private resizeTimer: any;
+    private maxSingleCrumbWidth: number = 800;
+
     constructor(
         private headerBreadcrumbService: HeaderBreadcrumbService,
         private ref: ChangeDetectorRef
@@ -82,7 +84,7 @@ export class HeaderBreadcrumbComponent {
         var breadcrumbWidth = element.offsetWidth;
 
         var combinedWidth = controlsWidth + logoWidth + breadcrumbWidth;
-        
+        this.maxSingleCrumbWidth = windowWidth - (controlsWidth + logoWidth);
         //if the width of this + the logo + the controls is bigger than screen start hiding breadcrumbs
         
         if (combinedWidth > windowWidth) {        
