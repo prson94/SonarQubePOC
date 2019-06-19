@@ -1,0 +1,94 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+	
+	<changeSet author="Tomislav Duric" id="GOV-7499-UpdateGenerateAssetURL">
+		<sql dbms="mssql"
+			endDelimiter="\nGO"
+			splitStatements="true"
+			stripComments="true">
+<![CDATA[
+ALTER FUNCTION [dbo].[GenerateAssetUrl] 
+(
+	@AssetID bigint
+)
+RETURNS varchar(500)
+AS
+BEGIN
+	declare @Url varchar(500) = '';
+	declare @Type varchar(50), @TypeID int, @ObjectID int = 0;
+
+
+	select
+		@ObjectID = A.ObjectID,
+		@Type = A.[Object],
+		@TypeID = T.ObjectID
+	from
+		Asset A
+		inner join AssetType T on T.ID = A.AssetTypeID
+	where
+		A.ID = @AssetID;
+
+
+	SET @Url = CASE @Type
+		WHEN 'Artifact' THEN 'artifact/' +  + CAST(@TypeID as varchar) + '/' + CAST(@ObjectID as varchar)
+		WHEN 'ReferenceItem' THEN 'reference/' +  + CAST(@TypeID as varchar)
+		WHEN 'FusionAttribute' THEN 'fusion/fusionattribute/' + CAST(@TypeID as varchar) + '/' + CAST(@ObjectID as varchar)		
+		WHEN 'Fusion' THEN 'fusion/' + CAST(@TypeID as varchar) + '/' + + CAST(@ObjectID as varchar)
+		WHEN 'Group' THEN 'group/' + CAST(@ObjectID as varchar)	
+		WHEN 'Policy' THEN 'policy/' + CAST(@TypeID as varchar(15)) + '/id/' + CAST(@ObjectID as varchar)	
+		WHEN 'Resource' THEN 'resource/' + CAST(@ObjectID as varchar)
+		WHEN 'Rule' THEN 'quality/rule/' + CAST(@TypeID as varchar) + '/' + CAST(@ObjectID as varchar)
+		WHEN 'Taxonomy' THEN 'model/' + CAST(@TypeID as varchar) + '/id/' + CAST(@ObjectID as varchar)	
+	END
+
+	RETURN @Url
+END
+]]>
+		</sql>
+		<rollback>
+<![CDATA[
+ALTER FUNCTION [dbo].[GenerateAssetUrl] 
+(
+	@AssetID bigint
+)
+RETURNS varchar(500)
+AS
+BEGIN
+	declare @Url varchar(500) = '';
+	declare @Type varchar(50), @TypeID int, @ObjectID int = 0;
+
+
+	select
+		@ObjectID = A.ObjectID,
+		@Type = A.[Object],
+		@TypeID = T.ObjectID
+	from
+		Asset A
+		inner join AssetType T on T.ID = A.AssetTypeID
+	where
+		A.ID = @AssetID;
+
+
+	SET @Url = CASE @Type
+		WHEN 'Artifact' THEN 'artifact/' +  + CAST(@TypeID as varchar) + '/' + CAST(@ObjectID as varchar)
+		WHEN 'ReferenceItem' THEN 'reference/' +  + CAST(@TypeID as varchar)
+		WHEN 'FusionAttribute' THEN 'fusion/fusionattribute/' + CAST(@TypeID as varchar) + '/' + CAST(@ObjectID as varchar)		
+		WHEN 'Fusion' THEN 'fusion/' + CAST(@TypeID as varchar) + '/' + + CAST(@ObjectID as varchar)
+		WHEN 'Group' THEN 'groups/' + CAST(@ObjectID as varchar)	
+		WHEN 'Policy' THEN 'policy/' + CAST(@TypeID as varchar(15)) + '/id/' + CAST(@ObjectID as varchar)	
+		WHEN 'Resource' THEN 'resource/' + CAST(@ObjectID as varchar)
+		WHEN 'Rule' THEN 'quality/rule/' + CAST(@TypeID as varchar) + '/' + CAST(@ObjectID as varchar)
+		WHEN 'Taxonomy' THEN 'model/' + CAST(@TypeID as varchar) + '/id/' + CAST(@ObjectID as varchar)	
+	END
+
+	RETURN @Url
+END
+]]>
+		</rollback>
+	</changeSet>
+
+  </databaseChangeLog>
