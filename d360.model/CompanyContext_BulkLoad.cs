@@ -20,7 +20,7 @@ using System.Security.Cryptography;
 
 namespace d360.model
 {
-    partial class CompanyContext: BaseContext
+    partial class CompanyContext : BaseContext
     {
         public string BulkLoadStatusMsg { get; set; }
 
@@ -278,7 +278,7 @@ order by	ColumnIndex", new { id });
                         bulkCopy.WriteToServer(table);
                     }
                 }
-                catch (Exception) 
+                catch (Exception)
                 {
 
                 }
@@ -289,11 +289,11 @@ order by	ColumnIndex", new { id });
                 }
             }
         }
-                
+
         private bool findFieldObjectByValue(
-            List<BulkLoadMatchingModel> matchingItems, 
+            List<BulkLoadMatchingModel> matchingItems,
             List<LoadItemColumn> loadKeyFieldValues,
-            int objectIDToFind, 
+            int objectIDToFind,
             int groupIndex = 0
             )
         {
@@ -306,7 +306,7 @@ order by	ColumnIndex", new { id });
                 if (groupIndex < matchingItems.Count - 1)
                 {
                     //Recurse.
-                    inList = findFieldObjectByValue(matchingItems, loadKeyFieldValues, objectIDToFind, groupIndex + 1); 
+                    inList = findFieldObjectByValue(matchingItems, loadKeyFieldValues, objectIDToFind, groupIndex + 1);
                 }
             }
 
@@ -317,7 +317,7 @@ order by	ColumnIndex", new { id });
 
 
         #region Process Data Methods
-                
+
         private int getAssetIDFieldIndex(string objectType, string objectName, int objectId, List<LoadColumn> columns)
         {
             if (objectType == "FusionAttributeType")
@@ -334,8 +334,8 @@ order by	ColumnIndex", new { id });
                 columns.Remove(col);
 
                 return index;
-            }  
-            else if(objectType == "IntersectType")
+            }
+            else if (objectType == "IntersectType")
             {
                 var col = columns.OrderBy(x => x.ColumnIndex).Where(x => string.Compare($"{objectName}", x.Name, true) == 0).FirstOrDefault();
 
@@ -363,7 +363,7 @@ order by	ColumnIndex", new { id });
 
                 if (col == null)
                     throw new Exception($"BULK LOAD CANNOT FIND ASSET ID COLUMN : [{objectName} Asset ID]");
-                                
+
                 columns.Remove(col);
 
                 return col.ColumnIndex;
@@ -375,14 +375,14 @@ order by	ColumnIndex", new { id });
             // get load properties
             var load = Loads.Where(x => x.ID == loadId).FirstOrDefault();
 
-            if(load == null)
+            if (load == null)
             {
                 throw new Exception($"Bulk load relate cannot find the load job to run [{loadId}].");
             }
 
             var intersectType = IntersectTypeDetails.Where(x => x.ID == load.ObjectID).FirstOrDefault();
 
-            if(intersectType == null)
+            if (intersectType == null)
             {
                 throw new Exception($"Bulk load relate cannot find the intersect type [{load.ObjectID}] specified by the load job [{loadId}]");
             }
@@ -391,11 +391,11 @@ order by	ColumnIndex", new { id });
             // get the load columns
             var columns = LoadColumns.Where(x => x.LoadID == loadId).ToList();
 
-            if(columns == null)
+            if (columns == null)
             {
                 throw new Exception($"Bulk load data doesnt contain any columns in LoadColumn table.  Load ID [{loadId}]");
             }
-            
+
             var loaddata = LoadItemColumns.Where(x => x.LoadID == loadId);
 
             //loop throw rows until there are no more indexes start at 2
@@ -404,18 +404,18 @@ order by	ColumnIndex", new { id });
             var fieldColumns = columns.ToList();
             var subjectAssetIDFieldIndex = getAssetIDFieldIndex(intersectType.Subject, intersectType.SubjectName, intersectType.SubjectID, fieldColumns);
             var objectAssetIDFieldIndex = getAssetIDFieldIndex(intersectType.Object, intersectType.ObjectName, intersectType.ObjectID, fieldColumns);
-                        
+
             //load any custom field types for this relationship type
             var customFieldTypes = FieldTypes.Where(x => x.Object == "IntersectType" && x.ObjectID == intersectType.ID);
             Dictionary<int, int> customFieldTypeMap = new Dictionary<int, int>();
 
-            if(operation == BulkRelationshipOperation.Relate && customFieldTypes.Any())
+            if (operation == BulkRelationshipOperation.Relate && customFieldTypes.Any())
             {
                 foreach (var item in customFieldTypes)
                 {
                     var col = columns.Where(x => string.Compare(x.Name, item.Name, true) == 0).FirstOrDefault();
 
-                    if(col != null)
+                    if (col != null)
                     {
                         customFieldTypeMap[item.ID] = col.ColumnIndex;
                     }
@@ -426,11 +426,11 @@ order by	ColumnIndex", new { id });
             }
 
             var rowData = loaddata.Where(x => x.RowIndex == currentRowIndex).ToList();
-            
+
             while (rowData != null && rowData.Count > 0)
             {
                 BulkLoadStatusMsg = "";
-                
+
                 var subjectTypeName = (intersectType.Subject == "ReferenceItemType" && intersectType.SubjectID == 0) ? "ReferenceItemType" : intersectType.Subject.Replace("Type", "");
                 var objectTypeName = (intersectType.Object == "ReferenceItemType" && intersectType.ObjectID == 0) ? "ReferenceItemType" : intersectType.Object.Replace("Type", "");
 
@@ -443,18 +443,18 @@ order by	ColumnIndex", new { id });
                     intersectId = (operation == BulkRelationshipOperation.Relate) ?
                        RelateObjects(rowData, objectId, subjectId, objectTypeName, subjectTypeName, intersectType.ID, customFieldTypes, customFieldTypeMap) :
                        (await UnrelateObjects(objectId, subjectId, objectTypeName, subjectTypeName, intersectType.ID));
-                
+
                 }
                 else
                 {
                     BulkLoadStatusMsg = errorMsg;
                 }
-                
+
                 // update status for this item
                 var statusSql = "update LoadItem set [Object] = 'Intersect', ObjectID = @objectId, Status = @status, StatusMessage = @msg where LoadID = @loadId and RowIndex = @rowIndex";
 
                 await QueryAsync<int>(statusSql, new { objectId = intersectId, msg = BulkLoadStatusMsg, loadId = loadId, rowIndex = currentRowIndex, status = (intersectId > 0 ? 1 : 0) });
-                
+
                 //next row
                 currentRowIndex++;
 
@@ -462,15 +462,15 @@ order by	ColumnIndex", new { id });
             }
         }
 
-        private bool IsValidCardinality(IntersectTypeDetail intersectType, int objectId, int subjectId, string objectType, string subjectType,out string message)
+        private bool IsValidCardinality(IntersectTypeDetail intersectType, int objectId, int subjectId, string objectType, string subjectType, out string message)
         {
             message = string.Empty;
             bool found = false;
 
 
-            if (intersectType.ObjectCardinality== Cardinality.One && intersectType.SubjectCardinality == Cardinality.One)
+            if (intersectType.ObjectCardinality == Cardinality.One && intersectType.SubjectCardinality == Cardinality.One)
             {
-                found = Intersects.Any((x => x.Object == objectType && x.IntersectTypeID == intersectType.ID && x.ObjectID == objectId) );
+                found = Intersects.Any((x => x.Object == objectType && x.IntersectTypeID == intersectType.ID && x.ObjectID == objectId));
                 message = found ? $"{objectType}  does not satisfy relationship cardinality " : string.Empty;
 
                 if (found) return false;
@@ -507,13 +507,13 @@ order by	ColumnIndex", new { id });
 
                         BulkLoadStatusMsg = "Relationship successfully removed.";
                     }
-                    catch(core.exceptions.ConflictException ex)
+                    catch (core.exceptions.ConflictException ex)
                     {
                         intersectId = 0;
 
                         BulkLoadStatusMsg = $"Relationship could not be removed.  {ex.StatusDescription}";
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         intersectId = 0;
 
@@ -639,13 +639,13 @@ order by	ColumnIndex", new { id });
             if (@object == "FusionAttribute")
             {
                 //load the fusion attribute where the fusionattribute type id matches the type in the intersecttype and the value 
-                var fusionItem = FusionAttributes.Where(x => x.FusionAttributeTypeID == objectTypeId && string.Compare(x.TextPath,valItem.Value,true) == 0).FirstOrDefault();
+                var fusionItem = FusionAttributes.Where(x => x.FusionAttributeTypeID == objectTypeId && string.Compare(x.TextPath, valItem.Value, true) == 0).FirstOrDefault();
 
                 if (fusionItem == null) return -1;
 
                 return fusionItem.ID;
             }
-            else if(@object == "Intersect")
+            else if (@object == "Intersect")
             {
                 if (!int.TryParse(valItem.Value, out int intersectId))
                 {
@@ -694,18 +694,18 @@ order by	ColumnIndex", new { id });
                     BulkLoadStatusMsg = $"Error asset id is not a number {valItem.Value}";
 
                     return -1;
-                }                    
+                }
 
-                var asset = Assets.Where(x => x.ID == assetId).Include(x=>x.AssetType).FirstOrDefault();
+                var asset = Assets.Where(x => x.ID == assetId).Include(x => x.AssetType).FirstOrDefault();
 
-                if(asset == null)
+                if (asset == null)
                 {
                     BulkLoadStatusMsg = $"Specified asset id doesnt exist in the asset table[{valItem.Value}]";
 
                     return -1;
                 }
 
-                if(asset.AssetType == null || asset.AssetType.ObjectID != objectTypeId)
+                if (asset.AssetType == null || asset.AssetType.ObjectID != objectTypeId)
                 {
                     BulkLoadStatusMsg = $"Specified asset id type doesnt match those required by the intersect type {asset.ObjectID}";
 
@@ -723,7 +723,7 @@ order by	ColumnIndex", new { id });
                 //find the field in the input load columns
                 if (!columns.Any(x => string.Compare(x.Name, $"{objectTypeName} {field.Name}", true) == 0))
                     throw new Exception($"Bulk Relate cannot find key field {field.Name} id {field.ID} friendly name {field.FriendlyName}");
-            }            
+            }
         }
 
         #endregion
@@ -779,7 +779,7 @@ order by	ColumnIndex", new { id });
                     else
                     {
                         var update = new AssetUpdate();
-                        var asset = Query<Asset>("select * from Asset Where Object = @object and ObjectID = @objectID", new { @object = item.Object, objectID = item.ObjectID}).FirstOrDefault();
+                        var asset = Query<Asset>("select * from Asset Where Object = @object and ObjectID = @objectID", new { @object = item.Object, objectID = item.ObjectID }).FirstOrDefault();
                         AssetDetail parent = null;
                         if (parentAssetType != null)
                         {
@@ -908,7 +908,6 @@ from    LoadItem L
         ) F on F.RowIndex = L.RowIndex
 where	L.LoadID = @id
 ";
-
             var glossaryHashWithParentSql = @"
 update  L
 set     L.KeyHash = K.KeyHash,
@@ -971,7 +970,6 @@ from    LoadItem L
         ) F on F.RowIndex = L.RowIndex
 where	L.LoadID = @id
 ";
-
             var modelHashSql = @"
 update  T
 set     T.KeyHash = K.KeyHash,
@@ -1024,6 +1022,39 @@ from    LoadItem T
         ) F on F.RowIndex = T.RowIndex
 where	T.LoadID = @id and T.RowIndex = @rowIndex;
 ";
+            var referenceItemHashSql = @"
+update	T
+set		T.KeyHash = CONVERT(
+							varchar(32), 
+							SUBSTRING(HASHBYTES('SHA1', substring(ltrim(rtrim(IC.Value)), 1, 250)), 3, 32), 
+							2),
+		T.FieldHash = V.FieldHash
+from	LoadItem T
+		inner join LoadColumn C on C.LoadID = T.LoadID and C.Name = 'Code'
+		inner join LoadItemColumn IC on IC.LoadID = C.LoadID and IC.RowIndex = T.RowIndex and IC.ColumnIndex = C.ColumnIndex
+		inner join	(
+					select		RowIndex,
+								CONVERT(
+									varchar(32), 
+									SUBSTRING(HASHBYTES('SHA1', STRING_AGG(cast(FieldTypeID as nvarchar) + ':' + Value, char(59))), 3, 32), 
+									2) as FieldHash
+					from		(
+								select		top 100 percent
+											I.RowIndex,
+											FT.ID as FieldTypeID,
+											coalesce(cast(IC.LookupObjectID as varchar(100)), IC.Value, '') as Value
+								from		LoadItem I
+											inner join LoadItemColumn IC on IC.LoadID = I.LoadID and IC.RowIndex = I.RowIndex and I.LoadID = @id
+											inner join LoadColumn C on C.LoadID = I.LoadID and C.ColumnIndex = IC.ColumnIndex													
+											left join FieldType FT on FT.Object = @Object and FT.ObjectID = @ObjectID and FT.Name = C.Name and C.Name !='Code'
+											left join Asset RI on RI.Object = 'ReferenceItem' and C.Name = 'Code' and RI.ObjectID = @ObjectID
+								order by	I.RowIndex,
+											FT.ID
+								) A
+					group by	A.RowIndex	
+					) V on V.RowIndex = T.RowIndex
+where	T.LoadID = @id;
+";
 
             #endregion
 
@@ -1040,7 +1071,7 @@ where	T.LoadID = @id and T.RowIndex = @rowIndex;
             }
             else if (assetType.Class == AssetTypeClass.Model)
             {
-                foreach(var item in load.LoadItems)
+                foreach (var item in load.LoadItems)
                 {
 
                     var currLevel = (await QueryAsync<int>(@"
@@ -1056,6 +1087,10 @@ where	T.LoadID = @id and T.RowIndex = @rowIndex;
 
                 }
             }
+            else if (assetType.Class == AssetTypeClass.Reference)
+            {
+                await QueryAsync<int>(referenceItemHashSql, new { @object = assetType.Object, objectID = assetType.ObjectID, id = load.ID });
+            }
 
             //find object/objectid for existing items
             if (assetType.Class == AssetTypeClass.Glossary && parentAssetType != null)
@@ -1068,7 +1103,7 @@ where	T.LoadID = @id and T.RowIndex = @rowIndex;
                 inner join AssetType ST on ST.Object = @Object and ST.ObjectID = @ObjectID
                 inner join Asset A on A.AssetTypeID = ST.ID
                 cross apply[GetArtifactKeyHashByIdWithParent](A.ID) S
-        where S.KeyHash = T.KeyHash and T.LoadID = @id", new { @object = assetType.Object, objectID = assetType.ObjectID, id = load.ID});
+        where S.KeyHash = T.KeyHash and T.LoadID = @id", new { @object = assetType.Object, objectID = assetType.ObjectID, id = load.ID });
 
             }
             else
