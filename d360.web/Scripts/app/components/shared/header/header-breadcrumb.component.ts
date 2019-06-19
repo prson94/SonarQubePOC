@@ -46,7 +46,7 @@ export class HeaderBreadcrumbComponent {
                         breadcrumb.active = false;
                     }
                     this.breadcrumbs.push(breadcrumb);
-                    this.resizeControlsToFit(window.innerWidth);
+                    setTimeout(() => { this.resizeControlsToFit(window.innerWidth); }, 100);
                     this.ref.markForCheck();
                 }
             });
