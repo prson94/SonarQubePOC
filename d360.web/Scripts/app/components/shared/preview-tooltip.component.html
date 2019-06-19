@@ -41,7 +41,7 @@
           <b>Version UID</b>: <span [innerHtml]="data.WorkflowVersionUID"></span>
       </div>
       <div *ngFor="let field of data?.FieldValues">
-          <span *ngIf="field.Value"><b>{{ field.Name }}</b>: <span [innerHtml]="field.Value"></span></span>
+          <span *ngIf="field.Value"><b>{{ field.Name }}</b>: <span [innerText]="field.Value"></span></span>
       </div>
   </div>
 </span>
