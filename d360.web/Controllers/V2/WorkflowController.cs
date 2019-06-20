@@ -148,7 +148,7 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "More than one uid is passed in the request , either  ActionTypeUid OR AssetTypeUid OR RelationshipTypeUid or WorkflowTypeUid"));
 
                 if (!validator.IsValidOrderByFieldForWorkflowGetVersionModel(queryParams))
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid order by is passed in the request , either  VersionNumber or State or CreatedOn or UpdatedOn "));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid order passed in the request. Valid values are: VersionNumber, State, CreatedOn, and UpdatedOn"));
 
                 if (!validator.IsValidGuidForWorkflowGetVersionModel(queryParams))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Your request to retrieve this workflow version is invalid, possibly due to an incorrectly formatted identifier ActionTypeUid/AssetTypeUid/RelationshipTypeUid/WorkflowTypeUid"));
