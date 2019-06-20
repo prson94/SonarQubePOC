@@ -95,7 +95,7 @@ export class HeaderBreadcrumbComponent {
         var combinedWidth = controlsWidth + logoWidth + breadcrumbWidth;
         this.maxSingleCrumbWidth = windowWidth - (controlsWidth + logoWidth);
         //if the width of this + the logo + the controls is bigger than screen start hiding breadcrumbs
-        console.log(controlsWidth + " " + logoWidth +" " +  breadcrumbWidth);
+        
             var worseCaseWidth = this.maxLength() + logoWidth + controlsWidth;
             if (worseCaseWidth > windowWidth) {                
                 this.showLastOnly = true;
