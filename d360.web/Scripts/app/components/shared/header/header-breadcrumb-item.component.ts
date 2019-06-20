@@ -22,7 +22,8 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
     template: ` <div #hovertarget class="hover-container" (mouseenter)="in(treePanel,searchPanel,$event)" (mouseleave)="out(treePanel,searchPanel,$event)" >
                     <a id="breadlink" (click)="navigateToLink(breadcrumb.link)" 
                             class="breadcrumb" 
-                            [ngClass]="{'breadcrumb-link' : hasLink(breadcrumb.link)}">
+                            [ngClass]="{'breadcrumb-link' : hasLink(breadcrumb.link)}"
+                            [ngStyle]="{'max-width.px': setLastBreadcrumbWidth()}">
                             <span class="breadcrumb-text" [ngClass]="{'highlight' : breadcrumb.isType}">{{breadcrumb.text}} </span>
                             <span class="parent" *ngIf="breadcrumb.parentTypeName"   
                                   (click)="stopParentNav($event);navigateToLink(breadcrumb.parentUrl)">{{breadcrumb.parentTypeName}}</span>
@@ -62,6 +63,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
     @Output() treeClick = new EventEmitter();
     @Input() showSeperator: boolean = true;
     @Input() index: number;
+    @Input() maxLastCrumbWidth: number;
     @ViewChild('hovertarget') hoverTarget: ElementRef;
 
     @ViewChild('standardInput') standardInput: ElementRef;
@@ -233,6 +235,15 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
         };
         return styles;
     }
+
+    setLastBreadcrumbWidth() {
+        if (!this.isLastItem || !this.maxLastCrumbWidth)
+            return;
+        //take 80 for the collapsed menu button
+        return this.maxLastCrumbWidth - 80;
+
+    }
+
     private stopParentNav(event) {
         event.stopPropagation();
     }
