@@ -29,7 +29,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                             <div *ngIf="!isChangableItem()" class="gutter"></div>
                             <i *ngIf="isChangableItem()" class="fa fa-caret-right crumb-arrow right"></i>
                     </a>
-                    <p-overlayPanel [ngClass]="'search-results'" #searchPanel for="hovertarget" my="left top" at="top right">  
+                    <p-overlayPanel [ngClass]="'search-results'" #searchPanel>  
                         <div class="breadcrumb-search">
                             <span class="header-search-input"><input #standardInput type="text" [(ngModel)]="searchValue" placeholder="Search" (keyup)="search(searchValue)"> <i *ngIf="searchingTypeahed" class="fa fa-spinner fa-spin"></i><i *ngIf="!searchingTypeahed" class="fa fa-search"></i></span> 
                             <div *ngFor="let result of results;" class="breadcrumb-search-results">
@@ -110,12 +110,12 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
         let parent = this.hoverTarget.nativeElement.parentNode;
         if (this.isChangableItem()) {
             this.showSearch = true;            
+            let lineDims = this.hoverTarget.nativeElement.getBoundingClientRect();
             if (this.hasClass(parent, 'collapsed-crumb')) {
                 searchPanel.show(event, this.hoverTarget.nativeElement.parentNode);
                 
                 searchPanel.el.nativeElement.children[0].opacity = 0;
                 window.setTimeout(() => {
-                    let lineDims = this.hoverTarget.nativeElement.getBoundingClientRect();
                     searchPanel.el.nativeElement.children[0].style.top = (lineDims.top - 40) + "px";
                     searchPanel.el.nativeElement.children[0].style.left = (lineDims.width + (10 * this.index)) + "px";
                     if (this.standardInput) {
@@ -127,6 +127,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
             } else {
                 searchPanel.show(event);
                 window.setTimeout(() => {
+                    searchPanel.el.nativeElement.children[0].style.top = (lineDims.bottom) + "px";
                     if (this.standardInput) {
                         this.standardInput.nativeElement.focus();
                         if (this.results === undefined && !this.isTreeItem()) this.search("");
