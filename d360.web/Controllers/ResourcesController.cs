@@ -1038,11 +1038,6 @@ where   RT.Object = @type and RT.ObjectID = @typeID";
                         var responbilityReleationRule = Company.GetById<ResponsibilityTypeRelationRule>(objectID);
                         uid = responbilityReleationRule?.UID.ToString();
                     }
-                    else if (objectType == "RuleDimension")
-                    {
-                        var ruleDimension = Company.GetById<RuleDimension>(objectID);
-                        desc = ruleDimension?.Description;
-                    }
                     else if (objectType == "WorkflowVersion")
                     {
                         var worflowSql = @"	Select t.uid as TypeUID,v.uid as VersionUID from workflow.[type] as t

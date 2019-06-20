@@ -17,7 +17,7 @@
                     </tr>
                 </ng-template>
                 <ng-template pTemplate="body" let-rowNode let-item="rowData">
-                    <tr [ttSelectableRow]="rowNode">
+                    <tr [ttSelectableRow]="rowNode" #treetableRows>
                         <td>
                             <d3s-treeTableToggler [rowNode]="rowNode" ></d3s-treeTableToggler>
                             {{item.Name}}

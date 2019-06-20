@@ -177,7 +177,7 @@
                                 name="lookup"
                                 [options]="lookups.Lookups"
                                 [ngModel]="model.selectedLookup"
-                                (ngModelChange)="model.selectedLookup=$event;lookupTypeSelected($event);"
+                                (ngModelChange)="model.selectedLookup=$event;lookupTypeSelected($event).subscribe();"
                                 [style]="{ 'width': '98%' }"
                                 ngDefaultControl></p-dropdown>
                 </div>
@@ -418,6 +418,8 @@
                     <p-calendar *ngIf="model.FieldType.Type == 'Date'"
                                 [ngModelOptions]="{standalone: true}"
                                 [(ngModel)]="model.FieldType.DefaultValue"
+                                [showButtonBar]="true"
+                                [showIcon]="true"
                                 (onSelect)="onDateSelectMethod($event)"
                                 [dateFormat]="getLocaleDateString()"></p-calendar>
                     <input *ngIf="model.FieldType.Type == 'Text' "
@@ -512,14 +514,14 @@
                                                 [options]="lookups.FusionAttributeTypes"
                                                 [(ngModel)]="item.SourceFusionAttributeType"
                                                 [style]="{ 'width' : '95%' }"
-                                                (onChange)="loadTargetFusionAttributes(item)"></p-dropdown>
+                                                (onChange)="loadTargetFusionAttributes(item).subscribe()"></p-dropdown>
                                 </td>
                                 <td>
                                     <p-dropdown [ngModelOptions]="{standalone: true}"
                                                 [options]="lookups.ReferenceTypes"
                                                 [(ngModel)]="item.ReferenceType"
                                                 [style]="{ 'width' : '95%' }"
-                                                (onChange)="loadTargetFusionAttributes(item)"></p-dropdown>
+                                                (onChange)="loadTargetFusionAttributes(item).subscribe()"></p-dropdown>
                                 </td>
                                 <td>
                                     <p-dropdown [ngModelOptions]="{standalone: true}"
@@ -606,7 +608,7 @@
                                     <select [ngModelOptions]="{standalone: true}"
                                             [(ngModel)]="i.ReferenceType"
                                             style="width:95%"
-                                            (ngModelChange)="changeRefType(x)"
+                                            (ngModelChange)="changeRefType(x).subscribe()"
                                             [disabled]="x < relationItemCount-1">
                                         <option *ngFor="let j of lookups.ComplexLookupRelations"
                                                 [value]="j.ID">
@@ -624,7 +626,7 @@
                                     <select [ngModelOptions]="{standalone: true}"
                                             [(ngModel)]="i.selectedRelationItemID"
                                             style="width:95%"
-                                            (ngModelChange)="changeRel(x)"
+                                            (ngModelChange)="changeRel(x).subscribe()"
                                             [disabled]="x < relationItemCount-1">
                                         <option *ngFor="let j of i.relationItems"
                                                 [value]="j.value">
@@ -775,7 +777,7 @@
                     <p-dropdown [ngModelOptions]="{standalone: true}"
                                 [options]="lookups.Field_FieldFromRelRelationships"
                                 [ngModel]="model.cardinalRelationship"
-                                (ngModelChange)="model.cardinalRelationship=$event;cardinalFieldFromRelationshipSelected($event);"
+                                (ngModelChange)="model.cardinalRelationship=$event;cardinalFieldFromRelationshipSelected($event).subscribe();"
                                 [style]="{ 'width': '98%' }"
                                 ngDefaultControl></p-dropdown>
                 </div>
@@ -831,7 +833,7 @@
                                 <td style="vertical-align: top">
                                     <select [ngModelOptions]="{standalone: true}"
                                             [(ngModel)]="filteredLookup"
-                                            (ngModelChange)="changeFilteredLookup()"
+                                            (ngModelChange)="changeFilteredLookup().subscribe()"
                                             style="width:100%">
                                         <option></option>
                                         <option *ngFor="let i of lookups.FilteredLookups"

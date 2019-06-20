@@ -29,7 +29,7 @@ export class RightSidebarComponent {
     ) {        
         this.items = [];
         this.subscription = rightSidebarService.rightSidebar$.subscribe(
-            item => {                                
+            item => {
                 this.items.push(item);
                 this.items = _.sortBy(this.items, 'title');                
                 ref.markForCheck();

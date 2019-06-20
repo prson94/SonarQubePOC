@@ -219,9 +219,11 @@
   <include file="scripts/GOV-7433.xml"/>
   <include file="scripts/GOV-6668.xml"/> <!--IGC proc-->
   <include file="scripts/GOV-7436.xml"/>
+  
+   <!-- Sprint 6 2019 Start -->
+  <include file="scripts/GOV-6387.xml"/>
   <include file="scripts/GOV-7448.xml"/>
   <include file="scripts/GOV-7461.xml"/> <!--IGC proc-->
-  
-  <!-- Sprint 6 2019 Start -->
   <include file="scripts/GOV-7374.xml"/>
+  <include file="scripts/GOV-7499.xml"/>
 </databaseChangeLog>

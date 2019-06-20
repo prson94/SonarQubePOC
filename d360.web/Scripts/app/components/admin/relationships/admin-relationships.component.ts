@@ -24,8 +24,7 @@ export class AdminRelationshipsComponent extends AdminBaseComponent implements O
     
     constructor(rightSidebarService: RightSidebarService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService,  titleService: Title) {
         super(headerBreadcrumbService, titleService, rightSidebarService);        
-        this.areaName = "Relationship Types";
-        this.adminHeading = "Security";
+        this.areaName = "Relationship Types";        
         this.setCommonItems();
         this.setCommonRightSideBar(true);    
 

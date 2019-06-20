@@ -18,7 +18,6 @@ import { SharedResponsibilitiesModule } from '../../shared/responsibilities/shar
 import { AdminModule } from '../admin.module';
 
 import { AdminRulesComponent } from './admin-rules.component';
-import { AdminRuleDimensionsComponent } from './admin-rule-dimensions.component';
 
 import { AdminRulesRoutingModule } from './admin-rules.routes';
 
@@ -60,8 +59,7 @@ import { TableModule } from 'primeng/table';
 
     ],
     declarations: [
-        AdminRulesComponent,
-        AdminRuleDimensionsComponent,
+        AdminRulesComponent
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

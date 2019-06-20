@@ -700,7 +700,9 @@ d3s-navbar-item {
     margin-left: 200px;
     margin-right: 40px;
 }
-
+main{
+    min-width:800px;
+}
 .panel-section ul,
 .ui-table-tbody ul,
 .ui-treetable :not(.ql-editor) > ul {
@@ -848,6 +850,7 @@ div.powerbi iframe {
     line-height: 25px;
     padding: 0 15px;
     height: 30px;
+    white-space: nowrap;
 
     &:hover {
         background: mix(black, #ff7155, 7%)
@@ -880,7 +883,7 @@ div.item-description {
 
 
 .InActiveRowTools {
-    margin: 4px;
+    margin: 4px;  
     float: right;
     width: 100%;
     color: @d3s-gray-3;
@@ -1107,7 +1110,7 @@ div.breadcrumbs {
     .active, .sep {
         color: #fff;
     }
-  
+
     .active, .inactive {
         display: inline-flex;
         background-color: transparent;
@@ -1121,18 +1124,18 @@ div.breadcrumbs {
     }
 
     .breadcrumb-collapse {
-        color: @igx-header-breadcrumb-color;
+        color: white;
         padding: 5px;
         height: 20px;
         margin-top: 10px;
-        background-color: #5c6f6f;
+        background-color: rgba(255,255,255,0.25);
         border-radius: 3px;
         line-height: 10px;
         margin-right: 5px;
     }
 
     .breadcrumb-search {
-        border-radius:3px;
+        border-radius: 3px;
     }
 }
 
@@ -1140,8 +1143,12 @@ div.breadcrumbs {
     line-height: 20px;
     text-indent: 0px;
 
-    &:hover, .hover {
-        background: #ceecf2;
+    &:hover, &.hover {
+        background-color: @igx-lightblue-xlight;
+    }
+
+    &:active, &.active {
+        background: @igx-lightblue-light;
     }
 
     .collapsed-crumb {
@@ -1155,10 +1162,7 @@ div.breadcrumbs {
             padding-right: 5px;
 
             &.highlight {
-                background-color: dodgerblue;
-                border-radius: 3px;
-                padding: 0px 5px;
-                font-size: 12px;
+                color: #000;
             }
         }
 
@@ -1168,12 +1172,14 @@ div.breadcrumbs {
             flex-grow: 1;
             max-width: none;
             padding: 10px;
+            padding-left: 20px;
         }
 
         .crumb-arrow {
             display: inline-flex;
             margin-left: auto;
             line-height: 20px;
+            padding-left: 40px;
         }
 
         .parent {
@@ -1181,6 +1187,7 @@ div.breadcrumbs {
             border-radius: 3px;
             padding: 0px 5px;
             font-size: 12px;
+            color:white;
 
             &:before {
                 content: '';
@@ -1194,8 +1201,12 @@ div.breadcrumbs {
         .breadcrumb-search-result {
             padding: 10px;
 
-            &:hover, .hover {
-                background: #ceecf2;
+            &:hover, &.hover {
+                background-color: @igx-lightblue-xlight;
+            }
+
+            &:active, &.active {
+                background: @igx-lightblue-light;
             }
         }
     }
@@ -1228,7 +1239,6 @@ a.breadcrumb {
 
 .breadcrumb {
     display: inline-block;
-    max-width: 250px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -1242,6 +1252,7 @@ a.breadcrumb {
 
         &:hover, .hover {
             cursor: pointer;
+            text-decoration: underline;
         }
 
         &.highlight {
@@ -1268,8 +1279,8 @@ a.breadcrumb {
 
 /* header search */
 .header-action {
-    margin-left:auto;
-    
+    margin-left: auto;
+
     .header-action-container {
         display: flex;
 
@@ -1284,6 +1295,12 @@ a.breadcrumb {
                 padding-right: 5px;
             }
 
+            .header-actions-li {
+                .active :active, :hover, .hover {
+                    background-color: transparent;
+                }
+            }
+
             li {
                 cursor: pointer;
 
@@ -1291,7 +1308,7 @@ a.breadcrumb {
                     padding: 0px 10px;
 
                     &:hover, &.hover {
-                        background: rgba(255, 255, 255, 0.2);                    
+                        background: rgba(255, 255, 255, 0.2);
                     }
                 }
             }
@@ -1308,6 +1325,7 @@ a.breadcrumb {
     .header-search-input {
         margin: 5px;
         border-radius: 5px;
+        width: 95%;
     }
 
     .tree-breadcrumb-panel {
@@ -1328,7 +1346,7 @@ a.breadcrumb {
                 padding: 5px;
 
                 &.current-crumb {
-                    background-color: #ffef99;
+                    font-weight: bold;
                 }
 
                 &:hover, &.hover {
@@ -1340,25 +1358,35 @@ a.breadcrumb {
 
     .breadcrumb-search-result {
         cursor: pointer;
-        padding-left: 10px;
+        padding-left: 20px;
+        padding-right: 40px;
 
         &:hover, &.hover {
-            background-color: #ceecf2;
+            background-color: @igx-lightblue-xlight;
+        }
+
+        &:active, &.active {
+            background: @igx-lightblue-light;
         }
 
         &.current-crumb {
-            background-color: #ffef99;
-
+            font-weight: bold;
         }
     }
 
-    .searchTypeahead {
+    .global-search-typeahead {
         .ui-autocomplete-panel {
             top: 40px !important;
         }
     }
 }
-
+.global-search-typeahead {
+    .ui-autocomplete-panel {
+        top: 36px !important;
+        left: -10px !important;
+        width: 302px !important;
+    }
+}
 .header-search-input {
     display: inline-flex;
     flex-direction: row;
@@ -1378,6 +1406,8 @@ a.breadcrumb {
         flex-grow: 1;
         outline: none;
         width: 150px;
+        font-family: 'Nunito Sans', sans-serif;
+        font-size: 14px;
 
         &.placeholder {
             color: #bbbbbb;
@@ -1422,8 +1452,9 @@ a.breadcrumb {
     text-align: center;
 
     &:active, &.active {
-        background: #676C7A;
-        .fa{
+        background: rgba(255, 255, 255, 0.4);
+
+        .fa {
             color: #54fffb;
         }
     }
@@ -1820,6 +1851,10 @@ div.home-image-title-text {
 
 .json-view {
     white-space: pre-wrap;
+}
+
+.json-view span {
+    font-size: 14px !important;
 }
 
 .tile {

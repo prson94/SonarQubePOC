@@ -72,7 +72,8 @@ export class PreviewTooltipComponent {
 
         if (!this.data) {
             //get object properties for the tooltip
-            this.toolTipService.getTooltipInfo(this.objectType, this.objectId).then(res => {
+            this.toolTipService.getTooltipInfo(this.objectType, this.objectId)
+                .subscribe(res => {
                 if (!res.ShowTooltip || !this.pending) {
                     this.active = false;
                     return;
@@ -140,6 +141,14 @@ export class PreviewTooltipComponent {
             window.setTimeout(() => {
                 this.repositionMenuToFit(window.innerHeight, window.innerWidth, panel);
             }, 50);
+        }
+    }
+
+    private GetJSON(value: string) {
+        try {
+            return JSON.parse(value);
+        } catch {
+            return "Error";
         }
     }
 

@@ -69,7 +69,7 @@ export class TakeSurveyComponent extends BaseComponent implements OnInit {
     private load() {
         this.isLoading = true;
         this.surveysService.getSurveyTypeQuestions(this.surveyType)
-            .then(result => {
+            .subscribe(result => {
                 this.questions = result;
                 if (this.questions.length > 0) {
                     this.loadQuestionDetails(this.questions[0]);
@@ -86,7 +86,7 @@ export class TakeSurveyComponent extends BaseComponent implements OnInit {
         else {
             this.isLoading = true;
             this.surveysService.getSurveyTypeQuestionDetails(question.ID, this.surveyType.ID)
-                .then(result => {
+                .subscribe(result => {
                     this.currentQuestion = result;
                     for (let option of this.currentQuestion.Items) {
                         option.IsChecked = false;
@@ -98,7 +98,7 @@ export class TakeSurveyComponent extends BaseComponent implements OnInit {
     }
 
     private onSubmit() {
-        this.surveysService.saveSurveyResponse(this.questionDetails, this.surveyType.ID, this.objectType, this.objectID);
+        this.surveysService.saveSurveyResponse(this.questionDetails, this.surveyType.ID, this.objectType, this.objectID).subscribe();
         this.surveyComplete.emit();
     }
 

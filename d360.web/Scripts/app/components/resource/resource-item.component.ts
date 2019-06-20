@@ -1,20 +1,20 @@
-﻿import {Input, Component, EventEmitter, Output, OnInit, OnDestroy} from '@angular/core';
-import {Router, ActivatedRoute} from '@angular/router';
-import {BaseComponent} from '../shared/base.component';
-import {Title} from '@angular/platform-browser';
-import {HeaderBreadcrumbService} from '../../services/header-breadcrumb.service';
-import {ResourcesService} from '../../services/resources.service';
-import {ObjectStatisticsService} from '../../services/object-statistics.service';
-import {UriBasedService} from '../../services/uri-based.service';
-import {SocialService} from '../../services/social.service';
-import {Breadcrumb} from '../../models/breadcrumb.model';
-import {Resource} from '../../models/resource.model';
-import {ObjectStatistics} from '../../models/object-statistics.model';
-import {WorkflowType} from '../../models/workflow.model';
-import {SiteUrlHelpers} from '../../static/site-url-helpers';
-import {RightSidebarItem} from '../../models/rightsidebar.model';
-import {RightSidebarService} from '../../services/right-sidebar.service';
-import {MessagesService} from '../../services/messages.service';
+﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
+import { BaseComponent } from '../shared/base.component';
+import { Title } from '@angular/platform-browser';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
+import { ResourcesService } from '../../services/resources.service';
+import { ObjectStatisticsService } from '../../services/object-statistics.service';
+import { UriBasedService } from '../../services/uri-based.service';
+import { SocialService } from '../../services/social.service';
+import { Breadcrumb } from '../../models/breadcrumb.model';
+import { Resource } from '../../models/resource.model';
+import { ObjectStatistics } from '../../models/object-statistics.model';
+import { WorkflowType } from '../../models/workflow.model';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { RightSidebarItem } from '../../models/rightsidebar.model';
+import { RightSidebarService } from '../../services/right-sidebar.service';
+import { MessagesService } from '../../services/messages.service';
 
 declare var CompanySettings;
 declare var CurrentResourceID;
@@ -194,11 +194,12 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
         const values = e.item;
         values.ID = -1;
 
-        this.uriBasedService.saveItem(null, 'form/dynamicedit/edit/resourceself', values).then(
-            result => {
-                this.pageMode = PageMode.Default;
-                this.showMessageForResult(this.messagesService, result);
-            }
-        );
+        this.uriBasedService.saveItem(null, 'form/dynamicedit/edit/resourceself', values)
+            .subscribe(
+                result => {
+                    this.pageMode = PageMode.Default;
+                    this.showMessageForResult(this.messagesService, result);
+                }
+            );
     }
 }

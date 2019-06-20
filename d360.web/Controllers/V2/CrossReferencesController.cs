@@ -247,7 +247,7 @@ namespace d360.web.Controllers.V2
 
 
         /// <summary>
-        /// Updates the specified asset cross reference.
+        /// Updates the specified asset cross reference.  In order to update an asset cross reference record you must pass in the uid, datasource and type values for an existing cross reference item.  If you have special characters in your datasource, or type values use the PUT endpoint that only requires the uid in the URL.
         /// </summary>
         /// <param name="uid">The unique identifier of the asset cross reference.</param>
         /// <param name="dataSource">Asset cross reference datasource</param>
@@ -284,7 +284,7 @@ namespace d360.web.Controllers.V2
 
 
         /// <summary>
-        /// Updates the specified asset cross reference.
+        /// Updates the specified asset cross reference.  In order to update an asset cross reference record you must pass in the uid, datasource and type values for an existing cross reference item.
         /// </summary>
         /// <param name="uid">The unique identifier of the asset cross reference.</param>        
         /// <param name="model">Asset cross reference model</param>
@@ -318,7 +318,7 @@ namespace d360.web.Controllers.V2
 
 
         /// <summary>
-        /// Deletes an asset cross reference by the specified unique identifier.
+        /// Deletes all asset cross reference records by the specified unique identifier.  Asset cross reference records with the same uid and different datasource and or type will also be deleted.
         /// </summary>
         /// <param name="uid">The unique identifier of the asset cross reference.</param>
         /// <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted.</returns>
