@@ -22,6 +22,8 @@ using Ganss.XSS;
 using System.Text.RegularExpressions;
 using d360.model.DataAccessLayer;
 using d360.extensions.storage;
+using d360.core;
+using System.Text;
 
 namespace igx.jobs.bulkloadprocessor
 {
@@ -83,7 +85,18 @@ namespace igx.jobs.bulkloadprocessor
 
                     if (loadItemRowCount <= 0)
                     {
-                        var memoryStream = new MemoryStream(load.File);
+                        byte[] bytes;
+                        if (load.File == null)
+                        {
+                            var data = storage.GetFileContentsAsString($"{constants.COMPANY_BULK_LOAD_FOLDER}",$"{loadInfo.CompanyID}/load_{load.ID}.{load.Extension}");
+                            bytes = Encoding.Default.GetBytes(data);
+                        }
+                        else
+                        {
+                            bytes = load.File;
+                        }
+
+                        var memoryStream = new MemoryStream(bytes);
                         var xls = new SLDocument(memoryStream);
 
                         var stats = xls.GetWorksheetStatistics();
@@ -271,8 +284,8 @@ namespace igx.jobs.bulkloadprocessor
                             await BulkLoadOwnership(company, load.ID);
                             break;
                         case "P":   // Promotions
-                            executeWithTry(companyConnection, $@"EXEC bulkload.Promotions {load.ID}", loadInfo.CompanyID, 2400);
-                            //await BulkLoadAssets(company, repository, load);
+                            //executeWithTry(companyConnection, $@"EXEC bulkload.Promotions {load.ID}", loadInfo.CompanyID, 2400);
+                            await BulkLoadAssets(company, repository, load);
 
                             company.CreateOrUpdateTypeDisplayValuesAsync(load.ObjectID, load.Object);
                             break;

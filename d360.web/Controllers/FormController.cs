@@ -8970,7 +8970,8 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                     //TODO: cleanup
                     load.File = null;
                     Company.Add<Load>(load);
-                    Storage.CreateFile(constants.COMPANY_BULK_LOAD_FOLDER, $"load_{load.ID}.{load.Extension}", new MemoryStream(byteArray));
+                    Storage.CreateFolder($"{constants.COMPANY_BULK_LOAD_FOLDER}");
+                    Storage.CreateFile($"{constants.COMPANY_BULK_LOAD_FOLDER}", $"{Company.CurrentCompanyID}/load_{load.ID}.{load.Extension}", new MemoryStream(byteArray));
                     Company.Enqueue(Config.GetValue<string>("BulkLoadQueue"), new BulkLoadInfo { CompanyID = Company.CurrentCompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
 
                     json = jsonSuccess("File uploaded and queued for processing.", load.ID.ToString(), "A", HttpStatusCode.Created);
@@ -9063,8 +9064,8 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
             if (bytes == null)
             {
-                var fileString = Storage.GetFileContentsAsString(constants.COMPANY_BULK_LOAD_FOLDER, $"load_{load.ID}.{load.Extension}");
-                bytes = Encoding.ASCII.GetBytes(fileString);
+                var fileString = Storage.GetFileContentsAsString($"{constants.COMPANY_BULK_LOAD_FOLDER}/{Company.CurrentCompanyID}", $"load_{load.ID}.{load.Extension}");
+                bytes = Encoding.Default.GetBytes(fileString);
             }
             return File(bytes, "application/vnd.ms-excel", $"{load.DateCompleted.ToString()}.xlsx");
         }

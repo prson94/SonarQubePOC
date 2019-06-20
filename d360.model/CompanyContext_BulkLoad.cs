@@ -130,7 +130,7 @@ order by	ColumnIndex", new { id });
                 });
                 sqlColumns += $", case EA.Success when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status], EA.Message as StatusMessage";
 
-                sql = $"select * from ({sqlColumns} {sqlTables} where EA.ExecutionID = @putExecutionID union all {sqlColumns} {sqlTables} where EA.ExecutionID = @postExecutionID) order by RowIndex";
+                sql = $"select * from ({sqlColumns} {sqlTables} where EA.ExecutionID = @putExecutionID union all {sqlColumns} {sqlTables} where EA.ExecutionID = @postExecutionID) R order by R.RowIndex";
                 return Query<dynamic>(sql, new { id, putExecutionID = load.PutExecutionID, postExecutionID = load.PostExecutionID });
             }
             else
