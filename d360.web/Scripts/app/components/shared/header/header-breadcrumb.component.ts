@@ -7,7 +7,7 @@ import * as _ from 'lodash';
 @Component({
     selector: 'd3s-header-breadcrumb',
     template: ` <div #bread class="breadcrumbs" (window:resize)="onResize($event)">
-                <span (mouseleave)="smallPanel.hide($event)" (mouseenter)="smallPanel.show($event)"> 
+                <span (mouseleave)="smallPanel.hide()" (mouseenter)="FixHeight($event,smallPanel)"> 
                     <i *ngIf="showLastOnly" class="fa fa-ellipsis-h breadcrumb-collapse" aria-hidden="true"></i>
                     <p-overlayPanel #smallPanel ngClass="collapsed-overlay">
                         <div *ngFor="let breadcrumb of breadcrumbs;let last=last;let index=index" class="collapsed-crumb-container">
@@ -32,6 +32,8 @@ export class HeaderBreadcrumbComponent {
     showLastOnly: boolean = false;
     @ViewChild('bread') breadcrumbUIElement;
     private resizeTimer: any;
+    private maxSingleCrumbWidth: number = 800;
+
     constructor(
         private headerBreadcrumbService: HeaderBreadcrumbService,
         private ref: ChangeDetectorRef
@@ -62,6 +64,12 @@ export class HeaderBreadcrumbComponent {
             })
     }
 
+    private FixHeight($event, smallPanel) {
+        smallPanel.show($event);
+        //primeNG overlay panel issue, need to dock the header panels to 40px from the top
+        window.setTimeout(() => { smallPanel.el.nativeElement.children[0].style.top = "40px";}, 150);
+    }
+
     ngOnDestroy() {
         // prevent memory leak when component destroyed
         this.subscriptionPop.unsubscribe();
@@ -73,50 +81,49 @@ export class HeaderBreadcrumbComponent {
         this.headerBreadcrumbService.breadcrumbTreeClick(event.id);
     }
 
-    private resizeControlsToFit(windowWidth) {
-        
+    resizeControlsToFit(windowWidth) {
+        if (windowWidth < 650) {
+            this.showLastOnly = true;
+            return;
+        } 
         let element = this.breadcrumbUIElement.nativeElement;
-        var controlsWidth = this.controlWidth ? this.controlWidth : 0;
+        var controlsWidth = (windowWidth > 991) ? this.controlWidth : 0; // only visible medium and up
         let logo = element.parentElement.previousSibling;
         var logoWidth = logo.offsetWidth;
-        var breadcrumbWidth = element.offsetWidth;
+        var breadcrumbWidth = element.offsetWidth;        
 
         var combinedWidth = controlsWidth + logoWidth + breadcrumbWidth;
-        
+        this.maxSingleCrumbWidth = windowWidth - (controlsWidth + logoWidth);
         //if the width of this + the logo + the controls is bigger than screen start hiding breadcrumbs
         
         if (combinedWidth > windowWidth) {        
             this.showLastOnly = true;
         }
         else {
-            let estCombinedWidth = controlsWidth + logoWidth + this.maxLength(); //calculate the full width if all breadcrumbs were shown
-            if (estCombinedWidth > windowWidth)
+            //check how many breadcrumbs there are and what would happen if we showed the full version            
+            var worseCaseWidth = this.maxLength() + logoWidth + controlsWidth;
+            if (worseCaseWidth > windowWidth) {                
                 this.showLastOnly = true;
-            else
+            }
+            else {                
                 this.showLastOnly = false;
+            }
         }
     }
 
-    onResize(event) {  
-        clearTimeout(this.resizeTimer);
-        this.resizeTimer = window.setTimeout(() => this.resizeControlsToFit(event.target.innerWidth),250)
+    onResize(event) {                
+        this.resizeControlsToFit(event.target.innerWidth);
     }
 
     maxLength(): number {
-        let max = 0;
-        this.breadcrumbUIElement.nativeElement.insertAdjacentHTML('beforeend', '<a class="breadlink" style="visibility:hidden;"></a>');
-        let tempCrumb = this.breadcrumbUIElement.nativeElement.lastElementChild; 
+        let max = 0;                
         for (var i = 0; i < this.breadcrumbs.length; i++){
-            tempCrumb.innerText = "";
-            tempCrumb.innerText = (this.breadcrumbs[i].text + this.breadcrumbs[i].parentTypeName);
-
-            max += tempCrumb.offsetWidth;
-            
             var last = (this.breadcrumbs.length - 1) == i;
             if (!last)
-                max += 20 // for the icon separator
+                max += (this.breadcrumbs[i].text ? (this.breadcrumbs[i].text.length * 10) : 0); // 10 is based on the font size.
+            else
+                max += 280; //width of search textbox shown on hoover.
         }
-        this.breadcrumbUIElement.nativeElement.removeChild(tempCrumb);
         return max;
     }
  
