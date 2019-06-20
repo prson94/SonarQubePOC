@@ -16,7 +16,7 @@ import * as _ from 'lodash';
                     </p-overlayPanel>
                 </span>
                 <div *ngFor="let breadcrumb of breadcrumbs;let last=last">
-                    <d3s-header-breadcrumb-item *ngIf="(showLastOnly && last) || !showLastOnly" [breadcrumb]="breadcrumb" [isLastItem]="last" [lastItem]="breadcrumbs[breadcrumbs.length - 1]" (treeClick)="handleTreeClick($event)"></d3s-header-breadcrumb-item>                    
+                    <d3s-header-breadcrumb-item *ngIf="(showLastOnly && last) || !showLastOnly" [breadcrumb]="breadcrumb" [isLastItem]="last" [lastItem]="breadcrumbs[breadcrumbs.length - 1]" (treeClick)="handleTreeClick($event)" [maxLastCrumbWidth]="maxSingleCrumbWidth"></d3s-header-breadcrumb-item>                    
                 </div>                
                 </div>  
               `,
@@ -87,7 +87,7 @@ export class HeaderBreadcrumbComponent {
             return;
         } 
         let element = this.breadcrumbUIElement.nativeElement;
-        var controlsWidth = (windowWidth > 991) ? this.controlWidth : 0; // only visible medium and up
+        var controlsWidth = this.controlWidth ? this.controlWidth : 0; // only visible medium and up
         let logo = element.parentElement.previousSibling;
         var logoWidth = logo.offsetWidth;
         var breadcrumbWidth = element.offsetWidth;        
@@ -96,11 +96,6 @@ export class HeaderBreadcrumbComponent {
         this.maxSingleCrumbWidth = windowWidth - (controlsWidth + logoWidth);
         //if the width of this + the logo + the controls is bigger than screen start hiding breadcrumbs
         
-        if (combinedWidth > windowWidth) {        
-            this.showLastOnly = true;
-        }
-        else {
-            //check how many breadcrumbs there are and what would happen if we showed the full version            
             var worseCaseWidth = this.maxLength() + logoWidth + controlsWidth;
             if (worseCaseWidth > windowWidth) {                
                 this.showLastOnly = true;
@@ -108,22 +103,30 @@ export class HeaderBreadcrumbComponent {
             else {                
                 this.showLastOnly = false;
             }
-        }
+       
+        this.ref.markForCheck();
     }
 
-    onResize(event) {                
-        this.resizeControlsToFit(event.target.innerWidth);
+    onResize(event) {  
+        clearTimeout(this.resizeTimer);
+        this.resizeTimer = window.setTimeout(() => this.resizeControlsToFit(event.target.innerWidth), 150);
     }
 
     maxLength(): number {
-        let max = 0;                
-        for (var i = 0; i < this.breadcrumbs.length; i++){
+        let max = 0;
+        this.breadcrumbUIElement.nativeElement.insertAdjacentHTML('beforeend', '<a class="breadlink" style="visibility:hidden;"></a>');
+        let tempCrumb = this.breadcrumbUIElement.nativeElement.lastElementChild;
+        for (var i = 0; i < this.breadcrumbs.length; i++) {
+            tempCrumb.innerText = "";
+            tempCrumb.innerText = (this.breadcrumbs[i].text + this.breadcrumbs[i].parentTypeName);
+
+            max += tempCrumb.offsetWidth;
+
             var last = (this.breadcrumbs.length - 1) == i;
             if (!last)
-                max += (this.breadcrumbs[i].text ? (this.breadcrumbs[i].text.length * 10) : 0); // 10 is based on the font size.
-            else
-                max += 280; //width of search textbox shown on hoover.
+                max += 20 // for the icon separator
         }
+        this.breadcrumbUIElement.nativeElement.removeChild(tempCrumb);
         return max;
     }
  
