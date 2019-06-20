@@ -107,18 +107,49 @@ order by	ColumnIndex", new { id });
 
         public IEnumerable<dynamic> GetLoadItemDetails(int id)
         {
+            var load = GetById<Load>(id);
+            var useExecutionTable = false;
+
+            if (load.Action == "P" && (load.PutExecutionID.HasValue || load.PostExecutionID.HasValue))
+                useExecutionTable = true;
+
             var columns = Filter<LoadColumn>(i => i.LoadID == id).OrderBy(i => i.ColumnIndex).ToList();
             var sql = "";
-            var sqlColumns = "select I.LoadID, I.RowIndex";
-            var sqlTables = "from LoadItem I";
-            columns.ForEach(c =>
+            var sqlColumns = "";
+            var sqlTables = "";
+
+            if (useExecutionTable)
             {
-                sqlColumns += string.Format(", C{0}.Value as Column{0}", c.ColumnIndex);
-                sqlTables += string.Format(" left join LoadItemColumn C{0} on C{0}.LoadID = I.LoadID and C{0}.RowIndex = I.RowIndex and C{0}.ColumnIndex = {0}", c.ColumnIndex);
-            });
-            sqlColumns += ", case I.[Status] when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status], I.StatusMessage";
-            sql += sqlColumns + " " + sqlTables + " where I.LoadID = @id order by I.RowIndex";
-            return Query<dynamic>(sql, new { id });
+                sqlColumns = $"select @id as LoadID, EA.ItemNumber as RowIndex\n";
+                sqlTables = "from api.ExecutionAsset EA\n";
+                columns.ForEach(c =>
+                {
+                    var i = c.ColumnIndex;
+                    sqlColumns += $",EF{i}.FieldValue as Column{i}\n";
+                    sqlTables += $" left join api.ExecutionField EF{i} on EF{i}.ItemNumber = EA.ItemNumber and EF{i}.ExecutionID = EA.ExecutionID and EF{i}.FieldName = '{c.Name}'\n";
+                });
+                sqlColumns += $", case EA.Success when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status], EA.Message as StatusMessage";
+
+                sql = $"select * from ({sqlColumns} {sqlTables} where EA.ExecutionID = @putExecutionID union all {sqlColumns} {sqlTables} where EA.ExecutionID = @postExecutionID) order by RowIndex";
+                return Query<dynamic>(sql, new { id, putExecutionID = load.PutExecutionID, postExecutionID = load.PostExecutionID });
+            }
+            else
+            {
+                sqlColumns = "select I.LoadID, I.RowIndex";
+                sqlTables = "from LoadItem I";
+                columns.ForEach(c =>
+                {
+                    sqlColumns += string.Format(", C{0}.Value as Column{0}", c.ColumnIndex);
+                    sqlTables += string.Format(" left join LoadItemColumn C{0} on C{0}.LoadID = I.LoadID and C{0}.RowIndex = I.RowIndex and C{0}.ColumnIndex = {0}", c.ColumnIndex);
+                });
+                sqlColumns += ", case I.[Status] when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status], I.StatusMessage";
+
+                sql += sqlColumns + " " + sqlTables + " where I.LoadID = @id order by I.RowIndex";
+
+                return Query<dynamic>(sql, new { id });
+            }
+
+            
         }
 
         public BulkLoadGetLoadColumnsModel GetLoadColumns(string action, SystemObjects type, int id, bool includeLookupValues)
@@ -813,13 +844,17 @@ order by	ColumnIndex", new { id });
                 {
                     var execution = getApiExecution(putAssets.Count, new BulkLoadExecutionFields_Assets { AssetTypeUid = assetTypeUid, LoadID = load.ID });
                     ApiExecutionInfo executionInfo = await repository.PutBulkAssets(assetTypeUid, putAssets, execution);
+                    load.PutExecutionID = executionInfo.ExecutionID;
                 }
 
                 if (postAssets.Any())
                 {
                     var execution = getApiExecution(postAssets.Count, new BulkLoadExecutionFields_Assets { AssetTypeUid = assetTypeUid, LoadID = load.ID });
                     ApiExecutionInfo executionInfo = await repository.PostBulkAssets(postAssets, execution);
+                    load.PostExecutionID = executionInfo.ExecutionID;
                 }
+
+                SaveChanges();
 
             }
             catch (Exception ex)

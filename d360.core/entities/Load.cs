@@ -43,6 +43,12 @@ namespace d360.core.entities
         [DataMember]
         public Guid? AssetTypeUid { get; set; }
 
+        [DataMember]
+        public Guid? PutExecutionID { get; set; }
+
+        [DataMember]
+        public Guid? PostExecutionID { get; set; }
+
         #endregion
 
 
