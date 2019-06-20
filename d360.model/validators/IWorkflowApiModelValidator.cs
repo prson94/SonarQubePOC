@@ -12,6 +12,7 @@ namespace d360.model.validators
         bool IsValidGuidForWorkflowGetTypeModel(IEnumerable<KeyValuePair<string, string>> queryParams);
         bool IsValidGuidCountForWorkflowGetVersionModel(IEnumerable<KeyValuePair<string, string>> queryParams);
         bool IsValidGuidForWorkflowGetVersionModel(IEnumerable<KeyValuePair<string, string>> queryParams);
+        bool IsValidOrderByFieldForWorkflowGetVersionModel(IEnumerable<KeyValuePair<string, string>> queryParams);
 
         bool IsValidAssetType(IEnumerable<KeyValuePair<string, string>> queryParams);
         bool IsValidActionType(IEnumerable<KeyValuePair<string, string>> queryParams);
