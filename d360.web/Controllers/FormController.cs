@@ -4311,8 +4311,7 @@ offset 0 rows fetch next 25 rows only
                 ft.DefaultValue = (string.IsNullOrEmpty(model.FieldType.DefaultValue)) ? null : model.FieldType.DefaultValue.Trim();
                 //set the default formatted value to the same as the default value, for lists the trigger will update this to the display value for the list
                 // however for strings, bools etc it will stay as there is no lookupfield column.
-                if (!string.IsNullOrEmpty(ft.DefaultValue))
-                    ft.DefaultFormattedValue = ft.DefaultValue;
+                ft.DefaultFormattedValue = ft.DefaultValue;
                 ft.DisplayDescription = model.FieldType.DisplayDescription;
                 ft.FormDescription = model.FieldType.FormDescription;
                 ft.ValidationDescription = model.FieldType.ValidationDescription;

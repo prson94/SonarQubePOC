@@ -417,7 +417,7 @@
                                 [disabled]="listFilterPredicate != null"></p-dropdown>
                     <p-calendar *ngIf="model.FieldType.Type == 'Date'"
                                 [ngModelOptions]="{standalone: true}"
-                                [(ngModel)]="defaultDate"
+                                [(ngModel)]="model.FieldType.DefaultValue"
                                 [showButtonBar]="true"
                                 [showIcon]="true"
                                 (onSelect)="onDateSelectMethod($event)"

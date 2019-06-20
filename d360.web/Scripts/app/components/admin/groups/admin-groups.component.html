@@ -21,7 +21,7 @@
                             <td>{{item.Name}}</td>
                             <td>
                                 <div class="RowTools">
-                                    <a (click)="groupUrl(item.ID)" style="cursor:pointer;"><i class="fa fa-info"></i></a>
+                                    <d3s-preview-tooltip objectType="Group" [objectId]="item.ID" icon="info"></d3s-preview-tooltip>
                                 </div>
                             </td>
                             <td>
