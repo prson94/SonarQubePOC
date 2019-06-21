@@ -2587,6 +2587,22 @@
             <param name="model">The fusion status log model.</param>
             <returns>The model of the updated fusion status log entry.</returns>
         </member>
+        <member name="M:d360.web.Controllers.V2.FusionController.DeleteBulkAssetsAsync(System.Guid,System.Boolean)">
+            <summary>
+            Removes a fusion configuration based on the specific fusio Uid. This endpoint is meant for deleting one fusion at a time.
+            </summary>
+            <remarks>
+            When using the ExecutionItemUid, keep in mind:
+            * ExecutionItemUid is optional.
+            * If you do not wish to provide an ExecutionItemUid, remove the entire line, including the preceding comma (, "ExecutionItemUid": "00000000-0000-0000-0000-000000000000").
+            * If you provide ExecutionItemUids, values must be a unique across the entire request body.
+            * You do not have to provide ExecutionItemUid values for all entries in a request.
+            * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+            </remarks>
+            <param name="assetUid">The unique identifier of the fusion configuration.</param>
+            <param name="cascade">The unique identifier of the fusion configuration.</param>
+            <returns>An HTTP status code and message.</returns>
+        </member>
         <member name="T:d360.web.Controllers.V2.ActionsController">
             <summary>
             This service houses all endpoints handling actions management in Govern.
@@ -2611,7 +2627,7 @@
             This service houses all endpoints handling glossary-related data such as artifacts and models.
             </summary>
         </member>
-        <member name="M:d360.web.Controllers.V2.MembershipController.GetUsers(System.Nullable{System.Guid},System.String,System.String,System.Nullable{d360.core.enums.State},System.Nullable{System.Boolean},System.Int32,System.Int32)">
+        <member name="M:d360.web.Controllers.V2.MembershipController.GetUsers(System.Nullable{System.Guid},System.String,System.String,System.Nullable{d360.core.enums.CompanyResourceState},System.Nullable{System.Boolean},System.Int32,System.Int32)">
             <summary>
             Retrieves a list of users.
             </summary>

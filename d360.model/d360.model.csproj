@@ -113,6 +113,8 @@
     <Compile Include="CompanyContext_MarkitLineage.cs" />
     <Compile Include="DataAccessLayer\IIssueRepository.cs" />
     <Compile Include="DataAccessLayer\IRelationshipRepository.cs" />
+    <Compile Include="DataAccessLayer\IFusionRepository.cs" />
+    <Compile Include="DataAccessLayer\repositories\FusionRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\IssueRepository.cs" />
     <Compile Include="DataAccessLayer\ITagRepository.cs" />
     <Compile Include="DataAccessLayer\IWorkflowRepository.cs" />
