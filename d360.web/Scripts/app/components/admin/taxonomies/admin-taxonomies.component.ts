@@ -151,7 +151,7 @@ export class AdminTaxonomiesComponent extends AdminBaseComponent implements OnIn
         this.taxonomiesService
             .getTaxonomies()
             .subscribe(taxonomies => {
-                this.taxonomies = taxonomies;
+                this.taxonomies = taxonomies.sort((a, b) => a.Name.localeCompare(b.Name));
                 if (this.taxonomies.length && this.taxonomies.length > 0) {
                     this.selectedTaxonomy = this.taxonomies[0];
                 }

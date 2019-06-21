@@ -212,7 +212,7 @@
 </div>
 <d3s-dynamic-editor
   *ngIf="showEditor"
-  [objectID]="artifactType?.ID"
+  [objectID]="selected ? selected?.ObjectID : artifactType?.ID"
   objectType="Artifact"
   [title]="artifactType?.Name + ' Item'"
   [selection]="selected"

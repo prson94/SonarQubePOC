@@ -195,10 +195,7 @@ namespace d360.model.DataAccessLayer
                 var pageNum = -1;
                 var pageSize = model.pageSize != 0 ? model.pageSize : -1;
 
-                if (!queryParams.Any(p => p.Key == "_order"))
-                {
-                    orderBySql = "order by v.[version] asc";
-                }
+              
 
                 queryParams.ToList().ForEach(x => {
 
@@ -279,6 +276,12 @@ namespace d360.model.DataAccessLayer
 
                    
                 });
+
+
+                if (string.IsNullOrEmpty(orderBySql))
+                {
+                    orderBySql = "order by v.[version] asc";
+                }
 
                 pagingSql.Add(orderBySql);
 

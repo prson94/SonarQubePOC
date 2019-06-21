@@ -434,6 +434,31 @@ namespace d360.web.Models
         public string TooltipUrl { get; set; }
     }
 
+   public class ReadOnlyFieldValueComparer : IEqualityComparer<ReadOnlyFieldValue>
+    {
+      
+        public bool Equals(ReadOnlyFieldValue x, ReadOnlyFieldValue y)
+        {
+            if (Object.ReferenceEquals(x, y)) return true;
+
+            if (Object.ReferenceEquals(x, null) || Object.ReferenceEquals(y, null))
+                return false;
+         
+            return  x.Value == y.Value;
+        }
+
+        
+
+        public int GetHashCode(ReadOnlyFieldValue obj)
+        {
+            if (Object.ReferenceEquals(obj, null)) return 0;
+          
+            int value = obj.Value == null ? 0 : obj.Value.GetHashCode();
+
+            return value;
+        }
+    }
+
     [DataContract(Namespace = constants.NAMESPACE)]
     public class RuleQualifierTypeField
     {
