@@ -42,8 +42,7 @@ namespace d360.web.Controllers
                 DataType.DataTableSelect.ToString(),
                 DataType.FilteredLookup.ToString(),
                 DataType.FusionLookup.ToString(),
-                DataType.OwnershipLookup.ToString(),
-                DataType.FieldFromRelationship.ToString()
+                DataType.OwnershipLookup.ToString()
             };
             var fields = getFieldTypesByObjectType("ArtifactType", id, listableOnly).Where(i => !typesToAvoid.Contains(i.Type)).ToList();
 
@@ -764,8 +763,8 @@ where   O.Type = 'ArtifactType' and O.TypeID = @id and O.[State] = 1
                     };
                 }
                 var filters = GetFilterValuesFromRequest(Request,true);
-                var results = await Company.GetPivotVersionDynamicAssets(assetType, filters, pagenum, pagesize, false, sortDataField, sortOrder, filter);
-
+                //var results = await Company.GetPivotVersionDynamicAssets(assetType, filters, pagenum, pagesize, false, sortDataField, sortOrder, filter);
+                var results = await Company.GetDynamicAssets(assetType, filters, pagenum, pagesize, sortDataField, sortOrder, filter);
                 return new JsonNetResult
                 {
                     Data = new { results = results.Results, total = results.Count },
