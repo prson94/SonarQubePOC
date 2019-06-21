@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 [assembly: Guid("be8136ff-c54d-4c40-b563-cb13c08c84cf")]
 [assembly: AssemblyCompany(constants.COMPANY)]
 [assembly: AssemblyProduct(constants.PRODUCT)]
-[assembly: AssemblyTitle("Database Task Processor")]
+[assembly: AssemblyTitle("Generic Command Processor")]
 [assembly: AssemblyCopyright(constants.COPYRIGHT)]
 [assembly: AssemblyVersion(constants.PRODUCT_VERSION)]
 [assembly: AssemblyFileVersion(constants.PRODUCT_VERSION_NOREVISION)]

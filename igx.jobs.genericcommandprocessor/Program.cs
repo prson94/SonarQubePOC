@@ -1,23 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using d360.core;
+using d360.core.entities;
+using d360.utils.company;
+using Dapper;
+using Microsoft.Azure.WebJobs;
+using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
+using System;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-using d360.core;
-using d360.core.entities;
-using d360.core.queue;
-using d360.extensions.queue;
-using d360.extensions.search;
-using d360.utils.company;
-using Dapper;
-using Mandrill;
-using Mandrill.Model;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
 namespace igx.jobs.genericcommandprocessor
 {
