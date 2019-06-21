@@ -2,6 +2,7 @@
 using d360.core.enums;
 using d360.model;
 using d360.model.DataAccessLayer;
+using d360.model.validators;
 using d360.web.Filters;
 using d360.web.Models;
 using Microsoft.Web.Http;
@@ -24,7 +25,7 @@ namespace d360.web.Controllers.V2
         ApiVersion("2.0"),
         RoutePrefix("api/v{version:apiVersion}/tags"),
         Authorize,
-        ApiExplorerSettings(IgnoreApi = true)
+        ApiExplorerSettings(IgnoreApi = false)
     ]
     public class TagsController : BaseV2ApiController
     {        
@@ -113,15 +114,26 @@ namespace d360.web.Controllers.V2
             TagApiModel result = new TagApiModel();
             try
             {
+                TagValidator.ValidateForPost(model);
+
+                //make sure no tag with the same name exists
+                if (tagRepository.DoesTagExists(model.Value))
+                {
+                    throw new Exception("Invalid tag specified [same tag already exists].");
+                }
+
+
                 result = tagRepository.CreateTag(model);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return errorMessageResponse(HttpStatusCode.BadRequest, "Error while creating tag", e.Message);
             }
             
             return ResponseMessage(Request.CreateResponse<TagApiModel>(HttpStatusCode.OK, result));
         }
+
+      
 
         /// <summary>
         /// Updates the specified tag.
@@ -147,7 +159,21 @@ namespace d360.web.Controllers.V2
             TagApiModel result = new TagApiModel();
             try
             {
-                result = tagRepository.UpdateTag(uid, model);
+                TagValidator.ValidateForPut(uid, model);
+
+                var existingTag = tagRepository.GetTagByUid(uid);
+
+                if (existingTag == null)
+                {
+                    throw new Exception("Invalid uid no tag exists with the specified uid.");
+                }
+
+                if (tagRepository.DoesTagExists(model))
+                {
+                    throw new Exception("Invalid tag specified [same tag already exists].");
+                }
+
+                result = tagRepository.UpdateTag(uid, model, existingTag);
             }
             catch (Exception e)
             {
