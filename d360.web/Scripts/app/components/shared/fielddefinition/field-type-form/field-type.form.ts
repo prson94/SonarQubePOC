@@ -309,7 +309,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.changeRefType(i)
                     .pipe(
                         map(() => { item.selectedRelationItemID = item.IntersectType + '|' + item.Object + '|' + item.ObjectID + '|' + item.Direction }),
-                        map(() => this.changeRel(i)),
+                        map(() => this.changeRel(i).subscribe()),
                         map(() => {
                             let parent = item;
                             item.DisplayFields.forEach(
@@ -340,8 +340,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                             if (r) {
                                 item.displayValue = r.title;
                             }
-                        })
-                    );
+                    })
+                    ).subscribe();
 
 
                 //load display order/sort order drop down lists
@@ -463,7 +463,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                         );
                     }
 
-                    this.changeRefType(this.model.RelationItems.length - 1);
+                    this.changeRefType(this.model.RelationItems.length - 1).subscribe();
                 }
                 break;
             case 'filteredlookup':
@@ -818,7 +818,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     }
                 }
             );
-        }));
+        })).subscribe();
     }
 
     //#endregion
@@ -893,6 +893,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.model.FieldType.DefaultValue += '|';
                 this.model.FieldType.DefaultValue += this.defaultLinkAdress != null ? this.defaultLinkAdress : '';
             }
+        } else if (this.model.FieldType.Type == 'Date') {
+            this.model.FieldType.DefaultValue = this.defaultDate;
         }
 
         this.isLoading = true;

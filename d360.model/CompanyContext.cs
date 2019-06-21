@@ -808,7 +808,7 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
                     countSql = @"select count(*) from AssetWithType A with (nolock)
                         cross apply GetAssetTextPathById(A.ID, '/') P 
                         where A.[Type] = @obj and A.TypeID = @objID and (@query is null or P.TextPath like '%' + @query + '%')";
-                    sql = @"select A.ObjectID as Value, P.TextPath as Text, case when I.ID is not null then 1 else 0 end as Selected 
+                    sql = @"select distinct A.ObjectID as Value, P.TextPath as Text, case when I.ID is not null then 1 else 0 end as Selected 
                             from AssetWithType A with (nolock)
                             cross apply GetAssetTextPathById(A.ID, '/') P 
                             left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and 

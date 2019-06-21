@@ -3,18 +3,18 @@
     OnInit,
     OnDestroy
 } from '@angular/core';
-import {Title} from '@angular/platform-browser';
+import { Title } from '@angular/platform-browser';
 
-import {PolicyType} from '../../../models/policy.model';
+import { PolicyType } from '../../../models/policy.model';
 
-import {HeaderBreadcrumbService} from '../../../services/header-breadcrumb.service';
-import {RightSidebarService} from '../../../services/right-sidebar.service';
-import {PoliciesService} from '../../../services/policies.service';
-import {StateService} from '../../../services/state.service';
-import {AssetTypeService} from "../../../services/asset-type.services";
-import {MessagesService} from '../../../services/messages.service';
+import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { RightSidebarService } from '../../../services/right-sidebar.service';
+import { PoliciesService } from '../../../services/policies.service';
+import { StateService } from '../../../services/state.service';
+import { AssetTypeService } from "../../../services/asset-type.services";
+import { MessagesService } from '../../../services/messages.service';
 
-import {AdminBaseComponent} from '../admin-base.component';
+import { AdminBaseComponent } from '../admin-base.component';
 
 @Component({
     selector: 'd3s-admin-policies-component',
@@ -218,7 +218,7 @@ export class AdminPoliciesComponent extends AdminBaseComponent implements OnInit
         this.policiesService.getPolicyTypes()
             .subscribe(
                 result => {
-                    this.policyTypes = result;
+                    this.policyTypes = result.sort((a, b) => a.Name.localeCompare(b.Name));
 
                     if (this.policyTypes.length > 0) {
                         this.selected = this.policyTypes[0];

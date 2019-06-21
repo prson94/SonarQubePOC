@@ -301,5 +301,17 @@ namespace d360.model.validators
                 isValid = false;
             return isValid;
         }
+
+        public bool IsValidOrderByFieldForWorkflowGetVersionModel(IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+            if (queryParams.Any(p => p.Key.Trim().ToLower() == "_order"))
+            {
+                var fieldName = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_order").Value;
+                string[] validFields = { "versionnumber", "state", "createdon", "updatedon" };
+            
+                return validFields.Contains(fieldName.Trim().ToLower());
+            }
+            return true;
+        }
     }
 }
