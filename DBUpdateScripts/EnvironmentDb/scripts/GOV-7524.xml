@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 	
-	<changeSet author="kmcnamee" id="GOV-7524-nonlookupvalue">
+	<changeSet author="kmcnamee" id="GOV-7524-nonlookupvalue-a">
 		<sql dbms="mssql"
 			endDelimiter="\nGO"
 			splitStatements="true"
@@ -53,7 +53,7 @@ end
 		</sql>
 		<rollback>
 <![CDATA[
-  drop function [utility].[GetFormattedFieldLinkValue]
+  drop function if exists [utility].[GetFormattedFieldLinkValue]
 ]]>
 		</rollback>
 	</changeSet>
