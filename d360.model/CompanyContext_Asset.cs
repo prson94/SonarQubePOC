@@ -500,7 +500,7 @@ select SubjectID from [Intersect]{tableHints} where IntersectTypeID = @{paramPre
                     selectFields
                         .Where(i => i.SortOrder != 0)
                         .OrderBy(i => i.SortOrder)
-                        .Select(i => (useFieldNames ? GetFieldTypeSort(i.Name, true, i) : GetFieldTypeSort($"Field{i.ID}", true, i)))
+                        .Select(i => (useFieldNames ? GetFieldTypeSort(i.Name, true) : GetFieldTypeSort($"Field{i.ID}", true)))
                 );
 
                 if (string.IsNullOrEmpty(orderFieldString))
@@ -510,7 +510,7 @@ select SubjectID from [Intersect]{tableHints} where IntersectTypeID = @{paramPre
                         selectFields
                             .Where(i => i.IsPartOfKey)
                             .OrderBy(i => i.ColumnOrder)
-                            .Select(i => (useFieldNames ? GetFieldTypeSort(i.Name, true, i) : GetFieldTypeSort($"Field{i.ID}", true, i)))
+                            .Select(i => (useFieldNames ? GetFieldTypeSort(i.Name, true) : GetFieldTypeSort($"Field{i.ID}", true)))
                     );
                 }
                 
@@ -527,7 +527,7 @@ select SubjectID from [Intersect]{tableHints} where IntersectTypeID = @{paramPre
                     selectFields.SingleOrDefault(i => sortField == $"Field{i.ID}");
                 if (sortFieldType != null)
                 {
-                    orderFieldString = useFieldNames ? GetFieldTypeSort(sortFieldType.Name, (sortOrder ??"").ToUpper() == "ASC" , sortFieldType) : GetFieldTypeSort($"{sortFieldType.ID}", (sortOrder ?? "").ToUpper() == "ASC", sortFieldType);
+                    orderFieldString = useFieldNames ? GetFieldTypeSort(sortFieldType.Name, (sortOrder ??"").ToUpper() == "ASC" ) : GetFieldTypeSort($"{sortFieldType.ID}", (sortOrder ?? "").ToUpper() == "ASC");
                 }
                 else if(string.Compare(sortField,"PARENT",true) == 0)
                 {
@@ -684,7 +684,7 @@ OPTION (RECOMPILE)";
             return selectString;
         }
 
-        private string GetFieldTypeSort(string fieldName, bool ascending, FieldType ft)
+        private string GetFieldTypeSort(string fieldName, bool ascending)
         {
             return $" [{fieldName}] {(ascending ? "ASC" : "DESC")}";
         }
