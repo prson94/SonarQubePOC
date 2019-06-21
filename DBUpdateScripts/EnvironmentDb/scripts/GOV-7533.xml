@@ -116,7 +116,7 @@ begin
 			T.ColumnStatement = 'try_cast(F'+TxtId+'RP.Value as '+DataType+')',
 			T.OrderStatement = 'try_cast(F'+TxtId+'RP.Value as '+DataType+')',
 			T.FilterStatement = case 
-									when @filter is not null then '(F'+TxtId+'RP.Value like @filter)' 
+									when @filter is not null and T.IsListable = 1 then '(F'+TxtId+'RP.Value like @filter)' 
 									when T.ID in (select TypeID from @filters where FilterType = 'F') then 'F'+TxtId+'RP.Value like (select top 1 FilterValues from @filters where TypeID = FT'+TxtId+'.ID)'
 									else '' 
 								end
@@ -132,7 +132,7 @@ begin
 			T.ColumnStatement = 'try_cast(F'+TxtId+'R.FormattedValue as '+DataType+')',
 			T.OrderStatement = 'try_cast(F'+TxtId+'R.FormattedValue as '+DataType+')',
 			T.FilterStatement = case 
-									when @filter is not null then '(F'+TxtId+'R.FormattedValue like @filter)' 
+									when @filter is not null and T.IsListable = 1 then '(F'+TxtId+'R.FormattedValue like @filter)' 
 									when T.ID in (select TypeID from @filters where FilterType = 'F') then 'F'+TxtId+'R.FormattedValue like (select top 1 FilterValues from @filters where TypeID = FT'+TxtId+'.ID)'
 									else '' 
 								end
@@ -149,7 +149,7 @@ begin
 			T.ColumnStatement = 'try_cast(F'+TxtId+'P.Value as '+D.DataType+')',
 			T.OrderStatement = 'try_cast(F'+TxtId+'P.Value as '+D.DataType+')',
 			T.FilterStatement = case 
-									when @filter is not null then '(F'+TxtId+'P.Value like @filter)' 
+									when @filter is not null and T.IsListable = 1 then '(F'+TxtId+'P.Value like @filter)' 
 									when T.ID in (select TypeID from @filters where FilterType = 'F') then 'F'+TxtId+'P.Value like (select top 1 FilterValues from @filters where TypeID = FT'+TxtId+'.ID)'
 									else '' 
 								end
@@ -168,7 +168,7 @@ begin
 			ColumnStatement = 'F'+TxtId+'.DisplayValue',
 			OrderStatement = 'F'+TxtId+'.DisplayValue',
 			FilterStatement =	case 
-									when @filter is not null then '(F'+TxtId+'.DisplayValue like @filter)' 
+									when @filter is not null and IsListable = 1 then '(F'+TxtId+'.DisplayValue like @filter)' 
 									when ID in (select TypeID from @filters where FilterType = 'R') then 'F'+TxtId+'.DisplayValue like (select top 1 FilterValues from @filters where TypeID = FT'+TxtId+'.ID)'
 									else '' 
 								end
@@ -180,7 +180,7 @@ begin
 			ColumnStatement = 'F'+TxtId+'.FormattedValue',
 			OrderStatement = 'F'+TxtId+'.FormattedValue',
 			FilterStatement =	case 
-									when @filter is not null then '(F'+TxtId+'.FormattedValue like @filter)' 
+									when @filter is not null and IsListable = 1 then '(F'+TxtId+'.FormattedValue like @filter)' 
 									when ID in (select TypeID from @filters where FilterType = 'F') then 'exists(select 1 from @filters where TypeID = F'+TxtId+'.FieldTypeID and F'+TxtId+'.FormattedValue like FilterValues)'
 									else '' 
 								end
