@@ -81,7 +81,7 @@ namespace d360.model
         /// <summary>
         /// This is the stored procedure version of getting both the count and paged assets with relevant dynamic fields.
         /// </summary>
-        public async Task<AssetResults> GetDynamicAssets(AssetType at, List<UiRequestFilterValue> filters, int pageNumber = 0, int pageSize = 25, string sortField = "", string sortOrder = "", string simpleFilter = null)
+        public async Task<AssetResults> GetDynamicAssets(AssetType at, List<UiRequestFilterValue> filters, int pageNumber = 0, int pageSize = 25, string sortField = "", string sortOrder = "", string simpleFilter = null, bool apiNamesInOutput = false, bool listableFieldsOnly = true, bool pagingEnabled = true)
         {
             var results = new AssetResults
             {
@@ -163,9 +163,12 @@ namespace d360.model
             parameters.Add("sortField", sortField);
             parameters.Add("sortDirection", sortOrder);
             parameters.Add("filters", filterTable);
+            parameters.Add("apiNamesInOutput", apiNamesInOutput);
+            parameters.Add("listableFieldsOnly", listableFieldsOnly);
+            parameters.Add("pagingEnabled", pagingEnabled);
 
             var multi = await QueryMultipleAsync(
-                "exec GetDynamicAssets @assetTypeId, @userId, @filter, @pageNumber, @pageSize, @sortField, @sortDirection, @filters",
+                "exec GetDynamicAssets @assetTypeId, @userId, @filter, @apiNamesInOutput, @listableFieldsOnly, @pagingEnabled, @pageNumber, @pageSize, @sortField, @sortDirection, @filters",
                 parameters);
             results.Count = multi.Read<int>().First();
             results.Results = multi.Read<dynamic>().ToList();
