@@ -303,7 +303,7 @@ namespace d360.web.Controllers
                                 values.Add(new ReadOnlyFieldValue { Value = intersectDisplayValue, TooltipContext = "Preview", TooltipID = objID, TooltipType = obj, TooltipUrl = url });
                             }
 
-                            values = values.OrderBy(x => x.Value).ToList();
+                            values = values.Distinct(new ReadOnlyFieldValueComparer()).OrderBy(x => x.Value).ToList();
 
                             var ro = new ReadOnlyField
                             {
@@ -4445,7 +4445,7 @@ order by C.DisplayValue";
             var result = Company.GetRelationshipFieldItems(fieldTypeID, @object, objectID, offset, rows, query, false);
             return Request.CreateResponse(HttpStatusCode.OK, new
             {
-                items = ((List<dynamic>)result["Items"]).Select(s => new System.Web.Mvc.SelectListItem { Text = s.Text, Value = s.Value.ToString(), Selected = s.Selected == 1 ? true : false }).ToList(),
+                items = ((List<dynamic>)result["Items"]).Where(x=>x.Value != objectID).Select(s => new System.Web.Mvc.SelectListItem { Text = s.Text, Value = s.Value.ToString(), Selected = s.Selected == 1 ? true : false }).ToList(),
                 count = (int)result["Count"]
             });
         }
