@@ -130,15 +130,12 @@ namespace d360.web.Controllers.V2
 
 
         /// <summary>
-        /// Removes a fusion configuration based on the specific fusio Uid. This endpoint is meant for deleting one fusion at a time.
+        /// Removes a fusion configuration based on the specific fusion Uid. This endpoint is meant for deleting one fusion at a time.
         /// </summary>
         /// <remarks>
-        /// When using the ExecutionItemUid, keep in mind:
-        /// * ExecutionItemUid is optional.
-        /// * If you do not wish to provide an ExecutionItemUid, remove the entire line, including the preceding comma (, "ExecutionItemUid": "00000000-0000-0000-0000-000000000000").
-        /// * If you provide ExecutionItemUids, values must be a unique across the entire request body.
-        /// * You do not have to provide ExecutionItemUid values for all entries in a request.
-        /// * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+        /// <strong>&#9888; Read before calling this endpoint</strong><br/>
+        /// Calling this endpoint with parameter <strong>Cascade</strong> set to <strong>true</strong> will irrevocably delete fusion configuration and all data related* which includes attributes, fields and relationships.
+        /// Fusion rules needs to be deleted manually from UI before calling this endpoint<br/>
         /// </remarks>
         /// <param name="assetUid">The unique identifier of the fusion configuration.</param>
         /// <param name="cascade">The unique identifier of the fusion configuration.</param>
@@ -149,10 +146,10 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution's unique identifier to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset was not found.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add assets of this type.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to delete assets of this type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> DeleteBulkAssetsAsync(Guid assetUid, bool cascade = false)
+        public async Task<IHttpActionResult> DeleteBulkFusionAsync(Guid assetUid, bool cascade = false)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to remove assets of this type."));
@@ -167,7 +164,10 @@ namespace d360.web.Controllers.V2
                 if (fusion == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Fusion configuration with Uid {assetUid} could not be found."));
 
-
+                if (FusionRepository.HasFusionRules(fusion.ObjectID))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Not found", $"Fusion configuration have rules. Delete them manually before calling this endpoint!"));
+                }
 
                 var execution = getApiExecution(1, new ApiExecutionFields_DeleteAssets { AssetTypeUid = fusion.AssetType.uid});
 

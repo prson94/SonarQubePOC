@@ -2587,17 +2587,14 @@
             <param name="model">The fusion status log model.</param>
             <returns>The model of the updated fusion status log entry.</returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.FusionController.DeleteBulkAssetsAsync(System.Guid,System.Boolean)">
+        <member name="M:d360.web.Controllers.V2.FusionController.DeleteBulkFusionAsync(System.Guid,System.Boolean)">
             <summary>
-            Removes a fusion configuration based on the specific fusio Uid. This endpoint is meant for deleting one fusion at a time.
+            Removes a fusion configuration based on the specific fusion Uid. This endpoint is meant for deleting one fusion at a time.
             </summary>
             <remarks>
-            When using the ExecutionItemUid, keep in mind:
-            * ExecutionItemUid is optional.
-            * If you do not wish to provide an ExecutionItemUid, remove the entire line, including the preceding comma (, "ExecutionItemUid": "00000000-0000-0000-0000-000000000000").
-            * If you provide ExecutionItemUids, values must be a unique across the entire request body.
-            * You do not have to provide ExecutionItemUid values for all entries in a request.
-            * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+            <strong>&#9888; Read before calling this endpoint</strong><br/>
+            Calling this endpoint with parameter <strong>Cascade</strong> set to <strong>true</strong> will irrevocably delete fusion configuration and all data related* which includes attributes, fields and relationships.
+            Fusion rules needs to be deleted manually from UI before calling this endpoint<br/>
             </remarks>
             <param name="assetUid">The unique identifier of the fusion configuration.</param>
             <param name="cascade">The unique identifier of the fusion configuration.</param>
