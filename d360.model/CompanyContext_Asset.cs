@@ -144,8 +144,16 @@ namespace d360.model
                     }
                 }
             }
+            else
+            {
+                simpleFilter = wildcardValue(simpleFilter);
+            }
 
             #endregion
+
+            // Scrub sort fields
+            sortField = sortField.Replace("'", "").Replace(" ", "").Replace("-","");
+            sortOrder = string.IsNullOrEmpty(sortOrder) ? "" : (sortOrder.ToLower().Equals("asc") ? "asc" : "desc");
 
             parameters.Add("assetTypeId", at.ID);
             parameters.Add("userId", CurrentResourceID);
