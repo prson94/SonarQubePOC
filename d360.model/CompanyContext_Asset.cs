@@ -686,10 +686,7 @@ OPTION (RECOMPILE)";
 
         private string GetFieldTypeSort(string fieldName, bool ascending, FieldType ft)
         {
-            string datatype = DetermineSqlDataTypeForFieldType(ft);
-            return (datatype == "nvarchar") ? 
-                $" [{fieldName}] {(ascending ? "ASC" : "DESC")}" : 
-                $" try_cast([{fieldName}] as {datatype}) {(ascending ? "ASC" : "DESC")}";
+            return $" [{fieldName}] {(ascending ? "ASC" : "DESC")}";
         }
 
         private string GetFilterCondition(string condition, string fieldName, string bind, DynamicParameters dbArgs, string value)
