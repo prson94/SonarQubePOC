@@ -284,9 +284,7 @@ namespace igx.jobs.bulkloadprocessor
                             await BulkLoadOwnership(company, load.ID);
                             break;
                         case "P":   // Promotions
-                            //executeWithTry(companyConnection, $@"EXEC bulkload.Promotions {load.ID}", loadInfo.CompanyID, 2400);
                             await BulkLoadAssets(company, repository, load);
-
                             company.CreateOrUpdateTypeDisplayValuesAsync(load.ObjectID, load.Object);
                             break;
                         case "R":   // Relations                                
@@ -1341,8 +1339,14 @@ where	ID = @loadId", new { loadId }, transaction: trans);
 
         private static async Task BulkLoadAssets(CompanyContext company, IAssetRepository repository, Load load)
         {
-            executeWithTry(company.Connection, $@"EXEC bulkload.Promotions {load.ID}", company.CurrentCompanyID, 2400);
-            await company.BulkLoadAssets(load, repository);
+            try
+            {
+                await company.BulkLoadAssets(load, repository);
+            }
+            catch (Exception ex)
+            {
+                CoreFunction.AITrackException(functionName, ex, companyID);
+            }
         }
 
         static void executeWithTry(SqlConnection companyConnection, string sql, int companyID, int timeout = 1200)

@@ -80,19 +80,64 @@ from	[Load] L
 
 		) C_D on C_D.[Object] = L.[Object] and C_D.ObjectID = L.ObjectID 
 		left join reporting.Global_Resource R on R.ResourceID = L.UpdatedBy       
-        cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 1) S
-        cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 0) E
-        cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status is null) I
-        cross apply (select count(1) as C from LoadItem where LoadID = L.ID) T";
+        {0}";
 
         public IEnumerable<LoadDetail> GetLoadDetails()
         {
-            return Query<LoadDetail>(LoadDetailBaseSql + " order by L.ID desc");
+            var countSql = @"
+        cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 1) S
+        cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 0) E
+        cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status is null) I
+        cross apply (select count(1) as C from LoadItem where LoadID = L.ID) T
+";
+            return Query<LoadDetail>(string.Format(LoadDetailBaseSql, countSql) + " order by L.ID desc");
         }
 
         public LoadDetail GetLoadDetail(int id)
         {
-            return Query<LoadDetail>(LoadDetailBaseSql + " where L.ID = " + id).SingleOrDefault();
+            var countSql = @"
+        cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 1) S
+        cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 0) E
+        cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status is null) I
+        cross apply (select count(1) as C from LoadItem where LoadID = L.ID) T
+";
+
+            var load = GetById<Load>(id);
+
+            if (load.Action == "P" && (load.PostExecutionID != null || load.PutExecutionID != null))
+            {
+                countSql = @"
+		cross apply (
+			select sum(I) as C from (
+				select count(*) as I from api.ExecutionAsset where ExecutionID = L.PostExecutionID and Success = 1
+				union all
+				select count(*) as I from api.ExecutionAsset where ExecutionID = L.PutExecutionID and Success = 1 
+				) R
+			) S
+		cross apply (
+			select sum(I) as C from (
+				select count(*) as I from api.ExecutionAsset where ExecutionID = L.PostExecutionID and Success = 0
+				union all
+				select count(*) as I from api.ExecutionAsset where ExecutionID = L.PutExecutionID and Success = 0 
+				) R
+			) E
+		cross apply (
+			select sum(I) as C from (
+				select count(*) as I from api.ExecutionAsset where ExecutionID = L.PostExecutionID and Success is null
+				union all
+				select count(*) as I from api.ExecutionAsset where ExecutionID = L.PutExecutionID and Success is null 
+				) R
+			) I
+		cross apply (
+			select sum(I) as C from (
+				select count(*) as I from api.ExecutionAsset where ExecutionID = L.PostExecutionID 
+				union all
+				select count(*) as I from api.ExecutionAsset where ExecutionID = L.PutExecutionID
+				) R
+			) T";
+            }
+
+            return Query<LoadDetail>(string.Format(LoadDetailBaseSql, countSql) + " where L.ID = " + id).SingleOrDefault();
         }
 
         public IEnumerable<dynamic> GetLoadColumnDetails(int id)
@@ -120,13 +165,26 @@ order by	ColumnIndex", new { id });
 
             if (useExecutionTable)
             {
+                var assetType = Filter<AssetType>(a => a.uid == load.AssetTypeUid).FirstOrDefault();
+
+                var parentAssetType = GetParentTypeById(assetType.ID);
+
                 sqlColumns = $"select @id as LoadID, EA.ItemNumber as RowIndex\n";
                 sqlTables = "from api.ExecutionAsset EA\n";
                 columns.ForEach(c =>
                 {
                     var i = c.ColumnIndex;
-                    sqlColumns += $",EF{i}.FieldValue as Column{i}\n";
-                    sqlTables += $" left join api.ExecutionField EF{i} on EF{i}.ItemNumber = EA.ItemNumber and EF{i}.ExecutionID = EA.ExecutionID and EF{i}.FieldName = '{c.Name}'\n";
+                    if (parentAssetType != null && c.Name == parentAssetType.Name)
+                    {
+                        sqlColumns += $",EF{i}.DisplayValue + ' [' + cast(EF{i}.[uid] as varchar(50)) + ']' as Column{i}\n";
+                        sqlTables += $" left join AssetDetail EF{i} on EF{i}.ID = EA.ParentAssetID\n";
+                    }
+                    else
+                    {
+                        sqlColumns += $",EF{i}.FieldValue as Column{i}\n";
+                        sqlTables += $" left join api.ExecutionField EF{i} on EF{i}.ItemNumber = EA.ItemNumber and EF{i}.ExecutionID = EA.ExecutionID and EF{i}.FieldName = '{c.Name}'\n";
+                    }
+
                 });
                 sqlColumns += $", case EA.Success when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status], EA.Message as StatusMessage";
 
@@ -763,18 +821,12 @@ order by	ColumnIndex", new { id });
 
         public async Task BulkLoadAssets(Load load, IAssetRepository repository)
         {
-            var errors = new List<string>();
-            var success = true;
 
             if (load == null)
-            {
-                errors.Add("Bulk load object is null");
-            }
+                throw new ArgumentNullException("load cannot be null");
 
             if (!load.AssetTypeUid.HasValue)
-            {
-                errors.Add("Asset Type uid not specified");
-            }
+                throw new ArgumentNullException("asset type uid cannot be null");
 
             try
             {
@@ -783,27 +835,46 @@ order by	ColumnIndex", new { id });
                 AssetType assetType = repository.GetAssetTypeByUID(assetTypeUid);
 
                 if (assetType == null)
-                    errors.Add($"Asset Type with uid '{assetTypeUid}' could not be found.");
+                    throw new Exception($"Asset type with uid {assetTypeUid} not found");
 
                 //get parent type if applicable
                 var parentAssetType = GetParentType(assetType.ObjectID, SystemObjectHelper.GetSystemObjects(assetType.Class));
 
+                //need to calculate key hashes to figure out which assets to put and post
+                await LoadLookupValues(load, assetType);
                 await CalculateHashes(load, assetType);
 
                 var putAssets = new List<AssetUpdate>();
                 var postAssets = new List<AssetInsert>();
 
-                foreach (var item in load.LoadItems)
+                var loadItems = Filter<LoadItem>(l => l.LoadID == load.ID).ToList();
+
+                foreach (var item in loadItems)
                 {
+                    var loadItemColumns = Filter<LoadItemColumn>(l => l.LoadID == load.ID && l.RowIndex == item.RowIndex).ToList();
                     if (!item.ObjectID.HasValue)
                     {
                         var insert = new AssetInsert();
                         insert.Fields = new Dictionary<string, string>();
 
-                        foreach (var field in item.LoadItemColumns)
+                        foreach (var field in loadItemColumns)
                         {
+                            
                             var col = load.LoadColumns.Where(c => c.LoadID == load.ID && c.ColumnIndex == field.ColumnIndex).FirstOrDefault();
-                            insert.Fields.Add(col.Name, field.Value);
+                            
+                            if (parentAssetType != null && col.Name == parentAssetType.Name)
+                            {
+                                    string parentUid = "";
+                                    int endIndex = field.Value.LastIndexOf(']');
+                                    int startIndex = field.Value.LastIndexOf('[') + 1;
+                                    if (startIndex < endIndex)
+                                        parentUid = field.Value.Substring(startIndex, (endIndex - startIndex));
+                                    insert.ParentUid = new Guid(parentUid);
+                            }
+                            else
+                            {
+                                insert.Fields.Add(col.Name, field.Value);
+                            }
                         }
                         postAssets.Add(insert);
                     }
@@ -820,7 +891,7 @@ order by	ColumnIndex", new { id });
                             }
                             else
                             {
-                                errors.Add($"Could not parse system object {parent.Object}");
+                                item.StatusMessage = $"Could not parse system object {parent.Object}";
                             }
 
                             if (parent != null)
@@ -830,7 +901,7 @@ order by	ColumnIndex", new { id });
                         update.Uid = asset.uid;
                         update.Fields = new Dictionary<string, string>();
 
-                        foreach (var field in item.LoadItemColumns)
+                        foreach (var field in loadItemColumns)
                         {
                             var col = load.LoadColumns.Where(c => c.LoadID == load.ID && c.ColumnIndex == field.ColumnIndex).FirstOrDefault();
                             update.Fields.Add(col.Name, field.Value);
@@ -859,8 +930,7 @@ order by	ColumnIndex", new { id });
             }
             catch (Exception ex)
             {
-                errors.Add(ex.Message + (ex.InnerException != null ? ex.InnerException.Message : ""));
-
+                throw ex;
             }
         }
 
@@ -889,6 +959,280 @@ order by	ColumnIndex", new { id });
             public int LoadID { get; set; }
         }
 
+
+        private async Task LoadLookupValues(Load load, AssetType assetType)
+        {
+            var resolveLookupSql = @"
+begin
+
+	update	T
+	set		T.LookupObject = S.LookupObject,
+			T.LookupObjectID = S.LookupObjectID
+	from	LoadItemColumn T
+			inner join	(
+						select	IC.LoadID,
+								IC.RowIndex,
+								IC.ColumnIndex,
+								case 
+									when ((L_A.ID is not null) OR (F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel AND F.LookupObjectType in ('Artifact', 'ArtifactType')) ) then 'Artifact'									
+									else NULL
+								end as LookupObject,
+								case 
+									when L_A.ObjectID is not null then L_A.ObjectID
+									when F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel then 0
+									else NULL
+								end as LookupObjectID 
+						from	FieldType F
+								inner join [Load] L on L.ID = @id and L.[Object] = F.[Object] and L.ObjectID = F.ObjectID and F.[Type] = 'Lookup'
+								inner join [LoadColumn] C on C.LoadID = L.ID and F.Name = C.Name
+								inner join [LoadItemColumn] IC on IC.LoadID = C.LoadID and IC.ColumnIndex = C.ColumnIndex								
+								inner join AssetDetail L_A on L_A.[Object] = 'Artifact' and L_A.TypeID = F.LookupObjectID and (L_A.DisplayValue = IC.Value)								
+						where	F.AllowMultipleValues = 0 and F.LookupObjectType in ('Artifact', 'ArtifactType')
+						) S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex and S.ColumnIndex = T.ColumnIndex;
+
+	update	T
+	set		T.LookupObject = S.LookupObject,
+			T.LookupObjectID = S.LookupObjectID
+	from	LoadItemColumn T
+			inner join	(
+						select	IC.LoadID,
+								IC.RowIndex,
+								IC.ColumnIndex,
+								case 									
+									when ( (L_D.ObjectID is not null) OR (F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel AND F.LookupObjectType = 'ReferenceItemType') ) then 'ReferenceItemType'									
+									else NULL
+								end as LookupObject,
+								case 									
+									when L_D.ObjectID is not null then L_D.ObjectID
+									when F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel then 0																		
+									else NULL
+								end as LookupObjectID 
+						from	FieldType F
+								inner join [Load] L on L.ID = @id and L.[Object] = F.[Object] and L.ObjectID = F.ObjectID and F.[Type] = 'Lookup'
+								inner join [LoadColumn] C on C.LoadID = L.ID and F.Name = C.Name
+								inner join [LoadItemColumn] IC on IC.LoadID = C.LoadID and IC.ColumnIndex = C.ColumnIndex
+
+								inner join AssetType L_D on L_D.[Object] = 'ReferenceItemType' and L_D.[Name] = IC.Value								
+						where	F.AllowMultipleValues = 0 and F.LookupObjectType = 'ReferenceItemType'
+						) S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex and S.ColumnIndex = T.ColumnIndex
+
+
+if exists (select 1 from	FieldType F
+								inner join [Load] L on L.ID = @id and L.[Object] = F.[Object] and L.ObjectID = F.ObjectID and F.[Type] = 'Lookup'
+								inner join [LoadColumn] C on C.LoadID = L.ID and F.Name = C.Name								
+				where F.AllowMultipleValues = 0 and F.LookupObjectType = 'ReferenceItem')
+	begin
+		
+		update	T
+			set		T.LookupObject = S.LookupObject,
+					T.LookupObjectID = S.LookupObjectID
+			from	LoadItemColumn T
+					inner join	(
+								select	IC.LoadID,
+										IC.RowIndex,
+										IC.ColumnIndex,								
+										case
+											
+											when ( (FLV.Value is not null) OR (F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel AND F.LookupObjectType = 'ReferenceItem') ) then 'ReferenceItem'									
+											else NULL
+										end as LookupObject,
+										case 									
+											
+											when FLV.Value is not null then FLV.Value
+											when F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel then 0
+											else NULL
+										end as LookupObjectID 
+								from	FieldType F
+										inner join [Load] L on L.ID = @id and L.[Object] = F.[Object] and L.ObjectID = F.ObjectID and F.[Type] = 'Lookup'
+										inner join [LoadColumn] C on C.LoadID = L.ID and F.Name = C.Name
+										inner join [LoadItemColumn] IC on IC.LoadID = C.LoadID and IC.ColumnIndex = C.ColumnIndex
+										
+										cross apply [dbo].[FieldLookupValueByFieldTypeID](F.ID) FLV
+										
+								where	F.AllowMultipleValues = 0 and F.LookupObjectType = 'ReferenceItem' and  FLV.Text = IC.Value
+								) S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex and S.ColumnIndex = T.ColumnIndex
+	end
+
+	update	T
+		set		T.LookupObject = S.LookupObject,
+				T.LookupObjectID = S.LookupObjectID
+		from	LoadItemColumn T
+				inner join	(
+							select	IC.LoadID,
+									IC.RowIndex,
+									IC.ColumnIndex,
+									case
+										when ( (L_F.ID is not null) OR (F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel AND F.LookupObjectType = 'FusionAttributeType') ) then 'FusionAttribute'									
+										else NULL
+									end as LookupObject,
+									case 									
+										when L_F.ID is not null then L_F.ID
+										when F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel then 0
+
+										else NULL
+									end as LookupObjectID 
+							from	FieldType F
+									inner join [Load] L on L.ID = @id and L.[Object] = F.[Object] and L.ObjectID = F.ObjectID and F.[Type] = 'Lookup'
+									inner join [LoadColumn] C on C.LoadID = L.ID and F.Name = C.Name
+									inner join [LoadItemColumn] IC on IC.LoadID = C.LoadID and IC.ColumnIndex = C.ColumnIndex
+
+									inner join FusionAttribute L_F on L_F.FusionAttributeTypeID = F.LookupObjectID and (L_F.[Name] = IC.Value OR L_F.TextPath = IC.Value)								
+							where	F.AllowMultipleValues = 0 and F.LookupObjectType = 'FusionAttributeType'
+							) S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex and S.ColumnIndex = T.ColumnIndex
+
+	update	T
+		set		T.LookupObject = S.LookupObject,
+				T.LookupObjectID = S.LookupObjectID
+		from	LoadItemColumn T
+				inner join	(
+							select	IC.LoadID,
+									IC.RowIndex,
+									IC.ColumnIndex,
+									case 									
+										when ( (L_L.Value is not null) OR (F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel AND F.LookupObjectType = 'Lookup') ) then 'Lookup'									
+										else NULL
+									end as LookupObject,
+									case 									
+										when L_L.Value is not null then L_L.Value
+										when F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel then 0
+
+										else NULL
+									end as LookupObjectID 
+							from	FieldType F
+									inner join [Load] L on L.ID = @id and L.[Object] = F.[Object] and L.ObjectID = F.ObjectID and F.[Type] = 'Lookup'
+									inner join [LoadColumn] C on C.LoadID = L.ID and F.Name = C.Name
+									inner join [LoadItemColumn] IC on IC.LoadID = C.LoadID and IC.ColumnIndex = C.ColumnIndex
+
+									left join [FieldLookupValue] L_L on F.ID = L_L.FieldTypeID and L_L.LookupObjectType = 'Lookup' and L_L.LookupObjectID = F.LookupObjectID and L_L.[Text] = IC.Value								
+							where	F.AllowMultipleValues = 0 and F.LookupObjectType = 'Lookup'
+							) S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex and S.ColumnIndex = T.ColumnIndex
+
+	update	T
+		set		T.LookupObject = S.LookupObject,
+				T.LookupObjectID = S.LookupObjectID
+		from	LoadItemColumn T
+				inner join	(
+							select	IC.LoadID,
+									IC.RowIndex,
+									IC.ColumnIndex,
+									case 									
+										when ( (L_L.Value is not null) OR (F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel AND F.LookupObjectType = 'Resource') ) then 'Resource'									
+										else NULL
+									end as LookupObject,
+									case 									
+										when L_L.Value is not null then L_L.Value
+										when F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel then 0
+
+										else NULL
+									end as LookupObjectID 
+							from	FieldType F
+									inner join [Load] L on L.ID = @id and L.[Object] = F.[Object] and L.ObjectID = F.ObjectID and F.[Type] = 'Lookup'
+									inner join [LoadColumn] C on C.LoadID = L.ID and F.Name = C.Name
+									inner join [LoadItemColumn] IC on IC.LoadID = C.LoadID and IC.ColumnIndex = C.ColumnIndex
+
+									left join [FieldLookupValue] L_L on F.ID = L_L.FieldTypeID and L_L.LookupObjectType = 'Resource' and L_L.LookupObjectID = F.LookupObjectID and L_L.[Text] = IC.Value								
+							where	F.AllowMultipleValues = 0 and F.LookupObjectType = 'Resource'
+							) S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex and S.ColumnIndex = T.ColumnIndex
+
+	update	T
+		set		T.LookupObject = S.LookupObject,
+				T.LookupObjectID = S.LookupObjectID
+		from	LoadItemColumn T
+				inner join	(
+							select	IC.LoadID,
+									IC.RowIndex,
+									IC.ColumnIndex,
+									case
+										when ( (L_T.ID is not null) OR (F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel ) ) then 'Taxonomy'
+										else NULL
+									end as LookupObject,
+									case 									
+										when L_T.ObjectID is not null then L_T.ObjectID
+										when F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel then 0
+										else NULL
+									end as LookupObjectID 
+							from	FieldType F
+									inner join [Load] L on L.ID = @id and L.[Object] = F.[Object] and L.ObjectID = F.ObjectID and F.[Type] = 'Lookup'
+									inner join [LoadColumn] C on C.LoadID = L.ID and F.Name = C.Name
+									inner join [LoadItemColumn] IC on IC.LoadID = C.LoadID and IC.ColumnIndex = C.ColumnIndex
+
+									inner join AssetDetail L_T on L_T.[Object] = 'Taxonomy' and L_T.TypeID = F.LookupObjectID and (L_T.[DisplayValue] = IC.Value )
+							where	F.AllowMultipleValues = 0 and F.LookupObjectType in ('Taxonomy', 'TaxonomyType')
+							) S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex and S.ColumnIndex = T.ColumnIndex
+
+
+	update	T
+	set		T.LookupObject = S.LookupObject,
+			T.LookupObjectID = S.LookupObjectID
+	from	LoadItemColumn T
+			inner join	(
+						select	IC.LoadID,
+								IC.RowIndex,
+								IC.ColumnIndex,
+								case
+									when ( (L_T.ID is not null) OR (F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel ) ) then 'Taxonomy'
+									else NULL
+								end as LookupObject,
+								case 									
+									when L_T.ObjectID is not null then L_T.ObjectID
+									when F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel then 0
+									else NULL
+								end as LookupObjectID 
+						from	FieldType F
+								inner join [Load] L on L.ID = @id and L.[Object] = F.[Object] and L.ObjectID = F.ObjectID and F.[Type] = 'Lookup'
+								inner join [LoadColumn] C on C.LoadID = L.ID and F.Name = C.Name
+								inner join [LoadItemColumn] IC on IC.LoadID = C.LoadID and IC.ColumnIndex = C.ColumnIndex
+
+								inner join AssetType L_T on L_T.[Object] = 'TaxonomyType'  and (L_T.Name = IC.Value )
+						where	F.AllowMultipleValues = 0 and F.LookupObjectType = 'TaxonomyType' and F.LookupObjectID = 0
+						) S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex and S.ColumnIndex = T.ColumnIndex
+	if exists (select 1 from LoadItem LI
+						inner join LoadColumn C on C.LoadID = LI.LoadID
+						inner join FieldType FT on FT.Object = @Object and FT.ObjectID = @ObjectID and FT.Name = C.Name
+				where
+					FT.AllowMultipleValues = 1 and LI.LoadID = @id )
+	begin
+		
+
+		update	IC
+		set		IC.LookupObject = MV.LookupObject,
+				IC.LookupValue = MV.LookupValue
+		from	LoadItemColumn IC
+				inner join	(
+							select		IC.LoadID,
+										IC.RowIndex,
+										IC.ColumnIndex,
+										'ReferenceItem' as LookupObject,
+										string_agg(AD.ObjectID, ',') as LookupValue
+							from		LoadItem LI
+										inner join LoadItemColumn IC on LI.LoadID = @id and LI.LoadID = IC.LoadID and IC.RowIndex = LI.RowIndex
+										inner join LoadColumn C on C.LoadID = IC.LoadID and C.ColumnIndex = IC.ColumnIndex
+										inner join FieldType FT on FT.Object = @Object and FT.ObjectID = @ObjectID and FT.Name = C.Name and FT.AllowMultipleValues = 1
+										cross apply string_split(IC.Value, ',') VS									
+										left join AssetWithType AD on AD.Object = 'ReferenceItem' and AD.TypeID = FT.LookupObjectID
+										CROSS APPLY [dbo].[GetReferenceItemDisplayValue](AD.ObjectID, FT.ID) GRIDV
+							where GRIDV.DisplayValue = ltrim(rtrim(VS.Value))
+							group by	IC.LoadID,
+										IC.RowIndex,
+										IC.ColumnIndex			
+							) MV on MV.LoadID = IC.LoadID and MV.RowIndex = IC.RowIndex and MV.ColumnIndex = IC.ColumnIndex
+	end
+
+	update	IC
+		set		IC.LookupObject = REPLACE(FT.LookupObjectType, 'Type', ''),
+				IC.LookupObjectID = 0,
+				IC.LookupValue = 0
+		from	LoadItemColumn IC
+				inner join LoadColumn C on C.ColumnIndex = IC.ColumnIndex and C.LoadID = IC.LoadID and C.LoadID = @id
+				inner join FieldType FT on FT.Object = @Object and FT.ObjectID = @ObjectID and FT.Name = C.Name and FT.Type = 'Lookup' and FT.AllowAllValue = 1 and IC.Value = FT.AllowAllLabel;
+	
+end
+
+";
+
+            await QueryAsync<int>(resolveLookupSql, new { id = load.ID, @object = assetType.Object, objectId = assetType.ObjectID });
+
+        }
 
         private async Task CalculateHashes(Load load, AssetType assetType)
         {
@@ -1097,7 +1441,7 @@ where	T.LoadID = @id;
             {
                 if (parentAssetType != null)
                 {
-                    await QueryAsync<int>(glossaryHashWithParentSql, new { @object = assetType.Object, objectID = assetType.ObjectID, id = load.ID, parrentTypeID = parentAssetType.Object });
+                    await QueryAsync<int>(glossaryHashWithParentSql, new { @object = assetType.Object, objectID = assetType.ObjectID, id = load.ID, parentTypeID = parentAssetType.ObjectID });
                 }
                 else
                 {

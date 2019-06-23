@@ -13,6 +13,7 @@ using d360.core.entities.Views;
 using d360.core.entities.Workflow;
 using d360.core.enums;
 using d360.core.queue;
+using d360.model.DataAccessLayer;
 using d360.model.workflow;
 using Dapper;
 using Newtonsoft.Json.Linq;
@@ -314,5 +315,6 @@ namespace d360.model
         List<RelationshipDirectionFieldInfo> getRelationFieldData(string fieldTypeRelationType, int typeID, List<FieldType> fields);
 
         Task<IEnumerable<TypeIdentifierInfoModel>> GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType type, Guid guid);
+        Task BulkLoadAssets(Load load, IAssetRepository repository);
     }
 }
