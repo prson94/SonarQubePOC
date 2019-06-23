@@ -637,8 +637,8 @@ where   A.Type = 'ArtifactType'
                 return (string)((row as IDictionary<string, object>)["Parent"]);
             else if (field != null && field.Name == "Url")
                 return (string)((row as IDictionary<string, object>)["Url"]);
-            else if (field != null && field.Name == "AssetID")
-                return (string)((row as IDictionary<string, object>)["AssetID"].ToString());
+            else if (field != null && field.Name == "ID")
+                return (string)((row as IDictionary<string, object>)["ID"].ToString());
             return "";
         }
 
