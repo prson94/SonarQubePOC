@@ -82,13 +82,13 @@ export class HeaderBreadcrumbService extends BaseObservableService{
         let folderName = menuID;
         let promise = new Promise<string>((resolve, reject) => {
 
-            this.sitenavservice.getSiteNavItems().then(res => {
+            this.sitenavservice.getSiteNavItems().subscribe(res => {
                 res.forEach(s => {
                     if (s.Name.indexOf(menuID) !== -1) {
                         folderName = s.Title;
                     }
                 });
-            }).then(() => {
+            }).add(() => {
                 if (folderName != menuID) resolve(folderName);
                 else reject(menuID.substr(1, menuID.length));
             });

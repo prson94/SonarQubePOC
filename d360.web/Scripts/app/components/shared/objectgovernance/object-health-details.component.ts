@@ -86,11 +86,11 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
 
     private loadSeriesData() {
         this.scoreService.getAverageScore(this.uid)
-            .then(res => {
+            .subscribe(res => {
                 this.averageScore = (res == null || res.AverageScore == null) ? 0 : res.AverageScore;
             })
-            .then(() => this.scoreService.getScoreHistory(this.uid))
-            .then(res => {
+            .add(() => this.scoreService.getScoreHistory(this.uid))
+            .add(res => {
                 let data = res.map(val => {
                     return [Date.parse(val.Date), val.Score];
                 });
@@ -166,7 +166,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     private loadPoints() {
         this.isLoading = true;
         this.scoreService.getPointBreakdown(this.uid, this.scoreDate)
-            .then(res => {
+            .subscribe(res => {
 
                 this.pointBreakdown = res;
                 this.pointBreakdownTree = [];

@@ -199,7 +199,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
         this.getFieldsDefinition();
 
 
-        this.companySettingsService.getAuthenticationModel().then(res => {
+        this.companySettingsService.getAuthenticationModel().subscribe(res => {
             if (res.model == 'forms') {
                 this.allowPasswordReset = true;
             }

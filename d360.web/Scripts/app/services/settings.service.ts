@@ -1,60 +1,68 @@
 ﻿import { Injectable } from '@angular/core';
-import { Headers, Http } from '@angular/http';
 import { CompanySettings, ICompanySettingsService } from '../models/settings.model';
-import { MessagesService } from './messages.service';
-import { BaseService } from './base.service';
 import { AuthenticationProperties } from '../models/authentication-properties.model';
 import { SelectItem } from 'primeng/primeng';
 import { JsonResult } from '../models/jsonresult.model';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { catchError, map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { BaseObservableService } from './baseObservable.service';
+import { MessagesObservableService } from './messages-observable.service';
 
 @Injectable()
-export class CompanySettingsService extends BaseService implements ICompanySettingsService {
+export class CompanySettingsService extends BaseObservableService  implements ICompanySettingsService {
 
-    constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
+    constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
-    getSettings(): Promise<CompanySettings> {
+    getSettings(): Observable<CompanySettings> {
         return this.http.get('/form/CompanySettings')
-            .toPromise()
-            .then(response => <CompanySettings>response.json())
-            .catch(err =>this.handleError(err));
+            .pipe(
+            map(response => <CompanySettings>response),
+                catchError(err => this.handleError(err))
+                );
     }
 
-    putSettings(companySettings: CompanySettings): Promise<any> { 
-        var headers = new Headers();
+    putSettings(companySettings: CompanySettings): Observable<any> {
+        var headers = new HttpHeaders();
         headers.append('Content-Type', 'application/json');
 
-        return this.http.put('/form/UpdateCompanySettings', JSON.stringify(companySettings), { headers: headers })
-            .toPromise()
-            .catch(err => this.handleError(err));
+        return this.http.put('/form/UpdateCompanySettings', JSON.stringify(companySettings), { headers })
+            .pipe(
+                catchError (err => this.handleError(err))
+            );
     }    
     
-    getAuthenticationModel(): Promise<AuthenticationProperties> {
+    getAuthenticationModel(): Observable<AuthenticationProperties> {
         return this.http.get('api/authenticationModel')
-            .toPromise()
-            .then(response => <AuthenticationProperties>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <AuthenticationProperties>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getGroups(): Promise<SelectItem[]> {
+    getGroups(): Observable<SelectItem[]> {
         return this.http.get(`/form/CompanySettings/groups`)
-            .toPromise()
-            .then(response => <SelectItem[]>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <SelectItem[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    postDisplayRebuildRequest(): Promise<JsonResult> {
+    postDisplayRebuildRequest(): Observable<JsonResult> {
         return this.http
             .post(`form/rebuildDisplayValues`,'')
-            .toPromise()
-            .then(res => <JsonResult>res.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(res => <JsonResult>res),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    postIndexRebuildRequest(): Promise<JsonResult> {
+    postIndexRebuildRequest(): Observable<JsonResult> {
         return this.http
             .post(`api/v2/search/rebuildIndex`, '')
-            .toPromise()
-            .then(res => <JsonResult>res.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(res => <JsonResult>res),
+                catchError(err => this.handleError(err))
+            );
     }
 }

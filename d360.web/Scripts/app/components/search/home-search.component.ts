@@ -47,7 +47,7 @@ export class HomeSearchComponent extends BaseComponent {
     
     private doSearch(filterCategory?: SearchCategories) {        
         this.searchService.getSearchResults(this.searchText, this.resultsPerPage, this.pageNumber, this.searchTypes, filterCategory, this.isExactMatch)
-            .then(res => {                
+            .subscribe(res => {                
                 this.searchResults = res;
                 this.resultsChange.emit(this.searchResults);
                 if (filterCategory == undefined) this.categories = res.Categories;

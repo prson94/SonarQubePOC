@@ -64,7 +64,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
     load(): void {
         this.isLoading = true;
         this.companySettingsService.getSettings()
-            .then(data => {
+            .subscribe(data => {
                 this.companyLogo = new CompanyImage();
                 this.companyIcon = new CompanyImage();
                 this.homePageImage = new CompanyImage();
@@ -78,8 +78,8 @@ export class AdminSettingsComponent extends AdminBaseComponent {
 
              
             })
-            .then(() => this.companySettingsService.getGroups())
-            .then(x => {
+            .add(() => this.companySettingsService.getGroups())
+            .add(x => {
                 this.groups = x;
                 this.groups.unshift({ label: '[Administrators]', value: '0' });
                 this.isLoading = false;
@@ -94,7 +94,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         this.companySettings.HomePageBackgroundImage = this.homePageImage.dataUrl;
 
         this.companySettingsService.putSettings(this.companySettings)
-            .then(data => {                
+            .subscribe(data => {                
                 this.isLoading = false;
                 let type = JSON.parse(data["_body"]).type;
                 if (type && type == "error") {
@@ -126,7 +126,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
     rebuildIndex() {
         this.disableRebuildIndex = true;
         this.companySettingsService.postIndexRebuildRequest()
-            .then(x => {
+            .subscribe(x => {
                 if (x.type == "confirm") {
                     this.rebuildLabel = "Refresh Queued";
                 } else {
