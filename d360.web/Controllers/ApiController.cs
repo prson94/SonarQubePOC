@@ -343,11 +343,6 @@ namespace d360.web.Controllers
                             case "date":
                             case "datetime":
                                 jsonElementDataType = jsonElementDefinition.DataType;
-                                DateTime jsonDate;
-                                if (DateTime.TryParse(jsonElementValue, out jsonDate))
-                                {
-                                    jsonElementValue = jsonDate.ToString("yyyy-MM-ddTHH:mm:ss\"Z\"");
-                                }
                                 break;
                             case "int":
                             case "bigint":
