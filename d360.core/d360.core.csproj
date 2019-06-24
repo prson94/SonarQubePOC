@@ -82,6 +82,7 @@
     <Compile Include="entities\AssetTypeLevel.cs" />
     <Compile Include="entities\Community\Client.cs" />
     <Compile Include="entities\Community\CompanyHelpResource.cs" />
+    <Compile Include="entities\Community\GenericCommand.cs" />
     <Compile Include="entities\Community\HelpResource.cs" />
     <Compile Include="entities\Community\Plugins\ClientFusionType.cs" />
     <Compile Include="entities\Contracts\ICreatedMetadata.cs" />
