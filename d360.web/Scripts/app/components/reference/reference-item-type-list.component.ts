@@ -80,7 +80,7 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
         this.isLoading = true;
         this.loadPermissions(this.permissionsService, "ReferenceItemType", 0);
         this.referenceService.getReferenceItemTypes()
-            .then(result => {
+            .subscribe(result => {
                 this.referenceTypes = result;
                 if (this.referenceTypes.length > 0) {
                     if (this.initialSelectedListId > 0) {                        

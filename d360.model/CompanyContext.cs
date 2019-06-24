@@ -221,8 +221,6 @@ namespace d360.model
 
         public DbSet<d360.core.entities.Rule> Rules { get; set; }
 
-        public DbSet<d360.core.entities.RuleDimension> RuleDimensions { get; set; }
-
         public DbSet<RuleImplementation> RuleImplementations { get; set; }
 
         public DbSet<RuleResult> RuleResults { get; set; }
@@ -811,7 +809,7 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
                     countSql = @"select count(*) from AssetWithType A with (nolock)
                         cross apply GetAssetTextPathById(A.ID, '/') P 
                         where A.[Type] = @obj and A.TypeID = @objID and (@query is null or P.TextPath like '%' + @query + '%')";
-                    sql = @"select A.ObjectID as Value, P.TextPath as Text, case when I.ID is not null then 1 else 0 end as Selected 
+                    sql = @"select distinct A.ObjectID as Value, P.TextPath as Text, case when I.ID is not null then 1 else 0 end as Selected 
                             from AssetWithType A with (nolock)
                             cross apply GetAssetTextPathById(A.ID, '/') P 
                             left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and 

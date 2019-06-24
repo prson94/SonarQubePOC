@@ -79,7 +79,7 @@ namespace igx.jobs.databasetaskprocessor
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
 #if DEBUG
-                companies = companies.Where(i => i.CompanyID == 193).ToList();
+                companies = companies.Where(i => i.CompanyID == 3).ToList();
 #endif
 
                 companies.Shuffle(); //Randomize
@@ -96,7 +96,7 @@ namespace igx.jobs.databasetaskprocessor
                     {
                         var numberOfQueueItems = 1000;
                         var indexCollectionModel = new ObjectIndexCollectionModel();
-                        var settings = CompanyConnectionUtils.GetCompanySettings(c.CompanyID);
+                        List<CompanySetting> settings = null;
                         
                         using (var outerCompanyConnection = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID))
                         {
@@ -356,6 +356,10 @@ from    [queue].[Task] T
                                             #endregion                                            
                                                 case "FusionCache":
                                                 #region
+                                                if(settings == null)
+                                                {
+                                                    settings = CompanyConnectionUtils.GetCompanySettings(c.CompanyID);
+                                                }
                                                 bool useNewMarkitLineage = settings.Any(s => s.SettingID == markitLineageSettingID && s.Value.ToLower() == "true");
                                                 companyConnection.Execute("exec fusion.ProcessFusionCacheInQueue @FusionID, @useNewMarkitLineage", new { FusionID = q.ObjectID, useNewMarkitLineage }, null, 10800);    // 180 minute timeout.
                                                 break;

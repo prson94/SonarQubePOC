@@ -18,7 +18,7 @@ import {MessagesService} from '../../services/messages.service';
 import {HeaderActionsService} from '../../services/header-actions.service';
 import {PermissionsService} from '../../services/permissions.service';
 import {Breadcrumb} from '../../models/breadcrumb.model';
-import {RuleDimension, Rule, RuleType, RuleClassification, RuleStatus} from '../../models/rule.model';
+import {Rule, RuleType, RuleClassification, RuleStatus} from '../../models/rule.model';
 import {SiteUrlHelpers} from '../../static/site-url-helpers';
 import {StringConstants} from '../../static/string-constants';
 import {RightSidebarService} from '../../services/right-sidebar.service';

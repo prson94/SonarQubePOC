@@ -82,6 +82,7 @@
     <Compile Include="entities\AssetTypeLevel.cs" />
     <Compile Include="entities\Community\Client.cs" />
     <Compile Include="entities\Community\CompanyHelpResource.cs" />
+    <Compile Include="entities\Community\GenericCommand.cs" />
     <Compile Include="entities\Community\HelpResource.cs" />
     <Compile Include="entities\Community\Plugins\ClientFusionType.cs" />
     <Compile Include="entities\Contracts\ICreatedMetadata.cs" />
@@ -169,7 +170,6 @@
     <Compile Include="entities\Quality\RuleResultQualifier.cs" />
     <Compile Include="entities\Quality\RuleResultQualifierType.cs" />
     <Compile Include="entities\Quality\RuleResult.cs" />
-    <Compile Include="entities\Quality\RuleDimension.cs" />
     <Compile Include="entities\Relation\Predicate.cs" />
     <Compile Include="entities\Social\CommentVote.cs" />
     <Compile Include="entities\Social\CommentCount.cs" />

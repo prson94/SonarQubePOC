@@ -546,14 +546,15 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
         if (obj == 'Fusion') {
             this.uriBasedService.getItems(`api/fusion/0/configurations/${this.model.Event.ObjectID}`)
-                .then(r => {
+                .subscribe(r => {
                     if (r != null)
                         this.objectTypeName = 'Fusion :: ' + r['Name'];
                     else
                         this.objectTypeName = '';
                 })
         } else {
-            this.objectDetailService.getObject(this.model.Event.ObjectID, obj).subscribe(
+            this.objectDetailService.getObject(this.model.Event.ObjectID, obj)
+                .subscribe(
                 r => {
                     if (r != null) {
                         this.objectTypeName = r.TypeName + ' :: ' + r.Name;

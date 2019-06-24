@@ -525,31 +525,12 @@ from	api.ExecutionField T
         private void ResolveRuleTypeLookupValues(Guid executionID, int timeout = 3600)
         {
             Connection.Execute(@"
-update  T 
-set     T.LookupValue = S.ID
-from    api.ExecutionField T
-        inner join RuleDimension S on S.Name = T.FieldValue and T.ExecutionID = @executionID and T.FieldName = 'Dimension';
-
-update  api.ExecutionField
-set     LookupValue = case FieldValue 
-            when 'Active' then '2' 
-            when 'Inactive' then '3' 
-            else '1' 
-        end 
-where   ExecutionID = @executionID and FieldName = 'Status';
-
-update  T 
-set     T.Success = 0,
-        T.Message = coalesce(T.Message, '') + 'Rule asset contains an invalid dimension; '
-from    api.ExecutionAsset T
-        inner join api.ExecutionField S on S.ExecutionID = T.ExecutionID and T.ExecutionID = @executionID and S.ItemNumber = T.ItemNumber and S.FieldName = 'Dimension' and S.LookupValue is null;
-
-update  T 
-set     T.Success = 0,
-        T.Message = coalesce(T.Message, '') + 'Rule asset contains an invalid threshold; '
-from    api.ExecutionAsset T
-        inner join api.ExecutionField S on S.ExecutionID = T.ExecutionID and T.ExecutionID = @executionID and S.ItemNumber = T.ItemNumber and S.FieldName = 'Threshold' and ISNUMERIC(S.FieldValue) = 0;
-", new { executionID }, commandTimeout: timeout);
+                        update  T 
+                        set     T.Success = 0,
+                                T.Message = coalesce(T.Message, '') + 'Rule asset contains an invalid threshold; '
+                        from    api.ExecutionAsset T
+                                inner join api.ExecutionField S on S.ExecutionID = T.ExecutionID and T.ExecutionID = @executionID and S.ItemNumber = T.ItemNumber and S.FieldName = 'Threshold' and ISNUMERIC(S.FieldValue) = 0;
+                        ", new { executionID }, commandTimeout: timeout);
         }
 
         private void SendWorkflowEvents(string objectType, int objectTypeID, IEnumerable<IWorkflowEnabledAsset> results, ChangeType? changeTypeOverride = null)
@@ -1909,23 +1890,6 @@ from	IntersectType I
                                     }
                                     if (at.Object == "RuleType")
                                     {
-                                        // Check to ensure Dimension is present.
-                                        success = model.Fields.ContainsKey("Dimension");
-                                        if (!success)
-                                        {
-                                            errorMessage = "Asset is missing a required Dimension field value";
-                                        }
-
-                                        // Check to ensure Status is present.
-                                        if (success)
-                                        {
-                                            success = model.Fields.ContainsKey("Status");
-                                            if (!success)
-                                            {
-                                                errorMessage = "Asset is missing a required Status field value";
-                                            }
-                                        }
-
                                         // Check to ensure Threshold is present.
                                         if (success)
                                         {
@@ -2492,12 +2456,8 @@ from	api.ExecutionAsset T
     merge   [Rule] as T
     using   (
             select  A.ItemNumber,
-                    D.LookupValue as RuleDimensionID,
-                    S.LookupValue as Status,
                     T.FieldValue as Threshold
             from    api.ExecutionAsset A
-                    inner join api.ExecutionField D on D.ExecutionID = A.ExecutionID and D.ItemNumber = A.ItemNumber and D.FieldName = 'Dimension'
-                    inner join api.ExecutionField S on S.ExecutionID = A.ExecutionID and S.ItemNumber = A.ItemNumber and S.FieldName = 'Status'
                     inner join api.ExecutionField T on T.ExecutionID = A.ExecutionID and T.ItemNumber = A.ItemNumber and T.FieldName = 'Threshold'
             where   A.ExecutionID = @ExecutionID
                     and A.Success is null
@@ -2505,8 +2465,8 @@ from	api.ExecutionAsset T
             ) S
     on      (T.RuleTypeID = @ObjectID and T.SourceID = @NonExistentUid)
     when    not matched then
-    insert  (RuleTypeID, RuleDimensionID, Status, Threshold, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-    values  (@ObjectID, S.RuleDimensionID, S.Status, S.Threshold, @R, @D, @R, @D)
+    insert  (RuleTypeID, Threshold, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+    values  (@ObjectID, S.Threshold, @R, @D, @R, @D)
     output  inserted.ID, S.ItemNumber into #ObjectMergeTableResult;
 
     update  T
@@ -2525,16 +2485,13 @@ from	api.ExecutionAsset T
                                                 {
                                                     Connection.Execute($@"
     update	T
-    set		T.RuleDimensionID = case when FD.LookupValue is not null then FD.LookupValue else T.RuleDimensionID end,
-            T.Status = case when FS.LookupValue is not null then FS.LookupValue else T.Status end,
+    set		
             T.Threshold = case when FD.FieldValue is not null then FD.FieldValue else T.Threshold end,
             T.UpdatedBy = @R,
 		    T.UpdatedOn = @D
     from	[Rule] T
 		    inner join api.ExecutionAsset S on S.ObjectID = T.ID and {executionAssetWhereSql}
-            left join api.ExecutionField FD on FD.ExecutionID = S.ExecutionID and FD.ItemNumber = S.ItemNumber and FD.FieldName = 'Dimension'
-            left join api.ExecutionField FS on FS.ExecutionID = S.ExecutionID and FS.ItemNumber = S.ItemNumber and FS.FieldName = 'Status'
-            left join api.ExecutionField FT on FT.ExecutionID = S.ExecutionID and FT.ItemNumber = S.ItemNumber and FT.FieldName = 'Threshold';
+            left join api.ExecutionField FD on FD.ExecutionID = S.ExecutionID and FD.ItemNumber = S.ItemNumber and FD.FieldName = 'Threshold';
 
     update	api.ExecutionAsset
     set		IsNew = 0

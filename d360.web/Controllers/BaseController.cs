@@ -4,6 +4,7 @@ using d360.core.enums;
 using d360.core.helpers;
 using d360.model;
 using d360.web.Models;
+using Dapper;
 using Microsoft.ApplicationInsights;
 using Newtonsoft.Json;
 using Resources;
@@ -346,7 +347,7 @@ namespace d360.web.Controllers
                 StartedOn = DateTime.UtcNow,
                 Route = Request?.RequestUri?.LocalPath,
                 Method =  Request?.Method?.Method,
-                ResourceID = Company.CurrentCompanyID,
+                ResourceID = Company.CurrentResourceID,
                 Total = total,
                 Fields = fields == null ? "" : JsonConvert.SerializeObject(fields),
                 Error = error,
@@ -1453,7 +1454,7 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
             return $"({sb.ToString()})";
         }
 
-        internal List<FieldType> getDynamicFieldJoinStatements(int typeID, string type, List<string> filterFields, out string joins, out string filterjoins, out string columns, out string filtercolumns, bool includeIdColumn = true, bool useFriendlyName = false, List<FieldType> fields = null, bool showSubsetColumns = false, List<int> subsetColumns = null, string idColumn = "A.ID")
+        internal List<FieldType> getDynamicFieldJoinStatements(int typeID, string type, List<string> filterFields, out string joins, out string filterjoins, out string columns, out string filtercolumns, DynamicParameters dbArgs, bool includeIdColumn = true, bool useFriendlyName = false, List<FieldType> fields = null, bool showSubsetColumns = false, List<int> subsetColumns = null, string idColumn = "A.ID")
         {
             columns = "";
             joins = "";
@@ -1461,49 +1462,78 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
             filtercolumns = "";
             filterjoins = "";
 
-            var fieldTypeRelationType = type;
-            switch (type)
-            {
-                case "Rule":
-                    type = "Event";
-                    break;
-                default:
-                    fieldTypeRelationType += "Type";
-                    break;
-            }
-
+            var fieldTypeRelationType = $"{type}Type";
             if (fields == null)
             {
-                fields = Company.Filter<FieldType>(i => i.Object == fieldTypeRelationType && i.ObjectID == typeID && i.IsListable).OrderBy(i => i.ColumnOrder).ToList();
+                fields = Company.Filter<FieldType>(i => 
+                        i.Object == fieldTypeRelationType && 
+                        i.ObjectID == typeID && 
+                        i.IsListable
+                    ).OrderBy(i => i.ColumnOrder).ToList();
             }
+
+            var dtJsonElement = DataType.JsonElement.ToString();
 
             foreach (var f in fields)
             {
+                var ftID = f.ID;
+
+                FieldTypeDefinition_JsonElement jsonElementDefinition = null;
+                if (f.Type == dtJsonElement)
+                {
+                    jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(f.Definition);
+                    ftID = jsonElementDefinition.FieldTypeID;
+                }
+
                 var name = $"Field{f.ID}";
                 var friendlyName = f.FriendlyName.Replace("[", "").Replace("]", "");
-                var thisColumn = $@", case 
-    when {name}_TT.AllowAllValue = 1 and {name}_T.Value = '0' then {name}_TT.AllowAllLabel 
-    when {name}_T.Value is not null then {name}_T.FormattedValue 
-    when {name}_TT.DefaultValue is not null then {name}_TT.DefaultFormattedValue 
-    else '' 
-end as [{(useFriendlyName ? friendlyName : name)}]";
+                string thisColumn;
+                string fieldJoin;
+                string dataType = "nvarchar";
 
-                if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
-                columns += thisColumn;
+                if (f.Type == dtJsonElement)
+                {
+                    fieldJoin = $" left join Field {name} on {name}.ObjectType = '{type}' and {name}.ObjectID = {idColumn} and {name}.FieldTypeID = {ftID} ";
+                    fieldJoin += $" left join FieldJsonProperty {name}_FJP on {name}_FJP.FieldID = {name}.ID and {name}_FJP.[Path] = @jsonPath{f.ID} ";
 
-                var thisJoin = $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationType}' and {name}_TT.ObjectID = {typeID} and {name}_TT.IsListable = 1 
-left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ";
+                    dbArgs.Add($"@jsonPath{f.ID}", jsonElementDefinition.Path);
+
+                    dataType = jsonElementDefinition.DataType;
+
+                    thisColumn = $", try_cast({name}_FJP.[Value] as {dataType}) as [{(useFriendlyName ? friendlyName : name)}]";
+                    columns += thisColumn;
+                }
+                else
+                {
+                    fieldJoin = $@" left join FieldDetail {name} on {name}.Object = '{type}' and {name}.ObjectID = {idColumn} and {name}.FieldTypeID = {f.ID} ";
+
+                    dataType = f.Type;
+
+                    switch (dataType)
+                    {
+                        case "decimal":
+                            dataType = "float";
+                            break;
+                        default:
+                            dataType = "nvarchar";
+                            break;
+                    }
+
+                    thisColumn = $@", try_cast({name}.FormattedValue as {dataType}) as [{(useFriendlyName ? friendlyName : name)}]";
+                    columns += thisColumn;
+                    if (includeIdColumn) columns += $"{name}.Value as [{name}ID], ";
+                }
                 
-                joins += thisJoin;
+                joins += fieldJoin;
 
                 if (filterFields.Contains(name))
                 {
                     filtercolumns += thisColumn;
-                    filterjoins += thisJoin;
+                    filterjoins += fieldJoin;
                 }
             }
+
             return fields;
-            //fields = null;
         }
 
         internal string getFilteringConditionBind(string field, string condition, int filterNumber, Dapper.DynamicParameters dbParams, string value, string prefix, bool skipFieldValidation = false, FieldType ft = null)

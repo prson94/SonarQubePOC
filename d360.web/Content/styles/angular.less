@@ -850,6 +850,7 @@ div.powerbi iframe {
     line-height: 25px;
     padding: 0 15px;
     height: 30px;
+    white-space: nowrap;
 
     &:hover {
         background: mix(black, #ff7155, 7%)
@@ -882,7 +883,7 @@ div.item-description {
 
 
 .InActiveRowTools {
-    margin: 4px;
+    margin: 4px;  
     float: right;
     width: 100%;
     color: @d3s-gray-3;
@@ -1373,13 +1374,19 @@ a.breadcrumb {
         }
     }
 
-    .searchTypeahead {
+    .global-search-typeahead {
         .ui-autocomplete-panel {
             top: 40px !important;
         }
     }
 }
-
+.global-search-typeahead {
+    .ui-autocomplete-panel {
+        top: 36px !important;
+        left: -10px !important;
+        width: 302px !important;
+    }
+}
 .header-search-input {
     display: inline-flex;
     flex-direction: row;
@@ -1844,6 +1851,10 @@ div.home-image-title-text {
 
 .json-view {
     white-space: pre-wrap;
+}
+
+.json-view span {
+    font-size: 14px !important;
 }
 
 .tile {

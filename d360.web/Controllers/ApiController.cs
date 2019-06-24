@@ -303,7 +303,7 @@ namespace d360.web.Controllers
                                 values.Add(new ReadOnlyFieldValue { Value = intersectDisplayValue, TooltipContext = "Preview", TooltipID = objID, TooltipType = obj, TooltipUrl = url });
                             }
 
-                            values = values.OrderBy(x => x.Value).ToList();
+                            values = values.Distinct(new ReadOnlyFieldValueComparer()).OrderBy(x => x.Value).ToList();
 
                             var ro = new ReadOnlyField
                             {
@@ -4445,7 +4445,7 @@ order by C.DisplayValue";
             var result = Company.GetRelationshipFieldItems(fieldTypeID, @object, objectID, offset, rows, query, false);
             return Request.CreateResponse(HttpStatusCode.OK, new
             {
-                items = ((List<dynamic>)result["Items"]).Select(s => new System.Web.Mvc.SelectListItem { Text = s.Text, Value = s.Value.ToString(), Selected = s.Selected == 1 ? true : false }).ToList(),
+                items = ((List<dynamic>)result["Items"]).Where(x=>x.Value != objectID).Select(s => new System.Web.Mvc.SelectListItem { Text = s.Text, Value = s.Value.ToString(), Selected = s.Selected == 1 ? true : false }).ToList(),
                 count = (int)result["Count"]
             });
         }
@@ -5206,8 +5206,6 @@ select	O.ID as AssetID,
         O.[Uid],
         A.ID,
         A.Threshold,
-        A.RuleDimensionID,
-        D.Name as Dimension,
         dbo.GenerateAssetUrl(O.ID) as Url,
         {0}
         A.RuleTypeID,
@@ -5215,7 +5213,6 @@ select	O.ID as AssetID,
 from	[Rule] A
         inner join Asset O on O.Object = 'Rule' and O.ObjectID = A.ID 
         {1} 
-        left join RuleDimension D on D.ID = A.RuleDimensionID 
 where   A.RuleTypeID = @id 
         and O.ID not in (" + Company.GetNoReadSqlStatement("@r") + ")" +
         "and O.AssetTypeID not in (" + Company.GetAssetTypeNoReadSqlStatement("@r") + ")", columns, joins, permissionSql);
@@ -5228,12 +5225,6 @@ where   A.RuleTypeID = @id
             {
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.GetFullExceptionData());
             }
-        }
-
-        [Route("ruledimensions")]
-        public IQueryable<RuleDimension> GetRuleDimensions()
-        {
-            return Company.Table<RuleDimension>();
         }
 
         [Route("ruleimplementations/{id:int}/")]
@@ -6198,7 +6189,7 @@ where    A.RuleID = @id", new { id });
                 case SystemObjects.Rule:
                     #region Fields
 
-                    var rule = Company.GetById<Rule>(id, i => i.Dimension, i => i.RuleType);
+                    var rule = Company.GetById<Rule>(id, i => i.RuleType);
                     if (rule != null)
                     {
                         model.rows.Add(new DetailReadOnlyRowModel
@@ -6207,11 +6198,7 @@ where    A.RuleID = @id", new { id });
                             FirstColumnFields = new List<ReadOnlyField>
                             {
                                 new ReadOnlyField { Name = Resources.FieldInfo.RuleType_Name, FieldName = "RuleRuleType", FieldDescription = Resources.FieldInfo.RuleType_Description, Value = rule.RuleType.Name }
-                            },
-                            SecondColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = Resources.FieldInfo.RuleDimension_Name, FieldName = "RuleDimension", FieldDescription = Resources.FieldInfo.RuleDimension_Description, Value = (rule.RuleDimensionID.HasValue ? rule.Dimension.Name:""), TooltipContext = "Preview", TooltipID = rule.RuleDimensionID.GetValueOrDefault(), TooltipType = "RuleDimension" }
-                            }    
+                            }  
                         });
 
                         model.rows.Add(new DetailReadOnlyRowModel
@@ -6272,9 +6259,6 @@ where    A.RuleID = @id", new { id });
                             columns = 2,
                             FirstColumnFields = new List<ReadOnlyField> {
                                     new ReadOnlyField { Name = rule.GetName(i => i.ID), FieldName = "RuleID", FieldDescription = rule.GetDescription(i => i.ID), Value = $"{rule.ID}" }
-                                },
-                            SecondColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = Resources.FieldInfo.RuleStatus_Name, FieldName = "Status", FieldDescription = Resources.FieldInfo.RuleStatus_Description, Value = rule.Status.GetDisplayName() }
                                 }
                         });
                     }
@@ -6284,7 +6268,7 @@ where    A.RuleID = @id", new { id });
                 case SystemObjects.RuleImplementation:
                     #region Fields
 
-                    var impl = Company.GetById<RuleImplementation>(id, i => i.Rule.RuleType, i => i.RuleResultQualifierTypes, i => i.Rule.Dimension);
+                    var impl = Company.GetById<RuleImplementation>(id, i => i.Rule.RuleType, i => i.RuleResultQualifierTypes);
                     if (impl != null)
                     {
                         model.rows.Add(new DetailReadOnlyRowModel
