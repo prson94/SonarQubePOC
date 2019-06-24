@@ -95,7 +95,7 @@ WHERE F.Value IS NOT NULL OR T.DefaultValue IS NOT NULL OR T.ShowIfEmpty = 1
 	</rollback>
  </changeSet>
 
- <changeSet author="Pappas" id="GOV-7533-Procedure-E">
+ <changeSet author="Pappas" id="GOV-7533-Procedure-F">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -297,7 +297,7 @@ end as P_CanDelete, '
 	begin
 		declare @sort nvarchar(250) = null
 
-		select @sort = ColumnStatement from #ft where ColumnName = @sortField
+		select @sort = OrderStatement from #ft where ColumnName = @sortField
 		if @sort = '' OR @sort is null
 		begin
 			set @sort = 'A.ID'
