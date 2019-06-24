@@ -665,9 +665,11 @@ OPTION (RECOMPILE)";
             {
                 case "int":
                 case "bigint":
+                    selectString += $"try_cast(coalesce([{f.ID}],'') as {sqlDataType}) as {(useFieldNames ? $"{f.Name}" : $"Field{f.ID}")}";
+                    break;
                 case "date":
                 case "datetime":
-                    selectString += $"try_parse(coalesce([{f.ID}],'') as {sqlDataType}) as {(useFieldNames ? $"{f.Name}" : $"Field{f.ID}")}";
+                    selectString += $"[{f.ID}] as {(useFieldNames ? $"{f.Name}" : $"Field{f.ID}")}";
                     break;
                 case "nvarchar":
                     selectString += $"try_cast([{f.ID}] as {sqlDataType}(max)) as {(useFieldNames ? $"{f.Name}" : $"Field{f.ID}")}";
@@ -678,7 +680,7 @@ OPTION (RECOMPILE)";
                     selectString += $"case when try_cast(coalesce([{f.ID}],'') as {sqlDataType}) is not null then [{f.ID}] else null end as {(useFieldNames ? $"{f.Name}" : $"Field{f.ID}")}";
                     break;
                 default:
-                    selectString += $"{(useFieldNames ? $"{f.Name}" : $"Field{f.ID}")}";
+                    selectString += $"[{f.ID}] as {(useFieldNames ? $"{f.Name}" : $"Field{f.ID}")}";
                     break;
             }
             return selectString;
