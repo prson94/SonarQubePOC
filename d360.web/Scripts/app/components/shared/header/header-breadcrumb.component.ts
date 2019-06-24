@@ -96,13 +96,13 @@ export class HeaderBreadcrumbComponent {
         this.maxSingleCrumbWidth = windowWidth - (controlsWidth + logoWidth);
         //if the width of this + the logo + the controls is bigger than screen start hiding breadcrumbs
         
-            var worseCaseWidth = this.maxLength() + logoWidth + controlsWidth;
-            if (worseCaseWidth > windowWidth) {                
-                this.showLastOnly = true;
-            }
-            else {                
-                this.showLastOnly = false;
-            }
+        var worseCaseWidth = this.maxLength() + logoWidth + controlsWidth;
+        if (worseCaseWidth > windowWidth || this.maxSingleCrumbWidth < this.maxLength()) {                
+            this.showLastOnly = true;
+        }
+        else {                
+            this.showLastOnly = false;
+        }
        
         this.ref.markForCheck();
     }
