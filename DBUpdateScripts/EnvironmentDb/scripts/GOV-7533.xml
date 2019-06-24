@@ -37,7 +37,7 @@ END
 	</rollback>
  </changeSet>
 	
- <changeSet author="Pappas" id="GOV-7533-Procedure">
+ <changeSet author="Pappas" id="GOV-7533-Procedure-D">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -47,6 +47,9 @@ create or alter procedure GetDynamicAssets
 	@assetTypeId int,
 	@userId int,
 	@filter nvarchar(250),
+	@apiNamesInOutput bit = 0,
+	@listableFieldsOnly bit = 1,
+	@pagingEnabled bit = 1,
 	@pageNumber int,
 	@pageSize int,
 	@sortField nvarchar(250),
@@ -88,8 +91,8 @@ begin
 
 	alter table #ft add DataType varchar(25)
 	alter table #ft add ColumnName varchar(250)
-	alter table #ft add ColumnStatement varchar(250)
-	alter table #ft add OrderStatement varchar(250)
+	alter table #ft add ColumnStatement varchar(2500)
+	alter table #ft add OrderStatement varchar(2500)
 	alter table #ft add JoinStatement varchar(2500)
 	alter table #ft add FilterStatement varchar(2500)
 	alter table #ft add TxtId varchar(25)
@@ -101,20 +104,30 @@ begin
 				when 'Decimal' then 'float'
 				when 'DateTime' then 'datetime'
 				when 'Date' then 'date'
-				when 'Number' then 'long'
+				when 'Number' then 'bigint'
 				else 'nvarchar'
 			end,
-			ColumnName = 'Field' + cast(ID as nvarchar);--REPLACE(REPLACE(Name, ' ', ''), '''', '');--'F' + cast(ID as nvarchar);
+			ColumnName = case 
+							when @apiNamesInOutput = 1 then REPLACE(REPLACE(Name, ' ', ''), '''', '') 
+							else 'Field' + cast(ID as nvarchar) 
+						 end;
 
 	--json field from relationship
 	update	T
-	set		T.JoinStatement = ' inner join FieldType FT'+TxtId+' with(nolock) on FT'+TxtId+'.ID = '+TxtId+' inner join FieldType FT'+TxtId+'R on FT'+TxtId+'R.ID = FT'+TxtId+'.LookupObjectFieldTypeID
-	 cross apply openjson(FT'+TxtId+'R.Definition) with (FieldTypeID int ''$.FieldTypeID'', DataType varchar(50) ''$.DataType'', [Path] varchar(250) ''$.Path'') FT'+TxtId+'RD
-	 left join [Intersect] FT'+TxtId+'_REL with(nolock) on FT'+TxtId+'.LookupObjectType = ''IntersectType'' and FT'+TxtId+'_REL.IntersectTypeID = FT'+TxtId+'.LookupObjectID  and ( (FT'+TxtId+'_REL.Subject = A.Object and FT'+TxtId+'_REL.SubjectID = A.ObjectID) or  (FT'+TxtId+'_REL.Object = A.Object and FT'+TxtId+'_REL.ObjectID = A.ObjectID) )
-	 left join Field F'+TxtId+'R with(nolock) on F'+TxtId+'R.ObjectType = case when FT'+TxtId+'_REL.Subject = A.Object and FT'+TxtId+'_REL.SubjectID = A.ObjectID then FT'+TxtId+'_REL.Object else FT'+TxtId+'_REL.Subject end and F'+TxtId+'R.ObjectID = case when FT'+TxtId+'_REL.Subject = A.Object and FT'+TxtId+'_REL.SubjectID = A.ObjectID then FT'+TxtId+'_REL.ObjectID else FT'+TxtId+'_REL.SubjectID end and F'+TxtId+'R.FieldTypeID = FT'+TxtId+'RD.FieldTypeID
-	 left join FieldJsonProperty F'+TxtId+'RP with(nolock) on F'+TxtId+'RP.FieldID = F'+TxtId+'R.ID and F'+TxtId+'RP.[Path] = FT'+TxtId+'RD.[Path]',
-			T.ColumnStatement = 'try_cast(F'+TxtId+'RP.Value as '+DataType+')',
-			T.OrderStatement = 'try_cast(F'+TxtId+'RP.Value as '+DataType+')',
+	set		T.JoinStatement = ' inner join FieldType FT'+TxtId+' with(nolock) on FT'+TxtId+'.ID = '+TxtId+' inner join FieldType FT'+TxtId+'R on FT'+TxtId+'R.ID = FT'+TxtId+'.LookupObjectFieldTypeID'
+				+ ' cross apply openjson(FT'+TxtId+'R.Definition) with (FieldTypeID int ''$.FieldTypeID'', DataType varchar(50) ''$.DataType'', [Path] varchar(250) ''$.Path'') FT'+TxtId+'RD'
+				+ ' left join [Intersect] FT'+TxtId+'_REL with(nolock) on FT'+TxtId+'.LookupObjectType = ''IntersectType'' and FT'+TxtId+'_REL.IntersectTypeID = FT'+TxtId+'.LookupObjectID' 
+				+ ' and ( (FT'+TxtId+'_REL.Subject = A.Object and FT'+TxtId+'_REL.SubjectID = A.ObjectID) or  (FT'+TxtId+'_REL.Object = A.Object and FT'+TxtId+'_REL.ObjectID = A.ObjectID) )'
+				+ ' left join Field F'+TxtId+'R with(nolock) on F'+TxtId+'R.ObjectType = case ' 
+				+	' when FT'+TxtId+'_REL.Subject = A.Object and FT'+TxtId+'_REL.SubjectID = A.ObjectID then FT'+TxtId+'_REL.Object ' 
+				+   ' else FT'+TxtId+'_REL.Subject end' 
+				+ ' and F'+TxtId+'R.ObjectID = case' 
+				+	' when FT'+TxtId+'_REL.Subject = A.Object and FT'+TxtId+'_REL.SubjectID = A.ObjectID then FT'+TxtId+'_REL.ObjectID' 
+				+   ' else FT'+TxtId+'_REL.SubjectID end' 
+				+ ' and F'+TxtId+'R.FieldTypeID = FT'+TxtId+'RD.FieldTypeID' 
+				+ ' left join FieldJsonProperty F'+TxtId+'RP with(nolock) on F'+TxtId+'RP.FieldID = F'+TxtId+'R.ID and F'+TxtId+'RP.[Path] = FT'+TxtId+'RD.[Path]',
+			T.ColumnStatement = 'F'+TxtId+'RP.Value',
+			T.OrderStatement = case when T.DataType = 'nvarchar' then 'F'+TxtId+'RP.Value' else 'try_cast(F'+TxtId+'RP.Value as '+DataType+')' end,
 			T.FilterStatement = case 
 									when @filter is not null and T.IsListable = 1 then '(F'+TxtId+'RP.Value like @filter)' 
 									when T.ID in (select TypeID from @filters where FilterType = 'F') then 'F'+TxtId+'RP.Value like (select top 1 FilterValues from @filters where TypeID = FT'+TxtId+'.ID)'
@@ -126,11 +139,18 @@ begin
 
 	--non-json field from relationship
 	update	T
-	set		T.JoinStatement = ' inner join FieldType FT'+TxtId+' with(nolock) on FT'+TxtId+'.ID = '+TxtId+'
-	 left join [Intersect] FT'+TxtId+'_REL with(nolock) on FT'+TxtId+'.LookupObjectType = ''IntersectType'' and FT'+TxtId+'_REL.IntersectTypeID = FT'+TxtId+'.LookupObjectID  and ( (FT'+TxtId+'_REL.Subject = A.Object and FT'+TxtId+'_REL.SubjectID = A.ObjectID) or  (FT'+TxtId+'_REL.Object = A.Object and FT'+TxtId+'_REL.ObjectID = A.ObjectID) )
-	 left join Field F'+TxtId+'R with(nolock) on F'+TxtId+'R.ObjectType = case when FT'+TxtId+'_REL.Subject = A.Object and FT'+TxtId+'_REL.SubjectID = A.ObjectID then FT'+TxtId+'_REL.Object else FT'+TxtId+'_REL.Subject end and F'+TxtId+'R.ObjectID = case when FT'+TxtId+'_REL.Subject = A.Object and FT'+TxtId+'_REL.SubjectID = A.ObjectID then FT'+TxtId+'_REL.ObjectID else FT'+TxtId+'_REL.SubjectID end and F'+TxtId+'R.FieldTypeID = FT'+TxtId+'.LookupObjectFieldTypeID',
-			T.ColumnStatement = 'try_cast(F'+TxtId+'R.FormattedValue as '+DataType+')',
-			T.OrderStatement = 'try_cast(F'+TxtId+'R.FormattedValue as '+DataType+')',
+	set		T.JoinStatement = ' inner join FieldType FT'+TxtId+' with(nolock) on FT'+TxtId+'.ID = '+TxtId
+				+ ' left join [Intersect] FT'+TxtId+'_REL with(nolock) on FT'+TxtId+'.LookupObjectType = ''IntersectType'' and FT'+TxtId+'_REL.IntersectTypeID = FT'+TxtId+'.LookupObjectID and' 
+				+ ' ( (FT'+TxtId+'_REL.Subject = A.Object and FT'+TxtId+'_REL.SubjectID = A.ObjectID) or  (FT'+TxtId+'_REL.Object = A.Object and FT'+TxtId+'_REL.ObjectID = A.ObjectID) )' 
+				+ ' left join Field F'+TxtId+'R with(nolock) on F'+TxtId+'R.ObjectType = case' 
+				+	' when FT'+TxtId+'_REL.Subject = A.Object and FT'+TxtId+'_REL.SubjectID = A.ObjectID then FT'+TxtId+'_REL.Object' 
+				+	' else FT'+TxtId+'_REL.Subject end' 
+				+ ' and F'+TxtId+'R.ObjectID = case' 
+				+	' when FT'+TxtId+'_REL.Subject = A.Object and FT'+TxtId+'_REL.SubjectID = A.ObjectID then FT'+TxtId+'_REL.ObjectID' 
+				+	' else FT'+TxtId+'_REL.SubjectID end' 
+				+ ' and F'+TxtId+'R.FieldTypeID = FT'+TxtId+'.LookupObjectFieldTypeID',
+			T.ColumnStatement = 'F'+TxtId+'R.FormattedValue',
+			T.OrderStatement = case when T.DataType = 'nvarchar' then 'F'+TxtId+'R.FormattedValue' else 'try_cast(F'+TxtId+'R.FormattedValue as '+DataType+')' end,
 			T.FilterStatement = case 
 									when @filter is not null and T.IsListable = 1 then '(F'+TxtId+'R.FormattedValue like @filter)' 
 									when T.ID in (select TypeID from @filters where FilterType = 'F') then 'F'+TxtId+'R.FormattedValue like (select top 1 FilterValues from @filters where TypeID = FT'+TxtId+'.ID)'
@@ -142,12 +162,12 @@ begin
 
 	--json element
 	update	T
-	set		T.JoinStatement = ' inner join FieldType FT'+TxtId+' with(nolock) on FT'+TxtId+'.ID = '+TxtId+'
- cross apply openjson(FT'+TxtId+'.Definition) with (FieldTypeID int ''$.FieldTypeID'', DataType varchar(50) ''$.DataType'', [Path] varchar(250) ''$.Path'') FT'+TxtId+'D
- left join Field F'+TxtId+' with(nolock) on F'+TxtId+'.FieldTypeID = '+cast(D.FieldTypeID as nvarchar)+' and F'+TxtId+'.AssetID = A.ID
- left join FieldJsonProperty F'+TxtId+'P with(nolock) on F'+TxtId+'P.FieldID = F'+TxtId+'.ID and F'+TxtId+'P.[Path] = FT'+TxtId+'D.[Path]',
-			T.ColumnStatement = 'try_cast(F'+TxtId+'P.Value as '+D.DataType+')',
-			T.OrderStatement = 'try_cast(F'+TxtId+'P.Value as '+D.DataType+')',
+	set		T.JoinStatement = ' inner join FieldType FT'+TxtId+' with(nolock) on FT'+TxtId+'.ID = '+TxtId
+				+ ' cross apply openjson(FT'+TxtId+'.Definition) with (FieldTypeID int ''$.FieldTypeID'', DataType varchar(50) ''$.DataType'', [Path] varchar(250) ''$.Path'') FT'+TxtId+'D' 
+				+ ' left join Field F'+TxtId+' with(nolock) on F'+TxtId+'.FieldTypeID = '+cast(D.FieldTypeID as nvarchar)+' and F'+TxtId+'.AssetID = A.ID' 
+				+ ' left join FieldJsonProperty F'+TxtId+'P with(nolock) on F'+TxtId+'P.FieldID = F'+TxtId+'.ID and F'+TxtId+'P.[Path] = FT'+TxtId+'D.[Path]',
+			T.ColumnStatement = 'F'+TxtId+'P.Value',
+			T.OrderStatement = case when D.DataType = 'nvarchar' then 'F'+TxtId+'P.Value' else 'try_cast(F'+TxtId+'P.Value as '+D.DataType+')' end,
 			T.FilterStatement = case 
 									when @filter is not null and T.IsListable = 1 then '(F'+TxtId+'P.Value like @filter)' 
 									when T.ID in (select TypeID from @filters where FilterType = 'F') then 'F'+TxtId+'P.Value like (select top 1 FilterValues from @filters where TypeID = FT'+TxtId+'.ID)'
@@ -159,17 +179,19 @@ begin
 
 	--relationship
 	update	#ft
-	set		JoinStatement = ' left join FieldType FT'+TxtId+' with(nolock) on FT'+TxtId+'.ID = '+TxtId+' and FT'+TxtId+'.LookupObjectType = ''IntersectType'' 
- left join [Intersect] F'+TxtId+'R with(nolock) on F'+TxtId+'R.IntersectTypeID = FT'+TxtId+'.LookupObjectID and ( (F'+TxtId+'R.Subject = A.Object and F'+TxtId+'R.SubjectID = A.ObjectID) or (F'+TxtId+'R.Object = A.Object and F'+TxtId+'R.ObjectID = A.ObjectID) ) 
- outer apply dbo.GetRelationshipDisplayValue(
-  case when F'+TxtId+'R.Subject = A.Object and F'+TxtId+'R.SubjectID = A.ObjectID then F'+TxtId+'R.Object else F'+TxtId+'R.Subject end,
-  case when F'+TxtId+'R.Subject = A.Object and F'+TxtId+'R.SubjectID = A.ObjectID then F'+TxtId+'R.ObjectID else F'+TxtId+'R.SubjectID end
- ) as F'+TxtId,
+	set		JoinStatement = ' left join FieldType FT'+TxtId+' with(nolock) on FT'+TxtId+'.ID = '+TxtId+' and FT'+TxtId+'.LookupObjectType = ''IntersectType''' 
+				+ ' outer apply ('
+				+	' select	string_agg(F'+TxtId+'.DisplayValue, '', '') as DisplayValue'
+				+	' from	[Intersect] F'+TxtId+'R with(nolock)'
+				+	' outer apply dbo.GetRelationshipDisplayValue(case when F'+TxtId+'R.Subject = A.Object and F'+TxtId+'R.SubjectID = A.ObjectID then F'+TxtId+'R.Object else F'+TxtId+'R.Subject end,case when F'+TxtId+'R.Subject = A.Object and F'+TxtId+'R.SubjectID = A.ObjectID then F'+TxtId+'R.ObjectID else F'+TxtId+'R.SubjectID end) as F'+TxtId
+				+	' where F'+TxtId+'R.IntersectTypeID = FT'+TxtId+'.LookupObjectID' 
+				+	' and ( (F'+TxtId+'R.Subject = A.Object and F'+TxtId+'R.SubjectID = A.ObjectID) or (F'+TxtId+'R.Object = A.Object and F'+TxtId+'R.ObjectID = A.ObjectID) )' 
+				+ ' ) F'+TxtId,
 			ColumnStatement = 'F'+TxtId+'.DisplayValue',
 			OrderStatement = 'F'+TxtId+'.DisplayValue',
 			FilterStatement =	case 
-									when @filter is not null and IsListable = 1 then '(F'+TxtId+'.DisplayValue like @filter)' 
-									when ID in (select TypeID from @filters where FilterType = 'R') then 'F'+TxtId+'.DisplayValue like (select top 1 FilterValues from @filters where TypeID = FT'+TxtId+'.ID)'
+									when (@filter is not null and IsListable = 1) then '(F'+TxtId+'.DisplayValue like @filter)' 
+									when ID in (select TypeID from @filters where FilterType = 'F') then 'F'+TxtId+'.DisplayValue like (select top 1 FilterValues from @filters where TypeID = FT'+TxtId+'.ID)'
 									else '' 
 								end
 	where	[Type] = 'Relationship';
@@ -178,18 +200,19 @@ begin
 	update	#ft
 	set		JoinStatement = 'left join FieldDetail F'+TxtId+' on F'+TxtId+'.FieldTypeID = '+TxtId+' and F'+TxtId+'.AssetID = A.ID',
 			ColumnStatement = 'F'+TxtId+'.FormattedValue',
-			OrderStatement = 'F'+TxtId+'.FormattedValue',
+			OrderStatement = case when DataType = 'nvarchar' then 'F'+TxtId+'.FormattedValue' else 'try_cast(F'+TxtId+'.FormattedValue as '+DataType+')' end,
 			FilterStatement =	case 
-									when @filter is not null and IsListable = 1 then '(F'+TxtId+'.FormattedValue like @filter)' 
+									when (@filter is not null and IsListable = 1) then '(F'+TxtId+'.FormattedValue like @filter)' 
 									when ID in (select TypeID from @filters where FilterType = 'F') then 'exists(select 1 from @filters where TypeID = F'+TxtId+'.FieldTypeID and F'+TxtId+'.FormattedValue like FilterValues)'
 									else '' 
 								end
-	where	JoinStatement is null;
+	where	JoinStatement is null
+			and [Type] not in ('FieldFromRelationship', 'JsonElement', 'Relationship');
 
 	declare @countSql nvarchar(max),
 			@sql nvarchar(max),
-			@orderSql nvarchar(500),
-			@filterSql nvarchar(500) = '',
+			@orderSql nvarchar(max),
+			@filterSql nvarchar(max) = '',
 			@parentColumns nvarchar(500) = '',
 			@parentJoin nvarchar(500) = '',
 			@editRightsColumns nvarchar(2500) = '',
@@ -214,10 +237,12 @@ end as P_CanDelete, '
 	-- Handle custom-provided sort
 	if @sortField is not null
 	begin
-		select @sortField = ColumnStatement from #ft where ColumnName = @sortField
-		if @sortField = ''
+		declare @sort nvarchar(250) = null
+
+		select @sort = ColumnStatement from #ft where ColumnName = @sortField
+		if @sort = '' OR @sort is null
 		begin
-			set @sortField = 'A.ID'
+			set @sort = 'A.ID'
 		end
 		if @sortDirection = 'desc'
 		begin
@@ -228,7 +253,7 @@ end as P_CanDelete, '
 			set @sortDirection = 'asc'
 		end
 
-		set @orderSql = REPLACE(@sortField, '''', '''''') + ' ' + @sortDirection
+		set @orderSql = REPLACE(@sort, '''', '''''') + ' ' + @sortDirection
 	end
 	else
 	begin
@@ -248,15 +273,24 @@ end as P_CanDelete, '
 
 	set @countSql = 'select count(1)'
 	set @countSql = @countSql + ' from Asset A '
-	select @countSql = @countSql + string_agg(JoinStatement, ' ') from #ft where (coalesce(JoinStatement,'') <> '') and (IsListable = 1 OR coalesce(FilterStatement,'') <> '')
+	select @countSql = @countSql + string_agg(cast(JoinStatement as nvarchar(max)), ' ') from #ft where (coalesce(JoinStatement,'') <> '') and (IsListable = 1 OR coalesce(FilterStatement,'') <> '')
 	set @countSql = @countSql + @parentJoin
 	set @countSql = @countSql + ' where A.AssetTypeID = '+cast(@assetTypeId as nvarchar)+' and A.State = 1'
 
 	-- Handle base filters
 	if exists(select 1 from #ft where coalesce(FilterStatement,'') <> '')
 	begin
-		select @filterSql = string_agg(FilterStatement, ' or ') from #ft where coalesce(FilterStatement,'') <> ''
-		set @filterSql = 'and (' + @filterSql + ')'
+		declare @contraction varchar(5) =  iif(@filter is not null, ' or ', ' and ')
+		
+		select @filterSql = string_agg(FilterStatement, @contraction) from #ft where coalesce(FilterStatement,'') <> ''
+
+		-- Include parent filter option
+		if @contraction = ' or ' and @parentIntersectTypeId is not null
+		begin
+			set @filterSql = @filterSql + ' or parp.DisplayValue like @filter'
+		end
+
+		set @filterSql = ' and (' + @filterSql + ')'
 		set @hasFilters = 1
 	end;
 
@@ -334,10 +368,17 @@ end as P_CanDelete, '
 	end
 	set @countSql = @countSql + ' and not exists (select 1 from AssetTypesUserCantRead(@userId) u where u.AssetTypeID = @assetTypeId) and not exists (select 1 from AssetsByTypeUserCantRead(@userId,@assetTypeId) u where u.AssetID = A.ID)'
 
-	set @sql = 'select	A.AssetTypeID, A.ID, A.ObjectID, A.Uid, ' + @parentColumns + @editRightsColumns
-	select @sql = @sql + string_agg(ColumnStatement + ' as ' + ColumnName, ', ') from #ft where coalesce(ColumnStatement,'') <> '' and IsListable = 1
-	set @sql = @sql + ' from Asset A '
-	select @sql = @sql + string_agg(JoinStatement, ' ') from #ft where (coalesce(JoinStatement,'') <> '') and (IsListable = 1 OR coalesce(FilterStatement,'') <>'')
+	set @sql = 'select	A.AssetTypeID, A.ID, A.ObjectID, A.Uid, [dbo].[GenerateObjectUrl](A.Object, T.ObjectID, A.ObjectID) as Url, ' + @parentColumns + @editRightsColumns
+	select	@sql = @sql + string_agg(ColumnStatement + ' as ' + ColumnName, ', ') 
+	from	#ft 
+	where	(coalesce(JoinStatement,'') <> '') 
+			and coalesce(ColumnStatement,'') <> '' 
+			and (IsListable = 1 or @listableFieldsOnly = 0)
+	set @sql = @sql + ' from Asset A inner join AssetType T on T.ID = A.AssetTypeID '
+	select	@sql = @sql + string_agg(cast(JoinStatement as nvarchar(max)), ' ') 
+	from	#ft 
+	where	(coalesce(JoinStatement,'') <> '') 
+			and (IsListable = 1 OR @listableFieldsOnly = 0 OR coalesce(FilterStatement,'') <>'')
 	set @sql = @sql + @parentJoin
 	set @sql = @sql + ' where A.AssetTypeID = '+cast(@assetTypeId as nvarchar)+' and A.State = 1'
 
@@ -347,12 +388,17 @@ end as P_CanDelete, '
 	end
 
 	set @sql = @sql + ' and not exists (select 1 from AssetTypesUserCantRead(@userId) u where u.AssetTypeID = @assetTypeId) and not exists (select 1 from AssetsByTypeUserCantRead(@userId,@assetTypeId) u where u.AssetID = A.ID)'
-	set @sql = @sql + ' order by '+@orderSql+' OFFSET(@pageNumber) ROWS FETCH NEXT (@pageSize) ROWS ONLY'
+	set @sql = @sql + ' order by ' + @orderSql
+	if @pagingEnabled = 1
+	begin
+		set @sql = @sql + ' OFFSET(@pageNumber) ROWS FETCH NEXT (@pageSize) ROWS ONLY'
+	end
 
 	declare @parameters nvarchar(max)
 	set @parameters = '@assetTypeId int, @filter nvarchar(250), @userId int, @pageNumber int, @pageSize int, @filters [dbo].[AssetFiltersTable] readonly'
 	--select @sql
 	--select @filterSql
+	--select * from #ft
 	exec sp_executesql @countSql, @parameters, @assetTypeId = @assetTypeId, @filter = @filter, @userId = @userId, @pageNumber = @pageNumber, @pageSize = @pageSize, @filters = @filters
 	exec sp_executesql @sql, @parameters, @assetTypeId = @assetTypeId, @filter = @filter, @userId = @userId, @pageNumber = @pageNumber, @pageSize = @pageSize, @filters = @filters
 end
