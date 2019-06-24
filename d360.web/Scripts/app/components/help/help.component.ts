@@ -64,7 +64,7 @@ export class HelpComponent extends BaseComponent implements OnInit {
         //    this.showDefaultHelpVideos = res.ShowDefaultHelpVideos;
         //});
 
-        this.resourceService.getHelpResources().then(res => {
+        this.resourceService.getHelpResources().subscribe(res => {
             this.helpResources = res;
             this.changeDetectorRef.markForCheck();
         });

@@ -199,7 +199,7 @@ export class RuleColumnFilterComponent implements OnInit, OnChanges {
 
     private getRelationshipTypes() {
         this.relationshipsService.getObjectRelations('RuleType', 1)//this.artifactType.ID
-            .then(result => {
+            .subscribe(result => {
                 this.relationshipTypes = result;
 
                 this.addRelationshipTypesToAvailable(this.relationshipTypes);
@@ -247,7 +247,8 @@ export class RuleColumnFilterComponent implements OnInit, OnChanges {
     private loadRelationshipValues(relationshipType: ObjectRelationship) {
         this.relationshipValues.splice(0, this.relationshipValues.length);
 
-        this.relationshipsService.getRelatedObjects(relationshipType.TargetType, relationshipType.TargetTypeID, relationshipType.IntersectTypeID).then(
+        this.relationshipsService.getRelatedObjects(relationshipType.TargetType, relationshipType.TargetTypeID, relationshipType.IntersectTypeID)
+            .subscribe(
             result => {
                 for (let item of result) {
                     this.relationshipValues.push({label: item.Name, value: item.ID});

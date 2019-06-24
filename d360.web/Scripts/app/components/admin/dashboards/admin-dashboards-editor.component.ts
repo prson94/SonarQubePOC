@@ -136,7 +136,7 @@ export class AdminDashboardsEditor {
     getReportTargets() {
         this.isTargetsLoading = true;
         this.reportsService.getReportTargetTypes()
-            .then(result => {
+            .subscribe(result => {
                 this.targetTypes = result;                
                 this.isTargetsLoading = false;
             });
@@ -145,7 +145,7 @@ export class AdminDashboardsEditor {
     getReportLayouts() {
         this.isLayoutsLoading = true;
         this.reportsService.getReportLayouts()
-            .then(result => {
+            .subscribe(result => {
                 this.reportLayouts = result;
                 this.isLayoutsLoading = false;
             });

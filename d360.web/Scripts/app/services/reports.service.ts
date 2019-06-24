@@ -1,28 +1,31 @@
 ﻿import { Injectable } from '@angular/core';
-import { Headers, Http } from '@angular/http';
-import { MessagesService } from './messages.service';
-import { BaseService } from './base.service';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Report, ReportTile, ReportLayout } from '../models/report.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { DropdownOption } from '../models/dropdown.model';
+import { Observable } from 'rxjs';
+import { BaseObservableService } from './baseObservable.service';
+import { MessagesObservableService } from './messages-observable.service';
+import { catchError, map } from 'rxjs/operators';
 
 @Injectable()
-export class ReportsService extends BaseService {
+export class ReportsService extends BaseObservableService {
 
-    constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
+    constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
-    getReports(): Promise<Report[]> {
+    getReports(): Observable<Report[]> {
         return this.http.get('reports/reports')
-            .toPromise()
-            .then(response => <Report[]>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <Report[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    deleteReport(id: number): Promise<JsonResult> {
+    deleteReport(id: number): Observable<JsonResult> {
         return this.deleteDynamicWithResult(this.http, 'report', id);
     }
 
-    saveReport(report: Report, file?: File): Promise<JsonResult> {
+    saveReport(report: Report, file?: File): Observable<JsonResult> {
         if (report.VisibleToRoles != null && report.VisibleToRoles.length > 0) report.VisibleTo = report.VisibleToRoles.join(",");
         else report.VisibleTo = null;
         if (report.ID == undefined || !report.ID) {
@@ -31,18 +34,19 @@ export class ReportsService extends BaseService {
         return this.putDynamic(this.http, 'report', report, file);
     }
 
-    getReportTiles(report: Report): Promise<ReportTile[]> {
+    getReportTiles(report: Report): Observable<ReportTile[]> {
         return this.http.get(`reports/${report.ID}/tiles`)
-            .toPromise()
-            .then(response => <ReportTile[]>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <ReportTile[]>response),
+                catchError(err=> this.handleError(err))
+            );
     }
 
-    deleteReportTile(id: number): Promise<JsonResult> {
+    deleteReportTile(id: number): Observable<JsonResult> {
         return this.deleteDynamicWithResult(this.http, 'reporttile', id);
     }
 
-    saveReportTile(reportTile: ReportTile, powerBIFile?: File): Promise<JsonResult> {
+    saveReportTile(reportTile: ReportTile, powerBIFile?: File): Observable<JsonResult> {
         
         if (reportTile.ID == undefined || !reportTile.ID) {
             return this.postDynamic(this.http, 'reporttile', reportTile, powerBIFile);
@@ -51,40 +55,44 @@ export class ReportsService extends BaseService {
     }
 
 
-    getReportLayout(report: Report): Promise<ReportLayout> {
+    getReportLayout(report: Report): Observable<ReportLayout> {
         return this.http.get(`reports/${report.ID}/layout`)
-            .toPromise()
-            .then(response => <ReportLayout>response.json()[0])
-            .catch(err => this.handleError(err));
+            .pipe(
+            map(response => <ReportLayout>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getReportTargetTypes(): Promise<DropdownOption[]> {        
+    getReportTargetTypes(): Observable<DropdownOption[]> {        
         return this.http.get('api/reports/targets')
-            .toPromise()
-            .then(response => <DropdownOption[]>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+            map(response => <DropdownOption[]>response),
+                catchError(err=>this.handleError(err))
+            );
     }
 
-    getReportLayouts(): Promise<DropdownOption[]> {
+    getReportLayouts(): Observable<DropdownOption[]> {
         return this.http.get('api/reports/layouts')
-            .toPromise()
-            .then(response => <DropdownOption[]>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <DropdownOption[]>response),
+                catchError(err=> this.handleError(err))
+            );
     }    
 
-    setPowerBICredentials(user: string, password: string): Promise<JsonResult> {
-        let headers = new Headers({
+    setPowerBICredentials(user: string, password: string): Observable<JsonResult> {
+        let headers = new HttpHeaders({
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', //pass as text since its a dynamic object and mvc has issue with dynamic models                        
         });
         
         return this.http
             .post(`form/AddPowerBICredentials`, `Username=${user}&Password=${password}`, { headers: headers })
-            .toPromise()
-            .then(res => <JsonResult>res.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+            map(response => response),
+               catchError(err=>this.handleError(err))
+            );
     }
 
-    saveTile(tile: ReportTile): Promise<JsonResult> {
+    saveTile(tile: ReportTile): Observable<JsonResult> {
         if (tile.ID == undefined || !tile.ID) {
             return this.postDynamic(this.http, 'reporttile', tile);
         }

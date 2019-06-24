@@ -52,7 +52,7 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
         this.isLoading = true;
         
         this.responsibilityService.getResponsibilityDetail(this.assetID)
-            .then(data => {  
+            .subscribe(data => {  
                 this.responsibilities = data;
                 this.selectedRow = this.responsibilities[0];
                 this.isLoading = false;                

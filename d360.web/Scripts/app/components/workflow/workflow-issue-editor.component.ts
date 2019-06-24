@@ -93,7 +93,7 @@ export class WorkflowIssueEditorComponent extends BaseComponent {
     loadResources() {
         this.isLoading = true;
         this.resourcesService.getResources()
-            .then(res => {
+            .subscribe(res => {
                 this.isLoading = false;
                 this.resources = res;
             });
