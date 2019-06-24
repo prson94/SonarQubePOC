@@ -11,6 +11,8 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using Dapper;
+using d360.web.Models;
+using d360.model.DataAccessLayer;
 
 namespace d360.web.Controllers.V2
 {
@@ -25,9 +27,10 @@ namespace d360.web.Controllers.V2
     public class FusionController : BaseV2ApiController
     {
         static string APIMACHINENAME = "API-GENERATED";
-        public FusionController(ICommunityContext community, ICompanyContext company) : base(community, company)
+        private IFusionRepository FusionRepository;
+        public FusionController(ICommunityContext community, ICompanyContext company, IFusionRepository fusionRepository) : base(community, company)
         {
-
+            this.FusionRepository = fusionRepository;
         }
 
         /// <summary>
@@ -122,6 +125,79 @@ namespace d360.web.Controllers.V2
             }
 
             return model;
+        }
+
+
+
+        /// <summary>
+        /// Removes a fusion configuration based on the specific fusion Uid. This endpoint is meant for deleting one fusion at a time.
+        /// </summary>
+        /// <remarks>
+        /// <strong>&#9888; Read before calling this endpoint</strong><br/>
+        /// Calling this endpoint with parameter <strong>Cascade</strong> set to <strong>true</strong> will irrevocably delete fusion configuration and all data related* which includes attributes, fields and relationships.
+        /// Fusion rules needs to be deleted manually from UI before calling this endpoint<br/>
+        /// </remarks>
+        /// <param name="assetUid">The unique identifier of the fusion configuration.</param>
+        /// <param name="cascade">The unique identifier of the fusion configuration.</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpDelete,
+            Route("batch/{assetUid:Guid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution's unique identifier to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to delete assets of this type.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> DeleteBulkFusionAsync(Guid assetUid, bool cascade = false)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to remove assets of this type."));
+
+            var prefix = "Assets.DeleteBulkAssetsAsync => ";
+            var errorMessage = "";
+
+            try
+            {
+                Asset fusion = FusionRepository.GetFusionByUID(assetUid);
+
+                if (fusion == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Fusion configuration with Uid {assetUid} could not be found."));
+
+                if (FusionRepository.HasFusionRules(fusion.ObjectID))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Not found", $"Fusion configuration have rules. Delete them manually before calling this endpoint!"));
+                }
+
+                var execution = getApiExecution(1, new ApiExecutionFields_DeleteAssets { AssetTypeUid = fusion.AssetType.uid});
+
+                var executionInfo = await FusionRepository.BulkDeleteFusionConfiguration(assetUid, cascade, execution);
+
+                return await Task.FromResult<IHttpActionResult>(
+                    ResponseMessage(
+                        Request.CreateResponse(
+                            HttpStatusCode.OK,
+                            new ApiExecutionRecievedResponse
+                            {
+                                ExecutionID = executionInfo.ExecutionID,
+                                Message = "Now processing request. Please check back with this ExecutionID for status.",
+                                Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/assets/executions/{executionInfo.ExecutionID}/status"
+                            }
+                        )
+                    )
+                );
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix },
+                    { "AssetTypeUid", assetUid.ToString() },
+                    { "AssetCount", "1" }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
         }
     }
 }

@@ -27,7 +27,6 @@ namespace d360.model.DataAccessLayer
             return companyContext.SaveChanges() > 0;
         }
 
-
         public async Task<TagApiModelWrapper> GetTags(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             TagApiModelWrapper results = new TagApiModelWrapper();
@@ -118,27 +117,6 @@ namespace d360.model.DataAccessLayer
 
         public TagApiModel CreateTag(TagApiModel model)
         {
-            if(model == null)
-            {
-                throw new Exception("Invalid tag specified [null model].");
-            }
-
-            if(string.IsNullOrEmpty(model.Value))
-            {
-                throw new Exception("Invalid tag specified [no value].");
-            }
-
-            if(model.Value.Length > 250)
-            {
-                throw new Exception("Invalid tag specified [too long].");
-            }
-
-            //make sure no tag with the same name exists
-            if(companyContext.Tags.Any(x=>x.Value == model.Value))
-            {
-                throw new Exception("Invalid tag specified [same tag already exists].");
-            }
-
             var tag = new Tag
             {
                 Value = model.Value,
@@ -163,44 +141,8 @@ namespace d360.model.DataAccessLayer
             return model;
         }
 
-        public TagApiModel UpdateTag(Guid uid, TagApiModel model)
+        public TagApiModel UpdateTag(Guid uid, TagApiModel model, Tag existingTag)
         {
-            if (model == null)
-            {
-                throw new Exception("Invalid tag specified [null model].");
-            }
-
-            if (string.IsNullOrEmpty(model.Value))
-            {
-                throw new Exception("Invalid tag specified [no value].");
-            }
-
-            if (model.Value.Length > 250)
-            {
-                throw new Exception("Invalid tag specified [too long].");
-            }
-
-            if(uid == Guid.Empty)
-            {
-                throw new Exception("Invalid uid specified.");
-            }
-
-            if(uid != model.uid)
-            {
-                throw new Exception("Invalid update tag request specified uid doesnt match model uid.");
-            }
-
-            var existingTag = companyContext.Tags.FirstOrDefault(x => x.uid == uid);
-
-            if(existingTag == null)
-            {
-                throw new Exception("Invalid uid no tag exists with the specified uid.");
-            }
-
-            if (companyContext.Tags.Any(x => x.Value == model.Value && x.uid != model.uid))
-            {
-                throw new Exception("Invalid tag specified [same tag already exists].");
-            }
 
             existingTag.Value = model.Value;
             existingTag.UpdatedBy = companyContext.CurrentResourceID;
@@ -222,6 +164,21 @@ namespace d360.model.DataAccessLayer
             }
 
             return model;
+        }
+
+        public Tag GetTagByUid(Guid uid)
+        {
+            return companyContext.Tags.FirstOrDefault(x => x.uid == uid);
+        }
+
+        public bool DoesTagExists(string value)
+        {
+            return companyContext.Tags.Any(x => x.Value == value);
+        }
+
+        public bool DoesTagExists(TagApiModel model)
+        {
+            return companyContext.Tags.Any(x => x.Value == model.Value && x.uid != model.uid);
         }
     }
 }
