@@ -33,7 +33,7 @@ namespace d360.model
         public int HighestItemNumberProcessed { get; set; }
     }
 
-    partial class CompanyContext: BaseContext
+    partial class CompanyContext : BaseContext
     {
         internal const int API_V2_RETRY_LIMIT = 10;
 
@@ -273,7 +273,7 @@ update	{targetTable}
 set		Success = 0,
 		[Message] = @msg
 where	ExecutionID = @executionID 
-         and ItemNumber between {beginItemNumber} and {endItemNumber};", 
+         and ItemNumber between {beginItemNumber} and {endItemNumber};",
          new { executionID, msg }, commandTimeout: timeout);
         }
 
@@ -335,7 +335,7 @@ update		set
                 T.FormattedValue = S.FormattedValue
 when		not matched by target then
 insert		(FieldTypeID, ObjectType, ObjectID, Value, FormattedValue)
-values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);", 
+values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
             new { executionID }, transaction: trans, commandTimeout: timeout);
         }
 
@@ -380,7 +380,7 @@ from    Field F
 
                 row["FieldID"] = f.FieldID;
                 row["Name"] = f.Name;
-                row["Parent"] = f.Parent+"";
+                row["Parent"] = f.Parent + "";
                 row["Path"] = f.Path;
                 row["Position"] = f.Position;
                 row["IsArray"] = f.IsArray;
@@ -772,7 +772,7 @@ from	api.ExecutionField T
             T.ParentObjectID = S.ObjectID
     from    api.ExecutionAsset T
             inner join Asset S on T.ExecutionID = @executionID and S.Uid = T.ParentUid and T.ParentUid is not null
-            inner join AssetType ST on ST.ID = S.AssetTypeID and ST.Object = T.ParentObjectType and ST.ObjectID = T.ParentObjectTypeID;", 
+            inner join AssetType ST on ST.ID = S.AssetTypeID and ST.Object = T.ParentObjectType and ST.ObjectID = T.ParentObjectTypeID;",
             new { executionID, assetTypeID }, commandTimeout: timeout);
         }
 
@@ -924,13 +924,15 @@ end as {f.Name}"));
             dbArgs.Add("@pageSize", pageSize);
 
             var stateSql = "case I.State ";
-            State.Active.GetList().ForEach(s => {
+            State.Active.GetList().ForEach(s =>
+            {
                 stateSql += $"when {(int)s.ID} then '{s.ID.ToString()}' ";
             });
             stateSql += " end as State, ";
 
             var predicateTypeSql = "case P.Type ";
-            PredicateType.DataLineage.GetAsList().ForEach(p => {
+            PredicateType.DataLineage.GetAsList().ForEach(p =>
+            {
                 predicateTypeSql += $"when {(int)p.ID} then '{p.ID.ToString()}' ";
             });
             predicateTypeSql += " end as 'Predicate.Type', ";
@@ -1211,10 +1213,106 @@ from	IntersectType I
                                 {
                                     try
                                     {
-                                        // Get the hierarchy items we also need to remove
-                                        if (predicateType.HasValue)
+                                        if (at.Object == "FusionType")
                                         {
-                                            Connection.Execute($@"
+                                            var fusion = import.First();
+                                            var data = Connection.Query<dynamic>($@"
+                                                    create table #forDelete (ID int, Type varchar(50))
+                                                    declare @result table (Status bit, Message varchar(255))
+                                                                                                        
+                                                    declare @fusionId int = (select ObjectID from api.ExecutionDeletedAsset
+                                                    	where ExecutionID = @ExecutionID AND Object = 'Fusion')
+                                                    
+                                                    insert into #forDelete values(@fusionId, 'Fusion')
+                                                    
+                                                    insert into #forDelete select ID,'Asset' as Type from Asset where Object = 'Fusion' and ObjectID = @fusionId
+                                                    
+                                                    
+                                                    declare @fusionTypeId int = (select FusionTypeID from fusion where ID = @fusionId)
+                                                    
+                                                    insert into #forDelete
+                                                    select ID as ID,'FusionAttribute' as Type from FusionAttribute where FusionID = @fusionId
+                                                    
+                                                    insert into #forDelete
+                                                    	select ID, 'Intersect' as Type
+                                                    	from [Intersect] where [Object] = 'FusionAttribute' and [ObjectID] in (select id from #forDelete where Type = 'FusionAttribute')
+                                                    
+                                                    insert into #forDelete
+                                                    	select ID, 'Intersect' as Type
+                                                        from [Intersect] where [Subject] = 'FusionAttribute' and [SubjectID] in (select id from #forDelete where Type = 'FusionAttribute')
+                                                    
+                                                    insert into #forDelete
+                                                    	select ID, 'Field' as Type
+                                                        from Field where ObjectType = 'FusionAttribute' and ObjectID in (select id from #forDelete where Type = 'FusionAttribute')
+                                                    
+                                                    declare @itemCount int = (select count(*) from #forDelete)
+                                                    
+                                                    declare @goodForDeletion bit = 0
+                                                    if @itemCount > 2 and @isCascade = 0
+                                                    	insert into @result values(0,'Fusion configuration cannot be deleted. Use Cascade=`true` to delete Fusion configuration and its children!')
+                                                    else if (select count(*) from #forDelete where Type = 'Asset') != 1
+                                                    	insert into @result values(0,'Asset not found!')
+                                                    else if (select count(*) from #forDelete where Type = 'Fusion') != 1
+                                                    	insert into @result values(0,'Asset is not found!')
+                                                    else 
+                                                    	set @goodForDeletion = 1
+                                                    
+                                                    if @goodForDeletion = 1
+                                                    begin	
+                                                    	delete F
+                                                    		from Field F
+                                                    		inner join #forDelete FD on FD.Type = 'Field' and F.ID = FD.ID
+                                                    	
+                                                    	delete I
+                                                    		from [Intersect] I
+                                                    		inner join #forDelete FD on FD.Type = 'Intersect' and I.ID = FD.ID
+                                                    	
+                                                    	delete FA 
+                                                    		from [FusionAttribute] FA
+                                                    		inner join #forDelete FD on FD.Type = 'FusionAttribute' and FA.ID = FD.ID
+                                                    	
+                                                    	delete A 
+                                                    		from Asset A
+                                                    		inner join #forDelete FD on FD.Type = 'Asset' and A.ID = FD.ID
+                                                    	
+                                                    	delete F 
+                                                    		from Fusion F
+                                                    		inner join #forDelete FD on FD.Type = 'Fusion' and F.ID = FD.ID
+                                                    
+                                                    	insert into @result values(1,'Success')
+                                                    end
+                                                    select * from @result", 
+                                                    new { execution.ExecutionID, isCascade = fusion.Cascade.HasValue ? fusion.Cascade.Value : false }, transaction: trans, commandTimeout: timeout).FirstOrDefault();
+
+                                            bool IsDeleted = false;
+                                            if(bool.TryParse(data.Status.ToString(), out IsDeleted))
+                                            {
+                                                if (!IsDeleted)
+                                                {
+                                                    Connection.Execute(
+                                                        $"update S set S.Success = 0, S.Message = '{data.Message.ToString()}' from api.ExecutionDeletedAsset S where	{querySuffix} and S.AssetID is not null;",
+                                                        new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                                    runCompleted = true;
+                                                    trans.Commit();
+                                                    continue;
+                                                }
+                                                else
+                                                {
+                                                    Connection.Execute(
+                                                        $"update S set S.Success = 1 from api.ExecutionDeletedAsset S where	{querySuffix} and S.AssetID is not null;",
+                                                        new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                                    runCompleted = true;
+                                                    trans.Commit();
+                                                    continue;
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            // Get the hierarchy items we also need to remove
+                                            if (predicateType.HasValue)
+                                            {
+                                                Connection.Execute($@"
     with h as (
 	    select	D.ExecutionID,
 			    D.ItemNumber,
@@ -1254,12 +1352,12 @@ from	IntersectType I
         where   IntersectID is not null 
                 and [Level] > 0 
                 and Uid not in (select Uid from api.ExecutionDeletedAsset where ExecutionID = @ExecutionID)",
-                                            new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
-                                        }
+                                                new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                            }
 
-                                        #region Delete workflow items
+                                            #region Delete workflow items
 
-                                        Connection.Execute($@"
+                                            Connection.Execute($@"
     create table #w (ItemID int);
 
     insert into #w
@@ -1291,13 +1389,13 @@ from	IntersectType I
  
     delete  [workflow].[Item] 
     where	ID in (Select ItemID from #w);",
-                                        new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                            new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
 
-                                        #endregion
+                                            #endregion
 
-                                        #region De-index queue / Audit
+                                            #region De-index queue / Audit
 
-                                        Connection.Execute($@"
+                                            Connection.Execute($@"
     INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
 	    select	distinct 
                 'ObjectIndex', 'D',	S.Object, S.ObjectID, S.AssetID 
@@ -1319,62 +1417,62 @@ from	IntersectType I
 			    'This asset has been removed.' 
 	    from	AssetDetail O
 			    inner join api.ExecutionDeletedAsset S on S.AssetID = O.ID and {querySuffix} and S.Object is not null and S.ObjectID is not null;",
-                                        new { execution.ExecutionID, r = CurrentResourceID, dt }, transaction: trans, commandTimeout: timeout);
+                                            new { execution.ExecutionID, r = CurrentResourceID, dt }, transaction: trans, commandTimeout: timeout);
 
-                                        #endregion
+                                            #endregion
 
-                                        #region Cross-references
+                                            #region Cross-references
 
-                                        Connection.Execute($@"
+                                            Connection.Execute($@"
     delete	T
     from	AssetCrossReference T
 		    inner join api.ExecutionDeletedAsset S on S.[Uid] = T.[Uid] and {querySuffix};",
-                                        new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
-
-                                        #endregion
-
-                                        #region Asset table
-
-                                        Connection.Execute(
-                                            $"delete Asset where Uid in (select S.Uid from api.ExecutionDeletedAsset S where {querySuffix})",
                                             new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
 
-                                        #endregion
+                                            #endregion
 
-                                        #region Legacy table
+                                            #region Asset table
 
-                                        var legacyTable = "";
-                                        switch (at.Object)
-                                        {
-                                            case "ArtifactType":
-                                                legacyTable = "Artifact";
-                                                break;
-                                            case "FusionAttributeType":
-                                                legacyTable = "FusionAttribute";
-                                                break;                                            
-                                            case "ReferenceItemType":
-                                                legacyTable = "ReferenceItem";
-                                                break;
-                                            case "RuleType":
-                                                legacyTable = "[Rule]";
-                                                break;
-                                            case "TaxonomyType":
-                                                legacyTable = "Taxonomy";
-                                                break;
-                                        }
-
-                                        if (!string.IsNullOrEmpty(legacyTable))
-                                        {
                                             Connection.Execute(
-                                                $"delete {legacyTable} where ID in (select S.ObjectID from api.ExecutionDeletedAsset S where {querySuffix})",
+                                                $"delete Asset where Uid in (select S.Uid from api.ExecutionDeletedAsset S where {querySuffix})",
                                                 new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
-                                        }
 
-                                        #endregion
+                                            #endregion
 
-                                        #region Attributes
+                                            #region Legacy table
 
-                                        Connection.Execute($@"
+                                            var legacyTable = "";
+                                            switch (at.Object)
+                                            {
+                                                case "ArtifactType":
+                                                    legacyTable = "Artifact";
+                                                    break;
+                                                case "FusionAttributeType":
+                                                    legacyTable = "FusionAttribute";
+                                                    break;
+                                                case "ReferenceItemType":
+                                                    legacyTable = "ReferenceItem";
+                                                    break;
+                                                case "RuleType":
+                                                    legacyTable = "[Rule]";
+                                                    break;
+                                                case "TaxonomyType":
+                                                    legacyTable = "Taxonomy";
+                                                    break;
+                                            }
+
+                                            if (!string.IsNullOrEmpty(legacyTable))
+                                            {
+                                                Connection.Execute(
+                                                    $"delete {legacyTable} where ID in (select S.ObjectID from api.ExecutionDeletedAsset S where {querySuffix})",
+                                                    new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                            }
+
+                                            #endregion
+
+                                            #region Attributes
+
+                                            Connection.Execute($@"
     delete	T
     from	Field T 
 		    inner join [Attribute] A on T.ObjectType = 'Attribute' and A.ID = T.ObjectID
@@ -1383,22 +1481,22 @@ from	IntersectType I
     delete	T
     from	[Attribute] T
 		    inner join api.ExecutionDeletedAsset S on S.Object = T.ObjectType and S.ObjectID = T.ObjectID and {querySuffix};",
-                                        new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                            new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
 
-                                        #endregion
+                                            #endregion
 
-                                        #region Delete Intersects
+                                            #region Delete Intersects
 
-                                        if (predicateType.HasValue)
-                                        {
-                                            Connection.Execute($@"
+                                            if (predicateType.HasValue)
+                                            {
+                                                Connection.Execute($@"
     delete	T
     from	[Intersect] T 
 		    inner join api.ExecutionDeletedAsset S on S.IntersectID = T.ID and {querySuffix};",
-                                            new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
-                                        }
+                                                new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                            }
 
-                                        Connection.Execute($@"
+                                            Connection.Execute($@"
     delete	T
     from	[Intersect] T
             inner join api.ExecutionDeletedAsset S on S.Object = T.Subject and S.ObjectID = T.SubjectID and {querySuffix};
@@ -1406,13 +1504,13 @@ from	IntersectType I
     delete	T
     from	[Intersect] T
             inner join api.ExecutionDeletedAsset S on S.Object = T.Object and S.ObjectID = T.ObjectID and {querySuffix};",
-                                        new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                            new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
 
-                                        #endregion
+                                            #endregion
 
-                                        #region Delete Social tables
+                                            #region Delete Social tables
 
-                                        Connection.Execute($@"
+                                            Connection.Execute($@"
     delete	T
     from	CommentRelation T
 		    inner join api.ExecutionDeletedAsset S on S.Object = T.ObjectType and S.ObjectID = T.ObjectID and {querySuffix};
@@ -1433,13 +1531,13 @@ from	IntersectType I
     delete	T
     from	Follow T
 		    inner join api.ExecutionDeletedAsset S on S.Object = T.ObjectType and S.ObjectID = T.ObjectID and {querySuffix};",
-                                        new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                            new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
 
-                                        #endregion
+                                            #endregion
 
-                                        #region Delete subsidiary tables
+                                            #region Delete subsidiary tables
 
-                                        Connection.Execute($@"
+                                            Connection.Execute($@"
     delete	T
     from	Field T
 		    inner join api.ExecutionDeletedAsset S on S.Object = T.ObjectType and S.ObjectID = T.ObjectID and {querySuffix};
@@ -1451,13 +1549,13 @@ from	IntersectType I
     delete	T
     from	Nym T
 		    inner join api.ExecutionDeletedAsset S on S.Object = T.Object and S.ObjectID = T.ObjectID and {querySuffix};",
-                                        new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                            new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
 
-                                        #endregion
+                                            #endregion
 
-                                        #region Delete owner tables
+                                            #region Delete owner tables
 
-                                        Connection.Execute($@"
+                                            Connection.Execute($@"
     delete	T
     from	ResponsibilityTypeRelationOverrideItem T
 		    inner join api.ExecutionDeletedAsset S on S.AssetID = T.AssetID and {querySuffix};
@@ -1465,17 +1563,20 @@ from	IntersectType I
     delete	T
     from	ResponsibilityRuleResultAsset T
 		    inner join api.ExecutionDeletedAsset S on S.AssetID = T.AssetID and {querySuffix};",
-                                        new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
-
-                                        #endregion
-
-                                        // Update success flag
-                                        Connection.Execute(
-                                            $"update S set S.Success = 1 from api.ExecutionDeletedAsset S where	{querySuffix} and S.AssetID is not null;",
                                             new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
 
-                                        trans.Commit();
-                                        runCompleted = true;
+                                            #endregion
+
+                                            // Update success flag
+                                            Connection.Execute(
+                                                $"update S set S.Success = 1 from api.ExecutionDeletedAsset S where	{querySuffix} and S.AssetID is not null;",
+                                                new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+
+                                            trans.Commit();
+                                            runCompleted = true;
+                                        }
+
+
                                     }
                                     catch (Exception ex)
                                     {
@@ -1704,8 +1805,8 @@ from	IntersectType I
                                 try
                                 {
                                     var thisResult = Connection.Query<DatabaseBulkAssetTypeResult>(
-                                        "exec api.DeleteAssetType @executionUid, @itemNumber, @resourceID", 
-                                        new { executionUid = execution.ExecutionID, itemNumber, resourceID = CurrentResourceID }, 
+                                        "exec api.DeleteAssetType @executionUid, @itemNumber, @resourceID",
+                                        new { executionUid = execution.ExecutionID, itemNumber, resourceID = CurrentResourceID },
                                         commandTimeout: timeout
                                     ).Single();
 
@@ -1765,14 +1866,14 @@ from	IntersectType I
                     table.Columns.Add("ExecutionID", typeof(Guid));
                     table.Columns.Add("ItemNumber", typeof(int));
                     table.Columns.Add("ExecutionItemUid", typeof(Guid));
-            
+
                     table.Columns.Add("Message", typeof(string));
                     table.Columns.Add("Success", typeof(bool));
                     table.Columns.Add("Uid", typeof(Guid));
                     table.Columns.Add("ParentUid", typeof(Guid));
                     table.Columns.Add("ObjectType", typeof(string));
                     table.Columns.Add("ObjectTypeID", typeof(int));
-            
+
                     table.Columns.Add("ParentObjectType", typeof(string));
                     table.Columns.Add("ParentObjectTypeID", typeof(int));
                     table.Columns.Add("IntersectTypeUid", typeof(Guid));
@@ -1849,7 +1950,7 @@ from	IntersectType I
                         }
 
                         int i = 1;
-                        foreach(var model in import)
+                        foreach (var model in import)
                         {
                             if (i > currentLocation.HighestItemNumber)
                             {
@@ -2079,8 +2180,8 @@ insert into #Keys
                             new { execution.ExecutionID, at.ID }, commandTimeout: timeout);
                         }
                         else if (at.Object == "ReferenceItemType")
-                            {
-                                Connection.Execute($@"
+                        {
+                            Connection.Execute($@"
 update  T
 set     T.ProposedKey = utility.GetHash(S.ProposedKey) 
 from    api.ExecutionAsset T
@@ -2102,8 +2203,8 @@ insert into #Keys
     where	    A.AssetTypeID = @ID;
 
 {keyComparisonUpdateStatement}",
-                                new { execution.ExecutionID, at.ID }, commandTimeout: timeout);
-                            }
+                            new { execution.ExecutionID, at.ID }, commandTimeout: timeout);
+                        }
                         else
                         {
                             var activeKeySql = $@"
@@ -2189,7 +2290,7 @@ from	api.ExecutionAsset T
                     if (generalChecksCompleted)
                     {
                         int loopSize = 500;
-                        int numberOfLoops = (int)Math.Ceiling((decimal)(execution.Total- currentLocation.HighestItemNumberProcessed) / loopSize);
+                        int numberOfLoops = (int)Math.Ceiling((decimal)(execution.Total - currentLocation.HighestItemNumberProcessed) / loopSize);
                         int beginItemNumber = currentLocation.HighestItemNumberProcessed + 1;
                         int endItemNumber = currentLocation.HighestItemNumberProcessed + loopSize;
 
@@ -2261,7 +2362,7 @@ from	api.ExecutionAsset T
                                                     new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
                                                 }
                                                 break;
-                                                #endregion
+                                            #endregion
                                             case AssetTypeClass.Model:
                                                 #region
                                                 if (isInsert)
@@ -2813,7 +2914,7 @@ begin
 			T.ObjectID = O.ObjectID
 	from	api.ExecutionRelationship T
 			inner join AssetType O on T.ExecutionID = @ExecutionID and O.[uid] = T.ObjectUid and T.Object is null;
-end", 
+end",
                 new { execution.ExecutionID, rt.uid }, commandTimeout: timeout);
 
                 #endregion
@@ -2829,7 +2930,7 @@ where	ExecutionID = @ExecutionID and (Subject is null or SubjectID is null);
 update	api.ExecutionRelationship
 set		Success = 0,
 		[Message] = coalesce([Message] + '; ', '') + 'Not able to resolve object of this relationship to a valid asset.'
-where	ExecutionID = @ExecutionID and (Object is null or ObjectID is null);", 
+where	ExecutionID = @ExecutionID and (Object is null or ObjectID is null);",
                 new { execution.ExecutionID }, commandTimeout: timeout);
 
                 #endregion
@@ -2915,13 +3016,13 @@ from	api.ExecutionRelationship T
                 execution.Error = import.Count();
 
                 results = new List<DatabaseBulkRelationshipResult>();
-                results.AddRange(import.Select(i => new DatabaseBulkRelationshipResult { Message = msg, Success = false })); 
+                results.AddRange(import.Select(i => new DatabaseBulkRelationshipResult { Message = msg, Success = false }));
             }
 
             if (generalChecksCompleted)
             {
                 int loopSize = 100;
-                int numberOfLoops = (int)Math.Ceiling((decimal)(execution.Total- currentLocation.HighestItemNumberProcessed) / loopSize);
+                int numberOfLoops = (int)Math.Ceiling((decimal)(execution.Total - currentLocation.HighestItemNumberProcessed) / loopSize);
                 int beginItemNumber = currentLocation.HighestItemNumberProcessed + 1;
                 int endItemNumber = currentLocation.HighestItemNumberProcessed + loopSize;
 
@@ -3002,7 +3103,8 @@ from	api.ExecutionRelationship T
                         )
                     );
 
-                    OnRelationshipsPartiallyProcessed(new RelationshipsPartiallyProcessedEventArgs {
+                    OnRelationshipsPartiallyProcessed(new RelationshipsPartiallyProcessedEventArgs
+                    {
                         Results = results
                     });
 
