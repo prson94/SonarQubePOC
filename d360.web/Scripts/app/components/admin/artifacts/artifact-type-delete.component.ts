@@ -1,5 +1,5 @@
 ﻿import { Input, Output, Component, EventEmitter, OnInit } from '@angular/core';
-
+import { MessagesService } from '../../../services/messages.service';
 import { ArtifactTypeService } from '../../../services/artifact-type.service';
 import { ArtifactService } from '../../../services/artifacts.service';
 import { ArtifactType } from '../../../models/artifact-type.model';
@@ -24,7 +24,8 @@ export class ArtifactTypeDeleteComponent extends BaseComponent implements OnInit
 
     constructor(
         private artifactTypeService:ArtifactTypeService,
-        private artifactService:ArtifactService            
+        private artifactService: ArtifactService,
+        private messagesService: MessagesService,
     ) {
         super();
     }
@@ -47,6 +48,10 @@ export class ArtifactTypeDeleteComponent extends BaseComponent implements OnInit
             ) => {
                 this.artifactType = getArtifactTypeDetailsResponse;
                 this.count = getArtifactsResponse.total;
+            },
+            err => {
+                this.isLoading = false;
+                this.messagesService.showError("Error", err.message);
             }
         );
     }
