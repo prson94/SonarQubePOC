@@ -43,7 +43,7 @@ namespace d360.web.Controllers
             };
             var assetType = Company.AssetTypes.FirstOrDefault(a => a.Object == "ArtifactType" && a.ObjectID == id);
             var fields = getFieldTypesByObjectType("ArtifactType", id, listableOnly).Where(i => !typesToAvoid.Contains(i.Type)).ToList();
-            fields.Add(new FieldType { Type = "Number", Name = "AssetID", FriendlyName = "Asset ID" });
+            fields.Add(new FieldType { Type = "Number", Name = "ID", FriendlyName = "Asset ID" });
             fields.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "Url" });
 
             if (Company.TypeHasParent(SystemObjects.ArtifactType, assetType.ObjectID))

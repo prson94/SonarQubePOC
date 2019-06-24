@@ -231,4 +231,5 @@
   <include file="scripts/GOV-7524.xml"/>
   <include file="scripts/GOV-7533-fix1.xml"/>
   <include file="scripts/GOV-7533-fix2.xml"/>
+  <include file="scripts/GOV-7533-fix3.xml"/>
 </databaseChangeLog>
