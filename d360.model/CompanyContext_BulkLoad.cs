@@ -817,7 +817,7 @@ order by	ColumnIndex", new { id });
 
         #endregion
 
-        #region API v2 Methods
+        #region Bulk Promote Methods
 
         public async Task BulkLoadAssets(Load load, IAssetRepository repository)
         {
