@@ -284,6 +284,31 @@ namespace igx.UnitTests
             return mock.Object;
         }
 
+        public ITagRepository GetTagRepository()
+        {
+            var mock = new Mock<ITagRepository>();
+
+            mock.Setup(x => x.CreateTag(It.IsAny<TagApiModel>()))
+                .Returns(new TagApiModel());
+
+            mock.Setup(x => x.DeleteTag(It.IsAny<Guid>()))
+                .Returns((Guid uid) => uid.ToString() == DataConstants.ValidGUID ? true : false);
+
+            mock.Setup(x => x.DoesTagExists(It.IsAny<string>()))
+                .Returns((string s) => s == DataConstants.Tags.ValidName ? false : true);
+
+            mock.Setup(x => x.GetTagByUid(It.IsAny<Guid>()))
+                .Returns((Guid uid) => uid.ToString() == DataConstants.ValidGUID ? new Tag() : null);
+
+            mock.Setup(x => x.GetTags(It.IsAny<IEnumerable<KeyValuePair<string, string>>>()))
+                .Returns(Task.FromResult(new TagApiModelWrapper() {items = new List<TagApiModel>() }));
+
+            mock.Setup(x => x.UpdateTag(It.IsAny<Guid>(), It.IsAny<TagApiModel>(), It.IsAny<Tag>()))
+                .Returns((Guid uid, TagApiModel tam, Tag tag) => (uid == tam.uid && uid == Guid.Parse(DataConstants.ValidGUID)) ? tam : null);
+
+            return mock.Object;
+        }
+
         public IWorkflowApiModelValidator GetWorkflowApiModelValidator()
         {
             return new WorkflowApiModelValidator(GetAssetRepository(), GetIssueRepository(), GetRelationshipRepository(), GetWorkflowRepository());
