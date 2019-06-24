@@ -37,7 +37,65 @@ END
 	</rollback>
  </changeSet>
 	
- <changeSet author="Pappas" id="GOV-7533-Procedure-D">
+ <changeSet author="Pappas" id="GOV-7533-FieldDetail">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[
+ALTER VIEW [dbo].[FieldDetail] AS
+SELECT	T.ID AS FieldTypeID, 
+		T.Name, 
+		T.FriendlyName, 
+		A.AssetTypeID, 
+		A.ID AS AssetID, 
+		A.Object, 
+		A.ObjectID, 
+		T.Type, 
+		COALESCE (F.Value, T.DefaultValue) AS Value, 
+		CASE 
+			WHEN T.AllowAllValue = 1 AND F.[Value] = '0' THEN CAST(T.AllowAllLabel AS nvarchar(MAX)) 
+			WHEN F.FormattedValue IS NOT NULL THEN F.FormattedValue 
+			WHEN T.DefaultFormattedValue IS NOT NULL THEN CAST(T .DefaultFormattedValue AS nvarchar(MAX)) 
+			ELSE NULL 
+		END AS FormattedValue,
+		T.ShowIfEmpty
+FROM	dbo.Asset AS A 
+		INNER JOIN dbo.FieldType AS T ON T.AssetTypeID = A.AssetTypeID 
+		LEFT OUTER JOIN dbo.Field AS F ON F.FieldTypeID = T.ID AND F.ObjectType = A.Object AND F.ObjectID = A.ObjectID
+WHERE	F.Value IS NOT NULL OR T.DefaultValue IS NOT NULL OR T.ShowIfEmpty = 1
+	]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+ALTER VIEW [dbo].[FieldDetail] AS
+SELECT        T.ID AS FieldTypeID, 
+				T.Name, 
+				T.FriendlyName, 
+				A.AssetTypeID, 
+				A.ID AS AssetID, 
+				A.Object, 
+				A.ObjectID, 
+				T.Type, 
+				COALESCE (F.Value, T.DefaultValue) AS Value, 
+				CASE WHEN T.AllowAllValue = 1 AND F.FormattedValue = '0'
+				 THEN CAST(T .AllowAllLabel AS nvarchar(MAX)) 
+				    WHEN F.FormattedValue IS NOT NULL 
+					    THEN F.FormattedValue 
+						WHEN T .DefaultFormattedValue IS NOT NULL 
+                           THEN CAST(T .DefaultFormattedValue AS nvarchar(MAX)) 
+						ELSE NULL 
+				END AS FormattedValue,
+				T.ShowIfEmpty
+FROM            dbo.Asset AS A 
+INNER JOIN dbo.FieldType AS T ON T.AssetTypeID = A.AssetTypeID 
+LEFT OUTER JOIN dbo.Field AS F ON F.FieldTypeID = T.ID AND F.ObjectType = A.Object AND F.ObjectID = A.ObjectID
+WHERE F.Value IS NOT NULL OR T.DefaultValue IS NOT NULL OR T.ShowIfEmpty = 1
+		]]>
+	</rollback>
+ </changeSet>
+
+ <changeSet author="Pappas" id="GOV-7533-Procedure-E">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -153,7 +211,7 @@ begin
 			T.OrderStatement = case when T.DataType = 'nvarchar' then 'F'+TxtId+'R.FormattedValue' else 'try_cast(F'+TxtId+'R.FormattedValue as '+DataType+')' end,
 			T.FilterStatement = case 
 									when @filter is not null and T.IsListable = 1 then '(F'+TxtId+'R.FormattedValue like @filter)' 
-									when T.ID in (select TypeID from @filters where FilterType = 'F') then 'F'+TxtId+'R.FormattedValue like (select top 1 FilterValues from @filters where TypeID = FT'+TxtId+'.ID)'
+									when T.ID in (select TypeID from @filters where FilterType = 'F') then '( F'+TxtId+'R.FormattedValue like (select top 1 FilterValues from @filters where TypeID = FT'+TxtId+'.ID) )' --+ IIF(S.AllowAllValue = 1, ' OR  F'+TxtId+'R.Value = ''0'' )', ' )')
 									else '' 
 								end
 	from	#ft T
@@ -203,7 +261,7 @@ begin
 			OrderStatement = case when DataType = 'nvarchar' then 'F'+TxtId+'.FormattedValue' else 'try_cast(F'+TxtId+'.FormattedValue as '+DataType+')' end,
 			FilterStatement =	case 
 									when (@filter is not null and IsListable = 1) then '(F'+TxtId+'.FormattedValue like @filter)' 
-									when ID in (select TypeID from @filters where FilterType = 'F') then 'exists(select 1 from @filters where TypeID = F'+TxtId+'.FieldTypeID and F'+TxtId+'.FormattedValue like FilterValues)'
+									when ID in (select TypeID from @filters where FilterType = 'F') then '( exists(select 1 from @filters where TypeID = F'+TxtId+'.FieldTypeID and F'+TxtId+'.FormattedValue like FilterValues) ' + IIF(AllowAllValue = 1, ' OR  F'+TxtId+'.Value = ''0'' )', ' )')
 									else '' 
 								end
 	where	JoinStatement is null
@@ -374,6 +432,7 @@ end as P_CanDelete, '
 	where	(coalesce(JoinStatement,'') <> '') 
 			and coalesce(ColumnStatement,'') <> '' 
 			and (IsListable = 1 or @listableFieldsOnly = 0)
+
 	set @sql = @sql + ' from Asset A inner join AssetType T on T.ID = A.AssetTypeID '
 	select	@sql = @sql + string_agg(cast(JoinStatement as nvarchar(max)), ' ') 
 	from	#ft 
