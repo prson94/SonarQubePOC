@@ -49,7 +49,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "Gets a list of Users.", typeof(ResourceApiViewModel)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
         ]
-        public async Task<HttpResponseMessage> GetUsers(Guid? Uid = null, string FirstName = null, string LastName = null, core.enums.State? State = null, bool? IsAdministrator = null, int _pageSize = 5, int _pageNum = 1)
+        public async Task<HttpResponseMessage> GetUsers(Guid? Uid = null, string FirstName = null, string LastName = null, core.enums.CompanyResourceState? State = null, bool? IsAdministrator = null, int _pageSize = 5, int _pageNum = 1)
         {
             string finalSql = "";
             string joinsSql = " left join Asset A on A.Object = 'Resource' and A.ObjectID = gr.ResourceID ";
@@ -75,34 +75,34 @@ namespace d360.web.Controllers.V2
             getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
 
             if (_pageSize > 0 || _pageNum > 0)
-            if (Uid != null || FirstName != null || LastName != null || State != null || IsAdministrator != null)
-            {
-                if (Uid != null)
+                if (Uid != null || FirstName != null || LastName != null || State != null || IsAdministrator != null)
                 {
-                    dbArgs.Add("uid", Uid);
-                    queries.Add(" gr.uid = @uid");
+                    if (Uid != null)
+                    {
+                        dbArgs.Add("uid", Uid);
+                        queries.Add(" gr.uid = @uid");
+                    }
+                    if (FirstName != null)
+                    {
+                        dbArgs.Add("FirstName", FirstName);
+                        queries.Add(" FirstName = @FirstName");
+                    }
+                    if (LastName != null)
+                    {
+                        dbArgs.Add("LastName", LastName);
+                        queries.Add(" LastName = @LastName");
+                    }
+                    if (State != null)
+                    {
+                        dbArgs.Add("state", State);
+                        queries.Add(" gr.state = @state");
+                    }
+                    if (IsAdministrator != null)
+                    {
+                        dbArgs.Add("isAdministrator", IsAdministrator);
+                        queries.Add(" isAdministrator = @isAdministrator");
+                    }
                 }
-                if (FirstName != null)
-                {
-                    dbArgs.Add("FirstName", FirstName);
-                    queries.Add(" FirstName = @FirstName");
-                }
-                if (LastName != null)
-                {
-                    dbArgs.Add("LastName", LastName);
-                    queries.Add(" LastName = @LastName");
-                }
-                if (State != null)
-                {
-                    dbArgs.Add("state", State);
-                    queries.Add(" gr.state = @state");
-                }
-                if (IsAdministrator != null)
-                {
-                    dbArgs.Add("isAdministrator", IsAdministrator);
-                    queries.Add(" isAdministrator = @isAdministrator");
-                }
-            }
             foreach (var col in fieldColumns)
             {
                 selectSql += "," + col;
