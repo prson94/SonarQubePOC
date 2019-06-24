@@ -130,6 +130,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
                 searchPanel.show(event);
                 window.setTimeout(() => {
                     searchPanel.el.nativeElement.children[0].style.top = (lineDims.bottom) + "px";
+                    searchPanel.el.nativeElement.children[0].style.left = (lineDims.left) + "px";
                     if (this.standardInput) {
                         this.standardInput.nativeElement.focus();
                         if (this.results === undefined && !this.isTreeItem()) this.search("");
