@@ -1345,7 +1345,7 @@ where	ID = @loadId", new { loadId }, transaction: trans);
             }
             catch (Exception ex)
             {
-                CoreFunction.AITrackException(functionName, ex, companyID);
+                CoreFunction.AITrackException(functionName, ex, company.CurrentCompanyID);
             }
         }
 
