@@ -49,7 +49,8 @@ namespace d360.web.Controllers
             if (Company.TypeHasParent(SystemObjects.ArtifactType, assetType.ObjectID))
                 fields.Insert(0, new FieldType { Type = "string", Name = "Parent", FriendlyName = "Parent" });
 
-            var filters = new List<UiRequestFilterValue>();
+            var filters = GetFilterValuesFromRequest(Request, true);
+            //var filters = new List<UiRequestFilterValue>();
             if (!string.IsNullOrEmpty(ownerUsers))
             {
                 try
