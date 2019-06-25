@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -91,6 +92,31 @@ namespace igx.IntegrationTests.TestData
                                     ]";
                 }
                 return _newAsset;
+            }
+        }
+
+        private static string _metricResults = string.Empty;
+
+        public static string MetricResultJson
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_metricResults))
+                {
+                    var test = new JArray();
+                    JToken token = JToken.Parse("");
+
+                    _metricResults = @"[
+                                         {
+                                           ""AssetUid"": """+AssetUid+ @""",
+                                           ""MetricAssetUid"": """ + MetricUid + @""",
+                                           ""EffectiveDate"": ""2019-06-25T09:12:06.127Z"",
+                                           ""Result"": true
+                                         }
+                                       ]";
+                }
+
+                return _metricResults;
             }
         }
     }

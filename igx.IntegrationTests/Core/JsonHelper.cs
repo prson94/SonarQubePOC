@@ -78,5 +78,12 @@ namespace igx.IntegrationTests.Core
             return JsonConvert.SerializeObject(token);
         }
 
+        public static string AddNewToken(string json, string prop, string value)
+        {
+            var token = JsonConvert.DeserializeObject<JToken>(json);
+            var newProp = new JProperty(prop, value);
+            token.First.AddAfterSelf(newProp);
+            return JsonConvert.SerializeObject(token);
+        }
     }
 }

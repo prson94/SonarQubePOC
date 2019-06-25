@@ -150,7 +150,7 @@ namespace igx.IntegrationTests.ApiTests
         }
 
         [Fact, Priority(60)]
-        public async void T_1_05_GetMetricByUid()
+        public async void T_1_06_GetMetricByUid()
         {
             string endpoint = $"{URIHelper.MetricsUri}/{MetricTestsData.MetricUid}";
             var response = await httpClient.GetAsync(endpoint);
@@ -163,6 +163,7 @@ namespace igx.IntegrationTests.ApiTests
             Assert.True(parsedData["Uid"].ToString() == MetricTestsData.MetricModel.GetJTokenValue("Uid"));
             Assert.True(parsedData["Name"].ToString() == MetricTestsData.MetricModel.GetJTokenValue("Name"));
             Assert.True(parsedData["Description"].ToString() == MetricTestsData.MetricModel.GetJTokenValue("Description"));
+            Assert.True(parsedData["State"].ToString() != "3");
 
             var definition = parsedData["Versions"].First();
             Assert.True(definition["Weight"].ToString() == MetricTestsData.MetricModel.GetJTokenValue("Weight"));
@@ -173,7 +174,62 @@ namespace igx.IntegrationTests.ApiTests
         }
 
         [Fact, Priority(70)]
-        public async void T_1_06_GetMetricsBreakdown()
+        public async void T_1_07_PostMetricResults()
+        {
+            string endpoint = $"{URIHelper.MetricsUri}/results";
+            var response = await httpClient.PostAsync(endpoint, MetricTestsData.MetricResultJson.AsStringContent());
+            var content = await response.Content.ReadAsStringAsync();
+            var parsedData = JsonConvert.DeserializeObject<JToken>(content);
+
+            Assert.True(response.IsSuccessStatusCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
+
+            Assert.True(parsedData.First()["AssetUid"].ToString() == MetricTestsData.MetricResultJson.GetJTokenValue("AssetUid"));
+            Assert.True(parsedData.First()["MetricAssetUid"].ToString() == MetricTestsData.MetricResultJson.GetJTokenValue("MetricAssetUid"));
+            Assert.True(parsedData.First()["Result"].ToString().ToLower() == "true");
+            Assert.True(parsedData.First()["IsSuccess"].ToString().ToLower() == "true");
+
+        }
+
+        [Fact, Priority(80)]
+        public async void T_1_08_DeleteMetric()
+        {
+            var response = await httpClient.DeleteAsync($"{URIHelper.MetricsUri}/{MetricTestsData.MetricUid}");
+            var content = await response.Content.ReadAsStringAsync();
+            var parsedData = JsonConvert.DeserializeObject<JToken>(content);
+
+            Assert.True(response.IsSuccessStatusCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
+            Assert.True(parsedData["Result"].ToString().ToLower() == "true");
+
+        }
+
+
+        [Fact, Priority(90)]
+        public async void T_1_09_GetMetricByUidAfterDelete()
+        {
+            string endpoint = $"{URIHelper.MetricsUri}/{MetricTestsData.MetricUid}";
+            var response = await httpClient.GetAsync(endpoint);
+            var content = await response.Content.ReadAsStringAsync();
+            var parsedData = JsonConvert.DeserializeObject<JToken>(content);
+
+            Assert.True(response.IsSuccessStatusCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
+
+            Assert.True(parsedData["Uid"].ToString() == MetricTestsData.MetricModel.GetJTokenValue("Uid"));
+            Assert.True(parsedData["Name"].ToString() == MetricTestsData.MetricModel.GetJTokenValue("Name"));
+            Assert.True(parsedData["Description"].ToString() == MetricTestsData.MetricModel.GetJTokenValue("Description"));
+            Assert.True(parsedData["State"].ToString() == "3");
+
+            var definition = parsedData["Versions"].First();
+            Assert.True(definition["Weight"].ToString() == MetricTestsData.MetricModel.GetJTokenValue("Weight"));
+            Assert.True(definition["ConditionAndOr"].ToString() == MetricTestsData.MetricModel.GetJTokenValue("ConditionAndOr"));
+
+            Assert.True(!string.IsNullOrEmpty(MetricTestsData.MetricUid));
+
+        }
+        [Fact, Priority(100)]
+        public async void T_1_10_GetMetricsBreakdown()
         {
             string endpoint = $"{URIHelper.MetricsUri}/{MetricTestsData.AssetUid}/pointbreakdown?effectiveDate=2019-06-20T11:59:03.874Z";
             var response = await httpClient.GetAsync(endpoint);
