@@ -2176,7 +2176,7 @@ where	R.SourceObject = 'FusionAttribute'
             return returnValue;
         }
 
-        private void CreateOrUpdateDisplayValue(long assetId, string objectType = "", int objectId = -1)
+        public void CreateOrUpdateDisplayValue(long assetId, string objectType = "", int objectId = -1)
         {
             Database.Connection.Execute("exec GenerateAssetDisplayValue @assetID, @objType,@objId", new { assetID = assetId, objId = objectId, objType = new DbString { Value = objectType.Replace("Type",""), IsFixedLength = true, Length = 20, IsAnsi = true } }, null, 2400);
         }
