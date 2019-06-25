@@ -3,6 +3,8 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { Subscription }   from 'rxjs';
 import * as _ from 'lodash';
+import { windowWhen } from 'rxjs/operators';
+import { clearLine } from 'readline';
 
 @Component({
     selector: 'd3s-header-breadcrumb',
@@ -15,8 +17,8 @@ import * as _ from 'lodash';
                         </div>
                     </p-overlayPanel>
                 </span>
-                <div *ngFor="let breadcrumb of breadcrumbs;let last=last">
-                    <d3s-header-breadcrumb-item *ngIf="(showLastOnly && last) || !showLastOnly" [breadcrumb]="breadcrumb" [isLastItem]="last" [lastItem]="breadcrumbs[breadcrumbs.length - 1]" (treeClick)="handleTreeClick($event)" [maxLastCrumbWidth]="maxSingleCrumbWidth"></d3s-header-breadcrumb-item>                    
+                <div *ngFor="let breadcrumb of breadcrumbs;let last=last;let index=index">
+                    <d3s-header-breadcrumb-item *ngIf="(showLastOnly && last) || breadcrumb.show" [breadcrumb]="breadcrumb" [isLastItem]="last" [lastItem]="breadcrumbs[breadcrumbs.length - 1]" (treeClick)="handleTreeClick($event)" [maxLastCrumbWidth]="maxSpaceForCrumbs"></d3s-header-breadcrumb-item>                    
                 </div>                
                 </div>  
               `,
@@ -30,9 +32,10 @@ export class HeaderBreadcrumbComponent {
     subscriptionAdd: Subscription;
     breadcrumbs: Breadcrumb[];
     showLastOnly: boolean = false;
+    showThisManyCrumbs: number = 0;
     @ViewChild('bread') breadcrumbUIElement;
     private resizeTimer: any;
-    private maxSingleCrumbWidth: number = 800;
+    private maxSpaceForCrumbs: number = 800;
 
     constructor(
         private headerBreadcrumbService: HeaderBreadcrumbService,
@@ -82,28 +85,30 @@ export class HeaderBreadcrumbComponent {
     }
 
     resizeControlsToFit(windowWidth) {
-        if (windowWidth < 650) {
-            this.showLastOnly = true;
-            return;
-        } 
+
+        this.breadcrumbs.forEach(x => { x.show = false });
+
         let element = this.breadcrumbUIElement.nativeElement;
         var controlsWidth = this.controlWidth ? this.controlWidth : 0; // only visible medium and up
         let logo = element.parentElement.previousSibling;
         var logoWidth = logo.offsetWidth;
-        var breadcrumbWidth = element.offsetWidth;        
-
-        var combinedWidth = controlsWidth + logoWidth + breadcrumbWidth;
-        this.maxSingleCrumbWidth = windowWidth - (controlsWidth + logoWidth);
-        //if the width of this + the logo + the controls is bigger than screen start hiding breadcrumbs
+        var breadcrumbWidth = element.offsetWidth;
         
-        var worseCaseWidth = this.maxLength() + logoWidth + controlsWidth;
-        if (worseCaseWidth > windowWidth || this.maxSingleCrumbWidth < this.maxLength()) {                
+        var combinedWidth = controlsWidth + logoWidth + breadcrumbWidth;
+        
+        this.maxSpaceForCrumbs = windowWidth - (controlsWidth + logoWidth );
+        //if the width of this + the logo + the controls is bigger than screen start hiding breadcrumbs
+        var worseCaseWidth = this.estimateMaxLength(this.maxSpaceForCrumbs) + logoWidth + controlsWidth;
+       
+        if (worseCaseWidth > windowWidth) {                
             this.showLastOnly = true;
+            this.showCrumb();
         }
         else {                
             this.showLastOnly = false;
+            this.breadcrumbs.forEach(x => { x.show = true; });
         }
-       
+
         this.ref.markForCheck();
     }
 
@@ -112,22 +117,55 @@ export class HeaderBreadcrumbComponent {
         this.resizeTimer = window.setTimeout(() => this.resizeControlsToFit(event.target.innerWidth), 150);
     }
 
-    maxLength(): number {
+    estimateMaxLength(maxSpaceForCrumbs: number): number {
         let max = 0;
-        this.breadcrumbUIElement.nativeElement.insertAdjacentHTML('beforeend', '<a class="breadlink" style="visibility:hidden;"></a>');
-        let tempCrumb = this.breadcrumbUIElement.nativeElement.lastElementChild;
-        for (var i = 0; i < this.breadcrumbs.length; i++) {
-            tempCrumb.innerText = "";
-            tempCrumb.innerText = (this.breadcrumbs[i].text + this.breadcrumbs[i].parentTypeName);
+        let maxNumberOfCrumbsInSpace = 0;
+        let html = '';
+        for (var i = this.breadcrumbs.length - 1; i >= 0; i--) {
+
+            html = '<a class="breadcrumb"><span class="breadcrumb-text">' + this.breadcrumbs[i].text + ' </span>';
+            if (this.breadcrumbs[i].parentTypeName !== undefined) 
+                html += '<span class="parent">' + this.breadcrumbs[i].parentTypeName ? this.breadcrumbs[i].parentTypeName : '' + '</span>'
+            html += '</a>';
+
+            this.breadcrumbUIElement.nativeElement.insertAdjacentHTML('beforeend', html);
+
+            let tempCrumb = this.breadcrumbUIElement.nativeElement.lastElementChild;
 
             max += tempCrumb.offsetWidth;
 
             var last = (this.breadcrumbs.length - 1) == i;
             if (!last)
-                max += 20 // for the icon separator
+                max += 25 // for the icon separator
+
+            if (max < maxSpaceForCrumbs)
+                maxNumberOfCrumbsInSpace++;
+
+           this.breadcrumbUIElement.nativeElement.removeChild(tempCrumb);
         }
-        this.breadcrumbUIElement.nativeElement.removeChild(tempCrumb);
-        return max;
+        this.showThisManyCrumbs = maxNumberOfCrumbsInSpace;
+        if (this.showLastOnly)
+            max += 40; 
+        return max + 20;//for the left margin on the breadcrumb
     }
- 
+
+    showCrumb() {
+        if (this.showThisManyCrumbs == 0)
+            return;
+
+        if (this.breadcrumbs.length == this.showThisManyCrumbs) {
+            this.showLastOnly = false;
+            this.breadcrumbs.forEach(x => { x.show = true });
+            return;
+        }
+        let maxIndex = this.breadcrumbs.length - 1;
+        let minIndex = this.breadcrumbs.length - this.showThisManyCrumbs;
+        for (var i = 0; i < this.breadcrumbs.length; i++) {     
+            if (i >= minIndex && i <= maxIndex) this.breadcrumbs[i].show = true;
+            else this.breadcrumbs[i].show = false;
+
+        }
+
+        
+    }
 }
