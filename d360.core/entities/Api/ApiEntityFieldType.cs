@@ -35,6 +35,7 @@ namespace d360.core.entities
         public string ItemNameOverride { get; set; }
 
         [NotMapped]
+        [DataMember]
         public List<ApiEntityFieldTypeMultiSelectField> MultiSelectFields { get; set; }
 
         [ForeignKey("EntityID"), IgnoreDataMember]

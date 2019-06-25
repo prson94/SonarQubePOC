@@ -23,5 +23,7 @@ namespace igx.IntegrationTests.Core
 
         public static string MetricsUri = Settings.Host + "/api/v2/metrics";
 
+        public static string TagUri = Settings.Host + "/api/v2/tags";
+
     }
 }

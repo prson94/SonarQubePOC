@@ -2587,6 +2587,19 @@
             <param name="model">The fusion status log model.</param>
             <returns>The model of the updated fusion status log entry.</returns>
         </member>
+        <member name="M:d360.web.Controllers.V2.FusionController.DeleteBulkFusionAsync(System.Guid,System.Boolean)">
+            <summary>
+            Removes a fusion configuration based on the specific fusion Uid. This endpoint is meant for deleting one fusion at a time.
+            </summary>
+            <remarks>
+            <strong>&#9888; Read before calling this endpoint</strong><br/>
+            Calling this endpoint with parameter <strong>Cascade</strong> set to <strong>true</strong> will irrevocably delete fusion configuration and all data related* which includes attributes, fields and relationships.
+            Fusion rules needs to be deleted manually from UI before calling this endpoint<br/>
+            </remarks>
+            <param name="assetUid">The unique identifier of the fusion configuration.</param>
+            <param name="cascade">The unique identifier of the fusion configuration.</param>
+            <returns>An HTTP status code and message.</returns>
+        </member>
         <member name="T:d360.web.Controllers.V2.ActionsController">
             <summary>
             This service houses all endpoints handling actions management in Govern.
@@ -2611,7 +2624,7 @@
             This service houses all endpoints handling glossary-related data such as artifacts and models.
             </summary>
         </member>
-        <member name="M:d360.web.Controllers.V2.MembershipController.GetUsers(System.Nullable{System.Guid},System.String,System.String,System.Nullable{d360.core.enums.State},System.Nullable{System.Boolean},System.Int32,System.Int32)">
+        <member name="M:d360.web.Controllers.V2.MembershipController.GetUsers(System.Nullable{System.Guid},System.String,System.String,System.Nullable{d360.core.enums.CompanyResourceState},System.Nullable{System.Boolean},System.Int32,System.Int32)">
             <summary>
             Retrieves a list of users.
             </summary>
