@@ -313,5 +313,7 @@ namespace d360.model
         List<RelationshipDirectionFieldInfo> getRelationFieldData(string fieldTypeRelationType, int typeID, List<FieldType> fields);
 
         Task<IEnumerable<TypeIdentifierInfoModel>> GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType type, Guid guid);
+
+        void CreateOrUpdateDisplayValue(long assetId, string objectType = "", int objectId = -1);
     }
 }
