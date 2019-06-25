@@ -11,16 +11,19 @@ namespace igx.IntegrationTests.Core
 {
     public static class JsonHelper
     {
-        public static StringContent AsStringContent(this string json)
+        public static StringContent AsStringContent(this JObject json)
         {
-            return new StringContent(json, Encoding.UTF8, "application/json");
+            return new StringContent(JsonConvert.SerializeObject(json), Encoding.UTF8, "application/json");
         }
-
-        public static bool HasSameFieldValue(this string json, JToken token, string field)
+        public static JObject AsJobject(this string rawJson)
+        {
+            return JObject.Parse(rawJson);
+        }
+        public static bool HasSameFieldValue(this JObject json, JToken token, string field)
         {
             try
             {
-                return JsonConvert.DeserializeObject<JToken>(json)[field].ToString() == token[field].ToString();
+                return json[field].ToString() == token[field].ToString();
             }
             catch
             {
@@ -28,15 +31,9 @@ namespace igx.IntegrationTests.Core
             }
         }
 
-        public static string GetJTokenValue(this string json, string field)
-        {
-            return JsonConvert.DeserializeObject<JToken>(json)[field].ToString();
-        }
-
-        public static bool DoesContainToken(this IEnumerable<JToken> jTokens, string json)
+        public static bool DoesContainToken(this IEnumerable<JToken> jTokens, JObject token)
         {
             if (jTokens == null || jTokens.Count() == 0) return false;
-            var token = JsonConvert.DeserializeObject<JToken>(json);
             int sameFields = 0;
             foreach (var item in jTokens)
             {
@@ -53,30 +50,16 @@ namespace igx.IntegrationTests.Core
             return false;
         }
 
-        public static JToken GetBy(this IEnumerable<JToken> jTokens, string field, string value)
+        public static void UpdateValueOnProperty(this JObject @object, string property, string value)
         {
-            if (jTokens == null || jTokens.Count() == 0) return null;
-            foreach (var item in jTokens)
-            {
-                if (item[field].ToString() == value)
-                    return item;
-            }
-            return null;
+            @object[property] = value;
         }
 
-        public static string UpdateJsonOnField(string json, string field, string newValue)
+        public static void AppendValueOnProperty(this JObject @object, string property, string value)
         {
-            var token = JsonConvert.DeserializeObject<JToken>(json);
-            token[field] = newValue;
-            return JsonConvert.SerializeObject(token);
+            @object[property] = @object[property] + value;
         }
 
-        public static string AppendJsonOnField(string json, string field, string newValue)
-        {
-            var token = JsonConvert.DeserializeObject<JToken>(json);
-            token[field] = token[field].ToString() + newValue;
-            return JsonConvert.SerializeObject(token);
-        }
 
     }
 }
