@@ -743,13 +743,13 @@ where   O.Type = 'ArtifactType' and O.TypeID = @id and O.[State] = 1
         }
 
         [HttpGet, Route("artifactsbytype"), NonNullableParameters]
-        public async Task<JsonNetResult> ArtifactsByType(int id, string sortDataField, string sortOrder, int pagenum, int pagesize, string filter)
+        public async Task<ActionResult> ArtifactsByType(int id, string sortDataField, string sortOrder, int pagenum, int pagesize, string filter)
         {
             return await ByType(id, sortDataField, sortOrder, pagenum, pagesize, filter);
         }
 
         [HttpPost, Route("bytype"), NonNullableParameters]
-        public async Task<JsonNetResult> ByType(int id, string sortDataField, string sortOrder, int pagenum, int pagesize, string filter)
+        public async Task<ActionResult> ByType(int id, string sortDataField, string sortOrder, int pagenum, int pagesize, string filter)
         {
             try
             {
@@ -774,7 +774,7 @@ where   O.Type = 'ArtifactType' and O.TypeID = @id and O.[State] = 1
             }
             catch (Exception ex)
             {
-                return jsonNetException(ex);
+                return new HttpStatusCodeResult(System.Net.HttpStatusCode.InternalServerError, ex.Message);                
             }
         }
 

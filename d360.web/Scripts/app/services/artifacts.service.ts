@@ -25,7 +25,7 @@ export class ArtifactService extends BaseObservableService {
 
     constructor(
         private http: HttpClient,
-        messagesService: MessagesObservableService
+        protected messagesService: MessagesObservableService
     ) {
         super(messagesService);
     }
@@ -119,13 +119,12 @@ export class ArtifactService extends BaseObservableService {
             .http
             .get(uri)
             .pipe(
-                map(response => response),
-                map(item => {
-                    return <Artifacts>item
-                }),
-                catchError(err => this.handleError(err))
-            )
-            ;
+                map(response => <Artifacts>response),
+            catchError(err => {
+                this.handleError(err);              
+                throw(err);
+            })
+            );
     }
 
     getArtifactByParentAndArtifactType(
