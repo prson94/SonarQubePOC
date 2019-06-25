@@ -22,9 +22,8 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
     template: ` <div #hovertarget class="hover-container" (mouseenter)="in(treePanel,searchPanel,$event)" (mouseleave)="out(treePanel,searchPanel,$event)" >
                     <a id="breadlink" (click)="navigateToLink(breadcrumb.link)" 
                             class="breadcrumb" 
-                            [ngClass]="{'breadcrumb-link' : hasLink(breadcrumb.link)}"
                             [ngStyle]="{'max-width.px': setLastBreadcrumbWidth()}">
-                            <span class="breadcrumb-text" [ngClass]="{'highlight' : breadcrumb.isType}">{{breadcrumb.text}} </span>
+                            <span class="breadcrumb-text" [ngClass]="{'highlight' : breadcrumb.isType, 'breadcrumb-link' : hasLink(breadcrumb.link)}">{{breadcrumb.text}} </span>
                             <span class="parent" *ngIf="breadcrumb.parentTypeName"   
                                   (click)="stopParentNav($event);navigateToLink(breadcrumb.parentUrl)">{{breadcrumb.parentTypeName}}</span>
                             <div *ngIf="!isChangableItem()" class="gutter"></div>
