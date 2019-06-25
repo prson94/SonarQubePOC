@@ -1,0 +1,104 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Tomislav Duric" id="GOV-6387-InsertData">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[  
+declare @objectID int = (SELECT ID FROM  ReferenceItemType WHERE Name = 'Rule Dimension')
+declare @assetTypeId int = (select ID from AssetType where ObjectID = @objectID and Object = 'ReferenceItemType')
+
+declare @count int = (select count(*) from FieldType where Name ='Description' and Object='ReferenceItemType' and ObjectId = @objectID)
+
+if @count = 0
+BEGIN
+	INSERT [dbo].[FieldType] ([Name], [FriendlyName], [Description], [DisplayDescription], [FormDescription], [Type], [LookupObjectType], [LookupObjectID], [LookupDisplayFormat], [MinimumLength], [MaximumLength], [Length], [Pattern], [Object], [ObjectID], [SortOrder], [IsRequired], [IsListable], [ValidationDescription], [Category], [IsDisplayable], [IsEditable], [DefaultValue], [DefaultFormattedValue], [AllowAllValue], [AllowAllLabel], [IsPrimaryFilter], [LookupEditFormat], [IsPartOfKey], [ColumnOrder], [ColumnWidth], [LookupObjectFieldTypeID], [AllowMultipleValues], [AssetTypeID], [ParentFieldTypeID], [UpdatedBy], [Increment], [Precision], [FilterPredicateID], [FilterPredicateDirection], [FilterFieldTypeID], [ShowIfEmpty], [Definition]) 
+	VALUES (N'Description', N'Description', NULL, NULL, NULL, N'Text', NULL, NULL, NULL, NULL, NULL, NULL, NULL, N'ReferenceItemType', @objectID, 0, 0, 1, NULL, NULL, 1, 1, NULL, NULL, 0, NULL, 0, NULL, 0, 1, NULL, NULL, 0, @assetTypeId, 0, 0, NULL, NULL, NULL, NULL, NULL, 0, N'{}')
+	
+	declare @fieldTypeID int = (select ID from FieldType where Name='Description' and Object ='ReferenceItemType' and ObjectID=@objectID)
+	
+	INSERT INTO Field (ObjectType, ObjectId, FieldTypeId, Value, FormattedValue, UpdatedBy, UpdatedOn)
+	values (
+	'ReferenceItem',
+	(select ID from ReferenceItem where ReferenceItemTypeId = @objectId and Code = 'Accuracy'),
+	@fieldTypeId,
+	'Do data objects accurately represent the “real-world” values they are expected to model? Incorrect spellings of product or person names, addresses, and even untimely or not current data can impact operational and analytical applications.',
+	'Do data objects accurately represent the “real-world” values they are expected to model? Incorrect spellings of product or person names, addresses, and even untimely or not current data can impact operational and analytical applications.',
+	0,
+	GETDATE()
+	)
+	
+	INSERT INTO Field (ObjectType, ObjectId, FieldTypeId, Value, FormattedValue, UpdatedBy, UpdatedOn)
+	values (
+	'ReferenceItem',
+	(select ID from ReferenceItem where ReferenceItemTypeId = @objectId and Code = 'Conformity'),
+	@fieldTypeId,
+	'Are there expectations that data values conform to specified formats? If so, do all the values conform to those formats? Maintaining conformance to specific formats is important in data representation, presentation, aggregate reporting, search, and establishing key relationships.',
+	'Are there expectations that data values conform to specified formats? If so, do all the values conform to those formats? Maintaining conformance to specific formats is important in data representation, presentation, aggregate reporting, search, and establishing key relationships.',
+	0,
+	GETDATE()
+	)
+	
+	INSERT INTO Field (ObjectType, ObjectId, FieldTypeId, Value, FormattedValue, UpdatedBy, UpdatedOn)
+	values (
+	'ReferenceItem',
+	(select ID from ReferenceItem where ReferenceItemTypeId = @objectId and Code = 'Consistency'),
+	@fieldTypeId,
+	'Do distinct data instances provide conflicting information about the same underlying data object? Are values consistent across data sets? Do interdependent attributes always appropriately reflect their expected consistency? Inconsistency between data values plagues organizations attempting to reconcile between different systems and applications.',
+	'Do distinct data instances provide conflicting information about the same underlying data object? Are values consistent across data sets? Do interdependent attributes always appropriately reflect their expected consistency? Inconsistency between data values plagues organizations attempting to reconcile between different systems and applications.',
+	0,
+	GETDATE()
+	)
+	
+	INSERT INTO Field (ObjectType, ObjectId, FieldTypeId, Value, FormattedValue, UpdatedBy, UpdatedOn)
+	values (
+	'ReferenceItem',
+	(select ID from ReferenceItem where ReferenceItemTypeId = @objectId and Code = 'Duplication'),
+	@fieldTypeId,
+	'Are there multiple, unnecessary representations of the same data objects within your data set? The inability to maintain a single representation for each entity across your systems poses numerous vulnerabilities and risks.',
+	'Are there multiple, unnecessary representations of the same data objects within your data set? The inability to maintain a single representation for each entity across your systems poses numerous vulnerabilities and risks.',
+	0,
+	GETDATE()
+	)
+	
+	INSERT INTO Field (ObjectType, ObjectId, FieldTypeId, Value, FormattedValue, UpdatedBy, UpdatedOn)
+	values (
+	'ReferenceItem',
+	(select ID from ReferenceItem where ReferenceItemTypeId = @objectId and Code = 'Completeness'),
+	@fieldTypeId,
+	'Is all the requisite information available? Are data values missing, or in an unusable state? In some cases, missing data is irrelevant, but when the information that is missing is critical to a specific business process, completeness becomes an issue.',
+	'Is all the requisite information available? Are data values missing, or in an unusable state? In some cases, missing data is irrelevant, but when the information that is missing is critical to a specific business process, completeness becomes an issue.',
+	0,
+	GETDATE()
+	)
+	
+	INSERT INTO Field (ObjectType, ObjectId, FieldTypeId, Value, FormattedValue, UpdatedBy, UpdatedOn)
+	values (
+	'ReferenceItem',
+	(select ID from ReferenceItem where ReferenceItemTypeId = @objectId and Code = 'Integrity'),
+	@fieldTypeId,
+	'What data is missing important relationship linkages? The inability to link related records together may actually introduce duplication across your systems. Not only that, as more value is derived from analyzing connectivity and relationships, the inability to link related data instance together impedes this valuable analysis.',
+	'What data is missing important relationship linkages? The inability to link related records together may actually introduce duplication across your systems. Not only that, as more value is derived from analyzing connectivity and relationships, the inability to link related data instance together impedes this valuable analysis.',
+	0,
+	GETDATE()
+	)
+END
+		]]>
+    </sql>
+    <rollback>
+	<![CDATA[
+declare @objectID int = (SELECT ID FROM  ReferenceItemType WHERE Name = 'Rule Dimension')
+declare @fieldTypeID int = (select ID from FieldType where Name='Description' and Object ='ReferenceItemType' and ObjectID=@objectID)
+
+delete Field where FieldTypeID = @fieldTypeID
+delete FieldType where ID = @fieldTypeID
+			]]>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>
