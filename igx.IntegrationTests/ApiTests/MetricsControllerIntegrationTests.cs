@@ -24,7 +24,7 @@ namespace igx.IntegrationTests.ApiTests
     public class MetricsControllerIntegrationTests : BaseIntegrationTestClass
     {
         [Fact, Priority(10)]
-        public async void T_1_01_PrepareAssetTypeAndField()
+        public async void PrepareAssetTypeAndField()
         {
 
             string endpointUrl = URIHelper.AssetsUri;
@@ -53,7 +53,7 @@ namespace igx.IntegrationTests.ApiTests
 
             Assert.True(!string.IsNullOrEmpty(MetricTestsData.NameFieldTypeId));
 
-            response = await httpClient.PostAsync($"{URIHelper.AssetsUri}/{MetricTestsData.AssetTypeGuid}", MetricTestsData.NewAsset.AsStringContent());
+            response = await httpClient.PostAsync($"{URIHelper.AssetsUri}/{MetricTestsData.AssetTypeGuid}", MetricTestsData.NewAssets.AsStringContent());
             content = await response.Content.ReadAsStringAsync();
 
             Assert.True(response.IsSuccessStatusCode);
@@ -67,12 +67,12 @@ namespace igx.IntegrationTests.ApiTests
         }
 
         [Fact, Priority(20)]
-        public async void T_1_02_PostMetric()
+        public async void PostMetric()
         {
             string endpointUrl = URIHelper.MetricsUri;
             var response = await httpClient.PostAsync(endpointUrl, MetricTestsData.MetricModel.AsStringContent());
             var content = await response.Content.ReadAsStringAsync();
-            var parsedData = JsonConvert.DeserializeObject<JToken>(content);
+            var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
@@ -80,14 +80,14 @@ namespace igx.IntegrationTests.ApiTests
         }
 
         [Fact, Priority(30)]
-        public async void T_1_03_GetMetricDefinition()
+        public async void GetMetricDefinitionAfterPost()
         {
             string endpoint = $"{URIHelper.MetricsUri}/{MetricTestsData.AssetTypeGuid}/definition";
             var response = await httpClient.GetAsync(endpoint);
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JArray>(content);
 
-            string name = MetricTestsData.MetricModel.GetJTokenValue("Name");
+            string name = MetricTestsData.MetricModel["Name"].ToString();
             bool isInResponse = false;
             foreach (var item in parsedData)
             {
@@ -104,17 +104,17 @@ namespace igx.IntegrationTests.ApiTests
         }
 
         [Fact, Priority(40)]
-        public async void T_1_04_UpdateMetric()
+        public async void UpdateMetric()
         {
             string endpointUrl = URIHelper.MetricsUri;
-            MetricTestsData.MetricModel = JsonHelper.AddNewToken(MetricTestsData.MetricModel, "Uid", MetricTestsData.MetricUid);
-            MetricTestsData.MetricModel = JsonHelper.AppendJsonOnField(MetricTestsData.MetricModel, "Name", "Updated name");
-            MetricTestsData.MetricModel = JsonHelper.UpdateJsonOnField(MetricTestsData.MetricModel, "Weight", "0.5");
+            MetricTestsData.MetricModel.AddNewToken("Uid", MetricTestsData.MetricUid);
+            MetricTestsData.MetricModel.AppendValueOnProperty("Name", "Updated name");
+            MetricTestsData.MetricModel.UpdateValueOnProperty("Weight", "0.5");
 
 
             var response = await httpClient.PostAsync(endpointUrl, MetricTestsData.MetricModel.AsStringContent());
             var content = await response.Content.ReadAsStringAsync();
-            var parsedData = JsonConvert.DeserializeObject<JToken>(content);
+            var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
@@ -123,7 +123,7 @@ namespace igx.IntegrationTests.ApiTests
 
 
         [Fact, Priority(50)]
-        public async void T_1_05_GetMetricDefinition()
+        public async void GetMetricDefinitionAfterPut()
         {
             string endpoint = $"{URIHelper.MetricsUri}/{MetricTestsData.AssetTypeGuid}/definition";
             var response = await httpClient.GetAsync(endpoint);
@@ -133,7 +133,7 @@ namespace igx.IntegrationTests.ApiTests
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
 
-            string name = MetricTestsData.MetricModel.GetJTokenValue("Name");
+            string name = MetricTestsData.MetricModel["Name"].ToString();
             bool isInResponse = false;
             foreach (var item in parsedData)
             {
@@ -150,86 +150,147 @@ namespace igx.IntegrationTests.ApiTests
         }
 
         [Fact, Priority(60)]
-        public async void T_1_06_GetMetricByUid()
+        public async void GetMetricByUid()
         {
             string endpoint = $"{URIHelper.MetricsUri}/{MetricTestsData.MetricUid}";
             var response = await httpClient.GetAsync(endpoint);
             var content = await response.Content.ReadAsStringAsync();
-            var parsedData = JsonConvert.DeserializeObject<JToken>(content);
+            var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
 
-            Assert.True(parsedData["Uid"].ToString() == MetricTestsData.MetricModel.GetJTokenValue("Uid"));
-            Assert.True(parsedData["Name"].ToString() == MetricTestsData.MetricModel.GetJTokenValue("Name"));
-            Assert.True(parsedData["Description"].ToString() == MetricTestsData.MetricModel.GetJTokenValue("Description"));
+            Assert.True(JsonHelper.AreEqualOnField(parsedData, MetricTestsData.MetricModel, "Uid"));
+            Assert.True(JsonHelper.AreEqualOnField(parsedData, MetricTestsData.MetricModel, "Name"));
+            Assert.True(JsonHelper.AreEqualOnField(parsedData, MetricTestsData.MetricModel, "Description"));
+
             Assert.True(parsedData["State"].ToString() != "3");
 
-            var definition = parsedData["Versions"].First();
-            Assert.True(definition["Weight"].ToString() == MetricTestsData.MetricModel.GetJTokenValue("Weight"));
-            Assert.True(definition["ConditionAndOr"].ToString() == MetricTestsData.MetricModel.GetJTokenValue("ConditionAndOr"));
+            var definition = parsedData["Versions"].First() as JObject;
+            Assert.True(JsonHelper.AreEqualOnField(definition, MetricTestsData.MetricModel, "Weight"));
+            Assert.True(JsonHelper.AreEqualOnField(definition, MetricTestsData.MetricModel, "ConditionAndOr"));
 
             Assert.True(!string.IsNullOrEmpty(MetricTestsData.MetricUid));
 
         }
 
         [Fact, Priority(70)]
-        public async void T_1_07_PostMetricResults()
+        public async void PostMetricResults()
         {
             string endpoint = $"{URIHelper.MetricsUri}/results";
             var response = await httpClient.PostAsync(endpoint, MetricTestsData.MetricResultJson.AsStringContent());
             var content = await response.Content.ReadAsStringAsync();
-            var parsedData = JsonConvert.DeserializeObject<JToken>(content);
+            var parsedData = JsonConvert.DeserializeObject<JArray>(content);
 
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
 
-            Assert.True(parsedData.First()["AssetUid"].ToString() == MetricTestsData.MetricResultJson.GetJTokenValue("AssetUid"));
-            Assert.True(parsedData.First()["MetricAssetUid"].ToString() == MetricTestsData.MetricResultJson.GetJTokenValue("MetricAssetUid"));
-            Assert.True(parsedData.First()["Result"].ToString().ToLower() == "true");
-            Assert.True(parsedData.First()["IsSuccess"].ToString().ToLower() == "true");
+            Assert.True(parsedData.First["AssetUid"].ToString() == MetricTestsData.MetricResultJson.First["AssetUid"].ToString());
+            Assert.True(parsedData.First["MetricAssetUid"].ToString() == MetricTestsData.MetricResultJson.First["MetricAssetUid"].ToString());
+            Assert.True(parsedData.First["Result"].ToString().ToLower() == "true");
+            Assert.True(parsedData.First["IsSuccess"].ToString().ToLower() == "true");
 
         }
 
-        [Fact, Priority(80)]
-        public async void T_1_08_DeleteMetric()
+        [Fact, Priority(71)]
+        public async void ERR_UpdateMetric_EmptyName()
+        {
+            string endpointUrl = URIHelper.MetricsUri;
+
+            var temp = MetricTestsData.MetricModel.DeepClone();
+
+            MetricTestsData.MetricModel.UpdateValueOnProperty("Name", "");
+
+            var response = await httpClient.PostAsync(endpointUrl, MetricTestsData.MetricModel.AsStringContent());
+            var content = await response.Content.ReadAsStringAsync();
+            var parsedData = JsonConvert.DeserializeObject<JObject>(content);
+            MetricTestsData.MetricModel = temp as JObject;
+
+            Assert.True(!response.IsSuccessStatusCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
+
+            Assert.True(parsedData["type"].ToString() == "error");
+
+
+        }
+
+        [Fact, Priority(90)]
+        public async void GetMetricStructure()
+        {
+            string endpoint = $"{URIHelper.MetricsUri}/structure/{MetricTestsData.AssetTypeGuid}";
+            var response = await httpClient.GetAsync(endpoint);
+            var content = await response.Content.ReadAsStringAsync();
+            var parsedData = JsonConvert.DeserializeObject<JArray>(content).First as JObject;
+
+            Assert.True(response.IsSuccessStatusCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
+
+            Assert.True(JsonHelper.AreEqualOnField(parsedData, MetricTestsData.MetricModel, "Uid"));
+            Assert.True(JsonHelper.AreEqualOnField(parsedData, MetricTestsData.MetricModel, "AssetTypeUid"));
+            Assert.True(JsonHelper.AreEqualOnField(parsedData, MetricTestsData.MetricModel, "IsGroup", true));
+            Assert.True(JsonHelper.AreEqualOnField(parsedData, MetricTestsData.MetricModel, "Name"));
+            Assert.True(JsonHelper.AreEqualOnField(parsedData, MetricTestsData.MetricModel, "Description"));
+            Assert.True(JsonHelper.AreEqualOnField(parsedData, MetricTestsData.MetricModel, "Weight"));
+            Assert.True(JsonHelper.AreEqualOnField(parsedData, MetricTestsData.MetricModel, "ConditionAndOr"));
+
+
+        }
+        [Fact, Priority(100)]
+        public async void GetMetricFields()
+        {
+            string endpoint = $"{URIHelper.MetricsUri}/fields/{MetricTestsData.AssetTypeGuid}";
+            var response = await httpClient.GetAsync(endpoint);
+            var content = await response.Content.ReadAsStringAsync();
+            var parsedData = JsonConvert.DeserializeObject<JArray>(content).First as JObject;
+
+            Assert.True(response.IsSuccessStatusCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
+
+            Assert.True(parsedData["ID"].ToString() == MetricTestsData.MetricModel["Conditions"]["FieldTypeID"].ToString());
+
+        }
+
+
+        [Fact, Priority(110)]
+        public async void DeleteMetric()
         {
             var response = await httpClient.DeleteAsync($"{URIHelper.MetricsUri}/{MetricTestsData.MetricUid}");
             var content = await response.Content.ReadAsStringAsync();
-            var parsedData = JsonConvert.DeserializeObject<JToken>(content);
+            var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(parsedData["Result"].ToString().ToLower() == "true");
+            Assert.True(parsedData["type"].ToString().ToLower() == "confirm");
 
         }
 
 
-        [Fact, Priority(90)]
-        public async void T_1_09_GetMetricByUidAfterDelete()
+        [Fact, Priority(120)]
+        public async void GetMetricByUidAfterDelete()
         {
             string endpoint = $"{URIHelper.MetricsUri}/{MetricTestsData.MetricUid}";
             var response = await httpClient.GetAsync(endpoint);
             var content = await response.Content.ReadAsStringAsync();
-            var parsedData = JsonConvert.DeserializeObject<JToken>(content);
+            var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
 
-            Assert.True(parsedData["Uid"].ToString() == MetricTestsData.MetricModel.GetJTokenValue("Uid"));
-            Assert.True(parsedData["Name"].ToString() == MetricTestsData.MetricModel.GetJTokenValue("Name"));
-            Assert.True(parsedData["Description"].ToString() == MetricTestsData.MetricModel.GetJTokenValue("Description"));
+            Assert.True(JsonHelper.AreEqualOnField(parsedData, MetricTestsData.MetricModel, "Uid"));
+            Assert.True(JsonHelper.AreEqualOnField(parsedData, MetricTestsData.MetricModel, "Name"));
+            Assert.True(JsonHelper.AreEqualOnField(parsedData, MetricTestsData.MetricModel, "Description"));
+
             Assert.True(parsedData["State"].ToString() == "3");
 
-            var definition = parsedData["Versions"].First();
-            Assert.True(definition["Weight"].ToString() == MetricTestsData.MetricModel.GetJTokenValue("Weight"));
-            Assert.True(definition["ConditionAndOr"].ToString() == MetricTestsData.MetricModel.GetJTokenValue("ConditionAndOr"));
+            var definition = parsedData["Versions"].First() as JObject;
+            Assert.True(JsonHelper.AreEqualOnField(definition, MetricTestsData.MetricModel, "Weight"));
+            Assert.True(JsonHelper.AreEqualOnField(definition, MetricTestsData.MetricModel, "ConditionAndOr"));
 
             Assert.True(!string.IsNullOrEmpty(MetricTestsData.MetricUid));
 
         }
-        [Fact, Priority(100)]
-        public async void T_1_10_GetMetricsBreakdown()
+        [Fact, Priority(130)]
+        public async void GetMetricsBreakdown()
         {
             string endpoint = $"{URIHelper.MetricsUri}/{MetricTestsData.AssetUid}/pointbreakdown?effectiveDate=2019-06-20T11:59:03.874Z";
             var response = await httpClient.GetAsync(endpoint);
@@ -238,6 +299,26 @@ namespace igx.IntegrationTests.ApiTests
 
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
+        }
+
+        [Fact, Priority(140)]
+        public async void DeleteAssetType()
+        {
+            var endpointUrl = URIHelper.AssetsUri;
+            HttpRequestMessage request = new HttpRequestMessage
+            {
+                Content = AssetTestData.GetDeleteJsonForAssetTypeUid(MetricTestsData.AssetTypeGuid, true).AsStringContent(),
+                Method = HttpMethod.Delete,
+                RequestUri = new Uri(endpointUrl)
+            };
+
+            var response = await httpClient.SendAsync(request);
+            var content = await response.Content.ReadAsStringAsync();
+
+            var parsedData = JsonConvert.DeserializeObject<JObject>(content);
+            Assert.True(parsedData.GetValue("ExecutionID") != null);
+            Assert.True(parsedData.GetValue("Message") != null);
+            Assert.True(parsedData.GetValue("Uri") != null);
         }
     }
 }

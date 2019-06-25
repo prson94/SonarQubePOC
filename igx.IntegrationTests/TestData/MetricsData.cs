@@ -17,26 +17,29 @@ namespace igx.IntegrationTests.TestData
         public static string NameFieldTypeId = "";
         public static string MetricUid = "";
 
-        private static string _testJSONAsset = string.Empty;
-        public static string AssetTypeJSON
+        private static JObject _testJSONAsset = null;
+        public static JObject AssetTypeJSON
         {
             get
             {
 
-                if (_testJSONAsset == string.Empty)
+                if (_testJSONAsset == null)
                 {
-                    _testJSONAsset = @"{
-                                      ""Name"": ""MetricsAssetTest" + Guid.NewGuid() + @""",
-                                      ""Class"": ""Glossary"",
-                                      ""Description"": """",
-                                      ""AutoDisplayDescription"": true,
-                                      ""DisplayFormat"": ""{Name}"",
-                                      ""IconStyle"": {
-                                        ""ForeColor"": ""#FFF"",
-                                        ""BackColor"": ""#000""
-                                      },
-                                      ""Notes"": """"
-                                    }";
+                    var @object = new JObject();
+                    @object.Add(new JProperty("Name", "MetricsAssetTest" + Guid.NewGuid()));
+                    @object.Add(new JProperty("Class", "Glossary"));
+                    @object.Add(new JProperty("Description", ""));
+                    @object.Add(new JProperty("AutoDisplayDescription", "true"));
+                    @object.Add(new JProperty("DisplayFormat", "{Name}"));
+                    @object.Add(new JProperty("Notes", ""));
+
+                    var @iconStyle = new JObject();
+                    @iconStyle.Add(new JProperty("ForeColor", "#FFF"));
+                    @iconStyle.Add(new JProperty("BackColor", "#000"));
+
+                    @object.Add(new JProperty("IconStyle", @iconStyle));
+
+                    _testJSONAsset = @object;
                 }
 
                 return _testJSONAsset;
@@ -44,30 +47,30 @@ namespace igx.IntegrationTests.TestData
             set { _testJSONAsset = value; }
         }
 
-        private static string _metricsModel = string.Empty;
-        public static string MetricModel
+        private static JObject _metricsModel = null;
+        public static JObject MetricModel
         {
             get
             {
 
-                if (_metricsModel == string.Empty)
+                if (_metricsModel == null)
                 {
-                    _metricsModel = @"{
-                                      ""AssetTypeUid"": """ + AssetTypeGuid + @""",
-                                      ""IsGroup"": false,
-                                      ""Name"": ""metric_int_test_" + Guid.NewGuid() + @""",
-                                      ""Description"": ""string"",
-                                      ""EffectiveDate"": ""2019-06-24T11:59:03.874Z"",
-                                      ""Weight"": 1,
-                                      ""ConditionAndOr"": ""o"",
-                                      ""Conditions"": [
-                                        {
-                                          ""FieldTypeID"": " + NameFieldTypeId + @",
-                                          ""Operator"": ""eq"",
-                                          ""Values"": ""Test name""
-                                        }
-                                      ]
-                                    }";
+                    var @object = new JObject();
+                    @object.Add(new JProperty("AssetTypeUid", AssetTypeGuid));
+                    @object.Add(new JProperty("IsGroup", "false"));
+                    @object.Add(new JProperty("Name", "metric_int_test_" + Guid.NewGuid()));
+                    @object.Add(new JProperty("Description", "string"));
+                    @object.Add(new JProperty("EffectiveDate", "2019-06-24T11:59:03.874Z"));
+                    @object.Add(new JProperty("Weight", "1"));
+                    @object.Add(new JProperty("ConditionAndOr", "o"));
+
+                    var @conditions = new JObject();
+                    conditions.Add(new JProperty("FieldTypeID", NameFieldTypeId));
+                    conditions.Add(new JProperty("Operator", "eq"));
+                    conditions.Add(new JProperty("Values", "Test name"));
+
+                    @object.Add(new JProperty("Conditions", conditions));
+                    _metricsModel = @object;
                 }
 
                 return _metricsModel;
@@ -76,44 +79,48 @@ namespace igx.IntegrationTests.TestData
         }
 
 
-        private static string _newAsset = string.Empty;
-        public static string NewAsset
+        private static JArray _newAssets = null;
+        public static JArray NewAssets
         {
             get
             {
-                if (string.IsNullOrEmpty(_newAsset))
+                if (_newAssets == null)
                 {
-                    _newAsset = @"[
-                                      {
-                                        ""Fields"": {
-                                          ""Name"": ""Metric test asset""
-                                        }
-                                    }
-                                    ]";
+
+                    var arr = new JArray();
+                    var @object = new JObject();
+                    arr.Add(@object);
+
+                    var @field = new JObject();
+                    @object.Add(new JProperty("Fields", field));
+
+                    field.Add(new JProperty("Name", "Metric test asset"));
+
+                    _newAssets = arr;
+
                 }
-                return _newAsset;
+                return _newAssets;
             }
         }
 
-        private static string _metricResults = string.Empty;
+        private static JArray _metricResults = null;
 
-        public static string MetricResultJson
+        public static JArray MetricResultJson
         {
             get
             {
-                if (string.IsNullOrEmpty(_metricResults))
+                if (_metricResults == null)
                 {
                     var test = new JArray();
-                    JToken token = JToken.Parse("");
+                    var @object = new JObject();
 
-                    _metricResults = @"[
-                                         {
-                                           ""AssetUid"": """+AssetUid+ @""",
-                                           ""MetricAssetUid"": """ + MetricUid + @""",
-                                           ""EffectiveDate"": ""2019-06-25T09:12:06.127Z"",
-                                           ""Result"": true
-                                         }
-                                       ]";
+                    @object.Add(new JProperty("AssetUid", AssetUid));
+                    @object.Add(new JProperty("MetricAssetUid", MetricUid));
+                    @object.Add(new JProperty("EffectiveDate", "2019-06-25T09:12:06.127Z"));
+                    @object.Add(new JProperty("Result", "true"));
+
+                    test.Add(@object);
+                    _metricResults = test;
                 }
 
                 return _metricResults;
