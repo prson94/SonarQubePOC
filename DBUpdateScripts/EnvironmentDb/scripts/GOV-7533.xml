@@ -323,7 +323,8 @@ end as P_CanDelete, '
 	end
 	else
 	begin
-		select	@orderSql = string_agg(OrderStatement, ', ') from (select top 100 percent OrderStatement from #ft where SortOrder not in (0,99) and (IsListable = 1 or coalesce(FilterStatement,'')<>'') order by SortOrder) O
+		select @orderSql = string_agg(OrderStatement, ', ') WITHIN GROUP (ORDER BY SortOrder, Name) from #ft where SortOrder not in (0,99) and (IsListable = 1 or coalesce(FilterStatement,'')<>'') --order by SortOrder, Name
+		--select	@orderSql = string_agg(OrderStatement, ', ') from (select top 100 percent OrderStatement from #ft where SortOrder not in (0,99) and (IsListable = 1 or coalesce(FilterStatement,'')<>'') order by SortOrder, Name) O
 		if @orderSql = '' or @orderSql is null 
 		begin 
 			set @orderSql = 'A.ID asc' 
