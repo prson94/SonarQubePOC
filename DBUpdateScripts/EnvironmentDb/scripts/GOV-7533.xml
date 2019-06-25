@@ -95,7 +95,7 @@ WHERE F.Value IS NOT NULL OR T.DefaultValue IS NOT NULL OR T.ShowIfEmpty = 1
 	</rollback>
  </changeSet>
 
- <changeSet author="Pappas" id="GOV-7533-Procedure-F">
+ <changeSet author="Pappas" id="GOV-7533-Procedure-G">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -261,6 +261,7 @@ begin
 			OrderStatement = case when DataType = 'nvarchar' then 'F'+TxtId+'.FormattedValue' else 'try_cast(F'+TxtId+'.FormattedValue as '+DataType+')' end,
 			FilterStatement =	case 
 									when (@filter is not null and IsListable = 1) then '(F'+TxtId+'.FormattedValue like @filter)' 
+									when ID in (select TypeID from @filters where FilterType = 'M') then '( exists(select 1 from @filters FF cross apply openjson(FF.FilterValues) MF where FF.TypeID = F'+TxtId+'.FieldTypeID and F'+TxtId+'.FormattedValue in (MF.value)) ' + IIF(AllowAllValue = 1, ' OR  F'+TxtId+'.Value = ''0'' )', ' )')
 									when ID in (select TypeID from @filters where FilterType = 'F') then '( exists(select 1 from @filters where TypeID = F'+TxtId+'.FieldTypeID and F'+TxtId+'.FormattedValue like FilterValues) ' + IIF(AllowAllValue = 1, ' OR  F'+TxtId+'.Value = ''0'' )', ' )')
 									else '' 
 								end
@@ -297,21 +298,24 @@ end as P_CanDelete, '
 	begin
 		declare @sort nvarchar(250) = null
 
-		select @sort = OrderStatement from #ft where ColumnName = @sortField
-		if @sort = '' OR @sort is null
+		if @sortField = 'Parent' and @parentIntersectTypeId is not null
 		begin
-			set @sort = 'A.ID'
-		end
-		if @sortDirection = 'desc'
-		begin
-			set @sortDirection = 'desc'
+			set @sort = 'parp.DisplayValue'
 		end
 		else
 		begin
-			set @sortDirection = 'asc'
+			select @sort = OrderStatement from #ft where ColumnName = @sortField
+			if @sort = '' OR @sort is null
+			begin
+				set @sort = 'A.ID'
+			end
 		end
 
-		set @orderSql = REPLACE(@sort, '''', '''''') + ' ' + @sortDirection
+		if @sort <> '' AND @sort is not null
+		begin
+			set @sortDirection = IIF(@sortDirection = 'desc', 'desc', 'asc')
+			set @orderSql = REPLACE(@sort, '''', '''''') + ' ' + @sortDirection
+		end
 	end
 	else
 	begin

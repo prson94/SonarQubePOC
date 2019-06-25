@@ -119,7 +119,17 @@ namespace d360.model
                         }
                         else
                         {
-                            filterTable.Rows.Add("F", f.Operator, int.Parse(f.FieldName.Replace("Field", "")), null, $"{wildcardValue(f.RawValue)}");
+                            if (f.RawValue.Contains("!~!"))
+                            {
+                                string[] seps = { "!~!" };
+                                var stringFilterArray = f.RawValue.Split(seps, StringSplitOptions.RemoveEmptyEntries);
+                                var valueArray = new JArray(stringFilterArray);
+                                filterTable.Rows.Add("M", f.Operator, int.Parse(f.FieldName.Replace("Field", "")), null, $"{valueArray.ToString()}");
+                            }
+                            else
+                            {
+                                filterTable.Rows.Add("F", f.Operator, int.Parse(f.FieldName.Replace("Field", "")), null, $"{wildcardValue(f.RawValue)}");
+                            }
                         }
                     }
 
