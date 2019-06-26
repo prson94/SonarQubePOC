@@ -24,7 +24,7 @@ export class SiteUrlHelpers {
     static SITE_URL_HOME_ROOT = 'home';
     static SITE_URL_MAPPING_ROOT = 'mapping';
     static SITE_URL_AUDIT_ROOT = 'sidebar/audit';
-    static SITE_URL_DASHBOARD_ROOT = 'sidebar/dashboard';
+    static SITE_URL_DASHBOARD_ROOT = 'dashboard';
     static SITE_URL_FOLLOWERS_ROOT = 'sidebar/followers';
     static SITE_URL_OWNERSHIP_ROOT = 'sidebar/ownership';
     static SITE_URL_VISUALIZATION_ROOT = 'sidebar/visualization';
@@ -75,7 +75,7 @@ export class SiteUrlHelpers {
     static SITE_URL_ADMIN_RULES = 'rules';
     static SITE_URL_ADMIN_SURVEYS = 'surveys';
     static SITE_URL_ADMIN_ANALYTICS = 'analytics';
-    static SITE_URL_ADMIN_DASHBOARDS = 'dashboards';
+    static SITE_URL_ADMIN_DASHBOARDS = 'dashboard';
     static SITE_URL_ADMIN_GROUPS = 'groups';
     static SITE_URL_ADMIN_RESPONSIBILITIES = 'responsibilities';
     static SITE_URL_ADMIN_RESOURCES = 'resources';

@@ -7,6 +7,7 @@ import { MessagesService} from '../../../services/messages.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Report, ReportType } from '../../../models/report.model';
 import { Title } from '@angular/platform-browser';
+import { StateService } from '../../../services/state.service';
 
 
 @Component({
@@ -125,7 +126,7 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
     powerBiUser: string;
     powerBiPassword: string;
 
-    constructor(rightSidebarService: RightSidebarService, protected reportsService: ReportsService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
+    constructor(private stateService: StateService, rightSidebarService: RightSidebarService, protected reportsService: ReportsService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
         super(headerBreadcrumbService, titleService, rightSidebarService);        
         this.areaName = "Dashboards";
         this.setCommonItems();
@@ -177,6 +178,8 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
                     this.selected = this.reports.length > 0 ? this.reports[0] : null;
                     this.reports.splice(this.findReportIndex(id), 1);
                 }
+
+                this.stateService.reloadLeftNavMenu();
             });
     }
 
@@ -208,6 +211,8 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
                 }
                 this.isLoading = false;
                 this.selected = event.report;
+
+                this.stateService.reloadLeftNavMenu();
             });
     }
 

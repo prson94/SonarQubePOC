@@ -15,7 +15,8 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
     dashboards: Dashboard[] = [];
     dashboard: Dashboard;
     selected: Dashboard;
-
+    dashboardName: string;
+    showSingle: boolean = false;
     constructor(
         protected dashboardService: DashboardService,
         private route: ActivatedRoute,
@@ -25,10 +26,12 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
     }
 
     ngOnInit() {
+        this.showSingle = false;
         this.sub = this.route.params.subscribe(params => {
             this.objectID = +params['objectId']; // (+) converts string 'id' to a number
             this.objectType = params['objectType'];
-
+            this.dashboardName = params['name'];
+            console.log(params);
             this.loadAvailableDashboards();
         });
     }
@@ -42,7 +45,10 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
         this.dashboardService.getDashboards(this.objectID, this.objectType).subscribe(
             result => {
                 this.dashboards = result;
-
+                if (this.objectType && this.objectID && this.dashboardName) {
+                    this.selected = this.dashboards[0];
+                    this.showSingle = true;
+                }
                 this.isLoading = false;
             }
         );
