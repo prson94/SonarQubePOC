@@ -95,7 +95,7 @@ WHERE F.Value IS NOT NULL OR T.DefaultValue IS NOT NULL OR T.ShowIfEmpty = 1
 	</rollback>
  </changeSet>
 
- <changeSet author="Pappas" id="GOV-7533-Procedure-I">
+ <changeSet author="Pappas" id="GOV-7533-Procedure-J">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -262,7 +262,7 @@ begin
 			FilterStatement =	case 
 									when (@filter is not null and IsListable = 1) then '(F'+TxtId+'.FormattedValue like @filter)' 
 									when ID in ( select TypeID from @filters where FilterType = 'M' and AllowMultipleValues = 1 ) then '( exists(select 1 from @filters FF cross apply openjson(FF.FilterValues) MF cross apply string_split(F'+TxtId+'.Value,'','') EF where FF.TypeID = F'+TxtId+'.FieldTypeID and MF.[value] = EF.[value]) ' + IIF(AllowAllValue = 1, ' OR  F'+TxtId+'.Value = ''0'' )', ' )')
-									when ID in ( select TypeID from @filters where FilterType = 'M' and AllowMultipleValues = 0 ) then '( exists(select 1 from @filters FF cross apply openjson(FF.FilterValues) MF where FF.TypeID = F'+TxtId+'.FieldTypeID and F'+TxtId+'.FormattedValue in (MF.value)) ' + IIF(AllowAllValue = 1, ' OR  F'+TxtId+'.Value = ''0'' )', ' )')
+									when ID in ( select TypeID from @filters where FilterType = 'M' and AllowMultipleValues = 0 ) then '( exists(select 1 from @filters FF cross apply openjson(FF.FilterValues) MF where FF.TypeID = F'+TxtId+'.FieldTypeID and F'+TxtId+'.[Value] in (MF.value)) ' + IIF(AllowAllValue = 1, ' OR  F'+TxtId+'.Value = ''0'' )', ' )')
 									when ID in ( select TypeID from @filters where FilterType = 'F' and [Type] = 'Lookup' and AllowMultipleValues = 1 and ISNUMERIC(REPLACE(FilterValues, '%', '')) = 1 ) then '( exists(select 1 from @filters FF cross apply string_split(F'+TxtId+'.Value,'','') MF where FF.TypeID = F'+TxtId+'.FieldTypeID and MF.[value] = REPLACE(FF.FilterValues, ''%'', '''')) ' + IIF(AllowAllValue = 1, ' OR  F'+TxtId+'.Value = ''0'' )', ' )')
 									when ID in ( select TypeID from @filters where FilterType = 'F' and [Type] = 'Lookup' and AllowMultipleValues = 0 and ISNUMERIC(REPLACE(FilterValues, '%', '')) = 1 ) then '( exists(select 1 from @filters where TypeID = F'+TxtId+'.FieldTypeID and F'+TxtId+'.Value = REPLACE(FilterValues, ''%'', '''')) ' + IIF(AllowAllValue = 1, ' OR  F'+TxtId+'.Value = ''0'' )', ' )')
 									when ID in ( select TypeID from @filters where FilterType = 'F' and AllowMultipleValues = 1 and ( [Type] <> 'Lookup' or ISNUMERIC(REPLACE(FilterValues, '%', '')) = 0 ) ) then '( exists(select 1 from @filters FF cross apply string_split(F'+TxtId+'.FormattedValue,'','') MF where FF.TypeID = F'+TxtId+'.FieldTypeID and MF.[value] like FF.FilterValues) ' + IIF(AllowAllValue = 1, ' OR  F'+TxtId+'.Value = ''0'' )', ' )')
