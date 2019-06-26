@@ -53,7 +53,7 @@ export class MonitorFilterComponent extends BaseComponent implements OnInit {
     private load() {
         this.isLoading = true;
         this.workflowService.getTypes()
-            .then(r => {
+            .subscribe(r => {
                 this.items = r;
 
                 this.items.forEach(i => {

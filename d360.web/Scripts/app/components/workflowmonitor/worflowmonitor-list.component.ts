@@ -152,7 +152,7 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
         } else if (this.selection != null) {
             itemIds.push(this.selection.Id);
         }
-        this.wfMonitorService.deleteItems(itemIds).then(
+        this.wfMonitorService.deleteItems(itemIds).subscribe(
             (res) => {
                 this.confirmDelete(false);
                 this.loadWorkflowMonitorItems({ rows: this.rowsPerPage, first: 0 });

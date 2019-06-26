@@ -1,4 +1,4 @@
-﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter, Input, ViewChild, AfterViewChecked  } from '@angular/core';
+﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter, Input, ViewChild, AfterViewChecked } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import {
     WorkflowEventRegistration,
@@ -15,9 +15,10 @@ import { Column, Header, Editor } from 'primeng/primeng';
 import { WorkflowService } from '../../../services/workflow.service';
 import { WorkflowFieldsService } from '../../../services/workflow-fields.service';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
-
+import { map, finalize, concatMap} from 'rxjs/operators';
 import * as _ from 'lodash';
 import { State } from '../../../models/asset.model';
+import { Observable, of} from 'rxjs';
 
 declare var CompanySettings;
 
@@ -49,7 +50,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     private errorMessage = "";
     private warningMessage = "";
     private hideShoppingCart = true;
-    
+
     WorkflowChangeType = WorkflowChangeType;
     EmailTaskRecipientType = EmailTaskRecipientType;
 
@@ -70,10 +71,8 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
         if (CompanySettings != null && CompanySettings.EnableShoppingCart != null && CompanySettings.EnableShoppingCart.toString() == 'true') {
             this.hideShoppingCart = false;
         }
-        
-        this.load()
-            .then(() => this.model.Event.SettingsObject.Settings.MessageRecipientType = 'SpecificUser')
-            .then(() => this.isLoading = false)
+
+        this.load();
     }
 
     ngAfterViewChecked() {
@@ -88,16 +87,16 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
         this.ed = null;
     }
 
-    load(): Promise<any> {
-        
+  
+ 
+    load(){
+
         this.isLoading = true;
-
-        return this.workflowService.getChangeTypes()
-            .then(r => { this.changesTypes = r; })
-            .then(() => {
-
-                return this.workflowService.getWorkflowTypeModel(this.id)
-                    .then(r => {
+        this.workflowService.getChangeTypes()
+            .pipe(map(r => { this.changesTypes = r; }))
+            .pipe(concatMap(() => this.workflowService.getWorkflowTypeModel(this.id)
+                .pipe(
+                    map(r => {
                         if (this.id > 0 && this.model == null && r != null)
                             this.model = r;
 
@@ -133,62 +132,70 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                             else
                                 this.conditions = this.model.Event.ConditionObject.Condition;
                         }
-                    })
-                    .then(() => this.workflowService.getWorkflowFieldTypes(this.objectID, this.objectType, true))
-                    .then(r => {
-                        //need to apply names to loaded conditions
+                    }))))
+            .pipe(concatMap(() => this.workflowService.getWorkflowFieldTypes(this.objectID, this.objectType, true)
+                .pipe(
+                    map(r => {
                         r.forEach(t => {
                             let c = this.conditions.filter(c => c['@FieldTypeID'] == t.ID);
                             if (c != null)
                                 c.forEach(f => f['@FieldName'] = t.FriendlyName);
                         });
-                    })
-                    .then(() => {
-                        //apply names to contextual fields
-                        this.conditions.filter(c => c['@ContextualFieldID'] != null).forEach(c => {
-                            let cx = this.workflowFieldsService
-                                .getContextualFieldsForType(this.model.Event.ChangeType, this.model.Event.Object)
-                                .find(x => x.value == 'Contextual|' + c['@ContextualFieldID']);
-                            if (cx != null)
-                                c['@FieldName'] = cx.label;
-                        });
-                    })
-                    .then(() => this.workflowService.getWorkflowObjectTypes(this.model.Event.ChangeType))
-                    .then(r => this.workflowObjectTypes = [this.defaultWorkflowObject].concat(r))
-                    .then(() => {
-                        if (this.hideShoppingCart) {
-                            this.workflowObjectTypes = this.workflowObjectTypes.filter(w => w.type != 'ShoppingCartType');
-                        }
-                    })
-                    .then(() => {
-                        this.model.Event.IssueObject = '';
-                        if (this.objectType == 'IssueType') {
-                            this.issueObjectTypes = this.workflowObjectTypes.slice().filter(w => w.type != 'IssueType');
+                    }))))
+            .pipe(concatMap(() => of(
+                //apply names to contextual fields
+                this.conditions.filter(c => c['@ContextualFieldID'] != null).forEach(c => {
+                    let cx = this.workflowFieldsService
+                        .getContextualFieldsForType(this.model.Event.ChangeType, this.model.Event.Object)
+                        .find(x => x.value == 'Contextual|' + c['@ContextualFieldID']);
+                    if (cx != null)
+                        c['@FieldName'] = cx.label;
+                })
+            )))
+            .pipe(concatMap(() => this.workflowService.getWorkflowObjectTypes(this.model.Event.ChangeType)
+                .pipe(
+                    map(r => this.workflowObjectTypes = [this.defaultWorkflowObject].concat(r)))))
+            .pipe(concatMap(() => of(() => {
+                if (this.hideShoppingCart) {
+                    this.workflowObjectTypes = this.workflowObjectTypes.filter(w => w.type != 'ShoppingCartType');
+                }
+            })))
+            .pipe(concatMap(() => of(() => {
+                this.model.Event.IssueObject = '';
+                if (this.objectType == 'IssueType') {
+                    this.issueObjectTypes = this.workflowObjectTypes.slice().filter(w => w.type != 'IssueType');
 
-                            let objectIndex = this.conditions.findIndex(c => c['@ContextualFieldID'] == 'IssueObject');
-                            let objectIdIndex = this.conditions.findIndex(c => c['@ContextualFieldID'] == 'IssueObjectID');
+                    let objectIndex = this.conditions.findIndex(c => c['@ContextualFieldID'] == 'IssueObject');
+                    let objectIdIndex = this.conditions.findIndex(c => c['@ContextualFieldID'] == 'IssueObjectID');
 
-                            if (objectIndex > -1 && objectIdIndex > -1) {
-                                this.model.Event.IssueObject = this.conditions[objectIndex]['@Value'] + '|' + this.conditions[objectIdIndex]['@Value'];
-                            }
+                    if (objectIndex > -1 && objectIdIndex > -1) {
+                        this.model.Event.IssueObject = this.conditions[objectIndex]['@Value'] + '|' + this.conditions[objectIdIndex]['@Value'];
+                    }
 
-                        }
-                    });
-            })
-            .then(() => this.loadResponsibilities())
-            .then(() => { this.validate(); });
-
+                }
+            })))
+            .pipe(concatMap(() => of(() => {
+                this.loadResponsibilities();
+               
+            })))
+            .pipe(
+            finalize(() => {
+                this.validate();
+                this.model.Event.SettingsObject.Settings.MessageRecipientType = 'SpecificUser';
+                this.isLoading = false;
+            })).subscribe();
 
     }
 
     loadObjects() {
         return this.workflowService.getWorkflowObjectTypes(this.model.Event.ChangeType)
-            .then(r => this.workflowObjectTypes = [this.defaultWorkflowObject].concat(r))
-            .then(() => {
-                if (this.hideShoppingCart) {
-                    this.workflowObjectTypes = this.workflowObjectTypes.filter(w => w.type != 'ShoppingCartType');
-                }
-            });
+            .pipe(
+                map(r => this.workflowObjectTypes = [this.defaultWorkflowObject].concat(r)),
+                map(() => {
+                    if (this.hideShoppingCart) {
+                        this.workflowObjectTypes = this.workflowObjectTypes.filter(w => w.type != 'ShoppingCartType');
+                    }
+                })).subscribe();
     }
 
     selectObjectType(e: any) {
@@ -243,7 +250,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
 
     hasPendingWorkflowItems() {
         this.workflowService.hasPendingWorkflowItems(this.model.Type.ID)
-            .then(x => {
+            .subscribe(x => {
                 if (x) {
                     this.warningMessage = "There are pending workflow items for this workflow. These items can still be completed, but no new workflow items will be created.";
                 }
