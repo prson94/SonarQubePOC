@@ -306,11 +306,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 }
 
                 //load cascading dropdowns
-                this.changeRefType(i)
-                    .pipe(
-                        map(() => { item.selectedRelationItemID = item.IntersectType + '|' + item.Object + '|' + item.ObjectID + '|' + item.Direction }),
-                        map(() => this.changeRel(i).subscribe()),
-                        map(() => {
+                this.changeRefType(i).subscribe(
+                    () => {
+                        item.selectedRelationItemID = item.IntersectType + '|' + item.Object + '|' + item.ObjectID + '|' + item.Direction;
+                        this.changeRel(i).subscribe(() => {
                             let parent = item;
                             item.DisplayFields.forEach(
                                 d => {
@@ -340,9 +339,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                             if (r) {
                                 item.displayValue = r.title;
                             }
-                    })
-                    ).subscribe();
-
+                        });
+                    }
+                );
 
                 //load display order/sort order drop down lists
                 this.model.RelationItems.forEach(

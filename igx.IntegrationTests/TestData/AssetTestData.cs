@@ -1,5 +1,6 @@
 ﻿using d360.core.entities;
 using d360.core.enums;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -106,6 +107,19 @@ namespace igx.IntegrationTests.TestData
                     return _assetUpdates;
                 }
             }
+        }
+
+
+        public static JArray GetDeleteJsonForAssetTypeUid(string assetTypeUid, bool isCascade)
+        {
+            var ret = new JArray();
+            var @obj = new JObject();
+
+            obj.Add(new JProperty("Uid", assetTypeUid));
+            obj.Add(new JProperty("Cascade", isCascade.ToString()));
+
+            ret.Add(@obj);
+            return ret;
         }
     }
 }

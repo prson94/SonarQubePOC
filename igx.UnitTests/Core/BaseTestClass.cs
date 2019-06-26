@@ -21,6 +21,7 @@ using d360.core.queue;
 using System.Net;
 using d360.core.entities.Workflow;
 using d360.model.validators;
+using d360.core.entities.Metric;
 
 namespace igx.UnitTests
 {
@@ -45,7 +46,8 @@ namespace igx.UnitTests
                            else
                            {
                                var result = new List<TypeIdentifierInfoModel>();
-                               result.Add(new TypeIdentifierInfoModel() {
+                               result.Add(new TypeIdentifierInfoModel()
+                               {
                                    Object = type.ToString(),
                                    Uid = uid
                                });
@@ -97,6 +99,9 @@ namespace igx.UnitTests
                 .Returns(
                 Task.FromResult<IEnumerable<AssetTypeApiViewModel>>(new List<AssetTypeApiViewModel>() { new AssetTypeApiViewModel() })
             );
+
+            mockRepo.Setup(x => x.GetAssetByUID(It.IsAny<Guid>()))
+                .Returns((Guid uid) => uid == Guid.Parse(DataConstants.ValidGUID) ? new Asset() : null);
 
             mockRepo.Setup(x => x.GetAssetTypeList()).Returns(AssetTypeClass.Glossary.GetAsList());
 
@@ -158,7 +163,7 @@ namespace igx.UnitTests
 
             string outString;
             bool outBool;
-            mockRepo.Setup(x => x.AddAssetType(It.IsAny<AssetTypeInsert>(), It.IsAny<AssetType>(), It.IsAny<AssetType>(), It.IsAny<Predicate>(), 0 , out outString, out outBool))
+            mockRepo.Setup(x => x.AddAssetType(It.IsAny<AssetTypeInsert>(), It.IsAny<AssetType>(), It.IsAny<AssetType>(), It.IsAny<Predicate>(), 0, out outString, out outBool))
                 .Returns(() => new Tuple<HttpStatusCode, string, string>(HttpStatusCode.OK, "", ""));
 
             mockRepo.Setup(x => x.UpsertObjectStyle(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()));
@@ -243,7 +248,8 @@ namespace igx.UnitTests
                 .Returns(Task.FromResult(new List<WorkflowTypeApiViewModel>() { new WorkflowTypeApiViewModel(), new WorkflowTypeApiViewModel() } as IEnumerable<WorkflowTypeApiViewModel>));
 
             mock.Setup(x => x.GetWorkflowVersionSteps(It.IsAny<Guid>()))
-                .Returns((Guid guid) => {
+                .Returns((Guid guid) =>
+                {
                     var result = new List<WorkflowVersionStepsApiViewModel>() as IEnumerable<WorkflowVersionStepsApiViewModel>;
                     if (guid == Guid.Parse(DataConstants.ValidGUID))
                         return Task.FromResult(result);
@@ -301,10 +307,48 @@ namespace igx.UnitTests
                 .Returns((Guid uid) => uid.ToString() == DataConstants.ValidGUID ? new Tag() : null);
 
             mock.Setup(x => x.GetTags(It.IsAny<IEnumerable<KeyValuePair<string, string>>>()))
-                .Returns(Task.FromResult(new TagApiModelWrapper() {items = new List<TagApiModel>() }));
+                .Returns(Task.FromResult(new TagApiModelWrapper() { items = new List<TagApiModel>() }));
 
             mock.Setup(x => x.UpdateTag(It.IsAny<Guid>(), It.IsAny<TagApiModel>(), It.IsAny<Tag>()))
                 .Returns((Guid uid, TagApiModel tam, Tag tag) => (uid == tam.uid && uid == Guid.Parse(DataConstants.ValidGUID)) ? tam : null);
+
+            return mock.Object;
+        }
+
+        public IMetricsRepository GetMetricsRepository()
+        {
+            var mock = new Mock<IMetricsRepository>();
+            bool outBool;
+            mock.Setup(x => x.AddOrUpdateMetrics(It.IsAny<MetricAssetViewModel>(), out outBool))
+                .Returns(new WorkHttpStatus(HttpStatusCode.OK, "", ""));
+
+            mock.Setup(x => x.BulkMetricsImport(It.IsAny<BulkMetricsImport>(), It.IsAny<ApiExecution>()))
+                .Returns(new List<BulkMetricTemporaryTableModel>() { new BulkMetricTemporaryTableModel() });
+
+            mock.Setup(x => x.DeleteMetric(It.IsAny<MetricAsset>()));
+
+            mock.Setup(x => x.GetActiveMetric(It.IsAny<Guid>()))
+                .Returns((Guid uid) => uid == Guid.Parse(DataConstants.ValidGUID) ? new MetricAsset() : null);
+
+            mock.Setup(x => x.GetMetricByUid(It.IsAny<Guid>()))
+                .Returns((Guid uid) => uid == Guid.Parse(DataConstants.ValidGUID) ? new MetricAsset() : null);
+
+            mock.Setup(x => x.GetMetricDefinitionHierarchyByAssetType(It.IsAny<Guid>(), It.IsAny<DateTime?>()))
+                .Returns(new MetricAssetTypeHierarchyModels() { new MetricAssetTypeHierarchyModel(), new MetricAssetTypeHierarchyModel() });
+
+            mock.Setup(x => x.GetMetricFieldFragments(It.IsAny<Guid>()))
+                .Returns(new List<string>()
+                {
+                    @"[{""ID"":420,""Name"":""Name"",""Type"":""Text""},{""ID"":421,""Name"":""AssetDate"",""Type"":""Date""}]"
+                });
+
+            mock.Setup(x => x.GetMetricHierarchyByAsset(It.IsAny<Guid>(), It.IsAny<DateTime?>()))
+                .Returns(new MetricAssetHierarchyModels());
+
+            mock.Setup(x => x.GetMetricStructureFragments(It.IsAny<Guid>()))
+                .Returns(new List<string>() {
+                    @"[{""ID"":420,""Name"":""Name"",""Type"":""Text""},{""ID"":421,""Name"":""AssetDate"",""Type"":""Date""}]"
+                });
 
             return mock.Object;
         }

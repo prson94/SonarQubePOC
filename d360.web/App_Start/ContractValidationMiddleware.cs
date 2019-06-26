@@ -5,6 +5,7 @@ using Dapper;
 using Microsoft.Owin;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Diagnostics;
@@ -28,32 +29,48 @@ namespace d360.web
             var time = ContractValidationCacheModel.cacheDuration;
             var cache = new MemoryCachingProvider();
 
-            var resource = cache.GetItemInListByID<ContractValidationCacheModel.User, int>(key, resourceId);
+            ContractValidationCacheModel.User resource;
+            var resources = cache.GetItem<ConcurrentBag<ContractValidationCacheModel.User>>(key);
+
+            if (resources == null)
+            {
+                resources = new ConcurrentBag<ContractValidationCacheModel.User>();
+                resource = new ContractValidationCacheModel.User();
+                resource.Companies = new ConcurrentBag<ContractValidationCacheModel.Company>();
+                resource.ID = resourceId;
+                resources.Add(resource);
+                cache.SetItem(key, resources, true, time);
+            }
+            else
+            {
+                resource = resources.FirstOrDefault(r => r.ID == resourceId);
+            }
 
             if (resource == null)
             {
                 resource = new ContractValidationCacheModel.User();
-                resource.Companies = new List<ContractValidationCacheModel.Company>();
-                cache.SetItemInListByID(key, resourceId, resource, true, time);
+                resource.ID = resourceId;
+                resource.Companies = new ConcurrentBag<ContractValidationCacheModel.Company>();
+                cache.SetItem(key, resources, true, time);
             }
             else
             {
                 if (resource.Companies == null)
-                    resource.Companies = new List<ContractValidationCacheModel.Company>();
+                    resource.Companies = new ConcurrentBag<ContractValidationCacheModel.Company>();
 
-                var comp = new List<ContractValidationCacheModel.Company>(resource.Companies ?? new List<ContractValidationCacheModel.Company>());
+                var comp = new ConcurrentBag<ContractValidationCacheModel.Company>(resource.Companies ?? new ConcurrentBag<ContractValidationCacheModel.Company>());
                 var res = comp.FirstOrDefault(c => c.ID == companyId);
                 if (res != null)
                 {
-                    cache.SetItemInListByID(key, resourceId, resource, true, time);
+                    cache.SetItem(key, resources, true, time);
                     return res.ContractsAccepted;
                 }
             }
 
             if (resource.Companies == null)
-                resource.Companies = new List<ContractValidationCacheModel.Company>();
+                resource.Companies = new ConcurrentBag<ContractValidationCacheModel.Company>();
 
-            var companies = new List<ContractValidationCacheModel.Company>(resource.Companies ?? new List<ContractValidationCacheModel.Company>());
+            var companies = new ConcurrentBag<ContractValidationCacheModel.Company>(resource.Companies ?? new ConcurrentBag<ContractValidationCacheModel.Company>());
             var resourceCompany = companies.FirstOrDefault(c => c.ID == companyId);
 
             if (resourceCompany == null)
@@ -87,7 +104,7 @@ namespace d360.web
                     }
                     resourceCompany.ContractsAccepted = contractCount == 0;
                     resource.Companies.Add(resourceCompany);
-                    cache.SetItemInListByID(key, resourceId, resource, true, time);
+                    cache.SetItem(key, resources, true, time);
 
                     return resourceCompany.ContractsAccepted;
 

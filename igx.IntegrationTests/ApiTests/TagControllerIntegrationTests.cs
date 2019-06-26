@@ -31,7 +31,7 @@ namespace igx.IntegrationTests.ApiTests
 
             var response = await httpClient.PostAsync(endpointUrl, TagTestData.TagJSON.AsStringContent());
             var content = await response.Content.ReadAsStringAsync();
-            var parsedData = JsonConvert.DeserializeObject<JToken>(content);
+            var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
@@ -41,7 +41,7 @@ namespace igx.IntegrationTests.ApiTests
 
             Assert.True(TagTestData.TagJSON.HasSameFieldValue(parsedData, "Value"));
 
-            TagTestData.TagJSON = content;
+            TagTestData.TagJSON = content.AsJobject();
         }
 
         [Fact, Priority(10)]
@@ -66,23 +66,23 @@ namespace igx.IntegrationTests.ApiTests
         {
             string endpointUrl = URIHelper.TagUri;
 
-            TagTestData.TagJSON = JsonHelper.AppendJsonOnField(TagTestData.TagJSON, "Value", "Put_edit");
+            TagTestData.TagJSON.AppendValueOnProperty("Value", "Put_Edit");
 
-            var response = await httpClient.PutAsync($"{endpointUrl}/{TagTestData.TagJSON.GetJTokenValue("uid")}", TagTestData.TagJSON.AsStringContent());
+            var response = await httpClient.PutAsync($"{endpointUrl}/{TagTestData.TagJSON["uid"]}", TagTestData.TagJSON.AsStringContent());
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JToken>(content);
 
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
             Assert.True(!string.IsNullOrEmpty(content));
-            Assert.True(TagTestData.TagJSON.GetJTokenValue("uid") == parsedData["uid"].ToString());
-            Assert.True(TagTestData.TagJSON.GetJTokenValue("Value") == parsedData["Value"].ToString());
-            Assert.True(TagTestData.TagJSON.GetJTokenValue("CreatedByUid") == parsedData["CreatedByUid"].ToString());
-            Assert.True(TagTestData.TagJSON.GetJTokenValue("CreatedOn") == parsedData["CreatedOn"].ToString());
-            Assert.True(TagTestData.TagJSON.GetJTokenValue("UpdatedOn") != parsedData["UpdatedOn"].ToString());
+            Assert.True(TagTestData.TagJSON["uid"].ToString() == parsedData["uid"].ToString());
+            Assert.True(TagTestData.TagJSON["Value"].ToString() == parsedData["Value"].ToString());
+            Assert.True(TagTestData.TagJSON["CreatedByUid"].ToString() == parsedData["CreatedByUid"].ToString());
+            Assert.True(TagTestData.TagJSON["CreatedOn"].ToString() == parsedData["CreatedOn"].ToString());
+            Assert.True(TagTestData.TagJSON["UpdatedOn"].ToString() != parsedData["UpdatedOn"].ToString());
 
 
-            TagTestData.TagJSON = content;
+            TagTestData.TagJSON = content.AsJobject();
         }
 
         [Fact, Priority(30)]
@@ -106,7 +106,7 @@ namespace igx.IntegrationTests.ApiTests
         public async void T_1_05_DeleteTag()
         {
             string endpointUrl = URIHelper.TagUri;
-            var response = await httpClient.DeleteAsync($"{endpointUrl}/{TagTestData.TagJSON.GetJTokenValue("uid")}");
+            var response = await httpClient.DeleteAsync($"{endpointUrl}/{TagTestData.TagJSON["uid"]}");
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JToken>(content);
 
@@ -150,7 +150,7 @@ namespace igx.IntegrationTests.ApiTests
         public async void T_2_02_Validation_PostEmptyValue()
         {
             string endpointUrl = URIHelper.TagUri;
-            TagTestData.TagJSON = JsonHelper.UpdateJsonOnField(TagTestData.TagJSON, "Value", "");
+            TagTestData.TagJSON.UpdateValueOnProperty("Value", "");
             var response = await httpClient.PostAsync(endpointUrl, TagTestData.TagJSON.AsStringContent());
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JToken>(content);
@@ -164,7 +164,9 @@ namespace igx.IntegrationTests.ApiTests
         public async void T_2_03_Validation_PostNameTooLong()
         {
             string endpointUrl = URIHelper.TagUri;
-            TagTestData.TagJSON = JsonHelper.UpdateJsonOnField(TagTestData.TagJSON, "Value", string.Join("", Enumerable.Repeat(0, 251).Select(n => (char)new Random().Next(127))));
+            var newName = string.Join("", Enumerable.Repeat(0, 251).Select(n => (char)new Random().Next(127)));
+            TagTestData.TagJSON.UpdateValueOnProperty("Value", newName);
+
             var response = await httpClient.PostAsync(endpointUrl, TagTestData.TagJSON.AsStringContent());
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JToken>(content);
@@ -178,8 +180,8 @@ namespace igx.IntegrationTests.ApiTests
         public async void T_2_04_Validation_PutEmptyValue()
         {
             string endpointUrl = URIHelper.TagUri;
-            TagTestData.TagJSON = JsonHelper.UpdateJsonOnField(TagTestData.TagJSON, "Value", "");
-            var response = await httpClient.PutAsync($"{endpointUrl}/{TagTestData.TagJSON.GetJTokenValue("uid")}", TagTestData.TagJSON.AsStringContent());
+            TagTestData.TagJSON.UpdateValueOnProperty("Value", "");
+            var response = await httpClient.PutAsync($"{endpointUrl}/{TagTestData.TagJSON["uid"]}", TagTestData.TagJSON.AsStringContent());
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JToken>(content);
 
@@ -192,8 +194,9 @@ namespace igx.IntegrationTests.ApiTests
         public async void T_2_05_Validation_PutNameTooLong()
         {
             string endpointUrl = URIHelper.TagUri;
-            TagTestData.TagJSON = JsonHelper.UpdateJsonOnField(TagTestData.TagJSON, "Value", string.Join("", Enumerable.Repeat(0, 251).Select(n => (char)new Random().Next(127))));
-            var response = await httpClient.PutAsync($"{endpointUrl}/{TagTestData.TagJSON.GetJTokenValue("uid")}", TagTestData.TagJSON.AsStringContent());
+            var newName = string.Join("", Enumerable.Repeat(0, 251).Select(n => (char)new Random().Next(127)));
+            TagTestData.TagJSON.UpdateValueOnProperty("Value", newName);
+            var response = await httpClient.PutAsync($"{endpointUrl}/{TagTestData.TagJSON["uid"]}", TagTestData.TagJSON.AsStringContent());
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JToken>(content);
 
@@ -206,7 +209,8 @@ namespace igx.IntegrationTests.ApiTests
         public async void T_2_06_Validation_PutUidNotMatching()
         {
             string endpointUrl = URIHelper.TagUri;
-            TagTestData.TagJSON = JsonHelper.UpdateJsonOnField(TagTestData.TagJSON, "Value", string.Join("", Enumerable.Repeat(0, 251).Select(n => (char)new Random().Next(127))));
+            var newName = string.Join("", Enumerable.Repeat(0, 251).Select(n => (char)new Random().Next(127)));
+            TagTestData.TagJSON.UpdateValueOnProperty("Value", newName);
             var response = await httpClient.PutAsync($"{endpointUrl}/{Guid.NewGuid()}", TagTestData.TagJSON.AsStringContent());
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JToken>(content);
