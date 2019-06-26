@@ -15,6 +15,7 @@ export class Breadcrumb {
     parentType: string;
     parentID: number;
     parentUrl: string;
+    show: boolean = true;
 
     constructor(text?: string,
                 link?: string,
