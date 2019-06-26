@@ -21,6 +21,7 @@ using d360.core.queue;
 using System.Net;
 using d360.core.entities.Workflow;
 using d360.model.validators;
+using d360.core.entities.Metric;
 
 namespace igx.UnitTests
 {
@@ -305,6 +306,39 @@ namespace igx.UnitTests
 
             mock.Setup(x => x.UpdateTag(It.IsAny<Guid>(), It.IsAny<TagApiModel>(), It.IsAny<Tag>()))
                 .Returns((Guid uid, TagApiModel tam, Tag tag) => (uid == tam.uid && uid == Guid.Parse(DataConstants.ValidGUID)) ? tam : null);
+
+            return mock.Object;
+        }
+
+        public IMetricsRepository GetMetricsRepository()
+        {
+            var mock = new Mock<IMetricsRepository>();
+            bool outBool;
+            mock.Setup(x => x.AddOrUpdateMetrics(It.IsAny<MetricAssetViewModel>(), out outBool))
+                .Returns(new WorkHttpStatus(HttpStatusCode.OK, "", ""));
+
+            mock.Setup(x => x.BulkMetricsImport(It.IsAny<BulkMetricsImport>(), It.IsAny<ApiExecution>()))
+                .Returns(new List<BulkMetricTemporaryTableModel>() { new BulkMetricTemporaryTableModel() });
+
+            mock.Setup(x => x.DeleteMetric(It.IsAny<MetricAsset>()));
+
+            mock.Setup(x => x.GetActiveMetric(It.IsAny<Guid>()))
+                .Returns(new MetricAsset());
+
+            mock.Setup(x => x.GetMetricByUid(It.IsAny<Guid>()))
+                .Returns(new MetricAsset());
+
+            mock.Setup(x => x.GetMetricDefinitionHierarchyByAssetType(It.IsAny<Guid>(), It.IsAny<DateTime?>()))
+                .Returns(new MetricAssetTypeHierarchyModels());
+
+            mock.Setup(x => x.GetMetricFieldFragments(It.IsAny<Guid>()))
+                .Returns(new List<string>());
+
+            mock.Setup(x => x.GetMetricHierarchyByAsset(It.IsAny<Guid>(), It.IsAny<DateTime?>()))
+                .Returns(new MetricAssetHierarchyModels());
+
+            mock.Setup(x => x.GetMetricStructureFragments(It.IsAny<Guid>()))
+                .Returns(new List<string>());
 
             return mock.Object;
         }

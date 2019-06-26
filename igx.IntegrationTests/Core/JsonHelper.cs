@@ -61,6 +61,16 @@ namespace igx.IntegrationTests.Core
             @object[property] = value;
         }
 
+        public static void UpdateValueOnProperty(this JToken @object, string property, bool value)
+        {
+            @object[property] = value;
+        }
+
+        public static void UpdateValueOnProperty(this JToken @object, string property, int value)
+        {
+            @object[property] = value;
+        }
+
         public static void AppendValueOnProperty(this JToken @object, string property, string value)
         {
             @object[property] = @object[property] + value;

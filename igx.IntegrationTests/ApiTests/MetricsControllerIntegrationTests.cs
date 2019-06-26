@@ -210,9 +210,88 @@ namespace igx.IntegrationTests.ApiTests
             Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
 
             Assert.True(parsedData["type"].ToString() == "error");
-
-
         }
+
+        [Fact, Priority(72)]
+        public async void ERR_UpdateMetric_WeightZero()
+        {
+            string endpointUrl = URIHelper.MetricsUri;
+
+            var temp = MetricTestsData.MetricModel.DeepClone();
+
+            MetricTestsData.MetricModel.UpdateValueOnProperty("Weight", 0);
+
+            var response = await httpClient.PostAsync(endpointUrl, MetricTestsData.MetricModel.AsStringContent());
+            var content = await response.Content.ReadAsStringAsync();
+            var parsedData = JsonConvert.DeserializeObject<JObject>(content);
+            MetricTestsData.MetricModel = temp as JObject;
+
+            Assert.True(!response.IsSuccessStatusCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
+
+            Assert.True(parsedData["type"].ToString() == "error");
+        }
+
+        [Fact, Priority(73)]
+        public async void ERR_UpdateMetric_GroupWithConditions()
+        {
+            string endpointUrl = URIHelper.MetricsUri;
+
+            var temp = MetricTestsData.MetricModel.DeepClone();
+
+            MetricTestsData.MetricModel.UpdateValueOnProperty("IsGroup", true);
+
+            var response = await httpClient.PostAsync(endpointUrl, MetricTestsData.MetricModel.AsStringContent());
+            var content = await response.Content.ReadAsStringAsync();
+            var parsedData = JsonConvert.DeserializeObject<JObject>(content);
+            MetricTestsData.MetricModel = temp as JObject;
+
+            Assert.True(!response.IsSuccessStatusCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
+
+            Assert.True(parsedData["type"].ToString() == "error");
+        }
+
+        [Fact, Priority(74)]
+        public async void ERR_UpdateMetric_CounditionWithZeroFieldTypeID()
+        {
+            string endpointUrl = URIHelper.MetricsUri;
+
+            var temp = MetricTestsData.MetricModel.DeepClone();
+
+            MetricTestsData.MetricModel["Conditions"][0].UpdateValueOnProperty("FieldTypeID", 0);
+
+            var response = await httpClient.PostAsync(endpointUrl, MetricTestsData.MetricModel.AsStringContent());
+            var content = await response.Content.ReadAsStringAsync();
+            var parsedData = JsonConvert.DeserializeObject<JObject>(content);
+            MetricTestsData.MetricModel = temp as JObject;
+
+            Assert.True(!response.IsSuccessStatusCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
+
+            Assert.True(parsedData["type"].ToString() == "error");
+        }
+
+        [Fact, Priority(75)]
+        public async void ERR_UpdateMetric_CounditionWithInvalidFieldTypeID()
+        {
+            string endpointUrl = URIHelper.MetricsUri;
+
+            var temp = MetricTestsData.MetricModel.DeepClone();
+
+            MetricTestsData.MetricModel["Conditions"][0].UpdateValueOnProperty("FieldTypeID", 1);
+
+            var response = await httpClient.PostAsync(endpointUrl, MetricTestsData.MetricModel.AsStringContent());
+            var content = await response.Content.ReadAsStringAsync();
+            var parsedData = JsonConvert.DeserializeObject<JObject>(content);
+            MetricTestsData.MetricModel = temp as JObject;
+
+            Assert.True(!response.IsSuccessStatusCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
+
+            Assert.True(parsedData["type"].ToString() == "error");
+        }
+
 
         [Fact, Priority(90)]
         public async void GetMetricStructure()
@@ -246,7 +325,7 @@ namespace igx.IntegrationTests.ApiTests
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
 
-            Assert.True(parsedData["ID"].ToString() == MetricTestsData.MetricModel["Conditions"]["FieldTypeID"].ToString());
+            Assert.True(parsedData["ID"].ToString() == MetricTestsData.MetricModel["Conditions"][0]["FieldTypeID"].ToString());
 
         }
 

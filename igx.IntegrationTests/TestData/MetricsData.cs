@@ -29,7 +29,7 @@ namespace igx.IntegrationTests.TestData
                     @object.Add(new JProperty("Name", "MetricsAssetTest" + Guid.NewGuid()));
                     @object.Add(new JProperty("Class", "Glossary"));
                     @object.Add(new JProperty("Description", ""));
-                    @object.Add(new JProperty("AutoDisplayDescription", "true"));
+                    @object.Add(new JProperty("AutoDisplayDescription", true));
                     @object.Add(new JProperty("DisplayFormat", "{Name}"));
                     @object.Add(new JProperty("Notes", ""));
 
@@ -57,19 +57,22 @@ namespace igx.IntegrationTests.TestData
                 {
                     var @object = new JObject();
                     @object.Add(new JProperty("AssetTypeUid", AssetTypeGuid));
-                    @object.Add(new JProperty("IsGroup", "false"));
+                    @object.Add(new JProperty("IsGroup", false));
                     @object.Add(new JProperty("Name", "metric_int_test_" + Guid.NewGuid()));
                     @object.Add(new JProperty("Description", "string"));
                     @object.Add(new JProperty("EffectiveDate", "2019-06-24T11:59:03.874Z"));
-                    @object.Add(new JProperty("Weight", "1"));
+                    @object.Add(new JProperty("Weight", 1));
                     @object.Add(new JProperty("ConditionAndOr", "o"));
 
-                    var @conditions = new JObject();
-                    conditions.Add(new JProperty("FieldTypeID", NameFieldTypeId));
-                    conditions.Add(new JProperty("Operator", "eq"));
-                    conditions.Add(new JProperty("Values", "Test name"));
+                    var @conditionArray = new JArray();
+                    var @condition = new JObject();
+                    condition.Add(new JProperty("FieldTypeID", NameFieldTypeId));
+                    condition.Add(new JProperty("Operator", "eq"));
+                    condition.Add(new JProperty("Values", "Test name"));
 
-                    @object.Add(new JProperty("Conditions", conditions));
+                    @conditionArray.Add(condition);
+
+                    @object.Add(new JProperty("Conditions", @conditionArray));
                     _metricsModel = @object;
                 }
 
@@ -117,7 +120,7 @@ namespace igx.IntegrationTests.TestData
                     @object.Add(new JProperty("AssetUid", AssetUid));
                     @object.Add(new JProperty("MetricAssetUid", MetricUid));
                     @object.Add(new JProperty("EffectiveDate", "2019-06-25T09:12:06.127Z"));
-                    @object.Add(new JProperty("Result", "true"));
+                    @object.Add(new JProperty("Result", true));
 
                     test.Add(@object);
                     _metricResults = test;
