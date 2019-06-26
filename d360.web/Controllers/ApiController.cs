@@ -3043,7 +3043,7 @@ order by    rnk, [Name]";
                             if (jsonElementDefinition.DataType == "nvarchar") jsonElementDefinition.DataType += "(max)";
                             var fc = new ComplexColumnModel
                             {
-                                DisplayColumn = $"{tbPrefix}_FJP.[Value]", //$"try_cast({tbPrefix}_FJP.[Value] as {jsonElementDefinition.DataType})",
+                                DisplayColumn = $"{tbPrefix}_FJP.[Value]",
                                 text = i.OverrideDisplayName ?? ft.FriendlyName,
                                 datafield = $"{dataField}",
                                 OutputColumn = true,
