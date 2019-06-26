@@ -10,6 +10,3 @@ This repo was migrated from Microsoft TFS on Saturday 29th September 2018 with f
 
 The repo is currently set to build and release on every check-in to the current Sprint Branch, publishing the build to the Test-CI deployment slot and can be viewed at https://ci.preview.data3sixty.com/home.
 
-
-
-Current Release - [![Release Status](https://data3sixty.vsrm.visualstudio.com/_apis/public/Release/badge/e117c703-6955-42ef-95e7-0e36c5fab280/1/1)](https://ci.preview.data3sixty.com/home)
