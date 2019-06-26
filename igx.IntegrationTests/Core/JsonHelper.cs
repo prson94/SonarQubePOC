@@ -27,10 +27,6 @@ namespace igx.IntegrationTests.Core
         }
         public static bool HasSameFieldValue(this JObject json, JToken token, string field)
         {
-            return JObject.Parse(rawJson);
-        }
-        public static bool HasSameFieldValue(this JObject json, JToken token, string field)
-        {
             try
             {
                 return json[field].ToString() == token[field].ToString();

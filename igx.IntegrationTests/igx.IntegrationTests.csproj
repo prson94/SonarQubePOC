@@ -91,6 +91,7 @@
     <Compile Include="ApiTests\CrossReferenceIntegrationTests.cs" />
     <Compile Include="ApiTests\FieldsControllerIntegrationTests.cs" />
     <Compile Include="ApiTests\MetricsControllerIntegrationTests.cs" />
+    <Compile Include="ApiTests\TagControllerIntegrationTests.cs" />
     <Compile Include="ApiTests\WorkflowControllerTests.cs" />
     <Compile Include="Core\BaseIntegrationTestClass.cs" />
     <Compile Include="Core\Helpers.cs" />
