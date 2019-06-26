@@ -8,7 +8,7 @@ import * as _ from 'lodash';
     selector: 'd3s-header-breadcrumb',
     template: ` <div #bread class="breadcrumbs" (window:resize)="onResize($event)">
                 <span (mouseleave)="smallPanel.hide()" (mouseenter)="FixHeight($event,smallPanel)"> 
-                    <i *ngIf="showLastOnly" class="fa fa-ellipsis-h breadcrumb-collapse" aria-hidden="true"></i>
+                    <i #collapseIcon *ngIf="showLastOnly" class="fa fa-ellipsis-h breadcrumb-collapse" aria-hidden="true"></i>
                     <p-overlayPanel #smallPanel ngClass="collapsed-overlay">
                         <div *ngFor="let breadcrumb of breadcrumbs;let last=last;let index=index" class="collapsed-crumb-container">
                             <d3s-header-breadcrumb-item [ngClass]="'collapsed-crumb'" [ngStyle]="{'padding-left': index *10 + 'px'}" [index]="index" [showSeperator]="false" [breadcrumb]="breadcrumb" [isLastItem]="last" (treeClick)="handleTreeClick($event)"></d3s-header-breadcrumb-item>
@@ -31,6 +31,7 @@ export class HeaderBreadcrumbComponent {
     breadcrumbs: Breadcrumb[];
     showLastOnly: boolean = false;
     @ViewChild('bread') breadcrumbUIElement;
+    @ViewChild('collapseIcon') collapseIcon;
     private resizeTimer: any;
     private maxSingleCrumbWidth: number = 800;
 
@@ -67,8 +68,14 @@ export class HeaderBreadcrumbComponent {
     private FixHeight($event, smallPanel) {
         smallPanel.show($event);
         //primeNG overlay panel issue, need to dock the header panels to 40px from the top
-        window.setTimeout(() => { smallPanel.el.nativeElement.children[0].style.top = "40px";}, 150);
-    }
+        window.setTimeout(() => {
+            let left = parseInt(smallPanel.el.nativeElement.children[0].style.left);
+            let parentLeft = this.collapseIcon.nativeElement.getBoundingClientRect();
+            if (left < 0)
+                smallPanel.el.nativeElement.children[0].style.left = parentLeft.left + "px";
+            smallPanel.el.nativeElement.children[0].style.top = "40px";
+        }, 150);
+    } 
 
     ngOnDestroy() {
         // prevent memory leak when component destroyed
