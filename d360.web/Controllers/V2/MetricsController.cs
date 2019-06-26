@@ -40,7 +40,7 @@ namespace d360.web.Controllers.V2
         IAssetRepository AssetRepository;
         IMetricsRepository MetricsRepository;
 
-        public MetricsController(ICommunityContext community, ICompanyContext company, IQueueSource queueSource,IMetricsRepository metricsRepository, IAssetRepository assetRepository)
+        public MetricsController(ICommunityContext community, ICompanyContext company, IQueueSource queueSource, IMetricsRepository metricsRepository, IAssetRepository assetRepository)
             : base(community, company)
         {
             QueueSource = queueSource;
@@ -245,7 +245,7 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                var asset = Company.Filter<Asset>(i => i.uid == assetUid).SingleOrDefault();
+                var asset = AssetRepository.GetAssetByUID(assetUid);
 
                 if (asset == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset with Uid {assetUid} could not be found."));

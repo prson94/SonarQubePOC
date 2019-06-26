@@ -29,6 +29,10 @@ namespace d360.model.DataAccessLayer
             this.QueueSource = queueSource;
             this.StorageProvider = storageProvider;
         }
+        public Asset GetAssetByUID(Guid assetUid)
+        {
+            return CompanyContext.Filter<Asset>(i => i.uid == assetUid).SingleOrDefault();
+        }
         public List<AssetTypeClassInfo> GetAssetTypeList()
         {
             return AssetTypeClass.Glossary.GetAsList();
