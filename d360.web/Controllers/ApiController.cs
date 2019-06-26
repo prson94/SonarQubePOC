@@ -3043,11 +3043,12 @@ order by    rnk, [Name]";
                             if (jsonElementDefinition.DataType == "nvarchar") jsonElementDefinition.DataType += "(max)";
                             var fc = new ComplexColumnModel
                             {
-                                DisplayColumn = $"try_cast({tbPrefix}_FJP.[Value] as {jsonElementDefinition.DataType})",
+                                DisplayColumn = $"{tbPrefix}_FJP.[Value]",
                                 text = i.OverrideDisplayName ?? ft.FriendlyName,
                                 datafield = $"{dataField}",
                                 OutputColumn = true,
-                                Width = i.Width
+                                Width = i.Width,
+                                datafieldtype = jsonElementDefinition.DataType.Contains("varchar") ? "text" : jsonElementDefinition.DataType
                             };
 
                             //Add here, only after you determine if this should be a link ABOVE.
