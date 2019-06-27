@@ -214,8 +214,7 @@ export class WorkflowService extends BaseObservableService {
     }
 
     getChangeTypes(): Observable<ChangeTypeInfo[]> {
-        debugger
-        return this.http.get('services/workflow/changetypes')
+         return this.http.get('services/workflow/changetypes')
             .pipe(
                 map(response => <ChangeTypeInfo[]>response),
                 catchError(err=>this.handleError(err))
@@ -263,7 +262,6 @@ export class WorkflowService extends BaseObservableService {
     }
 
     getWorkflowObjectTypes(changeType: WorkflowChangeType): Observable<WorkflowObjectType[]> {
-        debugger
         if (changeType == null || <any>changeType == '')
             return of([]);
 
@@ -276,8 +274,7 @@ export class WorkflowService extends BaseObservableService {
     }
 
     getWorkflowFieldTypes(id: number, type: string, allowHtml: boolean = false, additionalFields: string = ""): Observable<FieldType[]> {
-        debugger;
-        if (id == null || type == null)
+          if (id == null || type == null)
             return of([]);
         return this.http.get(`services/workflow/fieldtypes/${type}/${id}?allowHtml=${allowHtml}&additionalFields=${additionalFields}`)
             .pipe(
