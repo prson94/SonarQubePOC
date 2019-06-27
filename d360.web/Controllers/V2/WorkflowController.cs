@@ -233,7 +233,7 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Get a list of steps and their relevant information for a specific workflow instance contained within the system.
         /// </summary>
-        /// <param name="workflowUid">workflow instance unique identifie</param>
+        /// <param name="workflowUid">workflow instance unique identifier</param>
         /// <returns></returns>
         [HttpGet,Route("{workflowUid}/steps"),
         SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
