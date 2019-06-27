@@ -13,7 +13,7 @@ import {
 } from '@angular/core';
 import {FormGroup} from '@angular/forms';
 import {Editor} from 'primeng/primeng';
-import {Subject} from 'rxjs';
+import {Subject } from 'rxjs';
 
 import {EditorDropDownItem, EditorField} from '../../../models/editor-field.model';
 
@@ -64,6 +64,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     private colorValue: string = '#000';
 
     private filterException: string = '';
+    private fieldChangeSub;
 
     private isTaxonomyType: boolean = false; // taxonomy type requires its name be mapped to whatever the setting is set to.
     private hasCascadeLoaded: boolean = false;
@@ -98,12 +99,15 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                 }
             }
         }
-
-        //fallback to default behavior
-        this.field.Value = e;
     }
 
     ngOnInit() {
+        if (this.field.FieldType != 'Link') {
+            this.fieldChangeSub = this.form.controls[this.field.FieldName].valueChanges.subscribe(data => {
+                this.onFieldChanges(data);
+            });
+        }
+
         this.cascadeSub = this.cascadeService.cascadeMessage$.subscribe(
             casc => {
                 if (this.field.ParentFieldTypeID > 0 && casc.fieldTypeId == this.field.FieldTypeID) {
@@ -255,8 +259,25 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     ngOnDestroy() {
         this.cascadeSub.unsubscribe();
         this.relationSub.unsubscribe();
+        if (this.fieldChangeSub != null)
+            this.fieldChangeSub.unsubscribe();
         this.quill = null;
         this.ed = null;
+    }
+
+    onFieldChanges(data: any) {
+        console.log(data);
+
+        switch (this.field.FieldType) {
+            case 'Lookup':
+                    this.listItemChange.emit({ field: this.field, value: data });
+                break;
+            case 'Html':
+                this.setEditorContent(data);
+                break;
+        }
+
+        this.field.Value = data;
     }
 
     get isValid() {
