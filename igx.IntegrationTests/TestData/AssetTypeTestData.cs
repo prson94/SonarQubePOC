@@ -16,7 +16,7 @@ namespace igx.IntegrationTests.TestData
 
 
         private static readonly object padlock = new object();
-        public static JObject assetTypeInsert
+        public static JObject AssetTypeInsert
         {
             get
             {
@@ -70,6 +70,7 @@ namespace igx.IntegrationTests.TestData
             JObject jObject = new JObject();
             jObject.Add(new JProperty("Uid", uid.ToString()));
             jObject.Add(new JProperty("Cascade", true));
+            forDeletes.Add(jObject);
 
             return forDeletes;
         }

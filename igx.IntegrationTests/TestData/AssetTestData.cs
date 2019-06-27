@@ -130,6 +130,7 @@ namespace igx.IntegrationTests.TestData
                 JObject jObject = new JObject();
                 jObject.Add(new JProperty("Uid", uid.ToString()));
                 jObject.Add(new JProperty("Cascade", true));
+                forDeletes.Add(jObject);
             }
 
             return forDeletes;

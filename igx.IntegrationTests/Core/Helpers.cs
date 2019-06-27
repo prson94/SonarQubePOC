@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -30,6 +31,15 @@ namespace igx.IntegrationTests.Core
                 return true;
             }
             return self == to;
+        }
+
+        public static JArray AsJArray(this IEnumerable<JToken> arr)
+        {
+            var ret = new JArray();
+            foreach (var item in arr)
+                ret.Add(arr);
+
+            return ret;
         }
     }
 }
