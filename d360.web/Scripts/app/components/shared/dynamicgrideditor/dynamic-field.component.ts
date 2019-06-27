@@ -57,6 +57,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     private typeAheadSource$ = new Subject<any>();
     private typeAheadSub: any;
     private typeAheadValue: EditorDropDownItem = null;
+    private loadTypeAheadValue: boolean = false;
     private Increment: number = 1;
     private Min: number;
     private Max: number;
@@ -235,8 +236,10 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             if (this.field.Items != null && this.field.Items.length > 0) {
                 let sel: EditorDropDownItem = this.field.Items.find(i => i.Selected == true);
 
+                this.loadTypeAheadValue = true;
                 this.typeAheadValue = sel;
                 this.onSelect(sel);
+                
             }
         }
 
@@ -254,6 +257,16 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         if (this.ed != null && this.ed.quill != null) {
             this.quill = this.ed.quill;
         }
+
+        //set input text on typeahead to current value if applicable, avoids using ngModel binding
+        if (this.loadTypeAheadValue) {
+            this.loadTypeAheadValue = false;
+            if (this.field.UseTypeahead) {
+                let el: any = document.getElementById(this.field.FieldName + '_input');
+                if (el != null && this.typeAheadValue != null)
+                    el.value = this.typeAheadValue.Text;
+            }
+        }
     }
 
     ngOnDestroy() {
@@ -268,16 +281,22 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     onFieldChanges(data: any) {
         console.log(data);
 
-        switch (this.field.FieldType) {
-            case 'Lookup':
-                    this.listItemChange.emit({ field: this.field, value: data });
-                break;
-            case 'Html':
-                this.setEditorContent(data);
-                break;
+        if (this.field.FieldType == 'Lookup') {
+            if (this.field.UseTypeahead) {
+                if (this.typeAheadValue != null)
+                    this.field.Value = this.typeAheadValue.Value;
+                else
+                    this.field.Value = null;
+            } else {
+                this.field.Value = data;
+            }
+            this.listItemChange.emit({ field: this.field, value: data });
+        } else if (this.field.FieldType == 'Html') {
+            this.setEditorContent(data);
+            this.field.Value = data;
+        } else {
+            this.field.Value = data;
         }
-
-        this.field.Value = data;
     }
 
     get isValid() {
