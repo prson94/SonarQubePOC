@@ -2078,6 +2078,11 @@ where	R.SourceObject = 'FusionAttribute'
             return await Database.Connection.QueryAsync<T>(sql, param, null, timeout);
         }
 
+        public async Task<SqlMapper.GridReader> QueryMultipleAsync(string sql, object param = null, int timeout = 90)
+        {
+            return await Database.Connection.QueryMultipleAsync(sql, param, null, timeout);
+        }
+
         public override bool Update<T>(T item)
         {
             ObjectContext.ObjectStateManager.ChangeObjectState(item, EntityState.Modified);
@@ -2176,7 +2181,7 @@ where	R.SourceObject = 'FusionAttribute'
             return returnValue;
         }
 
-        private void CreateOrUpdateDisplayValue(long assetId, string objectType = "", int objectId = -1)
+        public void CreateOrUpdateDisplayValue(long assetId, string objectType = "", int objectId = -1)
         {
             Database.Connection.Execute("exec GenerateAssetDisplayValue @assetID, @objType,@objId", new { assetID = assetId, objId = objectId, objType = new DbString { Value = objectType.Replace("Type",""), IsFixedLength = true, Length = 20, IsAnsi = true } }, null, 2400);
         }
@@ -3045,15 +3050,37 @@ select @err";
 
                         if (relationFieldInfo != null)
                         {
-                            if (includeIdColumn) columns += $"{name}_T.ID as [{name}ID], ";
-                            columns += $"{name}_OT.FormattedValue as [{(useFriendlyName ? friendlyName : name)}], ";
+                            var relationshipLookupFieldType = GetById<FieldType>(f.LookupObjectFieldTypeID ?? 0);
+                            if (relationshipLookupFieldType != null)
+                            {
+                                if (relationshipLookupFieldType.Type == DataType.JsonElement.ToString())
+                                {
+                                    var jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(relationshipLookupFieldType.Definition);
+                                    var sqlType = DetermineSqlDataTypeForFieldType(relationshipLookupFieldType);
 
-                            joins += $" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and";
-                            joins += relationFieldInfo.IsSubject ? $" {name}_T.Subject = '{type.Replace("Type", "")}' and {name}_T.SubjectID = {idColumn}" : $" {name}_T.Object = '{type.Replace("Type", "")}' and {name}_T.ObjectID = {idColumn}";
-                            joins += $" left join [Field] {name}_OT on {name}_OT.FieldTypeID = {(f.LookupObjectFieldTypeID.HasValue ? f.LookupObjectFieldTypeID : 0)}";
-                            joins += $" and {name}_OT.ObjectType = {name}_T." + (relationFieldInfo.IsSubject ? "Object" : "Subject");
-                            joins += $" and {name}_OT.ObjectID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
+                                    if (includeIdColumn) columns += $"{name}_T.ID as [{name}ID], ";
+                                    columns += $"try_cast({name}_P.Value as {sqlType}) as [{(useFriendlyName ? friendlyName : name)}], ";
 
+                                    joins += $" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and";
+                                    joins += relationFieldInfo.IsSubject ? $" {name}_T.Subject = '{type.Replace("Type", "")}' and {name}_T.SubjectID = {idColumn}" : $" {name}_T.Object = '{type.Replace("Type", "")}' and {name}_T.ObjectID = {idColumn}";
+                                    joins += $" left join [Field] {name}_OT on {name}_OT.FieldTypeID = {jsonElementDefinition.FieldTypeID}";
+                                    joins += $" and {name}_OT.ObjectType = {name}_T." + (relationFieldInfo.IsSubject ? "Object" : "Subject");
+                                    joins += $" and {name}_OT.ObjectID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
+                                    joins += $" left join FieldJsonProperty {name}_P on {name}_P.FieldID = {name}_OT.ID and {name}_P.[Path] = '{jsonElementDefinition.Path.CleanForSql()}' ";
+
+                                }
+                                else
+                                {
+                                    if (includeIdColumn) columns += $"{name}_T.ID as [{name}ID], ";
+                                    columns += $"{name}_OT.FormattedValue as [{(useFriendlyName ? friendlyName : name)}], ";
+
+                                    joins += $" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and";
+                                    joins += relationFieldInfo.IsSubject ? $" {name}_T.Subject = '{type.Replace("Type", "")}' and {name}_T.SubjectID = {idColumn}" : $" {name}_T.Object = '{type.Replace("Type", "")}' and {name}_T.ObjectID = {idColumn}";
+                                    joins += $" left join [Field] {name}_OT on {name}_OT.FieldTypeID = {relationshipLookupFieldType.ID}";
+                                    joins += $" and {name}_OT.ObjectType = {name}_T." + (relationFieldInfo.IsSubject ? "Object" : "Subject");
+                                    joins += $" and {name}_OT.ObjectID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
+                                }
+                            }
                         }
                     }
                 }

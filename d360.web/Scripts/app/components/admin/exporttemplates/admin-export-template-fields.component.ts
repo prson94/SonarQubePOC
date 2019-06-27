@@ -130,7 +130,7 @@ export class AdminExportTemplateFieldsComponent extends BaseComponent implements
         //load available fields for the artifact type
         this.fieldsService.getAssetTypeFields(this.exportTemplate.AssetTypeUID).subscribe(
             data => {
-                data = data.filter(x => x.Type != 'Relation Lookup' && x.Type != 'Filtered Lookup' && x.Type != 'Ownership Lookup' && x.Type != 'Fusion Lookup')
+                data = data.filter(x => x.Type != 'Relation Lookup' && x.Type != 'Filtered Lookup' && x.Type != 'Ownership Lookup' && x.Type != 'Fusion Lookup' && x.Type != 'JSON' && x.Type != 'JSON Attribute')
                 //split the string of selected fields and populate the selected fields array
                 this.availableFields = this.setInitialFields(data);
             }

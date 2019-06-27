@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -38,6 +39,31 @@ namespace d360.core.entities
         public UiRequestOwnershipFilterType FilterType { get; set; }
         public int ResponsibilityTypeID { get; set; }
         public int SecurityAssetID { get; set; }
+
+        public JObject GetAsJsonDbQueryObject()
+        {
+            var obj = new JObject();
+
+            var securityAsset = "";
+            switch (FilterType)
+            {
+                case UiRequestOwnershipFilterType.Group:
+                    securityAsset = "G";
+                    break;
+                case UiRequestOwnershipFilterType.Organization:
+                    securityAsset = "O";
+                    break;
+                case UiRequestOwnershipFilterType.User:
+                    securityAsset = "R";
+                    break;
+            }
+
+            obj.Add("SecurityAsset", securityAsset);
+            obj.Add("SecurityAssetID", SecurityAssetID);
+            obj.Add("ResponsibilityTypeID", ResponsibilityTypeID);
+
+            return obj;
+        }
     }
 
     public class UiRequestOwnershipFilterValue : UiRequestFilterValue
