@@ -3,6 +3,7 @@ using igx.IntegrationTests.TestData;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 using Xunit.Priority;
@@ -231,9 +232,6 @@ namespace igx.IntegrationTests.ApiTests
         [InlineData(0, 15, "VersionNumber")]
         [InlineData(1, 15, "VersionNumber")]
         [InlineData(2, 15, "VersionNumber")]
-        [InlineData(3, 15, "VersionNumber")]
-        [InlineData(4, 15, "VersionNumber")]
-        [InlineData(5, 15, "VersionNumber")]
         [InlineData(3, 15, "CreatedOn")]
         [InlineData(3, 15, "UpdatedOn")]
 
@@ -250,14 +248,17 @@ namespace igx.IntegrationTests.ApiTests
             Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
             Assert.True(parsedData["items"].Count() == pageSize);
 
-            var ordered = WorkflowTestData.WorkflowVersions["items"].OrderBy(x => int.Parse(x["VersionNumber"].ToString()));
+            var ordered = new List<JToken>();
             switch (orderBy)
             {
                 case "CreatedOn":
-                    ordered = ordered.OrderBy(x => DateTime.Parse(x["CreatedOn"].ToString()));
+                    ordered = WorkflowTestData.WorkflowVersions["items"].OrderBy(x => DateTime.Parse(x["CreatedOn"].ToString())).ToList();
                     break;
                 case "UpdatedOn":
-                    ordered = ordered.OrderBy(x => DateTime.Parse(x["UpdatedOn"].ToString()));
+                    ordered = WorkflowTestData.WorkflowVersions["items"].OrderBy(x => DateTime.Parse(x["UpdatedOn"].ToString())).ToList();
+                    break;
+                case "VersionNumber":
+                    ordered = WorkflowTestData.WorkflowVersions["items"].OrderBy(x => int.Parse(x["VersionNumber"].ToString())).ToList();
                     break;
             }
 
@@ -267,7 +268,7 @@ namespace igx.IntegrationTests.ApiTests
                 realData.Add(item);
             }
 
-            Assert.True(SimpleCollectionComparere.IsEqual(realData, parsedData["items"]));
+            Assert.True(SimpleJsonComparer.IsEqual(realData, parsedData["items"]));
         }
 
         [Fact, Priority(2000)]

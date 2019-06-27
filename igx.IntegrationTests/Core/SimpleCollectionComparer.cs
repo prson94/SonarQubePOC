@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace igx.IntegrationTests.Core
 {
-    public class SimpleCollectionComparere
+    public class SimpleJsonComparer
     {
         public static bool IsEqual(JToken x, JToken y)
         {
@@ -21,13 +21,13 @@ namespace igx.IntegrationTests.Core
 
             for (int i = 0; i < x.Count(); i++)
             {
-                if (!Compare(x.ElementAt(i) as JObject, y.ElementAt(i) as JObject)) return false;
+                if (!IsEqual(x.ElementAt(i) as JObject, y.ElementAt(i) as JObject)) return false;
             }
 
             return true;
         }
 
-        private static bool Compare(JObject x, JObject y)
+        public static bool IsEqual(JObject x, JObject y)
         {
             List<string> properties = new List<string>();
             foreach(var prop in x)
