@@ -20,6 +20,7 @@ using Xunit;
 
 namespace igx.IntegrationTests.ApiTests
 {
+
     [Trait("Integration tests", "General tests")]
     [TestCaseOrderer(PriorityOrderer.Name, PriorityOrderer.Assembly)]
     public class AssetControllerGeneralTests : BaseIntegrationTestClass
@@ -32,14 +33,12 @@ namespace igx.IntegrationTests.ApiTests
 
             var response = await httpClient.GetAsync(endpointUrl);
             var content = await response.Content.ReadAsStringAsync();
-            var parsedJson = JsonConvert.DeserializeObject<List<AssetTypeClassInfo>>(content);
+            var parsedJson = JsonConvert.DeserializeObject<JArray>(content);
 
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
             Assert.True(!string.IsNullOrEmpty(content));
             Assert.True(parsedJson.Count == AssetTypeClass.Glossary.GetAsList().Count);
-
-            Assert.True(1 == 1);
         }
         [Fact, Priority(10)]
         public async void T_1_02_GetAssetTypesAsync()
@@ -48,7 +47,7 @@ namespace igx.IntegrationTests.ApiTests
 
             var response = await httpClient.GetAsync(endpointUrl);
             var content = await response.Content.ReadAsStringAsync();
-            var parsedData = JsonConvert.DeserializeObject<List<AssetTypeApiViewModel>>(content);
+            var parsedData = JsonConvert.DeserializeObject<JArray>(content);
 
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
@@ -57,11 +56,11 @@ namespace igx.IntegrationTests.ApiTests
             if (parsedData.Count == 0)
                 throw new Exception("Testing environment should have asset types!");
 
-            foreach (var assetClass in parsedData.Select(x => x.Class).GroupBy(x => x.Name))
+            foreach (var assetClass in parsedData.Select(x => x["Class"]).GroupBy(x => x["Name"]))
             {
-                response = await httpClient.GetAsync(endpointUrl + "?Class=" + assetClass.Key.Replace(" ", ""));
+                response = await httpClient.GetAsync(endpointUrl + "?Class=" + assetClass.Key.ToString().Replace(" ", ""));
                 content = await response.Content.ReadAsStringAsync();
-                parsedData = JsonConvert.DeserializeObject<List<AssetTypeApiViewModel>>(content);
+                parsedData = JsonConvert.DeserializeObject<JArray>(content);
 
                 Assert.True(response.IsSuccessStatusCode);
                 Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
@@ -82,7 +81,7 @@ namespace igx.IntegrationTests.ApiTests
         {
 
             string endpointUrl = URIHelper.AssetsUri;
-            var response = await httpClient.PostAsJsonAsync(endpointUrl, AssetTypeTestData.assetTypeInsert);
+            var response = await httpClient.PostAsync(endpointUrl, AssetTypeTestData.assetTypeInsert.AsStringContent());
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
@@ -92,31 +91,32 @@ namespace igx.IntegrationTests.ApiTests
             Assert.True(parsedData.GetValue("Message") != null);
             Assert.True(parsedData.GetValue("Success") != null && parsedData.GetValue("Success").ToString() == "True");
 
-            AssetTypeTestData.assetTypeInsert.Uid = Guid.Parse(parsedData.GetValue("Uid").ToString());
+            AssetTypeTestData.assetTypeInsert.UpdateValueOnProperty("Uid", parsedData.GetValue("Uid"));
         }
 
         [Fact, Priority(40)]
         public async void T_2_02_AssetTypeGetAfterPost()
         {
-            string endPointUrl = URIHelper.AssetTypesUri + "?Class=" + AssetTypeTestData.assetTypeInsert.Class.ToString();
+            string endPointUrl = URIHelper.AssetTypesUri + "?Class=" + AssetTypeTestData.assetTypeInsert["Class"].ToString();
             var response = await httpClient.GetAsync(endPointUrl);
             var content = await response.Content.ReadAsStringAsync();
-            var assetTypeApiViewModels = JsonConvert.DeserializeObject<List<AssetTypeApiViewModel>>(content);
+            var assetTypeApiViewModels = JsonConvert.DeserializeObject<JArray>(content);
 
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
 
             Assert.True(assetTypeApiViewModels.Count != 0);
-            Assert.Contains(assetTypeApiViewModels, x => x.uid == AssetTypeTestData.assetTypeInsert.Uid && x.Name == AssetTypeTestData.assetTypeInsert.Name && x.Description == AssetTypeTestData.assetTypeInsert.Description);
+            Assert.Contains(assetTypeApiViewModels, x => x["uid"].ToString() == AssetTypeTestData.assetTypeInsert["Uid"].ToString() && x["Name"].ToString() == AssetTypeTestData.assetTypeInsert["Name"].ToString() && x["Description"].ToString() == AssetTypeTestData.assetTypeInsert["Description"].ToString());
         }
 
         [Fact, Priority(50)]
         public async void T_2_03_AssetTypePut()
         {
-            AssetTypeTestData.assetTypeInsert.Name += " edited on put";
-            AssetTypeTestData.assetTypeInsert.Description += " edited on put";
+
+            AssetTypeTestData.assetTypeInsert.AppendValueOnProperty("Name"," edited on put");
+            AssetTypeTestData.assetTypeInsert.AppendValueOnProperty("Description"," edited on put");
             var endpointUrl = URIHelper.AssetsUri;
-            var response = await httpClient.PutAsJsonAsync(endpointUrl, AssetTypeTestData.assetTypeInsert);
+            var response = await httpClient.PutAsync(endpointUrl, AssetTypeTestData.assetTypeInsert.AsStringContent());
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
@@ -128,27 +128,27 @@ namespace igx.IntegrationTests.ApiTests
         [Fact, Priority(60)]
         public async void T_2_04_AssetTypeGetAfterPut()
         {
-            string endPointUrl = URIHelper.AssetTypesUri + "?Class=" + AssetTypeTestData.assetTypeInsert.Class.ToString();
+            string endPointUrl = URIHelper.AssetTypesUri + "?Class=" + AssetTypeTestData.assetTypeInsert["Class"].ToString();
             var response = await httpClient.GetAsync(endPointUrl);
             var content = await response.Content.ReadAsStringAsync();
-            var assetTypeApiViewModels = JsonConvert.DeserializeObject<List<AssetTypeApiViewModel>>(content);
+            var assetTypeApiViewModels = JsonConvert.DeserializeObject<JArray>(content);
 
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
 
             Assert.True(assetTypeApiViewModels.Count != 0);
-            Assert.Contains(assetTypeApiViewModels, x => x.uid == AssetTypeTestData.assetTypeInsert.Uid && x.Name == AssetTypeTestData.assetTypeInsert.Name && x.Description == AssetTypeTestData.assetTypeInsert.Description);
+            Assert.Contains(assetTypeApiViewModels, x => x["uid"].ToString() == AssetTypeTestData.assetTypeInsert["Uid"].ToString() && x["Name"].ToString() == AssetTypeTestData.assetTypeInsert["Name"].ToString() && x["Description"].ToString() == AssetTypeTestData.assetTypeInsert["Description"].ToString());
         }
 
         [Fact, Priority(70)]
         public async void T_2_05_AssetTypeDelete()
         {
             AssetTypeDeletes forDelete = new AssetTypeDeletes();
-            forDelete.Add(new AssetTypeDelete() { Uid = AssetTypeTestData.assetTypeInsert.Uid });
+            forDelete.Add(new AssetTypeDelete() { Uid = Guid.Parse(AssetTypeTestData.assetTypeInsert["Uid"].ToString())});
             var endpointUrl = URIHelper.AssetsUri;
             HttpRequestMessage request = new HttpRequestMessage
             {
-                Content = new StringContent(JsonConvert.SerializeObject(forDelete), Encoding.UTF8, "application/json"),
+                Content = AssetTypeTestData.GetDeleteAssetTypeJSON(Guid.Parse(AssetTypeTestData.assetTypeInsert["Uid"].ToString())).AsStringContent(),
                 Method = HttpMethod.Delete,
                 RequestUri = new Uri(endpointUrl)
             };
@@ -175,15 +175,15 @@ namespace igx.IntegrationTests.ApiTests
 
             while (doRetry)
             {
-                var response = await httpClient.GetAsync(AssetTypeTestData.ExecutionUrl);
+                var response = await httpClient.GetAsync(AssetTestData.ExecutionUrl);
                 var content = await response.Content.ReadAsStringAsync();
-                var parsedData = JsonConvert.DeserializeObject<ApiExecutionStatusModel>(content);
+                var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
 
-                if (parsedData.Results != null && parsedData.Results.Count > 0)
+                if (parsedData["Results"] != null && parsedData["Results"].Count() > 0)
                 {
                     doRetry = false;
-                    isSuccess = parsedData.Results.All(x => x.Success == true);
+                    isSuccess = parsedData["Results"].All(x => x["Success"].ToString().ToLower() == "true");
                 }
                 retryCount++;
                 if (retryCount == retryMax) doRetry = false;
@@ -204,7 +204,7 @@ namespace igx.IntegrationTests.ApiTests
         {
 
             string endpointUrl = URIHelper.AssetsUri;
-            var response = await httpClient.PostAsJsonAsync(endpointUrl, AssetTestData.assetTypeInsert);
+            var response = await httpClient.PostAsync(endpointUrl, AssetTestData.assetTypeInsert.AsStringContent());
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
@@ -214,42 +214,42 @@ namespace igx.IntegrationTests.ApiTests
             Assert.True(parsedData.GetValue("Message") != null);
             Assert.True(parsedData.GetValue("Success") != null && parsedData.GetValue("Success").ToString() == "True");
 
-            AssetTestData.assetTypeInsert.Uid = Guid.Parse(parsedData.GetValue("Uid").ToString());
+            AssetTestData.assetTypeInsert.UpdateValueOnProperty("Uid", parsedData.GetValue("Uid").ToString());
         }
 
         [Fact, Priority(110)]
         public async void T_3_02_AssetTypeGetAfterPost()
         {
-            string endPointUrl = URIHelper.AssetsUri + "/types?Class=" + AssetTestData.assetTypeInsert.Class.ToString();
+            string endPointUrl = URIHelper.AssetsUri + "/types?Class=" + AssetTestData.assetTypeInsert["Class"].ToString();
             var response = await httpClient.GetAsync(endPointUrl);
             var content = await response.Content.ReadAsStringAsync();
-            var assetTypeApiViewModels = JsonConvert.DeserializeObject<List<AssetTypeApiViewModel>>(content);
+            var assetTypeApiViewModels = JsonConvert.DeserializeObject<JArray>(content);
 
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
 
             Assert.True(assetTypeApiViewModels.Count != 0);
-            Assert.Contains(assetTypeApiViewModels, x => x.uid == AssetTestData.assetTypeInsert.Uid && x.Name == AssetTestData.assetTypeInsert.Name && x.Description == AssetTestData.assetTypeInsert.Description);
+            Assert.Contains(assetTypeApiViewModels, x => x["uid"].ToString() == AssetTestData.assetTypeInsert["Uid"].ToString() && x["Name"].ToString() == AssetTestData.assetTypeInsert["Name"].ToString() && x["Description"].ToString() == AssetTestData.assetTypeInsert["Description"].ToString());
         }
 
         [Fact, Priority(120)]
         public async void T_3_03_AssetsPost()
         {
-            string endPointUrl = URIHelper.AssetsUri + AssetTestData.assetTypeInsert.Uid.ToString();
-            var response = await httpClient.PostAsJsonAsync(endPointUrl, AssetTestData.assetInserts);
+            string endPointUrl = URIHelper.AssetsUri + AssetTestData.assetTypeInsert["Uid"].ToString();
+            var response = await httpClient.PostAsync(endPointUrl, AssetTestData.assetInserts.AsStringContent());
             var content = await response.Content.ReadAsStringAsync();
-            var databaseBulkAssetResults = JsonConvert.DeserializeObject<List<DatabaseBulkAssetResult>>(content);
+            var databaseBulkAssetResults = JsonConvert.DeserializeObject<JArray>(content);
 
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
 
             Assert.True(databaseBulkAssetResults.Count == AssetTestData.assetInserts.Count);
-            Assert.True(databaseBulkAssetResults.All(x => x.Success == true));
+            Assert.True(databaseBulkAssetResults.All(x => x["Success"].ToString().ToLower() == "true"));
 
             foreach (var item in databaseBulkAssetResults.Select((value, index) => new { index, value }))
             {
-                Assert.True(item.value.uid != Guid.Empty);
-                AssetTestData.assetInserts[item.index].Uid = item.value.uid;
+                Assert.True(item.value["uid"].ToString() != Guid.Empty.ToString());
+                AssetTestData.assetInserts[item.index].UpdateValueOnProperty("Uid", item.value["uid"].ToString());
             }
 
         }
@@ -257,21 +257,21 @@ namespace igx.IntegrationTests.ApiTests
         [Fact, Priority(130)]
         public async void T_3_04_GetAssetsAfterPost()
         {
-            string endPointUrl = URIHelper.AssetsUri + AssetTestData.assetTypeInsert.Uid.ToString();
+            string endPointUrl = URIHelper.AssetsUri + AssetTestData.assetTypeInsert["Uid"].ToString();
             var response = await httpClient.GetAsync(endPointUrl);
             var content = await response.Content.ReadAsStringAsync();
-            var assetsApiViewModel = JsonConvert.DeserializeObject<AssetsApiViewModel>(content);
+            var assetsApiViewModel = JsonConvert.DeserializeObject<JObject>(content);
 
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
 
-            Assert.True(assetsApiViewModel.total == AssetTestData.assetInserts.Count);
+            Assert.True(int.Parse(assetsApiViewModel["total"].ToString()) == AssetTestData.assetInserts.Count);
 
-            foreach (var item in assetsApiViewModel.items)
+            foreach (var item in assetsApiViewModel["items"])
             {
-                var compareItem = AssetTestData.assetInserts.Where(x => x.Uid == Guid.Parse(Convert.ToString(item.AssetUid))).FirstOrDefault();
+                var compareItem = AssetTestData.assetInserts.Where(x => Guid.Parse(x["Uid"].ToString()) == Guid.Parse(Convert.ToString(item["AssetUid"]))).FirstOrDefault();
                 Assert.True(compareItem != null);
-                Assert.True(compareItem.Fields["Name"] == Convert.ToString(item.Name));
+                Assert.True(compareItem["Fields"]["Name"].ToString() == Convert.ToString(item["Name"]));
 
             }
 
@@ -282,45 +282,45 @@ namespace igx.IntegrationTests.ApiTests
         {
             foreach (var inserted in AssetTestData.assetInserts.Select((value, index) => new { index, value }))
             {
-                AssetTestData.assetUpdates[inserted.index].Uid = inserted.value.Uid;
+                AssetTestData.assetUpdates[inserted.index].UpdateValueOnProperty("Uid", inserted.value["Uid"].ToString());
             }
 
-            string endPointUrl = URIHelper.AssetsUri + AssetTestData.assetTypeInsert.Uid.ToString();
-            var response = await httpClient.PutAsJsonAsync(endPointUrl, AssetTestData.assetUpdates);
+            string endPointUrl = URIHelper.AssetsUri + AssetTestData.assetTypeInsert["Uid"].ToString();
+            var response = await httpClient.PutAsync(endPointUrl, AssetTestData.assetUpdates.AsStringContent());
             var content = await response.Content.ReadAsStringAsync();
-            var databaseBulkAssetResults = JsonConvert.DeserializeObject<List<DatabaseBulkAssetResult>>(content);
+            var databaseBulkAssetResults = JsonConvert.DeserializeObject<JArray>(content);
 
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
 
-            Assert.True(databaseBulkAssetResults.Count == AssetTestData.assetUpdates.Count);
-            Assert.True(databaseBulkAssetResults.All(x => x.Success == true));
+            Assert.True(databaseBulkAssetResults.Count == AssetTestData.assetInserts.Count);
+            Assert.True(databaseBulkAssetResults.All(x => x["Success"].ToString().ToLower() == "true"));
 
             foreach (var item in databaseBulkAssetResults.Select((value, index) => new { index, value }))
             {
-                Assert.True(item.value.uid != Guid.Empty);
-                AssetTestData.assetUpdates[item.index].Uid = item.value.uid;
+                Assert.True(item.value["uid"].ToString() != Guid.Empty.ToString());
+                AssetTestData.assetInserts[item.index].UpdateValueOnProperty("Uid", item.value["uid"].ToString());
             }
         }
 
         [Fact, Priority(150)]
-        public async void T_3_06_GetAssetsAfterPost()
+        public async void T_3_06_GetAssetsAfterPut()
         {
-            string endPointUrl = URIHelper.AssetsUri + AssetTestData.assetTypeInsert.Uid.ToString();
+            string endPointUrl = URIHelper.AssetsUri + AssetTestData.assetTypeInsert["Uid"].ToString();
             var response = await httpClient.GetAsync(endPointUrl);
             var content = await response.Content.ReadAsStringAsync();
-            var assetsApiViewModel = JsonConvert.DeserializeObject<AssetsApiViewModel>(content);
+            var assetsApiViewModel = JsonConvert.DeserializeObject<JObject>(content);
 
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
 
-            Assert.True(assetsApiViewModel.total == AssetTestData.assetUpdates.Count);
+            Assert.True(int.Parse(assetsApiViewModel["total"].ToString()) == AssetTestData.assetInserts.Count);
 
-            foreach (var item in assetsApiViewModel.items)
+            foreach (var item in assetsApiViewModel["items"])
             {
-                var compareItem = AssetTestData.assetUpdates.Where(x => x.Uid == Guid.Parse(Convert.ToString(item.AssetUid))).FirstOrDefault();
+                var compareItem = AssetTestData.assetInserts.Where(x => Guid.Parse(x["Uid"].ToString()) == Guid.Parse(Convert.ToString(item["AssetUid"]))).FirstOrDefault();
                 Assert.True(compareItem != null);
-                Assert.True(compareItem.Fields["Name"] == Convert.ToString(item.Name));
+                Assert.True(compareItem["Fields"]["Name"].ToString() == Convert.ToString(item["Name"]));
 
             }
 
@@ -329,16 +329,16 @@ namespace igx.IntegrationTests.ApiTests
         [Fact, Priority(160)]
         public async void T_3_07_AssetDelete()
         {
-            AssetDeletes forDelete = new AssetDeletes();
+            List<Guid> forDelete = new List<Guid>();
 
             foreach (var item in AssetTestData.assetUpdates)
             {
-                forDelete.Add(new AssetDelete() { Uid = item.Uid });
+                forDelete.Add(Guid.Parse(item["Uid"].ToString()));
             }
-            string endPointUrl = URIHelper.AssetsUri + AssetTestData.assetTypeInsert.Uid.ToString();
+            string endPointUrl = URIHelper.AssetsUri + AssetTestData.assetTypeInsert["Uid"].ToString();
             HttpRequestMessage request = new HttpRequestMessage
             {
-                Content = new StringContent(JsonConvert.SerializeObject(forDelete), Encoding.UTF8, "application/json"),
+                Content = AssetTestData.GetDeleteAssetJSON(forDelete).AsStringContent(),
                 Method = HttpMethod.Delete,
                 RequestUri = new Uri(endPointUrl)
             };
@@ -346,9 +346,9 @@ namespace igx.IntegrationTests.ApiTests
             var response = await httpClient.SendAsync(request);
             var content = await response.Content.ReadAsStringAsync();
 
-            var parsedData = JsonConvert.DeserializeObject<List<DatabaseBulkAssetResult>>(content);
+            var parsedData = JsonConvert.DeserializeObject<JArray>(content);
 
-            Assert.True(parsedData.All(x => x.Success == true));
+            Assert.True(parsedData.All(x => x["Success"].ToString().ToLower() == "true"));
             Assert.True(parsedData.Count == forDelete.Count);
 
         }
@@ -356,12 +356,10 @@ namespace igx.IntegrationTests.ApiTests
         [Fact, Priority(170)]
         public async void T_3_08_AssetTypeDelete()
         {
-            AssetTypeDeletes forDelete = new AssetTypeDeletes();
-            forDelete.Add(new AssetTypeDelete() { Uid = AssetTestData.assetTypeInsert.Uid });
             var endpointUrl = URIHelper.AssetsUri;
             HttpRequestMessage request = new HttpRequestMessage
             {
-                Content = new StringContent(JsonConvert.SerializeObject(forDelete), Encoding.UTF8, "application/json"),
+                Content = AssetTypeTestData.GetDeleteAssetTypeJSON(Guid.Parse(AssetTestData.assetTypeInsert["Uid"].ToString())).AsStringContent(),
                 Method = HttpMethod.Delete,
                 RequestUri = new Uri(endpointUrl)
             };
@@ -382,7 +380,7 @@ namespace igx.IntegrationTests.ApiTests
         {
 
             int retryCount = 1;
-            int retryMax = 10;
+            int retryMax = 50;
             bool doRetry = true;
             bool isSuccess = false;
 
@@ -390,18 +388,18 @@ namespace igx.IntegrationTests.ApiTests
             {
                 var response = await httpClient.GetAsync(AssetTestData.ExecutionUrl);
                 var content = await response.Content.ReadAsStringAsync();
-                var parsedData = JsonConvert.DeserializeObject<ApiExecutionStatusModel>(content);
+                var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
 
-                if (parsedData.Results != null && parsedData.Results.Count > 0)
+                if (parsedData["Results"] != null && parsedData["Results"].Count() > 0)
                 {
                     doRetry = false;
-                    isSuccess = parsedData.Results.All(x => x.Success == true);
+                    isSuccess = parsedData["Results"].All(x => x["Success"].ToString().ToLower() == "true");
                 }
                 retryCount++;
                 if (retryCount == retryMax) doRetry = false;
 
-                Thread.Sleep(10000);
+                Thread.Sleep(2000);
             }
 
             return isSuccess;
@@ -418,7 +416,7 @@ namespace igx.IntegrationTests.ApiTests
         {
 
             string endpointUrl = URIHelper.AssetsUri;
-            var response = await httpClient.PostAsJsonAsync(endpointUrl, BulkTestData.assetTypeInsert);
+            var response = await httpClient.PostAsync(endpointUrl, BulkTestData.assetTypeInsert.AsStringContent());
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
@@ -428,29 +426,32 @@ namespace igx.IntegrationTests.ApiTests
             Assert.True(parsedData.GetValue("Message") != null);
             Assert.True(parsedData.GetValue("Success") != null && parsedData.GetValue("Success").ToString() == "True");
 
-            BulkTestData.assetTypeInsert.Uid = Guid.Parse(parsedData.GetValue("Uid").ToString());
+            BulkTestData.assetTypeInsert.UpdateValueOnProperty("Uid", parsedData.GetValue("Uid"));
         }
 
         [Fact, Priority(210)]
         public async void T_4_02_AssetTypeGetAfterPost()
         {
-            string endPointUrl = URIHelper.AssetsUri + "/types?Class=" + BulkTestData.assetTypeInsert.Class.ToString();
+            string endPointUrl = URIHelper.AssetsUri + "/types?Class=" + BulkTestData.assetTypeInsert["Class"].ToString();
             var response = await httpClient.GetAsync(endPointUrl);
             var content = await response.Content.ReadAsStringAsync();
-            var assetTypeApiViewModels = JsonConvert.DeserializeObject<List<AssetTypeApiViewModel>>(content);
+            var assetTypeApiViewModels = JsonConvert.DeserializeObject<JArray>(content);
 
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
 
             Assert.True(assetTypeApiViewModels.Count != 0);
-            Assert.Contains(assetTypeApiViewModels, x => x.uid == BulkTestData.assetTypeInsert.Uid && x.Name == BulkTestData.assetTypeInsert.Name && x.Description == BulkTestData.assetTypeInsert.Description);
+            Assert.Contains(assetTypeApiViewModels, 
+                x => x["uid"].ToString() == BulkTestData.assetTypeInsert["Uid"].ToString() 
+                && x["Name"].ToString() == BulkTestData.assetTypeInsert["Name"].ToString() 
+                && x["Description"].ToString() == BulkTestData.assetTypeInsert["Description"].ToString());
         }
 
         [Fact, Priority(220)]
         public async void T_4_03_BatchAssetPost()
         {
-            string endpoint = URIHelper.AssetsBatchUri + BulkTestData.assetTypeInsert.Uid;
-            var response = await httpClient.PostAsJsonAsync(endpoint, BulkTestData.assetInserts);
+            string endpoint = URIHelper.AssetsBatchUri + BulkTestData.assetTypeInsert["Uid"].ToString();
+            var response = await httpClient.PostAsync(endpoint, BulkTestData.assetInserts.AsStringContent());
             var content = await response.Content.ReadAsStringAsync();
 
             Assert.True(response.IsSuccessStatusCode);
@@ -469,21 +470,21 @@ namespace igx.IntegrationTests.ApiTests
         [Fact, Priority(230)]
         public async void T_4_04_BatchGetAssetsAfterPost()
         {
-            string endPointUrl = URIHelper.AssetsUri + BulkTestData.assetTypeInsert.Uid.ToString();
+            string endPointUrl = URIHelper.AssetsUri + BulkTestData.assetTypeInsert["Uid"].ToString();
             var response = await httpClient.GetAsync(endPointUrl);
             var content = await response.Content.ReadAsStringAsync();
-            var assetsApiViewModel = JsonConvert.DeserializeObject<AssetsApiViewModel>(content);
+            var assetsApiViewModel = JsonConvert.DeserializeObject<JObject>(content);
 
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
 
-            Assert.True(assetsApiViewModel.total == BulkTestData.assetInserts.Count);
+            Assert.True(int.Parse(assetsApiViewModel["total"].ToString()) == BulkTestData.assetInserts.Count);
 
-            foreach (var item in assetsApiViewModel.items)
+            foreach (var item in assetsApiViewModel["items"])
             {
-                var compareItem = BulkTestData.assetInserts.Where(x => x.Fields["Name"] == Convert.ToString(item.Name)).FirstOrDefault();
+                var compareItem = BulkTestData.assetInserts.Where(x => x["Fields"]["Name"].ToString() == Convert.ToString(item["Name"])).FirstOrDefault();
                 Assert.True(compareItem != null);
-                compareItem.Uid = item["AssetUid"];
+                Assert.True(compareItem["Uid"].ToString() == item["AssetUid"].ToString());
             }
 
         }
@@ -493,11 +494,11 @@ namespace igx.IntegrationTests.ApiTests
         {
             foreach (var inserted in BulkTestData.assetInserts.Select((value, index) => new { index, value }))
             {
-                BulkTestData.assetUpdates[inserted.index].Uid = inserted.value.Uid;
+                BulkTestData.assetUpdates[inserted.index].UpdateValueOnProperty("Uid", inserted.value["Uid"].ToString());
             }
 
-            string endPointUrl = URIHelper.AssetsBatchUri + BulkTestData.assetTypeInsert.Uid.ToString();
-            var response = await httpClient.PutAsJsonAsync(endPointUrl, BulkTestData.assetUpdates);
+            string endPointUrl = URIHelper.AssetsBatchUri + BulkTestData.assetTypeInsert["Uid"].ToString();
+            var response = await httpClient.PutAsync(endPointUrl, BulkTestData.assetUpdates.AsStringContent());
             var content = await response.Content.ReadAsStringAsync();
             var databaseBulkAssetResults = JsonConvert.DeserializeObject<JObject>(content);
 
@@ -516,21 +517,21 @@ namespace igx.IntegrationTests.ApiTests
         [Fact, Priority(250)]
         public async void T_4_06_GetAssetsAfterPut()
         {
-            string endPointUrl = URIHelper.AssetsUri + BulkTestData.assetTypeInsert.Uid.ToString();
+            string endPointUrl = URIHelper.AssetsUri + BulkTestData.assetTypeInsert["Uid"].ToString();
             var response = await httpClient.GetAsync(endPointUrl);
             var content = await response.Content.ReadAsStringAsync();
-            var assetsApiViewModel = JsonConvert.DeserializeObject<AssetsApiViewModel>(content);
+            var assetsApiViewModel = JsonConvert.DeserializeObject<JObject>(content);
 
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
 
-            Assert.True(assetsApiViewModel.total == BulkTestData.assetUpdates.Count);
+            Assert.True(int.Parse(assetsApiViewModel["total"].ToString()) == BulkTestData.assetUpdates.Count);
 
-            foreach (var item in assetsApiViewModel.items)
+            foreach (var item in assetsApiViewModel["items"])
             {
-                var compareItem = BulkTestData.assetUpdates.Where(x => x.Uid == Guid.Parse(Convert.ToString(item.AssetUid))).FirstOrDefault();
+                var compareItem = BulkTestData.assetUpdates.Where(x => x["Uid"].ToString() == item["AssetUid"].ToString()).FirstOrDefault();
                 Assert.True(compareItem != null);
-                Assert.True(compareItem.Fields["Name"] == Convert.ToString(item.Name));
+                Assert.True(compareItem["Fields"]["Name"].ToString() == item["Name"].ToString());
 
             }
 
@@ -539,16 +540,17 @@ namespace igx.IntegrationTests.ApiTests
         [Fact, Priority(260)]
         public async void T_4_07_BulkDeleteAsset()
         {
-            AssetDeletes forDelete = new AssetDeletes();
+
+            List<Guid> forDelete = new List<Guid>();
 
             foreach (var item in BulkTestData.assetUpdates)
             {
-                forDelete.Add(new AssetDelete() { Uid = item.Uid });
+                forDelete.Add(Guid.Parse(item["Uid"].ToString()));
             }
-            string endPointUrl = URIHelper.AssetsBatchUri + BulkTestData.assetTypeInsert.Uid.ToString();
+            string endPointUrl = URIHelper.AssetsBatchUri + BulkTestData.assetTypeInsert["Uid"].ToString();
             HttpRequestMessage request = new HttpRequestMessage
             {
-                Content = new StringContent(JsonConvert.SerializeObject(forDelete), Encoding.UTF8, "application/json"),
+                Content = AssetTestData.GetDeleteAssetJSON(forDelete).AsStringContent(),
                 Method = HttpMethod.Delete,
                 RequestUri = new Uri(endPointUrl)
             };
@@ -571,12 +573,10 @@ namespace igx.IntegrationTests.ApiTests
         [Fact, Priority(280)]
         public async void T_4_08_AssetTypeDelete()
         {
-            AssetTypeDeletes forDelete = new AssetTypeDeletes();
-            forDelete.Add(new AssetTypeDelete() { Uid = BulkTestData.assetTypeInsert.Uid });
             var endpointUrl = URIHelper.AssetsUri;
             HttpRequestMessage request = new HttpRequestMessage
             {
-                Content = new StringContent(JsonConvert.SerializeObject(forDelete), Encoding.UTF8, "application/json"),
+                Content = AssetTypeTestData.GetDeleteAssetTypeJSON(Guid.Parse(BulkTestData.assetTypeInsert["Uid"].ToString())).AsStringContent(),
                 Method = HttpMethod.Delete,
                 RequestUri = new Uri(endpointUrl)
             };
@@ -595,7 +595,6 @@ namespace igx.IntegrationTests.ApiTests
         [Fact, Priority(290)]
         private async Task<bool> T_4_09_ExecutionStatusCheck()
         {
-
             int retryCount = 1;
             int retryMax = 50;
             bool doRetry = true;
@@ -603,15 +602,15 @@ namespace igx.IntegrationTests.ApiTests
 
             while (doRetry)
             {
-                var response = await httpClient.GetAsync(BulkTestData.ExecutionUrl);
+                var response = await httpClient.GetAsync(AssetTestData.ExecutionUrl);
                 var content = await response.Content.ReadAsStringAsync();
-                var parsedData = JsonConvert.DeserializeObject<ApiExecutionStatusModel>(content);
+                var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
 
-                if (parsedData.Results != null && parsedData.Results.Count > 0)
+                if (parsedData["Results"] != null && parsedData["Results"].Count() > 0)
                 {
                     doRetry = false;
-                    isSuccess = parsedData.Results.All(x => x.Success == true);
+                    isSuccess = parsedData["Results"].All(x => x["Success"].ToString().ToLower() == "true");
                 }
                 retryCount++;
                 if (retryCount == retryMax) doRetry = false;
