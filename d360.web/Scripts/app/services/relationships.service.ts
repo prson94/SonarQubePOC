@@ -1,46 +1,51 @@
 ﻿import { Injectable } from '@angular/core';
-import { Headers, Http, Response, ResponseContentType } from '@angular/http';
-import { MessagesService } from './messages.service';
-import { BaseService } from './base.service';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { catchError, map } from 'rxjs/operators';
+import { MessagesObservableService } from './messages-observable.service';
+import { BaseObservableService } from './baseObservable.service';
 import { RelationshipType, RelationshipDetail, ObjectRelationship, RelatedItem, ObjectRelationshipCount, PossibleTechnicalRelationship, RelationshipRole } from '../models/relationship.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { DropdownOption } from '../models/dropdown.model';
 import { HierarchyArtifactsModel, HierarchyArtifactItem, HierarchyPostModel } from '../models/relations.model';
+import { Observable } from 'rxjs';
+
 
 @Injectable()
-export class RelationshipsService extends BaseService {
+export class RelationshipsService extends BaseObservableService {
 
-    constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
+    constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
-    getRelationshipTypes(): Promise<RelationshipType[]> {
+    getRelationshipTypes(): Observable<RelationshipType[]> {
         return this.http.get('api/v2/relationships/types?state=1')
-            .toPromise()
-            .then(response => <RelationshipType[]>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <RelationshipType[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getRelationshipTypesById(id: number, type: string): Promise<RelationshipType[]> {
+    getRelationshipTypesById(id: number, type: string): Observable<RelationshipType[]> {
         return this.http.get(`api/v2/relationships/types/${id}/${type}`)
-            .toPromise()
-            .then(response => <RelationshipType[]>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <RelationshipType[]> response),
+                catchError(err => this.handleError(err))
+            );
     }
 
     exportRelationshipTypeItems(relType: RelationshipType) {
-        this.http.get(`api/v2/relationships/export/${relType.Uid}`, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data, 'relationship type items'));
+        this.http.get(`api/v2/relationships/export/${relType.Uid}`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'relationship type items'));
     }
 
     exportRelationshipTypes() {        
-        this.http.get('relations/_intersectTypes/excel.xls', { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data, 'relationship types'));              
+        this.http.get('relations/_intersectTypes/excel.xls', { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'relationship types'));              
     }
 
-    downloadFile(data: Response, name: string) {
+    downloadFile(data: Blob, name: string) {
         var filename = `${name} ${new Date().toDateString()}.xlsx`;
         if (window.navigator.msSaveOrOpenBlob) {
-            window.navigator.msSaveOrOpenBlob(data.blob(), filename);
+            window.navigator.msSaveOrOpenBlob(data, filename);
         }
         else {
-            var url = window.URL.createObjectURL(data.blob());
+            var url = window.URL.createObjectURL(data);
             var anchor = document.createElement("a");
             anchor.setAttribute("style", "display:none;");
             document.body.appendChild(anchor);
@@ -50,46 +55,50 @@ export class RelationshipsService extends BaseService {
         }
     }
 
-    getRelation(id: number): Promise<RelationshipDetail> {
+    getRelation(id: number): Observable<RelationshipDetail> {
         return this.http.get(`form/IntersectType_FormData?id=${id}`)
-            .toPromise()
-            .then(response => <RelationshipDetail>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <RelationshipDetail>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getPossibleTechnicalRelations(id: number): Promise<PossibleTechnicalRelationship[]> {
+    getPossibleTechnicalRelations(id: number): Observable<PossibleTechnicalRelationship[]> {
         return this.http.get(`relations/GetPossibleRelationshipsObjectByIntersect?id=${id}`)
-            .toPromise()
-            .then(response => <PossibleTechnicalRelationship[]>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <PossibleTechnicalRelationship[]>response),
+                catchError(err=>this.handleError(err))
+            );
     }
 
-    getObjectRelations(objectType: string, objectId: number): Promise<ObjectRelationship[]> {
+    getObjectRelations(objectType: string, objectId: number): Observable<ObjectRelationship[]> {
         return this.http.get(`/api/${objectType}/${objectId}/relationshipTypes`)
-            .toPromise()
-            .then(response => <ObjectRelationship[]>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+            map(response => <ObjectRelationship[]>response),
+            catchError(err => this.handleError(err))
+                );
     }
 
-    getRelatedObjects(objectType: string, objectId: number, intersectTypeId: number): Promise<RelatedItem[]> {
+    getRelatedObjects(objectType: string, objectId: number, intersectTypeId: number): Observable<RelatedItem[]> {
         return this.http.get(`/api/RelationshipObjectsByType?type=${objectType}&id=${objectId}&intersectTypeId=${intersectTypeId}`)
-            .toPromise()
-            .then(response => <RelatedItem[]>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <RelatedItem[]>response),
+                catchError(err=>this.handleError(err))
+            );
     }
 
-    deleteRelationship(id: number): Promise<JsonResult>{
+    deleteRelationship(id: number): Observable<JsonResult>{
         return this.deleteDynamicWithResult(this.http, 'intersecttype', id);
     }
 
-    saveRelationship(relationship: RelationshipDetail): Promise<JsonResult> {
+    saveRelationship(relationship: RelationshipDetail): Observable<JsonResult> {
         if (relationship.ID == undefined || !relationship.ID) {
             return this.postDynamic(this.http, 'intersecttype', relationship);
         }
         return this.putDynamic(this.http, 'intersecttype', relationship);
     }
 
-    getRelationshipPredicates(subject: string, subjectId: number, object?: string, objectId?: number, predicateId?: number): Promise<DropdownOption[]> {
+    getRelationshipPredicates(subject: string, subjectId: number, object?: string, objectId?: number, predicateId?: number): Observable<DropdownOption[]> {
         let url = `form/IntersectType_PredicateOptions?subject=${subject}&subjectID=${subjectId}`;
         if (object != undefined)
             url = url += `&object=${object}`;
@@ -98,26 +107,29 @@ export class RelationshipsService extends BaseService {
         if (predicateId != undefined)
             url = url += `&predicateID=${predicateId}`;
         return this.http.get(url)
-            .toPromise()
-            .then(response => <DropdownOption[]>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <DropdownOption[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getCardinalityOptions(): Promise<DropdownOption[]> {
+    getCardinalityOptions(): Observable<DropdownOption[]> {
         return this.http.get('form/IntersectType_CardinalityOptions')
-            .toPromise()
-            .then(response => <DropdownOption[]>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <DropdownOption[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getSubjectOptions(): Promise<DropdownOption[]> {
+    getSubjectOptions(): Observable<DropdownOption[]> {
         return this.http.get('form/IntersectType_SubjectOptions')
-            .toPromise()
-            .then(response => <DropdownOption[]>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <DropdownOption[]>response),
+                catchError(err=> this.handleError(err))
+            );
     }
 
-    getObjectOptions(id: number, type: string, selectedId?: number, selectedType?: string, predicateId?: number): Promise<DropdownOption[]> {
+    getObjectOptions(id: number, type: string, selectedId?: number, selectedType?: string, predicateId?: number): Observable<DropdownOption[]> {
         let url = `form/IntersectType_ObjectOptions?id=${id}&type=${type}`;
         if (selectedId != undefined)
             url = url += `&side2ID=${selectedId}`;
@@ -127,31 +139,36 @@ export class RelationshipsService extends BaseService {
             url = url += `&predicateID=${predicateId}`;
 
         return this.http.get(url)
-            .toPromise()
-            .then(response => <DropdownOption[]>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+            map(response => <DropdownOption[]>response),
+            catchError(err=> this.handleError(err))
+        );
     }
 
-    getRelationshipCounts(objectType: string, objectId: number): Promise<ObjectRelationshipCount[]> {        
+    getRelationshipCounts(objectType: string, objectId: number): Observable<ObjectRelationshipCount[]> {        
         return this.http.get(`/api/${objectType}/${objectId}/relationships/counts`)
-            .toPromise()
-            .then(response => <ObjectRelationshipCount[]>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <ObjectRelationshipCount[]>response),
+                catchError(err=> this.handleError(err))
+            );
         
     }
 
-    getObjectRelationships(objectType: string, objectId: number, targetType: string, targetTypeId: number, intersectTypeID: number, includeInverse: boolean = true): Promise<any> {
+    getObjectRelationships(objectType: string, objectId: number, targetType: string, targetTypeId: number, intersectTypeID: number, includeInverse: boolean = true): Observable<any> {
         return this.http.get(`/api/${objectType}/${objectId}/relationships/${targetType}/${targetTypeId}/${intersectTypeID}?includeInverse=${includeInverse}`)
-            .toPromise()
-            .then(response => <any[]>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => response),
+                catchError(err=>this.handleError(err))
+            );
     }
 
-    getTechnicalRelationships(objectType: string, objectId: number): Promise<any> {        
+    getTechnicalRelationships(objectType: string, objectId: number): Observable<any> {        
         return this.http.get(`/api/${objectType}/${objectId}/relations`)
-            .toPromise()
-            .then(response => <any[]>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => response),
+                catchError(err=> this.handleError(err))
+            );
+
     }
 
     exportObjectRelationshipsToExcel(objectType: string, objectId: number, targetType: string, targetTypeId: number, intersectTypeID: number, queryString: string, criticalOnly?: boolean){
@@ -160,41 +177,45 @@ export class RelationshipsService extends BaseService {
         window.location.assign(`/api/export/${objectType}/${objectId}/relationships/${targetType}/${targetTypeId}/${intersectTypeID}/excel.xls?${queryString}`);        
     }
 
-    deleteRelationshipItem(id: number): Promise<any> {
+    deleteRelationshipItem(id: number): Observable<any> {
         let url = `/api/relationships/${id}`;
 
         return this.http
             .delete(url)
-            .toPromise()
-            .then(response => response)
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
     deleteHierarchyItem(id: number) {
         return this.http.delete(`relations/hierarchy/delete/${id}`)
-            .toPromise()
-            .catch(err => this.handleError(err));
+            .pipe(
+                catchError(err => this.handleError(err))
+            );
     }
     
-    postHierarchy(model: HierarchyPostModel): Promise<any> {
+    postHierarchy(model: HierarchyPostModel): Observable<any> {
         return this.http.post('relations/hierarchy/save', model)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => response),
+                catchError(err=> this.handleError(err))
+            );
     }
 
-    getRelationshipRoles(): Promise<RelationshipRole[]> {
+    getRelationshipRoles(): Observable<RelationshipRole[]> {
         return this.http.get('relations/IntersectRoles')
-            .toPromise()
-            .then(response => <RelationshipRole[]>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <RelationshipRole[]>response),
+                catchError(err=>this.handleError(err))
+            );
     }
 
-    deleteRelationshipRole(id: number): Promise<JsonResult> {
-        return this.deleteDynamicWithResult(this.http, 'relationshiprole', id);
+    deleteRelationshipRole(id: number): Observable<JsonResult> {
+        return this.deleteDynamicWithResult(this.http, 'relationshiprole', id)
     }
 
-    saveRelationshipRole(relationshipRole: RelationshipRole): Promise<JsonResult> {
+    saveRelationshipRole(relationshipRole: RelationshipRole): Observable<JsonResult> {
         if (relationshipRole.ID == undefined || !relationshipRole.ID) {
             return this.postDynamic(this.http, 'relationshiprole', relationshipRole);
         }

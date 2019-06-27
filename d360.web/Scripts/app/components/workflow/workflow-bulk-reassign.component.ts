@@ -45,7 +45,7 @@ export class WorkflowBulkReassignComponent extends BaseComponent implements OnIn
         this.field.MultiSelect = false;
 
         this.resourcesService.getResource(this.model.OriginalAssigneeResourceID)
-            .then(response => {
+            .subscribe(response => {
                 this.model.OriginalAssigneeResourceName = `${response.FirstName} ${response.LastName}`;
             });
     }

@@ -84,7 +84,7 @@ export class AssignmentsComponent extends BaseComponent implements OnInit {
                 this.counts = res.filter(item => (item.Total > 0));
                 if (loadResource)
                     this.resourcesService.getResource(this.resourceId)
-                        .then(r => {
+                        .subscribe(r => {
                             this.resource = r;
                             this.isLoading = false;
                             this.isLoaded = true;
