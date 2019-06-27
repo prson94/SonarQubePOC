@@ -215,7 +215,7 @@ declare @count int = (select count(*) from FieldType where Name ='Description' a
 if @count = 0
 BEGIN
 	INSERT [dbo].[FieldType] ([Name], [FriendlyName], [Description], [DisplayDescription], [FormDescription], [Type], [LookupObjectType], [LookupObjectID], [LookupDisplayFormat], [MinimumLength], [MaximumLength], [Length], [Pattern], [Object], [ObjectID], [SortOrder], [IsRequired], [IsListable], [ValidationDescription], [Category], [IsDisplayable], [IsEditable], [DefaultValue], [DefaultFormattedValue], [AllowAllValue], [AllowAllLabel], [IsPrimaryFilter], [LookupEditFormat], [IsPartOfKey], [ColumnOrder], [ColumnWidth], [LookupObjectFieldTypeID], [AllowMultipleValues], [AssetTypeID], [ParentFieldTypeID], [UpdatedBy], [Increment], [Precision], [FilterPredicateID], [FilterPredicateDirection], [FilterFieldTypeID], [ShowIfEmpty], [Definition]) 
-	VALUES (N'Description', N'Description', NULL, NULL, NULL, N'Text', NULL, NULL, NULL, NULL, NULL, NULL, NULL, N'ReferenceItemType', @objectID, 0, 0, 1, NULL, NULL, 1, 1, NULL, NULL, 0, NULL, 0, NULL, 0, 1, NULL, NULL, 0, @assetTypeId, 0, 0, NULL, NULL, NULL, NULL, NULL, 0, N'{}')
+	VALUES (N'Description', N'Description', NULL, NULL, NULL, N'Html', NULL, NULL, NULL, NULL, NULL, NULL, NULL, N'ReferenceItemType', @objectID, 0, 0, 1, NULL, NULL, 1, 1, NULL, NULL, 0, NULL, 0, NULL, 0, 1, NULL, NULL, 0, @assetTypeId, 0, 0, NULL, NULL, NULL, NULL, NULL, 0, N'{}')
 	
 	declare @fieldTypeID int = (select ID from FieldType where Name='Description' and Object ='ReferenceItemType' and ObjectID=@objectID)
 	
