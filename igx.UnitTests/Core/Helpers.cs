@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,6 +20,33 @@ namespace igx.UnitTests.Core
         public static string NormaliseString(string s)
         {
             return Regex.Replace(s, @"\s+", " ");
+        }
+
+        public static bool IsTypeOf(Type type, JObject jObject)
+        {
+            var props = type.GetProperties();
+
+            foreach (var item in jObject)
+            {
+                if (!props.Any(x => x.Name == item.Key)) return false;
+            }
+
+            return true;
+        }
+
+        public static bool IsTypeOf(Type type, JArray jArray)
+        {
+            var props = type.GetProperties();
+
+            foreach (JObject jObject in jArray)
+            {
+                foreach (var item in jObject)
+                {
+                    if (!props.Any(x => x.Name == item.Key)) return false;
+                }
+            }
+
+            return true;
         }
     }
 }

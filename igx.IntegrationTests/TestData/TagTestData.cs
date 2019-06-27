@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,18 +9,21 @@ namespace igx.IntegrationTests.TestData
 {
     public class TagTestData
     {
-        private static string _testJSON = string.Empty;
-        public static string TagJSON { get {
+        private static JObject _testJSON = null;
+        public static JObject TagJSON { get {
 
-                if (_testJSON == string.Empty)
+                if (_testJSON == null)
                 {
-                    _testJSON = @"{
-                              ""uid"": ""00000000-0000-0000-0000-000000000000"",
-                              ""Value"": ""int_test_tag" + Guid.NewGuid() + @""",
-                              ""CreatedByUid"": ""00000000-0000-0000-0000-000000000000"",
-                              ""CreatedOn"": ""2019-06-21T13:11:58.208Z"",
-                              ""UpdatedByUid"": ""00000000-0000-0000-0000-000000000000"",
-                              ""UpdatedOn"": ""2019-06-21T13:11:58.208Z""}";
+                    JObject @object = new JObject();
+                    @object.Add(new JProperty("uid", "00000000-0000-0000-0000-000000000000"));
+                    @object.Add(new JProperty("Value", "int_test_tag" + Guid.NewGuid()));
+                    @object.Add(new JProperty("CreatedByUid", "00000000-0000-0000-0000-000000000000"));
+                    @object.Add(new JProperty("CreatedOn", "2019-06-21T13:11:58.208Z"));
+                    @object.Add(new JProperty("UpdatedByUid", "00000000-0000-0000-0000-000000000000"));
+                    @object.Add(new JProperty("UpdatedOn", "2019-06-21T13:11:58.208Z"));
+
+
+                    _testJSON = @object;
                 }
 
                 return _testJSON;
