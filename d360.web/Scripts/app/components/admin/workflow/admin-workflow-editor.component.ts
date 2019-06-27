@@ -154,29 +154,27 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
             )))
             .pipe(concatMap(() => this.workflowService.getWorkflowObjectTypes(this.model.Event.ChangeType)
                 .pipe(
-                    map(r => this.workflowObjectTypes = [this.defaultWorkflowObject].concat(r)))))
-            .pipe(concatMap(() => of(() => {
-                if (this.hideShoppingCart) {
-                    this.workflowObjectTypes = this.workflowObjectTypes.filter(w => w.type != 'ShoppingCartType');
-                }
-            })))
-            .pipe(concatMap(() => of(() => {
-                this.model.Event.IssueObject = '';
-                if (this.objectType == 'IssueType') {
-                    this.issueObjectTypes = this.workflowObjectTypes.slice().filter(w => w.type != 'IssueType');
-
-                    let objectIndex = this.conditions.findIndex(c => c['@ContextualFieldID'] == 'IssueObject');
-                    let objectIdIndex = this.conditions.findIndex(c => c['@ContextualFieldID'] == 'IssueObjectID');
-
-                    if (objectIndex > -1 && objectIdIndex > -1) {
-                        this.model.Event.IssueObject = this.conditions[objectIndex]['@Value'] + '|' + this.conditions[objectIdIndex]['@Value'];
+                map(r => {
+                    this.workflowObjectTypes = [this.defaultWorkflowObject].concat(r);
+                    if (this.hideShoppingCart) {
+                        this.workflowObjectTypes = this.workflowObjectTypes.filter(w => w.type != 'ShoppingCartType');
                     }
 
-                }
-            })))
+                    this.model.Event.IssueObject = '';
+                    if (this.objectType == 'IssueType') {
+                        this.issueObjectTypes = this.workflowObjectTypes.slice().filter(w => w.type != 'IssueType');
+
+                        let objectIndex = this.conditions.findIndex(c => c['@ContextualFieldID'] == 'IssueObject');
+                        let objectIdIndex = this.conditions.findIndex(c => c['@ContextualFieldID'] == 'IssueObjectID');
+
+                        if (objectIndex > -1 && objectIdIndex > -1) {
+                            this.model.Event.IssueObject = this.conditions[objectIndex]['@Value'] + '|' + this.conditions[objectIdIndex]['@Value'];
+                        }
+                       
+                    }
+                }))))
             .pipe(concatMap(() => of(() => {
                 this.loadResponsibilities();
-               
             })))
             .pipe(
             finalize(() => {
