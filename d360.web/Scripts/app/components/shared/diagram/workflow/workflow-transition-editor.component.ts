@@ -55,7 +55,7 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
     ngOnInit() {
         this.originalTransition = _.cloneDeep(this.transition);
         this.workflowService.getTransitionTypes()
-            .then(r => {
+            .subscribe(r => {
                 this.transitionTypes = r;
             });
 

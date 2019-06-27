@@ -80,7 +80,7 @@ export class AssignmentsComponent extends BaseComponent implements OnInit {
         let loadResource = (this.resourceId != null && this.resourceId >= 0);
 
         this.workflowService.getMyCounts(this.daysToLookBack, (loadResource ? this.resourceId : null))
-            .then(res => {
+            .subscribe(res => {
                 this.counts = res.filter(item => (item.Total > 0));
                 if (loadResource)
                     this.resourcesService.getResource(this.resourceId)

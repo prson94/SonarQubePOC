@@ -12,6 +12,8 @@ import { WorkflowService } from '../../../../services/workflow.service';
 import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
 
 import * as go from 'gojs';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Component({
     selector: 'd3s-workflow-condition-editor',
@@ -106,34 +108,36 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
     load() {
         this.isLoading = true;
         this.loadObjectFields()
+            .pipe(
             //.then(() => this.loadFormFields())
-            .then(() => this.loadContextualFields())
-            .then(() => {
-                this.fieldList = [];
+            map(() => this.loadContextualFields()),
+            map(() => {
+                    this.fieldList = [];
 
-                this.fields.forEach(f => {
-                    this.fieldList.push({
-                        value: 'FieldType|' + f.ID.toString(),
-                        label: f.FriendlyName
-                    });
-                });
-
-                if (this.formFields.length > 0) {
-                    this.formFields.forEach(f => {
-                        if (f['@type'] == 'relationshipType')
-                            return;
+                    this.fields.forEach(f => {
                         this.fieldList.push({
-                            value: 'FormInput|' + f['@stepId'] + '|' + f['@id'],
-                            label: 'Form :: ' + f['@label']
+                            value: 'FieldType|' + f.ID.toString(),
+                            label: f.FriendlyName
                         });
                     });
-                }
 
-                if (this.contextualFields.length > 0) {
-                    this.fieldList = this.fieldList.concat(this.contextualFields);
-                }
+                    if (this.formFields.length > 0) {
+                        this.formFields.forEach(f => {
+                            if (f['@type'] == 'relationshipType')
+                                return;
+                            this.fieldList.push({
+                                value: 'FormInput|' + f['@stepId'] + '|' + f['@id'],
+                                label: 'Form :: ' + f['@label']
+                            });
+                        });
+                    }
 
-            });
+                    if (this.contextualFields.length > 0) {
+                        this.fieldList = this.fieldList.concat(this.contextualFields);
+                    }
+
+                })
+            ).subscribe();
        
     }
 
@@ -145,12 +149,14 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
         this.onClose.emit();
     }
 
-    loadObjectFields(): Promise<any> {
+    loadObjectFields(): Observable<any> {
         return this.workflowService.getWorkflowFieldTypes(this.objectId, this.objectType, true)
-            .then(r => {
-                this.fields = [];
-                this.fields = r;
-            });
+            .pipe(
+                map(r => {
+                    this.fields = [];
+                    this.fields = r;
+                })
+            );
     }
 
     loadFormFields() {
@@ -202,8 +208,8 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
 
             if (this.condition['@ValueType'] == 'L') {
                 this.workflowService.getLookupList(this.condition['@FieldTypeID'])
-                    .then(r => {
-                        //console.log(r);
+                    .subscribe(r => {
+                        console.log(r);
                         this.lookups = r;
                     });
             }
@@ -226,7 +232,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
                             //console.log('formField', formField, fieldId);
                             if (fieldId != null && fieldId > 0) {
                                 this.workflowService.getReferenceItemsForField(fieldId)
-                                    .then(r => {
+                                    .subscribe(r => {
                                         this.lookups = [];
                                         r.forEach(i => {
                                             this.lookups.push({
@@ -368,7 +374,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
 
     search(e: any) {
         this.workflowService.getIssueObjectSuggestions(e.query)
-            .then(r => {
+            .subscribe(r => {
                 this.suggestions = r;
             });
     }

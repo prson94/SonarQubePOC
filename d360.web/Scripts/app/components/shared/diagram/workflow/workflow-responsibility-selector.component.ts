@@ -114,7 +114,7 @@ export class WorkflowResponsibilitySelectorComponent implements OnInit {
         this.isLoading = true;
 
         if (this.intersectType == null)
-            promises.push(this.workflowService.getIntersectType(this.objectId).then(r => {
+            promises.push(this.workflowService.getIntersectType(this.objectId).subscribe(r => {
                 if (r == null || r.length < 1) {
                     this.intersectType = null;
                 } else {

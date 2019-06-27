@@ -1,5 +1,5 @@
 
-import { debounceTime } from 'rxjs/operators';
+import { debounceTime, catchError } from 'rxjs/operators';
 import { Input, Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Location } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -7,6 +7,7 @@ import { NgForm, FormGroup, FormBuilder, Validators, FormControl } from '@angula
 import { Title } from '@angular/platform-browser';
 import { SubscriptionLike as ISubscription } from 'rxjs';
 import { close } from 'fs';
+import { map } from 'rxjs/operators';
 
 import { BaseComponent } from '../shared/base.component';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
@@ -139,7 +140,8 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     private load() {
         this.isLoading = true;
         this.workflowService.getWorkflowForm(this.workflowId, this.workflowItemStepId)
-            .then(res => {
+            .pipe(
+            map(res => {
                 this.title = res.Title;
                 this.description = res.Description;
                 this.fields = res.Fields;
@@ -163,17 +165,17 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
                     this.loadResources();
                 }
                 this.hasObjectReassign = (this.reassignAvailableTypes.length > 0);
-            }).then(() => {
+            }),map(() => {
                 window.setTimeout(() => {
                     this.setValidators();
                 }, 500);
-            })
-            .catch(res => {
+            })).subscribe(() => { },error => {
                 this.isLoading = false;
                 this.isCompleted = false;
                 this.isItemDeleted = true;
                 this.title = "Cannot find the requested item.";
-            });
+            })
+           
     }
 
     private close() {
@@ -188,14 +190,15 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     private reassign() {
         this.isLoading = true;
         if (this.reassignType == 'object') {
-            this.workflowService.reassignObject(this.workflowItemId, this.workflowId, this.selectedReassignObjectId, this.selectedReassignObjectType, this.workflowItemStepId).then(result => {
+            this.workflowService.reassignObject(this.workflowItemId, this.workflowId, this.selectedReassignObjectId, this.selectedReassignObjectType, this.workflowItemStepId)
+            .subscribe(result => {
                 this.showMessageForResult(this.messagesService, result, 'Successfully Assigned');
                 this.isLoading = false;
                 this.isCompleted = true;
             });
         }
         else if (this.reassignType == 'resource') {
-            this.workflowService.reassignUser(this.workflowItemStepId, this.selectedReassignResource).then(result => {
+            this.workflowService.reassignUser(this.workflowItemStepId, this.selectedReassignResource).subscribe(result => {
                 this.showMessageForResult(this.messagesService, result, 'Successfully Assigned');
                 this.isLoading = false;
                 this.isCompleted = true;

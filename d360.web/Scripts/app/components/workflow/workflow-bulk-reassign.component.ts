@@ -69,7 +69,7 @@ export class WorkflowBulkReassignComponent extends BaseComponent implements OnIn
     save() {
         this.isLoading = true;
         this.workflowService.postWorkflowBulkReassign(this.model)
-            .then(response => {
+            .subscribe(response => {
                 this.isLoading = false;
                 if (response.type != null && response.type == 'success') {
                     this.showMessageForResult(this.messagesService, response);

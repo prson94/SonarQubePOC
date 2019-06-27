@@ -80,7 +80,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         });
 
         this.workflowService.getEmailTaskRecipientType()
-            .then(r => {
+            .subscribe(r => {
                 r.forEach(e => {
                     if (e.ID < 1)
                         return;
@@ -102,7 +102,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
 
         } else if (this.step.activityType == WorkflowActivityType.Procedure) {
             this.workflowService.getWorkflowProcedures()
-                .then(r => {
+                .subscribe(r => {
                     this.procedures = r;
                 });
         } else if (this.step.activityType == WorkflowActivityType.FieldChange) {
