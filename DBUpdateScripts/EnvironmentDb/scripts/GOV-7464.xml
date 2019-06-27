@@ -12,7 +12,7 @@
             splitStatements="true"
             stripComments="true">
 		<![CDATA[
-			ALTER   PROCEDURE [dbo].[GetSiteNavigation]
+	ALTER   PROCEDURE [dbo].[GetSiteNavigation]
 (
 	@ResourceID int = 0
 )
@@ -219,6 +219,9 @@ WHERE n.Name = '#Community' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
 				0 as feature,
 				null AS items	
 		FROM	Report R
+		left join ReportResponsibility rs on rs.ReportID = R.ID
+		left join ResponsibilityDetail rd on rd.ResponsibilityTypeID = rs.ResponsibilityTypeID
+		Where 15 = rd.ResourceID or rd.ResourceID is null
 		Order By R.name
 		FOR XML PATH('nav'), TYPE
 		) AS Items
@@ -239,7 +242,7 @@ WHERE n.Name = '#Community' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
 	where ParentID IS NULL and Name not like '#%' AND dbo.HasSiteNavPermission(s.ID, @ResourceID) = 1
 
 	order by sortorder
-END			
+END					
 		]]>
     </sql>
 	<rollback>
@@ -636,16 +639,21 @@ END
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="true">
-		<![CDATA[
-		INSERT INTO [dbo].[SiteNav] ([ParentId],[Name],[Route],[SortOrder],[ObjectID],[Object],[Icon],[Title],[ImageIconUrl])
-  VALUES (null,'#Dashboards',null,(SELECT MAX([SortOrder]) FROM [dbo].[SiteNav]) , null,null,'fa-tachometer', 'Dashboards',null)
-		]]>
+<![CDATA[
+		IF NOT EXISTS (SELECT 1 FROM [dbo].[SiteNav] Where Name = '#Dashboards')
+		BEGIN
+			INSERT INTO [dbo].[SiteNav] ([ParentId],[Name],[Route],[SortOrder],[ObjectID],[Object],[Icon],[Title],[ImageIconUrl])
+			VALUES (null,'#Dashboards',null,(SELECT MAX([SortOrder]) FROM [dbo].[SiteNav] Where Name like '#%') , null,null,'fa-tachometer', 'Dashboards',null)
+		END
+]]>
     </sql>
 	<rollback>
-		<![CDATA[
-		INSERT INTO [dbo].[SiteNav] ([ParentId],[Name],[Route],[SortOrder],[ObjectID],[Object],[Icon],[Title],[ImageIconUrl])
-  VALUES (null,'#Dashboards',null,(SELECT MAX([SortOrder]) FROM [dbo].[SiteNav]) , null,null,'fa-tachometer', 'Dashboards',null)
-		]]>
+<![CDATA[
+		IF EXISTS (SELECT 1 FROM [dbo].[SiteNav] Where Name = '#Dashboards')
+		BEGIN 
+			DELETE FROM [dbo].[SiteNav] Where Name = '#Dashboards'
+		END
+]]>
 	</rollback>
   </changeSet>
   </databaseChangeLog>

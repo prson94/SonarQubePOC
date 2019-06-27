@@ -182,7 +182,7 @@ export class BaseComponent {
                         'Dashboards',
                         'dashboards',
                         ['fa-tachometer'],
-                        `/sidebar/dashboard${this.objectContextUrl()}`
+                        `/dashboard${this.objectContextUrl()}`
                     )
                 );
             }
