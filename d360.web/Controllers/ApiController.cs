@@ -382,54 +382,59 @@ namespace d360.web.Controllers
                         var fieldTypeID = ft.LookupObjectFieldTypeID.Value;
                         var sType = type.ToString();
                         var intersect = Company.Filter<Intersect>(i => i.IntersectTypeID == intersectTypeID && ((i.Subject == sType && i.SubjectID == id) || (i.Object == sType && i.ObjectID == id))).FirstOrDefault();
+
+                        string fieldValue = null;
+
                         if (intersect != null)
                         {
                             var isSubject = (intersect.Subject == sType && intersect.SubjectID == id);
                             var obj = isSubject ? intersect.Object : intersect.Subject;
                             var objID = isSubject ? intersect.ObjectID : intersect.SubjectID;
+                            
+                            var rfld = Company.Query<string>(@"
+declare @fieldValue nvarchar(max) = null,
+		@type varchar(50) = '',
+		@definition nvarchar(2500) = '[]'
+select @type = [Type], @definition = [Definition] from FieldType where ID = @fieldTypeID
 
-                            var rfld = Company.Filter<Field>(i => i.FieldTypeID == fieldTypeID && i.ObjectType == obj && i.ObjectID == objID).SingleOrDefault();
+if @type = 'JsonElement'
+begin
+	select	@fieldValue = P.Value
+	from	openjson(@definition) with (FieldTypeID int '$.FieldTypeID', DataType varchar(50) '$.DataType', [Path] varchar(250) '$.Path') D
+			left join Field F on F.FieldTypeID = D.FieldTypeID and [ObjectType] = @obj and ObjectID = @objID
+			left join FieldJsonProperty P on P.FieldID = F.ID and P.[Path] = D.[Path]
+end
+else
+begin
+	select	@fieldValue = FormattedValue
+	from	FieldDetail
+	where	FieldTypeID = @fieldTypeID and [Object] = @obj and ObjectID = @objID
+end
+select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
 
                             if (rfld != null)
                             {
-                                var ro = new ReadOnlyField
-                                {
-                                    Name = ft.FriendlyName,
-                                    Value = rfld.FormattedValue,
-                                    FieldDescription = ft.DisplayDescription,
-                                    FieldName = ft.Name,
-                                    DataType = "Html",
-                                    ShowIfEmpty = ft.ShowIfEmpty
-                                };
-
-                                list.Add(new DetailReadOnlyRowModel
-                                {
-                                    columns = 1,
-                                    FirstColumnFields = new List<ReadOnlyField> { ro },
-                                    Category = ft.Category
-                                });
+                                fieldValue = rfld;
                             }
                         }
-                        else if (ft.ShowIfEmpty)
-                        {
-                            var ro = new ReadOnlyField
-                            {
-                                Name = ft.FriendlyName,
-                                Value = "",
-                                FieldDescription = ft.DisplayDescription,
-                                FieldName = ft.Name,
-                                Values = null,
-                                DataType = !string.IsNullOrEmpty(ft.Type) ? ft.Type : "",
-                                ShowIfEmpty = ft.ShowIfEmpty
-                            };
 
-                            list.Add(new DetailReadOnlyRowModel
-                            {
-                                columns = 1,
-                                FirstColumnFields = new List<ReadOnlyField> { ro },
-                                Category = ft.Category
-                            });
-                        }
+                        var ro = new ReadOnlyField
+                        {
+                            Name = ft.FriendlyName,
+                            Value = fieldValue,
+                            FieldDescription = ft.DisplayDescription,
+                            FieldName = ft.Name,
+                            DataType = "Html",
+                            ShowIfEmpty = ft.ShowIfEmpty
+                        };
+
+                        list.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField> { ro },
+                            Category = ft.Category
+                        });
+
                     }
                     else if (ft.Type == DataType.RefListRelationship.ToString())
                     {
@@ -520,7 +525,7 @@ namespace d360.web.Controllers
             }
             return list;
         }
-        
+
         #endregion
 
         #region Grid Definition Methods
@@ -532,7 +537,7 @@ namespace d360.web.Controllers
             else
                 return 0;
         }
-        
+
         GridColumn getGridColumnForColumn(FieldType item, decimal dynamicFieldWidth, bool serverPaged, bool loadLookupList = true, bool useNameAsDataField = false)
         {
             string cellsFormat = "";
@@ -599,7 +604,7 @@ namespace d360.web.Controllers
                                 .Select(o => o.Text + "!~!" + o.Value)
                                 .ToList();
                         }
-                        else 
+                        else
                         {
                             filterItems = Company
                                 .Filter<FieldLookupValue>(o => o.FieldTypeID == item.ID &&
@@ -777,7 +782,7 @@ namespace d360.web.Controllers
             var groups = new List<GridColumnGroup>();
             var topLevelFilterFields = new List<GridFilterColumn>();
             decimal dynamicFieldWidth = 0;
-            int remainingWidth = 0;            
+            int remainingWidth = 0;
             ObjectDetail detail = null;
             bool isReadOnly = false;
 
@@ -785,7 +790,7 @@ namespace d360.web.Controllers
             {
                 case SystemObjects.ArtifactType:
                     #region
-                                        
+
                     var hasParentType = Company.TypeHasParent(SystemObjects.ArtifactType, id);
 
                     parseDynamicColumnsAndFields(items, columns, fields, groups, 0, true);
@@ -803,7 +808,7 @@ namespace d360.web.Controllers
                             columnWidth = 200
                         });
                     }
-                                       
+
 
                     fields.Add(new GridField { name = "AssetID", type = "number" });
                     fields.Add(new GridField { name = "ID", type = "number" });
@@ -866,7 +871,7 @@ namespace d360.web.Controllers
 
                     var intersectType = Company.GetById<IntersectType>(id);
 
-                    if(intersectType != null && intersectType.Predicate != null)
+                    if (intersectType != null && intersectType.Predicate != null)
                     {
                         isReadOnly = !intersectType.Predicate.Type.AsInfoModel().AllowEditFromRelationshipEditor;
                     }
@@ -886,8 +891,8 @@ namespace d360.web.Controllers
                             new GridColumn { text = "Name", datafield = "Name", columntype = GridColumn.COLUMN_TYPE_STRING, filtertype = GridColumn.FILTER_TYPE_STRING }
                         );
                     }
-                    
-                    
+
+
                     remainingWidth = 80;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
@@ -907,7 +912,7 @@ namespace d360.web.Controllers
                 #endregion
                 case SystemObjects.LookupType:
                     #region
-                    
+
                     remainingWidth = 90;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
@@ -919,7 +924,7 @@ namespace d360.web.Controllers
                 #endregion
                 case SystemObjects.PolicyType:
                     #region
-                    
+
                     remainingWidth = 45;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
@@ -933,7 +938,7 @@ namespace d360.web.Controllers
                 #endregion                                
                 case SystemObjects.ReferenceItemType:
                     #region
-                    
+
                     remainingWidth = 85;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
@@ -944,7 +949,7 @@ namespace d360.web.Controllers
                     //add the parent columns
                     while (parentRefType != null && loopCount < 20)
                     {
-                        columns.Insert(0,new GridColumn { text = parentRefType.Name, datafield = $"Rel{parentRefType.ObjectID}" });
+                        columns.Insert(0, new GridColumn { text = parentRefType.Name, datafield = $"Rel{parentRefType.ObjectID}" });
 
                         parentRefType = Company.GetParentType(parentRefType.ObjectID, SystemObjects.ReferenceItemType);
                         loopCount++;
@@ -960,7 +965,7 @@ namespace d360.web.Controllers
                 #endregion
                 case SystemObjects.Rule:
                     #region
-                    
+
                     remainingWidth = 55;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
@@ -998,7 +1003,7 @@ namespace d360.web.Controllers
                 #endregion  
                 case SystemObjects.FusionAttributeType:
                     #region
-                    
+
                     remainingWidth = 75;
 
                     detail = Company.GetObjectDetail(type.ToString(), id);
@@ -1057,7 +1062,7 @@ where   h.ID <> @t order by h.[Level] desc;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
                     filterColumns.Add(new GridFilterColumn { text = "ID", datafield = "ID", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
-                    filterColumns.Add(new GridFilterColumn { text = detail.Name, datafield = "Name", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });                    
+                    filterColumns.Add(new GridFilterColumn { text = detail.Name, datafield = "Name", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
                     columns.Add(new GridColumn { text = detail.Name, datafield = "Name", filteritems = new List<string>() });
                     fields.Add(new GridField { name = "AssetID", type = "number" });
                     fields.Add(new GridField { name = "ID", type = "number" });
@@ -1066,7 +1071,7 @@ where   h.ID <> @t order by h.[Level] desc;
                     if (Request.GetQueryString("target") == "DataProfile")
                     {
                         filterColumns.Add(new GridFilterColumn { text = "Row Count", datafield = "RowCounts", filtertype = GridColumn.FILTER_TYPE_NUMBER, columntype = GridColumn.COLUMN_TYPE_NUMBER });
-                        filterColumns.Add(new GridFilterColumn { text = "Uniqueness", datafield = "Uniqueness", filtertype = GridColumn.FILTER_TYPE_NUMBER, columntype = GridColumn.COLUMN_TYPE_NUMBER});
+                        filterColumns.Add(new GridFilterColumn { text = "Uniqueness", datafield = "Uniqueness", filtertype = GridColumn.FILTER_TYPE_NUMBER, columntype = GridColumn.COLUMN_TYPE_NUMBER });
                         filterColumns.Add(new GridFilterColumn { text = "Unique Count", datafield = "UniqueCount", filtertype = GridColumn.FILTER_TYPE_NUMBER, columntype = GridColumn.COLUMN_TYPE_NUMBER });
                         filterColumns.Add(new GridFilterColumn { text = "Completeness", datafield = "Completeness", filtertype = GridColumn.FILTER_TYPE_NUMBER, columntype = GridColumn.COLUMN_TYPE_NUMBER });
                         filterColumns.Add(new GridFilterColumn { text = "Null Count", datafield = "NullCount", filtertype = GridColumn.FILTER_TYPE_NUMBER, columntype = GridColumn.COLUMN_TYPE_NUMBER });
@@ -1129,7 +1134,7 @@ where   h.ID <> @t order by h.[Level] desc;
                 #endregion
                 case SystemObjects.FusionQueryAttributeType:
                     #region
-                    
+
                     remainingWidth = 90;
 
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
@@ -1153,7 +1158,7 @@ where   h.ID <> @t order by h.[Level] desc;
                 #endregion
                 case SystemObjects.FusionType:
                     #region
-                    
+
                     remainingWidth = 61;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
@@ -1171,7 +1176,7 @@ where   h.ID <> @t order by h.[Level] desc;
                 #endregion
                 case SystemObjects.ResourceType:
                     #region
-                    
+
                     remainingWidth = 27;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
@@ -1181,10 +1186,16 @@ where   h.ID <> @t order by h.[Level] desc;
                     parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth);
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.LastLoggedInOn_Name, datafield = "LastLoggedInOn", filtertype = GridColumn.FILTER_TYPE_RANGE, cellsformat = "F" });
                     columns.Add(new GridColumn { text = "Administrator?", datafield = "IsAdministrator", columntype = GridColumn.COLUMN_TYPE_CHECKBOX, filtertype = GridColumn.FILTER_TYPE_CHECKBOX });
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Status_Name, datafield = "State", filtertype = GridColumn.FILTER_TYPE_CHECKEDLIST, filteritems = new List<string>() {
+                    columns.Add(new GridColumn
+                    {
+                        text = d360.core.resources.Fields.Status_Name,
+                        datafield = "State",
+                        filtertype = GridColumn.FILTER_TYPE_CHECKEDLIST,
+                        filteritems = new List<string>() {
                         CompanyResourceState.Active.ToString(),
                         CompanyResourceState.Inactive.ToString()
-                    } });
+                    }
+                    });
 
                     fields.Add(new GridField { name = "IsAdministrator", type = "bool" });
                     fields.Add(new GridField { name = "ID", type = "number" });
@@ -1214,7 +1225,7 @@ where   h.ID <> @t order by h.[Level] desc;
                     break;
                     #endregion
             }
-            
+
             return Request.CreateResponse(HttpStatusCode.OK, new
             {
                 Title = (detail != null) ? detail.PluralizedName : "Child Items",
@@ -1230,7 +1241,7 @@ where   h.ID <> @t order by h.[Level] desc;
             });
         }
 
-        
+
         [HttpGet, Route("{type}/{id:int}/grid/definition/parentValues")]
         public async Task<HttpResponseMessage> GetGridParentFilterItems(string type, int id)
         {
@@ -1238,7 +1249,7 @@ where   h.ID <> @t order by h.[Level] desc;
             {
                 var parentType = Company.GetParentType(id, SystemObjects.ArtifactType);
 
-                if(parentType == null) return Request.CreateErrorResponse(HttpStatusCode.NotFound, new Exception("parent"));
+                if (parentType == null) return Request.CreateErrorResponse(HttpStatusCode.NotFound, new Exception("parent"));
 
                 var res = await Company.QueryAsync<string>("select ADV.DisplayValue from AssetDisplayValue ADV inner join Asset A on (A.ID = ADV.AssetID) inner join AssetType ATT on (A.AssetTypeID = ATT.ID) where ATT.[Object] = 'ArtifactType' and ATT.[ObjectID] = @objID order by 1", new { objID = parentType.ObjectID });
 
@@ -1262,7 +1273,6 @@ where   h.ID <> @t order by h.[Level] desc;
         #endregion
 
         #region Navigation
-
 
         [Route("authenticationModel")]
         public HttpResponseMessage GetAuthenticationModel()
@@ -2992,11 +3002,9 @@ order by    rnk, [Name]";
                 return "";
             };
 
-
             var multiFieldReferencePosition = 1;
             fields.ForEach(i =>
             {
-
                 FieldType ft = (i.FieldTypeID > 0) ? fieldTypes.SingleOrDefault(o => o.ID == i.FieldTypeID) : null;
                 if (i.FieldTypeName.Contains("."))
                     i.FieldTypeName = i.FieldTypeName.Replace('.', '~');
@@ -3007,6 +3015,7 @@ order by    rnk, [Name]";
                 if (i.FieldTypeID > 0 && ((i.Object == "IntersectType" && i.ObjectID == join.IntersectTypeID) || (join.Object == i.Object && join.ObjectID == i.ObjectID)))
                 {
                     #region IF FieldTypeID has value
+
                     if (i.FieldTypeName.StartsWith("Related Item~")) //special case, these records use FieldTypeID to store an IntersectTypeID and there can be overlap
                         ft = null;
                     else
@@ -3019,106 +3028,138 @@ order by    rnk, [Name]";
                         var tbPrefix = $"F{pos}_{multiFieldReferencePosition}";
                         var tbtPrefix = $"FT{pos}_{multiFieldReferencePosition}";
 
-                        // Determine the join syntax for the eventual query.
-                        join.JoinStatement += $" inner join FieldType {tbtPrefix} on {tbtPrefix}.ID = {i.FieldTypeID} ";
-                        if ((i.Object == "IntersectType" && i.ObjectID == join.IntersectTypeID) || i.FieldTypeName.StartsWith("Relation~"))
-                            join.JoinStatement += $" {joinType} join Field {tbPrefix} on {tbPrefix}.FieldTypeID = {i.FieldTypeID} and {tbPrefix}.ObjectType = 'Intersect' and {tbPrefix}.ObjectID = {intersectIDColumn}";
-                        else if (join.Object == i.Object && join.ObjectID == i.ObjectID)
-                            join.JoinStatement += $" {joinType} join Field {tbPrefix} on {tbPrefix}.FieldTypeID = {i.FieldTypeID} and {tbPrefix}.ObjectType = {objColumn} and {tbPrefix}.ObjectID = {objIDColumn}";
+                        var joinIsIntersect = ((i.Object == "IntersectType" && i.ObjectID == join.IntersectTypeID) || i.FieldTypeName.StartsWith("Relation~"));
+                        var joinObj = joinIsIntersect ? "'Intersect'" : objColumn;
+                        var joinCol = joinIsIntersect ? intersectIDColumn : objIDColumn;
 
-                        //Create the column/field to display the visible column cell.
-                        var fc = new ComplexColumnModel
+                        if (ft.Type == "JsonElement")
                         {
-                            DisplayColumn = (ft.Type == "Boolean") ?
- $@"case 
-    when {tbtPrefix}.AllowAllValue = 1 and {tbPrefix}.Value = '0' then lower({tbtPrefix}.AllowAllLabel) 
-    when {tbPrefix}.Value is not null then lower({tbPrefix}.FormattedValue)
-    when {tbtPrefix}.DefaultValue is not null then lower({tbtPrefix}.DefaultFormattedValue) 
-    else '' 
-end" :
- $@"case 
-    when {tbtPrefix}.AllowAllValue = 1 and {tbPrefix}.Value = '0' then {tbtPrefix}.AllowAllLabel 
-    when {tbPrefix}.Value is not null then {tbPrefix}.FormattedValue 
-    when {tbtPrefix}.DefaultValue is not null then {tbtPrefix}.DefaultFormattedValue 
-    else '' 
-end",
-                            text = i.OverrideDisplayName ?? ft.FriendlyName,
-                            datafield = $"{dataField}",
-                            OutputColumn = true,
-                            Width = i.Width
-                        };
+                            var jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(ft.Definition);
 
-                        if (i.SortOrder > 0)
-                        {
-                            var columnValue = getFieldTypeColumnString(ft.Type, ft.Type == "Link" ? $"{tbPrefix}.Value" : fc.DisplayColumn);
-                            fc.SortColumn = columnValue == fc.DisplayColumn ? "" : columnValue;
+                            join.JoinStatement += $" left join Field {tbPrefix} on {tbPrefix}.FieldTypeID = {jsonElementDefinition.FieldTypeID} and {tbPrefix}.ObjectType = {joinObj} and {tbPrefix}.ObjectID = {joinCol}";
+                            join.JoinStatement += $" left join FieldJsonProperty {tbPrefix}_FJP on {tbPrefix}_FJP.FieldID = {tbPrefix}.ID and {tbPrefix}_FJP.[Path] = '{jsonElementDefinition.Path.CleanForSql()}'"; //@jsonPath{ft.ID}
+                            //dbArgs.Add($"@jsonPath{f.ID}", jsonElementDefinition.Path);
+
+                            if (jsonElementDefinition.DataType == "nvarchar") jsonElementDefinition.DataType += "(max)";
+                            var fc = new ComplexColumnModel
+                            {
+                                DisplayColumn = $"{tbPrefix}_FJP.[Value]",
+                                text = i.OverrideDisplayName ?? ft.FriendlyName,
+                                datafield = $"{dataField}",
+                                OutputColumn = true,
+                                Width = i.Width,
+                                datafieldtype = jsonElementDefinition.DataType.Contains("varchar") ? "text" : jsonElementDefinition.DataType
+                            };
+
+                            //Add here, only after you determine if this should be a link ABOVE.
+                            columnModels.Add(fc);
                         }
-
-                        setColumnTypeInfo(ft, i, fc);
-
-
-                        if (ft.LookupObjectType == "Lookup" || ft.LookupObjectType == "ReferenceItem")
+                        else
                         {
-                            var context = "Preview";
-                            if (ft.Type == "Lookup")
-                                context = "LookupPreview";
+                            // Determine the join syntax for the eventual query.
+                            join.JoinStatement += $" inner join FieldType {tbtPrefix} on {tbtPrefix}.ID = {i.FieldTypeID}";
+                            join.JoinStatement += $" {joinType} join Field {tbPrefix} on {tbPrefix}.FieldTypeID = {i.FieldTypeID} and {tbPrefix}.ObjectType = {joinObj} and {tbPrefix}.ObjectID = {joinCol}";
 
-                            // Add the fields that you need to create link in Angular component.
-                            columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'{context}'", datafield = $"{dataField}_Context" });
-                            columnModels.Add(new ComplexColumnModel {
-                                DisplayColumn = $@"
-case 
-    when {tbPrefix}.Value is not null then {tbtPrefix}.[LookupObjectType]
-    when {tbtPrefix}.DefaultValue is not null then replace({tbtPrefix}.[LookupObjectType], 'Type', '')
-    else '' 
-end
-",
-                                datafield = $"{dataField}_Object" });
-                            columnModels.Add(new ComplexColumnModel {
-                                DisplayColumn = $@"
-case 
-    when {tbPrefix}.Value is not null then cast({tbPrefix}.Value as varchar)
-    when {tbtPrefix}.DefaultValue is not null then cast({tbtPrefix}.DefaultValue as varchar)
-    else '' 
-end
-",
-                                datafield = $"{dataField}_ObjectID" });
-                            columnModels.Add(new ComplexColumnModel {
-                                DisplayColumn = $@"
-case 
-    when {tbPrefix}.Value is not null then [dbo].GenerateUrlByTypeName({tbtPrefix}.[LookupObjectType], {tbtPrefix}.LookupObjectID, {tbtPrefix}.LookupObjectID)
-    when {tbtPrefix}.DefaultValue is not null then [dbo].GenerateUrlByTypeName({tbtPrefix}.[LookupObjectType], {tbtPrefix}.LookupObjectID, {tbtPrefix}.LookupObjectID) 
-    else '' 
-end",
-                                datafield = $"{dataField}_Url" });
+                            //Create the column/field to display the visible column cell.
+                            var fc = new ComplexColumnModel
+                            {
+                                DisplayColumn = (ft.Type == "Boolean") ?
+     $@"case 
+        when {tbtPrefix}.AllowAllValue = 1 and {tbPrefix}.Value = '0' then lower({tbtPrefix}.AllowAllLabel) 
+        when {tbPrefix}.Value is not null then lower({tbPrefix}.FormattedValue)
+        when {tbtPrefix}.DefaultValue is not null then lower({tbtPrefix}.DefaultFormattedValue) 
+        else '' 
+    end" :
+     $@"case 
+        when {tbtPrefix}.AllowAllValue = 1 and {tbPrefix}.Value = '0' then {tbtPrefix}.AllowAllLabel 
+        when {tbPrefix}.Value is not null then {tbPrefix}.FormattedValue 
+        when {tbtPrefix}.DefaultValue is not null then {tbtPrefix}.DefaultFormattedValue 
+        else '' 
+    end",
+                                text = i.OverrideDisplayName ?? ft.FriendlyName,
+                                datafield = $"{dataField}",
+                                OutputColumn = true,
+                                Width = i.Width
+                            };
 
-                            // Now set the fields to reference to create the preview link in Angular component.
-                            fc.datafieldtype = "lookup";
-                            fc.contextfield = $"{dataField}_Context";
-                            fc.objectfield = $"{dataField}_Object";
-                            fc.objectidfield = $"{dataField}_ObjectID";
-                            fc.urlfield = $"{dataField}_Url";
+                            if (i.SortOrder > 0)
+                            {
+                                var columnValue = getFieldTypeColumnString(ft.Type, ft.Type == "Link" ? $"{tbPrefix}.Value" : fc.DisplayColumn);
+                                fc.SortColumn = columnValue == fc.DisplayColumn ? "" : columnValue;
+                            }
+
+                            setColumnTypeInfo(ft, i, fc);
+
+
+                            if (ft.LookupObjectType == "Lookup" || ft.LookupObjectType == "ReferenceItem")
+                            {
+                                var context = "Preview";
+                                if (ft.Type == "Lookup")
+                                    context = "LookupPreview";
+
+                                // Add the fields that you need to create link in Angular component.
+                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'{context}'", datafield = $"{dataField}_Context" });
+                                columnModels.Add(new ComplexColumnModel
+                                {
+                                    DisplayColumn = $@"
+    case 
+        when {tbPrefix}.Value is not null then {tbtPrefix}.[LookupObjectType]
+        when {tbtPrefix}.DefaultValue is not null then replace({tbtPrefix}.[LookupObjectType], 'Type', '')
+        else '' 
+    end
+    ",
+                                    datafield = $"{dataField}_Object"
+                                });
+                                columnModels.Add(new ComplexColumnModel
+                                {
+                                    DisplayColumn = $@"
+    case 
+        when {tbPrefix}.Value is not null then cast({tbPrefix}.Value as varchar)
+        when {tbtPrefix}.DefaultValue is not null then cast({tbtPrefix}.DefaultValue as varchar)
+        else '' 
+    end
+    ",
+                                    datafield = $"{dataField}_ObjectID"
+                                });
+                                columnModels.Add(new ComplexColumnModel
+                                {
+                                    DisplayColumn = $@"
+    case 
+        when {tbPrefix}.Value is not null then [dbo].GenerateUrlByTypeName({tbtPrefix}.[LookupObjectType], {tbtPrefix}.LookupObjectID, {tbtPrefix}.LookupObjectID)
+        when {tbtPrefix}.DefaultValue is not null then [dbo].GenerateUrlByTypeName({tbtPrefix}.[LookupObjectType], {tbtPrefix}.LookupObjectID, {tbtPrefix}.LookupObjectID) 
+        else '' 
+    end",
+                                    datafield = $"{dataField}_Url"
+                                });
+
+                                // Now set the fields to reference to create the preview link in Angular component.
+                                fc.datafieldtype = "lookup";
+                                fc.contextfield = $"{dataField}_Context";
+                                fc.objectfield = $"{dataField}_Object";
+                                fc.objectidfield = $"{dataField}_ObjectID";
+                                fc.urlfield = $"{dataField}_Url";
+                            }
+                            else if (i.FieldTypeName.ToLower() == "name") //special case for name
+                            {
+                                fc.datafieldtype = "lookup";
+                                fc.datafieldtype = "lookup";
+                                fc.contextfield = $"{dataField}_Context";
+                                fc.objectfield = $"{dataField}_Object";
+                                fc.objectidfield = $"{dataField}_ObjectID";
+                                fc.urlfield = $"{dataField}_Url";
+                                // Add the fields that you need to create link in Angular component.
+
+                                var obj = i.Object.Replace("Type", "");
+
+                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
+                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'{obj}'", datafield = $"{dataField}_Object" });
+                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
+                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateAssetUrl((select ID from Asset where Object = '{obj}' and ObjectID = A{pos}.ID))", datafield = $"{dataField}_Url" });
+                            }
+
+                            //Add here, only after you determine if this should be a link ABOVE.
+                            columnModels.Add(fc);
                         }
-                        else if (i.FieldTypeName.ToLower() == "name") //special case for name
-                        {
-                            fc.datafieldtype = "lookup";
-                            fc.datafieldtype = "lookup";
-                            fc.contextfield = $"{dataField}_Context";
-                            fc.objectfield = $"{dataField}_Object";
-                            fc.objectidfield = $"{dataField}_ObjectID";
-                            fc.urlfield = $"{dataField}_Url";
-                            // Add the fields that you need to create link in Angular component.
-
-                            var obj = i.Object.Replace("Type", "");
-
-                            columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
-                            columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'{obj}'", datafield = $"{dataField}_Object" });
-                            columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
-                            columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateAssetUrl((select ID from Asset where Object = '{obj}' and ObjectID = A{pos}.ID))", datafield = $"{dataField}_Url" });
-                        }
-
-                        //Add here, only after you determine if this should be a link ABOVE.
-                        columnModels.Add(fc);
 
                         multiFieldReferencePosition++;  //Increment in case you reference multiple fields from the same objects, in a SINGLE hop.
 
@@ -3132,8 +3173,8 @@ end",
                         {
                             var tbPrefix = $"F{pos}_{multiFieldReferencePosition}";
                             var tbTypePrefix = $"FT{pos}_{multiFieldReferencePosition}";
-                            var tbDetailPrefix = $"FD{pos}_{multiFieldReferencePosition}";                            
-                            
+                            var tbDetailPrefix = $"FD{pos}_{multiFieldReferencePosition}";
+
                             // Determine the join syntax for the eventual query.
                             join.JoinStatement += $@" {joinType} join [IntersectType] {tbTypePrefix} on {tbTypePrefix}.ID = {i.FieldTypeID} 
 {joinType} join [Intersect] {tbPrefix} on {tbPrefix}.IntersectTypeID = {tbTypePrefix}.ID and 
@@ -3211,7 +3252,7 @@ outer apply (
                         }
                         else if (i.FieldTypeName.ToLower() == "textpath")
                         {
-                            
+
                             overrideDisplayColumn = $@"(select T.TextPath from Asset a
                                 cross apply dbo.GetAssetTextPathById(a.ID, '{delim}') T
                                 where a.[Object] = '{@object}' and a.[ObjectID] = A{pos}.{idColumn})";
@@ -3289,7 +3330,7 @@ outer apply (
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateAssetUrl((select ID from Asset where Object = 'Artifact' and ObjectID =A{pos}.ID))", datafield = $"{dataField}_Url" });
 
                                 break;
-                                #endregion
+                            #endregion
                             case "FusionAttributeType":
                                 #region FusionAttributeType
 
@@ -3316,8 +3357,8 @@ outer apply (
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateAssetUrl((select ID from Asset where Object = 'FusionAttribute' and ObjectID = A{pos}.ID))", datafield = $"{dataField}_Url" });
                                 break;
-                                
-                                #endregion
+
+                            #endregion
                             case "PolicyType":
                                 #region PolicyType
 
@@ -3345,8 +3386,8 @@ outer apply (
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateAssetUrl((select ID from Asset where Object = 'Policy' and ObjectID = A{pos}.ID))", datafield = $"{dataField}_Url" });
                                 break;
-                                
-                                #endregion
+
+                            #endregion
                             case "ResourceType":
                                 #region ResourceType
 
@@ -3391,8 +3432,8 @@ outer apply (
                                 }
 
                                 break;
-                                
-                                #endregion
+
+                            #endregion
                             case "RuleType":
                                 #region RuleType
                                 //Create the column/field to display the visible column cell.
@@ -3418,9 +3459,9 @@ outer apply (
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Rule'", datafield = $"{dataField}_Object" });
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateAssetUrl((select ID from Asset where Object = 'Rule' and ObjectID = A{pos}.ID))", datafield = $"{dataField}_Url" });
-                                break;                                
-                                
-                                #endregion
+                                break;
+
+                            #endregion
                             case "TaxonomyType":
                                 #region TaxonomyType
 
@@ -3448,7 +3489,7 @@ outer apply (
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateAssetUrl((select ID from Asset where Object = 'Taxonomy' and ObjectID = A{pos}.ID))", datafield = $"{dataField}_Url" });
                                 break;
 
-                                #endregion
+                            #endregion
                             default:
                                 if (i.Object == "ReferenceItemType" && i.ObjectID == 0)
                                 {
@@ -3556,22 +3597,22 @@ outer apply (
                     switch (join.Direction)
                     {
                         case FieldTypeComplexLookupRelationDirection.Back:
-                            join.JoinStatement = (i == 0) ? 
-                                $"from [Intersect] I{i}" : 
+                            join.JoinStatement = (i == 0) ?
+                                $"from [Intersect] I{i}" :
                                 $"{joinType} join [Intersect] I{i} on I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null) and I{i}.Object = '{previousObj}' and I{i}.ObjectID = A{i - 1}.{previousObjIdColumn}";
                             break;
                         case FieldTypeComplexLookupRelationDirection.Forward:
-                            join.JoinStatement = (i == 0) ? 
-                                $"from [Intersect] I{i}" : 
+                            join.JoinStatement = (i == 0) ?
+                                $"from [Intersect] I{i}" :
                                 $"{joinType} join [Intersect] I{i} on I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null) and I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.{previousObjIdColumn}";
                             break;
                         default:
-                            join.JoinStatement = (i == 0) ? 
-                                $"from [Intersect] I{i}" : 
+                            join.JoinStatement = (i == 0) ?
+                                $"from [Intersect] I{i}" :
                                 $"{joinType} join [Intersect] I{i} on I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null) and ( (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.{previousObjIdColumn}) OR (I{i}.Object = '{previousObj}' and I{i}.ObjectID = A{i - 1}.{previousObjIdColumn} ) )";
                             break;
                     }
-                    
+
                     if (i == 0)
                     {
                         switch (join.Direction)

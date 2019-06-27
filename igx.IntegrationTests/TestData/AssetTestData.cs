@@ -130,5 +130,18 @@ namespace igx.IntegrationTests.TestData
 
             return forDeletes;
         }
+
+
+        public static JArray GetDeleteJsonForAssetTypeUid(string assetTypeUid, bool isCascade)
+        {
+            var ret = new JArray();
+            var @obj = new JObject();
+
+            obj.Add(new JProperty("Uid", assetTypeUid));
+            obj.Add(new JProperty("Cascade", isCascade.ToString()));
+
+            ret.Add(@obj);
+            return ret;
+        }
     }
 }
