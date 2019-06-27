@@ -279,8 +279,6 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     }
 
     onFieldChanges(data: any) {
-        console.log(data);
-
         if (this.field.FieldType == 'Lookup') {
             if (this.field.UseTypeahead) {
                 if (this.typeAheadValue != null)
