@@ -61,9 +61,9 @@ export class ResourcesService extends BaseObservableService {
 
         return this.http.get(url).pipe(
             map(response => {
-               response
+                return response;
             }),
-            catchError(err => this.handleError(err)),);
+            catchError(err => this.handleError(err)));
     }
 
     getResponsibilityBreakdownByResource(id: number, responsibilityTypeId: number = 0): Observable<CountObject[]> {
