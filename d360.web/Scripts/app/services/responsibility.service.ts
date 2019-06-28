@@ -1,10 +1,7 @@
 ﻿import { Injectable } from '@angular/core';
-//import { Headers, Http } from '@angular/http';
 import {HttpClient,HttpHeaders} from '@angular/common/http'
 import { FormHelper, SelectItem } from '../models/form.model';
 import { ResponsibilityEditorModel, ResponsibilityItem, ResponsibilityItemDetail, IResponsibilityService } from '../models/responsibility.model';
-//import { MessagesService } from './messages.service';
-//import { BaseService } from './base.service';
 import { JsonResult } from '../models/jsonresult.model'
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
