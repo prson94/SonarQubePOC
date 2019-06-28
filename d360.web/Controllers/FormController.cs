@@ -8793,7 +8793,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 {
                     IEnumerable<string> values;
 
-                    values = model.Lookups.Select(m => (string.IsNullOrEmpty(m.Value) ? m.Label : $"{m.Label} [{m.Value}]"));
+                    values = model.Lookups.Select(m => (string.IsNullOrEmpty(m.Label) ? m.Value : $"{m.Label} [{m.Value}]"));
 
                     var dv = document.CreateDataValidation(2, i + 1, model.Lookups.Count + 1, i + 1);
                     CreateExcelList(lookupColumns++, document, "Lookups", dv, values);

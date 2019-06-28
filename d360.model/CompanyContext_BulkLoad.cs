@@ -186,9 +186,13 @@ order by	ColumnIndex", new { id });
                     }
 
                 });
-                sqlColumns += $", case EA.Success when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status], EA.Message as StatusMessage";
+                sqlColumns += $", case EA.Success when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status]\n";
+                sqlColumns += ", case when EA.Message is null and EA.Success = 1 then '{0}' else  EA.Message end as StatusMessage\n";
 
-                sql = $"select * from ({sqlColumns} {sqlTables} where EA.ExecutionID = @putExecutionID union all {sqlColumns} {sqlTables} where EA.ExecutionID = @postExecutionID) R order by R.RowIndex";
+                sql = $"select * from ({string.Format(sqlColumns, "Item successfully updated.")} {sqlTables} where EA.ExecutionID = @putExecutionID\n";
+                sql += $"union all\n";
+                sql += $"{string.Format(sqlColumns, "Item successfully added.")} {sqlTables} where EA.ExecutionID = @postExecutionID) R order by R.RowIndex";
+
                 return Query<dynamic>(sql, new { id, putExecutionID = load.PutExecutionID, postExecutionID = load.PostExecutionID });
             }
             else
