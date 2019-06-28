@@ -7984,7 +7984,7 @@ from	    AssetType T where T.Object = 'TaxonomyType' ");
                         $"          outer apply (select	IT.SubjectID from	IntersectType IT " +
                         $"          inner join [Predicate] P on IT.Object = @typeName and IT.ObjectID = AT.ObjectID " +
                         $"          and P.ID = IT.PredicateID and P.Type = 3) IT " +
-                        $"where AT.[Object] = @typeName and AT.[objectId] = @typeId) AND AT.Name like @search " +
+                        $"where AT.[Object] = @typeName and AT.[objectId] = @typeId) AND AT.[Object] = @typeName AND AT.Name like @search " +
                         $"Order By AT.Name";
 
             return await Company.QueryAsync<BreadcrumbTypeAheadModel>(sql, new { typeName = new DbString { Value = objectType.ToString(), IsFixedLength = true, Length = 30, IsAnsi = true }, typeId = objectId, search = $"%{q}%" });
