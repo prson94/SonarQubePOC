@@ -1,20 +1,11 @@
 ﻿using igx.IntegrationTests.Core;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
-using d360.core.enums;
-using d360.model;
-using d360.core.entities;
 using igx.IntegrationTests.TestData;
 using Newtonsoft.Json.Linq;
 using Xunit.Priority;
-using d360.web.Models;
-using System.Threading;
 using Xunit;
 
 namespace igx.IntegrationTests.ApiTests
