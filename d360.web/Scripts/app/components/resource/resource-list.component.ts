@@ -44,8 +44,9 @@ export class ResourceListComponent extends BaseComponent {
 
     ngOnInit() {
         this.clearSidebar();
-        this.setBrowserTitle(this.titleService, 'Resources');
-
+        this.setBrowserTitle(this.titleService, 'Resource');
+        this.headerBreadcrumbService.clearBreadcrumbs();
+        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb("Resource"))
         
     }    
 };
