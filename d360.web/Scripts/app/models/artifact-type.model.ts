@@ -34,15 +34,6 @@ export class AssetTypeExportTemplate {
     Description: string;
 }
 
-export class ArtifactTypeSummary {
-    ID: number;
-    Description: string;
-    Name: string;
-    ParentID: number;
-    Total: number;
-    expanded: boolean;
-}
-
 export class ArtifactTypeStatusCount {
     Status: string;
     Count: number;
