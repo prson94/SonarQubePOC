@@ -406,12 +406,25 @@ namespace d360.web.Controllers
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
+        internal JsonNetResult jsonNetException(Exception ex)
+        {
+            return new JsonNetResult
+            {
+                Data = new { type = "error", title = "Error Occurred!", message = ex.GetFullExceptionData() },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
 
         internal JsonResult jsonSuccess(string message, string id, string action, HttpStatusCode statusCode, dynamic customdata = null)
         {
             Response.StatusCode = (int)statusCode;
             Response.StatusDescription = message.Replace("\n", "  ");
             return Json(new { type = "confirm", title = "Success!", action = action, message = message.Replace("\n", "  "), id = id, custom = customdata }, JsonRequestBehavior.AllowGet);
+        }
+
+        internal JsonNetResult jsonNetResult(dynamic data)
+        {
+            return new JsonNetResult { Data = data, Formatting = Formatting.None };
         }
 
         #endregion
@@ -519,18 +532,6 @@ namespace d360.web.Controllers
             }
             return showAllUsersAPIKey;
         }
-
-
-
-    internal JsonNetResult jsonNetException(Exception ex)
-        {
-            return new JsonNetResult
-            {
-                Data = new { type = "error", title = "Error Occurred!", message = ex.GetFullExceptionData() },
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
 
         protected override JsonResult Json(object data, string contentType, System.Text.Encoding contentEncoding, JsonRequestBehavior behavior)
         {
@@ -1423,7 +1424,7 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
                         }
                     }
 
-                        sb.Append($"(Field{field.ID}_OT.{columnName} like @simpleFilter + '%')");
+                        sb.Append($"(Field{field.ID}_OTD.{columnName} like @simpleFilter + '%')");
                 }
                 else if (field.Type == DataType.FieldFromRelationship.ToString())
                 {

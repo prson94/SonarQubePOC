@@ -93,7 +93,7 @@ export class WorkflowIssueEditorComponent extends BaseComponent {
     loadResources() {
         this.isLoading = true;
         this.resourcesService.getResources()
-            .then(res => {
+            .subscribe(res => {
                 this.isLoading = false;
                 this.resources = res;
             });
@@ -103,7 +103,7 @@ export class WorkflowIssueEditorComponent extends BaseComponent {
         //get the fields / values for this issue
         this.isLoading = true;
         this.workflowService.getIssueDetails(this.issue.IssueID)
-            .then(result => {
+            .subscribe(result => {
                 this.issueDetails = result;
                 this.isLoading = false;                
             });
@@ -111,7 +111,7 @@ export class WorkflowIssueEditorComponent extends BaseComponent {
 
     onSubmit() {
         this.isLoading = true;        
-        this.workflowService.updateIssue(this.issue, this.action, this.comments, this.assignToId).then(
+        this.workflowService.updateIssue(this.issue, this.action, this.comments, this.assignToId).subscribe(
             res => {
                 this.showMessageForResult(this.messagesService, res);
                 this.isLoading = false;

@@ -57,7 +57,7 @@
                     <div class="RowTools">
                         <a style="cursor:pointer;"
                             (click)="selected=rowNode.node;showAdd(item.Level)"
-                            *ngIf="model.MaximumDepth > item.Level"><i class="fa fa-plus"></i></a>
+                            *ngIf="( model.MaximumDepth > item.Level ) && hasModifyAssetPermissions()"><i class="fa fa-plus"></i></a>
                     </div>
                 </td>
                 <td>

@@ -54,7 +54,7 @@ export class ResourceApiComponent extends BaseComponent {
     ngOnInit() {
         this.isLoading = true;
         this.resourcesService.getMyCredentials()
-            .then(r => {
+            .subscribe(r => {
                 this.resource = r;
                 this.isLoading = false;
             });

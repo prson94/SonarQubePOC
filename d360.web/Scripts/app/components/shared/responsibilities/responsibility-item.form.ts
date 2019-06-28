@@ -11,6 +11,7 @@ import { JsonResult } from '../../../models/jsonresult.model';
 import { EditorField } from '../../../models/editor-field.model';
 import { StringHelpers } from '../../../static/string-helpers';
 import { ResourcesService } from '../../../services/resources.service';
+import { map } from 'rxjs/operators';
 
 @Component({
     selector: 'd3s-responsibility-item-form',
@@ -66,7 +67,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
         this.isLoading = true;
 
         this.responsibilityService.getResponsibilityItemEditor(this.itemToSave.AssetID, this.itemToSave.ID)
-            .then(data => {
+            .subscribe(data => {
                 this.model = data;
                  this.onLoadComplete.emit({ item: this.item });
                 this.isLoading = false;
@@ -138,13 +139,14 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
         this.isLoading = true;
 
         this.responsibilityService.getResponsibilityDetail(this.itemToSave.AssetID)
-            .then(data => {
+            .pipe(
+                map(data => {
                 this.checkD = data;
-            })
-            .then(() => {
+            }),
+            map(() => {
                 if (this.itemToSave.ID && this.itemToSave.ID > 0) {
                     this.responsibilityService.putResponsibility(this.itemToSave)
-                        .then(data => {
+                        .subscribe(data => {
                             this.isLoading = false;
                             this.showMessageForResult(this.messagesService, data);
                             this.onSaveComplete.emit({ item: this.itemToSave, message: this.message, initialItem: this.item });
@@ -173,13 +175,13 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
                         }
                     }
                     this.responsibilityService.postResponsibility(this.itemToSave)
-                        .then(data => {
+                        .subscribe(data => {
                             this.isLoading = false;
                             this.showMessageForResult(this.messagesService, data);
                             this.onSaveComplete.emit({ item: this.itemToSave, message: this.message, initialItem: this.item });
                         });
                 }
-            });
+            })).subscribe();
     }
 
     private cancel(): void {

@@ -224,9 +224,13 @@
   <include file="scripts/GOV-6387.xml"/>
   <include file="scripts/GOV-7448.xml"/>
   <include file="scripts/GOV-7461.xml"/> <!--IGC proc-->
+  <include file="scripts/GOV-7533.xml"/>
   <include file="scripts/GOV-7491.xml"/>
   <include file="scripts/GOV-7374.xml"/>
   <include file="scripts/GOV-7499.xml"/>
   <include file="scripts/GOV-7524.xml"/>
   <include file="scripts/GOV-4868.xml"/>
+  <include file="scripts/GOV-7523.xml"/>
+  <include file="scripts/GOV-7556.xml"/>
+  <include file="scripts/GOV-7481.xml"/>
 </databaseChangeLog>

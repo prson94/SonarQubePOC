@@ -132,14 +132,14 @@ export class RelationshipTechnicalRelationsComponent extends BaseComponent imple
 
     private load() {
         this.isLoading = true;        
-        this.relationshipsService.getTechnicalRelationships('Intersect', this.relationship.ID).
-            then(res => {
+        this.relationshipsService.getTechnicalRelationships('Intersect', this.relationship.ID)
+            .subscribe(res => {
                 this.relations = res;
                 this.selected = (this.relations && this.relations.length > 0) ? this.relations[0] : null;
                 this.isLoading = false;
             });
-        this.relationshipsService.getPossibleTechnicalRelations(this.relationship.ID).
-            then(res => {
+        this.relationshipsService.getPossibleTechnicalRelations(this.relationship.ID)
+            .subscribe(res => {
                 this.possibleTechnicalIntersectTypes = res;
             });
     }
@@ -162,7 +162,7 @@ export class RelationshipTechnicalRelationsComponent extends BaseComponent imple
 
     private deleteItem(item) {        
         this.relationshipsService.deleteRelationshipItem(item.ID)
-            .then(res => {
+            .subscribe(res => {
                 this.relations = this.relations.filter(x => x.ID != item.ID);                
                 if (this.relations.length == 0) this.allTechnicalRelationshipsDeleted.emit();
             });

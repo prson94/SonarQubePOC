@@ -40,16 +40,16 @@ export class AdminWorkflowDeleteComponent extends BaseComponent implements OnIni
     delete() {
         this.isLoading = true;
         this.workflowService.deleteWorkflowType(this.id)
-            .then(r => {
+            .subscribe(r => {
                 this.onSuccess.emit();
                 this.onComplete.emit();
                 this.isLoading = false;
-            })
-            .catch(err => {
+            }, err => {
                 this.onComplete.emit();
                 this.isLoading = false;
                 return err;
             });
+
     }
 
 }

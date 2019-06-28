@@ -31,128 +31,79 @@ namespace d360.web.Controllers
         #region Exports
 
         [Route("download/excel/{id:int}.xls"), FileDownload, HttpGet]
-        public FileResult ToExcel(int id, string sortDataField, string sortOrder, string filter, string ownerUsers = "", string ownerGroups = "", bool listableOnly = true)
+        public async Task<FileResult> ToExcel(int id, string sortDataField, string sortOrder, string filter, string ownerUsers = "", string ownerGroups = "", bool listableOnly = true)
         { 
-            var joins = "";
-            var columns = "";
-
             var typesToAvoid = new List<string>() {
                 DataType.Attribute.ToString(),
                 DataType.ComplexRelationLookup.ToString(),
                 DataType.DataTableSelect.ToString(),
                 DataType.FilteredLookup.ToString(),
                 DataType.FusionLookup.ToString(),
-                DataType.OwnershipLookup.ToString(),
-                DataType.FieldFromRelationship.ToString()
+                DataType.OwnershipLookup.ToString()
             };
-            var fields = getFieldTypesByObjectType("ArtifactType", id, listableOnly).Where(i => !typesToAvoid.Contains(i.Type)).ToList();
-
-            getDynamicFieldJoinStatements(id, "Artifact", out joins, out columns, true, false, listableOnly, fields, "A.ObjectID");
-
-            var dbArgs = new Dapper.DynamicParameters();
-
             var assetType = Company.AssetTypes.FirstOrDefault(a => a.Object == "ArtifactType" && a.ObjectID == id);
-
-
-            dbArgs.Add("typeId", assetType.ID);
-
-            joins = addOwnershipJoinCriteria(joins, ownerUsers, ownerGroups);
-
-            var parentIntersectType = Company.Filter<IntersectType>(i => i.Object == "ArtifactType" && i.ObjectID == id && i.Predicate.Type == core.enums.PredicateType.InterTypeHierarchy).FirstOrDefault();
-
-            var parentSqlColumn = @"null as ParentID, null as Parent, null as ParentUrl,";
-            var parentSqlJoin = @"";
-
-            if (parentIntersectType != null)
-            {
-                parentSqlColumn = @"P.ParentID, P.DisplayValue as Parent, P.ParentUrl, ";
-                parentSqlJoin = @" outer apply (
-				    select	I.SubjectID as ParentID,
-                            ID.DisplayValue,
-                            dbo.GenerateAssetUrl(IA.ID) as ParentUrl
-				    from	[PredicateIntersect] I
-                            inner join Asset IA on I.Object = A.Object and I.ObjectID = A.ObjectID and IA.Object = 'Artifact' and IA.ObjectID = I.SubjectID and I.PredicateType = 3
-                            inner join AssetType IAT on IAT.ID = IA.AssetTypeID
-                            left join dbo.GetAssetDisplayValue() ID on ID.ID = IA.ID
-				    ) P";
-            }
-
-
-            #region Sql
-
-            var sql = $@"
-select	distinct 
-        A.ObjectID as ID,
-        {parentSqlColumn}
-        {columns}
-        A.ID as AssetID,dbo.GenerateAssetUrl(A.ID) as Url
-from	AssetDetail A 
-        {parentSqlJoin} 
-        {joins} 
-where   A.Type = 'ArtifactType' 
-        and A.AssetTypeID = @typeId 
-        and A.[State] = 1 ";
-
-            #endregion
-
-            //if simple filter specified add that citeria to the sql
-            if (!string.IsNullOrEmpty(filter))
-            {
-                var fixedColumns = new List<string>();
-
-                if (parentIntersectType != null)
-                    fixedColumns.Add("P.DisplayValue"); //Owner/Parent
-
-                sql = $"{sql} and {addDynamicFieldSimpleFilter(fixedColumns.ToArray(), "Artifact", id, filter, dbArgs)}";
-            }
-            
-            sql = $"select * from ({sql}) A ";
-            
-            var filterSql = applyFilteringSuffixBindRaw(Request, dbArgs, fields:fields, applyHiddenFilters:true,fromArtifact:true);
-
-            sql = sql + filterSql;
-
-            if (string.IsNullOrEmpty(filterSql))
-            {
-                sql += $" where not exists(select 1 from AssetTypesUserCantRead({Company.CurrentResourceID})u where u.AssetTypeID = @typeId) and not exists(select 1 from AssetsByTypeUserCantRead({Company.CurrentResourceID}, @typeId) u where u.AssetID = A.AssetID) ";                
-            }
-            else
-            {
-                sql += $" and not exists(select 1 from AssetTypesUserCantRead({Company.CurrentResourceID})u where u.AssetTypeID = @typeId) and not exists(select 1 from AssetsByTypeUserCantRead({Company.CurrentResourceID}, @typeId) u where u.AssetID = A.AssetID) ";
-            }
-
-            if (string.IsNullOrEmpty(sortDataField))
-            {
-                var sortSql = "";
-
-                foreach (var field in fields.Where(i => i.SortOrder > 0).OrderBy(i => i.SortOrder))
-                {
-                    var columnName = $"Field{field.ID}";
-                    if (field.Type == "Number")
-                        sortSql += ((string.IsNullOrEmpty(sortSql)) ? "" : ", ") + $"CAST([{columnName}] AS int)";
-                    else
-                        sortSql += ((string.IsNullOrEmpty(sortSql)) ? "" : ", ") + $"[{columnName}]";
-                }
-
-                if(!string.IsNullOrEmpty(sortSql))
-                    sql += " ORDER BY " + sortSql;
-            }
-            else
-            {
-                //The user sorted by something else, other than the default SortOrder settings on the FieldTypes.                
-                sql = applySortSuffix(sql, sortDataField, sortOrder, sortFieldType: sortColumnType(sortDataField, fields));
-            }
+            var fields = getFieldTypesByObjectType("ArtifactType", id, listableOnly).Where(i => !typesToAvoid.Contains(i.Type)).ToList();
+            fields.Add(new FieldType { Type = "Number", Name = "ID", FriendlyName = "Asset ID" });
+            fields.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "Url" });
 
             if (Company.TypeHasParent(SystemObjects.ArtifactType, assetType.ObjectID))
                 fields.Insert(0, new FieldType { Type = "string", Name = "Parent", FriendlyName = "Parent" });
 
-            fields.Add(new FieldType { Type = "Number", Name = "AssetID", FriendlyName = "Asset ID" });
-            fields.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "Url" });
+            var filters = GetFilterValuesFromRequest(Request, true);
+            //var filters = new List<UiRequestFilterValue>();
+            if (!string.IsNullOrEmpty(ownerUsers))
+            {
+                try
+                {
+                    var userList = new List<UiRequestOwnershipFilterItem>();
+                    foreach (var u in ownerUsers.Split(','))
+                    {
+                        var uData = u.Split('|');
+                        userList.Add(new UiRequestOwnershipFilterItem
+                        {
+                            ResponsibilityTypeID = int.Parse(uData[0].ToString()),
+                            SecurityAssetID = int.Parse(uData[1].ToString()),
+                            FilterType = UiRequestOwnershipFilterType.User
+                        });
+                    }
 
-            
-            var results = Company.Query<dynamic>(sql + " OPTION (RECOMPILE)", dbArgs);            
-            var document = GenerateDefaultSpreadsheet(fields, results);
-            
+                    var userFilter = new UiRequestOwnershipFilterValue { Items = new List<UiRequestOwnershipFilterItem>(), Operator = "OR" };
+                    userFilter.Items.AddRange(userList);
+                    filters.Add(userFilter);
+                }
+                catch
+                {
+                }
+            }
+            if (!string.IsNullOrEmpty(ownerGroups))
+            {
+                try
+                {
+                    var groupList = new List<UiRequestOwnershipFilterItem>();
+                    foreach (var g in ownerGroups.Split(','))
+                    {
+                        var gData = g.Split('|');
+                        groupList.Add(new UiRequestOwnershipFilterItem
+                        {
+                            ResponsibilityTypeID = int.Parse(gData[0].ToString()),
+                            SecurityAssetID = int.Parse(gData[1].ToString()),
+                            FilterType = UiRequestOwnershipFilterType.Group
+                        });
+                    }
+
+                    var groupFilter = new UiRequestOwnershipFilterValue { Items = new List<UiRequestOwnershipFilterItem>(), Operator = "OR" };
+                    groupFilter.Items.AddRange(groupList);
+                    filters.Add(groupFilter);
+                }
+                catch
+                {
+                }
+            }
+
+            var results = await Company.GetDynamicAssets(assetType, filters, 0, 0, sortDataField, sortOrder, filter, false, false, false);
+
+            var document = GenerateDefaultSpreadsheet(fields, results.Results);
+
             var stream = new MemoryStream();
             document.SaveAs(stream);
             return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Filtered {assetType.Name} List for {DateTime.Now.ToShortDateString()}.xlsx");
@@ -687,8 +638,8 @@ where   A.Type = 'ArtifactType'
                 return (string)((row as IDictionary<string, object>)["Parent"]);
             else if (field != null && field.Name == "Url")
                 return (string)((row as IDictionary<string, object>)["Url"]);
-            else if (field != null && field.Name == "AssetID")
-                return (string)((row as IDictionary<string, object>)["AssetID"].ToString());
+            else if (field != null && field.Name == "ID")
+                return (string)((row as IDictionary<string, object>)["ID"].ToString());
             return "";
         }
 
@@ -739,42 +690,34 @@ where   O.Type = 'ArtifactType' and O.TypeID = @id and O.[State] = 1
                 sortDataField, sortOrder, pagenum, pagesize,
                 new string[] { "P.DisplayValue" },
                 filter, extraParams: d, includeIdColumn: false, idColumn: "O.ID", innerIdColumn:"O.ObjectID");
-            return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
+
+            return jsonNetResult(model);
         }
 
         [HttpGet, Route("artifactsbytype"), NonNullableParameters]
-        public async Task<JsonNetResult> ArtifactsByType(int id, string sortDataField, string sortOrder, int pagenum, int pagesize, string filter)
+        public async Task<ActionResult> ArtifactsByType(int id, string sortDataField, string sortOrder, int pagenum, int pagesize, string filter)
         {
             return await ByType(id, sortDataField, sortOrder, pagenum, pagesize, filter);
         }
 
         [HttpPost, Route("bytype"), NonNullableParameters]
-        public async Task<JsonNetResult> ByType(int id, string sortDataField, string sortOrder, int pagenum, int pagesize, string filter)
+        public async Task<ActionResult> ByType(int id, string sortDataField, string sortOrder, int pagenum, int pagesize, string filter)
         {
             try
             {
                 var assetType = Company.Filter<AssetType>(i => i.Object == "ArtifactType" && i.ObjectID == id).SingleOrDefault();
-                
                 if (assetType == null)
                 {
-                    return new JsonNetResult
-                    {
-                        Data = new { message = "Asset Type not found" },
-                        Formatting = Newtonsoft.Json.Formatting.None
-                    };
+                    return jsonNetResult(new { message = "Asset Type not found" });
                 }
-                var filters = GetFilterValuesFromRequest(Request,true);
-                var results = await Company.GetPivotVersionDynamicAssets(assetType, filters, pagenum, pagesize, false, sortDataField, sortOrder, filter);
 
-                return new JsonNetResult
-                {
-                    Data = new { results = results.Results, total = results.Count },
-                    Formatting = Newtonsoft.Json.Formatting.None
-                };
+                var filters = GetFilterValuesFromRequest(Request,true);
+                var results = await Company.GetDynamicAssets(assetType, filters, pagenum, pagesize, sortDataField, sortOrder, filter);
+                return jsonNetResult(new { results = results.Results, total = results.Count });
             }
             catch (Exception ex)
             {
-                return jsonNetException(ex);
+                return new HttpStatusCodeResult(System.Net.HttpStatusCode.InternalServerError, ex.Message);                
             }
         }
 

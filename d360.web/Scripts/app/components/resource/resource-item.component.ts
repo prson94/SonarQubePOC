@@ -83,7 +83,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
 
             this.headerBreadcrumbService.setCurrentObjectInfo('Resource', resourceId);
             this.resourcesService.getResource(this.resourceId)
-                .then(r => {
+                .subscribe(r => {
                     this.resource = r;
 
                     this.headerBreadcrumbService.clearBreadcrumbs();

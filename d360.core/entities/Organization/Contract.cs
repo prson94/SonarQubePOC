@@ -2,6 +2,7 @@
 using d360.core.enums;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
@@ -94,7 +95,8 @@ namespace d360.core.entities
 
         public class User
         {
-            public List<Company> Companies = new List<Company>();
+            public int ID { get; set; }
+            public ConcurrentBag<Company> Companies = new ConcurrentBag<Company>();
         }
 
         public class Company

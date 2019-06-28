@@ -4,6 +4,7 @@ import { WorkflowListItem, ChangeTypeInfo } from '../../../models/workflow.model
 import { WorkflowService } from '../../../services/workflow.service';
 import { Router } from '@angular/router';
 import { GridColumn } from '../../../models/grid-definition.model';
+import { map } from 'rxjs/operators';
 
 @Component({
     selector: 'd3s-admin-workflow-list',
@@ -102,7 +103,7 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
       
         this.isLoading = true;
         this.workflowService.cloneWorkflowDiagramModel(id)
-            .then(id => {
+            .subscribe(id => {
                 this.isLoading = false;
                 this.onEditClick.emit({ ID: id, isClone: true });
             })
@@ -111,15 +112,18 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
         this.isLoading = true;
 
         this.workflowService.getChangeTypes()
-            .then(r => this.changeTypes = r)
-            .then(() => this.workflowService.getAdminTypes())
-            .then(r => {
-                this.items = r
-                this.items.forEach(i => {
-                    i.ChangeTypeName = this.changeTypes.find(c => c.ID == i.ChangeType).Description;
-                });
-            })
-            .then(() => this.isLoading = false);
+            .pipe(
+                map(r => this.changeTypes = r),
+                map(() =>
+                    this.workflowService.getAdminTypes()
+                    .subscribe(r => {
+                            this.items = r
+                            this.items.forEach(i => {
+                            i.ChangeTypeName = this.changeTypes.find(c => c.ID == i.ChangeType).Description;
+                            });
+                    })),
+                map(() => this.isLoading = false))
+                .subscribe();
     }
 
     navigate(id: string) {

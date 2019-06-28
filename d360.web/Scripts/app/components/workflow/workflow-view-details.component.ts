@@ -131,7 +131,7 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
     private load() {
         this.isLoading = true;
         this.workflowService.getWorkflowDetailsV2(this.workflowId)
-            .then(res => {
+            .subscribe(res => {
                 for (let item of res.ItemSteps) {
                     if (!res.Steps) {
                         item.StepName = "";

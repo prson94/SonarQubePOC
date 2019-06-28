@@ -66,7 +66,7 @@ export class ResourceGroupsComponent extends BaseComponent implements OnInit{
     private load() {
         this.isLoading = true;
         this.resourcesService.getUserGroups(this.resourceId)
-            .then(res => {
+            .subscribe(res => {
                 this.groups = res;
                 this.isLoading = false;
             });

@@ -8236,6 +8236,10 @@ offset 0 rows fetch next 25 rows only
                 {
                 }
 
+                long assetId = Company.Assets.FirstOrDefault(x => x.Object == "Group" && x.ObjectID == model.ID).ID;
+
+                Company.CreateOrUpdateDisplayValue(assetId);
+
                 return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
