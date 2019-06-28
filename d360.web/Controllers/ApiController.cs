@@ -8028,7 +8028,7 @@ from	    AssetType T where T.Object = 'TaxonomyType' ");
 		                AT.id as AssetTypeID
 		                from
                   Assettype AT 
-                  where  AT.[object] = 'ReferenceItemType'";
+                  where  AT.[object] = 'ReferenceItemType' and AT.ObjectID > 0";
 
             return Company.Query<dynamic>(sql);            
         }
