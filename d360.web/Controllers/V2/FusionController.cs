@@ -134,11 +134,11 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <remarks>
         /// <strong>&#9888; Read before calling this endpoint</strong><br/>
-        /// Calling this endpoint with parameter <strong>Cascade</strong> set to <strong>true</strong> will irrevocably delete fusion configuration and all data related* which includes attributes, fields and relationships.
-        /// Fusion rules needs to be deleted manually from UI before calling this endpoint<br/>
+        /// Calling this endpoint with parameter Cascade set to true irrevocably deletes a Fusion configuration and all related data, which includes attributes, fields and relationships
+        /// <br/>Fusion rules must be deleted manually from the UI before calling this endpoint.
         /// </remarks>
         /// <param name="assetUid">The unique identifier of the fusion configuration.</param>
-        /// <param name="cascade">The unique identifier of the fusion configuration.</param>
+        /// <param name="cascade">Delete all related data.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpDelete,
