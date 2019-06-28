@@ -89,5 +89,20 @@ namespace igx.IntegrationTests.Core
             return o1[prop].ToString() == o2[prop].ToString(); 
         }
 
+        public static bool DoesContainFields(JToken obj, params string[] fields)
+        {
+            return DoesContainFields(obj as JObject, fields);
+        }
+        public static bool DoesContainFields(JObject obj, params string[] fields)
+        {
+            foreach(var prop in fields)
+            {
+                if (obj[prop] == null)
+                    return false;
+            }
+
+            return true;
+        }
+
     }
 }
