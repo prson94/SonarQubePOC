@@ -13,13 +13,13 @@ declare var VersionNumber: string;
                             <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="adminGuide">Admin Guide</a></div></div></li>
                             <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="whatIsNew">What's New</a></div></div></li>
                             <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="community">Community</a></div></div></li>
-                            <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" (click)="popup(item2)">About Data3Sixty</a></div></div></li>
+                            <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" (click)="popup(item2)">About Data3Sixty® Govern</a></div></div></li>
                        </ul>
                     </div>
         <div #item2 class="modal-overlay about">
         <div class="modal-dialog">
             <div class="title-bar">
-                <h1>About Data3Sixty Govern</h1>
+                <h1>About Data3Sixty® Govern</h1>
                 <span class="grow"></span>
                 <button (click)="closePopUp(item2)" class="light bar button close" title="Close"><i class="fa fa-times"></i></button>
             </div>
