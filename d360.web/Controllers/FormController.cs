@@ -11492,7 +11492,6 @@ where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetT
                             sql = $@"select C.Object, C.ObjectID, O.DisplayValue AS Name from [Rule] O inner join {sql}  inner join Asset Ass on (Ass.ObjectID = O.ID and Ass.[Object] = 'Rule') cross apply [dbo].[GetAssetDisplayValueById](Ass.ID) ADisp order by ADisp.DisplayValue";
                             break;
                         case "PolicyType":
-                        case "TaxonomyType":
                             sql = $@"
 select	A.Object,
         A.ObjectID, 
@@ -11505,7 +11504,9 @@ where   A.Type = @targetType
         and A.ObjectID != @id
         and A.ID not in ({GetNoReadSqlStatement()}) 
 order by TP.TextPath"; 
-                            
+                            break;
+                        case "TaxonomyType":
+                            sql = $@"select C.Object, C.ObjectID, ADisp.DisplayValue AS Name from [Taxonomy] O inner join {sql}  inner join Asset Ass on (Ass.ObjectID = O.ID and Ass.[Object] = 'Taxonomy') cross apply [dbo].[GetAssetDisplayValueById](Ass.ID) ADisp order by ADisp.DisplayValue";
                             break;
                     }
                     break;
