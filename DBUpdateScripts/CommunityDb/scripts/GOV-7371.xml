@@ -12,7 +12,7 @@
             stripComments="true">
 <![CDATA[
 GO
-DROP TABLE [utility].[JobActivity-retired]
+DROP TABLE IF EXISTS [utility].[JobActivity-retired]
 GO 
 ]]>
     </sql>

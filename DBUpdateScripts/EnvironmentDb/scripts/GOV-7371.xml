@@ -11,8 +11,8 @@
             splitStatements="true"
             stripComments="true">
 <![CDATA[
-  DROP PROCEDURE [dbo].[GetTypeHierarchyByObject];
-  DROP PROCEDURE [bulkload].[UpdateSubjectAreaColumn];
+  DROP PROCEDURE IF EXISTS [dbo].[GetTypeHierarchyByObject];
+  DROP PROCEDURE IF EXISTS [bulkload].[UpdateSubjectAreaColumn];
 ]]>
     </sql>
 	<rollback>
