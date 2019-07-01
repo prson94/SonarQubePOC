@@ -110,7 +110,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
     private in(panel, searchPanel, event) {
         let parent = this.hoverTarget.nativeElement.parentNode;
         let lineDims = this.hoverTarget.nativeElement.getBoundingClientRect();
-        if (this.isChangableItem()) {
+        if (this.isChangableItem() && !this.isTreeItem()) {
             this.showSearch = true;            
             if (this.hasClass(parent, 'collapsed-crumb')) {
                 searchPanel.show(event, this.hoverTarget.nativeElement.parentNode);
