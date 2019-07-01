@@ -28,6 +28,8 @@ namespace d360.core.entities
         [DataMember]
         public int TypeID { get; set; }
         [DataMember]
+        public Guid uid { get; set; }
+        [DataMember]
         public DateTime?  CreatedOn { get; set; }
         [DataMember]
         public DateTime? UpdatedOn { get; set; }

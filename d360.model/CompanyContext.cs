@@ -9,6 +9,7 @@ using d360.core.helpers;
 using d360.core.queue;
 using d360.core.resources;
 using d360.extensions;
+using d360.model.DataAccessLayer;
 using Dapper;
 using Ganss.XSS;
 using Newtonsoft.Json;
@@ -1076,7 +1077,7 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
         public AssetType GetParentType(int id, SystemObjects obj)
         {
             if ( id < 0)
-                return default(AssetType);
+                return null;
 
             var sql = @"select a.id from IntersectType I
                                inner join [Predicate] P on P.ID = I.PredicateID
@@ -1086,9 +1087,22 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
             var parentId = Query<int>(sql, new { type = (int)PredicateType.InterTypeHierarchy, @object = obj.ToString(), objectId = id }).FirstOrDefault();
 
             if (parentId < 1)
-                return default(AssetType);
+                return null;
 
             return GetById<AssetType>(parentId);
+        }
+
+        public AssetType GetParentTypeById(long assetTypeId)
+        {
+            if (assetTypeId < 0)
+                return null;
+
+            var assetType = GetById<AssetType>(((int)assetTypeId));
+
+            if (assetType == null)
+                return null;
+
+            return GetParentType(assetType.ObjectID, SystemObjectHelper.GetSystemObjects(assetType.Class));
         }
 
         public bool UpdateObjectParentRelationship(SystemObjects type, int typeId, SystemObjects objectType, int parentID, int objectID, PredicateType predicateType = PredicateType.InterTypeHierarchy)

@@ -14,6 +14,7 @@ import { Title } from '@angular/platform-browser';
 import { WorkflowService } from '../../services/workflow.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { AuthenticationService } from '../../services/authentication.service';
+import { map } from 'rxjs/operators';
 
 declare var CurrentResourceID;
 
@@ -83,16 +84,18 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
     private load() {
         this.isLoading = true;
         this.workflowService.getAssignedWorkflowInstancesByTypeId(this.workflowTypeId, this.resourceID, this.version, this.stepId)
-            .then(res => {
-                this.selection = [];
-                this.items = res.items;
-                this.workflow = res.workflow;
-            })
-            .then(() => this.workflowService.getAssignedWorkflowInstancesSummary(this.workflowTypeId, this.resourceID, this.version, this.stepId))
-            .then(res => {
-                    this.isLoading = false;
-                    this.assignmentSummary = res.item;
-         });
+            .pipe(
+                map(res => {
+                    this.selection = [];
+                    this.items = res.items;
+                    this.workflow = res.workflow;
+                    }),
+                map(() => this.workflowService.getAssignedWorkflowInstancesSummary(this.workflowTypeId, this.resourceID, this.version, this.stepId)
+                    .subscribe(res => {
+                        this.isLoading = false;
+                        this.assignmentSummary = res.item;
+                    })))
+                .subscribe();
                
     }
 

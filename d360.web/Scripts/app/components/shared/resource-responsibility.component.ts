@@ -74,14 +74,14 @@ export class ResourceResponsibilityComponent implements OnChanges {
         this.isMe = (this.resourceId == CurrentResourceID);
 
         this.resourcesService.getResponsibilityBreakdownByResource(this.resourceId, this.responsibilityTypeId)
-            .then(r => {
+            .subscribe(r => {
                 this.items = r;
                 if (this.items && this.items.length > 0)
                     this.select(this.items[0]);
 
                 if (this.resource == null)
                     this.resourcesService.getResource(this.resourceId)
-                        .then(res => {
+                        .subscribe(res => {
                             this.resource = res;
                             this.isLoading = false;
                         });

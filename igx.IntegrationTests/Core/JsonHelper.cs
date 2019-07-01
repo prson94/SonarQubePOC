@@ -56,6 +56,10 @@ namespace igx.IntegrationTests.Core
             return false;
         }
 
+        public static void UpdateValueOnProperty(this JToken @object, string property, object value)
+        {
+            @object[property] = value.ToString();
+        }
         public static void UpdateValueOnProperty(this JToken @object, string property, string value)
         {
             @object[property] = value;
@@ -83,10 +87,10 @@ namespace igx.IntegrationTests.Core
 
         public static bool AreEqualOnField(JObject o1, JObject o2, string prop, bool checkLowerCase = false)
         {
-            if(checkLowerCase)
+            if (checkLowerCase)
                 return o1[prop].ToString().ToLower() == o2[prop].ToString().ToLower();
 
-            return o1[prop].ToString() == o2[prop].ToString(); 
+            return o1[prop].ToString() == o2[prop].ToString();
         }
 
         public static bool DoesContainFields(JToken obj, params string[] fields)

@@ -17,6 +17,7 @@ import { WorkflowService } from '../../../../services/workflow.service';
 import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
 import { ResponsibilityTypeService } from '../../../../services/responsibility-type.service';
 import { FormMode } from '../../../../models/form.model';
+import { map } from 'rxjs/operators';
 
 @Component({
     selector: 'd3s-workflow-step-form-editor',
@@ -90,20 +91,21 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         this.usedFields = this.workflowFieldsService.getUsedFields();
 
         if (this.destination.length < 1)
-            promises.push(this.workflowService.getEmailTaskRecipientType()
-                .then(r => {
-                    r.forEach(e => {
-                        if (e.ID < 1)
-                            return;
-                        this.destination.push({
-                            value: EmailTaskRecipientType[e.ID],
-                            label: e.Name
+         this.workflowService.getEmailTaskRecipientType()
+                .pipe(
+                    map(r => {
+                    this.isLoading = true;
+                        r.forEach(e => {
+                            if (e.ID < 1)
+                                return;
+                            this.destination.push({
+                                value: EmailTaskRecipientType[e.ID],
+                                label: e.Name
+                            });
                         });
-                    });
-                }));
-
-        this.isLoading = true;
-        Promise.all(promises).then(() => this.isLoading = false);
+                    }),
+                    map(() => this.isLoading = false)
+             ).subscribe();
     }
 
     ngOnChanges() {
@@ -338,13 +340,13 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         if (e == 'boolean') this.newField['@required'] = true;
         if (e == 'relationshipType' && this.intersectTypes == null) {
             this.workflowService.getAllowIntersectTypes(this.objectType, this.objectId)
-                .then(r => {
+                .subscribe(r => {
                     this.intersectTypes = r;
                 });
         }
         if (e == 'list' && this.lookups == null) {
             this.workflowService.getWorkflowVersionStepFormLookups(this.objectType, this.objectId)
-                .then(r => {
+                .subscribe(r => {
                     this.lookups = r;
                 });
         }

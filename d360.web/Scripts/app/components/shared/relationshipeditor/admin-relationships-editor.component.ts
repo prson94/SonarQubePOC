@@ -107,7 +107,7 @@ export class AdminRelationshipsEditor {
 
     private loadItem(id: number) { 
         this.isLoadingItem = true;       
-        this.relationshipsService.getRelation(id).then(result => {
+        this.relationshipsService.getRelation(id).subscribe(result => {
             this.editedRelationship = result;
             this.isLoadingItem = false;
             if (this.editedRelationship.Subject) {
@@ -152,7 +152,7 @@ export class AdminRelationshipsEditor {
 
     private loadPredicates(subject: string, subjectId: number, object?: string, objectId?: number, predicateId?: number) {
         this.relationshipsService.getRelationshipPredicates(subject, subjectId, object, objectId, predicateId)
-            .then(result => {
+            .subscribe(result => {
                 this.predicates = [];
                 this.predicates.push({ label: 'Select A Predicate', value: null });
                 for (let item of result) {
@@ -166,7 +166,7 @@ export class AdminRelationshipsEditor {
 
     private loadSubjectOptions() {
         this.isLoading = true;
-        this.relationshipsService.getSubjectOptions().then(result => {            
+        this.relationshipsService.getSubjectOptions().subscribe(result => {            
             this.subjectOptions = [];
             this.subjectOptions.push({ label: 'Select Subject', value: null });
             for (let item of result) {
@@ -181,7 +181,7 @@ export class AdminRelationshipsEditor {
 
     private loadObjectOptions(subject: string, subjectId: number, object?: string, objectId?: number, predicateId?: number) {
         this.isLoadingObject = true;
-        this.relationshipsService.getObjectOptions(subjectId, subject, objectId, object, predicateId).then(result => {
+        this.relationshipsService.getObjectOptions(subjectId, subject, objectId, object, predicateId).subscribe(result => {
             this.objectOptions = [];   
             this.objectOptions.push({ label: 'Select Object', value: null });     
             for (let item of result) {
@@ -196,7 +196,7 @@ export class AdminRelationshipsEditor {
 
     private loadCardinalityOptions() {
         this.isLoading = true;
-        this.relationshipsService.getCardinalityOptions().then(result => {
+        this.relationshipsService.getCardinalityOptions().subscribe(result => {
             this.cardinalityOptions = [];
             this.cardinalityOptions.push({ label: 'Select Cardinality', value: null });
             for (let item of result) {

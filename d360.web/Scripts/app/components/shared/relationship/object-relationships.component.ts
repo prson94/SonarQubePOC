@@ -54,7 +54,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
 
     loadRelationshipItems() {
         this.relationshipsService.getRelationshipCounts(this.objectType, this.objectID)
-            .then(result => {
+            .subscribe(result => {
                 this.relationshipItems = result;
                 this.selected = null;
                 for (let relation of this.relationshipItems) {

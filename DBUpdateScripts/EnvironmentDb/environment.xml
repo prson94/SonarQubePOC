@@ -229,5 +229,10 @@
   <include file="scripts/GOV-7374.xml"/>
   <include file="scripts/GOV-7499.xml"/>
   <include file="scripts/GOV-7524.xml"/>
+  <include file="scripts/GOV-4868.xml"/>
   <include file="scripts/GOV-7523.xml"/>
+  <include file="scripts/GOV-7556.xml"/>
+  <include file="scripts/GOV-7481.xml"/>
+  <include file="scripts/GOV-4863.xml"/>
+  <include file="scripts/GOV-7371.xml"/>
 </databaseChangeLog>

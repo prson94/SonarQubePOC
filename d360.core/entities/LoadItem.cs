@@ -21,6 +21,12 @@ namespace d360.core.entities
         public string Object { get; set; }
 
         [DataMember]
+        public string KeyHash { get; set; }
+
+        [DataMember]
+        public string FieldHash { get; set; }
+
+        [DataMember]
         public int? ObjectID { get; set; }
 
         [DataMember]

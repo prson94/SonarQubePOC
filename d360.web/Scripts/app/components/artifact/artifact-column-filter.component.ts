@@ -24,6 +24,8 @@ import {
 import {ObjectRelationship} from '../../models/relationship.model';
 import {AttributeType} from '../../models/attribute-type.model';
 import {FilterExpression, FilterField, FilterFieldType} from '../../models/filter-field.model';
+import { map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 @Component({
     selector: 'd3s-artifact-column-filter',
@@ -242,7 +244,7 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
             filter.Data.relationshipType = target.Data;
             filter.Type = FilterFieldType.Relationship;
 
-            this.loadRelationshipValues(filter.Data);
+            this.loadRelationshipValues(filter.Data).subscribe();
         } else if (target.Type == FilterFieldType.Attribute) {
             filter.Data = new GridAttributeFilterExpression();
             filter.Data.attributeType = target.Data.ID;
@@ -364,16 +366,17 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
 
     //#region Relationship Logic
 
-    private loadRelationshipValues(expr: GridRelationshipFilterExpression) {
+    private loadRelationshipValues(expr: GridRelationshipFilterExpression): Observable<any> {
         return this.relationshipsService
             .getRelatedObjects(expr.relationshipType.TargetType, expr.relationshipType.TargetTypeID, expr.relationshipType.IntersectTypeID)
-            .then(result => {
+            .pipe(
+                map(result => {
                 expr.options = [];
                 for (let item of result) {
                     expr.options.push({label: item.Name, value: item.ID});
                 }
                 this.ref.markForCheck();
-            });
+            }));
     }
 
     private addRelationshipTypesToAvailable(relTypes) {
@@ -389,7 +392,7 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
             this.internalFilters = this.internalFilters.filter(x => x.Type != FilterFieldType.Relationship);
 
             for (let rel of this.relationshipFilters) {
-                this.loadRelationshipValues(rel).then(r => {
+                this.loadRelationshipValues(rel).subscribe(() => {
                     this.internalFilters.push({
                         Type: FilterFieldType.Relationship,
                         Data: rel,
@@ -408,7 +411,7 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
 
                 this.relationshipsService
                     .getObjectRelations('ArtifactType', this.artifactType.ID)
-                    .then(result => {
+                    .subscribe(result => {
                         this.relationshipTypes = result;
                         this.addRelationshipTypesToAvailable(this.relationshipTypes);
                         this.ref.markForCheck();

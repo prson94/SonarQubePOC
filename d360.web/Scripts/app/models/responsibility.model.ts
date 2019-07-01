@@ -1,10 +1,11 @@
 ﻿
 import { SelectItem } from '../models/form.model';
+import { Observable } from 'rxjs';
 
 export interface IResponsibilityService {
-    getResponsibilityDetail(assetID: number): Promise<ResponsibilityItemDetail[]>;
-    getResponsibilityItemEditor(assetID: number, responsibilityID: number): Promise<ResponsibilityEditorModel>;
-    postResponsibility(responsibility: ResponsibilityItem): Promise<any>;
+    getResponsibilityDetail(assetID: number): Observable<ResponsibilityItemDetail[]>;
+    getResponsibilityItemEditor(assetID: number, responsibilityID: number): Observable<ResponsibilityEditorModel>;
+    postResponsibility(responsibility: ResponsibilityItem): Observable<any>;
 }
 
 export class ResponsibilityEditorModel {

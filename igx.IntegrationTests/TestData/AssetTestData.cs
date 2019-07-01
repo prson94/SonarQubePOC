@@ -1,23 +1,18 @@
-﻿using d360.core.entities;
-using d360.core.enums;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace igx.IntegrationTests.TestData
 {
     public sealed class AssetTestData
     {
-        private static AssetTypeInsert _assetTypeInsert = null;
-        private static List<AssetInsert> _assetInserts = null;
-        private static List<AssetUpdate> _assetUpdates = null;
+        private static JObject _assetTypeInsert = null;
+        private static JArray _assetInserts = null;
+        private static JArray _assetUpdates = null;
         private static string _executionUrl = null;
 
         private static readonly object padlock = new object();
-        public static AssetTypeInsert assetTypeInsert
+        public static JObject assetTypeInsert
         {
             get
             {
@@ -25,18 +20,19 @@ namespace igx.IntegrationTests.TestData
                 {
                     if (_assetTypeInsert == null)
                     {
-                        _assetTypeInsert = new AssetTypeInsert()
-                        {
-                            Name = "AssetIntegrationTest-" + Guid.NewGuid().ToString(),
-                            Class = AssetTypeClass.Glossary,
-                            DisplayFormat = "{Name}",
-                            Description = "Integration test description!",
-                            IconStyle = new IconStyleInsert()
-                            {
-                                BackColor = "#FFF",
-                                ForeColor = "#000"
-                            }
-                        };
+                        JObject jObject = new JObject();
+                        jObject.Add(new JProperty("Name", "AssetIntegrationTest-" + Guid.NewGuid().ToString()));
+                        jObject.Add(new JProperty("Class", "Glossary"));
+                        jObject.Add(new JProperty("DisplayFormat", "{Name}"));
+                        jObject.Add(new JProperty("Description", "Integration test description!"));
+
+                        JObject iconStyle = new JObject();
+                        iconStyle.Add(new JProperty("BackColor", "#FFF"));
+                        iconStyle.Add(new JProperty("ForeColor", "#000"));
+
+                        jObject.Add(new JProperty("IconStyle", iconStyle));
+
+                        _assetTypeInsert = jObject;
                     }
                     return _assetTypeInsert;
                 }
@@ -62,7 +58,7 @@ namespace igx.IntegrationTests.TestData
             }
         }
 
-        public static List<AssetInsert> assetInserts
+        public static JArray assetInserts
         {
             get
             {
@@ -70,22 +66,28 @@ namespace igx.IntegrationTests.TestData
                 {
                     if (_assetInserts == null)
                     {
-                        var fields1 = new Dictionary<string, string>();
-                        fields1.Add("Name", "GUID_NAME_" + Guid.NewGuid().ToString());
-                        var first = new AssetInsert() { Fields = fields1 };
-                        var fields2 = new Dictionary<string, string>();
-                        fields2.Add("Name", "V2GUID_NAME_" + Guid.NewGuid().ToString());
-                        var second = new AssetInsert() { Fields = fields2 };
+                        JArray inserts = new JArray();
 
-                        _assetInserts = new List<AssetInsert>();
-                        _assetInserts.Add(first);
-                        _assetInserts.Add(second);
+                        JObject asset1 = new JObject();
+                        JObject field1 = new JObject();
+                        field1.Add(new JProperty("Name", "GUID_NAME_" + Guid.NewGuid().ToString()));
+                        asset1.Add("Fields", field1);
+
+                        JObject asset2 = new JObject();
+                        JObject field2 = new JObject();
+                        field2.Add(new JProperty("Name", "v2GUID_NAME_" + Guid.NewGuid().ToString()));
+                        asset2.Add("Fields", field2);
+
+                        inserts.Add(asset1);
+                        inserts.Add(asset2);
+
+                        _assetInserts = inserts;
                     }
                     return _assetInserts;
                 }
             }
         }
-        public static List<AssetUpdate> assetUpdates
+        public static JArray assetUpdates
         {
             get
             {
@@ -93,20 +95,40 @@ namespace igx.IntegrationTests.TestData
                 {
                     if (_assetUpdates == null)
                     {
-                        var fields1 = new Dictionary<string, string>();
-                        fields1.Add("Name", "PUT/EDITED-GUID_NAME_" + Guid.NewGuid().ToString());
-                        var first = new AssetUpdate() { Fields = fields1 };
-                        var fields2 = new Dictionary<string, string>();
-                        fields2.Add("Name", "PUT/EDITED-V2GUID_NAME_" + Guid.NewGuid().ToString());
-                        var second = new AssetUpdate() { Fields = fields2 };
+                        JArray updates = new JArray();
 
-                        _assetUpdates = new List<AssetUpdate>();
-                        _assetUpdates.Add(first);
-                        _assetUpdates.Add(second);
+                        JObject asset1 = new JObject();
+                        JObject field1 = new JObject();
+                        field1.Add(new JProperty("Name", "PutEdited/GUID_NAME_" + Guid.NewGuid().ToString()));
+                        asset1.Add("Fields", field1);
+
+                        JObject asset2 = new JObject();
+                        JObject field2 = new JObject();
+                        field2.Add(new JProperty("Name", "PutEdited/v2GUID_NAME_" + Guid.NewGuid().ToString()));
+                        asset2.Add("Fields", field2);
+
+                        updates.Add(asset1);
+                        updates.Add(asset2);
+                        _assetUpdates = updates;
                     }
                     return _assetUpdates;
                 }
             }
+        }
+
+        public static JArray GetDeleteAssetJSON(List<Guid> uids)
+        {
+            JArray forDeletes = new JArray();
+
+            foreach (var uid in uids)
+            {
+                JObject jObject = new JObject();
+                jObject.Add(new JProperty("Uid", uid.ToString()));
+                jObject.Add(new JProperty("Cascade", true));
+                forDeletes.Add(jObject);
+            }
+
+            return forDeletes;
         }
 
 

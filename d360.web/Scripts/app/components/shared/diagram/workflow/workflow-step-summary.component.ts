@@ -13,6 +13,7 @@ import { ResponsibilityTypeService } from '../../../../services/responsibility-t
 import { WorkflowService } from '../../../../services/workflow.service';
 
 import * as _ from 'lodash';
+import { map } from 'rxjs/operators';
 
 
 @Component({
@@ -52,9 +53,13 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
         this.isLoading = true;
         this.responsibilityService.getResponsibilityTypes()
             .then(r => this.responsibilities = r)
-            .then(() => this.workflowService.getWorkflowFieldTypes(this.objectId, this.object, true, this.issueObject))
-            .then(r => this.fields = r)
-            .then(() => this.load());
+            .then(() => this.workflowService.getWorkflowFieldTypes(this.objectId, this.object, true, this.issueObject)
+                .pipe(
+                    map(r => this.fields = r),
+                    map(() => this.load())
+                ).subscribe()
+            );
+
     }
     ngOnChanges() {
         this.load();
@@ -108,12 +113,12 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
 
     getLookups() {
         this.workflowService.getAllowIntersectTypes(this.object, this.objectId)
-            .then(r => {
+            .subscribe(r => {
                 this.intersectTypes = r;
             });
 
         this.workflowService.getWorkflowVersionStepFormLookups(this.object, this.objectId)
-            .then(r => {
+            .subscribe(r => {
                 this.lookups = r;
             });
     }
