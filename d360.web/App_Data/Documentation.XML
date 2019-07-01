@@ -2813,6 +2813,12 @@
             <param name="relationships">The list of relationships for deletions.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
+        <member name="M:d360.web.Controllers.V2.RelationshipsController.ExportTypesToExcel">
+            <summary>
+            GET a list of relationship types.
+            </summary>
+            <returns>A excel file containing relationships types.</returns>
+        </member>
         <member name="T:d360.web.Controllers.V2.AssetsController">
             <summary>
             This service houses all endpoints handling glossary-related data such as artifacts and models.
