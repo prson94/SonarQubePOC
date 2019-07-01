@@ -233,4 +233,5 @@
   <include file="scripts/GOV-7523.xml"/>
   <include file="scripts/GOV-7556.xml"/>
   <include file="scripts/GOV-7481.xml"/>
+  <include file="scripts/GOV-4863.xml"/>
 </databaseChangeLog>
