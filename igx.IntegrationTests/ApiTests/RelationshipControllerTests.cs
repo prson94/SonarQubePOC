@@ -7,6 +7,10 @@ using Xunit.Priority;
 using Xunit;
 using System.Linq;
 using System.Xml;
+using System.Net.Http;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace igx.IntegrationTests.ApiTests
 {
@@ -153,15 +157,219 @@ namespace igx.IntegrationTests.ApiTests
         }
 
         [Fact, Priority(60)]
-        public async void CreateAssetsForRelationship()
+        public async void DeleteAssetsRelationship()
         {
             RelationshipTestData.RelationshipItem = RelationshipTestData.Relationships["items"][0] as JObject;
 
-            var assetType1Uid = RelationshipTestData.RelationshipItem["Subject"]["AssetTypeUid"];
-            var assetType2Uid = RelationshipTestData.RelationshipItem["Object"]["AssetTypeUid"];
+            string endPointUrl = $"{URIHelper.RelationshipsUri}/types/{RelationshipTestData.RelationshipItem["RelationshipTypeUid"].ToString()}";
+
+            HttpRequestMessage request = new HttpRequestMessage
+            {
+                Content = RelationshipTestData.GetRelationshipForDelete(new List<string>() { RelationshipTestData.RelationshipItem["Uid"].ToString() }).AsStringContent(),
+                Method = HttpMethod.Delete,
+                RequestUri = new Uri(endPointUrl)
+            };
+
+            var response = await httpClient.SendAsync(request);
+            var content = await response.Content.ReadAsStringAsync();
+
+            var parsedData = JsonConvert.DeserializeObject<JArray>(content);
+
+            Assert.True(parsedData.All(x => x["Success"].ToString().ToLower() == "true"));
+
+
+        }
+
+        [Fact, Priority(70)]
+        public async void GetRelationshipsAfterDelete()
+        {
+            string endpointUrl = $"{URIHelper.RelationshipsUri}";
+
+            var response = await httpClient.GetAsync(endpointUrl);
+            var content = await response.Content.ReadAsStringAsync();
+
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+
+            var parsedData = JsonConvert.DeserializeObject<JObject>(content);
+
+
+            Assert.True(!string.IsNullOrEmpty(content), XMsg.NoContent);
+
+            bool isElementFound = false;
+
+            foreach(var item in parsedData["items"])
+            {
+                if (item["Uid"].ToString() == RelationshipTestData.RelationshipItem["Uid"].ToString())
+                    isElementFound = true;
+            }
+
+            Assert.False(isElementFound);
+        }
+
+        [Fact, Priority(80)]
+        public async void PostNewRelationship()
+        {
+            string endpointUrl = $"{URIHelper.RelationshipsUri}/{RelationshipTestData.RelationshipItem["RelationshipTypeUid"]}";
+
+
+            var forInsert = RelationshipTestData.GetRelationshipsForInsert(
+                new List<string>() { RelationshipTestData.RelationshipItem["Subject"]["Uid"].ToString() }, 
+                new List<string>() { RelationshipTestData.RelationshipItem["Object"]["Uid"].ToString() }
+                );
+
+            var response = await httpClient.PostAsync(endpointUrl, forInsert.AsStringContent());
+            var content = await response.Content.ReadAsStringAsync();
+
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+
+            var parsedData = JsonConvert.DeserializeObject<JArray>(content);
+
+
+            Assert.True(!string.IsNullOrEmpty(content), XMsg.NoContent);
+            Assert.True(parsedData.All(x => x["Success"].ToString().ToLower() == "true"));
+
+        }
+
+        [Fact, Priority(90)]
+        public async void GetRelationshipsAfterPost()
+        {
+            string endpointUrl = $"{URIHelper.RelationshipsUri}";
+
+            var response = await httpClient.GetAsync(endpointUrl);
+            var content = await response.Content.ReadAsStringAsync();
+
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+
+            var parsedData = JsonConvert.DeserializeObject<JObject>(content);
+
+
+            Assert.True(!string.IsNullOrEmpty(content), XMsg.NoContent);
+
+            bool isElementFound = false;
+
+            foreach (var item in parsedData["items"])
+            {
+                if (item["Subject"]["Uid"].ToString() == RelationshipTestData.RelationshipItem["Subject"]["Uid"].ToString() 
+                    && item["Object"]["Uid"].ToString() == RelationshipTestData.RelationshipItem["Object"]["Uid"].ToString())
+                    isElementFound = true;
+            }
+
+            Assert.True(isElementFound);
+            RelationshipTestData.Relationships = parsedData;
+
+        }
+
+        [Fact, Priority(100)]
+        public async void DeleteAssetsRelationshipBeforeBatch()
+        {
+            RelationshipTestData.RelationshipItem = RelationshipTestData.Relationships["items"][0] as JObject;
+
+            string endPointUrl = $"{URIHelper.RelationshipsUri}/types/{RelationshipTestData.RelationshipItem["RelationshipTypeUid"].ToString()}";
+
+            HttpRequestMessage request = new HttpRequestMessage
+            {
+                Content = RelationshipTestData.GetRelationshipForDelete(new List<string>() { RelationshipTestData.RelationshipItem["Uid"].ToString() }).AsStringContent(),
+                Method = HttpMethod.Delete,
+                RequestUri = new Uri(endPointUrl)
+            };
+
+            var response = await httpClient.SendAsync(request);
+            var content = await response.Content.ReadAsStringAsync();
+
+            var parsedData = JsonConvert.DeserializeObject<JArray>(content);
+
+            Assert.True(parsedData.All(x => x["Success"].ToString().ToLower() == "true"));
+
 
         }
 
 
+        [Fact, Priority(110)]
+        public async void BatchPostNewRelationship()
+        {
+            string endpointUrl = $"{URIHelper.RelationshipsUri}/batch/{RelationshipTestData.RelationshipItem["RelationshipTypeUid"]}";
+
+
+            var forInsert = RelationshipTestData.GetRelationshipsForInsert(
+                new List<string>() { RelationshipTestData.RelationshipItem["Subject"]["Uid"].ToString() },
+                new List<string>() { RelationshipTestData.RelationshipItem["Object"]["Uid"].ToString() }
+                );
+
+            var response = await httpClient.PostAsync(endpointUrl, forInsert.AsStringContent());
+            var content = await response.Content.ReadAsStringAsync();
+
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+
+            var parsedData = JsonConvert.DeserializeObject<JObject>(content);
+
+
+            Assert.True(!string.IsNullOrEmpty(content), XMsg.NoContent);
+            Assert.True(JsonHelper.DoesContainFields(parsedData, "ExecutionID", "Message", "Uri"));
+            Assert.True(Guid.Parse(parsedData["ExecutionID"].ToString()) != Guid.Empty);
+
+            RelationshipTestData.ExecutionUri = parsedData["Uri"].ToString();
+
+        }
+
+        [Fact, Priority(120)]
+        private async Task<bool> ExecutionStatusCheck()
+        {
+
+            int retryCount = 1;
+            int retryMax = 50;
+            bool doRetry = true;
+            bool isSuccess = false;
+
+            while (doRetry)
+            {
+                var response = await httpClient.GetAsync(RelationshipTestData.ExecutionUri);
+                var content = await response.Content.ReadAsStringAsync();
+                var parsedData = JsonConvert.DeserializeObject<JObject>(content);
+
+
+                if (parsedData["Results"] != null && parsedData["Results"].Count() > 0)
+                {
+                    doRetry = false;
+                    isSuccess = parsedData["Results"].All(x => x["Success"].ToString().ToLower() == "true");
+                }
+                retryCount++;
+                if (retryCount == retryMax) doRetry = false;
+
+                Thread.Sleep(2000);
+            }
+
+            return isSuccess;
+        }
+
+        public async void GetRelationshipsAfterBatchPost()
+        {
+            string endpointUrl = $"{URIHelper.RelationshipsUri}";
+
+            var response = await httpClient.GetAsync(endpointUrl);
+            var content = await response.Content.ReadAsStringAsync();
+
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+
+            var parsedData = JsonConvert.DeserializeObject<JObject>(content);
+
+
+            Assert.True(!string.IsNullOrEmpty(content), XMsg.NoContent);
+
+            bool isElementFound = false;
+
+            foreach (var item in parsedData["items"])
+            {
+                if (item["Subject"]["Uid"].ToString() == RelationshipTestData.RelationshipItem["Subject"]["Uid"].ToString()
+                    && item["Object"]["Uid"].ToString() == RelationshipTestData.RelationshipItem["Object"]["Uid"].ToString())
+                    isElementFound = true;
+            }
+
+            Assert.True(isElementFound);
+        }
     }
 }

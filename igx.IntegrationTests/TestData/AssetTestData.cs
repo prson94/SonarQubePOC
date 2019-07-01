@@ -12,7 +12,7 @@ namespace igx.IntegrationTests.TestData
         private static string _executionUrl = null;
 
         private static readonly object padlock = new object();
-        public static JObject assetTypeInsert
+        public static JObject AssetTypeInsert
         {
             get
             {
@@ -58,7 +58,7 @@ namespace igx.IntegrationTests.TestData
             }
         }
 
-        public static JArray assetInserts
+        public static JArray AssetInserts
         {
             get
             {
@@ -87,7 +87,7 @@ namespace igx.IntegrationTests.TestData
                 }
             }
         }
-        public static JArray assetUpdates
+        public static JArray AssetUpdates
         {
             get
             {
