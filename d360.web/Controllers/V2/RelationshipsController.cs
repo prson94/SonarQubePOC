@@ -4,6 +4,7 @@ using d360.core.enums;
 using d360.core.queue;
 using d360.extensions;
 using d360.model;
+using d360.model.DataAccessLayer;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Models.Attributes;
@@ -40,12 +41,14 @@ namespace d360.web.Controllers.V2
 
         IQueueSource QueueSource;
         IStorageProvider Storage;
+        IRelationshipRepository RelationshipRepository;
 
-        public RelationshipsController(ICommunityContext community, ICompanyContext company, IQueueSource queueSource, IStorageProvider storage)
+        public RelationshipsController(ICommunityContext community, ICompanyContext company, IQueueSource queueSource, IStorageProvider storage, IRelationshipRepository relationshipRepository)
             : base(community, company)
         {
             QueueSource = queueSource;
             Storage = storage;
+            this.RelationshipRepository = relationshipRepository;
         }
 
         #endregion
@@ -73,7 +76,7 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                var predicates = await Company.QueryAsync<PredicateApiViewModel>("select Uid, Name, Inverse, IsSystem, [Type] from [Predicate] order by [Type], Name");
+                IEnumerable<PredicateApiViewModel> predicates = await RelationshipRepository.GetPredicates();
 
                 #region Where clause action
 
@@ -112,6 +115,7 @@ namespace d360.web.Controllers.V2
             }
         }
 
+   
         /// <summary>
         /// GET a list of predicate functional types.
         /// </summary>
@@ -398,7 +402,7 @@ namespace d360.web.Controllers.V2
                 #endregion
 
                 var queryParams = Request.GetQueryNameValuePairs().ToList();
-                var items = await Company.GetRelationships(queryParams);
+                var items = await RelationshipRepository.GetRelationships(queryParams);
                 return Request.CreateResponse(HttpStatusCode.OK, items);
             }
             catch (Exception ex)
