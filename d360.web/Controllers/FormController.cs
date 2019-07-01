@@ -27,6 +27,7 @@ using System.Xml.Linq;
 using System.Configuration;
 using d360.core.helpers;
 using Ganss.XSS;
+using System.Text;
 
 namespace d360.web.Controllers
 {    
@@ -8794,8 +8795,12 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
                 if (model.IsLookup && !model.AllowMultipleValues && model.Lookups != null)
                 {
+                    IEnumerable<string> values;
+
+                    values = model.Lookups.Select(m => (string.IsNullOrEmpty(m.Label) ? m.Value : $"{m.Label} [{m.Value}]"));
+
                     var dv = document.CreateDataValidation(2, i + 1, model.Lookups.Count + 1, i + 1);
-                    CreateExcelList(lookupColumns++, document, "Lookups", dv, model.Lookups.Select(m => m.Value));
+                    CreateExcelList(lookupColumns++, document, "Lookups", dv, values);
                     document.AddDataValidation(dv);
                 }
 
@@ -8830,6 +8835,26 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             dataValidation.AllowList($"={range}", true, true);
         }
 
+        private void CreateExcelList(int numLookupColumns, SLDocument document, string lookupWorksheetName, SLDataValidation dataValidation, Dictionary<string, string> values)
+        {
+            if (!values.Any()) return;
+
+            var currentSheet = document.GetCurrentWorksheetName();
+            document.SelectWorksheet(lookupWorksheetName);
+            int rowNum = 0;
+            foreach (var key in values.Keys)
+            {
+                document.SetCellValue(++rowNum, numLookupColumns, WebUtility.HtmlDecode(key));
+                document.SetCellValue(rowNum, numLookupColumns + 1, WebUtility.HtmlDecode(values[key]));
+            }
+
+            document.SelectWorksheet(currentSheet);
+
+            //add a column to the given lookup worksheet with the specified values
+            string range = SLConvert.ToCellRange(lookupWorksheetName, 1, numLookupColumns, rowNum, numLookupColumns + 1, true);
+            dataValidation.AllowList($"={range}", true, true);
+        }
+
         [ HttpPost, AjaxValidateAntiForgeryToken, Route("AddLoad")]
         public JsonResult AddLoad(LoadFilePostModel model)
         {
@@ -8860,6 +8885,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                     if (extension == ".xlsx")
                     {
                         var typeInfo = model.Type.Split('|');
+                        var assetType = Company.Query<AssetType>("select * from AssetType where Object = @object and ObjectID = @objectID", new { @object = typeInfo[0], objectID = typeInfo[1] }).FirstOrDefault();
 
                         load = new Load
                         {
@@ -8870,7 +8896,8 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                             Object = typeInfo[0],
                             ObjectID = int.Parse(typeInfo[1]),
                             DateStarted = DateTime.UtcNow,
-                            UpdatedBy = Company.CurrentResourceID
+                            UpdatedBy = Company.CurrentResourceID,
+                            AssetTypeUid = assetType?.uid
                         };
 
                         xls = new SLDocument(stream);
@@ -8933,7 +8960,11 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
                 if (success)
                 {
+                    //TODO: cleanup
+                    load.File = null;
                     Company.Add<Load>(load);
+                    Storage.CreateFolder($"{constants.COMPANY_BULK_LOAD_FOLDER}");
+                    Storage.CreateFile($"{constants.COMPANY_BULK_LOAD_FOLDER}", $"{Company.CurrentCompanyID}/load_{load.ID}.{load.Extension}", new MemoryStream(byteArray));
                     Company.Enqueue(Config.GetValue<string>("BulkLoadQueue"), new BulkLoadInfo { CompanyID = Company.CurrentCompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
 
                     json = jsonSuccess("File uploaded and queued for processing.", load.ID.ToString(), "A", HttpStatusCode.Created);
@@ -9022,7 +9053,14 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             }
 
             var load = Company.GetById<Load>(id);
-            return File(load.File, "application/vnd.ms-excel", $"{load.DateCompleted.ToString()}.xlsx");
+            var bytes = load.File;
+
+            if (bytes == null)
+            {
+                var fileString = Storage.GetFileContentsAsString($"{constants.COMPANY_BULK_LOAD_FOLDER}/{Company.CurrentCompanyID}", $"load_{load.ID}.{load.Extension}");
+                bytes = Encoding.Default.GetBytes(fileString);
+            }
+            return File(bytes, "application/vnd.ms-excel", $"{load.DateCompleted.ToString()}.xlsx");
         }
 
         #endregion

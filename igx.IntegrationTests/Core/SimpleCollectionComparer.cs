@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,27 +7,38 @@ using System.Threading.Tasks;
 
 namespace igx.IntegrationTests.Core
 {
-    public class SimpleCollectionComparere
+    public class SimpleJsonComparer
     {
-        public static bool IsEqual<T>(IEnumerable<T> x, IEnumerable<T> y)
+        public static bool IsEqual(JToken x, JToken y)
+        {
+            return IsEqual(x as JArray, y as JArray);
+        }
+
+        public static bool IsEqual(JArray x, JArray y)
         {
             if (x == y) return true;
             if (x.Count() != y.Count()) return false;
 
             for (int i = 0; i < x.Count(); i++)
             {
-                if (!Compare(x.ElementAt(i), y.ElementAt(i))) return false;
+                if (!IsEqual(x.ElementAt(i) as JObject, y.ElementAt(i) as JObject)) return false;
             }
 
             return true;
         }
 
-        private static bool Compare<T>(T x, T y)
+        public static bool IsEqual(JObject x, JObject y)
         {
-            foreach(var prop in x.GetType().GetProperties())
+            List<string> properties = new List<string>();
+            foreach(var prop in x)
             {
-                object val1 = prop.GetValue(x, null);
-                object val2 = prop.GetValue(y, null);
+                properties.Add(prop.Key);
+            }
+
+            foreach(var prop in properties)
+            {
+                object val1 = x[prop];
+                object val2 = y[prop];
 
                 if (val1 == null && val2 == null) continue;
                 if ((val1 == null && val2 != null) || (val2 == null && val1 != null)) return false;

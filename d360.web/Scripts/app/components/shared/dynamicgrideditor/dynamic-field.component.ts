@@ -13,7 +13,7 @@ import {
 } from '@angular/core';
 import {FormGroup} from '@angular/forms';
 import {Editor} from 'primeng/primeng';
-import {Subject} from 'rxjs';
+import {Subject } from 'rxjs';
 
 import {EditorDropDownItem, EditorField} from '../../../models/editor-field.model';
 
@@ -57,6 +57,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     private typeAheadSource$ = new Subject<any>();
     private typeAheadSub: any;
     private typeAheadValue: EditorDropDownItem = null;
+    private loadTypeAheadValue: boolean = false;
     private Increment: number = 1;
     private Min: number;
     private Max: number;
@@ -64,6 +65,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     private colorValue: string = '#000';
 
     private filterException: string = '';
+    private fieldChangeSub;
 
     private isTaxonomyType: boolean = false; // taxonomy type requires its name be mapped to whatever the setting is set to.
     private hasCascadeLoaded: boolean = false;
@@ -98,12 +100,15 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                 }
             }
         }
-
-        //fallback to default behavior
-        this.field.Value = e;
     }
 
     ngOnInit() {
+        if (this.field.FieldType != 'Link') {
+            this.fieldChangeSub = this.form.controls[this.field.FieldName].valueChanges.subscribe(data => {
+                this.onFieldChanges(data);
+            });
+        }
+
         this.cascadeSub = this.cascadeService.cascadeMessage$.subscribe(
             casc => {
                 if (this.field.ParentFieldTypeID > 0 && casc.fieldTypeId == this.field.FieldTypeID) {
@@ -231,8 +236,10 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             if (this.field.Items != null && this.field.Items.length > 0) {
                 let sel: EditorDropDownItem = this.field.Items.find(i => i.Selected == true);
 
+                this.loadTypeAheadValue = true;
                 this.typeAheadValue = sel;
                 this.onSelect(sel);
+                
             }
         }
 
@@ -250,13 +257,44 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         if (this.ed != null && this.ed.quill != null) {
             this.quill = this.ed.quill;
         }
+
+        //set input text on typeahead to current value if applicable, avoids using ngModel binding
+        if (this.loadTypeAheadValue) {
+            this.loadTypeAheadValue = false;
+            if (this.field.UseTypeahead) {
+                let el: any = document.getElementById(this.field.FieldName + '_input');
+                if (el != null && this.typeAheadValue != null)
+                    el.value = this.typeAheadValue.Text;
+            }
+        }
     }
 
     ngOnDestroy() {
         this.cascadeSub.unsubscribe();
         this.relationSub.unsubscribe();
+        if (this.fieldChangeSub != null)
+            this.fieldChangeSub.unsubscribe();
         this.quill = null;
         this.ed = null;
+    }
+
+    onFieldChanges(data: any) {
+        if (this.field.FieldType == 'Lookup') {
+            if (this.field.UseTypeahead) {
+                if (this.typeAheadValue != null)
+                    this.field.Value = this.typeAheadValue.Value;
+                else
+                    this.field.Value = null;
+            } else {
+                this.field.Value = data;
+            }
+            this.listItemChange.emit({ field: this.field, value: data });
+        } else if (this.field.FieldType == 'Html') {
+            this.setEditorContent(data);
+            this.field.Value = data;
+        } else {
+            this.field.Value = data;
+        }
     }
 
     get isValid() {
