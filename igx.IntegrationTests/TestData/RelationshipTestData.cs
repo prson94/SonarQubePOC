@@ -13,8 +13,8 @@ namespace igx.IntegrationTests.TestData
     {
         public static JArray PredicateTypes { get; set; } = null;
         public static JArray RelationshipTypes { get; set; } = null;
-
         public static JObject Relationships { get; set; } = null;
+        public static JObject RelationshipItem { get; set; } = null;
 
 
     }

@@ -152,6 +152,15 @@ namespace igx.IntegrationTests.ApiTests
             RelationshipTestData.Relationships = parsedData;
         }
 
+        [Fact, Priority(60)]
+        public async void CreateAssetsForRelationship()
+        {
+            RelationshipTestData.RelationshipItem = RelationshipTestData.Relationships["items"][0] as JObject;
+
+            var assetType1Uid = RelationshipTestData.RelationshipItem["Subject"]["AssetTypeUid"];
+            var assetType2Uid = RelationshipTestData.RelationshipItem["Object"]["AssetTypeUid"];
+
+        }
 
 
     }
