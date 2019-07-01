@@ -12,7 +12,6 @@
             stripComments="true">
 <![CDATA[
   DROP PROCEDURE IF EXISTS [dbo].[GetTypeHierarchyByObject];
-  DROP PROCEDURE IF EXISTS [bulkload].[UpdateSubjectAreaColumn];
 ]]>
     </sql>
 	<rollback>
@@ -142,7 +141,21 @@ begin
 				inner join cache.ObjectDetails D on D.Object = R.Object and D.ObjectID = R.ObjectID
 	order by	R.[Level] desc
 end
-GO
+]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="SDooley" id="GOV-7371-2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+  DROP PROCEDURE IF EXISTS [bulkload].[UpdateSubjectAreaColumn];
+]]>
+    </sql>
+    <rollback>
+      <![CDATA[
 SET QUOTED_IDENTIFIER ON
 GO
 
@@ -159,7 +172,7 @@ begin
 			inner join TaxonomyType S on lower(S.Name) = lower(T.Value) and T.ColumnIndex = @subjectAreaColumn and T.LoadID = @id
 end
 ]]>
-	</rollback>
+    </rollback>
   </changeSet>
 
   </databaseChangeLog>
