@@ -229,11 +229,11 @@ namespace igx.IntegrationTests.ApiTests
 
         [Theory, Priority(1060)]
         [InlineData(0, 1, "VersionNumber")]
-        [InlineData(0, 15, "VersionNumber")]
-        [InlineData(1, 15, "VersionNumber")]
-        [InlineData(2, 15, "VersionNumber")]
-        [InlineData(3, 15, "CreatedOn")]
-        [InlineData(3, 15, "UpdatedOn")]
+        [InlineData(0, 5, "VersionNumber")]
+        [InlineData(1, 5, "VersionNumber")]
+        [InlineData(2, 5, "VersionNumber")]
+        [InlineData(3, 5, "CreatedOn")]
+        [InlineData(3, 5, "UpdatedOn")]
 
         public async void T_2_07_GetWorkflowVersionPageSizeOrdering(int pageNum, int pageSize, string orderBy)
         {
