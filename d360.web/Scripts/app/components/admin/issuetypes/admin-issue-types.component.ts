@@ -101,7 +101,7 @@ import { Title } from '@angular/platform-browser';
 
 export class AdminIssueTypesComponent extends AdminBaseComponent {
     issueTypes: WorkflowIssueType[] = [];
-    selected: WorkflowIssueType;
+    selected: WorkflowIssueType;    
     showEditor: boolean = false;
     showDelete: boolean = false;
     theDeleteCallback: Function;

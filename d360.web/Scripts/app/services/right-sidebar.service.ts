@@ -8,11 +8,17 @@ export class RightSidebarService {
     private rightSidebarSource = new Subject<RightSidebarItem>();
     private rightSidebarClearSource = new Subject<boolean>();
     private rightSidebarClickedSource = new Subject<RightSidebarItem>();
+    private currentAreaSource = new Subject<any>();
 
     // Observable streams
     rightSidebar$ = this.rightSidebarSource.asObservable();
     rightSidebarClear$ = this.rightSidebarClearSource.asObservable();
     rightSidebarClicked$ = this.rightSidebarClickedSource.asObservable();
+    currentArea$ = this.currentAreaSource.asObservable();
+
+    setCurrentArea(area: string) {
+        this.currentAreaSource.next(area);
+    }
 
     // Service message commands
     showItem(rightSidebarItem: RightSidebarItem) {

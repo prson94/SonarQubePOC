@@ -4,13 +4,24 @@ import { RightSidebarService  } from '../../../services/right-sidebar.service';
 import { RightSidebarItem } from '../../../models/rightsidebar.model';
 import { Subscription }   from 'rxjs';
 import * as _ from 'lodash';
+import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 
 @Component({
     selector: 'd3s-right-sidebar',      
-    template: ` <div *ngIf="items && items.length > 0" class="hide-on-small-only right-sidebar">                
-                    <div *ngFor="let item of items; trackBy: trackById">
-                        <d3s-right-sidebar-item [active]="item.active" (activeChange)="item.active=$event;itemClicked(item)" [title]="item.title" [activeIcons]="item.icons"></d3s-right-sidebar-item>
+    template: ` <div class="title-bar">
+                    <div class="title">
+                        <i class="fa {{area.icon}}"></i>
+                        <h1>{{this.area}}</h1>
+                        <span class="header-badge">
+                            <i class="fa fa-star"></i>
+                        </span>
+                        <span class="header-badge">
+                            <i class="fa fa-circle"></i>
+                        </span>
+                        <button><i class="fa fa-upload"></i><span>Import</span></button>
+                        <button class="primary"><i class="fa fa-plus-circle"></i><span>Create New</span></button>
                     </div>
+                    <div class="tabs"></div>
                 </div>
               `,
     changeDetection: ChangeDetectionStrategy.OnPush
@@ -19,9 +30,19 @@ import * as _ from 'lodash';
 export class RightSidebarComponent {    
     subscription: Subscription;
     subscriptionClear: Subscription;
+    areaSub: Subscription;
     items: RightSidebarItem[];  
     hostUrl: string;
-  
+    area: any;
+
+    /*
+     <div *ngIf="items && items.length > 0" class="hide-on-small-only right-sidebar">
+        <div *ngFor="let item of items; trackBy: trackById">
+            <d3s-right-sidebar-item [active]="item.active" (activeChange)="item.active=$event;itemClicked(item)" [title]="item.title" [activeIcons]="item.icons"></d3s-right-sidebar-item>
+        </div>
+    </div>
+     */
+
     constructor(
         private rightSidebarService: RightSidebarService,
         ref: ChangeDetectorRef,
@@ -29,7 +50,7 @@ export class RightSidebarComponent {
     ) {        
         this.items = [];
         this.subscription = rightSidebarService.rightSidebar$.subscribe(
-            item => {                                
+            item => {
                 this.items.push(item);
                 this.items = _.sortBy(this.items, 'title');                
                 ref.markForCheck();
@@ -39,12 +60,18 @@ export class RightSidebarComponent {
                 this.items.splice(0, this.items.length);                                
                 ref.markForCheck();
             })
+        this.areaSub = rightSidebarService.currentArea$.subscribe(
+            area => {
+                this.area = area;
+            }
+        );
     }
 
     ngOnDestroy() {        
         // prevent memory leak when component destroyed
         this.subscription.unsubscribe();
         this.subscriptionClear.unsubscribe();
+        this.areaSub.unsubscribe();
     }
 
     trackById(index, item) {        
