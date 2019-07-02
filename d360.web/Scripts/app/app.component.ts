@@ -19,7 +19,7 @@ import { CookieService } from './services/cookie.service';
                     <d3s-site-menu (menuChanged)="handleMenuChange($event)" [menuOpen]="menuOpen"></d3s-site-menu>
                 </header>
                 <main>
-                    <d3s-right-sidebar></d3s-right-sidebar>
+                    <d3s-right-sidebar [menuOpen]="menuOpen"></d3s-right-sidebar>
                     <div class="row">
                         <div class="col s12">
                             <div [class.maincontent]="!menuOpen" [class.maincontent-open]="menuOpen">

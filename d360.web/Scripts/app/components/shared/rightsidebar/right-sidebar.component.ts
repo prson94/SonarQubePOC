@@ -1,4 +1,4 @@
-import { Component, ElementRef, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, ElementRef, ChangeDetectionStrategy, ChangeDetectorRef, Input } from '@angular/core';
 import { Router } from '@angular/router';
 import { RightSidebarService  } from '../../../services/right-sidebar.service';
 import { RightSidebarItem } from '../../../models/rightsidebar.model';
@@ -8,20 +8,26 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 
 @Component({
     selector: 'd3s-right-sidebar',      
-    template: ` <div class="title-bar">
+    template: ` <div *ngIf="items && items.length > 0 || true" class="title-bar" [ngClass]="{'menu-open': menuOpen}">
                     <div class="title">
-                        <i class="fa {{area.icon}}"></i>
-                        <h1>{{this.area}}</h1>
+                        <i class="fa fa-book"></i>
+                        <h1 >{{area.title ? area.title: 'D3S'}}</h1>
                         <span class="header-badge">
                             <i class="fa fa-star"></i>
                         </span>
                         <span class="header-badge">
                             <i class="fa fa-circle"></i>
                         </span>
-                        <button><i class="fa fa-upload"></i><span>Import</span></button>
-                        <button class="primary"><i class="fa fa-plus-circle"></i><span>Create New</span></button>
+                        <button class="button"><i class="fa fa-upload"></i><span>Import</span></button>
+                        <button class="primary button"><i class="fa fa-plus-circle"></i><span>Create New</span></button>
                     </div>
-                    <div class="tabs"></div>
+                    <div class="tab-view">
+                        <div class="tab-bar-outer">
+                            <div class="tab-bar can-overflow">
+                                <button class="tab" *ngFor="let item of items; trackBy: trackById">{{item.title}}</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
               `,
     changeDetection: ChangeDetectionStrategy.OnPush
@@ -33,7 +39,8 @@ export class RightSidebarComponent {
     areaSub: Subscription;
     items: RightSidebarItem[];  
     hostUrl: string;
-    area: any;
+    area: any = {icon:'',};
+    @Input() menuOpen: boolean;
 
     /*
      <div *ngIf="items && items.length > 0" class="hide-on-small-only right-sidebar">
