@@ -1,10 +1,10 @@
 ﻿import { NgModule } from '@angular/core';
 import { CommonModule, DeprecatedI18NPipesModule } from '@angular/common';
-import { HttpModule, XHRBackend } from '@angular/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import { GovernPostRequestInterceptor } from "../../http-interceptors/govern-post-request.interceptor";
+
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-
-import { AuthenticationConnectionBackend } from '../../authentication-connection-backend';
 
 import { CoreModule } from '../shared/core.module';
 import { TilesModule } from '../shared/tiles/tiles.module';
@@ -46,7 +46,7 @@ import { TableModule } from 'primeng/table';
 @NgModule({
     imports: [CommonModule,
         DeprecatedI18NPipesModule,
-        HttpModule,
+        HttpClientModule,
         RouterModule,
         FormsModule,
         PipesModule,
@@ -96,7 +96,10 @@ import { TableModule } from 'primeng/table';
 
     ],
     providers: [
-        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: GovernPostRequestInterceptor,
+            multi: true },
     ]
 })
 export class WorkflowMonitorModule { }

@@ -1,10 +1,10 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
-import { HttpModule, XHRBackend  }     from '@angular/http';
-import { RouterModule } from '@angular/router';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import { GovernPostRequestInterceptor } from "../../http-interceptors/govern-post-request.interceptor";
 
-import { AuthenticationConnectionBackend } from '../../authentication-connection-backend';
+import { RouterModule } from '@angular/router';
 
 import { CoreModule } from '../shared/core.module';
 
@@ -15,7 +15,7 @@ import { HelpComponent } from './help.component';
 @NgModule({
     imports: [CommonModule,
         FormsModule,
-        HttpModule,
+        HttpClientModule,
         RouterModule,
 
         //routing 
@@ -28,7 +28,10 @@ import { HelpComponent } from './help.component';
         HelpComponent,
     ],
     providers: [
-        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: GovernPostRequestInterceptor,
+            multi: true },
     ]
 })
 export class HelpModule { }

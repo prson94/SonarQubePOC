@@ -1,11 +1,8 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
-import { HttpModule, XHRBackend  }     from '@angular/http';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
-
-import { AuthenticationConnectionBackend } from '../../authentication-connection-backend';
 
 import { ChartModule } from 'angular2-highcharts';
 
@@ -63,7 +60,6 @@ import {GovernPostRequestInterceptor} from "../../http-interceptors/govern-post-
     imports: [CommonModule,
         DeprecatedI18NPipesModule,
         FormsModule,
-        HttpModule,
         HttpClientModule,
         RouterModule,
 
@@ -108,7 +104,6 @@ import {GovernPostRequestInterceptor} from "../../http-interceptors/govern-post-
         ArtifactTopLevelFilterComponent,
     ],
     providers: [
-        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
         {
             provide: HTTP_INTERCEPTORS,
             useClass: GovernPostRequestInterceptor,

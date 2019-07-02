@@ -1,9 +1,9 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
-import { HttpModule, XHRBackend  }     from '@angular/http';
-import { RouterModule } from '@angular/router';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import { GovernPostRequestInterceptor } from "../../http-interceptors/govern-post-request.interceptor";
 
-import { AuthenticationConnectionBackend } from '../../authentication-connection-backend';
+import { RouterModule } from '@angular/router';
 
 import { CoreModule } from '../shared/core.module';
 import { SocialModule } from '../shared/social/social.module';
@@ -33,7 +33,7 @@ import { TableModule } from 'primeng/table';
 @NgModule({
     imports: [CommonModule,     
         DeprecatedI18NPipesModule,
-        HttpModule,
+        HttpClientModule,
         RouterModule,
 
         HomeRoutingModule,
@@ -64,7 +64,10 @@ import { TableModule } from 'primeng/table';
         HomeComponent,
     ],
     providers: [
-        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: GovernPostRequestInterceptor,
+            multi: true },
     ]
 })
 export class HomeModule { }

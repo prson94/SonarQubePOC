@@ -1,8 +1,7 @@
 ﻿import { Component, Input, Output, EventEmitter, NgModule, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { XHRBackend } from '@angular/http';
-import { AuthenticationConnectionBackend } from '../../authentication-connection-backend';
-
+import { HTTP_INTERCEPTORS } from '@angular/common/http'; 
+import { GovernPostRequestInterceptor } from "../../http-interceptors/govern-post-request.interceptor";
 
 @Component({
     selector: 'd3s-overlay-window',
@@ -79,7 +78,10 @@ export class OverlayWindowComponent implements OnChanges {
         CommonModule,
     ],
     providers: [
-        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: GovernPostRequestInterceptor,
+            multi: true },
     ]
 })
 export class D3SOverlayWindowModule { }

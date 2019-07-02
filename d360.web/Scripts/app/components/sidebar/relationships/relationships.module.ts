@@ -1,10 +1,10 @@
 ﻿import { NgModule } from '@angular/core';
 import { CommonModule, DeprecatedI18NPipesModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpModule, XHRBackend } from '@angular/http';
-import { RouterModule } from '@angular/router';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import { GovernPostRequestInterceptor } from "../../../http-interceptors/govern-post-request.interceptor";
 
-import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
+import { RouterModule } from '@angular/router';
 
 import {    
     SharedModule,
@@ -22,7 +22,7 @@ import { RelationshipsComponent } from './relationships.component';
     imports: [CommonModule,
         DeprecatedI18NPipesModule,
         FormsModule,
-        HttpModule,
+        HttpClientModule,
         RouterModule,
 
         //routing 
@@ -40,7 +40,10 @@ import { RelationshipsComponent } from './relationships.component';
         RelationshipsComponent,        
     ],
     providers: [
-        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: GovernPostRequestInterceptor,
+            multi: true },
     ]
 })
 export class RelationshipsModule { }

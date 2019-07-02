@@ -1,10 +1,9 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
-import { HttpModule, XHRBackend  }     from '@angular/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import { GovernPostRequestInterceptor } from "../../../http-interceptors/govern-post-request.interceptor";
 import { RouterModule } from '@angular/router';
-
-import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
 
 import {    
     SharedModule,
@@ -24,7 +23,7 @@ import { DiagramComponent } from './diagram.component';
     imports: [CommonModule,
         DeprecatedI18NPipesModule,
         FormsModule,
-        HttpModule,
+        HttpClientModule,
         RouterModule,
 
         //routing 
@@ -44,7 +43,10 @@ import { DiagramComponent } from './diagram.component';
         DiagramComponent
     ],
     providers: [
-        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: GovernPostRequestInterceptor,
+            multi: true },
     ]
 })
 export class VisualizationModule { }

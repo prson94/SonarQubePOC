@@ -2,8 +2,10 @@
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { UriBasedService } from '../../services/uri-based.service';
 import { CommonModule } from '@angular/common';
-import { XHRBackend } from '@angular/http';
-import { AuthenticationConnectionBackend } from '../../authentication-connection-backend';
+
+import { HTTP_INTERCEPTORS } from '@angular/common/http';      
+import { GovernPostRequestInterceptor } from "../../http-interceptors/govern-post-request.interceptor";
+
 import { CoreModule } from './core.module';
 import { RouterModule } from '@angular/router';
 import { Subject, Subscription } from 'rxjs';
@@ -74,7 +76,10 @@ export class SimilarItemsComponent implements OnChanges, OnInit, OnDestroy {
         RouterModule,
     ],
     providers: [
-        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: GovernPostRequestInterceptor,
+            multi: true },
     ]
 })
 export class SimilarItemsModule { }

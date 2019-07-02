@@ -1,10 +1,10 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { HttpModule, XHRBackend  }     from '@angular/http';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import { GovernPostRequestInterceptor } from "../../../http-interceptors/govern-post-request.interceptor";
 
-import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import {
     CalendarModule,
@@ -38,7 +38,7 @@ import { NgxJsonViewModule } from 'ng-json-view';
 @NgModule({
     imports: [CommonModule,
         DeprecatedI18NPipesModule,
-        HttpModule,
+        HttpClientModule,
         ReactiveFormsModule,
         FormsModule,
         RouterModule,
@@ -82,7 +82,10 @@ import { NgxJsonViewModule } from 'ng-json-view';
         DynamicGridComponent,
     ],
     providers: [
-        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: GovernPostRequestInterceptor,
+            multi: true },
     ]
 })
 export class SharedDynamicGridEditorModule { }

@@ -1,10 +1,9 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
-import { HttpModule, XHRBackend  }     from '@angular/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import { GovernPostRequestInterceptor } from "../../../http-interceptors/govern-post-request.interceptor";
 import { RouterModule } from '@angular/router';
-
-import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
 
 import { AdminModule } from '../admin.module';
 import { CoreModule } from '../../shared/core.module';
@@ -54,7 +53,7 @@ import { DirectivesModule } from '../../../directives/directives.module';
     imports: [CommonModule,
         DeprecatedI18NPipesModule,
         FormsModule,
-        HttpModule,
+        HttpClientModule,
 
         AdminFusionRoutingModule,
 
@@ -102,7 +101,10 @@ import { DirectivesModule } from '../../../directives/directives.module';
         FusionAttributeTypeCustomQueryEditorComponent
     ],
     providers: [
-        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: GovernPostRequestInterceptor,
+            multi: true },
     ]
 })
 export class AdminFusionModule { }

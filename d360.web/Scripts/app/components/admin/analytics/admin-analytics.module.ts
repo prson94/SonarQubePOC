@@ -1,10 +1,7 @@
 ﻿import {NgModule} from '@angular/core';
 import {CommonModule, DeprecatedI18NPipesModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
-import {HttpModule, XHRBackend} from '@angular/http';
 import {HttpClientModule, HTTP_INTERCEPTORS} from '@angular/common/http';
-
-import {AuthenticationConnectionBackend} from '../../../authentication-connection-backend';
 
 import {CoreModule} from '../../shared/core.module';
 import {PipesModule} from '../../../pipes/pipes.module';
@@ -48,7 +45,6 @@ import {GovernPostRequestInterceptor} from "../../../http-interceptors/govern-po
     imports: [CommonModule,
         DeprecatedI18NPipesModule,
         FormsModule,
-        HttpModule,
         HttpClientModule,
 
         AdminAnalyticsRoutingModule,
@@ -90,10 +86,6 @@ import {GovernPostRequestInterceptor} from "../../../http-interceptors/govern-po
         AdminMetricListComponent
     ],
     providers: [
-        {
-            provide: XHRBackend,
-            useClass: AuthenticationConnectionBackend
-        },
         {
             provide: HTTP_INTERCEPTORS,
             useClass: ErrorNotifyInterceptor,
