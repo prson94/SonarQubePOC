@@ -86,7 +86,7 @@
         (onCancel)="showDelete=false;"></d3s-delete-form>
     <d3s-dynamic-editor rowID="ID"
         *ngIf="showEditor"
-        [objectID]="model.ID"
+        [objectID]="selected ? selected?.data?.ID : model.ID"
         [objectType]="'Taxonomy'"
         [parentID]="selectedParentID"
         [title]="modelTaxonomyTitle()"
