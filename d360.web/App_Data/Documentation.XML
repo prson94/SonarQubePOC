@@ -3120,6 +3120,13 @@
             <param name="workflowUid">workflow instance unique identifier</param>
             <returns></returns>
         </member>
+        <member name="M:d360.web.Controllers.V2.WorkflowController.GetWorkflowsAsync(System.Nullable{d360.core.entities.Workflow.WorkflowApiState})">
+            <summary>
+            Get a list of workflows contained within the system.
+            </summary>
+            <param name="State">Active: is the workflow in an activate (non-completed) state.</param>
+            <returns>Returns list of workflows and a HTTP status code</returns>
+        </member>
         <member name="M:d360.web.Controllers.D3SApiController.GetFieldFiltersByType(d360.core.SystemObjects,System.Int32)">
             <summary>
             Gets a list of available field-level filters for a grid in the UI. This includes standard/custom fields, relationships, attributes, owner.

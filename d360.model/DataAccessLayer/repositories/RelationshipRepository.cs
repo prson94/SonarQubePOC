@@ -13,7 +13,13 @@ namespace d360.model.DataAccessLayer {
         {
             this.companyContext = companyContext;
         }
-        public IntersectType GetRelationshipByUID(Guid relationshipTypUid)
+
+        public Intersect GetRelationshipByUID(Guid relationshipUid)
+        {
+            return this.companyContext.Filter<Intersect>(i => i.uid == relationshipUid).SingleOrDefault();
+        }
+
+        public IntersectType GetRelationshipTypeByUID(Guid relationshipTypUid)
         {
             return this.companyContext.Filter<IntersectType>(i => i.uid == relationshipTypUid).SingleOrDefault();
         }

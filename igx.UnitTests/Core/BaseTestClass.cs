@@ -284,7 +284,7 @@ namespace igx.UnitTests
         public IRelationshipRepository GetRelationshipRepository()
         {
             var mock = new Mock<IRelationshipRepository>();
-            mock.Setup(x => x.GetRelationshipByUID(It.IsAny<Guid>()))
+            mock.Setup(x => x.GetRelationshipTypeByUID(It.IsAny<Guid>()))
                 .Returns(new IntersectType());
 
             return mock.Object;
