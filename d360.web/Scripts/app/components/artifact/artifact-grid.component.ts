@@ -215,6 +215,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
                 },
                 err => {
                     this.isLoading = false;
+                    this.changeDetectorRef.markForCheck();
                     this.messagesService.showError("Error", err.message);
                 }
             );

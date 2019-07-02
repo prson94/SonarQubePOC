@@ -36,7 +36,7 @@ export class RelationshipsService extends BaseObservableService {
     }
 
     exportRelationshipTypes() {        
-        this.http.get('relations/_intersectTypes/excel.xls', { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'relationship types'));              
+        this.http.get('api/v2/relationships/export/types', { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'relationship types'));              
     }
 
     downloadFile(data: Blob, name: string) {

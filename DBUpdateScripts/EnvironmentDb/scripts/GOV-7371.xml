@@ -5,14 +5,13 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="SDooley" id="GOV-7371">
+  <changeSet author="SDooley" id="GOV-7371-1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="true">
 <![CDATA[
   DROP PROCEDURE IF EXISTS [dbo].[GetTypeHierarchyByObject];
-  DROP PROCEDURE IF EXISTS [bulkload].[UpdateSubjectAreaColumn];
 ]]>
     </sql>
 	<rollback>
@@ -142,7 +141,21 @@ begin
 				inner join cache.ObjectDetails D on D.Object = R.Object and D.ObjectID = R.ObjectID
 	order by	R.[Level] desc
 end
-GO
+]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="SDooley" id="GOV-7371-2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+  DROP PROCEDURE IF EXISTS [bulkload].[UpdateSubjectAreaColumn];
+]]>
+    </sql>
+    <rollback>
+      <![CDATA[
 SET QUOTED_IDENTIFIER ON
 GO
 
@@ -158,9 +171,8 @@ begin
 	from	LoadItemColumn T
 			inner join TaxonomyType S on lower(S.Name) = lower(T.Value) and T.ColumnIndex = @subjectAreaColumn and T.LoadID = @id
 end
-GO
 ]]>
-	</rollback>
+    </rollback>
   </changeSet>
 
   </databaseChangeLog>
