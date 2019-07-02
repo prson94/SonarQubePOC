@@ -1,20 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using d360.core;
 using d360.core.entities;
 using d360.core.enums;
+using d360.core.queue;
+using d360.extensions;
 using Dapper;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace d360.model.DataAccessLayer { 
+namespace d360.model.DataAccessLayer
+{
     public class RelationshipRepository : IRelationshipRepository
     {
         ICompanyContext companyContext;
-        public RelationshipRepository(ICompanyContext companyContext)
+        IQueueSource QueueSource;
+        IStorageProvider Storage;
+        public RelationshipRepository(ICompanyContext companyContext, IQueueSource queueSource, IStorageProvider storageProvider)
         {
             this.companyContext = companyContext;
+            this.QueueSource = queueSource;
+            this.Storage = storageProvider;
         }
         public IntersectType GetRelationshipByUID(Guid relationshipTypUid)
         {
@@ -222,5 +232,262 @@ for json path, WITHOUT_ARRAY_WRAPPER";
 
             return models;
         }
+
+
+        public IQueryable<IntersectType> GetIntersectTypeById(int id)
+        {
+            return companyContext.Filter<IntersectType>(i => i.ID == id);
+        }
+        public IntersectType GetIntersectTypeByUid(Guid intersectTypeUid)
+        {
+            return companyContext.Filter<IntersectType>(i => i.uid == intersectTypeUid).SingleOrDefault();
+        }
+
+        public async Task<List<IntersectTypeApiViewModel>> GetRelationshipTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "")
+        {
+            var dbArgs = new DynamicParameters();
+
+            if (queryParams != null)
+            {
+                if (queryParams.ToList().Any(q => q.Key.ToLower() == "predicateuid"))
+                {
+                    Guid predicateUid;
+                    var predicateUidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "predicateuid").Value;
+                    if (Guid.TryParse(predicateUidString, out predicateUid))
+                    {
+                        dbArgs.Add("@predicateUid", predicateUid);
+                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" P.[UID] = @predicateUid";
+                    }
+                }
+                if (queryParams.ToList().Any(q => q.Key.ToLower() == "assettypeuid"))
+                {
+                    Guid assetTypeUid;
+                    var assetTypeUidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "assettypeuid").Value;
+                    if (Guid.TryParse(assetTypeUidString, out assetTypeUid))
+                    {
+                        dbArgs.Add("@assettypeuid", assetTypeUid);
+                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (S.Uid = @assettypeuid OR O.Uid = @assettypeuid)";
+                    }
+                }
+                if (queryParams.ToList().Any(q => q.Key.ToLower() == "state"))
+                {
+                    State state;
+                    var stateString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "state").Value;
+                    if (Enum.TryParse(stateString, out state))
+                    {
+                        dbArgs.Add("@state", state);
+                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" I.State = @state";
+                    }
+                }
+            }
+
+            var sql = $@"
+select	I.Id,
+        I.Uid,
+		I.State as State,
+        coalesce(I.IsSystem, 0) as IsSystem,
+		P.UID as 'Predicate.Uid',
+		coalesce(P.[Type],0) as 'Predicate.Type',
+		coalesce(P.Name,'') as 'Predicate.Name',
+		coalesce(P.Inverse,'') as 'Predicate.Inverse',
+		coalesce(SI.Uid, S.Uid) as 'Subject.Uid',
+		case 
+			when I.Subject = 'IntersectType' then SI.SubjectName + ' ' + SI.PredicateName + ' ' + SI.ObjectName + ' relationship'
+			else coalesce(SFT.Name + ' / ','') + coalesce(SP.[Path], S.Name)
+		end as 'Subject.Name',
+		coalesce(S.Class, 0) as 'Subject.Class',
+		I.SubjectCardinality as 'Subject.Cardinality',
+		O.Uid as 'Object.Uid',
+		coalesce(OFT.Name + ' / ','') + coalesce(OP.[Path], O.Name)  as 'Object.Name',
+		coalesce(O.Class, 0) as 'Object.Class',
+		I.ObjectCardinality as 'Object.Cardinality'
+from	IntersectType I
+		left join [Predicate] P on P.ID = I.PredicateID
+
+		left join AssetType S on (S.uid = I.SubjectUid OR (S.Object = I.Subject and S.ObjectID = I.SubjectID))
+        left join FusionAttributeType SFAT on I.Subject = 'FusionAttributeType' and SFAT.ID = I.SubjectID 
+        left join FusionType SFT on SFT.ID = SFAT.FusionTypeID 
+        outer apply dbo.GetAssetTypeTextPathById(S.ID, '/') SP
+
+		left join IntersectTypeDetail SI on I.Subject = 'IntersectType' and SI.ID = I.SubjectID
+		left join AssetType O on (O.uid = I.ObjectUid OR (O.Object = I.Object and O.ObjectID = I.ObjectID))
+        left join FusionAttributeType OFAT on I.Object = 'FusionAttributeType' and OFAT.ID = I.ObjectID 
+        left join FusionType OFT on OFT.ID = OFAT.FusionTypeID 
+        outer apply dbo.GetAssetTypeTextPathById(O.ID, '/') OP
+{whereClause} for json path";
+
+            var models = await companyContext.GetDatabaseJsonAsObjectAsync<List<IntersectTypeApiViewModel>>(sql, dbArgs);
+
+            return models;
+        }
+
+        public Task<List<IntersectTypeApiViewModel>> GetActiveIntersectTypesByObjectType(int id, SystemObjects type)
+        {
+            return this.GetRelationshipTypes(null, $"where I.State = 1 and ((I.SubjectID = {id} and I.[Subject] = '{type.ToString()}') or (I.ObjectID = {id} and I.Object = '{type.ToString()}'))");
+        }
+
+
+        public async Task<ApiExecutionInfo> BulkPostRelationships(Guid intersectTypeUid, RelationshipInserts relationships, Func<int, object, int, int, ApiExecution> getApiExecution)
+        {
+            var executionInfo = new ApiExecutionInfo
+            {
+                CompanyID = companyContext.CurrentCompanyID,
+                ResourceID = companyContext.CurrentResourceID,
+                CompanyDomainPrefix = companyContext.CurrentCompanyDomain,
+                ExecutionID = Guid.NewGuid(),
+                Action = ApiExecutionAction.PostRelationships
+            };
+
+            Storage.CreateFolder(executionInfo.StorageFolder);
+            Storage.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(relationships));
+
+            await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo);
+            var execution = getApiExecution(relationships.Count, new ApiExecutionFields_PostRelationships { IntersectTypeUid = intersectTypeUid }, 0, 0);
+            execution.ExecutionID = executionInfo.ExecutionID;
+            companyContext.Add(execution);
+            return executionInfo;
+        }
+
+        public IEnumerable<dynamic> GetExportModel(int id)
+        {
+            return companyContext.Query<dynamic>(
+                @"select 
+                    ID,
+                    [Subject], 
+                    SubjectID, 
+                    SubjectName, 
+                    SubjectTypeName, 
+                    [Object], 
+                    ObjectID, 
+                    ObjectName, 
+                    ObjectTypeName, 
+                    PredicateName 
+                from 
+                    intersectdetail 
+                where intersecttypeid = @id", new { id = id });
+        }
+
+        public IEnumerable<dynamic> GetExportModelWithCustomFields(int id, IEnumerable<string> customColumns)
+        {
+            var customColumnName = "[" + customColumns.Aggregate((x, y) => x + "],[" + y) + "]";
+            var CteColumnName = "CTE.[" + customColumns.Aggregate((x, y) => x + "],CTE.[" + y) + "]";
+
+
+            var sql = @"WITH CTE (ObjectID, " + customColumnName +
+                ") AS ( SELECT ObjectId, " + customColumnName +
+                " FROM ( select f2.ObjectID, f.FriendlyName,FormattedValue from fieldtype f  " +
+                "inner join field f2 on f2.fieldtypeid = f.id where f.[object] = 'IntersectType'" +
+                " and f.objectid = @id  ) as PivotData " +
+                "PIVOT (max(FormattedValue) FOR FriendlyName IN (" + customColumnName + ") ) AS PivotResult) " +
+                "select i.ID, i.[Subject],i.SubjectID, i.SubjectName, i.SubjectTypeName, i.[Object], " +
+                "i.ObjectID, i.ObjectName, i.ObjectTypeName, i.PredicateName , " + CteColumnName +
+                " from  intersectdetail as i left join CTE  on CTE.ObjectID =i.id where intersecttypeid=@id ";
+            var models = companyContext.Query<dynamic>(sql, new { id = id });
+            return models;
+        }
+
+        public bool AnyExists(Guid uid)
+        {
+            return companyContext.Any<IntersectType>(i => i.uid == uid);
+        }
+
+        public bool AnyPredicateExists(Guid uid)
+        {
+            return companyContext.Any<Predicate>(i => i.UID == uid);
+        }
+        public List<DatabaseBulkAssetResult> GetBulkResults(ApiExecutionInfo info)
+        {
+            List<DatabaseBulkAssetResult> results = null;
+            try
+            {
+                var resultsJson = Storage.GetFileContentsAsString(info.StorageFolder, info.ResponseFileName);
+                results = JsonConvert.DeserializeObject<List<DatabaseBulkAssetResult>>(resultsJson);
+            }
+            catch
+            {
+            }
+
+            return results;
+        }
+
+        public async Task<RelationshipDeleteResult> DeleteRelationships(IntersectType intersectType, RelationshipDeletes relationships)
+        {
+            var response = new List<RelationshipDeleteApiStatus>();
+            StringBuilder relationshipUids = new StringBuilder();
+            foreach (var rel in relationships)
+            {
+                relationshipUids.Append($"('{rel.Uid.ToString()}')");
+                if (rel != relationships.Last())
+                    relationshipUids.Append(",");
+            }
+
+            //Get Intersect ID for delete and union all child Intersects
+            var getRelationshipIDsForDeleting = @"declare @relationships table(uid uniqueidentifier)
+                                                      insert into @relationships values " + relationshipUids.ToString() + @"
+                                                   
+                                                      declare @results table(ID int, Uid uniqueidentifier,ParentUid uniqueidentifier )
+                                                      ;WITH ITS AS
+                                                          (  
+                                                            SELECT T.*, REL.uid as ParentUid
+                                                            FROM [Intersect] as T
+                                                              inner join @relationships REL on REL.uid = T.uid
+                                                            WHERE T.uid in (select uid from @relationships)  AND T.IntersectTypeID = @intersectTypeId
+                                                      )
+                                                      insert into @results (ID, Uid, ParentUid) select ID, Uid, ParentUid from ITS
+                                                   
+                                                      ;WITH CHILDREN AS
+                                                       (
+                                                        SELECT I.ID, I.uid, RES.ParentUid FROM [Intersect] AS I
+	                                                      inner join @results RES on (I.Subject = 'Intersect' and I.SubjectID = RES.ID) OR (I.Object = 'Intersect' and I.ObjectID = RES.ID)
+                                                        )
+                                                      insert into @results (ID, Uid, ParentUid) select ID, Uid, ParentUid from CHILDREN
+                                                   
+                                                      select * from @results";
+
+            var forDeleteCheck = await companyContext.QueryAsync<dynamic>(getRelationshipIDsForDeleting, new { intersectTypeId = intersectType.ID });
+
+
+            List<int> parentRelationships = new List<int>();
+            List<int> childrenRelationships = new List<int>();
+
+            foreach (var rel in relationships)
+            {
+                var status = new RelationshipDeleteApiStatus();
+                status.Uid = rel.Uid;
+                status.Message = "Relationship deleted";
+
+                var deleteItems = forDeleteCheck.Where(x => x.ParentUid == rel.Uid);
+                if (deleteItems.Count() == 0)
+                {
+                    return new RelationshipDeleteResult(HttpStatusCode.NotFound, "Not found", $"Relationship with Uid {rel.Uid} could not be found.", null);
+                }
+
+                if (deleteItems.Count() > 1 && !rel.Cascade)
+                {
+                    return new RelationshipDeleteResult(HttpStatusCode.BadRequest, "Bad request", $"Relationship with Uid {rel.Uid} have child relationships. Use Cascade = true to delete all child relationships.", null);
+                }
+
+                status.Success = true;
+
+
+                foreach (var item in deleteItems)
+                {
+                    if (rel.Uid == Guid.Parse(item.Uid.ToString()))
+                        parentRelationships.Add(int.Parse(item.ID.ToString()));
+                    else
+                        childrenRelationships.Add(int.Parse(item.ID.ToString()));
+                }
+
+                response.Add(status);
+            }
+
+            companyContext.Delete<Intersect>(x => childrenRelationships.Contains(x.ID));
+            companyContext.Delete<Intersect>(x => parentRelationships.Contains(x.ID));
+
+            return new RelationshipDeleteResult(HttpStatusCode.OK, "", "", response);
+
+        }
+
+
     }
 }

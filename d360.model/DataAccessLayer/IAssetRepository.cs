@@ -31,6 +31,7 @@ namespace d360.model.DataAccessLayer
         AssetType GetAssetTypeByModel(AssetTypeInsert model);
         ApiExecution GetExecutionItemByUid(Guid executionUid);
         void UpsertObjectStyle(string type, int id, string foreColor, string backColor, string objectName = "Tx");
+        bool DoesAssetExists(Guid uid);
 
 
     }
