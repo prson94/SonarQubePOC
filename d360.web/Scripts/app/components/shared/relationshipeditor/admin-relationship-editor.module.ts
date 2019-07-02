@@ -6,8 +6,6 @@ import { GovernPostRequestInterceptor } from "../../../http-interceptors/govern-
 
 import { RouterModule } from '@angular/router';
 
-import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
-
 import { CoreModule } from '../../shared/core.module';
 import { PipesModule } from '../../../pipes/pipes.module';
 import { TilesModule  } from '../../shared/tiles/tiles.module';

@@ -3,8 +3,6 @@ import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { GovernPostRequestInterceptor } from "../../../http-interceptors/govern-post-request.interceptor";
 
-import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
-
 import {
     SharedModule,
 } from 'primeng/primeng';
