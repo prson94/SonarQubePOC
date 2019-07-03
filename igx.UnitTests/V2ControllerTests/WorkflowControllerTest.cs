@@ -35,11 +35,9 @@ namespace igx.UnitTests.V2ControllerTests
             var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
             var str = res.Result.Content.ReadAsStringAsync().Result;
-            var data = JsonConvert.DeserializeObject<List<WorkflowTypeApiViewModel>>(str);
 
-            Assert.True(res.Result.IsSuccessStatusCode);
-            Assert.True(data != null);
-
+            Assert.True(res.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
+            AssertJSON.True<List<WorkflowTypeApiViewModel>>(str);
         }
 
         [Fact]
@@ -50,17 +48,15 @@ namespace igx.UnitTests.V2ControllerTests
             var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
             var str = res.Result.Content.ReadAsStringAsync().Result;
-            var data = JsonConvert.DeserializeObject<List<WorkflowVersionsApiViewModel>>(str);
 
-            Assert.True(res.Result.IsSuccessStatusCode);
-            Assert.True(data != null);
+            Assert.True(res.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
+            AssertJSON.True<List<WorkflowVersionApiViewModel>>(str);
 
             actionResult = await workflowController.GetWorkflowVersionStepsAsync(Guid.Parse(DataConstants.InvalidGUID));
             res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
             str = res.Result.Content.ReadAsStringAsync().Result;
-            data = JsonConvert.DeserializeObject<List<WorkflowVersionsApiViewModel>>(str);
-            Assert.True(data == null);
+            AssertJSON.True<List<WorkflowVersionApiViewModel>>(str);
 
         }
 
@@ -73,8 +69,8 @@ namespace igx.UnitTests.V2ControllerTests
             var str = res.Result.Content.ReadAsStringAsync().Result;
             var data = JsonConvert.DeserializeObject<WorkflowVersionsApiViewModel>(str);
 
-            Assert.True(res.Result.IsSuccessStatusCode);
-            Assert.True(data != null);
+            Assert.True(res.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
+            AssertJSON.True<WorkflowVersionsApiViewModel>(str);
         }
 
     }

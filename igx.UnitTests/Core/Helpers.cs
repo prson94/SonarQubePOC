@@ -71,7 +71,8 @@ namespace Xunit
             try
             {
                 var obj = JsonConvert.DeserializeObject<T>(json);
-                areEqual = json == JsonConvert.SerializeObject(obj);
+                var serialized = JsonConvert.SerializeObject(obj);
+                areEqual = json == serialized;
 
 
             }
