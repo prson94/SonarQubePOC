@@ -40,8 +40,8 @@ namespace igx.UnitTests.V2ControllerTests
             var str = await actionResult.Content.ReadAsStringAsync();
             var data = JsonConvert.DeserializeObject<JObject>(str);
 
-            Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.OK);
-            Assert.True(Helpers.IsTypeOf(typeof(MetricAsset), data));
+            Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.OK, XMsg.BadResponseCode);
+            Assert.True(Helpers.IsTypeOf(typeof(MetricAsset), data), XMsg.InvalidJSON);
 
         }
 
@@ -54,8 +54,8 @@ namespace igx.UnitTests.V2ControllerTests
             var str = await actionResult.Content.ReadAsStringAsync();
             var data = JsonConvert.DeserializeObject<JObject>(str);
 
-            Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.NotFound);
-            Assert.True(Helpers.IsTypeOf(typeof(ErrorResponse), data));
+            Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.NotFound, XMsg.BadResponseCode);
+            Assert.True(Helpers.IsTypeOf(typeof(ErrorResponse), data), XMsg.InvalidJSON);
 
         }
 
@@ -73,8 +73,8 @@ namespace igx.UnitTests.V2ControllerTests
             var str = await actionResult.Content.ReadAsStringAsync();
             var data = JsonConvert.DeserializeObject<JObject>(str);
 
-            Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.OK);
-            Assert.True(Helpers.IsTypeOf(typeof(ConfirmResponse), data));
+            Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.OK, XMsg.BadResponseCode);
+            Assert.True(Helpers.IsTypeOf(typeof(ConfirmResponse), data), XMsg.InvalidJSON);
 
         }
 
@@ -90,8 +90,8 @@ namespace igx.UnitTests.V2ControllerTests
             var str = await actionResult.Content.ReadAsStringAsync();
             var data = JsonConvert.DeserializeObject<JObject>(str);
 
-            Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.BadRequest);
-            Assert.True(Helpers.IsTypeOf(typeof(ErrorResponse), data));
+            Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+            Assert.True(Helpers.IsTypeOf(typeof(ErrorResponse), data), XMsg.InvalidJSON);
 
         }
 
@@ -108,8 +108,8 @@ namespace igx.UnitTests.V2ControllerTests
             var str = await actionResult.Content.ReadAsStringAsync();
             var data = JsonConvert.DeserializeObject<JObject>(str);
 
-            Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.BadRequest);
-            Assert.True(Helpers.IsTypeOf(typeof(ErrorResponse), data));
+            Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+            Assert.True(Helpers.IsTypeOf(typeof(ErrorResponse), data), XMsg.InvalidJSON);
 
         }
 
@@ -127,8 +127,8 @@ namespace igx.UnitTests.V2ControllerTests
             var str = await actionResult.Content.ReadAsStringAsync();
             var data = JsonConvert.DeserializeObject<JObject>(str);
 
-            Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.BadRequest);
-            Assert.True(Helpers.IsTypeOf(typeof(ErrorResponse), data));
+            Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+            Assert.True(Helpers.IsTypeOf(typeof(ErrorResponse), data), XMsg.InvalidJSON);
 
         }
 
@@ -146,8 +146,8 @@ namespace igx.UnitTests.V2ControllerTests
             var str = await actionResult.Content.ReadAsStringAsync();
             var data = JsonConvert.DeserializeObject<JObject>(str);
 
-            Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.BadRequest);
-            Assert.True(Helpers.IsTypeOf(typeof(ErrorResponse), data));
+            Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+            Assert.True(Helpers.IsTypeOf(typeof(ErrorResponse), data), XMsg.InvalidJSON);
 
         }
 
@@ -159,8 +159,8 @@ namespace igx.UnitTests.V2ControllerTests
             var str = await actionResult.Content.ReadAsStringAsync();
             var data = JsonConvert.DeserializeObject<JObject>(str);
 
-            Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.OK);
-            Assert.True(Helpers.IsTypeOf(typeof(ConfirmResponse), data));
+            Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.OK, XMsg.BadResponseCode);
+            Assert.True(Helpers.IsTypeOf(typeof(ConfirmResponse), data), XMsg.InvalidJSON);
 
         }
 
@@ -172,8 +172,8 @@ namespace igx.UnitTests.V2ControllerTests
             var str = await actionResult.Content.ReadAsStringAsync();
             var data = JsonConvert.DeserializeObject<JObject>(str);
 
-            Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.NotFound);
-            Assert.True(Helpers.IsTypeOf(typeof(ErrorResponse), data));
+            Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.NotFound, XMsg.BadResponseCode);
+            Assert.True(Helpers.IsTypeOf(typeof(ErrorResponse), data), XMsg.InvalidJSON);
 
         }
 
@@ -185,8 +185,8 @@ namespace igx.UnitTests.V2ControllerTests
             var str = await actionResult.Content.ReadAsStringAsync();
             var data = JsonConvert.DeserializeObject<JArray>(str);
 
-            Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.OK);
-            Assert.True(Helpers.IsTypeOf(typeof(MetricAssetTypeHierarchyModel), data));
+            Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.OK, XMsg.BadResponseCode);
+            Assert.True(Helpers.IsTypeOf(typeof(MetricAssetTypeHierarchyModel), data), XMsg.InvalidJSON);
 
         }
 
@@ -198,8 +198,8 @@ namespace igx.UnitTests.V2ControllerTests
             var str = await actionResult.Content.ReadAsStringAsync();
             var data = JsonConvert.DeserializeObject<JObject>(str);
 
-            Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.NotFound);
-            Assert.True(Helpers.IsTypeOf(typeof(ErrorResponse), data));
+            Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.NotFound, XMsg.BadResponseCode);
+            Assert.True(Helpers.IsTypeOf(typeof(ErrorResponse), data), XMsg.InvalidJSON);
 
         }
 
@@ -211,8 +211,8 @@ namespace igx.UnitTests.V2ControllerTests
             var str = await actionResult.Content.ReadAsStringAsync();
             var data = JsonConvert.DeserializeObject<JArray>(str);
 
-            Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.OK);
-            Assert.True(Helpers.IsTypeOf(typeof(MetricAssetHierarchyModel), data));
+            Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.OK, XMsg.BadResponseCode);
+            Assert.True(Helpers.IsTypeOf(typeof(MetricAssetHierarchyModel), data), XMsg.InvalidJSON);
 
         }
 
@@ -224,8 +224,8 @@ namespace igx.UnitTests.V2ControllerTests
             var str = await actionResult.Content.ReadAsStringAsync();
             var data = JsonConvert.DeserializeObject<JObject>(str);
 
-            Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.NotFound);
-            Assert.True(Helpers.IsTypeOf(typeof(ErrorResponse), data));
+            Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.NotFound, XMsg.BadResponseCode);
+            Assert.True(Helpers.IsTypeOf(typeof(ErrorResponse), data), XMsg.InvalidJSON);
 
         }
 
@@ -237,8 +237,8 @@ namespace igx.UnitTests.V2ControllerTests
             var str = await actionResult.Content.ReadAsStringAsync();
             var data = JsonConvert.DeserializeObject<JArray>(str);
 
-            Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.OK);
-            Assert.True(Helpers.IsTypeOf(typeof(MetricAssetViewModel), data));
+            Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.OK, XMsg.BadResponseCode);
+            Assert.True(Helpers.IsTypeOf(typeof(MetricAssetViewModel), data), XMsg.InvalidJSON);
 
         }
 
@@ -250,8 +250,8 @@ namespace igx.UnitTests.V2ControllerTests
             var str = await actionResult.Content.ReadAsStringAsync();
             var data = JsonConvert.DeserializeObject<JArray>(str);
 
-            Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.OK);
-            Assert.True(Helpers.IsTypeOf(typeof(MetricFieldTypeViewModel), data));
+            Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.OK, XMsg.BadResponseCode);
+            Assert.True(Helpers.IsTypeOf(typeof(MetricFieldTypeViewModel), data), XMsg.InvalidJSON);
 
         }
 
@@ -263,8 +263,8 @@ namespace igx.UnitTests.V2ControllerTests
             var str = await actionResult.Content.ReadAsStringAsync();
             var data = JsonConvert.DeserializeObject<JArray>(str);
 
-            Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.OK);
-            Assert.True(Helpers.IsTypeOf(typeof(BulkMetricTemporaryTableModel), data));
+            Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.OK, XMsg.BadResponseCode);
+            Assert.True(Helpers.IsTypeOf(typeof(BulkMetricTemporaryTableModel), data), XMsg.InvalidJSON);
 
         }
 
