@@ -20,8 +20,8 @@ import { D3SObjectHelpers } from '../../static/d3s-object-helpers';
 import { TagService } from '../../services/tag.service';
 import { ResourcesService } from '../../services/resources.service';
 import { Resource } from '../../models/resource.model';
-import { MessagesService } from '../../services/messages.service';
 import { FieldType } from '../../models/fields.model';
+import { MessagesObservableService } from '../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-workflow-form',
@@ -73,7 +73,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
         protected workflowService: WorkflowService,
         protected tagService: TagService,
         protected resourcesService: ResourcesService,
-        protected messagesService: MessagesService
+        protected messagesService: MessagesObservableService
     ) {
         super();
     }

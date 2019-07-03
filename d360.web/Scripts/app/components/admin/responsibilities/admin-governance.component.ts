@@ -3,11 +3,11 @@ import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { RightSidebarService } from '../../../services/right-sidebar.service';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
-import { MessagesService } from '../../../services/messages.service';
 import { ResponsibilityType, IResponsibilityTypeService } from '../../../models/responsibility-type.model';
 import { FormMode } from '../../../models/form.model';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'admin-governance',
@@ -22,7 +22,7 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
     private responsibilityTypeItems = new Array<ResponsibilityType>();
     private selectedRow = new ResponsibilityType();
 
-    constructor(rightSidebarService: RightSidebarService, private responsibilityTypeService: ResponsibilityTypeService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title, protected messagesService: MessagesService) {
+    constructor(rightSidebarService: RightSidebarService, private responsibilityTypeService: ResponsibilityTypeService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title, protected messagesService: MessagesObservableService) {
         super(headerBreadcrumbService, titleService, rightSidebarService);        
         this.areaName = "Responsibility Types";
         this.adminHeading = "Security";

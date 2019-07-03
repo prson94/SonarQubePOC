@@ -3,11 +3,11 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 import { RightSidebarService } from '../../../services/right-sidebar.service';
 import { RulesService } from '../../../services/rules.service';
 import { StateService } from '../../../services/state.service';
-import { MessagesService } from '../../../services/messages.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { RuleType } from '../../../models/rule.model';
 import { Title } from '@angular/platform-browser';
 import { RightSidebarItem } from '../../../models/rightsidebar.model';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-admin-rules-component',
@@ -105,7 +105,7 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
     
     constructor(private stateService: StateService, protected rightSidebarService: RightSidebarService,
         private rulesService: RulesService,
-        protected messagesService: MessagesService,
+        protected messagesService: MessagesObservableService,
         headerBreadcrumbService: HeaderBreadcrumbService,        
         titleService: Title)
     {

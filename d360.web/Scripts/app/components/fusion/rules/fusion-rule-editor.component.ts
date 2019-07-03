@@ -5,9 +5,9 @@ import {Subject} from "rxjs";
 import {FusionRule, FusionRuleEditorModel} from '../../../models/fusion.model';
 
 import {FusionService} from '../../../services/fusion.service';
-import {MessagesService} from '../../../services/messages.service';
 
 import {BaseComponent} from '../../shared/base.component';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 /* FIXME: Extract templates and styles to their own files
 *  https://angular.io/guide/styleguide#style-05-04 */
@@ -87,7 +87,7 @@ export class FusionRuleEditorComponent extends BaseComponent implements OnInit {
 
     constructor(
         private fusionService: FusionService,
-        private messagesService: MessagesService
+        private messagesService: MessagesObservableService
     ) {
         super();
     }

@@ -4,7 +4,7 @@ import { BaseComponent } from '../shared/base.component';
 import { SearchFullResult } from '../../models/search-result.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { ShoppingCartService } from '../../services/shopping-cart.service';
-import { MessagesService } from '../../services/messages.service';
+import { MessagesObservableService } from '../../services/messages-observable.service';
 
 declare var CompanySettings;
 
@@ -57,7 +57,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
         }
     }
 
-    constructor(private router: Router, private shoppingCartService: ShoppingCartService, private messagesService: MessagesService) {
+    constructor(private router: Router, private shoppingCartService: ShoppingCartService, private messagesService: MessagesObservableService) {
         super();
     }
 

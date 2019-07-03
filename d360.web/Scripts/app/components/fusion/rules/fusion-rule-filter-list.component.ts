@@ -1,10 +1,10 @@
 ﻿import {Component, EventEmitter, Input, OnChanges, Output, SimpleChanges} from '@angular/core';
 import {BaseComponent} from '../../shared/base.component';
 import {FusionService} from '../../../services/fusion.service';
-import {MessagesService} from '../../../services/messages.service';
 import {FusionRule, FusionRuleFilter} from '../../../models/fusion.model';
 import {takeUntil} from "rxjs/operators";
 import {Subject} from "rxjs";
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-fusion-rule-filter-list',
@@ -62,7 +62,7 @@ export class FusionRuleFilterListComponent extends BaseComponent implements OnCh
 
     constructor(
         private fusionService: FusionService,
-        private messagesService: MessagesService
+        private messagesService: MessagesObservableService
     ) {
         super();
     }

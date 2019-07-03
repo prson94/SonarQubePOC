@@ -2,7 +2,7 @@
 
 import { BaseComponent } from '../base.component';
 import { ArtifactService } from '../../../services/artifacts.service';
-import { MessagesService } from '../../../services/messages.service';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 declare var CompanySettings;
 
@@ -25,7 +25,7 @@ export class ArtifactStatusComponent extends BaseComponent  {
 
     constructor(
         protected artifactService: ArtifactService,
-        protected messagesService: MessagesService
+        protected messagesService: MessagesObservableService
     ) {
         super();        
     }

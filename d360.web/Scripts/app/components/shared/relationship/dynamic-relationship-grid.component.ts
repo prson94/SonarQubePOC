@@ -2,11 +2,11 @@
 import {Router} from '@angular/router';
 import {Lookup, LookupItem} from '../../../models/lookup.model';
 import {GridDefinition, GridColumn, GridField} from '../../../models/grid-definition.model';
-import {MessagesService} from '../../../services/messages.service';
 import {GridDefinitionService} from '../../../services/grid-definition.service';
 import {RelationshipsService} from '../../../services/relationships.service';
 import {BaseComponent} from '../base.component';
 import {SiteUrlHelpers} from '../../../static/site-url-helpers';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 declare var CompanySettings;
 
@@ -61,7 +61,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
 
     @ViewChild('dt') datatable;
 
-    constructor(private router: Router, private gridDefinitionService: GridDefinitionService, protected relationshipsService: RelationshipsService, private messagesService: MessagesService) {
+    constructor(private router: Router, private gridDefinitionService: GridDefinitionService, protected relationshipsService: RelationshipsService, private messagesService: MessagesObservableService) {
         super();
         this.theDeleteCallback = this.deleteItem.bind(this);
     }

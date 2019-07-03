@@ -10,10 +10,10 @@ import {
 } from '../../../../models/lineage.model';
 
 import {DiagramService} from '../../../../services/diagram.service';
-import {MessagesService} from '../../../../services/messages.service';
 import {PermissionsService} from '../../../../services/permissions.service';
 
 import {BaseComponent} from '../../base.component';
+import { MessagesObservableService } from '../../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-lineage-business-editor',
@@ -63,7 +63,7 @@ export class LineageBusinessEditorComponent extends BaseComponent implements OnI
 
     constructor(
         private diagramService: DiagramService,
-        protected messagesService: MessagesService,
+        protected messagesService: MessagesObservableService,
         protected permissionsService: PermissionsService
     ) {
         super();

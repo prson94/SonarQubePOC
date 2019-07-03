@@ -6,11 +6,11 @@ import { SiteNav } from '../../../models/site-menu.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { SiteMenuService } from '../../../services/site-menu.service';
 import { StateService } from '../../../services/state.service';
-import { MessagesService } from '../../../services/messages.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
 import { FormMode } from '../../../models/form.model';
 import { SelectItem } from 'primeng/primeng';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'admin-settings',
@@ -49,7 +49,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         titleService: Title,
         private siteMenuService: SiteMenuService,        
         private stateService: StateService,
-        private messagesService: MessagesService,
+        private messagesService: MessagesObservableService,
         private router: Router,
         private route: ActivatedRoute
     ) {

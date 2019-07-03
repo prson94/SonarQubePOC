@@ -3,8 +3,8 @@ import { BaseComponent } from '../base.component';
 import { Shortcut, LinkTarget } from '../../../models/shortcuts.model';
 import { CompanyImage } from '../../../models/settings.model';
 import { ShortcutService } from '../../../services/shortcuts.service';
-import { MessagesService } from '../../../services/messages.service';
 import * as _ from 'lodash';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-shortcut-item',
@@ -125,7 +125,7 @@ export class ShortcutItemComponent extends BaseComponent implements OnInit {
     private showTitleColor: boolean = false;
     private showBackgroundColor: boolean = false;
 
-    constructor(private shortcutService: ShortcutService, private messagesService: MessagesService) {
+    constructor(private shortcutService: ShortcutService, private messagesService: MessagesObservableService) {
         super();
     }
 

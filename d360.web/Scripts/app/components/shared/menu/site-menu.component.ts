@@ -1,6 +1,5 @@
 ﻿import { Input, Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter, AfterViewInit, ViewChildren, ElementRef, ContentChildren, ViewChild, QueryList} from '@angular/core';
 import { BaseComponent } from '../base.component';
-import { MessagesService } from '../../../services/messages.service';
 import { HeaderActionsService } from '../../../services/header-actions.service';
 import { StateService } from '../../../services/state.service';
 import { FavoritesService } from '../../../services/favorites.service';
@@ -14,6 +13,7 @@ import { isString, isArray } from 'util';
 import { Element } from '@angular/compiler';
 import { SiteMenuCategoryComponent } from './site-menu-category.component';
 import { forEach } from '@angular/router/src/utils/collection';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 declare var CompanySettings;
 
@@ -41,7 +41,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
     constructor(
         private ref: ChangeDetectorRef,
-        private messagesService: MessagesService,
+        private messagesService: MessagesObservableService,
         private stateService: StateService,
         private headerActionsService: HeaderActionsService,
         private authenticationService: AuthenticationService,

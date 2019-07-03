@@ -2,9 +2,9 @@
 import { BaseComponent } from '../base.component';
 import { Shortcut } from '../../../models/shortcuts.model';
 import { ShortcutService } from '../../../services/shortcuts.service';
-import { MessagesService } from '../../../services/messages.service';
 import { FormMode } from '../../../models/form.model';
 import * as _ from 'lodash';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-shortcut-list',
@@ -18,7 +18,7 @@ export class ShortcutListComponent extends BaseComponent implements OnInit {
     private formMode = FormMode.Default;
     FormMode = FormMode;
     
-    constructor(private shortcutService: ShortcutService, private messagesService: MessagesService) {
+    constructor(private shortcutService: ShortcutService, private messagesService: MessagesObservableService) {
         super();
     }
 

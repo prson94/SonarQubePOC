@@ -2,7 +2,6 @@
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { QualifierService } from '../../services/qualifier.service';
-import { MessagesService } from '../../services/messages.service';
 import { QualifierType } from '../../models/qualifier.model';
 import { FormMode } from '../../models/form.model';
 

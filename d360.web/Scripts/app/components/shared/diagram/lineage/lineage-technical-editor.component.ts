@@ -12,10 +12,10 @@ import {
 } from '../../../../models/lineage.model';
 
 import {DiagramService} from '../../../../services/diagram.service';
-import {MessagesService} from '../../../../services/messages.service';
 import {ResponsibilityTypeService} from '../../../../services/responsibility-type.service';
 
 import {BaseComponent} from '../../base.component';
+import { MessagesObservableService } from '../../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-lineage-technical-editor',
@@ -59,7 +59,7 @@ export class LineageTechnicalEditorComponent extends BaseComponent implements On
 
     constructor(
         private diagramService: DiagramService,
-        protected messagesService: MessagesService,
+        protected messagesService: MessagesObservableService,
         protected responsibilityTypeService: ResponsibilityTypeService
     ) {
         super();

@@ -1,6 +1,5 @@
 ﻿import { Component, Input, OnInit, SimpleChange, Output, EventEmitter} from '@angular/core';
 import { ReportTile, ReportTileTypes } from '../../../models/report.model';
-import { MessagesService } from '../../../services/messages.service';
 import { CompanySettingsService  } from '../../../services/settings.service';
 import { BaseComponent } from '../../shared/base.component';
 import * as _ from 'lodash';

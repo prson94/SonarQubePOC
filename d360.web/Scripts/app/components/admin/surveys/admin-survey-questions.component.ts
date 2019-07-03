@@ -1,8 +1,8 @@
 ﻿import { Component, Input, OnChanges, SimpleChange } from '@angular/core';
 import { SurveyQuestionType, SurveyType } from '../../../models/survey.model';
 import { SurveysService } from '../../../services/surveys.service';
-import { MessagesService } from '../../../services/messages.service';
 import { BaseComponent } from '../../shared/base.component';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-admin-survey-questions',
@@ -77,7 +77,7 @@ export class AdminSurveyQuestionsComponent extends BaseComponent implements OnCh
     selected: SurveyQuestionType = null;
     theDeleteCallback: Function;
 
-    constructor(private surveysService: SurveysService, private messagesService: MessagesService) {
+    constructor(private surveysService: SurveysService, private messagesService: MessagesObservableService) {
         super();
         this.theDeleteCallback = this.deleteQuestion.bind(this);
     }

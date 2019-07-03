@@ -2,7 +2,7 @@
 import { MetricsService } from '../../../services/metrics.service';
 import {  Condition, ConditionForm, MetricAssetVersionConditionViewModel, MetricFieldTypeViewModel } from '../../../models/metrics.model';
 import { BaseComponent } from '../../shared/base.component';
-import { MessagesService } from '../../../services/messages.service';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-admin-metric-condition-editor',
@@ -21,7 +21,7 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
 
     verb = "Add";
 
-    constructor(private metricsService: MetricsService, protected messagesService: MessagesService) {
+    constructor(private metricsService: MetricsService, protected messagesService: MessagesObservableService) {
         super();
     }
 

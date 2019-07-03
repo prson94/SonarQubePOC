@@ -1,11 +1,11 @@
 ﻿import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter, ViewChild} from '@angular/core';
 import { Router, ActivatedRoute }       from '@angular/router';
-import { MessagesService } from '../../../services/messages.service';
 import { RelationshipsService } from '../../../services/relationships.service';
 import { BaseComponent } from '../../shared/base.component';
 import { FusionAttributeItemDetailsComponent } from '../fusion-attribute-item-details.component';
 import { ObjectRelationship, PossibleTechnicalRelationship } from '../../../models/relationship.model';
 import { D3SObjectHelpers } from '../../../static/d3s-object-helpers';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-relationship-technical-relations',
@@ -122,7 +122,7 @@ export class RelationshipTechnicalRelationsComponent extends BaseComponent imple
     private possibleTechnicalIntersectTypes: PossibleTechnicalRelationship[] = [];
     private selectedIntersectType: number;
 
-    constructor(private messagesService: MessagesService, protected router: Router, protected relationshipsService: RelationshipsService) {
+    constructor(private messagesService: MessagesObservableService, protected router: Router, protected relationshipsService: RelationshipsService) {
         super();
     }
 

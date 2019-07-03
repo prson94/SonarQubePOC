@@ -2,7 +2,7 @@ import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core
 import { DetailRow, DetailField, DetailModel, DetailFieldType } from '../../../models/object-detail.model';
 import { ObjectDetailService } from '../../../services/object-detail.service';
 import { LookupGrid } from '../../../models/grid-definition.model';
-import { MessagesService } from '../../../services/messages.service';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 declare var CompanySettings;
 
@@ -27,7 +27,7 @@ export class ObjectDetailComponent implements OnChanges {
 
     rows = new Array<DetailRow>();
 
-    constructor(private objectDetailService: ObjectDetailService, protected messagesService: MessagesService) { }
+    constructor(private objectDetailService: ObjectDetailService, protected messagesService: MessagesObservableService) { }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         for (let p in changes) {

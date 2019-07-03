@@ -1,9 +1,9 @@
 ﻿import {Component, OnInit, OnDestroy} from '@angular/core';
 import {Router, ActivatedRoute} from '@angular/router';
 import {Classification} from '../../models/object-detail.model';
-import {MessagesService} from '../../services/messages.service';
 import {ObjectDetailService} from '../../services/object-detail.service';
 import {BaseComponent} from '../shared/base.component';
+import { MessagesObservableService } from '../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-admin-classifications',
@@ -102,7 +102,7 @@ export class AdminClassificationsComponent extends BaseComponent implements OnIn
 
     constructor(
         private objectDetailService: ObjectDetailService,
-        private messagesService: MessagesService,
+        private messagesService: MessagesObservableService,
         private route: ActivatedRoute,
         private router: Router,
     ) {

@@ -4,9 +4,9 @@ import { MetricAssetViewModel, MetricFieldTypeViewModel } from '../../../models/
 import { TreeNode } from 'primeng/primeng';
 import { BaseComponent } from '../../shared/base.component';
 import { FormMode } from '../../../models/form.model';
-import { MessagesService } from '../../../services/messages.service';
 import { AssetTypeMetricModel } from '../../../models/asset.model';
 import { FormHelpers } from '../../../static/form-helpers';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-admin-metric-list',
@@ -86,7 +86,7 @@ import { FormHelpers } from '../../../static/form-helpers';
 
                 </div>
                 `,
-    providers: [MetricsService, MessagesService]
+    providers: [MetricsService, MessagesObservableService]
 })
 
 export class AdminMetricListComponent extends BaseComponent implements OnInit, OnChanges {
@@ -103,7 +103,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
     private formMode = FormMode.Default;
     FormMode = FormMode;
 
-    constructor(private metricsService: MetricsService, protected messagesService: MessagesService) {
+    constructor(private metricsService: MetricsService, protected messagesService: MessagesObservableService) {
         super();
     }
 

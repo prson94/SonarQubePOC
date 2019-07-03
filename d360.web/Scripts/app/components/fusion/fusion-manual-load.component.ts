@@ -7,11 +7,11 @@ import {JsonResult} from '../../models/jsonresult.model';
 import {FusionConfigurationDetails} from '../../models/fusion.model';
 
 import {FusionService} from '../../services/fusion.service';
-import {MessagesService} from '../../services/messages.service';
 
 import {SiteUrlHelpers} from '../../static/site-url-helpers';
 
 import {BaseComponent} from '../shared/base.component';
+import { MessagesObservableService } from '../../services/messages-observable.service';
 
 
 @Component({
@@ -37,7 +37,7 @@ export class FusionManualLoadComponent extends BaseComponent implements OnInit {
         private router: Router,
         private route: ActivatedRoute,
         private fusionService: FusionService,
-        private messagesService: MessagesService
+        private messagesService: MessagesObservableService
     ) {
         super();
     }

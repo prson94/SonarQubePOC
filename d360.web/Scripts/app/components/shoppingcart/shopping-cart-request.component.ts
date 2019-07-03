@@ -8,7 +8,7 @@ import { Title } from '@angular/platform-browser';
 import { Location } from '@angular/common';
 import { ShoppingCart, ShoppingCartListItem } from '../../models/shopping-cart.model';
 import { Header, Column } from 'primeng/primeng';
-import { MessagesService } from '../../services/messages.service';
+import { MessagesObservableService } from '../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-shopping-cart-request',
@@ -28,7 +28,7 @@ export class ShoppingCartRequestComponent extends BaseComponent implements OnIni
         private titleService: Title,
         private locationService: Location,
         private shoppingCartService: ShoppingCartService,
-        private messagesService: MessagesService,
+        private messagesService: MessagesObservableService,
         private route: ActivatedRoute,
         private router: Router) {
         super();

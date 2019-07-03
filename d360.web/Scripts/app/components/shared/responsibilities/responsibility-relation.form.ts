@@ -10,11 +10,11 @@ import {
     ResponsibilityTypeRelation_FormData,
     ResponsibilityTypeRelationAllocationOption
 } from '../../../models/responsibility-type.model';
-import { MessagesService } from '../../../services/messages.service';
 import { ObjectDetailService } from '../../../services/object-detail.service';
 import { BaseComponent } from '../../shared/base.component';
 
 import * as _ from 'lodash';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-responsibility-relation-form',
@@ -56,7 +56,7 @@ export class ResponsibilityRelationForm extends BaseComponent implements OnInit 
     private selectedAllocation: ResponsibilityTypeRelationAllocationOption = null;
     private errorMessage: string = "";
 
-    constructor(private responsibilityTypeService: ResponsibilityTypeService, private messagesService: MessagesService, private objectDetailService: ObjectDetailService) {
+    constructor(private responsibilityTypeService: ResponsibilityTypeService, private messagesService: MessagesObservableService, private objectDetailService: ObjectDetailService) {
         super();
     }
     

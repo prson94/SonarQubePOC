@@ -1,10 +1,10 @@
 ﻿import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {BaseComponent} from '../../shared/base.component';
 import {FusionService} from '../../../services/fusion.service';
-import {MessagesService} from '../../../services/messages.service';
 import {FusionRuleMapping, FusionRuleMappingEditorModel, FusionRuleStep} from '../../../models/fusion.model';
 import {takeUntil} from "rxjs/operators";
 import {Subject} from "rxjs";
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 declare var CompanySettings;
 
@@ -99,7 +99,7 @@ export class FusionRuleStepMappingEditorComponent extends BaseComponent implemen
 
     constructor(
         private fusionService: FusionService,
-        private messagesService: MessagesService
+        private messagesService: MessagesObservableService
     ) {
         super();
     }

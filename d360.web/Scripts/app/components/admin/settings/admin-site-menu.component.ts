@@ -5,13 +5,13 @@ import { SiteNav } from '../../../models/site-menu.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { SiteMenuService } from '../../../services/site-menu.service';
 import { StateService } from '../../../services/state.service';
-import { MessagesService } from '../../../services/messages.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
 import { FormMode } from '../../../models/form.model';
 import { JsonResult } from '../../../models/jsonresult.model';
 
 import * as _ from 'lodash';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-admin-site-menu',
@@ -66,7 +66,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
         titleService: Title,
         private siteMenuService: SiteMenuService,
         private stateService: StateService,
-        private messagesService: MessagesService
+        private messagesService: MessagesObservableService
     ) {
         super(headerBreadcrumbService, titleService);
     }

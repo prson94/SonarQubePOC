@@ -14,7 +14,6 @@ import {
 import {HeaderBreadcrumbService} from '../../services/header-breadcrumb.service';
 import {RulesService} from '../../services/rules.service';
 import {GridDefinitionService} from '../../services/grid-definition.service';
-import {MessagesService} from '../../services/messages.service';
 import {HeaderActionsService} from '../../services/header-actions.service';
 import {PermissionsService} from '../../services/permissions.service';
 import {Breadcrumb} from '../../models/breadcrumb.model';
@@ -23,6 +22,7 @@ import {SiteUrlHelpers} from '../../static/site-url-helpers';
 import {StringConstants} from '../../static/string-constants';
 import {RightSidebarService} from '../../services/right-sidebar.service';
 import * as _ from 'lodash';
+import { MessagesObservableService } from '../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-rule-list',
@@ -51,7 +51,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
                 private router: Router,
                 protected rulesService: RulesService,
                 protected titleService: Title,
-                protected messagesService: MessagesService,
+                protected messagesService: MessagesObservableService,
                 private gridDefinitionService: GridDefinitionService,
                 private headerActionsService: HeaderActionsService,
                 protected headerBreadcrumbService: HeaderBreadcrumbService,

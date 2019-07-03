@@ -8,7 +8,7 @@ import { SortOrder } from '../../models/enums.model';
 import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression, GridAttributeFilterExpression } from '../../models/grid-definition.model';
 import { RuleColumnFilterComponent } from './rule-column-filter.component'
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import { MessagesService } from '../../services/messages.service';
+import { MessagesObservableService } from '../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-rule-implementations-grid',
@@ -117,7 +117,7 @@ export class RuleImplementationsGridComponent extends BaseComponent implements O
         private route: ActivatedRoute,
         private router: Router,
         private ruleService: RulesService,
-        private messagesService: MessagesService) {
+        private messagesService: MessagesObservableService) {
         super();
         this.theDeleteCallback = this.deleteImplementation.bind(this);
     }

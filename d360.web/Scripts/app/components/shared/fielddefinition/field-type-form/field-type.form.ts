@@ -17,7 +17,6 @@ import {
 } from '../../../../models/fields.model';
 
 import { FieldsService } from '../../../../services/fields.service';
-import { MessagesService } from '../../../../services/messages.service';
 import { ObjectDetailService } from '../../../../services/object-detail.service';
 
 import { BaseComponent } from '../../../shared/base.component';
@@ -25,6 +24,7 @@ import { BaseComponent } from '../../../shared/base.component';
 import { FormHelpers } from '../../../../static/form-helpers';
 import { Observable, Subscription, observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { MessagesObservableService } from '../../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-field-type-form',
@@ -111,7 +111,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     public defaultLinkName: any;
     public defaultLinkAdress: any;
 
-    constructor(private fieldsService: FieldsService, private messagesService: MessagesService, private objectDetailService: ObjectDetailService) {
+    constructor(private fieldsService: FieldsService, private messagesService: MessagesObservableService, private objectDetailService: ObjectDetailService) {
         super();
         this.model = new FieldTypeEditorModel();
         this.model.FieldType = new FieldType();

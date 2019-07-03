@@ -5,11 +5,11 @@ import {Title} from '@angular/platform-browser';
 import {ApiService} from '../../../models/custom-api.model';
 
 import {HeaderBreadcrumbService} from '../../../services/header-breadcrumb.service';
-import {MessagesService} from '../../../services/messages.service';
 import {CustomAPIService} from '../../../services/custom-api.service';
 import {RightSidebarService} from '../../../services/right-sidebar.service';
 
 import {AdminBaseComponent} from '../admin-base.component';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-admin-customapi',
@@ -30,7 +30,7 @@ export class AdminCustomAPIComponent extends AdminBaseComponent implements OnIni
         protected customAPIService: CustomAPIService,
         rightSidebarService: RightSidebarService,
         headerBreadcrumbService: HeaderBreadcrumbService,
-        private messagesService: MessagesService,
+        private messagesService: MessagesObservableService,
         titleService: Title,
         private router: Router
     ) {
