@@ -268,7 +268,8 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Get a list of workflows contained within the system.
         /// </summary>
-        /// <param name="State">Active: is the workflow in an activate (non-completed) state.</param>
+        /// <param name="Active">Active: is the workflow in an activate (non-completed) state; Default is Active
+        /// </param>
         /// <returns>Returns list of workflows and a HTTP status code</returns>
         [
         HttpGet,
@@ -278,7 +279,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("ActionUid", "issue that the workflow is registered to", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("AssetUid", "asset that the workflow is registered to", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("RelationshipUid", "relationship that the workflow is registered to", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 250.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by StartedOn.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
@@ -287,7 +288,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this workflow type is invalid, possibly due to an incorrectly formatted identifier ActionUid / AssetUid / RelationshipUid / WorkflowTypeUid / VersionUid", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             ]
-        public async Task<IHttpActionResult> GetWorkflowsAsync(WorkflowApiState? State = null)
+        public async Task<IHttpActionResult> GetWorkflowsAsync(WorkflowApiState? Active = null)
         {
             var prefix = "Workflow.GetWorkflowsAsync => ";
             var errorMessage = "";

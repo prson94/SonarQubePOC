@@ -567,7 +567,7 @@ namespace d360.model.DataAccessLayer
                 var pageNum = -1;
                 var pageSize = model.pageSize != 0 ? model.pageSize : -1;
 
-
+                var defaultFilterIncuded = false;
 
                 queryParams.ToList().ForEach(x => {
 
@@ -579,7 +579,7 @@ namespace d360.model.DataAccessLayer
                             if ((Guid.TryParse(x.Value, out actionUid)) && (actionUid != Guid.Empty))
                             {
                                 dbArgs.Add("@actionUid", actionUid);
-                                whereClause.Add(" [DD].[UID] = @actionUid");
+                                whereClause.Add(" [ISS].[UID] = @actionUid");
                             }
                             break;
                         case "assetuid":
@@ -595,7 +595,7 @@ namespace d360.model.DataAccessLayer
                             if ((Guid.TryParse(x.Value, out relationshipUid)) && (relationshipUid != Guid.Empty))
                             {
                                 dbArgs.Add("@relationshipUid", relationshipUid);
-                                whereClause.Add(" [DDD].[UID] = @relationshipUid");
+                                whereClause.Add(" [inter].[UID] = @relationshipUid");
                             }
                             break;
                         case "workflowtypeuid":
@@ -608,19 +608,20 @@ namespace d360.model.DataAccessLayer
                             break;
                         case "versionuid":
                             Guid workflowVersionUid;
-                            if (Enum.TryParse(x.Value, out workflowVersionUid))
+                            if (Guid.TryParse(x.Value, out workflowVersionUid))
                             {
                                 dbArgs.Add("@workflowVersionUid", workflowVersionUid);
                                 whereClause.Add(" [V].[UID] = @workflowVersionUid");
                             }
                             break;
-                        case "state":
+                        case "active":
                             WorkflowApiState state;
                             if (Enum.TryParse(x.Value, out state))
                             {
-                                if(state==WorkflowApiState.Active)
+                                defaultFilterIncuded = true;
+                                if (state==WorkflowApiState.Active)
                                     whereClause.Add("item.CompletedOn is null");
-                                else if(state == WorkflowApiState.InActive)
+                                else 
                                     whereClause.Add("item.CompletedOn is not null");
                             }
                             break;
@@ -653,6 +654,8 @@ namespace d360.model.DataAccessLayer
 
                 });
 
+                if (!defaultFilterIncuded)
+                    whereClause.Add("item.CompletedOn is null");
 
                 if (string.IsNullOrEmpty(orderBySql))
                 {
@@ -702,22 +705,20 @@ namespace d360.model.DataAccessLayer
                     item.VersionID =v.id and itemstep.ItemID = item.id
                     left join Asset D on D.Object = item.Object and D.ObjectID = item.ObjectID 
                     left join issue iss on item.object = 'Issue' and iss.id = item.objectid
-                    left join Asset DD on DD.Object = iss.Object and DD.ObjectID = iss.ObjectID 
                     left join [Intersect] inter on item.Object = 'Intersect' and item.objectid = inter.ID
-                    left join Asset DDD on DDD.Object = inter.Object and DDD.ObjectID = inter.ObjectID 
                     left outer join reporting.Global_Resource R on R.ResourceID = item.StartedBy
                     left outer join reporting.Global_Resource R1 on R1.ResourceID = item.CompletedBy
 				{whereSql}";
 
             string sql = $@"Select 
 		        Item.UID as Uid,
-		        case when item.[Object] = 'Issue' then DD.uid
+		        case when item.[Object] = 'Issue' then iss.uid
 		        ELSE NULL END as ActionUid ,
 		        case when item.[Object] = 'Artifact' or item.[Object] = 'Rule' or item.[Object] = 'Policy'
 		        or item.[Object] = 'Taxonomy' or item.[Object] = 'ShoppingCart' or  item.[Object] = 'ReferenceItem'
 		        or item.[Object] = 'Fusion' then D.uid
 		        ELSE NULL END as AssetUid,
-		        case when item.[Object] = 'Intersect' then DDD.uid
+		        case when item.[Object] = 'Intersect' then inter.uid
 		        ELSE NULL END as RelationshipUid,
 		        t.Uid as WorkflowTypeUid,
 		        V.UID as WorkflowVersionUid,
@@ -735,9 +736,7 @@ namespace d360.model.DataAccessLayer
 	        item.VersionID =v.id and itemstep.ItemID = item.id
 	        left join Asset D on D.Object = item.Object and D.ObjectID = item.ObjectID 
 	        left join issue iss on item.object = 'Issue' and iss.id = item.objectid
-	        left join Asset DD on DD.Object = iss.Object and DD.ObjectID = iss.ObjectID 
 	        left join [Intersect] inter on item.Object = 'Intersect' and item.objectid = inter.ID
-	        left join Asset DDD on DDD.Object = inter.Object and DDD.ObjectID = inter.ObjectID 
 	        left outer join reporting.Global_Resource R on R.ResourceID = item.StartedBy
 	        left outer join reporting.Global_Resource R1 on R1.ResourceID = item.CompletedBy
 				{whereSql}

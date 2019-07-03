@@ -264,10 +264,13 @@ namespace igx.UnitTests
                 .Returns(new d360.core.entities.Workflow.Type());
 
             mock.Setup(x => x.GetWorkflowVersionByUID(It.IsAny<Guid>()))
-                 .Returns(new WorkflowVersion());
+                 .Returns((Guid uid)=> uid == Guid.Parse(DataConstants.ValidGUID) ? new WorkflowVersion() : null);
 
             mock.Setup(x => x.GetWorkflowItemByUID(It.IsAny<Guid>()))
            .Returns(new WorkflowItem());
+
+            mock.Setup(x => x.GetWorkflows(It.IsAny<IEnumerable<KeyValuePair<string, string>>>()))
+                 .Returns(Task.FromResult(new WorkflowsApiViewModel()));
 
             return mock.Object;
         }
@@ -278,6 +281,10 @@ namespace igx.UnitTests
             mock.Setup(x => x.GetIssueTypeByUID(It.IsAny<Guid>()))
                 .Returns(new IssueType());
 
+     
+            mock.Setup(x => x.GetIssueByUID(It.IsAny<Guid>()))
+                .Returns((Guid uid) => uid == Guid.Parse(DataConstants.ValidGUID) ? new Issue() : null);
+
             return mock.Object;
         }
 
@@ -286,6 +293,9 @@ namespace igx.UnitTests
             var mock = new Mock<IRelationshipRepository>();
             mock.Setup(x => x.GetRelationshipTypeByUID(It.IsAny<Guid>()))
                 .Returns(new IntersectType());
+
+            mock.Setup(x => x.GetRelationshipByUID(It.IsAny<Guid>()))
+                .Returns((Guid uid) => uid == Guid.Parse(DataConstants.ValidGUID) ? new Intersect() : null);
 
             return mock.Object;
         }

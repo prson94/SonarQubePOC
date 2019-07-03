@@ -381,11 +381,12 @@ namespace d360.core.entities.Workflow
 
     public enum WorkflowApiState
     {
-        [Name("InActive")]
-        InActive = 0,
+        
         [Name("Active")]
-        Active = 1
-       
+        Active = 1,
+        [Name("InActive")]
+        InActive = 0
+
     }
 
     public class WorkflowApiViewModel
@@ -396,10 +397,11 @@ namespace d360.core.entities.Workflow
         public Guid? RelationshipUid { get; set; }
         public Guid WorkflowTypeUid { get; set; }
         public Guid WorkflowVersionUid { get; set; }
-        public Guid StartedByUid { get; set; }
         public DateTime StartedOn { get; set; }
-        public Guid? CompletedByUid { get; set; }
+        public Guid StartedByUid { get; set; }
         public DateTime? CompletedOn { get; set; }
+        public Guid? CompletedByUid { get; set; }
+  
     }
 
     public class WorkflowVersionsApiViewModel
