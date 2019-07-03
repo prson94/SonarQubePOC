@@ -3,7 +3,6 @@ import { BaseComponent } from '../../shared/base.component';
 import { WorkflowListItem, ChangeTypeInfo } from '../../../models/workflow.model';
 import { WorkflowService } from '../../../services/workflow.service';
 import { Router } from '@angular/router';
-import { GridColumn } from '../../../models/grid-definition.model';
 import { map } from 'rxjs/operators';
 
 @Component({
@@ -57,7 +56,7 @@ import { map } from 'rxjs/operators';
                 </td>
             </tr>
         </ng-template>
-        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+        <ng-template pTemplate="summary">
             <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords" ></d3s-grid-paging-info>
         </ng-template>
     </p-table>
