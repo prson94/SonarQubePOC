@@ -1,4 +1,4 @@
-﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter } from '@angular/core';
+﻿import { Component, NgZone, OnInit, Output, EventEmitter } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { WorkflowListItem, ChangeTypeInfo } from '../../../models/workflow.model';
 import { WorkflowService } from '../../../services/workflow.service';
@@ -71,7 +71,7 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
     @Output() onAddClick = new EventEmitter();
 
     private items: WorkflowListItem[] = [];
-    private selection: WorkflowListItem;
+    public selection: WorkflowListItem;
 
     private changeTypes: ChangeTypeInfo[] = [];
 
@@ -90,7 +90,10 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
         return this.columns.map(c => c.datafield);
     }
 
-    constructor(private workflowService: WorkflowService, protected router: Router) {
+    constructor(
+        private workflowService: WorkflowService,
+        protected router: Router
+    ) {
         super();
     }
 
