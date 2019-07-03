@@ -11532,18 +11532,22 @@ where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetT
                         case "PolicyType":
                         case "TaxonomyType":
                             sql = $@"
-select	A.Object,
-        A.ObjectID, 
-        TP.TextPath as Name 
-from	AssetDetail A 
-        cross apply dbo.GetAssetTextPathById(A.ID, '/') TP 
-where   A.Type = @targetType 
-        and A.TypeID = @targetTypeID 
-        and A.[State] = 1 
-        and A.ObjectID != @id
-        and A.ID not in ({GetNoReadSqlStatement()}) 
-order by TP.TextPath"; 
-                            
+                                    select	A.Object,
+                                            A.ObjectID, 
+                                            TP.TextPath as Name 
+                                    from	AssetDetail A 
+                                            cross apply dbo.GetAssetTextPathById(A.ID, '/') TP 
+                                    		left join [Intersect] I on	I.IntersectTypeID = @it and (
+                                    											( (I.Subject = @source and I.SubjectID = @id) AND (I.Object = A.[Object] and I.ObjectID = A.ObjectID) ) OR
+                                    											( (I.Subject = A.[Object] and I.SubjectID = A.ObjectID) AND (I.Object = @source and I.ObjectID = @id) )
+                                    										)
+                                    where   A.Type = @targetType 
+                                            and A.TypeID = @targetTypeID 
+                                            and A.[State] = 1 
+                                            and A.ObjectID != @id
+                                            and A.ID not in ({GetNoReadSqlStatement()}) 
+                                            and I.ID is null
+                                    order by TP.TextPath"; 
                             break;
                     }
                     break;
