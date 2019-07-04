@@ -49,6 +49,7 @@ namespace d360.web
             builder.RegisterType<RelationshipRepository>().As<IRelationshipRepository>().InstancePerRequest();
             builder.RegisterType<FusionRepository>().As<IFusionRepository>().InstancePerRequest();
             builder.RegisterType<MetricsRepository>().As<IMetricsRepository>().InstancePerRequest();
+            builder.RegisterType<ResponsibilityRepository>().As<IResponsibilityRepository>().InstancePerRequest();
 
 
             builder.RegisterType<d360.extensions.info.UriSecurityContextProvider>().As<ISecurityContextProvider>()

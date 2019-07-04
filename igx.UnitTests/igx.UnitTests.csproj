@@ -94,6 +94,7 @@
     <Compile Include="Core\BaseTestClass.cs" />
     <Compile Include="Core\DataConstants.cs" />
     <Compile Include="Core\Helpers.cs" />
+    <Compile Include="Core\MessagesHelper.cs" />
     <Compile Include="Core\SqlConstants.cs" />
     <Compile Include="LibraryTests\JsonTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -101,6 +102,7 @@
     <Compile Include="V2ControllerTests\FieldsControllerTest.cs" />
     <Compile Include="V2ControllerTests\MetricsControllerTest.cs" />
     <Compile Include="V2ControllerTests\TagsControllerTest.cs" />
+    <Compile Include="V2ControllerTests\ResponsibilitiesControllerTest.cs" />
     <Compile Include="V2ControllerTests\WorkflowControllerTest.cs" />
     <Compile Include="ValidatorTests\TagValidatorTests.cs" />
     <Compile Include="ValidatorTests\FieldValidatorTests.cs" />

@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using igx.UnitTests;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -47,6 +49,35 @@ namespace igx.UnitTests.Core
             }
 
             return true;
+        }
+    }
+}
+
+
+
+namespace Xunit
+{
+    public class AssertJSON
+    {
+        public static void True<T>(string json)
+        {
+            string userMessage = XMsg.InvalidJSON;
+            bool areEqual = false;
+            try
+            {
+                var obj = JsonConvert.DeserializeObject<T>(json);
+                var serialized = JsonConvert.SerializeObject(obj);
+                areEqual = json == serialized;
+
+
+            }
+            catch (Exception ex)
+            {
+                userMessage = ex.Message;
+            }
+
+
+            Assert.True(areEqual, userMessage);
         }
     }
 }
