@@ -1,0 +1,27 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="tklok" id="GOV-7491">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[  
+	UPDATE [dbo].[SiteNav] SET [Title] = 'Reference Lists' WHERE [Name] = '#Reference' AND [Title] = 'Reference'
+	UPDATE [dbo].[SiteNav] SET [Icon] = 'fa-list-alt' WHERE [Name] = '#Reference' AND [Icon] = 'fa-cubes'
+	UPDATE [dbo].[SiteNav] SET [Icon] = 'fa-retweet' WHERE [Name] = '#Monitor' AND [Icon] = 'fa-usb';
+		]]>
+    </sql>
+    <rollback>
+	<![CDATA[
+	UPDATE [dbo].[SiteNav] SET [Title] = 'Reference' WHERE [Name] = '#Reference' AND [Title] = 'Reference Lists'
+	UPDATE [dbo].[SiteNav] SET [Icon] = 'fa-cubes' WHERE [Name] = '#Reference' AND [Icon] = 'fa-list-alt'
+	UPDATE [dbo].[SiteNav] SET [Icon] = 'fa-usb' WHERE [Name] = '#Monitor' AND [Icon] = 'fa-retweet';
+			]]>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>
