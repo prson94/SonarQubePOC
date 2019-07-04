@@ -155,7 +155,7 @@ namespace d360.web.Controllers.V2
                     whereSql += " and ";
                 }
             }
-            finalSql = selectSql + joinsSql + whereSql;
+            finalSql = selectSql + whereSql;
             countSql += whereSql;
             if (pageSize > 0 || pageNum > 0)
             {
