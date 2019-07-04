@@ -446,16 +446,14 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         this.diagram.model.nodeDataArray.forEach(n => {
             if ((<NodeModel>n).activityName === "FieldChange") {
                 ((<NodeModel>n).settings.FieldUpdate.Field).forEach(function (fieldNode) {
-                    if (fieldNode["@FieldName"] != undefined) {
-                        var fieldData = fieldNode["@FieldName"].split("::", 2);
-                        if (fieldData.length == 2) {
-                            var fieldId = +fieldNode["@FieldId"];
-                            var object = fieldData[0];
-                            var objectName = fieldData[1];
-                            var f = types.filter(x => x.ID == fieldId && x.Object == object && x.Name == objectName)[0];
-                            if (f != undefined)
-                                fieldNode["@ObjectType"] = object;
-                        }
+                    var fieldData = fieldNode["@FieldName"].split("::", 2);
+                    if (fieldData.length == 2) {
+                        var fieldId = +fieldNode["@FieldId"];
+                        var object = fieldData[0];
+                        var objectName = fieldData[1];
+                        var f = types.filter(x => x.ID == fieldId && x.Object == object && x.Name == objectName)[0];
+                        if (f != undefined)
+                            fieldNode["@ObjectType"] = object;
                     }
                 });
             }
