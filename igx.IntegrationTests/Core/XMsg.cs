@@ -16,6 +16,8 @@ namespace igx.IntegrationTests
         public static string MissingAsset = "Asset missing from response!";
 
         public static string InvalidFieldValue(string field) => $"Invalid value on field '{field}' in response!";
+        public static string InvalidCount = $"Invalid count of items in response!";
+        public static string ExecutionStatusErr = "Execution status check failed";
 
 
     }
