@@ -6,6 +6,7 @@ import { MessagesService } from '../../../services/messages.service';
 import { AdminBaseComponent } from '../admin-base.component'
 import { Title } from '@angular/platform-browser';
 import { SurveyType } from '../../../models/survey.model';
+import { catchError } from 'rxjs/operators';
 
 @Component({
     selector: 'd3s-admin-surveys',
@@ -94,12 +95,12 @@ export class AdminSurveysComponent extends AdminBaseComponent {
 
     showDelete: boolean = false;
     showEditor: boolean = false;
-    
+
 
     public theDeleteCallback: Function;
 
     constructor(private surveysService: SurveysService, headerBreadcrumbService: HeaderBreadcrumbService, private messagesService: MessagesService, titleService: Title) {
-        super(headerBreadcrumbService,  titleService);        
+        super(headerBreadcrumbService, titleService);
         this.areaName = "Surveys";
         this.setCommonItems();
     }
@@ -113,17 +114,16 @@ export class AdminSurveysComponent extends AdminBaseComponent {
         this.isLoading = true;
         this.surveysService
             .getSurveyTypes()
-            .then(res => {
-                this.surveys = res;
+            .subscribe(res => {
+                this.surveys = res.sort((a, b) => a.Name.localeCompare(b.Name));
                 if (this.surveys.length > 0) this.selected = this.surveys[0];
                 this.isLoading = false;
-            })
-            .catch(error => this.error = error); // TODO: Display error message
+            }, err => { this.error = err })
     }
 
     deleteSurveyType(id: number) {
         this.surveysService.deleteSurveyTypeById(id).
-            then(result => {
+            subscribe(result => {
                 this.showMessageForResult(this.messagesService, result);
                 //remove the template with this id from the grid
                 if (result.type != 'error') {
@@ -155,7 +155,7 @@ export class AdminSurveysComponent extends AdminBaseComponent {
 
     saveSurvey(event) {
         this.surveysService.saveSurveyType(event.item)
-            .then(result => {
+            .subscribe(result => {
                 this.showMessageForResult(this.messagesService, result);
                 if (event.item.ID == undefined) {
                     event.item.ID = Number(result.id);

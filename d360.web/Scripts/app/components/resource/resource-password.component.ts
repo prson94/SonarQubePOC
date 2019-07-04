@@ -74,7 +74,7 @@ export class ResourcePasswordComponent extends BaseComponent{
 
         this.isLoading = true;
         this.uriBasedService.saveItem(null, "form/dynamicedit/edit/resourceselfpassword", values)
-            .then(result => {
+            .subscribe(result => {
                 this.isLoading = false;
                 this.showMessageForResult(this.messagesService, result);
                 if (result.type != 'error') {

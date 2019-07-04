@@ -68,51 +68,6 @@ namespace d360.web.Controllers
             var list = Company.Query<dynamic>(@"select ID as [value], Name as [text] from Predicate order by Name");
             return new JsonNetResult { Data = list, Formatting = Formatting.None };
         }
-
-        [Route("_IntersectTypes/excel.xls"), FileDownload, HttpGet]        
-        public async Task<FileResult> _IntersectTypesExcel()
-        {
-            var queryParams = new List<KeyValuePair<string, string>>();
-            queryParams.Add(new KeyValuePair<string, string>("state", "1"));
-            var models = await Company.GetRelationshipTypes(queryParams);
-            var document = new SLDocument();
-            document.AddWorksheet("Items");
-
-            #region Create the list sheet
-
-            #region Header
-
-            int index = 1;
-            document.SetCellValue(1, index++, "Id");
-            document.SetCellValue(1, index++, "Uid");
-            document.SetCellValue(1, index++, "Subject");
-            document.SetCellValue(1, index++, "Subject Class");
-            document.SetCellValue(1, index++, "Predicate");            
-            document.SetCellValue(1, index++, "Object");
-            document.SetCellValue(1, index++, "Object Class");
-
-            #endregion
-
-            int rowNumber = 1;
-            foreach (var row in models)
-            {
-                index = 1;
-                rowNumber++;
-                document.SetCellValue(rowNumber, index++, row.Id);
-                document.SetCellValue(rowNumber, index++, row.Uid.ToString());
-                document.SetCellValue(rowNumber, index++, row.Subject.Name);
-                document.SetCellValue(rowNumber, index++, row.Subject.Class.ToString());
-                document.SetCellValue(rowNumber, index++, row.Predicate.Name);
-                document.SetCellValue(rowNumber, index++, row.Object.Name);
-                document.SetCellValue(rowNumber, index++, row.Object.Class.ToString());                
-            }
-
-            #endregion
-
-            var stream = new System.IO.MemoryStream();
-            document.SaveAs(stream);
-            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", string.Format("Relationship Types {0}.xlsx", System.DateTime.Now.ToShortDateString()));
-        }
         
         [HttpGet, Route("GetPossibleRelationshipsObjectByIntersect"), NonNullableParameters]
         public JsonNetResult GetPossibleRelationshipsObjectByIntersect(int id)

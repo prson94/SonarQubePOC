@@ -29,4 +29,7 @@
   <include file="scripts/GOV-7217.xml"/>
   <include file="scripts/GOV-7316.xml"/> <!--add environmentlevel to databaseserver table and comments column-->
   <include file="scripts/GOV-7381.xml"/> <!--system setting for verbose v1 lineage-->
+  <include file="scripts/GOV-7437.xml"/>
+  <include file="scripts/GOV-7493.xml"/> <!--remove Foreign Key FK_CompanySetting_CompanySetting-->
+  <include file="scripts/GOV-7371.xml"/>
 </databaseChangeLog>

@@ -114,7 +114,6 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
         this.setCommonItems();
         this.theDeleteCallback = this.deleteRuleType.bind(this);
         this.setCommonRightSideBar(false, false, false);
-        this.rightSidebarService.showItem(new RightSidebarItem('Dimensions', 'dimensions', ['fa-tag'], '/admin/rules/dimensions'));
     }
 
     ngOnInit() {

@@ -117,8 +117,9 @@ export class AdminPredicatesComponent extends AdminBaseComponent implements OnDe
     getPredicates() {
         this.isLoading = true;
         this.predicatesService.getPredicates()
-            .then(predicates => {
-                this.predicates = predicates
+            .subscribe(predicates => {
+                this.predicates = predicates;
+                this.selected = predicates[0];
                 this.isLoading = false;
             })
     }
@@ -129,7 +130,7 @@ export class AdminPredicatesComponent extends AdminBaseComponent implements OnDe
 
     deletePredicate(id: number) {
         this.predicatesService.deletePredicate(id)
-            .then(result => {
+            .subscribe(result => {
                 this.showMessageForResult(this.messagesService, result);
                 this.showDelete = false;
                 if (result.type != 'error') {
@@ -151,7 +152,7 @@ export class AdminPredicatesComponent extends AdminBaseComponent implements OnDe
 
     savePredicate(event) {
         this.predicatesService.savePredicate(event.item)
-            .then(result => {
+            .subscribe(result => {
                 this.showMessageForResult(this.messagesService, result);
                 this.getPredicates();
                 this.showEditor = false;

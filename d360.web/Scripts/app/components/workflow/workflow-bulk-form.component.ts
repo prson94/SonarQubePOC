@@ -16,6 +16,7 @@ import { ResourcesService } from '../../services/resources.service';
 import { Resource } from '../../models/resource.model';
 import { MessagesService } from '../../services/messages.service';
 import { SubscriptionLike as ISubscription } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Component({
     selector: 'd3s-workflow-bulk-form',
@@ -185,12 +186,14 @@ export class WorkflowBulkFormComponent extends BaseComponent implements OnInit, 
         this.model.Fields = this.fields;
         this.isSubmitting = true;
         this.workflowService.submitBulkWorkflowForm(this.model)
-            .then(r => {
+            .pipe(
+                map(r => {
                 this.isCompleted = true;
                 if (r && r.omittedCount)
-                this.omittedCount = r.omittedCount;
-            })
-            .then(() => setTimeout(() => this.isSubmitting = false, 5000)); //pause for 5 seconds to ensure user sees processing message
+                    this.omittedCount = r.omittedCount;
+                }),
+                map(() => setTimeout(() => this.isSubmitting = false, 5000)))
+            .subscribe(); //pause for 5 seconds to ensure user sees processing message
         
     }
 
@@ -198,7 +201,7 @@ export class WorkflowBulkFormComponent extends BaseComponent implements OnInit, 
 
         this.isLoading = true;
         this.workflowService.getWorkflowBulkForm(this.model)
-            .then(res => {
+            .subscribe(res => {
                 //console.log(res);
 
                 this.title = res.Title;

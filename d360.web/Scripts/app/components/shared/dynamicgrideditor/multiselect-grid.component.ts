@@ -74,7 +74,7 @@ export class MultiSelectGridComponent extends BaseComponent implements OnInit, C
     private load() {
         this.isLoading = true;
         this.uriBasedService.getItems(this.field.TypeaheadUri).
-            then(result => {
+            subscribe(result => {
                 this.items = result;
                 this.isLoading = false;
                 this.ref.markForCheck();

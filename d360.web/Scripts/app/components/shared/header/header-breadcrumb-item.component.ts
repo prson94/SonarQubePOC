@@ -110,7 +110,8 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
 
     private in(panel, searchPanel, event) {
         let parent = this.hoverTarget.nativeElement.parentNode;
-        if (this.isChangableItem()) {
+        let lineDims = this.hoverTarget.nativeElement.getBoundingClientRect();
+        if (this.isChangableItem() && !this.isTreeItem()) {
             this.showSearch = true;            
             let lineDims = this.hoverTarget.nativeElement.getBoundingClientRect();
             if (this.hasClass(parent, 'collapsed-crumb')) {
@@ -139,11 +140,9 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
             }
         }
         if (this.isTreeItem()) {
-            
             if (this.hasClass(parent, 'collapsed-crumb')) {
                 panel.show(event, this.hoverTarget.nativeElement.parentNode);
                 window.setTimeout(() => {
-                    let lineDims = this.hoverTarget.nativeElement.getBoundingClientRect();
                     panel.el.nativeElement.children[0].style.top = (lineDims.top - 40) + "px";
                     panel.el.nativeElement.children[0].style.left = (lineDims.width + (10 * this.index)) + "px";
                     if (this.treeInput) {
@@ -156,11 +155,8 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
 
             else {
                 panel.show(event);
-                if (this.treeInput) {
-                    window.setTimeout(() => {
-                        this.treeInput.nativeElement.focus();
-                    }, 100);
-                } 
+                window.setTimeout(() => { panel.el.nativeElement.children[0].style.left = lineDims.left + "px"; }, 100);
+                if (this.treeInput) { window.setTimeout(() => { this.treeInput.nativeElement.focus(); }, 100); }
             }
         }
     }    

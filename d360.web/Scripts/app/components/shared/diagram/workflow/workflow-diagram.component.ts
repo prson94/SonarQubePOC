@@ -38,7 +38,9 @@ import {
     WorkflowActivityType,
 } from '../../../../models/workflow.model';
 import { FieldType } from '../../../../models/fields.model';
-
+import { map, concatMap } from 'rxjs/operators';
+import { Observable,of } from 'rxjs';
+ 
 declare var window: any;
 
 @Component({
@@ -313,45 +315,49 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
     //#region save/load
 
-    private populateDiagram(): Promise<any> {
+    private populateDiagram(): Observable<any> {
 
         //load from model
         if (this.model != null) {
             if (this.model.Event == null || this.model.Event.Object == null || this.model.Event.ObjectID == null) {
                 console.warn('Model passed to workflow diagram with no Event Registration data.');
                 this.isLoading = false;
-                return Promise.resolve();
+                return of();
 
             }
 
             return this.workflowService.getWorkflowFieldTypes(this.model.Event.ObjectID, this.model.Event.Object, true, this.model.Event.IssueObject)
-                .then(r => this.fieldTypes = r)
-                .then(() => this.parseData(this.model))
-                .then(() => this.isLoading = false);
+                .pipe(
+                    map(r => this.fieldTypes = r),
+                    map(() => this.parseData(this.model)),
+                    map(() => this.isLoading = false)
+                );
         }
 
         //if we don't have at least an id at this point, there's nothing we can do
         if (this.id == null) {
             this.isLoading = false;
-            return Promise.resolve();
+            return of();
         }
 
         this.isLoading = true;
 
         return this.workflowService.getWorkflowDiagram(this.id, this.version, this.filteredObject, this.filteredObjectId)
-            .then(r => {
-                this.model = r;
-                if (this.model.Nodes != null)
+            .pipe(
+                map(r => {
+                    this.model = r;
+                    if (this.model.Nodes != null)
                     this.model.Nodes.forEach(n => n.ActivityTypeInfo = this.activityTypes.find(a => a.ID == n.ActivityType));
-            })
-            .then(() => this.workflowService.getWorkflowFieldTypes(this.model.Event.ObjectID, this.model.Event.Object, true))
-            .then(r => this.fieldTypes = r)
-            .then(() => this.parseData(this.model))
-            .then(() => this.setIssueObject())
-            .then(() => {
-                this.isLoading = false;
-                this.hasType = true;
-            });
+                    }),
+                map(() => this.workflowService.getWorkflowFieldTypes(this.model.Event.ObjectID, this.model.Event.Object, true)
+                    .subscribe(r => this.fieldTypes = r)),
+                map(() => this.parseData(this.model)),
+                map(() => this.setIssueObject()),
+                map(() => {
+                    this.isLoading = false;
+                    this.hasType = true;
+                    })
+                );
     }
 
     private setIssueObject() {
@@ -470,19 +476,23 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         this.isLoading = true;
 
         this.workflowService.saveWorkflowDiagramModel(m)
-            .then(r => {
+            .subscribe(r => {
                 this.onCloseClick.emit();
             });
     }
 
+    
     private load() {
         this.getActivityTypes()
-            .then(() => this.populateDiagram())
-            .then(() => this.initializePalette())
-            .then(() => this.initializeFormFields())
-            .then(() => this.getObjectName())
-            .then(() => this.isWindowVisible = (this.monitorView || !this.isReadOnly));
+            .pipe(
+                concatMap(() => this.populateDiagram()),
+                concatMap(() => of(this.initializePalette())),
+                concatMap(() => of(this.initializeFormFields())),
+                concatMap(() => of(this.getObjectName())),
+            concatMap(() => of(this.isWindowVisible = (this.monitorView || !this.isReadOnly)))
+            ).subscribe();
     }
+
 
     //#endregion
 
@@ -546,14 +556,15 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
         if (obj == 'Fusion') {
             this.uriBasedService.getItems(`api/fusion/0/configurations/${this.model.Event.ObjectID}`)
-                .then(r => {
+                .subscribe(r => {
                     if (r != null)
                         this.objectTypeName = 'Fusion :: ' + r['Name'];
                     else
                         this.objectTypeName = '';
                 })
         } else {
-            this.objectDetailService.getObject(this.model.Event.ObjectID, obj).subscribe(
+            this.objectDetailService.getObject(this.model.Event.ObjectID, obj)
+                .subscribe(
                 r => {
                     if (r != null) {
                         this.objectTypeName = r.TypeName + ' :: ' + r.Name;
@@ -596,20 +607,22 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         return forms;
     }
 
-    private getActivityTypes(): Promise<any> {
+    private getActivityTypes(): Observable<any> {
         return this.workflowService.getActivityTypes()
-            .then(r => {
-                let excluded = r.findIndex(a => a.ID == WorkflowActivityType.None);
+            .pipe(
+                map(r => {
+                    let excluded = r.findIndex(a => a.ID == WorkflowActivityType.None);
 
-                if (excluded >= 0)
+                    if (excluded >= 0)
                     r.splice(excluded, 1);
 
-                excluded = r.findIndex(a => a.ID == WorkflowActivityType.StatusChange); //deprecated
-                if (excluded >= 0)
+                    excluded = r.findIndex(a => a.ID == WorkflowActivityType.StatusChange); //deprecated
+                    if (excluded >= 0)
                     r.splice(excluded, 1);
 
-                this.activityTypes = r;
-            });
+                    this.activityTypes = r;
+                })
+            );
 
     }
 
@@ -1904,7 +1917,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     //#endregion
 
     private clearExecuted() {
-        this.workflowService.clearLastExecutionDate(this.id);
+        this.workflowService.clearLastExecutionDate(this.id).subscribe();
         this.model.Event.LastExecuted = null;
     }
 

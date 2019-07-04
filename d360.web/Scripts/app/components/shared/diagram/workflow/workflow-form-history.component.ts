@@ -19,6 +19,7 @@ import { FieldType } from '../../../../models/fields.model';
 import { Column, Header, Editor } from 'primeng/primeng';
 import { WorkflowService } from '../../../../services/workflow.service';
 import { ResourcesService } from '../../../../services/resources.service';
+import { map } from 'rxjs/operators';
 
 @Component({
     selector: 'd3s-workflow-form-history',
@@ -46,10 +47,10 @@ export class WorkflowFormHistoryComponent extends BaseComponent implements OnIni
 
         this.isLoading = true;
         this.resourcesService.getResources()
-            .then(r => {
-                this.resources = r;
-            })
-            .then(() => {
+            .pipe(
+                map(r => {
+                this.resources = r; }),
+            map(() => {
                 //normalize input
                 if (this.fields != null && this.fields.form != null) {
                     if (this.fields.form.constructor !== Array) {
@@ -73,15 +74,15 @@ export class WorkflowFormHistoryComponent extends BaseComponent implements OnIni
                         }
                     });
                 }
-            })
-            .then(() => {
+            }),
+            map(() => {
                 //show the first completed form by default
                 if (this.fields != null && this.fields.form != null && this.fields.form.length > 0) {
                     this.selectedFormIndex = 0;
                     this.selectedForm = this.fields.form[0];
                 }
-            })
-            .then(() => this.isLoading = false);
+            }),
+            map(() => this.isLoading = false)).subscribe();
     }
 
     ngOnChanges() {

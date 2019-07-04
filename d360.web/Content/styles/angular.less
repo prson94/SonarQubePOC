@@ -883,7 +883,7 @@ div.item-description {
 
 
 .InActiveRowTools {
-    margin: 4px;
+    margin: 4px;  
     float: right;
     width: 100%;
     color: @d3s-gray-3;
@@ -1158,11 +1158,19 @@ div.breadcrumbs {
             width: 100%;
         }
 
-        .breadcrumb-text {
-            padding-right: 5px;
+        .breadcrumb{
+            .breadcrumb-text {
+                padding-right: 5px;
 
-            &.highlight {
-                color: #000;
+                &.highlight {
+                    color: #000;
+                }
+                &.breadcrumb-link {
+                    &:hover, &.hover {
+                        cursor: pointer;
+                        text-decoration: none;
+                    }
+                }
             }
         }
 
@@ -1187,7 +1195,7 @@ div.breadcrumbs {
             border-radius: 3px;
             padding: 0px 5px;
             font-size: 12px;
-            color:white;
+            color: white;
 
             &:before {
                 content: '';
@@ -1228,8 +1236,6 @@ a.breadcrumb {
         }
 
         &:hover {
-            cursor: pointer;
-
             icon {
                 text-decoration: none;
             }
@@ -1245,18 +1251,19 @@ a.breadcrumb {
     position: relative;
     top: 1px;
     text-transform: none;
-    cursor: pointer;
 
     .breadcrumb-text {
         padding-right: 0px;
 
-        &:hover, .hover {
-            cursor: pointer;
-            text-decoration: underline;
-        }
-
         &.highlight {
             color: @igx-header-breadcrumb-color;
+        }
+
+        &.breadcrumb-link{
+            &:hover, &.hover {
+                cursor:pointer;
+                text-decoration: underline;
+            }
         }
     }
 
@@ -1387,6 +1394,7 @@ a.breadcrumb {
         width: 302px !important;
     }
 }
+
 .header-search-input {
     display: inline-flex;
     flex-direction: row;
@@ -1406,8 +1414,8 @@ a.breadcrumb {
         flex-grow: 1;
         outline: none;
         width: 150px;
-        font-family: 'Nunito Sans', sans-serif;
-        font-size: 14px;
+        font-family: 'Nunito Sans', sans-serif !important;
+        font-size: 14px !important;
 
         &.placeholder {
             color: #bbbbbb;
@@ -1853,10 +1861,499 @@ div.home-image-title-text {
     white-space: pre-wrap;
 }
 
+.json-view span {
+    font-size: 14px !important;
+}
+
 .tile {
     header {
         .row {
             font-size: 14px;
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////
+// Modal Dialog
+///////////////////////////////////////////////////////////////////////////////////
+.modal-overlay {
+    position: fixed;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    z-index: 1000;
+    padding-top: 40px;
+    padding-bottom: 40px;
+    background: rgba(255, 255, 255, 0.8);
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 200ms ease;
+    cursor:auto;
+
+    button.button {
+        display: inline-flex;
+        position: relative;
+        box-sizing: border-box;
+        flex-wrap: nowrap;
+        justify-content: center;
+        align-items: center;
+        user-select: none;
+        cursor: pointer;
+        height: 32px;
+        font-family: 'Nunito Sans';
+        font-size: 14px;
+        text-align: center;
+        white-space: nowrap;
+        background: #f0f0f0;
+        color: #202020;
+        border: none;
+        border-radius: 3px;
+    }
+
+    button.button:not(.icon):not(.bar) {
+        padding: 0 15px;
+    }
+
+    button.button:not(.icon):not(.bar) i.fa {
+        padding-right: 7px;
+    }
+
+    button.button.icon {
+        width: 30px;
+    }
+
+    button.button:not(:disabled):hover, button.button.hover {
+        background: #dfdfdf;
+    }
+
+    button.button:not(:disabled):active, button.button.active {
+        background: #cecece;
+    }
+
+    button.button.primary {
+        background: #0971b9;
+        color: #ffffff;
+        line-height:normal;
+    }
+
+    button.button.primary:not(:disabled):hover, button.button.primary.hover {
+        background: #0869ac;
+    }
+
+    button.button.primary:not(:disabled):active, button.button.primary.active {
+        background: #08619f;
+    }
+
+    button.button.accent {
+        background: #ff7155;
+        color: #ffffff;
+    }
+
+    button.button.accent:not(:disabled):hover, button.button.accent.hover {
+        background: #ed694f;
+    }
+
+    button.button.accent:not(:disabled):active, button.button.accent.active {
+        background: #db6149;
+    }
+
+    button.button.negative {
+        background: #d11f49;
+        color: #ffffff;
+    }
+
+    button.button.negative:not(:disabled):hover, button.button.negative.hover {
+        background: #c21d44;
+    }
+
+    button.button.negative:not(:disabled):active, button.button.negative.active {
+        background: #b41b3f;
+    }
+
+    button.button .loader {
+        position: absolute;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+    }
+
+    button.button.loading {
+        opacity: 1;
+    }
+
+    button.button.loading .content {
+        visibility: hidden;
+    }
+
+    button.button.loading .loader {
+        display: inline-flex;
+    }
+
+    button.button.bar {
+        width: 40px;
+        height: 40px;
+        background: none;
+        color: #ffffff;
+        font-size: 16px;
+        border-radius: 0;
+    }
+
+    button.button.bar:not(:disabled):hover, button.button.bar.hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    button.button.bar:not(:disabled):active, button.button.bar.active {
+        background: rgba(255, 255, 255, 0.4);
+    }
+
+    button.button.bar.light {
+        color: #202020;
+    }
+
+    button.button.bar.light:not(:disabled):hover, button.button.bar.light.hover {
+        background: rgba(0, 0, 0, 0.07);
+    }
+
+    button.button.bar.light:not(:disabled):active, button.button.bar.light.active {
+        background: rgba(0, 0, 0, 0.14);
+    }
+
+    button.button.bar {
+        width: 40px;
+        height: 40px;
+        background: none;
+        color: #ffffff;
+        font-size: 16px;
+        border-radius: 0;
+    }
+
+    button.button.bar:not(:disabled):hover, button.button.bar.hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    button.button.bar:not(:disabled):active, button.button.bar.active {
+        background: rgba(255, 255, 255, 0.4);
+    }
+
+    button.button.bar.light {
+        color: #202020;
+    }
+
+    button.button.bar.light:not(:disabled):hover, button.button.bar.light.hover {
+        background: rgba(0, 0, 0, 0.07);
+    }
+
+    button.button.bar.light:not(:disabled):active, button.button.bar.light.active {
+        background: rgba(0, 0, 0, 0.14);
+    }
+
+    .flex {
+        display: inline-flex;
+        position: relative;
+        box-sizing: border-box;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        align-items: flex-start;
+    }
+
+    .flex.row {
+        flex-direction: row;
+    }
+
+    .flex.row.wrap.sp15 {
+        margin: -7.5px;
+    }
+
+    .flex.row.wrap.sp15 > * {
+        margin: 7.5px;
+    }
+
+    .flex.row:not(.wrap).sp15 > * {
+        margin-right: 15px;
+    }
+
+    .flex.row:not(.wrap).sp15 > *:last-child {
+        margin-right: 0;
+    }
+
+    .flex.column {
+        flex-direction: column;
+    }
+
+    .flex.column:not(.wrap).sp15 > * {
+        margin-bottom: 15px;
+    }
+
+    .flex.column:not(.wrap).sp15 > *:last-child {
+        margin-bottom: 0;
+    }
+
+    .flex.jcs {
+        justify-content: flex-start;
+    }
+
+    .flex.jce {
+        justify-content: flex-end;
+    }
+
+    .flex.jcc {
+        justify-content: center;
+    }
+
+    .flex.jcstr {
+        justify-content: flex-start;
+    }
+
+    .flex.jcstr > * {
+        flex-grow: 1;
+        flex-shrink: 1;
+    }
+
+    .flex.jca {
+        justify-content: space-around;
+    }
+
+    .flex.jcb {
+        justify-content: space-between;
+    }
+
+    .flex.ais {
+        align-items: flex-start;
+    }
+
+    .flex.aie {
+        align-items: flex-end;
+    }
+
+    .flex.aic {
+        align-items: center;
+    }
+
+    .flex.aib {
+        align-items: baseline;
+    }
+
+    .flex.aistr {
+        align-items: flex-start;
+    }
+
+    .flex.aistr > * {
+        width: 100%;
+    }
+
+    .flex.wrap {
+        flex-shrink: 1;
+        flex-wrap: wrap;
+    }
+
+    .flex > * {
+        flex-shrink: 0;
+    }
+
+    .flex > *.grow {
+        flex-grow: 1;
+    }
+
+    .flex > *.shrink {
+        flex-shrink: 1;
+    }
+
+    .flex > *.scroll {
+        flex-shrink: 1;
+        flex-basis: auto;
+    }
+
+    .flex > *.stretch {
+        align-self: stretch;
+    }
+
+    .flex.row > *.scroll {
+        overflow-x: auto;
+    }
+
+    .flex.row > *.spacer {
+        min-width: 20px;
+    }
+
+    .flex.row > *.stretcher {
+        min-width: 20px;
+        flex-grow: 1;
+    }
+
+    .flex.column > *.scroll {
+        overflow-y: auto;
+    }
+
+    .flex.column > *.spacer {
+        min-height: 20px;
+    }
+
+    .flex.column > *.stretcher {
+        min-height: 20px;
+        flex-grow: 1;
+    }
+}
+
+.modal-overlay.show {
+    visibility: visible;
+    opacity: 1;
+}
+
+.modal-overlay.begin-hide {
+    opacity: 0;
+}
+
+.modal-overlay .modal-dialog {
+    display: inline-flex;
+    flex-direction: column;
+    background: white;
+    border-radius: 5px;
+    box-shadow: rgba(0, 0, 0, 0.33) 0 5px 10px;
+    transform: scale(0.8);
+    transform-origin: center top;
+    transition: transform 200ms ease;
+}
+
+.modal-overlay .modal-dialog .title-bar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 10px;
+    padding-left: 20px;
+}
+
+.modal-overlay .modal-dialog .title-bar h1 {
+    font-family: "Nunito Sans";
+    color: #202020;
+    font-size: 18px;
+    font-weight: 300;
+    width: 100%;
+    display: inline-flex;
+    line-height: 1;
+    margin-right: 30px;
+    margin-left:0px;
+    margin-bottom:0px;
+    margin-top:0px;
+}
+
+.modal-overlay .modal-dialog .title-bar button {
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+
+.modal-overlay .modal-dialog .action-bar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 20px;
+}
+
+.modal-overlay .modal-dialog .content {
+    background: #f0f0f0;
+    padding: 20px;
+    flex-grow: 1;
+    flex-shrink: 1;
+    overflow-y: auto;
+}
+
+.modal-overlay.show .modal-dialog {
+    transform: scale(1);
+}
+
+.modal-overlay.begin-hide .modal-dialog {
+    transform: scale(0.8);
+}
+
+.about-image {
+    width: 100px;
+    height: 100px;
+}
+
+.about-info {
+    max-width: 480px;
+    flex-shrink: 1;
+    padding-left: 30px;
+}
+
+.about-info ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    line-height: initial;
+
+    a {
+        color: #0971b9 !important;
+        display: inline;
+    }
+}
+
+.about-info li {
+    font-family: "Nunito Sans";
+    font-weight: normal;
+    font-size: 14px;
+    color: #202020;
+    float: none;
+    cursor:text;
+
+    a {
+        color: #0971b9;
+        display: inline;
+    }
+}
+
+.about-info li:not(:last-child) {
+    margin-bottom: 5px;
+}
+
+.about-info p {
+    font-family: "Nunito Sans";
+    font-weight: normal;
+    font-size: 14px;
+    color: #202020;
+    line-height: 1.2;
+    margin: 0;
+    margin-top: 15px;
+}
+
+.modal-overlay .modal-dialog .title-bar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 10px;
+    padding-left: 20px;
+}
+
+.modal-overlay .modal-dialog .title-bar h1 {
+    display: inline-flex;
+    line-height: 1;
+    margin-right: 30px;
+}
+
+.modal-overlay .modal-dialog .title-bar button {
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+
+.grow {
+    flex-grow: 1;
+}
+
+modal-overlay .modal-dialog .content {
+    background: #f0f0f0;
+    padding: 20px;
+    flex-grow: 1;
+    flex-shrink: 1;
+    overflow-y: auto;
+}
+
         }
     }
 }

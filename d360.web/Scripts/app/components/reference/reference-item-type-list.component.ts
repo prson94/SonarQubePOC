@@ -80,8 +80,8 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
         this.isLoading = true;
         this.loadPermissions(this.permissionsService, "ReferenceItemType", 0);
         this.referenceService.getReferenceItemTypes()
-            .then(result => {
-                this.referenceTypes = result;
+            .subscribe(result => {
+                this.referenceTypes = result.sort((a, b) => a.Name.localeCompare(b.Name));
                 if (this.referenceTypes.length > 0) {
                     if (this.initialSelectedListId > 0) {                        
                         let index = this.referenceTypes.findIndex(x => x.ID == this.initialSelectedListId);

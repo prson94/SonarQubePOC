@@ -147,6 +147,9 @@ namespace d360.web.Controllers.V2
                 if (!validator.IsValidGuidCountForWorkflowGetVersionModel(queryParams))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "More than one uid is passed in the request , either  ActionTypeUid OR AssetTypeUid OR RelationshipTypeUid or WorkflowTypeUid"));
 
+                if (!validator.IsValidOrderByFieldForWorkflowGetVersionModel(queryParams))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid order passed in the request. Valid values are: VersionNumber, State, CreatedOn, and UpdatedOn"));
+
                 if (!validator.IsValidGuidForWorkflowGetVersionModel(queryParams))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Your request to retrieve this workflow version is invalid, possibly due to an incorrectly formatted identifier ActionTypeUid/AssetTypeUid/RelationshipTypeUid/WorkflowTypeUid"));
 
@@ -230,7 +233,7 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Get a list of steps and their relevant information for a specific workflow instance contained within the system.
         /// </summary>
-        /// <param name="workflowUid">workflow instance unique identifie</param>
+        /// <param name="workflowUid">workflow instance unique identifier</param>
         /// <returns></returns>
         [HttpGet,Route("{workflowUid}/steps"),
         SwaggerConsumes("application/json"), SwaggerProduces("application/json"),

@@ -20,7 +20,7 @@
             <d3s-workflow-condition-list (addClick)="add()"
                                          (removeClick)="remove($event)"
                                          [conditions]="transition.condition">
-            </d3s-workflow-condition-list> 
+            </d3s-workflow-condition-list>
 
             <d3s-workflow-condition-editor *ngIf="formMode == FormMode.Adding || formMode == FormMode.Editing"
                                            [objectId]="objectId"
@@ -35,28 +35,16 @@
         </div>
     </div>
     <div *ngSwitchCase="TransitionType.Timer" class="row">
-        <div class="col s12">
+        <div class="col s12" style="padding-bottom:15px">
             <div class="FieldName">Frequency (Days)</div>
             <div>
                 <input type="number" [ngModel]="transition.settings.TimerInterval" (ngModelChange)="transition.settings.TimerInterval = $event; transitionChange.emit(transition)" style="width: 95%" />
             </div>
         </div>
-        <div class="col s12">
-            <d3s-workflow-condition-list (addClick)="add()"
-                                         (removeClick)="remove($event)"
-                                         [conditions]="transition.condition">
-            </d3s-workflow-condition-list> 
-
-            <d3s-workflow-condition-editor *ngIf="formMode == FormMode.Adding || formMode == FormMode.Editing"
-                                           [objectId]="objectId"
-                                           [objectType]="objectType"
-                                           [condition]="condition"
-                                           (onSave)="saveCondition($event)"
-                                           (onClose)="formMode = FormMode.Default"
-                                           [formFields]="formFields"
-                                           [diagram]="diagram">
-            </d3s-workflow-condition-editor>
-
+    </div>
+    <div *ngSwitchCase="TransitionType.Always" class="row">
+        <div class="col s12" style="padding-bottom:5px">
+            &nbsp;
         </div>
     </div>
 </div>

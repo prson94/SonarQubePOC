@@ -1,5 +1,5 @@
-<span #item
-      (click)="click.emit()"
+<div #item
+        (click)="click.emit()"
       (mouseenter)="show(item, tip)"
       (mouseleave)="hideDebounce.next(); mouseIn = false"
       [ngClass]="{ 'd3s-tooltip-active': active }"
@@ -41,7 +41,14 @@
           <b>Version UID</b>: <span [innerHtml]="data.WorkflowVersionUID"></span>
       </div>
       <div *ngFor="let field of data?.FieldValues">
-          <span *ngIf="field.Value"><b>{{ field.Name }}</b>: <span [innerText]="field.Value"></span></span>
+          <span *ngIf="field.Value">
+              <b>{{ field.Name }}</b>:<span *ngIf="GetJSON(field.Value) == 'Error'; else showJSON" [innerText]="field.Value"></span>
+              <ng-template #showJSON >
+                  <span (click)="$event.stopPropagation()">
+                      <ngx-json-view [data]="GetJSON(field.Value)"></ngx-json-view>
+                  </span>
+              </ng-template>
+          </span>
       </div>
   </div>
-</span>
+</div>

@@ -4,6 +4,7 @@ import { WorkflowListItem, ChangeTypeInfo } from '../../../models/workflow.model
 import { WorkflowService } from '../../../services/workflow.service';
 import { Router } from '@angular/router';
 import { GridColumn } from '../../../models/grid-definition.model';
+import { map } from 'rxjs/operators';
 
 @Component({
     selector: 'd3s-admin-workflow-list',
@@ -77,13 +78,13 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
 
     private columns: any[] = [
         { datafield: 'Name', text: 'Name', type: 'text' },
-        { datafield: 'TypeName', text: 'Type Name', type: 'text'},
-        { datafield: 'Type', text: 'Type', type: 'text'},
+        { datafield: 'TypeName', text: 'Type Name', type: 'text' },
+        { datafield: 'Type', text: 'Type', type: 'text' },
         { datafield: 'ChangeTypeName', text: 'Change Type', type: 'text' },
         { datafield: 'State', text: 'Active', type: 'State' },
-        { datafield: 'UpdatedOn', text: 'Updated On', type: 'date'},
-        { datafield: 'UpdatedBy', text: 'Updated By', type: 'text'},
-        { datafield: 'Published', text: 'Status', type: 'text'},
+        { datafield: 'UpdatedOn', text: 'Updated On', type: 'date' },
+        { datafield: 'UpdatedBy', text: 'Updated By', type: 'text' },
+        { datafield: 'Published', text: 'Status', type: 'text' },
     ];
 
     get globalFilterFields(): string[] {
@@ -99,10 +100,10 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
     }
 
     cloneWorkflow(id) {
-      
+
         this.isLoading = true;
         this.workflowService.cloneWorkflowDiagramModel(id)
-            .then(id => {
+            .subscribe(id => {
                 this.isLoading = false;
                 this.onEditClick.emit({ ID: id, isClone: true });
             })
@@ -111,15 +112,21 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
         this.isLoading = true;
 
         this.workflowService.getChangeTypes()
-            .then(r => this.changeTypes = r)
-            .then(() => this.workflowService.getAdminTypes())
-            .then(r => {
-                this.items = r
-                this.items.forEach(i => {
-                    i.ChangeTypeName = this.changeTypes.find(c => c.ID == i.ChangeType).Description;
-                });
-            })
-            .then(() => this.isLoading = false);
+            .pipe(
+                map(r => this.changeTypes = r),
+                map(() =>
+                    this.workflowService.getAdminTypes()
+                        .subscribe(r => {
+                            this.items = r;
+                            if (this.items.length > 0) {
+                                this.selection = this.items[0];
+                            }
+                            this.items.forEach(i => {
+                                i.ChangeTypeName = this.changeTypes.find(c => c.ID == i.ChangeType).Description;
+                            });
+                        })),
+                map(() => this.isLoading = false))
+            .subscribe();
     }
 
     navigate(id: string) {

@@ -404,6 +404,7 @@
       <DependentUpon>eclipse.css</DependentUpon>
     </Content>
     <Content Include="Content\font-awesome.min.css" />
+    <Content Include="Content\images\aboutLogo.png" />
     <Content Include="Content\images\home.background.png" />
     <Content Include="Content\images\logo.new.color.png" />
     <Content Include="Content\images\logo.new.png" />
@@ -1627,7 +1628,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\assignments\assignments.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\home\board-tile.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\resource-responsibility-grid.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-issue-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-definition.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\attributes.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\fusion\fusion-attributes.tile.ts" />
@@ -1638,7 +1638,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\relationship\object-relationships.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\dashboards\admin-report-items.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\rules\admin-rule-dimensions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-survey-questions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\synonyms.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tiles\tile-actions.component.ts" />
@@ -1750,7 +1749,6 @@
     <TypeScriptCompile Include="Scripts\app\services\site-menu.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\social.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\state.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\statistics.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\artifact-type.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\artifacts.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\base.service.ts" />

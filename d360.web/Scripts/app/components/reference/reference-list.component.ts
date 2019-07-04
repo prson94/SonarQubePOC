@@ -94,7 +94,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
             //check if the user has permission to read the selected type
             if (this.selectedReferenceListId != null && !isNaN(this.selectedReferenceListId)) {
                 this.referenceService.canReadReferenceType(this.selectedReferenceListId)
-                    .then(r => {
+                    .subscribe(r => {
                         this.canReadSelectedType = r;
 
                         this.loadPermissions(this.permissionsService, "ReferenceItemType", this.selectedReferenceListId).then(perms => {

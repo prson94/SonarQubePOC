@@ -27,6 +27,7 @@ using System.Xml.Linq;
 using System.Configuration;
 using d360.core.helpers;
 using Ganss.XSS;
+using System.Text;
 
 namespace d360.web.Controllers
 {    
@@ -357,8 +358,6 @@ namespace d360.web.Controllers
                     return Rule_EditFields(oid);
                 case "RULEIMPLEMENTATION":
                     return RuleImplementation_EditFields(oid);
-                case "RULEDIMENSION":
-                    return RuleDimension_EditFields(oid);
                 case "RULETYPE":
                     return RuleType_EditFields(oid);
                 case "SERVICE":
@@ -424,8 +423,6 @@ namespace d360.web.Controllers
                     return Resource_AddFields(objectID.GetValueOrDefault());
                 case "RULE":
                     return Rule_AddFields(objectID.GetValueOrDefault());
-                case "RULEDIMENSION":
-                    return RuleDimension_AddFields();
                 case "RULEIMPLEMENTATION":
                     return RuleImplementation_AddFields(objectID.GetValueOrDefault());
                 case "RULETYPE":
@@ -527,8 +524,6 @@ namespace d360.web.Controllers
                     return ChangeMyPassword(form);
                 case "RULE":
                     return EditRule(form);
-                case "RULEDIMENSION":
-                    return EditRuleDimension(form);
                 case "RULEIMPLEMENTATION":
                     return EditRuleImplementation(form);
                 case "RULETYPE":
@@ -608,8 +603,6 @@ namespace d360.web.Controllers
                     return DeleteReportTile(form);
                 case "RULE":
                     return DeleteRule(form);
-                case "RULEDIMENSION":
-                    return DeleteRuleDimension(form);
                 case "RULETYPE":
                     return DeleteRuleType(form);
                 case "POLICY":
@@ -710,8 +703,6 @@ namespace d360.web.Controllers
                     return AddReportTile(form, true);
                 case "RESOURCE":
                     return AddResource(form);
-                case "RULEDIMENSION":
-                    return AddRuleDimension(form);
                 case "RULEIMPLEMENTATION":
                     return AddRuleImplementation(form);
                 case "RULETYPE":
@@ -4321,8 +4312,7 @@ offset 0 rows fetch next 25 rows only
                 ft.DefaultValue = (string.IsNullOrEmpty(model.FieldType.DefaultValue)) ? null : model.FieldType.DefaultValue.Trim();
                 //set the default formatted value to the same as the default value, for lists the trigger will update this to the display value for the list
                 // however for strings, bools etc it will stay as there is no lookupfield column.
-                if (!string.IsNullOrEmpty(ft.DefaultValue))
-                    ft.DefaultFormattedValue = ft.DefaultValue;
+                ft.DefaultFormattedValue = ft.DefaultValue;
                 ft.DisplayDescription = model.FieldType.DisplayDescription;
                 ft.FormDescription = model.FieldType.FormDescription;
                 ft.ValidationDescription = model.FieldType.ValidationDescription;
@@ -8246,6 +8236,10 @@ offset 0 rows fetch next 25 rows only
                 {
                 }
 
+                long assetId = Company.Assets.FirstOrDefault(x => x.Object == "Group" && x.ObjectID == model.ID).ID;
+
+                Company.CreateOrUpdateDisplayValue(assetId);
+
                 return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
@@ -8801,8 +8795,12 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
                 if (model.IsLookup && !model.AllowMultipleValues && model.Lookups != null)
                 {
+                    IEnumerable<string> values;
+
+                    values = model.Lookups.Select(m => (string.IsNullOrEmpty(m.Label) ? m.Value : $"{m.Label} [{m.Value}]"));
+
                     var dv = document.CreateDataValidation(2, i + 1, model.Lookups.Count + 1, i + 1);
-                    CreateExcelList(lookupColumns++, document, "Lookups", dv, model.Lookups.Select(m => m.Value));
+                    CreateExcelList(lookupColumns++, document, "Lookups", dv, values);
                     document.AddDataValidation(dv);
                 }
 
@@ -8837,6 +8835,26 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             dataValidation.AllowList($"={range}", true, true);
         }
 
+        private void CreateExcelList(int numLookupColumns, SLDocument document, string lookupWorksheetName, SLDataValidation dataValidation, Dictionary<string, string> values)
+        {
+            if (!values.Any()) return;
+
+            var currentSheet = document.GetCurrentWorksheetName();
+            document.SelectWorksheet(lookupWorksheetName);
+            int rowNum = 0;
+            foreach (var key in values.Keys)
+            {
+                document.SetCellValue(++rowNum, numLookupColumns, WebUtility.HtmlDecode(key));
+                document.SetCellValue(rowNum, numLookupColumns + 1, WebUtility.HtmlDecode(values[key]));
+            }
+
+            document.SelectWorksheet(currentSheet);
+
+            //add a column to the given lookup worksheet with the specified values
+            string range = SLConvert.ToCellRange(lookupWorksheetName, 1, numLookupColumns, rowNum, numLookupColumns + 1, true);
+            dataValidation.AllowList($"={range}", true, true);
+        }
+
         [ HttpPost, AjaxValidateAntiForgeryToken, Route("AddLoad")]
         public JsonResult AddLoad(LoadFilePostModel model)
         {
@@ -8867,6 +8885,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                     if (extension == ".xlsx")
                     {
                         var typeInfo = model.Type.Split('|');
+                        var assetType = Company.Query<AssetType>("select * from AssetType where Object = @object and ObjectID = @objectID", new { @object = typeInfo[0], objectID = typeInfo[1] }).FirstOrDefault();
 
                         load = new Load
                         {
@@ -8877,7 +8896,8 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                             Object = typeInfo[0],
                             ObjectID = int.Parse(typeInfo[1]),
                             DateStarted = DateTime.UtcNow,
-                            UpdatedBy = Company.CurrentResourceID
+                            UpdatedBy = Company.CurrentResourceID,
+                            AssetTypeUid = assetType?.uid
                         };
 
                         xls = new SLDocument(stream);
@@ -8940,7 +8960,11 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
                 if (success)
                 {
+                    //TODO: cleanup
+                    load.File = null;
                     Company.Add<Load>(load);
+                    Storage.CreateFolder($"{constants.COMPANY_BULK_LOAD_FOLDER}");
+                    Storage.CreateFile($"{constants.COMPANY_BULK_LOAD_FOLDER}", $"{Company.CurrentCompanyID}/load_{load.ID}.{load.Extension}", new MemoryStream(byteArray));
                     Company.Enqueue(Config.GetValue<string>("BulkLoadQueue"), new BulkLoadInfo { CompanyID = Company.CurrentCompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
 
                     json = jsonSuccess("File uploaded and queued for processing.", load.ID.ToString(), "A", HttpStatusCode.Created);
@@ -9029,7 +9053,14 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             }
 
             var load = Company.GetById<Load>(id);
-            return File(load.File, "application/vnd.ms-excel", $"{load.DateCompleted.ToString()}.xlsx");
+            var bytes = load.File;
+
+            if (bytes == null)
+            {
+                var fileString = Storage.GetFileContentsAsString($"{constants.COMPANY_BULK_LOAD_FOLDER}/{Company.CurrentCompanyID}", $"load_{load.ID}.{load.Extension}");
+                bytes = Encoding.Default.GetBytes(fileString);
+            }
+            return File(bytes, "application/vnd.ms-excel", $"{load.DateCompleted.ToString()}.xlsx");
         }
 
         #endregion
@@ -13762,16 +13793,9 @@ order by	case
             if (!Company.HasAssetTypePermission(SystemObjects.RuleType, typeID, Permission.ModifyAsset))
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
-            var statuses = RuleStatus.Active.GetStatusEnumList().Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList();
-            var dimensions = Company.RuleDimensions.Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList();
-            
             var list = new List<EditableField>();
 
-            list.Add(new EditableField { FieldType = DataType.Hidden.ToString(), FieldName = "RuleTypeID", Value = typeID.ToString() });
-
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Status", Name = FieldInfo.RuleStatus_Name, FieldDescription = FieldInfo.RuleStatus_Description, Items = statuses, FieldType = DataType.Lookup.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = false, FieldName = "RuleDimensionID", Name = FieldInfo.RuleDimension_Name, FieldDescription = FieldInfo.RuleDimension_Description, Items = dimensions, FieldType = DataType.Lookup.ToString() });
-                        
+            list.Add(new EditableField { FieldType = DataType.Hidden.ToString(), FieldName = "RuleTypeID", Value = typeID.ToString() });   
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Threshold", Name = FieldInfo.RuleThreshold_Name, FieldDescription = FieldInfo.RuleThreshold_Description, FieldType = DataType.Percentage.ToString()});
             
             list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.RuleType, typeID).ToList(), 3);
@@ -13786,9 +13810,6 @@ order by	case
         {
             if (!Company.HasAssetPermission(SystemObjects.Rule, id, Permission.ModifyAsset))
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-            var statuses = RuleStatus.Active.GetStatusEnumList().Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList();
-            var dimensions = Company.RuleDimensions.Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList();
             
             var model = Company.GetById<Rule>(id);
 
@@ -13796,9 +13817,6 @@ order by	case
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = model.ID.ToString() });
             
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Status", Name = FieldInfo.RuleStatus_Name, FieldDescription = FieldInfo.RuleStatus_Description, Items = statuses, FieldType = DataType.Lookup.ToString(), Value = ((int)model.Status).ToString() });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = false, FieldName = "RuleDimensionID", Name = FieldInfo.RuleDimension_Name, FieldDescription = FieldInfo.RuleDimension_Description, Items = dimensions, FieldType = DataType.Lookup.ToString(), Value = model.RuleDimensionID.GetValueOrDefault(-1).ToString() });
-
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Threshold", Name = FieldInfo.RuleThreshold_Name, FieldDescription = FieldInfo.RuleThreshold_Description, FieldType = DataType.Percentage.ToString(), Value = model.Threshold.ToString() });
 
             list = (
@@ -13844,9 +13862,7 @@ order by	case
 
                 var model = new Rule
                 {
-                    RuleDimensionID = parseNullableIntField(form, "RuleDimensionID"),
                     RuleTypeID = parseIntField(form, "RuleTypeID"),
-                    Status = (RuleStatus)Enum.Parse(typeof(RuleStatus), form["Status"]),
                     Threshold = threshold
                 };
 
@@ -13926,18 +13942,11 @@ order by	case
                 if (!Company.HasAssetPermission(SystemObjects.Rule, id, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-                var dimension = parseNullableIntField(form, "RuleDimensionID");
-
-                if (dimension.HasValue && dimension.GetValueOrDefault() > 0)
-                    model.RuleDimensionID = dimension;
-                else
-                    model.RuleDimensionID = null;
 
                 var threshold = decimal.Parse(form["Threshold"]);
                 if (threshold < 0 || threshold > 1)
                     throw new InvalidDataException("Threshold value must be between 0 and 1");
 
-                model.Status = (RuleStatus)Enum.Parse(typeof(RuleStatus), form["Status"]);
                 model.Threshold = threshold;
 
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Rule, model.ID, Company.GetFieldTypesByObject(SystemObjects.RuleType, model.RuleTypeID).ToList(), form, Server, false);
@@ -13968,170 +13977,6 @@ order by	case
 
         #endregion
         
-        #region RuleDimension
-
-        #region Field Generation
-
-        [Route("RuleDimension_AddFields")]
-        public JsonResult RuleDimension_AddFields()
-        {
-            var model = new RuleDimension();
-            if (!Company.CurrentResourceIsAdmin)
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = model.GetName(i => i.Name), FieldDescription = model.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Description", Name = model.GetName(i => i.Description), FieldDescription = model.GetDescription(i => i.Description), FieldType = DataType.Html.ToString() });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">RuleID</param>
-        [Route("RuleDimension_EditFields"), NonNullableParameters]
-        public JsonResult RuleDimension_EditFields(int id)
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-            var model = Company.GetById<RuleDimension>(id);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = model.ID.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = model.GetName(i => i.Name), FieldDescription = model.GetDescription(i => i.Name), FieldType = DataType.Text.ToString(), Value = model.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Description", Name = model.GetName(i => i.Name), FieldDescription = model.GetDescription(i => i.Name), FieldType = DataType.Html.ToString(), Value = model.Description });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
-        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddRuleDimension")]
-        public JsonResult AddRuleDimension(FormCollection form)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                if (!form.HasKeys()) throw new NoFormDataException("RuleDimension");
-
-                var model = new RuleDimension
-                {
-                    Name = parseTextField(form, "Name"),
-                    Description = parseTextField(form, "Description"),
-                    UpdatedBy = Company.CurrentResourceID,
-                    UpdatedOn = DateTime.UtcNow
-                };
-
-                Company.Add(model);
-
-                dynamic custom = new
-                {
-                    Name = model.Name,
-                    action = "add",
-                    Context = form["_context"]
-                };
-
-                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpDelete, Route("DeleteRuleDimension")]
-        public JsonResult DeleteRuleDimension(FormCollection form)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                if (!form.HasKeys()) throw new NoFormDataException("RuleDimension");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<RuleDimension>(id);
-                if (model == null) throw new NotFoundException("RuleDimension");
-
-                if (Company.Rules.Where(x => x.RuleDimensionID == id).Any())
-                {
-                    return jsonException(FormInfo.Delete_Error_Rule_Exist, HttpStatusCode.Forbidden);
-                }
-
-                Company.Delete(model);
-
-                dynamic custom = new
-                {
-                    model.Name,
-                    action = "delete",
-                    Context = form["_context"]
-                };
-
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpPut, ValidateInput(false), Route("EditRuleDimension")]
-        public JsonResult EditRuleDimension(FormCollection form)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                if (!form.HasKeys()) throw new NoFormDataException("RuleDimension");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<RuleDimension>(id);
-                if (model == null) throw new NotFoundException("RuleDimension");
-
-                model.Name = parseTextField(form, "Name");
-                model.Description = parseTextField(form, "Description");
-
-                model.UpdatedBy = Company.CurrentResourceID;
-                model.UpdatedOn = DateTime.UtcNow;
-
-                Company.Update(model);
-
-                dynamic custom = new
-                {
-                    model.Name,
-                    action = "edit",
-                    Context = form["_context"]
-                };
-
-                return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
         #region RuleImplementation
 
         #region Field Generation

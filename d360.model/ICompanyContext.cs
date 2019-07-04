@@ -13,6 +13,7 @@ using d360.core.entities.Views;
 using d360.core.entities.Workflow;
 using d360.core.enums;
 using d360.core.queue;
+using d360.model.DataAccessLayer;
 using d360.model.workflow;
 using Dapper;
 using Newtonsoft.Json.Linq;
@@ -149,7 +150,6 @@ namespace d360.model
         DbSet<ResponsibilityTypeRelationRule> ResponsibilityTypeRelationRules { get; set; }
         DbSet<ResponsibilityTypeRelation> ResponsibilityTypeRelations { get; set; }
         DbSet<ResponsibilityType> ResponsibilityTypes { get; set; }
-        DbSet<RuleDimension> RuleDimensions { get; set; }
         DbSet<RuleImplementation> RuleImplementations { get; set; }
         DbSet<RuleResultFusionAttribute> RuleResultFusionAttributes { get; set; }
         DbSet<RuleResultQualifier> RuleResultQualifiers { get; set; }
@@ -259,7 +259,8 @@ namespace d360.model
         AssetDetail GetParentObject(int id, SystemObjects obj);
         AssetType GetParentType(int id, SystemObjects obj);
         List<PermissionInfo> GetPermissions(long assetId, int assetTypeId);
-        Task<AssetResults> GetPivotVersionDynamicAssets(AssetType at, List<UiRequestFilterValue> filters, int pageNumber = 0, int pageSize = 25, bool useFieldNames = false, string sortField = "", string sortOrder = "", string simpleFilter = "");
+        Task<AssetResults> GetDynamicAssets(AssetType at, List<UiRequestFilterValue> filters, int pageNumber = 0, int pageSize = 25, string sortField = "", string sortOrder = "", string simpleFilter = null, bool apiNamesInOutput = false, bool listableFieldsOnly = true, bool pagingEnabled = true);
+        //Task<AssetResults> GetPivotVersionDynamicAssets(AssetType at, List<UiRequestFilterValue> filters, int pageNumber = 0, int pageSize = 25, bool useFieldNames = false, string sortField = "", string sortOrder = "", string simpleFilter = "");
         Dictionary<string, object> GetRelationshipFieldItems(int fieldTypeID, string @object = null, int? objectID = null, int offset = 0, int rows = 25, string query = null, bool includeSelection = true);
         Task<JObject> GetRelationships(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "");
         Task<List<IntersectTypeApiViewModel>> GetRelationshipTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "");        
@@ -287,6 +288,7 @@ namespace d360.model
         Task<string> ProcessMessageTokens(string bodyTemplate, int objectID, SystemObjects obj, int? objectScore, string prefix, WorkflowItemStep itemStep, bool supportHtml);
         IEnumerable<T> Query<T>(string sql, object param = null, int timeout = 90);
         Task<IEnumerable<T>> QueryAsync<T>(string sql, object param = null, int timeout = 90);
+        Task<SqlMapper.GridReader> QueryMultipleAsync(string sql, object param = null, int timeout = 90);
         void RebuildDisplayValuesRequest();
         void RebuildIndexRequest();
         List<DatabaseBulkAssetResult> RemoveAssets(ApiExecution execution, AssetType at, AssetDeletes import, int timeout = 3600);
@@ -314,5 +316,8 @@ namespace d360.model
         List<RelationshipDirectionFieldInfo> getRelationFieldData(string fieldTypeRelationType, int typeID, List<FieldType> fields);
 
         Task<IEnumerable<TypeIdentifierInfoModel>> GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType type, Guid guid);
+        Task BulkLoadAssets(Load load, IAssetRepository repository);
+
+        void CreateOrUpdateDisplayValue(long assetId, string objectType = "", int objectId = -1);
     }
 }

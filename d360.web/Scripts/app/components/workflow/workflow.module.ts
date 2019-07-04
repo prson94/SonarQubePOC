@@ -16,7 +16,6 @@ import { PipesModule } from '../../pipes/pipes.module';
 
 import { WorkflowComponent } from './workflow.component';
 import { WorkflowIssueDetailsComponent } from './workflow-issue-details.component';
-import { WorkflowIssueEditorComponent } from './workflow-issue-editor.component';
 import { WorkflowFormComponent } from './workflow-form.component';
 import { WorkflowBulkFormComponent } from './workflow-bulk-form.component';
 import { WorkflowRaiseIssueComponent } from './workflow-raise-issue.component';
@@ -80,7 +79,6 @@ import { TableModule } from 'primeng/table';
     declarations: [                        
         WorkflowComponent,                
         WorkflowIssueDetailsComponent,
-        WorkflowIssueEditorComponent,
         WorkflowFormComponent,        
         WorkflowRaiseIssueComponent,
         WorkflowViewDetailsComponent,        
@@ -92,7 +90,6 @@ import { TableModule } from 'primeng/table';
         WorkflowRaiseIssueComponent,           
         WorkflowComponent,        
         WorkflowIssueDetailsComponent,
-        WorkflowIssueEditorComponent,
         WorkflowNewDetailComponent,
     ],
     providers: [

@@ -6,8 +6,9 @@ import { WorkflowService } from '../../services/workflow.service';
 import { WorkflowItemStep, WorkflowActivityType, StepType, WorkflowDiagramNode, NodeModel, ActivityTypeInfo, DiagramObjectType, WorkflowStepDetail, WorkflowChangeType, WorkflowStepReassignment } from '../../models/workflow.model';
 import { ResponsibilityTypeService } from '../../services/responsibility-type.service';
 import { WorkflowHelpers } from '../../static/workflow-helpers';
-
+import { map } from 'rxjs/operators';
 import * as _ from 'lodash';
+import { Observable,of } from 'rxjs';
 
 @Component({
     selector: 'd3s-workflow-monitor-step-details',
@@ -44,51 +45,55 @@ export class WorkflowMonitorStepDetailsComponent extends BaseComponent implement
 
     ngOnInit() {
         this.load()
-            .then(() => this.responsibilityService.getResponsibilityTypes())
-            .then(r => this.responsibilities = r)
-            .then(() => {
-                if (this.step != null)
-                    this.workflowService.getWorkflowFieldTypes(this.step.ObjectTypeID, this.step.ObjectType, true)
-                        .then(r => {
-                            this.fields = r;
-                        });
-            });
+            .pipe(
+                map(() => this.responsibilityService.getResponsibilityTypes()
+                    .then(r => this.responsibilities = r)),
+                map(() => {
+                    if (this.step != null)
+                        this.workflowService.getWorkflowFieldTypes(this.step.ObjectTypeID, this.step.ObjectType, true)
+                            .subscribe(r => {
+                                this.fields = r;
+                            });
+                })
+            ).subscribe();
     }
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes['itemStepId'] != null && (changes['itemStepId'].isFirstChange || (changes['itemStepId'].currentValue != changes['itemStepId'].previousValue))) {
-            this.load();
+            this.load().subscribe();;
         }
     }
 
-    load() {
+    load(): Observable<any>{
         this.step = null;
 
         if (this.itemStepId != null) {
             this.isLoading = true;
             return this.workflowService.getWorkflowStepDetail(this.itemStepId)
-                .then(r => {
-                    this.isLoading = false;
-                    this.step = r;
-                    this.reassignments = [];
+                .pipe(
+                     map(r => {
+                        this.isLoading = false;
+                        this.step = r;
+                        this.reassignments = [];
 
-                    if (this.step.ItemFields != null && this.step.ItemFields.Reassigned != null) {
-                        for (let i = 0; i < this.step.ItemFields.Reassigned.length; i++) {
-                            this.reassignments.push(new WorkflowStepReassignment(this.step.ItemFields.Reassigned[i]));
+                        if (this.step.ItemFields != null && this.step.ItemFields.Reassigned != null) {
+                            for (let i = 0; i < this.step.ItemFields.Reassigned.length; i++) {
+                                this.reassignments.push(new WorkflowStepReassignment(this.step.ItemFields.Reassigned[i]));
+                            }
                         }
-                    }
 
-                    this.ref.markForCheck();
-                })
-                .then(r => {
-                    if (typeof this.step.Condition != 'undefined' && typeof this.step.Condition.length != 'undefined') {
-                        this.showAllAnyCondition = this.step.Condition.filter(x => x['@FieldTypeID']).length > 1;
-                        this.isSatisfyAll = this.step.Condition.every(x => x['@Connector'] == 'AND');
-                    }
-                });
+                        this.ref.markForCheck();
+                    }),
+                    map(() => {
+                        if (typeof this.step.Condition != 'undefined' && typeof this.step.Condition.length != 'undefined') {
+                            this.showAllAnyCondition = this.step.Condition.filter(x => x['@FieldTypeID']).length > 1;
+                            this.isSatisfyAll = this.step.Condition.every(x => x['@Connector'] == 'AND');
+                        }
+                    })
+                );
         }
         else
-            return Promise.resolve();
+            return of();
     }
 
 

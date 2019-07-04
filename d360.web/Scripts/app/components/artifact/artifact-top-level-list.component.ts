@@ -5,7 +5,6 @@ import { TreeNode } from 'primeng/primeng';
 
 import { ArtifactTypeService } from '../../services/artifact-type.service';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
-import { ArtifactTypeSummary } from '../../models/artifact-type.model';
 import { ArtifactBaseComponent} from './artifact-base.component';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
@@ -24,11 +23,9 @@ export class ArtifactTopLevelListComponent extends ArtifactBaseComponent impleme
     selectedRow: TreeNode;
     ArtifactTypes: TreeNode[];
 
-    private searchValue: string;
-    private treeNodeArray: TreeNode[] = [];
-
-    constructor(
-        private route: ActivatedRoute,
+    public searchValue: string;
+    
+    constructor(        
         private router: Router,
         private artifactsService: ArtifactTypeService,        
         headerBreadcrumbService: HeaderBreadcrumbService,
@@ -55,7 +52,9 @@ export class ArtifactTopLevelListComponent extends ArtifactBaseComponent impleme
                     data[i].data.Description = this.htmlDecode(data[i].data.Description);
                 }
                 this.ArtifactTypes = data;
-                this.selectedRow = this.ArtifactTypes[0];
+                if (this.ArtifactTypes != null && this.ArtifactTypes.length > 0) {
+                    this.selectedRow = this.ArtifactTypes[0];
+                }
 
                 this.headerBreadcrumbService.clearBreadcrumbs();
                 this.headerBreadcrumbService.clearCurrentObjectInfo();
@@ -70,7 +69,7 @@ export class ArtifactTopLevelListComponent extends ArtifactBaseComponent impleme
         return val ? String(val).replace(/<[^>]+>/gm, '') : '';
     }
 
-    navigate(item: any) {
-        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('ArtifactType', item.ID));
+    navigate(id: number) {
+        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('ArtifactType', id));
     }
 };

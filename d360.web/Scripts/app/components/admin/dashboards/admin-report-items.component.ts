@@ -3,6 +3,7 @@ import { Report, ReportTile } from '../../../models/report.model';
 import { ReportsService  } from '../../../services/reports.service';
 import { MessagesService } from '../../../services/messages.service';
 import { BaseComponent } from '../../shared/base.component';
+import { catchError } from 'rxjs/operators';
 
 @Component({
     selector: 'd3s-admin-report-item',
@@ -88,16 +89,15 @@ export class AdminReportItemsComponent extends BaseComponent implements OnChange
         this.isLoading = true;
         this.reportsService
             .getReportTiles(this.report)
-            .then(result => {
+            .subscribe(result => {
                 this.tiles = result;
-                this.selected = (this.tiles.length > 0 ? this.tiles[0] : null);                
+                this.selected = (this.tiles.length > 0 ? this.tiles[0] : null);
                 this.isLoading = false;
-            })
-            .catch(error => this.error = error);
+            }, catchError(error => this.error = error));
     }
 
     deleteTile(id: number) {
-        this.reportsService.deleteReportTile(id).then(result => {
+        this.reportsService.deleteReportTile(id).subscribe(result => {
             this.showMessageForResult(this.messagesService, result);
             if (result.type != 'error') this.tiles = this.tiles.filter(x => x.ID != id);
             this.showDelete = false;            
@@ -119,7 +119,7 @@ export class AdminReportItemsComponent extends BaseComponent implements OnChange
         this.showEditor = false;
         this.isLoading = true;
         this.reportsService.saveTile(event.tile)
-            .then(result => {
+            .subscribe(result => {
                 this.isLoading = false;
                 this.showMessageForResult(this.messagesService, result);
                 this.getTiles();                
