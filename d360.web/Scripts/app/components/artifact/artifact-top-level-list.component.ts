@@ -35,9 +35,7 @@ export class ArtifactTopLevelListComponent extends ArtifactBaseComponent impleme
         private titleService: Title,
         rightSidebarService: RightSidebarService
     ) {
-        super(headerBreadcrumbService);
-
-        this.rightSidebarService = rightSidebarService;
+        super(headerBreadcrumbService, rightSidebarService);
     }
 
     ngOnInit() {

@@ -7,13 +7,15 @@ import { AuthenticationConnectionBackend } from '../../../authentication-connect
 
 import { RightSidebarItemComponent } from './right-sidebar-item.component';
 import { RightSidebarComponent } from './right-sidebar.component';
+import { DynamicPercentageModule } from '../small-widgets/dynamic-percentage/dynamic-percentage-module';
 
 
 @NgModule({
     imports: [CommonModule,
         DeprecatedI18NPipesModule,
         FormsModule,
-        HttpModule,         
+        HttpModule,
+        DynamicPercentageModule,
     ],
     declarations: [
         RightSidebarItemComponent,

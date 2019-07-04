@@ -9,15 +9,17 @@ export class RightSidebarService {
     private rightSidebarClearSource = new Subject<boolean>();
     private rightSidebarClickedSource = new Subject<RightSidebarItem>();
     private currentAreaSource = new Subject<any>();
+    private hideHeaderSource = new Subject<boolean>();
 
     // Observable streams
     rightSidebar$ = this.rightSidebarSource.asObservable();
     rightSidebarClear$ = this.rightSidebarClearSource.asObservable();
     rightSidebarClicked$ = this.rightSidebarClickedSource.asObservable();
     currentArea$ = this.currentAreaSource.asObservable();
+    hideHeader$ = this.hideHeaderSource.asObservable();
 
-    setCurrentArea(area: string) {
-        this.currentAreaSource.next(area);
+    setCurrentArea(area: string, icon: string) {
+        this.currentAreaSource.next({ title: area, icon: icon });
     }
 
     // Service message commands
@@ -31,5 +33,8 @@ export class RightSidebarService {
 
     itemClicked(item: RightSidebarItem) {
         this.rightSidebarClickedSource.next(item);
+    }
+    ShowHeader(val: boolean) {
+        this.hideHeaderSource.next(val);
     }
 }

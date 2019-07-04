@@ -8,23 +8,28 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 
 @Component({
     selector: 'd3s-right-sidebar',      
-    template: ` <div *ngIf="items && items.length > 0 || true" class="title-bar" [ngClass]="{'menu-open': menuOpen}">
+    template: ` <div *ngIf="showHeader" class="title-bar" [ngClass]="{'menu-open': menuOpen}">
                     <div class="title">
-                        <i class="fa fa-book"></i>
+                         <img class="icon" *ngIf="!IsIcon(area.icon)" [src]="GetURL(area.icon)"  height="20" width="20" />
+                         <i *ngIf="IsIcon(area.icon)" [class]="'icon fa ' + area.icon"></i>
                         <h1 >{{area.title ? area.title: 'D3S'}}</h1>
-                        <span class="header-badge">
-                            <i class="fa fa-star"></i>
+                        <span *ngIf="ShowScore()" class="d3s-icon large-icon light-orange">
+                            <d3s-dynamic-percentage [percentage]="50"></d3s-dynamic-percentage> 
+                             <span class="text">50%</span>
+                        </span> 
+                        <span *ngIf="IsDraft()" class="d3s-icon large-icon">
+                            <i class="fa fa-certificate"></i>
+                            <span class="text">Draft</span>
                         </span>
-                        <span class="header-badge">
-                            <i class="fa fa-circle"></i>
-                        </span>
-                        <button class="button"><i class="fa fa-upload"></i><span>Import</span></button>
-                        <button class="primary button"><i class="fa fa-plus-circle"></i><span>Create New</span></button>
+                        <span class="grow"></span>
+                        <button class="button"><i class="fa fa-certificate"></i><span>Request Certification</span></button>
+                        <button class="primary button"><i class="fa fa-edit"></i><span>Take Survey</span></button>
                     </div>
-                    <div class="tab-view">
+                    <div *ngIf="items && items.length > 0" class="tab-view">
                         <div class="tab-bar-outer">
                             <div class="tab-bar can-overflow">
-                                <button class="tab" *ngFor="let item of items; trackBy: trackById">{{item.title}}</button>
+                                <button class="tab" [ngClass]="{'selected':AllClosed()}" (click)="itemClicked({active:false,title:'homeClick', url: 'blank'})">{{area.title}}</button>
+                                <button class="tab" [ngClass]="{'selected':item.active}" *ngFor="let item of items; trackBy: trackById" (click)="item.active=!item.active;itemClicked(item);">{{item.title}}</button>
                             </div>
                         </div>
                     </div>
@@ -37,10 +42,12 @@ export class RightSidebarComponent {
     subscription: Subscription;
     subscriptionClear: Subscription;
     areaSub: Subscription;
+    hideHeaderSub: Subscription;
     items: RightSidebarItem[];  
     hostUrl: string;
-    area: any = {icon:'',};
+    area: any = {icon:'fa-folder',title: ''};
     @Input() menuOpen: boolean;
+    showHeader: boolean = false;
 
     /*
      <div *ngIf="items && items.length > 0" class="hide-on-small-only right-sidebar">
@@ -52,7 +59,7 @@ export class RightSidebarComponent {
 
     constructor(
         private rightSidebarService: RightSidebarService,
-        ref: ChangeDetectorRef,
+        private ref: ChangeDetectorRef,
         private router: Router
     ) {        
         this.items = [];
@@ -70,15 +77,36 @@ export class RightSidebarComponent {
         this.areaSub = rightSidebarService.currentArea$.subscribe(
             area => {
                 this.area = area;
+                ref.markForCheck();
             }
         );
+        this.hideHeaderSub = rightSidebarService.hideHeader$.subscribe(result => {
+            this.showHeader = result;
+            ref.markForCheck();
+        });
     }
 
+    IsIcon(icon: string) {
+        return !_.startsWith(icon.toUpperCase(), "URL-");
+    }
+
+    GetURL(icon: string) {
+        if(icon)
+            return icon.replace(/^URL-+/i, '');
+    }
+    ShowScore() {
+        return true;
+    }
+
+    IsDraft() {
+        return true;
+    }
     ngOnDestroy() {        
         // prevent memory leak when component destroyed
         this.subscription.unsubscribe();
         this.subscriptionClear.unsubscribe();
         this.areaSub.unsubscribe();
+        this.hideHeaderSub.unsubscribe();
     }
 
     trackById(index, item) {        
@@ -86,6 +114,7 @@ export class RightSidebarComponent {
     }
     
     itemClicked(item: RightSidebarItem) {   
+        console.log(item);
         if (item.active) {
             //look for any other already active items and fire click for them
             let isFirstItemOpen = true;
@@ -107,6 +136,12 @@ export class RightSidebarComponent {
                 this.router.navigateByUrl(this.hostUrl);
             else
                 this.rightSidebarService.itemClicked(item);
-        }        
+        }
+        this.AllClosed();
     }     
+    AllClosed() {
+        let count = this.items.filter(x => x.active == true).length;
+        
+        return count == 0;
+    }
 };

@@ -83,7 +83,7 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
         this.clearSidebar();
 
         this.setCommonRightSideBar(false, false, true);
-
+        this.rightSidebarService.ShowHeader(false);
         this.showActivityTile = CompanySettings.ShowHomeActivityTile == 'true';
         this.showAssignmentTile = CompanySettings.ShowHomeAssignmentTile == 'true';
         this.showBoardTile = CompanySettings.ShowHomeBoardTile == 'true';
