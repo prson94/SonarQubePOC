@@ -122,20 +122,5 @@ namespace igx.IntegrationTests.Core
             return true;
         }
 
-        public static IList<JToken> AsJTokenList(this JArray arr)
-        {
-            List<JToken> list = new List<JToken>();
-            foreach (var item in arr)
-            {
-                list.Add(item);
-            }
-            return list;
-        }
-
-        public static bool DoesContain(this JArray arr, Func<JToken, bool> filter)
-        {
-            return arr.AsJTokenList().Where(filter).Count() > 0;
-        }
-
     }
 }

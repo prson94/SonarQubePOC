@@ -87,31 +87,3 @@ namespace Xunit
     }
 }
 
-
-
-namespace Xunit
-{
-    public class AssertJSON
-    {
-        public static void True<T>(string json)
-        {
-            string userMessage = XMsg.InvalidJSON;
-            bool areEqual = false;
-            try
-            {
-                var obj = JsonConvert.DeserializeObject<T>(json);
-                var serialized = JsonConvert.SerializeObject(obj);
-                areEqual = json == serialized;
-
-
-            }
-            catch (Exception ex)
-            {
-                userMessage = ex.Message;
-            }
-
-
-            Assert.True(areEqual, userMessage);
-        }
-    }
-}
