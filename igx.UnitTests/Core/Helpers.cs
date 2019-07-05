@@ -7,9 +7,11 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace igx.UnitTests.Core
 {
+
     class Helpers
     {
         public static bool NormalisedComparer(string s1, string s2)
@@ -49,6 +51,38 @@ namespace igx.UnitTests.Core
             }
 
             return true;
+        }
+
+
+    }
+
+
+}
+
+
+namespace Xunit
+{
+    public class AssertJSON
+    {
+        public static void True<T>(string json)
+        {
+            string userMessage = XMsg.InvalidJSON;
+            bool areEqual = false;
+            try
+            {
+                var obj = JsonConvert.DeserializeObject<T>(json);
+                var serialized = JsonConvert.SerializeObject(obj);
+                areEqual = json == serialized;
+
+
+            }
+            catch (Exception ex)
+            {
+                userMessage = ex.Message;
+            }
+
+
+            Assert.True(areEqual, userMessage);
         }
     }
 }

@@ -22,6 +22,9 @@ using System.Net;
 using d360.core.entities.Workflow;
 using d360.model.validators;
 using d360.core.entities.Metric;
+using d360.core;
+using System.Dynamic;
+using Newtonsoft.Json.Linq;
 
 namespace igx.UnitTests
 {
@@ -56,9 +59,19 @@ namespace igx.UnitTests
                        }
 
                  );
+
+
+            mock.Setup(x=> x.GetActiveIntersectTypesByObjectType(It.IsAny<int>(), It.IsAny<SystemObjects>()))
+                .Returns(Task.FromResult(new List<IntersectTypeApiViewModel>(){  new IntersectTypeApiViewModel(), new IntersectTypeApiViewModel()  }));
+
+            mock.Setup(x => x.ImportRelationships(It.IsAny<ApiExecution>(), It.IsAny<IntersectType>(), It.IsAny<RelationshipInserts>(), It.IsAny<int>()))
+                .Returns(new List<DatabaseBulkRelationshipResult>() { new DatabaseBulkRelationshipResult() });
+
+            mock.Setup(x => x.HasAssetTypePermission(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<Permission>()))
+                .Returns(true);
+
             return mock.Object;
         }
-
 
         public IStorageProvider GetStorage()
         {
@@ -171,6 +184,8 @@ namespace igx.UnitTests
             mockRepo.Setup(x => x.UpdateAssetType(It.IsAny<AssetTypeInsert>(), It.IsAny<AssetType>(), It.IsAny<AssetType>(), It.IsAny<Predicate>()))
                 .Returns(() => new Tuple<HttpStatusCode, string, string>(HttpStatusCode.OK, "", ""));
 
+            mockRepo.Setup(x => x.DoesAssetExists(It.IsAny<Guid>()))
+                .Returns((Guid uid) => uid == Guid.Parse(DataConstants.ValidGUID) ? true : false);
 
             return mockRepo.Object;
         }
@@ -187,6 +202,9 @@ namespace igx.UnitTests
 
             mockRepo.Setup(x => x.GetFieldTypes(It.IsAny<TypeIdentifierInfoModel>()))
                 .Returns(new List<FieldType>());
+
+            mockRepo.Setup(x => x.GetCustomFields(It.IsAny<SystemObjects>(), It.IsAny<int>()))
+                .Returns(new List<string>());
 
             return mockRepo.Object;
         }
@@ -285,7 +303,48 @@ namespace igx.UnitTests
         {
             var mock = new Mock<IRelationshipRepository>();
             mock.Setup(x => x.GetRelationshipByUID(It.IsAny<Guid>()))
-                .Returns(new IntersectType());
+                .Returns((Guid uid) => uid.ToString() == DataConstants.ValidGUID ? new IntersectType() : null);
+
+            mock.Setup(x => x.AnyExists(It.IsAny<Guid>()))
+                .Returns((Guid uid) => uid.ToString() == DataConstants.ValidGUID ? true : false);
+
+            mock.Setup(x => x.AnyPredicateExists(It.IsAny<Guid>()))
+                .Returns((Guid uid) => uid.ToString() == DataConstants.ValidGUID ? true : false);
+
+            mock.Setup(x => x.BulkPostRelationships(It.IsAny<Guid>(), It.IsAny<RelationshipInserts>(), It.IsAny<Func<int, object, int, int, ApiExecution>>()))
+                .Returns(Task.FromResult(new ApiExecutionInfo() { Action= ApiExecutionAction.PostRelationships, CompanyDomainPrefix="", CompanyID = -1, ExecutionID = Guid.NewGuid(), ResourceID= 56 }));
+
+            mock.Setup(x => x.GetActiveIntersectTypesByObjectType(It.IsAny<int>(), It.IsAny<SystemObjects>()))
+                .Returns(Task.FromResult(new List<IntersectTypeApiViewModel>()));
+
+            mock.Setup(x => x.GetBulkResults(It.IsAny<ApiExecutionInfo>()))
+                .Returns(new List<DatabaseBulkAssetResult>());
+            mock.Setup(x => x.GetExportModel(It.IsAny<int>()))
+                .Returns( DataConstants.GetExcelModel() );
+
+            mock.Setup(x => x.GetExportModelWithCustomFields(It.IsAny<int>(), It.IsAny<IEnumerable<string>>()))
+                .Returns(DataConstants.GetExcelModel() );
+
+            mock.Setup(x => x.GetIntersectTypeById(It.IsAny<int>()))
+                .Returns(new List<IntersectType>() { new IntersectType(), new IntersectType()}.AsQueryable());
+
+            mock.Setup(x => x.GetIntersectTypeByUid(It.IsAny<Guid>()))
+                .Returns((Guid uid) => uid.ToString() == DataConstants.ValidGUID ? new IntersectType() : null);
+
+            mock.Setup(x => x.GetPredicates())
+                .Returns(Task.FromResult(DataConstants.GetPredicates()));
+
+            mock.Setup(x => x.GetRelationshipByUID(It.IsAny<Guid>()))
+                .Returns((Guid uid) => uid.ToString() == DataConstants.ValidGUID ? new IntersectType() : null);
+
+            mock.Setup(x => x.GetRelationships(It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<string>()))
+                .Returns(Task.FromResult(JsonConvert.DeserializeObject<JObject>(JsonConvert.SerializeObject(new GetRelationshipsApiModel() { items = new List<GetRelationshipApiModel>() { new GetRelationshipApiModel(), new GetRelationshipApiModel() } }))));
+
+            mock.Setup(x => x.GetRelationshipTypes(It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<string>()))
+                .Returns(Task.FromResult(new List<IntersectTypeApiViewModel>() { new IntersectTypeApiViewModel(), new IntersectTypeApiViewModel() }));
+
+            mock.Setup(x => x.DeleteRelationships(It.IsAny<IntersectType>(), It.IsAny<RelationshipDeletes>()))
+                .Returns(Task.FromResult(new RelationshipDeleteResult(HttpStatusCode.OK, "", "", new List<RelationshipDeleteApiStatus>() { new RelationshipDeleteApiStatus() })));
 
             return mock.Object;
         }

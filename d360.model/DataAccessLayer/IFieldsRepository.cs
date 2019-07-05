@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using d360.core;
 using d360.core.entities;
 
 namespace d360.model.DataAccessLayer
@@ -12,5 +13,6 @@ namespace d360.model.DataAccessLayer
         List<FieldType> GetFieldTypes(TypeIdentifierInfoModel typeIdentifierInfoModel);
         bool HasExistingItems(TypeIdentifierInfoModel typeIdentifierInfoModel);
         WorkHttpStatus UpdateFields(FieldTypesApiEditModel model, TypeIdentifierInfoModel typeIdentifierInfoModel);
+        IEnumerable<string> GetCustomFields(SystemObjects objectType, int objectId);
     }
 }

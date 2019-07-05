@@ -91,6 +91,7 @@
     <Compile Include="ApiTests\CrossReferenceIntegrationTests.cs" />
     <Compile Include="ApiTests\FieldsControllerIntegrationTests.cs" />
     <Compile Include="ApiTests\MetricsControllerIntegrationTests.cs" />
+    <Compile Include="ApiTests\RelationshipControllerTests.cs" />
     <Compile Include="ApiTests\TagControllerIntegrationTests.cs" />
     <Compile Include="ApiTests\ResponsibilitiesControllerTests.cs" />
     <Compile Include="ApiTests\WorkflowControllerTests.cs" />
@@ -102,6 +103,7 @@
     <Compile Include="Core\XMsg.cs" />
     <Compile Include="TestData\AssetTestData.cs" />
     <Compile Include="TestData\AssetTypeTestData.cs" />
+    <Compile Include="TestData\RelationshipTestData.cs" />
     <Compile Include="TestData\BulkTestData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestData\FieldsTestData.cs" />
