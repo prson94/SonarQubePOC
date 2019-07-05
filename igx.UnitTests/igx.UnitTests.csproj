@@ -101,6 +101,7 @@
     <Compile Include="V2ControllerTests\AssetsControllerTest.cs" />
     <Compile Include="V2ControllerTests\FieldsControllerTest.cs" />
     <Compile Include="V2ControllerTests\MetricsControllerTest.cs" />
+    <Compile Include="V2ControllerTests\RelationshipControllerTest.cs" />
     <Compile Include="V2ControllerTests\TagsControllerTest.cs" />
     <Compile Include="V2ControllerTests\WorkflowControllerTest.cs" />
     <Compile Include="ValidatorTests\TagValidatorTests.cs" />

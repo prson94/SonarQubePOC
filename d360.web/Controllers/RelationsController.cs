@@ -68,7 +68,7 @@ namespace d360.web.Controllers
             var list = Company.Query<dynamic>(@"select ID as [value], Name as [text] from Predicate order by Name");
             return new JsonNetResult { Data = list, Formatting = Formatting.None };
         }
-        
+
         [HttpGet, Route("GetPossibleRelationshipsObjectByIntersect"), NonNullableParameters]
         public JsonNetResult GetPossibleRelationshipsObjectByIntersect(int id)
         {
