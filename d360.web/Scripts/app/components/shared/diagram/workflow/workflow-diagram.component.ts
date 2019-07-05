@@ -40,6 +40,8 @@ import {
 import { FieldType } from '../../../../models/fields.model';
 import { map, concatMap } from 'rxjs/operators';
 import { Observable,of } from 'rxjs';
+import { forEach } from '@angular/router/src/utils/collection';
+import { Field } from '../../../../models/fields-observable.model';
  
 declare var window: any;
 
@@ -974,6 +976,13 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
                 if (n.fields == null || _.isEmpty(n.fields))
                     return false;
+
+                if (n.fields && n.fields.form && n.fields.form["@description"]) {
+                    let desc = n.fields.form["@description"];
+                    var results = desc.match(/(\[)(.*?)(?=\])/g);
+                    console.log(results);
+                }
+
                 if (n.fields.form == null)
                     return false;
                 if (n.fields.form['@title'] == null || n.fields.form['@title'].length < 1)
@@ -994,6 +1003,18 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
                 if (n.settings.FieldUpdate.Field.length == null || n.settings.FieldUpdate.Field.length < 1)
                     return false;
+
+                let fields = n.settings.FieldUpdate.Field;
+                let hasInvalidField = false;
+                n.errors = [];
+                fields.forEach(f => {
+                    let refField = this.fieldTypes.find(x => x.ID == +f["@FieldId"]);
+                    if (!refField) {
+                        hasInvalidField = true;
+                        n.errors.push('Invalid field type');
+                    }
+                });
+                if (hasInvalidField) return false;
                 break;
             case WorkflowActivityType.RelationshipUpdate:
                 if (n.settings == null || n.settings.RelationshipUpdate == null || n.settings.RelationshipUpdate.Relationship == null || _.isEmpty(n.settings.RelationshipUpdate.Relationship))
@@ -1041,6 +1062,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         let finishNodes = 0;
         let missingInputCount = 0;
         let missingOutputCount = 0;
+        let invalidFieldReferences = 0;
 
         let startKey = "";
         let finishKey = "";
@@ -1075,7 +1097,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             if (to == null && from == null)
                 disconnectedNodeCount++;
 
-
+            if (node.errors) {
+                node.errors.forEach(x => { if (x == 'Invalid field type') invalidFieldReferences++ });
+            }
+            
         });
 
         model.linkDataArray.forEach(l => {
@@ -1108,6 +1133,9 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
         if (startToFinish)
             this.errors.push('The start step cannot be connected directly to the finish step');
+
+        if (invalidFieldReferences > 0)
+            this.errors.push(`There are ${invalidFieldReferences} invalid field ${invalidFieldReferences} references in workflow`);
 
         if (this.errors.length > 0)
             this.isValid = false;
