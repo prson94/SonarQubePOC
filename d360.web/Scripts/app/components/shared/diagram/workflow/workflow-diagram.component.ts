@@ -915,6 +915,8 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         if (this.isReadOnly)
             return true;
 
+        n.errors = [];
+
         switch (n.activityType) {
             case WorkflowActivityType.EmailNotification:
 
@@ -937,8 +939,14 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                             return false;
                         break;
                 }
+
+                n.errors = n.errors.concat(this.validateTextFields(n.settings.MessageBodyTemplate));
+                console.log(n.errors);
+                if (n.errors.length > 0) return false;
+
                 break;
             case WorkflowActivityType.Form:
+
                 if (n.settings == null || _.isEmpty(n.settings))
                     return false;
                 if (n.settings.FormResponseType == null || n.settings.FormResponseType == '')
@@ -973,18 +981,14 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     if (n.settings.MessageBodyTemplate == null || n.settings.MessageBodyTemplate.length < 1)
                         return false;
 
-                    n.errors = [];
-                    n.errors.concat(this.validateTextFields(n.settings.MessageBodyTemplate));
-                    if (n.errors.length > 0) return false;
+                    n.errors = n.errors.concat(this.validateTextFields(n.settings.MessageBodyTemplate));
                 }
 
                 if (n.fields == null || _.isEmpty(n.fields))
                     return false;
 
                 if (n.fields && n.fields.form && n.fields.form["@description"]) {
-                    n.errors = [];
-                    n.errors.concat(this.validateTextFields(n.fields.form["@description"]));
-                    if (n.errors.length > 0) return false;
+                    n.errors = n.errors.concat(this.validateTextFields(n.fields.form["@description"]));
                 }
 
                 if (n.fields.form == null)
@@ -992,6 +996,11 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 if (n.fields.form['@title'] == null || n.fields.form['@title'].length < 1)
                     return false;
 
+                
+                if (n.errors.length > 0) {
+                    console.log("here")
+                    return false;
+                }
                 break;
             case WorkflowActivityType.Procedure:
                 if (n.settings.ProcedureID == null || n.settings.ProcedureID == '')
@@ -1064,7 +1073,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 }
             });
         }
-
         return errors;
     }
 
