@@ -36,10 +36,9 @@ namespace igx.UnitTests.V2ControllerTests
             var actionResult = await tagsController.Get();
 
             var str = actionResult.Content.ReadAsStringAsync().Result;
-            var data = JsonConvert.DeserializeObject<TagApiModelWrapper>(str);
 
-            Assert.True(actionResult.IsSuccessStatusCode);
-            Assert.True(data != null);
+            Assert.True(actionResult.IsSuccessStatusCode, XMsg.BadResponseCode);
+            AssertJSON.True<TagApiModelWrapper>(str);
 
         }
 
@@ -57,11 +56,11 @@ namespace igx.UnitTests.V2ControllerTests
             var data = JsonConvert.DeserializeObject<JToken>(str);
             if (uid == DataConstants.ValidGUID)
             {
-                Assert.True(res.Result.IsSuccessStatusCode);
+                Assert.True(res.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
             }
             else
             {
-                Assert.True(!res.Result.IsSuccessStatusCode);
+                Assert.True(!res.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
 
             }
 
@@ -77,10 +76,9 @@ namespace igx.UnitTests.V2ControllerTests
             var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
             var str = res.Result.Content.ReadAsStringAsync().Result;
-            var data = JsonConvert.DeserializeObject<TagApiModel>(str);
 
-            Assert.True(data != null);
-            Assert.True(res.Result.IsSuccessStatusCode);
+            Assert.True(res.Result.IsSuccessStatusCode,XMsg.BadResponseCode);
+            AssertJSON.True<TagApiModel>(str);
 
         }
 
@@ -97,9 +95,9 @@ namespace igx.UnitTests.V2ControllerTests
             var str = res.Result.Content.ReadAsStringAsync().Result;
             var data = JsonConvert.DeserializeObject<JToken>(str);
 
-            Assert.True(data != null);
-            Assert.True(data["type"] != null && data["type"].ToString() == "error");
-            Assert.True(!res.Result.IsSuccessStatusCode);
+            Assert.True(data != null, XMsg.InvalidJSON);
+            Assert.True(data["type"] != null && data["type"].ToString() == "error", "Invalid type field");
+            Assert.True(!res.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
 
         }
 
@@ -113,10 +111,9 @@ namespace igx.UnitTests.V2ControllerTests
             var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
             var str = res.Result.Content.ReadAsStringAsync().Result;
-            var data = JsonConvert.DeserializeObject<TagApiModel>(str);
 
-            Assert.True(data != null);
-            Assert.True(res.Result.IsSuccessStatusCode);
+            Assert.True(res.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
+            AssertJSON.True<TagApiModel>(str);
 
         }
 
@@ -133,9 +130,9 @@ namespace igx.UnitTests.V2ControllerTests
             var str = res.Result.Content.ReadAsStringAsync().Result;
             var data = JsonConvert.DeserializeObject<JToken>(str);
 
-            Assert.True(data != null);
-            Assert.True(data["type"] != null && data["type"].ToString() == "error");
-            Assert.True(!res.Result.IsSuccessStatusCode);
+            Assert.True(data != null, XMsg.InvalidJSON);
+            Assert.True(data["type"] != null && data["type"].ToString() == "error", "Invalid type field");
+            Assert.True(!res.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
 
         }
 
@@ -152,9 +149,9 @@ namespace igx.UnitTests.V2ControllerTests
             var str = res.Result.Content.ReadAsStringAsync().Result;
             var data = JsonConvert.DeserializeObject<JToken>(str);
 
-            Assert.True(data != null);
-            Assert.True(data["type"] != null && data["type"].ToString() == "error");
-            Assert.True(!res.Result.IsSuccessStatusCode);
+            Assert.True(data != null, XMsg.InvalidJSON);
+            Assert.True(data["type"] != null && data["type"].ToString() == "error", "Invalid type field");
+            Assert.True(!res.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
 
         }
 

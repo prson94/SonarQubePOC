@@ -32,4 +32,5 @@
   <include file="scripts/GOV-7437.xml"/>
   <include file="scripts/GOV-7493.xml"/> <!--remove Foreign Key FK_CompanySetting_CompanySetting-->
   <include file="scripts/GOV-7371.xml"/>
+  <include file="scripts/GOV-7540.xml"/>
 </databaseChangeLog>

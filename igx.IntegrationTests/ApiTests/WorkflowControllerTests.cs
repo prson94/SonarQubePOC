@@ -23,10 +23,10 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JArray>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
             //Integration test should be run in environment with added workflows
-            Assert.True(parsedData.Count > 0);
+            Assert.True(parsedData.Count > 0, XMsg.InvalidCount);
             WorkflowTestData.WorkflowTypes = parsedData;
         }
 
@@ -41,9 +41,9 @@ namespace igx.IntegrationTests.ApiTests
                 var content = await response.Content.ReadAsStringAsync();
                 var parsedData = JsonConvert.DeserializeObject<JArray>(content);
 
-                Assert.True(response.IsSuccessStatusCode);
-                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-                Assert.True(parsedData.Count == changeType.Count());
+                Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+                Assert.True(parsedData.Count == changeType.Count(), XMsg.InvalidCount);
             }
 
         }
@@ -60,9 +60,9 @@ namespace igx.IntegrationTests.ApiTests
                 var parsedData = JsonConvert.DeserializeObject<JArray>(content);
 
 
-                Assert.True(response.IsSuccessStatusCode);
-                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-                Assert.True(parsedData.Count == stateType.Count());
+                Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+                Assert.True(parsedData.Count == stateType.Count(), XMsg.InvalidCount);
             }
 
         }
@@ -80,9 +80,9 @@ namespace igx.IntegrationTests.ApiTests
                 var parsedData = JsonConvert.DeserializeObject<JArray>(content);
 
 
-                Assert.True(response.IsSuccessStatusCode);
-                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-                Assert.True(parsedData.Count == byUid.Count());
+                Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+                Assert.True(parsedData.Count == byUid.Count(), XMsg.InvalidCount);
             }
 
         }
@@ -99,9 +99,9 @@ namespace igx.IntegrationTests.ApiTests
                 var parsedData = JsonConvert.DeserializeObject<JArray>(content);
 
 
-                Assert.True(response.IsSuccessStatusCode);
-                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-                Assert.True(parsedData.Count == byUid.Count());
+                Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+                Assert.True(parsedData.Count == byUid.Count(), XMsg.InvalidCount);
             }
 
         }
@@ -118,9 +118,9 @@ namespace igx.IntegrationTests.ApiTests
                 var parsedData = JsonConvert.DeserializeObject<JArray>(content);
 
 
-                Assert.True(response.IsSuccessStatusCode);
-                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-                Assert.True(parsedData.Count == byUid.Count());
+                Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+                Assert.True(parsedData.Count == byUid.Count(), XMsg.InvalidCount);
             }
 
         }
@@ -134,10 +134,10 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
             //Integration test should be run in environment with added workflows
-            Assert.True(parsedData["items"].Count() > 0);
+            Assert.True(parsedData["items"].Count() > 0, XMsg.InvalidCount);
             WorkflowTestData.WorkflowVersions = parsedData;
         }
 
@@ -152,9 +152,9 @@ namespace igx.IntegrationTests.ApiTests
                 var content = await response.Content.ReadAsStringAsync();
                 var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
-                Assert.True(response.IsSuccessStatusCode);
-                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-                Assert.True(parsedData["items"].Count() == filteredBy.Count());
+                Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+                Assert.True(parsedData["items"].Count() == filteredBy.Count(), XMsg.InvalidCount);
             }
         }
 
@@ -169,9 +169,9 @@ namespace igx.IntegrationTests.ApiTests
                 var content = await response.Content.ReadAsStringAsync();
                 var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
-                Assert.True(response.IsSuccessStatusCode);
-                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-                Assert.True(parsedData["items"].Count() == filteredBy.Count());
+                Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+                Assert.True(parsedData["items"].Count() == filteredBy.Count(), XMsg.InvalidCount);
             }
         }
 
@@ -186,10 +186,9 @@ namespace igx.IntegrationTests.ApiTests
                 var response = await httpClient.GetAsync($"{endpointUrl}&AssetTypeUid={filteredBy.Key}");
                 var content = await response.Content.ReadAsStringAsync();
                 var parsedData = JsonConvert.DeserializeObject<JObject>(content);
-
-                Assert.True(response.IsSuccessStatusCode);
-                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-                Assert.True(parsedData["items"].Count() == filteredBy.Count());
+                Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+                Assert.True(parsedData["items"].Count() == filteredBy.Count(), XMsg.InvalidCount);
             }
         }
 
@@ -204,9 +203,9 @@ namespace igx.IntegrationTests.ApiTests
                 var content = await response.Content.ReadAsStringAsync();
                 var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
-                Assert.True(response.IsSuccessStatusCode);
-                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-                Assert.True(parsedData["items"].Count() == filteredBy.Count());
+                Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+                Assert.True(parsedData.Count == filteredBy.Count(), XMsg.InvalidCount);
             }
         }
 
@@ -221,9 +220,9 @@ namespace igx.IntegrationTests.ApiTests
                 var content = await response.Content.ReadAsStringAsync();
                 var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
-                Assert.True(response.IsSuccessStatusCode);
-                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-                Assert.True(parsedData["items"].Count() == filteredBy.Count());
+                Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+                Assert.True(parsedData["items"].Count() == filteredBy.Count(), XMsg.InvalidCount);
             }
         }
 
@@ -240,7 +239,7 @@ namespace igx.IntegrationTests.ApiTests
             if (pageNum <= 0) pageNum = 1;
             string endpointUrl = URIHelper.WorkflowVersionUriWithoutPageSize;
 
-            var response = await httpClient.GetAsync($"{endpointUrl.Replace("?_pageSize=10000","")}?_pageSize={pageSize}&_pageNum={pageNum}&_order={orderBy}");
+            var response = await httpClient.GetAsync($"{endpointUrl.Replace("?_pageSize=10000", "")}?_pageSize={pageSize}&_pageNum={pageNum}&_order={orderBy}");
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
@@ -263,12 +262,12 @@ namespace igx.IntegrationTests.ApiTests
             }
 
             JArray realData = new JArray();
-            foreach(var item in ordered.Skip((pageNum - 1) * pageSize).Take(pageSize).ToList())
+            foreach (var item in ordered.Skip((pageNum - 1) * pageSize).Take(pageSize).ToList())
             {
                 realData.Add(item);
             }
 
-            Assert.True(SimpleJsonComparer.IsEqual(realData, parsedData["items"]));
+            Assert.True(SimpleJsonComparer.IsEqual(realData, parsedData["items"]), XMsg.MissingAsset);
         }
 
         [Fact, Priority(2000)]
@@ -283,9 +282,9 @@ namespace igx.IntegrationTests.ApiTests
                 var content = await response.Content.ReadAsStringAsync();
                 var parsedData = JsonConvert.DeserializeObject<JArray>(content);
 
-                Assert.True(response.IsSuccessStatusCode);
-                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-                Assert.True(parsedData != null);
+                Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+                Assert.True(parsedData != null, XMsg.NoContent);
             }
 
 

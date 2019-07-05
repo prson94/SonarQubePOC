@@ -934,6 +934,11 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             valid = false;
         }
 
+        if (this.model.FieldType.Type == 'JsonElement') {
+            if (!this.model.JsonElementSettings.FieldTypeID || !this.model.JsonElementSettings.Path || !this.model.JsonElementSettings.DataType)
+                valid = false;
+        }
+
         return valid;
     }
 

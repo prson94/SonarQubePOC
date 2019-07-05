@@ -32,7 +32,7 @@ namespace igx.UnitTests
         public void JObject_CanParseFieldJsonProperties(string json)
         {
             var list = json.ParseJsonIntoJsonPropertiesCollection();
-            Assert.True(list.Count > 0);
+            Assert.True(list.Count > 0,"Json not parsed successfully!");
         }
 
     }

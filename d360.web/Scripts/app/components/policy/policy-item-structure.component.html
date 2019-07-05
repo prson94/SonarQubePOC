@@ -90,7 +90,7 @@
         [prompt]="'Are you sure you want to delete the policy item [' + [selected?.data?.DisplayValue] + ']?'"
         (onCancel)="showDelete=false;"></d3s-delete-form>
     <d3s-dynamic-editor *ngIf="showEditor"
-        [objectID]="policyType.ID"
+        [objectID]="selected ? selected?.data?.ID : policyType.ID"
         objectType="Policy"
         [parentID]="selectedParentID"
         [title]="policyEditorTitle()"

@@ -22,13 +22,13 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(!string.IsNullOrEmpty(content));
-            Assert.True(Guid.Parse(parsedData["uid"].ToString()) != Guid.Empty);
-            Assert.True(Guid.Parse(parsedData["CreatedByUid"].ToString()) != Guid.Empty);
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+            Assert.True(!string.IsNullOrEmpty(content), XMsg.NoContent);
+            Assert.True(Guid.Parse(parsedData["uid"].ToString()) != Guid.Empty, XMsg.InvalidFieldValue("uid"));
+            Assert.True(Guid.Parse(parsedData["CreatedByUid"].ToString()) != Guid.Empty, XMsg.InvalidFieldValue("CreatedByUid"));
 
-            Assert.True(TagTestData.TagJSON.HasSameFieldValue(parsedData, "Value"));
+            Assert.True(TagTestData.TagJSON.HasSameFieldValue(parsedData, "Value"), XMsg.InvalidFieldValue("Value"));
 
             TagTestData.TagJSON = content.AsJobject();
         }
@@ -41,12 +41,12 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JToken>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(!string.IsNullOrEmpty(content));
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+            Assert.True(!string.IsNullOrEmpty(content), XMsg.NoContent);
 
-            Assert.True(parsedData["items"].Count() > 0);
-            Assert.True(parsedData["items"].DoesContainToken(TagTestData.TagJSON));
+            Assert.True(parsedData["items"].Count() > 0,XMsg.InvalidCount);
+            Assert.True(parsedData["items"].DoesContainToken(TagTestData.TagJSON), XMsg.MissingAsset);
 
         }
 
@@ -61,14 +61,14 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JToken>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(!string.IsNullOrEmpty(content));
-            Assert.True(TagTestData.TagJSON["uid"].ToString() == parsedData["uid"].ToString());
-            Assert.True(TagTestData.TagJSON["Value"].ToString() == parsedData["Value"].ToString());
-            Assert.True(TagTestData.TagJSON["CreatedByUid"].ToString() == parsedData["CreatedByUid"].ToString());
-            Assert.True(TagTestData.TagJSON["CreatedOn"].ToString() == parsedData["CreatedOn"].ToString());
-            Assert.True(TagTestData.TagJSON["UpdatedOn"].ToString() != parsedData["UpdatedOn"].ToString());
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+            Assert.True(!string.IsNullOrEmpty(content), XMsg.NoContent);
+            Assert.True(TagTestData.TagJSON["uid"].ToString() == parsedData["uid"].ToString(), XMsg.InvalidFieldValue("uid"));
+            Assert.True(TagTestData.TagJSON["Value"].ToString() == parsedData["Value"].ToString(), XMsg.InvalidFieldValue("Value"));
+            Assert.True(TagTestData.TagJSON["CreatedByUid"].ToString() == parsedData["CreatedByUid"].ToString(), XMsg.InvalidFieldValue("CreatedByUid"));
+            Assert.True(TagTestData.TagJSON["CreatedOn"].ToString() == parsedData["CreatedOn"].ToString(), XMsg.InvalidFieldValue("CreatedOn"));
+            Assert.True(TagTestData.TagJSON["UpdatedOn"].ToString() != parsedData["UpdatedOn"].ToString(), XMsg.InvalidFieldValue("UpdatedOn"));
 
 
             TagTestData.TagJSON = content.AsJobject();
@@ -82,12 +82,12 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JToken>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(!string.IsNullOrEmpty(content));
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+            Assert.True(!string.IsNullOrEmpty(content), XMsg.NoContent);
 
-            Assert.True(parsedData["items"].Count() > 0);
-            Assert.True(parsedData["items"].DoesContainToken(TagTestData.TagJSON));
+            Assert.True(parsedData["items"].Count() > 0, XMsg.InvalidCount);
+            Assert.True(parsedData["items"].DoesContainToken(TagTestData.TagJSON), XMsg.MissingAsset);
 
         }
 
@@ -99,9 +99,9 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JToken>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(!string.IsNullOrEmpty(content));
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+            Assert.True(!string.IsNullOrEmpty(content), XMsg.NoContent);
 
         }
 
@@ -113,11 +113,11 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JToken>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(!string.IsNullOrEmpty(content));
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+            Assert.True(!string.IsNullOrEmpty(content), XMsg.NoContent);
 
-            Assert.True(!parsedData["items"].DoesContainToken(TagTestData.TagJSON));
+            Assert.True(!parsedData["items"].DoesContainToken(TagTestData.TagJSON), XMsg.MissingAsset);
 
         }
 
@@ -130,9 +130,8 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JToken>(content);
 
-            Assert.True(!response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(response.StatusCode == System.Net.HttpStatusCode.BadRequest);
+            Assert.True(response.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
         }
 
         [Fact, Priority(70)]
@@ -144,9 +143,8 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JToken>(content);
 
-            Assert.True(!response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(response.StatusCode == System.Net.HttpStatusCode.BadRequest);
+            Assert.True(response.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
         }
 
         [Fact, Priority(80)]
@@ -160,9 +158,8 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JToken>(content);
 
-            Assert.True(!response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(response.StatusCode == System.Net.HttpStatusCode.BadRequest);
+            Assert.True(response.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
         }
 
         [Fact, Priority(90)]
@@ -174,9 +171,8 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JToken>(content);
 
-            Assert.True(!response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(response.StatusCode == System.Net.HttpStatusCode.BadRequest);
+            Assert.True(response.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
         }
 
         [Fact, Priority(100)]
@@ -189,9 +185,8 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JToken>(content);
 
-            Assert.True(!response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(response.StatusCode == System.Net.HttpStatusCode.BadRequest);
+            Assert.True(response.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
         }
 
         [Fact, Priority(110)]
@@ -204,9 +199,8 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JToken>(content);
 
-            Assert.True(!response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(response.StatusCode == System.Net.HttpStatusCode.BadRequest);
+            Assert.True(response.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
         }
 
     }

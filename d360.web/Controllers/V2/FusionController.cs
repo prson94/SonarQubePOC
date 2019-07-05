@@ -142,14 +142,14 @@ namespace d360.web.Controllers.V2
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpDelete,
-            Route("batch/{assetUid:Guid}"),
+            Route("batch/{assetUid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution's unique identifier to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to delete assets of this type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> DeleteBulkFusionAsync(Guid assetUid, bool cascade = false)
+        public async Task<IHttpActionResult> DeleteBulkFusionAsync(string assetUid, bool cascade = false)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to remove assets of this type."));
@@ -157,12 +157,14 @@ namespace d360.web.Controllers.V2
             var prefix = "Assets.DeleteBulkAssetsAsync => ";
             var errorMessage = "";
 
+            Guid fusionGuid = Guid.Parse(assetUid);
+
             try
             {
-                Asset fusion = FusionRepository.GetFusionByUID(assetUid);
+                Asset fusion = FusionRepository.GetFusionByUID(fusionGuid);
 
                 if (fusion == null)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Fusion configuration with Uid {assetUid} could not be found."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Fusion configuration with Uid {fusionGuid} could not be found."));
 
                 if (FusionRepository.HasFusionRules(fusion.ObjectID))
                 {
@@ -171,7 +173,7 @@ namespace d360.web.Controllers.V2
 
                 var execution = getApiExecution(1, new ApiExecutionFields_DeleteAssets { AssetTypeUid = fusion.AssetType.uid});
 
-                var executionInfo = await FusionRepository.BulkDeleteFusionConfiguration(assetUid, cascade, execution);
+                var executionInfo = await FusionRepository.BulkDeleteFusionConfiguration(fusionGuid, cascade, execution);
 
                 return await Task.FromResult<IHttpActionResult>(
                     ResponseMessage(
