@@ -230,7 +230,7 @@ namespace igx.IntegrationTests.ApiTests
             Assert.True(parsedData.GetValue("Success") != null && parsedData.GetValue("Success").ToString() == "True", XMsg.MissingField("Success"));
 
 
-            AssetTestData.assetTypeInsert.UpdateValueOnProperty("Uid", parsedData.GetValue("Uid").ToString());
+            AssetTestData.AssetTypeInsert.UpdateValueOnProperty("Uid", parsedData.GetValue("Uid").ToString());
         }
 
         [Fact, Priority(110)]
@@ -245,7 +245,7 @@ namespace igx.IntegrationTests.ApiTests
             Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
 
             Assert.True(assetTypeApiViewModels.Count != 0, XMsg.MissingAsset);
-            Assert.True(assetTypeApiViewModels.DoesContain(x => x["uid"].ToString() == AssetTestData.assetTypeInsert["Uid"].ToString() && x["Name"].ToString() == AssetTestData.assetTypeInsert["Name"].ToString() && x["Description"].ToString() == AssetTestData.assetTypeInsert["Description"].ToString()), XMsg.MissingAsset);
+            Assert.True(assetTypeApiViewModels.DoesContain(x => x["uid"].ToString() == AssetTestData.AssetTypeInsert["Uid"].ToString() && x["Name"].ToString() == AssetTestData.AssetTypeInsert["Name"].ToString() && x["Description"].ToString() == AssetTestData.AssetTypeInsert["Description"].ToString()), XMsg.MissingAsset);
         }
 
         [Fact, Priority(120)]
@@ -260,13 +260,13 @@ namespace igx.IntegrationTests.ApiTests
             Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
             Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
 
-            Assert.True(databaseBulkAssetResults.Count == AssetTestData.assetInserts.Count, XMsg.MissingAsset);
+            Assert.True(databaseBulkAssetResults.Count == AssetTestData.AssetInserts.Count, XMsg.MissingAsset);
             Assert.True(databaseBulkAssetResults.All(x => x["Success"].ToString().ToLower() == "true"), "Success should be set to true");
 
             foreach (var item in databaseBulkAssetResults.Select((value, index) => new { index, value }))
             {
                 Assert.True(item.value["uid"].ToString() != Guid.Empty.ToString(), "Guid not valid");
-                AssetTestData.assetInserts[item.index].UpdateValueOnProperty("Uid", item.value["uid"].ToString());
+                AssetTestData.AssetInserts[item.index].UpdateValueOnProperty("Uid", item.value["uid"].ToString());
             }
 
         }
@@ -283,11 +283,11 @@ namespace igx.IntegrationTests.ApiTests
             Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
             Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
 
-            Assert.True(int.Parse(assetsApiViewModel["total"].ToString()) == AssetTestData.assetInserts.Count);
+            Assert.True(int.Parse(assetsApiViewModel["total"].ToString()) == AssetTestData.AssetInserts.Count);
 
             foreach (var item in assetsApiViewModel["items"])
             {
-                var compareItem = AssetTestData.assetInserts.Where(x => Guid.Parse(x["Uid"].ToString()) == Guid.Parse(Convert.ToString(item["AssetUid"]))).FirstOrDefault();
+                var compareItem = AssetTestData.AssetInserts.Where(x => Guid.Parse(x["Uid"].ToString()) == Guid.Parse(Convert.ToString(item["AssetUid"]))).FirstOrDefault();
                 Assert.True(compareItem != null, XMsg.MissingAsset);
                 Assert.True(compareItem["Fields"]["Name"].ToString() == Convert.ToString(item["Name"]), XMsg.InvalidFieldValue("Name"));
 
@@ -312,14 +312,14 @@ namespace igx.IntegrationTests.ApiTests
             Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
             Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
 
-            Assert.True(databaseBulkAssetResults.Count == AssetTestData.assetInserts.Count, XMsg.MissingAsset);
+            Assert.True(databaseBulkAssetResults.Count == AssetTestData.AssetInserts.Count, XMsg.MissingAsset);
             Assert.True(databaseBulkAssetResults.All(x => x["Success"].ToString().ToLower() == "true"), XMsg.InvalidFieldValue("Success"));
 
             foreach (var item in databaseBulkAssetResults.Select((value, index) => new { index, value }))
             {
                 Assert.True(item.value["uid"].ToString() != Guid.Empty.ToString(), XMsg.InvalidFieldValue("uid"));
-                AssetTestData.assetInserts[item.index].UpdateValueOnProperty("Uid", item.value["uid"].ToString());
-                AssetTestData.assetInserts[item.index]["Fields"].UpdateValueOnProperty("Name", AssetTestData.assetUpdates[item.index]["Fields"]["Name"]);
+                AssetTestData.AssetInserts[item.index].UpdateValueOnProperty("Uid", item.value["uid"].ToString());
+                AssetTestData.AssetInserts[item.index]["Fields"].UpdateValueOnProperty("Name", AssetTestData.AssetUpdates[item.index]["Fields"]["Name"]);
             }
         }
 
@@ -335,11 +335,11 @@ namespace igx.IntegrationTests.ApiTests
             Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
             Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
 
-            Assert.True(int.Parse(assetsApiViewModel["total"].ToString()) == AssetTestData.assetInserts.Count, XMsg.MissingAsset);
+            Assert.True(int.Parse(assetsApiViewModel["total"].ToString()) == AssetTestData.AssetInserts.Count, XMsg.MissingAsset);
 
             foreach (var item in assetsApiViewModel["items"])
             {
-                var compareItem = AssetTestData.assetInserts.Where(x => Guid.Parse(x["Uid"].ToString()) == Guid.Parse(Convert.ToString(item["AssetUid"]))).FirstOrDefault();
+                var compareItem = AssetTestData.AssetInserts.Where(x => Guid.Parse(x["Uid"].ToString()) == Guid.Parse(Convert.ToString(item["AssetUid"]))).FirstOrDefault();
                 Assert.True(compareItem != null, XMsg.MissingAsset);
                 Assert.True(compareItem["Fields"]["Name"].ToString() == Convert.ToString(item["Name"]), XMsg.InvalidFieldValue("Name"));
 
