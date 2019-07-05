@@ -98,6 +98,7 @@
     <Compile Include="Core\Settings.cs" />
     <Compile Include="Core\SimpleCollectionComparer.cs" />
     <Compile Include="Core\URIHelper.cs" />
+    <Compile Include="Core\XMsg.cs" />
     <Compile Include="TestData\AssetTestData.cs" />
     <Compile Include="TestData\AssetTypeTestData.cs" />
     <Compile Include="TestData\BulkTestData.cs" />
