@@ -820,6 +820,12 @@ namespace d360.model.DataAccessLayer
 
 
         }
+
+        public bool DoesAssetExists(Guid uid)
+        {
+            return CompanyContext.Any<Asset>(i => i.uid == uid);
+        }
+
         #region Private
         private void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> fieldJoins, List<string> fieldColumns)
         {
@@ -1102,6 +1108,8 @@ namespace d360.model.DataAccessLayer
                     return "";
             }
         }
+
+
         #endregion
 
     }

@@ -17,9 +17,11 @@ using System.Net;
 
 namespace igx.UnitTests
 {
+
     [Trait("Unit tests", "Asset controller")]
     public class AssetControllerTest : BaseTest
     {
+
         internal AssetsController assetsController;
         public AssetControllerTest()
         {
@@ -36,8 +38,8 @@ namespace igx.UnitTests
             var list = new List<AssetTypeApiViewModel>();
             var res = results.TryGetContentValue(out list);
 
-            Assert.True(results.IsSuccessStatusCode);
-            Assert.True(list != null);
+            Assert.True(results.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(list != null, XMsg.NoContent);
 
         }
 
@@ -47,8 +49,9 @@ namespace igx.UnitTests
             var result = assetsController.GetAssetTypeClassesAsync();
             var list = new List<AssetTypeClassInfo>();
             var listOfAssets = result.TryGetContentValue(out list);
-            Assert.True(list.Count > 0);
-            Assert.True(result.IsSuccessStatusCode);
+
+            Assert.True(list.Count > 0, XMsg.NoContent);
+            Assert.True(result.IsSuccessStatusCode, XMsg.BadResponseCode);
         }
 
         [Fact]
@@ -61,11 +64,9 @@ namespace igx.UnitTests
             var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
             var str = res.Result.Content.ReadAsStringAsync().Result;
-            var data = JsonConvert.DeserializeObject<AssetsApiViewModel>(str);
 
-            Assert.True(res.Result.IsSuccessStatusCode);
-            Assert.IsType<AssetsApiViewModel>(data);
-            Assert.True(data != null);
+            Assert.True(res.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
+            AssertJSON.True<AssetsApiViewModel>(str);
 
         }
 
@@ -85,12 +86,12 @@ namespace igx.UnitTests
             {
                 foreach (var field in fieldContract)
                 {
-                    Assert.True(@object.GetValue(field) != null);
+                    Assert.True(@object.GetValue(field) != null,"Missing field in response!");
                 }
             }
 
-            Assert.True(res.Result.IsSuccessStatusCode);
-            Assert.True(data != null);
+            Assert.True(res.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(data != null, XMsg.InvalidJSON);
 
         }
 
@@ -116,7 +117,7 @@ namespace igx.UnitTests
             {
                 actionResult = await assetsController.PostAssetsAsync(assetUID, assetInsertList);
                 responseMessageResult = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
-                Assert.True(!responseMessageResult.Result.IsSuccessStatusCode);
+                Assert.True(!responseMessageResult.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
             }
 
             if (isGoodUID && numberOfassetInsertList == 0)
@@ -124,10 +125,9 @@ namespace igx.UnitTests
                 actionResult = await assetsController.PostAssetsAsync(assetUID, assetInsertList);
                 responseMessageResult = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
                 var str = responseMessageResult.Result.Content.ReadAsStringAsync().Result;
-                var data = JsonConvert.DeserializeObject<List<DatabaseBulkAssetResult>>(str);
 
-                Assert.True(responseMessageResult.Result.IsSuccessStatusCode);
-                Assert.True(data == null);
+                Assert.True(responseMessageResult.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
+                AssertJSON.True<List<DatabaseBulkAssetResult>>(str);
             }
 
             if (isGoodUID && numberOfassetInsertList > 0)
@@ -135,10 +135,9 @@ namespace igx.UnitTests
                 actionResult = await assetsController.PostAssetsAsync(assetUID, assetInsertList);
                 responseMessageResult = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
                 var str = responseMessageResult.Result.Content.ReadAsStringAsync().Result;
-                var data = JsonConvert.DeserializeObject<List<DatabaseBulkAssetResult>>(str);
 
                 Assert.True(responseMessageResult.Result.IsSuccessStatusCode);
-                Assert.True(data != null);
+                AssertJSON.True<List<AssetApiModel>>(str);
             }
 
             if (checkAsSendByJSONContent)
@@ -157,10 +156,9 @@ namespace igx.UnitTests
                 actionResult = await assetsController.PostAssetsAsync(assetUID, assetInsertList);
                 responseMessageResult = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
                 var str = responseMessageResult.Result.Content.ReadAsStringAsync().Result;
-                var data = JsonConvert.DeserializeObject<List<DatabaseBulkAssetResult>>(str);
 
                 Assert.True(responseMessageResult.Result.IsSuccessStatusCode);
-                Assert.True(data != null);
+                AssertJSON.True<List<DatabaseBulkAssetResult>>(str);
             }
 
 
@@ -189,7 +187,7 @@ namespace igx.UnitTests
             {
                 actionResult = await assetsController.PutAssetsAsync(assetUID, assetUpdateList);
                 responseMessageResult = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
-                Assert.True(!responseMessageResult.Result.IsSuccessStatusCode);
+                Assert.True(!responseMessageResult.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
             }
 
             if (isGoodUID && numberOfassetInsertList == 0)
@@ -197,10 +195,9 @@ namespace igx.UnitTests
                 actionResult = await assetsController.PutAssetsAsync(assetUID, assetUpdateList);
                 responseMessageResult = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
                 var str = responseMessageResult.Result.Content.ReadAsStringAsync().Result;
-                var data = JsonConvert.DeserializeObject<List<DatabaseBulkAssetResult>>(str);
 
-                Assert.True(responseMessageResult.Result.IsSuccessStatusCode);
-                Assert.True(data == null);
+                Assert.True(responseMessageResult.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
+                AssertJSON.True<List<DatabaseBulkAssetResult>>(str);
             }
 
             if (isGoodUID && numberOfassetInsertList > 0)
@@ -208,10 +205,9 @@ namespace igx.UnitTests
                 actionResult = await assetsController.PutAssetsAsync(assetUID, assetUpdateList);
                 responseMessageResult = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
                 var str = responseMessageResult.Result.Content.ReadAsStringAsync().Result;
-                var data = JsonConvert.DeserializeObject<List<DatabaseBulkAssetResult>>(str);
 
-                Assert.True(responseMessageResult.Result.IsSuccessStatusCode);
-                Assert.True(data != null);
+                Assert.True(responseMessageResult.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
+                AssertJSON.True<List<DatabaseBulkAssetResult>>(str);
             }
 
             if (checkAsSendByJSONContent)
@@ -230,10 +226,9 @@ namespace igx.UnitTests
                 actionResult = await assetsController.PutAssetsAsync(assetUID, assetUpdateList);
                 responseMessageResult = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
                 var str = responseMessageResult.Result.Content.ReadAsStringAsync().Result;
-                var data = JsonConvert.DeserializeObject<List<DatabaseBulkAssetResult>>(str);
 
-                Assert.True(responseMessageResult.Result.IsSuccessStatusCode);
-                Assert.True(data != null);
+                Assert.True(responseMessageResult.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
+                AssertJSON.True<List<DatabaseBulkAssetResult>>(str);
             }
 
 
@@ -261,7 +256,7 @@ namespace igx.UnitTests
             {
                 actionResult = await assetsController.DeleteAssetsAsync(assetUID, assetDeletes);
                 responseMessageResult = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
-                Assert.True(!responseMessageResult.Result.IsSuccessStatusCode);
+                Assert.True(!responseMessageResult.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
             }
 
             if (isGoodUID && !hasDeleteAsset)
@@ -269,7 +264,7 @@ namespace igx.UnitTests
                 actionResult = await assetsController.DeleteAssetsAsync(assetUID, assetDeletes);
                 responseMessageResult = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
-                Assert.True(responseMessageResult.Result.StatusCode == System.Net.HttpStatusCode.InternalServerError);
+                Assert.True(responseMessageResult.Result.StatusCode == HttpStatusCode.InternalServerError, XMsg.BadResponseCode);
             }
 
             if (isGoodUID && hasDeleteAsset)
@@ -277,10 +272,9 @@ namespace igx.UnitTests
                 actionResult = await assetsController.DeleteAssetsAsync(assetUID, assetDeletes);
                 responseMessageResult = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
                 var str = responseMessageResult.Result.Content.ReadAsStringAsync().Result;
-                var data = JsonConvert.DeserializeObject<List<DatabaseBulkAssetResult>>(str);
 
-                Assert.True(responseMessageResult.Result.IsSuccessStatusCode);
-                Assert.True(data != null);
+                Assert.True(responseMessageResult.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
+                AssertJSON.True<List<DatabaseBulkAssetResult>>(str);
             }
 
             if (checkAsSendByJSONContent)
@@ -299,10 +293,9 @@ namespace igx.UnitTests
                 actionResult = await assetsController.DeleteAssetsAsync(assetUID, assetDeletes);
                 responseMessageResult = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
                 var str = responseMessageResult.Result.Content.ReadAsStringAsync().Result;
-                var data = JsonConvert.DeserializeObject<List<DatabaseBulkAssetResult>>(str);
 
-                Assert.True(responseMessageResult.Result.IsSuccessStatusCode);
-                Assert.True(data != null);
+                Assert.True(responseMessageResult.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
+                AssertJSON.True<List<DatabaseBulkAssetResult>>(str);
             }
         }
 
@@ -334,7 +327,7 @@ namespace igx.UnitTests
             {
                 actionResult = await assetsController.PostBulkAssetsAsync(assetUID, assetInsertList);
                 responseMessageResult = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
-                Assert.True(!responseMessageResult.Result.IsSuccessStatusCode);
+                Assert.True(!responseMessageResult.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
             }
 
             if (isGoodUID && numberOfassetInsertList == 0)
@@ -342,7 +335,7 @@ namespace igx.UnitTests
                 actionResult = await assetsController.PostBulkAssetsAsync(assetUID, null);
                 responseMessageResult = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
-                Assert.True(responseMessageResult.Result.StatusCode == System.Net.HttpStatusCode.InternalServerError);
+                Assert.True(responseMessageResult.Result.StatusCode == HttpStatusCode.InternalServerError, XMsg.BadResponseCode);
             }
 
             if (isGoodUID && numberOfassetInsertList > 0)
@@ -352,11 +345,11 @@ namespace igx.UnitTests
                 var str = responseMessageResult.Result.Content.ReadAsStringAsync().Result;
                 var data = JsonConvert.DeserializeObject<JObject>(str);
 
-                Assert.True(responseMessageResult.Result.IsSuccessStatusCode);
-                Assert.True(data != null);
-                Assert.True(data.GetValue("ExecutionID") != null);
-                Assert.True(data.GetValue("Message") != null);
-                Assert.True(data.GetValue("Uri") != null);
+                Assert.True(responseMessageResult.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
+                Assert.True(data != null, XMsg.InvalidJSON);
+                Assert.True(data.GetValue("ExecutionID") != null,"ExecutionId field missing from response!");
+                Assert.True(data.GetValue("Message") != null, "Message field missing from response!");
+                Assert.True(data.GetValue("Uri") != null, "Uri field missing from response!");
             }
 
             if (checkAsSendByJSONContent)
@@ -378,11 +371,11 @@ namespace igx.UnitTests
                 var str = responseMessageResult.Result.Content.ReadAsStringAsync().Result;
                 var data = JsonConvert.DeserializeObject<JObject>(str);
 
-                Assert.True(responseMessageResult.Result.IsSuccessStatusCode);
-                Assert.True(data != null);
-                Assert.True(data.GetValue("ExecutionID") != null);
-                Assert.True(data.GetValue("Message") != null);
-                Assert.True(data.GetValue("Uri") != null);
+                Assert.True(responseMessageResult.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
+                Assert.True(data != null, XMsg.InvalidJSON);
+                Assert.True(data.GetValue("ExecutionID") != null, "ExecutionId field missing from response!");
+                Assert.True(data.GetValue("Message") != null, "Message field missing from response!");
+                Assert.True(data.GetValue("Uri") != null, "Uri field missing from response!");
             }
         }
 
@@ -423,7 +416,7 @@ namespace igx.UnitTests
                 actionResult = await assetsController.PutBulkAssetsAsync(assetUID, null);
                 responseMessageResult = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
-                Assert.True(responseMessageResult.Result.StatusCode == System.Net.HttpStatusCode.InternalServerError);
+                Assert.True(responseMessageResult.Result.StatusCode == HttpStatusCode.InternalServerError, XMsg.BadResponseCode);
             }
 
             if (isGoodUID && numberOfassetInsertList > 0)
@@ -433,11 +426,11 @@ namespace igx.UnitTests
                 var str = responseMessageResult.Result.Content.ReadAsStringAsync().Result;
                 var data = JsonConvert.DeserializeObject<JObject>(str);
 
-                Assert.True(responseMessageResult.Result.IsSuccessStatusCode);
-                Assert.True(data != null);
-                Assert.True(data.GetValue("ExecutionID") != null);
-                Assert.True(data.GetValue("Message") != null);
-                Assert.True(data.GetValue("Uri") != null);
+                Assert.True(responseMessageResult.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
+                Assert.True(data != null, XMsg.InvalidJSON);
+                Assert.True(data.GetValue("ExecutionID") != null, "ExecutionId field missing from response!");
+                Assert.True(data.GetValue("Message") != null, "Message field missing from response!");
+                Assert.True(data.GetValue("Uri") != null, "Uri field missing from response!");
             }
 
             if (checkAsSendByJSONContent)
@@ -459,11 +452,11 @@ namespace igx.UnitTests
                 var str = responseMessageResult.Result.Content.ReadAsStringAsync().Result;
                 var data = JsonConvert.DeserializeObject<JObject>(str);
 
-                Assert.True(responseMessageResult.Result.IsSuccessStatusCode);
-                Assert.True(data != null);
-                Assert.True(data.GetValue("ExecutionID") != null);
-                Assert.True(data.GetValue("Message") != null);
-                Assert.True(data.GetValue("Uri") != null);
+                Assert.True(responseMessageResult.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
+                Assert.True(data != null, XMsg.InvalidJSON);
+                Assert.True(data.GetValue("ExecutionID") != null, "ExecutionId field missing from response!");
+                Assert.True(data.GetValue("Message") != null, "Message field missing from response!");
+                Assert.True(data.GetValue("Uri") != null, "Uri field missing from response!");
             }
         }
 
@@ -494,7 +487,7 @@ namespace igx.UnitTests
             {
                 actionResult = await assetsController.DeleteBulkAssetsAsync(assetUID, assetDeletes);
                 responseMessageResult = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
-                Assert.True(!responseMessageResult.Result.IsSuccessStatusCode);
+                Assert.True(!responseMessageResult.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
             }
 
             if (isGoodUID && !hasDeleteAsset)
@@ -502,7 +495,7 @@ namespace igx.UnitTests
                 actionResult = await assetsController.DeleteBulkAssetsAsync(assetUID, assetDeletes);
                 responseMessageResult = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
-                Assert.True(responseMessageResult.Result.StatusCode == System.Net.HttpStatusCode.InternalServerError);
+                Assert.True(responseMessageResult.Result.StatusCode == HttpStatusCode.InternalServerError, XMsg.BadResponseCode);
             }
 
             if (isGoodUID && hasDeleteAsset)
@@ -512,11 +505,12 @@ namespace igx.UnitTests
                 var str = responseMessageResult.Result.Content.ReadAsStringAsync().Result;
                 var data = JsonConvert.DeserializeObject<JObject>(str);
 
-                Assert.True(responseMessageResult.Result.IsSuccessStatusCode);
-                Assert.True(data != null);
-                Assert.True(data.GetValue("ExecutionID") != null);
-                Assert.True(data.GetValue("Message") != null);
-                Assert.True(data.GetValue("Uri") != null);
+
+                Assert.True(responseMessageResult.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
+                Assert.True(data != null, XMsg.InvalidJSON);
+                Assert.True(data.GetValue("ExecutionID") != null, "ExecutionId field missing from response!");
+                Assert.True(data.GetValue("Message") != null, "Message field missing from response!");
+                Assert.True(data.GetValue("Uri") != null, "Uri field missing from response!");
             }
 
             if (checkAsSendByJSONContent)
@@ -539,11 +533,11 @@ namespace igx.UnitTests
                 var str = responseMessageResult.Result.Content.ReadAsStringAsync().Result;
                 var data = JsonConvert.DeserializeObject<JObject>(str);
 
-                Assert.True(responseMessageResult.Result.IsSuccessStatusCode);
-                Assert.True(data != null);
-                Assert.True(data.GetValue("ExecutionID") != null);
-                Assert.True(data.GetValue("Message") != null);
-                Assert.True(data.GetValue("Uri") != null);
+                Assert.True(responseMessageResult.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
+                Assert.True(data != null, XMsg.InvalidJSON);
+                Assert.True(data.GetValue("ExecutionID") != null, "ExecutionId field missing from response!");
+                Assert.True(data.GetValue("Message") != null, "Message field missing from response!");
+                Assert.True(data.GetValue("Uri") != null, "Uri field missing from response!");
             }
         }
 
@@ -562,7 +556,7 @@ namespace igx.UnitTests
                 actionResult = assetsController.GetExecutionStatus(executionUid);
                 responseMessageResult = actionResult.Result.ExecuteAsync(new System.Threading.CancellationToken());
 
-                Assert.True(responseMessageResult.Result.StatusCode == System.Net.HttpStatusCode.NotFound);
+                Assert.True(responseMessageResult.Result.StatusCode == HttpStatusCode.NotFound, XMsg.BadResponseCode);
             }
             if (isGoodUID)
             {
@@ -571,13 +565,13 @@ namespace igx.UnitTests
                 var str = responseMessageResult.Result.Content.ReadAsStringAsync().Result;
                 var data = JsonConvert.DeserializeObject<JObject>(str);
 
-                Assert.True(responseMessageResult.Result.IsSuccessStatusCode);
-                Assert.True(data != null);
+                Assert.True(responseMessageResult.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
+                Assert.True(data != null, XMsg.InvalidJSON);
 
                 var importantFields = new List<string>() { "CompletedOn", "Error", "Fields", "Processed", "StartedOn", "Total", "Results" };
                 foreach(var field in importantFields)
                 {
-                    Assert.True(data.GetValue(field) != null);
+                    Assert.True(data.GetValue(field) != null,$"{field} missing from response!");
                 }
 
             }
@@ -596,33 +590,32 @@ namespace igx.UnitTests
             HttpResponseMessage responseMessageResult;
 
             responseMessageResult = await GetResponseForPostAsset(insertItem);
-            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.BadRequest);
+            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.BadRequest, XMsg.BadResponseCode);
             
 
             insertItem.Class = AssetTypeClass.Glossary;
             responseMessageResult = await GetResponseForPostAsset(insertItem);
-            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.InternalServerError);
+            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.InternalServerError, XMsg.BadResponseCode);
 
             insertItem.Name = "testName";
             responseMessageResult = await GetResponseForPostAsset(insertItem);
-            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.InternalServerError);
+            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.InternalServerError, XMsg.BadResponseCode);
 
             insertItem.DisplayFormat = "{name}";
             responseMessageResult = await GetResponseForPostAsset(insertItem);
-            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.InternalServerError);
+            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.InternalServerError, XMsg.BadResponseCode);
 
             insertItem.IconStyle.BackColor = "#000000";
             insertItem.IconStyle.ForeColor = "#000000";
             responseMessageResult = await GetResponseForPostAsset(insertItem);
-            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.OK);
+            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.OK, XMsg.BadResponseCode);
 
             var str = responseMessageResult.Content.ReadAsStringAsync().Result;
             var data = JsonConvert.DeserializeObject<JObject>(str);
-            Assert.True(data != null);
-            Assert.True(data.GetValue("Uid") != null);
-            Assert.True(data.GetValue("Message") != null);
-            Assert.True(data.GetValue("Success") != null);
-
+            Assert.True(data != null, XMsg.InvalidJSON);
+            Assert.True(data.GetValue("Uid") != null, "Uid field missing from response!");
+            Assert.True(data.GetValue("Message") != null, "Message field missing from response!");
+            Assert.True(data.GetValue("Success") != null, "Success field missing from response!");
 
 
         }
@@ -640,37 +633,37 @@ namespace igx.UnitTests
             HttpResponseMessage responseMessageResult;
 
             responseMessageResult = await GetResponseForPutAsset(insertItem);
-            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.BadRequest);
+            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.BadRequest, XMsg.BadResponseCode);
 
 
             insertItem.Class = AssetTypeClass.Glossary;
             responseMessageResult = await GetResponseForPutAsset(insertItem);
-            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.InternalServerError);
+            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.InternalServerError, XMsg.BadResponseCode);
 
             insertItem.Name = "testName";
             insertItem.Uid = Guid.Parse(DataConstants.InvalidGUID);
             responseMessageResult = await GetResponseForPutAsset(insertItem);
-            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.NotFound);
+            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.NotFound, XMsg.BadResponseCode);
 
             insertItem.Uid = Guid.Parse(DataConstants.ValidGUID);
             responseMessageResult = await GetResponseForPutAsset(insertItem);
-            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.InternalServerError);
+            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.InternalServerError, XMsg.BadResponseCode);
            
             insertItem.DisplayFormat = "{name}";
             responseMessageResult = await GetResponseForPutAsset(insertItem);
-            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.InternalServerError);
+            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.InternalServerError, XMsg.BadResponseCode);
 
             insertItem.IconStyle.BackColor = "#000000";
             insertItem.IconStyle.ForeColor = "#000000";
             responseMessageResult = await GetResponseForPutAsset(insertItem);
-            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.OK);
+            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.OK, XMsg.BadResponseCode);
 
             var str = responseMessageResult.Content.ReadAsStringAsync().Result;
             var data = JsonConvert.DeserializeObject<JObject>(str);
-            Assert.True(data != null);
-            Assert.True(data.GetValue("Uid") != null);
-            Assert.True(data.GetValue("Message") != null);
-            Assert.True(data.GetValue("Success") != null);
+            Assert.True(data != null, XMsg.InvalidJSON);
+            Assert.True(data.GetValue("Uid") != null, "Uid field missing from response!");
+            Assert.True(data.GetValue("Message") != null, "Message field missing from response!");
+            Assert.True(data.GetValue("Success") != null, "Success field missing from response!");
 
 
 
