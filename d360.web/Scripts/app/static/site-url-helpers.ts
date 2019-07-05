@@ -38,6 +38,7 @@ export class SiteUrlHelpers {
     static SITE_URL_ITEM_OWN_ROOT = 'sidebar/itemown';
     static SITE_URL_MEMBER_GROUP_ROOT = 'sidebar/membergroup';
     static SITE_URL_COMMENTS_ROOT = 'sidebar/comments';
+    static SITE_URL_SCORE_ROOT = 'sidebar/score';
 
 
     //model child routes

@@ -39,7 +39,7 @@ namespace igx.jobs.scoreprocessor
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
 #if DEBUG
-                //companies = companies.Where(x => x.CompanyID == 6).ToList();
+                companies = companies.Where(x => x.CompanyID == 9).ToList();
 #endif
 
                 companies.AsParallel().WithDegreeOfParallelism(3).ForAll(c =>

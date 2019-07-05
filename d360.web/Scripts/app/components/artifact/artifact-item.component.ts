@@ -100,7 +100,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                     this.artifact = artifact;
                     this.buildBreadcrumb();
                     this.setBrowserTitle(this.titleService, this.artifact.DisplayValue);
-
+                    this.rightSidebarService.setCurrentObject("ArtifactType", this.artifact.ArtifactTypeID, "Artifact", this.artifact.ID, false);
                     this
                         .setObjectInfo(
                             'Artifact',
@@ -138,7 +138,21 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                             )
                         ;
                     }
+                    this.rightSidebarService.showItem(
+                        new RightSidebarItem(
+                            'Scoring',
+                            'Scoring',
+                            ['fa-sitemap'],
+                            `/sidebar/score/Artifact/${this.artifact.Uid}`
 
+                        )
+                    );
+                    this.rightSidebarService.showItem(
+                        new RightSidebarItem(
+                            'Comments', 'Comments', ['fa-comments'],
+                            `/sidebar/comments/Artifact/${this.artifact.ID}/${this.artifact.DisplayValue}`
+                        )
+                    );
                     this.loadItemSurvey(id);
                 },
                 err => {

@@ -2711,8 +2711,8 @@ button.tab-scroller {
     border-radius: 3px;
     margin-left: 10px;
 
-    img{
-        margin:5px;
+    img {
+        margin: 5px;
     }
 
     &.large-icon {
@@ -2722,12 +2722,31 @@ button.tab-scroller {
         line-height: 1.1;
     }
 
-    &.light-orange {
+    &.bad {
+        background: @igx-red-light;
+    }
+
+    &.ok {
         background: @igx-orange-light;
     }
 
-    .text{
+    &.good {
+        background: @igx-green-light;
+    }
+
+    &.primary {
+        background: @igx-blue; 
+    }
+
+    .text {
         padding-left: 7px;
+    }
+
+    &.small-icon {
+        margin-left: 4px;
+        position: relative;
+        top: -1px;
+        height: 16px;
     }
 }
 
@@ -2748,12 +2767,12 @@ button.tab-scroller {
     width: 12px;
     height: 12px;
     border-radius: 100%;
-    background-color: @igx-orange-light;
+    background-color: @igx-grey-light;
 }
 .d3s-dynamic-percentage .d3s-dynamic-percentageInner div {
-	position: relative;
-	top: 22px;
-	color:@igx-orange-light;
+    position: relative;
+    top: 22px;
+    color: @igx-grey-light;
 }
 .d3s-dynamic-percentage .d3s-dynamic-percentage-text {
     font-size: 30px;

@@ -1,5 +1,5 @@
 ﻿
-import { Component, ElementRef, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, ElementRef, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, AfterViewInit, OnChanges, SimpleChange } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import * as _ from 'lodash';
@@ -16,11 +16,11 @@ import * as _ from 'lodash';
 	changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class DynamicPercentageComponent implements AfterViewInit {
+export class DynamicPercentageComponent implements AfterViewInit, OnChanges {
 
     @Input() percentage: number;
     @ViewChild("self") self: ElementRef;
-
+    private changeWait: any;
     constructor(
         ref: ChangeDetectorRef,
         private router: Router
@@ -32,6 +32,13 @@ export class DynamicPercentageComponent implements AfterViewInit {
         setTimeout(() => {
             this.calculatePercent(this.self, this.percentage, 0);
         },200);
+    }
+
+    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+        clearTimeout(this.changeWait);
+        this.changeWait = setTimeout(() => {
+            this.calculatePercent(this.self, this.percentage, 0);
+        }, 200);
     }
 
     private calculatePercent(event, end, i) {
@@ -47,7 +54,7 @@ export class DynamicPercentageComponent implements AfterViewInit {
             c.backgroundImage = 'linear-gradient(' + (90 + i) + 'deg, transparent 50%, #ccc 50%),linear-gradient(90deg, #ccc 50%, transparent 50%)';
         } else {
             var m = event.nativeElement, c = m.style;
-            c.backgroundImage = 'linear-gradient(' + (i - 90) + 'deg, transparent 50%, #ffffff 50%), linear - gradient(90deg, #ccc 50%, transparent 50%)';
+            c.backgroundImage = 'linear-gradient(' + (i - 90) + 'deg, transparent 50%, #ffffff 50%),linear-gradient(90deg, #ccc 50%, transparent 50%)';
         }
         if (curr < end) {
             setTimeout(() => {
