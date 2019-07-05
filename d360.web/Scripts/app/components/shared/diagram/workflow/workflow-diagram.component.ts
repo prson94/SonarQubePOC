@@ -39,7 +39,7 @@ import {
 } from '../../../../models/workflow.model';
 import { FieldType } from '../../../../models/fields.model';
 import { map, concatMap } from 'rxjs/operators';
-import { Observable,of } from 'rxjs';
+import { Observable,of, ConnectableObservable } from 'rxjs';
 import { forEach } from '@angular/router/src/utils/collection';
 import { Field } from '../../../../models/fields-observable.model';
  
@@ -972,15 +972,19 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 if (n.settings.SendFormEmail != null && n.settings.SendFormEmail.toString().toLowerCase() == 'true') {
                     if (n.settings.MessageBodyTemplate == null || n.settings.MessageBodyTemplate.length < 1)
                         return false;
+
+                    n.errors = [];
+                    n.errors.concat(this.validateTextFields(n.settings.MessageBodyTemplate));
+                    if (n.errors.length > 0) return false;
                 }
 
                 if (n.fields == null || _.isEmpty(n.fields))
                     return false;
 
                 if (n.fields && n.fields.form && n.fields.form["@description"]) {
-                    let desc = n.fields.form["@description"];
-                    var results = desc.match(/(\[)(.*?)(?=\])/g);
-                    console.log(results);
+                    n.errors = [];
+                    n.errors.concat(this.validateTextFields(n.fields.form["@description"]));
+                    if (n.errors.length > 0) return false;
                 }
 
                 if (n.fields.form == null)
@@ -1031,6 +1035,37 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         }
 
         return true;
+    }
+
+    private validateTextFields(desc: string): string[] {
+        let errors: string[] = [];
+
+        if (!desc) return errors;
+
+        var results = desc.match(/(\[)(.*?)(?=\])/g);
+
+        if (results.length) {
+            results.forEach(x => {
+                var fieldData = x.split('::');
+
+                if (fieldData.length == 2) {
+                    var fieldType = fieldData[0].replace('[', '').trim();
+                    var fieldName = fieldData[1].trim();
+                    let f: any = null;
+                    if (fieldType == 'Action Field') {
+                        f = this.fieldTypes.find(x => x.Object == 'IssueType' && x.Name == fieldName);
+                    }
+                    else {
+                        f = this.fieldTypes.find(x => x.Object != 'IssueType' && x.Name == fieldName);
+                    }
+                    if (!f) {
+                        errors.push('Invalid field type');
+                    }
+                }
+            });
+        }
+
+        return errors;
     }
 
     private validateLink(l: LinkModel): boolean {
@@ -1135,7 +1170,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             this.errors.push('The start step cannot be connected directly to the finish step');
 
         if (invalidFieldReferences > 0)
-            this.errors.push(`There are ${invalidFieldReferences} invalid field ${invalidFieldReferences} references in workflow`);
+            this.errors.push(`There are ${invalidFieldReferences} invalid field references in workflow`);
 
         if (this.errors.length > 0)
             this.isValid = false;
