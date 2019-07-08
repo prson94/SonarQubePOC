@@ -35,6 +35,7 @@ namespace igx.UnitTests.V2ControllerTests
             var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
             var str = res.Result.Content.ReadAsStringAsync().Result;
+            var data = JsonConvert.DeserializeObject<List<WorkflowTypeApiViewModel>>(str);
 
             Assert.True(res.Result.IsSuccessStatusCode);
             Assert.True(data != null);
@@ -58,8 +59,8 @@ namespace igx.UnitTests.V2ControllerTests
             res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
             str = res.Result.Content.ReadAsStringAsync().Result;
-            Assert.Equal(System.Net.HttpStatusCode.NotFound,res.Result.StatusCode);
-           
+            Assert.Equal(System.Net.HttpStatusCode.NotFound, res.Result.StatusCode);
+
 
         }
 

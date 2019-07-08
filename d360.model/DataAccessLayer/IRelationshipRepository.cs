@@ -12,7 +12,7 @@ namespace d360.model.DataAccessLayer
 {
     public interface IRelationshipRepository
     {
-        IntersectType GetRelationshipByUID(Guid relationshipTypUid);
+        IntersectType GetRelationshipTypeByUID(Guid relationshipTypUid);
         Intersect GetRelationshipByUID(Guid relationshipUid);
         Task<IEnumerable<PredicateApiViewModel>> GetPredicates();
         Task<JObject> GetRelationships(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "");
