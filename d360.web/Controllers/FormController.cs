@@ -13287,7 +13287,7 @@ order by	case
                         CompanyID = Company.CurrentCompanyID,
                         IsAdministrator = isAdmin,
                         ResourceID = id,
-                        State = state
+                        State = state                        
                     };
                     Community.Add(companyResource);
                 }
@@ -13308,7 +13308,8 @@ order by	case
                         LastName = lastName,
                         FirstName = firstName,
                         State = state,
-                        UpdatedOn = DateTime.UtcNow
+                        UpdatedOn = DateTime.UtcNow,
+                        Uid = a.Uid
                     };
 
                     Company.Add(gr);
