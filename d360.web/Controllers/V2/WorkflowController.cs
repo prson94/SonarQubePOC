@@ -264,5 +264,82 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
         }
+
+        /// <summary>
+        /// Get a list of workflows contained within the system.
+        /// </summary>
+        /// <param name="Active">Active: is the workflow in an activate (non-completed) state; Default is Active
+        /// </param>
+        /// <returns>Returns list of workflows and a HTTP status code</returns>
+        [
+        HttpGet,
+            Route(""),
+            SwaggerParameter("WorkflowTypeUid", "the unique identifier for the workflow type.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("VersionUid", "the unique identifier for the workflow version.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("ActionUid", "issue that the workflow is registered to", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("AssetUid", "asset that the workflow is registered to", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("RelationshipUid", "relationship that the workflow is registered to", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 250.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by StartedOn.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(WorkflowsApiViewModel)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Action / Asset / Relationship / Workfflow Type / Workflow Version  not found based on Uid provided.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this workflow type is invalid, possibly due to an incorrectly formatted identifier ActionUid / AssetUid / RelationshipUid / WorkflowTypeUid / VersionUid", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            ]
+        public async Task<IHttpActionResult> GetWorkflowsAsync(WorkflowApiState? Active = null)
+        {
+            var prefix = "Workflow.GetWorkflowsAsync => ";
+            var errorMessage = "";
+
+            try
+            {
+                var queryParams = Request.GetQueryNameValuePairs();
+
+
+                if (!validator.IsValidGuidCountForGetWorkflowModel(queryParams))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "More than one uid is passed in the request , either  ActionUid OR AssetUid OR RelationshipUid"));
+
+                if (!validator.IsValidOrderByFieldForGetWorkflowModel(queryParams))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid order passed in the request. Valid values are: StartedOn and CompletedOn"));
+
+                if (!validator.IsValidGuidForGetWorkflowModel(queryParams))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Your request to retrieve this workflow version is invalid, possibly due to an incorrectly formatted identifier ActionUid / AssetUid / RelationshipUid / WorkflowTypeUid / WorkflowVerionUid"));
+
+                if (!this.validator.IsValidAsset(queryParams))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset with Uid {this.GetUidFromQueryParams(queryParams, "AssetUid")} could not be found."));
+
+                if (!this.validator.IsValidAction(queryParams))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Action with Uid {this.GetUidFromQueryParams(queryParams, "ActionUid")} could not be found."));
+
+                if (!this.validator.IsValidRelationship(queryParams))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Relationship  with Uid {this.GetUidFromQueryParams(queryParams, "RelationshipTypeUid")} could not be found."));
+
+                if (!this.validator.IsValidWorkflowType(queryParams))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Workflow Type with Uid {this.GetUidFromQueryParams(queryParams, "WorkflowTypeUid")} could not be found."));
+
+                if (!this.validator.IsValidWorkflowVersion(queryParams))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Workflow Version with Uid {this.GetUidFromQueryParams(queryParams, "versionUid")} could not be found."));
+
+
+
+                var workflows = await this.workflowRepository.GetWorkflows(queryParams);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, workflows)));
+
+
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix  }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+
+        }
+
     }
 }
