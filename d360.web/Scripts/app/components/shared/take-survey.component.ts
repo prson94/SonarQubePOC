@@ -4,6 +4,8 @@ import { SurveysService  } from '../../services/surveys.service';
 import { MessagesService  } from '../../services/messages.service';
 import { BaseComponent } from '../shared/base.component';
 import { SurveyType, SurveyQuestionType, SurveyQuestionTypeDetails, SurveyQuestionOption, SurveyTypeDisplayStyle } from '../../models/survey.model';
+import { Router } from '@angular/router';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-take-survey',
@@ -31,7 +33,8 @@ import { SurveyType, SurveyQuestionType, SurveyQuestionTypeDetails, SurveyQuesti
                         <div class="col s12">
                             <button *ngIf="currentQuestionIndex > 0" pButton type="button" [disabled]="!surveyForm.form.valid" label="Previous" (click)="previousQuestion(currentQuestionIndex)"></button>
                             <button *ngIf="currentQuestionIndex + 1 < questions.length" pButton type="button" [disabled]="!surveyForm.form.valid" label="Next" (click)="nextQuestion(currentQuestionIndex)"></button>                            
-                            <button *ngIf="currentQuestionIndex+1 == questions.length" pButton type="submit" [disabled]="!surveyForm.form.valid" label="Save"></button>                                                        
+                            <button *ngIf="currentQuestionIndex+1 == questions.length" pButton type="submit" [disabled]="!surveyForm.form.valid" label="Save"></button> 
+                            <button *ngIf="ShowCloseButton" pButton type="button" label="close" (click)="surveyBack.emit()"></button>  
                             <em *ngIf="questions.length > 1">Question {{currentQuestionIndex+1}} of {{questions.length}}</em>
                         </div>      
                     </div>              
@@ -45,9 +48,11 @@ export class TakeSurveyComponent extends BaseComponent implements OnInit {
     
     @Output() surveyComplete = new EventEmitter();
     @Output() surveyCancel = new EventEmitter();
+    @Output() surveyBack = new EventEmitter();
 
     @Input() objectType: string;
     @Input() objectID: number;
+    @Input() ShowCloseButton: boolean = false;
     
     private questions: SurveyQuestionType[] = [];    
     private currentQuestionIndex: number = 0;

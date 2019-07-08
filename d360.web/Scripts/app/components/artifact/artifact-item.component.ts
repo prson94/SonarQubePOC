@@ -70,7 +70,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
             this
                 .loadPermissions(this.permissionsService, StringConstants.ObjectArtifact, artifactId)
                 .then(p => {
-                        this.load(artifactId)
+                    this.load(artifactId, this.artifactTypeId)
                     }
                 )
             ;
@@ -85,8 +85,9 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
         this.clearSidebar();
     }
 
-    private load(id: number) {
+    private load(id: number, typeID: number) {
         this.messages = []; /* clear any messages for this artifact */
+        this.rightSidebarService.setCurrentObject("ArtifactType", typeID, "Artifact", id, false);
         this
             .artifactService
             .getArtifact(id)
@@ -100,7 +101,6 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                     this.artifact = artifact;
                     this.buildBreadcrumb();
                     this.setBrowserTitle(this.titleService, this.artifact.DisplayValue);
-                    this.rightSidebarService.setCurrentObject("ArtifactType", this.artifact.ArtifactTypeID, "Artifact", this.artifact.ID, false);
                     this
                         .setObjectInfo(
                             'Artifact',
@@ -261,6 +261,6 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
     
     private editArtifact(e: any) {
         this.isLoading = true;
-        this.load(e.ID);
+        this.load(e.ID, this.artifactTypeId);
     }
 };

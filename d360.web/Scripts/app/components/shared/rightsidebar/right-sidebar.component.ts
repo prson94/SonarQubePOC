@@ -9,6 +9,12 @@ import { ObjectStatistics } from '../../../models/object-statistics.model';
 import { load } from '@angular/core/src/render3';
 import { ObjectStatisticsService } from '../../../services/object-statistics.service';
 import { SurveysService } from '../../../services/surveys.service';
+import { ArtifactService } from '../../../services/artifacts.service';
+import { SurveyType } from '../../../models/survey.model';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
+
+declare var CompanySettings;
+
 
 @Component({
     selector: 'd3s-right-sidebar',      
@@ -17,7 +23,7 @@ import { SurveysService } from '../../../services/surveys.service';
                          <img class="icon" *ngIf="!IsIcon(area.icon)" [src]="GetURL(area.icon)"  height="20" width="20" />
                          <i *ngIf="IsIcon(area.icon)" [class]="'icon fa ' + area.icon"></i>
                         <h1 >{{area.title ? area.title: 'D3S'}}</h1>
-                        <span *ngIf="statistics?.Score;else noScore" class="d3s-icon large-icon" 
+                        <span *ngIf="statistics && statistics.Score;else noScore" class="d3s-icon large-icon" 
                                 [ngClass]="{
                                     'bad':scoreBetween(0,49),
                                     'ok':scoreBetween(50,89),
@@ -26,14 +32,14 @@ import { SurveysService } from '../../../services/surveys.service';
                             <d3s-dynamic-percentage [percentage]="statistics?.Score"></d3s-dynamic-percentage> 
                              <span class="text">{{statistics?.Score}}%</span>
                         </span> 
-                        <ng-template #noScore><span title="Governance Score not yet calculated" class="d3s-icon large-icon">No Score</span></ng-template>
+                        <ng-template #noScore><span *ngIf="object && !object?.isType" title="Governance Score not yet calculated" class="d3s-icon large-icon">No Score</span></ng-template>
                         <span *ngIf="showStatus" class="d3s-icon large-icon">
                             <i class="fa fa-certificate"></i>
-                            <span class="text">Draft</span>
+                            <span class="text">{{status}}</span>
                         </span>
                         <span class="grow"></span>
-                        <button class="button"><i class="fa fa-certificate"></i><span>Request Certification</span></button>
-                        <button class="primary button"><i class="fa fa-edit"></i><span>Take Survey</span></button>
+                        <button class="button" *ngIf="showCertify" (click)="requestCertification()"><i class="fa fa-certificate"></i><span>Request Certification</span></button>
+                        <button class="primary button" (click)="navigateToSurvey()" *ngIf="showSurvey"><i class="fa fa-edit"></i><span>Take Survey</span></button>
                     </div>
                     <div *ngIf="items && items.length > 0" class="tab-view">
                         <div class="tab-bar-outer">
@@ -46,7 +52,7 @@ import { SurveysService } from '../../../services/surveys.service';
                 </div>
               `,
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [SurveysService, ObjectStatisticsService]
+    providers: [SurveysService, ObjectStatisticsService, ArtifactService]
 })
 
 export class RightSidebarComponent implements OnInit, OnChanges, OnDestroy{    
@@ -55,44 +61,53 @@ export class RightSidebarComponent implements OnInit, OnChanges, OnDestroy{
     areaSub: Subscription;
     objectSub: Subscription;
     hideHeaderSub: Subscription;
+
     items: RightSidebarItem[];  
+
     hostUrl: string;
     area: any = {icon:'fa-folder',title: ''};
     @Input() menuOpen: boolean;
 
-    private object: any;
-    
+    private currentObject: any;
+    private surveyType: SurveyType;
 
     private statistics: ObjectStatistics = new ObjectStatistics();
+
     status: string;
     showStatus = false;
-
+    showCertify = false;
     showHeader: boolean = false;
+    showSurvey: boolean = false;
 
     constructor(
         private rightSidebarService: RightSidebarService,
         protected objectStatisticsService: ObjectStatisticsService,
         private surveysService: SurveysService,
         private ref: ChangeDetectorRef,
+        private artifactService: ArtifactService,
         private router: Router
     ) {
-        this.load()
     }
 
     ngOnInit(): void {
-        
+        this.load();
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if (this.object) {
+        if (this.currentObject) {
             this.load();
-        }
+        } 
     }
 
 
     load() {
-
+        
+        this.showStatus = false;
+        this.showCertify = false;
+        this.showHeader = false;
+        this.showSurvey = false;
         this.items = [];
+
         this.subscription = this.rightSidebarService.rightSidebar$.subscribe(
             item => {
                 this.items.push(item);
@@ -116,29 +131,51 @@ export class RightSidebarComponent implements OnInit, OnChanges, OnDestroy{
         });
 
         this.objectSub = this.rightSidebarService.currentObject$.subscribe(res => {
-            this.object = res;
-            if (!this.object.isType) {
-                this.loadItemStats(this.object.objectID, this.object.objectName);
+            this.currentObject = res;
+            if (this.currentObject && !this.currentObject.isType) {
+                this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID);
+            } else {
+                this.showStatus = false;
+                this.statistics = null; 
             }
-        });   
+        });
     }
 
-    private loadItemStats(objectID: number, objectType: string) {
-        this.objectStatisticsService.getObjectStatus(objectID, objectType).subscribe(
+    private loadItemStats(objectID: number, objectName: string, objectType: string, objectTypeID: number) {
+        this.objectStatisticsService.getObjectStatus(objectID, objectName).subscribe(
             result => {
                 this.status = result;
                 if (this.status != undefined && this.status != null && this.status.length > 0) {
+                    var draftValues = CompanySettings.RequestCertificationDraft;
+
+                    if (!draftValues) {
+                        draftValues = "DRAFT";
+                    }
+
+                    this.showCertify = this.status && (draftValues.toUpperCase().split(',').indexOf(this.status.toUpperCase()) > -1);
                     this.showStatus = true;
+                    this.ref.markForCheck();
                 }
             }
         );
 
-        this.objectStatisticsService.getObjectStatistics(objectID, objectType).subscribe(
+        this.objectStatisticsService.getObjectStatistics(objectID, objectName).subscribe(
             result => {
                 this.statistics = result; 
                 this.ref.markForCheck();
             }
         );
+
+        this.surveysService.getObjectSurvey(objectTypeID, objectType, objectID, objectName)
+            .subscribe(result => {
+                this.surveyType = undefined;
+                if (result) {
+                    this.surveyType = result;
+                    this.showSurvey = true;
+                    this.ref.markForCheck();
+                }
+            }); 
+
     }
 
     ngOnDestroy() {        
@@ -198,6 +235,21 @@ export class RightSidebarComponent implements OnInit, OnChanges, OnDestroy{
     scoreBetween(start, end) {
         if (this.statistics) {
             return this.statistics.Score >= start && this.statistics.Score <= end;
+        }
+    }
+
+    private requestCertification() {
+        if (this.currentObject && this.currentObject.objectID)
+            this.artifactService
+                .requestCertification(this.currentObject.objectID)
+                .subscribe(result => { this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID); });
+    }   
+
+    navigateToSurvey() {
+        if (this.currentObject) {
+            let Url = `${SiteUrlHelpers.SITE_URL_SURVEY_ROOT}/${this.currentObject.objectType}/${this.currentObject.objectTypeID}/${this.currentObject.objectName}/${this.currentObject.objectID}`
+            this.showSurvey = false;
+            this.router.navigateByUrl(Url);
         }
     }
 

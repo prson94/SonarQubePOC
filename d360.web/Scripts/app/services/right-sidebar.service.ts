@@ -28,6 +28,10 @@ export class RightSidebarService {
         this.currentObjectSource.next({ objectType, objectTypeID, objectName, objectID, isType});
     }
 
+    clearCurrentObject() {
+        this.currentObjectSource.next(null);
+    }
+
     // Service message commands
     showItem(rightSidebarItem: RightSidebarItem) {
         this.rightSidebarSource.next(rightSidebarItem);

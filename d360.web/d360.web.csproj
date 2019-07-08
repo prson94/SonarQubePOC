@@ -1438,6 +1438,9 @@
     <TypeScriptCompile Include="Scripts\app\components\sidebar\score\score.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\score\score.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\score\score.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\survey\survey.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\survey\survey.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\survey\survey.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\visualization\diagram.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\visualization\impact.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\visualization\lineage.component.ts" />

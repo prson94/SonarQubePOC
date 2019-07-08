@@ -120,7 +120,7 @@ export class HeaderBreadcrumbService extends BaseObservableService{
                         icon = s.Icon;
                         if (icon == null && s.FullURL)
                             icon = "URL-" + s.FullURL;
-                        else
+                        else if(icon == null)
                             icon = "fa-folder";
                     }
                 });
@@ -134,7 +134,7 @@ export class HeaderBreadcrumbService extends BaseObservableService{
                             icon = s.Icon;
                             if (icon == null && s.FullURL)
                                 icon = "URL-" + s.FullURL;
-                            else
+                            else if(icon == null)
                                 icon = "fa-folder";
                         }
                     });

@@ -39,7 +39,8 @@ const routes: Routes = [
     { path: SiteUrlHelpers.SITE_URL_MEMBER_GROUP_ROOT, loadChildren: './components/sidebar/membergroup/membergroup.module#MemberGroupModule?chunkName=membergroupChunk' }, 
     { path: SiteUrlHelpers.SITE_URL_COMMENTS_ROOT, loadChildren: './components/sidebar/comments/comments.module#CommentsModule?chunkName=commentsChunk' },
     { path: SiteUrlHelpers.SITE_URL_WORKFLOWMONITOR_ROOT, loadChildren: './components/workflowmonitor/workflowmonitor.module#WorkflowMonitorModule?chunkName=workflowMonitorChunk' },   
-    { path: SiteUrlHelpers.SITE_URL_SCORE_ROOT , loadChildren: './components/sidebar/score/score.module#ScoreModule?chunkName=scoreChunk' }, 
+    { path: SiteUrlHelpers.SITE_URL_SCORE_ROOT, loadChildren: './components/sidebar/score/score.module#ScoreModule?chunkName=scoreChunk' },
+    { path: SiteUrlHelpers.SITE_URL_SURVEY_ROOT, loadChildren: './components/sidebar/survey/survey.module#SurveyModule?chunkName=surveyChunk' }, 
 ];
 
 @NgModule({    
