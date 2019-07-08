@@ -877,7 +877,8 @@ order by	ColumnIndex", new { id });
                             }
                             else
                             {
-                                insert.Fields.Add(col.Name, field.Value);
+                                if (!string.IsNullOrEmpty(field.Value))
+                                    insert.Fields.Add(col.Name, field.Value);
                             }
                         }
                         postAssets.Add(insert);
