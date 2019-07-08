@@ -25,5 +25,6 @@ namespace igx.IntegrationTests.Core
 
         public static string TagUri = Settings.Host + "/api/v2/tags";
 
+        public static string RelationshipsUri = Settings.Host + "/api/v2/relationships";
     }
 }

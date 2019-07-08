@@ -35,7 +35,6 @@ namespace igx.UnitTests.V2ControllerTests
             var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
             var str = res.Result.Content.ReadAsStringAsync().Result;
-            var data = JsonConvert.DeserializeObject<List<WorkflowTypeApiViewModel>>(str);
 
             Assert.True(res.Result.IsSuccessStatusCode);
             Assert.True(data != null);

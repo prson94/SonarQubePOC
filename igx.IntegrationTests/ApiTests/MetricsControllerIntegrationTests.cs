@@ -23,18 +23,20 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(parsedData.GetValue("Uid") != null);
-            Assert.True(parsedData.GetValue("Message") != null);
-            Assert.True(parsedData.GetValue("Success") != null && parsedData.GetValue("Success").ToString() == "True");
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+            Assert.True(parsedData.GetValue("Uid") != null, XMsg.InvalidFieldValue("Uid"));
+            Assert.True(parsedData.GetValue("Message") != null, XMsg.InvalidFieldValue("Message"));
+            Assert.True(parsedData.GetValue("Success") != null && parsedData.GetValue("Success").ToString() == "True", XMsg.InvalidFieldValue("Success"));
 
             MetricTestsData.AssetTypeGuid = parsedData.GetValue("Uid").ToString();
 
             response = await httpClient.GetAsync($"{URIHelper.AssetFieldsUri}/{MetricTestsData.AssetTypeGuid}");
             content = await response.Content.ReadAsStringAsync();
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
+
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+
             var fieldArray = JsonConvert.DeserializeObject<JArray>(content);
             foreach (var f in fieldArray)
             {
@@ -42,16 +44,16 @@ namespace igx.IntegrationTests.ApiTests
                     MetricTestsData.NameFieldTypeId = f["ID"].ToString();
             }
 
-            Assert.True(!string.IsNullOrEmpty(MetricTestsData.NameFieldTypeId));
+            Assert.True(!string.IsNullOrEmpty(MetricTestsData.NameFieldTypeId), XMsg.InvalidFieldValue("FieldTypeId"));
 
             response = await httpClient.PostAsync($"{URIHelper.AssetsUri}/{MetricTestsData.AssetTypeGuid}", MetricTestsData.NewAssets.AsStringContent());
             content = await response.Content.ReadAsStringAsync();
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
 
             var assetArray = JsonConvert.DeserializeObject<JArray>(content);
-            Assert.True(Guid.Parse(assetArray.First()["uid"].ToString()) != Guid.Empty);
+            Assert.True(Guid.Parse(assetArray.First()["uid"].ToString()) != Guid.Empty, XMsg.InvalidFieldValue("uid"));
             MetricTestsData.AssetUid = assetArray.First()["uid"].ToString();
 
 
@@ -65,9 +67,9 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(parsedData["type"] != null && parsedData["type"].ToString() == "confirm");
+            Assert.True(response.IsSuccessStatusCode,XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+            Assert.True(parsedData["type"] != null && parsedData["type"].ToString() == "confirm", XMsg.InvalidFieldValue("type"));
         }
 
         [Fact, Priority(30)]
@@ -89,8 +91,8 @@ namespace igx.IntegrationTests.ApiTests
                 }
             }
 
-            Assert.True(isInResponse);
-            Assert.True(!string.IsNullOrEmpty(MetricTestsData.MetricUid));
+            Assert.True(isInResponse, XMsg.MissingAsset);
+            Assert.True(!string.IsNullOrEmpty(MetricTestsData.MetricUid), XMsg.InvalidFieldValue("MetricUid"));
 
         }
 
@@ -107,9 +109,9 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(parsedData["type"] != null && parsedData["type"].ToString() == "confirm");
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+            Assert.True(parsedData["type"] != null && parsedData["type"].ToString() == "confirm", XMsg.InvalidFieldValue("type"));
         }
 
 
@@ -121,8 +123,8 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JArray>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
 
             string name = MetricTestsData.MetricModel["Name"].ToString();
             bool isInResponse = false;
@@ -135,8 +137,8 @@ namespace igx.IntegrationTests.ApiTests
                 }
             }
 
-            Assert.True(isInResponse);
-            Assert.True(!string.IsNullOrEmpty(MetricTestsData.MetricUid));
+            Assert.True(isInResponse, XMsg.MissingAsset);
+            Assert.True(!string.IsNullOrEmpty(MetricTestsData.MetricUid), XMsg.InvalidFieldValue("MetricUid"));
 
         }
 
@@ -148,20 +150,20 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
 
-            Assert.True(JsonHelper.AreEqualOnField(parsedData, MetricTestsData.MetricModel, "Uid"));
-            Assert.True(JsonHelper.AreEqualOnField(parsedData, MetricTestsData.MetricModel, "Name"));
-            Assert.True(JsonHelper.AreEqualOnField(parsedData, MetricTestsData.MetricModel, "Description"));
+            Assert.True(JsonHelper.AreEqualOnField(parsedData, MetricTestsData.MetricModel, "Uid"), XMsg.InvalidFieldValue("Uid"));
+            Assert.True(JsonHelper.AreEqualOnField(parsedData, MetricTestsData.MetricModel, "Name"), XMsg.InvalidFieldValue("Name"));
+            Assert.True(JsonHelper.AreEqualOnField(parsedData, MetricTestsData.MetricModel, "Description"), XMsg.InvalidFieldValue("Description"));
 
-            Assert.True(parsedData["State"].ToString() != "3");
+            Assert.True(parsedData["State"].ToString() != "3", XMsg.InvalidFieldValue("State"));
 
             var definition = parsedData["Versions"].First() as JObject;
-            Assert.True(JsonHelper.AreEqualOnField(definition, MetricTestsData.MetricModel, "Weight"));
-            Assert.True(JsonHelper.AreEqualOnField(definition, MetricTestsData.MetricModel, "ConditionAndOr"));
+            Assert.True(JsonHelper.AreEqualOnField(definition, MetricTestsData.MetricModel, "Weight"), XMsg.InvalidFieldValue("Weight"));
+            Assert.True(JsonHelper.AreEqualOnField(definition, MetricTestsData.MetricModel, "ConditionAndOr"), XMsg.InvalidFieldValue("ConditionAndOr"));
 
-            Assert.True(!string.IsNullOrEmpty(MetricTestsData.MetricUid));
+            Assert.True(!string.IsNullOrEmpty(MetricTestsData.MetricUid), XMsg.InvalidFieldValue("MetricUid"));
 
         }
 
@@ -173,13 +175,13 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JArray>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
 
-            Assert.True(parsedData.First["AssetUid"].ToString() == MetricTestsData.MetricResultJson.First["AssetUid"].ToString());
-            Assert.True(parsedData.First["MetricAssetUid"].ToString() == MetricTestsData.MetricResultJson.First["MetricAssetUid"].ToString());
-            Assert.True(parsedData.First["Result"].ToString().ToLower() == "true");
-            Assert.True(parsedData.First["IsSuccess"].ToString().ToLower() == "true");
+            Assert.True(parsedData.First["AssetUid"].ToString() == MetricTestsData.MetricResultJson.First["AssetUid"].ToString(), XMsg.InvalidFieldValue("AssetUid"));
+            Assert.True(parsedData.First["MetricAssetUid"].ToString() == MetricTestsData.MetricResultJson.First["MetricAssetUid"].ToString(), XMsg.InvalidFieldValue("MetricAssetUid"));
+            Assert.True(parsedData.First["Result"].ToString().ToLower() == "true", XMsg.InvalidFieldValue("Result"));
+            Assert.True(parsedData.First["IsSuccess"].ToString().ToLower() == "true", XMsg.InvalidFieldValue("IsSuccess"));
 
         }
 
@@ -197,10 +199,10 @@ namespace igx.IntegrationTests.ApiTests
             var parsedData = JsonConvert.DeserializeObject<JObject>(content);
             MetricTestsData.MetricModel = temp as JObject;
 
-            Assert.True(!response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
+            Assert.True(!response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
 
-            Assert.True(parsedData["type"].ToString() == "error");
+            Assert.True(parsedData["type"].ToString() == "error", XMsg.InvalidFieldValue("type"));
         }
 
         [Fact, Priority(72)]
@@ -217,10 +219,10 @@ namespace igx.IntegrationTests.ApiTests
             var parsedData = JsonConvert.DeserializeObject<JObject>(content);
             MetricTestsData.MetricModel = temp as JObject;
 
-            Assert.True(!response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
+            Assert.True(!response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
 
-            Assert.True(parsedData["type"].ToString() == "error");
+            Assert.True(parsedData["type"].ToString() == "error", XMsg.InvalidFieldValue("type"));
         }
 
         [Fact, Priority(73)]
@@ -237,10 +239,10 @@ namespace igx.IntegrationTests.ApiTests
             var parsedData = JsonConvert.DeserializeObject<JObject>(content);
             MetricTestsData.MetricModel = temp as JObject;
 
-            Assert.True(!response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
+            Assert.True(!response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
 
-            Assert.True(parsedData["type"].ToString() == "error");
+            Assert.True(parsedData["type"].ToString() == "error", XMsg.InvalidFieldValue("type"));
         }
 
         [Fact, Priority(74)]
@@ -257,10 +259,10 @@ namespace igx.IntegrationTests.ApiTests
             var parsedData = JsonConvert.DeserializeObject<JObject>(content);
             MetricTestsData.MetricModel = temp as JObject;
 
-            Assert.True(!response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
+            Assert.True(!response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
 
-            Assert.True(parsedData["type"].ToString() == "error");
+            Assert.True(parsedData["type"].ToString() == "error", XMsg.InvalidFieldValue("type"));
         }
 
         [Fact, Priority(75)]
@@ -277,10 +279,10 @@ namespace igx.IntegrationTests.ApiTests
             var parsedData = JsonConvert.DeserializeObject<JObject>(content);
             MetricTestsData.MetricModel = temp as JObject;
 
-            Assert.True(!response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
+            Assert.True(!response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
 
-            Assert.True(parsedData["type"].ToString() == "error");
+            Assert.True(parsedData["type"].ToString() == "error", XMsg.InvalidFieldValue("type"));
         }
 
 
@@ -292,16 +294,16 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JArray>(content).First as JObject;
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
 
-            Assert.True(JsonHelper.AreEqualOnField(parsedData, MetricTestsData.MetricModel, "Uid"));
-            Assert.True(JsonHelper.AreEqualOnField(parsedData, MetricTestsData.MetricModel, "AssetTypeUid"));
-            Assert.True(JsonHelper.AreEqualOnField(parsedData, MetricTestsData.MetricModel, "IsGroup", true));
-            Assert.True(JsonHelper.AreEqualOnField(parsedData, MetricTestsData.MetricModel, "Name"));
-            Assert.True(JsonHelper.AreEqualOnField(parsedData, MetricTestsData.MetricModel, "Description"));
-            Assert.True(JsonHelper.AreEqualOnField(parsedData, MetricTestsData.MetricModel, "Weight"));
-            Assert.True(JsonHelper.AreEqualOnField(parsedData, MetricTestsData.MetricModel, "ConditionAndOr"));
+            Assert.True(JsonHelper.AreEqualOnField(parsedData, MetricTestsData.MetricModel, "Uid"), XMsg.InvalidFieldValue("Uid"));
+            Assert.True(JsonHelper.AreEqualOnField(parsedData, MetricTestsData.MetricModel, "AssetTypeUid"), XMsg.InvalidFieldValue("AssetTypeUid"));
+            Assert.True(JsonHelper.AreEqualOnField(parsedData, MetricTestsData.MetricModel, "IsGroup", true), XMsg.InvalidFieldValue("IsGroup"));
+            Assert.True(JsonHelper.AreEqualOnField(parsedData, MetricTestsData.MetricModel, "Name"), XMsg.InvalidFieldValue("Name"));
+            Assert.True(JsonHelper.AreEqualOnField(parsedData, MetricTestsData.MetricModel, "Description"), XMsg.InvalidFieldValue("Description"));
+            Assert.True(JsonHelper.AreEqualOnField(parsedData, MetricTestsData.MetricModel, "Weight"), XMsg.InvalidFieldValue("Weight"));
+            Assert.True(JsonHelper.AreEqualOnField(parsedData, MetricTestsData.MetricModel, "ConditionAndOr"), XMsg.InvalidFieldValue("ConditionAndOr"));
 
 
         }
@@ -313,10 +315,10 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JArray>(content).First as JObject;
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
 
-            Assert.True(parsedData["ID"].ToString() == MetricTestsData.MetricModel["Conditions"][0]["FieldTypeID"].ToString());
+            Assert.True(parsedData["ID"].ToString() == MetricTestsData.MetricModel["Conditions"][0]["FieldTypeID"].ToString(), XMsg.InvalidFieldValue("ID"));
 
         }
 
@@ -328,9 +330,10 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(parsedData["type"].ToString().ToLower() == "confirm");
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+
+            Assert.True(parsedData["type"].ToString().ToLower() == "confirm", XMsg.InvalidFieldValue("type"));
 
         }
 
@@ -343,20 +346,20 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
 
-            Assert.True(JsonHelper.AreEqualOnField(parsedData, MetricTestsData.MetricModel, "Uid"));
-            Assert.True(JsonHelper.AreEqualOnField(parsedData, MetricTestsData.MetricModel, "Name"));
-            Assert.True(JsonHelper.AreEqualOnField(parsedData, MetricTestsData.MetricModel, "Description"));
+            Assert.True(JsonHelper.AreEqualOnField(parsedData, MetricTestsData.MetricModel, "Uid"), XMsg.InvalidFieldValue("Uid"));
+            Assert.True(JsonHelper.AreEqualOnField(parsedData, MetricTestsData.MetricModel, "Name"), XMsg.InvalidFieldValue("Name"));
+            Assert.True(JsonHelper.AreEqualOnField(parsedData, MetricTestsData.MetricModel, "Description"), XMsg.InvalidFieldValue("Description"));
 
-            Assert.True(parsedData["State"].ToString() == "3");
+            Assert.True(parsedData["State"].ToString() == "3", XMsg.InvalidFieldValue("State"));
 
             var definition = parsedData["Versions"].First() as JObject;
-            Assert.True(JsonHelper.AreEqualOnField(definition, MetricTestsData.MetricModel, "Weight"));
-            Assert.True(JsonHelper.AreEqualOnField(definition, MetricTestsData.MetricModel, "ConditionAndOr"));
+            Assert.True(JsonHelper.AreEqualOnField(definition, MetricTestsData.MetricModel, "Weight"), XMsg.InvalidFieldValue("Weight"));
+            Assert.True(JsonHelper.AreEqualOnField(definition, MetricTestsData.MetricModel, "ConditionAndOr"), XMsg.InvalidFieldValue("ConditionAndOr"));
 
-            Assert.True(!string.IsNullOrEmpty(MetricTestsData.MetricUid));
+            Assert.True(!string.IsNullOrEmpty(MetricTestsData.MetricUid), XMsg.InvalidFieldValue("MetricUid"));
 
         }
         [Fact, Priority(130)]
@@ -367,8 +370,8 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JToken>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
         }
 
         [Fact, Priority(140)]
@@ -386,9 +389,9 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
 
             var parsedData = JsonConvert.DeserializeObject<JObject>(content);
-            Assert.True(parsedData.GetValue("ExecutionID") != null);
-            Assert.True(parsedData.GetValue("Message") != null);
-            Assert.True(parsedData.GetValue("Uri") != null);
+            Assert.True(parsedData.GetValue("ExecutionID") != null, XMsg.InvalidFieldValue("ExecutionId"));
+            Assert.True(parsedData.GetValue("Message") != null, XMsg.InvalidFieldValue("Message"));
+            Assert.True(parsedData.GetValue("Uri") != null, XMsg.InvalidFieldValue("Uri"));
         }
     }
 }

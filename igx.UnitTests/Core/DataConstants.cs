@@ -1,5 +1,8 @@
-﻿using System;
+﻿using d360.core.entities;
+using d360.core.enums;
+using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,6 +22,35 @@ namespace igx.UnitTests.Core
         public class Tags
         {
             public const string ValidName = "valid_tag_name";
+        }
+
+
+        public static IEnumerable<PredicateApiViewModel> GetPredicates()
+        {
+            return new List<PredicateApiViewModel>(){
+                new PredicateApiViewModel() { Name = "Test name", Inverse = "Inverse", IsSystem = true, Type = PredicateType.DataLineage, Uid = Guid.Parse(ValidGUID) },
+                new PredicateApiViewModel(){ Name ="", Inverse = ""},
+                new PredicateApiViewModel(){ Name ="", Inverse = ""},
+                new PredicateApiViewModel(){ Name ="", Inverse = ""}
+            };
+        }
+
+        public static List<dynamic> GetExcelModel()
+        {
+            dynamic data = new ExpandoObject();
+            data.ID = 1;
+            data.Subject = "";
+            data.SubjectID = 1;
+            data.SubjectName = "";
+            data.SubjectTypeName = "";
+            data.PredicateName = "";
+            data.Object = "";
+            data.ObjectID = 1;
+            data.ObjectName = "";
+            data.ObjectTypeName ="";
+
+
+            return new List<dynamic>() { data as dynamic };
         }
 
     }

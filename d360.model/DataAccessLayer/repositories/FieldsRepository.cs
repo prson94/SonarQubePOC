@@ -1124,5 +1124,13 @@ from	IntersectType I
         {
             return Company.Filter<FieldType>(f => f.Object == typeIdentifierInfoModel.Object && f.ObjectID == typeIdentifierInfoModel.ObjectID, i => i.FieldTypeLookup).ToList();
         }
+
+        public IEnumerable<string> GetCustomFields(SystemObjects objectType,  int objectId)
+        {
+            return Company.Query<string>(
+                @"select distinct  f.FriendlyName   as Name from fieldtype f  
+				inner join field f2 on f2.fieldtypeid = f.id 
+				 where f.[object] = @objectType and f.objectid = @id ", new { objectType = objectType.ToString(), id = objectId});
+        }
     }
 }
