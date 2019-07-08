@@ -51,7 +51,17 @@ namespace d360.model
 		L.Notes,
 		'MyFile.' + L.Extension as FilePath,
 		L.DateStarted,
-		L.DateCompleted,
+		case when L.Action = 'P' and L.[File] is null then
+            case when (L.PutExecutionId is not null and EE.CompletedOn is null) or (L.PostExecutionId is not null and EA.CompletedOn is null) then
+                null
+            when EE.CompletedOn > EA.CompletedOn then
+                EE.CompletedOn
+            else
+                EA.CompletedOn      
+            end
+        else 
+            L.DateCompleted 
+        end as DateCompleted,
 		case L.[Action]
 			when 'M' then 'Users/Groups'
             when 'P' then 'Promotion'
@@ -72,6 +82,8 @@ namespace d360.model
 		T.C as Total,
         R.FirstName + ' ' + R.LastName as Requestor
 from	[Load] L
+        left join api.Execution EE on EE.ExecutionId = L.PutExecutionID
+        left join api.Execution EA on EA.ExecutionId = L.PostExecutionID
 		left join (
 			select [Name], [Object] ,ObjectID from AssetType
 			union all
@@ -169,8 +181,13 @@ order by	ColumnIndex", new { id });
 
                 var parentAssetType = GetParentTypeById(assetType.ID);
 
-                sqlColumns = $"select @id as LoadID, EA.ItemNumber as RowIndex\n";
-                sqlTables = "from api.ExecutionAsset EA\n";
+                sqlColumns = $"select @id as LoadID, LI.RowIndex as RowIndex\n";
+                sqlTables = @"from (
+		select ExecutionId, ItemNumber, ExecutionItemUid, ParentAssetID, Message, Success from api.ExecutionAsset where ExecutionId = {0}
+		union all
+		select ExecutionID, ItemNumber, ExecutionItemUid, null as ParentAssetID, Message, cast(0 as bit) as Success from api.ExecutionAssetError where ExecutionId = {0}
+	 ) EA
+     left join LoadItem LI on LI.LoadID = @id and LI.ExecutionItemUid = EA.ExecutionItemUid";
                 columns.ForEach(c =>
                 {
                     var i = c.ColumnIndex;
@@ -189,9 +206,9 @@ order by	ColumnIndex", new { id });
                 sqlColumns += $", case EA.Success when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status]\n";
                 sqlColumns += ", case when EA.Message is null and EA.Success = 1 then '{0}' else  EA.Message end as StatusMessage\n";
 
-                sql = $"select * from ({string.Format(sqlColumns, "Item successfully updated.")} {sqlTables} where EA.ExecutionID = @putExecutionID\n";
+                sql = $"select * from ({string.Format(sqlColumns, "Item successfully updated.")} {string.Format(sqlTables,"@putExecutionID")} where EA.ExecutionID = @putExecutionID\n";
                 sql += $"union all\n";
-                sql += $"{string.Format(sqlColumns, "Item successfully added.")} {sqlTables} where EA.ExecutionID = @postExecutionID) R order by R.RowIndex";
+                sql += $"{string.Format(sqlColumns, "Item successfully added.")} {string.Format(sqlTables, "@postExecutionID")} where EA.ExecutionID = @postExecutionID) R order by R.RowIndex";
 
                 return Query<dynamic>(sql, new { id, putExecutionID = load.PutExecutionID, postExecutionID = load.PostExecutionID });
             }
@@ -855,15 +872,18 @@ order by	ColumnIndex", new { id });
 
                 foreach (var item in loadItems)
                 {
+                    var itemUid = Guid.NewGuid();
+                    item.ExecutionItemUid = itemUid;
+
                     var loadItemColumns = Filter<LoadItemColumn>(l => l.LoadID == load.ID && l.RowIndex == item.RowIndex).ToList();
                     if (!item.ObjectID.HasValue)
                     {
                         var insert = new AssetInsert();
+                        insert.ExecutionItemUid = itemUid;
                         insert.Fields = new Dictionary<string, string>();
 
                         foreach (var field in loadItemColumns)
                         {
-                            
                             var col = load.LoadColumns.Where(c => c.LoadID == load.ID && c.ColumnIndex == field.ColumnIndex).FirstOrDefault();
                             
                             if (parentAssetType != null && col.Name == parentAssetType.Name)
@@ -886,6 +906,7 @@ order by	ColumnIndex", new { id });
                     else
                     {
                         var update = new AssetUpdate();
+                        update.ExecutionItemUid = itemUid;
                         var asset = Query<Asset>("select * from Asset Where Object = @object and ObjectID = @objectID", new { @object = item.Object, objectID = item.ObjectID }).FirstOrDefault();
                         AssetDetail parent = null;
                         if (parentAssetType != null)
@@ -915,6 +936,7 @@ order by	ColumnIndex", new { id });
                     }
                 }
 
+                SaveChanges();
 
                 if (putAssets.Any())
                 {

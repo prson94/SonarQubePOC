@@ -1681,6 +1681,12 @@ from	IntersectType I
                     table.Columns.Add("IntersectTypeUid", typeof(Guid));
                     table.Columns.Add("IntersectTypeID", typeof(int));
 
+                    var errorTable = new DataTable();
+                    errorTable.Columns.Add("ExecutionID", typeof(Guid));
+                    errorTable.Columns.Add("ItemNumber", typeof(int));
+                    errorTable.Columns.Add("ExecutionItemUid", typeof(Guid));
+                    errorTable.Columns.Add("Uid", typeof(Guid));
+                    errorTable.Columns.Add("Message", typeof(string));
 
                     var fieldTable = new DataTable();
                     fieldTable.Columns.Add("ExecutionID", typeof(Guid));
@@ -1837,6 +1843,15 @@ from	IntersectType I
                                 }
                                 else
                                 {
+                                    var errorRow = errorTable.NewRow();
+                                    errorRow["ExecutionID"] = execution.ExecutionID;
+                                    errorRow["ItemNumber"] = i;
+                                    if (model.ExecutionItemUid.HasValue) errorRow["ExecutionItemUid"] = model.ExecutionItemUid.Value;
+                                    errorRow["Uid"] = model.Uid;
+                                    errorRow["Message"] = errorMessage;
+
+                                    errorTable.Rows.Add(errorRow);
+
                                     results.Add(new DatabaseBulkAssetResult { IsNew = false, ItemNumber = i, Message = errorMessage, Success = false });
                                 }
                             }
@@ -1880,6 +1895,23 @@ from	IntersectType I
                         bulkCopy.ColumnMappings.Add("IntersectTypeID", "IntersectTypeID");
 
                         bulkCopy.WriteToServer(table);
+
+
+
+                        bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection);
+
+                        bulkCopy.BatchSize = errorTable.Rows.Count;
+                        bulkCopy.DestinationTableName = "api.ExecutionAssetError";
+                        bulkCopy.BulkCopyTimeout = timeout;
+
+                        bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                        bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                        bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                        bulkCopy.ColumnMappings.Add("Uid", "Uid");
+                        bulkCopy.ColumnMappings.Add("Message", "Message");
+
+                        bulkCopy.WriteToServer(errorTable);
+
 
 
                         bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection);
