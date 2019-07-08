@@ -8997,9 +8997,39 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 return null;
             }
 
+            var load = Company.GetById<Load>(id);
+
+            var itemSql = @"select RowIndex, StatusMessage from LoadItem where LoadID = @id and Status = 0 order by RowIndex asc";
+            var itemColumnSql = @"select C.* from LoadItem I inner join LoadItemColumn C on C.LoadID = I.LoadID and I.RowIndex = C.RowIndex and I.LoadID = @id and I.Status = 0 order by I.RowIndex asc, C.ColumnIndex asc";
+
+            if (load.PutExecutionID.HasValue || load.PostExecutionID.HasValue)
+            {
+                itemSql = @"select L.RowIndex, EA.[Message] as StatusMessage from LoadItem L
+inner join (
+		select ExecutionId, ItemNumber, ExecutionItemUid, ParentAssetID, Message, Success from api.ExecutionAsset where success = 0
+		union all
+		select ExecutionID, ItemNumber, ExecutionItemUid, null as ParentAssetID, Message, cast(0 as bit) as Success from api.ExecutionAssetError
+	 )  EA on EA.ExecutionItemUid = L.ExecutionItemUid
+where L.LoadID = @id order by RowIndex asc";
+
+                itemColumnSql = @"
+select C.LoadID, C.RowIndex, C.ColumnIndex, coalesce(EF.FieldValue, C.[Value]) as [Value] 
+from LoadItem I 
+inner join (
+		select ExecutionId, ItemNumber, ExecutionItemUid, ParentAssetID, Message, Success from api.ExecutionAsset where success = 0
+		union all
+		select ExecutionID, ItemNumber, ExecutionItemUid, null as ParentAssetID, Message, cast(0 as bit) as Success from api.ExecutionAssetError
+	 )  EA on EA.ExecutionItemUid = I.ExecutionItemUid
+left join LoadItemColumn C on C.LoadID = I.LoadID and I.RowIndex = C.RowIndex and I.LoadID = @id 
+left join LoadColumn LC on LC.LoadID = I.LoadID and LC.ColumnIndex = C.ColumnIndex
+left join api.ExecutionField EF on EF.ExecutionId = EA.ExecutionID and EF.ItemNumber = EA.ItemNumber and EF.FieldName = LC.[Name]
+order by I.RowIndex asc, C.ColumnIndex asc";
+            }
+
+
             var loadColumns = Company.Filter<LoadColumn>(i => i.LoadID == id).OrderBy(i => i.ColumnIndex).ToList();
-            var loadItems = Company.Query<dynamic>("select RowIndex, StatusMessage from LoadItem where LoadID = @id and Status = 0 order by RowIndex asc", new { id}).ToList();
-            var loadItemColumnss = Company.Query<LoadItemColumn>("select C.* from LoadItem I inner join LoadItemColumn C on C.LoadID = I.LoadID and I.RowIndex = C.RowIndex and I.LoadID = @id and I.Status = 0 order by I.RowIndex asc, C.ColumnIndex asc", new { id }).ToList();
+            var loadItems = Company.Query<dynamic>(itemSql, new { id}).ToList();
+            var loadItemColumns = Company.Query<dynamic>(itemColumnSql, new { id }).ToList();
 
             var document = new SLDocument();
             document.RenameWorksheet("Sheet1", "Items");
@@ -9025,9 +9055,9 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             foreach (var i in loadItems)
             {
                 r++;
-                foreach (var lic in loadItemColumnss.Where(c => c.RowIndex == (int)i.RowIndex).OrderBy(c => c.ColumnIndex))
+                foreach (var lic in loadItemColumns.Where(c => c.RowIndex == (int)i.RowIndex).OrderBy(c => c.ColumnIndex))
                 {
-                    document.SetCellValue(r, lic.ColumnIndex, lic.Value);
+                    document.SetCellValue(r, lic.ColumnIndex, (string)lic.Value);
                 }
                 document.SetCellValue(r, columnCount + 1, i.StatusMessage);
             }

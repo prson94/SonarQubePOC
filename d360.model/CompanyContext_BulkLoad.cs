@@ -181,13 +181,13 @@ order by	ColumnIndex", new { id });
 
                 var parentAssetType = GetParentTypeById(assetType.ID);
 
-                sqlColumns = $"select @id as LoadID, LI.RowIndex as RowIndex\n";
+                sqlColumns = $"select @id as LoadID, I.RowIndex as RowIndex\n";
                 sqlTables = @"from (
 		select ExecutionId, ItemNumber, ExecutionItemUid, ParentAssetID, Message, Success from api.ExecutionAsset where ExecutionId = {0}
 		union all
 		select ExecutionID, ItemNumber, ExecutionItemUid, null as ParentAssetID, Message, cast(0 as bit) as Success from api.ExecutionAssetError where ExecutionId = {0}
 	 ) EA
-     left join LoadItem LI on LI.LoadID = @id and LI.ExecutionItemUid = EA.ExecutionItemUid";
+     left join LoadItem I on I.LoadID = @id and I.ExecutionItemUid = EA.ExecutionItemUid";
                 columns.ForEach(c =>
                 {
                     var i = c.ColumnIndex;
@@ -198,7 +198,8 @@ order by	ColumnIndex", new { id });
                     }
                     else
                     {
-                        sqlColumns += $",EF{i}.FieldValue as Column{i}\n";
+                        sqlColumns += $",coalesce(EF{i}.FieldValue,C{i}.[Value]) as Column{i}\n";
+                        sqlTables += $" left join LoadItemColumn C{i} on C{i}.LoadID = I.LoadID and C{i}.RowIndex = I.RowIndex and C{i}.ColumnIndex = {i}\n";
                         sqlTables += $" left join api.ExecutionField EF{i} on EF{i}.ItemNumber = EA.ItemNumber and EF{i}.ExecutionID = EA.ExecutionID and EF{i}.FieldName = '{c.Name}'\n";
                     }
 
