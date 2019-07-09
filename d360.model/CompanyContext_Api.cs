@@ -255,7 +255,7 @@ from	{targetTable} T
 								inner join FieldType FT on FT.Object = @obj
 															and FT.ObjectID = @objID
 															and FT.[Type] = 'Lookup'
-								inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID and F.LookupValue is null
+								inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID and F.LookupValue is null and (F.FieldValue != '' or FT.IsRequired = 1)
                     where       A.ExecutionID = @executionID
 					group by	A.ExecutionID, A.ItemNumber
 					) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
@@ -275,6 +275,15 @@ set		Success = 0,
 where	ExecutionID = @executionID 
          and ItemNumber between {beginItemNumber} and {endItemNumber};",
          new { executionID, msg }, commandTimeout: timeout);
+        }
+
+        private void DeleteEmptyAssetFieldByApiExecutionUid(Guid executionUid, SqlTransaction trans, int timeout = 3600)
+        {
+            Connection.Execute(@"delete F from Field F
+	                                inner join api.ExecutionAsset EA on EA.ExecutionID = @executionUid
+	                                where F.ObjectType = EA.Object 
+                                      and F.ObjectId = EA.ObjectID 
+                                      and F.Value = ''", new { executionUid }, transaction: trans, commandTimeout: timeout);
         }
 
         private void MergeAssetDisplayValues(Guid executionID, SqlTransaction trans, int beginItemNumber, int endItemNumber, int timeout = 3600)
@@ -2531,6 +2540,9 @@ from	api.ExecutionAsset T
 
                                         // Must execute BEFORE the Success flag is updated below.
                                         MergeAssetDisplayValues(execution.ExecutionID, trans, beginItemNumber, endItemNumber, timeout);
+
+                                        //Delete all field without value
+                                        DeleteEmptyAssetFieldByApiExecutionUid(execution.ExecutionID, trans, timeout);
 
                                         // Update success flag.
                                         Connection.Execute(
