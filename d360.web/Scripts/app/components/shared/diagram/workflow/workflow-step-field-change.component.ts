@@ -482,7 +482,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
     setValueType() {
         if (this.selectedField == null)
             this.valueType = null;
-        else if (this.selectedField['@UseFormValue'] != null && this.selectedField['@IsActionForm'].toString() != 'true')
+        else if (this.selectedField['@UseFormValue'] != null && (!this.selectedField['@IsActionForm'] || this.selectedField['@IsActionForm'].toString() != 'true'))
             this.valueType = 'form';
         else if (this.selectedField['@IsActionForm'] != null && this.selectedField['@IsActionForm'].toString() == 'true')
             this.valueType = 'actionForm';
