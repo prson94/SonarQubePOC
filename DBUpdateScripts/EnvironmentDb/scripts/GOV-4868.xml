@@ -1308,7 +1308,7 @@ go
 		]]>
 	</rollback>
   </changeSet>
-    <changeSet author="MDonato" id="GOV-4868-tables">
+  <changeSet author="MDonato" id="GOV-4868-tables">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -1353,7 +1353,7 @@ go
 		]]>
 	</rollback>
   </changeSet>
-     <changeSet author="MDonato" id="GOV-4868-procs2">
+  <changeSet author="MDonato" id="GOV-4868-procs2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -2185,6 +2185,36 @@ begin
 	from	@fields F
 	for json path
 end
+		]]>
+	</rollback>
+  </changeSet>
+  <changeSet author="MDonato" id="GOV-4868-tables2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[
+		 drop table if exists api.ExecutionAssetError;
+		 create table api.ExecutionAssetError
+		 (
+		 ExecutionID uniqueidentifier not null,
+		 ItemNumber int not null,
+		 ExecutionItemUid uniqueidentifier,
+		 [Uid] uniqueidentifier,
+		 [Message] nvarchar(2500)
+		 );
+		ALTER TABLE [api].[ExecutionAssetError] ADD  CONSTRAINT [PK_ApiExecutionAssetError] PRIMARY KEY CLUSTERED 
+		(
+			[ExecutionID] DESC,
+			[ItemNumber] ASC
+		);
+		alter table loaditem add ExecutionItemUid uniqueidentifier null;
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+		drop table if exists api.ExecutionAssetError;
+		alter table loaditem drop column ExecutionItemUid;
 		]]>
 	</rollback>
   </changeSet>
