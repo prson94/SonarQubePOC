@@ -282,10 +282,13 @@ namespace igx.UnitTests
                 .Returns(new d360.core.entities.Workflow.Type());
 
             mock.Setup(x => x.GetWorkflowVersionByUID(It.IsAny<Guid>()))
-                 .Returns(new WorkflowVersion());
+                 .Returns((Guid uid)=> uid == Guid.Parse(DataConstants.ValidGUID) ? new WorkflowVersion() : null);
 
             mock.Setup(x => x.GetWorkflowItemByUID(It.IsAny<Guid>()))
            .Returns(new WorkflowItem());
+
+            mock.Setup(x => x.GetWorkflows(It.IsAny<IEnumerable<KeyValuePair<string, string>>>()))
+                 .Returns(Task.FromResult(new WorkflowsApiViewModel()));
 
             return mock.Object;
         }
@@ -296,13 +299,20 @@ namespace igx.UnitTests
             mock.Setup(x => x.GetIssueTypeByUID(It.IsAny<Guid>()))
                 .Returns(new IssueType());
 
+     
+            mock.Setup(x => x.GetIssueByUID(It.IsAny<Guid>()))
+                .Returns((Guid uid) => uid == Guid.Parse(DataConstants.ValidGUID) ? new Issue() : null);
+
             return mock.Object;
         }
 
         public IRelationshipRepository GetRelationshipRepository()
         {
             var mock = new Mock<IRelationshipRepository>();
-            mock.Setup(x => x.GetRelationshipByUID(It.IsAny<Guid>()))
+            mock.Setup(x => x.GetRelationshipTypeByUID(It.IsAny<Guid>()))
+                .Returns(new IntersectType());
+
+            mock.Setup(x => x.GetRelationshipTypeByUID(It.IsAny<Guid>()))
                 .Returns((Guid uid) => uid.ToString() == DataConstants.ValidGUID ? new IntersectType() : null);
 
             mock.Setup(x => x.AnyExists(It.IsAny<Guid>()))
@@ -335,7 +345,7 @@ namespace igx.UnitTests
                 .Returns(Task.FromResult(DataConstants.GetPredicates()));
 
             mock.Setup(x => x.GetRelationshipByUID(It.IsAny<Guid>()))
-                .Returns((Guid uid) => uid.ToString() == DataConstants.ValidGUID ? new IntersectType() : null);
+                .Returns((Guid uid) => uid.ToString() == DataConstants.ValidGUID ? new Intersect() : null);
 
             mock.Setup(x => x.GetRelationships(It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<string>()))
                 .Returns(Task.FromResult(JsonConvert.DeserializeObject<JObject>(JsonConvert.SerializeObject(new GetRelationshipsApiModel() { items = new List<GetRelationshipApiModel>() { new GetRelationshipApiModel(), new GetRelationshipApiModel() } }))));

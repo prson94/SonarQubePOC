@@ -650,7 +650,7 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                var intersectType = RelationshipRepository.GetRelationshipByUID(intersectTypeUid);
+                var intersectType = RelationshipRepository.GetRelationshipTypeByUID(intersectTypeUid);
                 if (intersectType == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Relationship Type with Uid {intersectTypeUid} could not be found."));
 
