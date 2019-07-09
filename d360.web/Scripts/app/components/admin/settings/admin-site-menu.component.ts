@@ -226,12 +226,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
             this.iconType = 'image';
         else
             this.iconType = 'icon';
-        this.loadFolderItems()
-            .subscribe(() => {
-                this.oldFolderItems = _.cloneDeep(this.folderItems);
-                this.oldFolderName = this.folderName;
-            })
-            .add(() => this.loadSiteNavPermissions(this.selection));
+        this.loadFolderItems();
     }
     
     delete(item: SiteNav) {
@@ -373,7 +368,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
             });
     }
 
-    loadFolderItems(): Observable<any> {
+    loadFolderItems() {
         this.isLoading = true;
 
         if (this.selection == null || this.selection.ID == null) {
@@ -396,9 +391,13 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
                 })
                 .add(() => this.stateService.reloadLeftNavMenu());
         }
+
+        this.oldFolderItems = _.cloneDeep(this.folderItems);
+        this.oldFolderName = this.folderName;
+        this.loadSiteNavPermissions(this.selection);
     }
 
-    loadSiteNavPermissions(item: SiteNav): Observable<any> {
+    loadSiteNavPermissions(item: SiteNav) {
         this.isLoading = true;
         return this.siteMenuService.getSiteNavPermissions(item.ID)
             .subscribe(r => {
