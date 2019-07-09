@@ -170,5 +170,192 @@ namespace igx.UnitTests.ValidatorTests
             result = testMethod.Invoke(queryParams);
             Assert.False(result);
         }
+
+        [Fact]
+        public void IsValidGuidCountForGetWorkflowModel()
+        {
+            bool result;
+            var queryParams = new List<KeyValuePair<string, string>>();
+            CurrentTestingMethod testMethod = new CurrentTestingMethod(validator.IsValidGuidCountForGetWorkflowModel);
+
+            result = testMethod.Invoke(queryParams);
+            Assert.True(result);
+
+            queryParams.Add(new KeyValuePair<string, string>("ActionUid", DataConstants.ValidGUID));
+            result = testMethod.Invoke(queryParams);
+            Assert.True(result);
+
+            queryParams.Add(new KeyValuePair<string, string>("AssetUid", DataConstants.ValidGUID2));
+            result = testMethod.Invoke(queryParams);
+            Assert.False(result);
+
+            queryParams.Clear();
+            queryParams.Add(new KeyValuePair<string, string>("AssetUid", DataConstants.ValidGUID2));
+            result = testMethod.Invoke(queryParams);
+            Assert.True(result);
+
+            queryParams.Clear();
+            queryParams.Add(new KeyValuePair<string, string>("RelationshipUid", DataConstants.ValidGUID));
+            result = testMethod.Invoke(queryParams);
+            Assert.True(result);
+
+        }
+
+        [Fact]
+        public void IsValidAsset()
+        {
+            bool result;
+            CurrentTestingMethod testingMethod = new CurrentTestingMethod(validator.IsValidAsset);
+            var queryParams = new List<KeyValuePair<string, string>>();
+
+            queryParams.Add(new KeyValuePair<string, string>("AssetUid", DataConstants.ValidGUID));
+            result = testingMethod.Invoke(queryParams);
+            Assert.True(result);
+
+            queryParams.Clear();
+            queryParams.Add(new KeyValuePair<string, string>("AssetUid", DataConstants.InvalidGUID));
+            result = testingMethod.Invoke(queryParams);
+            Assert.False(result);
+
+        }
+
+       [Fact]
+        public void IsValidAction()
+        {
+            bool result;
+            CurrentTestingMethod testingMethod = new CurrentTestingMethod(validator.IsValidAction);
+            var queryParams = new List<KeyValuePair<string, string>>();
+
+            queryParams.Add(new KeyValuePair<string, string>("ActionUid", DataConstants.ValidGUID));
+            result = testingMethod.Invoke(queryParams);
+            Assert.True(result);
+
+            queryParams.Clear();
+            queryParams.Add(new KeyValuePair<string, string>("ActionUid", DataConstants.InvalidGUID));
+            result = testingMethod.Invoke(queryParams);
+            Assert.False(result);
+
+        }
+
+        [Fact]
+        public void IsValidRelationship()
+        {
+            bool result;
+            CurrentTestingMethod testingMethod = new CurrentTestingMethod(validator.IsValidRelationship);
+            var queryParams = new List<KeyValuePair<string, string>>();
+
+            queryParams.Add(new KeyValuePair<string, string>("RelationshipUid", DataConstants.ValidGUID));
+            result = testingMethod.Invoke(queryParams);
+            Assert.True(result);
+
+            queryParams.Clear();
+            queryParams.Add(new KeyValuePair<string, string>("RelationshipUid", DataConstants.InvalidGUID));
+            result = testingMethod.Invoke(queryParams);
+            Assert.False(result);
+        }
+
+       [Fact]
+        public void IsValidGuidForGetWorkflowModel()
+        {
+            bool result;
+            var queryParams = new List<KeyValuePair<string, string>>();
+            CurrentTestingMethod testMethod = new CurrentTestingMethod(validator.IsValidGuidForGetWorkflowModel);
+
+            result = testMethod.Invoke(queryParams);
+            Assert.True(result);
+
+            queryParams.Add(new KeyValuePair<string, string>("ActionUid", DataConstants.ValidGUID));
+            result = testMethod.Invoke(queryParams);
+            Assert.True(result);
+
+            queryParams.Clear();
+            queryParams.Add(new KeyValuePair<string, string>("ActionUid", DataConstants.WrongFormatGUID));
+            result = testMethod.Invoke(queryParams);
+            Assert.False(result);
+
+            queryParams.Clear();
+            queryParams.Add(new KeyValuePair<string, string>("AssetUid", DataConstants.ValidGUID));
+            result = testMethod.Invoke(queryParams);
+            Assert.True(result);
+
+            queryParams.Clear();
+            queryParams.Add(new KeyValuePair<string, string>("AssetUid", DataConstants.WrongFormatGUID));
+            result = testMethod.Invoke(queryParams);
+            Assert.False(result);
+
+            queryParams.Clear();
+            queryParams.Add(new KeyValuePair<string, string>("RelationshipUid", DataConstants.ValidGUID));
+            result = testMethod.Invoke(queryParams);
+            Assert.True(result);
+
+            queryParams.Clear();
+            queryParams.Add(new KeyValuePair<string, string>("RelationshipUid", DataConstants.WrongFormatGUID));
+            result = testMethod.Invoke(queryParams);
+            Assert.False(result);
+
+            queryParams.Clear();
+            queryParams.Add(new KeyValuePair<string, string>("WorkflowTypeUid", DataConstants.ValidGUID));
+            result = testMethod.Invoke(queryParams);
+            Assert.True(result);
+
+            queryParams.Clear();
+            queryParams.Add(new KeyValuePair<string, string>("WorkflowTypeUid", DataConstants.WrongFormatGUID));
+            result = testMethod.Invoke(queryParams);
+            Assert.False(result);
+
+            queryParams.Clear();
+            queryParams.Add(new KeyValuePair<string, string>("VersionUid", DataConstants.ValidGUID));
+            result = testMethod.Invoke(queryParams);
+            Assert.True(result);
+
+            queryParams.Clear();
+            queryParams.Add(new KeyValuePair<string, string>("VersionUid", DataConstants.WrongFormatGUID));
+            result = testMethod.Invoke(queryParams);
+            Assert.False(result);
+
+        }
+
+        [Fact]
+        public void IsValidWorkflowVersion()
+        {
+            bool result;
+            CurrentTestingMethod testingMethod = new CurrentTestingMethod(validator.IsValidWorkflowVersion);
+            var queryParams = new List<KeyValuePair<string, string>>();
+
+            queryParams.Add(new KeyValuePair<string, string>("VersionUid", DataConstants.ValidGUID));
+            result = testingMethod.Invoke(queryParams);
+            Assert.True(result);
+
+            queryParams.Clear();
+            queryParams.Add(new KeyValuePair<string, string>("VersionUid", DataConstants.InvalidGUID));
+            result = testingMethod.Invoke(queryParams);
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void IsValidOrderByFieldForGetWorkflowModel()
+        {
+            bool result;
+            CurrentTestingMethod testingMethod = new CurrentTestingMethod(validator.IsValidOrderByFieldForGetWorkflowModel);
+            var queryParams = new List<KeyValuePair<string, string>>();
+            queryParams.Add(new KeyValuePair<string, string>("_order", "StartedOn"));
+            result = testingMethod.Invoke(queryParams);
+            Assert.True(result);
+
+            queryParams.Clear();
+            queryParams.Add(new KeyValuePair<string, string>("_order", "StartedDate"));
+            result = testingMethod.Invoke(queryParams);
+            Assert.False(result);
+
+            queryParams.Clear();
+            queryParams.Add(new KeyValuePair<string, string>("_order", "CompletedOn"));
+            result = testingMethod.Invoke(queryParams);
+            Assert.True(result);
+
+            queryParams.Clear();
+            queryParams.Add(new KeyValuePair<string, string>("_order", "version"));
+            result = testingMethod.Invoke(queryParams);
+            Assert.False(result);
+        }
     }
 }

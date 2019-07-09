@@ -26,7 +26,13 @@ namespace d360.model.DataAccessLayer
             this.QueueSource = queueSource;
             this.Storage = storageProvider;
         }
-        public IntersectType GetRelationshipByUID(Guid relationshipTypUid)
+
+        public Intersect GetRelationshipByUID(Guid relationshipUid)
+        {
+            return this.companyContext.Filter<Intersect>(i => i.uid == relationshipUid).SingleOrDefault();
+        }
+
+        public IntersectType GetRelationshipTypeByUID(Guid relationshipTypUid)
         {
             return companyContext.Filter<IntersectType>(i => i.uid == relationshipTypUid).SingleOrDefault();
         }

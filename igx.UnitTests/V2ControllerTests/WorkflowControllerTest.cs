@@ -35,9 +35,11 @@ namespace igx.UnitTests.V2ControllerTests
             var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
             var str = res.Result.Content.ReadAsStringAsync().Result;
+            var data = JsonConvert.DeserializeObject<List<WorkflowTypeApiViewModel>>(str);
 
-            Assert.True(res.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
-            AssertJSON.True<List<WorkflowTypeApiViewModel>>(str);
+            Assert.True(res.Result.IsSuccessStatusCode);
+            Assert.True(data != null);
+
         }
 
         [Fact]
@@ -48,15 +50,17 @@ namespace igx.UnitTests.V2ControllerTests
             var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
             var str = res.Result.Content.ReadAsStringAsync().Result;
+            var data = JsonConvert.DeserializeObject<List<WorkflowVersionsApiViewModel>>(str);
 
-            Assert.True(res.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
-            AssertJSON.True<List<WorkflowVersionApiViewModel>>(str);
+            Assert.True(res.Result.IsSuccessStatusCode);
+            Assert.True(data != null);
 
             actionResult = await workflowController.GetWorkflowVersionStepsAsync(Guid.Parse(DataConstants.InvalidGUID));
             res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
             str = res.Result.Content.ReadAsStringAsync().Result;
-            AssertJSON.True<List<WorkflowVersionApiViewModel>>(str);
+            Assert.Equal(System.Net.HttpStatusCode.NotFound, res.Result.StatusCode);
+
 
         }
 
@@ -69,8 +73,22 @@ namespace igx.UnitTests.V2ControllerTests
             var str = res.Result.Content.ReadAsStringAsync().Result;
             var data = JsonConvert.DeserializeObject<WorkflowVersionsApiViewModel>(str);
 
-            Assert.True(res.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
-            AssertJSON.True<WorkflowVersionsApiViewModel>(str);
+            Assert.True(res.Result.IsSuccessStatusCode);
+            Assert.True(data != null);
+        }
+
+        [Fact]
+        public async void GetWorkflows()
+        {
+            var actionResult = await workflowController.GetWorkflowsAsync();
+            var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
+
+            var str = res.Result.Content.ReadAsStringAsync().Result;
+
+            var data = JsonConvert.DeserializeObject<WorkflowsApiViewModel>(str);
+
+            Assert.True(res.Result.IsSuccessStatusCode);
+            Assert.True(data != null);
         }
 
     }
