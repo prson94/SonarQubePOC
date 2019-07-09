@@ -89,9 +89,9 @@ export class HeaderHelpComponent implements AfterViewInit{
 
     popup(item) {
         this.display = true;
-        item.focus();
         item.className = "modal-overlay about";
         item.className = item.className + " show";
+        item.focus();
     }
 
     closePopUp(item) {
