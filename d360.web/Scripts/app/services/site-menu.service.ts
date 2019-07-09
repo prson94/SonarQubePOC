@@ -4,7 +4,7 @@ import { MessagesService } from './messages.service';
 import { BaseService } from './base.service';
 import { SiteMenu, SiteMenuItem, SiteMenuModel, SiteNav, SiteNavPermission } from '../models/site-menu.model';
 import { JsonResult } from '../models/jsonresult.model';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { catchError, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { BaseObservableService } from './baseObservable.service';
@@ -145,7 +145,14 @@ export class SiteMenuService extends BaseObservableService {
 
 
     removeSiteNavPermission(permission: SiteNavPermission) {
-        let options = new RequestOptions({ body: permission });
+        let options = {
+            headers: new HttpHeaders({
+                'Content-Type': 'application/json'
+            }),
+            body: {
+                permission
+            }
+        }
 
         return this.http.delete('navigation/permissions/remove', options)
             .pipe(
