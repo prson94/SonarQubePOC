@@ -13,15 +13,15 @@ declare var VersionNumber: string;
                             <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="adminGuide">Admin Guide</a></div></div></li>
                             <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="whatIsNew">What's New</a></div></div></li>
                             <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="community">Community</a></div></div></li>
-                            <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" (click)="popup(item2)">About Data3Sixty® Govern</a></div></div></li>
+                            <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" (click)="popup(popupBox)">About Data3Sixty® Govern</a></div></div></li>
                        </ul>
                     </div>
-                    <div #item2 class="modal-overlay about" tabindex=0 (keydown)="checkKey($event,item2)" >
+                    <div #popupBox class="modal-overlay about" tabindex=0 (keydown)="checkKey($event,popupBox)" >
                     <div class="modal-dialog">
                         <div class="title-bar">
                             <h1>About Data3Sixty® Govern</h1>
                             <span class="grow"></span>
-                            <button (click)="closePopUp(item2)" class="light bar button close" title="Close"><i class="fa fa-times"></i></button>
+                            <button (click)="closePopUp(popupBox)" class="light bar button close" title="Close"><i class="fa fa-times"></i></button>
                         </div>
                         <div class="content">
                             <div class="flex row">
@@ -39,7 +39,7 @@ declare var VersionNumber: string;
                         </div>
                         <div class="action-bar">
                             <span class="grow"></span>
-                            <button focus-me="focusInput" (click)="closePopUp(item2)" class="primary button close">Close</button>
+                            <button focus-me="focusInput" (click)="closePopUp(popupBox)" class="primary button close">Close</button>
                         </div>
                     </div>
                 </div>
@@ -59,7 +59,7 @@ export class HeaderHelpComponent implements AfterViewInit{
     buildDate: string = __BUILD_DATE;
     versionNumber: string = VersionNumber;
 
-    @ViewChild("item2") popupBox: ElementRef;
+    @ViewChild("popupBox") popupBox: ElementRef;
 
     constructor(
         private ref: ChangeDetectorRef
