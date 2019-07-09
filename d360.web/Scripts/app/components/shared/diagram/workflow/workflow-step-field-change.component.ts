@@ -480,7 +480,6 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
     }
 
     setValueType() {
-        console.log("Setting value type!");
         if (this.selectedField == null)
             this.valueType = null;
         else if (this.selectedField['@UseFormValue'] != null)
