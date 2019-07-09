@@ -53,7 +53,7 @@ import {
 } from 'primeng/primeng';
 
 import { TableModule } from 'primeng/table';
-import {GovernPostRequestInterceptor} from "../../http-interceptors/govern-post-request.interceptor";
+import {GovernRequestInterceptor} from "../../http-interceptors/govern-request.interceptor";
 
 
 @NgModule({
@@ -106,7 +106,7 @@ import {GovernPostRequestInterceptor} from "../../http-interceptors/govern-post-
     providers: [
         {
             provide: HTTP_INTERCEPTORS,
-            useClass: GovernPostRequestInterceptor,
+            useClass: GovernRequestInterceptor,
             multi: true
         },
         {

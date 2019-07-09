@@ -26,7 +26,7 @@ import {StateService} from './services/state.service';
 import {WebAnalyticsService} from './services/web-analytics.service';
 
 import {TooltipSingletonService} from './services/tooltip-singleton.service'
-import {GovernPostRequestInterceptor} from "./http-interceptors/govern-post-request.interceptor";
+import {GovernRequestInterceptor} from "./http-interceptors/govern-request.interceptor";
 import { CookieService } from './services/cookie.service';
 import { SiteMenuService } from './services/site-menu.service';
 import { DialogModule } from 'primeng/dialog';
@@ -65,7 +65,7 @@ export function getLocale() {
         AdminUserGuard,
         {
             provide: HTTP_INTERCEPTORS,
-            useClass: GovernPostRequestInterceptor,
+            useClass: GovernRequestInterceptor,
             multi: true
         },
         AuthenticationService,

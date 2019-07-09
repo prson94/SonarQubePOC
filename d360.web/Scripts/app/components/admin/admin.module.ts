@@ -4,7 +4,7 @@ import { FormsModule }    from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';      
-import { GovernPostRequestInterceptor } from "../../http-interceptors/govern-post-request.interceptor";
+import { GovernRequestInterceptor } from "../../http-interceptors/govern-request.interceptor";
 
 import { AdminRoutingModule } from './admin.routes';
 
@@ -82,7 +82,7 @@ import { DialogModule } from 'primeng/dialog';
     providers: [
         {
             provide: HTTP_INTERCEPTORS,
-            useClass: GovernPostRequestInterceptor,
+            useClass: GovernRequestInterceptor,
             multi: true },
     ]
 })

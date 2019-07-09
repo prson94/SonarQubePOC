@@ -2,7 +2,7 @@
 import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
-import { GovernPostRequestInterceptor } from "../../../http-interceptors/govern-post-request.interceptor";
+import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
 import { RouterModule } from '@angular/router';
 
 import { CoreModule } from '../../shared/core.module';
@@ -83,7 +83,7 @@ import { TableModule } from 'primeng/table';
     providers: [
         {
             provide: HTTP_INTERCEPTORS,
-            useClass: GovernPostRequestInterceptor,
+            useClass: GovernRequestInterceptor,
             multi: true },
     ]
 })

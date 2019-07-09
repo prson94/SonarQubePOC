@@ -2,7 +2,7 @@
 import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
 import { RouterModule }    from '@angular/router';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
-import { GovernPostRequestInterceptor } from "../../../http-interceptors/govern-post-request.interceptor";
+import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
 
 import {
     ButtonModule,
@@ -72,7 +72,7 @@ export function highchartsFactory() {
     providers: [
         {
             provide: HTTP_INTERCEPTORS,
-            useClass: GovernPostRequestInterceptor,
+            useClass: GovernRequestInterceptor,
             multi: true },
         {
             provide: HighchartsStatic,

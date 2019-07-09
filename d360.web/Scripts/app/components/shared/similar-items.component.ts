@@ -4,7 +4,7 @@ import { UriBasedService } from '../../services/uri-based.service';
 import { CommonModule } from '@angular/common';
 
 import { HTTP_INTERCEPTORS } from '@angular/common/http';      
-import { GovernPostRequestInterceptor } from "../../http-interceptors/govern-post-request.interceptor";
+import { GovernRequestInterceptor } from "../../http-interceptors/govern-request.interceptor";
 
 import { CoreModule } from './core.module';
 import { RouterModule } from '@angular/router';
@@ -78,7 +78,7 @@ export class SimilarItemsComponent implements OnChanges, OnInit, OnDestroy {
     providers: [
         {
             provide: HTTP_INTERCEPTORS,
-            useClass: GovernPostRequestInterceptor,
+            useClass: GovernRequestInterceptor,
             multi: true },
     ]
 })
