@@ -68,8 +68,8 @@ namespace d360.web.Controllers.V2
             string selectSql = @"SELECT 
                                     A.uid as 'AssetUid',
                                     AT.uid as 'AssetTypeUid',
-                                    IT.Name as 'IssueTypeName',
-                                    IT.uid as 'IssueTypeUid',
+                                    IT.Name as 'ActionTypeName',
+                                    IT.uid as 'ActionTypeUid',
                                     I.CreatedOn,
                                     R.uid as CreatedByUid,
                                     I.UpdatedOn,
