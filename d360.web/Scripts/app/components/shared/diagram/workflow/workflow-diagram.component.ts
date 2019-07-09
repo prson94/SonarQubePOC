@@ -941,7 +941,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 }
 
                 n.errors = n.errors.concat(this.validateTextFields(n.settings.MessageBodyTemplate));
-                console.log(n.errors);
+
                 if (n.errors.length > 0) return false;
 
                 break;
@@ -998,7 +998,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
                 
                 if (n.errors.length > 0) {
-                    console.log("here")
                     return false;
                 }
                 break;
@@ -1020,11 +1019,26 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 let fields = n.settings.FieldUpdate.Field;
                 let hasInvalidField = false;
                 n.errors = [];
+
                 fields.forEach(f => {
                     let refField = this.fieldTypes.find(x => x.ID == +f["@FieldId"]);
                     if (!refField) {
                         hasInvalidField = true;
                         n.errors.push('Invalid field type');
+                    }
+                    if (f["@IsActionForm"] && f["@IsActionForm"] == 'true' && f["@FormFieldId"]) {
+                        var fieldData = f["@FormFieldId"].split('|');
+                        if (fieldData[0] == 'IssueType') {
+                            refField = this.fieldTypes.find(x => x.Object == 'IssueType' && x.ID == +fieldData[1]);
+                        }
+                        else {
+                            refField = this.fieldTypes.find(x => x.Object != 'IssueType' && x.ID == +fieldData[1]);
+                        }
+
+                        if (!refField) {
+                            hasInvalidField = true;
+                            n.errors.push('Invalid field type');
+                        }
                     }
                 });
                 if (hasInvalidField) return false;
@@ -1053,7 +1067,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
         var results = desc.match(/(\[)(.*?)(?=\])/g);
 
-        if (results.length) {
+        if (results && results.length) {
             results.forEach(x => {
                 var fieldData = x.split('::');
 
