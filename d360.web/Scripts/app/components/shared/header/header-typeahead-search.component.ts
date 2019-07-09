@@ -23,7 +23,7 @@ import { SubscriptionLike as ISubscription } from 'rxjs';
                                 (onSelect)="selectItem()">                       
                             <ng-template let-result>
                                 <div style="padding:10px 0;">                                
-                                   <div class="tt-suggestion tt-selectable"><span style="color:#999;">{{result.Type}}:</span> {{result.DisplayName}}</div>
+                                   <div class="search-typeahead-suggestion"><span style="color:#999;">{{result.Type}}:</span> {{result.DisplayName}}</div>
                                 </div>                            
                             </ng-template>
                         </p-autoComplete>
