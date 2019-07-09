@@ -167,7 +167,7 @@ namespace d360.web.Controllers.V2
             MapToApiVersion("2.0"),
             Route("export/{intersectTypeUid}"),
             FileDownload,
-            SwaggerConsumes("application/vnd.ms-excel"), SwaggerProduces("application/vnd.ms-excel"),
+            SwaggerConsumes("application/vnd.ms-excel"), SwaggerProduces("application/octet-stream"),
             SwaggerResponse(HttpStatusCode.OK, "Exported realtionships to Excel.", typeof(List<PredicateTypeApiViewModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
