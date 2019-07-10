@@ -2910,9 +2910,11 @@ from	api.ExecutionRelationship T
 
         update	T
         set		T.IntersectID = S.ID,
-		        T.IsNew = IIF(S.[Action] = 'I', 1, 0)
+		        T.IsNew = IIF(S.[Action] = 'I', 1, 0),
+                T.uid = IT.uid
         from	api.ExecutionRelationship T
 		        inner join #ObjectMergeTableResult S on T.ExecutionID = @ExecutionID and S.ItemNumber = T.ItemNumber
+                inner join [Intersect] IT on IT.ID = S.ID
         where   T.ItemNumber between {beginItemNumber} and {endItemNumber};", new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
 
                                 #endregion
