@@ -1,4 +1,5 @@
 ﻿using d360.web.Controllers.V2;
+using igx.UnitTests.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,11 +27,9 @@ namespace igx.UnitTests.V2ControllerTests
         [Fact]
         public async void GetAllocationByAssetTypeAsync()
         {
-            var testGuid = Guid.NewGuid();
+            var testGuid = Guid.Parse(DataConstants.ValidGUID);
             var actionResult = await actionsController.GetAllocationByAssetTypeAsync(testGuid);
             var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
-
-            var str = res.Result.Content.ReadAsStringAsync().Result;
 
             Assert.True(res.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
 

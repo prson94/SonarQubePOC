@@ -299,7 +299,10 @@ namespace igx.UnitTests
             mock.Setup(x => x.GetIssueTypeByUID(It.IsAny<Guid>()))
                 .Returns(new IssueType());
 
-     
+            mock.Setup(x => x.GetAllocationByAssetType(It.IsAny<Guid>()))
+                .Returns(Task.FromResult(new List<IssueTypeApiModel>() { new IssueTypeApiModel(), new IssueTypeApiModel() } as IEnumerable<IssueTypeApiModel>));
+
+
             mock.Setup(x => x.GetIssueByUID(It.IsAny<Guid>()))
                 .Returns((Guid uid) => uid == Guid.Parse(DataConstants.ValidGUID) ? new Issue() : null);
 
