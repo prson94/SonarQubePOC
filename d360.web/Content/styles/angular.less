@@ -1200,6 +1200,12 @@ div.breadcrumbs {
             font-size: 12px;
             color: white;
 
+            &.breadcrumb-link {
+                &:hover, &.hover {
+                    cursor: pointer;
+                }
+            }
+
             &:before {
                 content: '';
             }
@@ -1236,6 +1242,12 @@ a.breadcrumb {
 
         &:after {
             content: ')';
+        }
+
+        &.breadcrumb-link {
+            &:hover, &.hover {
+                cursor: pointer;
+            }
         }
 
         &:hover {
