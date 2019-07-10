@@ -24,7 +24,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                             class="breadcrumb" 
                             [ngStyle]="{'max-width.px': setLastBreadcrumbWidth()}">
                             <span class="breadcrumb-text" [ngClass]="{'highlight' : breadcrumb.isType, 'breadcrumb-link' : hasLink(breadcrumb.link)}">{{breadcrumb.text}} </span>
-                            <span class="parent" *ngIf="breadcrumb.parentTypeName"   
+                            <span class="parent"  [ngClass]="{'breadcrumb-link' : hasLink(breadcrumb.link)}" *ngIf="breadcrumb.parentTypeName"   
                                   (click)="stopParentNav($event);navigateToLink(breadcrumb.parentUrl)">{{breadcrumb.parentTypeName}}</span>
                             <div *ngIf="!isChangableItem()" class="gutter"></div>
                             <i *ngIf="isChangableItem()" class="fa fa-caret-right crumb-arrow right"></i>
