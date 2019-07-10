@@ -1,5 +1,7 @@
 ﻿using d360.web.Controllers.V2;
 using igx.UnitTests.Core;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,13 +27,24 @@ namespace igx.UnitTests.V2ControllerTests
             };
         }
         [Fact]
-        public async void GetAllocationByAssetTypeAsync()
+        public async void GetIssueTypesTest()
+        {
+            var actionResult = await actionsController.GetIssueTypes();
+            Assert.True(actionResult.IsSuccessStatusCode, XMsg.BadResponseCode);
+
+        }
+        [Fact]
+        public async void GetAllocationByAssetTypeAsyncTest()
         {
             var testGuid = Guid.Parse(DataConstants.ValidGUID);
             var actionResult = await actionsController.GetAllocationByAssetTypeAsync(testGuid);
             var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
+            var str = res.Result.Content.ReadAsStringAsync().Result;
+            var data = JsonConvert.DeserializeObject<JArray>(str);
+
             Assert.True(res.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(data != null, XMsg.InvalidJSON);
 
         }
     }
