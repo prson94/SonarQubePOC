@@ -652,7 +652,7 @@ order by	ColumnIndex", new { id });
             {
                 if (objectId ==subjectId)
                 {
-                    BulkLoadStatusMsg = "Cannot related to itself when Subject = Object.";
+                    BulkLoadStatusMsg = "Object cannot be related to itself";
                     return 0;
                 }
                 var existingIntersect = Intersects.Where(x => x.Subject == subjectType && x.Object == objectType && x.IntersectTypeID == intersectTypeId && x.ObjectID == objectId && x.SubjectID == subjectId).FirstOrDefault();
