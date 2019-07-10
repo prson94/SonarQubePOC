@@ -1,11 +1,6 @@
 ﻿import { Injectable } from '@angular/core';
-import { Headers, Http } from '@angular/http';
-import { CompanySettings, ICompanySettingsService } from '../models/settings.model';
-import { MessagesService } from './messages.service';
-import { BaseService } from './base.service';
-import { AuthenticationProperties } from '../models/authentication-properties.model';
 import { JsonResult } from '../models/jsonresult.model';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { catchError, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { BaseObservableService } from './baseObservable.service';

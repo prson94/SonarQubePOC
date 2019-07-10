@@ -1,7 +1,4 @@
 ﻿import { Injectable } from '@angular/core';
-import { Headers, Http } from '@angular/http';
-import { MessagesService } from './messages.service';
-import { BaseService } from './base.service';
 import { JsonResult } from '../models/jsonresult.model';
 import { Shortcut } from '../models/shortcuts.model';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
