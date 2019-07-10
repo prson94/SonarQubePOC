@@ -98,6 +98,7 @@
     <Compile Include="Core\SqlConstants.cs" />
     <Compile Include="LibraryTests\JsonTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="V2ControllerTests\ActionsControllerTest.cs" />
     <Compile Include="V2ControllerTests\AssetsControllerTest.cs" />
     <Compile Include="V2ControllerTests\FieldsControllerTest.cs" />
     <Compile Include="V2ControllerTests\MetricsControllerTest.cs" />
