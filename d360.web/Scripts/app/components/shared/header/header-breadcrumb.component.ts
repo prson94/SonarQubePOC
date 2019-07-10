@@ -37,6 +37,7 @@ export class HeaderBreadcrumbComponent {
     @ViewChild('collapseIcon') collapseIcon;
     private resizeTimer: any;
     private maxSpaceForCrumbs: number = 800;
+    private maxWidthOfSmallPanel: number = window.innerWidth - 200;
 
     constructor(
         private headerBreadcrumbService: HeaderBreadcrumbService,
@@ -77,6 +78,7 @@ export class HeaderBreadcrumbComponent {
             if (left < 0)
                 smallPanel.el.nativeElement.children[0].style.left = parentLeft.left + "px";
             smallPanel.el.nativeElement.children[0].style.top = "40px";
+            smallPanel.el.nativeElement.children[0].style.maxWidth = this.maxWidthOfSmallPanel + "px";
         }, 150);
     } 
 
@@ -90,7 +92,9 @@ export class HeaderBreadcrumbComponent {
     private handleTreeClick(event) {
         this.headerBreadcrumbService.breadcrumbTreeClick(event.id);
     }
-
+    private setMaxWidth() {
+        return this.maxWidthOfSmallPanel;
+    }
     resizeControlsToFit(windowWidth) {
 
         this.breadcrumbs.forEach(x => { x.show = false });
@@ -103,7 +107,9 @@ export class HeaderBreadcrumbComponent {
         
         var combinedWidth = controlsWidth + logoWidth + breadcrumbWidth;
         
-        this.maxSpaceForCrumbs = windowWidth - (controlsWidth + logoWidth );
+        this.maxSpaceForCrumbs = windowWidth - (controlsWidth + logoWidth);
+        this.maxWidthOfSmallPanel = windowWidth - logoWidth;
+
         //if the width of this + the logo + the controls is bigger than screen start hiding breadcrumbs
         var worseCaseWidth = this.estimateMaxLength(this.maxSpaceForCrumbs) + logoWidth + controlsWidth;
        

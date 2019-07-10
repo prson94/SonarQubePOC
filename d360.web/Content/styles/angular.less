@@ -1158,13 +1158,16 @@ div.breadcrumbs {
             width: 100%;
         }
 
-        .breadcrumb{
+        .breadcrumb {
             .breadcrumb-text {
                 padding-right: 5px;
+                overflow: hidden;
+                text-overflow: ellipsis;
 
                 &.highlight {
                     color: #000;
                 }
+
                 &.breadcrumb-link {
                     &:hover, &.hover {
                         cursor: pointer;
@@ -1254,14 +1257,16 @@ a.breadcrumb {
 
     .breadcrumb-text {
         padding-right: 0px;
+        overflow: hidden;
+        text-overflow: ellipsis;
 
         &.highlight {
             color: @igx-header-breadcrumb-color;
         }
 
-        &.breadcrumb-link{
+        &.breadcrumb-link {
             &:hover, &.hover {
-                cursor:pointer;
+                cursor: pointer;
                 text-decoration: underline;
             }
         }
@@ -1367,6 +1372,8 @@ a.breadcrumb {
         cursor: pointer;
         padding-left: 20px;
         padding-right: 40px;
+        overflow: hidden;
+        text-overflow: ellipsis;
 
         &:hover, &.hover {
             background-color: @igx-lightblue-xlight;

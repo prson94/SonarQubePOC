@@ -115,10 +115,17 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
             if (this.hasClass(parent, 'collapsed-crumb')) {
                 searchPanel.show(event, this.hoverTarget.nativeElement.parentNode);
                 
-                searchPanel.el.nativeElement.children[0].opacity = 0;
                 window.setTimeout(() => {
                     searchPanel.el.nativeElement.children[0].style.top = (lineDims.top - 40) + "px";
                     searchPanel.el.nativeElement.children[0].style.left = (lineDims.width + (10 * this.index)) + "px";
+                    let searchDims = searchPanel.el.nativeElement.children[0].getBoundingClientRect(); 
+                    if (searchDims.right > window.innerWidth) {
+                        let diff = searchDims.right - window.innerWidth;
+                        let left = (lineDims.width + (10 * this.index)) - diff;
+                        searchPanel.el.nativeElement.children[0].style.left = left + "px";
+                        searchPanel.el.nativeElement.children[0].style.maxWidth = (window.innerWidth - lineDims.left) + "px";
+                    }
+                    parent.style.maxWidth = (window.innerWidth - lineDims.left) + "px";
                     if (this.standardInput) {
                         this.standardInput.nativeElement.focus();
                         if (this.results === undefined && !this.isTreeItem) this.search("");
@@ -130,6 +137,8 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
                 window.setTimeout(() => {
                     searchPanel.el.nativeElement.children[0].style.top = (lineDims.bottom) + "px";
                     searchPanel.el.nativeElement.children[0].style.left = (lineDims.left) + "px";
+
+                    searchPanel.el.nativeElement.children[0].style.maxWidth = (window.innerWidth - lineDims.left) + "px";
                     if (this.standardInput) {
                         this.standardInput.nativeElement.focus();
                         if (this.results === undefined && !this.isTreeItem()) this.search("");
