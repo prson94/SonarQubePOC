@@ -1158,13 +1158,16 @@ div.breadcrumbs {
             width: 100%;
         }
 
-        .breadcrumb{
+        .breadcrumb {
             .breadcrumb-text {
                 padding-right: 5px;
+                overflow: hidden;
+                text-overflow: ellipsis;
 
                 &.highlight {
                     color: #000;
                 }
+
                 &.breadcrumb-link {
                     &:hover, &.hover {
                         cursor: pointer;
@@ -1196,6 +1199,12 @@ div.breadcrumbs {
             padding: 0px 5px;
             font-size: 12px;
             color: white;
+
+            &.breadcrumb-link {
+                &:hover, &.hover {
+                    cursor: pointer;
+                }
+            }
 
             &:before {
                 content: '';
@@ -1235,6 +1244,12 @@ a.breadcrumb {
             content: ')';
         }
 
+        &.breadcrumb-link {
+            &:hover, &.hover {
+                cursor: pointer;
+            }
+        }
+
         &:hover {
             icon {
                 text-decoration: none;
@@ -1254,14 +1269,16 @@ a.breadcrumb {
 
     .breadcrumb-text {
         padding-right: 0px;
+        overflow: hidden;
+        text-overflow: ellipsis;
 
         &.highlight {
             color: @igx-header-breadcrumb-color;
         }
 
-        &.breadcrumb-link{
+        &.breadcrumb-link {
             &:hover, &.hover {
-                cursor:pointer;
+                cursor: pointer;
                 text-decoration: underline;
             }
         }
@@ -1367,6 +1384,8 @@ a.breadcrumb {
         cursor: pointer;
         padding-left: 20px;
         padding-right: 40px;
+        overflow: hidden;
+        text-overflow: ellipsis;
 
         &:hover, &.hover {
             background-color: @igx-lightblue-xlight;
