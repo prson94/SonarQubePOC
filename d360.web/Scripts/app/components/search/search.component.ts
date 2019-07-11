@@ -59,8 +59,8 @@ export class SearchComponent extends BaseComponent implements OnInit {
 
     public doSearch(filterCategory?: SearchCategories) {
         this.isLoading = true;
-        this.searchService.getSearchResults(this.searchText, this.resultsPerPage, this.pageNumber, (this.showAdvanced? undefined: this.searchTypes), filterCategory, this.isExactMatch, this.showAdvanced ? this.advancedFilters : undefined)
-            .then(res => {
+        this.searchService.getSearchResults(this.searchText, this.resultsPerPage, this.pageNumber, (this.showAdvanced ? undefined : this.searchTypes), filterCategory, this.isExactMatch, this.showAdvanced ? this.advancedFilters : undefined)
+            .subscribe(res => {
                 this.isLoading = false;
                 this.searchResults = res;
                 if (filterCategory == undefined) this.categories = res.Categories;

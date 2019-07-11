@@ -2605,6 +2605,13 @@
             This service houses all endpoints handling actions management in Govern.
             </summary>
         </member>
+        <member name="M:d360.web.Controllers.V2.ActionsController.GetIssues(System.Nullable{System.Guid},System.Nullable{System.Guid})">
+            <summary>
+            Returns all actions.
+            </summary>
+            <param name="actionTypeUid">The unique identifier of an action type</param>
+            <param name="assetUid">The unique identifier of an asset</param>
+        </member>
         <member name="M:d360.web.Controllers.V2.ActionsController.GetIssueTypes">
             <summary>
             Returns all actions types that are defined in Govern.  
@@ -3119,6 +3126,14 @@
             </summary>
             <param name="workflowUid">workflow instance unique identifier</param>
             <returns></returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.WorkflowController.GetWorkflowsAsync(System.Nullable{d360.core.entities.Workflow.WorkflowApiState})">
+            <summary>
+            Get a list of workflows contained within the system.
+            </summary>
+            <param name="Active">Active: is the workflow in an activate (non-completed) state; Default is Active
+            </param>
+            <returns>Returns list of workflows and a HTTP status code</returns>
         </member>
         <member name="M:d360.web.Controllers.D3SApiController.GetFieldFiltersByType(d360.core.SystemObjects,System.Int32)">
             <summary>

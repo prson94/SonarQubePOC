@@ -28,10 +28,11 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(!string.IsNullOrEmpty(content));
-            Assert.True(SimpleJsonComparer.IsEqual(XRefTestData.XRefModel, parsedData));
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadResponseCode);
+
+            Assert.True(!string.IsNullOrEmpty(content), XMsg.NoContent);
+            Assert.True(SimpleJsonComparer.IsEqual(XRefTestData.XRefModel, parsedData), XMsg.MissingAsset);
         }
 
 
@@ -44,13 +45,12 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedJson = JsonConvert.DeserializeObject<JArray>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(!string.IsNullOrEmpty(content));
-            Assert.Contains(parsedJson, 
-                x => x["uid"].ToString() == XRefTestData.XRefModel["uid"].ToString() 
-                && x["FieldHash"].ToString() == XRefTestData.XRefModel["FieldHash"].ToString()
-                && x["DataSource"].ToString() == XRefTestData.XRefModel["DataSource"].ToString());
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadResponseCode);
+            Assert.True(!string.IsNullOrEmpty(content), XMsg.NoContent);
+            Assert.True(parsedJson.DoesContain(x => x["uid"].ToString() == XRefTestData.XRefModel["uid"].ToString()
+               && x["FieldHash"].ToString() == XRefTestData.XRefModel["FieldHash"].ToString()
+               && x["DataSource"].ToString() == XRefTestData.XRefModel["DataSource"].ToString()), XMsg.MissingAsset);
         }
 
         [Fact, Priority(20)]
@@ -62,13 +62,12 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedJson = JsonConvert.DeserializeObject<JArray>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(!string.IsNullOrEmpty(content));
-            Assert.Contains(parsedJson,
-                x => x["uid"].ToString() == XRefTestData.XRefModel["uid"].ToString()
-                && x["FieldHash"].ToString() == XRefTestData.XRefModel["FieldHash"].ToString()
-                && x["DataSource"].ToString() == XRefTestData.XRefModel["DataSource"].ToString());
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadResponseCode);
+            Assert.True(!string.IsNullOrEmpty(content), XMsg.NoContent);
+            Assert.True(parsedJson.DoesContain(x => x["uid"].ToString() == XRefTestData.XRefModel["uid"].ToString()
+               && x["FieldHash"].ToString() == XRefTestData.XRefModel["FieldHash"].ToString()
+               && x["DataSource"].ToString() == XRefTestData.XRefModel["DataSource"].ToString()), XMsg.MissingAsset);
         }
 
         [Fact, Priority(30)]
@@ -82,8 +81,7 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.StatusCode == System.Net.HttpStatusCode.OK);
+            Assert.True(response.StatusCode == System.Net.HttpStatusCode.OK, XMsg.BadResponseCode);
 
         }
 
@@ -96,13 +94,12 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedJson = JsonConvert.DeserializeObject<JArray>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(!string.IsNullOrEmpty(content));
-            Assert.Contains(parsedJson,
-                x => x["uid"].ToString() == XRefTestData.XRefModel["uid"].ToString()
-                && x["FieldHash"].ToString() == XRefTestData.XRefModel["FieldHash"].ToString()
-                && x["DataSource"].ToString() == XRefTestData.XRefModel["DataSource"].ToString());
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadResponseCode);
+            Assert.True(!string.IsNullOrEmpty(content), XMsg.NoContent);
+            Assert.True(parsedJson.DoesContain(x => x["uid"].ToString() == XRefTestData.XRefModel["uid"].ToString()
+               && x["FieldHash"].ToString() == XRefTestData.XRefModel["FieldHash"].ToString()
+               && x["DataSource"].ToString() == XRefTestData.XRefModel["DataSource"].ToString()), XMsg.MissingAsset);
         }
 
         [Fact, Priority(50)]
@@ -116,8 +113,7 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.StatusCode == System.Net.HttpStatusCode.OK);
+            Assert.True(response.StatusCode == System.Net.HttpStatusCode.OK, XMsg.BadResponseCode);
 
         }
 
@@ -130,13 +126,12 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedJson = JsonConvert.DeserializeObject<JArray>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(!string.IsNullOrEmpty(content));
-            Assert.Contains(parsedJson,
-                x => x["uid"].ToString() == XRefTestData.XRefModel["uid"].ToString()
-                && x["FieldHash"].ToString() == XRefTestData.XRefModel["FieldHash"].ToString()
-                && x["DataSource"].ToString() == XRefTestData.XRefModel["DataSource"].ToString());
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadResponseCode);
+            Assert.True(!string.IsNullOrEmpty(content), XMsg.NoContent);
+            Assert.True(parsedJson.DoesContain(x => x["uid"].ToString() == XRefTestData.XRefModel["uid"].ToString()
+               && x["FieldHash"].ToString() == XRefTestData.XRefModel["FieldHash"].ToString()
+               && x["DataSource"].ToString() == XRefTestData.XRefModel["DataSource"].ToString()), XMsg.MissingAsset);
         }
 
         [Fact, Priority(70)]
@@ -148,13 +143,12 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedJson = JsonConvert.DeserializeObject<JArray>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(!string.IsNullOrEmpty(content));
-            Assert.Contains(parsedJson,
-                x => x["uid"].ToString() == XRefTestData.XRefModel["uid"].ToString()
-                && x["FieldHash"].ToString() == XRefTestData.XRefModel["FieldHash"].ToString()
-                && x["DataSource"].ToString() == XRefTestData.XRefModel["DataSource"].ToString());
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadResponseCode);
+            Assert.True(!string.IsNullOrEmpty(content), XMsg.NoContent);
+            Assert.True(parsedJson.DoesContain(x => x["uid"].ToString() == XRefTestData.XRefModel["uid"].ToString()
+               && x["FieldHash"].ToString() == XRefTestData.XRefModel["FieldHash"].ToString()
+               && x["DataSource"].ToString() == XRefTestData.XRefModel["DataSource"].ToString()), XMsg.MissingAsset);
         }
 
         [Fact, Priority(80)]
@@ -171,8 +165,7 @@ namespace igx.IntegrationTests.ApiTests
             var response = await httpClient.SendAsync(request);
             var content = await response.Content.ReadAsStringAsync();
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.StatusCode == System.Net.HttpStatusCode.OK);
+            Assert.True(response.StatusCode == System.Net.HttpStatusCode.OK, XMsg.BadResponseCode);
         }
 
         [Fact, Priority(90)]
@@ -184,13 +177,12 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedJson = JsonConvert.DeserializeObject<JArray>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(!string.IsNullOrEmpty(content));
-            Assert.DoesNotContain(parsedJson,
-                x => x["uid"].ToString() == XRefTestData.XRefModel["uid"].ToString()
-                && x["FieldHash"].ToString() == XRefTestData.XRefModel["FieldHash"].ToString()
-                && x["DataSource"].ToString() == XRefTestData.XRefModel["DataSource"].ToString());
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadResponseCode);
+            Assert.True(!string.IsNullOrEmpty(content), XMsg.NoContent);
+            Assert.False(parsedJson.DoesContain(x => x["uid"].ToString() == XRefTestData.XRefModel["uid"].ToString()
+               && x["FieldHash"].ToString() == XRefTestData.XRefModel["FieldHash"].ToString()
+               && x["DataSource"].ToString() == XRefTestData.XRefModel["DataSource"].ToString()), XMsg.MissingAsset);
         }
 
         [Fact, Priority(100)]
@@ -202,15 +194,14 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JArray>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(!string.IsNullOrEmpty(content));
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+            Assert.True(!string.IsNullOrEmpty(content), XMsg.NoContent);
             foreach (var item in parsedData)
             {
-                Assert.Contains(parsedData,
-                    x => x["uid"].ToString() == item["uid"].ToString()
+                Assert.True(parsedData.DoesContain(x => x["uid"].ToString() == item["uid"].ToString()
                       && x["FieldHash"].ToString() == item["FieldHash"].ToString()
-                      && x["DataSource"].ToString() == item["DataSource"].ToString());
+                      && x["DataSource"].ToString() == item["DataSource"].ToString()), XMsg.MissingAsset);
             }
         }
 
@@ -221,17 +212,16 @@ namespace igx.IntegrationTests.ApiTests
 
             var response = await httpClient.GetAsync($"{endpointUrl}/datasource/{XRefTestData.XRefModelList.First()["DataSource"].ToString()}");
             var content = await response.Content.ReadAsStringAsync();
-            var parsedJson = JsonConvert.DeserializeObject<JArray>(content);
+            var parsedData = JsonConvert.DeserializeObject<JArray>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(!string.IsNullOrEmpty(content));
-            foreach (var item in parsedJson)
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+            Assert.True(!string.IsNullOrEmpty(content), XMsg.NoContent);
+            foreach (var item in parsedData)
             {
-                Assert.Contains(parsedJson,
-                    x => x["uid"].ToString() == item["uid"].ToString()
+                Assert.True(parsedData.DoesContain(x => x["uid"].ToString() == item["uid"].ToString()
                       && x["FieldHash"].ToString() == item["FieldHash"].ToString()
-                      && x["DataSource"].ToString() == item["DataSource"].ToString());
+                      && x["DataSource"].ToString() == item["DataSource"].ToString()), XMsg.MissingAsset);
             }
         }
 
@@ -249,8 +239,7 @@ namespace igx.IntegrationTests.ApiTests
             var response = await httpClient.SendAsync(request);
             var content = await response.Content.ReadAsStringAsync();
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.StatusCode == System.Net.HttpStatusCode.OK);
+            Assert.True(response.StatusCode == System.Net.HttpStatusCode.OK, XMsg.BadResponseCode);
         }
 
         [Fact, Priority(130)]
@@ -267,8 +256,8 @@ namespace igx.IntegrationTests.ApiTests
             var response = await httpClient.SendAsync(request);
             var content = await response.Content.ReadAsStringAsync();
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.StatusCode == System.Net.HttpStatusCode.OK);
+            Assert.True(response.StatusCode == System.Net.HttpStatusCode.OK, XMsg.BadResponseCode);
+
         }
 
         [Fact, Priority(140)]
@@ -280,10 +269,10 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedJson = JsonConvert.DeserializeObject<JArray>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(!string.IsNullOrEmpty(content));
-            Assert.True(parsedJson.Count() == 0);
+            Assert.True(response.StatusCode == System.Net.HttpStatusCode.OK, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+            Assert.True(!string.IsNullOrEmpty(content), XMsg.NoContent);
+            Assert.True(parsedJson.Count() == 0, XMsg.InvalidCount);
         }
     }
 }

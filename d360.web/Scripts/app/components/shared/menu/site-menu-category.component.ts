@@ -149,7 +149,7 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
 
     loadCounts(menu: any) {
         if (menu && menu.NavigationItems && menu.NavigationItems.length > 0 && !menu.MenuID.startsWith('-')) {
-            this.siteMenuService.getCounts().then((res) => {
+            this.siteMenuService.getCounts().subscribe((res) => {
                 menu.NavigationItems.forEach((item) => this.getAllCounts(item, res));
             });
         }

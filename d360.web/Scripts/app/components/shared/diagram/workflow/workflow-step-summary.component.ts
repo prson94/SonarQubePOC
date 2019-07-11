@@ -95,6 +95,8 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
             return "Action Field::" + item['@FieldName'];
         else {
             let f = this.fields.find(f => f.ID == +item['@FieldId']);
+            if (f == undefined)
+                return "";
             return "Asset Field::" + f.FriendlyName;
         }
     }

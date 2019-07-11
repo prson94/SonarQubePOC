@@ -41,28 +41,7 @@ h6 {
     font-size: @font-size-h6;
     line-height: floor((@font-size-h6 * 1.1));
 }
-.NoResultsMessage,
-.EmptyMessage {
-    color: @d3s-gray-3;
-    font-size: 200%;
-    font-weight: 600;
-}
-    .EmptyMessage:before {
-        content: "No item currently selected.";
-    }
 
-.PageHeader {
-    padding: 0 10px 0 10px;
-    margin-bottom: 5px;
-}
-
-.FieldRow {
-    margin-bottom: 15px;
-}
-
-.form-header-info {
-    width: 55%;
-}
 .form-instructions {
     font-size: 90%;
     color: @d3s-gray-2;
@@ -74,14 +53,6 @@ h6 {
     color: @d3s-gray-2;
     margin-left: 10px;
     margin-top: 5px;
-}
-
-.FieldFilter {
-    clear: both;
-    display: table;
-    margin-bottom: 1px;
-    margin-top: 5px;
-    font-weight: 800;
 }
 
 .FieldNameRequired ,
@@ -103,10 +74,10 @@ button.WhiteButton {
     color: #000;
     border: none;
     background-color: transparent;
+
     &[disabled] {
         color: @d3s-gray-3;
     }
-
 }
 
 .FieldName {
@@ -139,77 +110,6 @@ button.WhiteButton {
         width:100%;
     }*/
 }
-
-
-
-
-.emptymessage {
-    padding: 25px;
-    color: #ddd;
-    font-size: 40px;
-    font-weight: 200;
-}
-
-.quickTip {
-    color: @rgba-complement-1;
-    text-decoration: dashed;
-}
-
-.FormStatus {
-    color: #1F98C7;
-    font-weight: 600;
-    font-size: 110%;
-}
-
-.FormNotice {
-    color: #ff0000;
-    font-weight: 600;
-    font-size: 110%;
-}
-
-/*******************************
-            Breadcrumb
-*******************************/
-ol.breadcrumb {
-    font-size: 90%;
-    list-style: none;
-    li {
-        display: inline-block;
-    } 
-    li:after {
-        content: ' / ';
-    }
-    li.active {
-        font-weight: 600;
-    }
-    li.active:after {
-        content: '';
-    }
-}
-
-ul.hierarchy {
-    margin-left: 20px;
-    margin-right: 20px;
-    padding: 5px;
-    border: 1px solid #f5f5f5;
-    border-radius: 3px;
-    background-color: #fafafa;
-    list-style: none;
-    li {
-        display: inline-block;
-    }
-    li.separator {
-        padding: 0 15px 0 15px;
-    }
-    li.clickable {
-        color: @d3s-blue-2;
-        text-decoration: underline;
-        cursor: pointer;
-    }    
-    :last-child {
-        font-weight: 600;
-    }    
-} 
 
 /*--------------------
         Form
@@ -419,101 +319,6 @@ ul.hierarchy {
     color: lightgreen;
     font-size: 150%;
     font-weight: 700;
-}
-
-.fusion-filter {
-    width: 98%; 
-    margin: auto;
-    .hdr {
-        font-weight: 600;
-    }
-    .filter-f {
-        display:inline-block;
-    }
-    .btn {
-        height: 25px; 
-        width: 100%; 
-        border-radius: 3px; 
-        border: 1px solid #999; 
-        color: @d3s-blue-1;
-        background-color: transparent;
-        :hover {
-            color: @d3s-blue-3;
-        }
-    }
-}
-
-.tooltip-icon {
-    vertical-align: middle; 
-    text-align: center; 
-    font-size: 12px; 
-    font-weight: 700; 
-    line-height: 40px; 
-    height: 40px; 
-    width: 40px; 
-    border-radius: 1px; 
-}
-
-.row-icon {
-    display: inline-block;
-    vertical-align: middle; 
-    font-size: 16px; 
-    font-weight: 700; 
-    line-height: 20px; 
-    height: 20px; 
-    width: 20px; 
-    border-radius: 1px; 
-    padding-left: 2px;
-    i {
-        font-size: 16px;
-    }
-}
-
-.active-flag {
-    color: red;
-}
-
-.inactive-flag {
-    color: @d3s-gray-2;
-}
-
-.detail-alert {
-    color: red;
-    font-size: 25px;
-    line-height: 25px;
-    position: absolute;
-    top: 15px;
-    right: 15px;
-}
-
-.flag-clickable {
-    cursor: pointer;
-}
-
-.report {
-    margin-top: 10px;
-}
-
-.report-area,
-.report-area-design {
-    min-height: 50px;
-    margin-bottom: 15px;
-}
-
-.report-area {
-
-}
-.report-area-design {
-    border: 3px dashed @d3s-gray-6;
-    border-radius: 5px;
-}
-
-.report-schema-view {
-    font-weight: 600;
-    font-size: 115%;
-}
-.report-schema-column {
-    font-weight: 400;
 }
 
 /*-----------------------

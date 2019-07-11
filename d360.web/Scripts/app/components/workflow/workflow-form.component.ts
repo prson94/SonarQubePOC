@@ -132,7 +132,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
             }
         }
         //save form values with stepid and itemid
-        this.workflowService.submitWorkflowForm(this.workflowItemId, this.workflowItemStepId, this.fields);
+        this.workflowService.submitWorkflowForm(this.workflowItemId, this.workflowItemStepId, this.fields).subscribe();
 
         this.isCompleted = true;
     }

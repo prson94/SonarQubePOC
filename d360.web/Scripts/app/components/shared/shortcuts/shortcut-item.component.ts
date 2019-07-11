@@ -176,14 +176,14 @@ export class ShortcutItemComponent extends BaseComponent implements OnInit {
 
         if (this.isAdding) {
             this.shortcutService.addShortcut(this.shortcut)
-                .then(r => {
+                .subscribe(r => {
                     this.showMessageForResult(this.messagesService, r);
                     this.isLoading = false;
                     this.onSave.emit();
                 });
         } else {
             this.shortcutService.editShortcut(this.shortcut)
-                .then(r => {
+                .subscribe(r => {
                     this.showMessageForResult(this.messagesService, r);
                     this.isLoading = false;
                     this.onSave.emit();

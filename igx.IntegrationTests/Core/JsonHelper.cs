@@ -93,5 +93,34 @@ namespace igx.IntegrationTests.Core
             return o1[prop].ToString() == o2[prop].ToString();
         }
 
+        public static IList<JToken> AsJTokenList(this JArray arr)
+        {
+            List<JToken> list = new List<JToken>();
+            foreach (var item in arr)
+            {
+                list.Add(item);
+            }
+            return list;
+        }
+
+        public static bool DoesContain(this JArray arr, Func<JToken, bool> filter)
+        {
+            return arr.AsJTokenList().Where(filter).Count() > 0;
+        }
+        public static bool DoesContainFields(JToken obj, params string[] fields)
+        {
+            return DoesContainFields(obj as JObject, fields);
+        }
+        public static bool DoesContainFields(JObject obj, params string[] fields)
+        {
+            foreach(var prop in fields)
+            {
+                if (obj[prop] == null)
+                    return false;
+            }
+
+            return true;
+        }
+
     }
 }

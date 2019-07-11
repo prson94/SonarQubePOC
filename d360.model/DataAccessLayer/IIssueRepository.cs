@@ -14,5 +14,7 @@ namespace d360.model.DataAccessLayer
         Task<IEnumerable<IssueTypeApiModel>> GetAllocationByAssetType(Guid assetTypeUid);
 
         IssueType GetIssueTypeByUID(Guid issueTypeUid);
+
+        Issue GetIssueByUID(Guid issueUid);
     }
 }

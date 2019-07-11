@@ -46,7 +46,7 @@ export class ShoppingCartComponent extends BaseComponent implements OnInit {
     load() {
         this.isLoading = true;
         this.shoppingCartService.getMyShoppingCartItems(1)
-            .then(r => {
+            .subscribe(r => {
                 this.cart = r.Cart;
                 this.items = r.Items;
                 
@@ -61,7 +61,7 @@ export class ShoppingCartComponent extends BaseComponent implements OnInit {
 
     delete(item: ShoppingCartListItem) {
         this.shoppingCartService.removeShoppingCartItem(item.Object, item.ObjectID, this.cart.ID)
-            .then(r => {
+            .subscribe(r => {
                 this.showMessageForResult(this.messagesService, r);
                 this.load();
             });
@@ -70,7 +70,7 @@ export class ShoppingCartComponent extends BaseComponent implements OnInit {
     request() {
         this.isLoading = true;
         this.shoppingCartService.requestShoppingCart(this.cart)
-            .then(r => {
+            .subscribe(r => {
                 this.showMessageForResult(this.messagesService, r);
                 this.mode = CartMode.Default;
                 this.load();
@@ -80,7 +80,7 @@ export class ShoppingCartComponent extends BaseComponent implements OnInit {
     clear() {
         this.isLoading = true;
         this.shoppingCartService.emptyShoppingCart(this.cart.ID)
-            .then(r => {
+            .subscribe(r => {
                 this.showMessageForResult(this.messagesService, r);
                 this.mode = CartMode.Default;
                 this.load();

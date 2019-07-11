@@ -63,7 +63,7 @@
 
                 </div>
             </div>
-            <d3s-dynamic-editor *ngIf="showEditor" [objectID]="ruleType?.ID" [objectType]="'Rule'" [title]="'Rule'" [selection]="selected" (saveClick)="saveRule($event)" (closeClick)="showEditor = false;"></d3s-dynamic-editor>
+            <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected ? selected?.ID : ruleType?.ID" [objectType]="'Rule'" [title]="'Rule'" [selection]="selected" (saveClick)="saveRule($event)" (closeClick)="showEditor = false;"></d3s-dynamic-editor>
             <d3s-delete-form *ngIf="showDelete"
                                     [callback]="theDeleteCallback"
                                     [itemId]="selected?.ID"
