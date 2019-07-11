@@ -233,6 +233,9 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
         else
             this.iconType = 'icon';
         this.loadFolderItems();
+        this.oldFolderItems = _.cloneDeep(this.folderItems);
+        this.oldFolderName = this.folderName;
+        this.loadSiteNavPermissions(this.selection);
     }
     
     delete(item: SiteNav) {
@@ -412,10 +415,6 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
                         })
                 })
         }
-
-        this.oldFolderItems = _.cloneDeep(this.folderItems);
-        this.oldFolderName = this.folderName;
-        this.loadSiteNavPermissions(this.selection);
     }
 
     loadSiteNavPermissions(item: SiteNav) {

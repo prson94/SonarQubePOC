@@ -95,9 +95,9 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         this.companySettingsService.putSettings(this.companySettings)
             .subscribe(data => {                
                 this.isLoading = false;
-                let type = JSON.parse(data["_body"]).type;
+                let type = data.type;
                 if (type && type == "error") {
-                    let message = JSON.parse(data["_body"]).message;
+                    let message = data.message;
                     console.log("type: " + type + " message: " + message);
                     this.messagesService.showError("Problem Saving settings", message);
                 } else {
