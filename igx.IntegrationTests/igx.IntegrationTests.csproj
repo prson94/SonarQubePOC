@@ -93,6 +93,7 @@
     <Compile Include="ApiTests\MetricsControllerIntegrationTests.cs" />
     <Compile Include="ApiTests\RelationshipControllerTests.cs" />
     <Compile Include="ApiTests\TagControllerIntegrationTests.cs" />
+    <Compile Include="ApiTests\ResponsibilitiesControllerTests.cs" />
     <Compile Include="ApiTests\WorkflowControllerTests.cs" />
     <Compile Include="Core\BaseIntegrationTestClass.cs" />
     <Compile Include="Core\JsonHelper.cs" />
@@ -107,6 +108,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestData\FieldsTestData.cs" />
     <Compile Include="TestData\MetricsData.cs" />
+    <Compile Include="TestData\ResponsibilitesTestData.cs" />
     <Compile Include="TestData\TagTestData.cs" />
     <Compile Include="TestData\WorkflowTestData.cs" />
     <Compile Include="TestData\XRefTestData.cs" />
