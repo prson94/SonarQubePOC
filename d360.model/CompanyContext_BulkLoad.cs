@@ -54,7 +54,7 @@ namespace d360.model
 		case when L.Action = 'P' and L.[File] is null then
             case when (L.PutExecutionId is not null and EE.CompletedOn is null) or (L.PostExecutionId is not null and EA.CompletedOn is null) then
                 null
-            when EE.CompletedOn > EA.CompletedOn then
+            when coalesce(EE.CompletedOn, '1/1/1900') > coalesce(EA.CompletedOn, '1/1/1900') then
                 EE.CompletedOn
             else
                 EA.CompletedOn      
@@ -120,31 +120,23 @@ from	[Load] L
             {
                 countSql = @"
 		cross apply (
-			select sum(I) as C from (
-				select count(*) as I from api.ExecutionAsset where ExecutionID = L.PostExecutionID and Success = 1
-				union all
-				select count(*) as I from api.ExecutionAsset where ExecutionID = L.PutExecutionID and Success = 1 
-				) R
+				select count(*) as C from api.ExecutionAsset where ExecutionID in (L.PostExecutionID, L.PutExecutionID) and Success = 1
 			) S
 		cross apply (
 			select sum(I) as C from (
-				select count(*) as I from api.ExecutionAsset where ExecutionID = L.PostExecutionID and Success = 0
+				select count(*) as I from api.ExecutionAsset where ExecutionID in (L.PostExecutionID, L.PutExecutionID) and Success = 0
 				union all
-				select count(*) as I from api.ExecutionAsset where ExecutionID = L.PutExecutionID and Success = 0 
+				select count(*) as I from api.ExecutionAssetError where ExecutionID in (L.PostExecutionID, L.PutExecutionID)
 				) R
 			) E
 		cross apply (
-			select sum(I) as C from (
-				select count(*) as I from api.ExecutionAsset where ExecutionID = L.PostExecutionID and Success is null
-				union all
-				select count(*) as I from api.ExecutionAsset where ExecutionID = L.PutExecutionID and Success is null 
-				) R
+				select count(*) as C from api.ExecutionAsset where ExecutionID in (L.PostExecutionID, L.PutExecutionID) and Success is null
 			) I
 		cross apply (
 			select sum(I) as C from (
-				select count(*) as I from api.ExecutionAsset where ExecutionID = L.PostExecutionID 
+				select count(*) as I from api.ExecutionAsset where ExecutionID in (L.PostExecutionID, L.PutExecutionID)
 				union all
-				select count(*) as I from api.ExecutionAsset where ExecutionID = L.PutExecutionID
+				select count(*) as I from api.ExecutionAssetError where ExecutionID in (L.PostExecutionID, L.PutExecutionID)
 				) R
 			) T";
             }
@@ -935,9 +927,10 @@ order by	ColumnIndex", new { id });
                         }
                         putAssets.Add(update);
                     }
+
+                    Update(item);
                 }
 
-                SaveChanges();
 
                 if (putAssets.Any())
                 {
