@@ -858,17 +858,40 @@ order by	ColumnIndex", new { id });
                 await LoadLookupValues(load, assetType);
                 await CalculateHashes(load, assetType);
 
+
                 var putAssets = new List<AssetUpdate>();
                 var postAssets = new List<AssetInsert>();
 
                 var loadItems = Filter<LoadItem>(l => l.LoadID == load.ID).ToList();
 
+
                 foreach (var item in loadItems)
                 {
                     var itemUid = Guid.NewGuid();
+                    var fieldsToSkip = new List<string>();
+                    AssetTypeLevel assetTypeLevel = null;
+                    var loadItemColumns = Filter<LoadItemColumn>(l => l.LoadID == load.ID && l.RowIndex == item.RowIndex).ToList();
+
                     item.ExecutionItemUid = itemUid;
 
-                    var loadItemColumns = Filter<LoadItemColumn>(l => l.LoadID == load.ID && l.RowIndex == item.RowIndex).ToList();
+                    if (assetType.Class == AssetTypeClass.Model)
+                    {
+                        var maxLevel = (await QueryAsync<int>(@"
+                        select      coalesce(max(L.[Level]), 1) 
+                        from		AssetType ATT
+			                        inner join AssetTypeLevel L on (L.AssetTypeID = ATT.ID and ATT.[Object] = 'TaxonomyType')
+			                        inner join LoadColumn LC on LC.LoadID = @id and L.Name = substring(LC.[Name], 1, len(LC.[Name]) - charindex(' ', reverse(LC.[Name])))
+			                        inner join LoadItemColumn LI on LI.LoadID = @id and LI.RowIndex = @rowIndex and LI.ColumnIndex = LC.ColumnIndex and LI.[Value] is not null
+                        where		ATT.[ObjectID] = @ObjectID", new { assetType.ObjectID, id = load.ID, rowIndex = item.RowIndex })).FirstOrDefault();
+                        assetTypeLevel = assetType.AssetTypeLevels.FirstOrDefault(l => l.Level == maxLevel);
+
+                        //ignore parent key fields
+                        var keyFields = FieldTypes.Where(f => f.Object == assetType.Object && f.ObjectID == assetType.ObjectID && f.IsPartOfKey);
+                        foreach (var k in keyFields)
+                            fieldsToSkip.AddRange(assetType.AssetTypeLevels.Where(l => l.Level != maxLevel).Select(l => $"{l.Name} {k.Name}"));
+                    }
+
+                    
                     if (!item.ObjectID.HasValue)
                     {
                         var insert = new AssetInsert();
@@ -890,8 +913,18 @@ order by	ColumnIndex", new { id });
                             }
                             else
                             {
-                                if (!string.IsNullOrEmpty(field.Value))
-                                    insert.Fields.Add(col.Name, field.Value);
+                                if (!string.IsNullOrEmpty(field.Value) && !fieldsToSkip.Contains(col.Name))
+                                {
+                                    if (assetTypeLevel != null)
+                                    {
+                                        if (col.Name.StartsWith($"{assetTypeLevel.Name} "))
+                                            insert.Fields.Add(col.Name.Replace($"{assetTypeLevel.Name} ", ""), field.Value);
+                                        else
+                                            insert.Fields.Add(col.Name, field.Value);
+
+                                    }
+
+                                }
                             }
                         }
                         postAssets.Add(insert);
@@ -923,6 +956,7 @@ order by	ColumnIndex", new { id });
                         foreach (var field in loadItemColumns)
                         {
                             var col = load.LoadColumns.Where(c => c.LoadID == load.ID && c.ColumnIndex == field.ColumnIndex).FirstOrDefault();
+                            if (!fieldsToSkip.Contains(col.Name))
                             update.Fields.Add(col.Name, field.Value);
                         }
                         putAssets.Add(update);
@@ -946,7 +980,7 @@ order by	ColumnIndex", new { id });
                     load.PostExecutionID = executionInfo.ExecutionID;
                 }
 
-                SaveChanges();
+                await SaveChangesAsync();
 
             }
             catch (Exception ex)
@@ -1371,8 +1405,8 @@ from    LoadItem L
 where	L.LoadID = @id
 ";
             var modelHashSql = @"
-update  T
-set     T.KeyHash = K.KeyHash,
+update T set
+       T.KeyHash = K.KeyHash,
 		T.FieldHash = F.FieldHash
 from    LoadItem T
         left join	(
@@ -1471,7 +1505,8 @@ where	T.LoadID = @id;
             }
             else if (assetType.Class == AssetTypeClass.Model)
             {
-                foreach (var item in load.LoadItems)
+                var rows = (await QueryAsync<int>(@"select RowIndex from LoadItem where LoadID = @id", new { id = load.ID })).ToList();
+                foreach (var row in rows)
                 {
 
                     var currLevel = (await QueryAsync<int>(@"
@@ -1481,9 +1516,9 @@ where	T.LoadID = @id;
 			                        inner join LoadColumn LC on LC.LoadID = @id and L.Name = substring(LC.[Name], 1, len(LC.[Name]) - charindex(' ', reverse(LC.[Name])))
 			                        inner join LoadItemColumn LI on LI.LoadID = @id and LI.RowIndex = @rowIndex and LI.ColumnIndex = LC.ColumnIndex and LI.[Value] is not null
                         where		ATT.[ObjectID] = @ObjectID"
-                        , new { id = load.ID, rowIndex = item.RowIndex, objectID = assetType.ObjectID })).FirstOrDefault();
+                        , new { id = load.ID, rowIndex = row, objectID = assetType.ObjectID })).FirstOrDefault();
 
-                    await QueryAsync<int>(modelHashSql, new { @object = assetType.Object, objectID = assetType.ObjectID, id = load.ID, rowIndex = item.RowIndex, currLevel });
+                    await QueryAsync<int>(modelHashSql, new { @object = assetType.Object, objectID = assetType.ObjectID, id = load.ID, rowIndex = row, currLevel });
 
                 }
             }
@@ -1520,6 +1555,7 @@ where	T.LoadID = @id;
         new { @object = assetType.Object, objectID = assetType.ObjectID, id = load.ID });
 
             }
+            
         }
 
         #endregion
