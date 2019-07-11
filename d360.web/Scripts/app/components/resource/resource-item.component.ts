@@ -98,7 +98,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                         this.isMe = false;
                     }
 
-                    this.socialService.getTheCounts(this.resourceId, this.days).then(
+                    this.socialService.getTheCounts(this.resourceId, this.days).subscribe(
                         k => {
                             for (let i = 0; i < k.length; i++) {
                                 this.totNumber += k[i].Total;

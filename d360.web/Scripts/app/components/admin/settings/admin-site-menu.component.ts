@@ -12,6 +12,7 @@ import { FormMode } from '../../../models/form.model';
 import { JsonResult } from '../../../models/jsonresult.model';
 
 import * as _ from 'lodash';
+import { Observable } from 'rxjs';
 
 @Component({
     selector: 'd3s-admin-site-menu',
@@ -160,15 +161,17 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
             item.ParentID = this.selection.ID;
             this.isLoading = true;
             this.siteMenuService.addFolderItem(item)
-                .then(() => this.stateService.reloadLeftNavMenu())
-                .then(() => this.loadFolderItems());
+                .subscribe(() => {
+                    this.stateService.reloadLeftNavMenu();
+                    this.loadFolderItems();
+                })
         }
     }
 
     deleteFolder(item: SiteNav) {
         this.isLoading = true;
         this.siteMenuService.removeFolder(item.ID)
-            .then(res => {
+            .subscribe(res => {
                 this.showMessageForResult(this.messagesService, res);
                 this.stateService.reloadLeftNavMenu();
                 this.formMode = FormMode.Default;
@@ -185,8 +188,10 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 
             this.isLoading = true;
             this.siteMenuService.removeFolderItem(item.ID)
-                .then(() => this.stateService.reloadLeftNavMenu())
-                .then(() => this.loadFolderItems());
+                .subscribe(() => {
+                    this.stateService.reloadLeftNavMenu();
+                    this.loadFolderItems();
+                })
         }
     }
 
@@ -198,8 +203,10 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
             item.ParentID = this.selection.ID;
             this.isLoading = true;
             this.siteMenuService.addFolderItem(item)
-                .then(() => this.stateService.reloadLeftNavMenu())
-                .then(() => this.loadFolderItems());
+                .subscribe(() => {
+                    this.stateService.reloadLeftNavMenu();
+                    this.loadFolderItems();
+                })
         }
     }
 
@@ -225,12 +232,10 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
             this.iconType = 'image';
         else
             this.iconType = 'icon';
-        this.loadFolderItems()
-            .then(() => {
-                this.oldFolderItems = _.cloneDeep(this.folderItems);
-                this.oldFolderName = this.folderName;
-            })
-            .then(() => this.loadSiteNavPermissions(this.selection));
+        this.loadFolderItems();
+        this.oldFolderItems = _.cloneDeep(this.folderItems);
+        this.oldFolderName = this.folderName;
+        this.loadSiteNavPermissions(this.selection);
     }
     
     delete(item: SiteNav) {
@@ -242,20 +247,31 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
         this.selection = item;
         this.isLoading = true;
         this.siteMenuService.moveFolderUp(this.selection.ID)
-            .then(() => this.siteMenuService.getSiteNavItems())
-            .then(s => { this.companySettings.SiteNav = s; this.companySettingsChange.emit(this.companySettings); })
-            .then(() => this.stateService.reloadLeftNavMenu())
-            .then(() => this.isLoading= false);
+            .subscribe(() => {
+                this.siteMenuService.getSiteNavItems()
+                    .subscribe(s => {
+                        this.companySettings.SiteNav = s;
+                        this.companySettingsChange.emit(this.companySettings);
+                        this.stateService.reloadLeftNavMenu();
+                        this.isLoading = false;
+                    })
+            })
     }
 
     moveDown(item: SiteNav) {
         this.selection = item;
         this.isLoading = true;
         this.siteMenuService.moveFolderDown(this.selection.ID)
-            .then(() => this.siteMenuService.getSiteNavItems())
-            .then(s => { this.companySettings.SiteNav = s; this.companySettingsChange.emit(this.companySettings); })
-            .then(() => this.stateService.reloadLeftNavMenu())
-            .then(() => this.isLoading = false);
+            .subscribe(() => {
+                this.siteMenuService.getSiteNavItems()
+                    .subscribe(s => {
+                        this.companySettings.SiteNav = s;
+                        this.companySettingsChange.emit(this.companySettings);
+                        this.stateService.reloadLeftNavMenu();
+                        this.isLoading = false;
+                    });
+                
+            })
     }
 
     moveFolderUp(item: SiteNav, i: number) {
@@ -265,10 +281,10 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
             this.prevFolderID = this.folderItems[i - 1].ID;
             this.isLoading = true;
             this.siteMenuService.moveSiteNavFolderUp(this.selection.ID, this.prevFolderID)
-                .then(() => {
-                    this.edit(this.editedMenuItem)
+                .subscribe(() => {
+                    this.edit(this.editedMenuItem);
+                    this.stateService.reloadLeftNavMenu()
                 })
-                .then(() => this.stateService.reloadLeftNavMenu())
         } else {
             this.messagesService.showError("Error", "First item can not be moved up.")            
         }        
@@ -282,10 +298,10 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
             this.nextFolderID = this.folderItems[i + 1].ID;
             this.isLoading = true;
             this.siteMenuService.moveSiteNavFolderDown(this.selection.ID, this.nextFolderID)
-                .then(() => {
-                    this.edit(this.editedMenuItem)
+                .subscribe(() => {
+                    this.edit(this.editedMenuItem);
+                    this.stateService.reloadLeftNavMenu()
                 })
-                .then(() => this.stateService.reloadLeftNavMenu())
         } else {
             this.messagesService.showError("Error", "Last item can not be moved down.")                       
         }        
@@ -299,16 +315,14 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
             case FormMode.Editing:
                 this.selection.IconPayload = this.iconImage.dataUrl;
                 this.siteMenuService.editFolder(this.selection)
-                    .then(result => {
+                    .subscribe(result => {
                         this.showMessageForResult(this.messagesService, result);
-                    })
-                    .then(() => this.siteMenuService.setSiteNavPermissions(this.selection))
-                    .then(() => {
+                        this.siteMenuService.setSiteNavPermissions(this.selection);
                         this.stateService.reloadLeftNavMenu();
                         this.isLoading = false;
                         this.formMode = FormMode.Default;
                         this.onSaveComplete.emit();
-                    });
+                    })
                 break;
             case FormMode.Adding:
 
@@ -319,19 +333,19 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
                 };
 
                 this.siteMenuService.addFolder(model)
-                    .then(r => {
+                    .subscribe(r => {
                         this.showMessageForResult(this.messagesService, r);
                         this.formMode = FormMode.Default;
                         this.isLoading = false;
                         this.stateService.reloadLeftNavMenu();
                         this.onSaveComplete.emit();
+                        this.siteMenuService.setSiteNavPermissions(this.selection)
                     })
-                    .then(() => this.siteMenuService.setSiteNavPermissions(this.selection))
                 break;
             case FormMode.Deleting:
                 this.isLoading = true;
                 this.siteMenuService.removeFolder(this.selection.ID)
-                    .then(res => {
+                    .subscribe(res => {
                         this.showMessageForResult(this.messagesService, res);
                         this.stateService.reloadLeftNavMenu();
                         this.formMode = FormMode.Default;
@@ -372,35 +386,41 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
             });
     }
 
-    loadFolderItems(): Promise<any> {
+    loadFolderItems() {
         this.isLoading = true;
 
         if (this.selection == null || this.selection.ID == null) {
             return this.siteMenuService.getAvailableItems()
-                .then(r => {
+                .subscribe(r => {
                     this.availableItems = r;
                     this.isLoading = false;
                 });
         } else {
 
             return this.siteMenuService.getAvailableItems()
-                .then(r => {
+                .subscribe(r => {
                     this.availableItems = r;
+                    this.siteMenuService.getSiteNavFolderItems(this.selection.ID)
+                        .subscribe(s => {
+                            this.folderItems = s;
+                            this.folderItems = _.sortBy(this.folderItems, 'SortOrder'); // sort the folderItems by SortOrder
+                            this.isLoading = false;
+                            this.siteMenuService.getSiteNavFolderItems(this.selection.ID)
+                                .subscribe(s => {
+                                    this.folderItems = s;
+                                    this.folderItems = _.sortBy(this.folderItems, 'SortOrder'); // sort the folderItems by SortOrder
+                                    this.isLoading = false;
+                                    this.stateService.reloadLeftNavMenu();
+                                })
+                        })
                 })
-                .then(() => this.siteMenuService.getSiteNavFolderItems(this.selection.ID))
-                .then(s => {                    
-                    this.folderItems = s;
-                    this.folderItems = _.sortBy(this.folderItems, 'SortOrder'); // sort the folderItems by SortOrder
-                    this.isLoading = false;
-                })
-                .then(() => this.stateService.reloadLeftNavMenu());
         }
     }
 
-    loadSiteNavPermissions(item: SiteNav): Promise<any> {
+    loadSiteNavPermissions(item: SiteNav) {
         this.isLoading = true;
         return this.siteMenuService.getSiteNavPermissions(item.ID)
-            .then(r => {
+            .subscribe(r => {
                 item.Permissions = r;
                 this.isLoading = false;
             });
