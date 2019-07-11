@@ -23,8 +23,9 @@ export class CompanySettingsService extends BaseObservableService  implements IC
     }
 
     putSettings(companySettings: CompanySettings): Observable<any> {
-        var headers = new HttpHeaders();
-        headers.append('Content-Type', 'application/json');
+        var headers = new HttpHeaders({
+            'Content-Type': 'application/json'
+        });
 
         return this.http.put('/form/UpdateCompanySettings', JSON.stringify(companySettings), { headers })
             .pipe(
