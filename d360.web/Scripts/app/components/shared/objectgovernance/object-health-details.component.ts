@@ -88,79 +88,79 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
         this.scoreService.getAverageScore(this.uid)
             .subscribe(res => {
                 this.averageScore = (res == null || res.AverageScore == null) ? 0 : res.AverageScore;
-            })
-            .add(() => this.scoreService.getScoreHistory(this.uid))
-            .add(res => {
-                let data = res.map(val => {
-                    return [Date.parse(val.Date), val.Score];
-                });
+                this.scoreService.getScoreHistory(this.uid)
+                    .subscribe(res => {
+                        let data = res.map(val => {
+                            return [Date.parse(val.Date), val.Score];
+                        });
 
-                this.scoreHistory = {                    
-                    chart: {
-                        zoomType: 'x'
-                    },
-                    title: {                      
-                        text:''
-                    },                    
-                    xAxis: {
-                        type: 'datetime',
-                        minTickInterval: (24 * 3600 * 1000),                    
-                    },
-                    yAxis: {
-                        title: {
-                            text: 'Governance Score'
-                        },
-                        min: 0,
-                        plotLines: [{
-                            value: this.averageScore,
-                            color: '#6b5a51',
-                            dashStyle: 'solid',
-                            width: 2,
-                            label: {
-                                text: 'Average Score'
-                                }
-                            }
-                        ]
-                    },
-                    credits: {
-                        enabled: false
-                    },
-                    legend: {
-                        enabled: false
-                    },
-                    plotOptions: {
-                        line: {                           
-                            marker: {
-                                radius: 1
+                        this.scoreHistory = {
+                            chart: {
+                                zoomType: 'x'
                             },
-                            lineWidth: 2,
-                            states: {
-                                hover: {
-                                    lineWidth: 3
-                                }
+                            title: {
+                                text: ''
                             },
-                            threshold: null
-                        },
-                        series: {
-                            cursor: 'pointer',
-                            point: {
-                                events: {
-                                    click: e => {
-                                        this.scoreDate = Highcharts.dateFormat('%Y-%m-%d', e.point.x);
-                                        this.loadPoints();
+                            xAxis: {
+                                type: 'datetime',
+                                minTickInterval: (24 * 3600 * 1000),
+                            },
+                            yAxis: {
+                                title: {
+                                    text: 'Governance Score'
+                                },
+                                min: 0,
+                                plotLines: [{
+                                    value: this.averageScore,
+                                    color: '#6b5a51',
+                                    dashStyle: 'solid',
+                                    width: 2,
+                                    label: {
+                                        text: 'Average Score'
                                     }
                                 }
-                            }
-                        }
-                    },
-                    series: [{
-                        type: 'line',
-                        name: 'Governance Score',
-                        data: data,
-                        color: '#426A84'
-                    }]
-                };
-            });        
+                                ]
+                            },
+                            credits: {
+                                enabled: false
+                            },
+                            legend: {
+                                enabled: false
+                            },
+                            plotOptions: {
+                                line: {
+                                    marker: {
+                                        radius: 1
+                                    },
+                                    lineWidth: 2,
+                                    states: {
+                                        hover: {
+                                            lineWidth: 3
+                                        }
+                                    },
+                                    threshold: null
+                                },
+                                series: {
+                                    cursor: 'pointer',
+                                    point: {
+                                        events: {
+                                            click: e => {
+                                                this.scoreDate = Highcharts.dateFormat('%Y-%m-%d', e.point.x);
+                                                this.loadPoints();
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            series: [{
+                                type: 'line',
+                                name: 'Governance Score',
+                                data: data,
+                                color: '#426A84'
+                            }]
+                        };
+                    });
+            }) 
     }
 
     private loadPoints() {

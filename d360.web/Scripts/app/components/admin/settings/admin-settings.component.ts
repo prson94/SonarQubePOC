@@ -75,15 +75,14 @@ export class AdminSettingsComponent extends AdminBaseComponent {
                 this.companySettings.SiteNav.forEach(s => {
                     s.IsCustom = (s.Name.indexOf('#') != 0)
                 });
-
+                this.companySettingsService.getGroups()
+                    .subscribe(x => {
+                        this.groups = x;
+                        this.groups.unshift({ label: '[Administrators]', value: '0' });
+                        this.isLoading = false;
+                    });
              
             })
-            .add(() => this.companySettingsService.getGroups())
-            .add(x => {
-                this.groups = x;
-                this.groups.unshift({ label: '[Administrators]', value: '0' });
-                this.isLoading = false;
-            });
     }
 
     save(): void {
