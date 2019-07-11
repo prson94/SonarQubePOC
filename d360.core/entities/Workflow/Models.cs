@@ -367,7 +367,42 @@ namespace d360.core.entities.Workflow
 
     }
 
+    public class WorkflowsApiViewModel
+    {
+        [DataMember]
+        public int pageSize { get; set; } = 250;
+        [DataMember]
+        public int pageNum { get; set; } = 1;
+        [DataMember]
+        public int total { get; set; } = 0;
+        [DataMember]
+        public IEnumerable<WorkflowApiViewModel> items { get; set; }
+    }
 
+    public enum WorkflowApiState
+    {
+        
+        [Name("Active")]
+        Active = 1,
+        [Name("InActive")]
+        InActive = 0
+
+    }
+
+    public class WorkflowApiViewModel
+    {
+        public Guid? Uid { get; set; }
+        public Guid? ActionUid { get; set; }
+        public Guid? AssetUid { get; set; }
+        public Guid? RelationshipUid { get; set; }
+        public Guid WorkflowTypeUid { get; set; }
+        public Guid WorkflowVersionUid { get; set; }
+        public DateTime StartedOn { get; set; }
+        public Guid StartedByUid { get; set; }
+        public DateTime? CompletedOn { get; set; }
+        public Guid? CompletedByUid { get; set; }
+  
+    }
 
     public class WorkflowVersionsApiViewModel
     {

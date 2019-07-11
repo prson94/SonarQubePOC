@@ -1,8 +1,9 @@
 ﻿import { SiteNav } from './site-menu.model';
+import { Observable } from 'rxjs';
 
 export interface ICompanySettingsService {
-    getSettings(): Promise<CompanySettings>;
-    putSettings(companySettings: CompanySettings): Promise<any>;
+    getSettings(): Observable<CompanySettings>;
+    putSettings(companySettings: CompanySettings): Observable<any>;
 }
 
 export class CompanySettings {

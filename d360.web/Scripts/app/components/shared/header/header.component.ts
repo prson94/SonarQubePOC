@@ -28,7 +28,7 @@ export class HeaderComponent extends BaseComponent implements OnInit {
 
     ngOnInit(): void {
         this.settings.getSettings()
-            .then(data => {
+            .subscribe(data => {
                 if (data.CurrentCompanyLogoPath != "")
                     this.imageSource = data.CurrentCompanyLogoPath;
             });

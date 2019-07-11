@@ -32,14 +32,6 @@
     "sourceMap": false
   },
   {
-    "outputFile": "Content/styles/typeahead.css",
-    "inputFile": "Content/styles/typeahead.less",
-    "minify": {
-      "enabled": true
-    },
-    "sourceMap": false
-  },
-  {
     "outputFile": "Content/styles/selectlistinfoitem.css",
     "inputFile": "Content/styles/selectlistinfoitem.less",
     "minify": {
@@ -56,7 +48,7 @@
     "sourceMap": false
   },
   {
-    "outputFile": "Content/styles/materialize.min.css",
+    "outputFile": "Content/styles/materialize.css",
     "inputFile": "Content/styles/materialize.less",
     "minify": {
       "enabled": true

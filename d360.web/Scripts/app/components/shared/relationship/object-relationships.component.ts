@@ -64,7 +64,8 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
                     }
                 }
 
-                if (!this.selected) this.relationshipItems.length > 0 ? this.relationshipItems[0] : null;
+                if (!this.selected)
+                    this.selected = (this.relationshipItems && this.relationshipItems.length > 0) ? this.relationshipItems[0] : null;
 
                 this.hasRelationships = (this.relationshipItems && this.relationshipItems.length > 0);
 
@@ -80,7 +81,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
 
     addRelationship(event) {
         if (!this.selected) return;
-        this.selected.Count = this.selected.Count + event.count;
+        this.selected.Count = event.count;
         this.updateCardinality();
     }
 

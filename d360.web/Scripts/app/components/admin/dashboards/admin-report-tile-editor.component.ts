@@ -86,7 +86,7 @@ export class AdminReportTileEditorComponent extends BaseComponent implements OnI
     load() {
         this.isLoading = true;
         this.companySettingsService.getAuthenticationModel().
-            then(result => {
+            subscribe(result => {
                 this.urlPrefix = result.prefix;
                 this.isLoading = false;
             });

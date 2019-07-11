@@ -255,7 +255,7 @@ from	{targetTable} T
 								inner join FieldType FT on FT.Object = @obj
 															and FT.ObjectID = @objID
 															and FT.[Type] = 'Lookup'
-								inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID and F.LookupValue is null
+								inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID and F.LookupValue is null and (F.FieldValue != '' or FT.IsRequired = 1)
                     where       A.ExecutionID = @executionID
 					group by	A.ExecutionID, A.ItemNumber
 					) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
@@ -275,6 +275,15 @@ set		Success = 0,
 where	ExecutionID = @executionID 
          and ItemNumber between {beginItemNumber} and {endItemNumber};",
          new { executionID, msg }, commandTimeout: timeout);
+        }
+
+        private void DeleteEmptyAssetFieldByApiExecutionUid(Guid executionUid, SqlTransaction trans, int timeout = 3600)
+        {
+            Connection.Execute(@"delete F from Field F
+	                                inner join api.ExecutionAsset EA on EA.ExecutionID = @executionUid
+	                                where F.ObjectType = EA.Object 
+                                      and F.ObjectId = EA.ObjectID 
+                                      and F.Value = ''", new { executionUid }, transaction: trans, commandTimeout: timeout);
         }
 
         private void MergeAssetDisplayValues(Guid executionID, SqlTransaction trans, int beginItemNumber, int endItemNumber, int timeout = 3600)
@@ -355,12 +364,16 @@ from    Field F
             foreach (var f in fields)
             {
                 string value = f.Value;
-                List<FieldJsonProperty> assetFieldProperties = value.ParseJsonIntoJsonPropertiesCollection(fieldJsonPropertyLoadLimitToTopLevel);
-                assetFieldProperties.ForEach(i =>
+                if (!string.IsNullOrEmpty(value))
                 {
-                    i.FieldID = f.ID;
-                });
-                collectionFieldroperties.AddRange(assetFieldProperties);
+                    List<FieldJsonProperty> assetFieldProperties = value.ParseJsonIntoJsonPropertiesCollection(fieldJsonPropertyLoadLimitToTopLevel);
+                    assetFieldProperties.ForEach(i =>
+                    {
+                        i.FieldID = f.ID;
+                    });
+                    collectionFieldroperties.AddRange(assetFieldProperties);
+                }
+               
             }
 
             #region Build data tables for bulk load.
@@ -779,204 +792,6 @@ from	api.ExecutionField T
         #endregion
 
         #endregion
-
-        public async Task<JObject> GetRelationships(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "")
-        {
-            var dbArgs = new DynamicParameters();
-
-            var countSql = "from [Intersect] I inner join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID inner join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID";
-
-            List<FieldType> fieldTypes = null;
-            bool filteringByFields = false;
-            int pageNumber = 1;
-            int pageSize = 250;
-
-            whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" S.ID not in ({GetNoReadSqlStatement(Permission.ReadRelationships)}) and S.AssetTypeID not in ({GetAssetTypeNoReadSqlStatement(Permission.ReadRelationships)})";
-            whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" O.ID not in ({GetNoReadSqlStatement(Permission.ReadRelationships)}) and O.AssetTypeID not in ({GetAssetTypeNoReadSqlStatement(Permission.ReadRelationships)})";
-
-            if (queryParams != null)
-            {
-                var queryParamsList = queryParams.ToList();
-
-                if (queryParamsList.Any(q => q.Key.ToLower() == "relationshiptypeuid"))
-                {
-                    Guid relationshipTypeUid;
-                    var relationshipTypeUidString = queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "relationshiptypeuid").Value;
-                    if (Guid.TryParse(relationshipTypeUidString, out relationshipTypeUid))
-                    {
-                        dbArgs.Add("@relationshiptypeuid", relationshipTypeUid);
-                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" T.[Uid] = @relationshiptypeuid";
-                        countSql += $" inner join IntersectType T on T.ID = I.IntersectTypeID";
-                        fieldTypes = Query<FieldType>("select F.* from FieldType F inner join IntersectType I on F.Object = 'IntersectType' and I.ID = F.ObjectID and I.[Uid] = @relationshipTypeUid", new { relationshipTypeUid }).ToList();
-                    }
-                }
-                if (queryParamsList.Any(q => q.Key.ToLower() == "state"))
-                {
-                    State state;
-                    var stateString = queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "state").Value;
-                    if (Enum.TryParse(stateString, out state))
-                    {
-                        dbArgs.Add("@state", state);
-                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" I.[State] = @state";
-                    }
-                }
-                if (queryParamsList.Any(q => q.Key.ToLower() == "predicateuid"))
-                {
-                    Guid predicateUid;
-                    var predicateUidString = queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "predicateuid").Value;
-                    if (Guid.TryParse(predicateUidString, out predicateUid))
-                    {
-                        dbArgs.Add("@predicateuid", predicateUid);
-                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (P.Uid = @predicateuid)";
-                        if (!countSql.Contains("inner join IntersectType T"))
-                        {
-                            countSql += $" inner join IntersectType T on T.ID = I.IntersectTypeID";
-                        }
-                        countSql += $" inner join [Predicate] P on P.ID = T.PredicateID and P.[Uid] = @predicateuid";
-                    }
-                }
-                if (queryParamsList.Any(q => q.Key.ToLower() == "subjectuid"))
-                {
-                    Guid subjectUid;
-                    var subjectUidString = queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "subjectuid").Value;
-                    if (Guid.TryParse(subjectUidString, out subjectUid))
-                    {
-                        dbArgs.Add("@subjectuid", subjectUid);
-                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (S.Uid = @subjectuid)";
-                    }
-                }
-                if (queryParamsList.Any(q => q.Key.ToLower() == "objectuid"))
-                {
-                    Guid objectUid;
-                    var objectUidString = queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "objectuid").Value;
-                    if (Guid.TryParse(objectUidString, out objectUid))
-                    {
-                        dbArgs.Add("@objectuid", objectUid);
-                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (O.Uid = @objectuid)";
-                    }
-                }
-                if (queryParamsList.Any(q => q.Key.ToLower() == "_pagenum"))
-                {
-                    var pageNumberString = queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "_pagenum").Value;
-                    if (!int.TryParse(pageNumberString, out pageNumber))
-                    {
-                        pageNumber = 1;
-                    }
-                }
-                if (queryParamsList.Any(q => q.Key.ToLower() == "_pagesize"))
-                {
-                    var pageSizeString = queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "_pagesize").Value;
-                    if (!int.TryParse(pageSizeString, out pageSize))
-                    {
-                        pageSize = 250;
-                    }
-                }
-
-                // Now deal with dynamic field filters
-                if (fieldTypes != null)
-                {
-                    var avoidFields = new List<string> { "relationshiptypeuid", "subjectuid", "objectuid", "predicateuid", "_pagenum", "_pagesize", "state" };
-                    queryParamsList.ForEach(qp =>
-                    {
-                        if (!avoidFields.Contains(qp.Key.ToLower()))
-                        {
-                            var fieldType = fieldTypes.FirstOrDefault(i => i.Name.ToLower() == qp.Key.ToLower());
-                            if (fieldType != null)
-                            {
-                                whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $@" case 
- when FT{fieldType.ID}.AllowAllValue = 1 and F{fieldType.ID}.Value = '0' then cast(FT{fieldType.ID}.AllowAllLabel as nvarchar(max))
- when F{fieldType.ID}.FormattedValue is not null then F{fieldType.ID}.FormattedValue
- when FT{fieldType.ID}.DefaultFormattedValue is not null then cast(FT{fieldType.ID}.DefaultFormattedValue as nvarchar(max))
-end = @f{fieldType.ID}Value";
-                                dbArgs.Add($"@f{fieldType.ID}Value", qp.Value);
-                                filteringByFields = true;
-                            }
-                        }
-                    });
-                }
-            }
-
-            var fieldColumns = "";
-            var fieldJoins = "";
-
-            if (fieldTypes != null)
-            {
-                fieldColumns = string.Join(",", fieldTypes.Select(f => $@"case 
- when FT{f.ID}.AllowAllValue = 1 and F{f.ID}.Value = '0' then cast(FT{f.ID}.AllowAllLabel as nvarchar(max)) 
- when F{f.ID}.FormattedValue is not null then F{f.ID}.FormattedValue
- when FT{f.ID}.DefaultFormattedValue is not null then cast(FT{f.ID}.DefaultFormattedValue as nvarchar(max))
- else null
-end as {f.Name}"));
-                fieldColumns += string.IsNullOrEmpty(fieldColumns) ? "" : ",";
-                fieldJoins = " " + string.Join(" ", fieldTypes.Select(f => $"inner join FieldType FT{f.ID} on FT{f.ID}.ID = {f.ID} left join Field F{f.ID} on F{f.ID}.ObjectType = 'Intersect' and F{f.ID}.ObjectID = I.ID and F{f.ID}.FieldTypeID = FT{f.ID}.ID"));
-            }
-
-            if (pageNumber < 0)
-            {
-                pageNumber = 1;
-            }
-            if (pageSize < 0 || pageSize > 250)
-            {
-                pageSize = 250;
-            }
-
-            dbArgs.Add("@pageNum", pageNumber);
-            dbArgs.Add("@pageSize", pageSize);
-
-            var stateSql = "case I.State ";
-            State.Active.GetList().ForEach(s =>
-            {
-                stateSql += $"when {(int)s.ID} then '{s.ID.ToString()}' ";
-            });
-            stateSql += " end as State, ";
-
-            var predicateTypeSql = "case P.Type ";
-            PredicateType.DataLineage.GetAsList().ForEach(p =>
-            {
-                predicateTypeSql += $"when {(int)p.ID} then '{p.ID.ToString()}' ";
-            });
-            predicateTypeSql += " end as 'Predicate.Type', ";
-
-
-            var sql = $@"
-declare @total int
-select	@total = count(1) {countSql} {(filteringByFields ? fieldJoins : "")} {whereClause}
-
-select	@pageSize as 'pageSize',
-		@pageNum as 'pageNum',
-		@total as 'total',
-		(
-		select	I.Uid,
-				T.Uid as RelationshipTypeUid,
-				{stateSql}
-				{fieldColumns}
-				P.UID as 'Predicate.Uid',
-				{predicateTypeSql}
-				P.Name as 'Predicate.Name',
-				P.Inverse as 'Predicate.Inverse',
-				S.Uid as 'Subject.Uid',
-				ST.Uid as 'Subject.AssetTypeUid',
-				O.Uid as 'Object.Uid',
-				OT.Uid as 'Object.AssetTypeUid'
-		from	[Intersect] I
-				inner join IntersectType T on T.ID = I.IntersectTypeID
-				left join [Predicate] P on P.ID = T.PredicateID
-				inner join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID
-				inner join AssetType ST on ST.ID = S.AssetTypeID
-				inner join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID
-				inner join AssetType OT on OT.ID = O.AssetTypeID
-                {fieldJoins} 
-        {whereClause} 
-        order by I.IntersectTypeID
-		offset ((@pageNum-1) * @pageSize) rows fetch next @pageSize rows only
-		for json path
-		) as 'items'
-for json path, WITHOUT_ARRAY_WRAPPER";
-
-            var models = await GetDatabaseJsonAsObjectAsync<JObject>(sql, dbArgs);
-
-            return models;
-        }
 
         public async Task<List<IntersectTypeApiViewModel>> GetRelationshipTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "")
         {
@@ -1839,7 +1654,6 @@ from	IntersectType I
         public List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true)
         {
             var results = new List<DatabaseBulkAssetResult>();
-
             var dupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
             if (dupes.Any())
             {
@@ -1879,6 +1693,12 @@ from	IntersectType I
                     table.Columns.Add("IntersectTypeUid", typeof(Guid));
                     table.Columns.Add("IntersectTypeID", typeof(int));
 
+                    var errorTable = new DataTable();
+                    errorTable.Columns.Add("ExecutionID", typeof(Guid));
+                    errorTable.Columns.Add("ItemNumber", typeof(int));
+                    errorTable.Columns.Add("ExecutionItemUid", typeof(Guid));
+                    errorTable.Columns.Add("Uid", typeof(Guid));
+                    errorTable.Columns.Add("Message", typeof(string));
 
                     var fieldTable = new DataTable();
                     fieldTable.Columns.Add("ExecutionID", typeof(Guid));
@@ -2035,6 +1855,15 @@ from	IntersectType I
                                 }
                                 else
                                 {
+                                    var errorRow = errorTable.NewRow();
+                                    errorRow["ExecutionID"] = execution.ExecutionID;
+                                    errorRow["ItemNumber"] = i;
+                                    if (model.ExecutionItemUid.HasValue) errorRow["ExecutionItemUid"] = model.ExecutionItemUid.Value;
+                                    errorRow["Uid"] = model.Uid;
+                                    errorRow["Message"] = errorMessage;
+
+                                    errorTable.Rows.Add(errorRow);
+
                                     results.Add(new DatabaseBulkAssetResult { IsNew = false, ItemNumber = i, Message = errorMessage, Success = false });
                                 }
                             }
@@ -2078,6 +1907,23 @@ from	IntersectType I
                         bulkCopy.ColumnMappings.Add("IntersectTypeID", "IntersectTypeID");
 
                         bulkCopy.WriteToServer(table);
+
+
+
+                        bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection);
+
+                        bulkCopy.BatchSize = errorTable.Rows.Count;
+                        bulkCopy.DestinationTableName = "api.ExecutionAssetError";
+                        bulkCopy.BulkCopyTimeout = timeout;
+
+                        bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                        bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                        bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                        bulkCopy.ColumnMappings.Add("Uid", "Uid");
+                        bulkCopy.ColumnMappings.Add("Message", "Message");
+
+                        bulkCopy.WriteToServer(errorTable);
+
 
 
                         bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection);
@@ -2697,6 +2543,9 @@ from	api.ExecutionAsset T
 
                                         // Must execute BEFORE the Success flag is updated below.
                                         MergeAssetDisplayValues(execution.ExecutionID, trans, beginItemNumber, endItemNumber, timeout);
+
+                                        //Delete all field without value
+                                        DeleteEmptyAssetFieldByApiExecutionUid(execution.ExecutionID, trans, timeout);
 
                                         // Update success flag.
                                         Connection.Execute(

@@ -37,7 +37,6 @@ export function getLocale() {
     return navigator.language;
 }
 
-
 @NgModule({
     declarations: [
         AppComponent,

@@ -144,7 +144,7 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
     }
 
     private doVote(vote: SocialVoteType) {
-        this.socialService.vote(this.comment.ID, vote).then(
+        this.socialService.vote(this.comment.ID, vote).subscribe(
             res => {
                 if (res) {                    
                     this.comment.Votes = res;                    

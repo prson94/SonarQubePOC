@@ -24,5 +24,7 @@ namespace d360.model.DataAccessLayer
 
         Task<IEnumerable<WorkflowInstanceApiViewModel>> GetWorkflowInstances(Guid workflowUid);
         WorkflowItem GetWorkflowItemByUID(Guid workflowItemUid);
+
+        Task<WorkflowsApiViewModel> GetWorkflows(IEnumerable<KeyValuePair<string, string>> queryParams);
     }
 }

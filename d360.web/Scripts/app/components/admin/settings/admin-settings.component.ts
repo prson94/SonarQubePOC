@@ -64,7 +64,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
     load(): void {
         this.isLoading = true;
         this.companySettingsService.getSettings()
-            .then(data => {
+            .subscribe(data => {
                 this.companyLogo = new CompanyImage();
                 this.companyIcon = new CompanyImage();
                 this.homePageImage = new CompanyImage();
@@ -75,15 +75,14 @@ export class AdminSettingsComponent extends AdminBaseComponent {
                 this.companySettings.SiteNav.forEach(s => {
                     s.IsCustom = (s.Name.indexOf('#') != 0)
                 });
-
+                this.companySettingsService.getGroups()
+                    .subscribe(x => {
+                        this.groups = x;
+                        this.groups.unshift({ label: '[Administrators]', value: '0' });
+                        this.isLoading = false;
+                    });
              
             })
-            .then(() => this.companySettingsService.getGroups())
-            .then(x => {
-                this.groups = x;
-                this.groups.unshift({ label: '[Administrators]', value: '0' });
-                this.isLoading = false;
-            });
     }
 
     save(): void {
@@ -94,11 +93,11 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         this.companySettings.HomePageBackgroundImage = this.homePageImage.dataUrl;
 
         this.companySettingsService.putSettings(this.companySettings)
-            .then(data => {                
+            .subscribe(data => {                
                 this.isLoading = false;
-                let type = JSON.parse(data["_body"]).type;
+                let type = data.type;
                 if (type && type == "error") {
-                    let message = JSON.parse(data["_body"]).message;
+                    let message = data.message;
                     console.log("type: " + type + " message: " + message);
                     this.messagesService.showError("Problem Saving settings", message);
                 } else {
@@ -126,7 +125,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
     rebuildIndex() {
         this.disableRebuildIndex = true;
         this.companySettingsService.postIndexRebuildRequest()
-            .then(x => {
+            .subscribe(x => {
                 if (x.type == "confirm") {
                     this.rebuildLabel = "Refresh Queued";
                 } else {

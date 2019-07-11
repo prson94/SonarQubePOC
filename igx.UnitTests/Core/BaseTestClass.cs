@@ -22,6 +22,9 @@ using System.Net;
 using d360.core.entities.Workflow;
 using d360.model.validators;
 using d360.core.entities.Metric;
+using d360.core;
+using System.Dynamic;
+using Newtonsoft.Json.Linq;
 
 namespace igx.UnitTests
 {
@@ -56,9 +59,19 @@ namespace igx.UnitTests
                        }
 
                  );
+
+
+            mock.Setup(x=> x.GetActiveIntersectTypesByObjectType(It.IsAny<int>(), It.IsAny<SystemObjects>()))
+                .Returns(Task.FromResult(new List<IntersectTypeApiViewModel>(){  new IntersectTypeApiViewModel(), new IntersectTypeApiViewModel()  }));
+
+            mock.Setup(x => x.ImportRelationships(It.IsAny<ApiExecution>(), It.IsAny<IntersectType>(), It.IsAny<RelationshipInserts>(), It.IsAny<int>()))
+                .Returns(new List<DatabaseBulkRelationshipResult>() { new DatabaseBulkRelationshipResult() });
+
+            mock.Setup(x => x.HasAssetTypePermission(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<Permission>()))
+                .Returns(true);
+
             return mock.Object;
         }
-
 
         public IStorageProvider GetStorage()
         {
@@ -171,6 +184,8 @@ namespace igx.UnitTests
             mockRepo.Setup(x => x.UpdateAssetType(It.IsAny<AssetTypeInsert>(), It.IsAny<AssetType>(), It.IsAny<AssetType>(), It.IsAny<Predicate>()))
                 .Returns(() => new Tuple<HttpStatusCode, string, string>(HttpStatusCode.OK, "", ""));
 
+            mockRepo.Setup(x => x.DoesAssetExists(It.IsAny<Guid>()))
+                .Returns((Guid uid) => uid == Guid.Parse(DataConstants.ValidGUID) ? true : false);
 
             return mockRepo.Object;
         }
@@ -187,6 +202,9 @@ namespace igx.UnitTests
 
             mockRepo.Setup(x => x.GetFieldTypes(It.IsAny<TypeIdentifierInfoModel>()))
                 .Returns(new List<FieldType>());
+
+            mockRepo.Setup(x => x.GetCustomFields(It.IsAny<SystemObjects>(), It.IsAny<int>()))
+                .Returns(new List<string>());
 
             return mockRepo.Object;
         }
@@ -264,10 +282,13 @@ namespace igx.UnitTests
                 .Returns(new d360.core.entities.Workflow.Type());
 
             mock.Setup(x => x.GetWorkflowVersionByUID(It.IsAny<Guid>()))
-                 .Returns(new WorkflowVersion());
+                 .Returns((Guid uid)=> uid == Guid.Parse(DataConstants.ValidGUID) ? new WorkflowVersion() : null);
 
             mock.Setup(x => x.GetWorkflowItemByUID(It.IsAny<Guid>()))
            .Returns(new WorkflowItem());
+
+            mock.Setup(x => x.GetWorkflows(It.IsAny<IEnumerable<KeyValuePair<string, string>>>()))
+                 .Returns(Task.FromResult(new WorkflowsApiViewModel()));
 
             return mock.Object;
         }
@@ -278,14 +299,65 @@ namespace igx.UnitTests
             mock.Setup(x => x.GetIssueTypeByUID(It.IsAny<Guid>()))
                 .Returns(new IssueType());
 
+            mock.Setup(x => x.GetAllocationByAssetType(It.IsAny<Guid>()))
+                .Returns(Task.FromResult(new List<IssueTypeApiModel>() { new IssueTypeApiModel(), new IssueTypeApiModel() } as IEnumerable<IssueTypeApiModel>));
+
+
+            mock.Setup(x => x.GetIssueByUID(It.IsAny<Guid>()))
+                .Returns((Guid uid) => uid == Guid.Parse(DataConstants.ValidGUID) ? new Issue() : null);
+
             return mock.Object;
         }
 
         public IRelationshipRepository GetRelationshipRepository()
         {
             var mock = new Mock<IRelationshipRepository>();
-            mock.Setup(x => x.GetRelationshipByUID(It.IsAny<Guid>()))
+            mock.Setup(x => x.GetRelationshipTypeByUID(It.IsAny<Guid>()))
                 .Returns(new IntersectType());
+
+            mock.Setup(x => x.GetRelationshipTypeByUID(It.IsAny<Guid>()))
+                .Returns((Guid uid) => uid.ToString() == DataConstants.ValidGUID ? new IntersectType() : null);
+
+            mock.Setup(x => x.AnyExists(It.IsAny<Guid>()))
+                .Returns((Guid uid) => uid.ToString() == DataConstants.ValidGUID ? true : false);
+
+            mock.Setup(x => x.AnyPredicateExists(It.IsAny<Guid>()))
+                .Returns((Guid uid) => uid.ToString() == DataConstants.ValidGUID ? true : false);
+
+            mock.Setup(x => x.BulkPostRelationships(It.IsAny<Guid>(), It.IsAny<RelationshipInserts>(), It.IsAny<Func<int, object, int, int, ApiExecution>>()))
+                .Returns(Task.FromResult(new ApiExecutionInfo() { Action= ApiExecutionAction.PostRelationships, CompanyDomainPrefix="", CompanyID = -1, ExecutionID = Guid.NewGuid(), ResourceID= 56 }));
+
+            mock.Setup(x => x.GetActiveIntersectTypesByObjectType(It.IsAny<int>(), It.IsAny<SystemObjects>()))
+                .Returns(Task.FromResult(new List<IntersectTypeApiViewModel>()));
+
+            mock.Setup(x => x.GetBulkResults(It.IsAny<ApiExecutionInfo>()))
+                .Returns(new List<DatabaseBulkAssetResult>());
+            mock.Setup(x => x.GetExportModel(It.IsAny<int>()))
+                .Returns( DataConstants.GetExcelModel() );
+
+            mock.Setup(x => x.GetExportModelWithCustomFields(It.IsAny<int>(), It.IsAny<IEnumerable<string>>()))
+                .Returns(DataConstants.GetExcelModel() );
+
+            mock.Setup(x => x.GetIntersectTypeById(It.IsAny<int>()))
+                .Returns(new List<IntersectType>() { new IntersectType(), new IntersectType()}.AsQueryable());
+
+            mock.Setup(x => x.GetIntersectTypeByUid(It.IsAny<Guid>()))
+                .Returns((Guid uid) => uid.ToString() == DataConstants.ValidGUID ? new IntersectType() : null);
+
+            mock.Setup(x => x.GetPredicates())
+                .Returns(Task.FromResult(DataConstants.GetPredicates()));
+
+            mock.Setup(x => x.GetRelationshipByUID(It.IsAny<Guid>()))
+                .Returns((Guid uid) => uid.ToString() == DataConstants.ValidGUID ? new Intersect() : null);
+
+            mock.Setup(x => x.GetRelationships(It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<string>()))
+                .Returns(Task.FromResult(JsonConvert.DeserializeObject<JObject>(JsonConvert.SerializeObject(new GetRelationshipsApiModel() { items = new List<GetRelationshipApiModel>() { new GetRelationshipApiModel(), new GetRelationshipApiModel() } }))));
+
+            mock.Setup(x => x.GetRelationshipTypes(It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<string>()))
+                .Returns(Task.FromResult(new List<IntersectTypeApiViewModel>() { new IntersectTypeApiViewModel(), new IntersectTypeApiViewModel() }));
+
+            mock.Setup(x => x.DeleteRelationships(It.IsAny<IntersectType>(), It.IsAny<RelationshipDeletes>()))
+                .Returns(Task.FromResult(new RelationshipDeleteResult(HttpStatusCode.OK, "", "", new List<RelationshipDeleteApiStatus>() { new RelationshipDeleteApiStatus() })));
 
             return mock.Object;
         }
@@ -349,6 +421,31 @@ namespace igx.UnitTests
                 .Returns(new List<string>() {
                     @"[{""ID"":420,""Name"":""Name"",""Type"":""Text""},{""ID"":421,""Name"":""AssetDate"",""Type"":""Date""}]"
                 });
+
+            return mock.Object;
+        }
+
+        public IResponsibilityRepository GetResponsibilityRepository()
+        {
+            var mock = new Mock<IResponsibilityRepository>();
+
+            mock.Setup(x => x.GetResponsibilities(It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>()))
+                .Returns(Task.FromResult(new AssetResponsibilitiesApiModel() { items = new List<AssetResponsibilityItemModel>() { new AssetResponsibilityItemModel(), new AssetResponsibilityItemModel() } }));
+
+            mock.Setup(x => x.GetResponsibilityRules(It.IsAny<Guid>()))
+                .Returns(Task.FromResult(new List<ResponsibilityTypeRuleViewModel>() { new ResponsibilityTypeRuleViewModel(), new ResponsibilityTypeRuleViewModel()  }.AsEnumerable()));
+
+            mock.Setup(x => x.GetResponsibilityRuleStats(It.IsAny<Guid>()))
+                .Returns(Task.FromResult(new ResponsibilityTypeRuleStatsViewModel()));
+
+            mock.Setup(x => x.GetResponsibilityTypeAllocations(It.IsAny<Guid>()))
+                .Returns(Task.FromResult(new List<ResponsibilityTypeAllocationViewModel>() { new ResponsibilityTypeAllocationViewModel(), new ResponsibilityTypeAllocationViewModel() }.AsEnumerable()));
+
+            mock.Setup(x => x.GetResponsibilityTypes())
+                .Returns(Task.FromResult(new List<ResponsibilityTypeViewModel>() { new ResponsibilityTypeViewModel(), new ResponsibilityTypeViewModel() }.AsEnumerable()));
+
+            mock.Setup(x => x.GetResponsibilityTypesByAssetUid(It.IsAny<Guid>()))
+                .Returns(Task.FromResult(new List<ResponsibilityTypeViewModel>() { new ResponsibilityTypeViewModel(), new ResponsibilityTypeViewModel() }.AsEnumerable()));
 
             return mock.Object;
         }
