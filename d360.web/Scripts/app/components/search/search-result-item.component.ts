@@ -74,6 +74,6 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
         var type = this.result.ID.toString().split('|')[0];
         var id = this.result.ID.toString().split('|')[1];
         this.shoppingCartService.addShoppingCartItem(this.type, +id, 1)
-            .then(r => this.showMessageForResult(this.messagesService, r));
+            .subscribe(r => this.showMessageForResult(this.messagesService, r));
     }
 };

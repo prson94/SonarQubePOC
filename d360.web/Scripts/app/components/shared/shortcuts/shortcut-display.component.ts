@@ -36,7 +36,7 @@ export class ShortcutDisplayComponent extends BaseComponent implements OnInit {
 
     ngOnInit() {
         this.shortcutService.getShortcuts()
-            .then(r => {
+            .subscribe(r => {
                 this.shortcuts = r;
             });
     }

@@ -364,12 +364,16 @@ from    Field F
             foreach (var f in fields)
             {
                 string value = f.Value;
-                List<FieldJsonProperty> assetFieldProperties = value.ParseJsonIntoJsonPropertiesCollection(fieldJsonPropertyLoadLimitToTopLevel);
-                assetFieldProperties.ForEach(i =>
+                if (!string.IsNullOrEmpty(value))
                 {
-                    i.FieldID = f.ID;
-                });
-                collectionFieldroperties.AddRange(assetFieldProperties);
+                    List<FieldJsonProperty> assetFieldProperties = value.ParseJsonIntoJsonPropertiesCollection(fieldJsonPropertyLoadLimitToTopLevel);
+                    assetFieldProperties.ForEach(i =>
+                    {
+                        i.FieldID = f.ID;
+                    });
+                    collectionFieldroperties.AddRange(assetFieldProperties);
+                }
+               
             }
 
             #region Build data tables for bulk load.
@@ -1650,7 +1654,6 @@ from	IntersectType I
         public List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true)
         {
             var results = new List<DatabaseBulkAssetResult>();
-
             var dupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
             if (dupes.Any())
             {
