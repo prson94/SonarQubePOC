@@ -5,7 +5,9 @@
              selectionMode="single"
              [metaKeySelection]="true"
              [globalFilterFields]="['ObjectName']"
-             [rowsPerPageOptions]="defaultPagingOptions">
+             [rowsPerPageOptions]="defaultPagingOptions"
+             [rows]="5"
+         >
         <ng-template pTemplate="header">
             <tr>
                 <th>Name</th>
