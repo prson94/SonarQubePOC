@@ -1,0 +1,380 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Sebastian Abraham" id="GOV-7629">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+
+ALTER     procedure [dbo].[ResponsibilityRuleShouldRun]
+	@id int
+as
+begin
+	set nocount on;
+	
+	declare @shouldRun bit = 0 ,
+			@lastRunOn datetime,
+			@o varchar(50),
+			@oid int,
+			@assignedObject varchar(20),
+			@assignedObjectID int,
+			@groupUpdatedOn datetime,
+			@orgUpdatedOn datetime,
+			@ruleUpdatedOn datetime
+
+	select	@lastRunOn = coalesce(LastRunOn, '1/1/2000'),
+			@o = Object,
+			@oid = ObjectID,
+			@ruleUpdatedOn = UpdatedOn
+	from	ResponsibilityTypeRelationRule
+	where	ID = @id
+
+	declare @assetMaxDate datetime,
+			@assetFieldMaxDate datetime,
+			@newUsers bit = 0,
+			@newAssets bit = 0,
+			@newIntersects bit = 0,
+			@ruleUpdated bit = 0,
+			@intersectMaxDate datetime
+
+	if @ruleUpdatedOn > @lastRunOn
+	begin
+		set	@ruleUpdated = 1
+	end
+	select	@newUsers = IIF(count(1) > 0, 1, 0)
+	from	reporting.Global_Resource
+	where	CreatedOn > @lastRunOn
+
+	select	@assetMaxDate = max(A.CreatedOn)
+	from	Asset A
+			inner join AssetType T on T.ID = A.AssetTypeID and T.Object = @o and T.ObjectID = @oid 
+
+	select	@assetMaxDate = IIF(max(A.UpdatedOn) > @assetMaxDate, max(A.UpdatedOn), @assetMaxDate)
+	from	Asset A
+			inner join AssetType T on T.ID = A.AssetTypeID and T.Object = @o and T.ObjectID = @oid 
+
+	if @assetMaxDate > @lastRunOn
+	begin
+		set @newAssets = 1
+	end
+
+	if @newAssets = 0
+	begin
+		declare @fIDs table (FieldTypeID int)
+		insert into @fIDs
+			select	WF.FieldTypeID
+			from	ResponsibilityTypeRelationRule R
+					cross apply OPENJSON(R.Definition, '$.When') D
+					cross apply OPENJSON(D.value) with (
+							CheckType nvarchar(1) '$.CheckType',
+							FieldTypeID int '$.FieldTypeID'
+							
+						) WF
+			where	R.ID = @id
+					and WF.CheckType = 'F'
+
+		if exists(select 1 from @fIDs)
+		begin
+			select	@assetFieldMaxDate = max(F.UpdatedOn)
+			from	Field F 
+					inner join @fIDs FT on FT.FieldTypeID = F.FieldTypeID					
+					inner join Asset A on A.[Object] = F.ObjectType and a.ObjectID = F.ObjectID 
+					inner join AssetType T on T.ID = A.AssetTypeID and T.Object = @o and T.ObjectID = @oid 
+		end
+		else
+		begin
+			select	@assetFieldMaxDate = max(F.UpdatedOn)
+			from	Field F 
+					inner join FieldType FT on F.FieldTypeID = FT.id and FT.Object = @o and FT.ObjectID = @oid
+		end
+
+		if @assetFieldMaxDate > @lastRunOn
+		begin
+			set @newAssets = 1
+		end	
+	end
+
+	
+	if(exists (select	1
+			from	[dbo].ResponsibilityTypeRelationRule R
+					cross apply OPENJSON(R.Definition, '$.When') D
+					cross apply OPENJSON(D.value) with (
+							CheckType nvarchar(1) '$.CheckType'							
+						) WF
+			where	R.ID = @id
+					and WF.CheckType = 'R'))
+	begin
+		
+		print 'checking responsibility changes'
+
+		declare @intersectTypeIDs table (IntersectTypeID int)
+
+		insert into @intersectTypeIDs
+			select	WF.IntersectTypeID
+			from	ResponsibilityTypeRelationRule R
+					cross apply OPENJSON(R.Definition, '$.When') D
+					cross apply OPENJSON(D.value) with (
+							CheckType nvarchar(1) '$.CheckType',
+							IntersectTypeID int '$.IntersectTypeID'
+							
+						) WF
+			where	R.ID = @id
+					and WF.CheckType = 'R'
+
+		if exists(select 1 from @intersectTypeIDs)
+		begin
+			select	@intersectMaxDate = max(I.UpdatedOn)
+			from	[Intersect] I
+					inner join @intersectTypeIDs IT on IT.IntersectTypeID = I.IntersectTypeID					
+			print 'Checking max intersect update date against last run'
+			if @intersectMaxDate > @lastRunOn
+			begin
+				set @newIntersects = 1
+				print 'Running rule due to new intersects'
+			end	
+		end
+	end 
+
+	select	@assignedObject = res.[Object],
+			@assignedObjectID = res.[ObjectID]
+	from	ResponsibilityTypeRelationRule R
+			CROSS APPLY OPENJSON(R.Definition, '$.Then') WITH ([Object] varchar(20), ObjectID int) as res
+	where	R.ID = @id
+
+	if @assignedObject = 'GroupType' and @assignedObjectID > 0
+	begin
+		
+		select @groupUpdatedOn = g.UpdatedOn from [group] g where g.id = @assignedObjectID
+
+		if @groupUpdatedOn > @lastRunOn
+		begin
+			set @newUsers = 1
+		end
+	end
+
+	if @assignedObject = 'OrganizationType' and @assignedObjectID > 0
+	begin
+		print 'Checking organization fields'
+		declare @orgfIDs table (FieldTypeID int)
+		insert into @orgfIDs
+		select	WF.FieldTypeID
+			from	ResponsibilityTypeRelationRule R
+					cross apply OPENJSON(R.Definition, '$.Then.Conditions') D
+					cross apply OPENJSON(D.value) with (
+							FieldTypeID int '$.FieldTypeID'							
+						) WF
+			where	R.ID = @id
+		if exists(select 1 from @orgfIDs)
+		begin
+			select	@orgUpdatedOn = max(F.UpdatedOn)
+			from	Field F 
+					inner join @orgfIDs FT on FT.FieldTypeID = F.FieldTypeID
+		end
+
+		if @orgUpdatedOn > @lastRunOn
+		begin
+			set @newUsers = 1
+		end
+	end
+
+	if @newUsers = 1 or @newAssets = 1 or @ruleUpdated = 1 or @newIntersects = 1
+	begin
+		set @shouldRun = 1
+	end
+
+	select @shouldRun
+end;
+]]>
+    </sql>
+    <rollback>
+<![CDATA[
+
+ALTER     procedure [dbo].[ResponsibilityRuleShouldRun]
+	@id int
+as
+begin
+	set nocount on;
+	
+	declare @shouldRun bit = 0 ,
+			@lastRunOn datetime,
+			@o varchar(50),
+			@oid int,
+			@assignedObject varchar(20),
+			@assignedObjectID int,
+			@groupUpdatedOn datetime,
+			@orgUpdatedOn datetime,
+			@ruleUpdatedOn datetime
+
+	select	@lastRunOn = coalesce(LastRunOn, '1/1/2000'),
+			@o = Object,
+			@oid = ObjectID,
+			@ruleUpdatedOn = UpdatedOn
+	from	ResponsibilityTypeRelationRule
+	where	ID = @id
+
+	declare @assetMaxDate datetime,
+			@assetFieldMaxDate datetime,
+			@newUsers bit = 0,
+			@newAssets bit = 0,
+			@newIntersects bit = 0,
+			@ruleUpdated bit = 0,
+			@intersectMaxDate datetime
+
+	if @ruleUpdatedOn > @lastRunOn
+	begin
+		set	@ruleUpdated = 1
+	end
+	select	@newUsers = IIF(count(1) > 0, 1, 0)
+	from	reporting.Global_Resource
+	where	CreatedOn > @lastRunOn
+
+	select	@assetMaxDate = max(A.CreatedOn)
+	from	Asset A
+			inner join AssetType T on T.ID = A.AssetTypeID and T.Object = @o and T.ObjectID = @oid 
+
+	select	@assetMaxDate = IIF(max(A.UpdatedOn) > @assetMaxDate, max(A.UpdatedOn), @assetMaxDate)
+	from	Asset A
+			inner join AssetType T on T.ID = A.AssetTypeID and T.Object = @o and T.ObjectID = @oid 
+
+	if @assetMaxDate > @lastRunOn
+	begin
+		set @newAssets = 1
+	end
+
+	if @newAssets = 0
+	begin
+		declare @fIDs table (FieldTypeID int)
+		insert into @fIDs
+			select	WF.FieldTypeID
+			from	ResponsibilityTypeRelationRule R
+					cross apply OPENJSON(R.Definition, '$.When') D
+					cross apply OPENJSON(D.value) with (
+							CheckType nvarchar(1) '$.CheckType',
+							FieldTypeID int '$.FieldTypeID'
+							
+						) WF
+			where	R.ID = @id
+					and WF.CheckType = 'F'
+
+		if exists(select 1 from @fIDs)
+		begin
+			select	@assetFieldMaxDate = max(F.UpdatedOn)
+			from	Field F 
+					inner join @fIDs FT on FT.FieldTypeID = F.FieldTypeID					
+					inner join Asset A on A.[Object] = F.ObjectType and a.ObjectID = F.ObjectID 
+					inner join AssetType T on T.ID = A.AssetTypeID and T.Object = @o and T.ObjectID = @oid 
+		end
+		else
+		begin
+			select	@assetFieldMaxDate = max(F.UpdatedOn)
+			from	Field F 
+					inner join FieldType FT on F.FieldTypeID = FT.id and FT.Object = @o and FT.ObjectID = @oid
+		end
+
+		if @assetFieldMaxDate > @lastRunOn
+		begin
+			set @newAssets = 1
+		end	
+	end
+
+	
+	if(exists (select	1
+			from	[dbo].ResponsibilityTypeRelationRule R
+					cross apply OPENJSON(R.Definition, '$.When') D
+					cross apply OPENJSON(D.value) with (
+							CheckType nvarchar(1) '$.CheckType'							
+						) WF
+			where	R.ID = @id
+					and WF.CheckType = 'R'))
+	begin
+		
+		print 'checking responsibility changes'
+
+		declare @intersectTypeIDs table (IntersectTypeID int)
+
+		insert into @intersectTypeIDs
+			select	WF.IntersectTypeID
+			from	ResponsibilityTypeRelationRule R
+					cross apply OPENJSON(R.Definition, '$.When') D
+					cross apply OPENJSON(D.value) with (
+							CheckType nvarchar(1) '$.CheckType',
+							IntersectTypeID int '$.IntersectTypeID'
+							
+						) WF
+			where	R.ID = @id
+					and WF.CheckType = 'R'
+
+		if exists(select 1 from @intersectTypeIDs)
+		begin
+			select	@intersectMaxDate = max(I.UpdatedOn)
+			from	[Intersect] I
+					inner join @intersectTypeIDs IT on IT.IntersectTypeID = I.IntersectTypeID					
+			print 'Checking max intersect update date against last run'
+			if @intersectMaxDate > @lastRunOn
+			begin
+				set @newIntersects = 1
+				print 'Running rule due to new intersects'
+			end	
+		end
+	end 
+
+	select	@assignedObject = res.[Object],
+			@assignedObjectID = res.[ObjectID]
+	from	ResponsibilityTypeRelationRule R
+			CROSS APPLY OPENJSON(R.Definition, '$.Then') WITH ([Object] varchar(20), ObjectID int) as res
+	where	R.ID = @id
+
+	if @assignedObject = 'Group' and @assignedObjectID > 0
+	begin
+		
+		select @groupUpdatedOn = g.UpdatedOn from [group] g where g.id = @assignedObjectID
+
+		if @groupUpdatedOn > @lastRunOn
+		begin
+			set @newUsers = 1
+		end
+	end
+
+	if @assignedObject = 'OrganizationType' and @assignedObjectID > 0
+	begin
+		print 'Checking organization fields'
+		declare @orgfIDs table (FieldTypeID int)
+		insert into @orgfIDs
+		select	WF.FieldTypeID
+			from	ResponsibilityTypeRelationRule R
+					cross apply OPENJSON(R.Definition, '$.Then.Conditions') D
+					cross apply OPENJSON(D.value) with (
+							FieldTypeID int '$.FieldTypeID'							
+						) WF
+			where	R.ID = @id
+		if exists(select 1 from @orgfIDs)
+		begin
+			select	@orgUpdatedOn = max(F.UpdatedOn)
+			from	Field F 
+					inner join @orgfIDs FT on FT.FieldTypeID = F.FieldTypeID
+		end
+
+		if @orgUpdatedOn > @lastRunOn
+		begin
+			set @newUsers = 1
+		end
+	end
+
+	if @newUsers = 1 or @newAssets = 1 or @ruleUpdated = 1 or @newIntersects = 1
+	begin
+		set @shouldRun = 1
+	end
+
+	select @shouldRun
+end;
+]]>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>
