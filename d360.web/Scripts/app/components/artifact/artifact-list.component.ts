@@ -57,7 +57,6 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
                     this.artifactTypeHierarchy.push(this.artifactType);
                     this.createBreadcrumbHierarchy(artifactType);
                     
-                    this.clearSidebar();
                     this.setBrowserTitle(this.titleService, this.artifactType.Name);
                     this.setCommonRightSideBar(false, false, this.artifactType.HasDashboards);
 

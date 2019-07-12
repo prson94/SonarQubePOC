@@ -87,7 +87,6 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
 
     private load(id: number, typeID: number) {
         this.messages = []; /* clear any messages for this artifact */
-        this.rightSidebarService.setCurrentObject("ArtifactType", typeID, "Artifact", id, false);
         this
             .artifactService
             .getArtifact(id)
@@ -124,7 +123,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                             true
                         )
                     ;
-                    
+                    this.rightSidebarService.setCurrentObject("ArtifactType", typeID, "Artifact", id, false);
                     if (this.artifact.HasChildArtifacts) {
                         this
                             .rightSidebarService
@@ -151,6 +150,12 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                         new RightSidebarItem(
                             'Comments', 'Comments', ['fa-comments'],
                             `/sidebar/comments/Artifact/${this.artifact.ID}/${this.artifact.DisplayValue}`
+                        )
+                    );
+                    this.rightSidebarService.showItem(
+                        new RightSidebarItem(
+                            'Actions', 'Actions', null,
+                            `/sidebar/actions/Artifact/${this.artifact.ID}/${this.artifact.DisplayValue}`
                         )
                     );
                     this.loadItemSurvey(id);

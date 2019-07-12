@@ -1290,6 +1290,9 @@
     <TypeScriptCompile Include="Scripts\app\components\shoppingcart\shopping-cart.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shoppingcart\shopping-cart.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shoppingcart\shopping-cart.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\actions\actions.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\actions\actions.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\actions\actions.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\audit\audit.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\audit\audit.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\audit\audit.routes.ts" />

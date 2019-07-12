@@ -1,4 +1,4 @@
-import { Component, ElementRef, ChangeDetectionStrategy, ChangeDetectorRef, Input, OnInit, SimpleChange, OnChanges, OnDestroy } from '@angular/core';
+import { Component, ElementRef, ChangeDetectionStrategy, ChangeDetectorRef, Input, OnInit, SimpleChange, OnChanges, OnDestroy, AfterViewInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { RightSidebarService  } from '../../../services/right-sidebar.service';
 import { RightSidebarItem } from '../../../models/rightsidebar.model';
@@ -45,7 +45,14 @@ declare var CompanySettings;
                         <div class="tab-bar-outer">
                             <div class="tab-bar can-overflow">
                                 <button class="tab" [ngClass]="{'selected':AllClosed()}" (click)="itemClicked({active:false,title:'homeClick', url: 'blank'})">{{area.title}}</button>
-                                <button class="tab" [ngClass]="{'selected':item.active}" *ngFor="let item of items; trackBy: trackById" (click)="item.active=!item.active;itemClicked(item);">{{item.title}}<span *ngIf="statistics?.CommentCount && item.title === 'Comments'" class="d3s-icon small-icon primary">{{statistics?.CommentCount}}</span></button>
+                                <button class="tab" 
+                                        [ngClass]="{'selected':item.active}" 
+                                        *ngFor="let item of items; trackBy: trackById" 
+                                        (click)="item.active=!item.active;itemClicked(item);">
+                                            {{item.title}}
+                                        <span *ngIf="statistics?.CommentCount && item.title === 'Comments'" class="d3s-icon small-icon primary">{{statistics?.CommentCount}}</span>
+                                        <span *ngIf="statistics?.IssueCount && item.title === 'Actions'" class="d3s-icon small-icon bad">{{statistics?.IssueCount}}</span>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -55,7 +62,8 @@ declare var CompanySettings;
     providers: [SurveysService, ObjectStatisticsService, ArtifactService]
 })
 
-export class RightSidebarComponent implements OnInit, OnChanges, OnDestroy{    
+export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewInit{
+        
     subscription: Subscription;
     subscriptionClear: Subscription;
     areaSub: Subscription;
@@ -71,7 +79,7 @@ export class RightSidebarComponent implements OnInit, OnChanges, OnDestroy{
     private currentObject: any;
     private surveyType: SurveyType;
 
-    private statistics: ObjectStatistics = new ObjectStatistics();
+    private statistics: ObjectStatistics;
 
     status: string;
     showStatus = false;
@@ -89,11 +97,13 @@ export class RightSidebarComponent implements OnInit, OnChanges, OnDestroy{
     ) {
     }
 
-    ngOnInit(): void {
-        this.load();
+    ngAfterViewInit(): void {
+        this.load();   
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+        if (changes['menuOpen'])
+            return;
         if (this.currentObject) {
             this.load();
         } 
@@ -101,8 +111,8 @@ export class RightSidebarComponent implements OnInit, OnChanges, OnDestroy{
 
 
     load() {
-        
         this.showStatus = false;
+        this.statistics = null; 
         this.showCertify = false;
         this.showHeader = false;
         this.showSurvey = false;
@@ -117,6 +127,8 @@ export class RightSidebarComponent implements OnInit, OnChanges, OnDestroy{
         this.subscriptionClear = this.rightSidebarService.rightSidebarClear$.subscribe(
             item => {
                 this.items.splice(0, this.items.length);
+                this.currentObject = null;
+                this.statistics = null;
                 this.ref.markForCheck();
             })
         this.areaSub = this.rightSidebarService.currentArea$.subscribe(
@@ -137,8 +149,10 @@ export class RightSidebarComponent implements OnInit, OnChanges, OnDestroy{
             } else {
                 this.showStatus = false;
                 this.statistics = null; 
+                this.ref.markForCheck();
             }
         });
+        this.ref.markForCheck();
     }
 
     private loadItemStats(objectID: number, objectName: string, objectType: string, objectTypeID: number) {

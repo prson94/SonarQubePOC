@@ -142,7 +142,6 @@ export class BaseComponent {
     ) {
         if (this.rightSidebarService) {
             this.clearSidebar();
-
             if (hasLineage && CompanySettings.ShowLineageSidebar != 'false') {
                 const isLineageShowUsageOnly = this.lineageShowUsageOnly ? '/1' : '';
                 const urlLineage = this.objectContextUrl() + isLineageShowUsageOnly;
@@ -293,6 +292,7 @@ export class BaseComponent {
         if (this.rightSidebarService) {
             if (!this.isVisitingSidebar) {
                 this.rightSidebarService.clearItems();
+                
             }
 
             if (this.sidebarSubscription && (unsubscribe || unsubscribe == undefined)) {

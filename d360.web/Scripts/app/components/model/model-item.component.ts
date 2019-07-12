@@ -17,6 +17,7 @@ import {StringConstants} from '../../static/string-constants';
 import {Permission} from '../../models/responsibility-type.model';
 import {Observable} from "rxjs";
 import { forEach } from '@angular/router/src/utils/collection';
+import { RightSidebarItem } from '../../models/rightsidebar.model';
 
 declare var CompanySettings;
 
@@ -98,7 +99,6 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
     ) {
         super();
         this.rightSidebarService = rightSidebarService;
-        this.lineageShowUsageOnly = true;
     }
 
     ngOnInit() {
@@ -153,6 +153,15 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
     private buildBreadcrumb() {
         this.headerBreadcrumbService.getFolderTitle("#Models").then((res) => {
             this.crumbs = [];
+            this.headerBreadcrumbService.getFolderIcon(res).then(icon => {
+                this.lineageShowUsageOnly = true;
+                this.rightSidebarService.setCurrentArea(res, icon);
+                this.rightSidebarService.showItem(new RightSidebarItem('Scoring','Scoring',['fa-sitemap'],`/sidebar/score/Artifact/${this.model.UID}`));
+                this.rightSidebarService.showItem(new RightSidebarItem('Comments', 'Comments', ['fa-comments'],`/sidebar/comments/Artifact/${this.model.ID}/${this.model.Name}`));
+                this.rightSidebarService.showItem(new RightSidebarItem('Actions', 'Actions', null,`/sidebar/actions/Artifact/${this.model.ID}/${this.model.Name}`));
+            });
+            this.rightSidebarService.ShowHeader(true);
+            
             this.headerBreadcrumbService.clearBreadcrumbs();
             let areaBreadcrumb = new Breadcrumb(
                 this.currentAreaName ? this.currentAreaName : res, `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`

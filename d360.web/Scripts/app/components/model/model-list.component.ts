@@ -154,10 +154,14 @@ export class ModelListComponent extends BaseComponent implements OnInit, OnDestr
                     this.selected = this.models[0];
                 }
                     this.headerBreadcrumbService.getFolderTitle('#Models').then((res) => {
-                    this.headerBreadcrumbService.clearCurrentObjectInfo();
-                    this.headerBreadcrumbService.clearBreadcrumbs();
-                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res, this.modelGroup ? `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}` : undefined));
-                });
+                        this.headerBreadcrumbService.clearCurrentObjectInfo();
+                        this.headerBreadcrumbService.clearBreadcrumbs();
+                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res, this.modelGroup ? `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}` : undefined));
+                        this.headerBreadcrumbService.getFolderIcon(res).then(icon => {
+                            this.rightSidebarService.setCurrentArea(res, icon);
+                        });
+                        this.rightSidebarService.ShowHeader(true);
+                    });
 
                 if (this.modelGroup) {
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.modelGroup));

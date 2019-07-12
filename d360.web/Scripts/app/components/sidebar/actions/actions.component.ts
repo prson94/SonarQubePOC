@@ -4,24 +4,26 @@ import { BaseComponent } from '../../shared/base.component';
 
 
 @Component({
-    selector: 'd3s-score',
+    selector: 'd3s-actions',
     template: `
             <d3s-loading [isLoading]="isLoading"></d3s-loading>
             <div class="row" *ngIf="!isLoading">
                 <div class="col s12">
                     <div class="tile tile-detail" style="margin-top: 5px; margin-bottom: 5px;">
-                       <d3s-object-health-details *ngIf="showBoard"
-                                       [uid]="uid"
-                                       [objectName]="objectName"></d3s-object-health-details>
+                     <d3s-workflow-issue-details *ngIf="showBoard"
+                                        [objectType]="objectType"
+                                        [objectID]="objectID"
+                                        [objectName]="objectName"
+                                        (countsChanged)="updateCounts()"></d3s-workflow-issue-details>
                     </div>
                 </div>
             </div>
         `
 })
 
-export class ScoreComponent extends BaseComponent implements OnInit, OnDestroy {
-    
-    @Input() uid: string = "";
+export class ActionsComponent extends BaseComponent implements OnInit, OnDestroy {
+    @Input() objectType: string = "";
+    @Input() objectID: number = 0;
     @Input() objectName: string = "";
 
     private sub: any;
@@ -36,7 +38,9 @@ export class ScoreComponent extends BaseComponent implements OnInit, OnDestroy {
         this.showBoard = false;
 
         this.sub = this.route.params.subscribe(params => {
-            this.uid = params['uid'];
+
+            this.objectType = params['objectType'];
+            this.objectID = +params['objectId'];
             this.objectName = params['objectName'];
             
             this.isLoading = false;
