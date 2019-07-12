@@ -199,7 +199,7 @@ order by	ColumnIndex", new { id });
                 sqlColumns += $", case EA.Success when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status]\n";
                 sqlColumns += ", case when EA.Message is null and EA.Success = 1 then '{0}' else  EA.Message end as StatusMessage\n";
 
-                sql = $"select * from ({string.Format(sqlColumns, "Item successfully updated.")} {string.Format(sqlTables,"@putExecutionID")} where EA.ExecutionID = @putExecutionID\n";
+                sql = $"select * from ({string.Format(sqlColumns, "Item successfully updated.")} {string.Format(sqlTables, "@putExecutionID")} where EA.ExecutionID = @putExecutionID\n";
                 sql += $"union all\n";
                 sql += $"{string.Format(sqlColumns, "Item successfully added.")} {string.Format(sqlTables, "@postExecutionID")} where EA.ExecutionID = @postExecutionID) R order by R.RowIndex";
 
@@ -221,7 +221,7 @@ order by	ColumnIndex", new { id });
                 return Query<dynamic>(sql, new { id });
             }
 
-            
+
         }
 
         public BulkLoadGetLoadColumnsModel GetLoadColumns(string action, SystemObjects type, int id, bool includeLookupValues)
@@ -642,7 +642,7 @@ order by	ColumnIndex", new { id });
             var intersectId = 0;
             if (objectId > 0 && subjectId > 0)
             {
-                if (objectId ==subjectId)
+                if (objectId == subjectId)
                 {
                     BulkLoadStatusMsg = "Object cannot be related to itself";
                     return 0;
@@ -867,13 +867,27 @@ order by	ColumnIndex", new { id });
                 var postAssets = new List<AssetInsert>();
 
                 var loadItems = Filter<LoadItem>(l => l.LoadID == load.ID).ToList();
+                Dictionary<int, string> assetTypeLevels = new Dictionary<int, string>();
 
+                //build level info for models
+                if (assetType.Class == AssetTypeClass.Model)
+                {
+                    for (var i = 1; i <= assetType.HierarchyMaximumDepth; i++)
+                    {
+                        var level = assetType.AssetTypeLevels.FirstOrDefault(l => l.Level == i);
+                        if (level != null)
+                            assetTypeLevels.Add(i, level.Name);
+                        else
+                            assetTypeLevels.Add(i, $"Level {i}");
+                    }
+                }
 
                 foreach (var item in loadItems)
                 {
                     var itemUid = Guid.NewGuid();
                     var fieldsToSkip = new List<string>();
-                    AssetTypeLevel assetTypeLevel = null;
+                    string assetTypeLevel = null;
+
                     var loadItemColumns = Filter<LoadItemColumn>(l => l.LoadID == load.ID && l.RowIndex == item.RowIndex).ToList();
                     var maxLevel = 0;
 
@@ -881,6 +895,7 @@ order by	ColumnIndex", new { id });
 
                     if (assetType.Class == AssetTypeClass.Model)
                     {
+                        //get max level for this row
                         maxLevel = (await QueryAsync<int>(@"
                         select      coalesce(max(L.[Level]), 1) 
                         from		AssetType ATT
@@ -888,15 +903,16 @@ order by	ColumnIndex", new { id });
 			                        inner join LoadColumn LC on LC.LoadID = @id and L.Name = substring(LC.[Name], 1, len(LC.[Name]) - charindex(' ', reverse(LC.[Name])))
 			                        inner join LoadItemColumn LI on LI.LoadID = @id and LI.RowIndex = @rowIndex and LI.ColumnIndex = LC.ColumnIndex and LI.[Value] is not null
                         where		ATT.[ObjectID] = @ObjectID", new { assetType.ObjectID, id = load.ID, rowIndex = item.RowIndex })).FirstOrDefault();
-                        assetTypeLevel = assetType.AssetTypeLevels.FirstOrDefault(l => l.Level == maxLevel);
+
+                        assetTypeLevel = assetTypeLevels[maxLevel];
 
                         //ignore parent key fields, not needed for API
                         var keyFields = FieldTypes.Where(f => f.Object == assetType.Object && f.ObjectID == assetType.ObjectID && f.IsPartOfKey);
                         foreach (var k in keyFields)
-                            fieldsToSkip.AddRange(assetType.AssetTypeLevels.Where(l => l.Level != maxLevel).Select(l => $"{l.Name} {k.Name}"));
+                            fieldsToSkip.AddRange(assetTypeLevels.ToList().Where(l => l.Key != maxLevel).Select(l => $"{l.Value} {k.Name}"));
                     }
 
-                    
+
                     if (!item.ObjectID.HasValue)
                     {
                         var insert = new AssetInsert();
@@ -908,7 +924,7 @@ order by	ColumnIndex", new { id });
                         {
                             var parentKeyHash = await GetModelKeyHashForLevel(item, assetType, maxLevel - 1);
 
-                            Guid? parentUid= (await QueryAsync<Guid?>(@" select [uid] from asset a
+                            Guid? parentUid = (await QueryAsync<Guid?>(@" select [uid] from asset a
                                 cross apply GetAssetKeyHashById(A.ID) S
                                 where a.AssetTypeID = @assetTypeId and S.KeyHash = @parentKeyHash", new { parentKeyHash, assetTypeId = assetType.ID })).FirstOrDefault();
 
@@ -921,23 +937,23 @@ order by	ColumnIndex", new { id });
                         foreach (var field in loadItemColumns)
                         {
                             var col = load.LoadColumns.Where(c => c.LoadID == load.ID && c.ColumnIndex == field.ColumnIndex).FirstOrDefault();
-                            
+
                             //resolve parent
                             if (parentAssetType != null && col.Name == parentAssetType.Name)
                             {
-                                    string parentUid = "";
-                                    int endIndex = field.Value.LastIndexOf(']');
-                                    int startIndex = field.Value.LastIndexOf('[') + 1;
-                                    if (startIndex < endIndex)
-                                        parentUid = field.Value.Substring(startIndex, (endIndex - startIndex));
-                                    insert.ParentUid = new Guid(parentUid);
+                                string parentUid = "";
+                                int endIndex = field.Value.LastIndexOf(']');
+                                int startIndex = field.Value.LastIndexOf('[') + 1;
+                                if (startIndex < endIndex)
+                                    parentUid = field.Value.Substring(startIndex, (endIndex - startIndex));
+                                insert.ParentUid = new Guid(parentUid);
                             }
                             else
                             {
                                 if (!string.IsNullOrEmpty(field.Value) && !fieldsToSkip.Contains(col.Name))
                                 {
-                                    if (assetTypeLevel != null && col.Name.StartsWith($"{assetTypeLevel.Name} "))
-                                        insert.Fields.Add(col.Name.Replace($"{assetTypeLevel.Name} ", ""), field.Value);
+                                    if (!string.IsNullOrEmpty(assetTypeLevel) && col.Name.StartsWith($"{assetTypeLevel} "))
+                                        insert.Fields.Add(col.Name.Replace($"{assetTypeLevel} ", ""), field.Value);
                                     else
                                         insert.Fields.Add(col.Name, field.Value);
                                 }
@@ -976,8 +992,8 @@ order by	ColumnIndex", new { id });
 
                             if (!fieldsToSkip.Contains(col.Name))
                             {
-                                if (assetTypeLevel != null && col.Name.StartsWith($"{assetTypeLevel.Name} "))
-                                    update.Fields.Add(col.Name.Replace($"{assetTypeLevel.Name} ", ""), field.Value);
+                                if (assetTypeLevel != null && col.Name.StartsWith($"{assetTypeLevel} "))
+                                    update.Fields.Add(col.Name.Replace($"{assetTypeLevel} ", ""), field.Value);
                                 else
                                     update.Fields.Add(col.Name, field.Value);
                             }
@@ -1577,7 +1593,7 @@ where	T.LoadID = @id;
         new { @object = assetType.Object, objectID = assetType.ObjectID, id = load.ID });
 
             }
-            
+
         }
 
         private async Task<string> GetModelKeyHashForLevel(LoadItem item, AssetType assetType, int level)
