@@ -154,7 +154,8 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
         this.headerBreadcrumbService.getFolderTitle("#Models").then((res) => {
             this.crumbs = [];
             this.headerBreadcrumbService.getFolderIcon(res).then(icon => {
-                this.lineageShowUsageOnly = true;
+                this.lineageShowUsageOnly = true;   
+                this.setCommonRightSideBar(true, this.hasPermission(Permission.ReadResponsibilities), (this.selected != null ? this.selected.HasDashboards : false), true, true, this.hasPermission(Permission.ReadRelationships), true, true);
                 this.rightSidebarService.setCurrentArea(res, icon);
                 this.rightSidebarService.showItem(new RightSidebarItem('Scoring','Scoring',['fa-sitemap'],`/sidebar/score/Artifact/${this.model.UID}`));
                 this.rightSidebarService.showItem(new RightSidebarItem('Comments', 'Comments', ['fa-comments'],`/sidebar/comments/Artifact/${this.model.ID}/${this.model.Name}`));
@@ -218,10 +219,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
 
         this.assetID = this.selected.AssetID;
 
-        this.loadPermissions(this.permissionsService, StringConstants.ObjectTaxonomy, this.selected.ID).then(p => {
-            this.clearSidebar();
-            this.setCommonRightSideBar(true, this.hasPermission(Permission.ReadResponsibilities), (this.selected != null ? this.selected.HasDashboards : false), true, true, this.hasPermission(Permission.ReadRelationships), true, true);
-        });
+        this.loadPermissions(this.permissionsService, StringConstants.ObjectTaxonomy, this.selected.ID);
         this.buildBreadcrumb();
         return Promise.resolve(null);
     }
