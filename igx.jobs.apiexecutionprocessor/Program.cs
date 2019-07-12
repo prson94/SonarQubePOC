@@ -54,11 +54,11 @@ namespace igx.jobs.apiexecutionprocessor
             ApiExecutionInfo info = null;
 #if DEBUG
             info = new ApiExecutionInfo {
-                Action = ApiExecutionAction.PutAssets,
-                CompanyDomainPrefix = "qa.eng",
-                CompanyID = 1,
-                ResourceID = 0,
-                ExecutionID = new Guid("e142d31f-1ca1-457f-80cc-d69fe9b26001") };
+                Action = ApiExecutionAction.PostAssets,
+                CompanyDomainPrefix = "mpappas.eng",
+                CompanyID = 2,
+                ResourceID = 3,
+                ExecutionID = new Guid("d04067cc-18e4-44d9-a817-c13dfbc6c6a7") };
 #else
             info = JsonConvert.DeserializeObject<ApiExecutionInfo>(myQueueItem);
 #endif
@@ -85,7 +85,7 @@ namespace igx.jobs.apiexecutionprocessor
 
             #region Create EF connection
 
-           var sec = new UriSecurityContextProvider
+            var sec = new UriSecurityContextProvider
             {
                 CompanyID = Info.CompanyID,
                 ResourceID = Info.ResourceID ?? 0,
@@ -135,7 +135,7 @@ namespace igx.jobs.apiexecutionprocessor
                             #region
                             var postAssetsFields = JsonConvert.DeserializeObject<ApiExecutionFields_PostAssets>(dbExecutionItem.Fields);
                             assetType = company.Filter<AssetType>(i => i.uid == postAssetsFields.AssetTypeUid).Single();
-                            string postAssetsJson = File.ReadAllText("c:\\junk\\e142d31f-1ca1-457f-80cc-d69fe9b26001_request.json");//storage.GetFileContentsAsString(Info.StorageFolder, Info.RequestFileName, Encoding.UTF8);
+                            string postAssetsJson = storage.GetFileContentsAsString(Info.StorageFolder, Info.RequestFileName, Encoding.UTF8);
                             var postAssets = JsonConvert.DeserializeObject<List<AssetInsert>>(postAssetsJson);
 
                             log.WriteLine($"POST Assets (DB Start): Total raw assets: {postAssets.Count}. Asset Type Uid: {postAssetsFields.AssetTypeUid}.");
@@ -153,7 +153,7 @@ namespace igx.jobs.apiexecutionprocessor
                             #region
                             var putAssetsFields = JsonConvert.DeserializeObject<ApiExecutionFields_PutAssets>(dbExecutionItem.Fields);
                             assetType = company.Filter<AssetType>(i => i.uid == putAssetsFields.AssetTypeUid).Single();
-                            string putAssetsJson = File.ReadAllText("c:\\junk\\e142d31f-1ca1-457f-80cc-d69fe9b26001_request.json");
+                            string putAssetsJson = storage.GetFileContentsAsString(Info.StorageFolder, Info.RequestFileName, Encoding.UTF8);
                             var putAssets = JsonConvert.DeserializeObject<List<AssetUpdate>>(putAssetsJson);
 
                             log.WriteLine($"PUT Assets (DB Start): Total raw assets: {putAssets.Count}. Asset Type Uid: {putAssetsFields.AssetTypeUid}.");

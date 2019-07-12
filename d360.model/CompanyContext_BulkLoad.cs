@@ -1626,6 +1626,26 @@ from    LoadItem T
 				        ) A
 	        group by	A.RowIndex
         ) K on K.RowIndex = T.RowIndex
+        inner join	(
+	        select		RowIndex,
+				        CONVERT(
+					        varchar(32), 
+					        SUBSTRING(HASHBYTES('SHA1', STRING_AGG(cast(FieldTypeID as nvarchar) + ':' + Value, char(59))), 3, 32), 
+					        2) as FieldHash
+	        from		(
+				        select		top 100 percent
+							        I.RowIndex,
+							        FT.ID as FieldTypeID,
+							        coalesce(IC.Value, '') as Value
+				        from		LoadItem I
+							        inner join LoadItemColumn IC on IC.LoadID = I.LoadID and IC.RowIndex = I.RowIndex and I.LoadID = @id
+							        inner join LoadColumn C on C.LoadID = I.LoadID and C.ColumnIndex = IC.ColumnIndex
+							        inner join FieldType FT on FT.Object = @Object and FT.ObjectID = @ObjectID and FT.Name = C.Name
+				        order by	I.RowIndex,
+							        FT.ID
+				        ) A
+	        group by	A.RowIndex	
+        ) F on F.RowIndex = T.RowIndex
 where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIndex = item.RowIndex, currLevel = level, @object = assetType.Object, objectID = assetType.ObjectID })).FirstOrDefault();
         }
 
