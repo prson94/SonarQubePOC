@@ -5160,10 +5160,10 @@ html {
       font-size: 14px; } }
   @media only screen and (min-width: 992px) {
     html {
-      font-size: 14.5px; } }
+      font-size: 14px; } }
   @media only screen and (min-width: 1200px) {
     html {
-      font-size: 15px; } }
+      font-size: 14px; } }
 
 h1, h2, h3, h4, h5, h6 {
   font-weight: 400; }
