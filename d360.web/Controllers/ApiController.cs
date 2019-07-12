@@ -7800,7 +7800,7 @@ SELECT (
 
                 foreach (var value in selected)
                 {
-                    Company.Query<int>("insert into questionoption (QuestionID, QuestionTypeOptionID) values(@qId, @qTypeId)", new { qId = q.ID, qTypeId = value.ID });
+                    var res = Company.Query<int>("insert into questionoption (QuestionID, QuestionTypeOptionID) values(@qId, @qTypeId)", new { qId = q.ID, qTypeId = value.ID }).ToList();
                 }
             }
 
