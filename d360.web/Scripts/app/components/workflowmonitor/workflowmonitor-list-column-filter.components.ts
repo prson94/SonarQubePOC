@@ -33,7 +33,7 @@ import { setTimeout } from 'timers';
                                             <option *ngFor="let p of filter.Field?.Data?.filteritems" [value]="p">{{p}}</option>
                                         </select>
                                     </span>
-                                    <p-calendar *ngSwitchCase="'date'" [name]="'FilterValue_' + index" [(ngModel)]="filter.Data.value" placeholder="mm/dd/yyyy"   [showIcon]="true" (onBlur)="onDateBlur(filter)"   (onSelect)="onDateSelected($event,filter)" ></p-calendar>
+                                    <p-calendar *ngSwitchCase="'date'" [name]="'FilterValue_' + index" [ngModel]="prepareDateValueForCalendar(filter)" placeholder="mm/dd/yyyy"   [showIcon]="true" (onBlur)="onDateBlur(filter)"   (onSelect)="onDateSelected($event,filter)" ></p-calendar>
                                     <input *ngSwitchDefault [name]="'FilterValue_' + index" type="text" required [ngModel]="filter?.Data?.value" (ngModelChange)="filter.Data.value = $event" placeholder="Enter a value" style="width:100%;"> 
                                 </span>   
                         </div>
@@ -86,17 +86,16 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
                     Data: field, Name: `${field.text}`, Type: FilterFieldType.Field
                 });
             }
-
             if (this.filters.length > 0) {
                 this.internalFilters = this.internalFilters.filter(x => x.Type != FilterFieldType.Field);
 
-                    for (let filter of this.filters) {
-                        this.internalFilters.push({
-                            Type: FilterFieldType.Field,
-                            Data: filter,
-                            Field: this.availableFilters.filter(x => x.Type == FilterFieldType.Field && x.Data.datafield == filter.field)[0],
-                        });
-                    }
+                for (let filter of this.filters) {
+                    this.internalFilters.push({
+                        Type: FilterFieldType.Field,
+                        Data: filter,
+                        Field: this.availableFilters.filter(x => x.Type == FilterFieldType.Field && x.Data.datafield == filter.field)[0],
+                    });
+                }
             }
         }
     }
@@ -113,18 +112,37 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
 
     private onDateSelected($event, filter) {
         let d = new Date(Date.parse($event));
-        if (d.toString() != "Invalid Date")
-            filter.Data.value = `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
+        if (d.toString() != "Invalid Date") {
+            filter.Data.value = this.getUTCFormattedDateForSearch(d, false);
+        }
     }
 
     private onDateBlur(filter) {
         let d = new Date(Date.parse(filter.Data.value));
-
         if (d.toString() != "Invalid Date")
-            filter.Data.value = `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
+            filter.Data.value = this.getUTCFormattedDateForSearch(d, true);
         else
             filter.Data.value = null;
     }
+
+    private prepareDateValueForCalendar(filter): string {
+        let d = new Date(Date.parse(filter.Data.value));
+        if (d.toString() != "Invalid Date")
+            return this.getUTCFormattedDateForSearch(d, true);
+        else
+            return null;
+    }
+
+    private getUTCFormattedDateForSearch(date: Date, isReverse: boolean): string {
+        let utcDate: Date = null;
+        if (isReverse)
+            utcDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+        else
+            utcDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
+
+        return `${utcDate.getMonth() + 1}/${utcDate.getDate()}/${utcDate.getFullYear()} ${utcDate.toTimeString().split(' ')[0]}`;
+    }
+
     public resetFilters() {
         this.internalFilters.splice(0, this.internalFilters.length);
         this.internalFilters.push(new FilterExpression());

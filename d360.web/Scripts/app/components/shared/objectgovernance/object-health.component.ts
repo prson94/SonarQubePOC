@@ -195,7 +195,7 @@ export class ObjectHealthComponent extends BaseComponent implements OnChanges {
     private loadScoreData() {
         this.isLoading = true;
         this.scoreService.getAverageScore(this.uid).
-            then(res => {
+            subscribe(res => {
                 this.averageScore = res;
                 this.isLoading = false;
             });
@@ -203,7 +203,7 @@ export class ObjectHealthComponent extends BaseComponent implements OnChanges {
 
     private loadSeriesData() {
         this.scoreService.getScoreHistory(this.uid).
-            then(res => {
+            subscribe(res => {
                 this.lastCalculatedDate = res.length > 0 ? Date.parse(res[res.length-1].Date) : null;
                 let data = res.map(val => {
                     return [Date.parse(val.Date), val.Score];

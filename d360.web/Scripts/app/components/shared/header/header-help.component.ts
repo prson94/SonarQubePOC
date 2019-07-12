@@ -1,4 +1,4 @@
-import { Component, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef, AfterViewInit, HostListener } from '@angular/core';
 import { CurrentEnvironmentSettings } from '../../../static/environment-settings';
 declare var __BUILD_DATE: string;
 declare var VersionNumber: string;
@@ -13,40 +13,41 @@ declare var VersionNumber: string;
                             <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="adminGuide">Admin Guide</a></div></div></li>
                             <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="whatIsNew">What's New</a></div></div></li>
                             <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="community">Community</a></div></div></li>
-                            <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" (click)="popup(item2)">About Data3Sixty</a></div></div></li>
+                            <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" (click)="popup(popupBox)">About Data3Sixty® Govern</a></div></div></li>
                        </ul>
                     </div>
-        <div #item2 class="modal-overlay about">
-        <div class="modal-dialog">
-            <div class="title-bar">
-                <h1>About Data3Sixty Govern</h1>
-                <span class="grow"></span>
-                <button (click)="closePopUp(item2)" class="light bar button close" title="Close"><i class="fa fa-times"></i></button>
-            </div>
-            <div class="content">
-                <div class="flex row">
-                    <img class="about-image" src="../../../../../Content/images/aboutLogo.png"/>
-                    <div class="about-info">
-                        <ul>
-                            <li><b>Build Version:</b> {{this.versionNumber}}</li>
-                            <li><b>Build Date:</b> {{this.buildDate}}</li>
-                            <li><b>Support:</b> <a href="http://support.infogix.com" target="_blank">http://support.infogix.com</a></li>
-                        </ul>
-                        <p>© 2005-2019 Infogix. All rights reserved.</p>
-                        <p>Confidential - Limited distribution to authorized persons only, pursuant to the terms of Infogix Inc. license agreement. This software is protected as an unpublished work and constitutes a trade secret of Infogix Inc.</p>
+                    <div #popupBox class="modal-overlay about" tabindex=0 (keydown)="checkKey($event,popupBox)" >
+                    <div class="modal-dialog">
+                        <div class="title-bar">
+                            <h1>About Data3Sixty® Govern</h1>
+                            <span class="grow"></span>
+                            <button (click)="closePopUp(popupBox)" class="light bar button close" title="Close"><i class="fa fa-times"></i></button>
+                        </div>
+                        <div class="content">
+                            <div class="flex row">
+                                <img class="about-image" src="../../../../../Content/images/aboutLogo.png"/>
+                                <div class="about-info">
+                                    <ul>
+                                        <li><b>Build Version:</b> {{this.versionNumber}}</li>
+                                        <li><b>Build Date:</b> {{this.buildDate}}</li>
+                                        <li><b>Support:</b> <a href="http://support.infogix.com" target="_blank">http://support.infogix.com</a></li>
+                                    </ul>
+                                    <p>© 2005-2019 Infogix. All rights reserved.</p>
+                                    <p>Confidential - Limited distribution to authorized persons only, pursuant to the terms of Infogix Inc. license agreement. This software is protected as an unpublished work and constitutes a trade secret of Infogix Inc.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="action-bar">
+                            <span class="grow"></span>
+                            <button focus-me="focusInput" (click)="closePopUp(popupBox)" class="primary button close">Close</button>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="action-bar">
-                <span class="grow"></span>
-                <button (click)="closePopUp(item2)" class="primary button close">Close</button>
-            </div>
-        </div>
-    </div>`,
+            </span>`,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class HeaderHelpComponent {
+export class HeaderHelpComponent implements AfterViewInit{
     public active: boolean = false;
     private hideHandle: number = 0;
     display: boolean = false;
@@ -58,9 +59,16 @@ export class HeaderHelpComponent {
     buildDate: string = __BUILD_DATE;
     versionNumber: string = VersionNumber;
 
+    @ViewChild("popupBox") popupBox: ElementRef;
+
     constructor(
         private ref: ChangeDetectorRef
     ) { }
+
+    ngAfterViewInit(): void {
+       
+    }
+
 
     show(item) {
         // check for any pending hides and cancel them
@@ -80,13 +88,23 @@ export class HeaderHelpComponent {
     }
 
     popup(item) {
+        this.display = true;
         item.className = "modal-overlay about";
         item.className = item.className + " show";
+        item.focus();
     }
 
     closePopUp(item) {
+        this.display = false;
         item.className = "modal-overlay about";
         item.className = item.className + " begin-hide";
+    }
+
+    @HostListener('wheel', ['$event'])
+    handleWheelEvent(event) {
+        if (this.display == true) {
+            event.preventDefault();
+        }
     }
 
     hide(item) {
@@ -97,5 +115,12 @@ export class HeaderHelpComponent {
             this.ref.markForCheck();
         },
             500);
+    }
+
+    checkKey(event,popupBox) {
+        if (event.keyCode) {
+            if (event.keyCode == 27 || event.keyCode == 13)
+                this.closePopUp(popupBox);
+        }
     }
 }

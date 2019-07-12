@@ -350,7 +350,7 @@ nav.top, .left-side-nav {
 .menu-toggle-open, .menu-toggle {
     background-color: @igx-left-side-nav;
     position: fixed;
-    z-index: 20000;
+    z-index: 950;
     bottom: 0;
     padding: 10px;
     padding-left: 15px;
@@ -1158,13 +1158,16 @@ div.breadcrumbs {
             width: 100%;
         }
 
-        .breadcrumb{
+        .breadcrumb {
             .breadcrumb-text {
                 padding-right: 5px;
+                overflow: hidden;
+                text-overflow: ellipsis;
 
                 &.highlight {
                     color: #000;
                 }
+
                 &.breadcrumb-link {
                     &:hover, &.hover {
                         cursor: pointer;
@@ -1196,6 +1199,12 @@ div.breadcrumbs {
             padding: 0px 5px;
             font-size: 12px;
             color: white;
+
+            &.breadcrumb-link {
+                &:hover, &.hover {
+                    cursor: pointer;
+                }
+            }
 
             &:before {
                 content: '';
@@ -1235,6 +1244,12 @@ a.breadcrumb {
             content: ')';
         }
 
+        &.breadcrumb-link {
+            &:hover, &.hover {
+                cursor: pointer;
+            }
+        }
+
         &:hover {
             icon {
                 text-decoration: none;
@@ -1254,14 +1269,16 @@ a.breadcrumb {
 
     .breadcrumb-text {
         padding-right: 0px;
+        overflow: hidden;
+        text-overflow: ellipsis;
 
         &.highlight {
             color: @igx-header-breadcrumb-color;
         }
 
-        &.breadcrumb-link{
+        &.breadcrumb-link {
             &:hover, &.hover {
-                cursor:pointer;
+                cursor: pointer;
                 text-decoration: underline;
             }
         }
@@ -1367,6 +1384,8 @@ a.breadcrumb {
         cursor: pointer;
         padding-left: 20px;
         padding-right: 40px;
+        overflow: hidden;
+        text-overflow: ellipsis;
 
         &:hover, &.hover {
             background-color: @igx-lightblue-xlight;
@@ -1884,14 +1903,14 @@ div.home-image-title-text {
     left: 0;
     bottom: 0;
     right: 0;
-    z-index: 1000;
+    z-index: 5000 !important;
     padding-top: 40px;
     padding-bottom: 40px;
     background: rgba(255, 255, 255, 0.8);
     visibility: hidden;
     opacity: 0;
     transition: opacity 200ms ease;
-    cursor:auto;
+    cursor: auto;
 
     button.button {
         display: inline-flex;
@@ -2291,6 +2310,7 @@ div.home-image-title-text {
     a {
         color: #0971b9 !important;
         display: inline;
+        font-size:14px;
     }
 }
 

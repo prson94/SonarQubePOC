@@ -241,7 +241,7 @@ namespace igx.jobs.indexer
 
                     users = company.Query(sql).ToList().Select(u => new AddToIndexModel
                     {
-                        Group = "Users",
+                        Group = "Resource",
                         CompanyID = c.CompanyID,
                         Type = "User",
                         ID = u.ResourceID,

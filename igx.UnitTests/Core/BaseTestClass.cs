@@ -299,7 +299,10 @@ namespace igx.UnitTests
             mock.Setup(x => x.GetIssueTypeByUID(It.IsAny<Guid>()))
                 .Returns(new IssueType());
 
-     
+            mock.Setup(x => x.GetAllocationByAssetType(It.IsAny<Guid>()))
+                .Returns(Task.FromResult(new List<IssueTypeApiModel>() { new IssueTypeApiModel(), new IssueTypeApiModel() } as IEnumerable<IssueTypeApiModel>));
+
+
             mock.Setup(x => x.GetIssueByUID(It.IsAny<Guid>()))
                 .Returns((Guid uid) => uid == Guid.Parse(DataConstants.ValidGUID) ? new Issue() : null);
 
@@ -422,6 +425,30 @@ namespace igx.UnitTests
             return mock.Object;
         }
 
+        public IResponsibilityRepository GetResponsibilityRepository()
+        {
+            var mock = new Mock<IResponsibilityRepository>();
+
+            mock.Setup(x => x.GetResponsibilities(It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>()))
+                .Returns(Task.FromResult(new AssetResponsibilitiesApiModel() { items = new List<AssetResponsibilityItemModel>() { new AssetResponsibilityItemModel(), new AssetResponsibilityItemModel() } }));
+
+            mock.Setup(x => x.GetResponsibilityRules(It.IsAny<Guid>()))
+                .Returns(Task.FromResult(new List<ResponsibilityTypeRuleViewModel>() { new ResponsibilityTypeRuleViewModel(), new ResponsibilityTypeRuleViewModel()  }.AsEnumerable()));
+
+            mock.Setup(x => x.GetResponsibilityRuleStats(It.IsAny<Guid>()))
+                .Returns(Task.FromResult(new ResponsibilityTypeRuleStatsViewModel()));
+
+            mock.Setup(x => x.GetResponsibilityTypeAllocations(It.IsAny<Guid>()))
+                .Returns(Task.FromResult(new List<ResponsibilityTypeAllocationViewModel>() { new ResponsibilityTypeAllocationViewModel(), new ResponsibilityTypeAllocationViewModel() }.AsEnumerable()));
+
+            mock.Setup(x => x.GetResponsibilityTypes())
+                .Returns(Task.FromResult(new List<ResponsibilityTypeViewModel>() { new ResponsibilityTypeViewModel(), new ResponsibilityTypeViewModel() }.AsEnumerable()));
+
+            mock.Setup(x => x.GetResponsibilityTypesByAssetUid(It.IsAny<Guid>()))
+                .Returns(Task.FromResult(new List<ResponsibilityTypeViewModel>() { new ResponsibilityTypeViewModel(), new ResponsibilityTypeViewModel() }.AsEnumerable()));
+
+            return mock.Object;
+        }
 
         public IWorkflowApiModelValidator GetWorkflowApiModelValidator()
         {
