@@ -103,10 +103,11 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     getData() {
         this.isLoading = true;
         this.relationshipsService.getObjectRelationships(this.objectType, this.objectID, this.targetType, this.targetTypeID, this.intersectTypeID)
-            .then(result => {
+            .subscribe(result => {
                 this.relations = result;
                 this.isLoading = false;
                 if (this.relations.length > 0) this.selected = this.relations[0];
+                this.relationshipAdded.emit({ count: result.length });
                 if (this.shouldShowEditor()) this.closeEditor();
             });
     }
@@ -134,7 +135,6 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
             if (event.values && event.values.Items) {
                 count = event.values.Items.split(',').length;
             }
-            this.relationshipAdded.emit({count: count});
         }
 
         this.getData();
@@ -142,7 +142,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     }
 
     deleteItem(item) {
-        this.relationshipsService.deleteRelationshipItem(item).then(res => {
+        this.relationshipsService.deleteRelationshipItem(item).subscribe(res => {
             this.relations = this.relations.filter(x => x.ID != item);
             this.relationshipRemoved.emit();
         });

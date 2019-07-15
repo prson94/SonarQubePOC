@@ -37,8 +37,8 @@ namespace igx.UnitTests
             var list = new FieldTypesApiViewModel();
             var res = results.TryGetContentValue(out list);
 
-            Assert.True(results.IsSuccessStatusCode);
-            Assert.True(list != null);
+            Assert.True(results.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(list != null, XMsg.InvalidJSON);
 
         }
 
@@ -49,7 +49,7 @@ namespace igx.UnitTests
             var results = await fieldsController.PutFieldTypesAsync(model).Result.ExecuteAsync(new System.Threading.CancellationToken());
             var content = await results.Content.ReadAsStringAsync();
 
-            Assert.True(results.StatusCode == HttpStatusCode.BadRequest);
+            Assert.True(results.StatusCode == HttpStatusCode.BadRequest, XMsg.BadResponseCode);
             
         }
 
@@ -65,13 +65,13 @@ namespace igx.UnitTests
 
             var data = JsonConvert.DeserializeObject<JObject>(content);
 
-            Assert.True(results.IsSuccessStatusCode);
-            Assert.True(data != null);
-            Assert.True(data.GetValue("Uid") != null);
-            Assert.True(data.GetValue("Success") != null);
-            Assert.True(data.GetValue("Message") != null);
-            Assert.True(Guid.Parse(data.GetValue("Uid").ToString()) == model.AssetTypeUid);
-            Assert.True(bool.Parse(data.GetValue("Success").ToString()));
+            Assert.True(results.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(data != null, XMsg.InvalidJSON);
+            Assert.True(data.GetValue("Uid") != null,"Uid field missing from response");
+            Assert.True(data.GetValue("Success") != null, "Success field missing from response");
+            Assert.True(data.GetValue("Message") != null, "Message field missing from response");
+            Assert.True(Guid.Parse(data.GetValue("Uid").ToString()) == model.AssetTypeUid,"Invalid Uid returned!");
+            Assert.True(bool.Parse(data.GetValue("Success").ToString()), "Invalid Success returned!");
         }
 
         [Fact]
@@ -81,7 +81,7 @@ namespace igx.UnitTests
             var results = await fieldsController.DeleteFieldTypesAsync(model).Result.ExecuteAsync(new System.Threading.CancellationToken());
             var content = await results.Content.ReadAsStringAsync();
 
-            Assert.True(results.StatusCode == HttpStatusCode.BadRequest);
+            Assert.True(results.StatusCode == HttpStatusCode.BadRequest, XMsg.BadResponseCode);
         }
 
         [Fact]
@@ -96,13 +96,13 @@ namespace igx.UnitTests
 
             var data = JsonConvert.DeserializeObject<JObject>(content);
 
-            Assert.True(results.IsSuccessStatusCode);
-            Assert.True(data != null);
-            Assert.True(data.GetValue("Uid") != null);
-            Assert.True(data.GetValue("Success") != null);
-            Assert.True(data.GetValue("Message") != null);
-            Assert.True(Guid.Parse(data.GetValue("Uid").ToString()) == model.AssetTypeUid);
-            Assert.True(bool.Parse(data.GetValue("Success").ToString()));
+            Assert.True(results.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(data != null, XMsg.InvalidJSON);
+            Assert.True(data.GetValue("Uid") != null, "Uid field missing from response");
+            Assert.True(data.GetValue("Success") != null, "Success field missing from response");
+            Assert.True(data.GetValue("Message") != null, "Message field missing from response");
+            Assert.True(Guid.Parse(data.GetValue("Uid").ToString()) == model.AssetTypeUid, "Invalid Uid returned!");
+            Assert.True(bool.Parse(data.GetValue("Success").ToString()), "Invalid Success returned!");
         }
     }
 }

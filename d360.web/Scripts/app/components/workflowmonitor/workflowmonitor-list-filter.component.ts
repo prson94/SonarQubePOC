@@ -7,6 +7,7 @@ import { FilterFieldType } from '../../models/filter-field.model';
 import * as _ from 'lodash';
 import { StringHelpers } from '../../static/string-helpers';
 import { State } from '../../models/asset.model';
+import { map } from 'rxjs/operators';
 
 
 
@@ -87,34 +88,37 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent  implement
     private load() {
         this.isLoading = true;
         this.workflowService.getTypes()
-            .then(r => {
-                this.items = r;
+            .pipe(
+                map(r => {
+                    this.items = r;
 
-                this.items.forEach(i => {
-                    i.label = i.State == State.InActive ? i.Name + " ( Inactive )" : i.Name ;
-                    i.value = i.ID.toString();
-                });
+                    this.items.forEach(i => {
+                        i.label = i.State == State.InActive ? i.Name + " ( Inactive )" : i.Name;
+                        i.value = i.ID.toString();
+                    });
 
-                this.selection = [];
-                if (this.usePredefinedFilters) {
-                    this.items.forEach(i => this.selection.push(i.value));
-                    this.change(this.selection);
-                }
-                else if (this.workflowTypeFilters && !StringHelpers.isNullOrEmpty(this.workflowTypeFilters.value)) {
-                    this.workflowTypeFilters.value.split(",").forEach(i => this.selection.push(i));
-                } else if (this.selectAll) {
-                    this.items.forEach(i => this.selection.push(i.value));
-                    this.change(this.selection);
-                }
+                    this.selection = [];
+                    if (this.usePredefinedFilters) {
+                        this.items.forEach(i => this.selection.push(i.value));
+                        this.change(this.selection);
+                    }
+                    else if (this.workflowTypeFilters && !StringHelpers.isNullOrEmpty(this.workflowTypeFilters.value)) {
+                        this.workflowTypeFilters.value.split(",").forEach(i => this.selection.push(i));
+                    } else if (this.selectAll) {
+                        this.items.forEach(i => this.selection.push(i.value));
+                        this.change(this.selection);
+                    }
 
-                
-                this.isLoading = false;
-            }).then(() => this.wfMonitorService.getWorkFlowMonitorFilterColumnDefinition())
-            .then(x => {
-                this.filtercolumns = x;
-                this.isLoading = false;
-                this.ref.markForCheck();
-            })
+
+                    this.isLoading = false;
+                }),
+                map(() => this.wfMonitorService.getWorkFlowMonitorFilterColumnDefinition()
+                    .subscribe(x => {
+                        this.filtercolumns = x;
+                        this.isLoading = false;
+                        this.ref.markForCheck();
+                }))
+            ).subscribe();
     }
 
 

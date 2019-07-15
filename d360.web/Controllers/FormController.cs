@@ -27,6 +27,7 @@ using System.Xml.Linq;
 using System.Configuration;
 using d360.core.helpers;
 using Ganss.XSS;
+using System.Text;
 
 namespace d360.web.Controllers
 {    
@@ -8235,6 +8236,10 @@ offset 0 rows fetch next 25 rows only
                 {
                 }
 
+                long assetId = Company.Assets.FirstOrDefault(x => x.Object == "Group" && x.ObjectID == model.ID).ID;
+
+                Company.CreateOrUpdateDisplayValue(assetId);
+
                 return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
@@ -8790,8 +8795,12 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
                 if (model.IsLookup && !model.AllowMultipleValues && model.Lookups != null)
                 {
+                    IEnumerable<string> values;
+
+                    values = model.Lookups.Select(m => (string.IsNullOrEmpty(m.Value) ? m.Label : $"{m.Label} [{m.Value}]"));
+
                     var dv = document.CreateDataValidation(2, i + 1, model.Lookups.Count + 1, i + 1);
-                    CreateExcelList(lookupColumns++, document, "Lookups", dv, model.Lookups.Select(m => m.Value));
+                    CreateExcelList(lookupColumns++, document, "Lookups", dv, values);
                     document.AddDataValidation(dv);
                 }
 
@@ -8826,6 +8835,26 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             dataValidation.AllowList($"={range}", true, true);
         }
 
+        private void CreateExcelList(int numLookupColumns, SLDocument document, string lookupWorksheetName, SLDataValidation dataValidation, Dictionary<string, string> values)
+        {
+            if (!values.Any()) return;
+
+            var currentSheet = document.GetCurrentWorksheetName();
+            document.SelectWorksheet(lookupWorksheetName);
+            int rowNum = 0;
+            foreach (var key in values.Keys)
+            {
+                document.SetCellValue(++rowNum, numLookupColumns, WebUtility.HtmlDecode(key));
+                document.SetCellValue(rowNum, numLookupColumns + 1, WebUtility.HtmlDecode(values[key]));
+            }
+
+            document.SelectWorksheet(currentSheet);
+
+            //add a column to the given lookup worksheet with the specified values
+            string range = SLConvert.ToCellRange(lookupWorksheetName, 1, numLookupColumns, rowNum, numLookupColumns + 1, true);
+            dataValidation.AllowList($"={range}", true, true);
+        }
+
         [ HttpPost, AjaxValidateAntiForgeryToken, Route("AddLoad")]
         public JsonResult AddLoad(LoadFilePostModel model)
         {
@@ -8856,6 +8885,7 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                     if (extension == ".xlsx")
                     {
                         var typeInfo = model.Type.Split('|');
+                        var assetType = Company.Query<AssetType>("select * from AssetType where Object = @object and ObjectID = @objectID", new { @object = typeInfo[0], objectID = typeInfo[1] }).FirstOrDefault();
 
                         load = new Load
                         {
@@ -8866,7 +8896,8 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                             Object = typeInfo[0],
                             ObjectID = int.Parse(typeInfo[1]),
                             DateStarted = DateTime.UtcNow,
-                            UpdatedBy = Company.CurrentResourceID
+                            UpdatedBy = Company.CurrentResourceID,
+                            AssetTypeUid = assetType?.uid
                         };
 
                         xls = new SLDocument(stream);
@@ -8929,7 +8960,11 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
 
                 if (success)
                 {
+                    //TODO: cleanup
+                    load.File = null;
                     Company.Add<Load>(load);
+                    Storage.CreateFolder($"{constants.COMPANY_BULK_LOAD_FOLDER}");
+                    Storage.CreateFile($"{constants.COMPANY_BULK_LOAD_FOLDER}", $"{Company.CurrentCompanyID}/load_{load.ID}.{load.Extension}", new MemoryStream(byteArray));
                     Company.Enqueue(Config.GetValue<string>("BulkLoadQueue"), new BulkLoadInfo { CompanyID = Company.CurrentCompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
 
                     json = jsonSuccess("File uploaded and queued for processing.", load.ID.ToString(), "A", HttpStatusCode.Created);
@@ -8962,9 +8997,39 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
                 return null;
             }
 
+            var load = Company.GetById<Load>(id);
+
+            var itemSql = @"select RowIndex, StatusMessage from LoadItem where LoadID = @id and Status = 0 order by RowIndex asc";
+            var itemColumnSql = @"select C.* from LoadItem I inner join LoadItemColumn C on C.LoadID = I.LoadID and I.RowIndex = C.RowIndex and I.LoadID = @id and I.Status = 0 order by I.RowIndex asc, C.ColumnIndex asc";
+
+            if (load.PutExecutionID.HasValue || load.PostExecutionID.HasValue)
+            {
+                itemSql = @"select L.RowIndex, EA.[Message] as StatusMessage from LoadItem L
+inner join (
+		select ExecutionId, ItemNumber, ExecutionItemUid, ParentAssetID, Message, Success from api.ExecutionAsset where success = 0
+		union all
+		select ExecutionID, ItemNumber, ExecutionItemUid, null as ParentAssetID, Message, cast(0 as bit) as Success from api.ExecutionAssetError
+	 )  EA on EA.ExecutionItemUid = L.ExecutionItemUid
+where L.LoadID = @id order by RowIndex asc";
+
+                itemColumnSql = @"
+select C.LoadID, C.RowIndex, C.ColumnIndex, coalesce(EF.FieldValue, C.[Value]) as [Value] 
+from LoadItem I 
+inner join (
+		select ExecutionId, ItemNumber, ExecutionItemUid, ParentAssetID, Message, Success from api.ExecutionAsset where success = 0
+		union all
+		select ExecutionID, ItemNumber, ExecutionItemUid, null as ParentAssetID, Message, cast(0 as bit) as Success from api.ExecutionAssetError
+	 )  EA on EA.ExecutionItemUid = I.ExecutionItemUid
+left join LoadItemColumn C on C.LoadID = I.LoadID and I.RowIndex = C.RowIndex and I.LoadID = @id 
+left join LoadColumn LC on LC.LoadID = I.LoadID and LC.ColumnIndex = C.ColumnIndex
+left join api.ExecutionField EF on EF.ExecutionId = EA.ExecutionID and EF.ItemNumber = EA.ItemNumber and EF.FieldName = LC.[Name]
+order by I.RowIndex asc, C.ColumnIndex asc";
+            }
+
+
             var loadColumns = Company.Filter<LoadColumn>(i => i.LoadID == id).OrderBy(i => i.ColumnIndex).ToList();
-            var loadItems = Company.Query<dynamic>("select RowIndex, StatusMessage from LoadItem where LoadID = @id and Status = 0 order by RowIndex asc", new { id}).ToList();
-            var loadItemColumnss = Company.Query<LoadItemColumn>("select C.* from LoadItem I inner join LoadItemColumn C on C.LoadID = I.LoadID and I.RowIndex = C.RowIndex and I.LoadID = @id and I.Status = 0 order by I.RowIndex asc, C.ColumnIndex asc", new { id }).ToList();
+            var loadItems = Company.Query<dynamic>(itemSql, new { id}).ToList();
+            var loadItemColumns = Company.Query<dynamic>(itemColumnSql, new { id }).ToList();
 
             var document = new SLDocument();
             document.RenameWorksheet("Sheet1", "Items");
@@ -8990,9 +9055,9 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             foreach (var i in loadItems)
             {
                 r++;
-                foreach (var lic in loadItemColumnss.Where(c => c.RowIndex == (int)i.RowIndex).OrderBy(c => c.ColumnIndex))
+                foreach (var lic in loadItemColumns.Where(c => c.RowIndex == (int)i.RowIndex).OrderBy(c => c.ColumnIndex))
                 {
-                    document.SetCellValue(r, lic.ColumnIndex, lic.Value);
+                    document.SetCellValue(r, lic.ColumnIndex, (string)lic.Value);
                 }
                 document.SetCellValue(r, columnCount + 1, i.StatusMessage);
             }
@@ -9018,7 +9083,14 @@ select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item:
             }
 
             var load = Company.GetById<Load>(id);
-            return File(load.File, "application/vnd.ms-excel", $"{load.DateCompleted.ToString()}.xlsx");
+            var bytes = load.File;
+
+            if (bytes == null)
+            {
+                var fileString = Storage.GetFileContentsAsString($"{constants.COMPANY_BULK_LOAD_FOLDER}/{Company.CurrentCompanyID}", $"load_{load.ID}.{load.Extension}");
+                bytes = Encoding.Default.GetBytes(fileString);
+            }
+            return File(bytes, "application/vnd.ms-excel", $"{load.DateCompleted.ToString()}.xlsx");
         }
 
         #endregion
@@ -11490,18 +11562,22 @@ where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetT
                         case "PolicyType":
                         case "TaxonomyType":
                             sql = $@"
-select	A.Object,
-        A.ObjectID, 
-        TP.TextPath as Name 
-from	AssetDetail A 
-        cross apply dbo.GetAssetTextPathById(A.ID, '/') TP 
-where   A.Type = @targetType 
-        and A.TypeID = @targetTypeID 
-        and A.[State] = 1 
-        and A.ObjectID != @id
-        and A.ID not in ({GetNoReadSqlStatement()}) 
-order by TP.TextPath"; 
-                            
+                                    select	A.Object,
+                                            A.ObjectID, 
+                                            TP.TextPath as Name 
+                                    from	AssetDetail A 
+                                            cross apply dbo.GetAssetTextPathById(A.ID, '/') TP 
+                                    		left join [Intersect] I on	I.IntersectTypeID = @it and (
+                                    											( (I.Subject = @source and I.SubjectID = @id) AND (I.Object = A.[Object] and I.ObjectID = A.ObjectID) ) OR
+                                    											( (I.Subject = A.[Object] and I.SubjectID = A.ObjectID) AND (I.Object = @source and I.ObjectID = @id) )
+                                    										)
+                                    where   A.Type = @targetType 
+                                            and A.TypeID = @targetTypeID 
+                                            and A.[State] = 1 
+                                            and A.ObjectID != @id
+                                            and A.ID not in ({GetNoReadSqlStatement()}) 
+                                            and I.ID is null
+                                    order by TP.TextPath"; 
                             break;
                     }
                     break;
@@ -13241,7 +13317,7 @@ order by	case
                         CompanyID = Company.CurrentCompanyID,
                         IsAdministrator = isAdmin,
                         ResourceID = id,
-                        State = state
+                        State = state                        
                     };
                     Community.Add(companyResource);
                 }
@@ -13262,7 +13338,8 @@ order by	case
                         LastName = lastName,
                         FirstName = firstName,
                         State = state,
-                        UpdatedOn = DateTime.UtcNow
+                        UpdatedOn = DateTime.UtcNow,
+                        Uid = a.Uid
                     };
 
                     Company.Add(gr);

@@ -76,7 +76,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
     loadComments() {
         this.isLoading = true;
         this.socialService.getComments(this.objectID, this.objectType, this.daysToLookBack, (this.pageNumber) * this.rowCount, this.rowCount, this.limitToType)
-            .then(res => {
+            .subscribe(res => {
                 this.isLoading = false;
                 this.comments = this.comments.concat(res);
                 this.hasMore = (res.length && res.length > 0);
@@ -101,7 +101,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
         editData.Comment.IsDeleted = true;
         
         this.socialService.editComment(editData).
-            then(res => {
+            subscribe(res => {
                 if (res.IsDeleted) {                    
                     let index = this.comments.findIndex(x => x.ID == res.ID);
                     
@@ -132,7 +132,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
         addData.Tags = event.tags? event.tags : [];
 
         this.socialService.addComment(addData).
-            then(res => {                
+            subscribe(res => {                
                 if (res) {
                     this.comments.unshift(res);                    
                 }
@@ -154,7 +154,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
         editData.ObjectType = this.objectType;
         
         this.socialService.editComment(editData).
-            then(res => {       
+            subscribe(res => {       
                 this.messagesService.showInfoMessage('Success', 'Item edited successfully');
                 this.isLoading = false;
             });
@@ -184,7 +184,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
         addData.Tags = [];
 
         this.socialService.addComment(addData).
-            then(res => {
+            subscribe(res => {
                 if (res) {
                     let index = this.comments.findIndex(x => x.ID == res.ParentID);
 

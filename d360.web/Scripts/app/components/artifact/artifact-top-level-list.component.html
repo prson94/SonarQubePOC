@@ -10,21 +10,20 @@
                 style="width: 100%;margin-bottom:10px;">
             <p-treeTable [value]="ArtifactTypes | treeSearch: searchValue:'Name'"
                 selectionMode="single"
-                [(selection)]="selectedRow"
-                (selectionChange)="navigate($event.data)"
+                [(selection)]="selectedRow"                
                 [style]="{ 'width': '100%' }">
                 <ng-template pTemplate="header">
                     <tr>
                         <th style="width: 20%">Name</th>
                         <th style="width: 70%">Description</th>
-                        <th style="width: 5%">Item Count</th>
-                        <th style="width: 5%">Select Item</th>
+                        <th style="width: 5%">Count</th>
+                        <th style="width: 5%"></th>
                     </tr>
                 </ng-template>
                 <ng-template pTemplate="body"
                     let-rowNode
                     let-item="rowData">
-                    <tr [ttSelectableRow]="rowNode">
+                    <tr [ttSelectableRow]="rowNode"  (click)="navigate(item.ID)">
                         <td>
                             <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
                             {{item.Name}}
@@ -37,11 +36,12 @@
                         <td style="overflow: auto; padding-left: 15px; text-align: center">
                             {{item.kount}}
                         </td>
-                        <td style="overflow: auto; padding-left: 15px; text-align: center">
-                            <d3s-preview-tooltip objectType="ArtifactType"
-                                [objectId]="item.ID"
-                                icon="info"
-                                (click)="navigate(item)"></d3s-preview-tooltip>
+                        <td>
+                            <div class="RowTools">
+                                <d3s-preview-tooltip objectType="ArtifactType"
+                                                     [objectId]="item.ID"
+                                                     icon="info"></d3s-preview-tooltip>
+                            </div>
                         </td>
                     </tr>
                 </ng-template>

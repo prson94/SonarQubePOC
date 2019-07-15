@@ -37,7 +37,7 @@
                 </div>
                 <div *ngSwitchCase="'user'">
                     <d3s-lineage-responsibilities *ngIf="selectedNode != null"
-                                                  [assetId]="selectedNode.key"></d3s-lineage-responsibilities>
+                                                  [assetId]="selectedNode.assetId"></d3s-lineage-responsibilities>
                 </div>
                 <div *ngSwitchCase="'relations'">
                     <d3s-lineage-relations *ngIf="selectedNode != null" [objectId]="selectedNode.key"

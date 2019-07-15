@@ -5,9 +5,9 @@
             <span *ngIf="fieldTooltip" [pTooltip]="fieldTooltip">{{currentFieldName}}</span>
             <span *ngIf="!fieldTooltip">{{currentFieldName}}&nbsp;</span>
         </div>
-        <input *ngSwitchCase="'Text'" [formControlName]="field.FieldName" (blur)="OnBlurTrim()" style="width: 100%;" type="string" [(ngModel)]="field.Value">
+        <input *ngSwitchCase="'Text'" [formControlName]="field.FieldName" (blur)="OnBlurTrim()" style="width: 100%;" type="text">
         <d3s-similar-items *ngIf="field.SimilarItemsUri != null" [uri]="field.SimilarItemsUri" [query]="field.Value"></d3s-similar-items>
-        <p-editor *ngSwitchCase="'Html'" [formControlName]="field.FieldName" [style]="{'height':'150px'}" [ngModel]="field.Value" (ngModelChange)="setEditorContent($event)" #ed>
+        <p-editor *ngSwitchCase="'Html'" [formControlName]="field.FieldName" [style]="{'height':'150px'}"  #ed>
             <header style="padding-bottom:0px !important">
                 <span class="ql-formats">
                     <select class="ql-header">
@@ -51,10 +51,10 @@
         </p-editor>
         <div *ngSwitchCase="'Lookup'">
             <ng-container *ngIf="!field.DelayedLoadType else delayedLoadType">
-                <p-multiSelect *ngIf="field?.MultiSelect; else singleSelect" [formControlName]="field.FieldName" [ngModel]="field.Value" (ngModelChange)="listItemChange.emit({field:field,value:$event});field.Value=$event;" [options]="field.Items | dropdownItemToSelectItemPipe" [style]="{width:'100%'}" ngDefaultControl [defaultLabel]="multiselectLabel()"></p-multiSelect>
+                <p-multiSelect *ngIf="field?.MultiSelect; else singleSelect" [formControlName]="field.FieldName" [options]="field.Items | dropdownItemToSelectItemPipe" [style]="{width:'100%'}" ngDefaultControl [defaultLabel]="multiselectLabel()"></p-multiSelect>
                 <ng-template #singleSelect>
                     <ng-container *ngIf="!field.UseTypeahead">
-                        <select [formControlName]="field.FieldName" style="height:auto;width:100%;" [ngModel]="field.Value" (ngModelChange)="listItemChange.emit({field:field,value:$event});field.Value=$event;">
+                        <select [formControlName]="field.FieldName" style="height:auto;width:100%;" >
                             <option *ngIf="field.ParentFieldTypeName && (!field.Items || field.Items.length == 0);else blankOption" value="" disabled selected>Select a {{field.ParentFieldTypeName}}</option>
                             <ng-template #blankOption>
                                 <option value=""></option>
@@ -68,8 +68,8 @@
                                         [field]="'Text'"
                                         [style]="{'width':'100%'}"
                                         [inputStyle]="{'width':'100%' }"
+                                        [inputId]="field.FieldName + '_input'"
                                         [formControlName]="field.FieldName"
-                                        [ngModel]="typeAheadValue"
                                         (onSelect)="onSelect($event)"
                                         [suggestions]="field.Items"
                                         (completeMethod)="search($event)"
@@ -96,8 +96,6 @@
                 <div [style.margin-right]="(filterException == '') ? 'auto' : '2.5em'">
                     <p-multiSelect *ngIf="field?.MultiSelect; else singleSelect"
                                    [formControlName]="field.FieldName"
-                                   [ngModel]="field.Value"
-                                   (ngModelChange)="listItemChange.emit({field:field,value:$event});field.Value=$event;"
                                    [options]="field.Items | selectItemTextToLabel"
                                    [style]="{width: '100%'}"
                                    ngDefaultControl [defaultLabel]="multiselectLabel()">
@@ -111,10 +109,8 @@
                         <ng-container *ngIf="!field.UseTypeahead">
                             <p-dropdown [formControlName]="field.FieldName"
                                         [style]="{'height':'auto',width: '100%'}"
-                                        [ngModel]="field.Value"
                                         [options]="field.Items | selectItemTextToLabel"
-                                        [placeholder]="multiselectLabel()"
-                                        (ngModelChange)="listItemChange.emit({field:field,value:$event});field.Value=$event;">
+                                        [placeholder]="multiselectLabel()">
                                 <ng-template let-item pTemplate="item">
                                     <div class="selectlistinfoitem-wrapper">
                                         <div class="selectlistinfoitem-text" [style.width]="item.Info ? '' : '100%'">{{item.Text}}</div><div class="selectlistinfoitem-info">{{item.Info}}</div>
@@ -128,8 +124,8 @@
                                             [field]="'Text'"
                                             [style]="{'width':'100%'}"
                                             [inputStyle]="{'width':'100%' }"
+                                            [inputId]="field.FieldName + '_input'"
                                             [formControlName]="field.FieldName"
-                                            [ngModel]="typeAheadValue"
                                             (onSelect)="onSelect($event)"
                                             [suggestions]="field.Items"
                                             (completeMethod)="search($event)"
@@ -174,25 +170,25 @@
                 </ng-template>
             </p-table>
         </div>
-        <input *ngSwitchCase="'Number'" [(ngModel)]="field.Value" name="{{field.FieldName}}" [formControlName]="field.FieldName"  style="width: 100%;" type="number" step="{{Increment ? Increment : 1}}" min="{{Min}}" max="{{Max}}">
-        <input *ngSwitchCase="'Decimal'" [(ngModel)]="field.Value" name="{{field.FieldName}}" [formControlName]="field.FieldName" style="width: 100%;" type="number" step="{{Increment ? Increment : 1}}" min="{{Min}}" max="{{Max}}" (keyup)="toDecimalPlaces($event,Precision)">
+        <input *ngSwitchCase="'Number'"  name="{{field.FieldName}}" [formControlName]="field.FieldName"  style="width: 100%;" type="number" step="{{Increment ? Increment : 1}}" min="{{Min}}" max="{{Max}}">
+        <input *ngSwitchCase="'Decimal'"  name="{{field.FieldName}}" [formControlName]="field.FieldName" style="width: 100%;" type="number" step="{{Increment ? Increment : 1}}" min="{{Min}}" max="{{Max}}" (keyup)="toDecimalPlaces($event,Precision)">
         <input *ngSwitchCase="'Percentage'" [formControlName]="field.FieldName" style="width: 100%;" type="number" step="0.01" min="0.00" max="1.00" (keyup)="clamp($event, 0, 1, 3)">
         <div *ngSwitchCase="'Color'">
-            <p-colorPicker [(ngModel)]="colorValue" [formControlName]="field.FieldName"></p-colorPicker>
-            <input type="text" [(ngModel)]="colorValue" [formControlName]="field.FieldName" style="padding:2px;" />
+            <p-colorPicker [formControlName]="field.FieldName"></p-colorPicker>
+            <input type="text" [formControlName]="field.FieldName" style="padding:2px;" />
         </div>
         <input *ngSwitchCase="'Password'" type="password" [formControlName]="field.FieldName" style="width: 100%;" />
         <input *ngSwitchCase="'Boolean'" type="checkbox" [formControlName]="field.FieldName" />
         <div *ngSwitchCase="'Date'">
-            <p-calendar [(ngModel)]="field.Value" [formControlName]="field.FieldName" [dateFormat]="getLocaleDateString()"></p-calendar>
+            <p-calendar [formControlName]="field.FieldName" [dateFormat]="getLocaleDateString()"></p-calendar>
         </div>
         <div *ngSwitchCase="'DateTime'">
-            <p-calendar [(ngModel)]="field.Value" [formControlName]="field.FieldName" [showTime]="true" [dateFormat]="getLocaleDateString()"></p-calendar>
+            <p-calendar [formControlName]="field.FieldName" [showTime]="true" [dateFormat]="getLocaleDateString()"></p-calendar>
         </div>
         <div *ngSwitchCase="'Link'">
-            <input [formControlName]="field.FieldName + '_Name'" style="width: 100%;" type="string">
+            <input [formControlName]="field.FieldName + '_Name'" style="width: 100%;" type="text">
             <div>(Link Name)</div>
-            <input [formControlName]="field.FieldName + '_Url'" style="width: 100%;" type="string">
+            <input [formControlName]="field.FieldName + '_Url'" style="width: 100%;" type="text">
             <div>(Link Url: Your Url should start with a protocol prefix.  For example 'http://' or 'https://')</div>
         </div>
         <div *ngSwitchCase="'FusionLookup'">
@@ -200,7 +196,7 @@
                 <option *ngFor="let opt of field.Items" [value]="opt.Value">{{opt.Text}}</option>
             </select>
         </div>
-        <d3s-multiselect-grid *ngSwitchCase="'DataTableSelect'" [multiple]="field.MultiSelect" [formControlName]="field.FieldName" ngDefaultControl [field]="field" [(ngModel)]="field.Value"></d3s-multiselect-grid>
+        <d3s-multiselect-grid *ngSwitchCase="'DataTableSelect'" [multiple]="field.MultiSelect" [formControlName]="field.FieldName" ngDefaultControl [field]="field" ></d3s-multiselect-grid>
         <div class="errorMessage" *ngIf="!isValid">* {{errorMessage}}</div>
     </div>
 </div>

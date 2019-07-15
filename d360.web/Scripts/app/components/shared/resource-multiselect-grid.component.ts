@@ -124,7 +124,7 @@ export class ResourceMultiSelectGridComponent extends BaseComponent implements O
         let url = `${this.field.TypeaheadUri}&pagenum=${this.currentPageNumber}&pagesize=${this.rowsPerPage}&sortdatafield=${this.sortField}&sortorder=${this.sortOrder == SortOrder.None ? "" : (this.sortOrder == SortOrder.Ascending ? "asc" : "desc")}&gbfilter=${this.globalfilter}`;
         
         this.resourceService.getResourceItems(url).
-            then(data => {
+            subscribe(data => {
                 this.isLoading = false;
                 this.items = data.results;
                 this.totalRecords = data.total;

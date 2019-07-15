@@ -20,6 +20,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Ganss.XSS;
 using System.Text.RegularExpressions;
+using d360.model.DataAccessLayer;
+using d360.extensions.storage;
+using d360.core;
+using System.Text;
 
 namespace igx.jobs.bulkloadprocessor
 {
@@ -58,8 +62,11 @@ namespace igx.jobs.bulkloadprocessor
                 };
                 var cache = new DummyCachingProvider();
                 var queue = new AzureQueueSource();
+                var storage = new AzureStorageProvider();
                 var community = new CommunityContext(cache, queue, sec);
+                
                 var company = new CompanyContext(community, cache, queue, sec, true);
+                var repository = new AssetRepository(company, queue, storage);
                 var isDev = (company.ObjectContext.Connection.DataSource.Contains("dev")) || (loadInfo.CompanyID == 8);
 
                 #endregion
@@ -78,7 +85,18 @@ namespace igx.jobs.bulkloadprocessor
 
                     if (loadItemRowCount <= 0)
                     {
-                        var memoryStream = new MemoryStream(load.File);
+                        byte[] bytes;
+                        if (load.File == null)
+                        {
+                            var data = storage.GetFileContentsAsString($"{constants.COMPANY_BULK_LOAD_FOLDER}",$"{loadInfo.CompanyID}/load_{load.ID}.{load.Extension}");
+                            bytes = Encoding.Default.GetBytes(data);
+                        }
+                        else
+                        {
+                            bytes = load.File;
+                        }
+
+                        var memoryStream = new MemoryStream(bytes);
                         var xls = new SLDocument(memoryStream);
 
                         var stats = xls.GetWorksheetStatistics();
@@ -266,7 +284,7 @@ namespace igx.jobs.bulkloadprocessor
                             await BulkLoadOwnership(company, load.ID);
                             break;
                         case "P":   // Promotions
-                            executeWithTry(companyConnection, $@"EXEC bulkload.Promotions {load.ID}", loadInfo.CompanyID, 2400);
+                            await BulkLoadAssets(company, repository, load);
                             company.CreateOrUpdateTypeDisplayValuesAsync(load.ObjectID, load.Object);
                             break;
                         case "R":   // Relations                                
@@ -1319,17 +1337,27 @@ where	ID = @loadId", new { loadId }, transaction: trans);
             if (currentRowIndex > 2) company.SaveChanges();
         }
 
-        static void executeWithTry(SqlConnection companyConnection, string lineageSql, int companyID, int timeout = 1200)
+        private static async Task BulkLoadAssets(CompanyContext company, IAssetRepository repository, Load load)
         {
             try
             {
-                companyConnection.Execute(lineageSql, null, null, timeout);
+                await company.BulkLoadAssets(load, repository);
             }
             catch (Exception ex)
             {
-                //logger.Error(lineageSql);
+                CoreFunction.AITrackException(functionName, ex, company.CurrentCompanyID);
+            }
+        }
+
+        static void executeWithTry(SqlConnection companyConnection, string sql, int companyID, int timeout = 1200)
+        {
+            try
+            {
+                companyConnection.Execute(sql, null, null, timeout);
+            }
+            catch (Exception ex)
+            {
                 CoreFunction.AITrackException(functionName, ex, companyID);
-                //logger.Error(ex.GetFullExceptionData());
             }
         }
     }

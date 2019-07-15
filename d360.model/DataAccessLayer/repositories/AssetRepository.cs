@@ -29,6 +29,10 @@ namespace d360.model.DataAccessLayer
             this.QueueSource = queueSource;
             this.StorageProvider = storageProvider;
         }
+        public Asset GetAssetByUID(Guid assetUid)
+        {
+            return CompanyContext.Filter<Asset>(i => i.uid == assetUid).SingleOrDefault();
+        }
         public List<AssetTypeClassInfo> GetAssetTypeList()
         {
             return AssetTypeClass.Glossary.GetAsList();
@@ -816,6 +820,12 @@ namespace d360.model.DataAccessLayer
 
 
         }
+
+        public bool DoesAssetExists(Guid uid)
+        {
+            return CompanyContext.Any<Asset>(i => i.uid == uid);
+        }
+
         #region Private
         private void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> fieldJoins, List<string> fieldColumns)
         {
@@ -1098,6 +1108,8 @@ namespace d360.model.DataAccessLayer
                     return "";
             }
         }
+
+
         #endregion
 
     }

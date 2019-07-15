@@ -109,6 +109,7 @@
     <Compile Include="entities\Issue\IssueType.cs" />
     <Compile Include="entities\Issue\IssueTypeApiModel.cs" />
     <Compile Include="entities\Issue\IssueTypeRelation.cs" />
+    <Compile Include="entities\Metric\MetricApiViewModels.cs" />
     <Compile Include="entities\Metric\MetricAsset.cs" />
     <Compile Include="entities\Metric\MetricAssetVersion.cs" />
     <Compile Include="entities\Metric\MetricAssetVersionCondition.cs" />
@@ -131,6 +132,7 @@
     <Compile Include="entities\Relation\MapTypeOrder.cs" />
     <Compile Include="entities\Relation\MapTypeTemplate.cs" />
     <Compile Include="entities\Relation\MapTypeTemplateItem.cs" />
+    <Compile Include="entities\Relation\RelationshipApiModels.cs" />
     <Compile Include="entities\ReportResponsibility.cs" />
     <Compile Include="entities\ResourcePasswordReset.cs" />
     <Compile Include="entities\Security\AssetResponsibilitiesModel.cs" />

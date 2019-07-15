@@ -149,7 +149,7 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
 
     private loadReports() {
         this.isLoading = true;
-        this.reportsService.getReports().then(result => {
+        this.reportsService.getReports().subscribe(result => {
             this.isLoading = false;
             for (var report of result) {
                 if (report.ReportType == 'sagacity') report.DisplayType = 'Data3Sixty Foundation';
@@ -170,7 +170,7 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
 
     deleteReport(id: number) {
         this.reportsService.deleteReport(id)
-            .then(result => {
+            .subscribe(result => {
                 this.showDelete = false;
                 this.showMessageForResult(this.messagesService, result);
                 if (result.type != 'error') {
@@ -183,7 +183,7 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
     saveReport(event) {
         this.isLoading = true;   
         this.reportsService.saveReport(event.report, event.file)
-            .then(result => {
+            .subscribe(result => {
                 this.showMessageForResult(this.messagesService, result);
                 let parts = event.report.ObjectType.split('|');
                 if (parts.length > 0) {
@@ -230,7 +230,7 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
     private onSubmitPowerCreds() {
         this.isLoading = true;
         this.reportsService.setPowerBICredentials(this.powerBiUser, this.powerBiPassword)
-            .then(result => {
+            .subscribe(result => {
                 this.isLoading = false;
                 this.showMessageForResult(this.messagesService, result);
                 if (result.type != 'error') {

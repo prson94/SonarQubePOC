@@ -66,7 +66,7 @@ export class BoardTile extends BaseComponent implements OnInit {
     private load() {
         this.isLoading = true;
 
-        this.socialService.getMyCounts(this.daysToLookBack).then(
+        this.socialService.getMyCounts(this.daysToLookBack).subscribe(
             res => {
                 this.counts = res.filter(item => item.Total > 0);
                 this.isLoading = false;                

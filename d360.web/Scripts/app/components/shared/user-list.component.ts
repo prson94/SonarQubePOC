@@ -199,7 +199,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
         this.getFieldsDefinition();
 
 
-        this.companySettingsService.getAuthenticationModel().then(res => {
+        this.companySettingsService.getAuthenticationModel().subscribe(res => {
             if (res.model == 'forms') {
                 this.allowPasswordReset = true;
             }
@@ -299,7 +299,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
         if (!this.selected.ID) {
             this.messagesService.showError("No User Selected", "Select a user to reset there password");
         }
-        this.resourcesService.resetResourcesPassword(this.selected.ID).then(result => {
+        this.resourcesService.resetResourcesPassword(this.selected.ID).subscribe(result => {
             this.showMessageForResult(this.messagesService, result);
             this.showResetPwd = false;
         });

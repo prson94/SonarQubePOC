@@ -1,22 +1,11 @@
 ﻿using igx.IntegrationTests.Core;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
-using d360.core.enums;
-using d360.model;
-using d360.core.entities;
 using igx.IntegrationTests.TestData;
 using Newtonsoft.Json.Linq;
 using Xunit.Priority;
-using d360.web.Models;
-using System.Threading;
 using Xunit;
-using igx.IntegrationTests.Core;
 
 namespace igx.IntegrationTests.ApiTests
 {
@@ -31,17 +20,17 @@ namespace igx.IntegrationTests.ApiTests
 
             var response = await httpClient.PostAsync(endpointUrl, TagTestData.TagJSON.AsStringContent());
             var content = await response.Content.ReadAsStringAsync();
-            var parsedData = JsonConvert.DeserializeObject<JToken>(content);
+            var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(!string.IsNullOrEmpty(content));
-            Assert.True(Guid.Parse(parsedData["uid"].ToString()) != Guid.Empty);
-            Assert.True(Guid.Parse(parsedData["CreatedByUid"].ToString()) != Guid.Empty);
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+            Assert.True(!string.IsNullOrEmpty(content), XMsg.NoContent);
+            Assert.True(Guid.Parse(parsedData["uid"].ToString()) != Guid.Empty, XMsg.InvalidFieldValue("uid"));
+            Assert.True(Guid.Parse(parsedData["CreatedByUid"].ToString()) != Guid.Empty, XMsg.InvalidFieldValue("CreatedByUid"));
 
-            Assert.True(TagTestData.TagJSON.HasSameFieldValue(parsedData, "Value"));
+            Assert.True(TagTestData.TagJSON.HasSameFieldValue(parsedData, "Value"), XMsg.InvalidFieldValue("Value"));
 
-            TagTestData.TagJSON = content;
+            TagTestData.TagJSON = content.AsJobject();
         }
 
         [Fact, Priority(10)]
@@ -52,12 +41,12 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JToken>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(!string.IsNullOrEmpty(content));
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+            Assert.True(!string.IsNullOrEmpty(content), XMsg.NoContent);
 
-            Assert.True(parsedData["items"].Count() > 0);
-            Assert.True(parsedData["items"].DoesContainToken(TagTestData.TagJSON));
+            Assert.True(parsedData["items"].Count() > 0,XMsg.InvalidCount);
+            Assert.True(parsedData["items"].DoesContainToken(TagTestData.TagJSON), XMsg.MissingAsset);
 
         }
 
@@ -66,23 +55,23 @@ namespace igx.IntegrationTests.ApiTests
         {
             string endpointUrl = URIHelper.TagUri;
 
-            TagTestData.TagJSON = JsonHelper.AppendJsonOnField(TagTestData.TagJSON, "Value", "Put_edit");
+            TagTestData.TagJSON.AppendValueOnProperty("Value", "Put_Edit");
 
-            var response = await httpClient.PutAsync($"{endpointUrl}/{TagTestData.TagJSON.GetJTokenValue("uid")}", TagTestData.TagJSON.AsStringContent());
+            var response = await httpClient.PutAsync($"{endpointUrl}/{TagTestData.TagJSON["uid"]}", TagTestData.TagJSON.AsStringContent());
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JToken>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(!string.IsNullOrEmpty(content));
-            Assert.True(TagTestData.TagJSON.GetJTokenValue("uid") == parsedData["uid"].ToString());
-            Assert.True(TagTestData.TagJSON.GetJTokenValue("Value") == parsedData["Value"].ToString());
-            Assert.True(TagTestData.TagJSON.GetJTokenValue("CreatedByUid") == parsedData["CreatedByUid"].ToString());
-            Assert.True(TagTestData.TagJSON.GetJTokenValue("CreatedOn") == parsedData["CreatedOn"].ToString());
-            Assert.True(TagTestData.TagJSON.GetJTokenValue("UpdatedOn") != parsedData["UpdatedOn"].ToString());
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+            Assert.True(!string.IsNullOrEmpty(content), XMsg.NoContent);
+            Assert.True(TagTestData.TagJSON["uid"].ToString() == parsedData["uid"].ToString(), XMsg.InvalidFieldValue("uid"));
+            Assert.True(TagTestData.TagJSON["Value"].ToString() == parsedData["Value"].ToString(), XMsg.InvalidFieldValue("Value"));
+            Assert.True(TagTestData.TagJSON["CreatedByUid"].ToString() == parsedData["CreatedByUid"].ToString(), XMsg.InvalidFieldValue("CreatedByUid"));
+            Assert.True(TagTestData.TagJSON["CreatedOn"].ToString() == parsedData["CreatedOn"].ToString(), XMsg.InvalidFieldValue("CreatedOn"));
+            Assert.True(TagTestData.TagJSON["UpdatedOn"].ToString() != parsedData["UpdatedOn"].ToString(), XMsg.InvalidFieldValue("UpdatedOn"));
 
 
-            TagTestData.TagJSON = content;
+            TagTestData.TagJSON = content.AsJobject();
         }
 
         [Fact, Priority(30)]
@@ -93,12 +82,12 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JToken>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(!string.IsNullOrEmpty(content));
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+            Assert.True(!string.IsNullOrEmpty(content), XMsg.NoContent);
 
-            Assert.True(parsedData["items"].Count() > 0);
-            Assert.True(parsedData["items"].DoesContainToken(TagTestData.TagJSON));
+            Assert.True(parsedData["items"].Count() > 0, XMsg.InvalidCount);
+            Assert.True(parsedData["items"].DoesContainToken(TagTestData.TagJSON), XMsg.MissingAsset);
 
         }
 
@@ -106,13 +95,13 @@ namespace igx.IntegrationTests.ApiTests
         public async void T_1_05_DeleteTag()
         {
             string endpointUrl = URIHelper.TagUri;
-            var response = await httpClient.DeleteAsync($"{endpointUrl}/{TagTestData.TagJSON.GetJTokenValue("uid")}");
+            var response = await httpClient.DeleteAsync($"{endpointUrl}/{TagTestData.TagJSON["uid"]}");
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JToken>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(!string.IsNullOrEmpty(content));
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+            Assert.True(!string.IsNullOrEmpty(content), XMsg.NoContent);
 
         }
 
@@ -124,11 +113,11 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JToken>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(!string.IsNullOrEmpty(content));
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+            Assert.True(!string.IsNullOrEmpty(content), XMsg.NoContent);
 
-            Assert.True(!parsedData["items"].DoesContainToken(TagTestData.TagJSON));
+            Assert.True(!parsedData["items"].DoesContainToken(TagTestData.TagJSON), XMsg.MissingAsset);
 
         }
 
@@ -141,79 +130,77 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JToken>(content);
 
-            Assert.True(!response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(response.StatusCode == System.Net.HttpStatusCode.BadRequest);
+            Assert.True(response.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
         }
 
         [Fact, Priority(70)]
         public async void T_2_02_Validation_PostEmptyValue()
         {
             string endpointUrl = URIHelper.TagUri;
-            TagTestData.TagJSON = JsonHelper.UpdateJsonOnField(TagTestData.TagJSON, "Value", "");
+            TagTestData.TagJSON.UpdateValueOnProperty("Value", "");
             var response = await httpClient.PostAsync(endpointUrl, TagTestData.TagJSON.AsStringContent());
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JToken>(content);
 
-            Assert.True(!response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(response.StatusCode == System.Net.HttpStatusCode.BadRequest);
+            Assert.True(response.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
         }
 
         [Fact, Priority(80)]
         public async void T_2_03_Validation_PostNameTooLong()
         {
             string endpointUrl = URIHelper.TagUri;
-            TagTestData.TagJSON = JsonHelper.UpdateJsonOnField(TagTestData.TagJSON, "Value", string.Join("", Enumerable.Repeat(0, 251).Select(n => (char)new Random().Next(127))));
+            var newName = string.Join("", Enumerable.Repeat(0, 251).Select(n => (char)new Random().Next(127)));
+            TagTestData.TagJSON.UpdateValueOnProperty("Value", newName);
+
             var response = await httpClient.PostAsync(endpointUrl, TagTestData.TagJSON.AsStringContent());
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JToken>(content);
 
-            Assert.True(!response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(response.StatusCode == System.Net.HttpStatusCode.BadRequest);
+            Assert.True(response.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
         }
 
         [Fact, Priority(90)]
         public async void T_2_04_Validation_PutEmptyValue()
         {
             string endpointUrl = URIHelper.TagUri;
-            TagTestData.TagJSON = JsonHelper.UpdateJsonOnField(TagTestData.TagJSON, "Value", "");
-            var response = await httpClient.PutAsync($"{endpointUrl}/{TagTestData.TagJSON.GetJTokenValue("uid")}", TagTestData.TagJSON.AsStringContent());
+            TagTestData.TagJSON.UpdateValueOnProperty("Value", "");
+            var response = await httpClient.PutAsync($"{endpointUrl}/{TagTestData.TagJSON["uid"]}", TagTestData.TagJSON.AsStringContent());
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JToken>(content);
 
-            Assert.True(!response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(response.StatusCode == System.Net.HttpStatusCode.BadRequest);
+            Assert.True(response.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
         }
 
         [Fact, Priority(100)]
         public async void T_2_05_Validation_PutNameTooLong()
         {
             string endpointUrl = URIHelper.TagUri;
-            TagTestData.TagJSON = JsonHelper.UpdateJsonOnField(TagTestData.TagJSON, "Value", string.Join("", Enumerable.Repeat(0, 251).Select(n => (char)new Random().Next(127))));
-            var response = await httpClient.PutAsync($"{endpointUrl}/{TagTestData.TagJSON.GetJTokenValue("uid")}", TagTestData.TagJSON.AsStringContent());
+            var newName = string.Join("", Enumerable.Repeat(0, 251).Select(n => (char)new Random().Next(127)));
+            TagTestData.TagJSON.UpdateValueOnProperty("Value", newName);
+            var response = await httpClient.PutAsync($"{endpointUrl}/{TagTestData.TagJSON["uid"]}", TagTestData.TagJSON.AsStringContent());
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JToken>(content);
 
-            Assert.True(!response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(response.StatusCode == System.Net.HttpStatusCode.BadRequest);
+            Assert.True(response.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
         }
 
         [Fact, Priority(110)]
         public async void T_2_06_Validation_PutUidNotMatching()
         {
             string endpointUrl = URIHelper.TagUri;
-            TagTestData.TagJSON = JsonHelper.UpdateJsonOnField(TagTestData.TagJSON, "Value", string.Join("", Enumerable.Repeat(0, 251).Select(n => (char)new Random().Next(127))));
+            var newName = string.Join("", Enumerable.Repeat(0, 251).Select(n => (char)new Random().Next(127)));
+            TagTestData.TagJSON.UpdateValueOnProperty("Value", newName);
             var response = await httpClient.PutAsync($"{endpointUrl}/{Guid.NewGuid()}", TagTestData.TagJSON.AsStringContent());
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JToken>(content);
 
-            Assert.True(!response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(response.StatusCode == System.Net.HttpStatusCode.BadRequest);
+            Assert.True(response.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
         }
 
     }

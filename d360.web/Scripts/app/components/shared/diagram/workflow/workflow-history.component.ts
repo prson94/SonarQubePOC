@@ -58,7 +58,7 @@ export class WorkflowHistoryComponent extends BaseComponent implements OnInit, O
         if (this.versionStepId != null) {
             this.isLoading = true;
             this.workflowService.getWorkflowVersionStepHistory(this.versionStepId, this.filteredObject, this.filteredObjectId)
-                .then(r => {
+                .subscribe(r => {
                     this.history = r;
                     this.isLoading = false;
                 });

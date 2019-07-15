@@ -2,6 +2,7 @@
 using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System;
 
 namespace d360.core.entities
 {
@@ -21,6 +22,12 @@ namespace d360.core.entities
         public string Object { get; set; }
 
         [DataMember]
+        public string KeyHash { get; set; }
+
+        [DataMember]
+        public string FieldHash { get; set; }
+
+        [DataMember]
         public int? ObjectID { get; set; }
 
         [DataMember]
@@ -28,6 +35,9 @@ namespace d360.core.entities
 
         [DataMember]
         public string StatusMessage { get; set; }
+
+        [DataMember]
+        public Guid? ExecutionItemUid { get; set; }
 
         #endregion
 

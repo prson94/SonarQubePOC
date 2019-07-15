@@ -274,6 +274,7 @@ where   A.RuleImplementationID = @id";
             string assignedSql = "";
             string havingSql = "";
             int count = 0; //same filtername multiple times
+
             foreach (var f in filters)
             {
                 var ff = f as UiRequestFieldFilterValue;
@@ -316,11 +317,11 @@ where   A.RuleImplementationID = @id";
                         break;
                     case "StartedOn":
                         dbArgs.Add($"{ff.FieldName}{count}", $"{ff.RawValue}");
-                        typeSql += $@"datediff(day, wi.startedOn, @{ff.FieldName}{count}) = 0 and ";
+                        typeSql += $@"datediff(hour, wi.StartedOn, @{ff.FieldName}{count}) <= 0 and datediff(hour, wi.StartedOn, @{ff.FieldName}{count}) > -24 and ";
                         break;
                     case "CompletedOn":
                         dbArgs.Add($"{ff.FieldName}{count}", $"{ff.RawValue}");
-                        typeSql += $@"datediff(day, wi.CompletedOn, @{ff.FieldName}{count}) = 0 and ";
+                        typeSql += $@"datediff(hour, wi.CompletedOn, @{ff.FieldName}{count}) <= 0 and datediff(hour, wi.CompletedOn, @{ff.FieldName}{count}) > -24 and ";
                         break;
                     case "Status":
                         typeSql +=  ff.RawValue == "Pending" ? " wi.CompletedOn is null and " : " wi.CompletedOn is not null and ";

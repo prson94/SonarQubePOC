@@ -22,8 +22,8 @@ namespace igx.UnitTests.ValidatorTests
         {
             var valResults = FieldApiModelValidator.ValidateModel(model, actionTypeModels, assetTypeModels, relationshipTypeModels);
 
-            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.BadRequest);
-            Assert.Contains("No model found", valResults.Error);
+            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+            Assert.True(valResults.Error.Contains("No model found"), XMsg.BadResponseMessage);
 
         }
         [Fact]
@@ -32,8 +32,8 @@ namespace igx.UnitTests.ValidatorTests
             model = new FieldTypesApiEditModel();
             var valResults = FieldApiModelValidator.ValidateModel(model, actionTypeModels, assetTypeModels, relationshipTypeModels);
 
-            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.BadRequest);
-            Assert.Contains("No Uid found", valResults.Error);
+            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+            Assert.True(valResults.Error.Contains("No Uid found"), XMsg.BadResponseMessage);
 
         }
 
@@ -44,8 +44,8 @@ namespace igx.UnitTests.ValidatorTests
             model.ActionTypeUid = Guid.NewGuid();
             var valResults = FieldApiModelValidator.ValidateModel(model, actionTypeModels, assetTypeModels, relationshipTypeModels);
 
-            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.NotFound);
-            Assert.Contains("Type not found", valResults.Error);
+            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.NotFound, XMsg.BadResponseCode);
+            Assert.True(valResults.Error.Contains("Type not found"), XMsg.BadResponseMessage);
 
         }
 
@@ -59,8 +59,8 @@ namespace igx.UnitTests.ValidatorTests
 
             var valResults = FieldApiModelValidator.ValidateModel(model, actionTypeModels, assetTypeModels, relationshipTypeModels);
 
-            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.BadRequest);
-            Assert.Contains("Parameter error", valResults.Error);
+            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+            Assert.True(valResults.Error.Contains("Parameter error"), XMsg.BadResponseMessage);
 
         }
 
@@ -72,8 +72,8 @@ namespace igx.UnitTests.ValidatorTests
 
             var valResults = FieldApiModelValidator.ValidateModel(model, actionTypeModels, assetTypeModels, relationshipTypeModels);
 
-            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.NotFound);
-            Assert.Contains("Type not found", valResults.Error);
+            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.NotFound, XMsg.BadResponseCode);
+            Assert.True(valResults.Error.Contains("Type not found"), XMsg.BadResponseMessage);
 
         }
 
@@ -87,8 +87,9 @@ namespace igx.UnitTests.ValidatorTests
 
             var valResults = FieldApiModelValidator.ValidateModel(model, actionTypeModels, assetTypeModels, relationshipTypeModels);
 
-            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.BadRequest);
-            Assert.Contains("Parameter error", valResults.Error);
+            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+            Assert.True(valResults.Error.Contains("Parameter error"), XMsg.BadResponseMessage);
+
 
         }
 
@@ -100,8 +101,8 @@ namespace igx.UnitTests.ValidatorTests
 
             var valResults = FieldApiModelValidator.ValidateModel(model, actionTypeModels, assetTypeModels, relationshipTypeModels);
 
-            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.NotFound);
-            Assert.Contains("Type not found", valResults.Error);
+            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.NotFound, XMsg.BadResponseCode);
+            Assert.True(valResults.Error.Contains("Type not found"), XMsg.BadResponseMessage);
 
         }
 
@@ -126,8 +127,9 @@ namespace igx.UnitTests.ValidatorTests
             model.Fields = new List<FieldTypeApiEditModel>();
             var valResults = FieldApiModelValidator.ValidateModel(model, actionTypeModels, assetTypeModels, relationshipTypeModels);
 
-            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.BadRequest);
-            Assert.Contains("No primary key defined", valResults.Error);
+            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+            Assert.True(valResults.Error.Contains("No primary key defined"), XMsg.BadResponseMessage);
+
         }
 
         [Fact]
@@ -153,7 +155,7 @@ namespace igx.UnitTests.ValidatorTests
 
             var valResults = FieldApiModelValidator.ValidateModel(model, actionTypeModels, assetTypeModels, relationshipTypeModels);
 
-            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.OK);
+            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.OK, XMsg.BadResponseCode);
         }
 
         [Fact]
@@ -183,8 +185,9 @@ namespace igx.UnitTests.ValidatorTests
 
             var valResults = FieldApiModelValidator.ValidateModel(model, actionTypeModels, assetTypeModels, relationshipTypeModels);
 
-            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.BadRequest);
-            Assert.Contains("Fields contain errors", valResults.Error);
+            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+            Assert.True(valResults.Error.Contains("Fields contain errors"), XMsg.BadResponseMessage);
+
         }
 
         [Fact]
@@ -219,8 +222,9 @@ namespace igx.UnitTests.ValidatorTests
             });
             var valResults = FieldApiModelValidator.ValidateModel(model, actionTypeModels, assetTypeModels, relationshipTypeModels);
 
-            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.BadRequest);
-            Assert.Contains("Duplicate field names", valResults.Error);
+            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+            Assert.True(valResults.Error.Contains("Duplicate field names"), XMsg.BadResponseMessage);
+
         }
 
         [Fact]
@@ -255,7 +259,7 @@ namespace igx.UnitTests.ValidatorTests
             });
             var valResults = FieldApiModelValidator.ValidateModel(model, actionTypeModels, assetTypeModels, relationshipTypeModels);
 
-            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.OK);
+            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.OK, XMsg.BadResponseCode);
         }
     }
 
@@ -272,8 +276,9 @@ namespace igx.UnitTests.ValidatorTests
         {
             var valResults = FieldApiModelValidator.ValidateModel(model, actionTypeModels, assetTypeModels, relationshipTypeModels);
 
-            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.BadRequest);
-            Assert.Contains("No model found", valResults.Error);
+            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+            Assert.True(valResults.Error.Contains("No model found"), XMsg.BadResponseMessage);
+
 
         }
         [Fact]
@@ -282,8 +287,8 @@ namespace igx.UnitTests.ValidatorTests
             model = new FieldTypesApiDeleteModel();
             var valResults = FieldApiModelValidator.ValidateModel(model, actionTypeModels, assetTypeModels, relationshipTypeModels);
 
-            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.BadRequest);
-            Assert.Contains("No Uid found", valResults.Error);
+            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+            Assert.True(valResults.Error.Contains("No Uid found"), XMsg.BadResponseMessage);
 
         }
 
@@ -294,8 +299,8 @@ namespace igx.UnitTests.ValidatorTests
             model.ActionTypeUid = Guid.NewGuid();
             var valResults = FieldApiModelValidator.ValidateModel(model, actionTypeModels, assetTypeModels, relationshipTypeModels);
 
-            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.NotFound);
-            Assert.Contains("Type not found", valResults.Error);
+            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.NotFound, XMsg.BadResponseCode);
+            Assert.True(valResults.Error.Contains("Type not found"), XMsg.BadResponseMessage);
 
         }
 
@@ -309,8 +314,8 @@ namespace igx.UnitTests.ValidatorTests
 
             var valResults = FieldApiModelValidator.ValidateModel(model, actionTypeModels, assetTypeModels, relationshipTypeModels);
 
-            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.BadRequest);
-            Assert.Contains("Parameter error", valResults.Error);
+            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+            Assert.True(valResults.Error.Contains("Parameter error"), XMsg.BadResponseMessage);
 
         }
 
@@ -322,8 +327,8 @@ namespace igx.UnitTests.ValidatorTests
 
             var valResults = FieldApiModelValidator.ValidateModel(model, actionTypeModels, assetTypeModels, relationshipTypeModels);
 
-            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.NotFound);
-            Assert.Contains("Type not found", valResults.Error);
+            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.NotFound, XMsg.BadResponseCode);
+            Assert.True(valResults.Error.Contains("Type not found"), XMsg.BadResponseMessage);
 
         }
 
@@ -337,8 +342,8 @@ namespace igx.UnitTests.ValidatorTests
 
             var valResults = FieldApiModelValidator.ValidateModel(model, actionTypeModels, assetTypeModels, relationshipTypeModels);
 
-            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.BadRequest);
-            Assert.Contains("Parameter error", valResults.Error);
+            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+            Assert.True(valResults.Error.Contains("Parameter error"), XMsg.BadResponseMessage);
 
         }
 
@@ -350,8 +355,8 @@ namespace igx.UnitTests.ValidatorTests
 
             var valResults = FieldApiModelValidator.ValidateModel(model, actionTypeModels, assetTypeModels, relationshipTypeModels);
 
-            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.NotFound);
-            Assert.Contains("Type not found", valResults.Error);
+            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.NotFound, XMsg.BadResponseCode);
+            Assert.True(valResults.Error.Contains("Type not found"), XMsg.BadResponseMessage);
 
         }
 

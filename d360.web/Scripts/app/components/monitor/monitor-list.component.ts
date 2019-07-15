@@ -3,7 +3,7 @@ import { BaseComponent } from '../shared/base.component';
 import { WorkflowService } from '../../services/workflow.service';
 import { WorkflowListItem } from '../../models/workflow.model';
 import { Router } from '@angular/router';
-
+import { map } from 'rxjs/operators';
 
 @Component({
     selector: 'd3s-monitor-list',
@@ -106,43 +106,45 @@ export class MonitorListComponent extends BaseComponent implements OnInit, OnCha
         let typeList = "";
         this.workflowTypes.forEach(s => typeList += s.toString() + ',');
         this.workflowService.getWorkflowsByTypeList(typeList, this.useFilteredObject ? this.objectType : null, this.useFilteredObject ? this.objectId : null)
-            .then(r => {
-                this.workflowItems = r;
-                //console.log(this.useFilteredObject, this.objectType, this.objectId, this.workflowItems);
-                r.forEach(i => {
-                    if (i.ResponsibleUser != null && i.ResponsibleUser.constructor === Array) {
-                        i.ResponsibleUser = i.ResponsibleUser[0];
+            .pipe(
+                 map(r => {
+                    this.workflowItems = r;
+                    //console.log(this.useFilteredObject, this.objectType, this.objectId, this.workflowItems);
+                    r.forEach(i => {
+                        if (i.ResponsibleUser != null && i.ResponsibleUser.constructor === Array) {
+                            i.ResponsibleUser = i.ResponsibleUser[0];
+                        }
+                    });
+                }),
+                map(() => {
+                    if (this.objectType != null && this.objectId != null) {
+                        //artifact type
+                        if (this.objectType.toLowerCase().endsWith('type')) {
+                            this.workflowItems = this.workflowItems.filter(i => i.Object == this.objectType && i.ObjectID == this.objectId);
+                        } else if (this.useFilteredObject) {
+                            //filtering is done on the server for specific objects. If the list comes back null, the specific object is not present
+                            this.workflowItems = this.workflowItems.filter(i => i.ObjectNames != null);
+                        }
                     }
-                });
-            })
-            .then(() => {
-                if (this.objectType != null && this.objectId != null) {
-                    //artifact type
-                    if (this.objectType.toLowerCase().endsWith('type')) {
-                        this.workflowItems = this.workflowItems.filter(i => i.Object == this.objectType && i.ObjectID == this.objectId);
-                    } else if (this.useFilteredObject) {
-                        //filtering is done on the server for specific objects. If the list comes back null, the specific object is not present
-                        this.workflowItems = this.workflowItems.filter(i => i.ObjectNames != null);
+                }),
+                map(() => {
+                    let filteredTypeList = [];
+                    if (this.workflowItems != null) {
+                        this.workflowItems.forEach(w => filteredTypeList.push(w.TypeID));
+                        this.filteredTypes.emit(filteredTypeList);
                     }
-                }
-            })
-            .then(() => {
-                let filteredTypeList = [];
-                if (this.workflowItems != null) {
-                    this.workflowItems.forEach(w => filteredTypeList.push(w.TypeID));
-                    this.filteredTypes.emit(filteredTypeList);
-                }
 
-            })
-            .then(() => {
-                if (this.workflowItems != null && this.workflowItems.length > 0) {
-                    //select first row by default
-                    this.selection = this.workflowItems[0];
-                    this.selectionChange.emit(this.selection);
-                }
-                this.onLoadComplete.emit({ rows: this.workflowItems == null ? 0 : this.workflowItems.length });
-                this.isLoading = false;
-            });
+                }),
+                map(() => {
+                    if (this.workflowItems != null && this.workflowItems.length > 0) {
+                        //select first row by default
+                        this.selection = this.workflowItems[0];
+                        this.selectionChange.emit(this.selection);
+                    }
+                    this.onLoadComplete.emit({ rows: this.workflowItems == null ? 0 : this.workflowItems.length });
+                    this.isLoading = false;
+                })
+            ).subscribe();
     }
 
     openItem(url: string) {

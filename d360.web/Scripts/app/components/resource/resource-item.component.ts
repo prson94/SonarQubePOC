@@ -83,7 +83,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
 
             this.headerBreadcrumbService.setCurrentObjectInfo('Resource', resourceId);
             this.resourcesService.getResource(this.resourceId)
-                .then(r => {
+                .subscribe(r => {
                     this.resource = r;
 
                     this.headerBreadcrumbService.clearBreadcrumbs();
@@ -98,7 +98,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                         this.isMe = false;
                     }
 
-                    this.socialService.getTheCounts(this.resourceId, this.days).then(
+                    this.socialService.getTheCounts(this.resourceId, this.days).subscribe(
                         k => {
                             for (let i = 0; i < k.length; i++) {
                                 this.totNumber += k[i].Total;

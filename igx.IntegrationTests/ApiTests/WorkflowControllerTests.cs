@@ -1,20 +1,12 @@
-﻿using d360.core.entities;
-using d360.core.entities.Workflow;
-using d360.web.Models;
-using igx.IntegrationTests.Core;
+﻿using igx.IntegrationTests.Core;
 using igx.IntegrationTests.TestData;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Xunit;
 using Xunit.Priority;
-using System.Reflection;
 
 namespace igx.IntegrationTests.ApiTests
 {
@@ -29,12 +21,12 @@ namespace igx.IntegrationTests.ApiTests
             string endpointUrl = URIHelper.WorkflowTypesUri;
             var response = await httpClient.GetAsync(endpointUrl);
             var content = await response.Content.ReadAsStringAsync();
-            var parsedData = JsonConvert.DeserializeObject<List<WorkflowTypeApiViewModel>>(content);
+            var parsedData = JsonConvert.DeserializeObject<JArray>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
             //Integration test should be run in environment with added workflows
-            Assert.True(parsedData.Count > 0);
+            Assert.True(parsedData.Count > 0, XMsg.InvalidCount);
             WorkflowTestData.WorkflowTypes = parsedData;
         }
 
@@ -43,15 +35,15 @@ namespace igx.IntegrationTests.ApiTests
         {
             string endpointUrl = URIHelper.WorkflowTypesUri;
 
-            foreach (var changeType in WorkflowTestData.WorkflowTypes.GroupBy(x => x.ChangeType))
+            foreach (var changeType in WorkflowTestData.WorkflowTypes.GroupBy(x => x["ChangeType"].ToString()))
             {
                 var response = await httpClient.GetAsync($"{endpointUrl}?ChangeType={changeType.Key}");
                 var content = await response.Content.ReadAsStringAsync();
-                var parsedData = JsonConvert.DeserializeObject<List<WorkflowTypeApiViewModel>>(content);
+                var parsedData = JsonConvert.DeserializeObject<JArray>(content);
 
-                Assert.True(response.IsSuccessStatusCode);
-                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-                Assert.True(parsedData.Count == changeType.Count());
+                Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+                Assert.True(parsedData.Count == changeType.Count(), XMsg.InvalidCount);
             }
 
         }
@@ -61,55 +53,36 @@ namespace igx.IntegrationTests.ApiTests
         {
             string endpointUrl = URIHelper.WorkflowTypesUri;
 
-            foreach (var stateType in WorkflowTestData.WorkflowTypes.GroupBy(x => x.State))
+            foreach (var stateType in WorkflowTestData.WorkflowTypes.GroupBy(x => x["State"]))
             {
                 var response = await httpClient.GetAsync($"{endpointUrl}?State={stateType.Key}");
                 var content = await response.Content.ReadAsStringAsync();
-                var parsedData = JsonConvert.DeserializeObject<List<WorkflowTypeApiViewModel>>(content);
+                var parsedData = JsonConvert.DeserializeObject<JArray>(content);
 
 
-                Assert.True(response.IsSuccessStatusCode);
-                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-                Assert.True(parsedData.Count == stateType.Count());
+                Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+                Assert.True(parsedData.Count == stateType.Count(), XMsg.InvalidCount);
             }
 
         }
 
-
-        [Fact, Priority(40)]
-        public async void T_1_04_GetWorkflowTypesByState()
-        {
-            string endpointUrl = URIHelper.WorkflowTypesUri;
-
-            foreach (var stateType in WorkflowTestData.WorkflowTypes.GroupBy(x => x.State))
-            {
-                var response = await httpClient.GetAsync($"{endpointUrl}?State={stateType.Key}");
-                var content = await response.Content.ReadAsStringAsync();
-                var parsedData = JsonConvert.DeserializeObject<List<WorkflowTypeApiViewModel>>(content);
-
-
-                Assert.True(response.IsSuccessStatusCode);
-                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-                Assert.True(parsedData.Count == stateType.Count());
-            }
-
-        }
 
         [Fact, Priority(50)]
         public async void T_1_05_GetWorkflowTypesByActionTypeUIDTest()
         {
             string endpointUrl = URIHelper.WorkflowTypesUri;
 
-            foreach (var byUid in WorkflowTestData.WorkflowTypes.Where(x => x.ActionTypeUid != null).GroupBy(x => x.ActionTypeUid).OrderByDescending(x => x.Count()).Take(5))
+            foreach (var byUid in WorkflowTestData.WorkflowTypes.Where(x => x["ActionTypeUid"] != null).GroupBy(x => x["ActionTypeUid"].ToString()).OrderByDescending(x => x.Count()).Take(5))
             {
                 var response = await httpClient.GetAsync($"{endpointUrl}?ActionTypeUid={byUid.Key}");
                 var content = await response.Content.ReadAsStringAsync();
-                var parsedData = JsonConvert.DeserializeObject<List<WorkflowTypeApiViewModel>>(content);
+                var parsedData = JsonConvert.DeserializeObject<JArray>(content);
 
 
-                Assert.True(response.IsSuccessStatusCode);
-                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-                Assert.True(parsedData.Count == byUid.Count());
+                Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+                Assert.True(parsedData.Count == byUid.Count(), XMsg.InvalidCount);
             }
 
         }
@@ -119,16 +92,16 @@ namespace igx.IntegrationTests.ApiTests
         {
             string endpointUrl = URIHelper.WorkflowTypesUri;
 
-            foreach (var byUid in WorkflowTestData.WorkflowTypes.Where(x => x.AssetTypeUid != null).GroupBy(x => x.AssetTypeUid).OrderByDescending(x => x.Count()).Take(5))
+            foreach (var byUid in WorkflowTestData.WorkflowTypes.Where(x => x["AssetTypeUid"] != null).GroupBy(x => x["AssetTypeUid"].ToString()).OrderByDescending(x => x.Count()).Take(5))
             {
                 var response = await httpClient.GetAsync($"{endpointUrl}?AssetTypeUid={byUid.Key}");
                 var content = await response.Content.ReadAsStringAsync();
-                var parsedData = JsonConvert.DeserializeObject<List<WorkflowTypeApiViewModel>>(content);
+                var parsedData = JsonConvert.DeserializeObject<JArray>(content);
 
 
-                Assert.True(response.IsSuccessStatusCode);
-                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-                Assert.True(parsedData.Count == byUid.Count());
+                Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+                Assert.True(parsedData.Count == byUid.Count(), XMsg.InvalidCount);
             }
 
         }
@@ -138,16 +111,16 @@ namespace igx.IntegrationTests.ApiTests
         {
             string endpointUrl = URIHelper.WorkflowTypesUri;
 
-            foreach (var byUid in WorkflowTestData.WorkflowTypes.Where(x => x.RelationshipTypeUid != null).GroupBy(x => x.RelationshipTypeUid).OrderByDescending(x => x.Count()).Take(5))
+            foreach (var byUid in WorkflowTestData.WorkflowTypes.Where(x => x["RelationshipTypeUid"] != null).GroupBy(x => x["RelationshipTypeUid"].ToString()).OrderByDescending(x => x.Count()).Take(5))
             {
                 var response = await httpClient.GetAsync($"{endpointUrl}?RelationshipTypeUid={byUid.Key}");
                 var content = await response.Content.ReadAsStringAsync();
-                var parsedData = JsonConvert.DeserializeObject<List<WorkflowTypeApiViewModel>>(content);
+                var parsedData = JsonConvert.DeserializeObject<JArray>(content);
 
 
-                Assert.True(response.IsSuccessStatusCode);
-                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-                Assert.True(parsedData.Count == byUid.Count());
+                Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+                Assert.True(parsedData.Count == byUid.Count(), XMsg.InvalidCount);
             }
 
         }
@@ -159,12 +132,12 @@ namespace igx.IntegrationTests.ApiTests
             string endpointUrl = URIHelper.WorkflowVersionUriWithPageSize;
             var response = await httpClient.GetAsync(endpointUrl);
             var content = await response.Content.ReadAsStringAsync();
-            var parsedData = JsonConvert.DeserializeObject<WorkflowVersionsApiViewModel>(content);
+            var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
             //Integration test should be run in environment with added workflows
-            Assert.True(parsedData.items.Count() > 0);
+            Assert.True(parsedData["items"].Count() > 0, XMsg.InvalidCount);
             WorkflowTestData.WorkflowVersions = parsedData;
         }
 
@@ -173,15 +146,15 @@ namespace igx.IntegrationTests.ApiTests
         {
             string endpointUrl = URIHelper.WorkflowVersionUriWithPageSize;
 
-            foreach (var filteredBy in WorkflowTestData.WorkflowVersions.items.GroupBy(x => x.State))
+            foreach (var filteredBy in WorkflowTestData.WorkflowVersions["items"].GroupBy(x => x["State"].ToString()))
             {
                 var response = await httpClient.GetAsync($"{endpointUrl}&State={filteredBy.Key}");
                 var content = await response.Content.ReadAsStringAsync();
-                var parsedData = JsonConvert.DeserializeObject<WorkflowVersionsApiViewModel>(content);
+                var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
-                Assert.True(response.IsSuccessStatusCode);
-                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-                Assert.True(parsedData.items.Count() == filteredBy.Count());
+                Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+                Assert.True(parsedData["items"].Count() == filteredBy.Count(), XMsg.InvalidCount);
             }
         }
 
@@ -190,15 +163,15 @@ namespace igx.IntegrationTests.ApiTests
         {
             string endpointUrl = URIHelper.WorkflowVersionUriWithPageSize;
 
-            foreach (var filteredBy in WorkflowTestData.WorkflowVersions.items.Where(x => x.ActionTypeUid != null).GroupBy(x => x.ActionTypeUid))
+            foreach (var filteredBy in WorkflowTestData.WorkflowVersions["items"].Where(x => x["ActionTypeUid"] != null).GroupBy(x => x["ActionTypeUid"].ToString()))
             {
                 var response = await httpClient.GetAsync($"{endpointUrl}&ActionTypeUid={filteredBy.Key}");
                 var content = await response.Content.ReadAsStringAsync();
-                var parsedData = JsonConvert.DeserializeObject<WorkflowVersionsApiViewModel>(content);
+                var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
-                Assert.True(response.IsSuccessStatusCode);
-                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-                Assert.True(parsedData.items.Count() == filteredBy.Count());
+                Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+                Assert.True(parsedData["items"].Count() == filteredBy.Count(), XMsg.InvalidCount);
             }
         }
 
@@ -208,15 +181,14 @@ namespace igx.IntegrationTests.ApiTests
         {
             string endpointUrl = URIHelper.WorkflowVersionUriWithPageSize;
 
-            foreach (var filteredBy in WorkflowTestData.WorkflowVersions.items.Where(x => x.AssetTypeUid != null).GroupBy(x => x.AssetTypeUid))
+            foreach (var filteredBy in WorkflowTestData.WorkflowVersions["items"].Where(x => x["AssetTypeUid"] != null).GroupBy(x => x["AssetTypeUid"].ToString()))
             {
                 var response = await httpClient.GetAsync($"{endpointUrl}&AssetTypeUid={filteredBy.Key}");
                 var content = await response.Content.ReadAsStringAsync();
-                var parsedData = JsonConvert.DeserializeObject<WorkflowVersionsApiViewModel>(content);
-
-                Assert.True(response.IsSuccessStatusCode);
-                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-                Assert.True(parsedData.items.Count() == filteredBy.Count());
+                var parsedData = JsonConvert.DeserializeObject<JObject>(content);
+                Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+                Assert.True(parsedData["items"].Count() == filteredBy.Count(), XMsg.InvalidCount);
             }
         }
 
@@ -225,15 +197,15 @@ namespace igx.IntegrationTests.ApiTests
         {
             string endpointUrl = URIHelper.WorkflowVersionUriWithPageSize;
 
-            foreach (var filteredBy in WorkflowTestData.WorkflowVersions.items.Where(x => x.RelationshipTypeUid != null).GroupBy(x => x.RelationshipTypeUid))
+            foreach (var filteredBy in WorkflowTestData.WorkflowVersions["items"].Where(x => x["RelationshipTypeUid"] != null).GroupBy(x => x["RelationshipTypeUid"].ToString()))
             {
                 var response = await httpClient.GetAsync($"{endpointUrl}&RelationshipTypeUid={filteredBy.Key}");
                 var content = await response.Content.ReadAsStringAsync();
-                var parsedData = JsonConvert.DeserializeObject<WorkflowVersionsApiViewModel>(content);
+                var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
-                Assert.True(response.IsSuccessStatusCode);
-                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-                Assert.True(parsedData.items.Count() == filteredBy.Count());
+                Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+                Assert.True(parsedData.Count == filteredBy.Count(), XMsg.InvalidCount);
             }
         }
 
@@ -242,52 +214,60 @@ namespace igx.IntegrationTests.ApiTests
         {
             string endpointUrl = URIHelper.WorkflowVersionUriWithPageSize;
 
-            foreach (var filteredBy in WorkflowTestData.WorkflowVersions.items.Where(x => x.WorkflowTypeUid != null).GroupBy(x => x.WorkflowTypeUid))
+            foreach (var filteredBy in WorkflowTestData.WorkflowVersions["items"].Where(x => x["WorkflowTypeUid"] != null).GroupBy(x => x["WorkflowTypeUid"].ToString()))
             {
                 var response = await httpClient.GetAsync($"{endpointUrl}&WorkflowTypeUid={filteredBy.Key}");
                 var content = await response.Content.ReadAsStringAsync();
-                var parsedData = JsonConvert.DeserializeObject<WorkflowVersionsApiViewModel>(content);
+                var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
-                Assert.True(response.IsSuccessStatusCode);
-                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-                Assert.True(parsedData.items.Count() == filteredBy.Count());
+                Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+                Assert.True(parsedData["items"].Count() == filteredBy.Count(), XMsg.InvalidCount);
             }
         }
 
         [Theory, Priority(1060)]
         [InlineData(0, 1, "VersionNumber")]
-        [InlineData(0, 15, "VersionNumber")]
-        [InlineData(1, 15, "VersionNumber")]
-        [InlineData(2, 15, "VersionNumber")]
-        [InlineData(3, 15, "VersionNumber")]
-        [InlineData(3, 15, "CreatedOn")]
-        [InlineData(3, 15, "UpdatedOn")]
+        [InlineData(0, 5, "VersionNumber")]
+        [InlineData(1, 5, "VersionNumber")]
+        [InlineData(2, 5, "VersionNumber")]
+        [InlineData(3, 5, "CreatedOn")]
+        [InlineData(3, 5, "UpdatedOn")]
 
         public async void T_2_07_GetWorkflowVersionPageSizeOrdering(int pageNum, int pageSize, string orderBy)
         {
             if (pageNum <= 0) pageNum = 1;
             string endpointUrl = URIHelper.WorkflowVersionUriWithoutPageSize;
 
-            var response = await httpClient.GetAsync($"{endpointUrl.Replace("?_pageSize=10000","")}?_pageSize={pageSize}&_pageNum={pageNum}&_order={orderBy}");
+            var response = await httpClient.GetAsync($"{endpointUrl.Replace("?_pageSize=10000", "")}?_pageSize={pageSize}&_pageNum={pageNum}&_order={orderBy}");
             var content = await response.Content.ReadAsStringAsync();
-            var parsedData = JsonConvert.DeserializeObject<WorkflowVersionsApiViewModel>(content);
+            var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
             Assert.True(response.IsSuccessStatusCode);
             Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(parsedData.items.Count() == pageSize);
+            Assert.True(parsedData["items"].Count() == pageSize);
 
-            var ordered = WorkflowTestData.WorkflowVersions.items.OrderBy(x => x.VersionNumber);
+            var ordered = new List<JToken>();
             switch (orderBy)
             {
                 case "CreatedOn":
-                    ordered = ordered.OrderBy(x => x.CreatedOn);
+                    ordered = WorkflowTestData.WorkflowVersions["items"].OrderBy(x => DateTime.Parse(x["CreatedOn"].ToString())).ToList();
                     break;
                 case "UpdatedOn":
-                    ordered = ordered.OrderBy(x => x.UpdatedOn);
+                    ordered = WorkflowTestData.WorkflowVersions["items"].OrderBy(x => DateTime.Parse(x["UpdatedOn"].ToString())).ToList();
+                    break;
+                case "VersionNumber":
+                    ordered = WorkflowTestData.WorkflowVersions["items"].OrderBy(x => int.Parse(x["VersionNumber"].ToString())).ToList();
                     break;
             }
 
-            Assert.True(SimpleCollectionComparere.IsEqual(ordered.Skip((pageNum - 1) * pageSize).Take(pageSize).ToList(), parsedData.items));
+            JArray realData = new JArray();
+            foreach (var item in ordered.Skip((pageNum - 1) * pageSize).Take(pageSize).ToList())
+            {
+                realData.Add(item);
+            }
+
+            Assert.True(SimpleJsonComparer.IsEqual(realData, parsedData["items"]), XMsg.MissingAsset);
         }
 
         [Fact, Priority(2000)]
@@ -295,16 +275,16 @@ namespace igx.IntegrationTests.ApiTests
         {
             string endpointUrl = URIHelper.WorkflowVersionUriWithoutPageSize;
 
-            foreach (var item in WorkflowTestData.WorkflowVersions.items.Where(x => x.State == d360.core.enums.State.Active).Take(5))
+            foreach (var item in WorkflowTestData.WorkflowVersions["items"].Where(x => x["State"].ToString() == "Active").Take(5))
             {
 
-                var response = await httpClient.GetAsync($"{endpointUrl}/{item.Uid}/steps");
+                var response = await httpClient.GetAsync($"{endpointUrl}/{item["Uid"].ToString()}/steps");
                 var content = await response.Content.ReadAsStringAsync();
-                var parsedData = JsonConvert.DeserializeObject<List<WorkflowVersionStepsApiViewModel>>(content);
+                var parsedData = JsonConvert.DeserializeObject<JArray>(content);
 
-                Assert.True(response.IsSuccessStatusCode);
-                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-                Assert.True(parsedData != null);
+                Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+                Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+                Assert.True(parsedData != null, XMsg.NoContent);
             }
 
 

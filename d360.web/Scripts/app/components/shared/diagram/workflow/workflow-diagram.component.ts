@@ -38,7 +38,11 @@ import {
     WorkflowActivityType,
 } from '../../../../models/workflow.model';
 import { FieldType } from '../../../../models/fields.model';
-
+import { map, concatMap } from 'rxjs/operators';
+import { Observable,of, ConnectableObservable } from 'rxjs';
+import { forEach } from '@angular/router/src/utils/collection';
+import { Field } from '../../../../models/fields-observable.model';
+ 
 declare var window: any;
 
 @Component({
@@ -313,45 +317,49 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
     //#region save/load
 
-    private populateDiagram(): Promise<any> {
+    private populateDiagram(): Observable<any> {
 
         //load from model
         if (this.model != null) {
             if (this.model.Event == null || this.model.Event.Object == null || this.model.Event.ObjectID == null) {
                 console.warn('Model passed to workflow diagram with no Event Registration data.');
                 this.isLoading = false;
-                return Promise.resolve();
+                return of();
 
             }
 
             return this.workflowService.getWorkflowFieldTypes(this.model.Event.ObjectID, this.model.Event.Object, true, this.model.Event.IssueObject)
-                .then(r => this.fieldTypes = r)
-                .then(() => this.parseData(this.model))
-                .then(() => this.isLoading = false);
+                .pipe(
+                    map(r => this.fieldTypes = r),
+                    map(() => this.parseData(this.model)),
+                    map(() => this.isLoading = false)
+                );
         }
 
         //if we don't have at least an id at this point, there's nothing we can do
         if (this.id == null) {
             this.isLoading = false;
-            return Promise.resolve();
+            return of();
         }
 
         this.isLoading = true;
 
         return this.workflowService.getWorkflowDiagram(this.id, this.version, this.filteredObject, this.filteredObjectId)
-            .then(r => {
-                this.model = r;
-                if (this.model.Nodes != null)
+            .pipe(
+                map(r => {
+                    this.model = r;
+                    if (this.model.Nodes != null)
                     this.model.Nodes.forEach(n => n.ActivityTypeInfo = this.activityTypes.find(a => a.ID == n.ActivityType));
-            })
-            .then(() => this.workflowService.getWorkflowFieldTypes(this.model.Event.ObjectID, this.model.Event.Object, true))
-            .then(r => this.fieldTypes = r)
-            .then(() => this.parseData(this.model))
-            .then(() => this.setIssueObject())
-            .then(() => {
-                this.isLoading = false;
-                this.hasType = true;
-            });
+                    }),
+                map(() => this.workflowService.getWorkflowFieldTypes(this.model.Event.ObjectID, this.model.Event.Object, true)
+                    .subscribe(r => this.fieldTypes = r)),
+                map(() => this.parseData(this.model)),
+                map(() => this.setIssueObject()),
+                map(() => {
+                    this.isLoading = false;
+                    this.hasType = true;
+                    })
+                );
     }
 
     private setIssueObject() {
@@ -470,19 +478,23 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         this.isLoading = true;
 
         this.workflowService.saveWorkflowDiagramModel(m)
-            .then(r => {
+            .subscribe(r => {
                 this.onCloseClick.emit();
             });
     }
 
+    
     private load() {
         this.getActivityTypes()
-            .then(() => this.populateDiagram())
-            .then(() => this.initializePalette())
-            .then(() => this.initializeFormFields())
-            .then(() => this.getObjectName())
-            .then(() => this.isWindowVisible = (this.monitorView || !this.isReadOnly));
+            .pipe(
+                concatMap(() => this.populateDiagram()),
+                concatMap(() => of(this.initializePalette())),
+                concatMap(() => of(this.initializeFormFields())),
+                concatMap(() => of(this.getObjectName())),
+            concatMap(() => of(this.isWindowVisible = (this.monitorView || !this.isReadOnly)))
+            ).subscribe();
     }
+
 
     //#endregion
 
@@ -597,20 +609,22 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         return forms;
     }
 
-    private getActivityTypes(): Promise<any> {
+    private getActivityTypes(): Observable<any> {
         return this.workflowService.getActivityTypes()
-            .then(r => {
-                let excluded = r.findIndex(a => a.ID == WorkflowActivityType.None);
+            .pipe(
+                map(r => {
+                    let excluded = r.findIndex(a => a.ID == WorkflowActivityType.None);
 
-                if (excluded >= 0)
+                    if (excluded >= 0)
                     r.splice(excluded, 1);
 
-                excluded = r.findIndex(a => a.ID == WorkflowActivityType.StatusChange); //deprecated
-                if (excluded >= 0)
+                    excluded = r.findIndex(a => a.ID == WorkflowActivityType.StatusChange); //deprecated
+                    if (excluded >= 0)
                     r.splice(excluded, 1);
 
-                this.activityTypes = r;
-            });
+                    this.activityTypes = r;
+                })
+            );
 
     }
 
@@ -901,6 +915,8 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         if (this.isReadOnly)
             return true;
 
+        n.errors = [];
+
         switch (n.activityType) {
             case WorkflowActivityType.EmailNotification:
 
@@ -923,8 +939,14 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                             return false;
                         break;
                 }
+
+                n.errors = n.errors.concat(this.validateTextFields(n.settings.MessageBodyTemplate));
+
+                if (n.errors.length > 0) return false;
+
                 break;
             case WorkflowActivityType.Form:
+
                 if (n.settings == null || _.isEmpty(n.settings))
                     return false;
                 if (n.settings.FormResponseType == null || n.settings.FormResponseType == '')
@@ -958,15 +980,26 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 if (n.settings.SendFormEmail != null && n.settings.SendFormEmail.toString().toLowerCase() == 'true') {
                     if (n.settings.MessageBodyTemplate == null || n.settings.MessageBodyTemplate.length < 1)
                         return false;
+
+                    n.errors = n.errors.concat(this.validateTextFields(n.settings.MessageBodyTemplate));
                 }
 
                 if (n.fields == null || _.isEmpty(n.fields))
                     return false;
+
+                if (n.fields && n.fields.form && n.fields.form["@description"]) {
+                    n.errors = n.errors.concat(this.validateTextFields(n.fields.form["@description"]));
+                }
+
                 if (n.fields.form == null)
                     return false;
                 if (n.fields.form['@title'] == null || n.fields.form['@title'].length < 1)
                     return false;
 
+                
+                if (n.errors.length > 0) {
+                    return false;
+                }
                 break;
             case WorkflowActivityType.Procedure:
                 if (n.settings.ProcedureID == null || n.settings.ProcedureID == '')
@@ -982,6 +1015,33 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
                 if (n.settings.FieldUpdate.Field.length == null || n.settings.FieldUpdate.Field.length < 1)
                     return false;
+
+                let fields = n.settings.FieldUpdate.Field;
+                let hasInvalidField = false;
+                n.errors = [];
+
+                fields.forEach(f => {
+                    let refField = this.fieldTypes.find(x => x.ID == +f["@FieldId"]);
+                    if (!refField) {
+                        hasInvalidField = true;
+                        n.errors.push('Invalid field type');
+                    }
+                    if (f["@IsActionForm"] && f["@IsActionForm"] == 'true' && f["@FormFieldId"]) {
+                        var fieldData = f["@FormFieldId"].split('|');
+                        if (fieldData[0] == 'IssueType') {
+                            refField = this.fieldTypes.find(x => x.Object == 'IssueType' && x.ID == +fieldData[1]);
+                        }
+                        else {
+                            refField = this.fieldTypes.find(x => x.Object != 'IssueType' && x.ID == +fieldData[1]);
+                        }
+
+                        if (!refField) {
+                            hasInvalidField = true;
+                            n.errors.push('Invalid field type');
+                        }
+                    }
+                });
+                if (hasInvalidField) return false;
                 break;
             case WorkflowActivityType.RelationshipUpdate:
                 if (n.settings == null || n.settings.RelationshipUpdate == null || n.settings.RelationshipUpdate.Relationship == null || _.isEmpty(n.settings.RelationshipUpdate.Relationship))
@@ -998,6 +1058,36 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         }
 
         return true;
+    }
+
+    private validateTextFields(desc: string): string[] {
+        let errors: string[] = [];
+
+        if (!desc) return errors;
+
+        var results = desc.match(/(\[)(.*?)(?=\])/g);
+
+        if (results && results.length) {
+            results.forEach(x => {
+                var fieldData = x.split('::');
+
+                if (fieldData.length == 2) {
+                    var fieldType = fieldData[0].replace('[', '').trim();
+                    var fieldName = fieldData[1].trim();
+                    let f: any = null;
+                    if (fieldType == 'Action Field') {
+                        f = this.fieldTypes.find(x => x.Object == 'IssueType' && x.Name == fieldName);
+                    }
+                    else {
+                        f = this.fieldTypes.find(x => x.Object != 'IssueType' && x.Name == fieldName);
+                    }
+                    if (!f) {
+                        errors.push('Invalid field type');
+                    }
+                }
+            });
+        }
+        return errors;
     }
 
     private validateLink(l: LinkModel): boolean {
@@ -1029,6 +1119,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         let finishNodes = 0;
         let missingInputCount = 0;
         let missingOutputCount = 0;
+        let invalidFieldReferences = 0;
 
         let startKey = "";
         let finishKey = "";
@@ -1063,7 +1154,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             if (to == null && from == null)
                 disconnectedNodeCount++;
 
-
+            if (node.errors) {
+                node.errors.forEach(x => { if (x == 'Invalid field type') invalidFieldReferences++ });
+            }
+            
         });
 
         model.linkDataArray.forEach(l => {
@@ -1096,6 +1190,9 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
         if (startToFinish)
             this.errors.push('The start step cannot be connected directly to the finish step');
+
+        if (invalidFieldReferences > 0)
+            this.errors.push(`There are ${invalidFieldReferences} invalid field references in workflow`);
 
         if (this.errors.length > 0)
             this.isValid = false;
@@ -1905,7 +2002,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     //#endregion
 
     private clearExecuted() {
-        this.workflowService.clearLastExecutionDate(this.id);
+        this.workflowService.clearLastExecutionDate(this.id).subscribe();
         this.model.Event.LastExecuted = null;
     }
 

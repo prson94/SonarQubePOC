@@ -20,8 +20,14 @@ namespace igx.UnitTests.ValidatorTests
 
 
             //implicit "DoesNotThrow" check
-            TagValidator.ValidateForPost(model);
-
+            try
+            {
+                TagValidator.ValidateForPost(model);
+            }
+            catch
+            {
+                Assert.True(false, "Should throw error");
+            }
         }
 
 
@@ -30,7 +36,8 @@ namespace igx.UnitTests.ValidatorTests
         {
             Action act = () => TagValidator.ValidateForPost(null);
             var exception = Assert.Throws<Exception>(act);
-            Assert.Contains("[null model]", exception.Message);
+
+            Assert.True(exception.Message.Contains("[null model]"), XMsg.BadResponseMessage);
 
         }
 
@@ -39,7 +46,8 @@ namespace igx.UnitTests.ValidatorTests
         {
             Action act = () => TagValidator.ValidateForPost(new TagApiModel() { });
             var exception = Assert.Throws<Exception>(act);
-            Assert.Contains("[no value]", exception.Message);
+
+            Assert.True(exception.Message.Contains("[no value]"), XMsg.BadResponseMessage);
 
         }
 
@@ -53,7 +61,8 @@ namespace igx.UnitTests.ValidatorTests
 
             Action act = () => TagValidator.ValidateForPost(model);
             var exception = Assert.Throws<Exception>(act);
-            Assert.Contains("[too long]", exception.Message);
+
+            Assert.True(exception.Message.Contains("[too long]"), XMsg.BadResponseMessage);
 
         }
 
@@ -76,8 +85,14 @@ namespace igx.UnitTests.ValidatorTests
             model.uid = guid;
 
             //implicit "DoesNotThrow" check
-            TagValidator.ValidateForPut(guid, model);
-
+            try
+            {
+                TagValidator.ValidateForPut(guid, model);
+            }
+            catch
+            {
+                Assert.True(false, "Should throw error");
+            }
         }
 
 
@@ -86,7 +101,8 @@ namespace igx.UnitTests.ValidatorTests
         {
             Action act = () => TagValidator.ValidateForPost(null);
             var exception = Assert.Throws<Exception>(act);
-            Assert.Contains("[null model]", exception.Message);
+
+            Assert.True(exception.Message.Contains("[null model]"), XMsg.BadResponseMessage);
 
         }
 
@@ -96,7 +112,8 @@ namespace igx.UnitTests.ValidatorTests
             var guid = new Guid();
             Action act = () => TagValidator.ValidateForPut(guid, new TagApiModel() { uid = guid });
             var exception = Assert.Throws<Exception>(act);
-            Assert.Contains("[no value]", exception.Message);
+
+            Assert.True(exception.Message.Contains("[no value]"), XMsg.BadResponseMessage);
 
         }
 
@@ -112,7 +129,8 @@ namespace igx.UnitTests.ValidatorTests
 
             Action act = () => TagValidator.ValidateForPut(guid, model);
             var exception = Assert.Throws<Exception>(act);
-            Assert.Contains("[too long]", exception.Message);
+
+            Assert.True(exception.Message.Contains("[too long]"), XMsg.BadResponseMessage);
 
         }
 
@@ -128,7 +146,8 @@ namespace igx.UnitTests.ValidatorTests
 
             Action act = () => TagValidator.ValidateForPut(guid, model);
             var exception = Assert.Throws<Exception>(act);
-            Assert.Contains("Invalid uid", exception.Message);
+
+            Assert.True(exception.Message.Contains("Invalid uid"), XMsg.BadResponseMessage);
 
         }
 
@@ -144,7 +163,8 @@ namespace igx.UnitTests.ValidatorTests
 
             Action act = () => TagValidator.ValidateForPut(guid, model);
             var exception = Assert.Throws<Exception>(act);
-            Assert.Contains("uid doesnt match model uid", exception.Message);
+
+            Assert.True(exception.Message.Contains("uid doesnt match model uid"), XMsg.BadResponseMessage);
 
         }
 
@@ -158,7 +178,14 @@ namespace igx.UnitTests.ValidatorTests
             };
             Guid guid = new Guid();
             model.uid = guid;
-            TagValidator.ValidateForPost(model);
+            try
+            {
+                TagValidator.ValidateForPost(model);
+            }
+            catch
+            {
+                Assert.True(false, "Should throw error");
+            }
 
         }
     }

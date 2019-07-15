@@ -9,6 +9,7 @@ using d360.core.helpers;
 using d360.core.queue;
 using d360.core.resources;
 using d360.extensions;
+using d360.model.DataAccessLayer;
 using Dapper;
 using Ganss.XSS;
 using Newtonsoft.Json;
@@ -1076,7 +1077,7 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
         public AssetType GetParentType(int id, SystemObjects obj)
         {
             if ( id < 0)
-                return default(AssetType);
+                return null;
 
             var sql = @"select a.id from IntersectType I
                                inner join [Predicate] P on P.ID = I.PredicateID
@@ -1086,9 +1087,22 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
             var parentId = Query<int>(sql, new { type = (int)PredicateType.InterTypeHierarchy, @object = obj.ToString(), objectId = id }).FirstOrDefault();
 
             if (parentId < 1)
-                return default(AssetType);
+                return null;
 
             return GetById<AssetType>(parentId);
+        }
+
+        public AssetType GetParentTypeById(long assetTypeId)
+        {
+            if (assetTypeId < 0)
+                return null;
+
+            var assetType = GetById<AssetType>(((int)assetTypeId));
+
+            if (assetType == null)
+                return null;
+
+            return GetParentType(assetType.ObjectID, SystemObjectHelper.GetSystemObjects(assetType.Class));
         }
 
         public bool UpdateObjectParentRelationship(SystemObjects type, int typeId, SystemObjects objectType, int parentID, int objectID, PredicateType predicateType = PredicateType.InterTypeHierarchy)
@@ -2078,6 +2092,11 @@ where	R.SourceObject = 'FusionAttribute'
             return await Database.Connection.QueryAsync<T>(sql, param, null, timeout);
         }
 
+        public async Task<SqlMapper.GridReader> QueryMultipleAsync(string sql, object param = null, int timeout = 90)
+        {
+            return await Database.Connection.QueryMultipleAsync(sql, param, null, timeout);
+        }
+
         public override bool Update<T>(T item)
         {
             ObjectContext.ObjectStateManager.ChangeObjectState(item, EntityState.Modified);
@@ -2176,7 +2195,7 @@ where	R.SourceObject = 'FusionAttribute'
             return returnValue;
         }
 
-        private void CreateOrUpdateDisplayValue(long assetId, string objectType = "", int objectId = -1)
+        public void CreateOrUpdateDisplayValue(long assetId, string objectType = "", int objectId = -1)
         {
             Database.Connection.Execute("exec GenerateAssetDisplayValue @assetID, @objType,@objId", new { assetID = assetId, objId = objectId, objType = new DbString { Value = objectType.Replace("Type",""), IsFixedLength = true, Length = 20, IsAnsi = true } }, null, 2400);
         }
@@ -3002,6 +3021,8 @@ select @err";
                             var isReferenceItemType = (relationFieldInfo.Object == SystemObjects.ReferenceItemType.ToString());
                             var isFusionAttributeType = (relationFieldInfo.Object == SystemObjects.FusionAttributeType.ToString());
                             var isTaxonomyType = (relationFieldInfo.Object == SystemObjects.TaxonomyType.ToString());
+                            var isPolicyType = (relationFieldInfo.Object == SystemObjects.PolicyType.ToString());
+                            var useAssetTable = isPolicyType;
 
                             var tableName = isReferenceItemType ? relationFieldInfo.Object : relationFieldInfo.Object.Replace("Type", "");
                             var typeIDColumnName = relationFieldInfo.Object + "ID";
@@ -3010,7 +3031,7 @@ select @err";
 
                             if (isReferenceItemType || isFusionAttributeType)
                                 columns += $"{name}_OT.Name";
-                            else if (isTaxonomyType)
+                            else if (isTaxonomyType || isPolicyType)
                                 columns += $"{name}_OTT.TextPath";
                             else
                                 columns += $"{name}_OTD.DisplayValue";
@@ -3019,12 +3040,20 @@ select @err";
 
                             joins += $" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and";
                             joins += relationFieldInfo.IsSubject ? $" {name}_T.Subject = '{type.Replace("Type", "")}' and {name}_T.SubjectID = {idColumn}" : $" {name}_T.Object = '{type.Replace("Type", "")}' and {name}_T.ObjectID = {idColumn}";
-                            joins += (isReferenceItemType)
-                                ? $" left join [{tableName}] {name}_OT on "
-                                : $" left join [{tableName}] {name}_OT on {name}_OT.{typeIDColumnName} = {relationFieldInfo.ObjectID} AND ";
-                            joins += $"{name}_OT.ID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
+                            if (!useAssetTable)
+                            {
+                                joins += (isReferenceItemType)
+                                    ? $" left join [{tableName}] {name}_OT on "
+                                    : $" left join [{tableName}] {name}_OT on {name}_OT.{typeIDColumnName} = {relationFieldInfo.ObjectID} AND ";
+                                joins += $"{name}_OT.ID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
+                            }
+                            else
+                            {
+                                joins += $" left join dbo.asset {name}_OT on {name}_OT.[Object] = '{tableName}' and {name}_OT.ObjectID = {relationFieldInfo.ObjectID} AND ";
+                                joins += $"{name}_OT.ID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
+                            }
 
-                            if (isTaxonomyType)
+                            if (isTaxonomyType || isPolicyType)
                             {
                                 joins += $" left join asset {name}_AS on {name}_AS.Object = '{tableName}' and  {name}_AS.ObjectId = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
                                 joins += $" outer apply [dbo].GetAssetTextPathById({name}_AS.ID, '/') {name}_OTT";
@@ -3045,15 +3074,37 @@ select @err";
 
                         if (relationFieldInfo != null)
                         {
-                            if (includeIdColumn) columns += $"{name}_T.ID as [{name}ID], ";
-                            columns += $"{name}_OT.FormattedValue as [{(useFriendlyName ? friendlyName : name)}], ";
+                            var relationshipLookupFieldType = GetById<FieldType>(f.LookupObjectFieldTypeID ?? 0);
+                            if (relationshipLookupFieldType != null)
+                            {
+                                if (relationshipLookupFieldType.Type == DataType.JsonElement.ToString())
+                                {
+                                    var jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(relationshipLookupFieldType.Definition);
+                                    var sqlType = DetermineSqlDataTypeForFieldType(relationshipLookupFieldType);
 
-                            joins += $" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and";
-                            joins += relationFieldInfo.IsSubject ? $" {name}_T.Subject = '{type.Replace("Type", "")}' and {name}_T.SubjectID = {idColumn}" : $" {name}_T.Object = '{type.Replace("Type", "")}' and {name}_T.ObjectID = {idColumn}";
-                            joins += $" left join [Field] {name}_OT on {name}_OT.FieldTypeID = {(f.LookupObjectFieldTypeID.HasValue ? f.LookupObjectFieldTypeID : 0)}";
-                            joins += $" and {name}_OT.ObjectType = {name}_T." + (relationFieldInfo.IsSubject ? "Object" : "Subject");
-                            joins += $" and {name}_OT.ObjectID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
+                                    if (includeIdColumn) columns += $"{name}_T.ID as [{name}ID], ";
+                                    columns += $"try_cast({name}_P.Value as {sqlType}) as [{(useFriendlyName ? friendlyName : name)}], ";
 
+                                    joins += $" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and";
+                                    joins += relationFieldInfo.IsSubject ? $" {name}_T.Subject = '{type.Replace("Type", "")}' and {name}_T.SubjectID = {idColumn}" : $" {name}_T.Object = '{type.Replace("Type", "")}' and {name}_T.ObjectID = {idColumn}";
+                                    joins += $" left join [Field] {name}_OT on {name}_OT.FieldTypeID = {jsonElementDefinition.FieldTypeID}";
+                                    joins += $" and {name}_OT.ObjectType = {name}_T." + (relationFieldInfo.IsSubject ? "Object" : "Subject");
+                                    joins += $" and {name}_OT.ObjectID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
+                                    joins += $" left join FieldJsonProperty {name}_P on {name}_P.FieldID = {name}_OT.ID and {name}_P.[Path] = '{jsonElementDefinition.Path.CleanForSql()}' ";
+
+                                }
+                                else
+                                {
+                                    if (includeIdColumn) columns += $"{name}_T.ID as [{name}ID], ";
+                                    columns += $"{name}_OT.FormattedValue as [{(useFriendlyName ? friendlyName : name)}], ";
+
+                                    joins += $" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and";
+                                    joins += relationFieldInfo.IsSubject ? $" {name}_T.Subject = '{type.Replace("Type", "")}' and {name}_T.SubjectID = {idColumn}" : $" {name}_T.Object = '{type.Replace("Type", "")}' and {name}_T.ObjectID = {idColumn}";
+                                    joins += $" left join [Field] {name}_OT on {name}_OT.FieldTypeID = {relationshipLookupFieldType.ID}";
+                                    joins += $" and {name}_OT.ObjectType = {name}_T." + (relationFieldInfo.IsSubject ? "Object" : "Subject");
+                                    joins += $" and {name}_OT.ObjectID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
+                                }
+                            }
                         }
                     }
                 }

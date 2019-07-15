@@ -134,7 +134,7 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
     private deleteIssueType(id: number) {
         this.isLoading = true;
         this.workflowService.deleteWorkflowIssueType(id)
-            .then(result => {
+            .subscribe(result => {
                 this.showMessageForResult(this.messagesService, result);
                 if (result.type != 'error') {
                     this.issueTypes = this.issueTypes.filter(x => x.ID != id);
@@ -147,7 +147,7 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
     private load() {
         this.isLoading = true;
         this.workflowService.getAdminWorkflowIssueTypes()
-            .then(result => {
+            .subscribe(result => {
                 this.issueTypes = result.sort((a, b) => a.Name.localeCompare(b.Name));
                 this.selected = this.issueTypes.length > 0 ? this.issueTypes[0] : null;
                 this.isLoading = false;
@@ -161,7 +161,7 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
 
     private saveIssueType(event) {
         this.workflowService.saveIssueType(event.item)
-            .then(result => {
+            .subscribe(result => {
                 this.showMessageForResult(this.messagesService, result);
                 if (result.type != 'error') {
                     if (event.item.ID == undefined) {

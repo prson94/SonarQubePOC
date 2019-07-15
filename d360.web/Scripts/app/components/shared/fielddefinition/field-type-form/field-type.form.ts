@@ -306,11 +306,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 }
 
                 //load cascading dropdowns
-                this.changeRefType(i)
-                    .pipe(
-                        map(() => { item.selectedRelationItemID = item.IntersectType + '|' + item.Object + '|' + item.ObjectID + '|' + item.Direction }),
-                        map(() => this.changeRel(i).subscribe()),
-                        map(() => {
+                this.changeRefType(i).subscribe(
+                    () => {
+                        item.selectedRelationItemID = item.IntersectType + '|' + item.Object + '|' + item.ObjectID + '|' + item.Direction;
+                        this.changeRel(i).subscribe(() => {
                             let parent = item;
                             item.DisplayFields.forEach(
                                 d => {
@@ -340,9 +339,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                             if (r) {
                                 item.displayValue = r.title;
                             }
-                    })
-                    ).subscribe();
-
+                        });
+                    }
+                );
 
                 //load display order/sort order drop down lists
                 this.model.RelationItems.forEach(
@@ -933,6 +932,11 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
         if (this.model.FieldType.Type == 'FieldFromRelationship' && !this.model.FieldType.LookupObjectFieldTypeID) {
             valid = false;
+        }
+
+        if (this.model.FieldType.Type == 'JsonElement') {
+            if (!this.model.JsonElementSettings.FieldTypeID || !this.model.JsonElementSettings.Path || !this.model.JsonElementSettings.DataType)
+                valid = false;
         }
 
         return valid;

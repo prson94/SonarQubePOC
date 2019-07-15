@@ -1158,11 +1158,22 @@ div.breadcrumbs {
             width: 100%;
         }
 
-        .breadcrumb-text {
-            padding-right: 5px;
+        .breadcrumb {
+            .breadcrumb-text {
+                padding-right: 5px;
+                overflow: hidden;
+                text-overflow: ellipsis;
 
-            &.highlight {
-                color: #000;
+                &.highlight {
+                    color: #000;
+                }
+
+                &.breadcrumb-link {
+                    &:hover, &.hover {
+                        cursor: pointer;
+                        text-decoration: none;
+                    }
+                }
             }
         }
 
@@ -1187,7 +1198,13 @@ div.breadcrumbs {
             border-radius: 3px;
             padding: 0px 5px;
             font-size: 12px;
-            color:white;
+            color: white;
+
+            &.breadcrumb-link {
+                &:hover, &.hover {
+                    cursor: pointer;
+                }
+            }
 
             &:before {
                 content: '';
@@ -1227,9 +1244,13 @@ a.breadcrumb {
             content: ')';
         }
 
-        &:hover {
-            cursor: pointer;
+        &.breadcrumb-link {
+            &:hover, &.hover {
+                cursor: pointer;
+            }
+        }
 
+        &:hover {
             icon {
                 text-decoration: none;
             }
@@ -1245,18 +1266,21 @@ a.breadcrumb {
     position: relative;
     top: 1px;
     text-transform: none;
-    cursor: pointer;
 
     .breadcrumb-text {
         padding-right: 0px;
-
-        &:hover, .hover {
-            cursor: pointer;
-            text-decoration: underline;
-        }
+        overflow: hidden;
+        text-overflow: ellipsis;
 
         &.highlight {
             color: @igx-header-breadcrumb-color;
+        }
+
+        &.breadcrumb-link {
+            &:hover, &.hover {
+                cursor: pointer;
+                text-decoration: underline;
+            }
         }
     }
 
@@ -1360,6 +1384,8 @@ a.breadcrumb {
         cursor: pointer;
         padding-left: 20px;
         padding-right: 40px;
+        overflow: hidden;
+        text-overflow: ellipsis;
 
         &:hover, &.hover {
             background-color: @igx-lightblue-xlight;
@@ -1406,8 +1432,8 @@ a.breadcrumb {
         flex-grow: 1;
         outline: none;
         width: 150px;
-        font-family: 'Nunito Sans', sans-serif;
-        font-size: 14px;
+        font-family: 'Nunito Sans', sans-serif !important;
+        font-size: 14px !important;
 
         &.placeholder {
             color: #bbbbbb;

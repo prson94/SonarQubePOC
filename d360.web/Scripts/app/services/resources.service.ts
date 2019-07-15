@@ -1,40 +1,45 @@
 
 import {catchError, map} from 'rxjs/operators';
 import { Injectable } from '@angular/core';
-import { Headers, Http, ResponseContentType } from '@angular/http';
-import { MessagesService } from './messages.service';
-import { BaseService } from './base.service';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { HelpResource, Resource, CountObject, ResponsibilityDetailForResource, FollowingDetailForResource, ResourceAPICredentials, MulitSelectResourceData } from '../models/resource.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { SortOrder } from '../models/enums.model';
 import { GridFilterExpression } from '../models/grid-definition.model';
 import { Observable } from "rxjs";
+import { BaseObservableService } from './baseObservable.service';
+import { MessagesObservableService } from './messages-observable.service';
 
 
 @Injectable()
-export class ResourcesService extends BaseService {
+export class ResourcesService extends BaseObservableService {
 
-    constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
+    constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
-    getHelpResources(): Promise<HelpResource[]> {
+    getHelpResources(): Observable<HelpResource[]> {
         return this.http.get('/resources/HelpResources')
-            .toPromise()
-            .then(response => <HelpResource[]>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <HelpResource[]>response),
+                catchError(err=>this.handleError(err))
+            );
     }
 
-    getResources(): Promise<Resource[]> {
+    getResources(): Observable<Resource[]> {
         return this.http.get('/api/resources/1')
-            .toPromise()
-            .then(response => <Resource[]>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <Resource[]>response),
+                catchError(err=>this.handleError(err))
+            );
+
     }
 
-    getResource(id: number): Promise<Resource> {
+    getResource(id: number): Observable<Resource> {
         return this.http.get(`/api/resources/1/${id}`)
-            .toPromise()
-            .then(response => <Resource>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <Resource>response),
+                catchError(err=> this.handleError(err))
+            );
+
     }
 
 
@@ -56,12 +61,12 @@ export class ResourcesService extends BaseService {
 
         return this.http.get(url).pipe(
             map(response => {
-                return response.json()
+                return response;
             }),
-            catchError(err => this.handleError(err)),);
+            catchError(err => this.handleError(err)));
     }
 
-    getResponsibilityBreakdownByResource(id: number, responsibilityTypeId: number = 0): Promise<CountObject[]> {
+    getResponsibilityBreakdownByResource(id: number, responsibilityTypeId: number = 0): Observable<CountObject[]> {
         var url = "";
         if (responsibilityTypeId > 0) {
             url = `/api/v2/social/ResponsibilityBreakdownByResource?id=${id}&responsibilityTypeID=${responsibilityTypeId}`;
@@ -71,34 +76,40 @@ export class ResourcesService extends BaseService {
         }
 
         return this.http.get(url)
-            .toPromise()
-            .then(response => <CountObject[]>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+            map(response => <CountObject[]>response),
+               catchError(err=>this.handleError(err))
+            );
+
     }
 
-    getFollowingBreakdownByResource(id: number): Promise<CountObject[]> {
+    getFollowingBreakdownByResource(id: number): Observable<CountObject[]> {
         return this.http.get(`/api/v2/social/FollowingBreakdownByResource?id=${id}`)
-            .toPromise()
-            .then(response => <CountObject[]>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+            map(response => <CountObject[]> response),
+                catchError(err=>this.handleError(err))
+            );
+
     }
 
-    getResponsibilitiesByResourceByType(type: string, id: number, targetType: string, targetId: number, responsibilityTypeId: number = null): Promise<ResponsibilityDetailForResource[]> {
+    getResponsibilitiesByResourceByType(type: string, id: number, targetType: string, targetId: number, responsibilityTypeId: number = null): Observable<ResponsibilityDetailForResource[]> {
         let uri = `api/${type}/${id}/ownership/${targetType}/${targetId}`;
         if (responsibilityTypeId != null && responsibilityTypeId > 0)
             uri += `?responsibilityTypeId=${responsibilityTypeId}`;
         return this.http.get(uri)
-            .toPromise()
-            .then(response => <ResponsibilityDetailForResource[]>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+            map(response => <ResponsibilityDetailForResource[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
     //    public JsonNetResult GetFollowingByResourceByType(int resourceID, string type, int id)
-    getFollowingByResourceByType(resourceID: number, type: string, id: number): Promise<FollowingDetailForResource[]> {
+    getFollowingByResourceByType(resourceID: number, type: string, id: number): Observable<FollowingDetailForResource[]> {
         return this.http.get(`queries/followingbyresourcebytype?resourceID=${resourceID}&type=${type}&id=${id}`)
-            .toPromise()
-            .then(response => <FollowingDetailForResource[]>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+            map(response => <FollowingDetailForResource[]>response),
+                catchError(err=> this.handleError(err))
+            );
     }
 
     exportFollowingByResourceByType(resourceID: number, type: string, id: number) {
@@ -112,37 +123,41 @@ export class ResourcesService extends BaseService {
         window.location.assign(uri);   
     }
 
-    getMyCredentials(): Promise<ResourceAPICredentials> {
+    getMyCredentials(): Observable<ResourceAPICredentials> {
         return this.http.get('resources/myapicredentials')
-            .toPromise()
-            .then(response => <ResourceAPICredentials>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <ResourceAPICredentials>response),
+                catchError(err=> this.handleError(err))
+            );
     }
 
-    getUserGroups(resourceID: number): Promise<any[]> {
+    getUserGroups(resourceID: number): Observable<any[]> {
         return this.http.get(`resources/_GroupsByResourceID?id=${resourceID}`)
-            .toPromise()
-            .then(response => <any[]>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => response),
+                catchError(err=> this.handleError(err))
+            );
     }
     
-    resetResourcesPassword(resourceID: number): Promise<JsonResult> {
-        let headers = new Headers({
+    resetResourcesPassword(resourceID: number): Observable<JsonResult> {
+        let headers = new HttpHeaders({
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' //pass as text since its a dynamic object and mvc has issue with dynamic models
         });
 
         return this.http
             .post(`form/ResetResourcePassword`, 'ID=' + resourceID, { headers: headers })
-            .toPromise()
-            .then(res => <JsonResult>res.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => response),
+                catchError(err=> this.handleError(err))
+            );
     }
 
-    getResourceItems(uri: string): Promise<MulitSelectResourceData> {
+    getResourceItems(uri: string): Observable<MulitSelectResourceData> {
         return this.http.get(uri)
-            .toPromise()
-            .then(response => <MulitSelectResourceData>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <MulitSelectResourceData>response),
+                catchError(err=> this.handleError(err))
+            );
     }
 
     exportResources(typeId: number, sortOrder: SortOrder, sortField?: string, simpleFilter?: string, filters?: GridFilterExpression[]) {
@@ -161,7 +176,7 @@ export class ResourcesService extends BaseService {
             }
         }
 
-        this.http.get(url, { responseType: ResponseContentType.Blob }).subscribe((data: any) => this.downloadFile(data, "Users.xlsx"));  
+        this.http.get(url, { responseType: 'blob' }).subscribe((data: any) => this.downloadFile(data, "Users.xlsx"));  
     }
 
     downloadFile(data: Response, filename: string) {
