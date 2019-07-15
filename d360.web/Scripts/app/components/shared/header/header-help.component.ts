@@ -29,7 +29,7 @@ declare var VersionNumber: string;
                                 <div class="about-info">
                                     <ul>
                                         <li><b>Build Version:</b> {{this.versionNumber}}</li>
-                                        <li><b>Build Date:</b> {{this.buildDate}}</li>
+                                        <li><b>Build Date:</b> {{this.buildDate | date:'short'}}</li>
                                         <li><b>Support:</b> <a href="http://support.infogix.com" target="_blank">http://support.infogix.com</a></li>
                                     </ul>
                                     <p>© 2005-2019 Infogix. All rights reserved.</p>
