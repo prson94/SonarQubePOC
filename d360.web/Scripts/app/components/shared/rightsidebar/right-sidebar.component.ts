@@ -32,7 +32,7 @@ declare var CompanySettings;
                             <d3s-dynamic-percentage [percentage]="statistics?.Score"></d3s-dynamic-percentage> 
                              <span class="text">{{statistics?.Score}}%</span>
                         </span> 
-                        <ng-template #noScore><span *ngIf="object && !object?.isType" title="Governance Score not yet calculated" class="d3s-icon large-icon">No Score</span></ng-template>
+                        <ng-template #noScore><span *ngIf="currentObject && !currentObject?.isType" title="Governance Score not yet calculated" class="d3s-icon large-icon">No Score</span></ng-template>
                         <span *ngIf="showStatus" class="d3s-icon large-icon">
                             <i class="fa fa-certificate"></i>
                             <span class="text">{{status}}</span>
@@ -117,7 +117,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.showHeader = false;
         this.showSurvey = false;
         this.items = [];
-
+        console.log(this.currentObject);
         this.subscription = this.rightSidebarService.rightSidebar$.subscribe(
             item => {
                 this.items.push(item);
@@ -129,6 +129,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 this.items.splice(0, this.items.length);
                 this.currentObject = null;
                 this.statistics = null;
+                this.showStatus = false;
                 this.ref.markForCheck();
             })
         this.areaSub = this.rightSidebarService.currentArea$.subscribe(
@@ -149,6 +150,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             } else {
                 this.showStatus = false;
                 this.statistics = null; 
+                this.showCertify = false;
                 this.ref.markForCheck();
             }
         });

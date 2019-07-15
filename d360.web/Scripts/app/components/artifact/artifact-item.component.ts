@@ -193,7 +193,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
         let currentFolderName = this.currentAreaName ? this.currentAreaName : this.folderTitle;
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.getFolderIcon(currentFolderName).then(res => {
-            this.rightSidebarService.setCurrentArea(currentFolderName, res);
+            this.rightSidebarService.setCurrentArea(this.artifact.DisplayValue, res);
         });
         let areaBreadcrumb = new Breadcrumb(
             this.currentAreaName ? this.currentAreaName : this.folderTitle,

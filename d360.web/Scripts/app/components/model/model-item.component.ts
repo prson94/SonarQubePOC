@@ -153,7 +153,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
     private buildBreadcrumb() {
         this.headerBreadcrumbService.getFolderTitle("#Models").then((res) => {
             this.crumbs = [];
-            this.headerBreadcrumbService.getFolderIcon(res).then(icon => {
+            this.headerBreadcrumbService.getFolderIcon(this.currentAreaName ? this.currentAreaName : res).then(icon => {
                 this.lineageShowUsageOnly = true;   
                 this.setCommonRightSideBar(true, this.hasPermission(Permission.ReadResponsibilities), (this.selected != null ? this.selected.HasDashboards : false), true, true, this.hasPermission(Permission.ReadRelationships), true, true);
                 this.rightSidebarService.setCurrentArea(res, icon);
