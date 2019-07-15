@@ -47,7 +47,7 @@ namespace d360.web.Controllers.V2
            MapToApiVersion("2.0"),
            Route(""),
            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
-           SwaggerResponse(HttpStatusCode.OK, "Gets Members of a Group.", typeof(ResourceApiViewModel)),
+           SwaggerResponse(HttpStatusCode.OK, "Gets all actions.", typeof(ResourceApiViewModel)),
            SwaggerResponse(HttpStatusCode.NotFound, "Uid {uid} not found."),
            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
            SwaggerParameter("_pageSize", "The number of results to return per page. The default is 5 users per page and max value is 250.", DataType = "integer", ParameterType = "query", Required = false),
@@ -73,13 +73,7 @@ namespace d360.web.Controllers.V2
                                     I.CreatedOn,
                                     R.uid as CreatedByUid,
                                     I.UpdatedOn,
-                                    GR.uid as UpdatedByUid
-                                    FROM[dbo].[Issue] I
-                                    inner join[dbo].[IssueType] IT on IT.ID = I.IssueTypeID
-                                    left join[dbo].Asset A on A.Object = I.Object and A.ObjectID = I.ObjectID
-                                    left join[dbo].AssetType AT on AT.Object = I.ObjectType and AT.ObjectID = I.ObjectTypeID
-                                    left join[reporting].[Global_Resource] R on R.ResourceID = I.CreatedBy
-                                    left join[reporting].[Global_Resource] GR on GR.ResourceID = I.UpdatedBy";
+                                    GR.uid as UpdatedByUid";
             string whereSql = "";
             string joinsSql = " ";
             List<string> queries = new List<string>();
@@ -118,6 +112,11 @@ namespace d360.web.Controllers.V2
             var fieldTypes = Company.FieldTypes.Where(f => f.Object == "IssueType").Distinct().ToList();
             getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
 
+            foreach (var col in fieldColumns)
+            {
+                selectSql += "," + col;
+            }
+
             foreach (var join in fieldJoins)
             {
                 joinsSql += join;
@@ -155,7 +154,12 @@ namespace d360.web.Controllers.V2
                     whereSql += " and ";
                 }
             }
-            finalSql = selectSql + whereSql;
+            finalSql = selectSql + @" FROM[dbo].[Issue] I
+                                    inner join[dbo].[IssueType] IT on IT.ID = I.IssueTypeID
+                                    left join[dbo].Asset A on A.Object = I.Object and A.ObjectID = I.ObjectID
+                                    left join[dbo].AssetType AT on AT.Object = I.ObjectType and AT.ObjectID = I.ObjectTypeID
+                                    left join[reporting].[Global_Resource] R on R.ResourceID = I.CreatedBy
+                                    left join[reporting].[Global_Resource] GR on GR.ResourceID = I.UpdatedBy" + joinsSql + whereSql;
             countSql += whereSql;
             if (pageSize > 0 || pageNum > 0)
             {
