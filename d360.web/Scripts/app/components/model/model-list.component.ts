@@ -160,7 +160,7 @@ export class ModelListComponent extends BaseComponent implements OnInit, OnDestr
                         this.headerBreadcrumbService.getFolderIcon(res).then(icon => {
                             this.rightSidebarService.setCurrentArea(res, icon);
                         });
-                        this.rightSidebarService.ShowHeader(true);
+                        this.rightSidebarService.showHeader(true);
                     });
 
                 if (this.modelGroup) {

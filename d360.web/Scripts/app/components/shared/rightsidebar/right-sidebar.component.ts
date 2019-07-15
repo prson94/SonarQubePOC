@@ -117,7 +117,6 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.showHeader = false;
         this.showSurvey = false;
         this.items = [];
-        console.log(this.currentObject);
         this.subscription = this.rightSidebarService.rightSidebar$.subscribe(
             item => {
                 this.items.push(item);

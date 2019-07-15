@@ -15,8 +15,6 @@ import {SurveyType} from '../../models/survey.model';
 import {SiteUrlHelpers} from '../../static/site-url-helpers';
 import {StringConstants} from '../../static/string-constants';
 import {Permission} from '../../models/responsibility-type.model';
-import {Observable} from "rxjs";
-import { forEach } from '@angular/router/src/utils/collection';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
 
 declare var CompanySettings;
@@ -156,12 +154,13 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
             this.headerBreadcrumbService.getFolderIcon(this.currentAreaName ? this.currentAreaName : res).then(icon => {
                 this.lineageShowUsageOnly = true;   
                 this.setCommonRightSideBar(true, this.hasPermission(Permission.ReadResponsibilities), (this.selected != null ? this.selected.HasDashboards : false), true, true, this.hasPermission(Permission.ReadRelationships), true, true);
-                this.rightSidebarService.setCurrentArea(res, icon);
-                this.rightSidebarService.showItem(new RightSidebarItem('Scoring','Scoring',['fa-sitemap'],`/sidebar/score/Artifact/${this.model.UID}`));
-                this.rightSidebarService.showItem(new RightSidebarItem('Comments', 'Comments', ['fa-comments'],`/sidebar/comments/Artifact/${this.model.ID}/${this.model.Name}`));
-                this.rightSidebarService.showItem(new RightSidebarItem('Actions', 'Actions', null,`/sidebar/actions/Artifact/${this.model.ID}/${this.model.Name}`));
+                this.rightSidebarService.setCurrentArea(this.selected.DisplayValue, icon);
+                this.rightSidebarService.setCurrentObject('TaxonomyType', this.model.ID, 'Taxonomy', this.selected.ID, false);
+                this.rightSidebarService.showItem(new RightSidebarItem('Scoring', 'Scoring', ['fa-sitemap'], `/sidebar/score/Taxonomy/${this.selected.Uid}`));
+                this.rightSidebarService.showItem(new RightSidebarItem('Comments', 'Comments', ['fa-comments'], `/sidebar/comments/Taxonomy/${this.selected.ID}/${this.selected.DisplayValue}`));
+                this.rightSidebarService.showItem(new RightSidebarItem('Actions', 'Actions', null,`/sidebar/actions/Taxonomy/${this.model.ID}/${this.model.Name}`));
             });
-            this.rightSidebarService.ShowHeader(true);
+            this.rightSidebarService.showHeader(true);
             
             this.headerBreadcrumbService.clearBreadcrumbs();
             let areaBreadcrumb = new Breadcrumb(

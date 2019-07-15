@@ -138,8 +138,6 @@ export class WorkflowIssueDetailsComponent extends BaseComponent implements OnIn
 
         this.workflowService.getIssues(this.objectID, this.objectType)
             .subscribe(result => {
-                console.log(this.objectID + " " + this.objectType);
-                console.log(result);
                     this.issues = result;
                     if (this.issues.length && this.issues.length > 0) this.selected = this.issues[0];
                     this.isLoading = false;                    

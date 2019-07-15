@@ -103,9 +103,9 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
                         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : res, `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`));
                         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.Name, SiteUrlHelpers.getObjectUrl('TAXONOMYTYPE', this.model.ID), undefined, 'TAXONOMYTYPE', this.model.ID, undefined, undefined,true));
                         this.headerBreadcrumbService.getFolderIcon(this.currentAreaName ? this.currentAreaName : res).then(icon => {
-                            this.rightSidebarService.setCurrentArea(this.currentAreaName ? this.currentAreaName : res, icon);
+                            this.rightSidebarService.setCurrentArea(this.model.Name, icon);
                             this.setCommonRightSideBar(true, false, this.model.HasDashboards);
-                            this.rightSidebarService.ShowHeader(true);
+                            this.rightSidebarService.showHeader(true);
                         });
                         this.rightSidebarService.showItem(new RightSidebarItem('Hierarchy Diagram', 'modeldiagram', ['fa-sitemap'], `/sidebar/visualization/diagram/${this.objectID}`))
 

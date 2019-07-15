@@ -44,7 +44,7 @@ export class RightSidebarService {
     itemClicked(item: RightSidebarItem) {
         this.rightSidebarClickedSource.next(item);
     }
-    ShowHeader(val: boolean) {
+    showHeader(val: boolean) {
         this.hideHeaderSource.next(val);
     }
 }

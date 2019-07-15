@@ -52,7 +52,7 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
                 .subscribe(artifactType => {
                     this.headerBreadcrumbService.clearBreadcrumbs();
                     this.artifactType = artifactType;
-                    this.setObjectInfo('ArtifactType', this.artifactType.ID);
+                    this.setObjectInfo('ArtifactType', this.artifactType.ID); 
 
                     this.artifactTypeHierarchy.push(this.artifactType);
                     this.createBreadcrumbHierarchy(artifactType);
