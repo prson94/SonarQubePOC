@@ -82,6 +82,7 @@
     <Compile Include="entities\AssetTypeLevel.cs" />
     <Compile Include="entities\Community\Client.cs" />
     <Compile Include="entities\Community\CompanyHelpResource.cs" />
+    <Compile Include="entities\Community\GenericCommand.cs" />
     <Compile Include="entities\Community\HelpResource.cs" />
     <Compile Include="entities\Community\Plugins\ClientFusionType.cs" />
     <Compile Include="entities\Contracts\ICreatedMetadata.cs" />
@@ -108,6 +109,7 @@
     <Compile Include="entities\Issue\IssueType.cs" />
     <Compile Include="entities\Issue\IssueTypeApiModel.cs" />
     <Compile Include="entities\Issue\IssueTypeRelation.cs" />
+    <Compile Include="entities\Metric\MetricApiViewModels.cs" />
     <Compile Include="entities\Metric\MetricAsset.cs" />
     <Compile Include="entities\Metric\MetricAssetVersion.cs" />
     <Compile Include="entities\Metric\MetricAssetVersionCondition.cs" />
@@ -130,6 +132,7 @@
     <Compile Include="entities\Relation\MapTypeOrder.cs" />
     <Compile Include="entities\Relation\MapTypeTemplate.cs" />
     <Compile Include="entities\Relation\MapTypeTemplateItem.cs" />
+    <Compile Include="entities\Relation\RelationshipApiModels.cs" />
     <Compile Include="entities\ReportResponsibility.cs" />
     <Compile Include="entities\ResourcePasswordReset.cs" />
     <Compile Include="entities\Security\AssetResponsibilitiesModel.cs" />
@@ -169,7 +172,6 @@
     <Compile Include="entities\Quality\RuleResultQualifier.cs" />
     <Compile Include="entities\Quality\RuleResultQualifierType.cs" />
     <Compile Include="entities\Quality\RuleResult.cs" />
-    <Compile Include="entities\Quality\RuleDimension.cs" />
     <Compile Include="entities\Relation\Predicate.cs" />
     <Compile Include="entities\Social\CommentVote.cs" />
     <Compile Include="entities\Social\CommentCount.cs" />

@@ -26,12 +26,6 @@
         <div>
             {{link.settings.TimerInterval}}
         </div>
-        <div class="FieldName">
-            Conditions
-        </div>
-        <d3s-workflow-condition-list [readonly]="true"
-                                     [conditions]="link.condition">
-        </d3s-workflow-condition-list>
     </div>
 </div>
 <div *ngIf="link == null">

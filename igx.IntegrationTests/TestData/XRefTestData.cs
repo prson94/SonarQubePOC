@@ -1,20 +1,16 @@
-﻿using d360.core.entities;
+﻿using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace igx.IntegrationTests.TestData
 {
     public sealed class XRefTestData
     {
-        private static AssetCrossReference _model = null;
-        private static List<AssetCrossReference> _modelsList = null;
+        private static JObject _model = null;
+        private static JArray _modelsList = null;
 
 
         private static readonly object padlock = new object();
-        public static AssetCrossReference XRefModel
+        public static JObject XRefModel
         {
             get
             {
@@ -22,20 +18,20 @@ namespace igx.IntegrationTests.TestData
                 {
                     if (_model == null)
                     {
-                        _model = new AssetCrossReference()
-                        {
-                           uid = Guid.NewGuid(),
-                           DataSource = "testDataSource",
-                           ExternalID = "testExternalId",
-                           Type = "testType_"+Guid.NewGuid(),
-                           FieldHash = "testFieldHash"
-                        };
+                        var obj = new JObject();
+                        obj.Add(new JProperty("uid", Guid.NewGuid()));
+                        obj.Add(new JProperty("DataSource", "testDataSource"));
+                        obj.Add(new JProperty("ExternalID", "testExternalId"));
+                        obj.Add(new JProperty("Type", "testType_" + Guid.NewGuid()));
+                        obj.Add(new JProperty("FieldHash", "testFieldHash"));
+
+                        _model = obj;
                     }
                     return _model;
                 }
             }
         }
-        public static List<AssetCrossReference> XRefModelList
+        public static JArray XRefModelList
         {
             get
             {
@@ -46,23 +42,27 @@ namespace igx.IntegrationTests.TestData
 
                         //Using same data source as final delete in tests will be over this unique datasource
                         var sameDataSourceName = "testSameDatasource" + Guid.NewGuid();
-                        _modelsList = new List<AssetCrossReference>();
-                        _modelsList.Add(new AssetCrossReference()
-                        {
-                            uid = Guid.NewGuid(),
-                            DataSource = sameDataSourceName,
-                            ExternalID = "testExternalId2",
-                            Type = "testType_" + Guid.NewGuid(),
-                            FieldHash = "testFieldHash2"
-                        });
-                        _modelsList.Add(new AssetCrossReference()
-                        {
-                            uid = Guid.NewGuid(),
-                            DataSource = sameDataSourceName,
-                            ExternalID = "testExternalId2",
-                            Type = "testType2_" + Guid.NewGuid(),
-                            FieldHash = "testFieldHash2"
-                        });
+
+                        var arr = new JArray();
+
+                        var model1 = new JObject();
+                        var model2 = new JObject();
+                        arr.Add(model1);
+                        arr.Add(model2);
+
+                        model1.Add(new JProperty("uid", Guid.NewGuid()));
+                        model1.Add(new JProperty("DataSource", sameDataSourceName));
+                        model1.Add(new JProperty("ExternalID", "testExternalId2"));
+                        model1.Add(new JProperty("Type", "testType_" + Guid.NewGuid()));
+                        model1.Add(new JProperty("FieldHash", "testFieldHash2"));
+
+                        model2.Add(new JProperty("uid", Guid.NewGuid()));
+                        model2.Add(new JProperty("DataSource", sameDataSourceName));
+                        model2.Add(new JProperty("ExternalID", "testExternalId2"));
+                        model2.Add(new JProperty("Type", "testType2_" + Guid.NewGuid()));
+                        model2.Add(new JProperty("FieldHash", "testFieldHash2"));
+
+                        _modelsList = arr;
                     }
                     return _modelsList;
                 }

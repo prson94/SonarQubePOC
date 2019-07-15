@@ -47,5 +47,10 @@ namespace d360.model.DataAccessLayer
         {
             return this.companyContext.Filter<IssueType>(i => i.uid == issueTypeUid).SingleOrDefault();
         }
+
+        public Issue GetIssueByUID(Guid issueUid)
+        {
+            return this.companyContext.Filter<Issue>(i => i.UID == issueUid).SingleOrDefault();
+        }
     }
 }

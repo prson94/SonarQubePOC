@@ -191,7 +191,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
     private loadIssueTypes() {
         this.isLoading = true;
         this.workflowService.getWorkflowIssueTypes(this.selectedObjectType, this.selectedObjectId)
-            .then(result => {
+            .subscribe(result => {
                 this.issueTypes = result;
                 if (this.issueTypes != null && this.issueTypes.length == 1) this.issueType = this.issueTypes[0];
                 this.isLoading = false;
@@ -203,7 +203,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
         data.item.ObjectID = this.selectedObjectId;
         data.item.ObjectType = this.selectedObjectType;
         this.workflowService.raiseIssue(data.item)
-            .then(res => {
+            .subscribe(res => {
                 this.showMessageForResult(this.messagesService, res);
                 this.isLoading = false;
                 this.location.back();

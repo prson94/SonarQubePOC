@@ -62,7 +62,7 @@ export class AdminSurveyQuestionEditorEditor {
     @Output() saveClick = new EventEmitter();
     action: string = "Edit";
     error: any;
-    editedQuestion: SurveyQuestionTypeDetails;    
+    editedQuestion: SurveyQuestionTypeDetails;
     isLoading: boolean = false;
 
     displayStyles: DropdownOption[] = [{ title: "Radio List", value: "1" }, { title: "Check List", value: "3" }];
@@ -74,10 +74,11 @@ export class AdminSurveyQuestionEditorEditor {
 
         if (this.questionId > 0) {
             this.isLoading = true;
-            this.surveysService.getSurveyTypeQuestionDetails(this.questionId, this.surveyTypeId).then(result => {
-                this.editedQuestion = result;
-                this.isLoading = false;
-            });
+            this.surveysService.getSurveyTypeQuestionDetails(this.questionId, this.surveyTypeId)
+                .subscribe(result => {
+                    this.editedQuestion = result;
+                    this.isLoading = false;
+                });
         }
         else {
             this.editedQuestion = new SurveyQuestionTypeDetails();
@@ -90,15 +91,15 @@ export class AdminSurveyQuestionEditorEditor {
                 IsChecked: false,
             });
             this.action = "New";
-        }        
+        }
     }
-        
-    onSubmit() {        
+
+    onSubmit() {
         //save the item back to the save or edit url        
         this.saveClick.emit({ question: this.editedQuestion, action: this.questionId > 0 ? "new" : "edit" });
     }
 
     addItem() {
-        this.editedQuestion.Items.push({ Name: '', Value: 0, ID: 0, IsChecked:false });
+        this.editedQuestion.Items.push({ Name: '', Value: 0, ID: 0, IsChecked: false });
     }
 };

@@ -57,7 +57,7 @@
                     <div class="RowTools">
                         <a style="cursor:pointer;"
                             (click)="selected=rowNode.node;showAdd(item.Level)"
-                            *ngIf="model.MaximumDepth > item.Level"><i class="fa fa-plus"></i></a>
+                            *ngIf="( model.MaximumDepth > item.Level ) && hasModifyAssetPermissions()"><i class="fa fa-plus"></i></a>
                     </div>
                 </td>
                 <td>
@@ -86,7 +86,7 @@
         (onCancel)="showDelete=false;"></d3s-delete-form>
     <d3s-dynamic-editor rowID="ID"
         *ngIf="showEditor"
-        [objectID]="model.ID"
+        [objectID]="selected ? selected?.data?.ID : model.ID"
         [objectType]="'Taxonomy'"
         [parentID]="selectedParentID"
         [title]="modelTaxonomyTitle()"

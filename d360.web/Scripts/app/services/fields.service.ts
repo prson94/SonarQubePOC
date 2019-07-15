@@ -1,144 +1,158 @@
-import {distinctUntilChanged, switchMap, map, catchError} from 'rxjs/operators';
+import { distinctUntilChanged, switchMap, map, catchError } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
-import { Headers, Http } from '@angular/http';
+import { HttpClient } from '@angular/common/http';
 import { FieldDefinition, IFieldsService, FieldTypeEditorModel, Lookups } from '../models/fields.model';
 import { EditorDropDownItem } from '../models/editor-field.model'
 import { SelectItem } from 'primeng/components/common/api';
-import {MessagesService} from './messages.service';
 import { JsonResult } from '../models/jsonresult.model';
 import { Observable } from 'rxjs';
-import {BaseService} from "./base.service";
+import { BaseObservableService } from './baseObservable.service';
+import { MessagesObservableService } from './messages-observable.service';
 
 @Injectable()
-export class FieldsService extends BaseService implements IFieldsService {
-    constructor(private http: Http, messagesService: MessagesService) { super(messagesService);  }
+export class FieldsService extends BaseObservableService implements IFieldsService {
+    constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
-    getFields(objectID: number, objectType: string): Promise<FieldDefinition[]> {
+    getFields(objectID: number, objectType: string): Observable<FieldDefinition[]> {
         return this.http.get(`/fields/${objectType}/${objectID}/full`)
-            .toPromise()
-            .then(response => <FieldDefinition[]>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <FieldDefinition[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getAssetTypeFields(assetTypeUID: string): Promise<FieldDefinition[]> {
+    getAssetTypeFields(assetTypeUID: string): Observable<FieldDefinition[]> {
         return this.http.get(`/api/v2/assets/fields/${assetTypeUID}`)
-            .toPromise()
-            .then(response => <FieldDefinition[]>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <FieldDefinition[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getFieldTypeEditor(id: number): Promise<any> {
+    getFieldTypeEditor(id: number): Observable<any> {
         return this.http.get(`form/FieldType?id=${id}`)
-            .toPromise()
-            .then(response => <any>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <any>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getFusionLookupDisplayFields(id: number): Promise<SelectItem[]> {
+    getFusionLookupDisplayFields(id: number): Observable<SelectItem[]> {
         return this.http.get(`form/FieldType_FusionLookup_DisplayFields?id=${id}`)
-            .toPromise()
-            .then(response => <FtItem[]>response.json())
-            .then(r => this.ftItemToSelectItem(r))
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <FtItem[]>response),
+                map(r => this.ftItemToSelectItem(r)),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getFusionLookupTargetAttributeTypes(sourceID: number, referenceTypeID: number): Promise<SelectItem[]> {
+    getFusionLookupTargetAttributeTypes(sourceID: number, referenceTypeID: number): Observable<SelectItem[]> {
         return this.http.get(`form/FieldType_FusionLookup_TargetAttributeTypes?s=${sourceID}&r=${referenceTypeID}`)
-            .toPromise()
-            .then(response => <FtItem[]>response.json())
-            .then(r => this.ftItemToSelectItem(r))
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <FtItem[]>response),
+                map(r => this.ftItemToSelectItem(r)),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getRelationObjectFields(type: string, id: number, intersectTypeID: number): Promise<SelectItem[]> {
+    getRelationObjectFields(type: string, id: number, intersectTypeID: number): Observable<SelectItem[]> {
         return this.http.get(`form/FieldType_FieldFromRelationship_Fields?type=${type}&id=${id}&intersectTypeID=${intersectTypeID}`)
-            .toPromise()
-            .then(response => <FtItem[]>response.json())
-            .then(r => this.ftItemToSelectItem(r))
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <FtItem[]>response),
+                map(r => this.ftItemToSelectItem(r)),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getRelationLookupDisplayFields(id: number, type: string, intersectTypeID: number): Promise<SelectItem[]> {
+    getRelationLookupDisplayFields(id: number, type: string, intersectTypeID: number): Observable<SelectItem[]> {
         return this.http.get(`form/FieldType_RelationLookup_DisplayFields?id=${id}&type=${type}&intersectTypeID=${intersectTypeID}`)
-            .toPromise()
-            .then(response => <FtItem[]>response.json())
-            .then(r => this.ftItemToSelectItem(r))
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <FtItem[]>response),
+                map(r => this.ftItemToSelectItem(r)),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getReferenceTypeHierarchyFields(id: number, objectType: string, objectId: number): Promise<SelectItem[]> {
+    getReferenceTypeHierarchyFields(id: number, objectType: string, objectId: number): Observable<SelectItem[]> {
         return this.http.get(`form/Reference_Hierarchy?id=${id}&objectType=${objectType}&objectId=${objectId}`)
-            .toPromise()
-            .then(response => <SelectItem[]>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <SelectItem[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getListFilterOptions(objectType: string, objectId: number, type: string, id: number ): Promise<any> {
+    getListFilterOptions(objectType: string, objectId: number, type: string, id: number): Observable<any> {
         return this.http.get(`form/FieldType_ListFilter?objectType=${objectType}&objectId=${objectId}&type=${type}&id=${id}`)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getLookupDefaultValueOptions(id: number, type: string): Promise<SelectItem[]> {
+    getLookupDefaultValueOptions(id: number, type: string): Observable<SelectItem[]> {
         return this.http.get(`form/FieldType_Lookup_DefaultValueOptions?id=${id}&type=${type}`)
-            .toPromise()
-            .then(response => <FtItem[]>response.json())
-            .then(r => this.ftItemToSelectItem(r))
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <FtItem[]>response),
+                map(r => this.ftItemToSelectItem(r)),
+                catchError(err => this.handleError(err))
+            );
     }
 
 
-    getLookupTokens(id: number, type: string): Promise<SelectItem[]> {
+    getLookupTokens(id: number, type: string): Observable<SelectItem[]> {
         return this.http.get(`form/FieldType_Lookup_Tokens?id=${id}&type=${type}`)
-            .toPromise()
-            .then(response => <FtItem[]>response.json())
-            .then( r => this.ftItemToSelectItem(r))
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <FtItem[]>response),
+                map(r => this.ftItemToSelectItem(r)),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getLookups(id: number, type: string): Promise<Lookups> {
+    getLookups(id: number, type: string): Observable<Lookups> {
         return this.http.get(`form/FieldType_Lookups?id=${id}&type=${type}&isNg=true`)
-            .toPromise()
-            .then(response => <any>response.json())
-            .then(r => {
-                let l = new Lookups();
-                l.DataTypes = this.ftItemToSelectItem(r.DataTypes);
-                l.FusionAttributeTypes = this.ftItemToSelectItem(r.FusionAttributeTypes);
-                let i = this.ftItemToSelectItem(r.IntersectTypes);
-                l.IntersectTypes = [];
-                i.forEach(j => {
-                    l.IntersectTypes.push({ value: j.value, label: j.label, id: null });
-                });
+            .pipe(
+                map(response => <any>response),
+                map(r => {
+                    let l = new Lookups();
+                    l.DataTypes = this.ftItemToSelectItem(r.DataTypes);
+                    l.FusionAttributeTypes = this.ftItemToSelectItem(r.FusionAttributeTypes);
+                    let i = this.ftItemToSelectItem(r.IntersectTypes);
+                    l.IntersectTypes = [];
+                    i.forEach(j => {
+                        l.IntersectTypes.push({ value: j.value, label: j.label, id: null });
+                    });
 
-                l.Field_Relationships = this.ftItemToSelectItem(r.Field_Relationships);
-                l.Field_CardinalRelationships = this.ftItemToSelectItem(r.Field_CardinalRelationships);
-                l.Field_CardinalReferenceRelationships = this.ftItemToSelectItem(r.Field_CardinalReferenceRelationships);
-                l.Field_FieldFromRelRelationships = this.ftItemToSelectItem(r.Field_FieldFromRelRelationships);
-                l.Field_JsonDataTypes = this.ftItemToSelectItem(r.Field_JsonDataTypes);
-                l.Field_JsonFields = this.ftItemToSelectItem(r.Field_JsonFields);
-                l.Lookups = this.ftItemToSelectItem(r.Lookups);
-                l.Patterns = this.ftItemToSelectItem(r.Patterns);
-                l.ComplexLookupRelations = r.ComplexLookupRelations;
-                l.FilteredLookups = r.FilteredLookups;
-                return l;
-            })
-            .catch(err => this.handleError(err));
+                    l.Field_Relationships = this.ftItemToSelectItem(r.Field_Relationships);
+                    l.Field_CardinalRelationships = this.ftItemToSelectItem(r.Field_CardinalRelationships);
+                    l.Field_CardinalReferenceRelationships = this.ftItemToSelectItem(r.Field_CardinalReferenceRelationships);
+                    l.Field_FieldFromRelRelationships = this.ftItemToSelectItem(r.Field_FieldFromRelRelationships);
+                    l.Field_JsonDataTypes = this.ftItemToSelectItem(r.Field_JsonDataTypes);
+                    l.Field_JsonFields = this.ftItemToSelectItem(r.Field_JsonFields);
+                    l.Lookups = this.ftItemToSelectItem(r.Lookups);
+                    l.Patterns = this.ftItemToSelectItem(r.Patterns);
+                    l.ComplexLookupRelations = r.ComplexLookupRelations;
+                    l.FilteredLookups = r.FilteredLookups;
+                    return l;
+                }),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getFormData(id: number): Promise<FieldTypeEditorModel> {
+    getFormData(id: number): Observable<FieldTypeEditorModel> {
         return this.http.get(`form/FieldType_FormData?id=${id}`)
-            .toPromise()
-            .then(response => <FieldTypeEditorModel>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <FieldTypeEditorModel>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getFusionDisplayFields(id: number): Promise<SelectItem[]> {
+    getFusionDisplayFields(id: number): Observable<SelectItem[]> {
         return this.http.get(`form/FieldType_FusionLookup_DisplayFields?id=${id}`)
-            .toPromise()
-            .then(response => <FtItem[]>response.json())
-            .then(r => this.ftItemToSelectItem(r))
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <FtItem[]>response),
+                map(r => this.ftItemToSelectItem(r)),
+                catchError(err => this.handleError(err))
+            );
     }
 
     getFusionReferenceTypes(): SelectItem[] {
@@ -157,97 +171,109 @@ export class FieldsService extends BaseService implements IFieldsService {
         ];
     }
 
-    putFieldType(model: FieldTypeEditorModel): Promise<JsonResult> {
+    putFieldType(model: FieldTypeEditorModel): Observable<JsonResult> {
         return this.http.put('form/EditFieldType', model)
-            .toPromise()
-            .then(response => <JsonResult>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <JsonResult>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    postFieldType(model: FieldTypeEditorModel): Promise<JsonResult> {
+    postFieldType(model: FieldTypeEditorModel): Observable<JsonResult> {
         return this.http.post('form/AddFieldType', model)
-            .toPromise()
-            .then(response => <JsonResult>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <JsonResult>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    deleteFieldType(id: number): Promise<JsonResult> {
+    deleteFieldType(id: number): Observable<JsonResult> {
         return this.http.delete(`form/DeleteFieldTypeByID?id=${id}`)
-            .toPromise()
-            .then(response => <JsonResult>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <JsonResult>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
     private ftItemToSelectItem(items: FtItem[]): SelectItem[] {
         let s = new Array<SelectItem>();
         //s.push({ label: '', value: '' }); //Empty value at beginning of list
         items.forEach(i => {
-            s.push({label: i.title, value: i.value });
+            s.push({ label: i.title, value: i.value });
         });
         return s;
     }
 
-    getRelationLookupChildIntersectTypes(id: number): Promise<SelectItem[]> {
+    getRelationLookupChildIntersectTypes(id: number): Observable<SelectItem[]> {
         return this.http.get(`form/FieldType_RelationLookup_ChildIntersectTypes?id=${id}`)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <SelectItem[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getChildRelations(type: string, id: number): Promise<any> {
+    getChildRelations(type: string, id: number): Observable<any> {
         return this.http.get(`form/FieldType_ComplexLookup_ChildItems?type=${type}&id=${id}`)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getParentRelations(type: string, id: number): Promise<any> {
+    getParentRelations(type: string, id: number): Observable<any> {
         return this.http.get(`form/FieldType_ComplexLookup_ParentItems?type=${type}&id=${id}`)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getStandardRelations(type: string, id: number): Promise<any> {
+    getStandardRelations(type: string, id: number): Observable<any> {
         return this.http.get(`form/FieldType_ComplexLookup_IntersectTypes?type=${type}&id=${id}`)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
     moveUp(type: string, id: number, fieldId: number) {
         return this.http.post(`fields/${type}/${id}/${fieldId}/move/up`, null)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
     moveDown(type: string, id: number, fieldId: number) {
         return this.http.post(`fields/${type}/${id}/${fieldId}/move/dpwn`, null)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getFilteredLookupDisplayFields(type: string, id: number, listType: string, listID: number): Promise<any> {
+    getFilteredLookupDisplayFields(type: string, id: number, listType: string, listID: number): Observable<any> {
         return this.http.get(`form/FieldType_FilteredLookup_DisplayFields?type=${type}&id=${id}&listType=${listType}&listID=${listID}`)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getCascadingListFieldValues(fieldTypeId: number, parentItemId?: string, parentValues?: string): Promise<EditorDropDownItem[]> {
+    getCascadingListFieldValues(fieldTypeId: number, parentItemId?: string, parentValues?: string): Observable<EditorDropDownItem[]> {
         return this.http.get(`api/FieldType_CascadingListValues/${fieldTypeId}?parentItemId=${parentItemId != undefined ? parentItemId : ''}&parentValues=${parentValues != undefined ? encodeURIComponent(parentValues) : ''}`)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <EditorDropDownItem[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getRelationshipFieldIsListable(type: string, id: number, intersectTypeId): Promise<boolean> {
+    getRelationshipFieldIsListable(type: string, id: number, intersectTypeId): Observable<boolean> {
         return this.http.get(`form/FieldType_Relationship_IsListable?type=${type}&id=${id}&intersectTypeId=${intersectTypeId}`)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <boolean>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
     getRelationshipFieldItems(event: Observable<any>) {
@@ -269,7 +295,7 @@ export class FieldsService extends BaseService implements IFieldsService {
                         map(res => res),
                         map(
                             res => {
-                                return {fieldTypeID: event.fieldTypeID, results: res, event: event.event}
+                                return { fieldTypeID: event.fieldTypeID, results: res, event: event.event }
                             }
                         ),
                         catchError(err => this.handleError(err))
@@ -286,15 +312,16 @@ export class FieldsService extends BaseService implements IFieldsService {
                 let uri = `form/FieldType_TypeAheadLookup?fieldTypeId=${e.fieldTypeID}&query=${e.event.query}`;
                 if (e.value != null)
                     uri += `&value=${e.value}`;
-                return this.http.get(uri).pipe(map(res => <EditorDropDownItem[]>res.json()));
-            }),);
+                return this.http.get(uri).pipe(map(res => <EditorDropDownItem[]>res));
+            }));
     }
 
-    getLookupFilteredByPredicate(fieldTypeID: number, objectType: string, id:number): Promise<any> {
+    getLookupFilteredByPredicate(fieldTypeID: number, objectType: string, id: number): Observable<any> {
         return this.http.get(`form/FieldType_Lookup_FilteredByPredicate?fieldTypeId=${fieldTypeID}&objectType=${objectType}&ObjectID=${id}`)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
     }
 
     getTypeaheadFilteredByPredicateItems(e: Observable<any>, objectType: string, id: number): Observable<EditorDropDownItem[]> {
@@ -304,15 +331,16 @@ export class FieldsService extends BaseService implements IFieldsService {
                 let uri = `form/FieldType_Lookup_FilteredByPredicate?fieldTypeId=${e.fieldTypeID}&objectType=${objectType}&ObjectID=${id}&query=${e.event.query}`
                 if (e.value != null)
                     uri += `&value=${e.value}`;
-                return this.http.get(uri).pipe(map(res => <any[]>res.json().items));
+                return this.http.get(uri).pipe(map(res => <EditorDropDownItem[]>JSON.parse(res.toString()).items));
             }));
     }
 
-    getTypeaheadJsonPropertyOptionsForJsonField(fieldTypeId: number, phrase: string): Promise<string[]> {
+    getTypeaheadJsonPropertyOptionsForJsonField(fieldTypeId: number, phrase: string): Observable<string[]> {
         return this.http.get(`form/FieldType_TypeaheadJsonPropertyOptionsForJsonField?fieldTypeId=${fieldTypeId}&phrase=${encodeURIComponent(phrase)}`)
-            .toPromise()
-            .then(response => response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <string[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 }
 

@@ -35,12 +35,12 @@ namespace igx.UnitTests.V2ControllerTests
             var res = await crossReferencesController.Get();
             var data = res.Content.ReadAsStringAsync().Result;
 
-            Assert.True(res.IsSuccessStatusCode);
-            Assert.True(data != null);
+            Assert.True(res.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(data != null, XMsg.InvalidJSON);
 
             var parsedData = JsonConvert.DeserializeObject<List<AssetCrossReference>>(data);
 
-            Assert.True(parsedData != null && parsedData.Count > 0);
+            Assert.True(parsedData != null && parsedData.Count > 0, XMsg.InvalidJSON);
         }
 
         [Fact]
@@ -49,12 +49,10 @@ namespace igx.UnitTests.V2ControllerTests
             var res = await crossReferencesController.GetByUid("");
             var data = res.Content.ReadAsStringAsync().Result;
 
-            Assert.True(res.IsSuccessStatusCode);
-            Assert.True(data != null);
+            Assert.True(res.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(data != null, XMsg.InvalidJSON);
 
-            var parsedData = JsonConvert.DeserializeObject<List<AssetCrossReference>>(data);
-
-            Assert.True(parsedData != null);
+            AssertJSON.True<List<AssetCrossReference>>(data);
         }
 
         [Fact]
@@ -63,12 +61,10 @@ namespace igx.UnitTests.V2ControllerTests
             var res = await crossReferencesController.GetByTypeID("", "");
             var data = res.Content.ReadAsStringAsync().Result;
 
-            Assert.True(res.IsSuccessStatusCode);
-            Assert.True(data != null);
+            Assert.True(res.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(data != null, XMsg.InvalidJSON);
 
-            var parsedData = JsonConvert.DeserializeObject<List<AssetCrossReference>>(data);
-
-            Assert.True(parsedData != null);
+            AssertJSON.True<List<AssetCrossReference>>(data);
         }
 
         [Fact]
@@ -77,12 +73,10 @@ namespace igx.UnitTests.V2ControllerTests
             var res = await crossReferencesController.GetByType("");
             var data = res.Content.ReadAsStringAsync().Result;
 
-            Assert.True(res.IsSuccessStatusCode);
-            Assert.True(data != null);
+            Assert.True(res.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(data != null, XMsg.InvalidJSON);
 
-            var parsedData = JsonConvert.DeserializeObject<List<AssetCrossReference>>(data);
-
-            Assert.True(parsedData != null);
+            AssertJSON.True<List<AssetCrossReference>>(data);
         }
 
         [Fact]
@@ -91,12 +85,10 @@ namespace igx.UnitTests.V2ControllerTests
             var res = await crossReferencesController.GetByDataSource("");
             var data = res.Content.ReadAsStringAsync().Result;
 
-            Assert.True(res.IsSuccessStatusCode);
-            Assert.True(data != null);
+            Assert.True(res.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(data != null, XMsg.InvalidJSON);
 
-            var parsedData = JsonConvert.DeserializeObject<List<AssetCrossReference>>(data);
-
-            Assert.True(parsedData != null);
+            AssertJSON.True<List<AssetCrossReference>>(data);
         }
 
         [Fact]
@@ -108,11 +100,11 @@ namespace igx.UnitTests.V2ControllerTests
             try
             {
                 res = await crossReferencesController.Post(myAssetCrossReference);
-                Assert.True(false);
+                Assert.True(false, XMsg.ExceptionExpected);
             }
             catch (HttpResponseException ex)
             {
-                Assert.True(ex.Response.StatusCode == System.Net.HttpStatusCode.NotAcceptable);
+                Assert.True(ex.Response.StatusCode == System.Net.HttpStatusCode.NotAcceptable, XMsg.BadResponseCode);
             }
             myAssetCrossReference.DataSource = "non-empty";
             myAssetCrossReference.ExternalID = "non-empty";
@@ -122,17 +114,17 @@ namespace igx.UnitTests.V2ControllerTests
             {
                 myAssetCrossReference.uid = Guid.Parse(DataConstants.InvalidGUID);
                 res = await crossReferencesController.Post(myAssetCrossReference);
-                Assert.True(false);
+                Assert.True(false, XMsg.ExceptionExpected);
             }
             catch (HttpResponseException ex)
             {
-                Assert.True(ex.Response.StatusCode == System.Net.HttpStatusCode.Conflict);
+                Assert.True(ex.Response.StatusCode == System.Net.HttpStatusCode.Conflict, XMsg.BadResponseCode);
             }
 
             myAssetCrossReference.uid = Guid.Parse(DataConstants.ValidGUID);
             res = await crossReferencesController.Post(myAssetCrossReference);
 
-            Assert.True(res != null);
+            Assert.True(res != null, XMsg.NoContent);
 
         }
 
@@ -147,11 +139,11 @@ namespace igx.UnitTests.V2ControllerTests
             {
                 xRef.uid = Guid.Parse(DataConstants.InvalidGUID);
                 res = await crossReferencesController.PostBulk(xRefList);
-                Assert.True(false);
+                Assert.True(false, XMsg.ExceptionExpected);
             }
             catch (HttpResponseException ex)
             {
-                Assert.True(ex.Response.StatusCode == System.Net.HttpStatusCode.Conflict);
+                Assert.True(ex.Response.StatusCode == System.Net.HttpStatusCode.Conflict, XMsg.BadResponseCode);
             }
 
 
@@ -159,8 +151,8 @@ namespace igx.UnitTests.V2ControllerTests
             res = await crossReferencesController.PostBulk(xRefList);
 
 
-            Assert.True(res != null);
-            Assert.True(res.Count == xRefList.Count);
+            Assert.True(res != null, XMsg.NoContent);
+            Assert.True(res.Count == xRefList.Count, "Invalid count!");
         }
         [Fact]
         public async void PutByParams()
@@ -176,23 +168,22 @@ namespace igx.UnitTests.V2ControllerTests
             try
             {
                 res = await crossReferencesController.Put(uid, dataSource, type, externalId, xRef);
-                Assert.True(false);
+                Assert.True(false, XMsg.ExceptionExpected);
             }
             catch (HttpResponseException ex)
             {
-                Assert.True(ex.Response.StatusCode == System.Net.HttpStatusCode.NotAcceptable);
+                Assert.True(ex.Response.StatusCode == System.Net.HttpStatusCode.NotAcceptable, XMsg.BadResponseCode);
             }
 
 
             dataSource = type = externalId = "not-empty";
             xRef.uid = Guid.Parse(DataConstants.InvalidGUID);
             res = await crossReferencesController.Put(uid, dataSource, type, externalId, xRef);
-            Assert.True(!res.IsSuccessStatusCode);
-            Assert.True(res.StatusCode == System.Net.HttpStatusCode.NotFound);
+            Assert.True(res.StatusCode == System.Net.HttpStatusCode.NotFound, XMsg.BadResponseCode);
 
             xRef.uid = Guid.Parse(DataConstants.ValidGUID);
             res = await crossReferencesController.Put(uid, dataSource, type, externalId, xRef);
-            Assert.True(res.IsSuccessStatusCode);
+            Assert.True(res.IsSuccessStatusCode, XMsg.BadResponseCode);
         }
 
         [Fact]
@@ -206,22 +197,22 @@ namespace igx.UnitTests.V2ControllerTests
             try
             {
                 res = await crossReferencesController.Put(uid, xRef);
-                Assert.True(false);
+                Assert.True(false, XMsg.ExceptionExpected);
             }
             catch (HttpResponseException ex)
             {
-                Assert.True(ex.Response.StatusCode == System.Net.HttpStatusCode.NotAcceptable);
+                Assert.True(ex.Response.StatusCode == System.Net.HttpStatusCode.NotAcceptable, XMsg.BadResponseCode);
             }
             xRef.DataSource = xRef.Type = xRef.ExternalID = "not-empty";
 
             xRef.uid = Guid.Parse(DataConstants.InvalidGUID);
             res = await crossReferencesController.Put(uid, xRef);
-            Assert.True(!res.IsSuccessStatusCode);
-            Assert.True(res.StatusCode == System.Net.HttpStatusCode.NotFound);
+
+            Assert.True(res.StatusCode == System.Net.HttpStatusCode.NotFound, XMsg.BadResponseCode);
 
             xRef.uid = Guid.Parse(DataConstants.ValidGUID);
             res = await crossReferencesController.Put(uid, xRef);
-            Assert.True(res.IsSuccessStatusCode);
+            Assert.True(res.IsSuccessStatusCode, XMsg.BadResponseCode);
         }
         [Fact]
         public async void DeleteByUid()
@@ -229,12 +220,12 @@ namespace igx.UnitTests.V2ControllerTests
             HttpResponseMessage res;
 
             res = await crossReferencesController.DeleteByUid(Guid.Parse(DataConstants.InvalidGUID));
-            Assert.True(!res.IsSuccessStatusCode);
-            Assert.True(res.StatusCode == System.Net.HttpStatusCode.NotFound);
+
+            Assert.True(res.StatusCode == System.Net.HttpStatusCode.NotFound, XMsg.BadResponseCode);
 
             res = await crossReferencesController.DeleteByUid(Guid.Parse(DataConstants.ValidGUID));
-            Assert.True(res.IsSuccessStatusCode);
-            Assert.True(res.StatusCode == System.Net.HttpStatusCode.OK);
+
+            Assert.True(res.StatusCode == System.Net.HttpStatusCode.OK, XMsg.BadResponseCode);
         }
 
         [Fact]
@@ -245,20 +236,20 @@ namespace igx.UnitTests.V2ControllerTests
             try
             {
                 res = await crossReferencesController.DeleteByDataSource(string.Empty);
-                Assert.True(false);
+                Assert.True(false, XMsg.ExceptionExpected);
             }
             catch (HttpResponseException ex)
             {
-                Assert.True(ex.Response.StatusCode == System.Net.HttpStatusCode.NotAcceptable);
+                Assert.True(ex.Response.StatusCode == System.Net.HttpStatusCode.NotAcceptable, XMsg.BadResponseCode);
             }
 
             res = await crossReferencesController.DeleteByDataSource("random invalid string");
-            Assert.True(!res.IsSuccessStatusCode);
-            Assert.True(res.StatusCode == System.Net.HttpStatusCode.NotFound);
+
+            Assert.True(res.StatusCode == System.Net.HttpStatusCode.NotFound, XMsg.BadResponseCode);
 
             res = await crossReferencesController.DeleteByDataSource(DataConstants.ValidDataSource);
-            Assert.True(res.IsSuccessStatusCode);
-            Assert.True(res.StatusCode == System.Net.HttpStatusCode.OK);
+
+            Assert.True(res.StatusCode == System.Net.HttpStatusCode.OK, XMsg.BadResponseCode);
         }
 
         [Fact]
@@ -270,20 +261,20 @@ namespace igx.UnitTests.V2ControllerTests
             try
             {
                 res = await crossReferencesController.DeleteByDataSource(string.Empty, type);
-                Assert.True(false);
+                Assert.True(false, XMsg.ExceptionExpected);
             }
             catch (HttpResponseException ex)
             {
-                Assert.True(ex.Response.StatusCode == System.Net.HttpStatusCode.NotAcceptable);
+                Assert.True(ex.Response.StatusCode == System.Net.HttpStatusCode.NotAcceptable, XMsg.BadResponseCode);
             }
 
             res = await crossReferencesController.DeleteByDataSource("random invalid string", "type");
-            Assert.True(!res.IsSuccessStatusCode);
-            Assert.True(res.StatusCode == System.Net.HttpStatusCode.NotFound);
+
+            Assert.True(res.StatusCode == System.Net.HttpStatusCode.NotFound, XMsg.BadResponseCode);
 
             res = await crossReferencesController.DeleteByDataSource(DataConstants.ValidDataSource, "type");
-            Assert.True(res.IsSuccessStatusCode);
-            Assert.True(res.StatusCode == System.Net.HttpStatusCode.OK);
+
+            Assert.True(res.StatusCode == System.Net.HttpStatusCode.OK, XMsg.BadResponseCode);
         }
 
         [Fact]
@@ -294,20 +285,20 @@ namespace igx.UnitTests.V2ControllerTests
             try
             {
                 res = await crossReferencesController.DeleteByType(string.Empty);
-                Assert.True(false);
+                Assert.True(false, XMsg.ExceptionExpected);
             }
             catch (HttpResponseException ex)
             {
-                Assert.True(ex.Response.StatusCode == System.Net.HttpStatusCode.NotAcceptable);
+                Assert.True(ex.Response.StatusCode == System.Net.HttpStatusCode.NotAcceptable, XMsg.BadResponseCode);
             }
 
             res = await crossReferencesController.DeleteByType("random invalid string");
             Assert.True(!res.IsSuccessStatusCode);
-            Assert.True(res.StatusCode == System.Net.HttpStatusCode.NotFound);
+            Assert.True(res.StatusCode == System.Net.HttpStatusCode.NotFound, XMsg.BadResponseCode);
 
             res = await crossReferencesController.DeleteByType(DataConstants.ValidType);
             Assert.True(res.IsSuccessStatusCode);
-            Assert.True(res.StatusCode == System.Net.HttpStatusCode.OK);
+            Assert.True(res.StatusCode == System.Net.HttpStatusCode.OK, XMsg.BadResponseCode);
         }
 
     }

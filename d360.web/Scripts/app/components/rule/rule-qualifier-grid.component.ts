@@ -32,8 +32,8 @@ import { FormMode } from '../../models/form.model';
                                                 <td>{{item.ResolutionFieldTypeName}}</td>
                                                 <td>
                                                         <div class="RowTools">
-                                                            <a *ngIf="i > 0" (click)="moveUp(item)"><i class="fa fa-caret-up"></i></a>
-                                                            <a *ngIf="i < (qualifierTypes.length - 1)" (click)="moveDown(item)"><i class="fa fa-caret-down"></i></a>
+                                                            <a *ngIf="i > 0" (click)="move(item,true)"><i class="fa fa-caret-up"></i></a>
+                                                            <a *ngIf="i < (qualifierTypes.length - 1)" (click)="move(item,false)"><i class="fa fa-caret-down"></i></a>
                                                             <a (click)="edit(item)"><i class="fa fa-pencil"></i></a>
                                                             <a (click)="delete(item)"><i class="fa fa-trash-o"></i></a>
                                                         </div>
@@ -100,7 +100,7 @@ export class RuleQualifierGridComponent extends BaseComponent implements OnInit 
     private load() {
         this.isLoading = true;
         this.qualifierService.getQualifierTypes(this.implementationId)
-            .then(r => {
+            .subscribe(r => {
                 this.qualifierTypes = r;
                 if (this.qualifierTypes != null)
                     this.selectedQualifierType = this.qualifierTypes[0];
@@ -118,24 +118,15 @@ export class RuleQualifierGridComponent extends BaseComponent implements OnInit 
         this.formMode = FormMode.Deleting;
     }
 
-    moveUp(item: QualifierType) {
+    move(item: QualifierType, up: boolean) {
         this.selectedQualifierType = item;
-        this.qualifierService.putMoveQualifierType(this.selectedQualifierType.ID, true)
-            .then(result => {
+        this.qualifierService.putMoveQualifierType(this.selectedQualifierType.ID, up)
+            .subscribe(result => {
                 this.showMessageForResult(this.messagesService, result);
                 this.load();
             });
     }
-
-    moveDown(item: QualifierType) {
-        this.selectedQualifierType = item;
-        this.qualifierService.putMoveQualifierType(this.selectedQualifierType.ID, false)
-            .then(result => {
-                this.showMessageForResult(this.messagesService, result);
-                this.load();
-            });
-    }
-
+    
     add() {
         this.formMode = FormMode.Adding;
     }

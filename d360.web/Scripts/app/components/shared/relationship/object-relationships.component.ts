@@ -28,6 +28,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
     hideDelete: boolean = true;
     queryString: string = "";
     public hasAdd: boolean;
+    public hasFilterMode: boolean=true;
 
     @ViewChild(DynamicRelationshipGridComponent) private relGrid: DynamicRelationshipGridComponent;
 
@@ -53,7 +54,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
 
     loadRelationshipItems() {
         this.relationshipsService.getRelationshipCounts(this.objectType, this.objectID)
-            .then(result => {
+            .subscribe(result => {
                 this.relationshipItems = result;
                 this.selected = null;
                 for (let relation of this.relationshipItems) {
@@ -63,7 +64,8 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
                     }
                 }
 
-                if (!this.selected) this.relationshipItems.length > 0 ? this.relationshipItems[0] : null;
+                if (!this.selected)
+                    this.selected = (this.relationshipItems && this.relationshipItems.length > 0) ? this.relationshipItems[0] : null;
 
                 this.hasRelationships = (this.relationshipItems && this.relationshipItems.length > 0);
 
@@ -79,7 +81,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
 
     addRelationship(event) {
         if (!this.selected) return;
-        this.selected.Count = this.selected.Count + event.count;
+        this.selected.Count = event.count;
         this.updateCardinality();
     }
 
@@ -133,7 +135,8 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
                 && this.selected.AllowEditFromRelationshipEditor;
         }
         else {
-            this.hasAdd = this.hasModifyRelationshipsPermissions() && !this.readOnly;
+            this.hasAdd = this.hasRelationships &&  this.hasModifyRelationshipsPermissions() && !this.readOnly;
         }
+        this.hasFilterMode = this.hasRelationships;
     }
 }

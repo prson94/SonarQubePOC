@@ -141,6 +141,9 @@ namespace d360.core.entities
 
         [DataMember]
         public Guid? ExecutionItemUid { get; set; }
+
+        [DataMember]
+        public bool? Cascade { get; set; }
     }
 
     [JsonArray]
@@ -293,6 +296,9 @@ namespace d360.core.entities
         public string Object { get { return "Intersect"; } set { } }
 
         public int ObjectID { get { return IntersectID; } set { } }
+
+        [DataMember]
+        public Guid uid { get; set; }
     }
 
     public class AssetDataProfileResult

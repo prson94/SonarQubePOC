@@ -19,7 +19,7 @@ import { Column, Header, Editor } from 'primeng/primeng';
 import { WorkflowService } from '../../../../services/workflow.service';
 import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
 import { FormMode } from '../../../../models/form.model';
-
+import { map } from 'rxjs/operators';
 import * as _ from 'lodash';
 
 @Component({
@@ -71,54 +71,56 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         this.hasFormResponses = this.formFields != null && this.formFields.length > 0;
 
         this.workflowService.getWorkflowFieldTypes(this.objectId, this.objectType, true, this.issueObject)
-            .then(r => {
-                this.fields = r;
-            })
-            .then(() => {
+            .pipe(
+                map(r => {
+                    this.fields = r;
+                }),
+                map(() => {
 
-                if (_.isEmpty(this.fieldUpdate.Field)) {
-                    this.fieldUpdate.Field = [];
-                } else if (this.fieldUpdate.Field.length == null) {
-                    let f = _.cloneDeep(this.fieldUpdate.Field);
-                    this.fieldUpdate.Field = [];
-                    this.fieldUpdate.Field.push(f);
-                }
-
-                this.fieldUpdate.Field.forEach(f => {
-                    this.initField(f);
-                    let fieldIndex = this.fields.findIndex(i => i.ID.toString() == f['@FieldId'].toString());
-
-                    if (fieldIndex > -1) {
-                        this.usedFields.push(this.fields[fieldIndex]);
-                        this.fields.splice(fieldIndex, 1);
+                    if (_.isEmpty(this.fieldUpdate.Field)) {
+                        this.fieldUpdate.Field = [];
+                    } else if (this.fieldUpdate.Field.length == null) {
+                        let f = _.cloneDeep(this.fieldUpdate.Field);
+                        this.fieldUpdate.Field = [];
+                        this.fieldUpdate.Field.push(f);
                     }
 
-                });
-            })
-            .then(() => {
-                if (this.issueObject != '') {
-                    var actionFields = this.fields.filter(x => x.Object == 'IssueType');
-                    actionFields.forEach(function (item) {
-                        var actionFormField: any = {};
-                        actionFormField['@FieldName'] = 'Action Type::' + item.FriendlyName;
-                        actionFormField['@FormFieldId'] = item.Object + '|' + item.ID;
-                        actionFormField['@FormLabel'] = 'Action Type::' + item.FriendlyName;
-                        actionFormField['@VersionStepID'] = '-1';
-                        actionFormField['@id'] = item.ID;
-                        actionFormField['@label'] = item.FriendlyName;
-                        actionFormField['@stepId'] = '-1';
-                        actionFormField['@type'] = this.getFieldTypeForFormType(item.Type);
-                        actionFormField['@isActionType'] = true;
-                        actionFormField['@UseFormValue'] = true;
-                        if (item.Type == 'Lookup') {
-                            actionFormField['@LookupFieldID'] = item.LookupObjectType + '|' + item.LookupObjectID;
+                    this.fieldUpdate.Field.forEach(f => {
+                        this.initField(f);
+                        let fieldIndex = this.fields.findIndex(i => i.ID.toString() == f['@FieldId'].toString());
+
+                        if (fieldIndex > -1) {
+                            this.usedFields.push(this.fields[fieldIndex]);
+                            this.fields.splice(fieldIndex, 1);
                         }
-                        this.formFields.push(actionFormField);
-                    }, this);
-                }
+
+                    });
+                }),
+                map(() => {
+                    if (this.issueObject != '') {
+                        var actionFields = this.fields.filter(x => x.Object == 'IssueType');
+                        actionFields.forEach(function (item) {
+                            var actionFormField: any = {};
+                            actionFormField['@FieldName'] = 'Action Type::' + item.FriendlyName;
+                            actionFormField['@FormFieldId'] = item.Object + '|' + item.ID;
+                            actionFormField['@FormLabel'] = 'Action Type::' + item.FriendlyName;
+                            actionFormField['@VersionStepID'] = '-1';
+                            actionFormField['@id'] = item.ID;
+                            actionFormField['@label'] = item.FriendlyName;
+                            actionFormField['@stepId'] = '-1';
+                            actionFormField['@type'] = this.getFieldTypeForFormType(item.Type);
+                            actionFormField['@isActionType'] = true;
+                            actionFormField['@UseFormValue'] = true;
+                            if (item.Type == 'Lookup') {
+                                actionFormField['@LookupFieldID'] = item.LookupObjectType + '|' + item.LookupObjectID;
+                            }
+                            this.formFields.push(actionFormField);
+                        }, this);
+                    }
               
-            })
-            .then(() => this.isLoading = false);     
+                }),
+                map(() => this.isLoading = false)
+            ).subscribe();     
 
 
     }
@@ -178,7 +180,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
 
             if (this.field.Type == 'Lookup') {
                 this.workflowService.getLookupList(this.field.ID)
-                    .then(r => {
+                    .subscribe(r => {
                         this.lookups = r;
                         this.lookups = this.lookups.filter(l => l.value != '');
                     });
@@ -480,7 +482,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
     setValueType() {
         if (this.selectedField == null)
             this.valueType = null;
-        else if (this.selectedField['@UseFormValue'] != null && this.selectedField['@IsActionForm'].toString() != 'true')
+        else if (this.selectedField['@UseFormValue'] != null && (!this.selectedField['@IsActionForm'] || this.selectedField['@IsActionForm'].toString() != 'true'))
             this.valueType = 'form';
         else if (this.selectedField['@IsActionForm'] != null && this.selectedField['@IsActionForm'].toString() == 'true')
             this.valueType = 'actionForm';

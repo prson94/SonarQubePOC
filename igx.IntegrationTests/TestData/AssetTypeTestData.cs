@@ -1,21 +1,16 @@
-﻿using d360.core.entities;
-using d360.core.enums;
+﻿using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace igx.IntegrationTests.TestData
 {
     public sealed class AssetTypeTestData
     {
-        private static AssetTypeInsert _assetTypeInsert = null;
+        private static JObject _assetTypeInsert = null;
         private static string _executionUrl = null;
 
 
         private static readonly object padlock = new object();
-        public static AssetTypeInsert assetTypeInsert
+        public static JObject AssetTypeInsert
         {
             get
             {
@@ -23,23 +18,25 @@ namespace igx.IntegrationTests.TestData
                 {
                     if (_assetTypeInsert == null)
                     {
-                        _assetTypeInsert = new AssetTypeInsert()
-                        {
-                            Name = "AssetTypeIntegrationTest-"+ Guid.NewGuid().ToString(),
-                            Class = AssetTypeClass.Glossary,
-                            DisplayFormat = "{Name}",
-                            Description = "Integration test description!",
-                            IconStyle = new IconStyleInsert()
-                            {
-                                BackColor = "#FFF",
-                                ForeColor = "#000"
-                            }
-                        };
+                        JObject jObject = new JObject();
+                        jObject.Add(new JProperty("Name", "AssetTypeIntegrationTest-" + Guid.NewGuid().ToString()));
+                        jObject.Add(new JProperty("Class", "Glossary"));
+                        jObject.Add(new JProperty("DisplayFormat", "{Name}"));
+                        jObject.Add(new JProperty("Description", "Integration test description!"));
+
+                        JObject iconStyle = new JObject();
+                        iconStyle.Add(new JProperty("BackColor", "#FFF"));
+                        iconStyle.Add(new JProperty("ForeColor", "#000"));
+
+                        jObject.Add(new JProperty("IconStyle", iconStyle));
+
+                        _assetTypeInsert = jObject;
                     }
                     return _assetTypeInsert;
                 }
             }
         }
+
 
         public static string ExecutionUrl
         {
@@ -58,6 +55,18 @@ namespace igx.IntegrationTests.TestData
             {
                 _executionUrl = value;
             }
+        }
+
+        public static JArray GetDeleteAssetTypeJSON(Guid uid)
+        {
+            JArray forDeletes = new JArray();
+
+            JObject jObject = new JObject();
+            jObject.Add(new JProperty("Uid", uid.ToString()));
+            jObject.Add(new JProperty("Cascade", true));
+            forDeletes.Add(jObject);
+
+            return forDeletes;
         }
     }
 }

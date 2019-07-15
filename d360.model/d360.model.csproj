@@ -113,6 +113,10 @@
     <Compile Include="CompanyContext_MarkitLineage.cs" />
     <Compile Include="DataAccessLayer\IIssueRepository.cs" />
     <Compile Include="DataAccessLayer\IRelationshipRepository.cs" />
+    <Compile Include="DataAccessLayer\IFusionRepository.cs" />
+    <Compile Include="DataAccessLayer\IResponsibilityRepository.cs" />
+    <Compile Include="DataAccessLayer\repositories\FusionRepository.cs" />
+    <Compile Include="DataAccessLayer\IMetricsRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\IssueRepository.cs" />
     <Compile Include="DataAccessLayer\ITagRepository.cs" />
     <Compile Include="DataAccessLayer\IWorkflowRepository.cs" />
@@ -120,7 +124,9 @@
     <Compile Include="DataAccessLayer\ICrossReferencesRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\AssetRepository.cs" />
     <Compile Include="DataAccessLayer\IAssetRepository.cs" />
+    <Compile Include="DataAccessLayer\repositories\MetricsRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\RelationshipRepository.cs" />
+    <Compile Include="DataAccessLayer\repositories\ResponsibilityRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\TagRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\FieldsRepository.cs" />
     <Compile Include="DataAccessLayer\IFieldsRepository.cs" />
@@ -135,6 +141,8 @@
     <Compile Include="validators\AssetTypeValidator.cs" />
     <Compile Include="validators\FieldApiModelValidator.cs" />
     <Compile Include="validators\IWorkflowApiModelValidator.cs" />
+    <Compile Include="validators\MetricModelValidator.cs" />
+    <Compile Include="validators\TagValidator.cs" />
     <Compile Include="validators\WorkflowApiModelValidator.cs" />
     <Compile Include="validators\WorkHttpStatus.cs" />
     <Compile Include="workflow\WorkflowCriteriaExpressionModel.cs" />

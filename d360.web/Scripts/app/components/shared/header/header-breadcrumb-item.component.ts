@@ -22,18 +22,16 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
     template: ` <div #hovertarget class="hover-container" (mouseenter)="in(treePanel,searchPanel,$event)" (mouseleave)="out(treePanel,searchPanel,$event)" >
                     <a id="breadlink" (click)="navigateToLink(breadcrumb.link)" 
                             class="breadcrumb" 
-                            [ngClass]="{'breadcrumb-link' : hasLink(breadcrumb.link)}">
-                            <span class="breadcrumb-text" [ngClass]="{'highlight' : breadcrumb.isType}">{{breadcrumb.text}} </span>
-                            <span class="parent" *ngIf="breadcrumb.parentTypeName"   
-                                  (click)="stopParentNav($event);navigateToLink(breadcrumb.parentUrl)">
-                                    {{breadcrumb.parentTypeName}}
-                            </span>
+                            [ngStyle]="{'max-width.px': setLastBreadcrumbWidth()}">
+                            <span class="breadcrumb-text" [ngClass]="{'highlight' : breadcrumb.isType, 'breadcrumb-link' : hasLink(breadcrumb.link)}">{{breadcrumb.text}} </span>
+                            <span class="parent"  [ngClass]="{'breadcrumb-link' : hasLink(breadcrumb.link)}" *ngIf="breadcrumb.parentTypeName"   
+                                  (click)="stopParentNav($event);navigateToLink(breadcrumb.parentUrl)">{{breadcrumb.parentTypeName}}</span>
                             <div *ngIf="!isChangableItem()" class="gutter"></div>
                             <i *ngIf="isChangableItem()" class="fa fa-caret-right crumb-arrow right"></i>
                     </a>
-                    <p-overlayPanel [ngClass]="'search-results'" #searchPanel for="hovertarget" my="left top" at="top right">  
+                    <p-overlayPanel [ngClass]="'search-results'" #searchPanel>  
                         <div class="breadcrumb-search">
-                            <span class="header-search-input"><input #standardInput type="text" [(ngModel)]="searchValue" placeholder="Search" (keyup)="search(searchValue)"> <i class="fa fa-search"></i></span> 
+                            <span class="header-search-input"><input #standardInput type="text" [(ngModel)]="searchValue" placeholder="Search" (keyup)="search(searchValue)"> <i *ngIf="searchingTypeahed" class="fa fa-spinner fa-spin"></i><i *ngIf="!searchingTypeahed" class="fa fa-search"></i></span> 
                             <div *ngFor="let result of results;" class="breadcrumb-search-results">
                                 <div class="breadcrumb-search-result" [ngClass]="{'current-crumb': breadcrumb.text === result.Name}" (click)="navigateToLink(result.Url,result)">{{result.Name}}</div>
                             </div>
@@ -64,6 +62,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
     @Output() treeClick = new EventEmitter();
     @Input() showSeperator: boolean = true;
     @Input() index: number;
+    @Input() maxLastCrumbWidth: number;
     @ViewChild('hovertarget') hoverTarget: ElementRef;
 
     @ViewChild('standardInput') standardInput: ElementRef;
@@ -78,7 +77,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
     public treeItems: TreeNode[] = [];
     public maxOverlayHeight: string = '800px'
     private searchSub: ISubscription
-
+    private searchingTypeahed: boolean = false;
     
     constructor(private elementRef: ElementRef, private router: Router,
         private typeaheadSearchService: TypeaheadSearchService, private ref: ChangeDetectorRef) { }
@@ -110,39 +109,48 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
 
     private in(panel, searchPanel, event) {
         let parent = this.hoverTarget.nativeElement.parentNode;
-        if (this.isChangableItem()) {
+        let lineDims = this.hoverTarget.nativeElement.getBoundingClientRect();
+        if (this.isChangableItem() && !this.isTreeItem()) {
             this.showSearch = true;            
             if (this.hasClass(parent, 'collapsed-crumb')) {
                 searchPanel.show(event, this.hoverTarget.nativeElement.parentNode);
                 
-                searchPanel.el.nativeElement.children[0].opacity = 0;
                 window.setTimeout(() => {
-                    let lineDims = this.hoverTarget.nativeElement.getBoundingClientRect();
-                    searchPanel.el.nativeElement.children[0].style.top = (lineDims.top - 30) + "px";
+                    searchPanel.el.nativeElement.children[0].style.top = (lineDims.top - 40) + "px";
                     searchPanel.el.nativeElement.children[0].style.left = (lineDims.width + (10 * this.index)) + "px";
+                    let searchDims = searchPanel.el.nativeElement.children[0].getBoundingClientRect(); 
+                    if (searchDims.right > window.innerWidth) {
+                        let diff = searchDims.right - window.innerWidth;
+                        let left = (lineDims.width + (10 * this.index)) - diff;
+                        searchPanel.el.nativeElement.children[0].style.left = left + "px";
+                        searchPanel.el.nativeElement.children[0].style.maxWidth = (window.innerWidth - lineDims.left) + "px";
+                    }
+                    parent.style.maxWidth = (window.innerWidth - lineDims.left) + "px";
                     if (this.standardInput) {
                         this.standardInput.nativeElement.focus();
                         if (this.results === undefined && !this.isTreeItem) this.search("");
                     }
-                }, 100);
+                }, 150);
                 
             } else {
                 searchPanel.show(event);
-                if (this.standardInput) {
-                    window.setTimeout(() => {
+                window.setTimeout(() => {
+                    searchPanel.el.nativeElement.children[0].style.top = (lineDims.bottom) + "px";
+                    searchPanel.el.nativeElement.children[0].style.left = (lineDims.left) + "px";
+
+                    searchPanel.el.nativeElement.children[0].style.maxWidth = (window.innerWidth - lineDims.left) + "px";
+                    if (this.standardInput) {
                         this.standardInput.nativeElement.focus();
                         if (this.results === undefined && !this.isTreeItem()) this.search("");
-                    }, 150);
-                }
+                    }
+                }, 150);
             }
         }
         if (this.isTreeItem()) {
-            
             if (this.hasClass(parent, 'collapsed-crumb')) {
                 panel.show(event, this.hoverTarget.nativeElement.parentNode);
                 window.setTimeout(() => {
-                    let lineDims = this.hoverTarget.nativeElement.getBoundingClientRect();
-                    panel.el.nativeElement.children[0].style.top = (lineDims.top - 30) + "px";
+                    panel.el.nativeElement.children[0].style.top = (lineDims.top - 40) + "px";
                     panel.el.nativeElement.children[0].style.left = (lineDims.width + (10 * this.index)) + "px";
                     if (this.treeInput) {
                         window.setTimeout(() => {
@@ -154,11 +162,8 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
 
             else {
                 panel.show(event);
-                if (this.treeInput) {
-                    window.setTimeout(() => {
-                        this.treeInput.nativeElement.focus();
-                    }, 100);
-                } 
+                window.setTimeout(() => { panel.el.nativeElement.children[0].style.left = lineDims.left + "px"; }, 100);
+                if (this.treeInput) { window.setTimeout(() => { this.treeInput.nativeElement.focus(); }, 100); }
             }
         }
     }    
@@ -176,13 +181,14 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
     search(event) {
 
         let q = event.query ? event.query : event;
-
+        this.searchingTypeahed = true;
         if (this.breadcrumb.isType && this.breadcrumb.objectType !== 'Fusion') {
             if (this.breadcrumb.hasParent) {
                 this.typeaheadSearchService.getObjectTypeItemsFromParent(10, q, this.breadcrumb.objectType, this.breadcrumb.objectId).pipe(
                     debounceTime(400))
                     .subscribe(data => {
                         this.results = data;
+                        this.searchingTypeahed = false;
                         this.ref.markForCheck();
                     });
             } else {
@@ -190,6 +196,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
                     debounceTime(400))
                     .subscribe(data => {
                         this.results = data;
+                        this.searchingTypeahed = false;
                         this.ref.markForCheck();
                     });
             }
@@ -198,6 +205,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
                 debounceTime(400))
                 .subscribe(data => {
                     this.results = data;
+                    this.searchingTypeahed = false;
                     this.ref.markForCheck();
                 });
         }
@@ -206,6 +214,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
                 debounceTime(400))
                 .subscribe(data => {
                     this.results = data;
+                    this.searchingTypeahed = false;
                     this.ref.markForCheck();
                 });
         }
@@ -222,6 +231,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
     }
 
     setTreeNodeStyles(node) {
+        console.log(node);
         if (!node.data) return null;
 
         let styles = {            
@@ -229,6 +239,15 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
         };
         return styles;
     }
+
+    setLastBreadcrumbWidth() {
+        if (!this.isLastItem || !this.maxLastCrumbWidth)
+            return;
+        //take 80 for the collapsed menu button
+        return this.maxLastCrumbWidth - 80;
+
+    }
+
     private stopParentNav(event) {
         event.stopPropagation();
     }

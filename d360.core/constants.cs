@@ -20,6 +20,7 @@ namespace d360.core
         public static string COMPANY_RESOURCES_URL = $"https://{AZURE_STORAGE_NAME}.blob.core.windows.net/{COMPANY_RESOURCES_FOLDER}/";
 
         public static string COMPANY_STYLES_FOLDER = "company-styles";
+        public static string COMPANY_BULK_LOAD_FOLDER = "bulk-loads";
         public static string COMPANY_STYLES_URL = $"https://{AZURE_STORAGE_NAME}.blob.core.windows.net/{COMPANY_STYLES_FOLDER}/";
 
         //azure container names
@@ -29,7 +30,7 @@ namespace d360.core
         public const string COMPANY = "Infogix, Inc.";
         public const string PRODUCT = "Data3Sixty Govern";
         public const string COPYRIGHT = "Copyright © Infogix, Inc. 2019";
-        public const string PRODUCT_VERSION = "2019.06.14.*";
-        public const string PRODUCT_VERSION_NOREVISION = "2019.06.14";
+        public const string PRODUCT_VERSION = "2019.07.19.*";
+        public const string PRODUCT_VERSION_NOREVISION = "2019.07.19";
     }
 }

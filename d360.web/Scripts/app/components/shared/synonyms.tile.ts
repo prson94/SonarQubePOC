@@ -6,8 +6,6 @@ import {BaseComponent} from '../shared/base.component';
 import {MessagesService} from '../../services/messages.service';
 import {Router} from '@angular/router';
 import {SiteUrlHelpers} from '../../static/site-url-helpers';
-import {Predicate} from '../../models/predicate.model';
-import {PredicatesService} from '../../services/predicates.service';
 
 declare var CompanySettings: any;
 
@@ -174,7 +172,7 @@ declare var CompanySettings: any;
             </div>
         </div>
     `,
-    providers: [ObjectDetailService, PredicatesService],
+    providers: [ObjectDetailService],
 })
 
 export class SynonymsTile extends BaseComponent implements OnChanges, OnInit {
@@ -202,8 +200,7 @@ export class SynonymsTile extends BaseComponent implements OnChanges, OnInit {
     private selectedItem;
 
 
-    private synonymTypes = [];
-    private predicateType: number = 0;
+    private synonymTypes = [];    
     private selectedType: string = '';
     private synonymItems = [];
     private selectedSynonym: SynonymItem;
@@ -212,7 +209,7 @@ export class SynonymsTile extends BaseComponent implements OnChanges, OnInit {
 
     private isLoadingItems = false;
 
-    constructor(private messagesService: MessagesService, private objectDetailService: ObjectDetailService, private router: Router, private predicatesService: PredicatesService) {
+    constructor(private messagesService: MessagesService, private objectDetailService: ObjectDetailService, private router: Router) {
         super();
 
         this.theDeleteCallback = this.deleteSynonym.bind(this);

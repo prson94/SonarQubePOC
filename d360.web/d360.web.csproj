@@ -404,6 +404,7 @@
       <DependentUpon>eclipse.css</DependentUpon>
     </Content>
     <Content Include="Content\font-awesome.min.css" />
+    <Content Include="Content\images\aboutLogo.png" />
     <Content Include="Content\images\home.background.png" />
     <Content Include="Content\images\logo.new.color.png" />
     <Content Include="Content\images\logo.new.png" />
@@ -542,8 +543,6 @@
     <Content Include="Content\styles\angular.min.css">
       <DependentUpon>angular.css</DependentUpon>
     </Content>
-    <Content Include="Content\styles\apps.css" />
-    <Content Include="Content\styles\apps.min.css" />
     <Content Include="Content\styles\ContentFormatting.css">
       <DependentUpon>ContentFormatting.less</DependentUpon>
     </Content>
@@ -556,13 +555,15 @@
     <Content Include="Content\styles\Diagrams.min.css">
       <DependentUpon>Diagrams.css</DependentUpon>
     </Content>
-    <Content Include="Content\styles\materialize.css" />
+	<Content Include="Content\styles\materialize.css">
+	  <DependentUpon>materialize.less</DependentUpon>
+	</Content>
     <Content Include="Content\styles\angular.less" />
     <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.eot" />
     <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.ttf" />
     <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.woff" />
     <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.woff2" />
-    <Content Include="Content\styles\materialize.min.css">
+	<Content Include="Content\styles\materialize.min.css">
       <DependentUpon>materialize.css</DependentUpon>
     </Content>
     <Content Include="Content\styles\Root.css">
@@ -576,12 +577,6 @@
     </Content>
     <Content Include="Content\styles\Tooltip.min.css">
       <DependentUpon>Tooltip.css</DependentUpon>
-    </Content>
-    <Content Include="Content\styles\typeahead.css">
-      <DependentUpon>typeahead.less</DependentUpon>
-    </Content>
-    <Content Include="Content\styles\typeahead.min.css">
-      <DependentUpon>typeahead.css</DependentUpon>
     </Content>
     <EmbeddedResource Include="Content\Swagger\index.html" />
     <EmbeddedResource Include="Content\Swagger\swagger.css">
@@ -977,7 +972,6 @@
     </Content>
     <Content Include="package.json" />
     <Content Include="Content\styles\_Variables.less" />
-    <Content Include="Content\styles\typeahead.less" />
     <Content Include="fonts\FontAwesome.otf" />
     <Content Include="fonts\fontawesome-webfont.woff2" />
     <Content Include="fonts\fontawesome-webfont.woff" />
@@ -1625,7 +1619,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\assignments\assignments.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\home\board-tile.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\resource-responsibility-grid.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-issue-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-definition.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\attributes.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\fusion\fusion-attributes.tile.ts" />
@@ -1636,7 +1629,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\relationship\object-relationships.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\dashboards\admin-report-items.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\rules\admin-rule-dimensions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-survey-questions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\synonyms.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tiles\tile-actions.component.ts" />
@@ -1748,7 +1740,6 @@
     <TypeScriptCompile Include="Scripts\app\services\site-menu.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\social.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\state.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\statistics.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\artifact-type.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\artifacts.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\base.service.ts" />

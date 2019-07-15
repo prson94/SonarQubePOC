@@ -47,7 +47,7 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked {
     ngOnChanges() {
         if (this.objectType != null && this.objectId != null)
             this.workflowService.getWorkflowFieldTypes(this.objectId, this.objectType, true, this.issueObject)
-                .then(r => {
+                .subscribe(r => {
                     this.fields = [];
                     this.fields = _.cloneDeep(this.defaultFields);
 

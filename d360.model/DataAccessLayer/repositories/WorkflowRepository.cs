@@ -195,10 +195,7 @@ namespace d360.model.DataAccessLayer
                 var pageNum = -1;
                 var pageSize = model.pageSize != 0 ? model.pageSize : -1;
 
-                if (!queryParams.Any(p => p.Key == "_order"))
-                {
-                    orderBySql = "order by v.[version] asc";
-                }
+              
 
                 queryParams.ToList().ForEach(x => {
 
@@ -279,6 +276,12 @@ namespace d360.model.DataAccessLayer
 
                    
                 });
+
+
+                if (string.IsNullOrEmpty(orderBySql))
+                {
+                    orderBySql = "order by v.[version] asc";
+                }
 
                 pagingSql.Add(orderBySql);
 
@@ -551,6 +554,203 @@ namespace d360.model.DataAccessLayer
         public WorkflowItem GetWorkflowItemByUID(Guid workflowItemUid)
         {
             return this.CompanyContext.Filter<WorkflowItem>(i => i.UID == workflowItemUid).SingleOrDefault();
+        }
+
+        private void gettWorkflowsQueryParamsSql(WorkflowsApiViewModel model, DynamicParameters dbArgs, List<string> whereClause, List<string> pagingSql, IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+
+            if (queryParams != null)
+            {
+
+                var orderBySql = "";
+                var offsetSql = "";
+                var pageNum = -1;
+                var pageSize = model.pageSize != 0 ? model.pageSize : -1;
+
+                var defaultFilterIncuded = false;
+
+                queryParams.ToList().ForEach(x => {
+
+                    switch (x.Key.ToLower())
+                    {
+                        case "actionuid":
+                            Guid actionUid;
+
+                            if ((Guid.TryParse(x.Value, out actionUid)) && (actionUid != Guid.Empty))
+                            {
+                                dbArgs.Add("@actionUid", actionUid);
+                                whereClause.Add(" [ISS].[UID] = @actionUid");
+                            }
+                            break;
+                        case "assetuid":
+                            Guid assetUid;
+                            if ((Guid.TryParse(x.Value, out assetUid)) && (assetUid != Guid.Empty))
+                            {
+                                dbArgs.Add("@assetUid", assetUid);
+                                whereClause.Add("[d].[UID] = @assetUid");
+                            }
+                            break;
+                        case "relationshipuid":
+                            Guid relationshipUid;
+                            if ((Guid.TryParse(x.Value, out relationshipUid)) && (relationshipUid != Guid.Empty))
+                            {
+                                dbArgs.Add("@relationshipUid", relationshipUid);
+                                whereClause.Add(" [inter].[UID] = @relationshipUid");
+                            }
+                            break;
+                        case "workflowtypeuid":
+                            Guid workflowTypeUid;
+                            if ((Guid.TryParse(x.Value, out workflowTypeUid)) && (workflowTypeUid != Guid.Empty))
+                            {
+                                dbArgs.Add("@workflowTypeUid", workflowTypeUid);
+                                whereClause.Add(" [T].[UID] = @workflowTypeUid");
+                            }
+                            break;
+                        case "versionuid":
+                            Guid workflowVersionUid;
+                            if (Guid.TryParse(x.Value, out workflowVersionUid))
+                            {
+                                dbArgs.Add("@workflowVersionUid", workflowVersionUid);
+                                whereClause.Add(" [V].[UID] = @workflowVersionUid");
+                            }
+                            break;
+                        case "active":
+                            WorkflowApiState state;
+                            if (Enum.TryParse(x.Value, out state))
+                            {
+                                defaultFilterIncuded = true;
+                                if (state==WorkflowApiState.Active)
+                                    whereClause.Add("item.CompletedOn is null");
+                                else 
+                                    whereClause.Add("item.CompletedOn is not null");
+                            }
+                            break;
+                        case "_pagesize":
+                            if (int.TryParse(x.Value, out pageSize))
+                            {
+                                if (pageSize < 1) pageSize = 1;
+                            }
+                            break;
+                        case "_pagenum":
+                            if (int.TryParse(x.Value, out pageNum))
+                            {
+                                if (pageNum < 1) pageNum = 1;
+                            }
+                            break;
+                        case "_order":
+                            switch (x.Value)
+                            {
+                                case "startedon":
+                                    orderBySql = "order by item.StartedOn asc";
+                                    break;
+                                case "completedon":
+                                    orderBySql = "order by item.CompletedOn asc";
+                                    break;
+                            }
+                            break;
+
+                    }
+
+
+                });
+
+                if (!defaultFilterIncuded)
+                    whereClause.Add("item.CompletedOn is null");
+
+                if (string.IsNullOrEmpty(orderBySql))
+                {
+                    orderBySql = "order by item.StartedOn asc";
+                }
+
+                pagingSql.Add(orderBySql);
+
+                if (pageSize > 0 || pageNum > 0)
+                {
+                    if (pageSize < 1) pageSize = 1;
+                    if (pageNum < 1) pageNum = 1;
+
+                    model.pageSize = pageSize;
+                    model.pageNum = pageNum;
+
+                    offsetSql = $"offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
+                    pagingSql.Add(offsetSql);
+                }
+            }
+        }
+
+        public async Task<WorkflowsApiViewModel> GetWorkflows(IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+
+            var dbArgs = new DynamicParameters();
+            List<string> whereClause = new List<string>();
+            List<string> pagingSql = new List<string>();
+            WorkflowsApiViewModel model = new WorkflowsApiViewModel();
+
+
+            this.gettWorkflowsQueryParamsSql(model, dbArgs, whereClause, pagingSql, queryParams);
+
+            var whereSql = "";
+            if (whereClause.Any())
+                whereSql = $"where {string.Join(" and ", whereClause)}";
+
+            string countSql = $@"select 
+                count(*)
+                        from workflow.type t
+                    inner join workflow.version v on v.TypeID = t.Id
+                    inner join  workflow.VersionStep  vs  on
+                    vs.VersionID = v.id
+                    inner join workflow.ItemStep itemstep on
+                    itemstep.StepID = vs.id
+                    inner join [workflow].[Item] item on
+                    item.VersionID =v.id and itemstep.ItemID = item.id
+                    left join Asset D on D.Object = item.Object and D.ObjectID = item.ObjectID 
+                    left join issue iss on item.object = 'Issue' and iss.id = item.objectid
+                    left join [Intersect] inter on item.Object = 'Intersect' and item.objectid = inter.ID
+                    left outer join reporting.Global_Resource R on R.ResourceID = item.StartedBy
+                    left outer join reporting.Global_Resource R1 on R1.ResourceID = item.CompletedBy
+				{whereSql}";
+
+            string sql = $@"Select 
+		        Item.UID as Uid,
+		        case when item.[Object] = 'Issue' then iss.uid
+		        ELSE NULL END as ActionUid ,
+		        case when item.[Object] = 'Artifact' or item.[Object] = 'Rule' or item.[Object] = 'Policy'
+		        or item.[Object] = 'Taxonomy' or item.[Object] = 'ShoppingCart' or  item.[Object] = 'ReferenceItem'
+		        or item.[Object] = 'Fusion' then D.uid
+		        ELSE NULL END as AssetUid,
+		        case when item.[Object] = 'Intersect' then inter.uid
+		        ELSE NULL END as RelationshipUid,
+		        t.Uid as WorkflowTypeUid,
+		        V.UID as WorkflowVersionUid,
+		        item.StartedOn,
+		        item.CompletedOn,
+		        R.uid as StartedByUid,
+		        R1.uid as CompletedByUid
+	        from workflow.type t
+	        inner join workflow.version v on v.TypeID = t.Id
+	        inner join  workflow.VersionStep  vs  on
+	        vs.VersionID = v.id
+	        inner join workflow.ItemStep itemstep on
+	        itemstep.StepID = vs.id
+	        inner join [workflow].[Item] item on
+	        item.VersionID =v.id and itemstep.ItemID = item.id
+	        left join Asset D on D.Object = item.Object and D.ObjectID = item.ObjectID 
+	        left join issue iss on item.object = 'Issue' and iss.id = item.objectid
+	        left join [Intersect] inter on item.Object = 'Intersect' and item.objectid = inter.ID
+	        left outer join reporting.Global_Resource R on R.ResourceID = item.StartedBy
+	        left outer join reporting.Global_Resource R1 on R1.ResourceID = item.CompletedBy
+				{whereSql}
+                {string.Join("\n", pagingSql)}";
+
+            var countResults = await CompanyContext.QueryAsync<int>(countSql, dbArgs);
+            var count = countResults.First();
+
+            var results = await CompanyContext.QueryAsync<WorkflowApiViewModel>(sql, dbArgs);
+
+            model.items = results;
+            model.total = count;
+
+            return model;
         }
     }
 }

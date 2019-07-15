@@ -965,22 +965,22 @@ from	IntersectDetail O
                             viewNames.Add(objectName);
 
                             selectSql = @"
-select	A.ID as AssetID,
-        A.ObjectID as ID,
-	    A.DisplayValue as Name,
-	    A.TypeID as RuleTypeID,
-        A.TypeName as RuleType,
-        R.RuleDimensionID,
-	    RD.Name as RuleDimensionName,
-	    R.Threshold,
-	    R.Status,
-	    A.CreatedOn,
-	    A.CreatedBy,
-	    A.UpdatedOn,
-	    A.UpdatedBy
-from	AssetDetail A
-		inner join [Rule] R on R.ID = A.ObjectID and A.AssetTypeClass = 7 and A.State = 1
-        left join RuleDimension RD on RD.ID = R.RuleDimensionID";
+                                SELECT        
+                                	A.ID AS AssetID, 
+                                	A.ObjectID AS ID, 
+                                	A.DisplayValue AS Name, 
+                                	A.TypeID AS RuleTypeID, 
+                                	A.TypeName AS RuleType, 
+                                	'-1' as RuleDimensionID, 
+                                	'' as RuleDimensionName, 
+                                	R.Threshold, 
+                                	'' as Status, 
+                                	A.CreatedOn, 
+                                	A.CreatedBy, 
+                                	A.UpdatedOn, 
+                                	A.UpdatedBy
+                                FROM  dbo.AssetDetail AS A 
+                                	INNER JOIN dbo.[Rule] AS R ON R.ID = A.ObjectID AND A.AssetTypeClass = 7 AND A.State = 1";
 
                             objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
 

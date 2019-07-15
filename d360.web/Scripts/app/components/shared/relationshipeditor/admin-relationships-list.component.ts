@@ -151,7 +151,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
         this.isLoading = true;
         if (this.objectID && this.objectType) {
             this.relationshipsService.getRelationshipTypesById(this.objectID, this.objectType)
-                .then(result => {
+                .subscribe(result => {
                     this.relationships = result;
                     this.isLoading = false;
                     if (this.relationships) {
@@ -163,7 +163,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
                 });
         } else {
             this.relationshipsService.getRelationshipTypes()
-                .then(result => {
+                .subscribe(result => {
                     this.relationships = result;
                     this.filterResults();
                     this.isLoading = false;
@@ -187,7 +187,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 
     deleteRelationship(id: number) {
         this.relationshipsService.deleteRelationship(id)
-            .then(result => {
+            .subscribe(result => {
                 this.showMessageForResult(this.messagesService, result);
                 this.showDelete = false;
                 if (result.type != 'error') {
@@ -199,7 +199,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 
     saveRelationship(event) {
         this.relationshipsService.saveRelationship(event.relationship)
-            .then(result => {
+            .subscribe(result => {
                 this.showMessageForResult(this.messagesService, result);
                 this.getRelationships();
                 this.showEditor = false;

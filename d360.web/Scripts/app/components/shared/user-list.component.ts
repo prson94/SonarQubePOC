@@ -1,22 +1,22 @@
-import {debounceTime} from 'rxjs/operators';
+import { debounceTime } from 'rxjs/operators';
 
-import {Title} from '@angular/platform-browser';
-import {ActivatedRoute, Router} from '@angular/router';
-import {Breadcrumb} from '../../models/breadcrumb.model';
-import {GridColumn, GridField, GridFilterExpression} from '../../models/grid-definition.model';
-import {GridDefinitionService} from '../../services/grid-definition.service';
-import {HeaderBreadcrumbService} from '../../services/header-breadcrumb.service';
-import {MessagesService} from '../../services/messages.service';
-import {PermissionsService} from '../../services/permissions.service';
-import {ResourcesService} from '../../services/resources.service';
-import {CompanySettingsService} from '../../services/settings.service';
-import {UriBasedService} from '../../services/uri-based.service';
-import {SiteUrlHelpers} from '../../static/site-url-helpers';
-import {BaseComponent} from '../shared/base.component';
-import {LazyLoadEvent} from 'primeng/primeng';
-import {SubscriptionLike as ISubscription} from 'rxjs';
-import {SortOrder} from '../../models/enums.model';
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, ViewChild, OnInit} from '@angular/core';
+import { Title } from '@angular/platform-browser';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Breadcrumb } from '../../models/breadcrumb.model';
+import { GridColumn, GridField, GridFilterExpression } from '../../models/grid-definition.model';
+import { GridDefinitionService } from '../../services/grid-definition.service';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
+import { MessagesService } from '../../services/messages.service';
+import { PermissionsService } from '../../services/permissions.service';
+import { ResourcesService } from '../../services/resources.service';
+import { CompanySettingsService } from '../../services/settings.service';
+import { UriBasedService } from '../../services/uri-based.service';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { BaseComponent } from '../shared/base.component';
+import { LazyLoadEvent } from 'primeng/primeng';
+import { SubscriptionLike as ISubscription } from 'rxjs';
+import { SortOrder } from '../../models/enums.model';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, ViewChild, OnInit } from '@angular/core';
 /* FIXME: Extract templates and styles to their own files
 *  https://angular.io/guide/styleguide#style-05-04 */
 @Component({
@@ -159,16 +159,16 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     @ViewChild('dt') datatable;
 
     constructor(private route: ActivatedRoute,
-                private router: Router,
-                protected uriBasedService: UriBasedService,
-                private gridDefinitionService: GridDefinitionService,
-                protected messagesService: MessagesService,
-                private permissionsService: PermissionsService,
-                private resourcesService: ResourcesService,
-                private companySettingsService: CompanySettingsService,
-                protected titleService: Title,
-                protected headerBreadcrumbService: HeaderBreadcrumbService,
-                private changeDetectorRef: ChangeDetectorRef) {
+        private router: Router,
+        protected uriBasedService: UriBasedService,
+        private gridDefinitionService: GridDefinitionService,
+        protected messagesService: MessagesService,
+        private permissionsService: PermissionsService,
+        private resourcesService: ResourcesService,
+        private companySettingsService: CompanySettingsService,
+        protected titleService: Title,
+        protected headerBreadcrumbService: HeaderBreadcrumbService,
+        private changeDetectorRef: ChangeDetectorRef) {
         super();
         this.setObjectInfo('ResourceType', 1);
     }
@@ -199,7 +199,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
         this.getFieldsDefinition();
 
 
-        this.companySettingsService.getAuthenticationModel().then(res => {
+        this.companySettingsService.getAuthenticationModel().subscribe(res => {
             if (res.model == 'forms') {
                 this.allowPasswordReset = true;
             }
@@ -207,14 +207,15 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     deleteUser(id: number) {
-        this.uriBasedService.deleteItemWithResult('form/DeleteResourceByID?id=', id).then(res => {
-            this.showMessageForResult(this.messagesService, res);
-            this.showDelete = false;
-            if (res.type != 'error') {
-                this.items = this.items.filter(x => x.ID != id);
-                this.changeDetectorRef.markForCheck();
-            }
-        });
+        this.uriBasedService.deleteItemWithResult('form/DeleteResourceByID?id=', id)
+            .subscribe(res => {
+                this.showMessageForResult(this.messagesService, res);
+                this.showDelete = false;
+                if (res.type != 'error') {
+                    this.items = this.items.filter(x => x.ID != id);
+                    this.changeDetectorRef.markForCheck();
+                }
+            });
     }
 
     getFieldsDefinition() {
@@ -287,7 +288,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     saveItem(event) {
         this.isLoading = true;
         this.uriBasedService.saveItem('form/dynamicedit/create/resource/', 'form/dynamicedit/edit/resource/', event.item)
-            .then(result => {
+            .subscribe(result => {
                 this.showMessageForResult(this.messagesService, result);
                 this.showEditor = false;
                 this.getData();
@@ -298,7 +299,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
         if (!this.selected.ID) {
             this.messagesService.showError("No User Selected", "Select a user to reset there password");
         }
-        this.resourcesService.resetResourcesPassword(this.selected.ID).then(result => {
+        this.resourcesService.resetResourcesPassword(this.selected.ID).subscribe(result => {
             this.showMessageForResult(this.messagesService, result);
             this.showResetPwd = false;
         });

@@ -1,5 +1,5 @@
-<span #item
-      (click)="click.emit()"
+<div #item
+        (click)="click.emit()"
       (mouseenter)="show(item, tip)"
       (mouseleave)="hideDebounce.next(); mouseIn = false"
       [ngClass]="{ 'd3s-tooltip-active': active }"
@@ -11,7 +11,7 @@
   <ng-content></ng-content>
   <div *ngIf="innerHtmlContent != null" [innerHtml]="innerHtmlContent"></div>
   <div #tip class="tooltip-child tooltip-panel">
-      <h3 style="positon: relative">
+      <h3 style="position: relative">
           <a *ngIf="data && data.Url" [routerLink]="data?.Url">{{data?.DisplayName}}</a>
           <span *ngIf="data && !data.Url && data.DisplayName"
                 style="background-color: #fff;">{{ data?.DisplayName }}</span>
@@ -41,7 +41,16 @@
           <b>Version UID</b>: <span [innerHtml]="data.WorkflowVersionUID"></span>
       </div>
       <div *ngFor="let field of data?.FieldValues">
-          <span *ngIf="field.Value"><b>{{ field.Name }}</b>: <span [innerHtml]="field.Value"></span></span>
+          <ng-container *ngIf="field.Value">
+              <b>{{ field.Name }}</b>:
+              <span *ngIf="field.Type == 'Html' || field.Type == 'Link'" [innerHtml]="field.Value"></span>
+              <ng-container *ngIf="field.Type == 'JSON'">
+                  <span (click)="$event.stopPropagation()">
+                      <ngx-json-view [data]="GetJSON(field.Value)"></ngx-json-view>
+                  </span>
+              </ng-container>
+              <span  *ngIf="field.Type != 'Html' && field.Type !='Link' && field.Type != 'JSON'" [innerText]="field.Value"></span>
+          </ng-container>
       </div>
   </div>
-</span>
+</div>

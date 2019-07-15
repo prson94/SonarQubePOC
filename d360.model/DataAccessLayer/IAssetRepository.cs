@@ -10,6 +10,7 @@ namespace d360.model.DataAccessLayer
 {
     public interface IAssetRepository
     {
+        Asset GetAssetByUID(Guid assetUid);
         Task<IEnumerable<AssetTypeApiViewModel>> GetAssetType(AssetTypeClass? Class);
         List<AssetTypeClassInfo> GetAssetTypeList();
         Task<AssetsApiViewModel> GetAssets(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams);
@@ -30,6 +31,7 @@ namespace d360.model.DataAccessLayer
         AssetType GetAssetTypeByModel(AssetTypeInsert model);
         ApiExecution GetExecutionItemByUid(Guid executionUid);
         void UpsertObjectStyle(string type, int id, string foreColor, string backColor, string objectName = "Tx");
+        bool DoesAssetExists(Guid uid);
 
 
     }

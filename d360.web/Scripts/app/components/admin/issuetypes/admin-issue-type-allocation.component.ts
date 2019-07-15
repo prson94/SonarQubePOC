@@ -103,7 +103,7 @@ export class AdminIssueTypeAllocationComponent extends BaseComponent implements 
         }
         this.isLoading = true;
         this.workflowService.getIssueTypeAllocations(this.issueTypeId)
-            .then(r => {
+            .subscribe(r => {
                 this.allocations = r.Allocations;
                 this.isLoading = false;
             });
@@ -112,7 +112,7 @@ export class AdminIssueTypeAllocationComponent extends BaseComponent implements 
     save(e: any) {
         this.isLoading = true;
         this.workflowService.postIssueTypeAllocation(e.item)
-            .then(r => {
+            .subscribe(r => {
                 this.formMode = FormMode.Default;
                 this.isLoading = false;
                 this.showMessageForResult(this.messagesService, r);
@@ -127,7 +127,7 @@ export class AdminIssueTypeAllocationComponent extends BaseComponent implements 
     delete() {
         this.isLoading = true;
         this.workflowService.deleteIssueTypeAllocation(this.issueTypeId, this.selection.AssetTypeID)
-            .then(r => {
+            .subscribe(r => {
                 this.isLoading = false;
                 this.formMode = FormMode.Default;
                 this.showMessageForResult(this.messagesService, r);
