@@ -3021,6 +3021,8 @@ select @err";
                             var isReferenceItemType = (relationFieldInfo.Object == SystemObjects.ReferenceItemType.ToString());
                             var isFusionAttributeType = (relationFieldInfo.Object == SystemObjects.FusionAttributeType.ToString());
                             var isTaxonomyType = (relationFieldInfo.Object == SystemObjects.TaxonomyType.ToString());
+                            var isPolicyType = (relationFieldInfo.Object == SystemObjects.PolicyType.ToString());
+                            var useAssetTable = isPolicyType;
 
                             var tableName = isReferenceItemType ? relationFieldInfo.Object : relationFieldInfo.Object.Replace("Type", "");
                             var typeIDColumnName = relationFieldInfo.Object + "ID";
@@ -3029,7 +3031,7 @@ select @err";
 
                             if (isReferenceItemType || isFusionAttributeType)
                                 columns += $"{name}_OT.Name";
-                            else if (isTaxonomyType)
+                            else if (isTaxonomyType || isPolicyType)
                                 columns += $"{name}_OTT.TextPath";
                             else
                                 columns += $"{name}_OTD.DisplayValue";
@@ -3038,12 +3040,20 @@ select @err";
 
                             joins += $" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and";
                             joins += relationFieldInfo.IsSubject ? $" {name}_T.Subject = '{type.Replace("Type", "")}' and {name}_T.SubjectID = {idColumn}" : $" {name}_T.Object = '{type.Replace("Type", "")}' and {name}_T.ObjectID = {idColumn}";
-                            joins += (isReferenceItemType)
-                                ? $" left join [{tableName}] {name}_OT on "
-                                : $" left join [{tableName}] {name}_OT on {name}_OT.{typeIDColumnName} = {relationFieldInfo.ObjectID} AND ";
-                            joins += $"{name}_OT.ID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
+                            if (!useAssetTable)
+                            {
+                                joins += (isReferenceItemType)
+                                    ? $" left join [{tableName}] {name}_OT on "
+                                    : $" left join [{tableName}] {name}_OT on {name}_OT.{typeIDColumnName} = {relationFieldInfo.ObjectID} AND ";
+                                joins += $"{name}_OT.ID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
+                            }
+                            else
+                            {
+                                joins += $" left join dbo.asset {name}_OT on {name}_OT.[Object] = '{tableName}' and {name}_OT.ObjectID = {relationFieldInfo.ObjectID} AND ";
+                                joins += $"{name}_OT.ID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
+                            }
 
-                            if (isTaxonomyType)
+                            if (isTaxonomyType || isPolicyType)
                             {
                                 joins += $" left join asset {name}_AS on {name}_AS.Object = '{tableName}' and  {name}_AS.ObjectId = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
                                 joins += $" outer apply [dbo].GetAssetTextPathById({name}_AS.ID, '/') {name}_OTT";
