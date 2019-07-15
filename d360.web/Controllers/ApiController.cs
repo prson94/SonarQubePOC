@@ -6848,6 +6848,15 @@ where    A.RuleID = @id", new { id });
                             }
                         });
 
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = "Uid", FieldName = "Uid", FieldDescription = surveyType.GetDescription(i => i.Uid), Value = surveyType.Uid.ToString() }
+                            }
+                        });
+
                         var dtlSurveyType = Company.GetObjectDetail(surveyType.Object, surveyType.ObjectID);
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
