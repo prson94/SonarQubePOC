@@ -3064,10 +3064,11 @@
             This service houses all endpoints handling tag management in Govern
             </summary>
         </member>
-        <member name="M:d360.web.Controllers.V2.SurveysController.GetSurveysResultsAsync(System.Int32)">
+        <member name="M:d360.web.Controllers.V2.SurveysController.GetSurveysResultsAsync(System.String)">
             <summary>
             Returns all survey results defined in Govern.          
             </summary>        
+            <param name="surveyTypeUid">SurveyType Uid</param>
             <returns>A list of survey results</returns>
         </member>
         <member name="T:d360.web.Controllers.V2.TagsController">

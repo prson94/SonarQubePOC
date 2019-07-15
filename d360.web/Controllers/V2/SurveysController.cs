@@ -1,8 +1,5 @@
-﻿using d360.core.entities;
-using d360.core.enums;
-using d360.model;
+﻿using d360.model;
 using d360.model.DataAccessLayer;
-using d360.model.validators;
 using d360.web.Filters;
 using d360.web.Models;
 using Microsoft.Web.Http;
@@ -16,7 +13,6 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
 using d360.core.entities.SurveyModels;
-using Newtonsoft.Json;
 
 namespace d360.web.Controllers.V2
 {
@@ -31,27 +27,36 @@ namespace d360.web.Controllers.V2
     ]
     public class SurveysController : BaseV2ApiController
     {
-
-        public SurveysController(ICommunityContext community, ICompanyContext company)
+        IAssetRepository AssetRepository;
+        ISurveyRepository SurveyRepository;
+        public SurveysController(ICommunityContext community, ICompanyContext company, IAssetRepository assetRepository, ISurveyRepository surveyRepository)
             : base(community, company)
         {
+            this.AssetRepository = assetRepository;
+            this.SurveyRepository = surveyRepository;
         }
 
         /// <summary>
         /// Returns all survey results defined in Govern.          
         /// </summary>        
+        /// <param name="surveyTypeUid">SurveyType Uid</param>
         /// <returns>A list of survey results</returns>
         [
-            HttpGet, MapToApiVersion("2.0"), Route("{surveyTypeUid:int}/results"),
+            HttpGet, MapToApiVersion("2.0"), Route("{surveyTypeUid}/results"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerParameter("AssetUid", "The uid of a specific asset to return.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("AsOfDate", "Pull results up to a certain date.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerResponse(HttpStatusCode.OK, "A full list of tags.", typeof(SurveyApiResponseModel)),
-            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied")
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Asset not found based on Uid provided.", typeof(ErrorResponse)),
+
         ]
-        public async Task<HttpResponseMessage> GetSurveysResultsAsync(int surveyTypeUid)
+        public async Task<IHttpActionResult> GetSurveysResultsAsync(string surveyTypeUid)
         {
             var prefix = "Surveys.GetSurveysResultsAsync => ";
             var errorMessage = "";
@@ -61,96 +66,31 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                var response = new SurveyApiResponseModel();
-                response.asOfDate = DateTime.Now.Date;
-                response.pageSize = 200;
-                response.pageNum = 1;
-                response.total = 0;
+                Guid surveyUid = Guid.Parse(surveyTypeUid);
 
+                var survey = SurveyRepository.GetSurveyTypeByUid(surveyUid);
+                if (survey == null)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Survey Type with Uid {surveyTypeUid} not found."));
+                }
                 var queryParams = Request.GetQueryNameValuePairs();
 
-                var additionalWhereClause = "";
-                foreach (var param in queryParams)
+                if(queryParams.Any(x=> x.Key.ToLower() == "assetuid"))
                 {
-                    switch (param.Key.ToLower())
-                    {
-                        case "_pagesize":
-                            int size = 0;
-                            if (int.TryParse(param.Value, out size))
-                            {
-                                response.pageSize = int.Parse(param.Value);
-                            }
-                            else throw new Exception("Invalid value for page size parametar!");
-                            break;
-                        case "_pagenum":
-                            int num = 0;
-                            if (int.TryParse(param.Value, out num))
-                            {
-                                response.pageNum = int.Parse(param.Value);
-                                if (response.pageNum <= 0) response.pageNum = 1;
-                            }
-                            else throw new Exception("Invalid value for page number parametar!");
-                            break;
-                        case "assetuid":
-                            Guid uid = Guid.Parse(param.Value);
-                            if (uid == Guid.Empty)
-                                throw new Exception("Invalid value for asset uid!");
+                    Guid uid = Guid.Parse(queryParams.FirstOrDefault(x=> x.Key.ToLower() == "assetuid").Value);
 
-                            additionalWhereClause += $" AND a.uid = '{uid}'";
-                            break;
-                        case "asofdate":
-                            DateTime date = DateTime.MinValue;
-                            if (!DateTime.TryParse(param.Value, out date))
-                            {
-                                throw new Exception("Invalid date value for AsOfDate parameter!");
-                            }
-                            response.asOfDate = date.AddDays(1);
-                            additionalWhereClause += $" AND S.CreatedOn <= '{response.asOfDate.ToString()}'";
-                            break;
+                    var asset = AssetRepository.GetAssetByUID(uid);
+                    if (asset == null)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset with Uid {uid} not found."));
                     }
                 }
 
-                var countQuery = $@"select count(*)
-                                    from dbo.SurveyType ST
-                                    	inner join Survey S on S.SurveyTypeID = ST.ID
-                        	            inner join Asset A on A.Object = s.Object and A.ObjectID = S.ObjectID
-                                    where ST.ID = @surveyTypeUID
-                                    {additionalWhereClause}
-                                     ";
 
-                var pagingSql = $"OFFSET {response.pageSize * (response.pageNum - 1)} ROWS FETCH NEXT {response.pageSize} ROWS ONLY";
+                var response = SurveyRepository.GetSurveysResult(surveyUid, queryParams);
 
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response)));
 
-                var query = $@"select S.ID as Uid,
-                        	a.uid as AssetUid,
-                        	U.uid as UserUid,
-                        	S.CreatedOn,
-                        	(select 
-                        			Q.ID,
-                        			Q.Comment, 
-                        			(select QTO.Name, QTO.Value from QuestionTypeOption QTO 
-                        				inner join QuestionOption QO ON Q.ID = QO.QuestionID
-                        				where QO.QuestionTypeOptionID = QTO.id 
-                        				for json path) as Response		
-                        		from Question Q
-                        	    where Q.SurveyID = S.Id for json path) as Question
-                        
-                         from dbo.SurveyType ST
-                        	inner join Survey S on S.SurveyTypeID = ST.ID
-                        	inner join Asset A on A.Object = s.Object and A.ObjectID = S.ObjectID
-                        	inner join Asset U on U.Object = 'Resource' and U.ObjectID = S.ResourceID
-                        where ST.ID = @surveyTypeUID
-                        {additionalWhereClause}
-                        order by S.CreatedOn
-                        {pagingSql}
-                        for json path";
-
-                var itemsJson = string.Join("", Company.Query<string>(query, new { surveyTypeUID = surveyTypeUid }).ToList());
-
-                response.items = JsonConvert.DeserializeObject<List<SurveyApiModel>>(itemsJson);
-                response.total = Company.Query<int>(countQuery, new { surveyTypeUID = surveyTypeUid }).FirstOrDefault();
-
-                return Request.CreateResponse(HttpStatusCode.OK, response);
             }
 
             catch (Exception ex)
@@ -160,10 +100,11 @@ namespace d360.web.Controllers.V2
                     { "Endpoint Method", prefix }
                 });
 
-                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
 
         }
+
 
 
     }
