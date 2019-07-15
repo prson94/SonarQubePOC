@@ -7809,7 +7809,7 @@ SELECT (
 
                 foreach (var value in selected)
                 {
-                    var res = Company.Query<int>("insert into questionoption (QuestionID, QuestionTypeOptionID) values(@qId, @qTypeId)", new { qId = q.ID, qTypeId = value.ID }).ToList();
+                   Company.Query<int>("insert into questionoption (QuestionID, QuestionTypeOptionID) values(@qId, @qTypeId)", new { qId = q.ID, qTypeId = value.ID });
                 }
             }
 
