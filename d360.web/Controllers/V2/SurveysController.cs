@@ -48,7 +48,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("AsOfDate", "Pull results up to a certain date.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
-            SwaggerResponse(HttpStatusCode.OK, "A full list of tags.", typeof(SurveyApiResponseModel)),
+            SwaggerResponse(HttpStatusCode.OK, "A full list of survey results.", typeof(SurveyApiResponseModel)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
