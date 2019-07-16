@@ -649,13 +649,14 @@ from	api.ExecutionField T
 
                     if (fieldType.IsRequired)
                     {
-                        if (string.IsNullOrEmpty(fieldValue) && isInsert)
+                        if (string.IsNullOrEmpty(fieldValue))
                         {
                             success = false;
                             errorMessage += $"{fieldName} is a required field; ";
                         }
                     }
-                    else
+
+                    if (!string.IsNullOrEmpty(fieldValue))
                     {
                         switch (fieldType.Type)
                         {
