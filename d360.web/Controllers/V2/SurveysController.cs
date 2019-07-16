@@ -106,6 +106,83 @@ namespace d360.web.Controllers.V2
         }
 
 
+        /// <summary>
+        /// Returns all survey results defined in Govern.          
+        /// </summary>        
+        /// <param name="surveyTypeUid">SurveyType Uid</param>
+        /// <returns>A list of survey results</returns>
+        [
+            HttpGet, MapToApiVersion("2.0"), Route("types"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerParameter("AssetTypeUid", "Asset type this survey is assigned", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("HasResponses", "Pull results up to a certain date.", DataType = "BOOL", ParameterType = "query", Required = false),
+            SwaggerParameter("_order", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerResponse(HttpStatusCode.OK, "A full list of tags.", typeof(SurveyApiResponseModel)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+
+        ]
+        public async Task<IHttpActionResult> GetSurveyTypes()
+        {
+            var prefix = "Surveys.GetSurveysResultsAsync => ";
+            var errorMessage = "";
+
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+
+            try
+            {
+              
+                var queryParams = Request.GetQueryNameValuePairs();
+
+                string query = @";WITH QuestionTypes
+                                     AS (select 
+		                                QT.Id as TypeId,
+		                                QT.Uid,
+		                                QT.Name,
+		                                QT.Description,
+		                                CASE
+			                                WHEN QT.DisplayStyle = 1 THEN 'Radio'
+			                                WHEN QT.DisplayStyle = 2 THEN 'Rating'
+			                                WHEN QT.DisplayStyle = 3 THEN 'CheckList'
+		                                END AS DisplayValue,
+		                                (select Name, Value from QuestionTypeOption WHERE QuestionTypeID = QT.Id for json path) as Options
+		                                from QuestionType QT)
+                                select 
+	                                ST.Uid,
+	                                AT.Uid as AssetTypeUid,
+	                                ST.Name,
+	                                ST.Description,
+	                                ST.ValidForDays,
+	                                ST.CreatedOn,
+	                                ST.CreatedBy as CreatedByUid,
+	                                ST.UpdatedOn,
+	                                ST.UpdatedBy as UpdatedByUid,
+	                                (select count(*) from survey where SurveyTypeID = ST.ID) as NumberOfResponses,
+	                                (select Uid, Name, Description, DisplayValue, Options from QuestionTypes where TypeId = ST.Id for json path) as Questions
+                                 from SurveyType ST
+                                 inner join AssetType AT on AT.Object =ST.Object AND AT.ObjectID = ST.ObjectID for json path";
+
+                var itemsJson = string.Join("", Company.Query<string>(query).ToList());
+
+                var response = "";
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response)));
+
+            }
+
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+
+        }
 
     }
 }
