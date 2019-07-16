@@ -59,7 +59,7 @@ namespace d360.core.entities.SurveyModels
         public DateTime UpdatedOn { get; set; }
         public int UpdatedByUid { get; set; }
         public int NumberOfResponses { get; set; }
-        public List<QuestionDescriptive> Questions { get; set; }
+        public List<QuestionDescriptive> Questions { get; set; } = new List<QuestionDescriptive>();
     }
 
     public class SurveyTypeApiResponseModel

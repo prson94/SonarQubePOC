@@ -135,6 +135,16 @@ namespace d360.web.Controllers.V2
             {
               
                 var queryParams = Request.GetQueryNameValuePairs();
+                if (queryParams.Any(x => x.Key.ToLower() == "assettypeuid"))
+                {
+                    Guid uid = Guid.Parse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "assettypeuid").Value);
+
+                    var assetType = AssetRepository.GetAssetTypeByUID(uid);
+                    if (assetType == null)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset type with Uid {uid} not found."));
+                    }
+                }
 
                 var response = SurveyRepository.GetSurveyTypes(queryParams);
 

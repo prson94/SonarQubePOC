@@ -33,7 +33,7 @@ namespace d360.model.DataAccessLayer
             response.total = 0;
 
 
-            var additionalWhereClause = "";
+            var additionalWhereClause = string.Empty;
             foreach (var param in queryParams)
             {
                 switch (param.Key.ToLower())
@@ -125,14 +125,22 @@ namespace d360.model.DataAccessLayer
             response.total = 0;
 
 
-            var additionalWhereClause = "";
             string orderByClause = "order by ST.CreatedOn";
+            List<string> whereClauses = new List<string>();
             foreach (var param in queryParams)
             {
                 switch (param.Key.ToLower())
                 {
                     case "hasresponses":
-                        
+                        if (bool.Parse(param.Value))
+                        {
+                            whereClauses.Add("Responses > 0");
+                        }
+                        break;
+                    case "assettypeuid":
+                        Guid uid = Guid.Parse(param.Value);
+                        whereClauses.Add($"AT.Uid = '{uid}'");
+                        break;
                     case "_pagesize":
                         int size = 0;
                         if (int.TryParse(param.Value, out size))
@@ -164,11 +172,12 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
+            var additionalWhereClause = whereClauses.Count > 0 ? $"where {string.Join(" AND ", whereClauses)}" : "";
 
             var pagingSql = $"OFFSET {response.pageSize * (response.pageNum - 1)} ROWS FETCH NEXT {response.pageSize} ROWS ONLY";
 
-            var countQuery = $@"select count(*) from dbo.SurveyType ST {additionalWhereClause}";
-            response.total = companyContext.Query<int>(countQuery).FirstOrDefault();
+            //var countQuery = $@"select count(*) from dbo.SurveyType ST {additionalWhereClause}";
+            //response.total = companyContext.Query<int>(countQuery).FirstOrDefault();
 
             string query = $@";WITH QuestionTypes
                                      AS (select 
@@ -193,10 +202,11 @@ namespace d360.model.DataAccessLayer
 	                                ST.CreatedBy as CreatedByUid,
 	                                ST.UpdatedOn,
 	                                ST.UpdatedBy as UpdatedByUid,
-	                                (select count(*) from survey where SurveyTypeID = ST.ID) as NumberOfResponses,
+	                                Responses as NumberOfResponses,
 	                                (select Uid, Name, Description, DisplayValue, Options from QuestionTypes where TypeId = ST.Id for json path) as Questions
                                  from SurveyType ST
                                  inner join AssetType AT on AT.Object =ST.Object AND AT.ObjectID = ST.ObjectID 
+								 left join (select SurveyTypeId, Count(*) as Responses from Survey Group by SurveyTypeId)Responses on Responses.SurveyTypeId = ST.Id
                                 {additionalWhereClause}
                                 {orderByClause}
                                 {pagingSql}
@@ -207,6 +217,7 @@ namespace d360.model.DataAccessLayer
             response.items = JsonConvert.DeserializeObject<List<SurveyTypeApiModel>>(itemsJson) ?? new List<SurveyTypeApiModel>();
             return response;
         }
+
 
     }
 }
