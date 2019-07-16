@@ -428,7 +428,7 @@ namespace d360.web.Models
         public string TooltipContext { get; set; }
 
         [DataMember]
-        public int? TooltipID { get; set; }
+        public long? TooltipID { get; set; }
 
         [DataMember]
         public string TooltipUrl { get; set; }
