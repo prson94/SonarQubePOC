@@ -1368,6 +1368,8 @@ a.breadcrumb {
 
             .ui-treenode-content {
                 padding: 5px;
+                text-overflow: ellipsis;
+                overflow: hidden;
 
                 &.current-crumb {
                     font-weight: bold;
@@ -1376,6 +1378,9 @@ a.breadcrumb {
                 &:hover, &.hover {
                     background-color: #ceecf2;
                 }
+            }
+            .ui-treenode-label{
+                display: inline;
             }
         }
     }
@@ -2223,6 +2228,8 @@ div.home-image-title-text {
 .modal-overlay.show {
     visibility: visible;
     opacity: 1;
+    overflow: hidden;
+    position: fixed;
 }
 
 .modal-overlay.begin-hide {
