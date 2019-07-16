@@ -737,19 +737,43 @@ from	api.ExecutionField T
                         }
                         if (fieldType.MinimumLength.HasValue)
                         {
-                            if (fieldValue.Length < fieldType.MinimumLength.Value)
+                            if (fieldType.Type == "Decimal" || fieldType.Type == "Number")
                             {
-                                success = false;
-                                errorMessage += $"{fieldName} must have a minimum length of {fieldType.MinimumLength.Value}; ";
+                                if (decimal.TryParse(fieldValue, out var fieldDecimalValue) && fieldDecimalValue < fieldType.MinimumLength.Value)
+                                {
+                                    success = false;
+                                    errorMessage += $"{fieldName} must have a minimum value of {fieldType.MinimumLength.Value}; ";
+                                }
                             }
+                            else
+                            {
+                                if (fieldValue.Length < fieldType.MinimumLength.Value)
+                                {
+                                    success = false;
+                                    errorMessage += $"{fieldName} must have a minimum length of {fieldType.MinimumLength.Value}; ";
+                                }
+                            }
+
                         }
                         if (fieldType.MaximumLength.HasValue)
                         {
-                            if (fieldValue.Length > fieldType.MaximumLength.Value)
+                            if (fieldType.Type == "Decimal" || fieldType.Type == "Number")
                             {
-                                success = false;
-                                errorMessage += $"{fieldName} may only have a maximum length of {fieldType.MaximumLength.Value}; ";
+                                if (decimal.TryParse(fieldValue, out var fieldDecimalValue) && fieldDecimalValue > fieldType.MaximumLength.Value)
+                                {
+                                    success = false;
+                                    errorMessage += $"{fieldName} must have a maximum value of {fieldType.MaximumLength.Value}; ";
+                                }
                             }
+                            else
+                            {
+                                if (fieldValue.Length > fieldType.MaximumLength.Value)
+                                {
+                                    success = false;
+                                    errorMessage += $"{fieldName} may only have a maximum length of {fieldType.MaximumLength.Value}; ";
+                                }
+                            }
+
                         }
                     }
                 }
