@@ -54,7 +54,7 @@ namespace d360.web.Controllers.V2
            SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
            SwaggerParameter("_order", "The way in which to order the results.", DataType = "string", ParameterType = "query", Required = false),
        ]
-        public async Task<IHttpActionResult> GetIssues(Guid? actionTypeUid = null, Guid? assetUid = null)
+        public async Task<IHttpActionResult> GetIssues(string actionTypeUid = null, string assetUid = null)
         {
             string finalSql = "";
             string countSql = @"SELECT 
@@ -79,22 +79,6 @@ namespace d360.web.Controllers.V2
             List<string> queries = new List<string>();
             List<string> fieldColumns = new List<string>();
             List<string> fieldJoins = new List<string>();
-
-            if(actionTypeUid != null)
-            {
-                IssueType issueType = this.issueRepository.GetIssueTypeByUID((Guid)actionTypeUid);
-
-                if (issueType == null)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Issue Type with Uid {actionTypeUid} could not be found."));
-            }
-
-            if (assetUid != null)
-            {
-                Asset asset = this.assetRepository.GetAssetByUID((Guid)assetUid);
-
-                if (asset == null)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset with Uid {assetUid} could not be found."));
-            }
 
             DynamicParameters dbArgs = new DynamicParameters();
             ResourceApiViewModel model = new ResourceApiViewModel();
@@ -125,17 +109,62 @@ namespace d360.web.Controllers.V2
                 }
             });
 
-            var fieldTypes = Company.FieldTypes.Where(f => f.Object == "IssueType").Distinct().ToList();
-            getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
-
-            foreach (var col in fieldColumns)
+            if (actionTypeUid != null)
             {
-                selectSql += "," + col;
+                Guid atGuid = new Guid();
+                if (Guid.TryParse(actionTypeUid, out atGuid))
+                {
+                    IssueType issueType = this.issueRepository.GetIssueTypeByUID(atGuid);
+
+                    if (issueType == null)
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Action Type with Uid {actionTypeUid} could not be found."));
+                    else
+                    {
+                        var fieldTypes = Company.FieldTypes.Where(f => f.Object == "IssueType" && f.ObjectID == issueType.ID).ToList();
+                        getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
+
+                        foreach (var col in fieldColumns)
+                        {
+                            selectSql += "," + col;
+                        }
+
+                        foreach (var join in fieldJoins)
+                        {
+                            joinsSql += join;
+                        }
+
+                        foreach (FieldType customField in fieldTypes)
+                        {
+                            if (queryParams.Any(x => x.Key == customField.Name))
+                            {
+                                var paramval = queryParams.FirstOrDefault(x => x.Key == customField.Name).Value;
+                                queries.Add($"F{customField.ID}.FormattedValue = @field{customField.ID}");
+                                dbArgs.Add($"@field{customField.ID}", paramval);
+                            }
+                        }
+                    }
+
+                }
+                else
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Action Type with Uid {actionTypeUid} could not be found."));
+                }
             }
 
-            foreach (var join in fieldJoins)
+            if (assetUid != null)
             {
-                joinsSql += join;
+                Guid aGuid = new Guid();
+                if (Guid.TryParse(assetUid, out aGuid))
+                {
+                    Asset asset = this.assetRepository.GetAssetByUID(aGuid);
+
+                    if (asset == null)
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset with Uid {assetUid} could not be found."));
+                }
+                else
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset with Uid {assetUid} could not be found."));
+                }
             }
 
             if (actionTypeUid != null)
