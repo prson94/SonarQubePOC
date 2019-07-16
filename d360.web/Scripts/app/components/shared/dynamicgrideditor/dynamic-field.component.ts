@@ -100,6 +100,8 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                 }
             }
         }
+
+        this.ref.markForCheck();
     }
 
     ngOnInit() {
