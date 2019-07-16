@@ -54,7 +54,7 @@ namespace d360.web.Controllers.V2
            SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
            SwaggerParameter("_order", "The way in which to order the results.", DataType = "string", ParameterType = "query", Required = false),
        ]
-        public async Task<HttpResponseMessage> GetIssues(Guid? actionTypeUid = null, Guid? assetUid = null)
+        public async Task<IHttpActionResult> GetIssues(Guid? actionTypeUid = null, Guid? assetUid = null)
         {
             string finalSql = "";
             string countSql = @"SELECT 
@@ -79,6 +79,22 @@ namespace d360.web.Controllers.V2
             List<string> queries = new List<string>();
             List<string> fieldColumns = new List<string>();
             List<string> fieldJoins = new List<string>();
+
+            if(actionTypeUid != null)
+            {
+                IssueType issueType = this.issueRepository.GetIssueTypeByUID((Guid)actionTypeUid);
+
+                if (issueType == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Issue Type with Uid {actionTypeUid} could not be found."));
+            }
+
+            if (assetUid != null)
+            {
+                Asset asset = this.assetRepository.GetAssetByUID((Guid)assetUid);
+
+                if (asset == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset with Uid {assetUid} could not be found."));
+            }
 
             DynamicParameters dbArgs = new DynamicParameters();
             ResourceApiViewModel model = new ResourceApiViewModel();
@@ -174,7 +190,7 @@ namespace d360.web.Controllers.V2
             var results = await Company.QueryAsync<dynamic>(finalSql, dbArgs);
             model.total = count.FirstOrDefault();
             model.items = results;
-            return Request.CreateResponse(HttpStatusCode.OK, model);
+            return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model)));
         }
 
         /// <summary>
