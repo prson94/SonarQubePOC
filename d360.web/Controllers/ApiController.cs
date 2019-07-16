@@ -6848,6 +6848,15 @@ where    A.RuleID = @id", new { id });
                             }
                         });
 
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = "Uid", FieldName = "Uid", FieldDescription = surveyType.GetDescription(i => i.Uid), Value = surveyType.Uid.ToString() }
+                            }
+                        });
+
                         var dtlSurveyType = Company.GetObjectDetail(surveyType.Object, surveyType.ObjectID);
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
@@ -7800,7 +7809,7 @@ SELECT (
 
                 foreach (var value in selected)
                 {
-                    Company.Query<int>("insert into questionoption (QuestionID, QuestionTypeOptionID) values(@qId, @qTypeId)", new { qId = q.ID, qTypeId = value.ID });
+                    Company.Query<int>("insert into questionoption (QuestionID, QuestionTypeOptionID) values(@qId, @qTypeId)", new { qId = q.ID, qTypeId = value.ID }).FirstOrDefault();
                 }
             }
 
