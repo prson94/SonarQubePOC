@@ -136,6 +136,10 @@ namespace d360.model.DataAccessLayer
                         {
                             whereClauses.Add("Responses > 0");
                         }
+                        else
+                        {
+                            whereClauses.Add("Responses is null or Responses = 0");
+                        }
                         break;
                     case "assettypeuid":
                         Guid uid = Guid.Parse(param.Value);
@@ -176,8 +180,11 @@ namespace d360.model.DataAccessLayer
 
             var pagingSql = $"OFFSET {response.pageSize * (response.pageNum - 1)} ROWS FETCH NEXT {response.pageSize} ROWS ONLY";
 
-            //var countQuery = $@"select count(*) from dbo.SurveyType ST {additionalWhereClause}";
-            //response.total = companyContext.Query<int>(countQuery).FirstOrDefault();
+            var countQuery = $@"select  count(*) from dbo.SurveyType ST 
+                                            inner join AssetType AT on AT.Object =ST.Object AND AT.ObjectID = ST.ObjectID 
+                                            left join (select SurveyTypeId, Count(*) as Responses from Survey Group by SurveyTypeId)Responses 
+                                                on Responses.SurveyTypeId = ST.Id {additionalWhereClause}";
+            response.total = companyContext.Query<int>(countQuery).FirstOrDefault();
 
             string query = $@";WITH QuestionTypes
                                      AS (select 
