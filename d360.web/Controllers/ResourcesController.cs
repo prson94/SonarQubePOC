@@ -1058,6 +1058,17 @@ where   RT.Object = @type and RT.ObjectID = @typeID";
                         typeName = null;
  
                     }
+                    else if (objectType == "QuestionType")
+                    {
+                        var sql = @"select Name, Description, Uid 
+                                    from questiontype
+                                    where ID = @id";
+                        var qType = Company.Query<dynamic>(sql, new { id = objectID }).FirstOrDefault();
+                        typeName = "QuestionType";
+                        uid = qType.Uid.ToString();
+                        desc = qType.Description.ToString();
+                        dispName = qType.Name.ToString();
+                    }
                 }
 
                 return Json(
