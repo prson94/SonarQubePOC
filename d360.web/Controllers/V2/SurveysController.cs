@@ -39,7 +39,7 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Returns all survey results defined in Govern.          
         /// </summary>        
-        /// <param name="surveyTypeUid">SurveyType Uid</param>
+        /// <param name="surveyTypeUid">Uid of survey type</param>
         /// <returns>A list of survey results</returns>
         [
             HttpGet, MapToApiVersion("2.0"), Route("{surveyTypeUid}/results"),
@@ -51,7 +51,6 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "A full list of tags.", typeof(SurveyApiResponseModel)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.NotFound, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Asset not found based on Uid provided.", typeof(ErrorResponse)),
 
@@ -107,21 +106,22 @@ namespace d360.web.Controllers.V2
 
 
         /// <summary>
-        /// Returns all survey results defined in Govern.          
+        /// Returns all survey types defined in Govern.          
         /// </summary>        
-        /// <param name="surveyTypeUid">SurveyType Uid</param>
-        /// <returns>A list of survey results</returns>
+        /// <returns>A list of survey types</returns>
         [
             HttpGet, MapToApiVersion("2.0"), Route("types"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerParameter("AssetTypeUid", "Asset type this survey is assigned", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("HasResponses", "Pull results up to a certain date.", DataType = "BOOL", ParameterType = "query", Required = false),
-            SwaggerParameter("_order", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
-            SwaggerResponse(HttpStatusCode.OK, "A full list of tags.", typeof(SurveyApiResponseModel)),
+            SwaggerParameter("HasResponses", "Return results that has responses", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by CreatedBy.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerResponse(HttpStatusCode.OK, "A full list of tags.", typeof(SurveyTypeApiResponseModel)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
-
+            SwaggerResponse(HttpStatusCode.NotFound, "Asset type not found based on Uid provided.", typeof(ErrorResponse)),
         ]
         public async Task<IHttpActionResult> GetSurveyTypes()
         {
@@ -136,37 +136,7 @@ namespace d360.web.Controllers.V2
               
                 var queryParams = Request.GetQueryNameValuePairs();
 
-                string query = @";WITH QuestionTypes
-                                     AS (select 
-		                                QT.Id as TypeId,
-		                                QT.Uid,
-		                                QT.Name,
-		                                QT.Description,
-		                                CASE
-			                                WHEN QT.DisplayStyle = 1 THEN 'Radio'
-			                                WHEN QT.DisplayStyle = 2 THEN 'Rating'
-			                                WHEN QT.DisplayStyle = 3 THEN 'CheckList'
-		                                END AS DisplayValue,
-		                                (select Name, Value from QuestionTypeOption WHERE QuestionTypeID = QT.Id for json path) as Options
-		                                from QuestionType QT)
-                                select 
-	                                ST.Uid,
-	                                AT.Uid as AssetTypeUid,
-	                                ST.Name,
-	                                ST.Description,
-	                                ST.ValidForDays,
-	                                ST.CreatedOn,
-	                                ST.CreatedBy as CreatedByUid,
-	                                ST.UpdatedOn,
-	                                ST.UpdatedBy as UpdatedByUid,
-	                                (select count(*) from survey where SurveyTypeID = ST.ID) as NumberOfResponses,
-	                                (select Uid, Name, Description, DisplayValue, Options from QuestionTypes where TypeId = ST.Id for json path) as Questions
-                                 from SurveyType ST
-                                 inner join AssetType AT on AT.Object =ST.Object AND AT.ObjectID = ST.ObjectID for json path";
-
-                var itemsJson = string.Join("", Company.Query<string>(query).ToList());
-
-                var response = "";
+                var response = SurveyRepository.GetSurveyTypes(queryParams);
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response)));
 
