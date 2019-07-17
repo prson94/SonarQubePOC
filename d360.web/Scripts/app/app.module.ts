@@ -17,7 +17,6 @@ import {HeaderModule} from './components/shared/header/header.module';
 import {AdminUserGuard} from './guards/admin-user.guard';
 
 import {AuthenticationService} from './services/authentication.service';
-import {MessagesService} from './services/messages.service';
 import {MessagesObservableService} from "./services/messages-observable.service";
 import {HeaderBreadcrumbService} from './services/header-breadcrumb.service';
 import {HeaderActionsService} from './services/header-actions.service';
@@ -71,7 +70,6 @@ export function getLocale() {
         Title,
         HeaderActionsService,
         HeaderBreadcrumbService,
-        MessagesService,
         MessagesObservableService,
         RightSidebarService,
         WebAnalyticsService,

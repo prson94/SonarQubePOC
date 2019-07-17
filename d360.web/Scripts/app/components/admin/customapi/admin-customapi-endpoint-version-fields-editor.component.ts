@@ -4,10 +4,10 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {ApiField} from '../../../models/custom-api.model';
 import {FieldType} from '../../../models/fields.model';
 
-import {MessagesService} from '../../../services/messages.service';
 import {CustomAPIService} from '../../../services/custom-api.service';
 
 import {BaseComponent} from '../../shared/base.component';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-admin-api-endpoint-version-fields-editor',
@@ -30,7 +30,7 @@ export class AdminCustomAPIEndpointVersionFieldsEditorComponent extends BaseComp
 
     constructor(
         protected customAPIService: CustomAPIService,
-        protected messagesService: MessagesService,
+        protected messagesService: MessagesObservableService,
         private route: ActivatedRoute,
         private router: Router,
     ) {

@@ -2,11 +2,11 @@
 import { BaseComponent } from '../shared/base.component';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { ReferenceService } from '../../services/reference.service';
-import { MessagesService } from '../../services/messages.service';
 import { PermissionsService } from '../../services/permissions.service';
 import { ReferenceItemType } from '../../models/reference.model';
 import { FormMode } from '../../models/form.model';
 import { AssetTypeService } from '../../services/asset-type.services';
+import { MessagesObservableService } from '../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-reference-item-type-list',
@@ -65,7 +65,7 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
         private referenceService: ReferenceService,
         private permissionsService: PermissionsService,
         private assetTypeService: AssetTypeService,
-        private messagesService: MessagesService) {
+        private messagesService: MessagesObservableService) {
         super();
         this.showDelete = false;
         this.showEditor = false;

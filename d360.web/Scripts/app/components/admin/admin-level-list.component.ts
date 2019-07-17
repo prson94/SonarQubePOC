@@ -1,8 +1,8 @@
 ﻿import {Component, Input, OnChanges, SimpleChange} from '@angular/core';
 import {Taxonomy, TaxonomyLevel} from '../../models/taxonomy.model';
 import {LevelsService} from '../../services/levels.service';
-import {MessagesService} from '../../services/messages.service';
 import {BaseComponent} from '../shared/base.component';
+import { MessagesObservableService } from '../../services/messages-observable.service';
 
 /* FIXME: Extract templates and styles to their own files
 *  https://angular.io/guide/styleguide#style-05-04 */
@@ -129,7 +129,7 @@ export class AdminLevelListComponent extends BaseComponent implements OnChanges 
     selectedLevel: TaxonomyLevel = null;
     theDeleteCallback: Function;
 
-    constructor(private levelsService: LevelsService, private messagesService: MessagesService) {
+    constructor(private levelsService: LevelsService, private messagesService: MessagesObservableService) {
         super();
         this.theDeleteCallback = this.deleteLevel.bind(this);
     }

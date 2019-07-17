@@ -1,5 +1,4 @@
 ﻿import { Injectable } from '@angular/core';
-import { MessagesService } from './messages.service';
 import { ObjectStyle } from '../models/object-style.model';
 import { BaseObservableService } from "./baseObservable.service";
 import { MessagesObservableService } from './messages-observable.service';

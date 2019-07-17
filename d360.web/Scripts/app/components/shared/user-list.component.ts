@@ -6,7 +6,6 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { GridColumn, GridField, GridFilterExpression } from '../../models/grid-definition.model';
 import { GridDefinitionService } from '../../services/grid-definition.service';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
-import { MessagesService } from '../../services/messages.service';
 import { PermissionsService } from '../../services/permissions.service';
 import { ResourcesService } from '../../services/resources.service';
 import { CompanySettingsService } from '../../services/settings.service';
@@ -17,6 +16,7 @@ import { LazyLoadEvent } from 'primeng/primeng';
 import { SubscriptionLike as ISubscription } from 'rxjs';
 import { SortOrder } from '../../models/enums.model';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, ViewChild, OnInit } from '@angular/core';
+import { MessagesObservableService } from '../../services/messages-observable.service';
 /* FIXME: Extract templates and styles to their own files
 *  https://angular.io/guide/styleguide#style-05-04 */
 @Component({
@@ -162,7 +162,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
         private router: Router,
         protected uriBasedService: UriBasedService,
         private gridDefinitionService: GridDefinitionService,
-        protected messagesService: MessagesService,
+        protected messagesService: MessagesObservableService,
         private permissionsService: PermissionsService,
         private resourcesService: ResourcesService,
         private companySettingsService: CompanySettingsService,

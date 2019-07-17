@@ -1,14 +1,15 @@
-﻿import { SelectItem } from 'primeng/components/common/api'; 
+﻿import { SelectItem } from 'primeng/components/common/api';
+import { Observable } from 'rxjs';
 
 export interface IResponsibilityTypeService {
-    getResponsibilityTypes(): Promise<ResponsibilityType[]>;
-    getResponsibilityType(id: number): Promise<ResponsibilityType>;
-    putResponsibilityType(responsibilityType: ResponsibilityType): Promise<any>;
-    postResponsibilityType(responsibilityType: ResponsibilityType): Promise<any>;
-    deleteResponsibilityType(id: number): Promise<any>;
-    getResponsibilityTypeBreakdown(): Promise<ResponsibilityTypeCount[]>;
-    getResourceResponsibilityByType(responsibilityTypeId: number): Promise<ResourceResponsibilityTypeCount[]>;
-    getResponsibilityTypesByObject(type: string, id: number): Promise<any>;
+    getResponsibilityTypes(): Observable<ResponsibilityType[]>;
+    getResponsibilityType(id: number): Observable<ResponsibilityType>;
+    putResponsibilityType(responsibilityType: ResponsibilityType): Observable<any>;
+    postResponsibilityType(responsibilityType: ResponsibilityType): Observable<any>;
+    deleteResponsibilityType(id: number): Observable<any>;
+    getResponsibilityTypeBreakdown(): Observable<ResponsibilityTypeCount[]>;
+    getResourceResponsibilityByType(responsibilityTypeId: number): Observable<ResourceResponsibilityTypeCount[]>;
+    getResponsibilityTypesByObject(type: string, id: number): Observable<any>;
 }
 
 export enum Permission {

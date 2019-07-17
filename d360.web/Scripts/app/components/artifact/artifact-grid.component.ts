@@ -25,7 +25,6 @@ import {
     GridRelationshipFilterExpression,
     GridAttributeFilterExpression
 } from '../../models/grid-definition.model';
-import {MessagesService} from '../../services/messages.service';
 import {GridDefinitionService} from '../../services/grid-definition.service';
 import {ArtifactService} from '../../services/artifacts.service';
 import {PermissionsService} from '../../services/permissions.service';
@@ -36,6 +35,7 @@ import {BaseComponent} from '../shared/base.component';
 import {SiteUrlHelpers} from '../../static/site-url-helpers';
 import {StringConstants} from '../../static/string-constants';
 import {ObjectDetailService} from '../../services/object-detail.service';
+import { MessagesObservableService } from '../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-artifact-grid',
@@ -93,7 +93,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
 
     constructor(
         private headerActionsService: HeaderActionsService,
-        private messagesService: MessagesService,
+        private messagesService: MessagesObservableService,
         private stateService: StateService,
         private permissionsService: PermissionsService,
         private router: Router,

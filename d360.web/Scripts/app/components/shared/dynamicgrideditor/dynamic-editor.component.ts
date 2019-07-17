@@ -17,13 +17,13 @@ import {EditorCategory, EditorField, EditorRow} from '../../../models/editor-fie
 
 import {EditorDefinitionService} from '../../../services/editor-definition.service';
 import {UriBasedService} from '../../../services/uri-based.service';
-import {MessagesService} from '../../../services/messages.service';
 import {FieldsService} from '../../../services/fields.service';
 import {CascadeService} from '../../../services/cascade.service';
 
 import {BaseComponent} from '../base.component';
 
 import {FormHelpers} from '../../../static/form-helpers';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-dynamic-editor',
@@ -70,7 +70,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     constructor(
         private ref: ChangeDetectorRef,
         private formBuilder: FormBuilder,
-        private messagesService: MessagesService,
+        private messagesService: MessagesObservableService,
         private editorDefinitionService: EditorDefinitionService,
         private uriBasedService: UriBasedService,
         private fieldsService: FieldsService,

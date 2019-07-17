@@ -1,8 +1,8 @@
 ﻿import { Input, Component, Output, EventEmitter, OnChanges, SimpleChange } from '@angular/core';
 import { RelationshipsService } from '../../../services/relationships.service';
-import { MessagesService  } from '../../../services/messages.service';
 import { RelationshipType } from '../../../models/relationship.model';
 import { BaseComponent } from '../../shared/base.component';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-admin-relationships-list',
@@ -114,7 +114,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
     showDelete: boolean = false;
     theDeleteCallback: Function;
     
-    constructor(private messagesService: MessagesService, private relationshipsService: RelationshipsService) {   
+    constructor(private messagesService: MessagesObservableService, private relationshipsService: RelationshipsService) {   
         super();     
         this.theDeleteCallback = this.deleteRelationship.bind(this);
     }

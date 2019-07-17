@@ -1,12 +1,12 @@
 ﻿import { Injectable } from '@angular/core';
-import {HttpClient,HttpHeaders} from '@angular/common/http'
 import { FormHelper, SelectItem } from '../models/form.model';
 import { ResponsibilityEditorModel, ResponsibilityItem, ResponsibilityItemDetail, IResponsibilityService } from '../models/responsibility.model';
-import { JsonResult } from '../models/jsonresult.model'
+import { JsonResult } from '../models/jsonresult.model';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { catchError, map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
-import { Observable } from 'rxjs';
-import { catchError,map } from 'rxjs/operators';
 
 
 @Injectable()
@@ -40,28 +40,23 @@ export class ResponsibilityService extends BaseObservableService implements IRes
                     return model;
                 }),
                 catchError(err => this.handleError(err))
-        );
+            );
     }
 
     postResponsibility(responsibility: ResponsibilityItem): Observable<JsonResult> {
-
-        let headers = new HttpHeaders({
-            'Content-Type': 'application/json' 
-        });
-        return this.http.post('form/responsibility', JSON.stringify(responsibility), { headers: headers })
+        var headers = new HttpHeaders({ 'Content-Type': 'application/json' })
+        return this.http.post('form/responsibility', JSON.stringify(responsibility), { headers })
             .pipe(
                 map(response => <JsonResult>response),
                 catchError(err=>this.handleError(err))
             );
-    }  
+    }
 
     putResponsibility(responsibility: ResponsibilityItem): Observable<JsonResult> {
-        let headers = new HttpHeaders({
-            'Content-Type': 'application/json'
-        });
-        return this.http.put('form/responsibility', JSON.stringify(responsibility), { headers: headers })
+        var headers = new HttpHeaders({ 'Content-Type': 'application/json' })
+        return this.http.put('form/responsibility', JSON.stringify(responsibility), { headers })
             .pipe(
-                map(response => response),
+                map(response => <JsonResult>response),
                 catchError(err=>this.handleError(err))
             );
     }

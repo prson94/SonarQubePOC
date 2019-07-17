@@ -4,10 +4,10 @@ import {takeUntil} from "rxjs/operators";
 import {FusionRule, FusionRuleFilterEditorModel, FusionRuleFilterItem} from '../../../models/fusion.model';
 
 import {FusionService} from '../../../services/fusion.service';
-import {MessagesService} from '../../../services/messages.service';
 
 import {BaseComponent} from '../../shared/base.component';
 import {Subject} from "rxjs";
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-fusion-rule-filter-editor',
@@ -148,7 +148,7 @@ export class FusionRuleFilterEditorComponent extends BaseComponent implements On
 
     destroySubject$: Subject<void> = new Subject();
 
-    constructor(private fusionService: FusionService, private messagesService: MessagesService) {
+    constructor(private fusionService: FusionService, private messagesService: MessagesObservableService) {
         super();
     }
 
