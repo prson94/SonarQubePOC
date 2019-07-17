@@ -39,7 +39,7 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Returns all survey results defined in Govern.          
         /// </summary>        
-        /// <param name="surveyTypeUid">SurveyType Uid</param>
+        /// <param name="surveyTypeUid">Uid of survey type</param>
         /// <returns>A list of survey results</returns>
         [
             HttpGet, MapToApiVersion("2.0"), Route("{surveyTypeUid}/results"),
@@ -51,7 +51,6 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "A full list of survey results.", typeof(SurveyApiResponseModel)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.NotFound, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Asset not found based on Uid provided.", typeof(ErrorResponse)),
 
@@ -106,6 +105,64 @@ namespace d360.web.Controllers.V2
         }
 
 
+        /// <summary>
+        /// Returns all survey types defined in Govern.          
+        /// </summary>        
+        /// <returns>A list of survey types</returns>
+        [
+            HttpGet, MapToApiVersion("2.0"), Route("types"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerParameter("AssetTypeUid", "Asset type this survey is assigned", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("HasResponses", "Return results that has responses", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by CreatedBy.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerResponse(HttpStatusCode.OK, "A full list of tags.", typeof(SurveyTypeApiResponseModel)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Asset type not found based on Uid provided.", typeof(ErrorResponse)),
+        ]
+        public async Task<IHttpActionResult> GetSurveyTypes()
+        {
+            var prefix = "Surveys.GetSurveysResultsAsync => ";
+            var errorMessage = "";
+
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+
+            try
+            {
+              
+                var queryParams = Request.GetQueryNameValuePairs();
+                if (queryParams.Any(x => x.Key.ToLower() == "assettypeuid"))
+                {
+                    Guid uid = Guid.Parse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "assettypeuid").Value);
+
+                    var assetType = AssetRepository.GetAssetTypeByUID(uid);
+                    if (assetType == null)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset type with Uid {uid} not found."));
+                    }
+                }
+
+                var response = SurveyRepository.GetSurveyTypes(queryParams);
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response)));
+
+            }
+
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+
+        }
 
     }
 }

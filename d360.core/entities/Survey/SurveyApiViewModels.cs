@@ -6,8 +6,7 @@ using System.Threading.Tasks;
 
 namespace d360.core.entities.SurveyModels
 {
-
-    public class Response
+    public class Option
     {
         public string Name { get; set; }
         public int Value { get; set; }
@@ -17,7 +16,7 @@ namespace d360.core.entities.SurveyModels
     {
         public Guid Uid { get; set; }
         public string Comment { get; set; }
-        public List<Response> Response { get; set; } = new List<Response>();
+        public List<Option> Response { get; set; } = new List<Option>();
     }
 
     public class SurveyApiModel
@@ -36,6 +35,39 @@ namespace d360.core.entities.SurveyModels
         public int total { get; set; }
         public DateTime asOfDate { get; set; }
         public List<SurveyApiModel> items { get; set; } = new List<SurveyApiModel>();
+    }
+
+
+
+    public class QuestionDescriptive
+    {
+        public string Uid { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string DisplayValue { get; set; }
+        public List<Option> Options { get; set; }
+    }
+
+    public class SurveyTypeApiModel
+    {
+        public string Uid { get; set; }
+        public string AssetTypeUid { get; set; }
+        public string Name { get; set; }
+        public int ValidForDays { get; set; }
+        public DateTime CreatedOn { get; set; }
+        public int CreatedByUid { get; set; }
+        public DateTime UpdatedOn { get; set; }
+        public int UpdatedByUid { get; set; }
+        public int NumberOfResponses { get; set; }
+        public List<QuestionDescriptive> Questions { get; set; } = new List<QuestionDescriptive>();
+    }
+
+    public class SurveyTypeApiResponseModel
+    {
+        public int pageSize { get; set; }
+        public int pageNum { get; set; }
+        public int total { get; set; }
+        public List<SurveyTypeApiModel> items { get; set; } = new List<SurveyTypeApiModel>();
     }
 
 }
