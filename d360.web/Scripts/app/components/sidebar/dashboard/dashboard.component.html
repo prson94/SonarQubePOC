@@ -2,7 +2,7 @@
 <div *ngIf="!isLoading"
      class="row">
     <div class="col s12">
-        <div class="tile tile-detail">
+        <div *ngIf="!showSingle" class="tile tile-detail">
             <header *ngIf="objectName">Dashboards for {{objectName}}</header>
             <header *ngIf="!objectName">Dashboards</header>
             <div class="row">

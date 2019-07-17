@@ -14,7 +14,7 @@ export class MessagesService {
     // Observable streams
     errorMessage$ = this.errorMessageSource.asObservable();
     infoMessage$ = this.infoMessageSource.asObservable();
-
+    private timeout: any;
     constructor(private http: Http, private headerActionService: HeaderActionsService) {
 
     }
@@ -26,7 +26,12 @@ export class MessagesService {
 
     showInfoMessage(summary: string, detail: string) {
         this.infoMessageSource.next(new SiteMessage(summary, detail));
-        this.headerActionService.emitCountChange();
+        this.emitCountChange();
+    }
+
+    private emitCountChange() {
+        clearTimeout(this.timeout);
+        this.timeout = window.setTimeout(() => { this.headerActionService.emitCountChange(); }, 200);
     }
 
     saveLegacyClientError(error: Response) {

@@ -23,7 +23,8 @@
                                 [rootIconName]="menu.Icon"
                                 (clearSearchesEvent)="clearSearches($event)"
                                 [imageUrl]="menu.FullURL"
-                                [menu]="menu"></d3s-site-menu-category>
+                                [menu]="menu"
+                                [countData]="countData"></d3s-site-menu-category>
     </ng-template>
     <d3s-site-menu-category *ngIf="isAdmin"
                             [expanded]="menuOpen"
