@@ -6,7 +6,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Sebastian Abraham" id="GOV-7369-1">
+  <changeSet author="Sebastian Abraham" id="GOV-7369-1-b">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -32,8 +32,8 @@ AS
 		SELECT	T.ID as FieldTypeID,
 			T.LookupObjectType,
 			T.LookupObjectID,
-			A.ID as Value,	
-			utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, A.ID) as Text		
+			A.ObjectID as Value,	
+			utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, A.ObjectID) as Text		
 	FROM	FieldType T 
 			INNER JOIN AssetDetail A ON T.LookupObjectType = 'Artifact' AND T.LookupObjectID = A.TypeID and A.[Object]='Artifact'						
 			INNER JOIN AssetType ATT on (A.AssetTypeID = ATT.ID)
@@ -46,8 +46,8 @@ AS
 	SELECT	T.ID as FieldTypeID,
 			T.LookupObjectType,
 			T.LookupObjectID,
-			A.ID as Value,
-			utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, A.ID) as Text		
+			A.ObjectID as Value,
+			utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, A.ObjectID) as Text		
 	FROM	FieldType T 
 			INNER JOIN AssetDetail A ON T.LookupObjectType = 'Artifact' AND T.LookupObjectID = A.TypeID and A.[Object]='Artifact'						
 	WHERE	T.LookupObjectType is not null AND A.ID IS NOT NULL and exists ( select 1 from intersecttype it inner join [predicate] p on it.predicateid = p.id and p.[type] = 3 and it.[subject] = 'ArtifactType' and it.[object] = 'ArtifactType' and it.objectid = A.TypeID)
