@@ -298,7 +298,7 @@ namespace d360.model.DataAccessLayer
                 additionalWhereClause = "WHERE " + string.Join(" and ", whereClauses);
 
             string AnswersCTE = $@"
-	                        select S.CreatedOn, A.uid as AssetUid, QT.Uid as QuestionTypeID, QTO.Name,QTO.Value from QuestionTypeOption QTO
+	                        select S.uid as SurveyUid,S.CreatedOn, A.uid as AssetUid, QT.Uid as QuestionTypeID, QTO.Name,QTO.Value from QuestionTypeOption QTO
 	                        		inner join QuestionOption QO on QO.QuestionTypeOptionID = QTO.ID
 	                        		inner join Question Q on QO.QuestionID = Q.ID
 	                        		inner join QuestionType QT on QT.ID = QTO.QuestionTypeID
@@ -328,7 +328,7 @@ namespace d360.model.DataAccessLayer
 	                        A.uid as AssetUid,
 	                        First.CreatedOn as FirstRespondedOn,
 	                        Last.CreatedOn as LastRespondedOn,
-	                        QD.Responses as NumberOfResponders,
+	                        QD.Responders as NumberOfResponders,
 	                        (select Uid, Responses
 	                        	from QuestionsData 
 	                        	where AssetUid = A.uid 
@@ -336,11 +336,11 @@ namespace d360.model.DataAccessLayer
 	                        from SurveyType ST 
 	                        inner join Survey S on S.SurveyTypeID = ST.ID
 	                        inner join Asset A ON S.Object = A.Object AND S.ObjectID = A.ObjectID
-	                        cross apply (select Count(*) as Responses from AnswerData where AssetUid = A.uid)QD
+	                        cross apply (select count(distinct SurveyUid) as Responders from AnswerData where AssetUid = A.uid)QD
 	                        cross apply (select top 1 CreatedOn from AnswerData where AssetUid = A.uid order by CreatedOn)First
 	                        cross apply (select top 1 CreatedOn from AnswerData where AssetUid = A.uid order by CreatedOn desc)Last
 	                        where ST.Uid = @surveyTypeUid
-	                        group by A.uid, QD.Responses, First.CreatedOn, Last.CreatedOn
+	                        group by A.uid, QD.Responders, First.CreatedOn, Last.CreatedOn
                             {orderByClause}
                             {pagingSql}
 	                        for json path";
