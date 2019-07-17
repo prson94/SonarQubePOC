@@ -6,7 +6,8 @@ import {
     ResponsibilityType,
     ResponsibilityTypeRelation,
     ResponsibilityTypeRelationPermission,
-    IResponsibilityTypeService,
+    IResponsibilityTypeService,
+
     ResponsibilityTypeRelation_FormData,
     ResponsibilityTypeRelationAllocationOption
 } from '../../../models/responsibility-type.model';
@@ -59,7 +60,7 @@ export class ResponsibilityRelationForm extends BaseComponent implements OnInit 
     constructor(private responsibilityTypeService: ResponsibilityTypeService, private messagesService: MessagesObservableService, private objectDetailService: ObjectDetailService) {
         super();
     }
-    
+
     ngOnInit() {
         this.load();
     }
@@ -104,7 +105,7 @@ export class ResponsibilityRelationForm extends BaseComponent implements OnInit 
             }
         }
     }
-    
+
     //#region form actions
 
     private cancel(): void {
@@ -115,7 +116,7 @@ export class ResponsibilityRelationForm extends BaseComponent implements OnInit 
         this.relation.AssetTypeID = at.ID;
     }
 
-    private onSubmit(): any {        
+    private onSubmit(): any {
         this.isLoading = true;
 
         if (this.validate()) {
@@ -125,10 +126,10 @@ export class ResponsibilityRelationForm extends BaseComponent implements OnInit 
                     this.relation.Permissions.push(po);
                 }
             });
-        
+
             if (this.relation.ObjectID > 0) {
                 this.responsibilityTypeService.putRelation(this.relation)
-                    .then(r => {
+                    .subscribe(r => {
                         this.isLoading = false;
                         this.showMessageForResult(this.messagesService, r);
                         if (r.type != 'error') {
@@ -137,10 +138,10 @@ export class ResponsibilityRelationForm extends BaseComponent implements OnInit 
                     });
             } else {
                 this.responsibilityTypeService.postRelation(this.relation)
-                    .then(r => {
+                    .subscribe(r => {
                         this.showMessageForResult(this.messagesService, r);
                         this.isLoading = false;
-                        if (r.type != 'error') {                                                                
+                        if (r.type != 'error') {
                             this.onComplete.emit({ action: 'add', field: this.relation });
                         }
                     });

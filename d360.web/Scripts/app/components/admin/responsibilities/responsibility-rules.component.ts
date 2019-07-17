@@ -64,10 +64,10 @@ export class ResponsibilityRulesComponent extends BaseComponent implements OnCha
         this.isLoading = true;
 
         this.responsibilityTypeService.getRelationRulesByResponsibilityType(this.id)
-            .then(data => {
-                this.rows = data;                
+            .subscribe(data => {
+                this.rows = data;
                 this.selectedRow = null;
-                this.isLoading = false; 
+                this.isLoading = false;
             });
     }
 
@@ -75,15 +75,15 @@ export class ResponsibilityRulesComponent extends BaseComponent implements OnCha
         this.selectedRow = this.rows.find(f => f.ID == id);
         this.isEditing = true;
         this.isDeleting = false;
-        this.isAdding = false;       
+        this.isAdding = false;
         this.onEdit.emit();
     }
 
     add(): void {
         this.selectedRow = null;
         this.isEditing = true;
-        this.isDeleting = false;  
-        this.onAdd.emit();      
+        this.isDeleting = false;
+        this.onAdd.emit();
     }
 
     delete(id: number): void {
@@ -102,7 +102,7 @@ export class ResponsibilityRulesComponent extends BaseComponent implements OnCha
         this.isDeletingDate = true;
         this.onDeleteDate.emit();
     }
-    
+
     editComplete(event) {
         this.isEditing = false;
         this.onCancel.emit();
@@ -111,27 +111,27 @@ export class ResponsibilityRulesComponent extends BaseComponent implements OnCha
     }
 
     deleteRule(id: number) {
-        this.responsibilityTypeService.deleteRule(id).then(res => {
+        this.responsibilityTypeService.deleteRule(id).subscribe(res => {
             this.showMessageForResult(this.messagesService, res);
-            if (!res.isError){   
+            if (!res.isError) {
                 this.isDeleting = false;
                 let index = this.rows.findIndex(f => f.ID == id);
                 if (index >= 0 && index < this.rows.length)
                     this.rows.splice(index, 1);
                 this.onFieldsChanged.emit();
             }
-        });        
+        });
     }
 
     deleteDate(id: number) {
-        this.responsibilityTypeService.deleteDate(id).then(res => {
+        this.responsibilityTypeService.deleteDate(id).subscribe(res => {
             this.showMessageForResult(this.messagesService, res);
             if (!res.isError) {
                 this.isDeletingDate = false;
                 this.load();
                 this.onFieldsChanged.emit();
             }
-        });    
+        });
     }
 
     private htmlDecode(val: string): string {

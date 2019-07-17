@@ -34,7 +34,7 @@ namespace igx.IntegrationTests.ApiTests
 
             Assert.True(parsedData.Count > 0, "No data returned, testing environment must have predefined relationships!");
 
-            Assert.True(JsonHelper.DoesContainFields(parsedData[0], "Type", "Name", "Description"),"Property missing in response!");
+            Assert.True(JsonHelper.DoesContainFields(parsedData[0], "Type", "Name", "Description"), "Property missing in response!");
 
             RelationshipTestData.PredicateTypes = parsedData;
         }
@@ -69,7 +69,7 @@ namespace igx.IntegrationTests.ApiTests
 
             Assert.True(groups.Count() > 0, "Testing environment must have relationships with predicates");
 
-            foreach(var data in groups)
+            foreach (var data in groups)
             {
                 string endpointUrl = $"{URIHelper.RelationshipsUri}/types?PredicateUid={data.Key}";
 
@@ -117,7 +117,7 @@ namespace igx.IntegrationTests.ApiTests
         [Fact, Priority(40)]
         public async void GetRelationshipsExport()
         {
-            var uidsToExport = RelationshipTestData.RelationshipTypes.Where(x => x["Uid"] != null).Select(x=> x["Uid"].ToString()).ToList();
+            var uidsToExport = RelationshipTestData.RelationshipTypes.Where(x => x["Uid"] != null).Select(x => x["Uid"].ToString()).ToList();
 
             foreach (var uid in uidsToExport)
             {
@@ -151,7 +151,7 @@ namespace igx.IntegrationTests.ApiTests
             Assert.True(parsedData["items"].Count() > 0, "No data returned, testing environment must have predefined relationships!");
 
             Assert.True(JsonHelper.DoesContainFields(parsedData, "pageSize", "pageNum", "total", "items"), "Property missing in response!");
-            Assert.True(JsonHelper.DoesContainFields(parsedData["items"][0], "Uid", "RelationshipTypeUid", "State", "Predicate","Subject", "Object"), "Property missing in response!");
+            Assert.True(JsonHelper.DoesContainFields(parsedData["items"][0], "Uid", "RelationshipTypeUid", "State", "Predicate", "Subject", "Object"), "Property missing in response!");
 
             RelationshipTestData.Relationships = parsedData;
         }
@@ -198,7 +198,7 @@ namespace igx.IntegrationTests.ApiTests
 
             bool isElementFound = false;
 
-            foreach(var item in parsedData["items"])
+            foreach (var item in parsedData["items"])
             {
                 if (item["Uid"].ToString() == RelationshipTestData.RelationshipItem["Uid"].ToString())
                     isElementFound = true;
@@ -214,7 +214,7 @@ namespace igx.IntegrationTests.ApiTests
 
 
             var forInsert = RelationshipTestData.GetRelationshipsForInsert(
-                new List<string>() { RelationshipTestData.RelationshipItem["Subject"]["Uid"].ToString() }, 
+                new List<string>() { RelationshipTestData.RelationshipItem["Subject"]["Uid"].ToString() },
                 new List<string>() { RelationshipTestData.RelationshipItem["Object"]["Uid"].ToString() }
                 );
 
@@ -252,7 +252,7 @@ namespace igx.IntegrationTests.ApiTests
 
             foreach (var item in parsedData["items"])
             {
-                if (item["Subject"]["Uid"].ToString() == RelationshipTestData.RelationshipItem["Subject"]["Uid"].ToString() 
+                if (item["Subject"]["Uid"].ToString() == RelationshipTestData.RelationshipItem["Subject"]["Uid"].ToString()
                     && item["Object"]["Uid"].ToString() == RelationshipTestData.RelationshipItem["Object"]["Uid"].ToString())
                     isElementFound = true;
             }
@@ -343,6 +343,23 @@ namespace igx.IntegrationTests.ApiTests
             }
 
             return isSuccess;
+        }
+
+        [Fact, Priority(130)]
+        private async void ERR_ExecutionStatusCheck_InvalidUID()
+        {
+
+            var response = await httpClient.GetAsync(RelationshipTestData.ExecutionUri);
+            var content = await response.Content.ReadAsStringAsync();
+            var parsedData = JsonConvert.DeserializeObject<JObject>(content);
+
+
+            if (parsedData["Results"] != null && parsedData["Results"].Count() > 0)
+            {
+                Assert.True(parsedData["Results"].All(x => x["Success"].ToString().ToLower() == "true"), "All statuses should be true");
+                Assert.True(parsedData["Results"].All(x => Guid.Parse(x["uid"].ToString()) != Guid.Empty), "Invalid uid returned");
+            }
+
         }
 
         public async void GetRelationshipsAfterBatchPost()

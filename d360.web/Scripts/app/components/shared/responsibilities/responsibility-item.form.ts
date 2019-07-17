@@ -48,7 +48,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
         this.itemToSave.SecurityAsset = this.item.SecurityAsset;
         this.itemToSave.SecurityAssetID = this.item.SecurityAssetID;
         this.itemToSave.Context = this.item.Context;
-        
+
         this.setResouceAssigned();
 
         if (this.item == null || (this.itemToSave.ID < 0 && !this.itemToSave.AssetID)) {
@@ -69,7 +69,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
         this.responsibilityService.getResponsibilityItemEditor(this.itemToSave.AssetID, this.itemToSave.ID)
             .subscribe(data => {
                 this.model = data;
-                 this.onLoadComplete.emit({ item: this.item });
+                this.onLoadComplete.emit({ item: this.item });
                 this.isLoading = false;
             });
         //if (StringHelpers.isNullOrEmpty(this.resouceAssigned)) {
@@ -90,7 +90,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
                 break;
             default:
                 this.resouceAssigned = "";
-            
+
         }
     }
 
@@ -124,7 +124,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
 
     private save(): void {
         try {
-     
+
             this.itemToSave.SecurityAsset = this.getAssetType(this.model.selectedResource.split('|')[0]);
             this.itemToSave.SecurityAssetID = parseInt(this.model.selectedResource.split('|')[1]);
             this.itemToSave.ResponsibilityTypeID = parseInt(this.model.selectedResponsibilityType);
@@ -139,11 +139,8 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
         this.isLoading = true;
 
         this.responsibilityService.getResponsibilityDetail(this.itemToSave.AssetID)
-            .pipe(
-                map(data => {
+            .subscribe(data => {
                 this.checkD = data;
-            }),
-            map(() => {
                 if (this.itemToSave.ID && this.itemToSave.ID > 0) {
                     this.responsibilityService.putResponsibility(this.itemToSave)
                         .subscribe(data => {
@@ -159,7 +156,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
                             this.checkD[i].ResponsibilityTypeID == this.itemToSave.ResponsibilityTypeID) {
 
                             this.itemToSave.ID = this.checkD[i].OverrideID;
-                          
+
                             var securityAssetDisplayNameForError = "user";
                             switch (this.itemToSave.SecurityAsset) {
                                 case "G":
@@ -181,7 +178,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
                             this.onSaveComplete.emit({ item: this.itemToSave, message: this.message, initialItem: this.item });
                         });
                 }
-            })).subscribe();
+            });
     }
 
     private cancel(): void {
@@ -189,7 +186,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
     }
 
     private showResourceGrid() {
-       
+
         let resTypeId;
         let securityAsset;
         let securityAssetId;
@@ -237,7 +234,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
     private isValid(): boolean {
         return !(StringHelpers.isNullOrEmpty(this.resouceAssigned) ||
             StringHelpers.isNullOrEmpty(this.model.selectedResponsibilityType));
-          
+
     }
 
 }

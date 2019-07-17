@@ -3,6 +3,7 @@ import { WorkflowService } from '../../../../services/workflow.service';
 import { ResponsibilityTypeService } from '../../../../services/responsibility-type.service';
 
 import * as _ from 'lodash';
+import { Observable } from 'rxjs';
 
 @Component({
     selector: 'd3s-workflow-responsibility-selector',
@@ -145,13 +146,13 @@ export class WorkflowResponsibilitySelectorComponent implements OnInit {
             .then(() => this.isLoading = false);
     }
 
-    getResponsibilityTypes(): Promise<any> {
+    getResponsibilityTypes() {
         //console.log('getResTypes', this.responsibleObject, this.responsibleObjectId);
         if (this.responsibleObject == null || this.responsibleObjectId == null || this.responsibleObjectId < 0 || this.objectType == 'IssueType') {
             this.responsibilities = [];
             return this.responsibilityService.getResponsibilityTypes()
-                .then(r => this.responsibilities = r)
-                .then(() => {
+                .subscribe(r => {
+                    this.responsibilities = r;
                     this.responsibilities.forEach(r => {
                         r.ResponsibilityTypeID = r.ID;
                     })
@@ -159,7 +160,7 @@ export class WorkflowResponsibilitySelectorComponent implements OnInit {
         }
 
         return this.responsibilityService.getResponsibilityTypesByObject(this.responsibleObject, this.responsibleObjectId)
-            .then(r => this.responsibilities = r);
+            .subscribe(r => this.responsibilities = r);
     }
 
     changeResponsibility(e: any, i: number) {
