@@ -142,30 +142,66 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
         this.attributeFilters = [];
         this.ownerFilter = null;
 
+        let usedFilters = [];
+        let filterIndicesToRemove = [];
+
         for (let internalFilter of this.internalFilters) {
 
+            let currentIndex = this.internalFilters.indexOf(internalFilter);
+
             if (internalFilter.Type == FilterFieldType.Field) {
-                this.filters.push(internalFilter.Data);
-            } else if (internalFilter.Type == FilterFieldType.Attribute) {
-                this.attributeFilters.push(internalFilter.Data);
-            } else if (internalFilter.Type == FilterFieldType.Relationship) {
-                this.relationshipFilters.push(internalFilter.Data);
-            } else if (internalFilter.Type == FilterFieldType.Owner) {
-                this.ownerFilter = new GridOwnerFilter();
-                this.ownerFilter.ownerUsers = [];
-                this.ownerFilter.ownerGroups = [];
-                for (let owner of internalFilter.Data) {
-                    if (owner.Type.toUpperCase() == 'RESOURCE') {
-                        this.ownerFilter.ownerUsers.push(owner.ID);
-                    } else {
-                        this.ownerFilter.ownerGroups.push(owner.ID);
-                    }
+                if (usedFilters.indexOf(internalFilter.Data.field) !== -1) {
+                    filterIndicesToRemove.push(currentIndex);
                 }
-                hasOwnerFilter = true;
+                else {
+                    this.filters.push(internalFilter.Data);
+                    usedFilters.push(internalFilter.Data.field);
+                }
+            } else if (internalFilter.Type == FilterFieldType.Attribute) {
+                if (usedFilters.indexOf("A" + internalFilter.Data.attributeType) !== -1) {
+                    filterIndicesToRemove.push(currentIndex);
+                }
+                else {
+                    this.attributeFilters.push(internalFilter.Data);
+                    usedFilters.push("A" + internalFilter.Data.attributeType);
+                }
+            } else if (internalFilter.Type == FilterFieldType.Relationship) {
+                if (usedFilters.indexOf("R" + internalFilter.Data.relationshipType.IntersectTypeID) !== -1) {
+                    filterIndicesToRemove.push(currentIndex);
+                }
+                else {
+                    this.relationshipFilters.push(internalFilter.Data);
+                    usedFilters.push("R" + internalFilter.Data.relationshipType.IntersectTypeID);
+                }
+            } else if (internalFilter.Type == FilterFieldType.Owner) {
+                if (usedFilters.indexOf("O") !== -1) {
+                    filterIndicesToRemove.push(currentIndex);
+                }
+                else {
+                    this.ownerFilter = new GridOwnerFilter();
+                    this.ownerFilter.ownerUsers = [];
+                    this.ownerFilter.ownerGroups = [];
+                    for (let owner of internalFilter.Data) {
+                        if (owner.Type.toUpperCase() == 'RESOURCE') {
+                            this.ownerFilter.ownerUsers.push(owner.ID);
+                        } else {
+                            this.ownerFilter.ownerGroups.push(owner.ID);
+                        }
+                    }
+                    hasOwnerFilter = true;
+                    usedFilters.push("O");
+                }
             }
         }
 
         if (!hasOwnerFilter && this.ownerFilter) this.ownerFilter = null;
+
+        // Remove duplicate filters based on field searched. Only leave the first instance of each filter.
+        if (filterIndicesToRemove.length > 0) {
+            for (let ix of filterIndicesToRemove) {
+                this.internalFilters.splice(ix, 1);
+            }
+        }
 
         this.attributeFiltersChange.emit(this.attributeFilters);
         this.relationshipFiltersChange.emit(this.relationshipFilters);
