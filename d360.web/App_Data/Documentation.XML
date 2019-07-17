@@ -3059,6 +3059,24 @@
             <param name="phrase">Search term</param>
             <returns></returns>
         </member>
+        <member name="T:d360.web.Controllers.V2.SurveysController">
+            <summary>
+            This service houses all endpoints handling tag management in Govern
+            </summary>
+        </member>
+        <member name="M:d360.web.Controllers.V2.SurveysController.GetSurveysResultsAsync(System.String)">
+            <summary>
+            Returns all survey results defined in Govern.          
+            </summary>        
+            <param name="surveyTypeUid">Uid of survey type</param>
+            <returns>A list of survey results</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.SurveysController.GetSurveyTypes">
+            <summary>
+            Returns all survey types defined in Govern.          
+            </summary>        
+            <returns>A list of survey types</returns>
+        </member>
         <member name="T:d360.web.Controllers.V2.TagsController">
             <summary>
             This service houses all endpoints handling tag management in Govern

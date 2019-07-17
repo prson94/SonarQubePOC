@@ -1,0 +1,57 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Tomislav Duric" id="GOV-7537">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[  
+IF COL_LENGTH('dbo.Survey', 'Uid') IS NULL
+BEGIN
+	ALTER TABLE dbo.Survey ADD Uid uniqueidentifier NOT NULL CONSTRAINT [DF_Survey_Uid] DEFAULT newid()	WITH VALUES
+END
+IF COL_LENGTH('dbo.SurveyType', 'Uid') IS NULL
+BEGIN
+	ALTER TABLE dbo.SurveyType ADD Uid uniqueidentifier NOT NULL CONSTRAINT [DF_SurveyType_Uid] DEFAULT newid()	WITH VALUES
+END
+IF COL_LENGTH('dbo.Question', 'Uid') IS NULL
+BEGIN
+	ALTER TABLE dbo.Question ADD Uid uniqueidentifier NOT NULL CONSTRAINT [DF_Question_Uid] DEFAULT newid()	WITH VALUES
+END
+IF COL_LENGTH('dbo.QuestionType', 'Uid') IS NULL
+BEGIN
+	ALTER TABLE dbo.QuestionType ADD Uid uniqueidentifier NOT NULL CONSTRAINT [DF_QuestionType_Uid] DEFAULT newid()	WITH VALUES
+END
+		]]>
+    </sql>
+    <rollback>
+	<![CDATA[
+	IF COL_LENGTH('dbo.Survey', 'Uid') IS NOT NULL
+BEGIN
+	ALTER TABLE dbo.Survey drop constraint [DF_Survey_Uid]
+	ALTER TABLE dbo.Survey drop column Uid 
+END
+IF COL_LENGTH('dbo.SurveyType', 'Uid') IS NOT NULL
+BEGIN
+	ALTER TABLE dbo.SurveyType drop constraint [DF_SurveyType_Uid]
+	ALTER TABLE dbo.SurveyType drop column Uid
+END
+IF COL_LENGTH('dbo.Question', 'Uid') IS NOT NULL
+BEGIN
+	ALTER TABLE dbo.Question drop constraint [DF_Question_Uid]
+	ALTER TABLE dbo.Question drop column Uid
+END
+IF COL_LENGTH('dbo.QuestionType', 'Uid') IS NOT NULL
+BEGIN
+	ALTER TABLE dbo.QuestionType drop constraint [DF_QuestionType_Uid]
+	ALTER TABLE dbo.QuestionType drop column Uid
+END
+			]]>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>

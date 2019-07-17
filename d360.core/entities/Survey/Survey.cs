@@ -22,6 +22,9 @@ namespace d360.core.entities
         [DataMember]
         public int SurveyTypeID { get; set; }
 
+        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public Guid Uid { get; set; }
+
         [DataMember]
         public DateTime CreatedOn { get; set; }
 

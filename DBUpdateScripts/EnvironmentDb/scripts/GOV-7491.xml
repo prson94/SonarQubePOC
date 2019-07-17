@@ -12,8 +12,8 @@
             stripComments="true">
 		<![CDATA[  
 	UPDATE [dbo].[SiteNav] SET [Title] = 'Reference Lists' WHERE [Name] = '#Reference' AND [Title] = 'Reference'
-	UPDATE [dbo].[SiteNav] SET [Icon] = 'fa-list-alt' WHERE [Name] = '#Reference' AND [Icon] = 'fa-cubes'
-	UPDATE [dbo].[SiteNav] SET [Icon] = 'fa-retweet' WHERE [Name] = '#Monitor' AND [Icon] = 'fa-usb';
+	UPDATE [dbo].[SiteNav] SET [Icon] = 'fa-list-alt' WHERE [Name] = '#Reference' AND [Icon] = 'fa-cubes'  	
+  UPDATE [dbo].[SiteNav] SET [Icon] = 'fa-usb' WHERE [Name] = '#Monitor' AND [Icon] = 'fa-retweet';
 		]]>
     </sql>
     <rollback>

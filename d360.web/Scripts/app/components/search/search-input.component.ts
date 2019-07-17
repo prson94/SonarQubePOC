@@ -112,7 +112,7 @@ export class SearchInputComponent extends BaseComponent implements OnChanges, On
         { title: "Group", value: "Group" },
         { title: "Model", value: "Taxonomy" },
         { title: "Reference", value: "Reference" },
-        { title: "User", value: "Users" },
+        { title: "User", value: "Resource" },
         { title: "Grammatic Type", value: "Synonym" },
         { title: "Data Quality", value: "Rule" },
     ];
@@ -125,7 +125,7 @@ export class SearchInputComponent extends BaseComponent implements OnChanges, On
         { value: "Group", label: "Group" },
         { value: "Taxonomy", label: "Model" },
         { value: "Reference", label: "Reference" },
-        { value: "Users", label: "User" },
+        { value: "Resource", label: "User" },
         { value: "Synonym", label: "Grammatic Type" },
         { value: "Rule", label: "Data Quality" },
     ];

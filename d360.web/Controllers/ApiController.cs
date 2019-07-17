@@ -3151,10 +3151,15 @@ order by    rnk, [Name]";
 
                                 var obj = i.Object.Replace("Type", "");
 
+                                var useAssetJoins = i.Object == SystemObjects.PolicyType.ToString();
+
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'{obj}'", datafield = $"{dataField}_Object" });
-                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
-                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateAssetUrl((select ID from Asset where Object = '{obj}' and ObjectID = A{pos}.ID))", datafield = $"{dataField}_Url" });
+                                if(useAssetJoins) columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ObjectID as varchar)", datafield = $"{dataField}_ObjectID" });
+                                else columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
+
+                                if(useAssetJoins) columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateAssetUrl(A{pos}.ID)", datafield = $"{dataField}_Url" });
+                                else columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateAssetUrl((select ID from Asset where Object = '{obj}' and ObjectID = A{pos}.ID))", datafield = $"{dataField}_Url" });
                             }
 
                             //Add here, only after you determine if this should be a link ABOVE.
@@ -3574,14 +3579,18 @@ outer apply (
             var objColumn = "";
             var objIDColumn = "";
             var joinType = "inner"; //the SQL join.
+            var useAssetJoin = false;
 
             var permissionJoin = $@"
                 inner join Asset O{i} on O{i}.Object = '{currentObj}' and O{i}.ObjectID = A{i}.ID ";
             var permissionsWhere = $" O{i}.ID not in ({Company.GetNoReadSqlStatement()}) ";
             switch (currentObj.ToLower())
             {
-                case "artifact":
                 case "policy":
+                    permissionJoin = $@"  inner join Asset O{i} on O{i}.Object = '{currentObj}' and O{i}.ObjectID = A{i}.ObjectID ";
+                    useAssetJoin = true;
+                    break;
+                case "artifact":                
                 case "taxonomy":
                     break;
                 default:
@@ -3618,19 +3627,40 @@ outer apply (
                         switch (join.Direction)
                         {
                             case FieldTypeComplexLookupRelationDirection.Back:
-                                join.JoinStatement += $" inner join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = I{i}.SubjectID";
+                                if (useAssetJoin)
+                                {
+                                    join.JoinStatement += $" inner join asset A{i} on A{i}.ObjectID = I{i}.SubjectID and A{i}.[Object] = '{currentObj}'";
+                                }
+                                else
+                                {
+                                    join.JoinStatement += $" inner join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = I{i}.SubjectID";
+                                }
                                 join.WhereStatement = $"I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null) and I{i}.Object = '{type}' and I{i}.ObjectID = {id}";
                                 objColumn = $"I{i}.Subject";
                                 objIDColumn = $"I{i}.SubjectID";
                                 break;
                             case FieldTypeComplexLookupRelationDirection.Forward:
-                                join.JoinStatement += $" inner join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = I{i}.ObjectID";
+                                if (useAssetJoin)
+                                {
+                                    join.JoinStatement += $" inner join asset A{i} on A{i}.ObjectID = I{i}.ObjectID and A{i}.[Object] = '{currentObj}'";
+                                }
+                                else
+                                {
+                                    join.JoinStatement += $" inner join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = I{i}.ObjectID";
+                                }
                                 join.WhereStatement = $"I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null) and I{i}.Subject = '{type}' and I{i}.SubjectID = {id}";
                                 objColumn = $"I{i}.Object";
                                 objIDColumn = $"I{i}.ObjectID";
                                 break;
                             default:
-                                join.JoinStatement += $" inner join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
+                                if (useAssetJoin)
+                                {
+                                    join.JoinStatement += $" inner join asset A{i} on A{i}.[Object] = '{currentObj}' and A{i}.ObjectID = case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
+                                }
+                                else
+                                {
+                                    join.JoinStatement += $" inner join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
+                                }
                                 join.WhereStatement = $"I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null) and ( (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) OR (I{i}.Object = '{type}' and I{i}.ObjectID = {id} ) )";
                                 objColumn = $"case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.Object else I{i}.Subject end";
                                 objIDColumn = $"case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
@@ -3645,19 +3675,40 @@ outer apply (
                         switch (join.Direction)
                         {
                             case FieldTypeComplexLookupRelationDirection.Back:
-                                join.JoinStatement += $" {joinType} join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = I{i}.SubjectID";
+                                if (useAssetJoin)
+                                {
+                                    join.JoinStatement += $" {joinType} join asset A{i} on A{i}.ObjectID = I{i}.SubjectID and A{i}.[Object] = '{currentObj}'";
+                                }
+                                else
+                                {
+                                    join.JoinStatement += $" {joinType} join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = I{i}.SubjectID";
+                                }
                                 join.WhereStatement += string.IsNullOrEmpty(join.WhereStatement) ? permissionsWhere : (string.IsNullOrEmpty(permissionsWhere) ? "" : $" and {permissionsWhere}");
                                 objColumn = $"I{i}.Subject";
                                 objIDColumn = $"I{i}.SubjectID";
                                 break;
                             case FieldTypeComplexLookupRelationDirection.Forward:
-                                join.JoinStatement += $" {joinType} join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = I{i}.ObjectID";
+                                if (useAssetJoin)
+                                {
+                                    join.JoinStatement += $" {joinType} join asset A{i} on A{i}.ObjectID = I{i}.ObjectID and A{i}.[Object] = '{currentObj}'";
+                                }
+                                else
+                                {
+                                    join.JoinStatement += $" {joinType} join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = I{i}.ObjectID";
+                                }
                                 join.WhereStatement += string.IsNullOrEmpty(join.WhereStatement) ? permissionsWhere : (string.IsNullOrEmpty(permissionsWhere) ? "" : $" and {permissionsWhere}");
                                 objColumn = $"I{i}.Object";
                                 objIDColumn = $"I{i}.ObjectID";
                                 break;
                             default:
-                                join.JoinStatement += $" {joinType} join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = case when (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.{previousObjIdColumn}) then I{i}.ObjectID else I{i}.SubjectID end";
+                                if (useAssetJoin)
+                                {                                    
+                                    join.JoinStatement += $" {joinType} join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
+                                }
+                                else
+                                {
+                                    join.JoinStatement += $" {joinType} join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = case when (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.{previousObjIdColumn}) then I{i}.ObjectID else I{i}.SubjectID end";
+                                }
                                 join.WhereStatement += string.IsNullOrEmpty(join.WhereStatement) ? permissionsWhere : " and " + permissionsWhere;
                                 objColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.{currentObjIdColumn}) then I{i}.Object else I{i}.Subject end";
                                 objIDColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.{currentObjIdColumn}) then I{i}.ObjectID else I{i}.SubjectID end";
@@ -3674,7 +3725,14 @@ outer apply (
                 case ComplexLookupRelationType.ChildRelationship:
                     #region
                     join.JoinStatement = (i == 0) ? $"from [Intersect] I{i}" : $"{joinType} join [Intersect] I{i} on I{i}.Subject = 'Intersect' and I{i}.SubjectID = I{i - 1}.ID and I{i}.IntersectTypeID = {join.IntersectTypeID} and (I{i}.Deleted = 0 or I{i}.Deleted is null)";
-                    join.JoinStatement += $" {joinType} join {currentObjTable} A{i} on I{i}.Object = '{join.Object.Replace("Type", "")}' and A{i}.ID = I{i}.ObjectID";
+                    if (useAssetJoin)
+                    {                        
+                        join.JoinStatement += $" {joinType} join asset A{i} on A{i}.ObjectID = I{i}.ObjectID and A{i}.[Object] = I{i}.Object and I{i}.Object = '{join.Object.Replace("Type", "")}'";
+                    }
+                    else
+                    {
+                        join.JoinStatement += $" {joinType} join {currentObjTable} A{i} on I{i}.Object = '{join.Object.Replace("Type", "")}' and A{i}.ID = I{i}.ObjectID";
+                    }
                     join.JoinStatement += permissionJoin;
                     objColumn = $"'{join.Object.Replace("Type", "")}'";
                     objIDColumn = $"I{i}.ObjectID";
@@ -4810,14 +4868,14 @@ from    ResponsibilityTypeRelationRule R
             getDynamicFieldJoinStatements(id, "Policy", out joins, out columns, false, false,true,false,"A.ObjectID");
 
             var permissionSql = @"case when exists (
-                                        select 1 from UserAssetPermissions(@r, OA.AssetTypeID) u where u.PermissionsBitMask & 2 = 2 and (u.AssetID = OA.ID  or (u.AssetID = 0 and u.AssetTypeID = OA.AssetTypeID))
+                                        select 1 from UserAssetPermissions(@r, A.AssetTypeID) u where u.PermissionsBitMask & 2 = 2 and (u.AssetID = A.ID  or (u.AssetID = 0 and u.AssetTypeID = A.AssetTypeID))
 						                ) 
 						                    then 1
 						                    else 0
 
                                         end as P_CanEdit,
 		                                case when exists(
-                                                             select 1 from UserAssetPermissions(@r, OA.AssetTypeID) u where u.PermissionsBitMask & 4 = 4 and (u.AssetID = OA.ID  or (u.AssetID = 0 and u.AssetTypeID = OA.AssetTypeID))
+                                                             select 1 from UserAssetPermissions(@r, A.AssetTypeID) u where u.PermissionsBitMask & 4 = 4 and (u.AssetID = A.ID  or (u.AssetID = 0 and u.AssetTypeID = A.AssetTypeID))
 						                                   ) 
 						                                   then 1
 						                                   else 0
@@ -6795,6 +6853,15 @@ where    A.RuleID = @id", new { id });
                             }
                         });
 
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = "Uid", FieldName = "Uid", FieldDescription = surveyType.GetDescription(i => i.Uid), Value = surveyType.Uid.ToString() }
+                            }
+                        });
+
                         var dtlSurveyType = Company.GetObjectDetail(surveyType.Object, surveyType.ObjectID);
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
@@ -7747,7 +7814,7 @@ SELECT (
 
                 foreach (var value in selected)
                 {
-                    Company.Query<int>("insert into questionoption (QuestionID, QuestionTypeOptionID) values(@qId, @qTypeId)", new { qId = q.ID, qTypeId = value.ID });
+                    Company.Query<int>("insert into questionoption (QuestionID, QuestionTypeOptionID) values(@qId, @qTypeId)", new { qId = q.ID, qTypeId = value.ID }).FirstOrDefault();
                 }
             }
 
