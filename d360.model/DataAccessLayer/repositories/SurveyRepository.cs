@@ -170,7 +170,7 @@ namespace d360.model.DataAccessLayer
                             case "createdon": orderByClause = "order by ST.CreatedOn"; break;
                             case "updatedon": orderByClause = "order by ST.UpdatedOn"; break;
                             case "numberofresponses": orderByClause = "order by NumberOfResponses desc"; break;
-                            default: orderByClause = "order by ST.CreatedOn"; break;
+                            default: throw new Exception("Invalid value for order parameter. Use Name|ValidForDays|CreatedOn|UpdatedOn|NumberOfResponses!");
                         }
                         break;
                 }
@@ -196,23 +196,25 @@ namespace d360.model.DataAccessLayer
 			                                WHEN QT.DisplayStyle = 1 THEN 'Radio'
 			                                WHEN QT.DisplayStyle = 2 THEN 'Rating'
 			                                WHEN QT.DisplayStyle = 3 THEN 'CheckList'
-		                                END AS DisplayValue,
+		                                END AS DisplayStyle,
 		                                (select Name, Value from QuestionTypeOption WHERE QuestionTypeID = QT.Id for json path) as Options
 		                                from QuestionType QT)
                                 select 
 	                                ST.Uid,
 	                                AT.Uid as AssetTypeUid,
 	                                ST.Name,
-	                                ST.Description,
+	                                ISNULL(ST.Description, '') as Description,
 	                                ST.ValidForDays,
 	                                ST.CreatedOn,
-	                                ST.CreatedBy as CreatedByUid,
+	                                ACreate.uid as CreatedByUid,
 	                                ST.UpdatedOn,
-	                                ST.UpdatedBy as UpdatedByUid,
+	                                AUpdate.uid as UpdatedByUid,
 	                                Responses as NumberOfResponses,
-	                                (select Uid, Name, Description, DisplayValue, Options from QuestionTypes where TypeId = ST.Id for json path) as Questions
+	                                (select Uid, Name, Description, DisplayStyle, Options from QuestionTypes where TypeId = ST.Id for json path) as Questions
                                  from SurveyType ST
-                                 inner join AssetType AT on AT.Object =ST.Object AND AT.ObjectID = ST.ObjectID 
+                                 inner join AssetType AT on AT.Object = ST.Object AND AT.ObjectID = ST.ObjectID 
+                                 inner join Asset ACreate on ACreate.Object = 'Resource' AND ACreate.ObjectID = ST.CreatedBy
+                                 inner join Asset AUpdate on AUpdate.Object = 'Resource' AND AUpdate.ObjectID = ST.UpdatedBy
 								 left join (select SurveyTypeId, Count(*) as Responses from Survey Group by SurveyTypeId)Responses on Responses.SurveyTypeId = ST.Id
                                 {additionalWhereClause}
                                 {orderByClause}
