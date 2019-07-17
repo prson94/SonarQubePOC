@@ -39,6 +39,12 @@ namespace d360.core.entities
         [DataMember]
         public Guid? ExecutionItemUid { get; set; }
 
+        [DataMember]
+        public Guid? AssetUid { get; set; }
+
+        [DataMember]
+        public Guid? ParentAssetUid { get; set; }
+
         #endregion
 
         [IgnoreDataMember, ForeignKey("LoadID")]
