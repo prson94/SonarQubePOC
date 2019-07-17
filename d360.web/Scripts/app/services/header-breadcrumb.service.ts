@@ -95,14 +95,14 @@ export class HeaderBreadcrumbService extends BaseObservableService{
 
             } else {
 
-                this.sitenavservice.getSiteNavItems().then(res => {
+                this.sitenavservice.getSiteNavItems().subscribe(res => {
 
                     res.forEach(s => {
                         if (s.Name.indexOf(menuID) !== -1) {
                             folderName = s.Title;
                         }
                     });
-                }).then(() => {
+                }).add(() => {
                     if (folderName != menuID) resolve(folderName);
                     else reject(menuID.substr(1, menuID.length));
                 });
@@ -138,7 +138,7 @@ export class HeaderBreadcrumbService extends BaseObservableService{
                                 icon = "fa-folder";
                         }
                     });
-                }).then(() => {
+                }).add(() => {
                     if (icon) resolve(icon);
                 });
             }

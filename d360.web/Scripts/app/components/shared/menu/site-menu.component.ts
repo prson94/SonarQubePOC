@@ -72,7 +72,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     private rebuildCounts() {
-        this.siteMenuService.getCounts().then((res) => {
+        this.siteMenuService.getCounts().subscribe((res) => {
             this.countData = res;
             this.siteMenu.forEach(menu => {
                 this.loadCounts(menu, res);
