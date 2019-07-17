@@ -14,7 +14,7 @@ import * as _ from 'lodash';
 export class ResponsibilityTypeForm implements OnInit {
     @Input() id: number;
     @Output() onSaveComplete = new EventEmitter();
-    @Output() onLoadComplete = new EventEmitter(); 
+    @Output() onLoadComplete = new EventEmitter();
     @Output() onCancel = new EventEmitter();
 
     private isLoading = false;
@@ -41,7 +41,7 @@ export class ResponsibilityTypeForm implements OnInit {
     load(): void {
         this.isLoading = true;
         this.responsibilityTypeService.getResponsibilityType(this.id)
-            .then(r => {
+            .subscribe(r => {
                 this.item = r;
                 this.getSelectedAllocations();
                 this.isLoading = false;
@@ -57,13 +57,13 @@ export class ResponsibilityTypeForm implements OnInit {
 
         if (this.id == 0) {
             this.responsibilityTypeService.postResponsibilityType(this.item)
-                .then(d => {
+                .subscribe(d => {
                     this.isLoading = false;
                     this.onSaveComplete.emit(d);
                 });
         } else {
             this.responsibilityTypeService.putResponsibilityType(this.item)
-                .then(d => {
+                .subscribe(d => {
                     this.isLoading = false;
                     this.onSaveComplete.emit(d);
                 });

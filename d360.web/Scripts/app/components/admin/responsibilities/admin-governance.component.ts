@@ -15,7 +15,7 @@ import { Title } from '@angular/platform-browser';
     templateUrl: './admin-governance.component.html',
 })
 
-export class AdminGovernanceComponent extends AdminBaseComponent implements OnDestroy {    
+export class AdminGovernanceComponent extends AdminBaseComponent implements OnDestroy {
     private formMode = FormMode.Default;
     private FormMode = FormMode;
 
@@ -23,7 +23,7 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
     private selectedRow = new ResponsibilityType();
 
     constructor(rightSidebarService: RightSidebarService, private responsibilityTypeService: ResponsibilityTypeService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title, protected messagesService: MessagesService) {
-        super(headerBreadcrumbService, titleService, rightSidebarService);        
+        super(headerBreadcrumbService, titleService, rightSidebarService);
         this.areaName = "Responsibility Types";
         this.adminHeading = "Security";
         this.setCommonItems();
@@ -36,7 +36,7 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
         }
         this.load();
     }
-    
+
 
     ngOnDestroy() {
         this.clearSidebar();
@@ -44,7 +44,7 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
 
     load(): void {
         this.responsibilityTypeService.getAdminResponsibilityTypes()
-            .then(data => {
+            .subscribe(data => {
                 this.responsibilityTypeItems = data;
                 this.selectedRow = this.responsibilityTypeItems[0];
             });
@@ -55,10 +55,10 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
     }
 
     edit(id: number): void {
-        this.formMode = FormMode.Editing;        
+        this.formMode = FormMode.Editing;
         this.selectedRow = this.responsibilityTypeItems.find(i => i.ID == id);
     }
-     
+
     delete(id: number): void {
         this.formMode = FormMode.Deleting;
         this.selectedRow = this.responsibilityTypeItems.find(i => i.ID == id);
@@ -70,14 +70,14 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
         this.load();
     }
 
-    confirmDelete(e: any) {        
+    confirmDelete(e: any) {
         if (e == 'error') {
             this.messagesService.showError('Error', 'An error occurred');
         }
         else {
             this.messagesService.showInfoMessage('Success', 'Item deleted successfully');
         }
-        
+
         this.formMode = FormMode.Default;
         this.load();
     }

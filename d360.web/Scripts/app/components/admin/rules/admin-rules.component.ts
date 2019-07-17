@@ -97,19 +97,18 @@ import { RightSidebarItem } from '../../../models/rightsidebar.model';
 
 export class AdminRulesComponent extends AdminBaseComponent implements OnInit, OnDestroy {
     ruleTypes: RuleType[] = [];
-    selected: RuleType;   
+    selected: RuleType;
     showEditor: boolean = false;
-    showDelete: boolean = false; 
+    showDelete: boolean = false;
     theDeleteCallback: Function;
     private isDimensionsVisible: boolean = false;
-    
+
     constructor(private stateService: StateService, protected rightSidebarService: RightSidebarService,
         private rulesService: RulesService,
         protected messagesService: MessagesService,
-        headerBreadcrumbService: HeaderBreadcrumbService,        
-        titleService: Title)
-    {
-        super(headerBreadcrumbService, titleService, rightSidebarService);        
+        headerBreadcrumbService: HeaderBreadcrumbService,
+        titleService: Title){
+        super(headerBreadcrumbService, titleService, rightSidebarService);
         this.areaName = "Rule Types";
         this.setCommonItems();
         this.theDeleteCallback = this.deleteRuleType.bind(this);
@@ -120,23 +119,23 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
         this.getRuleTypes();
     }
 
-    ngOnDestroy() {        
+    ngOnDestroy() {
         this.clearSidebar();
     }
 
     protected getRuleTypes() {
         this.isLoading = true;
         this.rulesService.getRuleTypes()
-            .then(result => {
+            .subscribe(result => {
                 this.ruleTypes = result;
                 this.isLoading = false;
                 if (this.ruleTypes.length > 0) this.selected = this.ruleTypes[0];
             });
-    }  
+    }
 
     deleteRuleType(id: number) {
         this.rulesService.deleteRuleType(id)
-            .then(result => {
+            .subscribe(result => {
                 this.showMessageForResult(this.messagesService, result);
                 this.showDelete = false;
                 if (result.type != 'error') {
@@ -150,7 +149,7 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
     saveRuleType(event) {
 
         this.rulesService.saveRuleType(event.item)
-            .then(result => {
+            .subscribe(result => {
                 this.showMessageForResult(this.messagesService, result);
                 if (result.type != 'error') {
                     this.getRuleTypes();
@@ -175,5 +174,5 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
     protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {
         if (activatedItem.tag == 'dimensions') this.isDimensionsVisible = !this.isDimensionsVisible;
     }
-    
+
 }

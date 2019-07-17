@@ -14,10 +14,11 @@ import { SurveyType } from '../../models/survey.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
+import { Observable, Subscription } from 'rxjs';
 
 @Component({
     selector: 'd3s-rule-implementation',
-    providers: [RulesService, PermissionsService],    
+    providers: [RulesService, PermissionsService],
     template: `                 
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="row" *ngIf="!isLoading">
@@ -37,26 +38,27 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
 })
 
 export class RuleImplementationComponent extends BaseComponent implements OnInit, OnDestroy {
-    private sub: any;    
+    private sub: any;
     private implementation: RuleImplementationDetail;
     private currentAreaNameSubscription: any;
     private currentAreaName: string;
+    private ruleSub: Subscription;
     private messages: MessageBarItem[] = [];
     private ruleTypeId: number;
-    
+
     constructor(private rulesService: RulesService,
-            private route: ActivatedRoute,
-            private router: Router,
-            rightSidebarService: RightSidebarService,
-            protected titleService: Title,
-            protected headerBreadcrumbService: HeaderBreadcrumbService,
-            protected permissionsService: PermissionsService
+        private route: ActivatedRoute,
+        private router: Router,
+        rightSidebarService: RightSidebarService,
+        protected titleService: Title,
+        protected headerBreadcrumbService: HeaderBreadcrumbService,
+        protected permissionsService: PermissionsService
     ) {
         super();
-        this.rightSidebarService = rightSidebarService;        
+        this.rightSidebarService = rightSidebarService;
     }
 
-    ngOnInit() {                
+    ngOnInit() {
         this.sub = this.route.params.subscribe(params => {
             this.ruleTypeId = +params['ruleTypeId']; // (+) converts string 'id' to a number    
             let ruleId = +params['ruleId']; // (+) converts string 'id' to a number
@@ -64,22 +66,22 @@ export class RuleImplementationComponent extends BaseComponent implements OnInit
             this.isLoading = true;
 
             this.headerBreadcrumbService.setCurrentObjectInfo('RuleImplementation', implementationId);
-                        
+
             this.loadPermissions(this.permissionsService, StringConstants.ObjectRule, ruleId);
 
-            this.load(implementationId).then(() => this.isLoading = false);
-        });        
+            this.load(implementationId);
+        });
 
     }
 
-    ngOnDestroy() {        
-        this.sub.unsubscribe();        
+    ngOnDestroy() {
+        this.sub.unsubscribe();
         this.clearSidebar();
     }
 
-    load(implementationId: number): Promise<any> {
-        return this.rulesService.getRuleImplementation(implementationId)
-            .then(result => {
+    load(implementationId: number) {
+        this.ruleSub = this.rulesService.getRuleImplementation(implementationId)
+            .subscribe(result => {
                 this.implementation = result;
 
                 this.setObjectInfo('RuleImplementation', this.implementation.ID, this.implementation.Name);
@@ -92,10 +94,11 @@ export class RuleImplementationComponent extends BaseComponent implements OnInit
                     url: `/quality/rule/implementation/qualifiers/detail/${this.objectID}`
                 });
 
-               
+
                 this.setBrowserTitle(this.titleService, this.implementation.Name);
                 this.buildBreadcrumb()
                 this.messages = []; //clear any messages for this implementation
+                this.isLoading = false;
             });
     }
     private buildBreadcrumb() {
