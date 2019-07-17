@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -33,6 +35,7 @@ namespace d360.core.entities.SurveyModels
         public int pageSize { get; set; }
         public int pageNum { get; set; }
         public int total { get; set; }
+        [JsonConverter(typeof(DateFormatConverter), "yyyy-MM-dd")]
         public DateTime asOfDate { get; set; }
         public List<SurveyApiModel> items { get; set; } = new List<SurveyApiModel>();
     }
@@ -91,7 +94,7 @@ namespace d360.core.entities.SurveyModels
         public int NumberOfResponders { get; set; }
         public DateTime FirstRespondedOn { get; set; }
         public DateTime LastRespondedOn { get; set; }
-        public List<Question> Questions { get; set; } = new List<Question>();
+        public List<Questions> Questions { get; set; } = new List<Questions>();
     }
 
     public class SurveyResultSummaryApiResponseModel
@@ -99,8 +102,17 @@ namespace d360.core.entities.SurveyModels
         public int pageSize { get; set; }
         public int pageNum { get; set; }
         public int total { get; set; }
+
+        [JsonConverter(typeof(DateFormatConverter), "yyyy-MM-dd")]
         public DateTime asOfDate { get; set; }
         public List<SurveyResultSummaryApiModel> items { get; set; } = new List<SurveyResultSummaryApiModel>();
     }
 
+    public class DateFormatConverter : IsoDateTimeConverter
+    {
+        public DateFormatConverter(string format)
+        {
+            DateTimeFormat = format;
+        }
+    }
 }

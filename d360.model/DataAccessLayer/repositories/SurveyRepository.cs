@@ -242,6 +242,18 @@ namespace d360.model.DataAccessLayer
             {
                 switch (param.Key.ToLower())
                 {
+                    case "assetuid":
+                        Guid assetGuid = Guid.Parse(param.Value);
+                        whereClauses.Add($"A.uid = '{assetGuid}'");
+                        break;
+                    case "asofdate":
+                        DateTime date = DateTime.ParseExact(param.Value,"MM/dd/yyyy", System.Globalization.CultureInfo.InvariantCulture);
+                        if (date == DateTime.MinValue)
+                            throw new Exception("Invalid value for date parameter! Use MM/dd/yyyy format");
+
+                        whereClauses.Add($"S.CreatedOn <= '{date.Date.AddDays(1)}'");
+                        response.asOfDate = date;
+                        break;
                     case "_pagesize":
                         int size = 0;
                         if (int.TryParse(param.Value, out size))
@@ -265,7 +277,7 @@ namespace d360.model.DataAccessLayer
                             case "firstrespondedon": orderByClause = "order by First.CreatedOn"; break;
                             case "lastrespondedon": orderByClause = "order by Last.CreatedOn"; break;
                             case "numberofresponders": orderByClause = "order by QD.Responses desc"; break;
-                            default: orderByClause = "order by First.CreatedOn"; break;
+                            default: throw new Exception("Invalid value for order parametar! Use FirstRespondedOn|LastRespondedOn|NumberOfResponders");
                         }
                         break;
                 }
@@ -274,23 +286,27 @@ namespace d360.model.DataAccessLayer
 
             var pagingSql = $"OFFSET {response.pageSize * (response.pageNum - 1)} ROWS FETCH NEXT {response.pageSize} ROWS ONLY";
 
-            //var countQuery = $@"select  count(*) from dbo.SurveyType ST 
-            //                                inner join AssetType AT on AT.Object =ST.Object AND AT.ObjectID = ST.ObjectID 
-            //                                left join (select SurveyTypeId, Count(*) as Responses from Survey Group by SurveyTypeId)Responses 
-            //                                    on Responses.SurveyTypeId = ST.Id {additionalWhereClause}";
-            //response.total = companyContext.Query<int>(countQuery).FirstOrDefault();
+            var countWhereClause = whereClauses.Count > 0 ? "and " + string.Join(" and ", whereClauses) : ""; 
+            var countQuery = $@"select count(distinct A.uid) from Asset A
+                                inner join Survey S ON A.Object = S.Object and A.ObjectID = S.ObjectID
+                                inner join SurveyType ST on S.SurveyTypeID = ST.ID
+                                where ST.uid = @surveyTypeUid
+                                {countWhereClause}";
+            response.total = companyContext.Query<int>(countQuery, new { surveyTypeUid }).FirstOrDefault();
 
-            string AnswersCTE = @"AnswerData as (
+            if (whereClauses.Count > 0)
+                additionalWhereClause = "WHERE " + string.Join(" and ", whereClauses);
+
+            string AnswersCTE = $@"
 	                        select S.CreatedOn, A.uid as AssetUid, QT.Uid as QuestionTypeID, QTO.Name,QTO.Value from QuestionTypeOption QTO
 	                        		inner join QuestionOption QO on QO.QuestionTypeOptionID = QTO.ID
 	                        		inner join Question Q on QO.QuestionID = Q.ID
 	                        		inner join QuestionType QT on QT.ID = QTO.QuestionTypeID
 	                        		inner join Survey S on Q.SurveyID = S.ID
 	                        		inner join Asset A on A.Object = S.Object and A.ObjectID = S.ObjectID
-	                        	)";
+                                    {additionalWhereClause}";
 
-            string QuestionsCTE = @"QuestionsData as 
-	                        	(select 
+            string QuestionsCTE = @"select 
 	                        	 	QT.Uid, 
 	                        		S.SurveyTypeID, 
 	                        		A.Uid as AssetUid,
@@ -305,10 +321,9 @@ namespace d360.model.DataAccessLayer
 	                        		inner join Survey S on S.ID = Q.SurveyID
 	                        		inner join Asset A ON S.Object = A.Object AND S.ObjectID = A.ObjectID
 	                        		inner join QuestionType QT on QT.ID = QTO.QuestionTypeID
-	                        		group by QT.Uid, S.SurveyTypeID, A.Uid
-	                        		)";
+	                        		group by QT.Uid, S.SurveyTypeID, A.Uid";
 
-            var sql = $@";with {AnswersCTE},{QuestionsCTE}
+            var sql = $@";with AnswerData as ({AnswersCTE}),QuestionsData as ({QuestionsCTE})
 	                        select  
 	                        A.uid as AssetUid,
 	                        First.CreatedOn as FirstRespondedOn,
@@ -325,7 +340,6 @@ namespace d360.model.DataAccessLayer
 	                        cross apply (select top 1 CreatedOn from AnswerData where AssetUid = A.uid order by CreatedOn)First
 	                        cross apply (select top 1 CreatedOn from AnswerData where AssetUid = A.uid order by CreatedOn desc)Last
 	                        where ST.Uid = @surveyTypeUid
-                            {additionalWhereClause}
 	                        group by A.uid, QD.Responses, First.CreatedOn, Last.CreatedOn
                             {orderByClause}
                             {pagingSql}
