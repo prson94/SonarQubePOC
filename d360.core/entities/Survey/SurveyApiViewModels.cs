@@ -70,4 +70,37 @@ namespace d360.core.entities.SurveyModels
         public List<SurveyTypeApiModel> items { get; set; } = new List<SurveyTypeApiModel>();
     }
 
+
+
+    public class Response
+    {
+        public string Name { get; set; }
+        public int Value { get; set; }
+        public int Count { get; set; }
+    }
+
+    public class Questions
+    {
+        public string Uid { get; set; }
+        public List<Response> Responses { get; set; } = new List<Response>();
+    }
+
+    public class SurveyResultSummaryApiModel
+    {
+        public string AssetUid { get; set; }
+        public int NumberOfResponders { get; set; }
+        public DateTime FirstRespondedOn { get; set; }
+        public DateTime LastRespondedOn { get; set; }
+        public List<Question> Questions { get; set; } = new List<Question>();
+    }
+
+    public class SurveyResultSummaryApiResponseModel
+    {
+        public int pageSize { get; set; }
+        public int pageNum { get; set; }
+        public int total { get; set; }
+        public DateTime asOfDate { get; set; }
+        public List<SurveyResultSummaryApiModel> items { get; set; } = new List<SurveyResultSummaryApiModel>();
+    }
+
 }

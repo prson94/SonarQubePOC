@@ -225,6 +225,118 @@ namespace d360.model.DataAccessLayer
             return response;
         }
 
+        public SurveyResultSummaryApiResponseModel GetSurveyResultSummary(Guid surveyTypeUid, IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+            var response = new SurveyResultSummaryApiResponseModel();
+            response.pageSize = 200;
+            response.pageNum = 1;
+            response.total = 0;
+            response.asOfDate = DateTime.Now.Date;
+
+
+            string orderByClause = "order by First.CreatedOn";
+            var additionalWhereClause = string.Empty;
+
+            List<string> whereClauses = new List<string>();
+            foreach (var param in queryParams)
+            {
+                switch (param.Key.ToLower())
+                {
+                    case "_pagesize":
+                        int size = 0;
+                        if (int.TryParse(param.Value, out size))
+                        {
+                            response.pageSize = int.Parse(param.Value);
+                        }
+                        else throw new Exception("Invalid value for page size parametar!");
+                        break;
+                    case "_pagenum":
+                        int num = 0;
+                        if (int.TryParse(param.Value, out num))
+                        {
+                            response.pageNum = int.Parse(param.Value);
+                            if (response.pageNum <= 0) response.pageNum = 1;
+                        }
+                        else throw new Exception("Invalid value for page number parametar!");
+                        break;
+                    case "_order":
+                        switch (param.Value.ToLower())
+                        {
+                            case "firstrespondedon": orderByClause = "order by First.CreatedOn"; break;
+                            case "lastrespondedon": orderByClause = "order by Last.CreatedOn"; break;
+                            case "numberofresponders": orderByClause = "order by QD.Responses desc"; break;
+                            default: orderByClause = "order by First.CreatedOn"; break;
+                        }
+                        break;
+                }
+            }
+
+
+            var pagingSql = $"OFFSET {response.pageSize * (response.pageNum - 1)} ROWS FETCH NEXT {response.pageSize} ROWS ONLY";
+
+            //var countQuery = $@"select  count(*) from dbo.SurveyType ST 
+            //                                inner join AssetType AT on AT.Object =ST.Object AND AT.ObjectID = ST.ObjectID 
+            //                                left join (select SurveyTypeId, Count(*) as Responses from Survey Group by SurveyTypeId)Responses 
+            //                                    on Responses.SurveyTypeId = ST.Id {additionalWhereClause}";
+            //response.total = companyContext.Query<int>(countQuery).FirstOrDefault();
+
+            string AnswersCTE = @"AnswerData as (
+	                        select S.CreatedOn, A.uid as AssetUid, QT.Uid as QuestionTypeID, QTO.Name,QTO.Value from QuestionTypeOption QTO
+	                        		inner join QuestionOption QO on QO.QuestionTypeOptionID = QTO.ID
+	                        		inner join Question Q on QO.QuestionID = Q.ID
+	                        		inner join QuestionType QT on QT.ID = QTO.QuestionTypeID
+	                        		inner join Survey S on Q.SurveyID = S.ID
+	                        		inner join Asset A on A.Object = S.Object and A.ObjectID = S.ObjectID
+	                        	)";
+
+            string QuestionsCTE = @"QuestionsData as 
+	                        	(select 
+	                        	 	QT.Uid, 
+	                        		S.SurveyTypeID, 
+	                        		A.Uid as AssetUid,
+	                        		(select AD.Name, AD.Value, count(*) as Count 
+	                        		   from AnswerData AD 
+	                        		   where AD.AssetUid = A.Uid AND AD.QuestionTypeID = QT.Uid 
+	                        		   group by AD.Name, AD.Value
+	                        		   for json path) Responses
+	                        	 from QuestionOption QO
+	                        		inner join QuestionTypeOption QTO on QTO.ID = QO.QuestionTypeOptionID
+	                        		inner join Question Q on QO.QuestionId = Q.Id
+	                        		inner join Survey S on S.ID = Q.SurveyID
+	                        		inner join Asset A ON S.Object = A.Object AND S.ObjectID = A.ObjectID
+	                        		inner join QuestionType QT on QT.ID = QTO.QuestionTypeID
+	                        		group by QT.Uid, S.SurveyTypeID, A.Uid
+	                        		)";
+
+            var sql = $@";with {AnswersCTE},{QuestionsCTE}
+	                        select  
+	                        A.uid as AssetUid,
+	                        First.CreatedOn as FirstRespondedOn,
+	                        Last.CreatedOn as LastRespondedOn,
+	                        QD.Responses as NumberOfResponders,
+	                        (select Uid, Responses
+	                        	from QuestionsData 
+	                        	where AssetUid = A.uid 
+	                        	for json path) AS Questions 
+	                        from SurveyType ST 
+	                        inner join Survey S on S.SurveyTypeID = ST.ID
+	                        inner join Asset A ON S.Object = A.Object AND S.ObjectID = A.ObjectID
+	                        cross apply (select Count(*) as Responses from AnswerData where AssetUid = A.uid)QD
+	                        cross apply (select top 1 CreatedOn from AnswerData where AssetUid = A.uid order by CreatedOn)First
+	                        cross apply (select top 1 CreatedOn from AnswerData where AssetUid = A.uid order by CreatedOn desc)Last
+	                        where ST.Uid = @surveyTypeUid
+                            {additionalWhereClause}
+	                        group by A.uid, QD.Responses, First.CreatedOn, Last.CreatedOn
+                            {orderByClause}
+                            {pagingSql}
+	                        for json path";
+
+            var itemsJson = string.Join("", companyContext.Query<string>(sql, new { surveyTypeUid }).ToList());
+
+            response.items = JsonConvert.DeserializeObject<List<SurveyResultSummaryApiModel>>(itemsJson) ?? new List<SurveyResultSummaryApiModel>();
+            return response;
+        }
+
 
     }
 }
