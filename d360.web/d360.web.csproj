@@ -16,7 +16,7 @@
     <AssemblyName>d360.web</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
-    <UseIISExpress>true</UseIISExpress>
+    <UseIISExpress>false</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -555,15 +555,15 @@
     <Content Include="Content\styles\Diagrams.min.css">
       <DependentUpon>Diagrams.css</DependentUpon>
     </Content>
-	<Content Include="Content\styles\materialize.css">
-	  <DependentUpon>materialize.less</DependentUpon>
-	</Content>
+    <Content Include="Content\styles\materialize.css">
+      <DependentUpon>materialize.less</DependentUpon>
+    </Content>
     <Content Include="Content\styles\angular.less" />
     <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.eot" />
     <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.ttf" />
     <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.woff" />
     <Content Include="Content\primeng\d3s\fonts\roboto-v15-latin-regular.woff2" />
-	<Content Include="Content\styles\materialize.min.css">
+    <Content Include="Content\styles\materialize.min.css">
       <DependentUpon>materialize.css</DependentUpon>
     </Content>
     <Content Include="Content\styles\Root.css">
@@ -1742,7 +1742,6 @@
     <TypeScriptCompile Include="Scripts\app\services\state.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\artifact-type.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\artifacts.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\base.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\editor-definition.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\fields.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\grid-definition.service.ts" />
@@ -1754,7 +1753,6 @@
     <TypeScriptCompile Include="Scripts\app\services\header-actions.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\header-breadcrumb.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\lookup.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\messages.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\object-style.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\rules.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\surveys.service.ts" />
