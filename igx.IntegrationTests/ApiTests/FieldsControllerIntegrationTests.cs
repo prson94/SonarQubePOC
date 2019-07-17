@@ -26,11 +26,11 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(parsedData.GetValue("Uid") != null);
-            Assert.True(parsedData.GetValue("Message") != null);
-            Assert.True(parsedData.GetValue("Success") != null && parsedData.GetValue("Success").ToString() == "True");
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+            Assert.True(parsedData.GetValue("Uid") != null, XMsg.MissingField("Uid"));
+            Assert.True(parsedData.GetValue("Message") != null, XMsg.MissingField("Message"));
+            Assert.True(parsedData.GetValue("Success") != null && parsedData.GetValue("Success").ToString() == "True", XMsg.MissingField("Success"));
 
             FieldsTestData.AssetTypeInsert.UpdateValueOnProperty("Uid", parsedData.GetValue("Uid"));
         }
@@ -43,14 +43,13 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var assetTypeApiViewModels = JsonConvert.DeserializeObject<JArray>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
 
-            Assert.True(assetTypeApiViewModels.Count != 0);
-            Assert.Contains(assetTypeApiViewModels,
-                x => x["uid"].ToString() == FieldsTestData.AssetTypeInsert["Uid"].ToString()
+            Assert.True(assetTypeApiViewModels.Count != 0, XMsg.InvalidCount);
+            Assert.True(assetTypeApiViewModels.DoesContain(x => x["uid"].ToString() == FieldsTestData.AssetTypeInsert["Uid"].ToString()
                     && x["Name"].ToString() == FieldsTestData.AssetTypeInsert["Name"].ToString()
-                    && x["Description"].ToString() == FieldsTestData.AssetTypeInsert["Description"].ToString());
+                    && x["Description"].ToString() == FieldsTestData.AssetTypeInsert["Description"].ToString()), XMsg.MissingAsset);
         }
 
         [Fact, Priority(30)]
@@ -63,12 +62,13 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(parsedData.GetValue("Uid") != null);
-            Assert.True(parsedData.GetValue("Message") != null);
-            Assert.True(parsedData.GetValue("Success") != null && bool.Parse(parsedData.GetValue("Success").ToString()) == true);
-            Assert.True(parsedData.GetValue("Uid").ToString() == FieldsTestData.FieldsModel["AssetTypeUid"].ToString());
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+            Assert.True(parsedData.GetValue("Uid") != null, XMsg.MissingField("Uid"));
+            Assert.True(parsedData.GetValue("Message") != null, XMsg.MissingField("Message"));
+            Assert.True(parsedData.GetValue("Success") != null && parsedData.GetValue("Success").ToString() == "True", XMsg.MissingField("Success"));
+
+            Assert.True(parsedData.GetValue("Uid").ToString() == FieldsTestData.FieldsModel["AssetTypeUid"].ToString(), XMsg.InvalidFieldValue("Uid"));
         }
 
         [Fact, Priority(40)]
@@ -79,14 +79,13 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(parsedData["items"].Count() == FieldsTestData.FieldsModel["Fields"].Count() + 1);
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+            Assert.True(parsedData["items"].Count() == FieldsTestData.FieldsModel["Fields"].Count() + 1, XMsg.InvalidCount);
             foreach (var field in FieldsTestData.FieldsModel["Fields"])
             {
-                Assert.Contains(parsedData["items"],
-                    x => x["FriendlyName"].ToString() == field["FriendlyName"].ToString()
-                    && x["Name"].ToString() == field["Name"].ToString());
+                Assert.True((parsedData["items"] as JArray).DoesContain(x => x["FriendlyName"].ToString() == field["FriendlyName"].ToString()
+                    && x["Name"].ToString() == field["Name"].ToString()), XMsg.MissingAsset);
             }
         }
 
@@ -109,10 +108,10 @@ namespace igx.IntegrationTests.ApiTests
 
             var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
-            Assert.True(parsedData.GetValue("Uid") != null);
-            Assert.True(parsedData.GetValue("Success") != null);
-            Assert.True(parsedData.GetValue("Message") != null);
-            Assert.True(bool.Parse(parsedData.GetValue("Success").ToString()) == true);
+            Assert.True(parsedData.GetValue("Uid") != null, XMsg.InvalidFieldValue("Uid"));
+            Assert.True(parsedData.GetValue("Success") != null, XMsg.InvalidFieldValue("Success"));
+            Assert.True(parsedData.GetValue("Message") != null, XMsg.InvalidFieldValue("Message"));
+            Assert.True(bool.Parse(parsedData.GetValue("Success").ToString()) == true, XMsg.InvalidFieldValue("Success"));
 
         }
 
@@ -124,14 +123,13 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
             var parsedData = JsonConvert.DeserializeObject<JObject>(content);
 
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json");
-            Assert.True(parsedData["items"].Count() == 1);
+            Assert.True(response.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(response.Content.Headers.ContentType.MediaType == "application/json", XMsg.BadContentType);
+            Assert.True(parsedData["items"].Count() == 1, XMsg.InvalidCount);
             foreach (var field in FieldsTestData.FieldsModel["Fields"])
             {
-                Assert.DoesNotContain(parsedData["items"],
-                    x => x["FriendlyName"].ToString() == field["FriendlyName"].ToString()
-                    && x["Name"].ToString() == field["Name"].ToString());
+                Assert.False((parsedData["items"] as JArray).DoesContain(x => x["FriendlyName"].ToString() == field["FriendlyName"].ToString()
+                    && x["Name"].ToString() == field["Name"].ToString()), XMsg.InvalidFieldValue("items"));
             }
         }
 
@@ -150,9 +148,9 @@ namespace igx.IntegrationTests.ApiTests
             var content = await response.Content.ReadAsStringAsync();
 
             var parsedData = JsonConvert.DeserializeObject<JObject>(content);
-            Assert.True(parsedData.GetValue("ExecutionID") != null);
-            Assert.True(parsedData.GetValue("Message") != null);
-            Assert.True(parsedData.GetValue("Uri") != null);
+            Assert.True(parsedData.GetValue("ExecutionID") != null, XMsg.MissingField("ExecutionID"));
+            Assert.True(parsedData.GetValue("Message") != null, XMsg.MissingField("Message"));
+            Assert.True(parsedData.GetValue("Uri") != null, XMsg.MissingField("Uri"));
 
             FieldsTestData.ExecutionUrl = parsedData.GetValue("Uri").ToString();
         }
@@ -183,7 +181,7 @@ namespace igx.IntegrationTests.ApiTests
 
                 Thread.Sleep(2000);
             }
-
+            Assert.True(isSuccess, XMsg.ExecutionStatusErr);
             return isSuccess;
         }
     }

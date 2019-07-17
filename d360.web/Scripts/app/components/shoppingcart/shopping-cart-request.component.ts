@@ -56,7 +56,7 @@ export class ShoppingCartRequestComponent extends BaseComponent implements OnIni
     load() {
         this.isLoading = true;
         this.shoppingCartService.getShoppingCartItems(this.cartId)
-            .then(r => {
+            .subscribe(r => {
                 this.cart = r.Cart;
                 this.items = r.Items;
                 this.isLoading = false;

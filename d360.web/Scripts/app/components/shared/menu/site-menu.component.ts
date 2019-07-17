@@ -126,7 +126,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     loadMenu() {
-        this.siteMenuService.getMenu().then(
+        this.siteMenuService.getMenu().subscribe(
             result => {
                 result.MenuItems = result.MenuItems.filter(x => (x.MenuID != '#Admin')); //remove admin menu it will get built later.
 
@@ -191,10 +191,11 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                 this.isAdmin = result.IsAdmin;
 
                 this.ref.markForCheck();
-            }).then(() => {
-                this.siteMenuService.getCounts().then((res) => {
-                    this.countData = res;
-                    this.rebuildCounts();
+            }).add(() => {
+                this.siteMenuService.getCounts().subscribe((res) => {
+                    this.siteMenu.forEach(menu => {
+                        this.loadCounts(menu, res);
+                    });
                 });
             });
     }

@@ -147,6 +147,38 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
         }
     }
 
+    loadCounts(menu: any) {
+        if (menu && menu.NavigationItems && menu.NavigationItems.length > 0 && !menu.MenuID.startsWith('-')) {
+            this.siteMenuService.getCounts().subscribe((res) => {
+                menu.NavigationItems.forEach((item) => this.getAllCounts(item, res));
+            });
+        }
+    }
+
+    getAllCounts(items, arr: any[]) {
+        if (isString(items.Name) && isString(items.Url) && items.Url.indexOf('/') != -1) {
+            //get count for item
+            var id = _.findIndex(arr, function (o) {
+                let currentURL = items.Url.toLowerCase();
+                currentURL = items.Url.replace('model', 'taxonomy');
+                return o.Name == items.Name
+                    && _.includes(currentURL, o.Object.toLowerCase().replace('type', ''))
+                    && _.includes(currentURL, o.ObjectID);
+            });
+            if (id !== -1) {
+                items.count = arr[id].count;
+            } else {
+                items.count = 0;
+            }
+        }
+
+        //check if sub items exist
+        if (isArray(items.Items)) {
+            //recursively check sub items
+            items.Items.forEach((item) => this.getAllCounts(item, arr));
+        }
+    }
+
     ngAfterViewInit(): void {
 
         this.viewReady = true;

@@ -955,6 +955,10 @@ button.ui-button:disabled {
 }
 
 /* Loader */
+.ui-table-loading-icon {
+    color: white;
+    font-size: 25px;
+}
 .ui-treetable-loading {
     position: absolute;
     width: 100%;

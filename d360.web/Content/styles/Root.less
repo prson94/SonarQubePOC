@@ -262,11 +262,6 @@ fieldset legend {
     cursor:pointer;
 }
 
-.search-highlight
-{
-    background-color:@rgba-secondary-2-3;
-}
-
 .search-category-link
 {
     margin-left:30px;
@@ -501,6 +496,94 @@ fieldset legend {
     display: list-item;
     list-style-type: disc;
 }
+
+/* main search typeahead*/
+
+.search-typeahead-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1000;
+    min-width: 160px;
+    width: 100%;
+    padding: 5px 0;
+    margin: 2px 0 0;
+    list-style: none;
+    font-size: 14px;
+    background-color: #ffffff;
+    background-color: @d3s-gray-4;
+    border: 1px solid @d3s-gray-4;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+    -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+    background-clip: padding-box;
+    *border-right-width: 2px;
+    *border-bottom-width: 2px;
+}
+
+.search-typeahead-menu .search-typeahead-suggestion {
+    display: block;
+    padding: 7px 20px;
+    clear: both;
+    font-weight: normal;
+    line-height: 1.42857143;
+    color: black;
+    background-color: #ffffff;
+    border-bottom: 1px solid @d3s-gray-4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.search-typeahead-menu .search-typeahead-suggestion:hover {
+    cursor: pointer;
+    text-decoration: none;
+    outline: 0;
+    background-color: @rgba-primary-0;
+    color: black;
+
+    .type {
+        color: white;
+    }
+}
+
+.search-typeahead-menu .search-typeahead-suggestion:hover a {
+    color: #262626;
+}
+
+.search-typeahead-menu .search-typeahead-suggestion p {
+    margin: 0;
+}
+
+.search-typeahead-menu .search-typeahead-suggestion .type,
+.search-typeahead-menu .search .type {
+    color: @d3s-gray-2;
+}
+
+.search-typeahead-menu .search-typeahead-suggestion em.match {
+    font-weight: bold;
+    font-style: normal;
+}
+
+.search-typeahead-menu .header {
+    color: @d3s-gray-3;
+    text-align: center;
+    padding: 5px;
+}
+
+.search-typeahead-menu .search-typeahead-suggestion .desc {
+    padding: 5px 3px 0 3px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2; /* number of lines to show */
+    line-height: 22px; /* fallback */
+    max-height: 44px; /* fallback */
+    font-size: 10px;
+    color: @d3s-gray-1;
+}
+
 /* html editor content multilavel list */
 li.ql-indent-1 {
     margin-left: 10px;

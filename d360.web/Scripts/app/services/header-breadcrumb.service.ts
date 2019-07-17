@@ -127,7 +127,7 @@ export class HeaderBreadcrumbService extends BaseObservableService{
                 if (icon) resolve(icon);
 
             } else {
-                this.sitenavservice.getSiteNavItems().then(res => {
+                this.sitenavservice.getSiteNavItems().subscribe(res => {
 
                     res.forEach(s => {
                         if (s.Title.indexOf(menuID) !== -1) {

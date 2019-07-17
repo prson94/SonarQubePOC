@@ -36,6 +36,7 @@ namespace d360.web.Models
     {
         public string Name { get; set; }
         public string Value { get; set; }
+        public string Type { get; set; }
         public List<string> Values { get; set; }
     }
 }
@@ -925,6 +926,7 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                         var sql = @"select ft.objectId as IssueId,
                                f.FormattedValue as [Value],
                                ft.FriendlyName as Name,
+                               ft.[Type] as [Type],
                                ft.AllowMultipleValues,
                                f.Value as OriginalValue,
                                ft.ID as FieldTypeID
@@ -938,7 +940,7 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                         List<dynamic> issueRes = Company.Query<dynamic>(sql, new { ty = objectType, obj = objectID }).ToList();
                         issueRes.ForEach((item) => {
                             issueId = item.IssueId;
-                            FieldTooltipValueModel resItem = new FieldTooltipValueModel{ Name = item.Name, Value = item.Value };
+                            FieldTooltipValueModel resItem = new FieldTooltipValueModel{ Name = item.Name, Value = item.Value, Type = item.Type };
                             if(item.AllowMultipleValues)
                             {
                                 var items = ((item.OriginalValue != null) ? item.OriginalValue.Split(',') : new string[] { });
@@ -961,7 +963,7 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                         var f = fieldTypes.Where(x => !res.Any(y => y.Name == x.FriendlyName) ).ToList();
                         f.ForEach(x =>
                         {
-                            res.Add(new FieldTooltipValueModel { Name = x.FriendlyName, Value = " " });
+                            res.Add(new FieldTooltipValueModel { Name = x.FriendlyName, Value = " ", Type = x.Type });
                         });
 
                         
@@ -970,12 +972,14 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                     {
                         var sql = @"
 select  ISNULL(FormattedValue,' ') as Value,
-	    FriendlyName as Name
+	    FriendlyName as Name,
+        [Type]
 from    FieldDetail 
 where   [Object]= @o and ObjectID = @oid and [Name] != 'Description' and [Type] <> 'JsonElement'
 union
 select	p.[Value],
-		RT.FriendlyName as [Name]
+		RT.FriendlyName as [Name],
+        RT.[Type]
 from	FieldType RT 
 		cross apply openjson(RT.Definition) with (FieldTypeID int '$.FieldTypeID', [Path] nvarchar(250) '$.Path', DataType varchar(50) '$.DataType') D
 		inner join Field F on  F.ObjectType = @o and F.ObjectID = @oid and F.FieldTypeID = D.FieldTypeID and RT.[Type] = 'JsonElement'
@@ -989,7 +993,8 @@ where   RT.Object = @type and RT.ObjectID = @typeID";
 
                     var descSql = @"select 
 	                                    ISNULL(FormattedValue,' ') as Value,
-	                                    FriendlyName as Name
+	                                    FriendlyName as Name,
+                                        [Type]
 	                                    from dbo.FieldDetail 
 		                                    where objectid = @oid and [object]= @o and [Name] = 'Description'";
 

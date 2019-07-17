@@ -24,8 +24,8 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                             class="breadcrumb" 
                             [ngClass]="{'breadcrumb-link' : hasLink(breadcrumb.link)}"
                             [ngStyle]="{'max-width.px': setLastBreadcrumbWidth()}">
-                            <span class="breadcrumb-text" [ngClass]="{'highlight' : breadcrumb.isType}">{{breadcrumb.text}} </span>
-                            <span class="parent" *ngIf="breadcrumb.parentTypeName"   
+                            <span class="breadcrumb-text" [ngClass]="{'highlight' : breadcrumb.isType, 'breadcrumb-link' : hasLink(breadcrumb.link)}">{{breadcrumb.text}} </span>
+                            <span class="parent"  [ngClass]="{'breadcrumb-link' : hasLink(breadcrumb.link)}" *ngIf="breadcrumb.parentTypeName"   
                                   (click)="stopParentNav($event);navigateToLink(breadcrumb.parentUrl)">{{breadcrumb.parentTypeName}}</span>
                             <div *ngIf="!isChangableItem()" class="gutter"></div>
                             <i *ngIf="isChangableItem()" class="fa fa-caret-right crumb-arrow right"></i>
@@ -42,7 +42,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                     <p-overlayPanel [ngClass]="'search-results'" #treePanel>  
                         <div class="breadcrumb-search tree-breadcrumb-panel">    
                             <span class="header-search-input"><input #treeInput type="text" [(ngModel)]="searchTreeValue" placeholder="Search"> <i class="fa fa-search"></i></span> 
-                            <p-tree [value]="treeItems | treeSearch: searchTreeValue" selectionMode="single" [(selection)]="breadcrumb.selectedTreeNode" styleClass="breadcrumbTree" [style]="{'max-height':maxOverlayHeight,'overflow':'auto','line-height':'25px'}" 
+                            <p-tree [value]="treeItems | treeSearch: searchTreeValue" selectionMode="single" [(selection)]="breadcrumb.selectedTreeNode" styleClass="breadcrumbTree" [style]="{'max-height':maxOverlayHeight,'overflow':'auto','line-height':'25px'}"
                                 (onNodeSelect)="nodeSelect($event,treePanel)">
                                 <ng-template let-node pTemplate type="default">
                                     <span class="breadcrumb-search-result" [ngClass]="{'current-crumb': breadcrumb.text === node.label}" [ngStyle]="setTreeNodeStyles(node)">{{node.label}}  <i *ngIf="node.data?.hasRelations" class="fa fa-share-alt" aria-hidden="true" title="Item has relationships" style="color:#999;"></i></span>
@@ -117,10 +117,17 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
             if (this.hasClass(parent, 'collapsed-crumb')) {
                 searchPanel.show(event, this.hoverTarget.nativeElement.parentNode);
                 
-                searchPanel.el.nativeElement.children[0].opacity = 0;
                 window.setTimeout(() => {
                     searchPanel.el.nativeElement.children[0].style.top = (lineDims.top - 40) + "px";
                     searchPanel.el.nativeElement.children[0].style.left = (lineDims.width + (10 * this.index)) + "px";
+                    let searchDims = searchPanel.el.nativeElement.children[0].getBoundingClientRect(); 
+                    searchPanel.el.nativeElement.children[0].style.maxWidth = (window.innerWidth - lineDims.left) + "px";
+                    if (searchDims.right > window.innerWidth) {
+                        let diff = searchDims.right - window.innerWidth;
+                        let left = (lineDims.width + (10 * this.index)) - diff;
+                        searchPanel.el.nativeElement.children[0].style.left = left + "px";
+                    }
+                    parent.style.maxWidth = (window.innerWidth - lineDims.left) + "px";
                     if (this.standardInput) {
                         this.standardInput.nativeElement.focus();
                         if (this.results === undefined && !this.isTreeItem) this.search("");
@@ -132,6 +139,8 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
                 window.setTimeout(() => {
                     searchPanel.el.nativeElement.children[0].style.top = (lineDims.bottom) + "px";
                     searchPanel.el.nativeElement.children[0].style.left = (lineDims.left) + "px";
+
+                    searchPanel.el.nativeElement.children[0].style.maxWidth = (window.innerWidth - lineDims.left) + "px";
                     if (this.standardInput) {
                         this.standardInput.nativeElement.focus();
                         if (this.results === undefined && !this.isTreeItem()) this.search("");
@@ -145,6 +154,16 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
                 window.setTimeout(() => {
                     panel.el.nativeElement.children[0].style.top = (lineDims.top - 40) + "px";
                     panel.el.nativeElement.children[0].style.left = (lineDims.width + (10 * this.index)) + "px";
+                    parent.style.maxWidth = (window.innerWidth - lineDims.left) + "px";
+                    panel.el.nativeElement.children[0].style.maxWidth = (window.innerWidth - lineDims.left) + "px";
+                    let searchDims = panel.el.nativeElement.children[0].getBoundingClientRect(); 
+
+                    if (searchDims.right > window.innerWidth) {
+                        let diff = searchDims.right - window.innerWidth;
+                        let left = (lineDims.width + (10 * this.index)) - diff;
+                        panel.el.nativeElement.children[0].style.left = left + "px";
+                    }
+
                     if (this.treeInput) {
                         window.setTimeout(() => {
                             this.treeInput.nativeElement.focus();
@@ -155,7 +174,10 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
 
             else {
                 panel.show(event);
-                window.setTimeout(() => { panel.el.nativeElement.children[0].style.left = lineDims.left + "px"; }, 100);
+                window.setTimeout(() => {
+                    panel.el.nativeElement.children[0].style.left = lineDims.left + "px";
+                    panel.el.nativeElement.children[0].style.maxWidth = (window.innerWidth - lineDims.left) + "px";
+                }, 100);
                 if (this.treeInput) { window.setTimeout(() => { this.treeInput.nativeElement.focus(); }, 100); }
             }
         }
