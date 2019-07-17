@@ -3151,10 +3151,15 @@ order by    rnk, [Name]";
 
                                 var obj = i.Object.Replace("Type", "");
 
+                                var useAssetJoins = i.Object == SystemObjects.PolicyType.ToString();
+
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'{obj}'", datafield = $"{dataField}_Object" });
-                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
-                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateAssetUrl((select ID from Asset where Object = '{obj}' and ObjectID = A{pos}.ID))", datafield = $"{dataField}_Url" });
+                                if(useAssetJoins) columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ObjectID as varchar)", datafield = $"{dataField}_ObjectID" });
+                                else columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
+
+                                if(useAssetJoins) columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateAssetUrl(A{pos}.ID)", datafield = $"{dataField}_Url" });
+                                else columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateAssetUrl((select ID from Asset where Object = '{obj}' and ObjectID = A{pos}.ID))", datafield = $"{dataField}_Url" });
                             }
 
                             //Add here, only after you determine if this should be a link ABOVE.
@@ -4863,14 +4868,14 @@ from    ResponsibilityTypeRelationRule R
             getDynamicFieldJoinStatements(id, "Policy", out joins, out columns, false, false,true,false,"A.ObjectID");
 
             var permissionSql = @"case when exists (
-                                        select 1 from UserAssetPermissions(@r, OA.AssetTypeID) u where u.PermissionsBitMask & 2 = 2 and (u.AssetID = OA.ID  or (u.AssetID = 0 and u.AssetTypeID = OA.AssetTypeID))
+                                        select 1 from UserAssetPermissions(@r, A.AssetTypeID) u where u.PermissionsBitMask & 2 = 2 and (u.AssetID = A.ID  or (u.AssetID = 0 and u.AssetTypeID = A.AssetTypeID))
 						                ) 
 						                    then 1
 						                    else 0
 
                                         end as P_CanEdit,
 		                                case when exists(
-                                                             select 1 from UserAssetPermissions(@r, OA.AssetTypeID) u where u.PermissionsBitMask & 4 = 4 and (u.AssetID = OA.ID  or (u.AssetID = 0 and u.AssetTypeID = OA.AssetTypeID))
+                                                             select 1 from UserAssetPermissions(@r, A.AssetTypeID) u where u.PermissionsBitMask & 4 = 4 and (u.AssetID = A.ID  or (u.AssetID = 0 and u.AssetTypeID = A.AssetTypeID))
 						                                   ) 
 						                                   then 1
 						                                   else 0

@@ -25,7 +25,7 @@ namespace d360.core.entities.SurveyModels
         public Guid AssetUid { get; set; }
         public Guid UserUid { get; set; }
         public DateTime CreatedOn { get; set; }
-        public List<Question> Question { get; set; }
+        public List<Question> Questions { get; set; }
     }
 
     public class SurveyApiResponseModel

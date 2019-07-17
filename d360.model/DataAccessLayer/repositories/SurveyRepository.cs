@@ -99,7 +99,7 @@ namespace d360.model.DataAccessLayer
                         				where QO.QuestionTypeOptionID = QTO.id 
                         				for json path) as Response		
                         		from Question Q
-                        	    where Q.SurveyID = S.Id for json path) as Question
+                        	    where Q.SurveyID = S.Id for json path) as Questions
                         
                          from dbo.SurveyType ST
                         	inner join Survey S on S.SurveyTypeID = ST.ID
