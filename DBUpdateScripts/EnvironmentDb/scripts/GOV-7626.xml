@@ -10,39 +10,13 @@
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="true">
-<![CDATA[
-DROP TABLE IF EXISTS [dbo].[PolicyType-retired]
-]]>
-    </sql>
-	<rollback>
-<![CDATA[
-SET QUOTED_IDENTIFIER ON
-GO
-
-CREATE TABLE [dbo].[PolicyType-retired](
-	[ID] [int] IDENTITY(50000,1) NOT NULL,
-	[Name] [nvarchar](250) NOT NULL,
-	[Description] [nvarchar](max) NULL,
-	[UpdatedOn] [datetime] NULL,
-	[UpdatedBy] [int] NULL,
-	[MaximumDepth] [int] NULL,
-	[DisplayFormat] [nvarchar](250) NULL,
- CONSTRAINT [PK_PolicyType] PRIMARY KEY CLUSTERED 
-(
-	[ID] ASC
-)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
-) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="SDooley" id="GOV-7626-1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="true">
       <![CDATA[
-DROP TABLE IF EXISTS [dbo].[Policy-retired]
+ALTER TABLE [dbo].[Policy-retired] DROP CONSTRAINT [FK_Policy_PolicyType];
+ALTER TABLE [dbo].[Policy-retired] DROP CONSTRAINT [DF_Policy_DisplayValue];
+ALTER TABLE [dbo].[Policy-retired] DROP CONSTRAINT [DF_Policy_Level];
+ALTER TABLE [dbo].[Policy-retired] DROP CONSTRAINT [DF_Policy_PolicyTypeID];
+ALTER TABLE [dbo].[Policy-retired] DROP CONSTRAINT [DF_Policy_UpdatedOn];
+DROP TABLE IF EXISTS [dbo].[Policy-retired];
 ]]>
     </sql>
     <rollback>
@@ -62,6 +36,38 @@ CREATE TABLE [dbo].[Policy-retired](
 	[FieldHash] [varchar](250) NULL,
 	[DisplayValue] [nvarchar](max) NOT NULL,
  CONSTRAINT [PK_Policy] PRIMARY KEY CLUSTERED 
+(
+	[ID] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="SDooley" id="GOV-7626-1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+ALTER TABLE [dbo].[PolicyType-retired] DROP CONSTRAINT [DF_PolicyType_DisplayFormat];
+DROP TABLE IF EXISTS [dbo].[PolicyType-retired];
+]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[PolicyType-retired](
+	[ID] [int] IDENTITY(50000,1) NOT NULL,
+	[Name] [nvarchar](250) NOT NULL,
+	[Description] [nvarchar](max) NULL,
+	[UpdatedOn] [datetime] NULL,
+	[UpdatedBy] [int] NULL,
+	[MaximumDepth] [int] NULL,
+	[DisplayFormat] [nvarchar](250) NULL,
+ CONSTRAINT [PK_PolicyType] PRIMARY KEY CLUSTERED 
 (
 	[ID] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
