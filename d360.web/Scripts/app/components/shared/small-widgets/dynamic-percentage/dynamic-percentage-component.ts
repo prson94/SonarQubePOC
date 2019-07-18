@@ -8,7 +8,7 @@ import * as _ from 'lodash';
 	selector: 'd3s-dynamic-percentage',
 	template: `
 				<div #self class="d3s-dynamic-percentage">
-					<div class="d3s-dynamic-percentageInner" [ngStyle]="{'background-color': innerCircleColor}">
+					<div class="d3s-dynamic-percentageInner" [ngStyle]="{'background': innerCircleColor}">
 						<div class="d3s-dynamic-percentage-text"></div>
 					</div>
 				</div>
@@ -33,7 +33,7 @@ export class DynamicPercentageComponent implements AfterViewInit, OnChanges {
         //allow time for items to render before animation begins
         setTimeout(() => {
             this.calculatePercent(this.self, this.percentage, 0);
-        },200);
+        }, 200);
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {

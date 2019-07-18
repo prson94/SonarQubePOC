@@ -154,8 +154,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     }
 
     getColor(badge: any) {
-        console.log(window.getComputedStyle(badge)['background']);
-        return window.getComputedStyle(badge, 'background');
+        return window.getComputedStyle(badge, 'background')['background'];
     }
 
     private loadItemStats(objectID: number, objectName: string, objectType: string, objectTypeID: number) {
