@@ -31,7 +31,7 @@ namespace d360.model.DataAccessLayer
         }
         public Asset GetAssetByUID(Guid assetUid)
         {
-            return CompanyContext.Filter<Asset>(i => i.uid == assetUid).SingleOrDefault();
+            return CompanyContext.Filter<Asset>(i => i.uid == assetUid, i => i.AssetType).SingleOrDefault();
         }
         public List<AssetTypeClassInfo> GetAssetTypeList()
         {

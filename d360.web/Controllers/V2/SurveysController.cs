@@ -208,10 +208,14 @@ namespace d360.web.Controllers.V2
                 {
                     Guid uid = Guid.Parse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "assetuid").Value);
 
-                    var assetType = AssetRepository.GetAssetByUID(uid);
-                    if (assetType == null)
+                    var asset = AssetRepository.GetAssetByUID(uid);
+                    if (asset == null)
                     {
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset with Uid {uid} not found."));
+                    }
+                    if(asset.AssetType.Object != survey.Object || asset.AssetType.ObjectID != survey.ObjectID)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset type does not match with any survey."));
                     }
                 }
 

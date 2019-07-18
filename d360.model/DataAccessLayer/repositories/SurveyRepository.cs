@@ -5,6 +5,7 @@ using Dapper;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -247,7 +248,8 @@ namespace d360.model.DataAccessLayer
                         whereClauses.Add($"A.uid = '{assetGuid}'");
                         break;
                     case "asofdate":
-                        DateTime date = DateTime.ParseExact(param.Value,"MM/dd/yyyy", System.Globalization.CultureInfo.InvariantCulture);
+                        DateTime date = DateTime.MinValue;
+                        DateTime.TryParseExact(param.Value,"MM/dd/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out date);
                         if (date == DateTime.MinValue)
                             throw new Exception("Invalid value for date parameter! Use MM/dd/yyyy format");
 
@@ -276,7 +278,7 @@ namespace d360.model.DataAccessLayer
                         {
                             case "firstrespondedon": orderByClause = "order by First.CreatedOn"; break;
                             case "lastrespondedon": orderByClause = "order by Last.CreatedOn"; break;
-                            case "numberofresponders": orderByClause = "order by QD.Responses desc"; break;
+                            case "numberofresponders": orderByClause = "order by QD.Responders desc"; break;
                             default: throw new Exception("Invalid value for order parametar! Use FirstRespondedOn|LastRespondedOn|NumberOfResponders");
                         }
                         break;
