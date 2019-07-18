@@ -163,7 +163,6 @@
     <Compile Include="entities\Relation\Map.cs" />
     <Compile Include="entities\Community\Plugins\FusionTypeField.cs" />
     <Compile Include="entities\Community\Plugins\FusionAttributeTypeField.cs" />
-    <Compile Include="entities\Community\Environment.cs" />
     <Compile Include="entities\FieldTypeFusionLookupDefinition.cs" />
     <Compile Include="entities\FieldTypeFusionLookupDisplayField.cs" />
     <Compile Include="entities\Fusion\FusionAgentError.cs" />
