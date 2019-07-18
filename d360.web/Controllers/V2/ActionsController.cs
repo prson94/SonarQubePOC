@@ -128,9 +128,10 @@ namespace d360.web.Controllers.V2
                             selectSql += "," + col;
                         }
 
-                        foreach (var join in fieldJoins)
+                        foreach (var join in fieldTypes)
                         {
-                            joinsSql += join;
+                            string fieldJoin = "left join Field F" + join.ID + " on F" + join.ID + ".FieldTypeID =" + join.ID + " and F" + join.ID + ".[ObjectType] = 'Issue' and F" + join.ID + ".[ObjectID] = " + join.Fields.FirstOrDefault().ObjectID;
+                            joinsSql += fieldJoin;
                         }
 
                         foreach (FieldType customField in fieldTypes)
