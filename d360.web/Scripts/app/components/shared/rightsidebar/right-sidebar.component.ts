@@ -1,4 +1,4 @@
-import { Component, ElementRef, ChangeDetectionStrategy, ChangeDetectorRef, Input, OnInit, SimpleChange, OnChanges, OnDestroy, AfterViewInit } from '@angular/core';
+import { Component, ElementRef, ChangeDetectionStrategy, ChangeDetectorRef, Input, OnInit, SimpleChange, OnChanges, OnDestroy, AfterViewInit, Output, EventEmitter, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { RightSidebarService  } from '../../../services/right-sidebar.service';
 import { RightSidebarItem } from '../../../models/rightsidebar.model';
@@ -23,13 +23,13 @@ declare var CompanySettings;
                          <img class="icon" *ngIf="!IsIcon(area.icon)" [src]="GetURL(area.icon)"  height="20" width="20" />
                          <i *ngIf="IsIcon(area.icon)" [class]="'icon fa ' + area.icon"></i>
                         <h1 >{{area.title ? area.title: 'D3S'}}</h1>
-                        <span *ngIf="statistics && statistics.Score;else noScore" class="d3s-icon large-icon" 
+                        <span #badge *ngIf="statistics && statistics.Score;else noScore" class="d3s-icon large-icon" 
                                 [ngClass]="{
                                     'bad':scoreBetween(0,49),
                                     'ok':scoreBetween(50,89),
                                     'good':scoreBetween(90,1000)
                                 }">
-                            <d3s-dynamic-percentage [percentage]="statistics?.Score"></d3s-dynamic-percentage> 
+                            <d3s-dynamic-percentage [innerCircleColor]="getColor(badge)" [percentage]="statistics?.Score"></d3s-dynamic-percentage> 
                              <span class="text">{{statistics?.Score}}%</span>
                         </span> 
                         <ng-template #noScore><span *ngIf="currentObject && !currentObject?.isType" title="Governance Score not yet calculated" class="d3s-icon large-icon">No Score</span></ng-template>
@@ -44,7 +44,7 @@ declare var CompanySettings;
                     <div *ngIf="items && items.length > 0" class="tab-view">
                         <div class="tab-bar-outer">
                             <div class="tab-bar can-overflow">
-                                <button class="tab" [ngClass]="{'selected':AllClosed()}" (click)="itemClicked({active:false,title:'homeClick', url: 'blank'})">{{area.title}}</button>
+                                <button class="tab" [ngClass]="{'selected':AllClosed()}" (click)="itemClicked({active:false,title:'homeClick', url: 'blank'})">Definition</button>
                                 <button class="tab" 
                                         [ngClass]="{'selected':item.active}" 
                                         *ngFor="let item of items; trackBy: trackById" 
@@ -75,10 +75,10 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     hostUrl: string;
     area: any = {icon:'fa-folder',title: ''};
     @Input() menuOpen: boolean;
-
+    @Output() changed = new EventEmitter();
     private currentObject: any;
     private surveyType: SurveyType;
-
+    @ViewChild('badge') badge: ElementRef;
     private statistics: ObjectStatistics;
 
     status: string;
@@ -120,26 +120,23 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.subscription = this.rightSidebarService.rightSidebar$.subscribe(
             item => {
                 this.items.push(item);
-                this.items = _.sortBy(this.items, 'title');
-                this.ref.markForCheck();
+                this.items = _.sortBy(this.items, 'title'); this.emitChanges(); 
             });
         this.subscriptionClear = this.rightSidebarService.rightSidebarClear$.subscribe(
             item => {
                 this.items.splice(0, this.items.length);
                 this.currentObject = null;
                 this.statistics = null;
-                this.showStatus = false;
-                this.ref.markForCheck();
+                this.showStatus = false; this.emitChanges(); 
             })
         this.areaSub = this.rightSidebarService.currentArea$.subscribe(
             area => {
-                this.area = area;
-                this.ref.markForCheck();
+                this.area = area; this.emitChanges(); 
             }
         );
         this.hideHeaderSub = this.rightSidebarService.hideHeader$.subscribe(result => {
             this.showHeader = result;
-            this.ref.markForCheck();
+            this.emitChanges(); 
         });
 
         this.objectSub = this.rightSidebarService.currentObject$.subscribe(res => {
@@ -150,10 +147,15 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 this.showStatus = false;
                 this.statistics = null; 
                 this.showCertify = false;
-                this.ref.markForCheck();
+                this.emitChanges(); 
             }
         });
-        this.ref.markForCheck();
+        this.emitChanges();
+    }
+
+    getColor(badge: any) {
+        console.log(window.getComputedStyle(badge)['background']);
+        return window.getComputedStyle(badge, 'background');
     }
 
     private loadItemStats(objectID: number, objectName: string, objectType: string, objectTypeID: number) {
@@ -267,5 +269,8 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             this.router.navigateByUrl(Url);
         }
     }
-
+    emitChanges() {
+        this.ref.markForCheck();
+        this.changed.emit();
+    }
 };

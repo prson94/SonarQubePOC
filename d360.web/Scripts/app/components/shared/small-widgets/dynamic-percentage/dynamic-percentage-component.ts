@@ -8,7 +8,7 @@ import * as _ from 'lodash';
 	selector: 'd3s-dynamic-percentage',
 	template: `
 				<div #self class="d3s-dynamic-percentage">
-					<div class="d3s-dynamic-percentageInner">
+					<div class="d3s-dynamic-percentageInner" [ngStyle]="{'background-color': innerCircleColor}">
 						<div class="d3s-dynamic-percentage-text"></div>
 					</div>
 				</div>
@@ -19,6 +19,8 @@ import * as _ from 'lodash';
 export class DynamicPercentageComponent implements AfterViewInit, OnChanges {
 
     @Input() percentage: number;
+    @Input() innerCircleColor: string = "rgb(0, 0, 0)";
+
     @ViewChild("self") self: ElementRef;
     private changeWait: any;
     constructor(

@@ -30,6 +30,7 @@ body {
     min-height: 100vh;
     font-family: 'Nunito Sans', sans-serif;
     font-size: 14px;
+    overflow: hidden;
 }
 
 select,
@@ -693,12 +694,10 @@ d3s-navbar-item {
 
 .maincontent {
     margin-left: 40px;
-    margin-right: 40px;
 }
 
 .maincontent-open {
     margin-left: 200px;
-    margin-right: 40px;
 }
 main{
     min-width:800px;
@@ -1086,7 +1085,6 @@ div.child .empty-count {
     display: flex;
     flex-direction: row;
     height:40px;
-    margin-bottom:20px;
 }
 
 
@@ -2385,11 +2383,9 @@ modal-overlay .modal-dialog .content {
 
 .title-bar {
     position: relative;
-    margin-top: -20px;
     background: white;
     margin-left: 40px;
     transition: all 200ms ease;
-    margin-bottom: 20px;
 
     h1 {
         font-size: 18px;
@@ -2795,6 +2791,18 @@ button.tab-scroller {
     height: 12px;
     border-radius: 100%;
     background-color: @igx-grey-light;
+
+    &.bad {
+        background: @igx-red-light;
+    }
+
+    &.ok {
+        background: @igx-orange-light;
+    }
+
+    &.good {
+        background: @igx-green-light;
+    }
 }
 .d3s-dynamic-percentage .d3s-dynamic-percentageInner div {
     position: relative;
@@ -2804,4 +2812,9 @@ button.tab-scroller {
 .d3s-dynamic-percentage .d3s-dynamic-percentage-text {
     font-size: 30px;
     line-height: 1em;
+}
+
+.d3s-content-pane {
+    padding-top: 20px;
+    overflow: auto;
 }

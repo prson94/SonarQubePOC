@@ -79,7 +79,6 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
                         console.log(result);
                         this.setBrowserTitle(this.titleService, `Fusion - ${this.fusion.Name}`);
                         this.setObjectInfo('Fusion', this.fusionId, undefined, this.fusion.AssetID);
-                        this.setRightSideBar(this.fusion.HasDashboards, this.fusion.Manual);
                         this.treeSub = this.headerBreadcrumbService.breadcrumbTreeSource$.subscribe(
                             id => {
                                 this.changeFusionAttributeTypeId(id);
@@ -117,6 +116,7 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
         this.headerBreadcrumbService.getFolderTitle('#Fusion').then((res) => {
             this.headerBreadcrumbService.clearBreadcrumbs();
             this.crumbs = [];
+
             let areaBreadcrumb = new Breadcrumb(res ? res : 'Fusion');
             this.headerBreadcrumbService.showBreadcrumb(areaBreadcrumb);
             this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.fusion.Name, SiteUrlHelpers.getObjectUrl('FUSIONTYPE', this.fusionId), undefined, 'Fusion', this.fusionId, undefined, undefined, true));
@@ -131,7 +131,11 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
             else if (this.isQueryConfigVisible) {
                 this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Fusion Query Configuration', `/${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${this.fusionId};showQueryConfig=true`));
             }
-
+            this.headerBreadcrumbService.getFolderIcon(areaBreadcrumb.text).then(icon => {
+                this.setRightSideBar(this.fusion.HasDashboards, this.fusion.Manual);
+                this.rightSidebarService.setCurrentArea(areaBreadcrumb.text, icon);
+                this.rightSidebarService.showHeader(true);
+            });
         });
     }
 
