@@ -37,12 +37,11 @@ namespace d360.model
 
         #region Engine Methods
 
-        private string wildcardValue(string value)
+        private string wildcardValue(string value, bool isContains = true)
         {
-            if (value.Contains("*") || value.Contains("?"))
-                return "%" + value.Replace("*", "%").Replace("?", "_") + "%";
-            else
-                return "%" + value + "%";
+            value = value.Replace("*", "%").Replace("?", "_");
+            value = isContains ? $"%{value}%" : $"{value}%";
+            return value;
         }
 
         public string DetermineSqlDataTypeForFieldType(FieldType f)
@@ -187,7 +186,7 @@ namespace d360.model
             }
             else
             {
-                simpleFilter = wildcardValue(simpleFilter);
+                simpleFilter = wildcardValue(simpleFilter, false);
             }
 
             #endregion
