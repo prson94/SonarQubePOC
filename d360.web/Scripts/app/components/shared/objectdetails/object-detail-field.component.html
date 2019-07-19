@@ -44,7 +44,7 @@
                     <div class="FieldDisplayContent" [ngStyle]="{'font-weight':(isName ? 'bold':'')}">{{formatAsNumber(field.Value)}}</div>
                 </ng-container>
                 <ng-container *ngSwitchCase="'html'">
-                    <div class="FieldDisplayContent" [innerHtml]="field.Value" [ngStyle]="{'font-weight':(isName ? 'bold':'')}"></div>
+                    <div class="FieldDisplayContent" [innerHtml]="field.Value  | safeHtml" [ngStyle]="{'font-weight':(isName ? 'bold':'')}"></div>
                 </ng-container>
                 <ng-container *ngSwitchCase="'link'">
                     <div class="FieldDisplayContent" [innerHtml]="field.Value" [ngStyle]="{'font-weight':(isName ? 'bold':'')}"></div>
