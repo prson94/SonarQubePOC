@@ -60,10 +60,21 @@ export class MessagesObservableService {
         let model: any;
 
         if (error instanceof Error) {
+            console.log(1);
             objError = error;
-        } else if (error.error instanceof Error) {
-            objError = error.error;
-        } else {
+        } else if (error.error) {
+            //This one will httpclient errors like timeout
+            objError = error.error.error;
+        }
+        else if (!error.error && error.name === 'HttpErrorResponse') {
+            console.log(3);
+
+            objError = new Error(error.message);
+            objError.name = error.name;
+        }
+        else {
+            console.log(4);
+
             objError = new Error(error.toString());
         }
 
