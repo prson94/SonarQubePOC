@@ -34,7 +34,10 @@ export class AdminBaseComponent extends BaseComponent {
         if (this.adminHeading)
             this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.adminHeading));     
         
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.areaName, this.areaLink));     
+        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.areaName, this.areaLink));
+        this.rightSidebarService.clearItems();
+        this.rightSidebarService.setCurrentArea(this.areaName, this.area === 'Configuration' ? 'fa-sliders' : "fa-cog");
+        this.rightSidebarService.showHeader(true);
         this.setBrowserTitle(this.titleService, this.areaName);
     }       
 

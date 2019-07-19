@@ -102,7 +102,7 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
                 this.setObjectInfo('Rule', ruleId, this.rule.Name, this.rule.AssetID);
 
                 this.loadPermissions(this.permissionsService, StringConstants.ObjectRule, ruleId).then(p => {
-                    this.clearSidebar();
+
                     this.setCommonRightSideBar(true, this.hasPermission(Permission.ReadResponsibilities), false, true, true, this.hasPermission(Permission.ReadRelationships), true, true);
                 });
 
@@ -116,7 +116,6 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
     ngOnDestroy() {        
         this.routeParamsSubscription.unsubscribe(); 
         this.currentAreaNameSubscription.unsubscribe();
-        this.clearSidebar();
     }
 
     private buildbreadcrumb() {
@@ -135,6 +134,16 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
                 true,
                 'Rule',
                 this.ruleType.ID));
+
+            this.headerBreadcrumbService.getFolderIcon(this.currentAreaName ? this.currentAreaName : res).then(icon => {
+                this.rightSidebarService.setCurrentArea(this.rule.Name, icon);
+                this.rightSidebarService.setCurrentObject('RuleType', this.ruleType.ID, 'Rule', this.rule.ID, false);
+                this.rightSidebarService.showItem(new RightSidebarItem('Scoring', 'Scoring', ['fa-sitemap'], `/sidebar/score/Rule/${this.rule.UID}`));
+                this.rightSidebarService.showItem(new RightSidebarItem('Comments', 'Comments', ['fa-comments'], `/sidebar/comments/Rule/${this.rule.ID}/${this.rule.Name.replace("/","%2F")}`));
+                this.rightSidebarService.showItem(new RightSidebarItem('Actions', 'Actions', null, `/sidebar/actions/Rule/${this.rule.ID}/${this.rule.Name.replace("/", "%2F")}`));
+            });
+            this.rightSidebarService.showHeader(true);
+
         });
     }
     load(ruleId: number): Promise<any> {

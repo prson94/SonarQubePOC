@@ -16,7 +16,7 @@
                                 [ngValue]="dashboard">{{dashboard.Name}}</option>
                     </select>
                     <span style="padding:0 10px;">
-                        <button (click)="selected=dashboard;"
+                        <button (click)="setSelected(dashboard);"
                                 pButton
                                 type="button"
                                 label="Display"

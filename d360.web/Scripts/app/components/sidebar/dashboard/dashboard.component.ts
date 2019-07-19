@@ -6,6 +6,7 @@ import {Dashboard} from '../../../models/dashboard.model'
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
+import { RightSidebarService } from '../../../services/right-sidebar.service';
 
 @Component({
     selector: 'd3s-dashboard',
@@ -27,9 +28,11 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
         protected dashboardService: DashboardService,
         private route: ActivatedRoute,
         private headerBreadcrumbService: HeaderBreadcrumbService,
+        rightSidebarService: RightSidebarService,
         private router: Router
     ) {
         super();
+        this.rightSidebarService = rightSidebarService;
     }
 
     ngOnInit() {
@@ -51,16 +54,26 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
             this.folderTitle = res
             let areaBreadcrumb = new Breadcrumb(
                 this.folderTitle ? this.folderTitle:'Dashboards',
-                '/Dashboards',
-                false
-            );
-            let dashboardCrumb = new Breadcrumb(
-                this.dashboardName, 
-                SiteUrlHelpers.getObjectUrl("Dashboard",this.objectID,null,this.objectName),
+                '/dashboard',
                 false
             );
             this.headerBreadcrumbService.showBreadcrumb(areaBreadcrumb);
-            this.headerBreadcrumbService.showBreadcrumb(dashboardCrumb);
+
+            if (this.selected) {
+                let dashboardCrumb = new Breadcrumb(
+                    this.selected.Name, 
+                    SiteUrlHelpers.getObjectUrl("Dashboard",this.selected.ObjectID,null,this.selected.Name),
+                    false
+                );
+                this.headerBreadcrumbService.showBreadcrumb(dashboardCrumb);
+            }
+
+            this.headerBreadcrumbService.getFolderIcon(res).then(icon => {
+                this.clearSidebar();
+                this.rightSidebarService.setCurrentArea(res, icon);
+                this.rightSidebarService.clearCurrentObject();
+            });
+            this.rightSidebarService.showHeader(true);
 
         });
     }
@@ -82,5 +95,10 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
                 this.isLoading = false;
             }
         );
+    }
+
+    setSelected(dashboard) {
+        this.selected = dashboard;
+        this.buildBreadcrumb();
     }
 }

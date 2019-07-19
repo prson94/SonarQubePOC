@@ -176,8 +176,8 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
                     this.rightSidebarService.setCurrentArea(this.selected.DisplayValue, icon);
                     this.rightSidebarService.setCurrentObject('PolicyType', this.policyType.ID, 'Policy', this.selected.ID, false);
                     this.rightSidebarService.showItem(new RightSidebarItem('Scoring', 'Scoring', ['fa-sitemap'], `/sidebar/score/Policy/${this.selected.Uid}`));
-                    this.rightSidebarService.showItem(new RightSidebarItem('Comments', 'Comments', ['fa-comments'], `/sidebar/comments/Policy/${this.selected.ID}/${this.selected.DisplayValue}`));
-                    this.rightSidebarService.showItem(new RightSidebarItem('Actions', 'Actions', null, `/sidebar/actions/Policy/${this.selected.ID}/${this.selected.DisplayValue}`));
+                    this.rightSidebarService.showItem(new RightSidebarItem('Comments', 'Comments', ['fa-comments'], `/sidebar/comments/Policy/${this.selected.ID}/${this.selected.DisplayValue.replace("/", "%2F")}`));
+                    this.rightSidebarService.showItem(new RightSidebarItem('Actions', 'Actions', null, `/sidebar/actions/Policy/${this.selected.ID}/${this.selected.DisplayValue.replace("/", "%2F")}`));
                 });
             }
         });

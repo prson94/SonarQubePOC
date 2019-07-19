@@ -292,7 +292,7 @@ export class BaseComponent {
         if (this.rightSidebarService) {
             if (!this.isVisitingSidebar) {
                 this.rightSidebarService.clearItems();
-                
+
             }
 
             if (this.sidebarSubscription && (unsubscribe || unsubscribe == undefined)) {

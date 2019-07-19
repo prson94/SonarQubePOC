@@ -147,6 +147,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 this.showStatus = false;
                 this.statistics = null; 
                 this.showCertify = false;
+                this.showSurvey = false;
                 this.emitChanges(); 
             }
         });

@@ -149,13 +149,13 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                     this.rightSidebarService.showItem(
                         new RightSidebarItem(
                             'Comments', 'Comments', ['fa-comments'],
-                            `/sidebar/comments/Artifact/${this.artifact.ID}/${this.artifact.DisplayValue}`
+                            `/sidebar/comments/Artifact/${this.artifact.ID}/${this.artifact.DisplayValue.replace("/", "%2F")}`
                         )
                     );
                     this.rightSidebarService.showItem(
                         new RightSidebarItem(
                             'Actions', 'Actions', null,
-                            `/sidebar/actions/Artifact/${this.artifact.ID}/${this.artifact.DisplayValue}`
+                            `/sidebar/actions/Artifact/${this.artifact.ID}/${this.artifact.DisplayValue.replace("/", "%2F")}`
                         )
                     );
                     this.loadItemSurvey(id);
@@ -191,6 +191,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
     private buildBreadcrumb() {
         let index = 0;
         let currentFolderName = this.currentAreaName ? this.currentAreaName : this.folderTitle;
+        console.log(currentFolderName);
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.getFolderIcon(currentFolderName).then(res => {
             this.rightSidebarService.setCurrentArea(this.artifact.DisplayValue, res);

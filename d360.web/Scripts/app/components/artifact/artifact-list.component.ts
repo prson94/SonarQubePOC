@@ -58,11 +58,6 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
                     this.createBreadcrumbHierarchy(artifactType);
                     
                     this.setBrowserTitle(this.titleService, this.artifactType.Name);
-                    this.setCommonRightSideBar(false, false, this.artifactType.HasDashboards);
-                    this.rightSidebarService.setCurrentObject('ArtifactType', this.artifactType.ID, this.artifactType.Name, null, true);
-                    this.headerBreadcrumbService.getFolderIcon(this.currentAreaName ? this.currentAreaName : this.folderTitle).then(res => {
-                        this.rightSidebarService.setCurrentArea(this.artifactType.Name,res);
-                    });
                     
                     if (this.artifactType.HasV2Workflows) {
                         this
@@ -115,6 +110,12 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
                             null,
                             true,
                             x.ParentID > 0));
+
+                        this.setCommonRightSideBar(false, false, this.artifactType.HasDashboards);
+                        this.rightSidebarService.setCurrentObject('ArtifactType', this.artifactType.ID, this.artifactType.Name, null, true);
+                        this.headerBreadcrumbService.getFolderIcon(this.currentAreaName ? this.currentAreaName : this.folderTitle).then(res => {
+                            this.rightSidebarService.setCurrentArea(this.artifactType.Name, res);
+                        });
                 });
         });
 
