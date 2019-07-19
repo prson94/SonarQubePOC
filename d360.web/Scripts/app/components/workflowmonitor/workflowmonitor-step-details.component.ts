@@ -9,6 +9,8 @@ import { WorkflowHelpers } from '../../static/workflow-helpers';
 import { map } from 'rxjs/operators';
 import * as _ from 'lodash';
 import { Observable,of } from 'rxjs';
+import { Responsibility } from '../../models/lineage.model';
+import { ResponsibilityType } from '../../models/responsibility-type.model';
 
 @Component({
     selector: 'd3s-workflow-monitor-step-details',
@@ -27,7 +29,7 @@ export class WorkflowMonitorStepDetailsComponent extends BaseComponent implement
     StepType = StepType;
     WorkflowActivityType = WorkflowActivityType;
     WorkflowChangeType = WorkflowChangeType
-    responsibilities: any[] = [];
+    responsibilities: ResponsibilityType[];
     fields: any[] = [];
     helper = WorkflowHelpers;
     private states = [
@@ -46,8 +48,9 @@ export class WorkflowMonitorStepDetailsComponent extends BaseComponent implement
     ngOnInit() {
         this.load()
             .pipe(
-                map(() => this.responsibilityService.getResponsibilityTypes()
-                    .then(r => this.responsibilities = r)),
+                map(() => {
+                    this.responsibilityService.getResponsibilityTypes().subscribe((r) => { this.responsibilities = r })
+                }),
                 map(() => {
                     if (this.step != null)
                         this.workflowService.getWorkflowFieldTypes(this.step.ObjectTypeID, this.step.ObjectType, true)
@@ -71,7 +74,7 @@ export class WorkflowMonitorStepDetailsComponent extends BaseComponent implement
             this.isLoading = true;
             return this.workflowService.getWorkflowStepDetail(this.itemStepId)
                 .pipe(
-                     map(r => {
+                    map(r => {
                         this.isLoading = false;
                         this.step = r;
                         this.reassignments = [];
