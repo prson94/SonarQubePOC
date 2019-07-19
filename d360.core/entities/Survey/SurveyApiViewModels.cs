@@ -47,7 +47,7 @@ namespace d360.core.entities.SurveyModels
         public string Uid { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        public string DisplayValue { get; set; }
+        public string DisplayStyle { get; set; }
         public List<Option> Options { get; set; }
     }
 
@@ -56,11 +56,12 @@ namespace d360.core.entities.SurveyModels
         public string Uid { get; set; }
         public string AssetTypeUid { get; set; }
         public string Name { get; set; }
+        public string Description { get; set; }
         public int ValidForDays { get; set; }
         public DateTime CreatedOn { get; set; }
-        public int CreatedByUid { get; set; }
+        public Guid CreatedByUid { get; set; }
         public DateTime UpdatedOn { get; set; }
-        public int UpdatedByUid { get; set; }
+        public Guid UpdatedByUid { get; set; }
         public int NumberOfResponses { get; set; }
         public List<QuestionDescriptive> Questions { get; set; } = new List<QuestionDescriptive>();
     }

@@ -113,11 +113,11 @@ namespace d360.web.Controllers.V2
             HttpGet, MapToApiVersion("2.0"), Route("types"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerParameter("AssetTypeUid", "Asset type this survey is assigned", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("HasResponses", "Return results that has responses", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("HasResponses", "Return results that have responses", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by CreatedBy.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerResponse(HttpStatusCode.OK, "A full list of tags.", typeof(SurveyTypeApiResponseModel)),
+            SwaggerResponse(HttpStatusCode.OK, "A full list of survey types.", typeof(SurveyTypeApiResponseModel)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
@@ -125,11 +125,9 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetSurveyTypes()
         {
-            var prefix = "Surveys.GetSurveysResultsAsync => ";
+            var prefix = "Surveys.GetSurveysTypesAsync => ";
             var errorMessage = "";
 
-            if (!Company.CurrentResourceIsAdmin)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
 
             try
             {
