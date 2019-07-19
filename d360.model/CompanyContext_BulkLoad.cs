@@ -861,12 +861,15 @@ order by	ColumnIndex", new { id });
                 //need to calculate key hashes to figure out which assets to put and post
                 await LoadLookupValues(load, assetType);
                 await CalculateHashes(load, assetType);
+                await GenerateExecutionItemUids(load);
 
 
                 var putAssets = new List<AssetUpdate>();
                 var postAssets = new List<AssetInsert>();
 
-                var loadItems = Filter<LoadItem>(l => l.LoadID == load.ID).ToList();
+                var loadItems = Query<LoadItem>("select * from LoadItem where LoadID = @id", new { id = load.ID }).ToList();
+                var loadColumns = Query<LoadColumn>("select * from LoadColumn LC where LoadID = @id", new { id = load.ID }).ToList();
+                var loadItemColumns = Query<LoadItemColumn>("select * from LoadItemColumn where LoadID = @id", new { id = load.ID }).ToList();
                 Dictionary<int, string> assetTypeLevels = new Dictionary<int, string>();
 
                 //build level info for models
@@ -884,14 +887,11 @@ order by	ColumnIndex", new { id });
 
                 foreach (var item in loadItems)
                 {
-                    var itemUid = Guid.NewGuid();
                     var fieldsToSkip = new List<string>();
                     string assetTypeLevel = null;
 
-                    var loadItemColumns = Filter<LoadItemColumn>(l => l.LoadID == load.ID && l.RowIndex == item.RowIndex).ToList();
+                    var rowColumns = loadItemColumns.Where(l => l.RowIndex == item.RowIndex).ToList();
                     var maxLevel = 0;
-
-                    item.ExecutionItemUid = itemUid;
 
                     if (assetType.Class == AssetTypeClass.Model)
                     {
@@ -913,10 +913,10 @@ order by	ColumnIndex", new { id });
                     }
 
 
-                    if (!item.ObjectID.HasValue)
+                    if (!item.AssetUid.HasValue)
                     {
                         var insert = new AssetInsert();
-                        insert.ExecutionItemUid = itemUid;
+                        insert.ExecutionItemUid = item.ExecutionItemUid;
                         insert.Fields = new Dictionary<string, string>();
 
                         //resolve model parent
@@ -929,14 +929,13 @@ order by	ColumnIndex", new { id });
                                 where a.AssetTypeID = @assetTypeId and S.KeyHash = @parentKeyHash", new { parentKeyHash, assetTypeId = assetType.ID })).FirstOrDefault();
 
                             if (parentUid.HasValue)
-                            {
                                 insert.ParentUid = parentUid;
-                            }
                         }
 
-                        foreach (var field in loadItemColumns)
+                        
+                        foreach (var field in rowColumns)
                         {
-                            var col = load.LoadColumns.Where(c => c.LoadID == load.ID && c.ColumnIndex == field.ColumnIndex).FirstOrDefault();
+                            var col = loadColumns.FirstOrDefault(c => c.ColumnIndex == field.ColumnIndex);
 
                             //resolve parent
                             if (parentAssetType != null && col.Name == parentAssetType.Name)
@@ -964,31 +963,17 @@ order by	ColumnIndex", new { id });
                     else
                     {
                         var update = new AssetUpdate();
-                        update.ExecutionItemUid = itemUid;
-                        var asset = Query<Asset>("select * from Asset Where Object = @object and ObjectID = @objectID", new { @object = item.Object, objectID = item.ObjectID }).FirstOrDefault();
-                        AssetDetail parent = null;
+                        update.ExecutionItemUid = item.ExecutionItemUid;
 
-                        if (parentAssetType != null)
-                        {
-                            if (Enum.TryParse(asset.Object, out SystemObjects obj))
-                            {
-                                parent = GetParentObject(asset.ObjectID, obj);
-                            }
-                            else
-                            {
-                                item.StatusMessage = $"Could not parse system object {parent.Object}";
-                            }
+                        if (parentAssetType != null && item.ParentAssetUid.HasValue)
+                                update.ParentUid = item.ParentAssetUid;
 
-                            if (parent != null)
-                                update.ParentUid = parent.uid;
-                        }
-
-                        update.Uid = asset.uid;
+                        update.Uid = ((Guid)item.AssetUid);
                         update.Fields = new Dictionary<string, string>();
 
-                        foreach (var field in loadItemColumns)
+                        foreach (var field in rowColumns)
                         {
-                            var col = load.LoadColumns.Where(c => c.LoadID == load.ID && c.ColumnIndex == field.ColumnIndex).FirstOrDefault();
+                            var col = loadColumns.FirstOrDefault(c => c.ColumnIndex == field.ColumnIndex); // load.LoadColumns.Where(c => c.LoadID == load.ID && c.ColumnIndex == field.ColumnIndex).FirstOrDefault();
 
                             if (!fieldsToSkip.Contains(col.Name))
                             {
@@ -1001,7 +986,6 @@ order by	ColumnIndex", new { id });
                         putAssets.Add(update);
                     }
 
-                    Update(item);
                 }
 
 
@@ -1571,20 +1555,43 @@ where	T.LoadID = @id;
                 await QueryAsync<int>(@"
         update	T
         set     T.Object = A.Object,
-                T.ObjectID = A.ObjectID
+                T.ObjectID = A.ObjectID,
+                T.AssetUid = A.[uid],
+                T.ParentAssetUid = AP.[uid]
         from LoadItem T
                 inner join AssetType ST on ST.Object = @Object and ST.ObjectID = @ObjectID
                 inner join Asset A on A.AssetTypeID = ST.ID
                 cross apply[GetArtifactKeyHashByIdWithParent](A.ID) S
+                outer apply GetParentByAssetId(A.ID) P
+                left join Asset AP on AP.ID = P.ID
         where S.KeyHash = T.KeyHash and T.LoadID = @id", new { @object = assetType.Object, objectID = assetType.ObjectID, id = load.ID });
 
+            }
+            else if (parentAssetType != null)
+            {
+                await QueryAsync<int>(@"
+        update	T
+        set     T.Object = A.Object,
+                T.ObjectID = A.ObjectID,
+                T.AssetUid = A.[uid],
+                T.ParentAssetUid = AP.[uid]
+        from LoadItem T
+                inner join AssetType ST on ST.Object = @Object and ST.ObjectID = @ObjectID
+                inner join Asset A on A.AssetTypeID = ST.ID
+                cross apply GetAssetKeyHashById(A.ID) S
+                outer apply GetParentByAssetId(A.ID) P
+                left join Asset AP on AP.ID = P.ID
+        where S.KeyHash = T.KeyHash and T.LoadID = @id",
+new { @object = assetType.Object, objectID = assetType.ObjectID, id = load.ID });
             }
             else
             {
                 await QueryAsync<int>(@"
         update	T
         set     T.Object = A.Object,
-                T.ObjectID = A.ObjectID
+                T.ObjectID = A.ObjectID,
+                T.AssetUid = A.[uid],
+                T.ParentAssetUid = null
         from LoadItem T
                 inner join AssetType ST on ST.Object = @Object and ST.ObjectID = @ObjectID
                 inner join Asset A on A.AssetTypeID = ST.ID
@@ -1594,6 +1601,11 @@ where	T.LoadID = @id;
 
             }
 
+        }
+
+        private async Task GenerateExecutionItemUids(Load load)
+        {
+            await QueryAsync<int>(@"update LoadItem set ExecutionItemUid = newid() where LoadID = @id", new { id = load.ID });
         }
 
         private async Task<string> GetModelKeyHashForLevel(LoadItem item, AssetType assetType, int level)

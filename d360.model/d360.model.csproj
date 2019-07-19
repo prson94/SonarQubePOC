@@ -124,9 +124,11 @@
     <Compile Include="DataAccessLayer\ICrossReferencesRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\AssetRepository.cs" />
     <Compile Include="DataAccessLayer\IAssetRepository.cs" />
+    <Compile Include="DataAccessLayer\ISurveyRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\MetricsRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\RelationshipRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\ResponsibilityRepository.cs" />
+    <Compile Include="DataAccessLayer\repositories\SurveyRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\TagRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\FieldsRepository.cs" />
     <Compile Include="DataAccessLayer\IFieldsRepository.cs" />

@@ -27,10 +27,12 @@ import { MessagesObservableService } from '../../../services/messages-observable
                                 </th>
                                 <th style="width: 40px"></th>
                                 <th style="width: 40px"></th>
+                                <th style="width: 40px"></th>
                             </tr>
                             <tr [hidden]="showSimpleFilter">
                                 <th><d3s-column-filter [field]="'Name'" [datatype]="'text'"></d3s-column-filter></th>
                                 <th><d3s-column-filter [field]="'DisplayStyle'" [datatype]="'text'"></d3s-column-filter></th>
+                                <th></th>
                                 <th></th>
                                 <th></th>
                             </tr>
@@ -39,6 +41,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
                             <tr (dblclick)="selected=item;showEditor=true" [pSelectableRow]="item">
                                 <td>{{item.Name}}</td>
                                 <td>{{item.DisplayStyle}}</td>
+                                <td><d3s-preview-tooltip objectType="QuestionType" [objectId]="item.ID" icon="info"></d3s-preview-tooltip></td>
                                 <td>
                                     <div class="RowTools">
                                         <a style="cursor:pointer;" (click)="selected=item;showEditor=true"><i class="fa fa-pencil"></i></a>
