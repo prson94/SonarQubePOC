@@ -4005,7 +4005,8 @@ outer apply (
                                         FieldDescription = ft.DisplayDescription,
                                         FieldName = ft.Name,
                                         Value = referenceItemType?.Description,
-                                        ShowIfEmpty = ft.ShowIfEmpty
+                                        ShowIfEmpty = ft.ShowIfEmpty,
+                                        DataType = "Html"
                                     }
                                 },
                                 Category = ft.Category
