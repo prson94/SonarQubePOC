@@ -123,10 +123,10 @@ export class RuleResultsGridComponent extends BaseComponent implements OnInit {
 
     @Input() implementationId: number;
     @Input() showTitle: boolean = true;
-    
+
     simpleTextFilter: string;
     showSimpleFilter: boolean = false;
-    
+
     private rowsPerPage: number = 5;
     private totalRecords: number = 0;
     private results: RuleResultPagedResults;
@@ -146,7 +146,7 @@ export class RuleResultsGridComponent extends BaseComponent implements OnInit {
     searchValue: string = "";
     simpleSearchID: number = 0;
     searchDelayMilliSeconds: number = 300;
-    
+
     constructor(private ruleService: RulesService) {
         super();
     }
@@ -154,17 +154,17 @@ export class RuleResultsGridComponent extends BaseComponent implements OnInit {
     ngOnInit() {
 
     }
-    
+
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (changes['implementationId'] && this.implementationId) {
             this.filters = [];
             this.getData();
         }
     }
-   
 
-    public filterGridData(filterData) {     
-        this.currentPageNumber = 0;        
+
+    public filterGridData(filterData) {
+        this.currentPageNumber = 0;
         this.getData();
     }
 
@@ -184,13 +184,13 @@ export class RuleResultsGridComponent extends BaseComponent implements OnInit {
         }
 
         this.ruleService.getResultsByRule(this.implementationId, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder, this.filters, this.relationships, this.attributes, this.simpleTextFilter)
-            .then(res => {
+            .subscribe(res => {
                 this.results = res;
                 if (this.results != null) {
                     this.totalRecords = this.results.total;
                     this.items = this.results.results;
                 }
-                
+
             });
 
     }
@@ -206,7 +206,7 @@ export class RuleResultsGridComponent extends BaseComponent implements OnInit {
         this.sortField = event.sortField == undefined ? "" : event.sortField;
         this.rowsPerPage = event.rows;
         this.currentPageNumber = event.first / event.rows;
-        
+
         this.getData();
     }
 

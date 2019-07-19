@@ -18,7 +18,7 @@ import { ResponsibilityTypeService } from '../../../services/responsibility-type
 import { map, finalize, concatMap} from 'rxjs/operators';
 import * as _ from 'lodash';
 import { State } from '../../../models/asset.model';
-import { Observable, of} from 'rxjs';
+import { Observable, of, Subscription } from 'rxjs';
 
 declare var CompanySettings;
 
@@ -42,6 +42,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     private selectedObjectType: any = null;
     private conditions: any[] = [];
     private issueObjectTypes: any[] = [];
+    private resSub: Subscription;
 
     private showAddCondition: boolean = false;
 
@@ -87,8 +88,8 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
         this.ed = null;
     }
 
-  
- 
+
+
     load(){
 
         this.isLoading = true;
@@ -154,34 +155,34 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
             )))
             .pipe(concatMap(() => this.workflowService.getWorkflowObjectTypes(this.model.Event.ChangeType)
                 .pipe(
-                map(r => {
-                    this.workflowObjectTypes = [this.defaultWorkflowObject].concat(r);
-                    if (this.hideShoppingCart) {
-                        this.workflowObjectTypes = this.workflowObjectTypes.filter(w => w.type != 'ShoppingCartType');
-                    }
-
-                    this.model.Event.IssueObject = '';
-                    if (this.objectType == 'IssueType') {
-                        this.issueObjectTypes = this.workflowObjectTypes.slice().filter(w => w.type != 'IssueType');
-
-                        let objectIndex = this.conditions.findIndex(c => c['@ContextualFieldID'] == 'IssueObject');
-                        let objectIdIndex = this.conditions.findIndex(c => c['@ContextualFieldID'] == 'IssueObjectID');
-
-                        if (objectIndex > -1 && objectIdIndex > -1) {
-                            this.model.Event.IssueObject = this.conditions[objectIndex]['@Value'] + '|' + this.conditions[objectIdIndex]['@Value'];
+                    map(r => {
+                        this.workflowObjectTypes = [this.defaultWorkflowObject].concat(r);
+                        if (this.hideShoppingCart) {
+                            this.workflowObjectTypes = this.workflowObjectTypes.filter(w => w.type != 'ShoppingCartType');
                         }
-                       
-                    }
-                }))))
+
+                        this.model.Event.IssueObject = '';
+                        if (this.objectType == 'IssueType') {
+                            this.issueObjectTypes = this.workflowObjectTypes.slice().filter(w => w.type != 'IssueType');
+
+                            let objectIndex = this.conditions.findIndex(c => c['@ContextualFieldID'] == 'IssueObject');
+                            let objectIdIndex = this.conditions.findIndex(c => c['@ContextualFieldID'] == 'IssueObjectID');
+
+                            if (objectIndex > -1 && objectIdIndex > -1) {
+                                this.model.Event.IssueObject = this.conditions[objectIndex]['@Value'] + '|' + this.conditions[objectIdIndex]['@Value'];
+                            }
+
+                        }
+                    }))))
             .pipe(concatMap(() => of(() => {
                 this.loadResponsibilities();
             })))
             .pipe(
-            finalize(() => {
-                this.validate();
-                this.model.Event.SettingsObject.Settings.MessageRecipientType = 'SpecificUser';
-                this.isLoading = false;
-            })).subscribe();
+                finalize(() => {
+                    this.validate();
+                    this.model.Event.SettingsObject.Settings.MessageRecipientType = 'SpecificUser';
+                    this.isLoading = false;
+                })).subscribe();
 
     }
 
@@ -218,19 +219,20 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                 this.issueObjectTypes = this.workflowObjectTypes.slice().filter(w => w.type != 'IssueType');
             }
 
-            this.loadResponsibilities().then(() => this.validate());
+            this.loadResponsibilities();
         } else {
             this.isValid = false;
         }
     }
 
-    loadResponsibilities(): Promise<any> {
+    loadResponsibilities() {
         if (this.objectType == null || this.objectID == null) {
             this.responsibilities = [];
-            return Promise.resolve();
         }
-        return this.responsibilityService.getResponsibilityTypesByObject(this.objectType, this.objectID)
-            .then(r => this.responsibilities = r);
+        this.resSub = this.responsibilityService.getResponsibilityTypesByObject(this.objectType, this.objectID)
+            .subscribe(r => this.responsibilities = r);
+
+        this.validate();
     }
 
     showCondition() {

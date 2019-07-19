@@ -101,11 +101,11 @@ export class AdminDashboardsEditor {
     reportLayouts: DropdownOption[] = [];
     responsibilities: SelectItem[] = [];
     file: File;
-    
+
     constructor(
         private reportsService: ReportsService,
         private responsibilityTypeService: ResponsibilityTypeService
-    ) {        
+    ) {
         this.reportTypes.push({ value:"legacy", title:"Default" });
         this.reportTypes.push({ value:"powerbi", title:"PowerBI" });
     }
@@ -114,13 +114,13 @@ export class AdminDashboardsEditor {
         if (CompanySettings.EnableSagacity == "true") this.reportTypes.push({ value: "sagacity", title: "Data3Sixty Foundation" });
         if (this.report != undefined) {
             this.editedReport = _.cloneDeep(this.report);
-            this.editedReport.ObjectType = this.editedReport.ObjectType + '|' + this.editedReport.ObjectID.toString();            
+            this.editedReport.ObjectType = this.editedReport.ObjectType + '|' + this.editedReport.ObjectID.toString();
             this.objectTypeChanged(this.editedReport.ObjectType,true);
         }
         else {
             this.editedReport = new Report();
             this.action = "New";
-        }   
+        }
         this.getReportTargets();
         this.getReportLayouts();
     }
@@ -129,7 +129,7 @@ export class AdminDashboardsEditor {
         this.file = null;
     }
 
-    onSubmit() {        
+    onSubmit() {
         this.saveClick.emit({ report: this.editedReport, action: this.report ? "new" : "edit", file: this.file });
     }
 
@@ -137,7 +137,7 @@ export class AdminDashboardsEditor {
         this.isTargetsLoading = true;
         this.reportsService.getReportTargetTypes()
             .subscribe(result => {
-                this.targetTypes = result;                
+                this.targetTypes = result;
                 this.isTargetsLoading = false;
             });
     }
@@ -157,10 +157,10 @@ export class AdminDashboardsEditor {
 
     private changeFile(e) {
         this.file = e.srcElement.files[0];
-   }    
+    }
 
     private isValid(): boolean {
-       if (this.action === "New" && this.editedReport.ReportType == "powerbi")
+        if (this.action === "New" && this.editedReport.ReportType == "powerbi")
             return this.file != null
         else
             return true;
@@ -180,13 +180,13 @@ export class AdminDashboardsEditor {
             ot += "Type";
         let otid: number = +object[1];
         this.responsibilityTypeService.getRelationsByObjectType(ot, otid).
-            then(res => {
+            subscribe(res => {
                 this.responsibilities = [];
                 res.forEach(o => {
                     this.responsibilities.push({
                         label: o.ResponsibilityTypeName,
                         value: o.ResponsibilityTypeID
-                    });                    
+                    });
                 });
                 if (isInitialLoad && this.editedReport && this.editedReport.VisibleTo) {
                     this.editedReport.VisibleToRoles = this.editedReport.VisibleTo.split(',');

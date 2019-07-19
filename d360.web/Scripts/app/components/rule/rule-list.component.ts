@@ -48,15 +48,15 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
     theDeleteCallback: Function;
 
     constructor(private route: ActivatedRoute,
-                private router: Router,
-                protected rulesService: RulesService,
-                protected titleService: Title,
-                protected messagesService: MessagesService,
-                private gridDefinitionService: GridDefinitionService,
-                private headerActionsService: HeaderActionsService,
-                protected headerBreadcrumbService: HeaderBreadcrumbService,
-                protected permissionsService: PermissionsService,
-                rightSidebarService: RightSidebarService
+        private router: Router,
+        protected rulesService: RulesService,
+        protected titleService: Title,
+        protected messagesService: MessagesService,
+        private gridDefinitionService: GridDefinitionService,
+        private headerActionsService: HeaderActionsService,
+        protected headerBreadcrumbService: HeaderBreadcrumbService,
+        protected permissionsService: PermissionsService,
+        rightSidebarService: RightSidebarService
     ) {
         super();
         this.rightSidebarService = rightSidebarService;
@@ -87,7 +87,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
 
             this.isLoading = true;
             this.rulesService.getRuleType(this.ruleTypeId)
-                .then(result => {
+                .subscribe(result => {
                     this.isLoading = false;
                     this.ruleType = result;
                     this.setObjectInfo('RuleType', this.ruleType.ID);
@@ -160,7 +160,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
     private loadRules() {
         this.isLoading = true;
         this.rulesService.getRules(this.ruleTypeId)
-            .then(result => {
+            .subscribe(result => {
                 this.isLoading = false;
                 for (let rule of result) {
                     if (!rule.Dimension) rule.Dimension = ""; //prime grid has issues with null objects make sure we dont have any.
@@ -179,7 +179,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
 
     private saveRule(event) {
         this.rulesService.saveRule(event.item)
-            .then(result => {
+            .subscribe(result => {
                 this.showMessageForResult(this.messagesService, result);
                 if (result.type != 'error') {
                     this.loadRules();
@@ -194,7 +194,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     private deleteRule(id: number) {
-        this.rulesService.deleteRule(id).then(result => {
+        this.rulesService.deleteRule(id).subscribe(result => {
             this.showMessageForResult(this.messagesService, result);
             this.showDelete = false;
             this.selected = this.rules.length > 0 ? this.rules[0] : null;

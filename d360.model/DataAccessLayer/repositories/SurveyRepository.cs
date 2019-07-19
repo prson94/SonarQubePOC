@@ -186,9 +186,8 @@ namespace d360.model.DataAccessLayer
                                                 on Responses.SurveyTypeId = ST.Id {additionalWhereClause}";
             response.total = companyContext.Query<int>(countQuery).FirstOrDefault();
 
-            string query = $@";WITH QuestionTypes
-                                     AS (select 
-		                                QT.Id as TypeId,
+            string QuestionsCTE = @"select 
+		                                ST.Id as TypeId,
 		                                QT.Uid,
 		                                QT.Name,
 		                                QT.Description,
@@ -198,7 +197,12 @@ namespace d360.model.DataAccessLayer
 			                                WHEN QT.DisplayStyle = 3 THEN 'CheckList'
 		                                END AS DisplayStyle,
 		                                (select Name, Value from QuestionTypeOption WHERE QuestionTypeID = QT.Id for json path) as Options
-		                                from QuestionType QT)
+		                                from QuestionType QT
+                                        cross apply(
+											select ST.ID From SurveyType ST where QT.SurveyTypeID = ST.ID
+											)ST(Id)";
+
+            string query = $@";WITH QuestionTypes AS ({QuestionsCTE})
                                 select 
 	                                ST.Uid,
 	                                AT.Uid as AssetTypeUid,

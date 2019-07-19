@@ -39,7 +39,7 @@ export class ResponsibilityRelationsComponent extends BaseComponent implements O
 
     private theDeleteCallback: Function;
 
-    
+
     constructor(private responsibilityTypeService: ResponsibilityTypeService, private messagesService: MessagesService) {
         super();
 
@@ -73,12 +73,12 @@ export class ResponsibilityRelationsComponent extends BaseComponent implements O
 
         this.isLoading = true;
 
-        this.responsibilityTypeService.getRelationFormData().then(formData => {
+        this.responsibilityTypeService.getRelationFormData().subscribe(formData => {
             this.commonFormData = formData;
 
             if (this.queryType === 'A') {
                 this.responsibilityTypeService.getRelationsByAssetType(this.id)
-                    .then(data => {
+                    .subscribe(data => {
                         this.rows = data;
                         this.selectedRow = null;
 
@@ -96,7 +96,7 @@ export class ResponsibilityRelationsComponent extends BaseComponent implements O
             }
             else {
                 this.responsibilityTypeService.getRelationsByResponsibilityType(this.id)
-                    .then(data => {
+                    .subscribe(data => {
                         this.rows = data;
                         this.selectedRow = null;
 
@@ -119,7 +119,7 @@ export class ResponsibilityRelationsComponent extends BaseComponent implements O
         this.selectedRow = item;
         this.isEditing = true;
         this.isDeleting = false;
-        this.isAdding = false;       
+        this.isAdding = false;
         this.onEdit.emit();
     }
 
@@ -127,8 +127,8 @@ export class ResponsibilityRelationsComponent extends BaseComponent implements O
         this.selectedRow = new ResponsibilityTypeRelation();
         this.selectedRow.ResponsibilityTypeID = this.id;
         this.isEditing = true;
-        this.isDeleting = false;  
-        this.onAdd.emit();      
+        this.isDeleting = false;
+        this.onAdd.emit();
     }
 
     delete(item: ResponsibilityTypeRelation): void {
@@ -138,7 +138,7 @@ export class ResponsibilityRelationsComponent extends BaseComponent implements O
         this.isAdding = false;
         //this.onDelete.emit();
     }
-    
+
     editComplete(event) {
         this.isEditing = false;
         this.onCancel.emit();
@@ -147,9 +147,9 @@ export class ResponsibilityRelationsComponent extends BaseComponent implements O
     }
 
     deleteResponsibilityTypeRelation(id: number) {
-        this.responsibilityTypeService.deleteRelation(this.selectedRow).then(res => {
+        this.responsibilityTypeService.deleteRelation(this.selectedRow).subscribe(res => {
             this.showMessageForResult(this.messagesService, res);
-            if (!res.isError){   
+            if (!res.isError){
                 this.isDeleting = false;
                 //let index = this.rows.findIndex(f => f.ID == id);
                 //if (index >= 0 && index < this.rows.length)
@@ -157,7 +157,7 @@ export class ResponsibilityRelationsComponent extends BaseComponent implements O
                 this.onDelete.emit();
                 this.load();
             }
-        });        
+        });
     }
 
     private htmlDecode(val: string): string {
