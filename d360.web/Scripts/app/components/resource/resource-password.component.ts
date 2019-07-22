@@ -1,7 +1,7 @@
 ﻿import { Component, EventEmitter, Output } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { UriBasedService } from '../../services/uri-based.service';
-import { MessagesService } from '../../services/messages.service';
+import { MessagesObservableService } from '../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-resource-password',
@@ -60,7 +60,7 @@ export class ResourcePasswordComponent extends BaseComponent{
 
     constructor(
         private uriBasedService: UriBasedService,
-        protected messagesService: MessagesService) {
+        protected messagesService: MessagesObservableService) {
         super();
     }
 

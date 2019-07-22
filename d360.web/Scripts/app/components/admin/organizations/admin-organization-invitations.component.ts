@@ -4,11 +4,11 @@ import {Router} from '@angular/router';
 import {Organization, OrganizationInvitation} from '../../../models/organization.model';
 
 import {OrganizationsService} from '../../../services/organizations.service';
-import {MessagesService} from '../../../services/messages.service';
 
 import {BaseComponent} from '../../shared/base.component';
 
 import {SiteUrlHelpers} from '../../../static/site-url-helpers';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-admin-organization-invitations',
@@ -124,7 +124,7 @@ export class AdminOrganizationInvitationsComponent extends BaseComponent impleme
     constructor(
         private router: Router,
         private organizationsService: OrganizationsService,
-        private messagesService: MessagesService
+        private messagesService: MessagesObservableService
     ) {
         super();
         this.theDeleteCallback = this.delete.bind(this);

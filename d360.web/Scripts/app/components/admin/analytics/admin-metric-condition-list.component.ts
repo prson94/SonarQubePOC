@@ -3,7 +3,7 @@ import { BaseComponent } from '../../shared/base.component';
 import { MetricsService } from '../../../services/metrics.service';
 import { MetricAssetVersionConditionViewModel, MetricFieldTypeViewModel, MetricFieldTypeValueViewModel } from '../../../models/metrics.model';
 import { FormMode } from '../../../models/form.model';
-import { MessagesService } from '../../../services/messages.service';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-admin-metric-condition-list',
@@ -109,7 +109,7 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
         { value: 'gte', label: '>=' },
     ];
 
-    constructor(private metricsService: MetricsService, protected messagesService: MessagesService) {
+    constructor(private metricsService: MetricsService, protected messagesService: MessagesObservableService) {
         super();
     }
 

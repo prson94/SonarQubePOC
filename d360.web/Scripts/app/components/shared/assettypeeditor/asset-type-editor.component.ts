@@ -3,7 +3,7 @@ import { SelectItem } from 'primeng/primeng';
 import { BaseComponent } from '../../shared/base.component';
 import { AssetTypeService } from "../../../services/asset-type.services";
 import { AssetTypeClass, AssetTypeEditorModel } from "../../../models/asset.model";
-import { MessagesService } from '../../../services/messages.service';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-asset-type-editor',
@@ -36,7 +36,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
     showAssetArtifactSettings: boolean = false;
     showNotesField: boolean = false;
 
-    constructor(private assetTypeService: AssetTypeService, private messagesService: MessagesService) {
+    constructor(private assetTypeService: AssetTypeService, private messagesService: MessagesObservableService) {
         super();
     }    
 

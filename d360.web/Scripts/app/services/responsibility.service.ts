@@ -1,8 +1,6 @@
 ﻿import { Injectable } from '@angular/core';
 import { FormHelper, SelectItem } from '../models/form.model';
 import { ResponsibilityEditorModel, ResponsibilityItem, ResponsibilityItemDetail, IResponsibilityService } from '../models/responsibility.model';
-import { MessagesService } from './messages.service';
-import { BaseService } from './base.service';
 import { JsonResult } from '../models/jsonresult.model';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, map } from 'rxjs/operators';

@@ -2,10 +2,10 @@
 import { Column } from 'primeng/primeng';
 import { Lookup, LookupItem } from '../../../models/lookup.model';
 import { GridDefinition, GridColumn, GridField } from '../../../models/grid-definition.model';
-import { MessagesService } from '../../../services/messages.service';
 import { GridDefinitionService } from '../../../services/grid-definition.service';
 import { UriBasedService } from '../../../services/uri-based.service';
 import { BaseComponent } from '../../shared/base.component';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 /* FIXME: Extract templates and styles to their own files
 *  https://angular.io/guide/styleguide#style-05-04 */
 @Component({
@@ -131,7 +131,7 @@ export class DynamicGridComponent extends BaseComponent implements OnChanges {
         return this.columns.map(c => c.datafield);
     }
 
-    constructor(private gridDefinitionService: GridDefinitionService, private uriBasedService: UriBasedService, private messagesService: MessagesService) {
+    constructor(private gridDefinitionService: GridDefinitionService, private uriBasedService: UriBasedService, private messagesService: MessagesObservableService) {
         super();
         this.theDeleteCallback = this.deleteItem.bind(this);
     }

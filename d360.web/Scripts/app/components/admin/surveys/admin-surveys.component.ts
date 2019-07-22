@@ -2,11 +2,11 @@
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { SurveysService } from '../../../services/surveys.service';
-import { MessagesService } from '../../../services/messages.service';
 import { AdminBaseComponent } from '../admin-base.component'
 import { Title } from '@angular/platform-browser';
 import { SurveyType } from '../../../models/survey.model';
 import { catchError } from 'rxjs/operators';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-admin-surveys',
@@ -99,7 +99,7 @@ export class AdminSurveysComponent extends AdminBaseComponent {
 
     public theDeleteCallback: Function;
 
-    constructor(private surveysService: SurveysService, headerBreadcrumbService: HeaderBreadcrumbService, private messagesService: MessagesService, titleService: Title) {
+    constructor(private surveysService: SurveysService, headerBreadcrumbService: HeaderBreadcrumbService, private messagesService: MessagesObservableService, titleService: Title) {
         super(headerBreadcrumbService, titleService);
         this.areaName = "Surveys";
         this.setCommonItems();

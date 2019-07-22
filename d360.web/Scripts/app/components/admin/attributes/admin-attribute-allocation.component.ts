@@ -1,9 +1,9 @@
 ﻿import {Component, Input, SimpleChange} from '@angular/core';
-import {MessagesService} from '../../../services/messages.service';
 import {AttributeTypeService} from '../../../services/attribute-type.service';
 import {BaseComponent} from '../../shared/base.component';
 import {AttributeTypeAllocation} from '../../../models/attribute-type.model';
 import * as _ from 'lodash';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-admin-attribute-allocation',
@@ -23,7 +23,7 @@ export class AdminAttributeAllocationComponent extends BaseComponent {
     theDeleteCallback: Function;
 
     constructor(
-        private messagesService: MessagesService,
+        private messagesService: MessagesObservableService,
         private attributeTypeService: AttributeTypeService
     ) {
         super();

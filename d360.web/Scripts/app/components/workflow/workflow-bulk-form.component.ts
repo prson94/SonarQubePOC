@@ -14,9 +14,9 @@ import { D3SObjectHelpers } from '../../static/d3s-object-helpers';
 import { TagService } from '../../services/tag.service';
 import { ResourcesService } from '../../services/resources.service';
 import { Resource } from '../../models/resource.model';
-import { MessagesService } from '../../services/messages.service';
 import { SubscriptionLike as ISubscription } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { MessagesObservableService } from '../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-workflow-bulk-form',
@@ -161,7 +161,7 @@ export class WorkflowBulkFormComponent extends BaseComponent implements OnInit, 
     constructor(private route: ActivatedRoute,
             protected headerBreadcrumbService: HeaderBreadcrumbService,
             protected workflowService: WorkflowService,
-            protected messagesService: MessagesService
+            protected messagesService: MessagesObservableService
         )
     {
         super();

@@ -2,9 +2,9 @@ import { Input, Component, EventEmitter, Output, OnInit, ViewChild, ElementRef }
 import { MetricsService } from '../../../services/metrics.service';
 import { MetricAssetViewModel, MetricFieldTypeViewModel } from '../../../models/metrics.model';
 import { BaseComponent } from '../../shared/base.component';
-import { MessagesService } from '../../../services/messages.service';
 import { FormMode } from "../../../models/form.model";
 import { FormHelpers } from '../../../static/form-helpers';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 
 @Component({
@@ -34,7 +34,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit 
     conditionFormMode = FormMode.Default;
     FormMode = FormMode;
 
-    constructor(private metricsService: MetricsService, protected messagesService: MessagesService) {
+    constructor(private metricsService: MetricsService, protected messagesService: MessagesObservableService) {
         super();
     }
 

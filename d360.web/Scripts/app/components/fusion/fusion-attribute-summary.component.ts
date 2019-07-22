@@ -10,7 +10,6 @@
 } from '@angular/core';
 import {Router} from '@angular/router';
 import {FusionAttributeService} from '../../services/fusion-attribute.service';
-import {MessagesService} from '../../services/messages.service';
 import {GridDefinitionService} from '../../services/grid-definition.service';
 import {BaseComponent} from '../shared/base.component';
 import {FusionAttributeType} from '../../models/fusion.model';
@@ -19,6 +18,7 @@ import {FusionAttributePagedResults} from '../../models/fusion-attribute.model';
 import {GridColumn, GridField, GridFilterColumn} from '../../models/grid-definition.model';
 import {SiteUrlHelpers} from '../../static/site-url-helpers';
 import {StateService} from '../../services/state.service';
+import { MessagesObservableService } from '../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-fusion-attribute-summary',
@@ -164,7 +164,7 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
     constructor(
         private gridDefinitionService: GridDefinitionService,
         private fusionAttributeService: FusionAttributeService,
-        private messagesService: MessagesService,
+        private messagesService: MessagesObservableService,
         private router: Router,
         private stateService: StateService,
         private changeDetectorRef: ChangeDetectorRef

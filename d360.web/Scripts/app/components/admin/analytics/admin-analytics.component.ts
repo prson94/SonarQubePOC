@@ -1,13 +1,12 @@
 ﻿import { Input, Component, OnInit, OnDestroy, Output } from '@angular/core';
-import { MessagesService } from '../../../services/messages.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { RightSidebarService } from '../../../services/right-sidebar.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
 //import { RightSidebarItem } from '../../../models/rightsidebar.model';
 import { AssetTypeMetricModel } from '../../../models/asset.model'; 
-import { EventEmitter } from 'events';
 import { MetricsService } from '../../../services/metrics.service'; 
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-admin-analytics-component',
@@ -37,7 +36,7 @@ export class AdminAnalyticsComponent extends AdminBaseComponent implements OnIni
 
     constructor(
         rightSidebarService: RightSidebarService,
-        protected messagesService: MessagesService,
+        protected messagesService: MessagesObservableService,
         private metricsService: MetricsService, 
         headerBreadcrumbService: HeaderBreadcrumbService,
         titleService: Title) {
