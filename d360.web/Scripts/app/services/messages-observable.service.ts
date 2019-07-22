@@ -52,6 +52,9 @@ export class MessagesObservableService {
             objError = new Error(error.toString());
         }
 
+        if (error.message)
+            objError.message = error.message;
+
         model = {Name: objError.name, Message: objError.message, Stack: objError.stack};
 
         return this.http.post('api/v2/errors/log/clienterror', model).pipe(
