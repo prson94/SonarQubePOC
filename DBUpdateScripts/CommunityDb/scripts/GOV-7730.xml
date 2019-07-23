@@ -11,12 +11,18 @@
             splitStatements="true"
             stripComments="true">
 <![CDATA[
-insert into [dbo].[Setting]([ID],[FieldName],[Name],[Description],[DefaultValue]) values((SELECT ISNULL(MAX(ID) + 1, 1) FROM Setting),'EnableTagging','Enable Tagging','This system setting is to enable/disable tagging ','false')
+IF NOT EXISTS (SELECT 1 FROM [Setting] where ID = 67)
+BEGIN
+	insert into [dbo].[Setting]([ID],[FieldName],[Name],[Description],[DefaultValue]) values(67,'EnableTagging','Enable Tagging','This system setting is to enable/disable tagging ','false')
+END
 ]]>
     </sql>
 	<rollback>
 <![CDATA[
-Delete from [dbo].[Setting] where [FieldName] = 'EnableTagging' and [Name] = 'Enable Tagging'
+IF EXISTS (SELECT 1 FROM [Setting] where ID = 67)
+BEGIN
+	Delete from [dbo].[Setting] where [ID] = 67
+END
 ]]>
 	</rollback>
   </changeSet>
