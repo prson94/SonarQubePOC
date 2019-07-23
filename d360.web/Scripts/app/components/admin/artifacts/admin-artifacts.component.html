@@ -6,7 +6,7 @@
             </header>
             <input type="text" pInputText [(ngModel)]="searchValue" placeholder="Search..." style="width: 100%;margin-bottom:10px;">    
             
-            <p-treeTable [value]="ArtifactTypes | treeSearch: searchValue:'Name'" selectionMode="single" dataKey="ID" [(selection)]="selectedRow"  metaKeySelection="true">
+            <p-treeTable [value]="ArtifactTypes | treeSearch: searchValue:'Name'" selectionMode="single" [(selection)]="selectedRow"  metaKeySelection="true">
                 <ng-template pTemplate="header">
                     <tr>
                         <th style="width: 60%">Name</th>
