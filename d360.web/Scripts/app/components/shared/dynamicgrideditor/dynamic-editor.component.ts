@@ -24,6 +24,7 @@ import {CascadeService} from '../../../services/cascade.service';
 import {BaseComponent} from '../base.component';
 
 import {FormHelpers} from '../../../static/form-helpers';
+import { concat } from 'rxjs';
 
 @Component({
     selector: 'd3s-dynamic-editor',
@@ -104,7 +105,6 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
     getDefinition() {
         let id = (this.selection ? this.selection[this.rowID] : null);
-
         this.isLoading = true;
 
         this.editorDefinitionService.getEditorDefinition(

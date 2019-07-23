@@ -1,0 +1,61 @@
+﻿<div class="row">
+    <div class="col l4 s12">
+        <div class="tile tile-detail">
+            <header *ngIf="!showEditor && !showDelete">
+                Tags
+                <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
+            </header>
+            <d3s-loading [isLoading]="isLoading"></d3s-loading>
+            <span *ngIf="!isLoading && !showDelete && !showEditor">
+                <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                <p-table #dt [value]="tags" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Value']" sortField="Value" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="10" [(selection)]="selected">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th [pSortableColumn]="'Value'" style="width: 25%">
+                                Value
+                                <d3s-sortIcon [field]="'Value'"></d3s-sortIcon>
+                            </th>
+                            <th style="width: 60px"></th>
+                        </tr>
+                        <tr [hidden]="showSimpleFilter">
+                            <th><d3s-column-filter [field]="'Value'" [datatype]="'text'"></d3s-column-filter></th>
+                            <th></th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-item>
+                        <tr (dblclick)="selected=item;showEditor=true" [pSelectableRow]="item">
+                            <td>{{item.Value}}</td>
+                            <td>
+                                <div class="RowTools">
+                                    <a style="cursor:pointer;" (click)="selected=item;showEditor=true"><i class="fa fa-pencil"></i></a>
+                                    <a style="cursor:pointer;" (click)="selected=item;showDelete=true"><i class="fa fa-trash-o"></i></a>
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-template>
+                    <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                        <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                    </ng-template>
+                </p-table>
+            </span>
+            <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.uid" [objectType]="'Tag'" [title]="'Tag'" [selection]="selected" (saveClick)="saveTag($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>
+            <d3s-delete-form *ngIf="showDelete"
+                             [callback]="theDeleteCallback"
+                             [itemId]="selected?.uid"
+                             [method]="'callback'"
+                             [prompt]="'Are you sure you want to delete the tag [' + [selected?.Value] + ']?'"
+                             (onCancel)="showDelete=false;"></d3s-delete-form>
+        </div>
+    </div>
+    <div class="col l8 s12" *ngIf="!showEditor && !showDelete && selected">
+        <div class="row">
+            <div class="col s12">
+                <div class="tile tile-detail">
+                    <object-detail [objectType]="'Tag'" [objectID]="selected?.uid"></object-detail>
+                </div>
+            </div>
+        </div>
+        <div>
+        </div>
+    </div>
+</div>

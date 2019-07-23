@@ -597,6 +597,7 @@
     <Content Include="Scripts\app\components\admin\customapi\admin-customapi-service-namespace.component.html" />
     <Content Include="Scripts\app\components\admin\customapi\admin-customapi.component.html" />
     <Content Include="Scripts\app\components\admin\load\load.form.html" />
+    <Content Include="Scripts\app\components\admin\tags\admin-tags.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-column-filter.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-grid.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-item.component.html" />
@@ -1153,6 +1154,9 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\organizations\admin-organization-contract-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\tags\admin-tags.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\tags\admin-tags.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\tags\admin-tags.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-tabs.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-data-profile-detail.component.ts" />

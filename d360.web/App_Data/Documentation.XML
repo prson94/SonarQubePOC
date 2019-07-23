@@ -2605,7 +2605,7 @@
             This service houses all endpoints handling actions management in Govern.
             </summary>
         </member>
-        <member name="M:d360.web.Controllers.V2.ActionsController.GetIssues(System.String,System.String)">
+        <member name="M:d360.web.Controllers.V2.ActionsController.GetIssues(System.Nullable{System.Guid},System.Nullable{System.Guid})">
             <summary>
             Returns all actions.
             </summary>
@@ -3353,6 +3353,9 @@
             <param name="id">PolicyTypeID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.SurveyType_EditFields(System.Int32)">
+            <param name="id">SurveyTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Tag_EditFields(System.Int32)">
             <param name="id">SurveyTypeID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.Taxonomy_AddFields(System.Int32,System.Int32)">

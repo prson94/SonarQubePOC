@@ -22,7 +22,7 @@ namespace d360.model.DataAccessLayer
             var model = companyContext.Filter<Tag>(i => i.uid == uid).SingleOrDefault();
 
             if (model == null && model.State != State.Deleted) return false;
-                
+
             model.State = State.Deleted;
             return companyContext.SaveChanges() > 0;
         }
@@ -32,7 +32,7 @@ namespace d360.model.DataAccessLayer
             TagApiModelWrapper results = new TagApiModelWrapper();
             int pageSize = 0;
             int pageNum = 0;
-            
+
             var dbArgs = new DynamicParameters();
             var sql = @"select t.uid,
 	                        t.Value,
@@ -68,8 +68,9 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
-            if (queryParams.ToList().Any(q => q.Key.ToLower() == "_pagesize")) {
-                
+            if (queryParams.ToList().Any(q => q.Key.ToLower() == "_pagesize"))
+            {
+
                 if (int.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_pagesize").Value, out pageSize))
                 {
                     if (pageSize < 1) pageSize = 1;
@@ -100,9 +101,9 @@ namespace d360.model.DataAccessLayer
 
                 results.pageNum = pageNum;
                 results.pageSize = pageSize;
-                
-                sql += $" offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";                
-                
+
+                sql += $" offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
+
             }
 
             results.total = (await companyContext.QueryAsync<int>(countSql, dbArgs)).FirstOrDefault();
@@ -111,7 +112,7 @@ namespace d360.model.DataAccessLayer
             {
                 results.items = (await companyContext.QueryAsync<TagApiModel>(sql, dbArgs));
             }
-            
+
             return results;
         }
 
@@ -126,7 +127,7 @@ namespace d360.model.DataAccessLayer
                 CreatedOn = DateTime.UtcNow
             };
 
-            companyContext.Tags.Add(tag);
+            companyContext.Entry(tag).State = System.Data.Entity.EntityState.Added;
 
             companyContext.SaveChanges();
 
@@ -147,14 +148,15 @@ namespace d360.model.DataAccessLayer
             existingTag.Value = model.Value;
             existingTag.UpdatedBy = companyContext.CurrentResourceID;
             existingTag.UpdatedOn = DateTime.UtcNow;
-            
-            companyContext.SaveChanges();
+            companyContext.Entry(existingTag).State = System.Data.Entity.EntityState.Modified;
 
+            companyContext.SaveChanges();
+            UpdateTagAudit(existingTag);
             var updateUser = companyContext.GlobalReportingResources.First(x => x.ResourceID == companyContext.CurrentResourceID);
 
             var createUser = companyContext.GlobalReportingResources.FirstOrDefault(x => x.ResourceID == existingTag.CreatedBy);
-            
-            model.UpdatedOn = existingTag.UpdatedOn.GetValueOrDefault();            
+
+            model.UpdatedOn = existingTag.UpdatedOn.GetValueOrDefault();
             model.UpdatedByUid = updateUser.Uid;
             model.CreatedOn = existingTag.CreatedOn.GetValueOrDefault();
 
@@ -179,6 +181,12 @@ namespace d360.model.DataAccessLayer
         public bool DoesTagExists(TagApiModel model)
         {
             return companyContext.Tags.Any(x => x.Value == model.Value && x.uid != model.uid);
+        }
+
+        private void UpdateTagAudit(Tag tag)
+        {
+            var sql = $@"INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID]) VALUES ('Update','Tag',{tag.Id})";
+            companyContext.Query<int>(sql).FirstOrDefault();
         }
     }
 }
