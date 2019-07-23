@@ -25,7 +25,7 @@ namespace d360.web.Controllers.V2
         ApiVersion("2.0"),
         RoutePrefix("api/v{version:apiVersion}/tags"),
         Authorize,
-        ApiExplorerSettings(IgnoreApi = true)
+        ApiExplorerSettings(IgnoreApi = false)
     ]
     public class TagsController : BaseV2ApiController
     {        
@@ -182,5 +182,60 @@ namespace d360.web.Controllers.V2
 
             return ResponseMessage(Request.CreateResponse<TagApiModel>(HttpStatusCode.OK, result));
         }
+
+
+        /// <summary>
+        /// Allows you to remove a tag based on tag lists.
+        /// </summary>
+        /// <returns>A status for the DELETE request.</returns>
+        [
+            HttpDelete,
+            Route(""),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the DELETE request.", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the tag was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse))
+        ]
+        public IHttpActionResult BulkTagDelete(List<TagApiDeleteModel> model)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+
+            if (!tagRepository.DeleteTags(model))
+            {
+                return errorMessageResponse(HttpStatusCode.NotFound, "Error removing tags", "Tag not found.");
+            }
+
+            return successMessageResponse(HttpStatusCode.OK, "Tags removed.", "Tags successfully removed.");
+        }
+
+
+        /// <summary>
+        /// Consolidates tags
+        /// </summary>
+        /// <returns>A status for the POST request.</returns>
+        [
+            HttpPost,
+            Route("consolidate/{parentUid}"),
+            /// <param name="parentUid">The unique identifier of the parent tag.</param>        
+            /// <param name="childrenUids">The list of children tags which we want to consolidate.</param>
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the tag was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse))
+        ]
+        public IHttpActionResult ConsolidateTags(string parentUid, List<string> childrenUids)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+
+            if (true)
+            {
+                return errorMessageResponse(HttpStatusCode.NotImplemented, "Error consolidating tags", "Method not implemented!");
+            }
+
+            return successMessageResponse(HttpStatusCode.OK, "Tags consolidated.", "Tags successfully consolidated.");
+        }
+
     }
 }

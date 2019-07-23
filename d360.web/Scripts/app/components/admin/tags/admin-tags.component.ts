@@ -6,6 +6,7 @@ import { AdminBaseComponent } from '../admin-base.component'
 import { Title } from '@angular/platform-browser';
 import { TagType } from '../../../models/tag.model';
 import { RightSidebarService } from '../../../services/right-sidebar.service';
+import { forEach } from '@angular/router/src/utils/collection';
 
 @Component({
     selector: 'd3s-admin-tags',
@@ -15,17 +16,21 @@ import { RightSidebarService } from '../../../services/right-sidebar.service';
 
 export class AdminTagsComponent extends AdminBaseComponent {
     tags: TagType[] = [];
-    selected: TagType;
+    selected: TagType[] = [];
 
     error: any;
 
+    deletePromptHTML: string;
+    consolidatePromptHTML: string;
     showDelete: boolean = false;
     showEditor: boolean = false;
+    showConsolidate: boolean = false
 
 
     public theDeleteCallback: Function;
+    public theConsolidateCallback: Function;
 
-    constructor(private tagsService: TagService, headerBreadcrumbService: HeaderBreadcrumbService, private messagesService: MessagesService, titleService: Title, rightSidebarService: RightSidebarService,) {
+    constructor(private tagsService: TagService, headerBreadcrumbService: HeaderBreadcrumbService, private messagesService: MessagesService, titleService: Title, rightSidebarService: RightSidebarService, ) {
         super(headerBreadcrumbService, titleService, rightSidebarService);
         this.areaName = "Tags";
         this.setCommonItems();
@@ -41,8 +46,8 @@ export class AdminTagsComponent extends AdminBaseComponent {
         }
         this.getTags();
 
-        this.theDeleteCallback = this.deleteTag.bind(this);
-
+        this.theDeleteCallback = this.deleteTags.bind(this);
+        this.theConsolidateCallback = this.consolidateTags.bind(this);
     }
 
     ngOnDestroy() {
@@ -54,22 +59,30 @@ export class AdminTagsComponent extends AdminBaseComponent {
         this.tagsService.getTagsList().subscribe(res => {
             if (res && res.length > 0) {
                 this.tags = res.sort((a, b) => a.Value.localeCompare(b.Value));
-                if (this.tags.length > 0) this.selected = this.tags[0];
+                if (this.tags.length > 0) this.selected.push(this.tags[0]);
             }
             this.isLoading = false;
         }, err => this.error = err);
     }
 
 
+
+    selectSingleItem(item: TagType) {
+        this.selected = [];
+        this.selected.push(item);
+    }
+
+
     closeEditor() {
         this.showEditor = false;
-        if (this.selected == null && this.tags.length > 0)
-            this.selected = this.tags[0];
+        if (this.selected.length == 0 && this.tags.length > 0)
+            this.selectSingleItem(this.tags[0]);
     }
 
     add() {
+        this.selected = [];
         this.showEditor = true;
-        this.selected = null;
+
     }
     saveTag(event) {
         this.tagsService.saveTag(event.item)
@@ -81,23 +94,65 @@ export class AdminTagsComponent extends AdminBaseComponent {
                 else {
                     this.tags[this.findTagIndex(event.item.uid)] = event.item;
                 }
-                this.selected = event.item;
+                this.selected = [];
+                event.item.UseCount = 0;
+                this.selected.push(event.item);
+
                 this.showEditor = false;
+
             });
     }
 
-    deleteTag(uid: string) {
-        this.tagsService.deleteTagByUid(uid).
+    deleteTags() {
+        this.tagsService.deleteTags(this.selected).
             subscribe(result => {
                 this.showMessageForResult(this.messagesService, result);
                 //remove the template with this id from the grid
                 if (result.type != 'error') {
-                    this.tags.splice(this.findTagIndex(uid), 1);
-                    this.selected = this.tags.length > 0 ? this.tags[0] : null;
+                    this.selected.forEach(t => {
+                        this.tags.splice(this.findTagIndex(t.uid), 1);
+                    })
+                    this.selected = [];
                 }
                 this.showDelete = false;
             }, err => this.showMessageForResult(this.messagesService, err));
     }
+
+    openDeleteModal() {
+        this.deletePromptHTML = '';
+        if (this.selected.length == 1) {
+            this.deletePromptHTML = `Please confirm that you wish to delete the tag '${this.selected[0].Value}' (${this.selected[0].UseCount} assets tagged)`;
+        }
+        else {
+            let tagList = '';
+            this.selected.forEach(t => {
+                tagList += `<li>${t.Value} ${t.UseCount} assets tagged<li>`;
+            });
+            this.deletePromptHTML = `Please confirm that you wish to delete following tags:<ul>${tagList}</ul>`;
+        }
+        this.showDelete = true;
+    }
+
+    openConsolidateModal() {
+        this.showConsolidate = true;
+    }
+
+    consolidateTags(parentUid: string, childrenUids: string[]) {
+        this.tagsService.consolidateTags(parentUid, childrenUids)
+            .subscribe(result => {
+                this.showMessageForResult(this.messagesService, result);
+                //remove the template with this id from the grid
+                console.log(result);
+                if (result.type != 'error') {
+                    this.selected.forEach(t => {
+                        this.tags.splice(this.findTagIndex(t.uid), 1);
+                    })
+                    this.selected = [];
+                }
+                this.showConsolidate = false;
+            }, err => this.showMessageForResult(this.messagesService, err));
+    }
+
 
     findTagIndex(uid: string) {
         var index: number = -1;

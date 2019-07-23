@@ -3110,6 +3110,18 @@
             <param name="model">The tag to be updated.</param>
             <returns>The updated tag.</returns>
         </member>
+        <member name="M:d360.web.Controllers.V2.TagsController.BulkTagDelete(System.Collections.Generic.List{d360.core.entities.TagApiDeleteModel})">
+            <summary>
+            Allows you to remove a tag based on tag lists.
+            </summary>
+            <returns>A status for the DELETE request.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.TagsController.ConsolidateTags(System.String,System.Collections.Generic.List{System.String})">
+            <summary>
+            Consolidates tags
+            </summary>
+            <returns>A status for the POST request.</returns>
+        </member>
         <member name="M:d360.web.Controllers.V2.WorkflowController.GetWorkflowTypeAsync(System.Nullable{d360.core.enums.Workflow.ChangeType},System.Nullable{d360.core.enums.State})">
             <summary>
             Retrieves workflow types for the given asset type unique identifier / action type unique identifier/ relationship type unique identifier .

@@ -17,6 +17,15 @@ namespace d360.model.DataAccessLayer
             this.companyContext = context;
         }
 
+        public bool DeleteTags(List<TagApiDeleteModel> model)
+        {
+            foreach(var item in model)
+            {
+                DeleteTag(item.uid);
+            }
+            return true;
+        }
+
         public bool DeleteTag(Guid uid)
         {
             var model = companyContext.Filter<Tag>(i => i.uid == uid).SingleOrDefault();
@@ -36,6 +45,7 @@ namespace d360.model.DataAccessLayer
             var dbArgs = new DynamicParameters();
             var sql = @"select t.uid,
 	                        t.Value,
+                            '0' as UseCount,
 	                        t.CreatedOn,
 	                        grc.uid as CreatedByUid,
 	                        t.UpdatedOn,

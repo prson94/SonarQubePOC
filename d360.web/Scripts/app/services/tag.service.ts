@@ -39,6 +39,25 @@ export class TagService extends BaseObservableService {
                 catchError(err => this.handleError(err)));
     }
 
+    deleteTags(tags: TagType[]): Observable<any> {
+        let url = `api/v2/tags/`;
+
+        if (tags.length == 1)
+            return this.deleteTagByUid(tags[0].uid);
+
+        let body: any[] = []
+        tags.forEach(t => {
+            body.push({ 'uid': t.uid });
+        })
+
+        const httpHeaders = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' }), body: body
+        };
+        return this.http.delete(url, httpHeaders)
+            .pipe(map(response => <any>response),
+                catchError(err => this.handleError(err)));
+    }
+
     saveTag(tag: TagType): Observable<any> {
         let url = `api/v2/tags/`;
 
@@ -49,6 +68,13 @@ export class TagService extends BaseObservableService {
         }
         url = `api/v2/tags/${tag.uid}`;
         return this.http.put(url, tag)
+            .pipe(map(response => <any>response),
+                catchError(err => this.handleError(err)));
+    }
+
+    consolidateTags(parentTag: string, childrenTags: string[]): Observable<any> {
+        let url = `api/v2/tags/consolidate/${parentTag}`;
+        return this.http.post(url, childrenTags)
             .pipe(map(response => <any>response),
                 catchError(err => this.handleError(err)));
     }

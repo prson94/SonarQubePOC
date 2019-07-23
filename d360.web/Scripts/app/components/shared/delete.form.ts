@@ -20,6 +20,7 @@ export class DeleteForm  {
     @Input() prompt: string;
     @Input() callback: Function;
     @Input() itemId: number;
+    @Input() items: any[];
     @Output() onDeleteComplete = new EventEmitter();
     @Output() onDeleteSuccess = new EventEmitter();
     @Output() onDeleteFail = new EventEmitter();
@@ -43,7 +44,12 @@ export class DeleteForm  {
         this.isLoading = true;
         switch (this.method.toLowerCase()) {
             case 'callback':
-                this.callback(this.itemId);
+                if (this.items) {
+                    this.callback(this.items);
+                }
+                else {
+                    this.callback(this.itemId);
+                }
                  break;
             case 'post':
                 this.http.post(this.uri, JSON.stringify(this.model), { headers: headers }).pipe(

@@ -13,6 +13,8 @@ import { SharedDynamicGridEditorModule } from '../../shared/dynamicgrideditor/sh
 import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-object-details.module';
 
 import { AdminTagsComponent } from './admin-tags.component';
+import { AdminTagsActionComponent } from './admin-tags-action.component';
+import { AdminTagsConsolidateComponent } from './admin-tags-consolidate.component'
 
 
 import { AdminTagsRoutingModule } from './admin-tags.routes';
@@ -50,7 +52,9 @@ import { TableModule } from 'primeng/table';
         TilesModule,
     ],
     declarations: [
-        AdminTagsComponent
+        AdminTagsComponent,
+        AdminTagsActionComponent,
+        AdminTagsConsolidateComponent
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

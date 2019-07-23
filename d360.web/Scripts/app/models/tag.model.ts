@@ -11,6 +11,7 @@
 export class TagType {
     uid: string;
     Value: string;
+    UseCount: number;
     State: TagTypeState;
     CreatedOn: Date;
     CreatedBy: string;

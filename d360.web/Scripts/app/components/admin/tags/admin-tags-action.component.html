@@ -1,0 +1,18 @@
+﻿<div *ngIf="selectedTags.length > 1">
+    <div class="multiselect-action">
+        <div class="item-selection">
+            {{selectedTags.length}} items selected
+        </div>
+        <div class="hamburger-menu">
+            <div class="layer"></div>
+            <div class="layer"></div>
+            <div class="layer"></div>
+            <div class="actions">
+                <ul>
+                    <li (click)="onDeleteClick()">Delete</li>
+                    <li (click)="onConsolidateClick()">Consolidate</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

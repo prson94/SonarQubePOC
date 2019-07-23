@@ -1,0 +1,29 @@
+﻿<div>
+    <div class="row">
+        Please choose the one tag you wish to keep:
+
+        <table class="table table-borderless">
+            <thead>
+                <tr>
+                    <th width="30px;"></th>
+                    <th scope="col"></th>
+                    <th scope="col"></th>
+
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let tag of tags;">
+                    <td><input type="radio" name="radio" (click)="selectItem(tag);" checked="{{selected && tag.uid == selected.uid ? 'checked' : ''}}"  /></td>
+                    <td>{{tag.Value}}</td>
+                    <td>{{tag.UseCount}} assets tagged</td>
+                </tr>
+            </tbody>
+        </table>
+        All assets listed above will be tagged with the selected tag.
+        The other tags listed will be deleted.
+    </div>
+    <div class="row">
+        <button pButton (click)="consolidate()" label="Consolidate" [disabled]="!selected"></button>
+        <button pButton (click)="cancel()" label="Cancel" [disabled]="isLoading"></button>
+    </div>
+</div>

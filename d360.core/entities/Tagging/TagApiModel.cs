@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace d360.core.entities
-{    
+{
     public class TagApiModel
     {
 
@@ -16,6 +16,9 @@ namespace d360.core.entities
         public Guid uid { get; set; }
         [DataMember, StringLength(250)]
         public string Value { get; set; }
+
+        [DataMember]
+        public int UseCount { get; set; }
         [DataMember]
         public Guid? CreatedByUid { get; set; }
         [DataMember]
@@ -25,5 +28,11 @@ namespace d360.core.entities
         public Guid? UpdatedByUid { get; set; }
         [DataMember]
         public DateTime UpdatedOn { get; set; }
-    }    
+    }
+
+    public class TagApiDeleteModel
+    {
+        [DataMember]
+        public Guid uid { get; set; }
+    }
 }
