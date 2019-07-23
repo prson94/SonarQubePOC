@@ -178,15 +178,7 @@ namespace d360.web.Controllers.V2
                 queries.Add("A.uid = @assetUid");
                 dbArgs.Add("assetUid", assetUid);
             }
-            foreach (FieldType customField in fieldTypes)
-            {
-                if (queryParams.Any(x => x.Key == customField.Name))
-                {
-                    var paramval = queryParams.FirstOrDefault(x => x.Key == customField.Name).Value;
-                    queries.Add($"F{customField.ID}.FormattedValue = @field{customField.ID}");
-                    dbArgs.Add($"@field{customField.ID}", paramval);
-                }
-            }
+
             if (queries.Count() > 0)
             {
                 whereSql += " where ";
