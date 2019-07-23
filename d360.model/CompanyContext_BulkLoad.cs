@@ -839,6 +839,7 @@ order by	ColumnIndex", new { id });
 
         public async Task BulkLoadAssets(Load load, IAssetRepository repository)
         {
+            const int timeout = 600;
 
             if (load == null)
                 throw new ArgumentNullException("load cannot be null");
@@ -859,9 +860,9 @@ order by	ColumnIndex", new { id });
                 var parentAssetType = GetParentType(assetType.ObjectID, SystemObjectHelper.GetSystemObjects(assetType.Class));
 
                 //need to calculate key hashes to figure out which assets to put and post
-                await LoadLookupValues(load, assetType);
-                await CalculateHashes(load, assetType);
-                await GenerateExecutionItemUids(load);
+                await LoadLookupValues(load, assetType, timeout);
+                await CalculateHashes(load, assetType, timeout);
+                await GenerateExecutionItemUids(load, timeout);
 
 
                 var putAssets = new List<AssetUpdate>();
@@ -973,7 +974,7 @@ order by	ColumnIndex", new { id });
 
                         foreach (var field in rowColumns)
                         {
-                            var col = loadColumns.FirstOrDefault(c => c.ColumnIndex == field.ColumnIndex); // load.LoadColumns.Where(c => c.LoadID == load.ID && c.ColumnIndex == field.ColumnIndex).FirstOrDefault();
+                            var col = loadColumns.FirstOrDefault(c => c.ColumnIndex == field.ColumnIndex); 
 
                             if (!fieldsToSkip.Contains(col.Name))
                             {
@@ -1037,9 +1038,15 @@ order by	ColumnIndex", new { id });
             public int LoadID { get; set; }
         }
 
-        private async Task LoadLookupValues(Load load, AssetType assetType)
+        private async Task LoadLookupValues(Load load, AssetType assetType, int timeout = 90)
         {
-            var resolveLookupSql = @"
+            var resolveLookupSql = $@"
+
+declare @id int, @Object varchar(50), @ObjectID int;
+set @id = {load.ID};
+set @Object = '{assetType.Object}';
+set @ObjectID = {assetType.ObjectID};
+
 begin
 
 	update	T
@@ -1307,11 +1314,11 @@ end
 
 ";
 
-            await QueryAsync<int>(resolveLookupSql, new { id = load.ID, @object = assetType.Object, objectId = assetType.ObjectID });
+            await QueryAsync<int>(resolveLookupSql, timeout: timeout);
 
         }
 
-        private async Task CalculateHashes(Load load, AssetType assetType)
+        private async Task CalculateHashes(Load load, AssetType assetType, int timeout = 90)
         {
             var parentAssetType = GetParentTypeById(assetType.ID);
 
@@ -1540,13 +1547,13 @@ where	T.LoadID = @id;
                         where		ATT.[ObjectID] = @ObjectID"
                         , new { id = load.ID, rowIndex = row, objectID = assetType.ObjectID })).FirstOrDefault();
 
-                    await QueryAsync<int>(modelHashSql, new { @object = assetType.Object, objectID = assetType.ObjectID, id = load.ID, rowIndex = row, currLevel });
+                    await QueryAsync<int>(modelHashSql, new { @object = assetType.Object, objectID = assetType.ObjectID, id = load.ID, rowIndex = row, currLevel }, timeout: timeout);
 
                 }
             }
             else if (assetType.Class == AssetTypeClass.Reference)
             {
-                await QueryAsync<int>(referenceItemHashSql, new { @object = assetType.Object, objectID = assetType.ObjectID, id = load.ID });
+                await QueryAsync<int>(referenceItemHashSql, new { @object = assetType.Object, objectID = assetType.ObjectID, id = load.ID }, timeout: timeout);
             }
 
             //find object/objectid for existing items
@@ -1564,7 +1571,7 @@ where	T.LoadID = @id;
                 cross apply[GetArtifactKeyHashByIdWithParent](A.ID) S
                 outer apply GetParentByAssetId(A.ID) P
                 left join Asset AP on AP.ID = P.ID
-        where S.KeyHash = T.KeyHash and T.LoadID = @id", new { @object = assetType.Object, objectID = assetType.ObjectID, id = load.ID });
+        where S.KeyHash = T.KeyHash and T.LoadID = @id", new { @object = assetType.Object, objectID = assetType.ObjectID, id = load.ID }, timeout: timeout);
 
             }
             else if (parentAssetType != null)
@@ -1582,7 +1589,7 @@ where	T.LoadID = @id;
                 outer apply GetParentByAssetId(A.ID) P
                 left join Asset AP on AP.ID = P.ID
         where S.KeyHash = T.KeyHash and T.LoadID = @id",
-new { @object = assetType.Object, objectID = assetType.ObjectID, id = load.ID });
+new { @object = assetType.Object, objectID = assetType.ObjectID, id = load.ID }, timeout: timeout);
             }
             else
             {
@@ -1597,15 +1604,15 @@ new { @object = assetType.Object, objectID = assetType.ObjectID, id = load.ID })
                 inner join Asset A on A.AssetTypeID = ST.ID
                 cross apply GetAssetKeyHashById(A.ID) S
         where S.KeyHash = T.KeyHash and T.LoadID = @id",
-        new { @object = assetType.Object, objectID = assetType.ObjectID, id = load.ID });
+        new { @object = assetType.Object, objectID = assetType.ObjectID, id = load.ID }, timeout: timeout);
 
             }
 
         }
 
-        private async Task GenerateExecutionItemUids(Load load)
+        private async Task GenerateExecutionItemUids(Load load, int timeout = 90)
         {
-            await QueryAsync<int>(@"update LoadItem set ExecutionItemUid = newid() where LoadID = @id", new { id = load.ID });
+            await QueryAsync<int>(@"update LoadItem set ExecutionItemUid = newid() where LoadID = @id", new { id = load.ID }, timeout: timeout);
         }
 
         private async Task<string> GetModelKeyHashForLevel(LoadItem item, AssetType assetType, int level)
