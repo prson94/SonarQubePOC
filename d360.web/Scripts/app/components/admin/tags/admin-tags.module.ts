@@ -15,6 +15,7 @@ import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-obj
 import { AdminTagsComponent } from './admin-tags.component';
 import { AdminTagsActionComponent } from './admin-tags-action.component';
 import { AdminTagsConsolidateComponent } from './admin-tags-consolidate.component'
+import { D3SCheckbox } from '../../shared/controls/gov-checkbox';
 
 
 import { AdminTagsRoutingModule } from './admin-tags.routes';
@@ -54,7 +55,8 @@ import { TableModule } from 'primeng/table';
     declarations: [
         AdminTagsComponent,
         AdminTagsActionComponent,
-        AdminTagsConsolidateComponent
+        AdminTagsConsolidateComponent,
+        D3SCheckbox
     ],
     providers: [
         { provide: XHRBackend, useClass: AuthenticationConnectionBackend },

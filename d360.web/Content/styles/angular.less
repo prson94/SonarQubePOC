@@ -2380,73 +2380,88 @@ modal-overlay .modal-dialog .content {
     overflow-y: auto;
 }
 
-.multiselect-action {
-    height: 34px;
-    width: fit-content;
+.tag-actions {
+    position: absolute;
+    top: 10px;
+    right: 200px;
 
-    .item-selection {
-        font-size: 14px;
-        font-weight: bold;
-        background-color: rgb(238,238,238);
-        padding: 5px 10px;
-        border-radius: 2px 0px 2px 0px;
-        border: 1px solid rgb(239,239,239);
+
+    .multiselect-action {
         height: 34px;
         float: left;
-    }
+        margin-right:30px;
 
-    .hamburger-menu {
-        width: 35px;
-        background-color: rgb(238,238,238);
-        height: 34px;
-        float: left;
-        border-radius: 0px 2px 0px 2px;
-        padding: 10px;
-        position: relative;
 
-        .actions {
-            display: none;
+        .item-selection {
+            font-size: 14px;
+            font-weight: bold;
+            background-color: rgb(238,238,238);
+            padding: 5px 10px;
+            border-radius: 2px 0px 2px 0px;
+            border: 1px solid rgb(239,239,239);
+            height: 34px;
+            float: left;
         }
 
-        &:hover {
-            background-color: rgb(200,200,200);
-            cursor: pointer;
+        .hamburger-menu {
+            width: 35px;
+            background-color: rgb(238,238,238);
+            height: 34px;
+            float: left;
+            border-radius: 0px 2px 0px 2px;
+            padding: 10px;
+            position: relative;
 
             .actions {
-                display: block;
+                display: none;
             }
-        }
 
-        .layer {
-            background-color: black;
-            width: 14px;
-            height: 2px;
-            margin: 0 auto;
-            margin-top: 2px;
-        }
+            &:hover {
+                background-color: rgb(200,200,200);
+                cursor: pointer;
 
-        .actions {
-            position: absolute;
-            background-color: white;
-            z-index: 2;
-            width: 200px;
-            top: 34px;
-            left:0px;
-            box-shadow: 0px 0px 3px 0px #808080;
+                .actions {
+                    display: block;
+                }
+            }
 
-            ul {
-                margin: 0px;
+            .layer {
+                background-color: black;
+                width: 14px;
+                height: 2px;
+                margin: 0 auto;
+                margin-top: 2px;
+            }
 
-                li {
-                    font-size: 14px;
-                    color: black;
-                    padding: 10px;
-                    &:hover{
-                        background-color:rgb(220,241,247);
+            .actions {
+                position: absolute;
+                background-color: white;
+                z-index: 2;
+                width: 200px;
+                top: 34px;
+                left: 0px;
+                box-shadow: 0px 0px 3px 0px #808080;
+
+                ul {
+                    margin: 0px;
+
+                    li {
+                        font-size: 14px;
+                        color: black;
+                        padding: 10px;
+
+                        &:hover {
+                            background-color: rgb(220,241,247);
+                        }
                     }
                 }
             }
         }
+    }
+
+    .enable-tags {
+        float: left;
+        font-size:14px;
     }
 }
 

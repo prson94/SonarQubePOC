@@ -1,18 +1,25 @@
-﻿<div *ngIf="selectedTags.length > 1">
-    <div class="multiselect-action">
-        <div class="item-selection">
-            {{selectedTags.length}} items selected
-        </div>
-        <div class="hamburger-menu">
-            <div class="layer"></div>
-            <div class="layer"></div>
-            <div class="layer"></div>
-            <div class="actions">
-                <ul>
-                    <li (click)="onDeleteClick()">Delete</li>
-                    <li (click)="onConsolidateClick()">Consolidate</li>
-                </ul>
+﻿<div class="tag-actions">
+
+    <div>
+        <div class="multiselect-action">
+            <div class="item-selection">
+                {{selectedTags.length}} items selected
+            </div>
+            <div class="hamburger-menu">
+                <div class="layer"></div>
+                <div class="layer"></div>
+                <div class="layer"></div>
+                <div class="actions">
+                    <ul>
+                        <li (click)="onDeleteClick()">Delete</li>
+                        <li (click)="onConsolidateClick()">Consolidate</li>
+                    </ul>
+                </div>
             </div>
         </div>
+        <div class="enable-tags">
+            <d3s-checkbox (onchange)="onTagToggle.emit($event)" label="Enable Tagging"></d3s-checkbox>
+        </div>
     </div>
+
 </div>

@@ -13,7 +13,9 @@ export class AdminTagsActionComponent  {
 
 
     @Output() onDelete: EventEmitter<any> = new EventEmitter();;
-    @Output() onConsolidate: EventEmitter<any> = new EventEmitter();;
+    @Output() onConsolidate: EventEmitter<any> = new EventEmitter();
+    @Output() onTagToggle: EventEmitter<boolean> = new EventEmitter();;
+
 
 
     onDeleteClick() {

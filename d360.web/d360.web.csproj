@@ -1165,6 +1165,8 @@
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-tabs.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-data-profile-detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-workflow-version.component.ts" />
+    <Content Include="Scripts\app\components\shared\controls\gov-checkbox.html" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\controls\gov-checkbox.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-responsibility-selector.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\fielddefinition\field-type-form\field-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\grid-selection-info.component.ts" />

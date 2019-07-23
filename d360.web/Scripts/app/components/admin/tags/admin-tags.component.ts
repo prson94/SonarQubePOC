@@ -87,7 +87,14 @@ export class AdminTagsComponent extends AdminBaseComponent {
     saveTag(event) {
         this.tagsService.saveTag(event.item)
             .subscribe(result => {
-                this.showMessageForResult(this.messagesService, result);
+                let msg: string = '';
+                if (event.item.uid == undefined) {
+                    msg = `${result.Value} succesfully created`;
+                }
+                else {
+                    msg = `${result.Value} succesfully updated`;
+                }
+                this.showMessageForResult(this.messagesService, result, msg);
                 if (event.item.uid == undefined) {
                     this.tags.push(result);
                 }
@@ -121,14 +128,14 @@ export class AdminTagsComponent extends AdminBaseComponent {
     openDeleteModal() {
         this.deletePromptHTML = '';
         if (this.selected.length == 1) {
-            this.deletePromptHTML = `Please confirm that you wish to delete the tag '${this.selected[0].Value}' (${this.selected[0].UseCount} assets tagged)`;
+            this.deletePromptHTML = `Please confirm that you wish to delete the tag '${this.selected[0].Value}'(${this.selected[0].UseCount} assets tagged)`;
         }
         else {
             let tagList = '';
             this.selected.forEach(t => {
                 tagList += `<li>${t.Value} ${t.UseCount} assets tagged<li>`;
             });
-            this.deletePromptHTML = `Please confirm that you wish to delete following tags:<ul>${tagList}</ul>`;
+            this.deletePromptHTML = `Please confirm that you wish to delete following tags: <ul>${tagList} </ul>`;
         }
         this.showDelete = true;
     }
@@ -151,6 +158,10 @@ export class AdminTagsComponent extends AdminBaseComponent {
                 }
                 this.showConsolidate = false;
             }, err => this.showMessageForResult(this.messagesService, err));
+    }
+
+    tagStateChanged(state: boolean) {
+        console.log(state);
     }
 
 

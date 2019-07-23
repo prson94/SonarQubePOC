@@ -5,7 +5,7 @@
                 Tags
 
                 
-                <d3s-admin-tags-action (onDelete)="openDeleteModal()" (onConsolidate)="openConsolidateModal()" [(selectedTags)]="selected"></d3s-admin-tags-action>
+                <d3s-admin-tags-action (onTagToggle)="tagStateChanged($event)" (onDelete)="openDeleteModal()" (onConsolidate)="openConsolidateModal()" [(selectedTags)]="selected"></d3s-admin-tags-action>
                 <d3s-tile-actions [hasAdd]="true"  (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
             </header>
             <d3s-loading [isLoading]="isLoading"></d3s-loading>
@@ -44,7 +44,7 @@
                             <td>
                                 <div class="RowTools">
                                     <a style="cursor:pointer;" (click)="selectSingleItem(item);showEditor=true;"><i class="fa fa-pencil"></i></a>
-                                    <a style="cursor:pointer;" (click)="selectSingleItem(item);deleteSelection();"><i class="fa fa-trash-o"></i></a>
+                                    <a style="cursor:pointer;" (click)="selectSingleItem(item);openDeleteModal();"><i class="fa fa-trash-o"></i></a>
                                 </div>
                             </td>
                         </tr>
