@@ -1,11 +1,8 @@
 ﻿import { NgModule } from '@angular/core';
 import { CommonModule, DeprecatedI18NPipesModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpModule, XHRBackend } from '@angular/http';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
-
-import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
 
 import { AdminModule } from '../admin.module';
 import { CoreModule } from '../../shared/core.module';
@@ -50,7 +47,6 @@ import { AdminExportTemplateStyleFormComponent } from './admin-export-template-s
     imports: [CommonModule,
         DeprecatedI18NPipesModule,
         FormsModule,
-        HttpModule,
         HttpClientModule,
 
         AdminExportTemplatesRoutingModule,
@@ -93,10 +89,6 @@ import { AdminExportTemplateStyleFormComponent } from './admin-export-template-s
         AdminExportTemplateStyleFormComponent,
     ],
     providers: [
-        {
-            provide: XHRBackend,
-            useClass: AuthenticationConnectionBackend
-        },
         {
             provide: HTTP_INTERCEPTORS,
             useClass: ErrorNotifyInterceptor,
