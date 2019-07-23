@@ -243,5 +243,9 @@
   <include file="scripts/GOV-7414.xml"/>
   <include file="scripts/GOV-7591.xml"/> <!-- GetDynamicAssets -->
   <include file="scripts/GOV-7647.xml"/>
+
+  <!-- Sprint 7 2019 Start -->
+  <include file="scripts/GOV-7711.xml"/>
   <include file="scripts/GOV-7658.xml"/>
+
 </databaseChangeLog>
