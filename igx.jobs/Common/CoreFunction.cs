@@ -17,14 +17,6 @@ using System.Linq;
 
 namespace igx.jobs
 {
-    public class WebJob
-    {
-        public string Environment { get; set; }
-        public string Name { get; set; }
-        public DateTime? LockedOn { get; set; }
-        public string LockingServer { get; set; }
-    }
-
     public static class ConnectionExtensions
     {
         public static void ProcessTask(this SqlConnection company, TextWriter log, string functionName, int companyID, string sql, int timeout = 1400)
@@ -231,107 +223,6 @@ namespace igx.jobs
             config.UseCore();
 
             return config;
-        }
-
-        public static bool LockWebJobIfAvailable(string name)
-        {
-            var available = false;
-
-            SqlConnection cnn = null;
-
-            try
-            {
-                var environment = ConfigurationManager.AppSettings["Environment"];
-                var machine = System.Environment.MachineName;
-
-                cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
-                cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
-
-                var job = cnn.Query<WebJob>("select * from WebJob where Environment = @e and Name = @n", new { e = environment, n = name }).SingleOrDefault();
-                if (job == null)
-                {
-                    job = new WebJob { Environment = environment, Name = name, LockedOn = DateTime.UtcNow, LockingServer = machine };
-                    var recordCount = cnn.Execute("insert into WebJob (Environment, Name, LockedOn, LockingServer) values (@Environment, @Name, @LockedOn, @LockingServer)", job);
-                    if (recordCount > 0)
-                    {
-                        available = true;
-                    }
-                }
-                else
-                {
-                    bool executeUpdate = true;
-                    if (job.LockedOn.HasValue)
-                    {
-                        if (job.LockedOn.Value > DateTime.UtcNow.AddHours(-20)) //Last webjob execution is less than 20 hours old, let's give that bad boy some time to do its thing!
-                        {
-                            executeUpdate = false;
-                        }
-                    }
-
-                    if (executeUpdate)
-                    {
-                        job.LockedOn = DateTime.UtcNow;
-                        job.LockingServer = machine;
-                        var recordCount = cnn.Execute("update WebJob set LockedOn = @LockedOn, LockingServer = @LockingServer where Environment = @Environment and Name = @Name", job);
-                        if (recordCount > 0)
-                        {
-                            available = true;
-                        }
-                    }
-                }
-            }
-            catch
-            {
-            }
-            finally
-            {
-                if (cnn != null)
-                {
-                    cnn.Dispose();
-                    cnn = null;
-                }
-            }
-
-            return available;
-        }
-
-        public static bool UnlockWebJob(string name)
-        {
-            var unlocked = false;
-
-            SqlConnection cnn = null;
-
-            try
-            {
-                var environment = ConfigurationManager.AppSettings["Environment"];
-                var machine = System.Environment.MachineName;
-
-                cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
-                cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
-
-                var job = cnn.Query<WebJob>("select * from WebJob where Environment = @e and Name = @n and LockingServer = @s", new { e = environment, n = name, s = machine }).SingleOrDefault();
-                if (job != null)
-                {
-                    var recordCount = cnn.Execute("update WebJob set LockedOn = null, LockingServer = null where Environment = @Environment and Name = @Name and LockingServer = @LockingServer", job);
-                    if (recordCount > 0)
-                    {
-                        unlocked = true;
-                    }
-                }
-            }
-            catch
-            {
-            }
-            finally
-            {
-                if (cnn != null)
-                {
-                    cnn.Dispose();
-                    cnn = null;
-                }
-            }
-
-            return unlocked;
         }
     }
 }
