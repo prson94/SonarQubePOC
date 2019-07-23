@@ -84,6 +84,7 @@ namespace d360.web.Controllers.V2
             ResourceApiViewModel model = new ResourceApiViewModel();
             var pageSize = 5;
             var pageNum = 1;
+            string order = "AssetUid";
             var queryParams = Request.GetQueryNameValuePairs();
             queryParams.ToList().ForEach(q =>
             {
@@ -104,6 +105,10 @@ namespace d360.web.Controllers.V2
                             {
                                 if (pageNum < 1) pageNum = 1;
                             }
+                            break;
+                        case "_order":
+                            if (q.Value != null)
+                                order = q.Value;
                             break;
                     }
                 }
@@ -205,7 +210,7 @@ namespace d360.web.Controllers.V2
                 if (pageNum < 1) pageNum = 1;
                 model.pageNum = pageNum;
                 model.pageSize = pageSize;
-                string offsetSql = $" Order by gr.ResourceID offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
+                string offsetSql = " Order by " + order + $" offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
                 finalSql += offsetSql;
             }
             var count = await Company.QueryAsync<int>(countSql, dbArgs);
