@@ -34,4 +34,5 @@
   <include file="scripts/GOV-7371.xml"/>
   <include file="scripts/GOV-7540.xml"/>
   <include file="scripts/GOV-7706.xml"/>
+  <include file="scripts/GOV-7730.xml"/>
 </databaseChangeLog>
