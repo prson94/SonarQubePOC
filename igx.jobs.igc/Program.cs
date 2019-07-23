@@ -739,6 +739,7 @@ where	[AllowChangeDetection] = 0").ToList();
 
                 if (SynchedAssetType.AllowChangeDetection)
                 {
+                    if (postModel.where == null) postModel.where = new IgcPostSearchRequestWhereModel();
                     postModel.where.conditions.Add(new IgcPostSearchRequestBetweenConditionModel { min = min, max = max, property = "created_on" });
                     postModel.where.conditions.Add(new IgcPostSearchRequestBetweenConditionModel { min = min, max = max, property = "modified_on" });
                 }
