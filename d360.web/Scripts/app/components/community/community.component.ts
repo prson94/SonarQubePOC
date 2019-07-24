@@ -72,7 +72,7 @@ export class CommunityComponent extends BaseComponent implements OnInit {
 
             this.headerBreadcrumbService.getFolderIcon(res).then(icon => {
                 this.clearSidebar();
-                this.rightSidebarService.setCurrentArea(res, icon);
+                this.rightSidebarService.setCurrentArea(res, icon, 'Community');
                 this.rightSidebarService.clearCurrentObject();
             });
             this.rightSidebarService.showHeader(true);

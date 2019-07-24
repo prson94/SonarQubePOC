@@ -32,19 +32,6 @@ declare var CompanySettings;
         <div *ngIf="!isLoading"
              class="row">
             <div class="col s12">
-                <div class="row"
-                     *ngIf="showSocialScoreBar">
-                    <div class="col s12">
-                        <div class="tile tile-detail"
-                             style="padding-left:0;padding-right:0;">
-                            <d3s-object-governance [uid]="selected?.Uid"
-                                                   [objectType]="'Policy'"
-                                                   [objectID]="selected?.ID"
-                                                   [objectName]="selected?.Name"
-                                                   [status]="selected?.StatusName"></d3s-object-governance>
-                        </div>
-                    </div>
-                </div>
                 <div class="row">
                     <div class="col s12">
                         <div class="tile tile-detail">
@@ -173,7 +160,7 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
                         this.findSelectedTreeNode(this.selected.ID)));
                 this.headerBreadcrumbService.getFolderIcon(areaBreadcrumb.text).then(icon => {
                     this.rightSidebarService.showHeader(true);
-                    this.rightSidebarService.setCurrentArea(this.selected.DisplayValue, icon);
+                    this.rightSidebarService.setCurrentArea(this.selected.DisplayValue, icon, 'Definition');
                     this.rightSidebarService.setCurrentObject('PolicyType', this.policyType.ID, 'Policy', this.selected.ID, false);
                     this.rightSidebarService.showItem(new RightSidebarItem('Scoring', 'Scoring', ['fa-sitemap'], `/sidebar/score/Policy/${this.selected.Uid}`));
                     this.rightSidebarService.showItem(new RightSidebarItem('Comments', 'Comments', ['fa-comments'], `/sidebar/comments/Policy/${this.selected.ID}/${this.selected.DisplayValue.replace("/", "%2F")}`));

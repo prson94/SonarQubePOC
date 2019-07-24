@@ -5,6 +5,7 @@ import { SiteCustomizationsService } from '../../../services/site-customizations
 import { MessagesService } from '../../../services/messages.service';
 import { Title } from '@angular/platform-browser';
 import 'codemirror/mode/css/css.js';
+import { RightSidebarService } from '../../../services/right-sidebar.service';
 
 @Component({
     selector: 'd3s-admin-customizations-component',
@@ -41,11 +42,12 @@ export class AdminCustomizationsComponent extends AdminBaseComponent implements 
     constructor(
         headerBreadcrumbService: HeaderBreadcrumbService,        
         titleService: Title,
+        rightSidebarService: RightSidebarService,
         protected siteCustomizationsService: SiteCustomizationsService,
         protected messagesService: MessagesService
     ) {
 
-        super(headerBreadcrumbService, titleService);
+        super(headerBreadcrumbService, titleService, rightSidebarService);
         this.areaName = "Style Customizations";
         this.setCommonItems();
         

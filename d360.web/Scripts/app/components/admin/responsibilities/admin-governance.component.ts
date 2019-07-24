@@ -24,8 +24,9 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
 
     constructor(rightSidebarService: RightSidebarService, private responsibilityTypeService: ResponsibilityTypeService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title, protected messagesService: MessagesService) {
         super(headerBreadcrumbService, titleService, rightSidebarService);        
-        this.areaName = "Responsibility Types";
+        this.areaName = "Responsibilities";
         this.adminHeading = "Security";
+        this.tabTitle = 'Responsibility Types';
         this.setCommonItems();
         this.setCommonRightSideBar();
         if (this.auditSidebar) {

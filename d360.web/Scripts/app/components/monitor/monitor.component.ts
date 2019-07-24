@@ -194,7 +194,7 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
                 this.headerBreadcrumbService.getFolderIcon(res).then(icon => {
                     this.rightSidebarService.clearItems();
                     this.rightSidebarService.clearCurrentObject();
-                    this.rightSidebarService.setCurrentArea(res, icon);
+                    this.rightSidebarService.setCurrentArea(res, icon, 'Definition');
                     this.rightSidebarService.showHeader(true);
                 });
 

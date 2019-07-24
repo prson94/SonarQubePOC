@@ -129,6 +129,7 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
     constructor(private stateService: StateService, rightSidebarService: RightSidebarService, protected reportsService: ReportsService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
         super(headerBreadcrumbService, titleService, rightSidebarService);        
         this.areaName = "Dashboards";
+        this.tabTitle = 'Dashboards'
         this.setCommonItems();
         this.setCommonRightSideBar();
         if (this.auditSidebar) {

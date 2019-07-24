@@ -133,7 +133,7 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
             }
             this.headerBreadcrumbService.getFolderIcon(areaBreadcrumb.text).then(icon => {
                 this.setRightSideBar(this.fusion.HasDashboards, this.fusion.Manual);
-                this.rightSidebarService.setCurrentArea(areaBreadcrumb.text, icon);
+                this.rightSidebarService.setCurrentArea(areaBreadcrumb.text, icon, 'Definition');
                 this.rightSidebarService.showHeader(true);
             });
         });

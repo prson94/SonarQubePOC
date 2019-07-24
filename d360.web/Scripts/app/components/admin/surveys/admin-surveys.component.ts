@@ -7,6 +7,7 @@ import { AdminBaseComponent } from '../admin-base.component'
 import { Title } from '@angular/platform-browser';
 import { SurveyType } from '../../../models/survey.model';
 import { catchError } from 'rxjs/operators';
+import { RightSidebarService } from '../../../services/right-sidebar.service';
 
 @Component({
     selector: 'd3s-admin-surveys',
@@ -99,8 +100,12 @@ export class AdminSurveysComponent extends AdminBaseComponent {
 
     public theDeleteCallback: Function;
 
-    constructor(private surveysService: SurveysService, headerBreadcrumbService: HeaderBreadcrumbService, private messagesService: MessagesService, titleService: Title) {
-        super(headerBreadcrumbService, titleService);
+    constructor(private surveysService: SurveysService,
+        headerBreadcrumbService: HeaderBreadcrumbService,
+        private messagesService: MessagesService,
+        titleService: Title,
+        rightSidebarService: RightSidebarService) {
+        super(headerBreadcrumbService, titleService, rightSidebarService);
         this.areaName = "Surveys";
         this.setCommonItems();
     }

@@ -135,7 +135,7 @@ export class PolicyListComponent extends BaseComponent implements OnInit, OnDest
                                 }
                             );
                         }
-                        this.rightSidebarService.setCurrentArea(res, icon);
+                        this.rightSidebarService.setCurrentArea(res, icon, 'Policies');
                     });
                 });
 

@@ -1,7 +1,7 @@
-import { Component, ElementRef, ChangeDetectionStrategy, ChangeDetectorRef, Input, OnInit, SimpleChange, OnChanges, OnDestroy, AfterViewInit, Output, EventEmitter, ViewChild } from '@angular/core';
+import { Component, ElementRef, ChangeDetectionStrategy, ChangeDetectorRef, Input, OnInit, SimpleChange, OnChanges, OnDestroy, AfterViewInit, Output, EventEmitter, ViewChild, ViewChildren, QueryList } from '@angular/core';
 import { Router } from '@angular/router';
 import { RightSidebarService  } from '../../../services/right-sidebar.service';
-import { RightSidebarItem } from '../../../models/rightsidebar.model';
+import { RightSidebarItem, DynamicButton } from '../../../models/rightsidebar.model';
 import { Subscription }   from 'rxjs';
 import * as _ from 'lodash';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
@@ -12,6 +12,7 @@ import { SurveysService } from '../../../services/surveys.service';
 import { ArtifactService } from '../../../services/artifacts.service';
 import { SurveyType } from '../../../models/survey.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
+import { Artifact } from '../../../models/artifacts.model';
 
 declare var CompanySettings;
 
@@ -22,7 +23,7 @@ declare var CompanySettings;
                     <div class="title">
                          <img class="icon" *ngIf="!IsIcon(area.icon)" [src]="GetURL(area.icon)"  height="20" width="20" />
                          <i *ngIf="IsIcon(area.icon)" [class]="'icon fa ' + area.icon"></i>
-                        <h1 >{{area.title ? area.title: 'D3S'}}</h1>
+                        <h1 title="{{area.title ? area.title: 'D3S'}}">{{area.title ? area.title: 'D3S'}}</h1>
                         <span #badge *ngIf="statistics && statistics.Score;else noScore" class="d3s-icon large-icon" 
                                 [ngClass]="{
                                     'bad':scoreBetween(0,49),
@@ -33,18 +34,23 @@ declare var CompanySettings;
                              <span class="text">{{statistics?.Score}}%</span>
                         </span> 
                         <ng-template #noScore><span *ngIf="currentObject && !currentObject?.isType" title="Governance Score not yet calculated" class="d3s-icon large-icon">No Score</span></ng-template>
-                        <span *ngIf="showStatus" class="d3s-icon large-icon">
+                        <span *ngIf="showStatus" class="d3s-icon large-icon" [style.color]="getCertificationStatusColor(status)">
                             <i class="fa fa-certificate"></i>
                             <span class="text">{{status}}</span>
                         </span>
                         <span class="grow"></span>
                         <button class="button" *ngIf="showCertify" (click)="requestCertification()"><i class="fa fa-certificate"></i><span>Request Certification</span></button>
                         <button class="primary button" (click)="navigateToSurvey()" *ngIf="showSurvey"><i class="fa fa-edit"></i><span>Take Survey</span></button>
+                        <button *ngFor="let button of buttons" (click)="button.EmitFunction()" [ngClass]="{'loading': button.isLoading}"  class="primary button" [disabled]="button.disabled">
+                            <span class="content">{{button.text}}</span>
+                            <span *ngIf="button.isLoading" class="loader"><span class="spinner light"></span></span>    
+                        </button>
                     </div>
                     <div *ngIf="items && items.length > 0" class="tab-view">
                         <div class="tab-bar-outer">
-                            <div class="tab-bar can-overflow">
-                                <button class="tab" [ngClass]="{'selected':AllClosed()}" (click)="itemClicked({active:false,title:'homeClick', url: 'blank'})">Definition</button>
+                            <button *ngIf="showScrollButtons" class="left tab-scroller" (click)="scroll('L')"><i class="fa fa-chevron-circle-left"></i></button>
+                            <div #tabScroller class="tab-bar can-overflow" [ngStyle]="{'margin-left.px': showScrollButtons ? 40 : 0,'margin-right.px': showScrollButtons ? 40 : 0}">
+                                <button class="tab" [ngClass]="{'selected':AllClosed()}" (click)="itemClicked({active:false,title:'homeClick', url: 'blank'})">{{area.tabTitle}}</button>
                                 <button class="tab" 
                                         [ngClass]="{'selected':item.active}" 
                                         *ngFor="let item of items; trackBy: trackById" 
@@ -54,24 +60,28 @@ declare var CompanySettings;
                                         <span *ngIf="statistics?.IssueCount && item.title === 'Actions'" class="d3s-icon small-icon bad">{{statistics?.IssueCount}}</span>
                                 </button>
                             </div>
+                            <button *ngIf="showScrollButtons" class="right tab-scroller" (click)="scroll('R')"><i class="fa fa-chevron-circle-right"></i></button>
                         </div>
                     </div>
                 </div>
               `,
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [SurveysService, ObjectStatisticsService, ArtifactService]
+    providers: [SurveysService, ObjectStatisticsService, ArtifactService],
+    host: { '(window:resize)': 'checkSize()' }
 })
 
 export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewInit{
         
     subscription: Subscription;
+    buttonSubscription: Subscription;
+    buttonSubscriptionClear: Subscription;
     subscriptionClear: Subscription;
     areaSub: Subscription;
     objectSub: Subscription;
     hideHeaderSub: Subscription;
 
     items: RightSidebarItem[];  
-
+    buttons: DynamicButton[];
     hostUrl: string;
     area: any = {icon:'fa-folder',title: ''};
     @Input() menuOpen: boolean;
@@ -79,6 +89,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     private currentObject: any;
     private surveyType: SurveyType;
     @ViewChild('badge') badge: ElementRef;
+    @ViewChildren('tabScroller') tabScroller: QueryList<ElementRef>;
     private statistics: ObjectStatistics;
 
     status: string;
@@ -86,7 +97,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     showCertify = false;
     showHeader: boolean = false;
     showSurvey: boolean = false;
-
+    showScrollButtons: boolean = false;
     constructor(
         private rightSidebarService: RightSidebarService,
         protected objectStatisticsService: ObjectStatisticsService,
@@ -98,7 +109,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     }
 
     ngAfterViewInit(): void {
-        this.load();   
+        this.load();  
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -109,6 +120,31 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         } 
     }
 
+    checkSize() {
+        if (this.tabScroller && this.tabScroller.length > 0) {
+            let maxWidth = this.tabScroller.first.nativeElement.parentElement.getBoundingClientRect().right;
+            let lastTab = this.tabScroller.first.nativeElement.lastChild.getBoundingClientRect().right;
+            this.showScrollButtons = lastTab > maxWidth;
+        }
+    }
+
+    scroll(direction: string) {
+        let scrollAmount = 0;
+        let move = () => {
+            if (direction == 'L') {
+                this.tabScroller.first.nativeElement.scrollLeft -= 10;
+            } else {
+                this.tabScroller.first.nativeElement.scrollLeft += 10;
+            }
+            scrollAmount += 10;
+            if (scrollAmount >= 100) {
+                window.clearInterval(id);
+            }
+        };
+
+        let id = window.setInterval(move,10);
+
+    }
 
     load() {
         this.showStatus = false;
@@ -117,11 +153,26 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.showHeader = false;
         this.showSurvey = false;
         this.items = [];
+        this.buttons = [];
+        console.log("load");
+        this.showScrollButtons = false;
+
         this.subscription = this.rightSidebarService.rightSidebar$.subscribe(
             item => {
                 this.items.push(item);
-                this.items = _.sortBy(this.items, 'title'); this.emitChanges(); 
+                this.items = _.sortBy(this.items, 'title'); this.emitChanges();
             });
+
+        this.buttonSubscription = this.rightSidebarService.rightSidebarButton$.subscribe(
+            button => {
+                console.log("addded");
+                this.buttons.push(button);
+                this.buttons = _.sortBy(this.buttons, 'text'); this.emitChanges();
+            });
+        this.buttonSubscriptionClear = this.rightSidebarService.rightSidebarButtonClear$.subscribe(
+            item => {
+                this.buttons.splice(0, this.buttons.length); this.emitChanges();
+            })
         this.subscriptionClear = this.rightSidebarService.rightSidebarClear$.subscribe(
             item => {
                 this.items.splice(0, this.items.length);
@@ -142,7 +193,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.objectSub = this.rightSidebarService.currentObject$.subscribe(res => {
             this.currentObject = res;
             if (this.currentObject && !this.currentObject.isType) {
-                this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID);
+                this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID, this.currentObject.hasWorkFlow);
             } else {
                 this.showStatus = false;
                 this.statistics = null; 
@@ -152,13 +203,14 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             }
         });
         this.emitChanges();
+
     }
 
     getColor(badge: any) {
         return window.getComputedStyle(badge, 'background')['background'];
     }
 
-    private loadItemStats(objectID: number, objectName: string, objectType: string, objectTypeID: number) {
+    private loadItemStats(objectID: number, objectName: string, objectType: string, objectTypeID: number, hasWorkFlow: boolean) {
         this.objectStatisticsService.getObjectStatus(objectID, objectName).subscribe(
             result => {
                 this.status = result;
@@ -168,8 +220,11 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                     if (!draftValues) {
                         draftValues = "DRAFT";
                     }
-
-                    this.showCertify = this.status && (draftValues.toUpperCase().split(',').indexOf(this.status.toUpperCase()) > -1);
+                    console.log(hasWorkFlow);
+                    if (objectName === 'Artifact')
+                        this.showCertify = this.status && (draftValues.toUpperCase().split(',').indexOf(this.status.toUpperCase()) > -1) && hasWorkFlow;
+                    else
+                        this.showCertify = this.status && (draftValues.toUpperCase().split(',').indexOf(this.status.toUpperCase()) > -1);
                     this.showStatus = true;
                     this.ref.markForCheck();
                 }
@@ -202,6 +257,8 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.areaSub.unsubscribe();
         this.hideHeaderSub.unsubscribe();
         this.objectSub.unsubscribe();
+        this.buttonSubscriptionClear.unsubscribe();
+        this.buttonSubscription.unsubscribe();
     }
 
     trackById(index, item) {        
@@ -255,11 +312,32 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         }
     }
 
+    getCertificationStatusColor(status: string) {
+        status = status.toLowerCase().trim();
+
+        switch (status) {
+            case 'draft':
+                return '#BBBBBB';
+            case 'certified':
+                return '#3f9d40';
+            case 'under review':
+                return '#e2792a';
+            default:
+                //custom status, we need to generate a color
+                let hash = 0;
+                for (let i = 0; i < status.length; i++) {
+                    hash = status.charCodeAt(i) + ((hash << 5) - hash);
+                    hash = hash & hash;
+                }
+                return `hsl(${(hash * 2) % 360}, 70%, 70%)`;
+        }
+    }
+
     private requestCertification() {
         if (this.currentObject && this.currentObject.objectID)
             this.artifactService
                 .requestCertification(this.currentObject.objectID)
-                .subscribe(result => { this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID); });
+                .subscribe(result => { this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID, this.currentObject.hasWorkFlow); });
     }   
 
     navigateToSurvey() {
@@ -269,8 +347,10 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             this.router.navigateByUrl(Url);
         }
     }
+
     emitChanges() {
         this.ref.markForCheck();
         this.changed.emit();
+        this.checkSize();
     }
 };

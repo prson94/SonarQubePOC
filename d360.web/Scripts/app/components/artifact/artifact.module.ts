@@ -17,7 +17,6 @@ import { TilesModule  } from '../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 import { SharedDeleteFormModule } from '../shared/delete.form';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
-import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
 
 import { ArtifactRoutingModule } from './artifact.routes';
 
@@ -91,8 +90,7 @@ import {GovernPostRequestInterceptor} from "../../http-interceptors/govern-post-
         
         SharedDeleteFormModule,
         SharedGridPagingInfoModule,        
-        SharedDynamicGridEditorModule,
-        SharedObjectGovernanceModule,        
+        SharedDynamicGridEditorModule,    
         TilesModule,
         WorkflowModule,        
     ],

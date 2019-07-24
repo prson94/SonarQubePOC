@@ -157,8 +157,8 @@ export class BaseComponent {
 
             if (hasAudit || hasAudit === undefined) {
                 this.auditSidebar = new RightSidebarItem(
-                    'Audit',
-                    'audit',
+                    'Change Log',
+                    'Change Log',
                     ['fa-eye'],
                     `/sidebar/audit${this.objectContextUrl()}`
                 );
@@ -292,7 +292,7 @@ export class BaseComponent {
         if (this.rightSidebarService) {
             if (!this.isVisitingSidebar) {
                 this.rightSidebarService.clearItems();
-
+                this.rightSidebarService.clearButtons();
             }
 
             if (this.sidebarSubscription && (unsubscribe || unsubscribe == undefined)) {

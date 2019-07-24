@@ -70,7 +70,7 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
 
             this.headerBreadcrumbService.getFolderIcon(res).then(icon => {
                 this.clearSidebar();
-                this.rightSidebarService.setCurrentArea(res, icon);
+                this.rightSidebarService.setCurrentArea(res, icon, 'Dashboards');
                 this.rightSidebarService.clearCurrentObject();
             });
             this.rightSidebarService.showHeader(true);

@@ -122,8 +122,8 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                             true,
                             true
                         )
-                    ;
-                    this.rightSidebarService.setCurrentObject("ArtifactType", typeID, "Artifact", id, false);
+                        ;
+                    this.rightSidebarService.setCurrentObject("ArtifactType", typeID, "Artifact", id, false, artifact.HasWorkflow);
                     if (this.artifact.HasChildArtifacts) {
                         this
                             .rightSidebarService
@@ -191,10 +191,9 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
     private buildBreadcrumb() {
         let index = 0;
         let currentFolderName = this.currentAreaName ? this.currentAreaName : this.folderTitle;
-        console.log(currentFolderName);
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.getFolderIcon(currentFolderName).then(res => {
-            this.rightSidebarService.setCurrentArea(this.artifact.DisplayValue, res);
+            this.rightSidebarService.setCurrentArea(this.artifact.DisplayValue, res, 'Definition');
         });
         let areaBreadcrumb = new Breadcrumb(
             this.currentAreaName ? this.currentAreaName : this.folderTitle,

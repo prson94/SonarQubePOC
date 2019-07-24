@@ -34,7 +34,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                             <button *ngIf="currentQuestionIndex > 0" pButton type="button" [disabled]="!surveyForm.form.valid" label="Previous" (click)="previousQuestion(currentQuestionIndex)"></button>
                             <button *ngIf="currentQuestionIndex + 1 < questions.length" pButton type="button" [disabled]="!surveyForm.form.valid" label="Next" (click)="nextQuestion(currentQuestionIndex)"></button>                            
                             <button *ngIf="currentQuestionIndex+1 == questions.length" pButton type="submit" [disabled]="!surveyForm.form.valid" label="Save"></button> 
-                            <button *ngIf="ShowCloseButton" pButton type="button" label="close" (click)="surveyBack.emit()"></button>  
+                            <button *ngIf="ShowCloseButton" pButton type="button" label="Close" (click)="surveyBack.emit()"></button>  
                             <em *ngIf="questions.length > 1">Question {{currentQuestionIndex+1}} of {{questions.length}}</em>
                         </div>      
                     </div>              

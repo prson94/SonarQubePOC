@@ -13,7 +13,6 @@ import { TilesModule  } from '../shared/tiles/tiles.module';
 import { SharedDeleteFormModule } from '../shared/delete.form';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
-import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
 import { SharedAssetTypeEditorModule } from '../shared/assettypeeditor/shared-asset-type-editor.module';
 
 import { PolicyRoutingModule } from './policy.routes';
@@ -71,7 +70,6 @@ import { TableModule } from 'primeng/table';
         SharedDeleteFormModule,
         SharedGridPagingInfoModule,        
         SharedDynamicGridEditorModule,        
-        SharedObjectGovernanceModule,   
         SharedAssetTypeEditorModule,     
         TilesModule,
     ],

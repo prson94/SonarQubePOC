@@ -108,9 +108,9 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
 
     constructor(rightSidebarService: RightSidebarService, private workflowService: WorkflowService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
         super(headerBreadcrumbService, titleService, rightSidebarService);
-        this.areaName = "Action Types";
-        this.adminHeading = "Action Types";
-
+        this.areaName = "Actions";
+        this.adminHeading = "Actions";
+        this.tabTitle = 'Action Types';
         this.setCommonItems();
         this.theDeleteCallback = this.deleteIssueType.bind(this);
         this.setCommonRightSideBar(true);

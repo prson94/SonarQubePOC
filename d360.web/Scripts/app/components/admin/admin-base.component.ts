@@ -14,6 +14,7 @@ export class AdminBaseComponent extends BaseComponent {
     public areaLink: string = undefined;    
     public area: string = "Administration";
     public adminHeading: string;
+    public tabTitle: string = 'Admin'
 
     @ViewChildren('treetableRows') treeTableElements: any;
     private isDefaultTreeValuesSet: boolean = false;
@@ -36,7 +37,9 @@ export class AdminBaseComponent extends BaseComponent {
         
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.areaName, this.areaLink));
         this.rightSidebarService.clearItems();
-        this.rightSidebarService.setCurrentArea(this.areaName, this.area === 'Configuration' ? 'fa-sliders' : "fa-cog");
+        this.rightSidebarService.clearButtons();
+        this.rightSidebarService.setCurrentArea(this.areaName, this.area === 'Configuration' ? 'fa-sliders' : "fa-cog", this.tabTitle);
+        this.rightSidebarService.setCurrentObject(null,null,null,null,true);
         this.rightSidebarService.showHeader(true);
         this.setBrowserTitle(this.titleService, this.areaName);
     }       

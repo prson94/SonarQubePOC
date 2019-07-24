@@ -146,7 +146,8 @@ export class AdminLookupsComponent extends AdminBaseComponent implements OnInit,
     ) {
         super(headerBreadcrumbService, titleService, rightSidebarService);
 
-        this.areaName = "Lookup Types";
+        this.areaName = "Lookups";
+        this.tabTitle = 'Lookup Types'
         this.setCommonItems();
         this.setCommonRightSideBar(true);
 

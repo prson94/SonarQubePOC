@@ -41,6 +41,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
         private router: Router) {
         super(headerBreadcrumbService, titleService, rightSidebarService);
         this.areaName = "Artifacts";
+        this.tabTitle = 'Artifact Types';
         this.setCommonItems();
         this.load();
         this.setObjectInfo('ArtifactType', -1);

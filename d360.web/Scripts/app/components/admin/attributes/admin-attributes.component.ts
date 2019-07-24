@@ -33,7 +33,8 @@ export class AdminAttributesComponent extends AdminBaseComponent {
     ) {
         super(headerBreadcrumbService, titleService, rightSidebarService);
 
-        this.areaName = "Attribute Groups";
+        this.areaName = "Attributes";
+        this.tabTitle = 'Attribute Groups';
         this.setCommonItems();
         this.setCommonRightSideBar(true);
 

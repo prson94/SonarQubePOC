@@ -36,7 +36,8 @@ export class AdminFusionComponent extends AdminBaseComponent implements OnDestro
         private objectStyleService: ObjectStyleService
     ) {
         super(headerBreadcrumbService, titleService, rightSidebarService);
-        this.areaName = 'Fusion Types';
+        this.areaName = 'Fusion';
+        this.tabTitle = 'Fusion Types';
         this.adminHeading = 'Integration';
         this.setCommonItems();
         this.setCommonRightSideBar();

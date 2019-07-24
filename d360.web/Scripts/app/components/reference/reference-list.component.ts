@@ -83,7 +83,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 
             this.headerBreadcrumbService.getFolderIcon(res).then(icon => {
                 this.clearSidebar();
-                this.rightSidebarService.setCurrentArea(res, icon);
+                this.rightSidebarService.setCurrentArea(res, icon, 'Reference Lists');
                 this.rightSidebarService.clearCurrentObject();
             });
             this.rightSidebarService.showHeader(true);

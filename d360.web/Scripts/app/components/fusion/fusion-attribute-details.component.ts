@@ -111,7 +111,7 @@ export class FusionAttributeDetailsComponent extends BaseComponent implements On
             }
 
             this.headerBreadcrumbService.getFolderIcon(areaBreadcrumb.text).then(icon => {
-                this.rightSidebarService.setCurrentArea(areaBreadcrumb.text, icon);
+                this.rightSidebarService.setCurrentArea(areaBreadcrumb.text, icon, 'Definition');
                 this.setCommonRightSideBar(true, true, false, true, true, true, false);
                 this.rightSidebarService.showHeader(true);
             });

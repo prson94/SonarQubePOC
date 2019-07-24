@@ -108,24 +108,26 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
 
                     this.isLoading = false;
 
-                    this.clearSidebar();
                     this.setCommonRightSideBar(
                         false, false, false,
                         false, false, false,
                         false, false
                     );
+                    this.rightSidebarService.showHeader(true);
+                    this.rightSidebarService.setCurrentArea(this.resource.FirstName + " " + this.resource.LastName, 'fa-cog', 'User');
+                   
                     this.itemsOwn = new RightSidebarItem(
-                        'Items Own', 'itemOwn', ['fa-tasks'],
+                        'Related Assets', 'itemOwn', ['fa-tasks'],
                         `/sidebar/itemown/${resourceId}`
                     );
                     this.rightSidebarService.showItem(this.itemsOwn);
                     this.memberGroups = new RightSidebarItem(
-                        'Member Groups', 'memberGroup', ['fa-user-circle'],
+                        'Ownership', 'memberGroup', ['fa-user-circle'],
                         `/sidebar/membergroup/${resourceId}`
                     );
                     this.rightSidebarService.showItem(this.memberGroups);
                     this.itemsFollow = new RightSidebarItem(
-                        'Items Follow', 'itemFollow', ['fa-user-plus'],
+                        'Following', 'itemFollow', ['fa-user-plus'],
                         `/sidebar/itemfollow/${resourceId}`
                     );
                     this.rightSidebarService.showItem(this.itemsFollow);
@@ -135,7 +137,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                     );
                     this.rightSidebarService.showItem(this.hasRelations);
                     this.comments = new RightSidebarItem(
-                        this.resource.FirstName + '\'s Comments', 'comments', ['fa-comments'],
+                        'Comments', 'comments', ['fa-comments'],
                         `/sidebar/comments/Resource/${resourceId}/${this.resource.FirstName}`
                     );
                     this.rightSidebarService.showItem(this.comments);

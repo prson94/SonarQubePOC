@@ -10,6 +10,7 @@ import {Title} from '@angular/platform-browser';
 import {MessagesService} from '../../../services/messages.service';
 import {SiteUrlHelpers} from '../../../static/site-url-helpers';
 import {StringConstants} from '../../../static/string-constants';
+import { RightSidebarService } from '../../../services/right-sidebar.service';
 
 @Component({
     selector: 'd3s-admin-groups',
@@ -28,10 +29,11 @@ export class AdminGroupsComponent extends AdminBaseComponent {
         private router: Router,
         private groupService: GroupService,
         headerBreadcrumbService: HeaderBreadcrumbService,
+        rightSidebarService: RightSidebarService,
         titleService: Title,
         protected messagesService: MessagesService
     ) {
-        super(headerBreadcrumbService, titleService);
+        super(headerBreadcrumbService, titleService, rightSidebarService);
         this.areaName = "Groups";
         this.adminHeading = "Security";
         this.setCommonItems();

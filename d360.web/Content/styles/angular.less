@@ -2393,6 +2393,9 @@ modal-overlay .modal-dialog .content {
         margin-right: 15px;
         flex-shrink: 1;
         margin-left: 10px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
     }
 
     .grow {
@@ -2640,20 +2643,20 @@ button.button {
     &.can-overflow {
         position: absolute;
         overflow-y: hidden;
-        overflow-x: hidden;
-        right: 40px;
-        left:0px;
-        width: 100%;
-        /* hiding scrollbar */
-        -ms-overflow-style: none !important; /* IE 10+ */
+        overflow-x: auto;
+        right: 0px;
+        left: 0px;
+        width: auto;
+        
         scrollbar-width: none !important; /* Firefox */
-        ::-webkit-scrollbar { /* WebKit hide scrollbar */
-            width: 0px !important;
-        }
+        -ms-overflow-style: none !important; /* IE 10+ */
         /* end hiding scrollbar*/
     }
 }
-
+.tab-bar::-webkit-scrollbar { /* WebKit hide scrollbar */
+    width: 0px !important;
+    height: 0px !important;
+}
 button.tab, button.tab-scroller {
     box-sizing: border-box;
     padding: 0 15px;
@@ -2818,4 +2821,54 @@ button.tab-scroller {
 .d3s-content-pane {
     padding-top: 20px;
     overflow: auto;
+}
+
+.grid-header {
+    padding-top: 35px;
+
+    .description-toggle {
+        padding-right: 5px;
+        cursor: pointer;
+        color:@igx-blue-light;
+        font-size: 12px;
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////
+// Spinner
+///////////////////////////////////////////////////////////////////////////////////
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.spinner {
+    display: inline-block;
+    box-sizing: border-box;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border-color: rgba(0, 0, 0, 0.67) rgba(0, 0, 0, 0.2) rgba(0, 0, 0, 0.2) rgba(0, 0, 0, 0.2);
+    border-style: solid;
+    border-width: 2px;
+    animation-name: spin;
+    animation-duration: 1000ms;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+
+    &.light {
+        border-color: rgba(255, 255, 255, 1) rgba(255, 255, 255, 0.5) rgba(255, 255, 255, 0.5) rgba(255, 255, 255, 0.5);
+    }
+
+    &.large {
+        width: 36px;
+        height: 36px;
+        border-width: 4px;
+    }
 }

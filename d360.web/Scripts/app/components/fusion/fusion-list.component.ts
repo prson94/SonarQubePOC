@@ -67,7 +67,7 @@ export class FusionListComponent extends BaseComponent implements OnInit, OnDest
                     if (s.tag == 'technical')
                         this.showTechnicalMappings = s.active
                 });
-                this.rightSidebarService.setCurrentArea(areaBreadcrumb.text, icon);
+                this.rightSidebarService.setCurrentArea(areaBreadcrumb.text, icon, 'Fusion List');
                 this.rightSidebarService.showHeader(true);
             });
         });

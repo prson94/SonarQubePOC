@@ -14,8 +14,6 @@ import { TilesModule  } from '../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 import { SharedDeleteFormModule } from '../shared/delete.form';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
-import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
-
 import { ModelRoutingModule } from './model.routes';
 
 import { ModelComponent } from './model.component';
@@ -72,7 +70,6 @@ import { TableModule } from 'primeng/table';
         SharedGridPagingInfoModule,        
         SharedDeleteFormModule,
         SharedDynamicGridEditorModule,
-        SharedObjectGovernanceModule,        
         TilesModule,
     ],
     declarations: [

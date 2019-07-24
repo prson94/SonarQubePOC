@@ -54,7 +54,6 @@ export class SurveyComponent extends BaseComponent implements OnInit, OnDestroy 
     }
 
     GetSurvey(objectID: number, objectName: string, objectType: string, objectTypeID: number) {
-        console.log(objectTypeID, objectType, objectID, objectName);
         this.surveysService.getObjectSurvey(objectTypeID, objectType, objectID, objectName)
             .subscribe(result => {
                 this.surveyType = undefined;
