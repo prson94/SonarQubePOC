@@ -1,10 +1,10 @@
 ﻿import { NgModule, Component } from '@angular/core';
 import { CommonModule, DeprecatedI18NPipesModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpModule, XHRBackend } from '@angular/http';
-import { RouterModule } from '@angular/router';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
 
-import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
+import { RouterModule } from '@angular/router';
 
 import {
     ButtonModule,
@@ -21,7 +21,7 @@ import { SocialModule } from '../../shared/social/social.module';
     imports: [CommonModule,
         DeprecatedI18NPipesModule,
         FormsModule,
-        HttpModule,
+        HttpClientModule,
         RouterModule,
         SocialModule,
 
@@ -40,7 +40,10 @@ import { SocialModule } from '../../shared/social/social.module';
         CommentsComponent
     ],
     providers: [
-        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: GovernRequestInterceptor,
+            multi: true },
     ]
 })
 export class CommentsModule { }

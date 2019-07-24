@@ -1,10 +1,9 @@
 ﻿import { NgModule } from '@angular/core';
 import { CommonModule, DeprecatedI18NPipesModule } from '@angular/common';
 import { FormsModule }    from '@angular/forms';
-import { HttpModule, XHRBackend  }     from '@angular/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import { GovernRequestInterceptor } from "../../http-interceptors/govern-request.interceptor";
 import { RouterModule } from '@angular/router';
-
-import { AuthenticationConnectionBackend } from '../../authentication-connection-backend';
 
 
 import { ChartModule } from 'angular2-highcharts';
@@ -92,7 +91,7 @@ export function highchartsFactory() {
     imports: [CommonModule,
         DeprecatedI18NPipesModule,
         FormsModule,
-        HttpModule,
+        HttpClientModule,
         RouterModule,
 
         FusionRoutingModule,
@@ -160,7 +159,10 @@ export function highchartsFactory() {
         FusionDataProfileDetailComponent
     ],
     providers: [
-        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: GovernRequestInterceptor,
+            multi: true },
         {
             provide: HighchartsStatic,
             useFactory: highchartsFactory
