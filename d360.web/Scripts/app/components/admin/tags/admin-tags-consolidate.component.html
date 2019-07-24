@@ -1,29 +1,42 @@
-﻿<div>
-    <div class="row">
-        Please choose the one tag you wish to keep:
+﻿
+<div #popupBox class="modal-overlay show" tabindex=-1 (keydown)="checkKey($event,popupBox)">
+    <div class="modal-dialog modal-consolidate">
+        <div class="title-bar">
+            <h1>Consolidate Tags</h1>
+            <span class="grow"></span>
+            <button (click)="cancel()" class="light bar button close" title="Close"><i class="fa fa-times"></i></button>
+        </div>
+        <div class="content">
+            <div class="row">
+                Please choose the one tag you wish to keep:
+                <br/>
+                <table class="table table-borderless">
+                    <thead>
+                        <tr>
+                            <th width="30px;"></th>
+                            <th scope="col"></th>
+                            <th scope="col"></th>
 
-        <table class="table table-borderless">
-            <thead>
-                <tr>
-                    <th width="30px;"></th>
-                    <th scope="col"></th>
-                    <th scope="col"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let tag of tags;">
+                            <td><input type="radio" name="radio" (click)="selectItem(tag);" checked="{{selected && tag.uid == selected.uid ? 'checked' : ''}}" /></td>
+                            <td>{{tag.Value}}</td>
+                            <td>{{tag.UseCount}} assets tagged</td>
+                        </tr>
+                    </tbody>
+                </table>
+                All assets listed above will be tagged with the selected tag.
+                The other tags listed will be deleted.
 
-                </tr>
-            </thead>
-            <tbody>
-                <tr *ngFor="let tag of tags;">
-                    <td><input type="radio" name="radio" (click)="selectItem(tag);" checked="{{selected && tag.uid == selected.uid ? 'checked' : ''}}"  /></td>
-                    <td>{{tag.Value}}</td>
-                    <td>{{tag.UseCount}} assets tagged</td>
-                </tr>
-            </tbody>
-        </table>
-        All assets listed above will be tagged with the selected tag.
-        The other tags listed will be deleted.
-    </div>
-    <div class="row">
-        <button pButton (click)="consolidate()" label="Consolidate" [disabled]="!selected"></button>
-        <button pButton (click)="cancel()" label="Cancel" [disabled]="isLoading"></button>
+            </div>
+        </div>
+        <div class="action-bar">
+            <button class="button" (click)="cancel()" [disabled]="isLoading">Cancel</button>
+            <span class="grow"></span>
+
+            <button class="button primary" (click)="consolidate()" [disabled]="!selected">Consolidate</button>
+        </div>
     </div>
 </div>

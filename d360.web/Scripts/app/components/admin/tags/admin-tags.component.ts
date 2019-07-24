@@ -1,12 +1,12 @@
 ﻿import { Component } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { TagService } from '../../../services/tag.service';
-import { MessagesService } from '../../../services/messages.service';
 import { AdminBaseComponent } from '../admin-base.component'
 import { Title } from '@angular/platform-browser';
 import { TagType } from '../../../models/tag.model';
 import { RightSidebarService } from '../../../services/right-sidebar.service';
 import { forEach } from '@angular/router/src/utils/collection';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-admin-tags',
@@ -30,7 +30,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
     public theDeleteCallback: Function;
     public theConsolidateCallback: Function;
 
-    constructor(private tagsService: TagService, headerBreadcrumbService: HeaderBreadcrumbService, private messagesService: MessagesService, titleService: Title, rightSidebarService: RightSidebarService, ) {
+    constructor(private tagsService: TagService, headerBreadcrumbService: HeaderBreadcrumbService, private messagesService: MessagesObservableService, titleService: Title, rightSidebarService: RightSidebarService, ) {
         super(headerBreadcrumbService, titleService, rightSidebarService);
         this.areaName = "Tags";
         this.setCommonItems();
@@ -133,9 +133,9 @@ export class AdminTagsComponent extends AdminBaseComponent {
         else {
             let tagList = '';
             this.selected.forEach(t => {
-                tagList += `<li>${t.Value} ${t.UseCount} assets tagged<li>`;
+                tagList += `<tr><td>${t.Value}</td><td>${t.UseCount} assets tagged</td></tr>`;
             });
-            this.deletePromptHTML = `Please confirm that you wish to delete following tags: <ul>${tagList} </ul>`;
+            this.deletePromptHTML = `Please confirm that you wish to delete following tags: <table>${tagList}</table>`;
         }
         this.showDelete = true;
     }

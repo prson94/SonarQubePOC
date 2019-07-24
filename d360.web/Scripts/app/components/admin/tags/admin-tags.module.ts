@@ -3,8 +3,8 @@ import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
 import { HttpModule, XHRBackend  }     from '@angular/http';
 
-import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
-
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
 import { CoreModule } from '../../shared/core.module';
 import { TilesModule  } from '../../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.component';
@@ -59,7 +59,12 @@ import { TableModule } from 'primeng/table';
         D3SCheckbox
     ],
     providers: [
-        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: GovernRequestInterceptor,
+            multi: true
+        },
     ]
+    
 })
 export class AdminTagsModule { }

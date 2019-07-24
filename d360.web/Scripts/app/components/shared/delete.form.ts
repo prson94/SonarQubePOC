@@ -26,6 +26,12 @@ export class DeleteForm  {
     @Output() onDeleteFail = new EventEmitter();
     @Output() onCancel = new EventEmitter();
 
+    //Modal
+    @Input() showAsModal: boolean = false;
+    @Input() modalTitle: string = '';
+
+
+
     public message: FormMessage = new FormMessage();
     public isLoading = false;
 

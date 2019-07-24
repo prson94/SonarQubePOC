@@ -1,11 +1,38 @@
-﻿<div>
-    <div class="row">
-        <div *ngIf="isLoading" style="text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-        <div [innerHTML]="prompt">{{prompt}}</div>
-    </div>    
-    <div class="row">
-        <form-message [message]="message"></form-message>
-        <button pButton (click)="delete()" label="{{deleteButtonText ? deleteButtonText : 'Delete'}}" [disabled]="isLoading"></button>
-        <button pButton (click)="cancel()" label="Cancel" [disabled]="isLoading"></button>
+﻿<ng-template [ngIf]="!showAsModal">
+    <div>
+        <div class="row">
+            <div *ngIf="isLoading" style="text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
+            <div [innerHTML]="prompt">{{prompt}}</div>
+        </div>
+        <div class="row">
+            <form-message [message]="message"></form-message>
+            <button pButton (click)="delete()" label="{{deleteButtonText ? deleteButtonText : 'Delete'}}" [disabled]="isLoading"></button>
+            <button pButton (click)="cancel()" label="Cancel" [disabled]="isLoading"></button>
+        </div>
     </div>
-</div>
+</ng-template>
+
+<ng-template [ngIf]="showAsModal">
+    <div #popupBox class="modal-overlay show" tabindex=-1 (keydown)="checkKey($event,popupBox)">
+        <div class="modal-dialog modal-delete-form">
+            <div class="title-bar">
+                <h1>{{modalTitle}}</h1>
+                <span class="grow"></span>
+                <button (click)="cancel()" class="light bar button close" title="Close"><i class="fa fa-times"></i></button>
+            </div>
+            <div class="content">
+                <div class="flex row">
+                    <div *ngIf="isLoading" style="text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
+                    <div [innerHTML]="prompt">{{prompt}}</div>
+                    <form-message [message]="message"></form-message>
+
+                </div>
+            </div>
+            <div class="action-bar">
+                <button class="button" (click)="cancel()" [disabled]="isLoading">Cancel</button>
+                <span class="grow"></span>
+                <button class="button primary" (click)="delete()" [disabled]="isLoading">{{deleteButtonText ? deleteButtonText : 'Delete'}}</button>
+            </div>
+        </div>
+    </div>
+</ng-template>

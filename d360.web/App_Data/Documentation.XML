@@ -2605,7 +2605,7 @@
             This service houses all endpoints handling actions management in Govern.
             </summary>
         </member>
-        <member name="M:d360.web.Controllers.V2.ActionsController.GetIssues(System.Nullable{System.Guid},System.Nullable{System.Guid})">
+        <member name="M:d360.web.Controllers.V2.ActionsController.GetIssues(System.String,System.String)">
             <summary>
             Returns all actions.
             </summary>

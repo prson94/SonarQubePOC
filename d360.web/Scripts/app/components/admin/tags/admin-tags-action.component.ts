@@ -16,12 +16,22 @@ export class AdminTagsActionComponent  {
     @Output() onConsolidate: EventEmitter<any> = new EventEmitter();
     @Output() onTagToggle: EventEmitter<boolean> = new EventEmitter();;
 
-
+    private isEnabled: boolean;
 
     onDeleteClick() {
         this.onDelete.emit();
     }
     onConsolidateClick() {
         this.onConsolidate.emit();
+    }
+
+    changeTagStatusConfirmation($event) {
+        this.isEnabled = $event;
+        console.log(this.isEnabled);
+    }
+
+
+    changeStatus() {
+        this.onTagToggle.emit(this.isEnabled);
     }
 };

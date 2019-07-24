@@ -56,6 +56,10 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     @Output() closeClick = new EventEmitter();
     @Output() saveClick = new EventEmitter();
 
+    @Input() showAsModal: boolean = false;
+    @Input() modalTitle: string = '';
+    private savingInProgress: boolean = false;
+
     form: FormGroup;
 
     action: string = "Edit";
@@ -93,6 +97,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     }
 
     private load() {
+        this.savingInProgress = false;
         if (this.selection != undefined) {
             this.editedItem = _.cloneDeep(this.selection);
             this.action = this.copy ? "Copy" : this.action;
@@ -348,10 +353,11 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     onSubmit() {
         let action = (this.selection == null ? "new" : "edit");
         let values: any = {};
-
+        this.savingInProgress = true;
         if (this.copy == true) {
             action = this.action;
-        }
+        } 
+
 
         //adjust any dates to utc
         for (var p in this.form.value) {
