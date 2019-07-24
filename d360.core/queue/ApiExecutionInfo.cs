@@ -27,6 +27,8 @@ namespace d360.core.queue
 
         public ApiExecutionAction Action { get; set; }
 
+        public bool SendWorkflowEvents { get; set; } = true;
+
         [JsonIgnore]
         public string StorageFolder { get { return $"api-execution"; } }
 
