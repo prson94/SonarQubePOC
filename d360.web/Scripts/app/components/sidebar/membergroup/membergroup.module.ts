@@ -1,10 +1,11 @@
 ﻿import { NgModule } from '@angular/core';
 import { CommonModule, DeprecatedI18NPipesModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpModule, XHRBackend } from '@angular/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
+
 import { RouterModule } from '@angular/router';
 
-import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
 
 import {
     ButtonModule,
@@ -23,7 +24,7 @@ import { ResourceModule } from '../../resource/resource.module';
     imports: [CommonModule,
         DeprecatedI18NPipesModule,
         FormsModule,
-        HttpModule,
+        HttpClientModule,
         RouterModule,
 
         //routing 
@@ -42,7 +43,10 @@ import { ResourceModule } from '../../resource/resource.module';
         MemberGroupComponent,
     ],
     providers: [
-        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: GovernRequestInterceptor,
+            multi: true},
     ]
 })
 export class MemberGroupModule { }

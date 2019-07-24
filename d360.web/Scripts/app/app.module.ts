@@ -4,7 +4,6 @@ import {HTTP_INTERCEPTORS, HttpClientModule} from '@angular/common/http';
 import {BrowserModule, Title} from '@angular/platform-browser';
 import {AppComponent} from './app.component';
 import {AppRoutingModule} from './app.routes';
-import {HttpModule, XHRBackend} from '@angular/http';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 
 import {
@@ -26,8 +25,7 @@ import {StateService} from './services/state.service';
 import {WebAnalyticsService} from './services/web-analytics.service';
 
 import {TooltipSingletonService} from './services/tooltip-singleton.service'
-import {AuthenticationConnectionBackend} from './authentication-connection-backend';
-import {GovernPostRequestInterceptor} from "./http-interceptors/govern-post-request.interceptor";
+import {GovernRequestInterceptor} from "./http-interceptors/govern-request.interceptor";
 import { CookieService } from './services/cookie.service';
 import { SiteMenuService } from './services/site-menu.service';
 import { DialogModule } from 'primeng/dialog';
@@ -49,7 +47,6 @@ export function getLocale() {
         BrowserModule,
         HttpClientModule,
         AppRoutingModule,
-        HttpModule,
         BrowserAnimationsModule,
 
         // prime 
@@ -64,10 +61,9 @@ export function getLocale() {
     bootstrap: [AppComponent],
     providers: [
         AdminUserGuard,
-        {provide: XHRBackend, useClass: AuthenticationConnectionBackend},
         {
             provide: HTTP_INTERCEPTORS,
-            useClass: GovernPostRequestInterceptor,
+            useClass: GovernRequestInterceptor,
             multi: true
         },
         AuthenticationService,

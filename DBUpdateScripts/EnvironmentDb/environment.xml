@@ -239,12 +239,14 @@
   <include file="scripts/GOV-7369.xml"/>
   <include file="scripts/GOV-7592.xml"/>
   <include file="scripts/GOV-7629.xml"/>
+  <include file="scripts/GOV-7626.xml"/>
   <include file="scripts/GOV-7537.xml"/>
   <include file="scripts/GOV-7414.xml"/>
   <include file="scripts/GOV-7591.xml"/> <!-- GetDynamicAssets -->
   <include file="scripts/GOV-7647.xml"/>
 
   <!-- Sprint 7 2019 Start -->
+  <include file="scripts/GOV-7728.xml"/>
   <include file="scripts/GOV-7711.xml"/>
   <include file="scripts/GOV-7658.xml"/>
   <include file="scripts/GOV-7644.xml"/> <!-- goes after 7658-->

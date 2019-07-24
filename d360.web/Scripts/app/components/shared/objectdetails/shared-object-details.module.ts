@@ -1,9 +1,8 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
 import { RouterModule }    from '@angular/router';
-import { HttpModule, XHRBackend  }     from '@angular/http';
-
-import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
 
 import {
     ButtonModule,
@@ -30,7 +29,7 @@ import { NgxJsonViewModule } from 'ng-json-view';
     imports: [CommonModule,
         DeprecatedI18NPipesModule,
         RouterModule,
-        HttpModule,
+        HttpClientModule,
         //d3s
         CoreModule,
         SharedGridPagingInfoModule,
@@ -57,7 +56,10 @@ import { NgxJsonViewModule } from 'ng-json-view';
         ObjectDetailFieldComponent
     ],
     providers: [
-        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: GovernRequestInterceptor,
+            multi: true },
     ]
 })
 export class SharedObjectDetailsModule { }
