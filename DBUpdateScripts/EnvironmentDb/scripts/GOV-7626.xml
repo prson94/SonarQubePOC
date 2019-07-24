@@ -11,20 +11,14 @@
             splitStatements="true"
             stripComments="true">
       <![CDATA[
-ALTER TABLE [dbo].[Policy-retired] DROP CONSTRAINT [FK_Policy_PolicyType];
-ALTER TABLE [dbo].[Policy-retired] DROP CONSTRAINT [DF_Policy_DisplayValue];
-ALTER TABLE [dbo].[Policy-retired] DROP CONSTRAINT [DF_Policy_Level];
-ALTER TABLE [dbo].[Policy-retired] DROP CONSTRAINT [DF_Policy_PolicyTypeID];
-ALTER TABLE [dbo].[Policy-retired] DROP CONSTRAINT [DF_Policy_UpdatedOn];
 DROP TABLE IF EXISTS [dbo].[Policy-retired];
 ]]>
     </sql>
     <rollback>
       <![CDATA[
-SET QUOTED_IDENTIFIER ON
-GO
-
-CREATE TABLE [dbo].[Policy-retired](
+  IF NOT EXISTS(SELECT 1 FROM sys.Tables WHERE  Name = N'Policy-retired' AND Type = N'U')
+ BEGIN
+  CREATE TABLE [dbo].[Policy-retired](
 	[ID] [int] IDENTITY(1,1) NOT NULL,
 	[TextPath] [nvarchar](2000) NULL,
 	[UpdatedOn] [datetime] NULL,
@@ -36,10 +30,15 @@ CREATE TABLE [dbo].[Policy-retired](
 	[FieldHash] [varchar](250) NULL,
 	[DisplayValue] [nvarchar](max) NOT NULL,
  CONSTRAINT [PK_Policy] PRIMARY KEY CLUSTERED 
-(
-	[ID] ASC
-)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
-) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+  (
+	  [ID] ASC
+  )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+  ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+  ALTER TABLE [dbo].[Policy-retired] ADD  CONSTRAINT [DF_Policy_UpdatedOn]  DEFAULT (getutcdate()) FOR [UpdatedOn]
+  ALTER TABLE [dbo].[Policy-retired] ADD  CONSTRAINT [DF_Policy_PolicyTypeID]  DEFAULT ((50000)) FOR [PolicyTypeID]
+  ALTER TABLE [dbo].[Policy-retired] ADD  CONSTRAINT [DF_Policy_Level]  DEFAULT ((1)) FOR [Level]
+  ALTER TABLE [dbo].[Policy-retired] ADD  CONSTRAINT [DF_Policy_DisplayValue]  DEFAULT ('<INVALID VALUE>') FOR [DisplayValue]
+ END
 ]]>
     </rollback>
   </changeSet>
@@ -50,16 +49,21 @@ CREATE TABLE [dbo].[Policy-retired](
             splitStatements="true"
             stripComments="true">
       <![CDATA[
-ALTER TABLE [dbo].[PolicyType-retired] DROP CONSTRAINT [DF_PolicyType_DisplayFormat];
-DROP TABLE IF EXISTS [dbo].[PolicyType-retired];
+IF Exists(SELECT * FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_NAME ='FK_PolicyTypeLevel_PolicyType')
+ BEGIN
+	ALTER TABLE [dbo].[PolicyTypeLevel] DROP CONSTRAINT [FK_PolicyTypeLevel_PolicyType]
+END
+IF EXISTS(SELECT 1 FROM sys.Tables WHERE  Name = N'PolicyType-retired' AND Type = N'U')
+ BEGIN
+	DROP TABLE IF EXISTS [dbo].[PolicyType-retired];
+END
 ]]>
     </sql>
     <rollback>
       <![CDATA[
-SET QUOTED_IDENTIFIER ON
-GO
-
-CREATE TABLE [dbo].[PolicyType-retired](
+IF NOT EXISTS(SELECT 1 FROM sys.Tables WHERE  Name = N'PolicyType-retired' AND Type = N'U')
+ BEGIN
+  CREATE TABLE [dbo].[PolicyType-retired](
 	[ID] [int] IDENTITY(50000,1) NOT NULL,
 	[Name] [nvarchar](250) NOT NULL,
 	[Description] [nvarchar](max) NULL,
@@ -67,11 +71,13 @@ CREATE TABLE [dbo].[PolicyType-retired](
 	[UpdatedBy] [int] NULL,
 	[MaximumDepth] [int] NULL,
 	[DisplayFormat] [nvarchar](250) NULL,
- CONSTRAINT [PK_PolicyType] PRIMARY KEY CLUSTERED 
-(
-	[ID] ASC
-)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
-) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+  CONSTRAINT [PK_PolicyType] PRIMARY KEY CLUSTERED 
+  (
+	  [ID] ASC
+  )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+  ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+  ALTER TABLE [dbo].[PolicyType-retired] ADD  CONSTRAINT [DF_PolicyType_DisplayFormat]  DEFAULT ('{Name}') FOR [DisplayFormat]
+ END
 ]]>
     </rollback>
   </changeSet>
