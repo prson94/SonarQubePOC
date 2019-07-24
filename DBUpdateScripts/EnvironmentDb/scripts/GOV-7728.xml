@@ -13,7 +13,27 @@
       <![CDATA[
  IF NOT EXISTS(SELECT 1 FROM sys.Tables WHERE  Name = N'ASSETTAG' AND Type = N'U')
  BEGIN
+      CREATE TABLE dbo.AssetTag(
+	[ID] [bigint] IDENTITY(1,1) NOT NULL,
+	[uid] [uniqueidentifier] NOT NULL,
+	[AssetID] [int] NOT NULL,
+	[TagID] [int] NOT NULL,
+	[CreatedOn] [datetime] NULL,
+	[CreatedBy] [int] NULL,
+	CONSTRAINT [PK_AssetTag] PRIMARY KEY NONCLUSTERED 
+(
+	[ID] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY])
  END
+
+ CREATE NONCLUSTERED INDEX [IX_AssetTag_AssetID] ON [dbo].[AssetTag]
+(
+	[AssetID] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
+CREATE NONCLUSTERED INDEX [IX_AssetTag_TagID] ON [dbo].[AssetTag]
+(
+	[TagID] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
 ]]>
     </sql>
     <rollback>
