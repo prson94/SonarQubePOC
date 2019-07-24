@@ -220,7 +220,7 @@
   <include file="scripts/GOV-6668.xml"/> <!--IGC proc-->
   <include file="scripts/GOV-7436.xml"/>
   
-   <!-- Sprint 6 2019 Start -->
+  <!-- Sprint 6 2019 Start -->
   <include file="scripts/GOV-6387.xml"/>
   <include file="scripts/GOV-7448.xml"/>
   <include file="scripts/GOV-7461.xml"/> <!--IGC proc-->
@@ -247,4 +247,7 @@
   <include file="scripts/GOV-7728.xml"/>
   <include file="scripts/GOV-7711.xml"/>
   <include file="scripts/GOV-7658.xml"/>
+  
+  <!-- Sprint 7 2019 Start -->
+  <include file="scripts/GOV-7754.xml"/>
 </databaseChangeLog>
