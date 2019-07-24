@@ -1,9 +1,9 @@
 ﻿import {Component, Input, OnInit, SimpleChange, Output, EventEmitter} from '@angular/core';
 import {OrganizationType} from '../../../models/organization.model';
 import {OrganizationsService} from '../../../services/organizations.service';
-import {MessagesService} from '../../../services/messages.service';
 import {BaseComponent} from '../../shared/base.component';
 import {SiteUrlHelpers} from '../../../static/site-url-helpers';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-admin-organization-types',
@@ -120,7 +120,7 @@ export class AdminOrganizationTypesComponent extends BaseComponent implements On
 
     constructor(
         private organizationsService: OrganizationsService,
-        private messagesService: MessagesService
+        private messagesService: MessagesObservableService
     ) {
         super();
 

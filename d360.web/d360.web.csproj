@@ -1130,7 +1130,6 @@
   <ItemGroup>
     <TypeScriptCompile Include="Scripts\app\app.module.ts" />
     <TypeScriptCompile Include="Scripts\app\app.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\authentication-connection-backend.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-allocation.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-metric-asset-type-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-metric-editor.component.ts" />
@@ -1470,7 +1469,7 @@
     <TypeScriptCompile Include="Scripts\app\directives\text-highlight-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\guards\api-key-users.gurard.ts" />
     <TypeScriptCompile Include="Scripts\app\http-interceptors\error-notify-interceptor.ts" />
-    <TypeScriptCompile Include="Scripts\app\http-interceptors\govern-post-request.interceptor.ts" />
+    <TypeScriptCompile Include="Scripts\app\http-interceptors\govern-request.interceptor.ts" />
     <TypeScriptCompile Include="Scripts\app\models\authentication-properties.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\asset.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\cascade.model.ts" />
@@ -1753,7 +1752,6 @@
     <TypeScriptCompile Include="Scripts\app\services\state.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\artifact-type.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\artifacts.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\base.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\editor-definition.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\fields.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\grid-definition.service.ts" />
@@ -1765,7 +1763,6 @@
     <TypeScriptCompile Include="Scripts\app\services\header-actions.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\header-breadcrumb.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\lookup.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\messages.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\object-style.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\rules.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\surveys.service.ts" />

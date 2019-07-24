@@ -109,7 +109,7 @@ namespace igx.jobs.igc
         public int? begin { get; set; }
         public int? pageSize { get; set; }
         public List<string> types { get; set; } = new List<string>();
-        public IgcPostSearchRequestWhereModel where { get; set; } = new IgcPostSearchRequestWhereModel();
+        public IgcPostSearchRequestWhereModel where { get; set; }//; = new IgcPostSearchRequestWhereModel();
         public List<IgcPostSearchRequestSortModel> sorts { get; set; }
         public List<string> properties { get; set; } = new List<string>();
     }

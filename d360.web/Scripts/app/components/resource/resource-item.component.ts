@@ -14,7 +14,7 @@ import { WorkflowType } from '../../models/workflow.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
 import { RightSidebarService } from '../../services/right-sidebar.service';
-import { MessagesService } from '../../services/messages.service';
+import { MessagesObservableService } from '../../services/messages-observable.service';
 
 declare var CompanySettings;
 declare var CurrentResourceID;
@@ -68,7 +68,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
         private uriBasedService: UriBasedService,
         private socialService: SocialService,
         rightSideBarService: RightSidebarService,
-        protected messagesService: MessagesService) {
+        protected messagesService: MessagesObservableService) {
         super();
         this.rightSidebarService = rightSideBarService;
     }

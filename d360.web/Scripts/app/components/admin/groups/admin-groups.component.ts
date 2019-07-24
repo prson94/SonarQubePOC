@@ -7,9 +7,9 @@ import {GroupService} from '../../../services/group.service';
 import {GroupSearchResultModel, Group, ResourceGroup, GroupEditorModel} from '../../../models/group.model';
 import {FormMode} from '../../../models/form.model';
 import {Title} from '@angular/platform-browser';
-import {MessagesService} from '../../../services/messages.service';
 import {SiteUrlHelpers} from '../../../static/site-url-helpers';
 import {StringConstants} from '../../../static/string-constants';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-admin-groups',
@@ -29,7 +29,7 @@ export class AdminGroupsComponent extends AdminBaseComponent {
         private groupService: GroupService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         titleService: Title,
-        protected messagesService: MessagesService
+        protected messagesService: MessagesObservableService
     ) {
         super(headerBreadcrumbService, titleService);
         this.areaName = "Groups";

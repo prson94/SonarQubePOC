@@ -2,7 +2,6 @@
 import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { MessagesService } from '../../services/messages.service';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { ResourcesService } from '../../services/resources.service';
 import { GridDefinitionService } from '../../services/grid-definition.service';

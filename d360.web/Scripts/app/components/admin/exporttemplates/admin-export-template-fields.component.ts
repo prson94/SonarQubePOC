@@ -8,12 +8,12 @@
     SimpleChanges
 } from '@angular/core';
 import {BaseComponent} from '../../shared/base.component';
-import {MessagesService} from '../../../services/messages.service';
 import {ExportTemplateService} from '../../../services/export-template.service';
 import {ExportTemplate} from '../../../models/export-template.model';
 import {FieldsObservableService} from '../../../services/fieldsObservable.service';
 import {FieldDefinition} from '../../../models/fields.model';
 import * as _ from 'lodash';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-admin-export-template-fields-component',
@@ -110,7 +110,7 @@ export class AdminExportTemplateFieldsComponent extends BaseComponent implements
 
     constructor(
         private exportTemplateService: ExportTemplateService,
-        protected messagesService: MessagesService,
+        protected messagesService: MessagesObservableService,
         protected fieldsService: FieldsObservableService
     ) {
         super();

@@ -1,8 +1,8 @@
 ﻿import { Input, Output, Component, OnChanges, SimpleChange, EventEmitter } from '@angular/core';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
 import { ResponsibilityType, IResponsibilityTypeService, ResponsibilityTypeRelationRule, ResponsibilityTypeRelation, ResponsibilityTypeRelation_FormData, ResponsibilityTypeRelationAllocationOption } from '../../../models/responsibility-type.model';
-import { MessagesService } from '../../../services/messages.service';
 import { BaseComponent } from '../../shared/base.component';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-responsibility-relations',
@@ -39,8 +39,8 @@ export class ResponsibilityRelationsComponent extends BaseComponent implements O
 
     private theDeleteCallback: Function;
 
-
-    constructor(private responsibilityTypeService: ResponsibilityTypeService, private messagesService: MessagesService) {
+    
+    constructor(private responsibilityTypeService: ResponsibilityTypeService, private messagesService: MessagesObservableService) {
         super();
 
         this.theDeleteCallback = this.deleteResponsibilityTypeRelation.bind(this);

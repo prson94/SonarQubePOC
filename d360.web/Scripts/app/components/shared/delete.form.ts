@@ -2,8 +2,8 @@
 import {map} from 'rxjs/operators';
 import { CommonModule }       from '@angular/common';
 import { NgModule, Input, Output, Component, EventEmitter } from '@angular/core';
-import { Http, Headers } from '@angular/http';
-import { FormMessage} from '../../models/form.model';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { FormMessage } from '../../models/form.model';
 import { JsonResult } from '../../models/jsonresult.model';
 import { SharedFormMessageModule } from './form-message.part';
 
@@ -29,16 +29,16 @@ export class DeleteForm  {
     public message: FormMessage = new FormMessage();
     public isLoading = false;
 
-    http: Http;
+    http: HttpClient;
 
-    constructor(http: Http) {
+    constructor(http: HttpClient) {
         this.http = http;
     }
 
     public delete(): void {
        if (this.isLoading)
             return;
-        var headers = new Headers();
+        var headers = new HttpHeaders();
         headers.append('Content-Type', 'application/json');
 
         this.isLoading = true;
@@ -53,7 +53,7 @@ export class DeleteForm  {
                  break;
             case 'post':
                 this.http.post(this.uri, JSON.stringify(this.model), { headers: headers }).pipe(
-                    map(data => data.json()))
+                    map(data => data))
                     .subscribe(
                     data => {
                         var r = new JsonResult(data);
@@ -73,7 +73,7 @@ export class DeleteForm  {
                 break;
             case 'put':
                 this.http.put(this.uri, JSON.stringify(this.model), { headers: headers }).pipe(
-                    map(data => data.json()))
+                    map(data => data))
                     .subscribe(
                     data => {
                         var r = new JsonResult(data);
@@ -95,7 +95,7 @@ export class DeleteForm  {
                 if (this.model)
                     console.warn('Model passed to generic delete will be ignored when method=\'DELETE\'.');
                 this.http.delete(this.uri).pipe(
-                    map(data => data.json()))
+                    map(data => data))
                     .subscribe(
                     data => {                        
                         var r = new JsonResult(data);

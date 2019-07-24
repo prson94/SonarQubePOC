@@ -91,16 +91,16 @@ export class WorkflowMonitorService extends BaseObservableService {
         }
     }
 
-    deleteItems(itemIds) {
-        const httpHeaders = new HttpHeaders(
-            {
-                'Content-Type': 'application/json'
-            }
+    deleteItems(itemIds):Observable<any> {
+        const httpOptions = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+            body: itemIds
+        };
+        let uri = `services/workflow/deleteItems`;
+
+        return this.http.delete(uri, httpOptions).pipe(
+            map(res => res),
+            catchError(err => this.handleError(err))
         );
-        let uri = `services/workflow/deleteItems/${itemIds}`;
-        return this.http.delete(uri, { headers: httpHeaders })
-            .pipe(
-            map(response => response),
-             catchError(err=>this.handleError(err)));
     }
 }
