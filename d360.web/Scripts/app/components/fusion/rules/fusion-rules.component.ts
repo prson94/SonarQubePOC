@@ -2,8 +2,8 @@
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
 import { FusionService } from '../../../services/fusion.service';
-import { MessagesService } from '../../../services/messages.service';
 import { FusionRule, FusionRuleStep, FusionRuleFilter, FusionRuleItem, FusionRuleMapping } from '../../../models/fusion.model';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 
 @Component({
@@ -31,7 +31,7 @@ export class FusionRulesComponent extends BaseComponent {
         private route: ActivatedRoute,
         private router: Router,
         private fusionService: FusionService,
-        private messagesService: MessagesService
+        private messagesService: MessagesObservableService
     ) {
         super();
     }

@@ -1,82 +1,91 @@
 ﻿import { Injectable } from '@angular/core';
-import { Headers, Http, ResponseContentType, Response } from '@angular/http';
-import { MessagesService } from './messages.service';
-import { BaseService } from './base.service';
 import { GridFilterExpression, GridRelationshipFilterExpression, GridFilterFieldType, GridAttributeFilterExpression } from '../models/grid-definition.model';
 import { RuleType, Rule, RuleDetail, RuleImplementation, RuleImplementationDetail, RuleResultPagedResults, RuleResultFilter } from '../models/rule.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { SortOrder } from '../models/enums.model';
+import { HttpClient } from '@angular/common/http';
+import { catchError, map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { BaseObservableService } from './baseObservable.service';
+import { MessagesObservableService } from './messages-observable.service';
 
 @Injectable()
-export class RulesService extends BaseService {
+export class RulesService extends BaseObservableService {
 
-    constructor(private http: Http, messagesService: MessagesService) { super(messagesService); }
+    constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
-    getRuleTypes(): Promise<RuleType[]> {
+    getRuleTypes(): Observable<RuleType[]> {
         return this.http.get('api/ruletypes')
-            .toPromise()
-            .then(response => <RuleType[]>response.json())//.ruleTypes)
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <RuleType[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getRules(id: number): Promise<any[]> {
+    getRules(id: number): Observable<any[]> {
         return this.http.get(`api/rules/${id}`)
-            .toPromise()
-            .then(response => <any[]>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <any[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getRuleImplementations(id: number): Promise<RuleImplementation[]> {
+    getRuleImplementations(id: number): Observable<RuleImplementation[]> {
         return this.http.get(`api/rules/${id}/implementations`)
-            .toPromise()
-            .then(response => <RuleImplementation[]>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <RuleImplementation[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getRule(id: number): Promise<RuleDetail> { 
+    getRule(id: number): Observable<RuleDetail> {
         return this.http.get(`api/rule/${id}`)
-            .toPromise()
-            .then(response => <RuleDetail>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <RuleDetail>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getRuleImplementation(id: number): Promise<RuleImplementationDetail> {
+    getRuleImplementation(id: number): Observable<RuleImplementationDetail> {
         return this.http.get(`api/ruleimplementations/${id}`)
-            .toPromise()
-            .then(response => <RuleImplementationDetail>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <RuleImplementationDetail>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getRuleType(id: number): Promise<RuleType> {
+    getRuleType(id: number): Observable<RuleType> {
         return this.http.get(`api/ruletypes/${id}`)
-            .toPromise()
-            .then(response => <RuleType>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <RuleType>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    deleteRule(id: number): Promise<JsonResult> {
+    deleteRule(id: number): Observable<JsonResult> {
         return this.deleteDynamicWithResult(this.http, 'rule', id);
     }
 
-    saveRule(rule: Rule): Promise<JsonResult> {
+    saveRule(rule: Rule): Observable<JsonResult> {
         if (rule.ID == undefined || !rule.ID) {
             return this.postDynamic(this.http, 'rule', rule);
         }
         return this.putDynamic(this.http, 'rule', rule);
     }
 
-    deleteRuleType(id: number): Promise<JsonResult> {
+    deleteRuleType(id: number): Observable<JsonResult> {
         return this.deleteDynamicWithResult(this.http, 'ruletype', id);
     }
 
-    saveRuleType(ruleType: RuleType): Promise<JsonResult> {
+    saveRuleType(ruleType: RuleType): Observable<JsonResult> {
         if (ruleType.ID == undefined || !ruleType.ID) {
             return this.postDynamic(this.http, 'ruletype', ruleType);
         }
         return this.putDynamic(this.http, 'ruletype', ruleType);
     }
 
-    getResultsByRule(id: number, pageNumber?: number, pageSize?: number, sortField?: string, sortOrder?: SortOrder, filters?: GridFilterExpression[], relationships?: GridRelationshipFilterExpression, attributes?: GridAttributeFilterExpression, simpleFilter?: string): Promise<RuleResultPagedResults> {
+
+    getResultsByRule(id: number, pageNumber?: number, pageSize?: number, sortField?: string, sortOrder?: SortOrder, filters?: GridFilterExpression[], relationships?: GridRelationshipFilterExpression, attributes?: GridAttributeFilterExpression, simpleFilter?: string): Observable<RuleResultPagedResults> {
         let sortOrderText = sortOrder == SortOrder.None ? "" : (sortOrder == SortOrder.Descending ? "desc" : "asc");
         let uri = `internal/monitor/rules/${id}/results?pagesize=${pageSize}&pagenum=${pageNumber}&sortDataField=${sortField}&sortOrder=${sortOrderText}`;
 
@@ -127,22 +136,29 @@ export class RulesService extends BaseService {
         }
 
         return this.http.get(uri)
-            .toPromise()
-            .then(response => <RuleResultPagedResults>response.json())
-            .catch(err => this.handleError(err));
+            .pipe(
+                map(response => <RuleResultPagedResults>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getResultsByRuleExcel(id: number) {        
-        this.http.get(`internal/monitor/ExportResultsByRule?id=${id}`, { responseType: ResponseContentType.Blob }).subscribe(data => this.downloadFile(data));
+    getResultsByRuleExcel(id: number) {
+        this.http.get(`internal/monitor/ExportResultsByRule?id=${id}`, { responseType: "blob" }).pipe(
+            map((response) => {
+                this.downloadFile(response);
+
+            }),
+            catchError(err => this.handleError(err))
+        ).subscribe();
     }
 
-    downloadFile(data: Response) {
+    downloadFile(data: any) {
         var filename = `Rule Data ${new Date().toDateString()}.xlsx`;
         if (window.navigator.msSaveOrOpenBlob) {
-            window.navigator.msSaveOrOpenBlob(data.blob(), filename);
+            window.navigator.msSaveOrOpenBlob(data, filename);
         }
         else {
-            var url = window.URL.createObjectURL(data.blob());
+            var url = window.URL.createObjectURL(data);
             var anchor = document.createElement("a");
             anchor.setAttribute("style", "display:none;");
             document.body.appendChild(anchor);
@@ -153,19 +169,19 @@ export class RulesService extends BaseService {
     }
 
 
-    deleteRuleImplementation(id: number): Promise<JsonResult> {
+    deleteRuleImplementation(id: number): Observable<JsonResult> {
         return this.deleteDynamicWithResult(this.http, 'ruleimplementation', id);
     }
 
 
-    saveRuleImplementation(implementation: RuleImplementation, action: string): Promise<JsonResult> {
+    saveRuleImplementation(implementation: RuleImplementation, action: string): Observable<JsonResult> {
         if (action && action == "Copy") {
-            return this.postDynamic(this.http, 'ruleimplementation', implementation, undefined,true);
+            return this.postDynamic(this.http, 'ruleimplementation', implementation, undefined, true);
         }
         else if (implementation.ID == undefined || !implementation.ID) {
             return this.postDynamic(this.http, 'ruleimplementation', implementation);
-        } else 
-        return this.putDynamic(this.http, 'ruleimplementation', implementation);
+        } else
+            return this.putDynamic(this.http, 'ruleimplementation', implementation);
     }
-    
+
 }

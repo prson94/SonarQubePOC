@@ -5,9 +5,9 @@ import {Subject} from "rxjs";
 import {FusionRule, FusionRuleStep} from '../../../models/fusion.model';
 
 import {FusionService} from '../../../services/fusion.service';
-import {MessagesService} from '../../../services/messages.service';
 
 import {BaseComponent} from '../../shared/base.component';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-fusion-rule-step-list',
@@ -88,7 +88,7 @@ export class FusionRuleStepListComponent extends BaseComponent implements OnChan
 
     constructor(
         private fusionService: FusionService,
-        private messagesService: MessagesService
+        private messagesService: MessagesObservableService
     ) {
         super();
     }

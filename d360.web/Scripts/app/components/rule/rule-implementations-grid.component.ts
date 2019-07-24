@@ -8,7 +8,7 @@ import { SortOrder } from '../../models/enums.model';
 import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression, GridAttributeFilterExpression } from '../../models/grid-definition.model';
 import { RuleColumnFilterComponent } from './rule-column-filter.component'
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import { MessagesService } from '../../services/messages.service';
+import { MessagesObservableService } from '../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-rule-implementations-grid',
@@ -87,7 +87,7 @@ import { MessagesService } from '../../services/messages.service';
 export class RuleImplementationsGridComponent extends BaseComponent implements OnInit {
 
     @Input() ruleId: number;
-    
+
     @Input() selected: RuleImplementation;
     @Output() selectedChange = new EventEmitter();
     private rowsPerPage: number = 10;
@@ -112,18 +112,18 @@ export class RuleImplementationsGridComponent extends BaseComponent implements O
 
     private showDelete: boolean = false;
     private showEditor: boolean = false;
-    
+
     constructor(
         private route: ActivatedRoute,
         private router: Router,
         private ruleService: RulesService,
-        private messagesService: MessagesService) {
+        private messagesService: MessagesObservableService) {
         super();
         this.theDeleteCallback = this.deleteImplementation.bind(this);
     }
 
     ngOnInit() {
-       
+
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -132,9 +132,9 @@ export class RuleImplementationsGridComponent extends BaseComponent implements O
             this.getData();
         }
     }
-    
-    public filterGridData(filterData) {     
-        this.currentPageNumber = 0;        
+
+    public filterGridData(filterData) {
+        this.currentPageNumber = 0;
         this.getData();
     }
 
@@ -147,14 +147,14 @@ export class RuleImplementationsGridComponent extends BaseComponent implements O
         //remove any invalid filters
         if (this.filters && this.filters.length > 0) {
             for (var i = this.filters.length - 1; i >= 0; i--) {
-                if (!this.filters[i].field || !this.filters[i].value) {                    
+                if (!this.filters[i].field || !this.filters[i].value) {
                     this.filters.splice(i, 1);
                 }
             }
         }
 
         this.ruleService.getRuleImplementations(this.ruleId)//, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder, this.filters, this.simpleTextFilter)
-            .then(res => {
+            .subscribe(res => {
                 this.results = res;
                 if (this.results && this.results.length > 0) {
                     this.selected = this.results[0];
@@ -166,7 +166,7 @@ export class RuleImplementationsGridComponent extends BaseComponent implements O
 
     private deleteImplementation(id: number) {
         this.ruleService.deleteRuleImplementation(id).
-            then(result => {
+            subscribe(result => {
                 this.showMessageForResult(this.messagesService, result);
                 this.showDelete = false;
                 this.results = this.results.filter(x => x.ID != id);
@@ -211,10 +211,10 @@ export class RuleImplementationsGridComponent extends BaseComponent implements O
         this.copy = true;
         this.showEditor = true;
     }
-    private saveImplementation(event) {       
+    private saveImplementation(event) {
         event.item.RuleID = this.ruleId;
         this.ruleService.saveRuleImplementation(event.item, event.action)
-            .then(result => {
+            .subscribe(result => {
                 this.showMessageForResult(this.messagesService, result);
                 this.getData();
                 this.copy = false;

@@ -3,8 +3,8 @@ import { BaseComponent } from '../../shared/base.component';
 import { MetricsService } from '../../../services/metrics.service';
 import { Item } from '../../../models/metrics.model';
 import { FormMode } from '../../../models/form.model';
-import { MessagesService } from '../../../services/messages.service';
 import { AssetTypeMetricModel } from '../../../models/asset.model';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-admin-metric-asset-type-list',
@@ -48,7 +48,7 @@ export class AdminMetricAssetTypeListComponent extends BaseComponent implements 
     private models: AssetTypeMetricModel[] = [];
     private selection: AssetTypeMetricModel = null;
 
-    constructor(private metricsService: MetricsService, protected messagesService: MessagesService) {
+    constructor(private metricsService: MetricsService, protected messagesService: MessagesObservableService) {
         super();
     }
 

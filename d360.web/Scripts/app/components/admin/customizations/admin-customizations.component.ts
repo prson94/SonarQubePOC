@@ -2,9 +2,9 @@
 import { AdminBaseComponent } from '../admin-base.component';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { SiteCustomizationsService } from '../../../services/site-customizations.service';
-import { MessagesService } from '../../../services/messages.service';
 import { Title } from '@angular/platform-browser';
 import 'codemirror/mode/css/css.js';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-admin-customizations-component',
@@ -42,7 +42,7 @@ export class AdminCustomizationsComponent extends AdminBaseComponent implements 
         headerBreadcrumbService: HeaderBreadcrumbService,        
         titleService: Title,
         protected siteCustomizationsService: SiteCustomizationsService,
-        protected messagesService: MessagesService
+        protected messagesService: MessagesObservableService
     ) {
 
         super(headerBreadcrumbService, titleService);

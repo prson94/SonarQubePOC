@@ -1,9 +1,9 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { QualifierService } from '../../services/qualifier.service';
-import { MessagesService } from '../../services/messages.service';
 import { QualifierType, ResolutionObjectType } from '../../models/qualifier.model';
 import { Subject, Observable } from 'rxjs';
+import { MessagesObservableService } from '../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-rule-qualifier-editor',
@@ -63,7 +63,7 @@ export class RuleQualifierEditorComponent extends BaseComponent implements OnIni
     private resolutionFields = [];
 
 
-    constructor(private qualifierService: QualifierService, private messagesService: MessagesService) {
+    constructor(private qualifierService: QualifierService, private messagesService: MessagesObservableService) {
         super();
     }
 

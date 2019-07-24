@@ -1,9 +1,9 @@
 ﻿import { Component, Input, OnChanges, SimpleChange} from '@angular/core';
 import { Report, ReportTile } from '../../../models/report.model';
 import { ReportsService  } from '../../../services/reports.service';
-import { MessagesService } from '../../../services/messages.service';
 import { BaseComponent } from '../../shared/base.component';
 import { catchError } from 'rxjs/operators';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-admin-report-item',
@@ -76,7 +76,7 @@ export class AdminReportItemsComponent extends BaseComponent implements OnChange
 
     theDeleteCallback: Function;
 
-    constructor(private reportsService: ReportsService, private messagesService: MessagesService) {
+    constructor(private reportsService: ReportsService, private messagesService: MessagesObservableService) {
         super();
         this.theDeleteCallback = this.deleteTile.bind(this);
     }

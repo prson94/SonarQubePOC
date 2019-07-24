@@ -15,12 +15,13 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
 import { Permission } from '../../models/responsibility-type.model';
+import { Observable, Subscribable, Subscription } from 'rxjs';
 
 declare var CompanySettings;
 
 @Component({
     selector: 'd3s-rule-item',
-    providers: [RulesService, PermissionsService, SurveysService],    
+    providers: [RulesService, PermissionsService, SurveysService],
     template: ` 
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="row" *ngIf="!isLoading">
@@ -64,22 +65,23 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
     private currentAreaNameSubscription: any;
     private currentAreaName: string;
     private rightSub: any;
+    private ruleSub: Subscription;
     private rule: RuleDetail;
     private messages: MessageBarItem[] = [];
     private surveyType: SurveyType;
-    private showSurvey: boolean = false;    
+    private showSurvey: boolean = false;
     private selectedImp: RuleImplementation;
     private showSocialScoreBar: boolean = true;
     private ruleType: RuleType;
 
     constructor(private rulesService: RulesService,
-            private route: ActivatedRoute,
-            private router: Router,
-            rightSidebarService: RightSidebarService,
-            protected titleService: Title,
-            protected headerBreadcrumbService: HeaderBreadcrumbService,
-            protected permissionsService: PermissionsService,
-            protected surveysService: SurveysService
+        private route: ActivatedRoute,
+        private router: Router,
+        rightSidebarService: RightSidebarService,
+        protected titleService: Title,
+        protected headerBreadcrumbService: HeaderBreadcrumbService,
+        protected permissionsService: PermissionsService,
+        protected surveysService: SurveysService
     ) {
         super();
         this.rightSidebarService = rightSidebarService;
@@ -96,25 +98,14 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
                     .getAreaName('RuleType', ruleTypeId)
                     .subscribe(result => { this.currentAreaName = result });
 
-            this.load(ruleId).then(() => {
-                this.rulesService.getRuleType(ruleTypeId).then(r => { this.ruleType = r; this.buildbreadcrumb(); });
-                this.headerBreadcrumbService.setCurrentObjectInfo('Rule', ruleId);
-                this.setObjectInfo('Rule', ruleId, this.rule.Name, this.rule.AssetID);
-
-                this.loadPermissions(this.permissionsService, StringConstants.ObjectRule, ruleId).then(p => {
-                    this.clearSidebar();
-                    this.setCommonRightSideBar(true, this.hasPermission(Permission.ReadResponsibilities), false, true, true, this.hasPermission(Permission.ReadRelationships), true, true);
-                });
-
-                this.isLoading = false;
-            });
+            this.load(ruleId);
         });
 
         this.showSocialScoreBar = (CompanySettings.ShowSocialScoreBar != 'false');
     }
 
-    ngOnDestroy() {        
-        this.routeParamsSubscription.unsubscribe(); 
+    ngOnDestroy() {
+        this.routeParamsSubscription.unsubscribe();
         this.currentAreaNameSubscription.unsubscribe();
         this.clearSidebar();
     }
@@ -137,13 +128,24 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
                 this.ruleType.ID));
         });
     }
-    load(ruleId: number): Promise<any> {
-        return this.rulesService.getRule(ruleId)
-            .then(result => {
+    load(ruleId: number) {
+        this.ruleSub = this.rulesService.getRule(ruleId)
+            .subscribe(result => {
                 this.rule = result;
                 this.setBrowserTitle(this.titleService, this.rule.Name);
                 this.messages = []; //clear any messages for this rule
                 this.loadItemSurvey();
+
+
+                this.rulesService.getRuleType(this.rule.TypeID).subscribe(r => { this.ruleType = r; this.buildbreadcrumb(); });
+                this.headerBreadcrumbService.setCurrentObjectInfo('Rule', ruleId);
+                this.setObjectInfo('Rule', ruleId, this.rule.Name, this.rule.AssetID);
+
+                this.loadPermissions(this.permissionsService, StringConstants.ObjectRule, ruleId).then(p => {
+                    this.clearSidebar();
+                    this.setCommonRightSideBar(true, this.hasPermission(Permission.ReadResponsibilities), false, true, true, this.hasPermission(Permission.ReadRelationships), true, true);
+                });
+                this.isLoading = false;
             });
     }
 

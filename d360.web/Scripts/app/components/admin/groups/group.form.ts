@@ -4,10 +4,10 @@ import {Group, GroupEditorModel, GroupSearchResultModel, ResourceGroup} from '..
 import {FormEvents, FormHelper} from '../../../models/form.model';
 import {JsonResult} from '../../../models/jsonresult.model';
 import {GroupService} from '../../../services/group.service';
-import {MessagesService} from '../../../services/messages.service';
 import * as _ from 'lodash';
 import {EditorField} from '../../../models/editor-field.model';
 import {ResourcesService} from '../../../services/resources.service';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-group-form',
@@ -33,7 +33,7 @@ export class GroupForm implements OnInit, OnChanges, FormEvents {
     private isLoading = false;
     private initialItem: GroupEditorModel;
 
-    constructor(private groupService: GroupService, private messagesService: MessagesService) {
+    constructor(private groupService: GroupService, private messagesService: MessagesObservableService) {
         this.model = new GroupEditorModel();
         this.model.group = new Group();
     }

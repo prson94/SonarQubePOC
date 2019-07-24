@@ -3,11 +3,11 @@ import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { RightSidebarService } from '../../../services/right-sidebar.service';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
-import { MessagesService } from '../../../services/messages.service';
 import { ResponsibilityType, IResponsibilityTypeService } from '../../../models/responsibility-type.model';
 import { FormMode } from '../../../models/form.model';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'admin-governance',
@@ -15,14 +15,14 @@ import { Title } from '@angular/platform-browser';
     templateUrl: './admin-governance.component.html',
 })
 
-export class AdminGovernanceComponent extends AdminBaseComponent implements OnDestroy {    
+export class AdminGovernanceComponent extends AdminBaseComponent implements OnDestroy {
     private formMode = FormMode.Default;
     private FormMode = FormMode;
 
     private responsibilityTypeItems = new Array<ResponsibilityType>();
     private selectedRow = new ResponsibilityType();
 
-    constructor(rightSidebarService: RightSidebarService, private responsibilityTypeService: ResponsibilityTypeService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title, protected messagesService: MessagesService) {
+    constructor(rightSidebarService: RightSidebarService, private responsibilityTypeService: ResponsibilityTypeService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title, protected messagesService: MessagesObservableService) {
         super(headerBreadcrumbService, titleService, rightSidebarService);        
         this.areaName = "Responsibility Types";
         this.adminHeading = "Security";
@@ -36,7 +36,7 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
         }
         this.load();
     }
-    
+
 
     ngOnDestroy() {
         this.clearSidebar();
@@ -44,7 +44,7 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
 
     load(): void {
         this.responsibilityTypeService.getAdminResponsibilityTypes()
-            .then(data => {
+            .subscribe(data => {
                 this.responsibilityTypeItems = data;
                 this.selectedRow = this.responsibilityTypeItems[0];
             });
@@ -55,10 +55,10 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
     }
 
     edit(id: number): void {
-        this.formMode = FormMode.Editing;        
+        this.formMode = FormMode.Editing;
         this.selectedRow = this.responsibilityTypeItems.find(i => i.ID == id);
     }
-     
+
     delete(id: number): void {
         this.formMode = FormMode.Deleting;
         this.selectedRow = this.responsibilityTypeItems.find(i => i.ID == id);
@@ -70,14 +70,14 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
         this.load();
     }
 
-    confirmDelete(e: any) {        
+    confirmDelete(e: any) {
         if (e == 'error') {
             this.messagesService.showError('Error', 'An error occurred');
         }
         else {
             this.messagesService.showInfoMessage('Success', 'Item deleted successfully');
         }
-        
+
         this.formMode = FormMode.Default;
         this.load();
     }

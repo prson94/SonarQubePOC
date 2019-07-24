@@ -47,14 +47,14 @@ namespace d360.web.Controllers.V2
            MapToApiVersion("2.0"),
            Route(""),
            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
-           SwaggerResponse(HttpStatusCode.OK, "Gets Members of a Group.", typeof(ResourceApiViewModel)),
+           SwaggerResponse(HttpStatusCode.OK, "Gets all actions.", typeof(ResourceApiViewModel)),
            SwaggerResponse(HttpStatusCode.NotFound, "Uid {uid} not found."),
            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
            SwaggerParameter("_pageSize", "The number of results to return per page. The default is 5 users per page and max value is 250.", DataType = "integer", ParameterType = "query", Required = false),
            SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
            SwaggerParameter("_order", "The way in which to order the results.", DataType = "string", ParameterType = "query", Required = false),
        ]
-        public async Task<HttpResponseMessage> GetIssues(Guid? actionTypeUid = null, Guid? assetUid = null)
+        public async Task<IHttpActionResult> GetIssues(string actionTypeUid = null, string assetUid = null)
         {
             string finalSql = "";
             string countSql = @"SELECT 
@@ -73,13 +73,7 @@ namespace d360.web.Controllers.V2
                                     I.CreatedOn,
                                     R.uid as CreatedByUid,
                                     I.UpdatedOn,
-                                    GR.uid as UpdatedByUid
-                                    FROM[dbo].[Issue] I
-                                    inner join[dbo].[IssueType] IT on IT.ID = I.IssueTypeID
-                                    left join[dbo].Asset A on A.Object = I.Object and A.ObjectID = I.ObjectID
-                                    left join[dbo].AssetType AT on AT.Object = I.ObjectType and AT.ObjectID = I.ObjectTypeID
-                                    left join[reporting].[Global_Resource] R on R.ResourceID = I.CreatedBy
-                                    left join[reporting].[Global_Resource] GR on GR.ResourceID = I.UpdatedBy";
+                                    GR.uid as UpdatedByUid";
             string whereSql = "";
             string joinsSql = " ";
             List<string> queries = new List<string>();
@@ -115,12 +109,63 @@ namespace d360.web.Controllers.V2
                 }
             });
 
-            var fieldTypes = Company.FieldTypes.Where(f => f.Object == "IssueType").Distinct().ToList();
-            getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
-
-            foreach (var join in fieldJoins)
+            if (actionTypeUid != null)
             {
-                joinsSql += join;
+                Guid atGuid = new Guid();
+                if (Guid.TryParse(actionTypeUid, out atGuid))
+                {
+                    IssueType issueType = this.issueRepository.GetIssueTypeByUID(atGuid);
+
+                    if (issueType == null)
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Action Type with Uid {actionTypeUid} could not be found."));
+                    else
+                    {
+                        var fieldTypes = Company.FieldTypes.Where(f => f.Object == "IssueType" && f.ObjectID == issueType.ID).ToList();
+                        getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
+
+                        foreach (var col in fieldColumns)
+                        {
+                            selectSql += "," + col;
+                        }
+
+                        foreach (var join in fieldTypes)
+                        {
+                            string fieldJoin = "left join Field F" + join.ID + " on F" + join.ID + ".FieldTypeID =" + join.ID + " and F" + join.ID + ".[ObjectType] = 'Issue' and F" + join.ID + ".[ObjectID] = I.ID ";
+                            joinsSql += fieldJoin;
+                        }
+
+                        foreach (FieldType customField in fieldTypes)
+                        {
+                            if (queryParams.Any(x => x.Key == customField.Name))
+                            {
+                                var paramval = queryParams.FirstOrDefault(x => x.Key == customField.Name).Value;
+                                queries.Add($"F{customField.ID}.FormattedValue = @field{customField.ID}");
+                                dbArgs.Add($"@field{customField.ID}", paramval);
+                            }
+                        }
+                    }
+
+                }
+                else
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Invaild GUID {actionTypeUid}."));
+                }
+            }
+
+            if (assetUid != null)
+            {
+                Guid aGuid = new Guid();
+                if (Guid.TryParse(assetUid, out aGuid))
+                {
+                    Asset asset = this.assetRepository.GetAssetByUID(aGuid);
+
+                    if (asset == null)
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset with Uid {assetUid} could not be found."));
+                }
+                else
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Invaild GUID {assetUid}."));
+                }
             }
 
             if (actionTypeUid != null)
@@ -133,15 +178,7 @@ namespace d360.web.Controllers.V2
                 queries.Add("A.uid = @assetUid");
                 dbArgs.Add("assetUid", assetUid);
             }
-            foreach (FieldType customField in fieldTypes)
-            {
-                if (queryParams.Any(x => x.Key == customField.Name))
-                {
-                    var paramval = queryParams.FirstOrDefault(x => x.Key == customField.Name).Value;
-                    queries.Add($"F{customField.ID}.FormattedValue = @field{customField.ID}");
-                    dbArgs.Add($"@field{customField.ID}", paramval);
-                }
-            }
+
             if (queries.Count() > 0)
             {
                 whereSql += " where ";
@@ -155,7 +192,12 @@ namespace d360.web.Controllers.V2
                     whereSql += " and ";
                 }
             }
-            finalSql = selectSql + whereSql;
+            finalSql = selectSql + @" FROM[dbo].[Issue] I
+                                    inner join[dbo].[IssueType] IT on IT.ID = I.IssueTypeID
+                                    left join[dbo].Asset A on A.Object = I.Object and A.ObjectID = I.ObjectID
+                                    left join[dbo].AssetType AT on AT.Object = I.ObjectType and AT.ObjectID = I.ObjectTypeID
+                                    left join[reporting].[Global_Resource] R on R.ResourceID = I.CreatedBy
+                                    left join[reporting].[Global_Resource] GR on GR.ResourceID = I.UpdatedBy" + joinsSql + whereSql;
             countSql += whereSql;
             if (pageSize > 0 || pageNum > 0)
             {
@@ -170,7 +212,7 @@ namespace d360.web.Controllers.V2
             var results = await Company.QueryAsync<dynamic>(finalSql, dbArgs);
             model.total = count.FirstOrDefault();
             model.items = results;
-            return Request.CreateResponse(HttpStatusCode.OK, model);
+            return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model)));
         }
 
         /// <summary>

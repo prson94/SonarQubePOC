@@ -1,11 +1,11 @@
 ﻿import { Input, Output, Component, EventEmitter, OnInit } from '@angular/core';
-import { MessagesService } from '../../../services/messages.service';
 import { ArtifactTypeService } from '../../../services/artifact-type.service';
 import { ArtifactService } from '../../../services/artifacts.service';
 import { ArtifactType } from '../../../models/artifact-type.model';
 import { SortOrder } from '../../../models/enums.model';
 import { BaseComponent } from '../../shared/base.component';
 import { forkJoin } from 'rxjs';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-artifact-type-delete',
@@ -25,7 +25,7 @@ export class ArtifactTypeDeleteComponent extends BaseComponent implements OnInit
     constructor(
         private artifactTypeService:ArtifactTypeService,
         private artifactService: ArtifactService,
-        private messagesService: MessagesService,
+        private messagesService: MessagesObservableService,
     ) {
         super();
     }

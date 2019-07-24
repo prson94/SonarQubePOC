@@ -3,9 +3,9 @@
 import { FieldDefinition, IFieldsService } from '../../../models/fields.model';
 
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
-import { MessagesService } from '../../../services/messages.service';
 
 import { BaseComponent } from '../../shared/base.component';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-field-definition-tile',
@@ -41,7 +41,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
     private theDeleteCallback: Function;
     public hasKeyFields: boolean = false;
 
-    constructor(private fieldsService: FieldsObservableService, private messagesService: MessagesService) {
+    constructor(private fieldsService: FieldsObservableService, private messagesService: MessagesObservableService) {
         super();
         this.theDeleteCallback = this.deleteFieldType.bind(this);
     }

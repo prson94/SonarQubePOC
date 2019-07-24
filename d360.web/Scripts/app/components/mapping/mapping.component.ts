@@ -6,10 +6,10 @@ import {Breadcrumb} from '../../models/breadcrumb.model';
 import {HeaderBreadcrumbService} from '../../services/header-breadcrumb.service';
 import {DiagramService} from '../../services/diagram.service';
 import {RightSidebarService} from '../../services/right-sidebar.service';
-import {MessagesService} from '../../services/messages.service';
 import {PermissionsService} from '../../services/permissions.service';
 
 import {BaseComponent} from '../shared/base.component';
+import { MessagesObservableService } from '../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-mapping-component',
@@ -28,7 +28,7 @@ export class MappingComponent extends BaseComponent implements OnInit, OnDestroy
         protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected diagramService: DiagramService,
-        protected messagesService: MessagesService,
+        protected messagesService: MessagesObservableService,
         rightSidebarService: RightSidebarService,
         protected permissionsService: PermissionsService
     ) {

@@ -26,9 +26,9 @@ import {
 import {PermissionsService} from '../../../../services/permissions.service';
 import {DiagramService} from '../../../../services/diagram.service';
 import {LineageService} from '../../../../services/lineage.service';
-import {MessagesService} from '../../../../services/messages.service';
 
 import {DiagramBaseComponent} from '../diagram-base.component';
+import { MessagesObservableService } from '../../../../services/messages-observable.service';
 
 declare var window: any;
 
@@ -121,7 +121,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         protected permissionsService: PermissionsService,
         private diagramService: DiagramService,
         private lineageService: LineageService,
-        private messagesService: MessagesService
+        private messagesService: MessagesObservableService
     ) {
         super();
     }

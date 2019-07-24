@@ -1,18 +1,18 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { BaseService } from './base.service';
-import { MessagesService } from './messages.service';
 import { JsonResult } from '../models/jsonresult.model';
 import { Group, Map, Item, Condition, MapForm, ConditionForm, MetricAssetViewModel, MetricFieldTypeViewModel } from '../models/metrics.model';
 import { AssetTypeMetricModel } from '../models/asset.model';
 import { Observable } from 'rxjs';
+import { MessagesObservableService } from './messages-observable.service';
+import { BaseObservableService } from './baseObservable.service';
 
 
 
 @Injectable()
-export class MetricsService extends BaseService {
+export class MetricsService extends BaseObservableService {
 
-    constructor(private http: HttpClient, messagesService: MessagesService) { super(messagesService); }
+    constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
     public getAssetTypes(): Observable<AssetTypeMetricModel[]> {
         return this.http

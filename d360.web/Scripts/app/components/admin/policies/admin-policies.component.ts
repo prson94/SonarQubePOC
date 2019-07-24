@@ -12,9 +12,9 @@ import { RightSidebarService } from '../../../services/right-sidebar.service';
 import { PoliciesService } from '../../../services/policies.service';
 import { StateService } from '../../../services/state.service';
 import { AssetTypeService } from "../../../services/asset-type.services";
-import { MessagesService } from '../../../services/messages.service';
 
 import { AdminBaseComponent } from '../admin-base.component';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-admin-policies-component',
@@ -181,7 +181,7 @@ export class AdminPoliciesComponent extends AdminBaseComponent implements OnInit
         private stateService: StateService,
         rightSidebarService: RightSidebarService,
         private policiesService: PoliciesService,
-        protected messagesService: MessagesService,
+        protected messagesService: MessagesObservableService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         assetTypeService: AssetTypeService,
         titleService: Title

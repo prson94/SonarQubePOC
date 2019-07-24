@@ -2,10 +2,10 @@
 import { AdminBaseComponent } from '../admin-base.component'
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { RightSidebarService } from '../../../services/right-sidebar.service';
-import { MessagesService } from '../../../services/messages.service';
 import { Title } from '@angular/platform-browser';
 import { ExportTemplateService } from '../../../services/export-template.service';
 import { ExportTemplate } from '../../../models/export-template.model';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-admin-export-templates-component',
@@ -135,7 +135,7 @@ export class AdminExportTemplatesComponent extends AdminBaseComponent implements
             headerBreadcrumbService: HeaderBreadcrumbService,        
             titleService: Title,
             private exportTemplateService: ExportTemplateService,
-            protected messagesService: MessagesService,
+            protected messagesService: MessagesObservableService,
         ) {
         super(headerBreadcrumbService, titleService, rightSidebarService);
         this.areaName = "Export Templates";

@@ -17,7 +17,6 @@ import {
 } from '../../../../models/fields.model';
 
 import { FieldsService } from '../../../../services/fields.service';
-import { MessagesService } from '../../../../services/messages.service';
 import { ObjectDetailService } from '../../../../services/object-detail.service';
 
 import { BaseComponent } from '../../../shared/base.component';
@@ -25,6 +24,7 @@ import { BaseComponent } from '../../../shared/base.component';
 import { FormHelpers } from '../../../../static/form-helpers';
 import { Observable, Subscription, observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { MessagesObservableService } from '../../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-field-type-form',
@@ -111,7 +111,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     public defaultLinkName: any;
     public defaultLinkAdress: any;
 
-    constructor(private fieldsService: FieldsService, private messagesService: MessagesService, private objectDetailService: ObjectDetailService) {
+    constructor(private fieldsService: FieldsService, private messagesService: MessagesObservableService, private objectDetailService: ObjectDetailService) {
         super();
         this.model = new FieldTypeEditorModel();
         this.model.FieldType = new FieldType();
@@ -397,8 +397,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                         observables.push(this.cardinalFieldFromRelationshipSelected(this.model.cardinalRelationship, this.model.FieldType.LookupObjectFieldTypeID));
                     } else if (this.lookups.Field_CardinalRelationships.length > 0) {
                         observables.push(this.cardinalFieldFromRelationshipSelected(this.lookups.Field_FieldFromRelRelationships[0].value, this.model.FieldType.LookupObjectFieldTypeID));
-
                     }
+                    this.model.FieldType.IsEditable = false;
                 } catch (e) {
                     console.log(e);
                 }
@@ -1502,7 +1502,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             case 'IsDisplayable':
                 return (['FusionLookup', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup'].indexOf(this.model.FieldType.Type) > -1);
             case 'IsEditable':
-                return (['ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup', 'JSON', 'JsonElement'].indexOf(this.model.FieldType.Type) > -1);
+                return (['ComplexRelationLookup','FieldFromRelationship', 'FilteredLookup', 'OwnershipLookup', 'JSON', 'JsonElement'].indexOf(this.model.FieldType.Type) > -1);
             case 'IsListable':
                 return (['FusionLookup', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup', 'RefListRelationship', 'JSON'].indexOf(this.model.FieldType.Type) > -1
                     || (this.model.FieldType.Type == 'Relationship' && !this.isListableRelationship));

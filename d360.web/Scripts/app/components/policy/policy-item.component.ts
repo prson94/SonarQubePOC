@@ -189,7 +189,7 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
             if (parentAr.length > 0) {
                 parent = parentAr[0];
                 let crumb = new Breadcrumb(parent.DisplayValue,
-                    SiteUrlHelpers.getObjectUrl('POLICYTYPE', parent.ID, this.policyTypeId),
+                    SiteUrlHelpers.getObjectUrl('POLICY', parent.ID, this.policyTypeId),
                     true,
                     'Policy',
                     parent.ID,

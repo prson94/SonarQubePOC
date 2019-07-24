@@ -1,9 +1,8 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
-import { HttpModule, XHRBackend  }     from '@angular/http';
-
-import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
 
 import {
     CalendarModule,
@@ -33,7 +32,7 @@ import { FieldDefinitionComponent } from './field-definition.component';
     imports: [CommonModule,
         DeprecatedI18NPipesModule,
         FormsModule,
-        HttpModule,
+        HttpClientModule,
         //d3s
         CoreModule,
         SharedDeleteFormModule,
@@ -63,7 +62,10 @@ import { FieldDefinitionComponent } from './field-definition.component';
         FieldDefinitionComponent
     ],
     providers: [
-        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: GovernRequestInterceptor,
+            multi: true },
     ]
 })
 export class SharedFieldDefinitionModule { }

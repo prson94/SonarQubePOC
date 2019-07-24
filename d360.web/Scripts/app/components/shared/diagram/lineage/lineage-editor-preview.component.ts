@@ -13,9 +13,9 @@ import {
 } from '../../../../models/lineage.model';
 
 import {DiagramService} from '../../../../services/diagram.service';
-import {MessagesService} from '../../../../services/messages.service';
 
 import {DiagramBaseComponent} from '../diagram-base.component';
+import { MessagesObservableService } from '../../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-lineage-editor-preview',
@@ -39,7 +39,7 @@ export class LineageEditorPreviewComponent extends DiagramBaseComponent implemen
 
     public menuItems: MenuItem[] = [];
 
-    constructor(private diagramService: DiagramService, protected messagesService: MessagesService) {
+    constructor(private diagramService: DiagramService, protected messagesService: MessagesObservableService) {
         super();
     }
 

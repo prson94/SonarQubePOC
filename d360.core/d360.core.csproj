@@ -163,7 +163,6 @@
     <Compile Include="entities\Relation\Map.cs" />
     <Compile Include="entities\Community\Plugins\FusionTypeField.cs" />
     <Compile Include="entities\Community\Plugins\FusionAttributeTypeField.cs" />
-    <Compile Include="entities\Community\Environment.cs" />
     <Compile Include="entities\FieldTypeFusionLookupDefinition.cs" />
     <Compile Include="entities\FieldTypeFusionLookupDisplayField.cs" />
     <Compile Include="entities\Fusion\FusionAgentError.cs" />
@@ -189,6 +188,7 @@
     <Compile Include="entities\SiteNav.cs" />
     <Compile Include="entities\Nym.cs" />
     <Compile Include="entities\NymRelation.cs" />
+    <Compile Include="entities\Survey\SurveyApiViewModels.cs" />
     <Compile Include="entities\Tagging\Tag.cs" />
     <Compile Include="entities\Tagging\TagApiModel.cs" />
     <Compile Include="entities\Tagging\TagApiModelWrapper.cs" />

@@ -3,10 +3,10 @@ import {ActivatedRoute, Router} from '@angular/router';
 
 import {ApiEndpoint, ApiService} from '../../../models/custom-api.model';
 
-import {MessagesService} from '../../../services/messages.service';
 import {CustomAPIService} from '../../../services/custom-api.service';
 
 import {BaseComponent} from '../../shared/base.component';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-admin-api-endpoints',
@@ -28,7 +28,7 @@ export class AdminCustomAPIEndpointsComponent extends BaseComponent implements O
 
     constructor(
         protected customAPIService: CustomAPIService,
-        protected messagesService: MessagesService,
+        protected messagesService: MessagesObservableService,
         private route: ActivatedRoute,
         private router: Router,
     ) {

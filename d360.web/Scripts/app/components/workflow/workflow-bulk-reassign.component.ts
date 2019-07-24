@@ -8,8 +8,8 @@ import { BulkWorkflowReassignModel } from '../../models/workflow.model';
 import { ResourcesService } from '../../services/resources.service';
 import { FormEvents, FormHelper } from '../../models/form.model';
 import { EditorField } from '../../models/editor-field.model';
-import { MessagesService } from '../../services/messages.service';
 import { AuthenticationService } from '../../services/authentication.service';
+import { MessagesObservableService } from '../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-workflow-bulk-reassign',
@@ -33,7 +33,7 @@ export class WorkflowBulkReassignComponent extends BaseComponent implements OnIn
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected workflowService: WorkflowService,
         protected resourcesService: ResourcesService,
-        protected messagesService: MessagesService
+        protected messagesService: MessagesObservableService
     ) {
         super();
     }
