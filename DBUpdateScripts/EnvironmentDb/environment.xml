@@ -243,4 +243,5 @@
   <include file="scripts/GOV-7414.xml"/>
   <include file="scripts/GOV-7591.xml"/> <!-- GetDynamicAssets -->
   <include file="scripts/GOV-7647.xml"/>
+  <include file="scripts/GOV-7728.xml"/>
 </databaseChangeLog>
